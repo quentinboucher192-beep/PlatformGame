@@ -51,7 +51,8 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
 
 /// The story of `bossId`; nullptr when it has none. `startAt` (automated screenshots): the shot
 /// to start from (0 = the first), its line already typed (the number of shots: the title card
-/// revealed); -1: from its beginning, faded in.
-std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt = -1);
+/// revealed); -1: from its beginning, faded in. `atSeconds` (automated screenshots, 2.60): the
+/// story that many seconds in, as it plays then (instead of `startAt`).
+std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt = -1, float atSeconds = -1.0f);
 
 }  // namespace cosmic

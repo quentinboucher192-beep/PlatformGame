@@ -160,27 +160,28 @@ TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip ther
         for (const StoryKey& k : st.camera) CHECK(k.t >= 0.0f && k.t <= dur + 1e-3f);
         for (const StoryShake& s : st.shakes) CHECK(s.from >= 0.0f && s.to <= dur + 1e-3f && s.from <= s.to);
         for (const StoryFlash& f : st.flashes) CHECK(f.t >= 0.0f && f.t <= dur + 1e-3f);
-        // The camera moves in every shot, and nothing stays still: every sprite plays a clip of
-        // several frames or moves, every layer slides by itself or with the camera (parallax).
+        // The camera moves in every shot, and nothing stays still: no fixed painting behind (the
+        // scenery is animated sprites in layers, like the characters, at their depths), every sprite
+        // plays a clip of several frames (or moves), the lights breathe, the dust and ash fly.
         const auto [c0, z0] = st.cameraAt(0.0f);
         const auto [c1, z1] = st.cameraAt(dur);
         const bool cameraMoves = c0.x != c1.x || c0.y != c1.y || z0 != z1;
         CHECK(cameraMoves);
-        int layers = 0, sprites = 0;
+        int scenery = 0, sprites = 0, pulses = 0, shadows = 0, kinds = 0;
+        std::set<float> depths;
         for (const StoryElement& e : st.elements) {
             CHECK(!e.keys.empty());
             for (size_t k = 1; k < e.keys.size(); ++k) CHECK(e.keys[k - 1].t <= e.keys[k].t);
             for (const StoryKey& k : e.keys) CHECK(k.t >= 0.0f && k.t <= dur + 1e-3f);
-            bool keysMove = false;
-            for (const StoryKey& k : e.keys) keysMove |= (k.pos && e.keys.size() > 1) || k.alpha || k.rot || k.scale;
-            if (e.kind == StoryElementKind::Layer) {
-                ++layers;
-                CHECK(e.source.rfind("stories/pyrrhax/", 0) == 0);
-                auto [lw, lh] = pngSize(Paths::assetsDir() / e.source);
-                CHECK(lw > 0 && lh > 0);
-                CHECK(e.drift.x != 0.0f || e.depth > 0.0f || keysMove);
-            } else if (e.kind == StoryElementKind::Sprite) {
+            pulses += e.pulse > 0.0f ? 1 : 0;
+            CHECK(e.kind != StoryElementKind::Layer);  // no still picture
+            if (e.kind == StoryElementKind::Sprite) {
                 ++sprites;
+                shadows += e.shadow.on ? 1 : 0;
+                if (e.depth < 1.0f || e.repeat) {
+                    ++scenery;
+                    depths.insert(e.depth);
+                }
                 sheets.insert(e.source);
                 auto j = FileUtil::loadJson(Paths::assetsDir() / e.source);
                 CHECK(j.has_value());
@@ -200,13 +201,19 @@ TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip ther
                         CHECK((c->start + c->frameCount()) * set->frameWidth <= sw && (c->row + 1) * set->frameHeight <= sh);
                     }
                 }
-                CHECK(animated || keysMove);
+                CHECK(animated);
+                if (!animated) std::printf("  %s (%s) plays no animated clip\n", e.id.c_str(), e.source.c_str());
             } else if (e.kind == StoryElementKind::Particles) {
                 CHECK(e.area.w > 0.0f && e.area.h > 0.0f);
+                ++kinds;
             }
         }
-        CHECK(layers >= 4);  // the sky, far, middle, near (parallax)
-        CHECK(sprites >= 3);
+        CHECK(scenery >= 6);        // sky, stars, clouds or mist, far spires, near spires, ground…
+        CHECK(depths.size() >= 4);  // …at depths of their own (a real parallax)
+        CHECK(sprites >= 12);
+        CHECK(pulses >= 2);         // lights that breathe
+        CHECK(shadows >= 1);        // characters casting their shadow
+        CHECK(kinds >= 2);          // embers, dust, ash, sparks…
     }
     // The hatchlings, the egg, the nest, fire, smoke, embers, the sky, the frontier, and the boss's
     // own sheet when it has grown.
@@ -216,7 +223,9 @@ TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip ther
     CHECK(sheets.count("animations/pyrrhax.json") == 1);
     const story::StageAssets assets = story::stageAssets(*p);
     CHECK(assets.animations.size() == sheets.size());
-    CHECK(assets.textures.size() >= 6);
+    CHECK(assets.textures.empty());  // no fixed layer: every layer of scenery is an animated sheet
+    for (const char* s : {"ciel_nuit", "ciel_rouge", "etoiles", "nuages", "brume", "pics_loin", "pics", "sol", "avant", "flammeches", "lave"})
+        CHECK(sheets.count(std::string("animations/stories/pyrrhax_") + s + ".json") == 1);
     // Its duration and its title card do not change.
     CHECK(story::duration(*p) >= 35.0f && story::duration(*p) <= 50.0f);
 }
@@ -252,7 +261,7 @@ TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; ve
     s = storyStateAt(keys, 3.2f);
     CHECK(s.clip == "walk" && s.flip);
     CHECK_NEAR(s.clipTime, 0.7f, 1e-4f);
-    CHECK_NEAR(s.alpha, 0.0f, 1e-4f);
+    CHECK_NEAR(s.alpha, 0.2f, 1e-4f);  // 0 from its key (a step), then towards the next one
     s = storyStateAt(keys, 3.5f);
     CHECK_NEAR(s.alpha, 0.5f, 1e-4f);
     s = storyStateAt(keys, 9.0f);  // after the last key: its values
@@ -282,7 +291,8 @@ TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; ve
                    "elements": [
                      {"id": "ciel", "layer": "stories/pyrrhax/ciel_nuit.png", "depth": 0.05, "drift": [4, 0], "repeat": true,
                       "keys": [{"t": 0, "pos": [-80, -30]}]},
-                     {"id": "x", "sprite": "animations/stories/pyrrhax_oeuf.json", "blend": "add",
+                     {"id": "x", "sprite": "animations/stories/pyrrhax_oeuf.json", "blend": "add", "pulse": [0.5, 2.0],
+                      "shadow": {"alpha": 0.3, "size": [80, 12], "light": [100, 400]}, "drift": [3, 0],
                       "keys": [{"t": 2, "clip": "crack"}, {"t": 0, "pos": [480, 450], "clip": "idle"}]},
                      {"id": "l", "glow": "#ff8a3a", "radius": 120, "keys": [{"t": 0, "alpha": 0.5}]},
                      {"id": "p", "particles": "embers", "color": "#ffb066", "area": [0, 0, 960, 540], "keys": [{"t": 0}]}
@@ -301,6 +311,13 @@ TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; ve
         CHECK(st.elements.size() == 4);
         CHECK(st.elements[0].kind == StoryElementKind::Layer && st.elements[0].repeat && st.elements[0].drift.x == 4.0f);
         CHECK(st.elements[1].kind == StoryElementKind::Sprite && st.elements[1].additive);
+        CHECK(st.elements[1].shadow.on && st.elements[1].shadow.size.x == 80.0f && st.elements[1].shadow.light.has_value());
+        CHECK(st.elements[1].drift.x == 3.0f);
+        // a breathing light: whole at the start of its period, down to (1 - pulse) in its middle
+        CHECK_NEAR(st.elements[1].pulseAt(0.0f), 1.0f, 1e-5f);
+        CHECK_NEAR(st.elements[1].pulseAt(1.0f), 0.5f, 1e-5f);
+        CHECK_NEAR(st.elements[1].pulseAt(2.0f), 1.0f, 1e-5f);
+        CHECK(!st.elements[0].shadow.on && st.elements[0].pulseAt(1.0f) == 1.0f);
         CHECK(st.elements[1].keys.front().t == 0.0f);  // its keys sorted by time
         CHECK(st.elements[2].kind == StoryElementKind::Glow && st.elements[2].radius == 120.0f);
         CHECK(st.elements[3].kind == StoryElementKind::Particles && st.elements[3].source == "embers");

@@ -191,12 +191,33 @@ std::optional<StoryStage> StoryStage::fromJson(const Json& j, std::string* error
         if (e.contains("drift")) el.drift = vec2FromJson(e["drift"]);
         if (!std::isfinite(el.drift.x) || !std::isfinite(el.drift.y)) el.drift = {};
         el.repeat = jget<bool>(e, "repeat", false);
+        if (e.contains("pulse") && e["pulse"].is_array() && e["pulse"].size() >= 2 && e["pulse"][0].is_number() &&
+            e["pulse"][1].is_number()) {
+            el.pulse = std::clamp(finiteOr(e["pulse"][0].get<float>(), 0.0f), 0.0f, 1.0f);
+            el.pulsePeriod = std::clamp(finiteOr(e["pulse"][1].get<float>(), 2.0f), 0.05f, 60.0f);
+            if (e["pulse"].size() >= 3 && e["pulse"][2].is_number()) el.pulsePhase = finiteOr(e["pulse"][2].get<float>(), 0.0f);
+        }
+        if (e.contains("shadow") && e["shadow"].is_object()) {
+            const Json& s = e["shadow"];
+            el.shadow.on = true;
+            el.shadow.alpha = std::clamp(finiteOr(jget<float>(s, "alpha", el.shadow.alpha), el.shadow.alpha), 0.0f, 1.0f);
+            if (s.contains("size")) el.shadow.size = vec2FromJson(s["size"], el.shadow.size);
+            if (!(el.shadow.size.x > 0.0f && el.shadow.size.y > 0.0f && el.shadow.size.x < 4000.0f && el.shadow.size.y < 4000.0f))
+                el.shadow.size = {60.0f, 12.0f};
+            if (s.contains("light") && s["light"].is_array() && s["light"].size() == 2) el.shadow.light = vec2FromJson(s["light"]);
+        }
         if (!e.contains("keys") || !keysFromJson(e["keys"], el.keys) || el.keys.empty())
             return fail("element '" + el.id + "' without keys");
         st.elements.push_back(std::move(el));
     }
     if (st.elements.empty()) return fail("a stage without elements");
     return st;
+}
+
+float StoryElement::pulseAt(float t) const {
+    if (pulse <= 0.0f) return 1.0f;
+    const float u = t / std::max(0.05f, pulsePeriod) + pulsePhase;
+    return 1.0f - pulse * (0.5f - 0.5f * std::cos(2.0f * kPi * u));
 }
 
 std::pair<Vec2, float> StoryStage::cameraAt(float t) const {

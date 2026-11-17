@@ -9,9 +9,12 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 * L'**histoire de Pyrrhax** (« Le Dragon d'Obsidienne ») devient un **petit dessin animé** : ses six plans sont
   des scènes animées faites de vrais sprites dans le style du jeu (la Fumerolle et ses frères et sœurs de feu,
   l'œuf qui éclot dans le nid de cendres, flammes, fumée, pluie de braises, ventre qui s'illumine,
-  transformation en dragon de verre noir), animés image par image, sur un décor en couches qui défile
-  (parallaxe), avec une caméra qui suit l'action ; format des histoires en **version 2** (les autres histoires
-  gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir l'histoire ».
+  transformation en dragon de verre noir), animés image par image. Le **décor vit aussi**, en couches de
+  sprites animés qui défilent chacune à sa vitesse (parallaxe) : ciel et étoiles qui scintillent, nuages et
+  brume qui dérivent, magma qui respire au pied des pics, braises qui crépitent, cendres dans le vent, lueurs
+  qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
+  **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
+  l'histoire ».
 
 **Nouveau dans la version 2.59.0** :
 * **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme

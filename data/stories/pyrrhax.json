@@ -29,18 +29,18 @@
      {
       "t": 0.0,
       "pos": [
-       480.0,
+       400.0,
        250.0
       ],
-      "zoom": 1.0
+      "zoom": 1.06
      },
      {
       "t": 1.0,
       "pos": [
-       480.0,
+       420.0,
        262.0
       ],
-      "zoom": 1.02
+      "zoom": 1.08
      },
      {
       "t": 3.2,
@@ -53,7 +53,7 @@
      {
       "t": 6.887,
       "pos": [
-       484.0,
+       512.0,
        370.0
       ],
       "zoom": 1.38
@@ -62,7 +62,7 @@
     "elements": [
      {
       "id": "ciel",
-      "layer": "stories/pyrrhax/ciel_nuit.png",
+      "sprite": "animations/stories/pyrrhax_ciel_nuit.json",
       "depth": 0.03,
       "keys": [
        {
@@ -70,13 +70,14 @@
         "pos": [
          -80.0,
          -30.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "etoiles",
-      "layer": "stories/pyrrhax/etoiles.png",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
       "depth": 0.08,
       "drift": [
        5.0,
@@ -89,7 +90,8 @@
         "pos": [
          -80.0,
          -20.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
@@ -213,8 +215,51 @@
       ]
      },
      {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.2,
+      "drift": [
+       16.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         40.0
+        ],
+        "alpha": 0.9,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
       "id": "pics_loin",
-      "layer": "stories/pyrrhax/pics_loin.png",
+      "sprite": "animations/stories/pyrrhax_pics_loin.json",
       "depth": 0.25,
       "keys": [
        {
@@ -222,13 +267,14 @@
         "pos": [
          -240.0,
          170.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "brume",
-      "layer": "stories/pyrrhax/brume.png",
+      "sprite": "animations/stories/pyrrhax_brume.json",
       "depth": 0.4,
       "drift": [
        12.0,
@@ -242,13 +288,14 @@
          -160.0,
          330.0
         ],
-        "alpha": 0.9
+        "alpha": 0.9,
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "pics",
-      "layer": "stories/pyrrhax/pics.png",
+      "sprite": "animations/stories/pyrrhax_pics.json",
       "depth": 0.5,
       "keys": [
        {
@@ -256,13 +303,33 @@
         "pos": [
          -320.0,
          140.0
-        ]
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere_pics",
+      "particles": "dustfall",
+      "color": "#d0a0a0",
+      "area": [
+       0.0,
+       160.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
        }
       ]
      },
      {
       "id": "sol",
-      "layer": "stories/pyrrhax/sol.png",
+      "sprite": "animations/stories/pyrrhax_sol.json",
       "depth": 1.0,
       "keys": [
        {
@@ -270,7 +337,211 @@
         "pos": [
          -280.0,
          400.0
-        ]
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         466.0
+        ],
+        "clip": "idle",
+        "offset": 0.18
+       }
+      ]
+     },
+     {
+      "id": "lave1_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         456.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.4401330279289803,
+       0.8735534453962619
+      ]
+     },
+     {
+      "id": "lave2",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         452.1
+        ],
+        "clip": "idle",
+        "offset": 0.657
+       }
+      ]
+     },
+     {
+      "id": "lave2_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         442.1
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.837655543001637,
+       0.4679349528437208
+      ]
+     },
+     {
+      "id": "flammeches1",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         452.2
+        ],
+        "clip": "idle",
+        "offset": 0.303
+       }
+      ]
+     },
+     {
+      "id": "flammeches1_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         438.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.48837433801862307,
+       0.9955002834343927
+      ]
+     },
+     {
+      "id": "flammeches2",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         457.1
+        ],
+        "clip": "idle",
+        "offset": 0.373
+       }
+      ]
+     },
+     {
+      "id": "flammeches2_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         443.1
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.5972400369204712,
+       0.21530869823559895
+      ]
+     },
+     {
+      "id": "flammeches3",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         448.2
+        ],
+        "clip": "idle",
+        "offset": 0.368
+       }
+      ]
+     },
+     {
+      "id": "flammeches3_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         434.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.36098550199034585,
+       0.03568027877359614
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8b0b0",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
        }
       ]
      },
@@ -327,6 +598,17 @@
       "id": "frere_fond",
       "sprite": "animations/stories/pyrrhax_frere.json",
       "depth": 0.96,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        100.0,
+        16.0
+       ],
+       "light": [
+        480.0,
+        440.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -385,6 +667,17 @@
       "id": "frere",
       "sprite": "animations/stories/pyrrhax_frere.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        120.0,
+        19.2
+       ],
+       "light": [
+        480.0,
+        440.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -408,6 +701,17 @@
       "id": "soeur",
       "sprite": "animations/stories/pyrrhax_soeur.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        120.0,
+        19.2
+       ],
+       "light": [
+        480.0,
+        440.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -456,6 +760,10 @@
         "t": 6.887,
         "alpha": 0.4
        }
+      ],
+      "pulse": [
+       0.3,
+       1.7
       ]
      },
      {
@@ -597,7 +905,7 @@
      },
      {
       "id": "avant",
-      "layer": "stories/pyrrhax/avant.png",
+      "sprite": "animations/stories/pyrrhax_avant.json",
       "depth": 1.35,
       "keys": [
        {
@@ -605,7 +913,8 @@
         "pos": [
          -420.0,
          316.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      }
@@ -682,7 +991,7 @@
     "elements": [
      {
       "id": "ciel",
-      "layer": "stories/pyrrhax/ciel_nuit.png",
+      "sprite": "animations/stories/pyrrhax_ciel_nuit.json",
       "depth": 0.03,
       "keys": [
        {
@@ -690,13 +999,14 @@
         "pos": [
          -80.0,
          -30.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "etoiles",
-      "layer": "stories/pyrrhax/etoiles.png",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
       "depth": 0.08,
       "drift": [
        5.0,
@@ -709,7 +1019,8 @@
         "pos": [
          -80.0,
          -20.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
@@ -833,8 +1144,51 @@
       ]
      },
      {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.2,
+      "drift": [
+       16.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         40.0
+        ],
+        "alpha": 0.9,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
       "id": "pics_loin",
-      "layer": "stories/pyrrhax/pics_loin.png",
+      "sprite": "animations/stories/pyrrhax_pics_loin.json",
       "depth": 0.25,
       "keys": [
        {
@@ -842,13 +1196,14 @@
         "pos": [
          -240.0,
          170.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "brume",
-      "layer": "stories/pyrrhax/brume.png",
+      "sprite": "animations/stories/pyrrhax_brume.json",
       "depth": 0.4,
       "drift": [
        12.0,
@@ -862,13 +1217,14 @@
          -160.0,
          330.0
         ],
-        "alpha": 0.9
+        "alpha": 0.9,
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "pics",
-      "layer": "stories/pyrrhax/pics.png",
+      "sprite": "animations/stories/pyrrhax_pics.json",
       "depth": 0.5,
       "keys": [
        {
@@ -876,13 +1232,33 @@
         "pos": [
          -320.0,
          140.0
-        ]
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere_pics",
+      "particles": "dustfall",
+      "color": "#d0a0a0",
+      "area": [
+       0.0,
+       160.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
        }
       ]
      },
      {
       "id": "sol",
-      "layer": "stories/pyrrhax/sol.png",
+      "sprite": "animations/stories/pyrrhax_sol.json",
       "depth": 1.0,
       "keys": [
        {
@@ -890,7 +1266,211 @@
         "pos": [
          -280.0,
          400.0
-        ]
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         466.0
+        ],
+        "clip": "idle",
+        "offset": 0.18
+       }
+      ]
+     },
+     {
+      "id": "lave1_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         456.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.4401330279289803,
+       0.8735534453962619
+      ]
+     },
+     {
+      "id": "lave2",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         452.1
+        ],
+        "clip": "idle",
+        "offset": 0.657
+       }
+      ]
+     },
+     {
+      "id": "lave2_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         442.1
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.837655543001637,
+       0.4679349528437208
+      ]
+     },
+     {
+      "id": "flammeches1",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         452.2
+        ],
+        "clip": "idle",
+        "offset": 0.303
+       }
+      ]
+     },
+     {
+      "id": "flammeches1_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         438.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.48837433801862307,
+       0.9955002834343927
+      ]
+     },
+     {
+      "id": "flammeches2",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         457.1
+        ],
+        "clip": "idle",
+        "offset": 0.373
+       }
+      ]
+     },
+     {
+      "id": "flammeches2_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         443.1
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.5972400369204712,
+       0.21530869823559895
+      ]
+     },
+     {
+      "id": "flammeches3",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         448.2
+        ],
+        "clip": "idle",
+        "offset": 0.368
+       }
+      ]
+     },
+     {
+      "id": "flammeches3_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         434.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.36098550199034585,
+       0.03568027877359614
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8b0b0",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
        }
       ]
      },
@@ -914,6 +1494,17 @@
       "id": "soeur",
       "sprite": "animations/stories/pyrrhax_soeur.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        120.0,
+        19.2
+       ],
+       "light": [
+        900.0,
+        300.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -956,6 +1547,17 @@
       "id": "frere",
       "sprite": "animations/stories/pyrrhax_frere.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        124.0,
+        19.8
+       ],
+       "light": [
+        900.0,
+        300.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -996,6 +1598,17 @@
       "id": "fumerolle",
       "sprite": "animations/stories/pyrrhax_fumerolle.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        110.0,
+        17.6
+       ],
+       "light": [
+        700.0,
+        300.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -1318,7 +1931,7 @@
      },
      {
       "id": "avant",
-      "layer": "stories/pyrrhax/avant.png",
+      "sprite": "animations/stories/pyrrhax_avant.json",
       "depth": 1.35,
       "keys": [
        {
@@ -1326,7 +1939,8 @@
         "pos": [
          -420.0,
          316.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      }
@@ -1387,21 +2001,7 @@
     "elements": [
      {
       "id": "ciel",
-      "layer": "stories/pyrrhax/ciel_nuit.png",
-      "depth": 0.03,
-      "keys": [
-       {
-        "t": 0.0,
-        "pos": [
-         -80.0,
-         -30.0
-        ]
-       }
-      ]
-     },
-     {
-      "id": "ciel_feu",
-      "layer": "stories/pyrrhax/ciel_rouge.png",
+      "sprite": "animations/stories/pyrrhax_ciel_nuit.json",
       "depth": 0.03,
       "keys": [
        {
@@ -1410,7 +2010,23 @@
          -80.0,
          -30.0
         ],
-        "alpha": 0.0
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "ciel_feu",
+      "sprite": "animations/stories/pyrrhax_ciel_rouge.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "alpha": 0.0,
+        "clip": "idle"
        },
        {
         "t": 1.9,
@@ -1424,7 +2040,7 @@
      },
      {
       "id": "etoiles",
-      "layer": "stories/pyrrhax/etoiles.png",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
       "depth": 0.08,
       "drift": [
        5.0,
@@ -1437,7 +2053,8 @@
         "pos": [
          -80.0,
          -20.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
@@ -1561,6 +2178,49 @@
       ]
      },
      {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.2,
+      "drift": [
+       16.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         40.0
+        ],
+        "alpha": 0.9,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
       "id": "lueur_etoile",
       "glow": "#fff2c8",
       "radius": 150.0,
@@ -1644,7 +2304,7 @@
      },
      {
       "id": "pics_loin",
-      "layer": "stories/pyrrhax/pics_loin.png",
+      "sprite": "animations/stories/pyrrhax_pics_loin.json",
       "depth": 0.25,
       "keys": [
        {
@@ -1652,13 +2312,14 @@
         "pos": [
          -240.0,
          170.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "brume",
-      "layer": "stories/pyrrhax/brume.png",
+      "sprite": "animations/stories/pyrrhax_brume.json",
       "depth": 0.4,
       "drift": [
        12.0,
@@ -1672,13 +2333,14 @@
          -160.0,
          330.0
         ],
-        "alpha": 0.9
+        "alpha": 0.9,
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "pics",
-      "layer": "stories/pyrrhax/pics.png",
+      "sprite": "animations/stories/pyrrhax_pics.json",
       "depth": 0.5,
       "keys": [
        {
@@ -1686,13 +2348,33 @@
         "pos": [
          -320.0,
          140.0
-        ]
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere_pics",
+      "particles": "dustfall",
+      "color": "#d0a0a0",
+      "area": [
+       0.0,
+       160.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
        }
       ]
      },
      {
       "id": "sol",
-      "layer": "stories/pyrrhax/sol.png",
+      "sprite": "animations/stories/pyrrhax_sol.json",
       "depth": 1.0,
       "keys": [
        {
@@ -1700,7 +2382,211 @@
         "pos": [
          -280.0,
          400.0
-        ]
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         466.0
+        ],
+        "clip": "idle",
+        "offset": 0.18
+       }
+      ]
+     },
+     {
+      "id": "lave1_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         456.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.4401330279289803,
+       0.8735534453962619
+      ]
+     },
+     {
+      "id": "lave2",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         452.1
+        ],
+        "clip": "idle",
+        "offset": 0.657
+       }
+      ]
+     },
+     {
+      "id": "lave2_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         442.1
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.837655543001637,
+       0.4679349528437208
+      ]
+     },
+     {
+      "id": "flammeches1",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         452.2
+        ],
+        "clip": "idle",
+        "offset": 0.303
+       }
+      ]
+     },
+     {
+      "id": "flammeches1_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         438.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.48837433801862307,
+       0.9955002834343927
+      ]
+     },
+     {
+      "id": "flammeches2",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         457.1
+        ],
+        "clip": "idle",
+        "offset": 0.373
+       }
+      ]
+     },
+     {
+      "id": "flammeches2_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         443.1
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.5972400369204712,
+       0.21530869823559895
+      ]
+     },
+     {
+      "id": "flammeches3",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         448.2
+        ],
+        "clip": "idle",
+        "offset": 0.368
+       }
+      ]
+     },
+     {
+      "id": "flammeches3_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         434.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.36098550199034585,
+       0.03568027877359614
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8b0b0",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
        }
       ]
      },
@@ -1795,6 +2681,36 @@
       ]
      },
      {
+      "id": "braise2_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         872.3,
+         433.6
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.415,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.515,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 4.365,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise3",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -1839,6 +2755,36 @@
         "t": 4.198,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise3_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         351.4,
+         428.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.648,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.748,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 4.598,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -1933,6 +2879,36 @@
       ]
      },
      {
+      "id": "braise5_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1010.4,
+         424.2
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.798,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.898,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 4.748,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise6",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -1977,6 +2953,36 @@
         "t": 4.409,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise6_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         511.8,
+         434.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.859,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.959,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 4.809,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -2071,6 +3077,36 @@
       ]
      },
      {
+      "id": "braise8_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         730.5,
+         439.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.278,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.378,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 5.228,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise9",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -2115,6 +3151,36 @@
         "t": 5.341,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise9_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         615.6,
+         442.2
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.791,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.891,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 5.741,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -2209,6 +3275,36 @@
       ]
      },
      {
+      "id": "braise11_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         70.3,
+         426.8
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.434,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.534,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 5.384,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise12",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -2253,6 +3349,36 @@
         "t": 5.322,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise12_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         489.7,
+         431.2
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.772,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.872,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 5.722,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -2347,6 +3473,36 @@
       ]
      },
      {
+      "id": "braise14_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         445.3,
+         430.9
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 4.763,
+        "alpha": 0.0
+       },
+       {
+        "t": 4.863,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 5.713,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise15",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -2391,6 +3547,36 @@
         "t": 5.583,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise15_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         507.8,
+         436.5
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.033,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.133,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 5.983,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -2485,6 +3671,36 @@
       ]
      },
      {
+      "id": "braise17_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         494.1,
+         444.4
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.173,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.273,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 6.123,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise18",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -2529,6 +3745,36 @@
         "t": 5.996,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise18_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         271.8,
+         435.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.446,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.546,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 6.396,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -2623,6 +3869,36 @@
       ]
      },
      {
+      "id": "braise20_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         559.0,
+         439.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.951,
+        "alpha": 0.0
+       },
+       {
+        "t": 6.051,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 6.512,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise21",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -2667,6 +3943,36 @@
         "t": 6.374,
         "alpha": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise21_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         900.9,
+         438.7
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.824,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.924,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 6.512,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -2751,6 +4057,36 @@
       ]
      },
      {
+      "id": "braise23_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         81.8,
+         428.1
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 5.977,
+        "alpha": 0.0
+       },
+       {
+        "t": 6.077,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 6.512,
+        "alpha": 0.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
       "id": "braise24",
       "sprite": "animations/stories/pyrrhax_braise.json",
       "depth": 1.0,
@@ -2790,6 +4126,36 @@
         "clip": "impact",
         "rot": 0.0,
         "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braise24_lueur",
+      "glow": "#ff7a2a",
+      "radius": 60.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         309.8,
+         444.1
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 6.145,
+        "alpha": 0.0
+       },
+       {
+        "t": 6.245,
+        "alpha": 0.85,
+        "ease": "out"
+       },
+       {
+        "t": 6.512,
+        "alpha": 0.0,
+        "ease": "in"
        }
       ]
      },
@@ -3167,6 +4533,17 @@
       "id": "fumerolle",
       "sprite": "animations/stories/pyrrhax_fumerolle.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        110.0,
+        17.6
+       ],
+       "light": [
+        600.0,
+        150.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -3275,7 +4652,7 @@
      },
      {
       "id": "avant",
-      "layer": "stories/pyrrhax/avant.png",
+      "sprite": "animations/stories/pyrrhax_avant.json",
       "depth": 1.35,
       "keys": [
        {
@@ -3283,7 +4660,8 @@
         "pos": [
          -420.0,
          316.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      }
@@ -3360,7 +4738,7 @@
     "elements": [
      {
       "id": "ciel",
-      "layer": "stories/pyrrhax/ciel_rouge.png",
+      "sprite": "animations/stories/pyrrhax_ciel_rouge.json",
       "depth": 0.03,
       "keys": [
        {
@@ -3368,13 +4746,14 @@
         "pos": [
          -80.0,
          -30.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "etoiles",
-      "layer": "stories/pyrrhax/etoiles.png",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
       "depth": 0.08,
       "drift": [
        5.0,
@@ -3387,7 +4766,8 @@
         "pos": [
          -80.0,
          -20.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
@@ -3511,8 +4891,51 @@
       ]
      },
      {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         150.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "nuages",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.2,
+      "drift": [
+       16.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         40.0
+        ],
+        "alpha": 0.9,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
       "id": "pics_loin",
-      "layer": "stories/pyrrhax/pics_loin.png",
+      "sprite": "animations/stories/pyrrhax_pics_loin.json",
       "depth": 0.25,
       "keys": [
        {
@@ -3520,13 +4943,14 @@
         "pos": [
          -240.0,
          170.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "brume",
-      "layer": "stories/pyrrhax/brume.png",
+      "sprite": "animations/stories/pyrrhax_brume.json",
       "depth": 0.4,
       "drift": [
        12.0,
@@ -3540,13 +4964,14 @@
          -160.0,
          330.0
         ],
-        "alpha": 0.9
+        "alpha": 0.9,
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "pics",
-      "layer": "stories/pyrrhax/pics.png",
+      "sprite": "animations/stories/pyrrhax_pics.json",
       "depth": 0.5,
       "keys": [
        {
@@ -3554,13 +4979,33 @@
         "pos": [
          -320.0,
          140.0
-        ]
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere_pics",
+      "particles": "dustfall",
+      "color": "#d0a0a0",
+      "area": [
+       0.0,
+       160.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
        }
       ]
      },
      {
       "id": "sol",
-      "layer": "stories/pyrrhax/sol.png",
+      "sprite": "animations/stories/pyrrhax_sol.json",
       "depth": 1.0,
       "keys": [
        {
@@ -3568,7 +5013,211 @@
         "pos": [
          -280.0,
          400.0
-        ]
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         466.0
+        ],
+        "clip": "idle",
+        "offset": 0.18
+       }
+      ]
+     },
+     {
+      "id": "lave1_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         456.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.4401330279289803,
+       0.8735534453962619
+      ]
+     },
+     {
+      "id": "lave2",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         452.1
+        ],
+        "clip": "idle",
+        "offset": 0.657
+       }
+      ]
+     },
+     {
+      "id": "lave2_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         442.1
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.837655543001637,
+       0.4679349528437208
+      ]
+     },
+     {
+      "id": "flammeches1",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         452.2
+        ],
+        "clip": "idle",
+        "offset": 0.303
+       }
+      ]
+     },
+     {
+      "id": "flammeches1_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         438.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.48837433801862307,
+       0.9955002834343927
+      ]
+     },
+     {
+      "id": "flammeches2",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         457.1
+        ],
+        "clip": "idle",
+        "offset": 0.373
+       }
+      ]
+     },
+     {
+      "id": "flammeches2_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         443.1
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.5972400369204712,
+       0.21530869823559895
+      ]
+     },
+     {
+      "id": "flammeches3",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         448.2
+        ],
+        "clip": "idle",
+        "offset": 0.368
+       }
+      ]
+     },
+     {
+      "id": "flammeches3_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         434.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.36098550199034585,
+       0.03568027877359614
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8b0b0",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
        }
       ]
      },
@@ -3874,6 +5523,13 @@
       "id": "fumerolle",
       "sprite": "animations/stories/pyrrhax_fumerolle.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        110.0,
+        17.6
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -4227,6 +5883,10 @@
         "alpha": 0.5,
         "scale": 1.4
        }
+      ],
+      "pulse": [
+       0.25,
+       0.7
       ]
      },
      {
@@ -4283,7 +5943,7 @@
      },
      {
       "id": "avant",
-      "layer": "stories/pyrrhax/avant.png",
+      "sprite": "animations/stories/pyrrhax_avant.json",
       "depth": 1.35,
       "keys": [
        {
@@ -4291,7 +5951,8 @@
         "pos": [
          -420.0,
          316.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      }
@@ -4319,7 +5980,7 @@
      {
       "t": 0.0,
       "pos": [
-       490.0,
+       450.0,
        372.0
       ],
       "zoom": 1.62
@@ -4327,7 +5988,7 @@
      {
       "t": 1.8,
       "pos": [
-       490.0,
+       468.0,
        368.0
       ],
       "zoom": 1.6
@@ -4335,7 +5996,7 @@
      {
       "t": 3.6,
       "pos": [
-       480.0,
+       486.0,
        330.0
       ],
       "zoom": 1.18
@@ -4343,7 +6004,7 @@
      {
       "t": 5.0,
       "pos": [
-       480.0,
+       496.0,
        320.0
       ],
       "zoom": 1.1
@@ -4351,16 +6012,16 @@
      {
       "t": 7.7,
       "pos": [
-       482.0,
+       520.0,
        300.0
       ],
-      "zoom": 1.02
+      "zoom": 1.04
      }
     ],
     "elements": [
      {
       "id": "ciel",
-      "layer": "stories/pyrrhax/ciel_rouge.png",
+      "sprite": "animations/stories/pyrrhax_ciel_rouge.json",
       "depth": 0.03,
       "tint": "#d8b0c0",
       "keys": [
@@ -4369,13 +6030,14 @@
         "pos": [
          -80.0,
          -30.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "etoiles",
-      "layer": "stories/pyrrhax/etoiles.png",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
       "depth": 0.08,
       "drift": [
        5.0,
@@ -4388,7 +6050,8 @@
         "pos": [
          -80.0,
          -20.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
@@ -4528,7 +6191,7 @@
      },
      {
       "id": "pics_loin",
-      "layer": "stories/pyrrhax/pics_loin.png",
+      "sprite": "animations/stories/pyrrhax_pics_loin.json",
       "depth": 0.25,
       "tint": "#e0c0d0",
       "keys": [
@@ -4537,13 +6200,14 @@
         "pos": [
          -240.0,
          170.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "brume",
-      "layer": "stories/pyrrhax/brume.png",
+      "sprite": "animations/stories/pyrrhax_brume.json",
       "depth": 0.4,
       "drift": [
        12.0,
@@ -4557,13 +6221,14 @@
          -160.0,
          330.0
         ],
-        "alpha": 0.9
+        "alpha": 0.9,
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "pics",
-      "layer": "stories/pyrrhax/pics.png",
+      "sprite": "animations/stories/pyrrhax_pics.json",
       "depth": 0.5,
       "keys": [
        {
@@ -4571,13 +6236,33 @@
         "pos": [
          -320.0,
          140.0
-        ]
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere_pics",
+      "particles": "dustfall",
+      "color": "#d0a0a0",
+      "area": [
+       0.0,
+       160.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
        }
       ]
      },
      {
       "id": "sol",
-      "layer": "stories/pyrrhax/sol.png",
+      "sprite": "animations/stories/pyrrhax_sol.json",
       "depth": 1.0,
       "keys": [
        {
@@ -4585,7 +6270,211 @@
         "pos": [
          -280.0,
          400.0
-        ]
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         466.0
+        ],
+        "clip": "idle",
+        "offset": 0.18
+       }
+      ]
+     },
+     {
+      "id": "lave1_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         52.5,
+         456.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.4401330279289803,
+       0.8735534453962619
+      ]
+     },
+     {
+      "id": "lave2",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         452.1
+        ],
+        "clip": "idle",
+        "offset": 0.657
+       }
+      ]
+     },
+     {
+      "id": "lave2_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         981.5,
+         442.1
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.837655543001637,
+       0.4679349528437208
+      ]
+     },
+     {
+      "id": "flammeches1",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         452.2
+        ],
+        "clip": "idle",
+        "offset": 0.303
+       }
+      ]
+     },
+     {
+      "id": "flammeches1_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         164.2,
+         438.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.48837433801862307,
+       0.9955002834343927
+      ]
+     },
+     {
+      "id": "flammeches2",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         457.1
+        ],
+        "clip": "idle",
+        "offset": 0.373
+       }
+      ]
+     },
+     {
+      "id": "flammeches2_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         727.8,
+         443.1
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.5972400369204712,
+       0.21530869823559895
+      ]
+     },
+     {
+      "id": "flammeches3",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         448.2
+        ],
+        "clip": "idle",
+        "offset": 0.368
+       }
+      ]
+     },
+     {
+      "id": "flammeches3_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         1025.5,
+         434.2
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.36098550199034585,
+       0.03568027877359614
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8b0b0",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
        }
       ]
      },
@@ -4615,6 +6504,10 @@
         "t": 7.7,
         "alpha": 0.3
        }
+      ],
+      "pulse": [
+       0.25,
+       1.1
       ]
      },
      {
@@ -4661,6 +6554,13 @@
       "id": "jeune",
       "sprite": "animations/stories/pyrrhax_jeune.json",
       "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        150.0,
+        24.0
+       ]
+      },
       "keys": [
        {
         "t": 0.0,
@@ -4782,7 +6682,7 @@
      },
      {
       "id": "avant",
-      "layer": "stories/pyrrhax/avant.png",
+      "sprite": "animations/stories/pyrrhax_avant.json",
       "depth": 1.35,
       "keys": [
        {
@@ -4790,7 +6690,8 @@
         "pos": [
          -420.0,
          316.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      }
@@ -4877,7 +6778,7 @@
     "elements": [
      {
       "id": "ciel",
-      "layer": "stories/pyrrhax/ciel_rouge.png",
+      "sprite": "animations/stories/pyrrhax_ciel_rouge.json",
       "depth": 0.03,
       "keys": [
        {
@@ -4885,13 +6786,14 @@
         "pos": [
          -80.0,
          -30.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "etoiles",
-      "layer": "stories/pyrrhax/etoiles.png",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
       "depth": 0.08,
       "drift": [
        5.0,
@@ -4904,7 +6806,8 @@
         "pos": [
          -80.0,
          -20.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
@@ -5032,6 +6935,10 @@
         ],
         "alpha": 0.6
        }
+      ],
+      "pulse": [
+       0.2,
+       3.0
       ]
      },
      {
@@ -5059,8 +6966,30 @@
       ]
      },
      {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/pyrrhax_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         210.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
       "id": "pics_loin",
-      "layer": "stories/pyrrhax/pics_loin.png",
+      "sprite": "animations/stories/pyrrhax_pics_loin.json",
       "depth": 0.25,
       "keys": [
        {
@@ -5068,13 +6997,14 @@
         "pos": [
          -240.0,
          170.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      },
      {
       "id": "brume",
-      "layer": "stories/pyrrhax/brume.png",
+      "sprite": "animations/stories/pyrrhax_brume.json",
       "depth": 0.4,
       "drift": [
        14.0,
@@ -5088,7 +7018,8 @@
          -160.0,
          330.0
         ],
-        "alpha": 0.9
+        "alpha": 0.9,
+        "clip": "idle"
        }
       ]
      },
@@ -5110,6 +7041,10 @@
         "t": 6.575,
         "alpha": 0.7
        }
+      ],
+      "pulse": [
+       0.35,
+       1.4
       ]
      },
      {
@@ -5129,7 +7064,7 @@
      },
      {
       "id": "pics",
-      "layer": "stories/pyrrhax/pics.png",
+      "sprite": "animations/stories/pyrrhax_pics.json",
       "depth": 0.5,
       "keys": [
        {
@@ -5137,13 +7072,33 @@
         "pos": [
          -320.0,
          150.0
-        ]
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere_pics",
+      "particles": "dustfall",
+      "color": "#d0a0a0",
+      "area": [
+       0.0,
+       160.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
        }
       ]
      },
      {
       "id": "sol",
-      "layer": "stories/pyrrhax/sol.png",
+      "sprite": "animations/stories/pyrrhax_sol.json",
       "depth": 1.0,
       "keys": [
        {
@@ -5151,7 +7106,133 @@
         "pos": [
          -280.0,
          400.0
-        ]
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         462.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave1_lueur",
+      "glow": "#ff6a2a",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         452.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.5
+      ]
+     },
+     {
+      "id": "flammeches1",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         452.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "flammeches1_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         438.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.45
+      ]
+     },
+     {
+      "id": "flammeches2",
+      "sprite": "animations/stories/pyrrhax_flammeches.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         900.0,
+         456.0
+        ],
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "flammeches2_lueur",
+      "glow": "#ffa040",
+      "radius": 46.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         900.0,
+         442.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.45,
+       0.5,
+       0.4
+      ]
+     },
+     {
+      "id": "cendres",
+      "particles": "ash",
+      "color": "#c8b0b0",
+      "area": [
+       0.0,
+       330.0,
+       960.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
        }
       ]
      },
@@ -5298,7 +7379,7 @@
      },
      {
       "id": "avant",
-      "layer": "stories/pyrrhax/avant.png",
+      "sprite": "animations/stories/pyrrhax_avant.json",
       "depth": 1.35,
       "keys": [
        {
@@ -5306,7 +7387,8 @@
         "pos": [
          -420.0,
          316.0
-        ]
+        ],
+        "clip": "idle"
        }
       ]
      }

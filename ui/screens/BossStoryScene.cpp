@@ -111,7 +111,8 @@ SkipHintMetrics skipHintMetrics(UIContext& ui) {
 
 class BossStoryScene : public Scene {
 public:
-    BossStoryScene(GameServices& g, const BossStory& story, int startAt) : g_(g), story_(story), startAt_(startAt) {}
+    BossStoryScene(GameServices& g, const BossStory& story, int startAt, float atSeconds)
+        : g_(g), story_(story), startAt_(atSeconds >= 0.0f ? -1 : startAt), atSeconds_(atSeconds) {}
 
     void onEnter() override {
         def_ = g_.content.enemy(story_.bossId);
@@ -140,6 +141,10 @@ public:
         if (startAt_ >= 0) {
             // Automated screenshots: that shot with its line typed, or the title card revealed.
             t_ = startAt_ < static_cast<int>(shots_.size()) ? shots_[static_cast<size_t>(startAt_)].start + 1.4f : titleStart_ + 1.8f;
+            sinceEnter_ = 10.0f;
+        }
+        if (atSeconds_ >= 0.0f) {  // automated screenshots: that moment of the story, as it plays
+            t_ = std::min(atSeconds_, total_ - 0.01f);
             sinceEnter_ = 10.0f;
         }
         roarLen_ = def_ ? creatureClipDuration(g_, *def_, story_.clip) : 0.0f;
@@ -181,7 +186,7 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         Renderer& r = ui.r();
-        const float in = startAt_ >= 0 ? 1.0f : clamp01(sinceEnter_ / story::kFade);
+        const float in = startAt_ >= 0 || atSeconds_ >= 0.0f ? 1.0f : clamp01(sinceEnter_ / story::kFade);
         const float out = closing_ ? 1.0f - clamp01(closeT_ / story::kFade) : 1.0f;
         const float alpha = std::min(in, out);
         // Faded in and out over the screen below: drawn on a target, then shown with its alpha.
@@ -357,7 +362,7 @@ private:
         for (size_t k = 0; k < st.elements.size(); ++k) {
             const StoryElement& e = st.elements[k];
             const StoryElementState es = e.at(tau);
-            const float a = es.alpha * alpha;
+            const float a = es.alpha * alpha * e.pulseAt(tau);
             if (a <= 0.003f) continue;
             const float kd = base * (1.0f + (zoom - 1.0f) * e.depth);  // far layers zoom less
             const Vec2 cd = c0 + (cam - c0) * e.depth;                   // and move less
@@ -388,10 +393,25 @@ private:
                     const float sc = kStoryPixel * es.scale * kd;
                     Vec2 pv = set->pivot;
                     if (es.flip) pv.x = static_cast<float>(set->frameWidth) - pv.x;
-                    const Vec2 at = scr(es.pos);
+                    const Vec2 at = scr(es.pos + e.drift * tau);
                     const Vec2 pivot = pv * sc;
-                    r.drawTexture(*set->texture, &src, {at.x - pivot.x, at.y - pivot.y, src.w * sc, src.h * sc}, col, blend, es.flip,
-                                  false, es.rot, &pivot);
+                    if (e.shadow.on && r.glowTexture()) {
+                        // its shadow on the ground, pushed away from its light
+                        float off = 0.0f;
+                        if (e.shadow.light) off = std::clamp((es.pos.x - e.shadow.light->x) * 0.12f, -40.0f, 40.0f);
+                        const Vec2 c = scr({es.pos.x + off, es.pos.y});
+                        const Vec2 size = e.shadow.size * (es.scale * kd);
+                        r.drawTexture(*r.glowTexture(), nullptr, Rect::fromCenter(c, size), Color{0, 0, 0, 255}.withAlphaF(a * e.shadow.alpha));
+                    }
+                    if (e.repeat && src.w * sc >= 1.0f) {  // scenery: the sheet repeated along x
+                        const float step = src.w * sc;
+                        float x = img.x + std::fmod(at.x - pivot.x - img.x, step);
+                        if (x > img.x) x -= step;
+                        for (; x < img.right(); x += step) r.drawTexture(*set->texture, &src, {x, at.y - pivot.y, step, src.h * sc}, col, blend, es.flip);
+                    } else {
+                        r.drawTexture(*set->texture, &src, {at.x - pivot.x, at.y - pivot.y, src.w * sc, src.h * sc}, col, blend, es.flip,
+                                      false, es.rot, &pivot);
+                    }
                     break;
                 }
                 case StoryElementKind::Glow:
@@ -415,7 +435,7 @@ private:
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         const float u = std::max(0.5f, ui.s(1.0f));
-        const int n = kind == "stars" ? 46 : kind == "dust" ? 34 : kind == "sparks" ? 26 : kind == "ember_rain" ? 40 : 32;
+        const int n = kind == "stars" ? 46 : kind == "dust" ? 34 : kind == "sparks" ? 26 : kind == "ember_rain" ? 40 : kind == "ash" ? 44 : 32;
         if (kind == "ember_rain") {
             // 2.60: burning embers falling down and to the left, each with its trail.
             for (int k = 0; k < n; ++k) {
@@ -440,6 +460,7 @@ private:
             const float a = hash01(h), b = hash01(h + 1), c2 = hash01(h + 2), d = hash01(h + 3), e = hash01(h + 4);
             Vec2 p;
             float size = u * (1.5f + 2.5f * d), glow = 0.0f, op = 0.0f;
+            Color pc = c;
             if (kind == "embers") {
                 // Rising, swaying, flickering.
                 const float span = area.h + u * 60.0f;
@@ -466,6 +487,24 @@ private:
                 p = {area.x + a * area.w + std::sin(t * (0.5f + e) + c2 * 6.28f) * u * 22.0f, area.y - u * 20.0f + y};
                 op = 0.7f;
                 glow = size * 2.5f;
+            } else if (kind == "ash") {
+                // 2.60: ash lifted by the wind: blown along in gusts, rising and sinking.
+                const float span = area.w + u * 60.0f;
+                const float gust = 1.0f + 0.6f * std::sin(t * 0.9f + c2 * 3.0f);
+                const float x = std::fmod(a * span + t * u * (30.0f + 40.0f * b) * gust, span);
+                p = {area.x - u * 30.0f + x, area.bottom() - (0.1f + 0.85f * c2) * area.h + std::sin(t * (1.1f + e) + d * 6.28f) * u * 14.0f};
+                op = 0.35f + 0.4f * std::fabs(std::sin(t * 1.3f + e * 6.28f));
+                size *= 0.6f;
+                glow = 0.0f;
+                pc = Color::lerp(Color{150, 140, 150, 255}, c, 0.35f);
+            } else if (kind == "dustfall") {
+                // 2.60: dust falling slowly from the spires.
+                const float span = area.h + u * 30.0f;
+                const float y = std::fmod(t * u * (10.0f + 14.0f * b) + c2 * span, span);
+                p = {area.x + a * area.w + std::sin(t * (0.6f + e) + c2 * 6.28f) * u * 6.0f, area.y - u * 15.0f + y};
+                op = 0.45f * smooth(std::min(y / (span * 0.15f), (span - y) / (span * 0.25f)));
+                size *= 0.55f;
+                glow = size * 2.0f;
             } else {  // dust: drifting motes
                 const float span = area.w + u * 40.0f;
                 const float x = std::fmod(a * span + t * u * (6.0f + 12.0f * b), span);
@@ -476,8 +515,8 @@ private:
             }
             op *= alpha;
             if (op <= 0.01f) continue;
-            if (glow > 0.0f) r.drawGlow(p, glow, c.withAlphaF(0.45f * op));
-            r.fillCircle(p, size, Color::lerp(c, Color::white(), 0.55f).withAlphaF(op), BlendMode::Additive);
+            if (glow > 0.0f) r.drawGlow(p, glow, pc.withAlphaF(0.45f * op));
+            r.fillCircle(p, size, Color::lerp(pc, Color::white(), kind == "ash" ? 0.15f : 0.55f).withAlphaF(op), BlendMode::Additive);
         }
     }
 
@@ -627,6 +666,7 @@ private:
     const BossStory& story_;
     const EnemyDefinition* def_ = nullptr;
     int startAt_ = -1;
+    float atSeconds_ = -1.0f;
     std::vector<Shot> shots_;
     float titleStart_ = 0.0f, total_ = 0.0f;
     float t_ = 0.0f;            // time in the story
@@ -709,10 +749,10 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
     return lay;
 }
 
-std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt) {
+std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt, float atSeconds) {
     const BossStory* s = g.stories.find(bossId);
     if (!s || s->shots.empty()) return nullptr;
-    return std::make_unique<BossStoryScene>(g, *s, std::max(-1, startAt));
+    return std::make_unique<BossStoryScene>(g, *s, std::max(-1, startAt), std::isfinite(atSeconds) ? atSeconds : -1.0f);
 }
 
 }  // namespace cosmic

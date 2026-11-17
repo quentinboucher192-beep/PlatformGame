@@ -80,9 +80,20 @@ struct StoryElement {
     Color color = Color::white();  // a glow's, the particles'
     float radius = 100.0f;         // a glow's (units, times its scale)
     Rect area;                     // the particles' (units)
-    Vec2 drift{};                  // a layer sliding by itself (units per second)
-    bool repeat = false;           // a layer repeated along x (it drifts without end)
+    Vec2 drift{};                  // a layer or sprite sliding by itself (units per second)
+    bool repeat = false;           // a layer or sprite repeated along x (it drifts without end)
+    float pulse = 0.0f;            // its alpha breathing: down to (1 - pulse) and back,
+    float pulsePeriod = 2.0f;      // once per period (seconds),
+    float pulsePhase = 0.0f;       // from this point of it (0..1)
+    struct Shadow {
+        bool on = false;
+        float alpha = 0.4f;
+        Vec2 size{60.0f, 12.0f};    // units, times the sprite's scale
+        std::optional<Vec2> light;  // a light: the shadow is pushed away from it
+    } shadow;                       // a sprite's soft shadow on the ground, at its point
     std::vector<StoryKey> keys;
+    /// Its alpha multiplier at `t` (the pulse).
+    float pulseAt(float t) const;
     StoryElementState at(float t) const { return storyStateAt(keys, t); }
 };
 

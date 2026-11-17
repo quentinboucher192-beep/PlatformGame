@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/lave.png",
+  "frameWidth": 64,
+  "frameHeight": 24,
+  "pivot": [32, 24],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true}
+  }
+}

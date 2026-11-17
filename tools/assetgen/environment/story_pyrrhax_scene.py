@@ -56,8 +56,10 @@ def K(t, **kw):
     return k
 
 
-def layer(id_, image, depth, pos, alpha=1.0, drift=None, repeat=False, tint=None, keys=None, blend=None):
-    e = {"id": id_, "layer": L + image + ".png", "depth": depth}
+def layer(id_, image, depth, pos, alpha=1.0, drift=None, repeat=False, tint=None, keys=None, blend=None, offset=0.0,
+          pulse=None):
+    """A layer of scenery: an animated sheet (story_pyrrhax_layers.py, its point at its top-left)."""
+    e = {"id": id_, "sprite": A + image + ".json", "depth": depth}
     if drift:
         e["drift"] = [float(drift[0]), float(drift[1])]
     if repeat:
@@ -66,22 +68,45 @@ def layer(id_, image, depth, pos, alpha=1.0, drift=None, repeat=False, tint=None
         e["tint"] = tint
     if blend:
         e["blend"] = blend
-    e["keys"] = keys or [K(0, pos=pos, alpha=alpha if alpha != 1.0 else None)]
+    if pulse:
+        e["pulse"] = [float(v) for v in pulse]
+    if keys:
+        keys[0].setdefault("clip", "idle")
+        if offset:
+            keys[0]["offset"] = round(float(offset), 3)
+    e["keys"] = keys or [K(0, pos=pos, alpha=alpha if alpha != 1.0 else None, clip="idle", offset=offset or None)]
     return e
 
 
-def sprite(id_, anim, keys, depth=1.0, blend=None, tint=None):
+def sprite(id_, anim, keys, depth=1.0, blend=None, tint=None, shadow=None, pulse=None, drift=None):
     e = {"id": id_, "sprite": anim if anim.endswith(".json") else A + anim + ".json", "depth": depth}
     if blend:
         e["blend"] = blend
     if tint:
         e["tint"] = tint
+    if shadow:
+        e["shadow"] = shadow
+    if pulse:
+        e["pulse"] = [float(v) for v in pulse]
+    if drift:
+        e["drift"] = [float(drift[0]), float(drift[1])]
     e["keys"] = keys
     return e
 
 
-def glow(id_, color, radius, keys, depth=1.0):
-    return {"id": id_, "glow": color, "radius": float(radius), "depth": depth, "keys": keys}
+def shade(width, light=None, alpha=0.45):
+    """A soft shadow on the ground under a sprite, pushed away from `light`."""
+    sh = {"alpha": alpha, "size": [float(width), round(width * 0.16, 1)]}
+    if light:
+        sh["light"] = [float(light[0]), float(light[1])]
+    return sh
+
+
+def glow(id_, color, radius, keys, depth=1.0, pulse=None):
+    e = {"id": id_, "glow": color, "radius": float(radius), "depth": depth, "keys": keys}
+    if pulse:
+        e["pulse"] = [float(v) for v in pulse]
+    return e
 
 
 def particles(id_, kind, color, area, keys, depth=1.0):
@@ -99,22 +124,44 @@ def twinkles(seed, n, area, depth=0.08, dur=10.0):
     return out
 
 
-def sky(name="ciel_nuit", stars=True, seed=1, extra=None):
+def sky(name="ciel_nuit", stars=True, seed=1, extra=None, clouds=True):
+    """The sky: its nebula shimmering, the stars twinkling and drifting, two bands of smoke clouds
+    drifting at their own speeds (the farther, the slower)."""
     els = [layer("ciel", name, 0.03, (-80, -30))]
     if extra:
         els += extra
     if stars:
         els.append(layer("etoiles", "etoiles", 0.08, (-80, -20), drift=(5, 0), repeat=True))
         els += twinkles(seed, 7, (40, 20, 880, 250))
+    if clouds:
+        els.append(layer("nuages_loin", "nuages", 0.12, (-200, 150), drift=(-9, 0), repeat=True, alpha=0.75, offset=0.3))
+        els.append(layer("nuages", "nuages", 0.2, (-300, 40), drift=(16, 0), repeat=True, alpha=0.9))
     return els
 
 
-def hills(mist=True, far_tint=None):
+def hills(mist=True, far_tint=None, seed=7, props=True):
+    """Spires far and near (their magma breathing), mist drifting between them, dust falling from
+    them, the ground with its embers; small flames and cracks of lava on it, each lighting the
+    ground around it, ash blown along by the wind."""
     els = [layer("pics_loin", "pics_loin", 0.25, (-240, 170), tint=far_tint)]
     if mist:
         els.append(layer("brume", "brume", 0.4, (-160, 330), drift=(12, 0), repeat=True, alpha=0.9))
-    els.append(layer("pics", "pics", 0.5, (-320, 140)))
+    els.append(layer("pics", "pics", 0.5, (-320, 140), offset=0.2))
+    els.append(particles("poussiere_pics", "dustfall", "#d0a0a0", (0, 160, 960, 260), [K(0, alpha=0.8)], depth=0.5))
     els.append(layer("sol", "sol", 1.0, (-280, 400)))
+    if props:
+        rng = np.random.default_rng(seed)
+        for i, x in enumerate((rng.uniform(-60, 120), rng.uniform(820, 1000))):
+            y = rng.uniform(452, 470)
+            els.append(sprite(f"lave{i + 1}", "lave", [K(0, pos=(x, y), clip="idle", offset=float(rng.uniform(0, 0.8)))]))
+            els.append(glow(f"lave{i + 1}_lueur", "#ff6a2a", 70, [K(0, pos=(x, y - 10), alpha=0.55)],
+                            pulse=(0.5, float(rng.uniform(1.2, 2.0)), float(rng.uniform(0, 1)))))
+        for i, x in enumerate((rng.uniform(140, 220), rng.uniform(700, 800), rng.uniform(1000, 1100))):
+            y = rng.uniform(446, 460)
+            els.append(sprite(f"flammeches{i + 1}", "flammeches", [K(0, pos=(x, y), clip="idle", offset=float(rng.uniform(0, 0.6)))]))
+            els.append(glow(f"flammeches{i + 1}_lueur", "#ffa040", 46, [K(0, pos=(x, y - 14), alpha=0.6)],
+                            pulse=(0.45, float(rng.uniform(0.35, 0.6)), float(rng.uniform(0, 1)))))
+    els.append(particles("cendres", "ash", "#c8b0b0", (0, 330, 960, 160), [K(0, alpha=0.9)]))
     return els
 
 
@@ -150,6 +197,9 @@ def mouth_offset(sheet, clip, frame):
 
 
 # =================================================================== the six shots
+NEST = (480, 440)
+
+
 def shot_nest(D):
     """Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets."""
     els = sky("ciel_nuit", True, 101) + hills()
@@ -159,14 +209,15 @@ def shot_nest(D):
         sprite("volute2", "volute", [K(0, pos=(570, 432), clip="rise", offset=0.5, alpha=0.6, flip=True)]),
         sprite("nid_fond", "nid", [K(0, pos=nest, clip="back")]),
         sprite("frere_fond", "frere", [K(0, pos=(598, 410), clip="watch", flip=True, scale=0.8), K(3.75, clip="cheer"),
-                                       K(5.4, clip="watch", offset=0.3)], depth=0.96),
+                                       K(5.4, clip="watch", offset=0.3)], depth=0.96, shadow=shade(100, NEST)),
         sprite("coquilles", "coquilles", [K(0, pos=(372, 452), clip="idle")]),
         sprite("coquilles2", "coquilles", [K(0, pos=(600, 450), clip="idle", flip=True, offset=0.4)]),
-        sprite("frere", "frere", [K(0, pos=(262, 444), clip="watch"), K(3.7, clip="cheer"), K(5.6, clip="watch")]),
+        sprite("frere", "frere", [K(0, pos=(262, 444), clip="watch"), K(3.7, clip="cheer"), K(5.6, clip="watch")],
+               shadow=shade(120, NEST)),
         sprite("soeur", "soeur", [K(0, pos=(768, 448), clip="watch", flip=True, offset=0.2), K(3.85, clip="cheer"),
-                                  K(5.5, clip="idle")]),
+                                  K(5.5, clip="idle")], shadow=shade(120, NEST)),
         glow("lueur_nid", "#ff8a3a", 240, [K(0, pos=(480, 440), alpha=0.3), K(2.2, alpha=0.36), K(3.5, alpha=0.62, ease="out"),
-                                           K(D, alpha=0.4)]),
+                                           K(D, alpha=0.4)], pulse=(0.3, 1.7)),
         sprite("oeuf", "oeuf", [K(0, pos=(480, 452), clip="idle", scale=1.25), K(2.2, clip="crack"), K(3.5, clip="hatch")]),
         sprite("coquille", "coquille", [K(0, pos=(480, 392), alpha=0.0, scale=1.25), K(3.6, alpha=0.0, ease="step"),
                                         K(3.62, alpha=1.0, clip="spin", ease="step"),
@@ -178,8 +229,8 @@ def shot_nest(D):
         particles("braises", "embers", "#ffb066", (260, 200, 440, 260), [K(0, alpha=0.9)]),
     ]
     els += front()
-    cam = [K(0, pos=(480, 250), zoom=1.0), K(1.0, pos=(480, 262), zoom=1.02), K(3.2, pos=(480, 362), zoom=1.3),
-           K(D, pos=(484, 370), zoom=1.38)]
+    cam = [K(0, pos=(400, 250), zoom=1.06), K(1.0, pos=(420, 262), zoom=1.08), K(3.2, pos=(480, 362), zoom=1.3),
+           K(D, pos=(512, 370), zoom=1.38)]
     return dict(backdrop="#0a0414", camera=cam, elements=els, still=4.6)
 
 
@@ -213,11 +264,12 @@ def shot_smoke(D):
         sprite("coquilles", "coquilles", [K(0, pos=(420, 450), clip="idle", offset=0.2)]),
         sprite("soeur", "soeur", [K(0, pos=sx, clip="idle", offset=0.3), K(0.9, clip="inhale"), K(1.35, rot=s_rot),
                                   K(s_off, rot=s_rot), K(s_off + 0.15, clip="idle"), K(s_off + 0.45, rot=0.0),
-                                  K(5.05, clip="laugh", flip=True, offset=0.15)]),
+                                  K(5.05, clip="laugh", flip=True, offset=0.15)], shadow=shade(120, (900, 300))),
         sprite("frere", "frere", [K(0, pos=fx, clip="idle"), K(0.3, clip="inhale"), K(0.75, rot=f_rot), K(f_off, rot=f_rot),
-                                  K(f_off + 0.15, clip="idle"), K(f_off + 0.45, rot=0.0), K(4.9, clip="laugh", flip=True)]),
+                                  K(f_off + 0.15, clip="idle"), K(f_off + 0.45, rot=0.0), K(4.9, clip="laugh", flip=True)],
+               shadow=shade(124, (900, 300))),
         sprite("fumerolle", "fumerolle", [K(0, pos=fumx, clip="idle"), K(3.3, clip="inhale"), K(3.96, clip="blow"),
-                                          K(4.96, clip="cough"), K(5.94, clip="sad")]),
+                                          K(4.96, clip="cough"), K(5.94, clip="sad")], shadow=shade(110, (700, 300))),
     ]
     els += flame("flamme2", sx, ms, s_on, s_off, s_rot) + flame("flamme1", fx, mf, f_on, f_off, f_rot)
     px, py = fumx[0] + mb[0], fumx[1] + mb[1]
@@ -260,6 +312,17 @@ def _fall(i, x0, t0, dur, depth, rng, land_y=436, scale=1.0, impact=True, end=No
     return sprite(f"braise{i}", "braise", keys, depth=depth)
 
 
+def _impact_light(i, x0, t0, dur, depth, land_y, end):
+    """The ground lit where an ember lands, the light dying out."""
+    x1 = x0 - 0.5 * (land_y + 40)
+    t1 = t0 + dur
+    if t1 + 0.05 > end:
+        return None
+    keys = [K(0, pos=(x1, land_y - 6), alpha=0.0), K(t1 - 0.05, alpha=0.0), K(t1 + 0.05, alpha=0.85, ease="out")]
+    keys.append(K(min(end, t1 + 0.9), alpha=0.0, ease="in"))
+    return glow(f"braise{i}_lueur", "#ff7a2a", 60, keys, depth=depth)
+
+
 def shot_ember_rain(D):
     """La nuit où l'étoile du centre s'effondra, une pluie de braises tomba sur les Confins."""
     rng = np.random.default_rng(303)
@@ -282,13 +345,17 @@ def shot_ember_rain(D):
         far = k % 3 == 1
         x0 = rng.uniform(280, 1300)
         dur = rng.uniform(1.3, 1.9) if not far else rng.uniform(1.9, 2.4)
-        els.append(_fall(k, x0, t, dur, 0.55 if far else 1.0, rng, land_y=410 if far else rng.uniform(430, 452),
-                         scale=0.8 if far else 1.35, impact=not far, end=D))
+        land = 410 if far else rng.uniform(430, 452)
+        els.append(_fall(k, x0, t, dur, 0.55 if far else 1.0, rng, land_y=land, scale=0.8 if far else 1.35, impact=not far, end=D))
+        if not far:
+            lit = _impact_light(k, x0, t, dur, 1.0, land, D)
+            if lit:
+                els.append(lit)
         k += 1
         t += rng.uniform(0.07, 0.18)
     els += [
         sprite("fumerolle", "fumerolle", [K(0, pos=(250, 436), clip="walk"), K(2.3, pos=(420, 436), ease="linear"),
-                                          K(2.31, clip="idle", ease="step"), K(2.8, clip="look_up")]),
+                                          K(2.31, clip="idle", ease="step"), K(2.8, clip="look_up")], shadow=shade(110, star)),
         particles("braises", "embers", "#ff8a3a", (100, 180, 760, 280), [K(0, alpha=0.0), K(2.2, alpha=0.0), K(3.0, alpha=1.0)]),
         particles("etincelles", "sparks", "#ffb070", (100, 340, 760, 110), [K(0, alpha=0.0), K(3.2, alpha=0.0), K(3.8, alpha=0.9)]),
         particles("pluie", "ember_rain", "#ff9a40", (0, -40, 1000, 520), [K(0, alpha=0.0), K(2.0, alpha=0.0), K(2.8, alpha=1.0)],
@@ -321,7 +388,7 @@ def shot_swallow(D):
     for (t, c) in swallows:
         keys.append(K(t, clip=c))
     keys.append(K(4.06, clip="glow"))
-    els.append(sprite("fumerolle", "fumerolle", keys))
+    els.append(sprite("fumerolle", "fumerolle", keys, shadow=shade(110)))
     # the three embers, floating down to its open mouth
     for i, (t, c) in enumerate(swallows):
         arrive = t + 0.24
@@ -337,7 +404,7 @@ def shot_swallow(D):
                                                                 K(max(0.01, start), alpha=0.8), K(start + 0.7, pos=p1, ease="out"),
                                                                 K(arrive, pos=mouth, ease="in"), K(arrive + 0.01, alpha=0.0, ease="step")]))
     els += [
-        glow("ventre", "#ffb347", 40, [K(0, pos=belly, alpha=0.0, scale=0.6), K(1.4, alpha=0.0), K(1.6, alpha=0.25, scale=0.8),
+        glow("ventre", "#ffb347", 40, pulse=(0.25, 0.7), keys=[K(0, pos=belly, alpha=0.0, scale=0.6), K(1.4, alpha=0.0), K(1.6, alpha=0.25, scale=0.8),
                                        K(2.7, alpha=0.25), K(2.9, alpha=0.4, scale=1.0), K(3.8, alpha=0.4),
                                        K(4.0, alpha=0.55, scale=1.3), K(D, alpha=0.5, scale=1.4)]),
         particles("etincelles", "sparks", "#ffc060", (370, 300, 220, 150), [K(0, alpha=0.0), K(3.9, alpha=0.0), K(4.4, alpha=1.0)]),
@@ -361,13 +428,13 @@ def shot_glass(D):
     j = (480, 436)
     t_tr, t_roar, t_flash = 1.8, 3.9, 5.0
     els += [
-        glow("chaleur", "#ff6a3a", 320, [K(0, pos=(480, 380), alpha=0.25), K(t_tr + 1.5, alpha=0.45), K(t_flash, alpha=0.55),
+        glow("chaleur", "#ff6a3a", 320, pulse=(0.25, 1.1), keys=[K(0, pos=(480, 380), alpha=0.25), K(t_tr + 1.5, alpha=0.45), K(t_flash, alpha=0.55),
                                          K(D, alpha=0.3)]),
         glow("ventre", "#ffb347", 50, [K(0, pos=(j[0] + 14, j[1] - 26), alpha=0.5, scale=1.0), K(t_tr, alpha=0.6, scale=1.2),
                                        K(t_tr + 1.6, pos=(j[0] + 26, j[1] - 48), alpha=0.5, scale=2.0), K(t_flash, alpha=0.5),
                                        K(t_flash + 0.05, alpha=0.0, ease="step")]),
         sprite("jeune", "jeune", [K(0, pos=j, clip="glow"), K(t_tr, clip="transform"), K(t_roar, clip="roar"),
-                                  K(t_flash, alpha=1.0), K(t_flash + 0.06, alpha=0.0, ease="step")]),
+                                  K(t_flash, alpha=1.0), K(t_flash + 0.06, alpha=0.0, ease="step")], shadow=shade(150, alpha=0.5)),
         sprite("pyrrhax", BOSS, [K(0, pos=(500, 392), alpha=0.0, scale=0.9), K(t_flash, alpha=0.0, ease="step"),
                                  K(t_flash + 0.06, alpha=1.0, clip="summon", ease="step"), K(t_flash + 1.0, clip="idle"),
                                  K(D, pos=(500, 380), ease="inout")]),
@@ -376,8 +443,8 @@ def shot_glass(D):
         particles("braises", "embers", "#ff6a3a", (120, 160, 720, 300), [K(0, alpha=0.5), K(t_flash, alpha=1.0)]),
     ]
     els += front()
-    cam = [K(0, pos=(490, 372), zoom=1.62), K(t_tr, pos=(490, 368), zoom=1.6), K(t_tr + 1.8, pos=(480, 330), zoom=1.18),
-           K(t_flash, pos=(480, 320), zoom=1.1), K(D, pos=(482, 300), zoom=1.02)]
+    cam = [K(0, pos=(450, 372), zoom=1.62), K(t_tr, pos=(468, 368), zoom=1.6), K(t_tr + 1.8, pos=(486, 330), zoom=1.18),
+           K(t_flash, pos=(496, 320), zoom=1.1), K(D, pos=(520, 300), zoom=1.04)]
     shake = [{"from": t_tr, "to": t_tr + 1.7, "amount": 3.0}, {"from": t_roar + 0.2, "to": t_roar + 0.8, "amount": 5.0},
              {"from": t_flash, "to": t_flash + 0.7, "amount": 7.0}]
     flash = [{"t": t_flash, "in": 0.1, "out": 0.8, "color": "#fff0d8", "alpha": 0.95}]
@@ -390,17 +457,28 @@ def shot_frontier(D):
     els = [layer("ciel", "ciel_rouge", 0.03, (-80, -30)),
            layer("etoiles", "etoiles", 0.08, (-80, -20), drift=(5, 0), repeat=True)]
     els += twinkles(606, 6, (40, 20, 600, 200))
-    els += [glow("lueur_lune", "#ff7a5a", 230, [K(0, pos=moon, alpha=0.5), K(D, pos=(moon[0], moon[1] - 16), alpha=0.6)], depth=0.1),
+    els += [glow("lueur_lune", "#ff7a5a", 230, pulse=(0.2, 3.0), depth=0.1,
+                 keys=[K(0, pos=moon, alpha=0.5), K(D, pos=(moon[0], moon[1] - 16), alpha=0.6)]),
             sprite("lune", "lune", [K(0, pos=moon, clip="idle", scale=1.25), K(D, pos=(moon[0], moon[1] - 16), ease="linear")],
                    depth=0.1)]
-    els += [layer("pics_loin", "pics_loin", 0.25, (-240, 170)),
+    els += [layer("nuages_loin", "nuages", 0.12, (-200, 210), drift=(-8, 0), repeat=True, alpha=0.7, offset=0.4),
+            layer("pics_loin", "pics_loin", 0.25, (-240, 170)),
             layer("brume", "brume", 0.4, (-160, 330), drift=(14, 0), repeat=True, alpha=0.9)]
     gate = (290, 434)
     els += [
-        glow("lueur_porte", "#ff6a3a", 160, [K(0, pos=(gate[0], gate[1] - 170), alpha=0.6), K(D, alpha=0.7)], depth=0.7),
+        glow("lueur_porte", "#ff6a3a", 160, pulse=(0.35, 1.4),
+             keys=[K(0, pos=(gate[0], gate[1] - 170), alpha=0.6), K(D, alpha=0.7)], depth=0.7),
         sprite("porte", "porte", [K(0, pos=gate, clip="idle")], depth=0.7),
-        layer("pics", "pics", 0.5, (-320, 150)),
+        layer("pics", "pics", 0.5, (-320, 150), offset=0.3),
+        particles("poussiere_pics", "dustfall", "#d0a0a0", (0, 160, 960, 260), [K(0, alpha=0.8)], depth=0.5),
         layer("sol", "sol", 1.0, (-280, 400)),
+        sprite("lave1", "lave", [K(0, pos=(470, 462), clip="idle")]),
+        glow("lave1_lueur", "#ff6a2a", 70, [K(0, pos=(470, 452), alpha=0.55)], pulse=(0.5, 1.5)),
+        sprite("flammeches1", "flammeches", [K(0, pos=(150, 452), clip="idle")]),
+        glow("flammeches1_lueur", "#ffa040", 46, [K(0, pos=(150, 438), alpha=0.6)], pulse=(0.45, 0.45)),
+        sprite("flammeches2", "flammeches", [K(0, pos=(900, 456), clip="idle", offset=0.3)]),
+        glow("flammeches2_lueur", "#ffa040", 46, [K(0, pos=(900, 442), alpha=0.6)], pulse=(0.45, 0.5, 0.4)),
+        particles("cendres", "ash", "#c8b0b0", (0, 330, 960, 160), [K(0, alpha=0.9)]),
     ]
     px, py = 700, 380
     t_in, t_fire = 3.5, 4.26
@@ -613,6 +691,10 @@ def render(stage, t, size=(W, H), particles_on=False):
             return (iw / 2 + (p[0] - cdx) * k, ih / 2 + (p[1] - cdy) * k)
 
         s = state(el, t)
+        if el.get("pulse"):  # a breathing light
+            amt, per = el["pulse"][0], el["pulse"][1]
+            ph = el["pulse"][2] if len(el["pulse"]) > 2 else 0.0
+            s["alpha"] *= 1 - amt * (0.5 - 0.5 * math.cos(2 * math.pi * (t / per + ph)))
         if s["alpha"] <= 0.003:
             continue
         tint = _hex(el["tint"]) if el.get("tint") else None
@@ -650,8 +732,29 @@ def render(stage, t, size=(W, H), particles_on=False):
                 px, py = px + pad, py + pad
             w2, h2 = max(1, int(round(fr.width * sc))), max(1, int(round(fr.height * sc)))
             im = fr.resize((w2, h2), Image.NEAREST)
-            x, y = scr(s["pos"])
-            _blend(canvas, im, x - px * sc, y - py * sc, s["alpha"], add, tint)
+            dr = el.get("drift", [0, 0])
+            x, y = scr((s["pos"][0] + dr[0] * t, s["pos"][1] + dr[1] * t))
+            sh = el.get("shadow")
+            if sh:  # its soft shadow on the ground, pushed away from its light
+                off = 0.0
+                if sh.get("light"):
+                    off = min(40.0, max(-40.0, (s["pos"][0] - sh["light"][0]) * 0.12))
+                cx_, cy_ = scr((s["pos"][0] + off, s["pos"][1]))
+                rw, rh = sh["size"][0] * s["scale"] * k / 2, sh["size"][1] * s["scale"] * k / 2
+                x0, x1 = max(0, int(cx_ - rw)), min(iw, int(cx_ + rw) + 1)
+                y0, y1 = max(0, int(cy_ - rh)), min(ih, int(cy_ + rh) + 1)
+                if x1 > x0 and y1 > y0:
+                    yy, xx = np.mgrid[y0:y1, x0:x1].astype(np.float32)
+                    dd = np.clip(1 - np.hypot((xx + 0.5 - cx_) / rw, (yy + 0.5 - cy_) / rh), 0, 1)
+                    a = dd * dd * (3 - 2 * dd) * s["alpha"] * sh.get("alpha", 0.4)
+                    canvas[y0:y1, x0:x1] *= (1 - a)[..., None]
+            if el.get("repeat"):
+                x = ((x - px * sc) % w2) - w2
+                while x < iw:
+                    _blend(canvas, im, x, y - py * sc, s["alpha"], add, tint)
+                    x += w2
+            else:
+                _blend(canvas, im, x - px * sc, y - py * sc, s["alpha"], add, tint)
         elif "glow" in el:
             r = el["radius"] * s["scale"] * k
             x, y = scr(s["pos"])
@@ -690,7 +793,10 @@ def generate(review=None):
     built = S.build()
     files = [os.path.join(ASSETS, sh.texture) for sh in built.values()]
     files += [os.path.join(ASSETS, S.jpath(n)) for n in built]
-    files += LY.build(os.path.join(ASSETS, "stories", "pyrrhax"))
+    scenery = LY.build()
+    files += [os.path.join(ASSETS, sh.texture) for sh in scenery.values()]
+    files += [os.path.join(ASSETS, f"animations/stories/pyrrhax_{n}.json") for n in scenery]
+    built.update(scenery)
     story = json.load(open(STORY_JSON, encoding="utf-8"))
     st = stages(story)
     write_story(st)

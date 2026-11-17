@@ -7225,7 +7225,7 @@
    ]
   },
   {
-   "fr": "Chaque personnage joue ses animations image par image (éclosion, souffle de flammes, nuage de fumée, toux, braises avalées, transformation, rugissement) ; le décor défile en plusieurs couches, la caméra suit l'action, l'écran tremble et s'illumine au rythme du texte, qui reste aussi long à lire qu'avant.",
+   "fr": "Chaque personnage joue ses animations image par image (éclosion, souffle de flammes, nuage de fumée, toux, braises avalées, transformation, rugissement), et le décor vit aussi : étoiles qui scintillent, nuages et brume qui dérivent, magma qui respire au pied des pics, braises qui crépitent au sol, cendres soulevées par le vent, lueurs et ombres qui suivent le feu. Les couches défilent à leur propre vitesse, la caméra suit l'action, l'écran tremble et s'illumine au rythme du texte, qui reste aussi long à lire qu'avant.",
    "where": [
     "data/news/changelog.json"
    ]
