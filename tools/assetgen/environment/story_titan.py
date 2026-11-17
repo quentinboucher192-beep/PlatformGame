@@ -16,8 +16,8 @@ from story_pyrrhax import collapsed_star
 FIRE = "#ff8a2e"      # the furnaces, molten steel
 FIRE_HOT = "#ffe6b0"
 AMBER = "#ffc23c"     # the Titan's light (its first phase)
-STEEL = {"hi": "#b6c2ce", "mid": "#66717f", "dark": "#2c323b"}
-BRASS = {"hi": "#f4dc98", "mid": "#98773a", "dark": "#3c2a14"}
+STEEL = {"hi": "#8e9aa8", "mid": "#525c6a", "dark": "#20252d"}
+BRASS = {"hi": "#cdb070", "mid": "#86682e", "dark": "#34240f"}
 RUST = "#8a4a22"
 
 
@@ -272,7 +272,7 @@ def shot1():
                                (380, 1.7, "carry", False), (880, 1.6, "stand", True)):
         worker(c, wx, 456, ws, pose, flip=fl)
     smoke(c, 5805, 820, 300, 200, 60, "#5a4a40", 0.35)
-    return finish(c, bloom=0.6, vignette=0.55)
+    return finish(c, bloom=0.45, threshold=0.7, vignette=0.55)
 
 
 def shot2():
@@ -290,7 +290,7 @@ def shot2():
         sparks(c, 5813 + wx, 30, ax, ay + 8, 40, "#d8eeff", 0.8)
     for (wx, pose, fl) in ((150, "carry", False), (230, "stand", True), (760, "point", True), (830, "stand", False)):
         worker(c, wx, 462, 2.0, pose, flip=fl)
-    return finish(c, bloom=0.6, vignette=0.55)
+    return finish(c, bloom=0.45, threshold=0.7, vignette=0.55)
 
 
 def _sky_star(c):
@@ -330,7 +330,7 @@ def shot3():
     c.over("#2a221c", lad.get(0.5), 0.95)
     for (t, s) in ((0.35, 1.5), (0.6, 1.3), (0.85, 1.1)):
         worker(c, 262 + 40 * t, 462 - 312 * t, s, "stand", light="#c8a8ff", k=0.5)
-    return finish(c, bloom=0.6, vignette=0.55)
+    return finish(c, bloom=0.45, threshold=0.7, vignette=0.55)
 
 
 def shot4():
@@ -354,7 +354,7 @@ def shot4():
     core, visor, _ = titan(c, 450, 462, 2.4, light=(0.9, -0.4), glow=AMBER, visor=0.9, reactor=0.8, k=1.1, rust=0.25, seed=5837)
     sparks(c, 5839, 70, 640, 400, 80, k=0.9)
     smoke(c, 5841, 700, 300, 220, 70, "#4a3e36", 0.4)
-    return finish(c, bloom=0.6, vignette=0.6)
+    return finish(c, bloom=0.45, threshold=0.7, vignette=0.6)
 
 
 def shot5():
@@ -370,7 +370,7 @@ def shot5():
     smoke(c, 5857, 640, 300, 200, 60, "#c8c4c0", 0.3)
     sparks(c, 5859, 90, 360, 300, 70, k=1.0)
     sparks(c, 5861, 60, 600, 380, 60, k=0.8)
-    return finish(c, bloom=0.65, vignette=0.6)
+    return finish(c, bloom=0.5, threshold=0.7, vignette=0.6)
 
 
 def shot6():
@@ -386,7 +386,7 @@ def shot6():
     c.rays(visor[0], visor[1], 8, 160, 10, AMBER, 0.1, 5875, soft=8)
     smoke(c, 5877, 400, 160, 160, 50, "#5a4a40", 0.35)
     sparks(c, 5879, 60, 480, 466, 300, k=0.6, up=20)
-    return finish(c, bloom=0.62, vignette=0.6)
+    return finish(c, bloom=0.48, threshold=0.7, vignette=0.6)
 
 
 SHOTS = [shot1, shot2, shot3, shot4, shot5, shot6]

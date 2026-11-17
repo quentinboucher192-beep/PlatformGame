@@ -202,7 +202,7 @@ void Enemy::beginVent(GameWorld& w) {
         s.dir = dir;
         s.length = 150.0f;
         s.height = 30.0f;
-        s.warn = 0.35f;
+        s.warn = 0.5f;  // it hisses first (puffs at its feet)
         s.time = kVentJets - s.warn;
         s.damage = 1.0f;
         s.knockback = 260.0f;
@@ -401,7 +401,7 @@ void Enemy::planPresses(GameWorld& w) {
         std::vector<int> round;
         for (int k = 0; k < n; ++k)
             if (k != safe && !overMe(k)) round.push_back(k);
-        round.push_back(-1 - std::max(0, safe));  // the spared one, encoded (-1 - index)
+        if (safe >= 0) round.push_back(-1 - safe);  // the spared one, encoded (-1 - index)
         pressRounds_.push_back(round);
     } else if (a.arms == 3) {
         // A march from its side across the arena: one round, in order.
