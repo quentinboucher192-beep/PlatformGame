@@ -58,4 +58,19 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
 /// story that many seconds in, as it plays then (instead of `startAt`).
 std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt = -1, float atSeconds = -1.0f);
 
+/// 2.63: the game's trailer (GameServices::trailer, data/trailer/trailer.json), played by the same
+/// scene as the stories: its shots with their own lengths, their titles large in the picture, the
+/// game's name on its last card, its own music. `attract`: the main menu's attract mode (it starts
+/// again at its end, through black, as long as nobody touches anything; any input — a key, a
+/// button, a click, the mouse or a stick moving — leaves it at once, without acting on the menu).
+/// nullptr when there is no trailer. `atSeconds` (automated screenshots): that moment of it.
+std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSeconds = -1.0f);
+/// The passes of the trailer `s` plays in attract mode (0 during the first); -1 when `s` is not one.
+int trailerPasses(const Scene* s);
+/// The main menu's attract mode: after this long without any input, the trailer plays.
+constexpr float kAttractDelay = 60.0f;
+/// Whether the attract mode may start now: its setting on (Paramètres › Jeu), a trailer, nothing
+/// being typed, the tutorial done, no update being downloaded.
+bool attractAllowed(GameServices& g);
+
 }  // namespace cosmic

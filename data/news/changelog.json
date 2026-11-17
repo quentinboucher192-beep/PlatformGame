@@ -1,4 +1,7 @@
 {
+  "2.63.9": [
+    "Bande-annonce : environ 40 secondes de plans rapides et de grands titres, faits de vraies scènes du jeu — Nova qui court, saute, tire et plane sur Sylvanox, Pyralis et Glacior, les sept giga-boss qui rugissent dans les décors de leurs histoires, les dragonnets de Pyrrhax, trois Nova en coopération, Cosmic Online — sur la musique de Singularis. Elle se lance sur l'écran d'accueil après 1 minute sans aucune action (clavier, souris, manette) et tourne en boucle ; n'importe quelle touche, un clic ou un mouvement ramène aussitôt au menu, sans déclencher l'action. Jamais pendant une saisie, une fenêtre ouverte, un téléchargement ou avant le didacticiel ; Paramètres › Jeu › « Bande-annonce à l'accueil après 1 min d'inactivité » pour la désactiver."
+  ],
   "2.63.8": [
     "Mise à jour du jeu : une barre de progression montre où en est le téléchargement de l'installateur (Mo reçus / total), le téléchargement n'est plus coupé au bout de 90 s sur une connexion lente (il ne s'arrête que si plus rien n'arrive pendant 60 s), et le message dit la vraie raison d'un échec (connexion trop lente, pas de connexion au serveur, erreur du serveur)."
   ],

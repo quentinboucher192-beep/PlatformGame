@@ -435,6 +435,12 @@
    ]
   },
   {
+   "fr": "19 POUVOIRS À DÉBLOQUER",
+   "where": [
+    "data/trailer/trailer.json"
+   ]
+  },
+  {
    "fr": "1re pression : pose une balise (gratuit). 2e pression dans les 5 s : retour instantané à la balise, à l'arrêt et brièvement invulnérable.",
    "where": [
     "data/powers/recall.json"
@@ -588,6 +594,18 @@
    "fr": "60 images/s",
    "where": [
     "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "7 GIGA-BOSS",
+   "where": [
+    "data/trailer/trailer.json"
+   ]
+  },
+  {
+   "fr": "7 HISTOIRES ANIMÉES",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -2517,6 +2535,12 @@
    ]
   },
   {
+   "fr": "Appuyez sur une touche pour revenir au menu",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "Appuyez sur « Aperçu » pour vérifier le compte cible.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -3345,6 +3369,12 @@
    "fr": "Au centre du système, l'étoile s'ouvre. Ses couloirs rejouent les trois planètes avant son cœur, où l'Astrarque porte les échos de tous les gardiens.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Au clavier, à la manette ou à la souris",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -4796,6 +4826,12 @@
    ]
   },
   {
+   "fr": "avant le premier combat de chaque giga-boss",
+   "where": [
+    "data/trailer/trailer.json"
+   ]
+  },
+  {
    "fr": "avant le suivi",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -5091,6 +5127,18 @@
    "fr": "Bande passante",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bande-annonce : environ 40 secondes de plans rapides et de grands titres, faits de vraies scènes du jeu — Nova qui court, saute, tire et plane sur Sylvanox, Pyralis et Glacior, les sept giga-boss qui rugissent dans les décors de leurs histoires, les dragonnets de Pyrrhax, trois Nova en coopération, Cosmic Online — sur la musique de Singularis. Elle se lance sur l'écran d'accueil après 1 minute sans aucune action (clavier, souris, manette) et tourne en boucle ; n'importe quelle touche, un clic ou un mouvement ramène aussitôt au menu, sans déclencher l'action. Jamais pendant une saisie, une fenêtre ouverte, un téléchargement ou avant le didacticiel ; Paramètres › Jeu › « Bande-annonce à l'accueil après 1 min d'inactivité » pour la désactiver.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Bande-annonce à l'accueil après 1 min d'inactivité",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -11590,6 +11638,7 @@
   {
    "fr": "COSMIC",
    "where": [
+    "ui/screens/BossStoryScene.cpp",
     "ui/screens/MenuBackground.cpp"
    ]
   },
@@ -11606,6 +11655,7 @@
   {
    "fr": "Cosmic Online",
    "where": [
+    "data/trailer/trailer.json",
     "game/online/OnlineService.cpp",
     "game/online/OnlineSession.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -11998,6 +12048,12 @@
    "fr": "Courir contre mon meilleur temps par défaut",
    "where": [
     "ui/screens/GhostOptionsScene.cpp"
+   ]
+  },
+  {
+   "fr": "COURIR, SAUTER, GLISSER",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -13106,6 +13162,12 @@
    ]
   },
   {
+   "fr": "data/trailer/trailer.json introuvable",
+   "where": [
+    "game/content/BossStories.cpp"
+   ]
+  },
+  {
    "fr": "DATE",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -13705,6 +13767,12 @@
    "fr": "Des engrenages tournent autour du portail, puis une coulée d'acier en fusion jaillit en gerbe d'étincelles dans un panache de vapeur.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "DES ENNEMIS SUR CHAQUE PLANÈTE",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -15805,6 +15873,12 @@
    "fr": "Défis › Calendrier : chaque défi commencé montre combien de joueurs vérifiés ont atteint le bronze, l'argent et l'or (votre médaille entourée), avec le détail au survol ou au focus ; les derniers nombres reçus restent affichés hors ligne.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "DÉFIS, CLASSEMENTS, CLANS",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -23316,6 +23390,12 @@
    ]
   },
   {
+   "fr": "JUSQU'À 3 EN COOPÉRATION",
+   "where": [
+    "data/trailer/trailer.json"
+   ]
+  },
+  {
    "fr": "jusqu'à ce qu'un coup les brise",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -24303,7 +24383,8 @@
   {
    "fr": "La Lanterne des profondeurs",
    "where": [
-    "data/stories/kraken.json"
+    "data/stories/kraken.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -24333,7 +24414,8 @@
   {
    "fr": "LA LICHE DES CATACOMBES",
    "where": [
-    "data/enemies/liche.json"
+    "data/enemies/liche.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -25639,7 +25721,8 @@
    "fr": "Le Cœur effondré",
    "where": [
     "data/music/tracks.json",
-    "data/stories/singularis.json"
+    "data/stories/singularis.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -25669,7 +25752,8 @@
   {
    "fr": "Le Dernier Quart",
    "where": [
-    "data/stories/titan.json"
+    "data/stories/titan.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -25718,7 +25802,8 @@
    "fr": "Le Dragon d'Obsidienne",
    "where": [
     "data/music/tracks.json",
-    "data/stories/pyrrhax.json"
+    "data/stories/pyrrhax.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -25869,7 +25954,8 @@
   {
    "fr": "Le Gardien des noms",
    "where": [
-    "data/stories/liche.json"
+    "data/stories/liche.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -25923,7 +26009,8 @@
    "fr": "Le Golem Primordial",
    "where": [
     "data/music/tracks.json",
-    "data/stories/monolithe.json"
+    "data/stories/monolithe.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -26040,7 +26127,8 @@
   {
    "fr": "LE KRAKEN DES ABYSSES",
    "where": [
-    "data/enemies/kraken.json"
+    "data/enemies/kraken.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -26437,7 +26525,8 @@
   {
    "fr": "LE PHÉNIX STELLAIRE",
    "where": [
-    "data/enemies/phenix.json"
+    "data/enemies/phenix.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -26504,7 +26593,8 @@
   {
    "fr": "Le Porteur d'aube",
    "where": [
-    "data/stories/phenix.json"
+    "data/stories/phenix.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -26941,7 +27031,8 @@
   {
    "fr": "LE TITAN MÉCANIQUE",
    "where": [
-    "data/enemies/titan.json"
+    "data/enemies/titan.json",
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -30660,6 +30751,12 @@
    ]
   },
   {
+   "fr": "MONOLITHE",
+   "where": [
+    "data/trailer/trailer.json"
+   ]
+  },
+  {
    "fr": "Monolithe",
    "where": [
     "data/achievements/achievements.json",
@@ -31196,6 +31293,12 @@
    "fr": "Météores",
    "where": [
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "même PC, réseau local ou en ligne",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -36582,6 +36685,7 @@
   {
    "fr": "PLATFORMER",
    "where": [
+    "ui/screens/BossStoryScene.cpp",
     "ui/screens/MenuBackground.cpp"
    ]
   },
@@ -39154,6 +39258,12 @@
    "fr": "PYROGYRE, L'ANNEAU SOLAIRE",
    "where": [
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "PYRRHAX",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {
@@ -44908,6 +45018,12 @@
    ]
   },
   {
+   "fr": "SINGULARIS",
+   "where": [
+    "data/trailer/trailer.json"
+   ]
+  },
+  {
    "fr": "Singularis",
    "where": [
     "data/achievements/achievements.json",
@@ -46891,6 +47007,7 @@
   {
    "fr": "Sylvanox · Pyralis · Glacior · Aethra",
    "where": [
+    "data/trailer/trailer.json",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -50906,6 +51023,12 @@
    "fr": "Un souffle de feu balaie le portail, puis retombe en braises.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "UN SYSTÈME À EXPLORER",
+   "where": [
+    "data/trailer/trailer.json"
    ]
   },
   {

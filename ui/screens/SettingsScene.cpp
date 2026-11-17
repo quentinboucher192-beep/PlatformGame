@@ -412,8 +412,8 @@ private:
 
     void gameplay(const Rect& c) {
         UIContext& ui = g_.ui;
-        // Eleven rows, then where the saves are: they scroll when the window is too short for them.
-        const float total = row() * 11.0f + ui.s(20) + ui.s(28) + ui.s(28);
+        // Twelve rows, then where the saves are: they scroll when the window is too short for them.
+        const float total = row() * 12.0f + ui.s(20) + ui.s(28) + ui.s(28);
         const bool scrolls = total > c.h;
         ui.beginScroll("gamescroll", c, total);
         Rect r{c.x, c.y - ui.scrollOffset(), std::min(c.w - (scrolls ? ui.s(16) : 0.0f), ui.s(900)), ui.s(54)};
@@ -445,6 +445,10 @@ private:
         if (ui.cycle("bossstories", r, "Histoire des giga-boss", story, {"Avant le premier combat", "Jamais"}))
             working_.gameplay.bossStories = story;
         ui.newBadge("bossstories", r, "settings.boss_stories", true, true);
+        r.y += row();
+        // 2.63: the trailer on the main menu after a minute without any input.
+        ui.toggle("attract", r, "Bande-annonce à l'accueil après 1 min d'inactivité", working_.gameplay.attractTrailer);
+        ui.newBadge("attract", r, "settings.game.attract_trailer", true, true);
         r.y += row();
         bool openHud = ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)");
         ui.newBadge("hudeditor", r, "settings.hud_editor", true, true);  // « NOUVEAU » (2.52: « Ennemis vaincus »)

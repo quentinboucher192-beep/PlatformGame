@@ -57,6 +57,8 @@ struct GameplaySettings {
     /// « Histoire des giga-boss » (2.51): 0 told before the first fight against each giga
     /// boss, 1 never (game/content/BossStories.h, StorySetting). Display only.
     int bossStories = 0;
+    /// 2.63: the trailer plays on the main menu after a minute without any input (attract mode).
+    bool attractTrailer = true;
 };
 
 /// Whether a HUD element is shown (the timer and the progress bar have their own settings;

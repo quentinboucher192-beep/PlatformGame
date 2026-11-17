@@ -2401,6 +2401,13 @@
    "parents": [
     "online.nav.clans"
    ]
+  },
+  {
+   "id": "settings.game.attract_trailer",
+   "version": "2.63.9",
+   "parents": [
+    "settings.tab.game"
+   ]
   }
  ]
 }

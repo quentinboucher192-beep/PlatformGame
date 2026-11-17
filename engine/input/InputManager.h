@@ -49,6 +49,9 @@ public:
     bool anyMenuInput() const;
     /// SDL ticks (ms) of the last key, button, click, wheel or stick move: presence (idle).
     uint64_t lastActivityMs() const { return lastActivityMs_; }
+    /// 2.63: how many such inputs there have been (the main menu's attract mode: any change is
+    /// someone back at the controls).
+    uint64_t activityCount() const { return activityCount_; }
 
     // ------------------------------------------------------------ devices
     InputDevice lastDevice() const { return lastDevice_; }
@@ -118,6 +121,7 @@ public:
 
 private:
     uint64_t lastActivityMs_ = 0;
+    uint64_t activityCount_ = 0;
     static int idx(Action a) { return static_cast<int>(a); }
     float padValue(const PadBinding& b) const;
     /// The commands bound to `code` (a mouse button or a notch of the wheel) are pressed.

@@ -3,11 +3,16 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdio>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "engine/core/Easing.h"
+#include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/tutorial/Tutorial.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/BossStoryScene.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/CoopGameScene.h"
 #include "ui/screens/Navigation.h"
@@ -58,11 +63,29 @@ public:
         g_.ui.setFocus(!g_.progression.lastLevel.empty() && !g_.content.campaignPlanetOf(g_.progression.lastLevel).empty()
                            ? "main/continue"
                            : "main/campaign");
+        activity_ = g_.app.input().activityCount();
     }
-    void onResume() override { g_.playMusic(g_.menuMusic()); }
+    void onResume() override {
+        g_.playMusic(g_.menuMusic());
+        idle_ = 0.0f;  // 2.63: back from a screen (or from the trailer): a new minute to wait
+        activity_ = g_.app.input().activityCount();
+    }
     void update(float dt) override {
         t_ += dt;
         bg_.update(dt);
+        // 2.63, attract mode: a minute without any input on this menu (this screen on top: no
+        // window over it), nothing typed, no update downloading, the tutorial done, and the
+        // trailer plays, looping until someone touches anything.
+        const uint64_t act = g_.app.input().activityCount();
+        if (act != activity_ || !attractAllowed(g_)) {
+            activity_ = act;
+            idle_ = 0.0f;
+        } else if ((idle_ += dt) >= kAttractDelay) {
+            idle_ = 0.0f;
+            if (auto trailer = makeTrailer(g_, true)) g_.app.pushScene(std::move(trailer));
+        } else if (idle_ >= kAttractDelay - 10.0f) {
+            preloadTrailer();
+        }
         // The installer asked from the alert is downloaded and checked: run it, close the game.
         if (std::string v; g_.updates.takeLaunch(&v) && g_.updates.launch(v)) g_.app.quit();
     }
@@ -177,6 +200,23 @@ public:
     }
 
 private:
+    /// 2.63: the trailer's files, one per frame during the last seconds of the wait, so that it
+    /// starts without a pause (its scene finds them all loaded).
+    void preloadTrailer() {
+        if (!g_.trailer) return;
+        if (preload_.empty() && preloadNext_ == 0) {
+            const story::StageAssets a = story::stageAssets(*g_.trailer);
+            for (const auto& t : a.textures) preload_.push_back({t, false});
+            for (const auto& s : a.animations) preload_.push_back({s, true});
+        }
+        if (preloadNext_ >= preload_.size()) return;
+        const auto& [path, anim] = preload_[preloadNext_++];
+        ResourceManager& res = g_.app.resources();
+        if (!res.exists(path)) return;
+        if (anim) res.animation(path);
+        else res.texture(path, true);
+    }
+
     /// A newer version exists (announced by Cosmic Online): an alert at the bottom of the menu.
     /// A click downloads the installer, checks it (SHA-256), then runs it and closes the game.
     void drawUpdateAlert(const Rect& side) {
@@ -271,6 +311,10 @@ private:
     MenuBackground bg_;
     float t_ = 0.0f;
     bool confirmQuit_ = false;
+    float idle_ = 0.0f;        // 2.63: seconds without any input (attract mode)
+    uint64_t activity_ = 0;
+    std::vector<std::pair<std::string, bool>> preload_;  // the trailer's files (true: an animation)
+    size_t preloadNext_ = 0;
 };
 
 }  // namespace

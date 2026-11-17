@@ -9872,6 +9872,24 @@
     "Téléchargement de l'installateur : {0} Mo…": "Downloading the installer: {0} MB…",
     "Téléchargement interrompu ({0}). Réessayez.": "Download interrupted ({0}). Try again.",
     "{0} / {1} Mo": "{0} / {1} MB",
-    "{0} Mo…": "{0} MB…"
+    "{0} Mo…": "{0} MB…",
+    "Bande-annonce : environ 40 secondes de plans rapides et de grands titres, faits de vraies scènes du jeu — Nova qui court, saute, tire et plane sur Sylvanox, Pyralis et Glacior, les sept giga-boss qui rugissent dans les décors de leurs histoires, les dragonnets de Pyrrhax, trois Nova en coopération, Cosmic Online — sur la musique de Singularis. Elle se lance sur l'écran d'accueil après 1 minute sans aucune action (clavier, souris, manette) et tourne en boucle ; n'importe quelle touche, un clic ou un mouvement ramène aussitôt au menu, sans déclencher l'action. Jamais pendant une saisie, une fenêtre ouverte, un téléchargement ou avant le didacticiel ; Paramètres › Jeu › « Bande-annonce à l'accueil après 1 min d'inactivité » pour la désactiver.": "Trailer: about 40 seconds of quick cuts and big titles, made of real scenes of the game — Nova running, jumping, shooting and gliding on Sylvanox, Pyralis and Glacior, the seven giga bosses roaring on the scenery of their stories, Pyrrhax's hatchlings, three Novas in cooperation, Cosmic Online — to Singularis's music. It starts on the title screen after 1 minute without any input (keyboard, mouse, gamepad) and loops; any key, click or movement goes straight back to the menu without triggering anything. Never while typing, with a window open, during a download or before the tutorial; Settings › Game › “Trailer on the title screen after 1 min idle” turns it off.",
+    "Bande-annonce à l'accueil après 1 min d'inactivité": "Trailer on the title screen after 1 min idle",
+    "Appuyez sur une touche pour revenir au menu": "Press any key to go back to the menu",
+    "19 POUVOIRS À DÉBLOQUER": "19 POWERS TO UNLOCK",
+    "7 GIGA-BOSS": "7 GIGA BOSSES",
+    "7 HISTOIRES ANIMÉES": "7 ANIMATED STORIES",
+    "Au clavier, à la manette ou à la souris": "With a keyboard, a gamepad or a mouse",
+    "COURIR, SAUTER, GLISSER": "RUN, JUMP, SLIDE",
+    "DES ENNEMIS SUR CHAQUE PLANÈTE": "ENEMIES ON EVERY PLANET",
+    "DÉFIS, CLASSEMENTS, CLANS": "CHALLENGES, LEADERBOARDS, CLANS",
+    "JUSQU'À 3 EN COOPÉRATION": "UP TO 3 IN CO-OP",
+    "MONOLITHE": "MONOLITH",
+    "PYRRHAX": "PYRRHAX",
+    "SINGULARIS": "SINGULARIS",
+    "UN SYSTÈME À EXPLORER": "A STAR SYSTEM TO EXPLORE",
+    "avant le premier combat de chaque giga-boss": "before the first fight against each giga boss",
+    "data/trailer/trailer.json introuvable": "data/trailer/trailer.json not found",
+    "même PC, réseau local ou en ligne": "same PC, local network or online"
   }
 }

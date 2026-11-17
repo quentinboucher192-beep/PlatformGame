@@ -145,6 +145,10 @@ struct StoryShot {
     std::string particles = "dust";  // over the painting: dust, embers, sparks, snow, stars, ember_rain (2.60), none
     Color glow = Color::white();  // the particles' colour
     std::optional<StoryStage> stage;  // version 2: the animated scene
+    /// 2.63 (the trailer): the shot's length in seconds (0: its line's reading time, as a story's),
+    /// and a smaller line under its title (a trailer's line is a title, drawn large).
+    float duration = 0.0f;
+    std::string subtitle;
 };
 
 /// The story of a giga boss.
@@ -155,6 +159,13 @@ struct BossStory {
     Color color = Color::white();  // its colour (title card, progress bar)
     Color accent = Color::white(); // a second colour (glows of the title card)
     std::string clip = "roar";     // the boss's clip on the title card (its idle one if missing)
+    /// 2.63: « trailer »: the game's trailer (data/trailer/trailer.json), not a boss's story: its
+    /// lines are titles, its last card the game's name, its music its own (`music`), its title
+    /// card `titleCard` seconds long.
+    std::string kind = "story";
+    std::string music;
+    float titleCard = 3.0f;
+    bool isTrailer() const { return kind == "trailer"; }
     std::vector<StoryShot> shots;
 
     static std::optional<BossStory> fromJson(const Json& j, std::string* error = nullptr);
@@ -173,6 +184,10 @@ constexpr float kReadRate = 16.0f;    // characters read per second (a calm read
 size_t characters(std::string_view text);
 /// How long a shot stays: max(4.5 s, 1.2 s + characters / 16), long enough to read its line.
 float shotDuration(std::string_view text);
+/// 2.63: a shot's length: its own `duration` when it has one (the trailer), else shotDuration.
+float shotLength(const StoryShot& shot);
+/// 2.63: the game's trailer (data/trailer/trailer.json); nullopt when it cannot be read.
+std::optional<BossStory> loadTrailer(std::string* error = nullptr);
 /// The whole story with its title card (texts as given: the French ones).
 float duration(const BossStory& s);
 constexpr int kVersion = 2;  // the newest format read (1: paintings, 2: animated scenes)

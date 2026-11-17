@@ -1,0 +1,3753 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 2,
+ "kind": "trailer",
+ "comment": "The game's trailer (2.63), played by the stories' scene (BossStoryScene) from the main menu's attract mode: each shot has its own length, its line is a title drawn large (where its focus says), its subtitle under it; the last card is the game's name with this file's title. Written by tools/assetgen/environment/trailer.py (edit it there).",
+ "boss": "trailer",
+ "title": "Au clavier, à la manette ou à la souris",
+ "color": "#39f0d8",
+ "accent": "#ffd27a",
+ "music": "music/singularis_boss.ogg",
+ "titleCard": 4.5,
+ "shots": [
+  {
+   "scene": "system",
+   "image": "",
+   "text": "UN SYSTÈME À EXPLORER",
+   "subtitle": "Sylvanox · Pyralis · Glacior · Aethra",
+   "duration": 3.4,
+   "focus": [
+    0.5,
+    0.78
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ffd27a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.0
+     },
+     {
+      "t": 3.4,
+      "pos": [
+       480.0,
+       276.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       6.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.2,
+      "drift": [
+       -14.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         300.0
+        ],
+        "clip": "idle",
+        "alpha": 0.7
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "soleil_lueur",
+      "glow": "#ffd27a",
+      "radius": 220.0,
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.25,
+       1.6
+      ]
+     },
+     {
+      "id": "soleil",
+      "layer": "ui/planets/sun.png",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         416.0,
+         206.0
+        ],
+        "scale": 0.25
+       }
+      ]
+     },
+     {
+      "id": "sylvanox",
+      "layer": "ui/planets/sylvanox.png",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         739.0,
+         229.0
+        ],
+        "scale": 0.16,
+        "ease": "linear"
+       },
+       {
+        "t": 0.85,
+        "pos": [
+         735.1,
+         241.0
+        ],
+        "scale": 0.166,
+        "ease": "linear"
+       },
+       {
+        "t": 1.7,
+        "pos": [
+         726.4,
+         252.7
+        ],
+        "scale": 0.172,
+        "ease": "linear"
+       },
+       {
+        "t": 2.55,
+        "pos": [
+         713.3,
+         264.1
+        ],
+        "scale": 0.178,
+        "ease": "linear"
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         695.8,
+         274.9
+        ],
+        "scale": 0.184,
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "pyralis",
+      "layer": "ui/planets/pyralis.png",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         426.2,
+         324.2
+        ],
+        "scale": 0.21,
+        "ease": "linear"
+       },
+       {
+        "t": 0.85,
+        "pos": [
+         388.7,
+         323.5
+        ],
+        "scale": 0.21,
+        "ease": "linear"
+       },
+       {
+        "t": 1.7,
+        "pos": [
+         352.0,
+         321.2
+        ],
+        "scale": 0.208,
+        "ease": "linear"
+       },
+       {
+        "t": 2.55,
+        "pos": [
+         316.7,
+         317.6
+        ],
+        "scale": 0.206,
+        "ease": "linear"
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         283.3,
+         312.5
+        ],
+        "scale": 0.204,
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "glacior",
+      "layer": "ui/planets/glacior.png",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         139.0,
+         229.0
+        ],
+        "scale": 0.16,
+        "ease": "linear"
+       },
+       {
+        "t": 0.85,
+        "pos": [
+         143.0,
+         217.1
+        ],
+        "scale": 0.154,
+        "ease": "linear"
+       },
+       {
+        "t": 1.7,
+        "pos": [
+         151.6,
+         205.4
+        ],
+        "scale": 0.148,
+        "ease": "linear"
+       },
+       {
+        "t": 2.55,
+        "pos": [
+         164.8,
+         194.0
+        ],
+        "scale": 0.142,
+        "ease": "linear"
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         182.3,
+         183.2
+        ],
+        "scale": 0.136,
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "aethra",
+      "layer": "ui/planets/aethra.png",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         451.8,
+         133.8
+        ],
+        "scale": 0.11,
+        "ease": "linear"
+       },
+       {
+        "t": 0.85,
+        "pos": [
+         489.3,
+         134.6
+        ],
+        "scale": 0.11,
+        "ease": "linear"
+       },
+       {
+        "t": 1.7,
+        "pos": [
+         526.0,
+         136.8
+        ],
+        "scale": 0.112,
+        "ease": "linear"
+       },
+       {
+        "t": 2.55,
+        "pos": [
+         561.4,
+         140.5
+        ],
+        "scale": 0.114,
+        "ease": "linear"
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         594.8,
+         145.6
+        ],
+        "scale": 0.116,
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#fff0d8",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       540.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#ffd27a",
+      "area": [
+       0.0,
+       100.0,
+       960.0,
+       340.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "scene": "run",
+   "image": "",
+   "text": "COURIR, SAUTER, GLISSER",
+   "duration": 3.2,
+   "focus": [
+    0.5,
+    0.2
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#c8ff9a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#06100a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       470.0,
+       330.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 3.2,
+      "pos": [
+       430.0,
+       320.0
+      ],
+      "zoom": 1.22
+     }
+    ],
+    "elements": [
+     {
+      "id": "sky",
+      "layer": "backgrounds/sylvanox/sky.png",
+      "depth": 0.05,
+      "drift": [
+       -4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "far",
+      "layer": "backgrounds/sylvanox/far.png",
+      "depth": 0.2,
+      "drift": [
+       -18.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "mid",
+      "layer": "backgrounds/sylvanox/mid.png",
+      "depth": 0.45,
+      "drift": [
+       -50.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "near",
+      "layer": "backgrounds/sylvanox/near.png",
+      "depth": 0.75,
+      "drift": [
+       -110.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "tint": "#c8e0b0",
+      "drift": [
+       -170.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         404.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "lumiere",
+      "glow": "#c8ff9a",
+      "radius": 260.0,
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         620.0,
+         200.0
+        ],
+        "alpha": 0.35
+       }
+      ],
+      "pulse": [
+       0.3,
+       2.0
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        46.0,
+        7.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         380.0,
+         436.0
+        ],
+        "clip": "run",
+        "scale": 1.7
+       },
+       {
+        "t": 1.0,
+        "clip": "jump"
+       },
+       {
+        "t": 1.32,
+        "pos": [
+         380.0,
+         331.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.34,
+        "clip": "double_jump"
+       },
+       {
+        "t": 1.7,
+        "pos": [
+         380.0,
+         286.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.72,
+        "clip": "fall"
+       },
+       {
+        "t": 2.1,
+        "pos": [
+         380.0,
+         436.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.12,
+        "clip": "land"
+       },
+       {
+        "t": 2.3,
+        "clip": "run"
+       }
+      ]
+     },
+     {
+      "id": "pollen",
+      "particles": "dust",
+      "color": "#d8ffb0",
+      "area": [
+       0.0,
+       120.0,
+       960.0,
+       340.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffffff",
+      "area": [
+       300.0,
+       260.0,
+       200.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "layer": "backgrounds/sylvanox/fg_vines.png",
+      "depth": 1.3,
+      "drift": [
+       -260.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8,
+        "alpha": 0.85
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "scene": "powers",
+   "image": "",
+   "text": "19 POUVOIRS À DÉBLOQUER",
+   "duration": 2.8,
+   "focus": [
+    0.5,
+    0.2
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#9adcff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#12040e",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       380.0,
+       340.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 0.5,
+      "pos": [
+       480.0,
+       340.0
+      ],
+      "zoom": 1.26
+     },
+     {
+      "t": 1.25,
+      "pos": [
+       560.0,
+       330.0
+      ],
+      "zoom": 1.32
+     },
+     {
+      "t": 2.8,
+      "pos": [
+       540.0,
+       330.0
+      ],
+      "zoom": 1.2
+     }
+    ],
+    "elements": [
+     {
+      "id": "sky",
+      "layer": "backgrounds/pyralis/sky.png",
+      "depth": 0.05,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "far",
+      "layer": "backgrounds/pyralis/far.png",
+      "depth": 0.2,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "mid",
+      "layer": "backgrounds/pyralis/mid.png",
+      "depth": 0.45,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "near",
+      "layer": "backgrounds/pyralis/near.png",
+      "depth": 0.75,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/pyrrhax_sol.json",
+      "depth": 1.0,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         404.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "lave",
+      "sprite": "animations/stories/pyrrhax_lave.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         462.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "lave_lueur",
+      "glow": "#ff6a2a",
+      "radius": 80.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         220.0,
+         452.0
+        ],
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.5,
+       1.4
+      ]
+     },
+     {
+      "id": "golem",
+      "sprite": "animations/magma_golem.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        90.0,
+        14.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         438.0
+        ],
+        "clip": "idle",
+        "scale": 2.2,
+        "flip": true
+       },
+       {
+        "t": 1.25,
+        "clip": "hurt"
+       },
+       {
+        "t": 1.55,
+        "clip": "death"
+       }
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        46.0,
+        7.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         120.0,
+         436.0
+        ],
+        "clip": "dash",
+        "scale": 1.7
+       },
+       {
+        "t": 0.45,
+        "pos": [
+         420.0,
+         436.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 0.46,
+        "clip": "shoot",
+        "ease": "step"
+       },
+       {
+        "t": 0.9,
+        "clip": "cast"
+       },
+       {
+        "t": 1.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "tir",
+      "sprite": "animations/projectiles.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         390.0
+        ],
+        "alpha": 0.0,
+        "clip": "charge_shot",
+        "scale": 3.0
+       },
+       {
+        "t": 0.55,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.57,
+        "alpha": 1.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.2,
+        "pos": [
+         740.0,
+         380.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 1.22,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "tir_lueur",
+      "glow": "#9adcff",
+      "radius": 70.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         390.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.55,
+        "alpha": 0.0
+       },
+       {
+        "t": 0.6,
+        "alpha": 0.9
+       },
+       {
+        "t": 1.2,
+        "pos": [
+         740.0,
+         380.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 1.3,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "impact",
+      "glow": "#ffffff",
+      "radius": 160.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         750.0,
+         380.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.25,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 1.9,
+        "alpha": 0.0
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ff8a3a",
+      "area": [
+       0.0,
+       200.0,
+       960.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "sparks",
+      "color": "#ffd27a",
+      "area": [
+       640.0,
+       300.0,
+       220.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.2,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "layer": "backgrounds/pyralis/fg_embers.png",
+      "depth": 1.3,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8,
+        "alpha": 0.85
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 1.2,
+      "to": 1.6,
+      "amount": 4.0
+     }
+    ]
+   }
+  },
+  {
+   "scene": "enemies",
+   "image": "",
+   "text": "DES ENNEMIS SUR CHAQUE PLANÈTE",
+   "duration": 2.6,
+   "focus": [
+    0.5,
+    0.2
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#c8f0ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#06101a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       400.0,
+       260.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 2.6,
+      "pos": [
+       520.0,
+       330.0
+      ],
+      "zoom": 1.18
+     }
+    ],
+    "elements": [
+     {
+      "id": "sky",
+      "layer": "backgrounds/glacior/sky.png",
+      "depth": 0.05,
+      "drift": [
+       -2.4,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "far",
+      "layer": "backgrounds/glacior/far.png",
+      "depth": 0.2,
+      "drift": [
+       -10.799999999999999,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "mid",
+      "layer": "backgrounds/glacior/mid.png",
+      "depth": 0.45,
+      "drift": [
+       -30.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "near",
+      "layer": "backgrounds/glacior/near.png",
+      "depth": 0.75,
+      "drift": [
+       -66.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "tint": "#d8f0ff",
+      "drift": [
+       -102.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         404.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "wisp1",
+      "sprite": "animations/frost_wisp.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         250.0
+        ],
+        "clip": "move",
+        "scale": 2.4
+       },
+       {
+        "t": 2.6,
+        "pos": [
+         620.0,
+         230.0
+        ]
+       }
+      ]
+     },
+     {
+      "id": "wisp2",
+      "sprite": "animations/frost_wisp.json",
+      "depth": 1.0,
+      "blend": "add",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         800.0,
+         330.0
+        ],
+        "clip": "move",
+        "scale": 2.0,
+        "offset": 0.3
+       },
+       {
+        "t": 2.6,
+        "pos": [
+         760.0,
+         300.0
+        ]
+       }
+      ]
+     },
+     {
+      "id": "golem",
+      "sprite": "animations/ice_golem.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        90.0,
+        14.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         820.0,
+         438.0
+        ],
+        "clip": "walk",
+        "scale": 2.4,
+        "flip": true
+       },
+       {
+        "t": 2.6,
+        "pos": [
+         700.0,
+         438.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        46.0,
+        7.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         160.0,
+         120.0
+        ],
+        "clip": "glide",
+        "scale": 1.7
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         380.0,
+         400.0
+        ],
+        "ease": "inout"
+       },
+       {
+        "t": 1.7,
+        "pos": [
+         390.0,
+         436.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 1.72,
+        "clip": "land"
+       },
+       {
+        "t": 1.9,
+        "clip": "attack"
+       }
+      ]
+     },
+     {
+      "id": "neige",
+      "particles": "snow",
+      "color": "#e8f8ff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       540.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#c8f0ff",
+      "area": [
+       500.0,
+       200.0,
+       400.0,
+       240.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "layer": "backgrounds/glacior/fg_icicles.png",
+      "depth": 1.3,
+      "drift": [
+       -156.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8,
+        "alpha": 0.85
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "scene": "giga",
+   "image": "",
+   "text": "7 GIGA-BOSS",
+   "duration": 1.8,
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#c88bff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 1.8,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.15
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "tint": "#ff9a9a",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       30.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "coeur",
+      "glow": "#c88bff",
+      "radius": 320.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "alpha": 0.2
+       },
+       {
+        "t": 0.3,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 1.8,
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.4
+      ]
+     },
+     {
+      "id": "trou",
+      "sprite": "animations/stories/singularis_lyse.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         270.0
+        ],
+        "clip": "implode",
+        "scale": 2.0
+       }
+      ]
+     },
+     {
+      "id": "aspiration",
+      "particles": "sparks",
+      "color": "#c88bff",
+      "area": [
+       180.0,
+       80.0,
+       600.0,
+       380.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ff6a3a",
+      "area": [
+       0.0,
+       200.0,
+       960.0,
+       340.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.0,
+      "to": 0.8,
+      "amount": 7.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.05,
+      "in": 0.05,
+      "out": 0.4,
+      "color": "#ffffff",
+      "alpha": 0.9
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_monolithe",
+   "image": "",
+   "text": "MONOLITHE",
+   "subtitle": "Le Golem Primordial",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ffb347",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0806",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       327.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       480.0,
+       344.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "monolithe_grotte_fond",
+      "sprite": "animations/stories/monolithe_grotte_fond.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "monolithe_piliers",
+      "sprite": "animations/stories/monolithe_piliers.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "monolithe_sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#ffb347",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         318.5
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/monolithe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        187.0,
+        29.9
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         446.0
+        ],
+        "clip": "roar",
+        "scale": 0.85
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dustfall",
+      "color": "#c8b090",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_kraken",
+   "image": "",
+   "text": "LE KRAKEN DES ABYSSES",
+   "subtitle": "La Lanterne des profondeurs",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#7ae6ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#010204",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       328.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       480.0,
+       344.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "kraken_abysses",
+      "sprite": "animations/stories/kraken_abysses.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "kraken_recifs",
+      "sprite": "animations/stories/kraken_recifs.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "kraken_algues",
+      "sprite": "animations/stories/kraken_algues.json",
+      "depth": 0.8,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         330.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "kraken_fond",
+      "sprite": "animations/stories/kraken_fond.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#7ae6ff",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         320.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/kraken.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        176.0,
+        28.2
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         440.0
+        ],
+        "clip": "roar",
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "bulles",
+      "particles": "embers",
+      "color": "#9adcff",
+      "area": [
+       200.0,
+       100.0,
+       560.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_phenix",
+   "image": "",
+   "text": "LE PHÉNIX STELLAIRE",
+   "subtitle": "Le Porteur d'aube",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ffd04a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#1a1030",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       268.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       480.0,
+       284.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "phenix_ciel_aube",
+      "sprite": "animations/stories/phenix_ciel_aube.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "phenix_volcans",
+      "sprite": "animations/stories/phenix_volcans.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         140.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "phenix_verre",
+      "sprite": "animations/stories/phenix_verre.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#ffd04a",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         260.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/phenix.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        176.0,
+        28.2
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         380.0
+        ],
+        "clip": "summon",
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ffb066",
+      "area": [
+       200.0,
+       60.0,
+       560.0,
+       380.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_liche",
+   "image": "",
+   "text": "LA LICHE DES CATACOMBES",
+   "subtitle": "Le Gardien des noms",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#b4f566",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       327.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       480.0,
+       344.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "liche_galerie",
+      "sprite": "animations/stories/liche_galerie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "liche_arcades",
+      "sprite": "animations/stories/liche_arcades.json",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         100.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "liche_dalles",
+      "sprite": "animations/stories/liche_dalles.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#b4f566",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         318.5
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/liche.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        187.0,
+        29.9
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         446.0
+        ],
+        "clip": "summon",
+        "scale": 0.85
+       }
+      ]
+     },
+     {
+      "id": "ames",
+      "particles": "sparks",
+      "color": "#b4f566",
+      "area": [
+       200.0,
+       100.0,
+       560.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_titan",
+   "image": "",
+   "text": "LE TITAN MÉCANIQUE",
+   "subtitle": "Le Dernier Quart",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ffc23c",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0606",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       329.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       480.0,
+       346.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "titan_fonderie",
+      "sprite": "animations/stories/titan_fonderie.json",
+      "depth": 0.05,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "titan_poutres",
+      "sprite": "animations/stories/titan_poutres.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "titan_sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#ffc23c",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         320.5
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/titan.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        187.0,
+        29.9
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         448.0
+        ],
+        "clip": "roar",
+        "scale": 0.85
+       }
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#ffb040",
+      "area": [
+       200.0,
+       200.0,
+       560.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_pyrrhax",
+   "image": "",
+   "text": "PYRRHAX",
+   "subtitle": "Le Dragon d'Obsidienne",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ff6a3a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#12040e",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       500.0,
+       288.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       500.0,
+       304.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "pyrrhax_ciel_rouge",
+      "sprite": "animations/stories/pyrrhax_ciel_rouge.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "pyrrhax_pics",
+      "sprite": "animations/stories/pyrrhax_pics.json",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         140.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "pyrrhax_sol",
+      "sprite": "animations/stories/pyrrhax_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#ff6a3a",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         280.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/pyrrhax.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        176.0,
+        28.2
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         400.0
+        ],
+        "clip": "roar",
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "pluie",
+      "particles": "ember_rain",
+      "color": "#ff9a40",
+      "area": [
+       0.0,
+       -40.0,
+       1000.0,
+       520.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "boss_singularis",
+   "image": "",
+   "text": "SINGULARIS",
+   "subtitle": "Le Cœur effondré",
+   "duration": 1.7,
+   "focus": [
+    0.5,
+    0.82
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#c88bff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#04030a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       241.0
+      ],
+      "zoom": 1.38
+     },
+     {
+      "t": 0.35,
+      "zoom": 1.22,
+      "ease": "out"
+     },
+     {
+      "t": 1.7,
+      "pos": [
+       480.0,
+       258.0
+      ],
+      "zoom": 1.1
+     }
+    ],
+    "elements": [
+     {
+      "id": "singularis_cosmos",
+      "sprite": "animations/stories/singularis_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "singularis_etoiles",
+      "sprite": "animations/stories/singularis_etoiles.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "singularis_voile",
+      "sprite": "animations/stories/singularis_voile.json",
+      "depth": 0.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         300.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "aura",
+      "glow": "#c88bff",
+      "radius": 260.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         232.5
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.5
+      ]
+     },
+     {
+      "id": "boss",
+      "sprite": "animations/singularis.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        187.0,
+        29.9
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         360.0
+        ],
+        "clip": "roar",
+        "scale": 0.85
+       }
+      ]
+     },
+     {
+      "id": "aspiration",
+      "particles": "sparks",
+      "color": "#c88bff",
+      "area": [
+       200.0,
+       60.0,
+       560.0,
+       400.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 0.08,
+      "to": 0.7,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.02,
+      "in": 0.02,
+      "out": 0.3,
+      "color": "#ffffff",
+      "alpha": 0.7
+     }
+    ]
+   }
+  },
+  {
+   "scene": "stories",
+   "image": "",
+   "text": "7 HISTOIRES ANIMÉES",
+   "subtitle": "avant le premier combat de chaque giga-boss",
+   "duration": 3.0,
+   "focus": [
+    0.5,
+    0.2
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ff8a3a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0414",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       380.0
+      ],
+      "zoom": 1.5
+     },
+     {
+      "t": 3.0,
+      "pos": [
+       480.0,
+       360.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/pyrrhax_ciel_nuit.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/pyrrhax_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       5.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "pics",
+      "sprite": "animations/stories/pyrrhax_pics.json",
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         140.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/pyrrhax_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "nid_fond",
+      "sprite": "animations/stories/pyrrhax_nid.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         440.0
+        ],
+        "clip": "back"
+       }
+      ]
+     },
+     {
+      "id": "frere",
+      "sprite": "animations/stories/pyrrhax_frere.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        120.0,
+        19.2
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         300.0,
+         444.0
+        ],
+        "clip": "watch"
+       },
+       {
+        "t": 1.2,
+        "clip": "cheer"
+       }
+      ]
+     },
+     {
+      "id": "soeur",
+      "sprite": "animations/stories/pyrrhax_soeur.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        120.0,
+        19.2
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         660.0,
+         448.0
+        ],
+        "clip": "watch",
+        "flip": true
+       },
+       {
+        "t": 1.3,
+        "clip": "cheer"
+       }
+      ]
+     },
+     {
+      "id": "lueur_nid",
+      "glow": "#ff8a3a",
+      "radius": 240.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         440.0
+        ],
+        "alpha": 0.4
+       },
+       {
+        "t": 1.1,
+        "alpha": 0.7
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.2
+      ]
+     },
+     {
+      "id": "oeuf",
+      "sprite": "animations/stories/pyrrhax_oeuf.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         452.0
+        ],
+        "clip": "crack",
+        "scale": 1.25
+       },
+       {
+        "t": 1.0,
+        "clip": "hatch"
+       }
+      ]
+     },
+     {
+      "id": "nid_devant",
+      "sprite": "animations/stories/pyrrhax_nid.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         440.0
+        ],
+        "clip": "front"
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ffb066",
+      "area": [
+       260.0,
+       200.0,
+       440.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "scene": "coop",
+   "image": "",
+   "text": "JUSQU'À 3 EN COOPÉRATION",
+   "subtitle": "même PC, réseau local ou en ligne",
+   "duration": 3.0,
+   "focus": [
+    0.5,
+    0.2
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ffc8f0",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#140a1e",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       420.0,
+       330.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 3.0,
+      "pos": [
+       460.0,
+       320.0
+      ],
+      "zoom": 1.2
+     }
+    ],
+    "elements": [
+     {
+      "id": "sky",
+      "layer": "backgrounds/aethra/sky.png",
+      "depth": 0.05,
+      "drift": [
+       -4.8,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "far",
+      "layer": "backgrounds/aethra/far.png",
+      "depth": 0.2,
+      "drift": [
+       -21.599999999999998,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "mid",
+      "layer": "backgrounds/aethra/mid.png",
+      "depth": 0.45,
+      "drift": [
+       -60.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "near",
+      "layer": "backgrounds/aethra/near.png",
+      "depth": 0.75,
+      "drift": [
+       -132.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "tint": "#e8d8ff",
+      "drift": [
+       -204.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         404.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "ciel",
+      "glow": "#ffc8f0",
+      "radius": 300.0,
+      "depth": 0.2,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         160.0
+        ],
+        "alpha": 0.35
+       }
+      ],
+      "pulse": [
+       0.3,
+       2.4
+      ]
+     },
+     {
+      "id": "nova2",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "tint": "#ffb0d0",
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        46.0,
+        7.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         260.0,
+         436.0
+        ],
+        "clip": "run",
+        "scale": 1.7
+       },
+       {
+        "t": 0.5,
+        "clip": "jump"
+       },
+       {
+        "t": 0.82,
+        "pos": [
+         260.0,
+         331.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 0.84,
+        "clip": "double_jump"
+       },
+       {
+        "t": 1.2,
+        "pos": [
+         260.0,
+         286.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.22,
+        "clip": "fall"
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         260.0,
+         436.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 1.62,
+        "clip": "land"
+       },
+       {
+        "t": 1.8,
+        "clip": "run"
+       }
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        46.0,
+        7.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         420.0,
+         436.0
+        ],
+        "clip": "run",
+        "scale": 1.7
+       },
+       {
+        "t": 0.9,
+        "clip": "jump"
+       },
+       {
+        "t": 1.22,
+        "pos": [
+         420.0,
+         331.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.24,
+        "clip": "double_jump"
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         420.0,
+         286.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.62,
+        "clip": "fall"
+       },
+       {
+        "t": 2.0,
+        "pos": [
+         420.0,
+         436.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.02,
+        "clip": "land"
+       },
+       {
+        "t": 2.2,
+        "clip": "run"
+       }
+      ]
+     },
+     {
+      "id": "nova3",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "tint": "#a0e8ff",
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        46.0,
+        7.4
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         580.0,
+         436.0
+        ],
+        "clip": "run",
+        "scale": 1.7
+       },
+       {
+        "t": 1.3,
+        "clip": "jump"
+       },
+       {
+        "t": 1.62,
+        "pos": [
+         580.0,
+         331.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 1.64,
+        "clip": "double_jump"
+       },
+       {
+        "t": 2.0,
+        "pos": [
+         580.0,
+         286.0
+        ],
+        "ease": "out"
+       },
+       {
+        "t": 2.02,
+        "clip": "fall"
+       },
+       {
+        "t": 2.4,
+        "pos": [
+         580.0,
+         436.0
+        ],
+        "ease": "in"
+       },
+       {
+        "t": 2.42,
+        "clip": "land"
+       },
+       {
+        "t": 2.6,
+        "clip": "run"
+       }
+      ]
+     },
+     {
+      "id": "petales",
+      "particles": "ash",
+      "color": "#ffc8f0",
+      "area": [
+       0.0,
+       200.0,
+       960.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffffff",
+      "area": [
+       200.0,
+       260.0,
+       560.0,
+       160.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "layer": "backgrounds/aethra/fg_petals.png",
+      "depth": 1.3,
+      "drift": [
+       -312.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8,
+        "alpha": 0.85
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "scene": "online",
+   "image": "",
+   "text": "DÉFIS, CLASSEMENTS, CLANS",
+   "subtitle": "Cosmic Online",
+   "duration": 2.6,
+   "focus": [
+    0.5,
+    0.2
+   ],
+   "zoom": 1.0,
+   "particles": "none",
+   "glow": "#ffd27a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#08061a",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       360.0
+      ],
+      "zoom": 1.6
+     },
+     {
+      "t": 2.6,
+      "pos": [
+       480.0,
+       340.0
+      ],
+      "zoom": 1.3
+     }
+    ],
+    "elements": [
+     {
+      "id": "sky",
+      "layer": "backgrounds/noyau/sky.png",
+      "depth": 0.05,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "far",
+      "layer": "backgrounds/noyau/far.png",
+      "depth": 0.2,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "mid",
+      "layer": "backgrounds/noyau/mid.png",
+      "depth": 0.45,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "near",
+      "layer": "backgrounds/noyau/near.png",
+      "depth": 0.75,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/titan_sol.json",
+      "depth": 1.0,
+      "tint": "#d0c8ff",
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         404.0
+        ],
+        "clip": "idle"
+       }
+      ],
+      "repeat": true
+     },
+     {
+      "id": "gloire",
+      "glow": "#ffd27a",
+      "radius": 220.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         340.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 0.6,
+        "alpha": 0.8,
+        "ease": "out"
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.8
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        52.0,
+        8.3
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         480.0,
+         436.0
+        ],
+        "clip": "victory",
+        "scale": 2.0
+       }
+      ]
+     },
+     {
+      "id": "confettis",
+      "particles": "sparks",
+      "color": "#ffd27a",
+      "area": [
+       200.0,
+       120.0,
+       560.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "particles": "stars",
+      "color": "#ffffff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       300.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#c8b8ff",
+      "area": [
+       200.0,
+       200.0,
+       560.0,
+       260.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "layer": "backgrounds/noyau/fg_motes.png",
+      "depth": 1.3,
+      "drift": [
+       -0.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -32.0,
+         -18.0
+        ],
+        "scale": 0.8,
+        "alpha": 0.85
+       }
+      ]
+     }
+    ],
+    "flash": [
+     {
+      "t": 0.1,
+      "in": 0.05,
+      "out": 0.5,
+      "color": "#fff2c0",
+      "alpha": 0.5
+     }
+    ]
+   }
+  }
+ ]
+}
