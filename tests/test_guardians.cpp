@@ -173,7 +173,8 @@ TEST_CASE("guardians: twelve new attack types, named in French, saved only where
     // The attacks of before are written as before (their levels keep their fingerprints).
     for (const EnemyDefinition* d : sharedContent().enemies())
         for (const AttackDef& x : d->attacks) {
-            if (x.isGuardianType() || x.isDragonType() || x.isGolemType() || x.isPhoenixType()) continue;  // 2.52: the golem's follow; 2.56: the phoenix's
+            // 2.52: the golem's follow; 2.56: the phoenix's; 2.57: the lich's
+            if (x.isGuardianType() || x.isDragonType() || x.isGolemType() || x.isPhoenixType() || x.isLicheType()) continue;
             Json xj = x.toJson();
             for (const char* k : {"duration", "pull", "radius", "height", "bounces", "arms", "grip"}) CHECK(!xj.contains(k));
         }

@@ -15,6 +15,10 @@ start (data/planets/confins.json):
                                 Stellaire (tools/contentgen/phenix.py; it flies: the crust gives
                                 way over two beds of embers at the ends, its nest in the middle
                                 stays; its perches of embers burn under Nova and are reborn)
+  data/levels/confins_05.json  "La Crypte des Noms" (2.57, EXTRÊME): the same for the Liche des
+                                Catacombes (tools/contentgen/liche.py; it floats over four altars
+                                of its crypt and teleports between them; the crust gives way over two
+                                ossuaries at the ends, the floor between its two floor altars stays)
 
 2.49: each level of Les Confins is its giga boss's fight alone (no platforming before it).
 
@@ -52,14 +56,16 @@ class Edge(Star):
     FIRE_LIGHTS = ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"), (66, 8, "#ff5ad2"))
 
     def giga_arena(self, boss, music, pits, flying, texts, style="plasma", lights=FIRE_LIGHTS, flicker=0.12,
-                   perches=()):
+                   perches=(), altars=()):
         """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
         boss waits (in the air, or on the floor). 2.53: `style` of what fills the pits and closes
         in (« plasma », « abyss »: the dark water of the Kraken, or 2.56 « embers »: the Phénix's),
         the arena's `lights`. 2.56: the ledges at the heights `perches` are perches of embers
-        instead (crumble platforms « ember »: they burn under Nova and are reborn)."""
+        instead (crumble platforms « ember »: they burn under Nova and are reborn). 2.57: `altars`
+        (x, h): the altars of the Liche's crypt (objects « altar », 3 tiles wide, 2.5 tall, standing at
+        the height h: 0 the floor, else a ledge), over which it floats and between which it teleports."""
         L, f = self.L, self.f
         x0 = self.x
         X = x0 + 1
@@ -95,6 +101,8 @@ class Edge(Star):
                     L.crumble(X + lx, f - h, lw, delay=0.6, respawn=3.5, style="ember")
                 else:
                     L.oneway(X + lx, X + lx + lw, f - h, ledge)
+        for (ax, ah) in altars:
+            L.obj("altar", [(X + ax - 1.5) * T, (f - ah - 2.5) * T, 3 * T, 2.5 * T], "terrain", {})
         ocx, och, orx, ory = self.GIANT_ORBIT
         debris = []
         for k in range(3):
@@ -336,8 +344,66 @@ def phoenix_nest():
     return width
 
 
+# ---------------------------------------------------------------- the crypt of names (2.57)
+LICHE_TEXTS = {
+    3: ("Ses sorts arrachent la roche : les blocs tournoient !", "Malédiction : les blocs en orbite"),
+    5: "Phylactère brisé : la crypte s'effondre sur les ossuaires",
+    7: "Crypte : un soin",
+    8: ("Les âmes des morts referment l'arène !", "Néant : l'arène se resserre"),
+    "won": ("La Liche retombe en poussière, enfin en paix. La sortie est ouverte.", "Liche vaincue"),
+}
+# The lights of the crypt: soul fire, green high up, violet low over the ossuaries.
+LICHE_LIGHTS = ((10, 26, "#b4f566"), (48, 30, "#d8d0ff"), (86, 26, "#b4f566"), (30, 8, "#9a52f0"), (66, 8, "#9a52f0"))
+# The sky of the Confins seen from the catacombs, grey-violet and cold (display only).
+CRYPT_TINTS = {"sky.png": "#7a6e9a", "far.png": "#5a527a", "mid.png": "#443e60", "near.png": "#2e2a42",
+               "fg_embers.png": "#b4f566a0"}
+# The altars of the crypt (x, height above the floor): two on the ledges at 10 tiles (over the
+# ossuaries), two on the floor between the ledges at 5 tiles (where its phylactery is set).
+LICHE_ALTARS = ((18, 10), (37, 0), (59, 0), (78, 10))
+
+
+def crypt_of_names():
+    b = Edge("confins_05", "La Crypte des Noms", "pyralis", seed=8501)
+    L, d = b.L, b.L.data
+    d["description"] = ("Sous les Confins, des catacombes de verre noir où brûlent des bougies d'âme : la Liche des "
+                        "Catacombes et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.")
+    d["difficulty"] = 5
+    d["extreme"] = True
+    d["bossMusic"] = "music/liche_boss.ogg"
+    d["ambientLight"] = "#8a84a8"
+    d["backgroundColor"] = "#0a0812"
+    for layer in d["background"]:
+        name = layer["texture"].rsplit("/", 1)[-1]
+        if name in CRYPT_TINTS:
+            layer["tint"] = CRYPT_TINTS[name]
+        if "fillBelow" in layer:
+            layer["fillBelow"] = "#14101e"
+    b.f = 40
+    # Only the fight, as the other giga bosses' levels: the choice of the powers, then the arena.
+    b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
+    b.opening("La Crypte des Noms : la Liche seule, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
+    b.tablets(giga_powers("confins_05"))  # every power of the game
+    b.zone_sign("La Liche des Catacombes.")
+    b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "liche"})
+    # It floats (it waits in the air): the crust gives way over two ossuaries at the ends, the
+    # floor between its two floor altars stays; its altars, two on the floor, two on the ledges.
+    b.giga_arena("liche", "music/liche_boss.ogg", pits=[(6, 22), (74, 90)], flying=True, texts=LICHE_TEXTS,
+                 style="souls", lights=LICHE_LIGHTS, flicker=0.1, altars=LICHE_ALTARS)
+    width = b.finish("La Liche s'est tue. Dans la crypte, les bougies brûlent encore, pour chaque nom.")
+    ref = 360  # about six minutes of fight
+    d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
+    d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
+                   "platinum": {"maxTime": ref, "maxDeaths": 0}}
+    b.cinematics("LA CRYPTE DES NOMS", "Les Confins", "Une seule vie. Une liche qui n'a oublié aucun nom. Huit phases.",
+                 "LA LICHE S'APAISE")
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    L.save(os.path.join(ROOT, "data/levels/confins_05.json"))
+    return width
+
+
 if __name__ == "__main__":
     print("confins_01 :", dragon_maw(), "tuiles")
     print("confins_02 :", stone_heart(), "tuiles")  # 2.49
     print("confins_03 :", abyss_trench(), "tuiles")  # 2.53
     print("confins_04 :", phoenix_nest(), "tuiles")  # 2.56
+    print("confins_05 :", crypt_of_names(), "tuiles")  # 2.57

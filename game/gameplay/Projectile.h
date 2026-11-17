@@ -10,8 +10,11 @@
 namespace cosmic {
 
 /// Projectiles drawn by the game rather than taken from animations/projectiles.json: the waves of
-/// a slam (« shockwave ») and (2.56) the Phénix's feathers of light (« feather »).
-inline bool drawnProjectile(const std::string& clip) { return clip == "shockwave" || clip == "feather"; }
+/// a slam (« shockwave »), (2.56) the Phénix's feathers of light (« feather ») and (2.57) the
+/// Liche's souls in torment (« soul ») and bones (« bone »).
+inline bool drawnProjectile(const std::string& clip) {
+    return clip == "shockwave" || clip == "feather" || clip == "soul" || clip == "bone";
+}
 
 struct Projectile {
     Vec2 pos;

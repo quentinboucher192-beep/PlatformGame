@@ -53,6 +53,7 @@ Enemy::Enemy(const EnemyDefinition& def, AnimationSetPtr anim, Vec2 feet, bool f
         if (a.isDragonType()) hasDragon_ = true;
         if (a.isGolemType()) hasGolem_ = true;  // 2.52: the golem walks with its own brain
         if (a.isPhoenixType()) hasPhoenix_ = true;  // 2.56: the phoenix glides, its columns, its blade
+        if (a.isLicheType()) hasLiche_ = true;      // 2.57: the lich, its altars, its runes, its curse
     }
     standSize_ = def_.size;
     teleportTimer_ = def_.teleportCooldown;
@@ -256,6 +257,15 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         return;
     }
     checkPhase(w);
+    if (warded_) stepWard(w);  // 2.57: the Liche's phylactery broken, the next phase begins
+    if (!warded_ && phylactery_ != 0) {
+        // A fight resumed (setWounds) while its soul was hidden: the crystal goes with the ward.
+        if (Enemy* c = w.findEnemy(phylactery_)) {
+            c->vanishing = true;
+            c->despawn();
+        }
+        phylactery_ = 0;
+    }
     stateTimer_ -= dt;
     simDt_ = dt;
     if (def_.isBoss && engaged_) {
@@ -297,6 +307,8 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             vel.x = approach(vel.x, 0.0f, 700.0f * dt);
             if (hasPhoenix_ && def_.flying && def_.isBoss && engaged_) {
                 phoenixGlide(w, dt, 0.8f);  // 2.56: the phoenix glides between its blows
+            } else if (hasLiche_ && def_.flying && def_.isBoss && engaged_) {
+                licheHover(w, dt);  // 2.57: the lich floats over its altar
             } else if (def_.flying && def_.isBoss && engaged_) {
                 // Flying bosses keep repositioning between attacks (preferred distance, above).
                 Vec2 toP = playerPos_ - box.center();
@@ -325,6 +337,10 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             if (stateTimer_ <= 0.0f) state_ = engaged_ ? EnemyState::Chase : EnemyState::Patrol;
             break;
         case EnemyState::TeleportOut:
+            if (hasLiche_) {  // 2.57: from one altar to another
+                licheBlink(w, dt);
+                break;
+            }
             vel = {};
             if (stateTimer_ <= 0.0f) {
                 box = Rect::fromBottomCenter(teleportTarget_, box.size());
@@ -468,6 +484,11 @@ void Enemy::stepEngaged(GameWorld& w, float dt) {
         golemThink(w, dt);
         return;
     }
+    // 2.57: the lich floats over its altars and teleports between them (LicheAttacks.cpp).
+    if (hasLiche_ && def_.isBoss && def_.flying) {
+        licheThink(w, dt);
+        return;
+    }
 
     if (playerVisible_ && chooseAttack(w)) return;
 
@@ -558,6 +579,9 @@ void Enemy::tryTeleport(GameWorld& w) {
 void Enemy::setWounds(float hp, int phase) {
     phaseTime_ = 0.0f;
     ashes_ = AshStage::None;  // 2.56: a fight resumed never starts in the Phénix's ashes
+    // 2.57: nor with the Liche's soul in its phylactery (the crystal goes at the next step).
+    warded_ = false;
+    phylacteryAltar_ = -1;
     hp_ = std::clamp(hp, 1.0f, maxHp_);
     phase_ = def_.phases.empty() ? 0 : std::clamp(phase, 0, static_cast<int>(def_.phases.size()) - 1);
 }
@@ -571,6 +595,12 @@ void Enemy::checkPhase(GameWorld& w) {
     // ground of its arena: never while it is over it).
     if (hasGolem_ && golemBusy()) return;
     if (inAshes()) return;  // 2.56: in its ashes, the next phase comes with its rebirth
+    if (warded_) return;    // 2.57: its soul in its phylactery, the next phase comes when it breaks
+    if (!def_.phases[static_cast<size_t>(phase_)].phylactery.empty()) {
+        // 2.57, the Liche's « Phylactère »: its soul hidden in a crystal on an altar.
+        beginWard(w, next);
+        return;
+    }
     if (def_.phases[static_cast<size_t>(phase_)].rebirth > 0.0f) {
         // 2.56, the Phénix's « Cendres »: it burns to ashes, then is reborn into the next phase.
         beginAshes(w, next);
@@ -588,6 +618,7 @@ void Enemy::enterPhase(GameWorld& w, int next) {
     if (attack_ && attack_->isDragonType()) dragonEnd(w);      // a dive or a landing too (2.50)
     if (attack_ && attack_->isGolemType()) golemEnd(w);        // its quake, its curl, its crouch (2.52)
     if (attack_ && attack_->isPhoenixType()) phoenixEnd(w);    // its blade (2.56)
+    if (attack_ && attack_->isLicheType()) licheEnd(w);        // its runes stay, its curse is lifted (2.57)
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
     invuln_ = 1.6f;
@@ -628,6 +659,7 @@ void Enemy::applyPhysics(GameWorld& w, float dt) {
     opt.isEnemy = true;
     opt.dropThrough = dropThrough_;  // 2.50: the dragon dives and lands through the one-way ledges
     if (hasPhoenix_) opt.ignoreTags |= ColliderTag::Crumble;  // 2.56: the Phénix flies through its perches of embers
+    if (hasLiche_) opt.dropThrough = true;  // 2.57: the Liche floats through the ledges and the tops of its altars
     if (skyborne()) {
         // 2.52: the golem's titanic leap goes out of sight and comes down on its mark (through
         // the roof of its arena, out of the camera's view): no collision on the way.
@@ -699,6 +731,12 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         return false;
     }
     if (state_ == EnemyState::TeleportOut || state_ == EnemyState::TeleportIn) return false;
+    if (warded_) {
+        // 2.57: the Liche's soul is in its phylactery: nothing hurts it until the crystal breaks.
+        if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
+        hurtFlash_ = 0.05f;
+        return false;
+    }
     // Guard-breaking hits: impulse, dash, ground pound (from above) and the charged shot.
     bool breaksGuard = dmg.type == DamageType::Impulse || dmg.type == DamageType::Dash ||
                        dmg.type == DamageType::GroundPound || dmg.type == DamageType::ChargeShot;
@@ -773,6 +811,7 @@ void Enemy::kill(GameWorld& w) {
     perched_ = dropThrough_ = false;
     stage_ = Stage::None;
     ashes_ = AshStage::None;
+    warded_ = false;  // 2.57: its crystal vanishes with it (a boss's creatures do)
     if (hasGolem_ && golem_ != GolemStage::None) {  // 2.52: it dies standing, on its floor
         if (skyborne()) box = Rect::fromBottomCenter({box.center().x, floorY_}, box.size());
         box = Rect::fromBottomCenter(box.bottomCenter(), standSize_);
@@ -848,6 +887,7 @@ void Enemy::beginLastStand(GameWorld& w) {
     if (attack_ && attack_->isDragonType()) dragonEnd(w);
     if (attack_ && attack_->isGolemType()) golemEnd(w);
     if (attack_ && attack_->isPhoenixType()) phoenixEnd(w);
+    if (attack_ && attack_->isLicheType()) licheEnd(w);
     attack_ = nullptr;
     staged_.clear();
     comboLeft_ = 0;

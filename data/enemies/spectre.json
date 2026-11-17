@@ -1,0 +1,85 @@
+{
+  "format": "cosmic.enemy",
+  "id": "spectre",
+  "name": "Spectre de la Liche",
+  "description": "Une ombre pâle des catacombes, liée à la Liche : elle flotte autour d'elle et lance des âmes en peine.",
+  "family": "caster",
+  "animation": "animations/wisp.json",
+  "size": [
+    12,
+    12
+  ],
+  "scale": 1.0,
+  "hp": 7,
+  "contactDamage": 0,
+  "speed": 50,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 0.3,
+  "detectionRange": 900,
+  "attackRange": 220,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0.3,
+  "preferredDistance": 120,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "orbs",
+      "name": "Âme en peine",
+      "type": "projectile",
+      "damage": 1,
+      "range": 220,
+      "telegraph": 0.7,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 2.4,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "soul",
+      "projectileSpeed": 120,
+      "count": 3,
+      "spread": 16,
+      "sound": "sounds/enemy_shoot.wav",
+      "projectileRadius": 5
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": true,
+      "cooldown": 3.5,
+      "range": 100
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 0.5,
+    "melee": 1.5
+  },
+  "rewards": {
+    "score": 340,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.5
+      }
+    ]
+  },
+  "light": {
+    "color": "#aaf2ff",
+    "radius": 52
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/enemy_death.wav",
+    "alert": "sounds/enemy_alert.wav"
+  },
+  "tint": "#c8f6ff"
+}

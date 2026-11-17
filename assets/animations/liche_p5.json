@@ -2,7 +2,7 @@
   "texture": "sprites/enemies/liche_p5.png",
   "frameWidth": 224,
   "frameHeight": 224,
-  "pivot": [112, 184],
+  "pivot": [112, 218],
   "clips": {
     "idle": {"row": 0, "count": 8, "fps": 8, "loop": true},
     "telegraph": {"row": 0, "count": 6, "start": 8, "durations": [0.1, 0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},

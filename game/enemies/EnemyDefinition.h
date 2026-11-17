@@ -41,6 +41,9 @@ enum class AttackType {
     // 2.56: the attacks of the Phénix, the phoenix of Les Confins (game/enemies/PhoenixAttacks.cpp).
     Sunbeam,  // columns of sunlight fall from the roof onto marks, one after the other (a march, or from both walls)
     Sweep,    // its wings throw a blade of feathers across the arena, low (jump over it) or high (stay down)
+    // 2.57: the spells of the Liche, the lich of Les Confins (game/enemies/LicheAttacks.cpp).
+    Glyph,  // runes traced on the ground she stands on: armed, a rune bursts when she steps on it, all burst at their end
+    Hex,    // a circle of runes closes around her: still inside, she is cursed (her jumps grow heavy for a while)
     Count
 };
 
@@ -128,12 +131,16 @@ struct AttackDef {
     /// 2.53 (the Kraken): Flood "tide" (dark water), Cage "tentacle" (tentacles out of the floor),
     /// CloudShot / Perch "ink" (clouds of ink instead of fire).
     /// 2.56 (the Phénix): CloudShot "ash" (clouds of grey ash, embers glowing in them).
+    /// 2.57 (the Liche): Cage "bone" (walls of stacked bones, skulls and ribs).
     std::string look;
     // v5 (2.50, the dragon): Perch: damage it takes while landed (0 = the type's default, 1.5).
     // 2.52, the golem: Shell: damage it takes while dizzy after its roll (0 = 1.5).
     float vulnerability = 0.0f;
     // v6 (2.52, the golem): Shell: damage it takes while curled in its shell (0 = the type's default, 0.35).
     float armor = 0.0f;
+    // v7 (2.57, the Liche): Hex: how high the cursed player still jumps (a ratio of her jumps, 0 =
+    // the type's default, 0.72) for `duration` seconds.
+    float curse = 0.0f;
 
     bool isProjectileType() const {
         return type == AttackType::Projectile || type == AttackType::Spread || type == AttackType::Arc ||
@@ -147,6 +154,8 @@ struct AttackDef {
     bool isGolemType() const { return type >= AttackType::Shell && type <= AttackType::Skyfall; }
     /// The attack types of the phoenix (2.56, the Phénix).
     bool isPhoenixType() const { return type >= AttackType::Sunbeam && type <= AttackType::Sweep; }
+    /// The attack types of the lich (2.57, the Liche).
+    bool isLicheType() const { return type >= AttackType::Glyph && type <= AttackType::Hex; }
 
     Json toJson() const;
     static AttackDef fromJson(const Json& j);
@@ -176,6 +185,10 @@ struct BossPhase {
     /// Appearance only (2.56): ash falls over the arena and veils it during this phase (and
     /// while the boss lies in its ashes), Nova and the HUD stay clear.
     bool ashes = false;
+    /// 2.57, the Liche's « Phylactère »: when its health reaches the next phase's threshold, the
+    /// boss hides its soul in its phylactery (this enemy, set on one of its altars): it cannot be
+    /// hurt until the crystal is broken, then the next phase begins. "" = the phase ends as any other.
+    std::string phylactery;
     Json toJson() const;
     static BossPhase fromJson(const Json& j);
 };

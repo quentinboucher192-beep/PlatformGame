@@ -47,6 +47,7 @@ void Player::spawn(GameWorld& w, Vec2 feet, bool faceLeft, bool materialize) {
     airJumpsLeft_ = airJumpCount();
     grounded_ = wasGrounded_ = false;
     invulnTimer_ = hurtTimer_ = attackTimer_ = castTimer_ = 0.0f;
+    curseTimer_ = 0.0f;  // 2.57: a curse never outlives a death
     afterimages_.clear();
     shield_ = false;
     for (auto& p : powers_) p->cancel(*this, w);
@@ -184,6 +185,7 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
     tick(phasedTimer_);
     tick(hurtFlash_);
     tick(slowTimer_);
+    tick(curseTimer_);
     if (forcedAnimTimer_ > 0) {
         forcedAnimTimer_ -= dt;
         if (forcedAnimTimer_ <= 0) forcedAnim_.clear();
@@ -461,7 +463,7 @@ void Player::stepMovement(GameWorld& w, const PlayerInput& in, float dt) {
 void Player::tryJump(GameWorld& w, const PlayerInput& in) {
     if (jumpBufferTimer_ <= 0.0f || !controlEnabled) return;
     if (grounded_ || coyoteTimer_ > 0.0f) {
-        vel.y = -cfg_.jumpVelocity();
+        vel.y = -cfg_.jumpVelocity() * curseSpeed();  // 2.57: heavier under the Liche's curse
         if (state_ == PlayerState::Slide) {
             setHitbox(cfg_.size);
             vel.x = facing * std::max(std::abs(vel.x), cfg_.maxRunSpeed * 1.1f);
@@ -480,7 +482,7 @@ void Player::tryJump(GameWorld& w, const PlayerInput& in) {
     // the jump button keeps its double-jump meaning (climbing ledges feels natural).
     int wd = state_ == PlayerState::WallSlide ? wallDir_ : (vel.y >= -20.0f ? wallDirection(w) : 0);
     if (wd != 0 && !inWater && (state_ == PlayerState::WallSlide || airJumpsLeft_ == 0 || vel.y > 40.0f)) {
-        vel = {-static_cast<float>(wd) * cfg_.wallJumpVelocity.x, cfg_.wallJumpVelocity.y};
+        vel = {-static_cast<float>(wd) * cfg_.wallJumpVelocity.x, cfg_.wallJumpVelocity.y * curseSpeed()};
         facing = -static_cast<float>(wd);
         wallJumpLockTimer_ = cfg_.wallJumpLock;
         jumpBufferTimer_ = 0.0f;
@@ -499,7 +501,7 @@ void Player::tryJump(GameWorld& w, const PlayerInput& in) {
     if (airJumpsLeft_ > 0) {
         bool extra = airJumpsLeft_ <= extraAirJumps_ && extraAirJumps_ > 0;
         --airJumpsLeft_;
-        vel.y = -cfg_.doubleJumpVelocity();
+        vel.y = -cfg_.doubleJumpVelocity() * curseSpeed();
         if (extra) {
             w.playSound("sounds/triple_jump.wav", box.center(), 0.8f);
             w.particles().emit("triple_jump_ring", box.bottomCenter(), 1.0f);

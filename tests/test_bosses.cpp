@@ -77,7 +77,12 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
             // (2.50), so the blow waits for it to take off; the golem curled in its shell, dizzy
             // or out of sight (2.52) too.
             if (step % 700 == 699 && boss->hpRatio() > (rebirth ? last + 0.01f : 0.26f)) wearDue = true;
-            if (wearDue && !boss->perched() && !boss->curled() && !boss->dizzy() && !boss->outOfSight() && !boss->inAshes()) {
+            // 2.57: a boss that hides its soul in its phylactery (the Liche): the crystal is broken
+            // as soon as it stands (the blows wait for it).
+            if (boss->warded())
+                if (Enemy* crystal = w.findEnemy(boss->phylactery()); crystal && crystal->alive()) crystal->kill(w);
+            if (wearDue && !boss->perched() && !boss->curled() && !boss->dizzy() && !boss->outOfSight() && !boss->inAshes() &&
+                !boss->warded()) {
                 wearDue = false;
                 DamageInfo d;
                 d.amount = boss->maxHp() * 0.15f;

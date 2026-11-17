@@ -86,6 +86,8 @@ float Enemy::belowFit(const AttackDef& a) const {
         case AttackType::Vortex: return 0.4f;
         case AttackType::Sunbeam: return 2.2f;  // 2.56: the Phénix's columns come down on her
         case AttackType::Sweep: return 1.1f;
+        case AttackType::Glyph: return 1.8f;  // 2.57: the Liche's runes under her, its curse around her
+        case AttackType::Hex: return 1.5f;
         default: return 1.0f;
     }
 }

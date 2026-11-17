@@ -269,9 +269,14 @@ for _k in range(8):
 # Eight sheets, one per phase, packed like Pyrrhax' (no teleport: it floats).
 for _k in range(8):
     _id = "liche" if _k == 0 else "liche_p%d" % (_k + 1)
-    ANIMS[_id] = (224, 224, [112, 184], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
+    ANIMS[_id] = (224, 224, [112, 218], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
     LOOPING[_id] = {"idle", "walk", "move", "special"}
+
+# The crystal of the Liche's soul (2.57, phylactere.py): it floats on an altar, does not attack.
+ANIMS["phylactere"] = (48, 64, [24, 64], [("idle", 8), ("hurt", 2), ("death", 10)], {}, {})
+TEXTURES["phylactere"] = "sprites/enemies/phylactere.png"
+LOOPING["phylactere"] = {"idle"}
 
 # ------------------------------------------------------------------ Titan Mécanique (war machine giga boss)
 # Eight sheets packed like Monolithe's (same clips, no teleport); a walker: footsteps.

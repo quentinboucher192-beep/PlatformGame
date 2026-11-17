@@ -182,15 +182,18 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
         bool plasma = style == "plasma";
         bool abyss = style == "abyss";  // 2.53: the dark water of the Kraken's arena
         bool embers = style == "embers";  // 2.56: the embers under the ash of the Phénix's nest
-        fxTimer_ = std::max(0.05f, (plasma || abyss || embers ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
-        w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : (embers ? "embers_rising" : "toxic_mist")),
-                           {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
+        bool souls = style == "souls";    // 2.57: the souls of the Liche's ossuary
+        fxTimer_ = std::max(0.05f, (plasma || abyss || embers || souls ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
+        static const Color kSoul{150, 240, 220, 255};
+        w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : (embers || souls ? "embers_rising" : "toxic_mist")),
+                           {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f, {}, souls ? &kSoul : nullptr);
     }
 }
 
 bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
     const std::string style = obj_.propStr("style", "toxic");
-    if ((action == "enable" || action == "activate") && !active && (style == "plasma" || style == "abyss" || style == "embers")) {
+    if ((action == "enable" || action == "activate") && !active &&
+        (style == "plasma" || style == "abyss" || style == "embers" || style == "souls")) {
         w.playSound("sounds/lava_rise.wav", box.center(), 0.9f);
         w.shake(0.3f);
     }
@@ -217,6 +220,10 @@ void DamageZoneEntity::render(RenderContext& ctx) {
     }
     if (obj_.propStr("style", "toxic") == "embers") {
         renderEmbers(ctx);
+        return;
+    }
+    if (obj_.propStr("style", "toxic") == "souls") {
+        renderSouls(ctx);
         return;
     }
     if (active) {
@@ -317,6 +324,64 @@ void DamageZoneEntity::renderEmbers(RenderContext& ctx) const {
     for (float x = box.x + 40.0f; x < box.right(); x += 120.0f) ctx.lights.add({x, pool ? box.y : box.center().y}, 120.0f, glow);
     if (!pool)
         for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 140.0f, glow);
+}
+
+void DamageZoneEntity::renderSouls(RenderContext& ctx) const {
+    // The ossuary of the Liche's crypt (2.57): a pool (a heap of bones and skulls under a mist of
+    // soul fire, wisps rising out of it) or a curtain (a wall of wailing souls, pale faces drifting
+    // up through it), fading in when switched on. Display only.
+    const float a = shown_;
+    const float t = ctx.time;
+    const bool pool = box.w >= box.h;
+    const Color soul{150, 240, 220, 255};
+    if (pool) {
+        ctx.r.fillWorldRect(box, Color{18, 22, 30, static_cast<uint8_t>(235 * a)});
+        // Bones heaped in it: pale shafts and skulls catching the light of the mist.
+        for (float x = box.x + 3.0f; x < box.right() - 3.0f; x += 9.0f) {
+            const float k = std::fmod(x * 0.618f, 1.0f);
+            const float y = box.y + 3.0f + 5.0f * std::fmod(x * 0.377f, 1.0f);
+            const float ang = (k - 0.5f) * 1.6f;
+            const Vec2 d{dmath::cos(ang) * 4.0f, dmath::sin(ang) * 4.0f};
+            ctx.r.drawWorldLine({x - d.x, y - d.y}, {x + d.x, y + d.y}, Color{196, 188, 166, static_cast<uint8_t>(210 * a)},
+                                std::max(1.0f, ctx.r.view().scale * 0.7f));
+            if (static_cast<int>(x) % 5 == 0) ctx.r.fillWorldCircle({x, y + 5.0f}, 2.6f, Color{214, 206, 184, static_cast<uint8_t>(220 * a)});
+        }
+        for (float x = box.x; x < box.right(); x += 8.0f) {
+            const float wdt = std::min(8.0f, box.right() - x);
+            const float breath = 0.5f + 0.5f * dmath::sin(t * 1.3f + x * 0.027f) * dmath::sin(t * 0.6f + x * 0.011f);
+            ctx.r.fillWorldRect({x, box.y - 3.0f, wdt, 6.0f}, soul.withAlpha(static_cast<uint8_t>(60 * a * breath)), BlendMode::Additive);
+        }
+        const int wisps = static_cast<int>(box.w / 36.0f);
+        for (int k = 0; k < wisps; ++k) {
+            const float ph = std::fmod(t * 0.45f + static_cast<float>(k) * 0.618f, 1.0f);
+            const float x = box.x + std::fmod(static_cast<float>(k) * 89.3f, box.w) + 6.0f * dmath::sin(t * 1.6f + static_cast<float>(k));
+            const float y = box.y - ph * 70.0f;
+            ctx.r.drawWorldGlow({x, y}, 4.0f + 3.0f * (1.0f - ph), soul.withAlpha(static_cast<uint8_t>(170 * a * (1.0f - ph))));
+        }
+    } else {
+        ctx.r.fillWorldRect(box, Color{20, 30, 40, static_cast<uint8_t>(110 * a)});
+        ctx.r.fillWorldRect(box, soul.withAlpha(static_cast<uint8_t>(45 * a)), BlendMode::Additive);
+        for (float y = box.y; y < box.bottom(); y += 6.0f) {
+            const float wv = 2.0f * dmath::sin(t * 4.0f + y * 0.07f);
+            ctx.r.fillWorldRect({box.x - 1.0f + wv, y, 3.0f, 6.0f}, soul.withAlpha(static_cast<uint8_t>(190 * a)), BlendMode::Additive);
+            ctx.r.fillWorldRect({box.right() - 2.0f - wv, y, 3.0f, 6.0f}, soul.withAlpha(static_cast<uint8_t>(190 * a)), BlendMode::Additive);
+        }
+        for (int k = 0; k < 7; ++k) {
+            // A wailing face drifting up: a pale glow, two dark eyes, an open mouth.
+            const float ph = std::fmod(t * 0.22f + static_cast<float>(k) / 7.0f, 1.0f);
+            const float x = box.x + box.w * (0.2f + 0.6f * std::fmod(static_cast<float>(k) * 0.381f, 1.0f)) + 4.0f * dmath::sin(t + static_cast<float>(k));
+            const float y = box.bottom() - ph * box.h;
+            const uint8_t fa = static_cast<uint8_t>(150 * a * dmath::sin(ph * 3.1415927f));
+            ctx.r.drawWorldGlow({x, y}, 9.0f, soul.withAlpha(fa));
+            ctx.r.fillWorldCircle({x - 2.5f, y - 1.5f}, 1.4f, Color{10, 16, 24, fa});
+            ctx.r.fillWorldCircle({x + 2.5f, y - 1.5f}, 1.4f, Color{10, 16, 24, fa});
+            ctx.r.fillWorldRect({x - 1.2f, y + 1.5f, 2.4f, 3.0f}, Color{10, 16, 24, fa});
+        }
+    }
+    const Color glow = soul.withAlpha(static_cast<uint8_t>(255 * a));
+    for (float x = box.x + 40.0f; x < box.right(); x += 120.0f) ctx.lights.add({x, pool ? box.y : box.center().y}, 110.0f, glow);
+    if (!pool)
+        for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 130.0f, glow);
 }
 
 void DamageZoneEntity::renderAbyss(RenderContext& ctx) const {

@@ -135,6 +135,12 @@ public:
     /// Temporary slow (ice attacks, webs).
     void applySlow(float multiplier, float seconds);
     bool slowed() const { return slowTimer_ > 0.0f; }
+    /// 2.57, the Liche's « Maléfice »: for `seconds`, her jumps (from the ground, in the air, off a
+    /// wall) reach only `heightRatio` of their height; the stronger curse and the longer time hold.
+    void applyCurse(float heightRatio, float seconds);
+    bool cursed() const { return curseTimer_ > 0.0f; }
+    float curseTime() const { return curseTimer_; }
+    float curseRatio() const { return curseTimer_ > 0.0f ? curseRatio_ : 1.0f; }
     void setShield(bool on) { shield_ = on; }
     bool shieldActive() const { return shield_; }
     void setCastPose(float seconds) { castTimer_ = seconds; }
@@ -204,6 +210,9 @@ private:
     bool keysPerSlot_ = false;
     float slowTimer_ = 0.0f;
     float slowMultiplier_ = 1.0f;
+    float curseTimer_ = 0.0f;  // 2.57: the Liche's « Maléfice »
+    float curseRatio_ = 1.0f;
+    float curseSpeed() const;  // the factor of her jump speeds while cursed (sqrt of the height ratio)
     float wallJumpLockTimer_ = 0.0f;
     int wallDir_ = 0;
     float slideTimer_ = 0.0f;

@@ -197,6 +197,42 @@ void GameRenderer::drawProjectiles(Renderer& r, GameWorld& world, float alpha, L
             r.drawWorldGlow(tip, wid * 1.6f, Color{255, 255, 255, 200});
             continue;
         }
+        if (p.clip == "soul") {
+            // 2.57, the Liche's souls in torment: a pale head of soul fire, two hollow eyes, a
+            // wavering tail of its colour streaming behind it.
+            const float sp = p.vel.length();
+            const Vec2 d = sp > 1.0f ? p.vel / sp : Vec2{1.0f, 0.0f};
+            const Vec2 n{-d.y, d.x};
+            const float rad = std::max(4.0f, p.radius);
+            const float wob = std::sin(p.age * 18.0f + p.pos.x * 0.05f);
+            for (int i = 4; i >= 1; --i) {
+                const float k = static_cast<float>(i) / 4.0f;
+                const Vec2 q = pos - d * (rad * 1.3f * static_cast<float>(i)) + n * (wob * rad * 0.35f * k);
+                r.drawWorldGlow(q, rad * (1.25f - 0.2f * k), p.light.withAlpha(static_cast<uint8_t>(150 * (1.0f - k * 0.7f))));
+            }
+            r.drawWorldGlow(pos, rad * 2.4f, p.light.withAlpha(110));
+            r.fillWorldCircle(pos, rad, Color{p.light.r, p.light.g, p.light.b, 230});
+            r.fillWorldCircle(pos + d * (rad * 0.15f), rad * 0.62f, Color{240, 255, 244, 240});
+            r.fillWorldCircle(pos + d * (rad * 0.35f) + n * (rad * 0.3f), std::max(0.8f, rad * 0.18f), Color{20, 24, 40, 230});
+            r.fillWorldCircle(pos + d * (rad * 0.35f) - n * (rad * 0.3f), std::max(0.8f, rad * 0.18f), Color{20, 24, 40, 230});
+            continue;
+        }
+        if (p.clip == "bone") {
+            // 2.57, the Liche's bones: an ivory shaft with its two knobs, spinning, a glow of soul fire.
+            const float rad = std::max(4.0f, p.radius);
+            const float a = p.age * 11.0f + p.pos.y * 0.01f;
+            const Vec2 d{std::cos(a), std::sin(a)};
+            const Vec2 n{-d.y, d.x};
+            const Vec2 e0 = pos - d * (rad * 1.3f), e1 = pos + d * (rad * 1.3f);
+            r.drawWorldGlow(pos, rad * 2.0f, p.light.withAlpha(90));
+            r.drawWorldLine(e0, e1, Color{90, 80, 62, 255}, std::max(2.0f, rad * 0.9f * r.view().scale));
+            r.drawWorldLine(e0, e1, Color{236, 226, 198, 255}, std::max(1.0f, rad * 0.55f * r.view().scale));
+            for (const Vec2& e : {e0, e1}) {
+                r.fillWorldCircle(e + n * (rad * 0.35f), rad * 0.42f, Color{226, 214, 184, 255});
+                r.fillWorldCircle(e - n * (rad * 0.35f), rad * 0.42f, Color{200, 188, 158, 255});
+            }
+            continue;
+        }
         if (p.clip == "shockwave") {
             // Its size follows its radius (2.52: the golem's waves are taller), its colour its light.
             float t = std::fmod(p.age * 3.0f, 1.0f);

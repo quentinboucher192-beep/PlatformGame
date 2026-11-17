@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "engine/resources/ResourceManager.h"
+#include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
 #include "engine/core/DetMath.h"
@@ -290,6 +291,88 @@ void CrumblePlatformEntity::renderEmber(RenderContext& ctx) const {
         }
         ctx.r.drawWorldGlow(r.center() + Vec2{0.0f, -4.0f}, r.w * 0.6f, Color{255, 120, 50, static_cast<uint8_t>(120 * burn)});
     }
+}
+
+// ------------------------------------------------------------------- altar
+
+void AltarEntity::init(GameWorld& w) {
+    // Its top can be stood on, as a ledge (2.57).
+    collider_ = w.physics().add({box.x, box.y, box.w, 4.0f}, ColliderKind::OneWay, 0, this);
+}
+
+void AltarEntity::update(GameWorld& w, float dt) {
+    // Display only: the light of the Liche's phase, brighter when it floats over this altar,
+    // brightest when it is about to appear here or when the phylactery rests on it.
+    float want = 0.15f;
+    crystal_ = false;
+    if (const Enemy* b = w.activeBoss(); b && b->alive() && b->isLiche()) {
+        color_ = b->lightColor();
+        const auto& alt = b->altars();
+        for (int k = 0; k < static_cast<int>(alt.size()); ++k) {
+            if (std::abs(alt[static_cast<size_t>(k)].x - box.center().x) > 1.0f || std::abs(alt[static_cast<size_t>(k)].y - box.y) > 1.0f) continue;
+            if (k == b->altarIndex()) want = 0.8f;
+            if (k == b->altarNext()) want = 1.5f;
+            if (k == b->phylacteryAltar()) {
+                want = 1.3f;
+                crystal_ = true;
+            }
+        }
+    }
+    glow_ = approach(glow_, want, dt * 2.5f);
+}
+
+void AltarEntity::render(RenderContext& ctx) {
+    // A block of dark carved stone: a slab on top, a plinth, a skull carved in its front between
+    // two columns of runes, two candles of soul fire on its top. Display only.
+    const Rect b = box;
+    const float t = ctx.time;
+    const float g = ctx.editor ? 0.5f : glow_;
+    const Color soul = color_;
+    const float px = std::max(1.0f, ctx.r.view().scale * 0.5f);
+    ctx.r.fillWorldRect({b.x + 3.0f, b.y + 5.0f, b.w - 6.0f, b.h - 9.0f}, Color{40, 36, 48, 255});
+    ctx.r.fillWorldRect({b.x + 3.0f, b.y + 5.0f, 3.0f, b.h - 9.0f}, Color{62, 56, 72, 255});
+    ctx.r.fillWorldRect({b.right() - 6.0f, b.y + 5.0f, 3.0f, b.h - 9.0f}, Color{26, 22, 32, 255});
+    ctx.r.fillWorldRect({b.x, b.y, b.w, 6.0f}, Color{70, 64, 82, 255});           // the slab
+    ctx.r.fillWorldRect({b.x, b.y, b.w, 2.0f}, Color{104, 96, 118, 255});
+    ctx.r.fillWorldRect({b.x - 1.0f, b.bottom() - 5.0f, b.w + 2.0f, 5.0f}, Color{52, 46, 60, 255});  // the plinth
+    ctx.r.fillWorldRect({b.x - 1.0f, b.bottom() - 5.0f, b.w + 2.0f, 1.0f}, Color{84, 76, 96, 255});
+    // The skull carved in its front.
+    const Vec2 sk{b.center().x, b.y + b.h * 0.48f};
+    ctx.r.fillWorldCircle(sk, 6.5f, Color{112, 104, 122, 255});
+    ctx.r.fillWorldRect({sk.x - 4.0f, sk.y + 3.0f, 8.0f, 5.0f}, Color{112, 104, 122, 255});
+    const Color eye{static_cast<uint8_t>(std::min(255.0f, soul.r * (0.4f + 0.6f * std::min(1.0f, g)))),
+                    static_cast<uint8_t>(std::min(255.0f, soul.g * (0.4f + 0.6f * std::min(1.0f, g)))),
+                    static_cast<uint8_t>(std::min(255.0f, soul.b * (0.4f + 0.6f * std::min(1.0f, g)))), 255};
+    ctx.r.fillWorldCircle(sk + Vec2{-2.6f, -0.5f}, 1.8f, eye);
+    ctx.r.fillWorldCircle(sk + Vec2{2.6f, -0.5f}, 1.8f, eye);
+    for (float x = -3.0f; x <= 3.0f; x += 2.0f) ctx.r.fillWorldRect({sk.x + x - 0.5f, sk.y + 5.0f, 1.0f, 3.0f}, Color{40, 36, 48, 255});
+    // Columns of runes on both sides of the skull.
+    const uint8_t ra = static_cast<uint8_t>(std::clamp(60.0f + 150.0f * g + 30.0f * dmath::sin(t * 3.0f + b.x), 0.0f, 255.0f));
+    for (float side : {-1.0f, 1.0f}) {
+        const float x = b.center().x + side * (b.w * 0.5f - 9.0f);
+        for (int k = 0; k < 3; ++k) {
+            const float y = b.y + 11.0f + static_cast<float>(k) * 7.0f;
+            const int kind = (static_cast<int>(b.x / 16.0f) + k + (side > 0 ? 1 : 0)) % 3;
+            const Color rc = soul.withAlpha(ra);
+            if (kind == 0) ctx.r.drawWorldLine({x - 2.0f, y}, {x + 2.0f, y + 4.0f}, rc, px, BlendMode::Additive);
+            else if (kind == 1) ctx.r.drawWorldCircle({x, y + 2.0f}, 2.0f, rc, px);
+            else ctx.r.drawWorldLine({x, y}, {x, y + 4.0f}, rc, px, BlendMode::Additive);
+        }
+    }
+    // Two candles of soul fire on its top.
+    for (float side : {-1.0f, 1.0f}) {
+        const float x = b.center().x + side * (b.w * 0.5f - 6.0f);
+        ctx.r.fillWorldRect({x - 1.5f, b.y - 7.0f, 3.0f, 7.0f}, Color{214, 206, 184, 255});
+        const float fl = 1.0f + 0.25f * dmath::sin(t * 13.0f + x);
+        ctx.r.drawWorldGlow({x, b.y - 9.5f}, 3.0f * fl + 2.0f * g, soul.withAlpha(220));
+        ctx.r.fillWorldCircle({x, b.y - 9.0f}, 1.2f, Color{240, 255, 244, 255});
+    }
+    if (g > 0.2f) ctx.r.drawWorldGlow({b.center().x, b.y + b.h * 0.4f}, b.w * 0.5f * g, soul.withAlpha(static_cast<uint8_t>(std::min(255.0f, 70.0f * g))));
+    if (crystal_) {
+        const float pulse = 0.5f + 0.5f * dmath::sin(t * 6.0f);
+        ctx.r.drawWorldCircle({b.center().x, b.y - 2.0f}, b.w * (0.55f + 0.15f * pulse), soul.withAlpha(static_cast<uint8_t>(120 + 100 * pulse)), px);
+    }
+    ctx.lights.add({b.center().x, b.y - 6.0f}, 50.0f + 50.0f * g, soul);
 }
 
 // --------------------------------------------------------------- power gate

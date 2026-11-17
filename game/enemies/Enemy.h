@@ -117,6 +117,20 @@ public:
     Rect lane() const { return lane_; }
     /// Ash veils the arena (display): in a phase with ashes, or while it lies in its ashes.
     bool ashVeil() const;
+    /// The lich (2.57, the Liche): it floats over the altars of its arena (the top of each, by x)
+    /// and teleports from one to another (the next one is shown before it appears there); at the
+    /// end of a phase with a phylactery it hides its soul in it (the crystal, an enemy set on an
+    /// altar): it cannot be hurt until the crystal is broken. Its spells: the marks of its runes
+    /// (attackPath), the circle of its curse (attackMark, ringRadius).
+    bool isLiche() const { return hasLiche_; }
+    const std::vector<Vec2>& altars() const { return altars_; }
+    int altarIndex() const { return altar_; }
+    int altarNext() const { return altarNext_; }
+    bool warded() const { return warded_; }
+    uint32_t phylactery() const { return phylactery_; }
+    int phylacteryAltar() const { return phylacteryAltar_; }
+    /// The curse of its last « Maléfice » reached Nova (tests, statistics of display).
+    bool hexLanded() const { return hexLanded_; }
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -394,6 +408,41 @@ private:
     float laneFloor_ = 0.0f;
     int bladesLeft_ = 0;
     float glideClock_ = 0.0f;
+
+    // The lich (2.57, the Liche): its spells (runes, curse), its altars and its phylactery, in
+    // LicheAttacks.cpp.
+    void licheBegin(GameWorld& w);  // wind-up: the marks of the runes, the circle of the curse
+    void licheStart(GameWorld& w);
+    void licheActive(GameWorld& w, float dt);
+    void licheEnd(GameWorld& w, bool cut = true);
+    void renderLiche(RenderContext& ctx, float prog) const;
+    void renderAltarFx(RenderContext& ctx) const;  // its altar, the next one, its phylactery's thread
+    float licheFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
+    /// Between two spells: over its altar, or away to another one (after a few spells there, or
+    /// when Nova stays right against it).
+    void licheThink(GameWorld& w, float dt);
+    void licheHover(GameWorld& w, float dt);
+    void licheBlink(GameWorld& w, float dt);  // its teleport (TeleportOut, then TeleportIn)
+    void findAltars(GameWorld& w);
+    Vec2 altarSpot(int k) const;  // where its feet float over altar k
+    int chooseAltar(GameWorld& w) const;
+    void beginTeleport(GameWorld& w, int k);
+    void planRunes(GameWorld& w);
+    void beginWard(GameWorld& w, int next);
+    void stepWard(GameWorld& w);
+    bool hasLiche_ = false;
+    std::vector<Vec2> altars_;  // the top of each altar of its arena (by x); spots of its floor without one
+    bool altarsKnown_ = false;
+    int altar_ = -1;            // the altar it floats over
+    int altarNext_ = -1;        // the one it teleports to (shown)
+    int castsHere_ = 0;
+    bool teleportDue_ = false;
+    float closeTime_ = 0.0f;    // Nova right against it
+    bool warded_ = false;       // its soul in its phylactery: it cannot be hurt
+    int wardNext_ = 0;
+    uint32_t phylactery_ = 0;   // the crystal (its uid)
+    int phylacteryAltar_ = -1;
+    bool hexLanded_ = false;
 };
 
 }  // namespace cosmic

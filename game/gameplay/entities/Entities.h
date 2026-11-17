@@ -71,6 +71,24 @@ private:
     bool ember_ = false;
 };
 
+/// 2.57: an altar of the Liche's crypt (« Autel de la Liche »): a block of carved stone whose top
+/// can be stood on (a ledge); the Liche floats over the altars of its arena and teleports between
+/// them (game/enemies/LicheAttacks.cpp). Drawn by the game: its runes take the light of the boss's
+/// phase and glow when the Liche floats over it, or is about to appear there.
+class AltarEntity : public LevelEntity {
+public:
+    using LevelEntity::LevelEntity;
+    void init(GameWorld& w) override;
+    void update(GameWorld& w, float dt) override;
+    void render(RenderContext& ctx) override;
+
+private:
+    uint32_t collider_ = 0;
+    Color color_{170, 120, 255, 255};  // display: the soul fire of its runes
+    float glow_ = 0.0f;                // display: how bright they burn (0 .. 1.5)
+    bool crystal_ = false;             // display: it holds the phylactery
+};
+
 class PowerGateEntity : public LevelEntity {
 public:
     using LevelEntity::LevelEntity;
@@ -168,6 +186,7 @@ private:
     void renderPlasma(RenderContext& ctx) const;
     void renderAbyss(RenderContext& ctx) const;  // 2.53: the dark water of the Kraken's arena
     void renderEmbers(RenderContext& ctx) const;  // 2.56: the embers under the ash of the Phénix's nest
+    void renderSouls(RenderContext& ctx) const;   // 2.57: the ossuary of the Liche's crypt, its souls
     float tick_ = 0.0f;
     float fxTimer_ = 0.0f;
     float shown_ = 0.0f;  // display: fades in when enabled (2.33)

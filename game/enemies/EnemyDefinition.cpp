@@ -36,7 +36,9 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               {"shell", "Carapace roulante"},    {"quake", "Tremblement de terre"},
                               {"skyfall", "Bond titanesque"},
                               // 2.56: the phoenix (the Phénix)
-                              {"sunbeam", "Colonnes solaires"},  {"sweep", "Lame d'ailes"}};
+                              {"sunbeam", "Colonnes solaires"},  {"sweep", "Lame d'ailes"},
+                              // 2.57: the lich (the Liche)
+                              {"glyph", "Runes funestes"},       {"hex", "Maléfice"}};
 static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
 }  // namespace
 
@@ -196,6 +198,17 @@ Json AttackDef::toJson() const {
         if (height > 0) j["height"] = height;
         if (arms > 0) j["arms"] = arms;
     }
+    if (isLicheType()) {
+        // 2.57, written only for the lich's types (the definitions of before keep their fingerprints).
+        j["count"] = count;
+        j["spread"] = spread;
+        j["burstInterval"] = burstInterval;
+        if (duration > 0) j["duration"] = duration;
+        if (radius > 0) j["radius"] = radius;
+        if (height > 0) j["height"] = height;
+        if (arms > 0) j["arms"] = arms;
+        if (curse > 0) j["curse"] = curse;
+    }
     return j;
 }
 
@@ -260,6 +273,7 @@ AttackDef AttackDef::fromJson(const Json& j) {
     a.look = jstr(j, "look", "");
     a.vulnerability = std::clamp(jget<float>(j, "vulnerability", 0.0f), 0.0f, 4.0f);
     a.armor = std::clamp(jget<float>(j, "armor", 0.0f), 0.0f, 1.0f);
+    a.curse = std::clamp(jget<float>(j, "curse", 0.0f), 0.0f, 1.0f);
     return a;
 }
 
@@ -281,6 +295,8 @@ Json BossPhase::toJson() const {
     // 2.56: the Phénix's rebirth and its ashes (written only when set).
     if (rebirth > 0) j["rebirth"] = rebirth;
     if (ashes) j["ashes"] = true;
+    // 2.57: the Liche's phylactery (written only when set).
+    if (!phylactery.empty()) j["phylactery"] = phylactery;
     return j;
 }
 
@@ -303,6 +319,7 @@ BossPhase BossPhase::fromJson(const Json& j) {
     p.enterSound = jstr(j, "enterSound", "");
     p.rebirth = std::clamp(jget<float>(j, "rebirth", 0.0f), 0.0f, 1.0f);
     p.ashes = jget<bool>(j, "ashes", false);
+    p.phylactery = jstr(j, "phylactery", "");
     return p;
 }
 

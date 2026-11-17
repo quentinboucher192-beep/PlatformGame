@@ -163,6 +163,22 @@ std::vector<ObjectTypeInfo> build() {
         add(t);
     }
     {
+        // 2.57: the altars of the Liche's crypt: the Liche floats over them and teleports from one
+        // to another; one of them holds its phylactery. Their top can be stood on (as a ledge).
+        ObjectTypeInfo t;
+        t.id = "altar";
+        t.name = "Autel de la Liche";
+        t.category = ObjCategory::Platforms;
+        t.defaultSize = {48, 40};
+        t.editorColor = {150, 120, 210, 255};
+        t.defaultLayer = "terrain";
+        t.props = {};
+        t.assets = {};  // drawn by the game
+        t.help = "Autel de pierre des catacombes : on peut se tenir sur son dessus. Dans l'arène d'un boss qui en a besoin "
+                 "(la Liche), le boss flotte au-dessus des autels et se téléporte de l'un à l'autre.";
+        add(t);
+    }
+    {
         ObjectTypeInfo t;
         t.id = "crumble_platform";
         t.name = "Plateforme fragile";
@@ -257,8 +273,8 @@ std::vector<ObjectTypeInfo> build() {
                    pBool("visible", "Visible (brume toxique)", true),
                    pBool("shieldProtects", "Le bouclier protège", true),
                    pBool("active", "Active au départ", true, "Sinon, un événement l'active"),
-                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma", "abyss", "embers"},
-                         {"Brume toxique", "Plasma d'étoile", "Eaux abyssales", "Braises sous la cendre"}),
+                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma", "abyss", "embers", "souls"},
+                         {"Brume toxique", "Plasma d'étoile", "Eaux abyssales", "Braises sous la cendre", "Âmes de l'ossuaire"}),
                    pBool("bounce", "Projette vers le haut", false)};
         add(t);
     }

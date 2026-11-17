@@ -18,14 +18,17 @@ never do.  Every emissive pixel uses one of five tones P0..P4 of the phase ramp 
 so each phase sheet is the phase-1 sheet with those five colours swapped (exact LUT, `recolour`),
 see PHASES.
 
-Frames 224x224, pivot [112, 184] = bottom-centre of the 56x128 collision box (x 84..140,
-y 56..184) around the skull, the torso and the robe (not the staff, the far hand nor the tails
-and wisps of the hem).  Drawn at scale 1.25 in game (280 px frame, 70x160 px box).
+Frames 224x224, pivot [112, 218] = bottom-centre of the 56x160 collision box (x 84..140,
+y 58..218) around the skull, the torso and the robe, down to the tips of the tails and wisps of
+the hem (2.57: the pivot was at the hem, y 184, and the tails hung ~33 px under the box: low over
+the floor they went through it and under the HUD, as the Kraken's arms in 2.53 and the Phénix's
+plumes in 2.56; the art is unchanged, only the anchor and the box).  Drawn at scale 1.25 in game
+(280 px frame, 70x200 px box).
 ORIGIN (projectile origin = the point of the phylactery crystal, frame pixels from the pivot,
 x forward, y down; x1.25 in game):
-  * attack frame 1 (`fire`, the staff thrust forward, a bolt leaves the crystal): (+83, -128)
+  * attack frame 1 (`fire`, the staff thrust forward, a bolt leaves the crystal): (+83, -162)
     = frame pixel (195, 56);
-  * special (beam loop, the staff levelled forward does not move on its four frames): (+86, -104)
+  * special (beam loop, the staff levelled forward does not move on its four frames): (+86, -138)
     = frame pixel (198, 80); the beam itself is drawn by the game, the sheet only shows a burst
     at the crystal.
 `Liche.origin(pose)` gives these points (the point of the crystal; `Liche.crystal(pose)` its
@@ -50,8 +53,8 @@ from raster import TCanvas, ik2
 
 PI = math.pi
 W = H = 224
-PIVOT = [112, 184]
-BOX = (84, 56, 140, 184)  # x0, y0, x1, y1 (collision box, frame pixels)
+PIVOT = [112, 218]
+BOX = (84, 58, 140, 218)  # x0, y0, x1, y1 (collision box, frame pixels; 2.57: down to the tails of the hem)
 GD = 212                  # death: the ground the empty robe falls on (rows >= GD stay empty)
 WHITE = "#ffffff"
 SEED = 51613

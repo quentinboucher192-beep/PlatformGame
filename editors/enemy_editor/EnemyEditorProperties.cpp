@@ -242,6 +242,7 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
             std::vector<std::string> proj;
             if (auto pa = g_.app.resources().animation("animations/projectiles.json"))
                 for (const auto& [k, _] : pa->clips) proj.push_back(k);
+            for (const char* drawn : {"feather", "soul", "bone"}) proj.push_back(drawn);  // drawn by the game (2.56, 2.57)
             std::sort(proj.begin(), proj.end());
             if (a.type != AttackType::Slam) {
                 c |= stringCycle(ui, "proj", {x, y, w, ui.s(46)}, "Projectile", a.projectile, proj);
@@ -364,6 +365,7 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 std::vector<std::string> proj;
                 if (auto pa = g_.app.resources().animation("animations/projectiles.json"))
                     for (const auto& [k, _] : pa->clips) proj.push_back(k);
+                for (const char* drawn : {"feather", "soul", "bone"}) proj.push_back(drawn);  // drawn by the game (2.56, 2.57)
                 std::sort(proj.begin(), proj.end());
                 c |= stringCycle(ui, "gproj", {x, y, w, ui.s(46)}, a.type == AttackType::Orbit ? "Flammes" : "Projectile", a.projectile, proj);
                 y += ui.s(54);
@@ -566,6 +568,40 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                     num("pprad", "Rayon d'une plume", a.projectileRadius, 1, 0, 20, "%.0f");
                     break;
                 }
+                default: break;
+            }
+        }
+        if (a.isLicheType()) {
+            // 2.57: the spells of the lich (the Liche). A value left at 0 takes the type's default
+            // (see game/enemies/LicheAttacks.cpp).
+            auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
+                c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);
+            };
+            auto whole = [&](const char* id, const char* label, int& v, int lo, int hi) {
+                float f = static_cast<float>(v);
+                if (ui.numberField(id, row.field(label), f, 1, static_cast<float>(lo), static_cast<float>(hi), "%.0f")) {
+                    v = static_cast<int>(f);
+                    c = true;
+                }
+            };
+            switch (a.type) {
+                case AttackType::Glyph:
+                    whole("lcnt", "Runes (par côté avec 2 bras)", a.count, 1, 12);
+                    num("lspr", "Écart entre les runes (px)", a.spread, 5, 0, 300, "%.0f");
+                    num("larm", "Armée après (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    num("lstg", "Entre deux runes (s)", a.stagger, 0.02f, 0, 1, "%.2f");
+                    num("ldur", "Reste armée (s)", a.duration, 0.1f, 0, 12, "%.1f");
+                    num("lrad", "Demi-largeur d'une rune", a.radius, 1, 0, 60, "%.0f");
+                    num("lhgt", "Hauteur de son éclat", a.height, 2, 0, 200, "%.0f");
+                    whole("larms", "Autour du joueur (2)", a.arms, 0, 2);
+                    c |= ui.numberField("llead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
+                    break;
+                case AttackType::Hex:
+                    num("hrad", "Rayon du cercle", a.radius, 2, 0, 200, "%.0f");
+                    num("hdur", "Durée de la malédiction (s)", a.duration, 0.25f, 0, 12, "%.2f");
+                    num("hcur", "Hauteur des sauts maudits (part)", a.curse, 0.02f, 0, 1, "%.2f");
+                    c |= ui.numberField("hlead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
+                    break;
                 default: break;
             }
         }

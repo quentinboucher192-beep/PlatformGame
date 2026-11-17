@@ -153,6 +153,7 @@ START_POWERS = {
     "confins_02": ["dash", "grapple", "glide", "charge_shot"],  # 2.49: the granite galleries
     "confins_03": ["dash", "grapple", "glide", "charge_shot"],  # 2.53: the abyssal trench
     "confins_04": ["dash", "grapple", "glide", "charge_shot"],  # 2.56: the nest of ashes
+    "confins_05": ["dash", "grapple", "glide", "charge_shot"],  # 2.57: the crypt of names
     # Aethra (2.19): three powers, the fourth slot for the new power whose tablet waits at the
     # start of the level.
     "aethra_01": ["dash", "wave", "grapple"],

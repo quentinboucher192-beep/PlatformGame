@@ -27,7 +27,9 @@ struct RenderContext;
 ///    push, always below her run speed: running against it still moves her forward);
 ///  * (2.52, the golem's quake) cracks in the ground that glow, then burst out of it, and rocks
 ///    falling from the roof onto marked spots; (2.56, the Phénix) columns of sunlight falling
-///    from the roof onto marked spots, the same way.
+///    from the roof onto marked spots, the same way;
+///  * (2.57, the Liche) runes traced on the ground: armed after a while, a rune bursts into a
+///    pillar of soul fire when Nova steps on it, and every rune left bursts at the end of its time.
 /// An effect belongs to the enemy that made it (its uid): it ends with its time, with the
 /// enemy (death, removal) or when the player respawns.
 class BossHazards {
@@ -73,7 +75,7 @@ public:
         float time = 4.0f;
         float age = 0.0f;
         float damage = 1.0f;
-        std::string look;  // display: "" = thorns, "star" = starlight (2.33), "tentacle" = the Kraken's (2.53)
+        std::string look;  // display: "" = thorns, "star" = starlight (2.33), "tentacle" = the Kraken's (2.53), "bone" = the Liche's (2.57)
         float side = 1.0f;                // display: the cage's side of it (a tentacle curls over it)
         Color color{122, 230, 255, 255};  // display: the light of its suckers ("tentacle")
     };
@@ -122,6 +124,34 @@ public:
         /// A rock: the centre of the falling stone at its age (it speeds up).
         Vec2 rockAt() const;
     };
+    /// 2.57, a rune of the Liche's « Runes funestes »: traced on the ground (`at`: its middle, on the
+    /// surface), it glows faintly for `arm` seconds (it cannot hurt yet), then it is armed for
+    /// `time` seconds: Nova's feet on it make it burst; at the end of its time it bursts on its own
+    /// (it flickers kWarn seconds before). Its burst: a pillar of soul fire `height` tall for
+    /// kBurst seconds, which hurts once and throws her up.
+    struct Rune {
+        static constexpr float kWarn = 0.6f;
+        static constexpr float kBurst = 0.35f;
+        uint32_t owner = 0;
+        Vec2 at;
+        float half = 18.0f;     // half its width
+        float height = 56.0f;   // its pillar
+        float arm = 0.8f;
+        float time = 4.0f;
+        float age = 0.0f;
+        float burstAge = -1.0f;  // >= 0: bursting for this long
+        float damage = 1.0f;
+        float knockback = 260.0f;
+        bool hit = false;
+        int glyph = 0;           // display: which signs are traced in it
+        Color color{150, 245, 110, 255};  // display: the soul fire of the phase
+        bool armed() const { return burstAge < 0.0f && age >= arm; }
+        bool bursting() const { return burstAge >= 0.0f; }
+        bool done() const { return burstAge >= kBurst + 0.25f; }
+        /// What her feet touch (a strip on the surface) and the pillar of its burst.
+        Rect pad() const { return {at.x - half, at.y - 6.0f, half * 2.0f, 8.0f}; }
+        Rect pillar() const { return {at.x - half * 0.85f, at.y - height, half * 1.7f, height}; }
+    };
     struct Wind {
         uint32_t owner = 0;
         Vec2 center;           // Nova is pushed away from it, horizontally
@@ -135,6 +165,7 @@ public:
     void addCloud(const Cloud& c);
     void addWind(const Wind& wd);
     void addCrack(const Crack& c);
+    void addRune(const Rune& r);
     /// Freezes the floors, ledges and platforms whose top lies in `area` (grip < 1).
     void addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds);
     void addFlood(const Flood& f);
@@ -152,7 +183,7 @@ public:
 
     bool empty() const {
         return pulls_.empty() && ice_.empty() && floods_.empty() && walls_.empty() && clouds_.empty() && winds_.empty() &&
-               cracks_.empty();
+               cracks_.empty() && runes_.empty();
     }
     bool hasIce(uint32_t owner) const;
     bool hasFlood(uint32_t owner) const;
@@ -160,6 +191,7 @@ public:
     bool hasWind(uint32_t owner) const;
     int cloudCount(uint32_t owner) const;
     int crackCount(uint32_t owner) const;
+    int runeCount(uint32_t owner) const;
     const std::vector<Pull>& pulls() const { return pulls_; }
     const std::vector<Ice>& ice() const { return ice_; }
     const std::vector<Flood>& floods() const { return floods_; }
@@ -167,6 +199,7 @@ public:
     const std::vector<Cloud>& clouds() const { return clouds_; }
     const std::vector<Wind>& winds() const { return winds_; }
     const std::vector<Crack>& cracks() const { return cracks_; }
+    const std::vector<Rune>& runes() const { return runes_; }
 
     /// Display only.
     void render(RenderContext& ctx) const;
@@ -180,6 +213,7 @@ private:
     std::vector<Cloud> clouds_;
     std::vector<Wind> winds_;
     std::vector<Crack> cracks_;
+    std::vector<Rune> runes_;
 };
 
 }  // namespace cosmic

@@ -1,0 +1,54 @@
+{
+  "format": "cosmic.enemy",
+  "id": "phylactere",
+  "name": "Phylactère de la Liche",
+  "description": "Le cristal où la Liche a enfermé son âme, posé sur un autel de sa crypte. Tant qu'il tient, rien ne peut la blesser : brisez-le.",
+  "family": "turret",
+  "animation": "animations/phylactere.json",
+  "size": [
+    26,
+    52
+  ],
+  "scale": 1.0,
+  "hp": 36,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 1500,
+    "drops": []
+  },
+  "light": {
+    "color": "#aaf2ff",
+    "radius": 110
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/ice_shatter.wav",
+    "alert": ""
+  }
+}

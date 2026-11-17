@@ -93,7 +93,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
     // 2.50: right under the dragon is no shelter: its dives, its landings and what falls are
     // preferred there (only for the bosses with its attacks: the others choose as before).
     bool below = false;
-    if (hasDragon_ && def_.flying) {
+    if ((hasDragon_ || hasLiche_) && def_.flying) {  // 2.57: nor under the Liche
         const float dy = playerPos_.y - box.bottom();
         below = dy > 0.0f && std::abs(playerPos_.x - box.center().x) < std::max(200.0f, dy * 1.2f);
     }
@@ -130,6 +130,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 if (a->isGuardianType()) fit *= guardianFit(w, *a, near, far, air);
                 else if (a->isDragonType()) fit *= dragonFit(w, *a, near, far, air);
                 else if (a->isPhoenixType()) fit *= phoenixFit(w, *a, near, far, air);
+                else if (a->isLicheType()) fit *= licheFit(w, *a, near, far, air);
                 break;
         }
         if (below) fit *= belowFit(*a);
@@ -165,6 +166,8 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Skyfall: k = 2.5f; break;
                 case AttackType::Sunbeam: k = 2.2f; break;  // 2.56: the phoenix
                 case AttackType::Sweep: k = 1.6f; break;
+                case AttackType::Glyph: k = 1.8f; break;  // 2.57: the lich
+                case AttackType::Hex: k = 2.0f; break;
                 default: break;
             }
             if (k <= 0.0f) continue;
@@ -276,6 +279,7 @@ void Enemy::beginAttack(GameWorld& w) {
     if (attack_->isDragonType()) dragonBegin(w);
     if (attack_->isGolemType()) golemBegin(w);
     if (attack_->isPhoenixType()) phoenixBegin(w);
+    if (attack_->isLicheType()) licheBegin(w);
     if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
@@ -338,7 +342,7 @@ void Enemy::spawnImpact(GameWorld& w, const AttackDef& a, Vec2 t) {
     p.type = DamageType::Projectile;
     p.clip = a.projectile;
     p.radius = a.projectileRadius > 0 ? a.projectileRadius : 5.0f;
-    p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.56: the Phénix's feathers glow with its phase
+    p.light = hasPhoenix_ || hasLiche_ ? lightColor() : def_.lightColor;  // 2.56: the Phénix's feathers glow with its phase
     p.knockback = a.knockback;
     p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
     p.slow = a.slow;
@@ -353,9 +357,10 @@ void Enemy::fireProjectiles(GameWorld& w, const AttackDef& a) {
     Vec2 baseDir = a.type == AttackType::Spread ? Vec2{facing, 0.0f} : aimDir_;
     if (a.type == AttackType::Spread && a.lead > 0.0f) baseDir = aimDir_;  // aimed fans (bosses)
     Vec2 target = a.lead > 0.0f ? predictPlayer(w, distance(origin, playerPos_) / std::max(60.0f, a.projectileSpeed) * a.lead) : playerPos_;
-    if (hasDragon_ && a.type != AttackType::Arc) {
+    if ((hasDragon_ || hasLiche_) && a.type != AttackType::Arc) {
         // 2.50: the dragon's mouth is far from its middle (a big sprite): its shots leave its jaws
-        // toward the target, so that right under it they still come at it.
+        // toward the target, so that right under it they still come at it (2.57: the Liche's
+        // crystal, high on its staff, too).
         Vec2 d = (target - origin).normalized();
         if (d.lengthSq() > 0.01f) baseDir = d;
     }
@@ -381,7 +386,7 @@ void Enemy::fireProjectiles(GameWorld& w, const AttackDef& a) {
         p.clip = a.projectile;
         p.radius = a.projectileRadius > 0 ? a.projectileRadius : (a.projectile == "boss_orb" ? 7.0f : 4.5f);
         p.life = a.homing > 0.0f ? std::max(4.0f, a.homingTime + 2.5f) : 4.0f;
-        p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.56: the Phénix's feathers glow with its phase
+        p.light = hasPhoenix_ || hasLiche_ ? lightColor() : def_.lightColor;  // 2.56: the Phénix's feathers glow with its phase
         p.knockback = a.knockback;
         p.hitSound = "sounds/explosion.wav";
         p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
@@ -444,6 +449,10 @@ void Enemy::performAttackStart(GameWorld& w) {
     }
     if (a.isPhoenixType()) {
         phoenixStart(w);
+        return;
+    }
+    if (a.isLicheType()) {
+        licheStart(w);
         return;
     }
     switch (a.type) {
@@ -573,6 +582,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         if (glide) phoenixGlide(w, dt, 0.55f, false);
         return;
     }
+    if (a.isLicheType()) {
+        licheActive(w, dt);
+        return;
+    }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
     for (size_t k = 0; k < staged_.size();) {
         if (attackClock_ >= staged_[k].time) {
@@ -677,6 +690,12 @@ void Enemy::finishAttack(GameWorld& w) {
     if (attack_ && attack_->isDragonType()) dragonEnd(w, false);
     if (attack_ && attack_->isGolemType()) golemEnd(w, false);
     if (attack_ && attack_->isPhoenixType()) phoenixEnd(w, false);
+    if (attack_ && attack_->isLicheType()) licheEnd(w, false);
+    if (hasLiche_ && def_.isBoss && comboLeft_ <= 0) {
+        // 2.57: after a few spells at the same altar, the Liche leaves for another one.
+        ++castsHere_;
+        if (castsHere_ >= 2 || (castsHere_ >= 1 && w.rng().chance(0.6f))) teleportDue_ = true;
+    }
     if (hasGolem_) {
         walkTime_ = 0.0f;  // 2.52: its steps before the next blow
         dropThrough_ = false;
@@ -705,7 +724,18 @@ void Enemy::render(RenderContext& ctx) const {
     Color tint = def_.tint;
     if (state_ == EnemyState::Dormant) tint.a = 110;
     if (state_ == EnemyState::Dead) tint.a = static_cast<uint8_t>(std::clamp(deathTimer_ / 0.9f, 0.0f, 1.0f) * 255);
+    if (hasLiche_) {
+        // 2.57: the Liche fades out of one altar and into another; its soul hidden in its
+        // phylactery, it is a translucent shade.
+        if (state_ == EnemyState::TeleportOut) tint.a = static_cast<uint8_t>(255 * std::clamp(stateTimer_ / 0.55f, 0.0f, 1.0f));
+        if (state_ == EnemyState::TeleportIn) tint.a = static_cast<uint8_t>(255 * (1.0f - std::clamp(stateTimer_ / 0.4f, 0.0f, 1.0f)));
+        if (warded_) tint.a = static_cast<uint8_t>(tint.a * (0.45f + 0.1f * dmath::sin(ctx.time * 3.0f)));
+        renderAltarFx(ctx);
+    }
     ctx.r.drawWorldTexture(tex, &src, dst, tint, BlendMode::Alpha, flip);
+    if (warded_ && state_ != EnemyState::Dead)
+        ctx.r.drawWorldTexture(tex, &src, dst, Color{150, 235, 255, static_cast<uint8_t>(50 + 30 * dmath::sin(ctx.time * 5.0f))}, BlendMode::Additive,
+                               flip);
     // Hurt flash and telegraph pulse (additive overlays of the same frame)
     if (hurtFlash_ > 0.0f)
         ctx.r.drawWorldTexture(tex, &src, dst, Color{255, 255, 255, static_cast<uint8_t>(hurtFlash_ / 0.14f * 220)},
@@ -776,6 +806,10 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     }
     if (attack_->isPhoenixType()) {
         renderPhoenix(ctx, std::clamp(prog, 0.0f, 1.0f));
+        return;
+    }
+    if (attack_->isLicheType()) {
+        renderLiche(ctx, std::clamp(prog, 0.0f, 1.0f));
         return;
     }
     switch (attack_->type) {

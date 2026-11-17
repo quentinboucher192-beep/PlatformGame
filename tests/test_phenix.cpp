@@ -336,11 +336,11 @@ TEST_CASE("phenix: its sheets are anchored at the tips of its plumes (nothing dr
     CHECK_NEAR(phenix().size.y, 120.0, 1e-6);
 }
 
-TEST_CASE("phenix: « Le Nid de Cendres », the last level of Les Confins, the fight alone") {
+TEST_CASE("phenix: « Le Nid de Cendres », the fourth level of Les Confins, the fight alone") {
     const PlanetData* confins = content().planet("confins");
     REQUIRE(confins != nullptr);
-    REQUIRE(!confins->levels.empty());
-    CHECK(confins->levels.back() == "confins_04");
+    REQUIRE(confins->levels.size() >= 4);
+    CHECK(confins->levels[3] == "confins_04");  // 2.57: « La Crypte des Noms » after it
     auto level = content().loadLevel("confins_04");
     REQUIRE(level.has_value());
     CHECK(level->name == "Le Nid de Cendres");

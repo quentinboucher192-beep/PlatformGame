@@ -80,6 +80,17 @@ void BossHazards::addCrack(const Crack& c) {
     cracks_.push_back(c);
 }
 
+void BossHazards::addRune(const Rune& r) {
+    // Two dozen at most per enemy: the oldest goes first.
+    if (runeCount(r.owner) >= 24)
+        for (auto it = runes_.begin(); it != runes_.end(); ++it)
+            if (it->owner == r.owner) {
+                runes_.erase(it);
+                break;
+            }
+    runes_.push_back(r);
+}
+
 void BossHazards::addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds) {
     for (auto& i : ice_)
         if (i.owner == owner) {
@@ -171,6 +182,7 @@ void BossHazards::removeOwner(GameWorld& w, uint32_t owner) {
     floods_.erase(std::remove_if(floods_.begin(), floods_.end(), [&](const Flood& f) { return f.owner == owner; }), floods_.end());
     clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [&](const Cloud& c) { return c.owner == owner; }), clouds_.end());
     cracks_.erase(std::remove_if(cracks_.begin(), cracks_.end(), [&](const Crack& c) { return c.owner == owner; }), cracks_.end());
+    runes_.erase(std::remove_if(runes_.begin(), runes_.end(), [&](const Rune& r) { return r.owner == owner; }), runes_.end());
 }
 
 void BossHazards::clear(GameWorld& w) {
@@ -183,6 +195,7 @@ void BossHazards::clear(GameWorld& w) {
     clouds_.clear();
     winds_.clear();
     cracks_.clear();
+    runes_.clear();
 }
 
 bool BossHazards::hasIce(uint32_t owner) const {
@@ -202,6 +215,9 @@ int BossHazards::cloudCount(uint32_t owner) const {
 }
 int BossHazards::crackCount(uint32_t owner) const {
     return static_cast<int>(std::count_if(cracks_.begin(), cracks_.end(), [&](const Crack& c) { return c.owner == owner; }));
+}
+int BossHazards::runeCount(uint32_t owner) const {
+    return static_cast<int>(std::count_if(runes_.begin(), runes_.end(), [&](const Rune& r) { return r.owner == owner; }));
 }
 
 // ================================================================= stepping
@@ -370,6 +386,32 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         if (w.damagePlayer(dmg)) c.hit = true;
     }
     cracks_.erase(std::remove_if(cracks_.begin(), cracks_.end(), [](const Crack& c) { return c.done(); }), cracks_.end());
+
+    // 2.57, the Liche's runes: armed, Nova's feet make one burst; at their end they all burst.
+    for (Rune& r : runes_) {
+        r.age += dt;
+        if (r.bursting()) {
+            r.burstAge += dt;
+        } else {
+            const bool stepped = exposed && r.armed() && r.pad().intersects(p.box);
+            if (stepped || r.age >= r.arm + r.time) {
+                r.burstAge = 0.0f;
+                w.particles().emit("eruption_fire", r.at, 1.0f, {}, &r.color);
+                w.particles().emit("rune_glow", r.at + Vec2{0.0f, -10.0f}, 2.0f, {}, &r.color);
+                w.playSound("sounds/root_burst.wav", r.at, 0.55f, 1.35f);
+                w.shake(0.08f);
+            }
+        }
+        if (!exposed || r.hit || r.damage <= 0.0f || !r.bursting() || r.burstAge > Rune::kBurst) continue;
+        if (!r.pillar().intersects(p.box)) continue;
+        DamageInfo dmg;
+        dmg.amount = r.damage;
+        dmg.type = DamageType::Contact;
+        dmg.source = {r.at.x, r.at.y + 14.0f};  // from under her: thrown up
+        dmg.knockback = r.knockback;
+        if (w.damagePlayer(dmg)) r.hit = true;
+    }
+    runes_.erase(std::remove_if(runes_.begin(), runes_.end(), [](const Rune& r) { return r.done(); }), runes_.end());
 }
 
 void BossHazards::bendShot(Projectile& p, float dt) const {
@@ -457,6 +499,49 @@ void drawTentacle(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& v
     const Vec2 tip = at(n, rad);
     ctx.r.drawWorldGlow(tip, 9.0f, wl.color.withAlpha(160));
     ctx.lights.add(vis.center(), 60.0f, wl.color.withAlpha(200));
+}
+
+/// A wall of bones (2.57, the Liche's « Murs d'os »): bones stacked crosswise, a skull every so
+/// often, ribs curling out of its sides, the soul fire of the phase glowing between them. Display
+/// only (time-driven).
+void drawBoneWall(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& vis, float t) {
+    if (vis.h < 1.0f) return;
+    const Color soul = wl.color;
+    const float line = std::max(1.0f, 0.9f * ctx.r.view().scale);
+    const float cx = vis.center().x;
+    ctx.r.drawWorldGlow(vis.center(), std::max(vis.w * 2.0f, vis.h * 0.5f), soul.withAlpha(60));
+    ctx.r.fillWorldRect({cx - vis.w * 0.35f, vis.y, vis.w * 0.7f, vis.h}, Color{40, 34, 30, 255});
+    int k = 0;
+    for (float y = vis.bottom() - 4.0f; y > vis.y + 2.0f; y -= 9.0f, ++k) {
+        // A bone across the stack (alternating slants), its two knobs.
+        const float slant = (k % 2 ? 1.0f : -1.0f) * 3.0f;
+        const Vec2 a{cx - vis.w * 0.75f, y + slant}, b{cx + vis.w * 0.75f, y - slant};
+        ctx.r.drawWorldLine(a, b, Color{120, 108, 86, 255}, line * 3.2f);
+        ctx.r.drawWorldLine(a, b, Color{226, 214, 184, 255}, line * 1.8f);
+        for (const Vec2& e : {a, b}) ctx.r.fillWorldCircle(e, 2.4f, Color{214, 202, 172, 255});
+        if (k % 4 == 2) {
+            // A skull wedged in the stack, its eyes burning with the phase.
+            const Vec2 sk{cx + (k % 8 == 2 ? -1.5f : 1.5f), y - 4.0f};
+            ctx.r.fillWorldCircle(sk, 4.6f, Color{232, 222, 196, 255});
+            ctx.r.fillWorldRect({sk.x - 2.6f, sk.y + 2.0f, 5.2f, 3.2f}, Color{232, 222, 196, 255});
+            const float flick = 0.7f + 0.3f * dmath::sin(t * 9.0f + y);
+            ctx.r.fillWorldCircle(sk + Vec2{-1.7f, -0.3f}, 1.2f, soul.withAlpha(static_cast<uint8_t>(255 * flick)));
+            ctx.r.fillWorldCircle(sk + Vec2{1.7f, -0.3f}, 1.2f, soul.withAlpha(static_cast<uint8_t>(255 * flick)));
+        }
+        if (k % 3 == 1) {
+            // A rib curling out of the side it faces (the cage's inside).
+            const float dir = wl.side >= 0.0f ? 1.0f : -1.0f;
+            const Vec2 r0{cx + dir * vis.w * 0.4f, y}, r1{cx + dir * vis.w * 1.1f, y - 5.0f}, r2{cx + dir * vis.w * 1.3f, y - 11.0f};
+            ctx.r.drawWorldLine(r0, r1, Color{220, 208, 178, 255}, line * 1.4f);
+            ctx.r.drawWorldLine(r1, r2, Color{220, 208, 178, 255}, line * 1.1f);
+        }
+    }
+    // Soul fire seeping between the bones.
+    for (int i = 0; i < 3; ++i) {
+        const float ph = std::fmod(t * 0.8f + static_cast<float>(i) / 3.0f, 1.0f);
+        ctx.r.drawWorldGlow({cx, vis.bottom() - ph * vis.h}, 5.0f, soul.withAlpha(static_cast<uint8_t>(180 * (1.0f - ph))));
+    }
+    ctx.lights.add(vis.center(), 70.0f, soul);
 }
 
 /// A column of sunlight (2.56, the Phénix's « Colonnes solaires »): first a thread of light from
@@ -601,6 +686,10 @@ void BossHazards::render(RenderContext& ctx) const {
         Rect vis{r.x, r.bottom() - h, r.w, h};
         if (wl.look == "tentacle") {
             drawTentacle(ctx, wl, vis, t);
+            continue;
+        }
+        if (wl.look == "bone") {  // 2.57: the Liche's walls of bones
+            drawBoneWall(ctx, wl, vis, t);
             continue;
         }
         const bool star = wl.look == "star";
@@ -769,6 +858,69 @@ void BossHazards::render(RenderContext& ctx) const {
                                 BlendMode::Additive);
         }
         ctx.lights.add(c.at + Vec2{0.0f, -top * 0.5f}, 70.0f, col);
+    }
+
+    // 2.57, the Liche's runes: a circle traced on the ground (seen slantwise), faint while it is
+    // being traced, bright once armed, flickering before its end; its burst, a pillar of soul fire.
+    for (const Rune& r : runes_) {
+        const Color col = r.color;
+        const float line = std::max(1.0f, 1.6f * px * ctx.r.view().scale);
+        if (r.bursting()) {
+            const float e = r.burstAge;
+            const float up = std::clamp(e / 0.05f, 0.0f, 1.0f) * (1.0f - std::clamp((e - Rune::kBurst) / 0.25f, 0.0f, 1.0f));
+            if (up <= 0.0f) continue;
+            const Rect pil = r.pillar();
+            ctx.r.fillWorldRect(pil.expanded(4.0f), col.withAlpha(static_cast<uint8_t>(60 * up)), BlendMode::Additive);
+            ctx.r.fillWorldRect(pil, col.withAlpha(static_cast<uint8_t>(170 * up)), BlendMode::Additive);
+            ctx.r.fillWorldRect(Rect::fromCenter(pil.center(), {pil.w * 0.35f, pil.h}), Color{240, 255, 236, static_cast<uint8_t>(210 * up)},
+                                BlendMode::Additive);
+            for (int i = 0; i < 4; ++i) {
+                const float ph = std::fmod(t * 2.6f + static_cast<float>(i) * 0.25f, 1.0f);
+                const float y = pil.bottom() - ph * pil.h;
+                const float xo = dmath::sin(t * 9.0f + static_cast<float>(i) * 1.7f) * pil.w * 0.3f;
+                ctx.r.drawWorldGlow({pil.center().x + xo, y}, 5.0f + 4.0f * (1.0f - ph), col.withAlpha(static_cast<uint8_t>(200 * up * (1.0f - ph))));
+            }
+            ctx.r.drawWorldGlow(r.at + Vec2{0.0f, -4.0f}, r.half * 2.0f, col.withAlpha(static_cast<uint8_t>(200 * up)));
+            ctx.lights.add(r.at + Vec2{0.0f, -r.height * 0.5f}, 90.0f, col.withAlpha(static_cast<uint8_t>(255 * up)));
+            continue;
+        }
+        const float k = r.arm > 0.0f ? std::clamp(r.age / r.arm, 0.0f, 1.0f) : 1.0f;
+        float a = 0.25f + 0.55f * k;
+        const float left = r.arm + r.time - r.age;
+        if (r.armed()) {
+            a = 0.8f + 0.2f * dmath::sin(t * 6.0f + r.at.x * 0.05f);
+            if (left < Rune::kWarn) a = (static_cast<int>(t * 18.0f) % 2) ? 1.0f : 0.35f;  // about to burst
+        }
+        const Color c = col.withAlpha(static_cast<uint8_t>(255 * a));
+        // The circle (an ellipse on the ground) traced as it is drawn: more of it as it arms.
+        const float rx = r.half, ry = std::max(3.0f, r.half * 0.3f);
+        const Vec2 o = r.at + Vec2{0.0f, -ry * 0.6f};
+        constexpr int kSeg = 20;
+        const int shown = r.armed() ? kSeg : std::max(2, static_cast<int>(static_cast<float>(kSeg) * k));
+        for (int i = 0; i < shown; ++i) {
+            const float a0 = 6.2831853f * static_cast<float>(i) / kSeg + static_cast<float>(r.glyph);
+            const float a1 = 6.2831853f * static_cast<float>(i + 1) / kSeg + static_cast<float>(r.glyph);
+            ctx.r.drawWorldLine(o + Vec2{dmath::cos(a0) * rx, dmath::sin(a0) * ry}, o + Vec2{dmath::cos(a1) * rx, dmath::sin(a1) * ry}, c, line,
+                                BlendMode::Additive);
+        }
+        // Its signs: three strokes across it, different from one rune to the next.
+        for (int j = 0; j < 3 && r.armed(); ++j) {
+            const float u = static_cast<float>((r.glyph * 7 + j * 3) % 5) / 4.0f - 0.5f;
+            const Vec2 p0 = o + Vec2{(u - 0.25f) * rx, -ry * 0.4f + static_cast<float>(j) * ry * 0.4f};
+            const Vec2 p1 = o + Vec2{(u + 0.25f) * rx, ry * 0.3f - static_cast<float>(j) * ry * 0.2f};
+            ctx.r.drawWorldLine(p0, p1, c, line, BlendMode::Additive);
+        }
+        ctx.r.drawWorldGlow(o, r.half * (0.8f + 0.5f * a), col.withAlpha(static_cast<uint8_t>(30 + 90 * a)));
+        if (r.armed()) {
+            // Wisps rising from it, faster as it is about to burst.
+            const float speed = left < Rune::kWarn ? 3.0f : 1.2f;
+            for (int i = 0; i < 2; ++i) {
+                const float ph = std::fmod(t * speed + static_cast<float>(i) * 0.5f + r.at.x * 0.013f, 1.0f);
+                ctx.r.drawWorldGlow(o + Vec2{(static_cast<float>(i) - 0.5f) * rx * 0.8f, -ph * 22.0f}, 3.0f,
+                                    col.withAlpha(static_cast<uint8_t>(160 * (1.0f - ph))));
+            }
+            ctx.lights.add(o, 45.0f, col);
+        }
     }
 
     // Pulls: a black hole (well) or air rushing in (vortex).

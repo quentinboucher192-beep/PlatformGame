@@ -15,6 +15,7 @@ std::map<std::string, EntityFactory::Creator>& EntityFactory::registry() {
     static std::map<std::string, Creator> r = {
         {"moving_platform", make<MovingPlatformEntity>()},
         {"crumble_platform", make<CrumblePlatformEntity>()},
+        {"altar", make<AltarEntity>()},  // 2.57: the Liche's crypt
         {"power_gate", make<PowerGateEntity>()},
         {"bounce_pad", make<BouncePadEntity>()},
         {"ladder", make<LadderEntity>()},

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "engine/core/DetMath.h"
 #include "engine/rendering/Renderer.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
@@ -109,6 +110,15 @@ void Player::applySlow(float multiplier, float seconds) {
     slowMultiplier_ = std::clamp(multiplier, 0.2f, 1.0f);
     slowTimer_ = std::max(slowTimer_, seconds);
 }
+
+void Player::applyCurse(float heightRatio, float seconds) {
+    if (seconds <= 0.0f) return;
+    const float r = std::clamp(heightRatio, 0.3f, 1.0f);
+    curseRatio_ = curseTimer_ > 0.0f ? std::min(curseRatio_, r) : r;
+    curseTimer_ = std::max(curseTimer_, seconds);
+}
+
+float Player::curseSpeed() const { return curseTimer_ > 0.0f ? std::sqrt(curseRatio_) : 1.0f; }
 
 bool Player::hasPower(const std::string& id) const {
     for (const auto& p : powers_)
@@ -393,6 +403,35 @@ void Player::render(RenderContext& ctx) const {
     if (state_ != PlayerState::Dead) {
         ctx.lights.add(f + Vec2{facing * 2.0f, -16.0f}, 46.0f, {57, 240, 216, 255});
         ctx.lights.add(f + Vec2{0.0f, -12.0f}, 90.0f, {90, 110, 140, 255});
+    }
+    if (curseTimer_ > 0.0f && state_ != PlayerState::Dead) {
+        // 2.57, the Liche's « Maléfice »: a ring of violet runes turns around her, a shackle of soul
+        // fire weighs on her feet, and an arc shows the time the curse has left. Display only.
+        const float s = ctx.r.view().scale / 3.0f;
+        const float fade = std::clamp(curseTimer_ / 0.4f, 0.0f, 1.0f);
+        const float pulse = 0.5f + 0.5f * dmath::sin(ctx.time * 7.0f);
+        const Color hex{196, 128, 255, static_cast<uint8_t>((150 + 80 * pulse) * fade)};
+        const Vec2 mid = f + Vec2{0.0f, -11.0f};
+        ctx.r.drawWorldGlow(mid, 20.0f + 3.0f * pulse, Color{150, 70, 230, static_cast<uint8_t>(70 * fade)});
+        for (int k = 0; k < 6; ++k) {
+            const float a = ctx.time * 2.4f + static_cast<float>(k) * 1.0471976f;
+            const Vec2 p = mid + Vec2{dmath::cos(a) * 14.0f, dmath::sin(a) * 5.0f};
+            ctx.r.fillWorldRect(Rect::fromCenter(p, {3.0f, 3.0f}), hex, BlendMode::Additive);
+        }
+        ctx.r.drawWorldLine(f + Vec2{-7.0f, -1.0f}, f + Vec2{7.0f, -1.0f}, hex, std::max(1.0f, 1.6f * s), BlendMode::Additive);
+        ctx.r.drawWorldCircle(f + Vec2{-7.0f, -1.5f}, 2.0f, hex, std::max(1.0f, s));
+        ctx.r.drawWorldCircle(f + Vec2{7.0f, -1.5f}, 2.0f, hex, std::max(1.0f, s));
+        // The time left: an arc over her head that shrinks.
+        const float left = std::clamp(curseTimer_ / 5.0f, 0.0f, 1.0f);
+        const Vec2 top = f + Vec2{0.0f, -30.0f};
+        const int seg = std::max(1, static_cast<int>(16.0f * left));
+        for (int k = 0; k < seg; ++k) {
+            const float a0 = -1.5707963f - 3.1415927f * left + 6.2831853f * left * static_cast<float>(k) / static_cast<float>(seg);
+            const float a1 = -1.5707963f - 3.1415927f * left + 6.2831853f * left * static_cast<float>(k + 1) / static_cast<float>(seg);
+            ctx.r.drawWorldLine(top + Vec2{dmath::cos(a0), dmath::sin(a0)} * 4.0f, top + Vec2{dmath::cos(a1), dmath::sin(a1)} * 4.0f, hex,
+                                std::max(1.0f, 1.2f * s), BlendMode::Additive);
+        }
+        ctx.lights.add(mid, 50.0f, Color{170, 90, 255, 255});
     }
     for (const auto& p : powers_) p->render(*this, ctx);
 }

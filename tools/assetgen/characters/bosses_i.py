@@ -1,6 +1,6 @@
 """BOSSES-I entry point (called from boss.py `build()`): the lich giga boss.
 
-  * liche - La Liche des Catacombes   224x224, pivot [112, 184]  (boss_i_liche.py)
+  * liche - La Liche des Catacombes   224x224, pivot [112, 218]  (boss_i_liche.py)
 
 Eight sheets, one per phase (sprites/enemies/liche.png for phase 1, liche_p2..p8.png): the same
 clips, the soul fire (eyes, phylactery, runes, gems, spells, wisps) recoloured per phase
