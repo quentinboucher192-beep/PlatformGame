@@ -160,7 +160,7 @@ public:
             // around the thumbnail (4 of the 6 pixels above the name), and its tooltip.
             if (exclusiveItem(it)) {
                 drawExclusiveAura(ui, thumb, ui.s(8), ui.s(4));
-                tip_.offer(ui, c, hovered, ui.focused("tile" + std::to_string(i)), it.name, exclusiveText(g_, it));
+                if (ExclusiveTip::wanted(ui, hovered, ui.focused("tile" + std::to_string(i)))) tip_.offer(c, it.name, exclusiveText(g_, it));
             }
             r.fillRoundedRect(thumb, ui.s(8), Color{11, 18, 38, 255});
             drawThumb(it, thumb);

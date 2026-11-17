@@ -430,7 +430,7 @@ private:
             // around the thumbnail (5 of the 8 pixels above the name), and its tooltip.
             if (exclusiveItem(it)) {
                 drawExclusiveAura(ui, thumb, ui.s(8), ui.s(5));
-                exclusiveTip_.offer(ui, c, hovered, ui.focused("item" + std::to_string(i)), it.name, exclusiveText(g_, it));
+                if (ExclusiveTip::wanted(ui, hovered, ui.focused("item" + std::to_string(i)))) exclusiveTip_.offer(c, it.name, exclusiveText(g_, it));
             }
             drawThumb(it, thumb, unlocked);
             ui.label(ui.elide(it.name, FontFace::Bold, 16, c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(102)}, 16,

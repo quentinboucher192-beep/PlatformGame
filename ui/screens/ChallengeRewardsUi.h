@@ -96,8 +96,11 @@ std::string adminCreationTip(const Json& creation, bool* reserve = nullptr);
 class ExclusiveTip {
 public:
     void clear() { text_.clear(); }
-    /// `tile` shows its tooltip this frame when it is hovered (with the mouse) or focused (otherwise).
-    void offer(UIContext& ui, const Rect& tile, bool hovered, bool focused, const std::string& name, const std::string& text, bool reserve = false);
+    /// Whether a tile shows its tooltip this frame: hovered with the mouse, else focused (the
+    /// callers compute its text only then).
+    static bool wanted(const UIContext& ui, bool hovered, bool focused);
+    /// `tile` shows `text` this frame (once wanted() said so).
+    void offer(const Rect& tile, std::string name, std::string text, bool reserve = false);
     bool active() const { return !text_.empty(); }
     void draw(GameServices& g);
 
@@ -135,7 +138,7 @@ private:
         CosmeticItem item;
         ChallengePrize prize;
         bool won = false;
-        std::string exclusive;  // 2.60: « Exclusif : défi du jour du… » ("" for an item that is not exclusive)
+        bool exclusive = false;  // 2.60: only a reward of the challenges (its aura; its tooltip says this challenge)
     };
     void drawPrizeTooltip(GameServices& g, const Prize& pz);
 
@@ -146,6 +149,7 @@ private:
     std::vector<Prize> prizes_;
     std::string prizeChallenge_;
     int64_t prizeEndsMs_ = 0;
+    std::string prizeKind_, prizePeriod_, prizeDate_;  // 2.60: the challenge of the rewards (« défi du jour du… »)
 };
 
 }  // namespace cosmic

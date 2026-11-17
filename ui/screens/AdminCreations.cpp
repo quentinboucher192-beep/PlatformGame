@@ -735,10 +735,10 @@ void AdminCreations::drawRow(const Json& c, const Rect& row) {
     // 2.60: a creation is exclusive (only a reward of the challenges): the aura in the row's margin
     // around its preview (5 of its 7 pixels), and the tooltip of the row: where it stands.
     drawExclusiveAura(ui, pv, ui.s(8), ui.s(5));
-    {
+    if (ExclusiveTip::wanted(ui, hovered, focused)) {
         bool reserveTip = false;
-        const std::string tip = adminCreationTip(c, &reserveTip);
-        tip_.offer(ui, row, hovered, focused, jstr(c, "name"), tip, reserveTip);
+        std::string tip = adminCreationTip(c, &reserveTip);
+        tip_.offer(row, jstr(c, "name"), std::move(tip), reserveTip);
     }
     r.fillRoundedRect(pv, ui.s(8), Color{11, 18, 38, 255});
     drawRowPreview(c, pv, selected, archived);

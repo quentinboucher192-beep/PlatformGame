@@ -311,9 +311,11 @@ void drawExclusiveAura(UIContext& ui, const Rect& box, float radius, float sprea
                              {box.x + radius, box.bottom() - radius},
                              {box.x + radius, box.y + radius}};
     const float starts[4] = {-kPi / 2, 0, kPi / 2, kPi};
-    std::vector<SDL_Vertex> v;
-    std::vector<int> idx;
-    v.reserve(4 * (kSeg + 1) * 2);
+    // Kept from a call to the next (the interface draws on one thread): no allocation per frame.
+    static std::vector<SDL_Vertex> v;
+    static std::vector<int> idx;
+    v.clear();
+    idx.clear();
     auto vtx = [](Vec2 p, Color col) {
         SDL_Vertex x{};
         x.position = {p.x, p.y};
@@ -401,11 +403,12 @@ std::string adminCreationTip(const Json& c, bool* reserve) {
     return reserveText();
 }
 
-void ExclusiveTip::offer(UIContext& ui, const Rect& tile, bool hovered, bool focused, const std::string& name, const std::string& text, bool reserve) {
-    if (text.empty() || !((ui.usingPointer() && hovered) || (!ui.usingPointer() && focused))) return;
+bool ExclusiveTip::wanted(const UIContext& ui, bool hovered, bool focused) { return ui.usingPointer() ? hovered : focused; }
+
+void ExclusiveTip::offer(const Rect& tile, std::string name, std::string text, bool reserve) {
     tile_ = tile;
-    name_ = name;
-    text_ = text;
+    name_ = std::move(name);
+    text_ = std::move(text);
     reserve_ = reserve;
 }
 
@@ -454,13 +457,16 @@ void ChallengeRewardRow::setPrizes(GameServices& g, const DailyChallenge* c) {
     prizeChallenge_.clear();
     if (!c) return;
     prizeChallenge_ = c->id;
+    prizeKind_ = challengeKindId(c->kind);
+    prizePeriod_ = c->period;
+    prizeDate_ = c->date;
     prizeEndsMs_ = c->endsAtMs;
     const WonRewards& won = g.challenges.wonRewards();
     for (const ChallengePrize& p : c->prizes)
         if (auto look = prizeLook(g, p)) {
             // 2.60: exclusive (a creation of the server, a reward of the challenges of the catalogue): this challenge, its condition.
-            std::string ex = exclusiveItem(*look) ? exclusiveOriginText(challengeKindId(c->kind), c->period, c->date, p.condition, p.value) : std::string();
-            prizes_.push_back({std::move(*look), p, won.wonAt(c->id, p.ref), std::move(ex)});
+            const bool ex = exclusiveItem(*look);
+            prizes_.push_back({std::move(*look), p, won.wonAt(c->id, p.ref), ex});
         }
 }
 
@@ -503,7 +509,7 @@ const CosmeticItem* ChallengeRewardRow::draw(GameServices& g, const std::string&
         const Color tc = prizeColor(pz.prize);
         r.fillRoundedRect(tile, ui.s(9), pz.won ? Color{14, 34, 30, 245} : Color{11, 18, 38, 245});
         // 2.60: an exclusive item's aura, between its preview and the tile's border (inside the tile).
-        if (!pz.exclusive.empty()) drawExclusiveAura(ui, tile.expanded(-ui.s(5)), ui.s(6), ui.s(4));
+        if (pz.exclusive) drawExclusiveAura(ui, tile.expanded(-ui.s(5)), ui.s(6), ui.s(4));
         drawCosmeticPreview(g, pz.item, tile.expanded(-ui.s(5)), ui.time(), pz.won || pz.prize.serverMade());
         Color border = focused || hovered ? ui.theme().accent : pz.won ? kGreen.withAlpha(210) : tc.withAlphaF(0.75f);
         r.drawRoundedRect(tile, ui.s(9), border, std::max(1.0f, ui.s(focused || hovered ? 2.2f : 1.4f)));
@@ -689,7 +695,8 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     const float fsName = 19, fsSub = fz(ui, 14), fsCond = fz(ui, 16), fsNote = fz(ui, 13.5f), fsState = fz(ui, 15.5f), fsHint = fz(ui, 13.5f);
     // 2.60: an exclusive item: « Exclusif : défi du jour du 10/11/2026 · Or atteint ».
     const float fsExcl = fz(ui, 14.5f);
-    const float exclH = pz.exclusive.empty() ? 0.0f : ui.text().measureWrapped(pz.exclusive, FontFace::Body, ui.s(fsExcl), inner).y + ui.s(6);
+    const std::string excl = pz.exclusive ? exclusiveOriginText(prizeKind_, prizePeriod_, prizeDate_, pz.prize.condition, pz.prize.value) : std::string();
+    const float exclH = excl.empty() ? 0.0f : ui.text().measureWrapped(excl, FontFace::Body, ui.s(fsExcl), inner).y + ui.s(6);
     const float condH = ui.text().measureWrapped(cond, FontFace::Body, ui.s(fsCond), inner).y;
     const float noteH = ui.text().measureWrapped(note, FontFace::Body, ui.s(fsNote), inner).y;
     const float stateH = ui.text().measureWrapped(state, FontFace::Bold, ui.s(fsState), inner).y;
@@ -710,9 +717,9 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     y += ui.s(26);
     ui.label(ui.elide(sub, FontFace::Body, fsSub, inner), {x, y + ui.s(11)}, fsSub, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
     y += ui.s(22);
-    if (!pz.exclusive.empty()) {
+    if (!excl.empty()) {
         y += ui.s(6);
-        ui.labelWrapped(pz.exclusive, {x, y}, inner, fsExcl, exclusiveColor());
+        ui.labelWrapped(excl, {x, y}, inner, fsExcl, exclusiveColor());
         y += exclH - ui.s(6);
     }
     y += ui.s(10);

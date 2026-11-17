@@ -1634,7 +1634,8 @@ bool AdminCalendar::drawPrizeRow(const Period& per, size_t i, const Rect& row, b
         bool hovered = false;
         const std::string tipId = "pri" + std::to_string(i);
         ui.hotspot(tipId, icon, &hovered);
-        tip_.offer(ui, icon, hovered, ui.focused(tipId), look->name, exclusiveOriginText(per.kind, per.period, per.date, p.condition, p.value));
+        if (ExclusiveTip::wanted(ui, hovered, ui.focused(tipId)))
+            tip_.offer(icon, look->name, exclusiveOriginText(per.kind, per.period, per.date, p.condition, p.value));
     }
     r.fillRoundedRect(icon, ui.s(8), Color{11, 18, 38, 255});
     r.drawRoundedRect(icon, ui.s(8), Color{57, 70, 100, 200}, std::max(1.0f, ui.s(1.0f)));
@@ -1932,11 +1933,13 @@ void AdminCalendar::drawItemPicker() {
         // condition of a reward of the challenges of the catalogue.
         if (exclusiveItem(it)) {
             drawExclusiveAura(ui, pv, ui.s(6), ui.s(5));
-            bool reserve = false;
-            std::string tip = "Exclusif aux défis";
-            if (const Json* c = it.serverSuit() || it.serverLook() ? creationByRef(it.id) : nullptr) tip = adminCreationTip(*c, &reserve);
-            else if (it.challengeReward()) tip = exclusiveText(g_, it);
-            tip_.offer(ui, t, hovered, focused, it.name, tip, reserve);
+            if (ExclusiveTip::wanted(ui, hovered, focused)) {
+                bool reserve = false;
+                std::string tip = "Exclusif aux défis";
+                if (const Json* c = it.serverSuit() || it.serverLook() ? creationByRef(it.id) : nullptr) tip = adminCreationTip(*c, &reserve);
+                else if (it.challengeReward()) tip = exclusiveText(g_, it);
+                tip_.offer(t, it.name, std::move(tip), reserve);
+            }
         }
         drawCosmeticPreview(g_, it, pv, ui.time(), !taken);
         const std::string label = taken ? "déjà dans la liste" : it.serverTitle() ? "créé par un admin" : it.name;
