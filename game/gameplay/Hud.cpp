@@ -8,9 +8,11 @@
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/BossBadge.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/HudFade.h"
 #include "game/gameplay/entities/Entities.h"
 #include "game/powers/Powers.h"
 #include "game/records/Records.h"
+#include "engine/resources/ResourceManager.h"
 #include "saves/Settings.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/widgets/UIContext.h"
@@ -53,6 +55,8 @@ void Hud::update(GameWorld& w, float dt) {
     }
     if (Enemy* b = w.activeBoss()) bossBarDelayed_ = approach(bossBarDelayed_, b->hpRatio(), dt * 0.35f);
     else bossBarDelayed_ = 1.0f;
+    // 2.60: each block toward its opacity (faded while something important is under it).
+    for (size_t i = 0; i < fade_.size(); ++i) fade_[i] = HudFade::step(fade_[i], covered_[i], dt);
 
     // Countdown warnings during the last 10 seconds.
     const LevelTimer& t = w.timer();
@@ -66,9 +70,82 @@ void Hud::update(GameWorld& w, float dt) {
     }
 }
 
+namespace {
+/// Where an animated sprite shows on screen: the visible pixels of the frame drawn now.
+Rect spriteOnScreen(ResourceManager& res, const Animator& a, Vec2 feet, bool flip, float scale, const WorldView& view) {
+    const AnimationSetPtr& set = a.set();
+    if (!set) return {};
+    const Rect src = a.sourceRect();
+    const Rect seen = res.visibleBox(*set, src);
+    const Vec2 frame{static_cast<float>(set->frameWidth), static_cast<float>(set->frameHeight)};
+    return view.toScreen(HudFade::visiblePart(a.destRect(feet, flip, scale), frame, seen, flip));
+}
+}  // namespace
+
+Rect Hud::novaOnScreen(GameWorld& w, const WorldView& view) {
+    const Player& p = w.player();
+    if (p.state() == PlayerState::Hidden) return {};
+    return spriteOnScreen(w.resources(), p.anim, p.box.bottomCenter(), p.facing < 0.0f, 1.0f, view);
+}
+
+Rect Hud::bossOnScreen(GameWorld& w, const WorldView& view) {
+    const Enemy* b = w.activeBoss();
+    if (!b || !b->alive() || b->dormant()) return {};
+    return spriteOnScreen(w.resources(), b->animator(), b->box.bottomCenter(), b->facing < 0.0f, b->def().scale, view);
+}
+
+void Hud::warmUp(GameWorld& w) {
+    // The sheets are read once (a few milliseconds each): while the level loads, not in the fight.
+    ResourceManager& res = w.resources();
+    auto read = [&](const AnimationSetPtr& set) {
+        if (set && !set->clips.empty()) res.visibleBox(*set, set->frameRect(set->clips.begin()->second, 0));
+    };
+    read(w.player().anim.set());
+    for (const auto& o : w.level().objects) {
+        if (o.type != "enemy" || !o.prop<bool>("boss", false)) continue;
+        const EnemyDefinition* def = w.enemyDefinition(o.propStr("enemy"));
+        if (!def) continue;
+        if (!def->assetRoot.empty()) res.pushMount(def->assetRoot);
+        read(res.animation(def->animation));
+        if (!def->assetRoot.empty()) res.popMount();
+    }
+}
+
+CoverageProbe* Hud::threatProbe(const GameWorld& w, const GameplaySettings& s) {
+    probeArmed_ = false;
+    const Enemy* b = w.activeBoss();
+    if (!s.fadeHud || !fadeAllowed_ || !b || !b->alive()) return nullptr;
+    std::vector<Rect> zones(drawn_.begin(), drawn_.end());
+    zones[static_cast<size_t>(HudElement::Boss)] = {};  // the boss's bar gives way to Nova only
+    probe_.watch(zones);
+    probeArmed_ = true;
+    return &probe_;
+}
+
+template <class F>
+void Hud::drawBlock(UIContext& ui, int block, F&& draw) {
+    DrawGroup group(ui.r(), fade_[static_cast<size_t>(block)]);
+    draw();
+    drawn_[static_cast<size_t>(block)] = group.area();
+}
+
 void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const LevelRecord* record,
                  const GameplaySettings& settings) {
     bool cinematic = w.cinematic().active() || w.state() == WorldState::Intro || w.state() == WorldState::Outro;
+    {
+        // 2.60: what is under each block, where it was drawn the last frame: Nova, the boss, an
+        // attack of the boss (the probe armed before the world was drawn). update() fades them.
+        const bool fading = settings.fadeHud && fadeAllowed_ && !cinematic;
+        const Rect nova = fading ? novaOnScreen(w, view) : Rect{};
+        const Rect boss = fading ? bossOnScreen(w, view) : Rect{};
+        for (int i = 0; i < kFadeBlocks; ++i) {
+            const bool attack = probeArmed_ && probe_.touched(static_cast<size_t>(i));
+            covered_[static_cast<size_t>(i)] =
+                fading && HudFade::covered(drawn_[static_cast<size_t>(i)], nova, boss, attack, i == static_cast<int>(HudElement::Boss));
+        }
+        probeArmed_ = false;
+        drawn_.fill(Rect{});
+    }
     if (float slow = w.timeSlowRemaining(); slow > 0.0f && !cinematic) {
         // Time slow: violet veil on the edges, and the seconds left under the energy bar.
         float k = std::min(1.0f, slow / 0.4f);
@@ -80,32 +157,33 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
     }
     if (!cinematic) {
         auto at = [&](HudElement e) { return place(ui, w, settings, e); };
+        auto id = [](HudElement e) { return static_cast<int>(e); };
         if (hudVisible(settings, HudElement::Vitals)) {
             Place p = at(HudElement::Vitals);
-            drawVitals(ui, w, p.o, p.k);
+            drawBlock(ui, id(HudElement::Vitals), [&] { drawVitals(ui, w, p.o, p.k); });
         }
         if (hudVisible(settings, HudElement::Powers)) {
             Place p = at(HudElement::Powers);
-            drawPowers(ui, w, p.o, p.k);
+            drawBlock(ui, id(HudElement::Powers), [&] { drawPowers(ui, w, p.o, p.k); });
         }
         if (hudVisible(settings, HudElement::Timer)) {
             Place p = at(HudElement::Timer);
-            drawTimer(ui, w, record, p.o, p.k);
+            drawBlock(ui, id(HudElement::Timer), [&] { drawTimer(ui, w, record, p.o, p.k); });
         }
         if (hudVisible(settings, HudElement::Collectibles)) {
             Place p = at(HudElement::Collectibles);
-            drawCollectibles(ui, w, p.o, p.k);
+            drawBlock(ui, id(HudElement::Collectibles), [&] { drawCollectibles(ui, w, p.o, p.k); });
         }
         if (hudVisible(settings, HudElement::Boss)) {
             Place p = at(HudElement::Boss);
-            drawBoss(ui, w, p.o, p.k);
+            drawBlock(ui, id(HudElement::Boss), [&] { drawBoss(ui, w, p.o, p.k); });
         }
         if (hudVisible(settings, HudElement::Progress)) {
             Place p = at(HudElement::Progress);
-            drawProgress(ui, w, p.o, p.k, p.width);
+            drawBlock(ui, id(HudElement::Progress), [&] { drawProgress(ui, w, p.o, p.k, p.width); });
         }
-        if (hudVisible(settings, HudElement::Enemies)) drawEnemies(ui, w, at(HudElement::Enemies));
-        drawStatus(ui, w, settings);
+        if (hudVisible(settings, HudElement::Enemies)) drawBlock(ui, id(HudElement::Enemies), [&] { drawEnemies(ui, w, at(HudElement::Enemies)); });
+        drawBlock(ui, kStatusBlock, [&] { drawStatus(ui, w, settings); });
         if (settings.showInputHints) drawInteractPrompt(ui, w, view);
     }
     if (messagesVisible(settings)) drawMessages(ui, w);

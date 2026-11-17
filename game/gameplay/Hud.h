@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <vector>
 
 #include "engine/rendering/Renderer.h"
+#include "engine/rendering/ShapeProbe.h"
 #include "game/gameplay/LevelProgress.h"
 #include "saves/HudLayout.h"
 
@@ -53,7 +55,47 @@ public:
         tierFinish_ = finish;
     }
 
+    /// 2.60, « Effacer le HUD quand il cache l'action » (GameplaySettings::fadeHud): a block
+    /// that hides the boss, Nova or an attack of the boss fades (HudFade). The blocks: the
+    /// elements of the HUD (HudElement order), then the status chips (drawStatus). The phase
+    /// announcements and the level's messages never fade; the boss's bar only gives way to Nova.
+    static constexpr int kFadeBlocks = kHudElements + 1;
+    static constexpr int kStatusBlock = kHudElements;
+    /// Before the world is drawn: the probe telling which blocks (where they were drawn the last
+    /// frame) the boss's attacks touch — its projectiles, telegraphs and lasting effects
+    /// (RenderOptions::threats). nullptr when the option is off or no boss is fought. render()
+    /// reads it back.
+    CoverageProbe* threatProbe(const GameWorld& w, const GameplaySettings& s);
+    /// The opacity of a block now (1: not faded).
+    float opacity(HudElement e) const { return fade_[static_cast<size_t>(e)]; }
+    /// Where a block drawn outside render() was drawn this frame (the ghosts' box: Splits).
+    void setDrawn(HudElement e, const Rect& r) { drawn_[static_cast<size_t>(e)] = r; }
+    /// Where each block was drawn the last frame (empty: not drawn).
+    const Rect& drawn(int block) const { return drawn_[static_cast<size_t>(block)]; }
+    /// The HUD editor: its blocks never fade (they are what is being placed).
+    void setFadeAllowed(bool on) { fadeAllowed_ = on; }
+    /// Where Nova and the active boss show on screen: the visible pixels of the frame drawn
+    /// (ResourceManager::visibleBox). Empty when not shown.
+    static Rect novaOnScreen(GameWorld& w, const WorldView& view);
+    static Rect bossOnScreen(GameWorld& w, const WorldView& view);
+    /// Reads the visible boxes of Nova's and the level's bosses' frames before they are needed.
+    static void warmUp(GameWorld& w);
+
 private:
+    std::array<float, kFadeBlocks> fade_ = [] {
+        std::array<float, kFadeBlocks> a{};
+        a.fill(1.0f);
+        return a;
+    }();
+    std::array<bool, kFadeBlocks> covered_{};
+    std::array<Rect, kFadeBlocks> drawn_{};
+    CoverageProbe probe_;
+    bool probeArmed_ = false;
+    bool fadeAllowed_ = true;
+    /// Draws a block at its opacity and keeps where it was drawn.
+    template <class F>
+    void drawBlock(UIContext& ui, int block, F&& draw);
+
     float tierSilver_ = 0.0f, tierGold_ = 0.0f;
     bool tierGoldNoDamage_ = false;
     bool tierFinish_ = false;

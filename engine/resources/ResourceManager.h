@@ -39,6 +39,10 @@ public:
     AnimationSetPtr animation(const std::string& rel);
     /// Drops a cached animation so the next request reloads it (editor changes).
     void invalidateAnimation(const std::string& rel);
+    /// 2.60, display only: the box of the visible pixels of a frame of a sprite sheet (`src`: one
+    /// of its frame rects), in the frame's own pixels. The sheet is read once from its file, then
+    /// kept. Empty when unknown (no file, nothing visible): the caller takes the whole frame.
+    Rect visibleBox(const AnimationSet& set, const Rect& src);
     std::optional<Json> json(const std::string& rel);
     /// Absolute path of a sound to hand to AudioSystem (empty if missing).
     std::string soundPath(const std::string& rel);
@@ -60,6 +64,11 @@ private:
     std::unordered_map<std::string, TexturePtr> textures_;
     std::unordered_map<std::string, AnimationSetPtr> animations_;
     std::unordered_map<std::string, std::string> soundPaths_;
+    struct VisibleCells {
+        int cols = 0;
+        std::vector<Rect> cells;  // row by row, in the frame's pixels
+    };
+    std::unordered_map<std::string, VisibleCells> visibleCells_;
     TexturePtr missing_;
 };
 

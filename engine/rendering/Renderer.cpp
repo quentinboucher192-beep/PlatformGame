@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "engine/core/Log.h"
+#include "engine/rendering/ShapeProbe.h"
 
 namespace cosmic {
 
@@ -116,12 +117,35 @@ Rect Renderer::snap(const Rect& r) const {
     return {x0, y0, x1 - x0, y1 - y0};
 }
 
+void Renderer::listenTexture(const Texture& tex, const Rect& dst, uint8_t alpha, float angleDeg, const Vec2* pivot) {
+    if (!listener_ || alpha < ShapeListener::kMinAlpha) return;
+    if (glow_ && &tex == glow_.get()) {
+        listener_->glow(dst.center(), dst.w * 0.5f);  // a soft light: its core only
+        return;
+    }
+    if (angleDeg == 0.0f) {
+        listener_->rect(dst);
+        return;
+    }
+    // Turned about its pivot (clockwise on screen, as SDL draws it): its four corners.
+    const Vec2 c = pivot ? Vec2{dst.x + pivot->x, dst.y + pivot->y} : dst.center();
+    const float a = angleDeg * kPi / 180.0f, cs = std::cos(a), sn = std::sin(a);
+    auto turn = [&](Vec2 p) {
+        const Vec2 d = p - c;
+        return Vec2{c.x + d.x * cs - d.y * sn, c.y + d.x * sn + d.y * cs};
+    };
+    const Vec2 p0 = turn({dst.x, dst.y}), p1 = turn({dst.right(), dst.y}), p2 = turn({dst.right(), dst.bottom()}), p3 = turn({dst.x, dst.bottom()});
+    listener_->triangle(p0, p1, p2);
+    listener_->triangle(p0, p2, p3);
+}
+
 void Renderer::drawTexture(const Texture& tex, const Rect* src, const Rect& dst, Color tint, BlendMode blend,
                            bool flipX, bool flipY, float angleDeg, const Vec2* pivot) {
     SDL_Texture* t = tex.sdl();
     if (!t) return;
+    listenTexture(tex, dst, tint.a, angleDeg, pivot);
     SDL_SetTextureColorMod(t, tint.r, tint.g, tint.b);
-    SDL_SetTextureAlphaMod(t, tint.a);
+    SDL_SetTextureAlphaMod(t, faded(tint.a));
     SDL_SetTextureBlendMode(t, toSdl(blend));
     SDL_FRect s;
     if (src) s = frect(*src);
@@ -143,8 +167,9 @@ void Renderer::drawNineSlice(const Texture& tex, const Rect& src, float border, 
                              Color tint) {
     SDL_Texture* t = tex.sdl();
     if (!t) return;
+    listenTexture(tex, dst, tint.a, 0.0f, nullptr);
     SDL_SetTextureColorMod(t, tint.r, tint.g, tint.b);
-    SDL_SetTextureAlphaMod(t, tint.a);
+    SDL_SetTextureAlphaMod(t, faded(tint.a));
     SDL_SetTextureBlendMode(t, SDL_BLENDMODE_BLEND);
     SDL_FRect s = frect(src);
     SDL_FRect d = frect(dst);
@@ -153,8 +178,9 @@ void Renderer::drawNineSlice(const Texture& tex, const Rect& src, float border, 
 }
 
 void Renderer::fillRect(const Rect& r, Color c, BlendMode blend) {
+    if (listener_ && c.a >= ShapeListener::kMinAlpha) listener_->rect(r);
     SDL_SetRenderDrawBlendMode(renderer_, toSdl(blend));
-    SDL_SetRenderDrawColor(renderer_, c.r, c.g, c.b, c.a);
+    SDL_SetRenderDrawColor(renderer_, c.r, c.g, c.b, faded(c.a));
     SDL_FRect f = frect(r);
     SDL_RenderFillRect(renderer_, &f);
     ++drawCalls_;
@@ -162,8 +188,9 @@ void Renderer::fillRect(const Rect& r, Color c, BlendMode blend) {
 
 void Renderer::drawRect(const Rect& r, Color c, float t) {
     if (t <= 1.0f) {
+        if (listener_ && c.a >= ShapeListener::kMinAlpha) listener_->rect(r);
         SDL_SetRenderDrawBlendMode(renderer_, SDL_BLENDMODE_BLEND);
-        SDL_SetRenderDrawColor(renderer_, c.r, c.g, c.b, c.a);
+        SDL_SetRenderDrawColor(renderer_, c.r, c.g, c.b, faded(c.a));
         SDL_FRect f = frect(r);
         SDL_RenderRect(renderer_, &f);
         ++drawCalls_;
@@ -178,17 +205,35 @@ void Renderer::drawRect(const Rect& r, Color c, float t) {
 void Renderer::geometry(const std::vector<SDL_Vertex>& verts, const std::vector<int>& idx, BlendMode blend,
                         SDL_Texture* tex) {
     if (verts.empty()) return;
+    if (listener_) {
+        // Each triangle, unless all its corners are too faint to be seen.
+        const float minA = static_cast<float>(ShapeListener::kMinAlpha) / 255.0f;
+        const size_t n = idx.empty() ? verts.size() : idx.size();
+        auto at = [&](size_t i) -> const SDL_Vertex& { return verts[idx.empty() ? i : static_cast<size_t>(idx[i])]; };
+        for (size_t i = 0; i + 2 < n; i += 3) {
+            const SDL_Vertex &a = at(i), &b = at(i + 1), &c = at(i + 2);
+            if (std::max({a.color.a, b.color.a, c.color.a}) < minA) continue;
+            listener_->triangle({a.position.x, a.position.y}, {b.position.x, b.position.y}, {c.position.x, c.position.y});
+        }
+    }
+    const std::vector<SDL_Vertex>* drawn = &verts;
+    if (opacity_ < 1.0f) {
+        fadeVerts_ = verts;
+        for (auto& v : fadeVerts_) v.color.a *= opacity_;
+        drawn = &fadeVerts_;
+    }
     SDL_SetRenderDrawBlendMode(renderer_, toSdl(blend));
     if (tex) SDL_SetTextureBlendMode(tex, toSdl(blend));
-    SDL_RenderGeometry(renderer_, tex, verts.data(), static_cast<int>(verts.size()),
+    SDL_RenderGeometry(renderer_, tex, drawn->data(), static_cast<int>(drawn->size()),
                        idx.empty() ? nullptr : idx.data(), static_cast<int>(idx.size()));
     ++drawCalls_;
 }
 
 void Renderer::drawLine(Vec2 a, Vec2 b, Color c, float thickness, BlendMode blend) {
     if (thickness <= 1.0f) {
+        if (listener_ && c.a >= ShapeListener::kMinAlpha) listener_->segment(a, b);
         SDL_SetRenderDrawBlendMode(renderer_, toSdl(blend));
-        SDL_SetRenderDrawColor(renderer_, c.r, c.g, c.b, c.a);
+        SDL_SetRenderDrawColor(renderer_, c.r, c.g, c.b, faded(c.a));
         SDL_RenderLine(renderer_, a.x, a.y, b.x, b.y);
         ++drawCalls_;
         return;
