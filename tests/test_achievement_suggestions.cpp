@@ -306,6 +306,30 @@ TEST_CASE("pause menu: the column is measured, shrinks on short windows and neve
     CHECK_NEAR(tall.buttonH, 64.0f, 1e-3);
     // More rows never make a shorter panel.
     CHECK(pauseLayout(6, 3, false, 1.0f, 1600.0f).height > pauseLayout(6, 0, false, 1.0f, 1600.0f).height);
+    // A comfortable column keeps a line of description under each name; the tightest does not.
+    CHECK(pauseLayout(6, 5, true, 1.0f, 1600.0f).rowDescription());
+    CHECK_FALSE(pauseLayout(9, 5, true, 0.6667f, 720.0f).rowDescription());
+    // Fewer than five followed: a line says how many places are free.
+    PauseLayout four = pauseLayout(6, 4, false, 1.0f, 1600.0f);
+    CHECK_NEAR(four.sectionHeight(4, false), four.headerH + 4.0f * four.rowH + four.emptyH, 1e-3);
+}
+
+TEST_CASE("pause menu (2.60): under the map, the five places and their descriptions fit with the map") {
+    // With the map on the right, the column keeps only the buttons.
+    PauseLayout col = pauseLayout(9, 5, true, 1.0f, 1080.0f, false);
+    CHECK_NEAR(col.sectionHeight(5, true), 0.0f, 1e-3);
+    CHECK_NEAR(col.height, col.sectionTop(9) + col.footer, 1e-3);
+    // Five achievements on two lines each, the note: the map keeps 160 px, its hint and its
+    // legend on two lines, in a 1080p window (1040 px of panel at most).
+    PauseSideTracked M;
+    const float five = M.height({2, 2, 2, 2, 2}, true);
+    CHECK(96.0f + 160.0f + 40.0f + 52.0f + 22.0f + 24.0f + five <= 1040.0f);
+    // Every place is drawn: a free place takes room too, never more than a followed one.
+    CHECK(M.height({}, false) > M.headerH);
+    CHECK(M.height({1}, false) >= M.height({}, false) - (M.freeH + 8.0f) + M.rowHeight(1) - 1e-3);
+    CHECK(M.freeH + 8.0f <= M.rowHeight(1));
+    // Six rows are never asked; only five places exist.
+    CHECK_NEAR(M.height({1, 1, 1, 1, 1, 1}, false), M.height({1, 1, 1, 1, 1}, false), 1e-3);
 }
 
 TEST_CASE("hud: « Ennemis vaincus » counts the run's kills against the level's enemies, as « Aucun survivant »") {

@@ -129,6 +129,18 @@ PowerKeyMap levelPowerKeys(const LevelData& level, const ContentDatabase& conten
 ResolvedPowerKey levelPowerKey(const std::string& power, const LevelData& level, const ContentDatabase& content, const InputBindings& base,
                                const PowerKeyOverrides* overrides, const std::vector<std::string>& extra = {});
 
+/// 2.60: what makes the keys of two levels « exactly the same » for this player: each key
+/// power of the level with the key and the button it asks for (the player's, else the
+/// level's, else the suggestion), in the order of the power ids. "" for a level without key
+/// powers (nothing to share).
+std::string powerKeySignature(const PowerKeyMap& keys);
+
+/// 2.60: after a change of keys in one level (`fromKeys`, its keys after the change), another
+/// level that had exactly the same keys (`toKeys`, before) follows: each of its powers asks for
+/// the key and the button the first one asks for now. What equals that level's own key is no
+/// choice to keep (as in « Touches de ce niveau »). Returns whether anything changed.
+bool matchPowerKeys(PowerKeyOverrides& overrides, const std::string& toLevelId, const PowerKeyMap& toKeys, const PowerKeyMap& fromKeys);
+
 /// Binds the slot keys of `in` (PowerSlot1..8) to the keys of the powers `player` carries:
 /// slot N gets the key of the power in slot N when it is used with its slot's key, nothing
 /// otherwise (empty slot, passive power, power on a move). Returns the carried key powers
