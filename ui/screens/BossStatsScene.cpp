@@ -85,7 +85,8 @@ float clipHold(float loop) {
 
 class BossStatsScene : public Scene {
 public:
-    BossStatsScene(GameServices& g, std::string bossId) : g_(g), wanted_(std::move(bossId)) {}
+    BossStatsScene(GameServices& g, std::string bossId, std::string fromAsset = {})
+        : g_(g), wanted_(std::move(bossId)), fromAsset_(std::move(fromAsset)) {}
 
     void onEnter() override {
         bg_.init(g_);
@@ -152,7 +153,10 @@ public:
             show(d);
             drawDetail(detail, d);
         }
-        if (leave || ui.backPressed()) g_.app.switchScene(makeStatistics(g_, 2), 0.3f);  // 2.54: back to Statistiques › Boss
+        if (leave || ui.backPressed()) {
+            if (!fromAsset_.empty()) g_.app.switchScene(makeAdmin(g_, "assets:" + fromAsset_), 0.3f);  // 2.63: back to Administration › Assets
+            else g_.app.switchScene(makeStatistics(g_, 2), 0.3f);                                      // 2.54: back to Statistiques › Boss
+        }
         ui.popId();
         ui.end();
     }
@@ -849,6 +853,7 @@ private:
 
     GameServices& g_;
     std::string wanted_;
+    std::string fromAsset_;  // 2.63: opened from ADMINISTRATION › Assets on this asset
     MenuBackground bg_;
     std::vector<const EnemyDefinition*> bosses_;
     int selected_ = 0;
@@ -870,6 +875,8 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId) { return std::make_unique<BossStatsScene>(g, bossId); }
+std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId, const std::string& fromAsset) {
+    return std::make_unique<BossStatsScene>(g, bossId, fromAsset);
+}
 
 }  // namespace cosmic

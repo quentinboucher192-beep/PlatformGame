@@ -111,13 +111,15 @@ std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
 /// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,
-/// « Calendrier des défis »), "campaign[:<level id>]" (2.45, « Campagne ») (automated screenshots).
+/// « Calendrier des défis »), "campaign[:<level id>]" (2.45, « Campagne ») (automated screenshots);
+/// 2.63: "assets[:<asset path>]" (« Assets », that asset selected: the way back from a sheet).
 std::unique_ptr<Scene> makeAdmin(GameServices& g, const std::string& open = {});
 std::unique_ptr<Scene> makePlanetMap(GameServices& g);
 /// `levelId`: the level selected on arrival (else the last one played). `fromBoss`: opened
 /// from the statistics of this boss (« Retour » goes back there instead of the planet map).
+/// `fromAsset` (2.63): opened from ADMINISTRATION › Assets on this asset (« Retour » goes back there).
 std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId = {},
-                                       const std::string& fromBoss = {});
+                                       const std::string& fromBoss = {}, const std::string& fromAsset = {});
 std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId, PlayOptions opt = {});
 std::unique_ptr<Scene> makeSettingsScene(GameServices& g, bool overlay);
 /// HUD editor: place and size every HUD element; "Enregistrer" writes the layout into `target`.
@@ -148,7 +150,8 @@ std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 std::unique_ptr<Scene> makeStatistics(GameServices& g, int tab = 0);
 /// Statistiques › Boss › « Fiches des boss »: the bosses (victories, without being hit, per
 /// phase, how they look, where to fight them). `bossId`: the boss selected on arrival.
-std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {});
+/// `fromAsset` (2.63): opened from ADMINISTRATION › Assets on this asset (« Retour » goes back there).
+std::unique_ptr<Scene> makeBossStats(GameServices& g, const std::string& bossId = {}, const std::string& fromAsset = {});
 /// Boss statistics → Entraînement: hearts, power slots, powers and phase, then the boss's arena.
 /// `phase` (2.54, « Passages difficiles »): the phase chosen on arrival (0 = the first, -1 every
 /// phase; -2: the last choice for this boss).

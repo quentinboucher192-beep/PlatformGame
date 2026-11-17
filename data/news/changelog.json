@@ -1,4 +1,10 @@
 {
+  "2.63.0": [
+    "Administration › Assets : tous les fichiers du jeu (images, animations, sons, musiques, polices, données), rangés en arbre — Personnages, Ennemis, Boss et giga-boss par monde, Pouvoirs, Décors et tuiles par planète, Interface et icônes, Effets et particules, Histoires, Musiques par groupe du juke-box, Sons, Polices —, chaque dossier avec son nombre d'assets et son poids.",
+    "Recherche instantanée (nom, chemin, dossier, type, « utilisé par »), filtres par type et « Inutilisés » ; résultats en grille de vignettes ou en liste, seules les vignettes visibles sont chargées.",
+    "Aperçu de l'asset choisi : image sur damier, animation qui défile (clip, images par seconde), son et musique à l'écoute (la musique du menu attend, puis reprend), police et texte ; taille, dimensions, images et clips, durée.",
+    "Utilisé par : les ennemis, boss, niveaux (avec le compte), planètes, pouvoirs, histoires, combinaisons, effets, morceaux du juke-box et le code qui s'en servent ; chaque ligne montre ce qu'utilise ce « client », « Fiche » ouvre sa fiche dans le jeu, « Ouvrir le dossier » le fichier sur le PC. Lecture seule."
+  ],
   "2.59.0": [
     "Administration › Créations : en plus des combinaisons, un admin crée des traînées (une forme que le jeu sait dessiner — comète, poussière d'étoiles, ruban, flammèches, aurore, bulles —, la couleur près de Nova et celle du bout, la largeur, la durée et les étincelles), des cadres d'avatar (un style — anneau poli, gemmes serties, orbite, nébuleuse, constellation, cercle runique —, la couleur du bord et de la lueur) et des effets de victoire (feu d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun avec son aperçu animé ; il les modifie ou les archive.",
     "Comme les combinaisons, ils se donnent en récompense d'un défi (Calendrier des défis › Récompenses) ; gagnés, ils rejoignent leur catégorie du Vestiaire et s'équipent, sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et derrière vos fantômes, le cadre sur votre profil et dans les classements, l'effet de victoire à la sortie des niveaux.",

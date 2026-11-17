@@ -1254,6 +1254,13 @@
    ]
   },
   {
+   "id": "admin.tab.assets",
+   "version": "2.63.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
    "id": "collection.tab.music",
    "parents": [
     "menu.collection"
