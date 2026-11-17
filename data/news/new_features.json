@@ -2408,6 +2408,40 @@
    "parents": [
     "settings.tab.game"
    ]
+  },
+  {
+   "id": "coop.devices",
+   "version": "2.64.2",
+   "parents": [
+    "menu.coop"
+   ]
+  },
+  {
+   "id": "keys.players",
+   "version": "2.64.2",
+   "parents": [
+    "coop.keys"
+   ]
+  },
+  {
+   "id": "settings.players.keyboard",
+   "version": "2.64.2",
+   "parents": [
+    "keys.players"
+   ]
+  },
+  {
+   "id": "settings.players.gamepad",
+   "version": "2.64.2",
+   "parents": [
+    "keys.players"
+   ]
+  },
+  {
+   "id": "coop.keys",
+   "parents": [
+    "menu.coop"
+   ]
   }
  ]
 }

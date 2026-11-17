@@ -32,8 +32,10 @@
 #include "game/gameplay/InputFrame.h"
 #include "game/online/Replay.h"
 #include "packaging/PackageImporter.h"
+#include "ui/widgets/Glyphs.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/CoopGameScene.h"
+#include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -68,6 +70,10 @@ const Rule kRules[] = {
     {"Déconnexion",
      "Le joueur passe en veille (intouchable, ne gêne personne) ; 60 s pour revenir près de l'équipe. Sinon l'équipe continue, classée « incomplète ».",
      {201, 179, 255, 255}},
+    {"Un périphérique par joueur",
+     "Chacun a le sien et ses propres touches (profils J1, J2, J3, gardés d'une partie à l'autre) ; le clavier et la souris vont ensemble, à un seul "
+     "joueur. Une manette débranchée en partie met tout en pause, chrono compris.",
+     {124, 240, 168, 255}},
     {"Caméra commune", "Elle cadre toute l'équipe ; un joueur hors de l'écran depuis 3 s revient près de l'allié le plus proche.", {201, 211, 238, 255}},
 };
 
@@ -80,23 +86,18 @@ public:
 
     void onEnter() override {
         startLevelSearch();
-        p1Pad_ = g_.app.input().gamepadId();
-        seats_.clear();
-        CoopSeat me;
-        me.name = g_.online.loggedIn() ? g_.online.username() : "Joueur 1";
-        me.accountId = g_.online.loggedIn() ? g_.online.playerId() : "";
-        me.device = CoopSeat::Device::Keyboard;
-        me.color = coopColor(0);
-        seats_.push_back(me);
+        // 2.65: player 1 starts with the keyboard and the mouse; the team of the game just played
+        // keeps its devices (a pad unplugged since then: its player 2 or 3 leaves the place).
+        team_ = LocalTeamDevices();
         if (previous_ && previous_->mode == CoopSetup::Mode::SamePc) {
-            // The team of the game just played, when its gamepads are still there.
-            const auto pads = connectedGamepads();
-            for (size_t i = 1; i < previous_->seats.size(); ++i) {
-                const CoopSeat& s = previous_->seats[i];
-                if (s.device == CoopSeat::Device::Pad &&
-                    std::find(pads.begin(), pads.end(), static_cast<SDL_JoystickID>(s.pad)) != pads.end())
-                    addPad(static_cast<SDL_JoystickID>(s.pad));
+            std::vector<LocalDevice> devices;
+            for (const CoopSeat& s : previous_->seats) {
+                if (s.device == CoopSeat::Device::Pad && s.padNumber > 0) devices.push_back(LocalDevice::gamepad(s.padNumber));
+                else if (s.device == CoopSeat::Device::Keyboard) devices.push_back(LocalDevice::keyboard());
+                else devices.push_back(LocalDevice::none());
             }
+            team_.set(devices);
+            dropGonePads();
             wantedLevel_ = previous_->levelId;
         }
         if (previous_ && previous_->mode != CoopSetup::Mode::SamePc) {
@@ -127,6 +128,8 @@ public:
             else level_ = firstOfSource(source_);
         }
         if (mode_ == 0) watchPads(dt);
+        else g_.localTeam.clear();
+        if (keysNoteTimer_ > 0.0f) keysNoteTimer_ -= dt;
         updateNet(dt);
     }
 
@@ -533,74 +536,110 @@ public:
         }
     }
 
-    /// Every gamepad but player 1's is watched (and kept from the menus): Start or A takes a
-    /// place, B leaves it.
-    void watchPads(float dt) {
-        const auto pads = connectedGamepads();
-        // The ones gone: their watcher, their place.
-        for (auto it = watchers_.begin(); it != watchers_.end();) {
-            if (std::find(pads.begin(), pads.end(), it->first) == pads.end()) {
-                removePad(it->first);
-                it = watchers_.erase(it);
-            } else {
-                ++it;
-            }
+    // ------------------------------------------------------------- 2.65: devices
+
+    std::string seatName(int i) const {
+        if (i == 0 && g_.online.loggedIn()) return g_.online.username();
+        return "Joueur " + std::to_string(i + 1);
+    }
+
+    /// The watcher of a connected pad (by its number), nullptr if none.
+    LocalPad* watcher(int number) {
+        const PadEntry* p = g_.app.input().devices().byNumber(number);
+        if (!p || !p->connected) return nullptr;
+        auto it = watchers_.find(p->id);
+        return it == watchers_.end() ? nullptr : it->second.get();
+    }
+
+    /// The pad given a place vibrates once (when its player wants it).
+    void rumbleFor(int player) {
+        const LocalDevice& d = team_.device(player);
+        if (!d.isPad() || !g_.settings.playerInput(player).gamepad.rumble) return;
+        if (LocalPad* w = watcher(d.pad)) w->rumble(0.55f, 0.55f, 220);
+    }
+
+    /// Every device a player may take, in the order « Changer de périphérique » goes through.
+    std::vector<LocalDevice> availableDevices() const {
+        std::vector<LocalDevice> out{LocalDevice::keyboard()};
+        for (int n : g_.app.input().devices().connectedNumbers()) out.push_back(LocalDevice::gamepad(n));
+        return out;
+    }
+
+    /// A pad that went away: players 2 and 3 leave the place, player 1 goes back to the
+    /// keyboard when it is free.
+    void dropGonePads() {
+        for (int i = team_.count() - 1; i >= 0; --i) {
+            const LocalDevice d = team_.device(i);
+            if (!d.isPad() || g_.app.input().devices().connected(d.pad)) continue;
+            if (i > 0) team_.leave(i);
+            else team_.assign(0, team_.isFree(LocalDevice::keyboard()) ? LocalDevice::keyboard() : LocalDevice::none());
         }
-        if (p1Pad_ != 0 && std::find(pads.begin(), pads.end(), p1Pad_) == pads.end()) p1Pad_ = 0;
-        if (p1Pad_ != 0) watchers_.erase(p1Pad_);  // player 1's own: it takes no place
-        std::vector<SDL_JoystickID> reserved;
-        for (SDL_JoystickID id : pads) {
-            if (id == p1Pad_) continue;
-            reserved.push_back(id);
-            auto& w = watchers_[id];
+    }
+
+    /// Every pad of this PC has a LocalPad (watched): Start or A on a free one takes a place, B
+    /// on a player's leaves it, and its buttons light on its player's card. Every pad but player
+    /// 1's is kept from the menus.
+    void watchPads(float dt) {
+        InputManager& in = g_.app.input();
+        const DeviceRegistry& reg = in.devices();
+        dropGonePads();
+        std::set<SDL_JoystickID> live;
+        for (int n : reg.connectedNumbers()) {
+            const PadEntry* p = reg.byNumber(n);
+            live.insert(p->id);
+            auto& w = watchers_[p->id];
             if (!w) {
                 w = std::make_unique<LocalPad>();
-                w->open(id);
+                w->open(p->id);
             }
         }
+        for (auto it = watchers_.begin(); it != watchers_.end();) it = live.count(it->first) ? std::next(it) : watchers_.erase(it);
+        std::vector<SDL_JoystickID> reserved;
+        const int p1 = team_.device(0).isPad() ? team_.device(0).pad : 0;
+        for (int n : reg.connectedNumbers())
+            if (n != p1) reserved.push_back(reg.byNumber(n)->id);
         if (reserved != reserved_) {
             reserved_ = reserved;
-            g_.app.input().setReservedPads(reserved_);
+            in.setReservedPads(reserved_);
         }
-        for (auto& [id, w] : watchers_) {
+        for (int n : reg.connectedNumbers()) {
+            LocalPad* w = watcher(n);
             if (!w) continue;
-            w->update(g_.settings.input, dt);
-            const int seat = seatOfPad(id);
-            if (seat < 0 && (w->startPressed() || w->confirmPressed())) addPad(id);
-            else if (seat > 0 && w->backPressed()) removePad(id);
+            const int player = team_.owner(LocalDevice::gamepad(n));
+            w->update(g_.settings.playerInput(std::max(0, player)), dt);
+            if (player < 0 && (w->startPressed() || w->confirmPressed())) {
+                // A player without a device takes it first, else the next free place.
+                int seat = -1;
+                for (int i = 0; i < team_.count() && seat < 0; ++i)
+                    if (team_.device(i).isNone() && team_.assign(i, LocalDevice::gamepad(n))) seat = i;
+                if (seat < 0) seat = team_.join(LocalDevice::gamepad(n));
+                if (seat >= 0) {
+                    rumbleFor(seat);
+                    g_.uiSound("ui_confirm");
+                }
+            } else if (player > 0 && w->backPressed()) {
+                team_.leave(player);
+                g_.uiSound("ui_back", 0.5f);
+            }
         }
+        // The keys screens show one tab per player of this PC.
+        g_.localTeam.clear();
+        if (team_.count() >= 2)
+            for (int i = 0; i < team_.count(); ++i) g_.localTeam.push_back({seatName(i), coopColor(i), team_.device(i)});
     }
 
-    int seatOfPad(SDL_JoystickID id) const {
-        for (size_t i = 1; i < seats_.size(); ++i)
-            if (seats_[i].device == CoopSeat::Device::Pad && seats_[i].pad == id) return static_cast<int>(i);
-        return -1;
-    }
-
-    void addPad(SDL_JoystickID id) {
-        if (seats_.size() >= 3 || seatOfPad(id) >= 0 || id == p1Pad_) return;
-        CoopSeat s;
-        const int n = static_cast<int>(seats_.size());
-        s.name = "Joueur " + std::to_string(n + 1);
-        s.device = CoopSeat::Device::Pad;
-        s.pad = id;
-        s.color = coopColor(n);
-        seats_.push_back(s);
-    }
-
-    void removePad(SDL_JoystickID id) {
-        const int seat = seatOfPad(id);
-        if (seat <= 0) return;
-        seats_.erase(seats_.begin() + seat);
-        for (size_t i = 0; i < seats_.size(); ++i) {
-            seats_[i].color = coopColor(static_cast<int>(i));
-            if (i > 0) seats_[i].name = "Joueur " + std::to_string(i + 1);
+    /// Every player has a device that is here.
+    bool devicesReady() const {
+        for (int i = 0; i < team_.count(); ++i) {
+            const LocalDevice& d = team_.device(i);
+            if (d.isNone() || (d.isPad() && !g_.app.input().devices().connected(d.pad))) return false;
         }
+        return true;
     }
 
     void start() {
         const CoopLevel* l = chosenLevel();
-        if (seats_.size() < 2 || !l) return;
+        if (team_.count() < 2 || !l || !devicesReady()) return;
         CoopSetup s;
         s.mode = CoopSetup::Mode::SamePc;
         s.levelId = l->id;
@@ -608,14 +647,40 @@ public:
             s.communityId = l->communityId;
             s.communityVersion = l->version;
         }
-        s.seats = seats_;
+        for (int i = 0; i < team_.count(); ++i) {
+            CoopSeat seat;
+            seat.name = seatName(i);
+            if (i == 0) seat.accountId = g_.online.loggedIn() ? g_.online.playerId() : "";
+            const LocalDevice& d = team_.device(i);
+            if (d.isPad()) {
+                seat.device = CoopSeat::Device::Pad;
+                seat.padNumber = d.pad;
+                if (const PadEntry* p = g_.app.input().devices().byNumber(d.pad)) seat.pad = p->id;
+            } else {
+                seat.device = CoopSeat::Device::Keyboard;
+            }
+            seat.color = coopColor(i);
+            s.seats.push_back(seat);
+        }
         s.localSeat = -1;
         s.seed = levelSeed(s.levelId);
         s.attemptId = makeUuidV4();
-        const int n = static_cast<int>(seats_.size());
+        const int n = team_.count();
         g_.app.input().setReservedPads({});
         watchers_.clear();  // the game opens its own
         g_.app.switchScene(makeCoopGame(g_, std::move(s), std::make_unique<LocalCoopLink>(n)), 0.4f);
+    }
+
+    /// « Touches… » of a player: the keys of the chosen level, on that player's tab.
+    void openKeys(int player) {
+        const CoopLevel* l = chosenLevel();
+        std::optional<LevelData> level = l ? g_.content.loadLevel(l->id) : std::nullopt;
+        if (!level) {
+            keysNote_ = "Choisissez d'abord un niveau : ses touches se règlent pour chaque joueur.";
+            keysNoteTimer_ = 4.0f;
+            return;
+        }
+        g_.app.pushScene(makeLevelPowerKeys(g_, std::move(*level), {}, {}, player));
     }
 
     // ---------------------------------------------------------------------- drawing
@@ -635,6 +700,7 @@ public:
         if (ui.button("back", back, "Retour") || (ui.backPressed() && !choosingLevel_ && !inviting_)) {
             leaveNet();
             ui.popId();
+            g_.localTeam.clear();  // the keys screens are the solo game's again
             g_.app.switchScene(makeMainMenu(g_), 0.3f);
             return;
         }
@@ -836,102 +902,291 @@ public:
         drawLocalTeam(box);
     }
 
+    // 2.65 (mockup « Salon même PC »): a card per place (its device, the buttons it presses lit
+    // live, « Changer de périphérique », « Touches… »), the devices of this PC listed live, then
+    // « Jouer ». Every text is measured, fitted or wrapped, and placed one after the other.
     void drawLocalTeam(const Rect& box) {
         UIContext& ui = g_.ui;
+        const DeviceRegistry& reg = g_.app.input().devices();
         float y = heading("ÉQUIPE", box.x, box.y);
         {
-            const int pads = static_cast<int>(connectedGamepads().size());
+            const int pads = static_cast<int>(reg.connectedNumbers().size());
             const std::string t = "Sur ce PC · " + std::to_string(pads) + (pads > 1 ? " manettes branchées" : " manette branchée");
-            ui.label(ui.elide(t, FontFace::Body, 15, box.w * 0.6f), {box.right(), box.y}, 15, ui.theme().accent, Align::Right, FontFace::Body);
+            const float fs = ui.fitFont(t, FontFace::Body, 15, box.w * 0.6f, 0.75f);
+            ui.label(ui.elide(t, FontFace::Body, fs, box.w * 0.6f), {box.right(), box.y}, fs, ui.theme().accent, Align::Right, FontFace::Body);
         }
-        // The bottom row: the ranking line and « Jouer ».
+        // The bottom row: the ranking line (or why « Touches… » opened nothing) and « Jouer ».
         const float rowH = ui.s(52);
         const float rowY = box.bottom() - rowH;
-        const std::string play = seats_.size() >= 3 ? "Jouer à 3" : "Jouer à 2";
-        const float playW = std::max(ui.s(200), ui.text().measure(play, FontFace::Bold, ui.s(20)).x + ui.s(60));
+        const bool ready = devicesReady();
+        const std::string play = team_.count() < 2 ? "2 joueurs au moins"
+                                 : !ready         ? "Un joueur sans périphérique"
+                                 : team_.count() >= 3 ? "Jouer à 3"
+                                                      : "Jouer à 2";
+        const float playW = std::min(box.w * 0.42f, std::max(ui.s(200), ui.text().measure(play, FontFace::Bold, ui.s(20)).x + ui.s(60)));
         UIContext::ButtonStyle ps;
         ps.primary = true;
-        ps.enabled = seats_.size() >= 2 && !levels_.empty();
+        ps.enabled = team_.count() >= 2 && ready && !levels_.empty();
+        ps.fontSize = ui.fitFont(play, FontFace::Bold, 20, playW - ui.s(24), 0.6f);
         const Rect playRect{box.right() - playW, rowY, playW, rowH};
-        if (ui.button("play", playRect, seats_.size() < 2 ? "2 joueurs au moins" : play, ps)) start();
+        if (ui.button("play", playRect, play, ps)) start();
         ui.newBadge("play", playRect, "coop");  // 2.62: « NOUVEAU » until the button is reached
         {
-            const std::string t = "À deux, l'équipe est classée en Duo ; à trois, en Trio. Les classements ne se mélangent jamais.";
+            const bool note = keysNoteTimer_ > 0.0f;
+            const std::string t = note ? keysNote_ : "À deux, l'équipe est classée en Duo ; à trois, en Trio. Les classements ne se mélangent jamais.";
             const float room = box.w - playW - ui.s(20);
-            const Vec2 sz = ui.text().measureWrapped(t, FontFace::Body, ui.s(15), room);
-            ui.labelWrapped(t, {box.x, rowY + std::max(0.0f, (rowH - sz.y) * 0.5f)}, room, 15, Color{143, 155, 189, 255});
+            const float fs = std::max(ui.fitFont(t, FontFace::Body, 15, room * 2.0f, 0.75f), 11.5f / ui.s(1.0f));
+            const Vec2 sz = ui.text().measureWrapped(t, FontFace::Body, ui.s(fs), room);
+            ui.labelWrapped(t, {box.x, rowY + std::max(0.0f, (rowH - sz.y) * 0.5f)}, room, fs, note ? ui.theme().warm : Color{143, 155, 189, 255});
         }
+        // The devices of this PC, above the row.
+        const auto pads = reg.listed(SDL_GetTicks(), 10000);
+        const float lineH = ui.s(34);
+        const float wanted = ui.s(44) + static_cast<float>(pads.size() + 1) * (lineH + ui.s(4)) + ui.s(10);
+        const float devH = std::clamp(wanted, ui.s(120), std::max(ui.s(120), (rowY - ui.s(12) - y) * 0.36f));
+        const Rect devRect{box.x, rowY - ui.s(12) - devH, box.w, devH};
+        drawDevices(devRect, pads, lineH);
         // Three places side by side.
-        const float cardsH = rowY - ui.s(12) - y;
+        const float cardsH = devRect.y - ui.s(12) - y;
         const float cw = (box.w - ui.s(24)) / 3.0f;
-        for (int i = 0; i < 3; ++i) {
-            const Rect c{box.x + static_cast<float>(i) * (cw + ui.s(12)), y, cw, cardsH};
-            drawSeat(i, c);
+        ui.pushId("seats");
+        for (int i = 0; i < 3; ++i) drawSeat(i, {box.x + static_cast<float>(i) * (cw + ui.s(12)), y, cw, cardsH});
+        ui.popId();
+    }
+
+    /// What is held now on pad `number` (and on the keyboard and the mouse), read raw.
+    HeldInputs heldOn(int number, int player) const {
+        const PadEntry* p = g_.app.input().devices().byNumber(number);
+        return g_.app.input().heldInputs(p && p->connected ? p->id : 0, g_.settings.playerInput(std::max(0, player)).gamepad.triggerThreshold);
+    }
+
+    /// Whether any button (or trigger) of that pad is pressed now: its line lights in the list.
+    bool anyPressed(int number) const {
+        const HeldInputs h = heldOn(number, 0);
+        return h.padButtons != 0 || padBindingHeld(PadBinding::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER), h) ||
+               padBindingHeld(PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER), h);
+    }
+
+    /// The buttons shown on a player's card, lit while pressed: its main keys on the keyboard
+    /// (its own profile), the face buttons, shoulders and triggers of its pad (its glyphs).
+    std::vector<std::pair<std::string, bool>> liveChips(int player) {
+        std::vector<std::pair<std::string, bool>> out;
+        const LocalDevice& d = team_.device(player);
+        if (d.isKeyboard()) {
+            const InputBindings& b = g_.settings.playerInput(player);
+            const HeldInputs held = g_.app.input().heldInputs();
+            for (Action a : {Action::MoveLeft, Action::MoveRight, Action::Jump, Action::Attack, Action::Interact}) {
+                const SDL_Scancode sc = b.keys[static_cast<size_t>(a)][0];
+                if (sc == SDL_SCANCODE_UNKNOWN) continue;
+                const std::string t = keyName(sc);
+                if (std::any_of(out.begin(), out.end(), [&](const auto& c) { return c.first == t; })) continue;
+                out.emplace_back(t, keyBindingHeld(sc, held));
+            }
+        } else if (d.isPad()) {
+            const PadEntry* p = g_.app.input().devices().byNumber(d.pad);
+            const GamepadStyle style = p ? p->style : GamepadStyle::Generic;
+            const HeldInputs held = heldOn(d.pad, player);
+            for (const PadBinding& pb :
+                 {PadBinding::button(SDL_GAMEPAD_BUTTON_SOUTH), PadBinding::button(SDL_GAMEPAD_BUTTON_EAST), PadBinding::button(SDL_GAMEPAD_BUTTON_WEST),
+                  PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), PadBinding::button(SDL_GAMEPAD_BUTTON_LEFT_SHOULDER),
+                  PadBinding::button(SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER), PadBinding::axisPos(SDL_GAMEPAD_AXIS_LEFT_TRIGGER),
+                  PadBinding::axisPos(SDL_GAMEPAD_AXIS_RIGHT_TRIGGER)})
+                out.emplace_back(padBindingName(pb, style), padBindingHeld(pb, held));
         }
+        return out;
     }
 
     void drawSeat(int i, const Rect& c) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
-        const bool filled = i < static_cast<int>(seats_.size());
-        const Color border = filled ? seats_[static_cast<size_t>(i)].color : Color{34, 48, 90, 255};
-        r.fillRoundedRect(c, ui.s(14), Color{15, 23, 48, 255});
-        r.drawRoundedRect(c, ui.s(14), border, ui.s(2));
-        const float in = ui.s(14), w = c.w - in * 2.0f;
+        const bool filled = i < team_.count();
+        const Color color = coopColor(i);
+        const Color dim{154, 160, 200, 255}, soft{201, 205, 240, 255};
+        r.fillRoundedRect(c, ui.s(16), filled ? Color{22, 29, 66, 255} : Color{17, 22, 47, 255});
+        r.drawRoundedRect(c, ui.s(16), filled ? color : Color{90, 74, 154, 255}, ui.s(2));
+        const float in = ui.s(14), x = c.x + in, w = c.w - in * 2.0f;
         float y = c.y + in;
-        ui.label("JOUEUR " + std::to_string(i + 1), {c.x + in, y}, 13, Color{143, 155, 189, 255}, Align::Left, FontFace::Bold);
-        y += ui.s(26);
+        const LocalDevice dev = filled ? team_.device(i) : LocalDevice::none();
+        const DeviceRegistry& reg = g_.app.input().devices();
+        const PadEntry* pad = dev.isPad() ? reg.byNumber(dev.pad) : nullptr;
+        const bool here = filled && (dev.isKeyboard() || (pad && pad->connected));
+        // Header: « J1 » in the player's colour, the name, the state at the right.
+        const float badge = ui.s(36);
+        const std::string jn = "J" + std::to_string(i + 1);
+        r.fillRoundedRect({x, y, badge, badge}, ui.s(10), filled ? color : color.withAlpha(110));
+        ui.label(jn, {x + badge * 0.5f, y + badge * 0.5f}, ui.fitFont(jn, FontFace::Title, 16, badge - ui.s(6)), Color{11, 16, 40, 255}, Align::Center,
+                 FontFace::Title, VAlign::Middle);
+        const std::string state = !filled ? "En attente" : here ? "Prêt" : "Sans périphérique";
+        const float pf = ui.fitFont(state, FontFace::Bold, 13, w * 0.4f, 0.8f);
+        const float pillW = ui.text().measure(state, FontFace::Bold, ui.s(pf)).x + ui.s(18);
+        const Rect pill{x + w - pillW, y + (badge - ui.s(26)) * 0.5f, pillW, ui.s(26)};
+        r.fillRoundedRect(pill, ui.s(8), !filled ? Color{42, 47, 90, 255} : here ? Color{31, 94, 58, 255} : Color{110, 40, 40, 255});
+        ui.label(state, pill.center(), pf, Color{238, 240, 255, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+        {
+            const std::string name = filled ? seatName(i) : "Place libre";
+            const float room = pill.x - ui.s(10) - (x + badge + ui.s(10));
+            const float nf = ui.fitFont(name, FontFace::Bold, 18, room, 0.7f);
+            ui.label(ui.elide(name, FontFace::Bold, nf, room), {x + badge + ui.s(10), y + badge * 0.5f}, nf, ui.theme().text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+        }
+        y += badge + ui.s(10);
+        // The device: its icon, its name, what goes with it.
+        std::string line1, line2;
         if (!filled) {
-            // A free place: how to take it (a gamepad of this PC).
-            const Rect dash{c.x + in, y, w, c.bottom() - in - y};
-            r.drawRoundedRect(dash, ui.s(10), Color{44, 60, 106, 255}, ui.s(2));
-            std::string t = "Place libre\n\nAppuyez sur Start ou A d'une autre manette pour prendre cette place.";
-            if (connectedGamepads().size() <= (p1Pad_ != 0 ? 1u : 0u) + (seats_.size() - 1)) t = "Place libre\n\nBranchez une manette de plus pour un joueur de plus.";
-            const Vec2 sz = ui.text().measureWrapped(t, FontFace::Body, ui.s(16), w - ui.s(24));
-            ui.labelWrapped(t, {dash.x + ui.s(12), dash.center().y - sz.y * 0.5f}, w - ui.s(24), 16, Color{201, 211, 238, 255});
-            return;
+            const bool freePad = std::any_of(reg.all().begin(), reg.all().end(),
+                                             [&](const PadEntry& p) { return p.connected && team_.owner(LocalDevice::gamepad(p.number)) < 0; });
+            line1 = freePad ? "Appuyez sur Start ou A" : "Branchez une manette";
+            line2 = freePad ? "sur une manette libre pour rejoindre" : "de plus pour un joueur de plus";
+        } else if (dev.isKeyboard()) {
+            line1 = "Clavier + souris";
+            line2 = "touches du profil " + jn;
+        } else if (pad) {
+            line1 = padLabel(*pad);
+            const char* glyphs = pad->style == GamepadStyle::Xbox          ? "glyphes Xbox"
+                                 : pad->style == GamepadStyle::PlayStation ? "glyphes PlayStation"
+                                 : pad->style == GamepadStyle::Switch      ? "glyphes Switch"
+                                                                           : "glyphes génériques";
+            const bool rumble = g_.settings.playerInput(i).gamepad.rumble;
+            line2 = pad->connected ? std::string(glyphs) + (rumble ? " · vibration activée" : " · vibration coupée")
+                                   : "débranchée : rebranchez-la ou changez de périphérique";
+        } else {
+            line1 = "Aucun périphérique";
+            line2 = "« Changer de périphérique » ou A sur une manette libre";
         }
-        const CoopSeat& s = seats_[static_cast<size_t>(i)];
-        // Nova in its suit (the colour of the player), idle.
-        const float spriteH = std::min(ui.s(170), (c.bottom() - y) * 0.42f);
-        if (nova_ && nova_->texture) {
-            TexturePtr suit = i == 0 ? g_.suitSheet(g_.cosmeticLook("suit")) : g_.suitTextures.get(g_.app.resources(), g_.app.renderer(), suitOf(i));
-            const Texture& tex = suit ? *suit : *nova_->texture;
-            const Rect src = anim_.sourceRect();
-            if (src.h > 0.0f) {
-                const float k = spriteH / src.h;
-                r.drawTexture(tex, &src, {c.center().x - src.w * k * 0.5f, y, src.w * k, spriteH});
-            }
+        const float iconW = ui.s(52), textX = x + ui.s(12) + iconW + ui.s(10), textRoom = x + w - ui.s(12) - textX;
+        const float f1 = ui.fitFont(line1, FontFace::Bold, 17, textRoom, 0.7f);
+        const float h1 = ui.text().measure(line1, FontFace::Bold, ui.s(f1)).y;
+        const float h2 = std::min(ui.text().measureWrapped(line2, FontFace::Body, ui.s(13), textRoom).y, ui.s(40));
+        const float boxH = std::max(ui.s(76), h1 + ui.s(4) + h2 + ui.s(20));
+        const Rect devBox{x, y, w, boxH};
+        r.fillRoundedRect(devBox, ui.s(14), Color{13, 20, 48, 255});
+        const Vec2 ic{x + ui.s(12) + iconW * 0.5f, devBox.center().y};
+        if (!filled) {
+            ui.label("+", ic, 40, color, Align::Center, FontFace::Title, VAlign::Middle);
+        } else if (dev.isKeyboard()) {
+            // A small keyboard: its frame and three rows of keys.
+            const Rect kb{ic.x - iconW * 0.5f, ic.y - ui.s(16), iconW, ui.s(32)};
+            r.drawRoundedRect(kb, ui.s(5), color, ui.s(2));
+            for (int row = 0; row < 3; ++row)
+                for (int k = 0; k < 5; ++k)
+                    r.fillRect({kb.x + ui.s(6) + static_cast<float>(k) * ui.s(8.4f), kb.y + ui.s(6) + static_cast<float>(row) * ui.s(7.5f), ui.s(5), ui.s(4.5f)},
+                               color.withAlpha(200));
+        } else {
+            r.fillCircle(ic, ui.s(20), here ? color : color.withAlpha(90));
+            r.fillCircle(ic, ui.s(8), Color{13, 20, 48, 255});
         }
-        y += spriteH + ui.s(10);
-        const float nameFs = ui.fitFont(s.name, FontFace::Bold, 20, w, 0.7f);
-        ui.label(ui.elide(s.name, FontFace::Bold, nameFs, w), {c.center().x, y}, nameFs, ui.theme().text, Align::Center, FontFace::Bold);
-        y += ui.text().measure(s.name, FontFace::Bold, ui.s(nameFs)).y + ui.s(6);
-        std::string device;
-        if (s.device == CoopSeat::Device::Pad) device = "manette : " + gamepadName(static_cast<SDL_JoystickID>(s.pad));
-        else device = p1Pad_ != 0 ? "clavier · manette : " + gamepadName(p1Pad_) : "clavier et souris";
-        device += s.accountId.empty() ? " · sans compte" : " · compte connecté";
-        y += ui.labelWrapped(device, {c.x + in, y}, w, 14, Color{201, 211, 238, 255}).y + ui.s(8);
-        // What it can do here: player 1 picks its gamepad; the others leave with B.
-        if (i == 0) {
-            std::vector<SDL_JoystickID> free;
-            for (SDL_JoystickID id : connectedGamepads())
-                if (seatOfPad(id) < 0) free.push_back(id);
+        float ty = devBox.center().y - (h1 + ui.s(4) + h2) * 0.5f;
+        ui.label(ui.elide(line1, FontFace::Bold, f1, textRoom), {textX, ty}, f1, ui.theme().text, Align::Left, FontFace::Bold);
+        ty += h1 + ui.s(4);
+        ui.labelWrapped(line2, {textX, ty}, textRoom, 13, dim);
+        y = devBox.bottom() + ui.s(10);
+        // The buttons at the bottom (filled places): one under the other, the full width.
+        const float bh = ui.s(38), bgap = ui.s(8);
+        const float buttonsTop = filled ? c.bottom() - in - bh * 2.0f - bgap : c.bottom() - in;
+        if (filled) {
+            std::vector<LocalDevice> avail = availableDevices();
+            const bool other = std::any_of(avail.begin(), avail.end(), [&](const LocalDevice& d) { return !(d == dev) && team_.isFree(d); });
             UIContext::ButtonStyle bs;
             bs.small = true;
-            bs.enabled = !free.empty();
-            const Rect b{c.x + in, c.bottom() - in - ui.s(40), w, ui.s(40)};
-            if (ui.button("p1pad", b, p1Pad_ ? "Changer de manette" : "Prendre une manette", bs)) {
-                // The next free gamepad (or none: the keyboard alone).
-                auto it = std::find(free.begin(), free.end(), p1Pad_);
-                p1Pad_ = (it == free.end()) ? free.front() : (it + 1 == free.end() ? 0 : *(it + 1));
+            bs.enabled = other;
+            const std::string change = "Changer de périphérique";
+            bs.fontSize = ui.fitFont(change, FontFace::Bold, 15, w - ui.s(16), 0.6f);
+            if (ui.button("change" + std::to_string(i), {x, buttonsTop, w, bh}, change, bs) && team_.cycle(i, avail)) {
+                rumbleFor(i);
+                g_.uiSound("ui_confirm");
             }
-        } else {
-            const std::string t = "B sur sa manette : quitter la place";
-            const float fs = ui.fitFont(t, FontFace::Body, 14, w, 0.75f);
-            ui.label(ui.elide(t, FontFace::Body, fs, w), {c.center().x, c.bottom() - in - ui.s(20)}, fs, Color{143, 155, 189, 255}, Align::Center,
-                     FontFace::Body, VAlign::Middle);
+            ui.newBadge("change" + std::to_string(i), {x, buttonsTop, w, bh}, "coop.devices", i == 0, true);
+            UIContext::ButtonStyle ks;
+            ks.small = true;
+            const std::string keys = "Touches…";
+            ks.fontSize = ui.fitFont(keys, FontFace::Bold, 15, w - ui.s(16), 0.6f);
+            if (ui.button("keys" + std::to_string(i), {x, buttonsTop + bh + bgap, w, bh}, keys, ks)) openKeys(i);
+            ui.newBadge("keys" + std::to_string(i), {x, buttonsTop + bh + bgap, w, bh}, "coop.keys", i == 0, true);
         }
+        // The buttons it presses, lit live (rows that fit only), then the hint (if it fits).
+        const float chipH = ui.s(28), chipGap = ui.s(6), limit = buttonsTop - ui.s(8);
+        if (filled) {
+            float cx = x, cy = y;
+            bool any = false;
+            for (const auto& [text, on] : liveChips(i)) {
+                const float cwid = ui.text().measure(text, FontFace::Bold, ui.s(13)).x + ui.s(18);
+                if (cx > x && cx + cwid > x + w) {
+                    cx = x;
+                    cy += chipH + chipGap;
+                }
+                if (cy + chipH > limit) break;
+                const Rect chip{cx, cy, std::min(cwid, w), chipH};
+                r.fillRoundedRect(chip, ui.s(7), on ? Color{62, 230, 214, 255} : Color{26, 33, 72, 255});
+                if (!on) r.drawRoundedRect(chip, ui.s(7), Color{57, 67, 122, 255}, ui.s(1));
+                ui.label(ui.elide(text, FontFace::Bold, 13, chip.w - ui.s(8)), chip.center(), 13, on ? Color{11, 16, 40, 255} : soft, Align::Center,
+                         FontFace::Bold, VAlign::Middle);
+                cx += chip.w + chipGap;
+                any = true;
+            }
+            if (any) y = cy + chipH + ui.s(10);
+        }
+        std::string hint;
+        if (!filled) hint = "B sur cette manette pour quitter la place. Une seule place par périphérique.";
+        else if (dev.isKeyboard()) hint = "Les touches appuyées s'allument : vous vérifiez que c'est bien le vôtre.";
+        else if (dev.isPad()) hint = i == 0 ? "La manette vibre une fois quand on lui attribue cette place." : "La manette vibre une fois quand on lui attribue cette place ; B pour la quitter.";
+        if (!hint.empty()) {
+            const float hh = ui.text().measureWrapped(hint, FontFace::Body, ui.s(13), w).y;
+            if (y + hh <= limit) ui.labelWrapped(hint, {x, y}, w, 13, Color{185, 191, 230, 255});
+        }
+    }
+
+    /// « PÉRIPHÉRIQUES BRANCHÉS »: the keyboard and every pad, whose player has it, plugged or
+    /// unplugged (a pad unplugged stays a few seconds); a pad's line lights while a button of it
+    /// is pressed (to tell which is which).
+    void drawDevices(const Rect& box, const std::vector<PadEntry>& pads, float lineH) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        r.fillRoundedRect(box, ui.s(16), Color{18, 24, 54, 255});
+        r.drawRoundedRect(box, ui.s(16), Color{44, 53, 102, 255}, ui.s(1));
+        const float in = ui.s(14), x = box.x + in, w = box.w - in * 2.0f;
+        const std::string title = "PÉRIPHÉRIQUES BRANCHÉS";
+        const float tf = ui.fitFont(title, FontFace::Bold, 15, w * 0.45f, 0.7f);
+        const float tw = ui.text().measure(title, FontFace::Bold, ui.s(tf)).x;
+        const float headY = box.y + ui.s(12);
+        ui.label(title, {x, headY}, tf, Color{159, 216, 255, 255}, Align::Left, FontFace::Bold);
+        {
+            const std::string t = "mis à jour en direct · appuyez sur un bouton pour le reconnaître";
+            const float room = w - tw - ui.s(16);
+            if (room > ui.s(80)) {
+                const float fs = ui.fitFont(t, FontFace::Body, 13, room, 0.8f);
+                ui.label(ui.elide(t, FontFace::Body, fs, room), {x + w, headY}, fs, Color{154, 160, 200, 255}, Align::Right, FontFace::Body);
+            }
+        }
+        const float top = headY + ui.text().measure(title, FontFace::Bold, ui.s(tf)).y + ui.s(10);
+        const Rect view{box.x + ui.s(4), top, box.w - ui.s(8), box.bottom() - ui.s(8) - top};
+        const float rowsH = static_cast<float>(pads.size() + 1) * (lineH + ui.s(4));
+        ui.beginScroll("devices", view, rowsH);
+        float y = view.y - ui.scrollOffset();
+        const uint64_t now = SDL_GetTicks();
+        auto line = [&](const std::string& name, int owner, bool connected, bool lit, const std::string& state) {
+            const Rect row{x, y, w - ui.s(10), lineH};
+            r.fillRoundedRect(row, ui.s(8), lit ? Color{30, 52, 96, 255} : connected ? Color{22, 29, 66, 255} : Color{30, 20, 36, 255});
+            r.fillCircle({row.x + ui.s(16), row.center().y}, ui.s(6), connected ? Color{124, 240, 168, 255} : Color{255, 138, 138, 255});
+            const float stateW = row.w * 0.26f, ownerW = row.w * 0.26f;
+            const float nameX = row.x + ui.s(32), nameW = row.right() - stateW - ownerW - ui.s(16) - nameX;
+            const float nf = ui.fitFont(name, FontFace::Body, 15, nameW, 0.75f);
+            ui.label(ui.elide(name, FontFace::Body, nf, nameW), {nameX, row.center().y}, nf, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+            const std::string who = owner >= 0 ? "J" + std::to_string(owner + 1) + " · " + seatName(owner) : connected ? "libre" : "—";
+            const float ox = row.right() - stateW - ownerW - ui.s(8);
+            ui.label(ui.elide(who, FontFace::Body, 13, ownerW), {ox, row.center().y}, 13, Color{185, 191, 230, 255}, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+            const float sx = row.right() - stateW;
+            ui.label(ui.elide(state, FontFace::Body, 13, stateW - ui.s(8)), {sx, row.center().y}, 13,
+                     connected ? Color{124, 240, 168, 255} : Color{255, 176, 176, 255}, Align::Left, FontFace::Body, VAlign::Middle);
+            y += lineH + ui.s(4);
+        };
+        line("Clavier et souris", team_.owner(LocalDevice::keyboard()), true, false, "branchés");
+        for (const PadEntry& p : pads) {
+            std::string state = "branchée";
+            if (!p.connected) state = "débranchée il y a " + std::to_string(static_cast<int>((now - p.changedMs) / 1000)) + " s";
+            line(padLabel(p), team_.owner(LocalDevice::gamepad(p.number)), p.connected, p.connected && anyPressed(p.number), state);
+        }
+        ui.endScroll();
     }
 
     // ------------------------------------------------------------ network drawing
@@ -1277,10 +1532,11 @@ public:
     int level_ = -1;
     int source_ = 0;  // 0: the campaign, 1: the community (2.63.5)
     std::string wantedLevel_;
-    std::vector<CoopSeat> seats_;
+    LocalTeamDevices team_;  // 2.65: who plays with what on this PC (player 1 first)
     std::map<SDL_JoystickID, std::unique_ptr<LocalPad>> watchers_;
     std::vector<SDL_JoystickID> reserved_;
-    SDL_JoystickID p1Pad_ = 0;
+    std::string keysNote_;  // why « Touches… » opened nothing (no level chosen yet)
+    float keysNoteTimer_ = 0.0f;
     AnimationSetPtr nova_;
     Animator anim_;
     bool choosingLevel_ = false;

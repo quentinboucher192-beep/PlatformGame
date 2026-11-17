@@ -16,6 +16,7 @@
 #include "game/online/LevelFingerprint.h"
 #include "game/records/PlayStats.h"
 #include "ui/screens/BossStoryScene.h"
+#include "ui/screens/DeviceLostUi.h"
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
@@ -1218,6 +1219,16 @@ void GameScene::update(float dt) {
             g_.app.pushScene(makeTutorialCard(g_, *this, tutorialCard_));
         }
         return;
+    }
+    // 2.65: the gamepad in use went away: the run and its chrono wait (no step) for it, another
+    // pad or the keyboard (« MANETTE DÉBRANCHÉE », then 3, 2, 1).
+    if (int lost = g_.app.input().lostPad(); lost != 0) {
+        g_.app.input().clearLostPad();
+        const WorldState st = world_->state();
+        if (!ended_ && !script_.active() && (st == WorldState::Playing || st == WorldState::Intro)) {
+            g_.app.pushScene(makeDeviceLost(g_, *this, lost));
+            return;
+        }
     }
     syncPowerKeys();
     world_->update(dt);

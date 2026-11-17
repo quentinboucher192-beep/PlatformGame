@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <functional>
 #include <future>
 #include <map>
@@ -81,6 +82,23 @@ public:
     TrainingRecords training;
     /// The keys the player chose for the powers of a level (2.31, saves/power_keys.json).
     PowerKeyOverrides powerKeyOverrides;
+    /// 2.65: the power keys of players 2 and 3 on one computer (saves/power_keys_j2.json, _j3.json).
+    std::array<PowerKeyOverrides, 2> coopPowerKeys;
+    /// The power keys of local player `player` (0: player 1, `powerKeyOverrides`), and saving them.
+    PowerKeyOverrides& powerKeysOf(int player) { return player <= 0 ? powerKeyOverrides : coopPowerKeys[static_cast<size_t>(std::min(player, 2) - 1)]; }
+    void savePowerKeys(int player);
+    /// 2.65: the players of one computer's cooperation (the lobby « Sur ce PC » and its game):
+    /// the keys screens (Paramètres, « Touches de ce niveau ») show one tab each, with the keys of
+    /// that player's device. Empty (or one player): the solo game, no tab.
+    struct LocalPlayer {
+        std::string name;
+        Color color;
+        LocalDevice device;
+    };
+    std::vector<LocalPlayer> localTeam;
+    /// The glyphs of a local player's device: its pad's (connected or remembered), else those of
+    /// the gamepad in use.
+    GamepadStyle playerPadStyle(int player) const;
     /// Achievements: the catalogue (data) and what this player has unlocked (saves).
     /// Training attempts of this session (per level and starting checkpoint), never saved.
     std::map<std::string, std::vector<float>> trainingAttempts;

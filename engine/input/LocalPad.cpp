@@ -27,14 +27,7 @@ bool LocalPad::open(SDL_JoystickID id) {
     id_ = id;
     const char* n = SDL_GetGamepadName(pad_);
     name_ = n && *n ? n : "Manette";
-    switch (SDL_GetGamepadType(pad_)) {
-        case SDL_GAMEPAD_TYPE_PS3:
-        case SDL_GAMEPAD_TYPE_PS4:
-        case SDL_GAMEPAD_TYPE_PS5: style_ = GamepadStyle::PlayStation; break;
-        case SDL_GAMEPAD_TYPE_XBOX360:
-        case SDL_GAMEPAD_TYPE_XBOXONE: style_ = GamepadStyle::Xbox; break;
-        default: style_ = GamepadStyle::Generic; break;
-    }
+    style_ = gamepadStyleOf(SDL_GetGamepadType(pad_));
     held_.fill(false);
     prev_.fill(false);
     pressed_.fill(false);
@@ -151,6 +144,13 @@ PlayerInput LocalPad::consume() {
     pressed_.fill(false);
     released_.fill(false);
     return in;
+}
+
+int LocalPad::batteryPercent() const {
+    if (!connected()) return -1;
+    int percent = -1;
+    const SDL_PowerState st = SDL_GetGamepadPowerInfo(pad_, &percent);
+    return st == SDL_POWERSTATE_ON_BATTERY && percent >= 0 ? percent : -1;
 }
 
 void LocalPad::rumble(float low, float high, int ms) const {

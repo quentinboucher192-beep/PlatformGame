@@ -36,6 +36,7 @@ void GameServices::loadAll() {
     segments.load();
     training.load();
     powerKeyOverrides.load();
+    for (size_t i = 0; i < coopPowerKeys.size(); ++i) coopPowerKeys[i].loadFile(Paths::savesDir() / ("power_keys_j" + std::to_string(i + 2) + ".json"));
     if (std::string err; !achievementCatalog.loadDefault(&err)) Log::warn("Succès : {}", err);
     achievements.load();
     online.onAchievementEvent = [this](const std::string& key) {
@@ -759,6 +760,17 @@ void GameServices::presenceOffline() {
     if (!online.loggedIn() || !online.usable() || presenceSent_.empty()) return;
     presenceSent_.clear();
     online.send("POST", "/api/v1/presence", {{"state", "offline"}}, [](const ApiResult&) {});
+}
+
+void GameServices::savePowerKeys(int player) {
+    if (player <= 0) powerKeyOverrides.save();
+    else coopPowerKeys[static_cast<size_t>(std::min(player, 2) - 1)].saveFile(Paths::savesDir() / ("power_keys_j" + std::to_string(std::min(player, 2) + 1) + ".json"));
+}
+
+GamepadStyle GameServices::playerPadStyle(int player) const {
+    if (player >= 0 && player < static_cast<int>(localTeam.size()) && localTeam[static_cast<size_t>(player)].device.isPad())
+        if (const PadEntry* p = app.input().devices().byNumber(localTeam[static_cast<size_t>(player)].device.pad)) return p->style;
+    return app.input().gamepadStyle();
 }
 
 }  // namespace cosmic

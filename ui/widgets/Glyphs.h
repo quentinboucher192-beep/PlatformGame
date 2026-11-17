@@ -23,6 +23,8 @@ const char* sheetFor(GamepadStyle style);
 float drawAction(UIContext& ui, Action a, Vec2 pos, float height);
 float drawKeycap(UIContext& ui, const std::string& label, Vec2 pos, float height);
 float drawPadButton(UIContext& ui, const PadBinding& b, Vec2 pos, float height);
+/// 2.65: with the glyphs of a given gamepad (a local player's own pad, not the one in use).
+float drawPadButton(UIContext& ui, const PadBinding& b, Vec2 pos, float height, GamepadStyle style);
 /// "[A] Valider   [B] Retour" style hint bar; returns its width.
 float drawHint(UIContext& ui, Action a, const std::string& text, Vec2 pos, float height);
 /// Width drawAction() would take, without drawing.

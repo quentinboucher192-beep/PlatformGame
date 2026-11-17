@@ -69,6 +69,7 @@ Json Settings::toJson() const {
                    {"onboardingDone", online.onboardingDone},
                    {"serverOverride", online.serverOverride}};
     j["input"] = input.toJson();
+    j["coopInput"] = Json::array({coopInput[0].toJson(), coopInput[1].toJson()});
     return j;
 }
 
@@ -149,6 +150,9 @@ Settings Settings::fromJson(const Json& j) {
         s.online.serverOverride = jstr(o, "serverOverride").substr(0, 200);
     }
     if (j.contains("input")) s.input = InputBindings::fromJson(j["input"]);
+    if (auto it = j.find("coopInput"); it != j.end() && it->is_array())
+        for (size_t i = 0; i < it->size() && i < s.coopInput.size(); ++i)
+            if ((*it)[i].is_object()) s.coopInput[i] = InputBindings::fromJson((*it)[i]);
     return s;
 }
 

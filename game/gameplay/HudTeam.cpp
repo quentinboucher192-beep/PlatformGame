@@ -177,6 +177,7 @@ void Hud::drawTeamPanel(UIContext& ui, GameWorld& w) {
             line(teamName(i) + " est parti : l'équipe continue, la tentative sera classée incomplète.", dim);
     }
     if (!team_.waitingFor.empty()) line(team_.waitingFor, text);
+    for (const auto& note : team_.deviceNotes) line(note, gold);  // 2.65: no pause for these
     teamPanel_ = drawn;
 }
 

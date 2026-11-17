@@ -15,6 +15,7 @@
 
 #include "game/GameServices.h"
 #include "game/powers/Power.h"
+#include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -34,11 +35,14 @@ float fz(const UIContext& ui, float size) { return std::max(size, 11.5f / ui.s(1
 
 class LevelPowerKeysScene : public Scene {
 public:
-    LevelPowerKeysScene(GameServices& g, LevelData level, std::vector<std::string> extra, std::vector<std::string> carried)
-        : g_(g), level_(std::move(level)), extra_(std::move(extra)), carried_(std::move(carried)) {}
+    LevelPowerKeysScene(GameServices& g, LevelData level, std::vector<std::string> extra, std::vector<std::string> carried, int player)
+        : g_(g), level_(std::move(level)), extra_(std::move(extra)), carried_(std::move(carried)), startPlayer_(player) {}
     bool isOverlay() const override { return true; }
 
     void onEnter() override {
+        // 2.65: a team on this PC: one tab per player (solo: player 1, no tab).
+        team_ = startPlayer_ >= 0 && g_.localTeam.size() >= 2;
+        player_ = team_ ? std::clamp(startPlayer_, 0, static_cast<int>(g_.localTeam.size()) - 1) : 0;
         refresh();
         if (!keys_.powers.empty()) g_.ui.setFocus("lpk/k" + keys_.powers.front().power);
         else g_.ui.setFocus("lpk/back");
@@ -97,7 +101,7 @@ public:
             "touche du niveau.";
         const float introH = ui.text().measureWrapped(intro, FontFace::Body, ui.s(fz(ui, 17)), innerW).y;
         const float shareH = ui.s(48) + ui.s(14);  // 2.60: the levels with the same keys
-        const float headH = ui.s(26) + ui.s(48) + ui.s(30) + introH + ui.s(18) + shareH + ui.s(30);
+        const float headH = ui.s(26) + ui.s(48) + ui.s(30) + teamBarHeight() + introH + ui.s(18) + shareH + ui.s(30);
         const float footH = ui.s(96);
         const float rowsW = innerW - ui.s(14);  // the scroll bar
         // 2.50: with many powers (a giga boss arena offers them all), compact rows; the powers
@@ -132,6 +136,10 @@ public:
         const std::string name = level_.name.empty() ? level_.id : level_.name;
         ui.label(ui.elide(name, FontFace::Bold, fz(ui, 19), innerW), {x, y}, fz(ui, 19), th.accent, Align::Left, FontFace::Bold);
         y += ui.s(30);
+        if (team_) {
+            drawTeamBar(x, y, innerW);
+            y += teamBarHeight();
+        }
         ui.labelWrapped(intro, {x, y}, innerW, fz(ui, 17), th.textDim);
         y += introH + ui.s(18);
         drawShare({x, y, innerW, ui.s(48)});
@@ -143,8 +151,8 @@ public:
             ui.label(ui.elide(t, FontFace::Bold, f, cw), {cx, y + ui.s(12)}, f, th.textDim, Align::Left, FontFace::Bold, VAlign::Middle);
         };
         head("Pouvoir", c.nameX, c.nameW);
-        head("Clavier / souris", c.keyX, c.keyW);
-        head("Manette", c.padX, c.padW);
+        if (showKey()) head("Clavier / souris", c.keyX, c.keyW);
+        if (showPad()) head(team_ ? padTypeName(padStyle()) : std::string("Manette"), c.padX, c.padW);
         y += ui.s(30);
 
         Rect area{x, y, innerW, panel.bottom() - footH - y};
@@ -213,6 +221,11 @@ private:
         c.keyW = w * 0.25f - gap;
         c.padX = c.keyX + c.keyW + gap;
         c.padW = w * 0.25f - gap;
+        if (team_) {
+            // 2.65: one device per tab: its column takes both places.
+            c.keyW = c.padW = w * 0.50f - gap;
+            c.padX = c.keyX;
+        }
         c.resetX = c.padX + c.padW + gap;
         c.resetW = x + w - ui.s(12) - c.resetX;
         return c;
@@ -226,14 +239,16 @@ private:
     /// What is said under a row: why a power has no key or another key than asked.
     std::vector<std::string> warnings(const ResolvedPowerKey& r) const {
         std::vector<std::string> out;
-        const GamepadStyle style = g_.app.input().gamepadStyle();
-        if (!r.keyCommand.empty())
+        const GamepadStyle style = padStyle();
+        if (!showKey()) {
+        } else if (!r.keyCommand.empty())
             out.push_back("Clavier : « " + keyName(r.wantedKey) + " » est la touche de « " + r.keyCommand +
                           " » : la commande l'emporte, ce pouvoir n'a pas de touche.");
         else if (!r.keyPower.empty())
             out.push_back("Clavier : « " + keyName(r.wantedKey) + " » est déjà prise par « " + powerName(r.keyPower) + " » : « " + keyName(r.key) +
                           " » à la place.");
-        if (!r.padCommand.empty())
+        if (!showPad()) {
+        } else if (!r.padCommand.empty())
             out.push_back("Manette : « " + padBindingName(r.wantedPad, style) + " » est le bouton de « " + r.padCommand +
                           " » : la commande l'emporte, ce pouvoir n'a pas de bouton.");
         else if (!r.padPower.empty())
@@ -253,9 +268,9 @@ private:
         UIContext& ui = g_.ui;
         const UITheme& th = ui.theme();
         const PowerDefinition* def = g_.content.power(r.power);
-        const bool mine = g_.powerKeyOverrides.has(level_.id, r.power);
+        const bool mine = myKeys().has(level_.id, r.power);
         ui.r().fillRoundedRect(row, ui.s(10), Color{14, 20, 40, 200});
-        if (r.keyConflict() || r.padConflict()) ui.r().drawRoundedRect(row, ui.s(10), th.warm.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
+        if ((showKey() && r.keyConflict()) || (showPad() && r.padConflict())) ui.r().drawRoundedRect(row, ui.s(10), th.warm.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
         // Icon and name; under the name, whose keys these are.
         const float isz = compact_ ? ui.s(40) : ui.s(48);
         Rect icon{c.nameX, row.y + (compact_ ? ui.s(11) : ui.s(16)), isz, isz};
@@ -275,13 +290,14 @@ private:
         ui.label(ui.elide(whose, FontFace::Body, wf, troom), {tx, row.y + (compact_ ? ui.s(44) : ui.s(58))}, wf, mine ? th.accent : th.textDim,
                  Align::Left, FontFace::Body, VAlign::Middle);
 
-        const GamepadStyle style = g_.app.input().gamepadStyle();
-        // What is held right now lights its key / button, outside any rebinding.
+        const GamepadStyle style = padStyle();
+        // What is held right now lights its key / button, outside any rebinding (2.65: on the
+        // pad of the tab's player).
         const bool check = !g_.app.input().capturing();
-        const HeldInputs held = g_.app.input().heldInputs();
+        const HeldInputs held = heldNow();
         const float by = row.y + ui.s(12), bh = ui.s(46);
         // Keyboard / mouse: the key used, the level's below.
-        {
+        if (showKey()) {
             Rect b{c.keyX, by, c.keyW, bh};
             UIContext::ButtonStyle st;
             st.small = true;
@@ -302,7 +318,7 @@ private:
                          VAlign::Middle);
         }
         // Gamepad: the button used (its icon on the left), the level's below.
-        {
+        if (showPad()) {
             Rect b{c.padX, by, c.padW, bh};
             UIContext::ButtonStyle st;
             st.small = true;
@@ -313,7 +329,7 @@ private:
             const float room = b.w - ui.s(20) - (icon ? 2.0f * (ui.s(8) + ui.s(30) + ui.s(4)) : 0.0f);
             st.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(24), room), 0.6f), fz(ui, 11.5f));
             if (ui.button("p" + r.power, b, label, st)) beginCapture(r.power, true);
-            if (icon) Glyphs::drawPadButton(ui, r.pad, {b.x + ui.s(8), b.center().y}, ui.s(30));
+            if (icon) Glyphs::drawPadButton(ui, r.pad, {b.x + ui.s(8), b.center().y}, ui.s(30), style);
             const std::string lv =
                 r.levelPadSource == PowerKeySource::Level ? "Niveau : " + padBindingName(r.levelPad, style) : "Suggéré : " + padBindingName(r.levelPad, style);
             float lf = std::max(ui.fitFont(lv, FontFace::Body, fz(ui, 14), b.w, 0.8f), fz(ui, 11.5f));
@@ -330,9 +346,9 @@ private:
             const std::string label = "Par défaut";
             st.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 17, b.w - ui.s(14), 0.6f), fz(ui, 11.5f));
             if (ui.button("r" + r.power, b, label, st) && mine) {
-                g_.powerKeyOverrides.reset(level_.id, r.power);
+                myKeys().reset(level_.id, r.power);
                 const std::string also = shareChange();
-                g_.powerKeyOverrides.save();
+                g_.savePowerKeys(player_);
                 refresh();
                 say("« " + powerName(r.power) + " » reprend les touches du niveau." + also, false);
                 g_.uiSound("ui_confirm");
@@ -368,11 +384,11 @@ private:
         float nf = std::max(ui.fitFont(name, FontFace::Bold, fz(ui, 18), troom, 0.7f), fz(ui, 11.5f));
         ui.label(ui.elide(name, FontFace::Bold, nf, troom), {tx, row.center().y}, nf, def ? def->color : th.text, Align::Left, FontFace::Bold,
                  VAlign::Middle);
-        const GamepadStyle style = g_.app.input().gamepadStyle();
+        const GamepadStyle style = padStyle();
         // The key / button held right now is lit (a check): a mark around what is written, inside
         // its column and the row (the columns are ui.s(16) apart), nothing moves.
         const bool check = !g_.app.input().capturing();
-        const HeldInputs held = g_.app.input().heldInputs();
+        const HeldInputs held = heldNow();
         const auto mark = [&](float x0, float x1) {
             ui.heldHighlight({x0 - ui.s(7), row.center().y - ui.s(17), x1 - x0 + ui.s(14), ui.s(34)});
         };
@@ -404,7 +420,108 @@ private:
     }
 
     void refresh() {
-        keys_ = playerPowerKeys(g_, level_, extra_);
+        keys_ = levelPowerKeys(level_, g_.content, base(), &myKeys(), extra_);
+        shownTab_ = player_;
+    }
+
+    // 2.65: whose keys: the player of the tab (player 1 alone).
+    const InputBindings& base() const { return g_.settings.playerInput(player_); }
+    PowerKeyOverrides& myKeys() { return g_.powerKeysOf(player_); }
+    const PowerKeyOverrides& myKeys() const { return const_cast<GameServices&>(g_).powerKeysOf(player_); }
+    GamepadStyle padStyle() const { return team_ ? g_.playerPadStyle(player_) : g_.app.input().gamepadStyle(); }
+    /// Which columns: both alone; in a team, the device of the tab's player only.
+    bool showKey() const { return !team_ || !g_.localTeam[static_cast<size_t>(player_)].device.isPad(); }
+    bool showPad() const { return !team_ || g_.localTeam[static_cast<size_t>(player_)].device.isPad(); }
+    /// What is held now: the keyboard and the mouse, and the pad of the tab's player (alone: the
+    /// pad in use).
+    HeldInputs heldNow() const {
+        InputManager& in = g_.app.input();
+        if (!team_ || !g_.localTeam[static_cast<size_t>(player_)].device.isPad()) return in.heldInputs();
+        const PadEntry* p = in.devices().byNumber(g_.localTeam[static_cast<size_t>(player_)].device.pad);
+        return in.heldInputs(p && p->connected ? p->id : 0, base().gamepad.triggerThreshold);
+    }
+    std::string deviceLabel(int player) const {
+        const LocalDevice& d = g_.localTeam[static_cast<size_t>(player)].device;
+        if (d.isKeyboard()) return "Clavier + souris";
+        if (d.isPad())
+            if (const PadEntry* p = g_.app.input().devices().byNumber(d.pad)) return padLabel(*p);
+        return "Aucun périphérique";
+    }
+
+    /// « Copier les touches de Jn »: this level's keys of player `from` (its own choices) for the
+    /// player of the tab.
+    void copyFrom(int from) {
+        PowerKeyOverrides& src = g_.powerKeysOf(from);
+        PowerKeyOverrides& dst = myKeys();
+        const Json& theirs = src.level(level_.id);
+        for (const auto& r : keys_.powers) {
+            dst.reset(level_.id, r.power);
+            if (!src.has(level_.id, r.power)) continue;
+            if (SDL_Scancode k = powerKeyEntryKey(theirs, r.power); k != SDL_SCANCODE_UNKNOWN) dst.setKey(level_.id, r.power, k);
+            if (PadBinding b = powerKeyEntryPad(theirs, r.power); b.kind != PadBinding::Kind::None) dst.setPad(level_.id, r.power, b);
+        }
+        g_.savePowerKeys(player_);
+        refresh();
+        say("Les touches de ce niveau de J" + std::to_string(from + 1) + " sont maintenant celles de J" + std::to_string(player_ + 1) + ".", false);
+        g_.uiSound("ui_confirm");
+    }
+
+    /// « Par défaut »: every power of this level takes the level's keys again (this player).
+    void resetAll() {
+        for (const auto& r : keys_.powers) myKeys().reset(level_.id, r.power);
+        g_.savePowerKeys(player_);
+        refresh();
+        say("Toutes les touches de ce niveau reprennent celles du niveau pour J" + std::to_string(player_ + 1) + ".", false);
+        g_.uiSound("ui_confirm");
+    }
+
+    /// The tabs of the players, the device of the one shown, its actions; returns the height.
+    float teamBarHeight() const { return team_ ? g_.ui.s(52) + g_.ui.s(10) + g_.ui.s(30) + g_.ui.s(46) + g_.ui.s(14) : 0.0f; }
+    void drawTeamBar(float x, float y, float w) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        std::vector<std::string> labels;
+        for (size_t i = 0; i < g_.localTeam.size(); ++i) labels.push_back("J" + std::to_string(i + 1) + " · " + g_.localTeam[i].name);
+        int tab = player_;
+        ui.tabs("players", {x, y, w, ui.s(52)}, labels, tab);
+        if (tab != player_ && !g_.app.input().capturing()) {
+            player_ = tab;
+            refresh();
+            startTwins();
+        }
+        y += ui.s(52) + ui.s(10);
+        // « J2 · Joueur 2 · Manette Xbox (n° 1) »: the device whose keys are shown (its glyphs).
+        const std::string head = "J" + std::to_string(player_ + 1) + " · " + g_.localTeam[static_cast<size_t>(player_)].name + " · " + deviceLabel(player_);
+        const float hf = std::max(ui.fitFont(head, FontFace::Bold, fz(ui, 17), w, 0.7f), fz(ui, 11.5f));
+        ui.label(ui.elide(head, FontFace::Bold, hf, w), {x, y + ui.s(15)}, hf, g_.localTeam[static_cast<size_t>(player_)].color, Align::Left, FontFace::Bold,
+                 VAlign::Middle);
+        y += ui.s(30);
+        // The actions: copy another player's keys, all back to the level's, the commands.
+        std::vector<std::pair<std::string, int>> acts;  // label, what (-1 default, -2 commands, n: copy from n)
+        for (int i = 0; i < static_cast<int>(g_.localTeam.size()); ++i)
+            if (i != player_) acts.emplace_back("Copier les touches de J" + std::to_string(i + 1), i);
+        acts.emplace_back("Par défaut", -1);
+        acts.emplace_back("Commandes de J" + std::to_string(player_ + 1) + "…", -2);
+        const float gap = ui.s(10);
+        const float bw = (w - gap * static_cast<float>(acts.size() - 1)) / static_cast<float>(acts.size());
+        float fs = 17.0f;
+        for (const auto& a : acts) fs = std::min(fs, ui.fitFont(a.first, FontFace::Bold, 17, bw - ui.s(16), 0.55f));
+        ui.pushId("team");
+        for (size_t k = 0; k < acts.size(); ++k) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = fs;
+            const Rect b{x + static_cast<float>(k) * (bw + gap), y, bw, ui.s(46)};
+            if (!ui.button("a" + std::to_string(k), b, acts[k].first, st)) continue;
+            if (acts[k].second >= 0) copyFrom(acts[k].second);
+            else if (acts[k].second == -1) resetAll();
+            else g_.app.pushScene(makeSettingsScene(g_, true, showPad() ? 3 : 2, player_));
+        }
+        // « NOUVEAU » on « Commandes de Jn… » (its settings: one button per player).
+        const size_t last = acts.size() - 1;
+        ui.newBadge("a" + std::to_string(last), {x + static_cast<float>(last) * (bw + gap), y, bw, ui.s(46)}, "keys.players");
+        ui.popId();
+        (void)th;
     }
 
     // ------------------------------------------------------------ 2.60: the same keys elsewhere
@@ -418,7 +535,7 @@ private:
         stopTwins();
         twins_.clear();
         twinsReady_ = false;
-        const std::string sig = powerKeySignature(levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides));
+        const std::string sig = powerKeySignature(levelPowerKeys(level_, g_.content, base(), &myKeys()));
         if (sig.empty()) {
             twinsReady_ = true;  // no key power: nothing to share
             return;
@@ -427,8 +544,8 @@ private:
         for (const LevelEntry* e : g_.content.levels())
             if (e && e->id != level_.id) ids.push_back(e->id);
         twinsCancel_ = std::make_shared<std::atomic<bool>>(false);
-        twinsJob_ = std::async(std::launch::async, [content = &g_.content, ids = std::move(ids), overrides = g_.powerKeyOverrides,
-                                                    base = g_.settings.input, sig, cancel = twinsCancel_]() {
+        twinsJob_ = std::async(std::launch::async, [content = &g_.content, ids = std::move(ids), overrides = myKeys(),
+                                                    base = base(), sig, cancel = twinsCancel_]() {
             std::vector<Twin> out;
             for (const std::string& id : ids) {
                 if (cancel->load()) break;
@@ -455,9 +572,9 @@ private:
             startTwins();
             return {};
         }
-        const PowerKeyMap mine = levelPowerKeys(level_, g_.content, g_.settings.input, &g_.powerKeyOverrides);
+        const PowerKeyMap mine = levelPowerKeys(level_, g_.content, base(), &myKeys());
         int n = 0;
-        for (const Twin& t : twins_) n += matchPowerKeys(g_.powerKeyOverrides, t.id, t.keys, mine) ? 1 : 0;
+        for (const Twin& t : twins_) n += matchPowerKeys(myKeys(), t.id, t.keys, mine) ? 1 : 0;
         if (n == 0) return {};
         return n == 1 ? " Aussi dans 1 autre niveau aux mêmes touches." : " Aussi dans " + std::to_string(n) + " autres niveaux aux mêmes touches.";
     }
@@ -535,9 +652,9 @@ private:
             }
         storeKey(*me, sc);
         const std::string also = shareChange();
-        g_.powerKeyOverrides.save();
+        g_.savePowerKeys(player_);
         refresh();
-        if (std::string cmd = baseCommandOfKey(g_.settings.input, sc); !cmd.empty())
+        if (std::string cmd = baseCommandOfKey(base(), sc); !cmd.empty())
             say("« " + keyName(sc) + " » est la touche de « " + cmd + " » : la commande l'emporte, choisissez une autre touche.", true);
         else if (!swapped.empty())
             say("« " + powerName(swapped) + " » prend « " + keyName(old) + " » : les deux pouvoirs échangent leurs touches." + also, false);
@@ -549,7 +666,7 @@ private:
         const ResolvedPowerKey* me = keys_.find(power);
         if (!me) return;
         const PadBinding old = me->pad;
-        const GamepadStyle style = g_.app.input().gamepadStyle();
+        const GamepadStyle style = padStyle();
         std::string swapped;
         for (const auto& o : keys_.powers)
             if (o.power != power && o.pad == b && old.kind != PadBinding::Kind::None && !(old == b)) {
@@ -558,9 +675,9 @@ private:
             }
         storePad(*me, b);
         const std::string also = shareChange();
-        g_.powerKeyOverrides.save();
+        g_.savePowerKeys(player_);
         refresh();
-        if (std::string cmd = baseCommandOfPad(g_.settings.input, b); !cmd.empty())
+        if (std::string cmd = baseCommandOfPad(base(), b); !cmd.empty())
             say("« " + padBindingName(b, style) + " » est le bouton de « " + cmd + " » : la commande l'emporte, choisissez un autre bouton.", true);
         else if (!swapped.empty())
             say("« " + powerName(swapped) + " » prend « " + padBindingName(old, style) + " » : les deux pouvoirs échangent leurs boutons." + also,
@@ -570,10 +687,10 @@ private:
     }
 
     void storeKey(const ResolvedPowerKey& r, SDL_Scancode sc) {
-        g_.powerKeyOverrides.setKey(level_.id, r.power, sc == r.levelKey ? SDL_SCANCODE_UNKNOWN : sc);
+        myKeys().setKey(level_.id, r.power, sc == r.levelKey ? SDL_SCANCODE_UNKNOWN : sc);
     }
     void storePad(const ResolvedPowerKey& r, const PadBinding& b) {
-        g_.powerKeyOverrides.setPad(level_.id, r.power, b == r.levelPad ? PadBinding{} : b);
+        myKeys().setPad(level_.id, r.power, b == r.levelPad ? PadBinding{} : b);
     }
 
     void drawCaptureModal() {
@@ -610,12 +727,16 @@ private:
     std::shared_ptr<std::atomic<bool>> twinsCancel_;
     std::vector<Twin> twins_;
     bool twinsReady_ = false;
+    int startPlayer_ = -1;
+    bool team_ = false;  // 2.65: a team on this PC, one tab per player
+    int player_ = 0;
+    int shownTab_ = 0;
 };
 
 }  // namespace
 
-std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra, std::vector<std::string> carried) {
-    return std::make_unique<LevelPowerKeysScene>(g, std::move(level), std::move(extra), std::move(carried));
+std::unique_ptr<Scene> makeLevelPowerKeys(GameServices& g, LevelData level, std::vector<std::string> extra, std::vector<std::string> carried, int player) {
+    return std::make_unique<LevelPowerKeysScene>(g, std::move(level), std::move(extra), std::move(carried), player);
 }
 
 }  // namespace cosmic

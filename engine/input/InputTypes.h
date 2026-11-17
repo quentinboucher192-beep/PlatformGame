@@ -86,7 +86,11 @@ bool actionIsPowerInput(Action a);
 Action actionFromId(const std::string& id);
 
 enum class InputDevice { Keyboard, Gamepad };
-enum class GamepadStyle { Xbox, PlayStation, Generic };
+/// The glyphs of a gamepad (2.65: Switch, its pads and Joy-Con, with its own names: B at the
+/// bottom, A at the right, + / −, ZL / ZR).
+enum class GamepadStyle { Xbox, PlayStation, Generic, Switch };
+/// The style of a gamepad type as SDL reports it.
+GamepadStyle gamepadStyleOf(SDL_GamepadType type);
 
 /// A gamepad binding: a button, or one direction of an axis (sticks / triggers).
 struct PadBinding {

@@ -105,13 +105,48 @@ voulu.
 
 ## 3. Jeu sur un même PC
 
-* Le joueur 1 joue au clavier et à la souris, et avec une manette s'il en prend une dans le
-  salon (« Prendre une manette »). Les joueurs 2 et 3 prennent une place en appuyant sur
-  **Start** ou **A / Croix** de leur propre manette, et la quittent avec **B / Rond**. Chaque
-  manette est lue séparément (`engine/input/LocalPad`), avec les réglages de manette du jeu et
-  les boutons des pouvoirs que porte son joueur ; le gestionnaire d'entrées du joueur 1 ignore
-  les manettes des autres (`InputManager::setReservedPads` : jamais de bascule vers elles).
+* **Un périphérique par joueur** (2.65, `engine/input/Devices.h`) : le clavier et la souris vont
+  ensemble et ne servent qu'à un seul joueur ; chaque manette, à un seul joueur. Le joueur 1
+  commence au clavier ; les joueurs 2 et 3 prennent une place avec **Start** ou **A / Croix**
+  d'une manette libre et la quittent avec **B / Rond**. « Changer de périphérique » (sur la carte
+  de chaque joueur) passe au périphérique libre suivant : le clavier, puis les manettes par numéro.
+  La manette qui reçoit une place vibre une fois (si ses vibrations sont activées).
+* **Numéros stables** : chaque manette vue pendant la session a un numéro (« Manette Xbox
+  (n° 1) ») ; débranchée puis rebranchée (SDL lui donne un autre identifiant), elle le retrouve
+  (même GUID, même numéro de série quand SDL le donne). Le type (Xbox, PlayStation, Switch,
+  générique) donne les glyphes : sur Switch, B en bas et A à droite, L / R, ZL / ZR, + / −.
+* **Le salon** montre pour chaque place son périphérique, ses boutons qui s'allument quand on
+  appuie (pour vérifier que c'est bien le sien), « Changer de périphérique » et « Touches… », puis
+  la liste des périphériques branchés, en direct (une manette débranchée y reste 10 s ; une
+  ligne s'allume quand on appuie sur un bouton de cette manette).
+* **Touches par joueur** : profils J1, J2, J3 dans `saves/settings.json` (`input` pour J1,
+  `coopInput` pour J2 et J3 : touches du clavier et de la souris, boutons et réglages de la
+  manette) ; touches des pouvoirs de chaque niveau dans `saves/power_keys.json` (J1),
+  `power_keys_j2.json`, `power_keys_j3.json`. « Touches de ce niveau » a un onglet par joueur,
+  Paramètres › Clavier / Manette un bouton par joueur, avec les touches du périphérique de ce
+  joueur et ses glyphes, les conflits vérifiés pour ce périphérique, « Copier les touches de
+  Jn » et « Par défaut ». Changer de manette change les glyphes de l'onglet, jamais les réglages
+  du joueur. En solo, rien ne change : J1 seulement, sans onglet.
+* Chaque manette est lue séparément (`engine/input/LocalPad`) avec le profil de son joueur ; en
+  partie, le gestionnaire d'entrées ne lit plus aucune manette pour jouer
+  (`InputManager::setGamepadGameplay(false)`) : le joueur du clavier joue au clavier et à la
+  souris seulement, avec son profil.
 * Pause (Échap ou Start de n'importe quelle manette du PC) : toute l'équipe s'arrête.
+* **Manette débranchée en partie** (aussi en solo, `GameScene`) : la partie **et le chrono**
+  s'arrêtent — hors simulation : simplement aucun pas — et « MANETTE DÉBRANCHÉE · J2 · Lyra ·
+  Manette Xbox (n° 1) » s'affiche. La même manette rebranchée (ou réveillée) : 3, 2, 1, la partie
+  reprend. **A** sur une autre manette libre : elle prend la place du joueur, avec ses touches.
+  **Entrée** : le joueur passe au clavier, s'il est libre. « Continuer sans <joueur> » (même PC
+  seulement) : ce PC décide son absence comme le relais en ligne (trames `Standby`, 60 s pour
+  revenir — sa manette rebranchée ou A sur une manette libre —, puis parti : équipe incomplète).
+  « Quitter la partie » (confirmé). Seuls les joueurs dont le périphérique est encore branché
+  peuvent choisir. En solo : même écran, sans « Continuer sans… ».
+* En ligne et en réseau local, chacun gère le sien : une manette débranchée ne met pas l'équipe en
+  pause (une ligne dans le panneau d'équipe), la règle des 60 s de reconnexion ne change pas.
+* **Pile faible** (seulement si SDL donne la charge, sur batterie, 15 % ou moins) : une ligne dans
+  le panneau d'équipe, sans pause.
+* Rien de tout cela ne touche la simulation : les choix passent par les trames (`InputFrame`),
+  les empreintes de référence ne changent pas.
 * Un joueur local n'a pas besoin de compte. Il peut se connecter à son compte dans le salon
   (« Se connecter », jeton gardé en mémoire seulement, jamais écrit) : c'est nécessaire pour
   que l'équipe soit classée (voir § 6).

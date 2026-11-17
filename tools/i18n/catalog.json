@@ -679,6 +679,12 @@
    ]
   },
   {
+   "fr": "A / Croix",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
    "fr": "A : outil · gâchettes : images · LB / RB : outils · X / Y : annuler / rétablir",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -2519,6 +2525,12 @@
    ]
   },
   {
+   "fr": "Appuyez sur Start ou A",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Appuyez sur un bouton ou une gâchette de la manette",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -3372,6 +3384,24 @@
    ]
   },
   {
+   "fr": "au clavier : impossible, le clavier et la souris sont déjà à un autre joueur",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "au clavier : vous continuez au clavier et à la souris",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "au clavier : {0} joue au clavier et à la souris, avec ses touches",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
    "fr": "Au clavier, à la manette ou à la souris",
    "where": [
     "data/trailer/trailer.json"
@@ -4048,6 +4078,13 @@
    "fr": "Aucun projet ouvert aux autres joueurs pour l'instant.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun périphérique",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -5037,7 +5074,7 @@
    ]
   },
   {
-   "fr": "B sur sa manette : quitter la place",
+   "fr": "B sur cette manette pour quitter la place. Une seule place par périphérique.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
    ]
@@ -6110,9 +6147,27 @@
    ]
   },
   {
+   "fr": "Branchez une manette",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Branchez une manette : elle sera reconnue automatiquement.",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "branchée",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "branchés",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -6872,6 +6927,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Capture",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -8323,6 +8384,12 @@
    ]
   },
   {
+   "fr": "Chacun a le sien et ses propres touches (profils J1, J2, J3, gardés d'une partie à l'autre) ; le clavier et la souris vont ensemble, à un seul joueur. Une manette débranchée en partie met tout en pause, chrono compris.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Chacun de ses pas fait trembler les Confins !",
    "where": [
     "data/enemies/monolithe.json"
@@ -8396,12 +8463,6 @@
    ]
   },
   {
-   "fr": "Changer de manette",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "Changer de musique",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -8417,6 +8478,12 @@
    "fr": "Changer de planète",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Changer de périphérique",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -8987,6 +9054,12 @@
    "fr": "Choisissez d'abord un niveau : il lui faut un parcours tracé (comme en ont les niveaux EXTRÊME).",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez d'abord un niveau : ses touches se règlent pour chaque joueur.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -9651,6 +9724,13 @@
    ]
   },
   {
+   "fr": "Clavier + souris",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Clavier / souris",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -9684,13 +9764,7 @@
    ]
   },
   {
-   "fr": "clavier et souris",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
-   "fr": "clavier · manette : {0}",
+   "fr": "Clavier et souris",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
    ]
@@ -10336,6 +10410,12 @@
    ]
   },
   {
+   "fr": "Commandes de J{0}…",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Comme les autres gardiens : statistiques, entraînement, succès (vaincre, sans dégât, chaque phase sans dégât), titre « Briseur d'étoiles », musique dans le juke-box, Galerie ; pas d'écho dans L'Arène des Échos.",
    "where": [
     "data/news/changelog.json"
@@ -10656,12 +10736,6 @@
    ]
   },
   {
-   "fr": "compte connecté",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "Compte Cosmic Online",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -10847,6 +10921,7 @@
   {
    "fr": "Confirmer : quitter",
    "where": [
+    "ui/screens/DeviceLostUi.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -11350,6 +11425,12 @@
    ]
   },
   {
+   "fr": "Continuer sans {0}",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
    "fr": "Contre le monde",
    "where": [
     "data/achievements/achievements.json"
@@ -11406,6 +11487,12 @@
   },
   {
    "fr": "Coopération sur les niveaux EXTRÊME de la communauté : le salon de COOPÉRATION propose « Campagne / Communauté » (titre, auteur, version des niveaux installés depuis NIVEAUX EN LIGNE), et la page d'un niveau EXTRÊME gagne « Jouer en coop ». Tout le monde joue la même version : un invité qui n'a pas le niveau le reçoit avant « Prêt » (téléchargé depuis Cosmic Online, ou envoyé par le PC hôte en réseau local, même sans Internet), avec sa progression ; sa taille est bornée et son empreinte vérifiée avant l'installation, et une partie ne démarre jamais avec deux versions différentes. Les classements Duo et Trio de chaque version s'affichent sur la page du niveau et à la fin de la partie (les points de clan restent ceux des niveaux officiels).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Coopération sur un même PC : un périphérique par joueur. Le clavier et la souris vont ensemble à un seul joueur, chaque manette à un seul joueur ; Start ou Ⓐ sur une manette libre prend une place, Ⓑ la quitte, « Changer de périphérique » passe au suivant libre, et la manette qui reçoit une place vibre une fois. Chaque carte du salon montre le périphérique de son joueur (« Manette Xbox (n° 1) », numéro gardé quand on la rebranche) et allume les boutons qu'il appuie ; la liste des périphériques branchés se met à jour en direct (une manette débranchée y reste quelques secondes). Glyphes Xbox, PlayStation, Switch (B en bas, A à droite, ZL / ZR, + / −) ou génériques.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -11529,6 +11616,13 @@
    "fr": "Copier le lien",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Copier les touches de J{0}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp",
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -13247,6 +13341,12 @@
    "fr": "De petits engrenages de laiton tournent derrière Nova, entre quelques bouffées de vapeur.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "de plus pour un joueur de plus",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -15159,6 +15259,18 @@
    ]
   },
   {
+   "fr": "débranchée : rebranchez-la ou changez de périphérique",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "débranchée il y a {0} s",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Débroussailleur",
    "where": [
     "data/achievements/achievements.json"
@@ -16670,7 +16782,8 @@
   {
    "fr": "En attente",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -17607,7 +17720,8 @@
   {
    "fr": "Entrée",
    "where": [
-    "engine/input/InputTypes.cpp"
+    "engine/input/InputTypes.cpp",
+    "ui/screens/DeviceLostUi.cpp"
    ]
   },
   {
@@ -20397,6 +20511,30 @@
    ]
   },
   {
+   "fr": "glyphes génériques",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "glyphes PlayStation",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "glyphes Switch",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "glyphes Xbox",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Golem de glace",
    "where": [
     "data/enemies/ice_golem.json"
@@ -22923,6 +23061,12 @@
    ]
   },
   {
+   "fr": "J'ai rebranché · Reprendre",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
    "fr": "J'aime",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -23186,12 +23330,6 @@
    ]
   },
   {
-   "fr": "Joueur 1",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "Joueur bloqué : il ne peut plus vous écrire, vous suivre ni réagir à vos commentaires.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -23420,6 +23558,39 @@
    ]
   },
   {
+   "fr": "J{0}",
+   "where": [
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "J{0} joue au clavier",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "J{0} n'a pas de manette",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "J{0} · {1}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/LevelPowerKeysScene.cpp",
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "J{0} · {1} · {2}",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "K",
    "where": [
     "ui/screens/NotificationsScene.cpp",
@@ -23484,6 +23655,7 @@
   {
    "fr": "L",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
@@ -24479,6 +24651,24 @@
    ]
   },
   {
+   "fr": "La manette de {0} est toujours débranchée : rebranchez-la, ou A sur une manette libre, ou Entrée au clavier.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "La manette vibre une fois quand on lui attribue cette place ; B pour la quitter.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "La manette vibre une fois quand on lui attribue cette place.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "La marée monte dans l'arène !",
    "where": [
     "data/enemies/kraken.json"
@@ -24622,6 +24812,18 @@
    "where": [
     "game/coop/NetCoopLink.cpp",
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie et le chrono sont en pause. Rebranchez la manette (ou réveillez-la) : la partie reprend après un compte à rebours de 3 secondes.",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "LA PARTIE REPREND",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
    ]
   },
   {
@@ -25444,6 +25646,18 @@
    "fr": "Le chemin de ronde craque sous le givre. Ne traînez pas sous les bombes !",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Le chrono repart en même temps que la partie.",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "Le chrono reste arrêté tant que la partie est en pause.",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
    ]
   },
   {
@@ -28127,9 +28341,21 @@
    ]
   },
   {
+   "fr": "Les touches appuyées s'allument : vous vérifiez que c'est bien le vôtre.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Les touches d'emplacement disparaissent des paramètres Clavier / souris et Manette ; le guide des pouvoirs, le choix de remplacement et les entraînements (boss et segments) montrent la touche de chaque pouvoir.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les touches de ce niveau de J{0} sont maintenant celles de J{1}.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -28320,6 +28546,12 @@
    "fr": "Libre",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "libre",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -29121,8 +29353,11 @@
    "fr": "Manette",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
+    "engine/input/Devices.cpp",
     "engine/input/InputManager.cpp",
     "engine/input/LocalPad.cpp",
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/DeviceLostUi.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
@@ -29152,12 +29387,6 @@
    ]
   },
   {
-   "fr": "manette : {0}",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "Manette : « {0} » est déjà pris par « {1} » : « {2} » à la place.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -29173,6 +29402,36 @@
    "fr": "Manette : « {0} » est le bouton de « {1} » par défaut",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "MANETTE DÉBRANCHÉE",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "Manette débranchée en pleine partie (en solo comme en coopération sur un même PC) : la partie et le chrono se mettent en pause et « MANETTE DÉBRANCHÉE » dit à qui elle était ; la rebrancher relance la partie après 3, 2, 1. Ⓐ sur une autre manette libre prend la place du joueur avec ses touches, Entrée lui donne le clavier s'il est libre ; en coopération, « Continuer sans… » laisse l'équipe repartir sans lui (60 s pour revenir, comme en ligne). En ligne, la règle des 60 s de reconnexion ne change pas. Pile faible d'une manette : une ligne dans le panneau d'équipe, sans pause.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Manette PlayStation",
+   "where": [
+    "engine/input/Devices.cpp"
+   ]
+  },
+  {
+   "fr": "Manette Switch",
+   "where": [
+    "engine/input/Devices.cpp"
+   ]
+  },
+  {
+   "fr": "Manette Xbox",
+   "where": [
+    "engine/input/Devices.cpp"
    ]
   },
   {
@@ -30260,6 +30519,12 @@
    "fr": "mis en favori",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "mis à jour en direct · appuyez sur un bouton pour le reconnaître",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -34241,6 +34506,12 @@
    ]
   },
   {
+   "fr": "Ou bien",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
    "fr": "Ouganda",
    "where": [
     "data/online/countries.json",
@@ -36273,6 +36544,12 @@
    ]
   },
   {
+   "fr": "Pile faible : manette de {0} ({1} %)",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Pipette",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -36384,13 +36661,7 @@
    ]
   },
   {
-   "fr": "Place libre\n\nAppuyez sur Start ou A d'une autre manette pour prendre cette place.",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
-   "fr": "Place libre\n\nBranchez une manette de plus pour un joueur de plus.",
+   "fr": "Place libre",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
    ]
@@ -38188,12 +38459,6 @@
    ]
   },
   {
-   "fr": "Prendre une manette",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "Prenez la tablette du sanctuaire.",
    "where": [
     "data/levels/aethra_01.json",
@@ -39353,6 +39618,12 @@
    ]
   },
   {
+   "fr": "PÉRIPHÉRIQUES BRANCHÉS",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Pérou",
    "where": [
     "data/online/countries.json",
@@ -39428,7 +39699,8 @@
   {
    "fr": "Quitter la partie",
    "where": [
-    "ui/screens/CoopGameScene.cpp"
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/DeviceLostUi.cpp"
    ]
   },
   {
@@ -39488,6 +39760,7 @@
   {
    "fr": "R",
    "where": [
+    "engine/input/InputTypes.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/studio/StudioCanvas.cpp"
@@ -41502,6 +41775,7 @@
    "fr": "Reprendre",
    "where": [
     "ui/screens/CoopGameScene.cpp",
+    "ui/screens/DeviceLostUi.cpp",
     "ui/screens/PauseScene.cpp"
    ]
   },
@@ -43716,12 +43990,6 @@
    ]
   },
   {
-   "fr": "sans compte",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "Sans compte : gardé sur ce PC. Connectez-vous à Cosmic Online pour entrer dans le classement « Plus loin ».",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -43819,6 +44087,12 @@
    "fr": "sans points de passage",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sans périphérique",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -44642,6 +44916,12 @@
    ]
   },
   {
+   "fr": "Ses boutons servent dès qu'il prend une manette.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ses frères crachaient des flammes. Lui ne soufflait qu'un nuage de fumée. On l'appelait « la Fumerolle ».",
    "where": [
     "data/stories/pyrrhax.json"
@@ -44906,6 +45186,12 @@
    "fr": "Seuls les défis gardés sur ce PC sont montrés.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seuls les joueurs dont le périphérique est encore branché peuvent choisir. En ligne, chacun gère le sien : la règle des 60 s de reconnexion ne change pas.",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
    ]
   },
   {
@@ -46869,6 +47155,24 @@
    ]
   },
   {
+   "fr": "sur une autre manette : la partie reprend avec elle",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "sur une autre manette libre : elle prend la place de {0}, avec ses touches",
+   "where": [
+    "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "sur une manette libre pour rejoindre",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "sur {0}",
    "where": [
     "ui/screens/AchievementsScene.cpp",
@@ -46999,6 +47303,12 @@
    "fr": "Swim",
    "where": [
     "game/player/Player.cpp"
+   ]
+  },
+  {
+   "fr": "Switch",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -49064,6 +49374,12 @@
    ]
   },
   {
+   "fr": "Touches de J{0} copiées pour J{1}",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Touches de son niveau (à changer au choix du niveau ou en pause)",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -49101,6 +49417,18 @@
    ]
   },
   {
+   "fr": "touches du profil {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touches par joueur : profils J1, J2 et J3 gardés dans les paramètres (clavier et souris, boutons et réglages de la manette) et touches des pouvoirs de chaque niveau pour chacun. En coopération sur un même PC, « Touches de ce niveau » a un onglet par joueur avec les touches de son périphérique et ses glyphes, les conflits vérifiés pour ce périphérique, « Copier les touches de Jn », « Par défaut » et « Commandes de Jn… » (Paramètres › Clavier / Manette, un bouton par joueur). En solo, rien ne change.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Touches proposées : les suggestions des pouvoirs, sans conflit",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
@@ -49116,6 +49444,7 @@
    "fr": "Touches…",
    "where": [
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
@@ -49437,6 +49766,12 @@
    "fr": "Toutes les récompenses des paliers sont débloquées",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les touches de ce niveau reprennent celles du niveau pour J{0}.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -50796,6 +51131,12 @@
    ]
   },
   {
+   "fr": "Un joueur sans périphérique",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Un joueur à terre laisse son âme : un allié reste 2 s près d'elle pour le relever. 2 réanimations par équipe et par tentative.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -50949,6 +51290,12 @@
    "fr": "Un puits plonge vers la galerie. Planez pour adoucir la chute.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Un périphérique par joueur",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -53813,6 +54160,12 @@
    ]
   },
   {
+   "fr": "Votre manette est débranchée : rebranchez-la ou jouez au clavier. En ligne, la partie continue pour l'équipe.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre meilleur : rang {0} · {1}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -54753,6 +55106,12 @@
    ]
   },
   {
+   "fr": "ZL",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "zone",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -54914,6 +55273,12 @@
    "fr": "Zoom {0} %",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "ZR",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -55146,6 +55511,12 @@
    "fr": "{0} (modèle)",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (n° {1})",
+   "where": [
+    "engine/input/Devices.cpp"
    ]
   },
   {
@@ -57609,6 +57980,18 @@
    ]
   },
   {
+   "fr": "{0} · vibration activée",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · vibration coupée",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} · planète {2}",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -57899,6 +58282,12 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Changer de périphérique » ou A sur une manette libre",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {

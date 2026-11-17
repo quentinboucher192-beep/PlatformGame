@@ -21,6 +21,7 @@ struct CoopSeat {
     std::string name;             // shown in the game (an account's name, else « Joueur N »)
     enum class Device { Keyboard, Pad, Remote } device = Device::Keyboard;
     uint32_t pad = 0;             // SDL_JoystickID of its gamepad (Device::Pad)
+    int padNumber = 0;            // 2.65: its gamepad's stable number (DeviceRegistry: « n° 1 »)
     std::string accountId;        // its Cosmic Online account ("" : no account, never ranked)
     std::string accountToken;     // same PC: the access token of a player who signed in (memory only)
     Color color{62, 230, 214, 255};

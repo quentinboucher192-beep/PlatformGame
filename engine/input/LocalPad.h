@@ -44,6 +44,9 @@ public:
     bool navDown() const { return navDown_; }
     bool heldJump() const { return held_[static_cast<size_t>(Action::Jump)]; }
     void rumble(float low, float high, int ms) const;
+    /// 2.65: the charge of its battery in % when SDL reports it (on battery, a known level), -1
+    /// otherwise (wired, unknown): a low battery is only said when it is known.
+    int batteryPercent() const;
 
 private:
     Vec2 deadzone(Vec2 v, const GamepadSettings& s) const;

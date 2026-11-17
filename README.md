@@ -455,6 +455,14 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.64.2** :
+* **Coopération sur un même PC, un périphérique par joueur** : clavier et souris à un seul joueur, une manette
+  chacun (Start / Ⓐ pour rejoindre, Ⓑ pour partir, « Changer de périphérique », vibration à l'attribution), boutons
+  allumés en direct sur chaque carte, liste des périphériques en direct (numéros gardés au rebranchement), glyphes
+  Xbox / PlayStation / Switch / génériques ; **manette débranchée** (solo et même PC) : partie et chrono en pause,
+  reprise après 3-2-1 au rebranchement, Ⓐ sur une autre manette ou Entrée pour le clavier, « Continuer sans… » ;
+  **touches par joueur** (profils J1, J2, J3, un onglet par joueur dans « Touches de ce niveau » et les Paramètres).
+
 **Nouveau dans la version 2.64.1** :
 * **Vérification des touches** : dans Paramètres › Clavier / souris et Manette et dans « Touches de ce niveau », la
   touche, le bouton de souris ou de manette, la gâchette ou la direction de stick tenus s'allument en direct dans la
