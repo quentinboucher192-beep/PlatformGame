@@ -219,7 +219,7 @@ const SegmentRec* LevelRuns::segment(const std::string& from, const std::string&
 SegmentRec& LevelRuns::segmentAt(const std::string& from, const std::string& to) {
     for (auto& s : segments)
         if (s.from == from && s.to == to) return s;
-    segments.push_back({from, to, {}, -1.0f});
+    segments.push_back({from, to, {}, -1.0f, -1.0f});
     return segments.back();
 }
 
@@ -235,14 +235,20 @@ std::vector<std::pair<std::string, std::string>> LevelRuns::route() const {
     return r;
 }
 
+float SegmentRec::bestAll() const {
+    if (best > 0.0f && trainBest > 0.0f) return std::min(best, trainBest);
+    return best > 0.0f ? best : trainBest > 0.0f ? trainBest : -1.0f;
+}
+
 float LevelRuns::sob() const {
     auto r = route();
     if (r.empty()) return -1.0f;
     float sum = 0.0f;
     for (const auto& [from, to] : r) {
         const SegmentRec* s = segment(from, to);
-        if (!s || s->best <= 0.0f) return -1.0f;
-        sum += s->best;
+        const float b = s ? s->bestAll() : -1.0f;
+        if (b <= 0.0f) return -1.0f;
+        sum += b;
     }
     return sum;
 }
@@ -430,7 +436,9 @@ Json PlayStatsData::toJson() const {
         for (const auto& s : r.segments) {
             std::string times;
             for (float t : s.times) putB64(times, centisCode(t), 3);
-            segs.push_back({{"f", s.from}, {"t", s.to}, {"b", s.best > 0.0f ? centis(s.best) : -1}, {"x", times}});
+            Json sj{{"f", s.from}, {"t", s.to}, {"b", s.best > 0.0f ? centis(s.best) : -1}, {"x", times}};
+            if (s.trainBest > 0.0f) sj["tb"] = centis(s.trainBest);  // 2.60.3 (older games ignore it)
+            segs.push_back(std::move(sj));
         }
         std::string fin, hist;
         int prevDay = r.finishes.empty() ? 0 : r.finishes.front().day;
@@ -579,6 +587,8 @@ PlayStatsData PlayStatsData::fromJson(const Json& j) {
                         sr.to = text(s, "t");
                         int b = field(s, "b", -1);
                         sr.best = b > 0 ? fromCentis(b) : -1.0f;
+                        int tb = field(s, "tb", -1);
+                        sr.trainBest = tb > 0 ? fromCentis(tb) : -1.0f;
                         const std::string x = text(s, "x", 3 * (kSegmentTimesKept + 10));
                         size_t pos = 0;
                         for (unsigned c = 0; getB64(x, pos, 3, c);)

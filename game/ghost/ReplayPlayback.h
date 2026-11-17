@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -27,8 +28,11 @@ namespace cosmic {
 /// timeline) lands on the first step showing it.
 class ReplayPlayback {
 public:
+    /// How a run started besides the level's own start (2.60.3: a section training's checkpoint
+    /// and powers, applySectionTraining), applied to every copy of the level once seeded.
+    using Setup = std::function<void(GameWorld&)>;
     /// `replay` must outlive the playback. `level` is the installed level (same version).
-    ReplayPlayback(WorldServices services, LevelData level, const ReplayData& replay);
+    ReplayPlayback(WorldServices services, LevelData level, const ReplayData& replay, Setup setup = {});
     ~ReplayPlayback();
 
     GameWorld& world() { return *main_.world; }
@@ -92,6 +96,7 @@ private:
     WorldServices services_;
     LevelData level_;
     const ReplayData& replay_;
+    Setup setup_;
     Run main_;
     std::vector<Run> spares_;  // points de reprise, behind main_
     static constexpr std::array<uint32_t, 3> kLags{90, 360, 1440};

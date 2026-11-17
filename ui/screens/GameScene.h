@@ -152,7 +152,9 @@ private:
     /// the editor's completion run of a player level (needed to publish it).
     /// Local: any other level played from its start (workshop, imported), recorded for the
     /// ghosts only (nothing is sent).
-    enum class RecordMode { None, Official, Community, EditorCompletion, Local, Challenge };
+    /// Training (2.60.3): a section training's attempt, kept on this computer only (its best
+    /// attempt's replay), never sent.
+    enum class RecordMode { None, Official, Community, EditorCompletion, Local, Challenge, Training };
     RecordMode recordMode_ = RecordMode::None;
     std::string gameplayHash_;
     // EXTRÊME level (one life) played from its start: the attempt joins the « course à la
@@ -209,6 +211,9 @@ private:
     bool collectionDirty_ = false;
     std::string ghostHash_;
     int64_t pbGhostMs_ = 0;
+    /// 2.60.3: the Sum of Best of this level version when the run started, full runs and
+    /// section trainings together (the ghosts' panel, the segments' summary); -1 unknown.
+    float sobAtStart_ = -1.0f;
     // Achievements: what this run adds to the lifetime counters (once, at its end).
     void noteAchievementStats(bool completed, const RecordUpdate* upd);
     /// Adds this run's counters to `a` (false: a run that counts for nothing); `uses`: the
@@ -243,6 +248,8 @@ private:
     std::optional<ChallengeService::AttemptReport> attemptReport_;
     // Training (Ghost Racing): a segment from a checkpoint, again and again, never a record.
     void startTraining();
+    /// How this section training's attempt starts (the run, and its replay: 2.60.3).
+    SectionTrainingStart trainingStart() const;
     void trainingSegmentDone();
     void drawTrainingBanner();
     /// Section training: the segment's references (best segment, in my record, best training

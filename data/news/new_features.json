@@ -2245,6 +2245,13 @@
    "parents": [
     "menu.admin"
    ]
+  },
+  {
+   "id": "ghosts.training.montage",
+   "version": "2.62.1",
+   "parents": [
+    "ghosts.training"
+   ]
   }
  ]
 }

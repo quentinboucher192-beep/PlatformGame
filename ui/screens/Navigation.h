@@ -9,6 +9,7 @@
 #include "engine/core/Scene.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/ghost/GhostStore.h"
+#include "game/ghost/SobMontage.h"
 #include "game/levels/LevelData.h"
 #include "game/online/DailyChallenges.h"
 
@@ -85,10 +86,14 @@ struct SegmentSummary {
     std::vector<float> splits;            // this run (cumulative)
     float time = 0.0f;
     std::vector<float> bestSegments;      // my best ones before this run (-1 unknown)
+    /// 2.60.3: the Sum of Best before this run, full runs and section trainings together (-1:
+    /// unknown, the sum of `bestSegments` is shown).
+    float sob = -1.0f;
     std::vector<float> pbSplits;          // my record's splits before this run
     float pbTime = 0.0f;
     struct Ghost {
         std::string name;
+        std::string recordId;             // an online record (2.60.3: the world record's own column)
         Color color;
         std::vector<float> splits;
         float duration = 0.0f;
@@ -96,6 +101,11 @@ struct SegmentSummary {
         bool sameVersion = true;
     };
     std::vector<Ghost> ghosts;
+    /// 2.60.3, online only: the level version (GhostStore::levelKey's hash), its leaderboard
+    /// (GET path, empty: none) and where its records' verified replays are (« <base><id>/replay »).
+    std::string levelHash;
+    std::string wrBoard;
+    std::string wrReplayBase;
 };
 std::unique_ptr<Scene> makeSegments(GameServices& g, std::shared_ptr<const SegmentSummary> s);
 
@@ -137,6 +147,16 @@ std::unique_ptr<Scene> makeHudEditor(GameServices& g, GameplaySettings& target);
 std::unique_ptr<Scene> makeNotifications(GameServices& g, int tab = 0);
 /// Before a run: the ghosts to race against (mine, downloaded, online) and the training mode.
 std::unique_ptr<Scene> makeGhostSetup(GameServices& g, const std::string& levelId, GhostSetupRequest req = {});
+/// 2.60.3, section training › « Regarder »: the Sum of Best of a level version watched, its best
+/// segments one after the other (full runs and section trainings), each from its exact replay.
+struct SobMontageRequest {
+    std::string levelId;
+    std::string levelHash;  // the version every replay must be of (GhostStore::levelKey)
+    std::string levelName;
+    MontagePlan plan;
+    std::vector<std::string> names;  // one per segment of the plan (« Départ du niveau → Seuil I »)
+};
+std::unique_ptr<Scene> makeSobMontage(GameServices& g, SobMontageRequest req);
 class GameScene;
 /// Ghost Racing options (opacity, colours, HUD): from the pause menu (`game`: the run, whose
 /// ghosts follow the changes at once) or from the pre-race screen (nullptr).

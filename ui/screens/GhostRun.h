@@ -36,6 +36,9 @@ public:
     void setPersonal(std::vector<float> bestSegments, std::vector<float> pbSplits, float pbTime) {
         race_.setPersonal(std::move(bestSegments), std::move(pbSplits), pbTime);
     }
+    /// 2.60.3: the Sum of Best shown under the panel, full runs and section trainings together
+    /// (-1: the sum of the gold segments given to setPersonal, the full runs' only).
+    void setSumOfBest(float seconds) { sumOfBest_ = seconds; }
     /// Training from the checkpoint at `feet`: the ghosts start where they passed it.
     void setTrainingFrom(Vec2 feet) {
         trainingFrom_ = feet;
@@ -108,6 +111,7 @@ private:
     std::string checkpointName(Vec2 feet, int fallbackIndex) const;
 
     GhostRace race_;
+    float sumOfBest_ = -1.0f;
     GhostSettings settings_;
     std::future<Prepared> loading_;
     std::vector<Animator> anims_;

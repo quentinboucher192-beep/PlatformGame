@@ -282,6 +282,9 @@ LevelRuns mergeRuns(const LevelRuns& a, const LevelRuns& b) {
         r.times = uniteTimes(o ? o->times : std::vector<float>{}, n ? n->times : std::vector<float>{});
         for (const SegmentRec* x : {o, n})
             if (x && x->best > 0.0f && (r.best <= 0.0f || x->best < r.best)) r.best = x->best;
+        // 2.60.3: the best section-training time, the better one (the Sum of Best only).
+        for (const SegmentRec* x : {o, n})
+            if (x && x->trainBest > 0.0f && (r.trainBest <= 0.0f || x->trainBest < r.trainBest)) r.trainBest = x->trainBest;
         m.segments.push_back(std::move(r));
     };
     for (const auto& s : a.segments) add(s);

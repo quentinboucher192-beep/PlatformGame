@@ -1,11 +1,15 @@
 #include "game/ghost/TrainingSegments.h"
 
+#include <algorithm>
 #include <cmath>
+#include <set>
+#include <system_error>
 
 #include "engine/core/FileUtil.h"
 #include "engine/core/Json.h"
 #include "game/ghost/Ghost.h"
 #include "game/ghost/GhostRace.h"
+#include "game/ghost/KeptReplays.h"
 
 namespace cosmic {
 
@@ -103,12 +107,29 @@ float sumOfBest(const std::vector<float>& bestSegments) {
     return static_cast<float>(sum);
 }
 
+std::vector<float> withTrainingBests(std::vector<float> segments, const std::vector<std::string>& ids, const TrainingBests& training,
+                                     std::vector<bool>* fromTraining) {
+    if (fromTraining) fromTraining->assign(segments.size(), false);
+    if (segments.size() != ids.size() + 1) return segments;  // the route's segments are not known
+    for (size_t i = 0; i < segments.size(); ++i) {
+        const std::string from = i == 0 ? std::string{} : ids[i - 1], to = i == ids.size() ? std::string{} : ids[i];
+        float t = lookup(training, from, to);
+        if (!validSeconds(t)) continue;
+        // Compared to the millisecond (what the timer shows): a tie keeps the full run's.
+        if (segments[i] < 0.0f || ms(t) < ms(segments[i])) {
+            segments[i] = t;
+            if (fromTraining) (*fromTraining)[i] = true;
+        }
+    }
+    return segments;
+}
+
 float SegmentReferences::bestOf(const std::string& from, const std::string& to) const { return lookup(best, from, to); }
 float SegmentReferences::pbOf(const std::string& from, const std::string& to) const { return lookup(pb, from, to); }
 
 SegmentReferences buildSegmentReferences(const std::vector<float>& gold, const std::vector<std::string>& goldCheckpoints,
                                          const std::vector<SegmentReferences::RunInput>& runs, const SegmentReferences::RunInput& pb,
-                                         const std::vector<std::string>& route) {
+                                         const std::vector<std::string>& route, const TrainingBests& training) {
     SegmentReferences r;
     const bool hasPb = validSeconds(pb.time);
     std::vector<float> pbSegs;
@@ -125,20 +146,30 @@ SegmentReferences buildSegmentReferences(const std::vector<float>& gold, const s
     // The gold route (the segment history's best segments), completed with the PB's segments
     // when the PB went through the same checkpoints: the Sum of Best.
     std::vector<float> sob;
+    std::optional<std::vector<std::string>> sobIds;  // the checkpoints of the Sum of Best's route
     if (!gold.empty()) {
         const size_t splits = gold.size() - 1;
         auto ids = resolveRunCheckpoints(goldCheckpoints, splits, route);
         if (ids) noteSegments(r.best, *ids, gold);
         sob = gold;
+        sobIds = ids;
         if (hasPb && pb.splits.size() == splits && (!ids || !pbIds || *ids == *pbIds)) {
             r.pbOnSobRoute = true;
+            if (!sobIds) sobIds = pbIds;
             for (size_t i = 0; i < sob.size() && i < pbSegs.size(); ++i)
                 if (sob[i] < 0.0f || pbSegs[i] < sob[i]) sob[i] = pbSegs[i];
         }
     } else if (hasPb) {
         sob = pbSegs;  // one run known: its segments are the best ones
+        sobIds = pbIds;
         r.pbOnSobRoute = true;
+    } else if (!training.empty()) {
+        // No full run yet: the route's segments, from the trainings only.
+        sob.assign(route.size() + 1, -1.0f);
+        sobIds = route;
     }
+    // 2.60.3: « tout confondu », the trainings' best times of the same segments too.
+    if (sobIds) sob = withTrainingBests(std::move(sob), *sobIds, training);
     r.sob = sumOfBest(sob);
     r.sobSegments = static_cast<int>(sob.size());
     // Every run kept: the segments it went straight through.
@@ -153,13 +184,16 @@ SegmentReferences buildSegmentReferences(const std::vector<float>& gold, const s
 
 // ------------------------------------------------------------------ training records
 
-TrainingRecords::TrainingRecords(fs::path file) : file_(std::move(file)) {}
+TrainingRecords::TrainingRecords(fs::path file, fs::path replayDir) : file_(std::move(file)), replayDir_(std::move(replayDir)) {}
 
 void TrainingRecords::load() {
     levels_.clear();
     recovered_ = false;
     readOnly_ = false;
-    if (file_.empty()) file_ = Paths::savesDir() / "training.json";
+    if (file_.empty()) {
+        file_ = Paths::savesDir() / "training.json";
+        if (replayDir_.empty()) replayDir_ = Paths::userDir() / "ghosts" / "training";
+    }
     std::error_code ec;
     if (!fs::exists(file_, ec)) return;  // no training finished yet
     std::optional<Json> j;
@@ -207,6 +241,15 @@ void TrainingRecords::load() {
                 }
             }
             if (!validId(from) || !validId(to)) continue;
+            // 2.60.3: the best attempt's replay and its start (dropped when damaged).
+            if (validSeconds(e.best) && sj.contains("replay")) {
+                std::string name = jstr(sj, "replay");
+                auto start = SectionTrainingStart::fromJson(jfield(sj, "start", Json()));
+                if (keptreplays::validName(name) && start && start->checkpointId == from) {
+                    e.replay = std::move(name);
+                    e.start = std::move(*start);
+                }
+            }
             if (validSeconds(e.best)) {
                 e.attempts = std::max(1, e.attempts);
             } else {
@@ -220,7 +263,7 @@ void TrainingRecords::load() {
     }
 }
 
-bool TrainingRecords::save() const {
+bool TrainingRecords::save() {
     if (file_.empty() || readOnly_) return false;
     Json levels = Json::object();
     for (const auto& [key, l] : levels_) {
@@ -228,14 +271,68 @@ bool TrainingRecords::save() const {
         for (const auto& [ends, e] : l.segments) {
             Json sj{{"from", ends.first}, {"to", ends.second}, {"best", e.best}, {"attempts", e.attempts}, {"date", e.date}};
             if (e.customPowers) sj["powers"] = e.powers;
+            if (!e.replay.empty()) {
+                sj["replay"] = e.replay;
+                sj["start"] = e.start.toJson();
+            }
             segs.push_back(std::move(sj));
         }
         levels[key] = {{"touched", l.touched}, {"segments", segs}};
     }
     std::error_code ec;
     fs::create_directories(file_.parent_path(), ec);
+    // Version 1 still: the replays (2.60.3) are optional fields older games ignore.
     Json root{{"format", "cosmic.training"}, {"version", kVersion}, {"levels", levels}};
-    return FileUtil::writeTextAtomic(file_, root.dump(1, ' ', false, Json::error_handler_t::replace) + "\n");
+    bool ok = FileUtil::writeTextAtomic(file_, root.dump(1, ' ', false, Json::error_handler_t::replace) + "\n");
+    // Only once the file that names them is written: a replay is never deleted while it is named.
+    if (ok) collectReplays();
+    return ok;
+}
+
+fs::path TrainingRecords::replayPath(const std::string& levelKey, const std::string& replay) const {
+    fs::path dir = keptreplays::levelDir(replayDir_, levelKey);
+    if (dir.empty() || !keptreplays::validName(replay)) return {};
+    return dir / replay;
+}
+
+void TrainingRecords::collectReplays() {
+    if (replayDir_.empty()) return;
+    std::map<std::string, std::set<std::string>> used;
+    std::map<std::string, std::string> keyOf;  // folder → level key
+    for (const auto& [key, l] : levels_) {
+        std::string dir = keptreplays::safeName(key, 96);
+        if (dir.empty()) continue;
+        keyOf[dir] = key;
+        for (const auto& [ends, e] : l.segments)
+            if (!e.replay.empty()) used[dir].insert(e.replay);
+    }
+    auto sizes = keptreplays::collect(replayDir_, used);
+    // Bounded: beyond kMaxReplayBytes, the least recently trained levels lose their replays.
+    uint64_t total = 0;
+    for (const auto& sz : sizes) total += sz.second;
+    if (total <= kMaxReplayBytes) return;
+    auto level = [&](const std::string& dir) {
+        auto k = keyOf.find(dir);
+        return k == keyOf.end() ? levels_.end() : levels_.find(k->second);
+    };
+    std::sort(sizes.begin(), sizes.end(), [&](const auto& a, const auto& b) {
+        auto la = level(a.first), lb = level(b.first);
+        return (la == levels_.end() ? std::string{} : la->second.touched) < (lb == levels_.end() ? std::string{} : lb->second.touched);
+    });
+    bool dropped = false;
+    for (const auto& [dir, bytes] : sizes) {
+        if (total <= kMaxReplayBytes) break;
+        if (auto it = level(dir); it != levels_.end())
+            for (auto& [ends, e] : it->second.segments) {
+                e.replay.clear();
+                e.start = SectionTrainingStart{};
+            }
+        std::error_code ec;
+        fs::remove_all(replayDir_ / Paths::fromUtf8(dir), ec);
+        total -= std::min(total, bytes);
+        dropped = true;
+    }
+    if (dropped) save();  // the file must stop naming them
 }
 
 TrainingRecords::Entry* TrainingRecords::entry(const std::string& levelKey, const std::string& from, const std::string& to,
@@ -260,7 +357,8 @@ TrainingRecords::Entry* TrainingRecords::entry(const std::string& levelKey, cons
     return &l.segments[ends];
 }
 
-bool TrainingRecords::add(const std::string& levelKey, const std::string& from, const std::string& to, float seconds, const std::string& date) {
+bool TrainingRecords::add(const std::string& levelKey, const std::string& from, const std::string& to, float seconds, const std::string& date,
+                          const std::vector<uint8_t>* replay, const SectionTrainingStart* start) {
     if (!validSeconds(seconds)) return false;
     Entry* ep = entry(levelKey, from, to, date);
     if (!ep) return false;
@@ -271,6 +369,13 @@ bool TrainingRecords::add(const std::string& levelKey, const std::string& from, 
     if (better) {
         e.best = seconds;
         e.date = date.substr(0, 32);
+        // 2.60.3: its replay (the previous best's no longer holds it, kept or not).
+        e.replay.clear();
+        e.start = SectionTrainingStart{};
+        if (replay && start && start->checkpointId == from) {
+            e.replay = keptreplays::write(replayDir_, levelKey, *replay, date);
+            if (!e.replay.empty()) e.start = *start;
+        }
     }
     return better;
 }
@@ -301,6 +406,15 @@ void TrainingRecords::setPowers(const std::string& levelKey, const std::string& 
 const std::vector<std::string>* TrainingRecords::powers(const std::string& levelKey, const std::string& from, const std::string& to) const {
     const Entry* e = get(levelKey, from, to);
     return e && e->customPowers ? &e->powers : nullptr;
+}
+
+TrainingBests TrainingRecords::bests(const std::string& levelKey) const {
+    TrainingBests out;
+    auto lit = levels_.find(levelKey);
+    if (lit == levels_.end()) return out;
+    for (const auto& [ends, e] : lit->second.segments)
+        if (validSeconds(e.best)) out[ends] = e.best;
+    return out;
 }
 
 const TrainingRecords::Entry* TrainingRecords::get(const std::string& levelKey, const std::string& from, const std::string& to) const {

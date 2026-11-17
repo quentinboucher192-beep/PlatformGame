@@ -8,6 +8,7 @@
 
 #include "game/GameServices.h"
 #include "game/ghost/GhostRace.h"
+#include "game/ghost/WorldRecordSplits.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/widgets/Glyphs.h"
@@ -22,7 +23,10 @@ class SegmentsScene : public Scene {
 public:
     SegmentsScene(GameServices& g, std::shared_ptr<const SegmentSummary> s) : g_(g), s_(std::move(s)) {}
     bool isOverlay() const override { return true; }
-    void onEnter() override { g_.ui.setFocus("segs/close"); }
+    void onEnter() override {
+        g_.ui.setFocus("segs/close");
+        fetchWorldRecord();
+    }
 
     void render(float) override {
         UIContext& ui = g_.ui;
@@ -59,6 +63,80 @@ public:
     }
 
 private:
+    // ------------------------------------------------------------ world record (2.60.3)
+
+    /// Online only: the verified world record of this level version (its leaderboard, then the
+    /// replay the server keeps for it); offline or on an error, no column.
+    void fetchWorldRecord() {
+        if (s_->wrBoard.empty() || s_->levelHash.empty() || !g_.online.usable() || !g_.settings.online.enabled) return;
+        wrLoading_ = true;
+        g_.online.get(s_->wrBoard, OnlineService::guard(life_, [this](const ApiResult& r) {
+            if (!r.ok) {
+                wrLoading_ = false;
+                return;
+            }
+            wrCandidates_ = worldRecordCandidates(r.data.value("entries", Json::array()));
+            tryWorldRecord(0);
+        }));
+    }
+
+    /// The best verified record whose replay is of this version (the board may also list
+    /// records kept from a previous revision of the level).
+    void tryWorldRecord(size_t k) {
+        if (k >= wrCandidates_.size() || k >= 10) {
+            wrLoading_ = false;
+            return;
+        }
+        const WorldRecordEntry e = wrCandidates_[k];
+        auto use = [this, k, e](const std::optional<ReplayData>& rep) {
+            std::optional<std::vector<float>> splits = rep ? worldRecordSplits(*rep, s_->levelHash) : std::nullopt;
+            if (!splits) return tryWorldRecord(k + 1);
+            wrLoading_ = false;
+            wr_ = Column{"Record du monde · " + e.player, "durée · écart cumulé", worldColor(), *splits, static_cast<float>(e.timeMs) / 1000.0f, false};
+            wrId_ = e.recordId;
+        };
+        // Already downloaded (a ghost raced against): read from the cache.
+        if (auto cached = g_.ghosts.cached(e.recordId)) return use(GhostStore::loadReplay(cached->file));
+        auto alive = std::weak_ptr<int>(life_);
+        g_.online.getBinary(s_->wrReplayBase + e.recordId + "/replay", [this, alive, use](const HttpResponse& resp) {
+            if (!alive.lock()) return;
+            if (resp.networkFailure() || resp.status != 200) {
+                wrLoading_ = false;
+                return;
+            }
+            std::vector<uint8_t> bytes(resp.body.begin(), resp.body.end());
+            use(ReplayData::decode(bytes));
+        }, GhostStore::kMaxReplayBytes);
+    }
+
+    struct Column {
+        std::string name, sub;
+        Color color;
+        std::vector<float> splits;
+        float duration = 0.0f;
+        bool loading = false;
+    };
+    static Color worldColor() { return Color{255, 214, 90, 255}; }
+
+    /// The columns after « Mon record »: the ghosts raced against (3 at most), then the world
+    /// record (« chargement… » while it comes; the ghost's own column when it was raced against).
+    std::vector<Column> columns() const {
+        std::vector<Column> out;
+        bool wrShown = false;
+        for (size_t i = 0; i < s_->ghosts.size() && i < 3; ++i) {
+            const SegmentSummary::Ghost& gh = s_->ghosts[i];
+            Column c{gh.name, "durée · écart cumulé", gh.color, gh.splits, gh.duration, false};
+            if (wr_ && !gh.recordId.empty() && gh.recordId == wrId_) {
+                c.name = wr_->name;
+                wrShown = true;
+            }
+            out.push_back(std::move(c));
+        }
+        if (wrLoading_) out.push_back(Column{"Record du monde", "chargement…", worldColor(), {}, 0.0f, true});
+        else if (wr_ && !wrShown) out.push_back(*wr_);
+        return out;
+    }
+
     /// « Comparer des replays »: this run (my last one) against my record, or the record it
     /// replaced when it is the new one.
     void openCompare() {
@@ -86,8 +164,10 @@ private:
         const UITheme& th = ui.theme();
         const SegmentSummary& s = *s_;
         size_t n = s.splits.size() + 1;  // + the exit
-        // Columns: segment | this run (duration, cumulative) | my best | my record | ghosts (max 3).
-        size_t ghosts = std::min<size_t>(s.ghosts.size(), 3);
+        // Columns: segment | this run (duration, cumulative) | my best | my record | ghosts (max 3)
+        // | the world record (online, 2.60.3).
+        const std::vector<Column> extra = columns();
+        size_t ghosts = extra.size();
         float nameW = std::min(ui.s(260), area.w * 0.22f);
         int cols = 3 + static_cast<int>(ghosts);
         float cw = (area.w - nameW) / static_cast<float>(cols);
@@ -102,7 +182,7 @@ private:
         head(0, "Cette course", "durée · temps", th.accent);
         head(1, "Mon meilleur", "segment", Color{255, 214, 90, 255});
         head(2, "Mon record", "durée de ce segment", th.text);
-        for (size_t gi = 0; gi < ghosts; ++gi) head(3 + static_cast<int>(gi), s.ghosts[gi].name, "durée · écart cumulé", s.ghosts[gi].color);
+        for (size_t gi = 0; gi < ghosts; ++gi) head(3 + static_cast<int>(gi), extra[gi].name, extra[gi].sub, extra[gi].color);
         y += ui.s(46);
         ui.r().fillRect({area.x, y - ui.s(6), area.w, std::max(1.0f, ui.s(1))}, th.accent.withAlpha(60));
         float rh = ui.s(50);
@@ -134,22 +214,33 @@ private:
             cell(2, rec >= 0.0f ? formatGhostTime(rec) : "—", th.text, rec >= 0.0f && mine >= 0.0f ? formatGhostDelta(mine - rec, false) : "",
                  mine >= 0.0f && rec >= 0.0f ? (mine < rec ? th.success : mine > rec ? th.danger : th.textDim) : th.textDim);
             for (size_t gi = 0; gi < ghosts; ++gi) {
-                const auto& gh = s.ghosts[gi];
-                float gseg = seg(gh.splits, gh.duration, i), gcum = cum(gh.splits, gh.duration, i);
+                const Column& gh = extra[gi];
+                if (gh.loading) continue;
+                float gseg = seg(gh.splits, gh.duration, i);
                 std::string bottom;
                 Color bc = th.textDim;
-                if (gcum >= 0.0f && mineCum >= 0.0f && gh.splits.size() == s.splits.size()) {
-                    float d = mineCum - gcum;
-                    bottom = formatGhostDelta(d, false);
-                    bc = d < -0.0005f ? th.success : d > 0.0005f ? th.danger : th.textDim;
+                if (auto d = cumulativeGap(s.splits, s.time, gh.splits, gh.duration, i)) {
+                    bottom = formatGhostDelta(*d, false);
+                    bc = *d < -0.0005f ? th.success : *d > 0.0005f ? th.danger : th.textDim;
                 }
                 cell(3 + static_cast<int>(gi), gseg >= 0.0f ? formatGhostTime(gseg) : "—", th.text, bottom, bc);
             }
         }
-        // The sum of my best segments (the time a perfect run would make).
-        ui.label("Somme de mes meilleurs segments", {area.x + ui.s(8), ry + rh * 0.5f}, fs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        ui.label(sumOk && sumBest > 0.0f ? formatGhostTime(sumBest) : "—", {area.x + nameW + cw * 2.0f - ui.s(10), ry + rh * 0.5f}, fs,
-                 Color{255, 214, 90, 255}, Align::Right, FontFace::Bold, VAlign::Middle);
+        // The sum of my best segments (the time a perfect run would make). 2.60.3: the section
+        // trainings' best times count too (the Sum of Best of the training screen).
+        float sobShown = sumOk && sumBest > 0.0f ? sumBest : -1.0f;
+        bool withTraining = false;
+        if (s.sob > 0.0f && (sobShown <= 0.0f || s.sob < sobShown - 0.0005f)) {
+            sobShown = s.sob;
+            withTraining = true;
+        }
+        ui.label(ui.elide("Somme de mes meilleurs segments", FontFace::Body, fs, nameW + cw - ui.s(16)), {area.x + ui.s(8), ry + rh * 0.5f}, fs, th.textDim,
+                 Align::Left, FontFace::Body, VAlign::Middle);
+        const float sx = area.x + nameW + cw * 2.0f - ui.s(10);
+        ui.label(sobShown > 0.0f ? formatGhostTime(sobShown) : "—", {sx, withTraining ? ry + ui.s(6) : ry + rh * 0.5f}, fs, Color{255, 214, 90, 255},
+                 Align::Right, FontFace::Bold, withTraining ? VAlign::Top : VAlign::Middle);
+        if (withTraining)
+            ui.label(ui.elide("entraînement compris", FontFace::Body, fz(ui, 13), cw - ui.s(16)), {sx, ry + ui.s(28)}, fz(ui, 13), th.textDim, Align::Right);
         ui.endScroll();
     }
 
@@ -184,6 +275,12 @@ private:
 
     GameServices& g_;
     std::shared_ptr<const SegmentSummary> s_;
+    std::shared_ptr<int> life_ = std::make_shared<int>(0);
+    // The world record (2.60.3).
+    bool wrLoading_ = false;
+    std::vector<WorldRecordEntry> wrCandidates_;
+    std::optional<Column> wr_;
+    std::string wrId_;
 };
 
 }  // namespace
