@@ -178,3 +178,4 @@ style
 supernova
 arc
 missile
+constellation

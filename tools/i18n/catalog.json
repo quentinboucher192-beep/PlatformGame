@@ -1162,6 +1162,12 @@
    ]
   },
   {
+   "fr": "Administration › Créations : en plus des combinaisons, un admin crée des traînées (une forme que le jeu sait dessiner — comète, poussière d'étoiles, ruban, flammèches, aurore, bulles —, la couleur près de Nova et celle du bout, la largeur, la durée et les étincelles), des cadres d'avatar (un style — anneau poli, gemmes serties, orbite, nébuleuse, constellation, cercle runique —, la couleur du bord et de la lueur) et des effets de victoire (feu d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun avec son aperçu animé ; il les modifie ou les archive.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration › Créations : un admin crée des combinaisons recolorées (un nom, la couleur de la combinaison, de l'accent et de l'écharpe) avec un aperçu animé de Nova, les modifie ou les archive.",
    "where": [
     "data/news/changelog.json"
@@ -8702,6 +8708,12 @@
   },
   {
    "fr": "Comme les autres gardiens : statistiques, entraînement, succès (vaincre, sans dégât, chaque phase sans dégât), titre « Briseur d'étoiles », musique dans le juke-box, Galerie ; pas d'écho dans L'Arène des Échos.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Comme les combinaisons, ils se donnent en récompense d'un défi (Calendrier des défis › Récompenses) ; gagnés, ils rejoignent leur catégorie du Vestiaire et s'équipent, sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et derrière vos fantômes, le cadre sur votre profil et dans les classements, l'effet de victoire à la sortie des niveaux.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -19860,6 +19872,12 @@
    ]
   },
   {
+   "fr": "L'effet de victoire se joue dès que Nova atteint la sortie, pendant la scène de fin du niveau (il commençait après elle et le passage aux résultats le cachait).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'enregistrement est activé (Paramètres › Jeu › « Enregistrer mes statistiques »).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -23252,6 +23270,12 @@
    "fr": "Les entités natives de la campagne. Une révision publiée ici est téléchargée par les jeux, avec une nouvelle révision de chaque niveau qui l'utilise : le choix des records se fait niveau par niveau.",
    "where": [
     "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "Les fantômes laissent maintenant la traînée de leur joueur (la vôtre derrière vos propres fantômes), aussi translucide qu'eux.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
