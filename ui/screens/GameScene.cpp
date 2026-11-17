@@ -18,6 +18,8 @@
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
+#include "ui/screens/TutorialScenes.h"
+#include "game/tutorial/Tutorial.h"
 
 namespace cosmic {
 
@@ -84,6 +86,16 @@ void GameScene::onEnter() {
     if (opt_.challenge) startChallenge();
     // 2.48: a hardcore level played as a practice run (respawn where Nova fell, not ranked).
     if (opt_.practiceRespawn && level_.extreme && !opt_.challenge && !opt_.bossTraining) world_->setPracticeRespawn(true);
+    // 2.64: the tutorial counts for nothing (no record, ranking, achievement, statistics, nothing
+    // online); it is started: never offered again.
+    if (opt_.tutorial) {
+        world_->setTraining(true);
+        if (g_.progression.tutorial != "finished" && g_.progression.tutorial != "skipped") {
+            g_.progression.tutorial = "started";
+            g_.progression.save();
+        }
+    }
+    tutorialOrder_ = tutorial::levelCards(level_);
     // 2.51: « Invincible » (administrators): training runs only, never a run that counts.
     if (invincibleAllowed() && g_.settings.gameplay.adminInvincible) {
         world_->setTraining(true);
@@ -97,6 +109,7 @@ void GameScene::onEnter() {
     if (opt_.training) startTraining();
     if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training && counted) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
+    Hud::warmUp(*world_);  // 2.60: where Nova and the bosses show (the HUD fades over them)
     if (g_.settings.gameplay.progressBar > 0)
         trackFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return buildProgressTrack(level, content); });
     if (!opt_.editorTest && !opt_.training && counted) {
@@ -168,6 +181,7 @@ void GameScene::onEnter() {
     startSpectate();
     // 2.54: the player's statistics (they read the run, never change it); a classic campaign level
     // from its start counts its segments too.
+    if (!opt_.tutorial)
     playStats_ = g_.playStats.beginRun(
         *world_, PlayStatsRun{levelId_, &level_, opt_.editorTest, opt_.training,
                               counted && !opt_.training && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_},
@@ -510,6 +524,50 @@ void GameScene::onResume() {
     g_.app.audio().setMusicDuck(1.0f);
     refreshPowerKeys();  // « Touches de ce niveau », the settings: maybe other keys now
     g_.app.input().consumePlayerInput();
+    if (tutorialCardOpen_) {
+        // « Compris, je continue »: the run goes on (the press that closed the card dropped
+        // above), or the next card already asked for opens.
+        tutorialCardOpen_ = false;
+        tutorialCard_.clear();
+        if (world_ && !ended_) checkTutorialCard();
+    }
+}
+
+void GameScene::checkTutorialCard() {
+    if (!world_ || !tutorialCard_.empty()) return;
+    while (auto c = world_->takeTutorialCard()) {
+        // Automated runs (scripted input) never wait for a card.
+        if (script_.active() || !tutorial::card(*c)) continue;
+        tutorialCard_ = *c;
+        return;
+    }
+}
+
+std::pair<int, int> GameScene::tutorialCardRank(const std::string& id) const {
+    auto it = std::find(tutorialOrder_.begin(), tutorialOrder_.end(), id);
+    const int n = static_cast<int>(tutorialOrder_.size());
+    return {it == tutorialOrder_.end() ? 0 : static_cast<int>(it - tutorialOrder_.begin()) + 1, n};
+}
+
+void GameScene::leaveTutorial() {
+    if (!g_.progression.tutorialFinished()) {
+        g_.progression.tutorial = "skipped";
+        g_.progression.save();
+    }
+    g_.app.switchScene(makeMainMenu(g_), 0.4f);
+}
+
+void GameScene::finishTutorial() {
+    ended_ = true;
+    // Finished: never again, and its souvenir (a title of the Vestiaire, given on this computer).
+    g_.progression.tutorial = "finished";
+    g_.progression.save();
+    g_.collection.markAnnounced(tutorial::kSouvenirTitle);  // shown by the end card, not again later
+    g_.collection.save();
+    g_.syncCosmetics();
+    std::string victory = g_.app.resources().soundPath("music/victory.ogg");
+    if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
+    g_.app.pushScene(makeTutorialEnd(g_));
 }
 
 void GameScene::refreshPowerKeys() {
@@ -608,6 +666,12 @@ void GameScene::abandonRaceAttempt() {
 }
 
 void GameScene::restart() {
+    // 2.60: the challenge changed (an administrator) while it was played: never again its former
+    // version; back to « Défis », on its new one.
+    if (opt_.challenge && g_.challenges.changedSince(opt_.challenge->challenge)) {
+        quitToMenu();
+        return;
+    }
     endSpectate("quit");
     abandonRaceAttempt();
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: restarting ends the attempt
@@ -626,6 +690,10 @@ void GameScene::restartPractice() {
 }
 
 void GameScene::quitToMenu() {
+    if (opt_.tutorial) {
+        leaveTutorial();
+        return;
+    }
     endSpectate("quit");
     abandonRaceAttempt();
     if (!ended_) takeChallengeAttempt(false);  // « Plus loin »: leaving ends the attempt
@@ -676,6 +744,8 @@ void GameScene::fixedUpdate(float dt) {
     if (!world_) return;
     // The story of a giga boss is due: the run waits for it (no step, no input recorded).
     if (!storyBoss_.empty()) return;
+    // 2.64: a card of the tutorial is due or open: the run waits for « Compris, je continue ».
+    if (!tutorialCard_.empty()) return;
     // A power offer waits for the player's answer (PowerChoiceScene): nothing is simulated
     // or recorded until it comes. Scripted runs leave the power unless told otherwise.
     uint8_t choice = 0;
@@ -723,6 +793,7 @@ void GameScene::fixedUpdate(float dt) {
         bossFeedback();
     }
     if (!ended_) checkBossStory();
+    if (!ended_) checkTutorialCard();
     if (!ended_ && race_.active()) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
@@ -883,6 +954,12 @@ void GameScene::bossFeedback() {
 }
 
 void GameScene::finishRun(bool completed) {
+    if (opt_.tutorial) {
+        // 2.64: the tutorial's end (it cannot be lost: no time limit, no life counted).
+        if (completed) finishTutorial();
+        else restart();
+        return;
+    }
     endSpectate(completed ? "finished" : "failed");
     if (opt_.challenge) {
         finishChallenge(completed);
@@ -1079,8 +1156,24 @@ void GameScene::update(float dt) {
         }
         if (storyOpen_) return;
     }
+    if (!tutorialCard_.empty()) {
+        if (!tutorialCardOpen_) {
+            tutorialCardOpen_ = true;
+            g_.app.pushScene(makeTutorialCard(g_, *this, tutorialCard_));
+        }
+        return;
+    }
     syncPowerKeys();
     world_->update(dt);
+    if (opt_.tutorial) {
+        // 2.64: Bip floats a little behind Nova, above her shoulder (display only).
+        const Player& pl = world_->player();
+        const Vec2 target = pl.center() + Vec2{-pl.facing * 20.0f, -30.0f};
+        if (!bipPlaced_ || distance(bipPos_, target) > 400.0f) bipPos_ = target;
+        bipPlaced_ = true;
+        bipPos_ = bipPos_ + (target - bipPos_) * (1.0f - std::exp(-dt * 3.5f));
+        bipTime_ += dt;
+    }
     // The pause map: what the camera has shown (display only, outside the simulation).
     if (explored_.cols == 0) explored_.reset(world_->level().bounds);
     explored_.mark(world_->camera().visibleArea(1920, 1080));
@@ -1104,7 +1197,7 @@ void GameScene::update(float dt) {
         }
         if ((metTimer_ -= dt) <= 0.0f) {
             metTimer_ = 0.25f;
-            noteCreaturesMet();
+            if (!opt_.tutorial) noteCreaturesMet();  // 2.64: the tutorial's creatures are not the bestiary's
         }
     }
     InputManager& in = g_.app.input();
@@ -1293,7 +1386,9 @@ void GameScene::render(float alpha) {
     RenderOptions opt;
     opt.lighting = g_.settings.graphics.dynamicLighting;
     opt.debug = g_.app.debugOverlay;
+    opt.threats = hud_.threatProbe(*world_, g_.settings.gameplay);  // 2.60: the HUD fades over the boss's attacks
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
+    if (opt_.tutorial) drawTutorialWorld(view, alpha);  // 2.64: Bip, the sleeping creatures' « z »
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
     trail_.draw(r, trailLook_, true);
     if (victoryT_ >= 0.0f) drawVictoryFx(r, victoryLook_, victoryAt_, victoryT_, true);
@@ -1318,7 +1413,22 @@ void GameScene::render(float alpha) {
         keepOut.insert(keepOut.end(), enemyArrowAreas_.begin(), enemyArrowAreas_.end());
         Hud::Place sp = hud_.place(g_.ui, *world_, gs, HudElement::Splits);
         ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut.data(),
-                          static_cast<int>(keepOut.size()));
+                          static_cast<int>(keepOut.size()), hud_.opacity(HudElement::Splits));
+        hud_.setDrawn(HudElement::Splits, ghostRun_.boxDrawn());  // 2.60: it fades like the HUD's blocks
+    }
+    {
+        // 2.60: in a boss arena that fits the view, the camera keeps the vault under the HUD's top
+        // blocks and the floor above its bottom ones, as far as the arena's spare height allows
+        // (where they were really drawn; display only).
+        const float H = g_.ui.screenH();
+        float top = 0.0f, bottom = 0.0f;
+        for (int i = 0; i < Hud::kFadeBlocks; ++i) {
+            const Rect& d = hud_.drawn(i);
+            if (d.w <= 0.0f || d.h <= 0.0f) continue;
+            if (d.y < H * 0.15f) top = std::max(top, d.bottom());
+            else if (d.bottom() > H * 0.85f) bottom = std::max(bottom, H - d.y);
+        }
+        world_->camera().setScreenMargins(top, bottom);
     }
     drawBossArrow(view);
     drawEnemyArrows(view);
@@ -1329,6 +1439,28 @@ void GameScene::render(float alpha) {
         std::snprintf(buf, sizeof(buf), "%.0f FPS", g_.app.fps());
         g_.ui.label(buf, {g_.ui.s(12), g_.ui.screenH() - g_.ui.s(30)}, 18, g_.ui.theme().textDim);
     }
+}
+
+void GameScene::drawTutorialWorld(const WorldView& view, float /*alpha*/) {
+    Renderer& r = g_.app.renderer();
+    // The sleeping creatures of the garden: their « z » (display only).
+    for (const auto& e : world_->enemies()) {
+        if (!e->alive() || !e->def().tutorial || e->def().isBoss) continue;
+        const Vec2 top = view.toScreen({e->box.center().x, e->box.y});
+        for (int i = 0; i < 2; ++i) {
+            const float f = std::fmod(bipTime_ * 0.6f + i * 0.5f, 1.0f);
+            const float s = view.scale * (4.0f + 3.0f * f);
+            const Vec2 c{top.x + view.scale * (4.0f + 8.0f * f), top.y - view.scale * (6.0f + 16.0f * f)};
+            const Color col = Color{255, 255, 255, 255}.withAlphaF(0.85f * (1.0f - f));
+            const float t = std::max(1.0f, s * 0.18f);
+            r.drawLine({c.x - s * 0.5f, c.y - s * 0.5f}, {c.x + s * 0.5f, c.y - s * 0.5f}, col, t);
+            r.drawLine({c.x + s * 0.5f, c.y - s * 0.5f}, {c.x - s * 0.5f, c.y + s * 0.5f}, col, t);
+            r.drawLine({c.x - s * 0.5f, c.y + s * 0.5f}, {c.x + s * 0.5f, c.y + s * 0.5f}, col, t);
+        }
+    }
+    // Bip, by Nova (not while she is hidden: the intro, a respawn).
+    if (bipPlaced_ && world_->player().state() != PlayerState::Hidden)
+        drawBip(r, view.toScreen(bipPos_), 14.0f * view.scale, bipTime_);
 }
 
 void GameScene::drawTrainingBanner() {

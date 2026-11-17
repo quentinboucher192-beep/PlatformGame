@@ -280,6 +280,9 @@ struct EnemyDefinition {
     /// and performs these attacks one after the other, then dies. Empty = it dies at once.
     std::vector<std::string> finalAttacks;
     std::string finalText;  // the message shown when the last stand begins
+    /// 2.64: a creature of the tutorial only (« Le premier envol de Nova »): never in the
+    /// bestiary, the boss statistics, the news nor the administration's list.
+    bool tutorial = false;
 
     // Runtime bookkeeping
     std::string sourcePath;

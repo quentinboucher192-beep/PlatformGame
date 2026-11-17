@@ -1,6 +1,7 @@
 // Moderation routes, enabled only when the ADMIN_TOKEN secret is set (wrangler secret put).
 // The token is never distributed with the game: these routes are for the operators.
 
+import { refreshAllClanPoints } from "./clans";
 import { audit } from "./auth";
 import { secretsEqual } from "./crypto";
 import { ApiError, Errors, json, readJsonObject, type Ctx } from "./http";
@@ -148,6 +149,8 @@ export async function registerLevels(ctx: Ctx): Promise<Response> {
         await ctx.env.DB.batch(stmts);
         report.push({ id: l.id, version: l.version, result: sameVersion ? "unchanged" : becomesCurrent ? "current" : "added_as_legacy" });
     }
+    // 2.66: the clans' points follow the current revision of the EXTRÊME levels.
+    await refreshAllClanPoints(ctx.env.DB);
     await audit(ctx, null, "levels_registered", { count: levels.length });
     return json(ctx, { levels: report });
 }

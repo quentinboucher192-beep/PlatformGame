@@ -4,6 +4,13 @@
  "comment": "Novelties of each update and the trail to them (game/progression/NewBadges.h). An entry with a version is a novelty: its « NOUVEAU » pill goes once its widget gets the focus or a click. « parents »: the widgets that lead to it (menu entry, tab, category…); an entry without a version is a step of that trail. A parent shows the pill as long as anything under it is new.",
  "features": [
   {
+   "id": "settings.game.hud_fade",
+   "version": "2.60.1",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
    "id": "pause.level_keys",
    "version": "2.31.0"
   },
@@ -2138,15 +2145,80 @@
    ]
   },
   {
+   "id": "admin.calendar.running",
+   "version": "2.60.2",
+   "parents": [
+    "menu.admin",
+    "admin.tab.calendar"
+   ]
+  },
+  {
+   "id": "challenges.calendar.medals",
+   "version": "2.60.2",
+   "parents": [
+    "menu.challenges",
+    "challenges.tab.calendar"
+   ]
+  },
+  {
+   "id": "ghosts.training.invincible",
+   "version": "2.60.3",
+   "parents": [
+    "ghosts.training"
+   ]
+  },
+  {
+   "id": "online.nav.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "admin.tab.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "gallery.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "gallery.boss.pyrrhax"
+   ]
+  },
+  {
+   "id": "stats.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "admin.creations.reserve",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "collection.exclusive",
+   "version": "2.62.0",
+   "parents": [
+    "collection.tab.wardrobe"
+   ]
+  },
+  {
    "id": "admin.creations.studio",
-   "version": "2.61.0",
+   "version": "2.63.0",
    "parents": [
     "admin.tab.creations"
    ]
   },
   {
    "id": "admin.creations.studio.import",
-   "version": "2.61.0",
+   "version": "2.63.0",
    "parents": [
     "admin.tab.creations",
     "admin.creations.studio"
@@ -2154,7 +2226,7 @@
   },
   {
    "id": "admin.creations.studio.recolor",
-   "version": "2.61.0",
+   "version": "2.63.0",
    "parents": [
     "admin.tab.creations",
     "admin.creations.studio"

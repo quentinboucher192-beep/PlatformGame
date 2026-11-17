@@ -90,7 +90,7 @@ public:
     void onEnter() override {
         bg_.init(g_);
         for (const auto* d : g_.content.enemies())
-            if (d->isBoss) bosses_.push_back(d);
+            if (d->isBoss && !d->tutorial) bosses_.push_back(d);  // 2.64: not the tutorial's
         // Bosses met first (most victories), then the others by name.
         std::stable_sort(bosses_.begin(), bosses_.end(), [&](const EnemyDefinition* a, const EnemyDefinition* b) {
             const BossRecord* ra = g_.bossStats.find(a->id);
@@ -292,7 +292,9 @@ private:
             const float bw = std::min(rw * 0.45f, ui.text().measure(lbl, FontFace::Bold, ui.s(16)).x + ui.s(44));
             const Rect sb{rx + rw - bw, y, bw, ui.s(40)};
             if (ui.button("story", sb, lbl, st)) openStory(d.id);
-            ui.newBadge("story", sb, "stats.story", true, true);
+            // 2.60: a story told anew (Pyrrhax's, in animated scenes) has its own novelty.
+            const std::string fresh = "stats.story." + d.id;
+            ui.newBadge("story", sb, ui.isNew(fresh) ? fresh : std::string("stats.story"), true, true);
             nameRoom = rw - bw - ui.s(16);
         }
         float tf = ui.fitFont(d.name, FontFace::Title, 32, nameRoom, 0.6f);

@@ -47,6 +47,22 @@ private:
     float angle_ = 0.0f;
     TexturePtr tex_;
     Vec2 orbitPos(float angle) const;
+    // 2.64: a carrying bubble (object type « bubble »): it waits where it was born, leaves when
+    // Nova stands on it, goes once along its route, pops at the end (its collider off) and is
+    // born again at its place `respawn` seconds later.
+    bool bubble_ = false;
+    bool popped_ = false;
+    float reborn_ = 0.0f;   // seconds until it is born again (popped)
+    float shown_ = 1.0f;    // display only: 0 → 1 as it grows back, the burst after a pop
+    float burst_ = 0.0f;
+    Vec2 burstAt_;
+    void bubbleStep(GameWorld& w, float dt);
+    void renderBubble(RenderContext& ctx) const;
+
+public:
+    bool isBubble() const { return bubble_; }
+    bool popped() const { return popped_; }
+    void update(GameWorld& w, float dt) override;
 };
 
 class CrumblePlatformEntity : public LevelEntity {

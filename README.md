@@ -5,7 +5,7 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
-**Nouveau dans la version 2.61.0** :
+**Nouveau dans la version 2.63.0** :
 * **Administration › Créations › Studio** : un éditeur complet des images des créations, pour les admins.
   L'**explorateur** (combinaisons, traînées, cadres, effets de victoire du serveur et brouillons de ce PC,
   recherche, nouveau, dupliquer, renommer, archiver, bibliothèque des sprites et palettes du jeu), des
@@ -28,6 +28,94 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   R2 sous son empreinte SHA-256 et note chaque envoi et chaque refus au Journal. Un joueur ne télécharge que
   l'image d'une création qu'il a gagnée, ou qui apparaît dans un classement, un profil ou les récompenses
   d'un défi commencé ; le jeu la garde pour le hors-ligne et dessine l'apparence simple tant qu'elle manque.
+
+**Nouveau dans la version 2.62.0** :
+* **Objets exclusifs** (récompenses de défi seulement) : une **aura** dorée qui pulse autour de leur vignette et
+  une infobulle qui dit d'où ils viennent (« Exclusif : défi du jour du 10/11/2026 · Or atteint ») ;
+  **Administration › Créations** apporte la **réserve du jeu** (40 combinaisons, 30 traînées, 30 cadres, 30
+  effets de victoire), invisible des joueurs tant qu'aucun défi ne la donne, avec un filtre réserve / donnée /
+  archivée.
+* L'**histoire de Pyrrhax** (« Le Dragon d'Obsidienne ») devient un **petit dessin animé** : ses six plans sont
+  des scènes animées faites de vrais sprites dans le style du jeu (la Fumerolle et ses frères et sœurs de feu,
+  l'œuf qui éclot dans le nid de cendres, flammes, fumée, pluie de braises, ventre qui s'illumine,
+  transformation en dragon de verre noir), animés image par image. Le **décor vit aussi**, en couches de
+  sprites animés qui défilent chacune à sa vitesse (parallaxe) : ciel et étoiles qui scintillent, nuages et
+  brume qui dérivent, magma qui respire au pied des pics, braises qui crépitent, cendres dans le vent, lueurs
+  qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
+  **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
+  l'histoire ».
+* **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
+  lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
+  (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**
+  invitent, acceptent ou refusent les candidatures et excluent (un officier n'exclut pas un officier, personne
+  n'exclut le chef) ; le chef nomme les officiers, modifie le clan et peut le **dissoudre** (avec confirmation).
+* Adhésion **sur invitation**, **sur candidature** (avec un court message) ou **ouverte**, au choix du chef.
+  Chaque règle est décidée par le serveur dans une seule transaction : deux actions simultanées ne font jamais
+  un 51ᵉ membre, deux chefs ou un clan sans chef.
+* **Page d'un clan** : membres et rôles (la **présence** seulement pour les membres du clan, et si le joueur la
+  partage déjà), **meilleure équipe du clan sur chaque niveau EXTRÊME** (Solo pour l'instant, la coopération
+  Duo et Trio arrive bientôt), candidatures (chef et officiers) et **discussion du clan** (un groupe de SOCIAL
+  qui suit ses membres).
+* **Classement des clans** : la somme des meilleurs résultats **vérifiés par le serveur** de chaque clan sur les
+  niveaux EXTRÊME officiels. Le **tag** s'affiche à côté du pseudo dans les classements, le profil et SOCIAL.
+* **Administration › Clans** : un admin renomme ou dissout un clan ; chaque action va au **Journal**.
+* Serveur : migration D1 `0120_clans.sql`, routes `/api/v1/clans/*` et `/api/v1/admin/clans/*`
+  ([`server/openapi.yaml`](server/openapi.yaml)) ; le jeu reste jouable sans compte et sans Internet (la page
+  de son clan reste visible hors ligne, depuis le cache).
+
+**Nouveau dans la version 2.61.1** :
+* Didacticiel : bulles porteuses au-dessus de la terre ferme, traînée d'éclats à hauteur de Nova ; correctif des combinaisons recolorées.
+
+**Nouveau dans la version 2.61.0** :
+* **Didacticiel du premier lancement, « Le premier envol de Nova »** : au tout premier lancement (aucune
+  progression), **Bip**, un petit robot compagnon qui flotte près de Nova, propose un vol d'essai d'environ six
+  minutes dans la **Pépinière d'étoiles**, un petit monde pastel hors de la campagne : aucune planète sur la carte,
+  aucun classement, aucun record, aucun succès compté, rien d'envoyé en ligne. « Passer le didacticiel » est
+  proposé au départ (avec confirmation) et dans le menu Pause.
+* **Sept zones** : se déplacer ; sauter (plus haut en maintenant, double saut) ; rebondir sur les **champignons**
+  et attraper les éclats en l'air ; attaquer des **petites bêtes endormies** qui ne ripostent pas ; prendre la
+  **Ruée** (le Dash) sur une tablette, briser un mur de cristal et traverser un ruisseau sur des **bulles
+  porteuses** ; repartir d'une **lanterne** ; affronter **Mycélia la Câline**, variante ralentie du boss le plus
+  facile du jeu selon la note de difficulté des boss, aux attaques longuement annoncées. Aucune chute n'est
+  mortelle : Bip ramène Nova sur la dernière terre ferme.
+* **Neuf explications bloquantes** : la simulation s'arrête vraiment ; une carte montre Bip, « 3 / 9 », un
+  petit aperçu animé, le texte mesuré et les **touches réelles** du joueur (clavier, manette Xbox ou
+  PlayStation) ; « **Compris, je continue** » (Entrée, A ou clic) reprend la partie.
+* **Fin** : « Bravo, Nova ! », ce qui a été appris, le souvenir **« Premier envol »** (un titre du Vestiaire,
+  accordé sur cet ordinateur ; en ligne, le serveur ne pouvant pas le vérifier, le titre par défaut s'affiche) et
+  « Commencer l'aventure », qui ouvre Sylvanox. Le didacticiel ne se rejoue **jamais**, qu'on le finisse ou
+  qu'on le passe ; un joueur qui avait déjà une progression ne le voit pas ; les copies de progression et la
+  migration de compte gardent ce choix.
+* **Éditeur de niveaux** : la **Bulle porteuse** et l'action « Didacticiel : explication bloquante ». Le niveau
+  est généré par `tools/levelgen/tutorial.py` (`data/tutorial/premier_envol.json`) ; aucune règle des niveaux
+  existants ne change (même version de simulation, mêmes empreintes).
+
+**Nouveau dans la version 2.60.3** :
+* Entraînement par segment : interrupteur « Invincible (admin) · non classé » sur l'écran de choix du segment (administrateurs).
+
+**Nouveau dans la version 2.60.2** :
+* **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se
+  change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) **tant qu'aucun joueur n'y
+  a de résultat** ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de
+  joueurs ont déjà un résultat. Le serveur porte la condition dans l'écriture même (migration `0117`) et refuse
+  toute partie de l'ancienne version ; le jeu reçoit la nouvelle version et dit « ce défi a changé ».
+* **Défis › Calendrier** : chaque défi montre combien de joueurs vérifiés ont atteint le **bronze**, l'**argent**
+  et l'**or** (votre médaille entourée, détail au survol ou au focus), comptés par le serveur.
+
+**Nouveau dans la version 2.60.1** :
+* **Le HUD s'efface quand il cache l'action** : un bloc du HUD (chronomètre, barre de progression, vie et
+  énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé
+  au-dessus du **boss**, de **Nova** ou d'une **attaque du boss** (projectiles, télégraphes, réticules, zones
+  dangereuses) descend vers **28 %** d'opacité en 0,15 s, puis revient dès que plus rien n'est dessous. Chaque
+  bloc est mesuré là où il est réellement dessiné (positions de l'éditeur du HUD comprises) ; le boss et Nova,
+  par les pixels visibles de leur image du moment ; les attaques, forme par forme (un laser en diagonale ne
+  compte que là où il passe). Les giga-boss volants (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles.
+* La **barre de vie du boss** ne s'efface que sous Nova ; les **annonces de phase** ne s'effacent jamais.
+* **Paramètres › Jeu** : option « **Effacer le HUD quand il cache l'action** », activée par défaut.
+* **Arènes de boss** : quand l'arène tient à l'écran avec de la hauteur en trop, la caméra la place entre le HUD
+  du haut et la barre de vie du boss (voûte plus basse, sol au-dessus de la barre), sans jamais la couper ni
+  s'éloigner ; les arènes des giga-boss, plus hautes que l'écran, gardent leur cadrage. Affichage seulement :
+  ni la simulation ni les records ne changent.
 
 **Nouveau dans la version 2.60.0** :
 * **Pause › Succès suivis** sous la carte : les cinq places toujours visibles (une place libre en pointillés) et

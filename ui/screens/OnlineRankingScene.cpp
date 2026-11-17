@@ -8,6 +8,7 @@
 
 #include "engine/core/Easing.h"
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "ui/widgets/ExtremeFrame.h"
 #include "ui/online/GlobeRenderer.h"
@@ -809,14 +810,18 @@ private:
                 right = db.x - ui.s(8);
             }
         }
-        std::string name = ui_.displayName(jstr(p, "username"), rank, me);
+        // 2.66: « [TAG] name » (the tag of the player's clan), as the player chose them.
+        std::string name = ui_.displayName(p, rank, me);
         float room = std::max(ui.s(40), right - nx);
         // The player's title under the name (2.23), smaller and dimmed.
         std::string title = titleOf(p);
         float nameY = title.empty() ? row.center().y : row.center().y - ui.s(8);
-        float nf = std::max(11.5f / ui.s(1.0f), ui.fitFont(name, FontFace::Bold, title.empty() ? 18 : 17, room, 0.75f));
-        ui.label(ui.elide(name, FontFace::Bold, nf, room), {nx, nameY}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold,
-                 VAlign::Middle);
+        {
+            i18n::Verbatim playerWords(me || g_.settings.online.showPseudonyms);
+            float nf = std::max(11.5f / ui.s(1.0f), ui.fitFont(name, FontFace::Bold, title.empty() ? 18 : 17, room, 0.75f));
+            ui.label(ui.elide(name, FontFace::Bold, nf, room), {nx, nameY}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+        }
         if (!title.empty()) {
             float tf = std::max(12.5f, 11.5f / ui.s(1.0f));  // never under 11.5 px on screen
             // 2.43: a title created on Cosmic Online shows in its colour.

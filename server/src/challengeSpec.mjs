@@ -144,7 +144,8 @@ function boolOr(field, raw, def) {
  * slots?, powers?: string[], stations?, checkpoints?, objective?: "speed"|"finish",
  * silver_ms?, gold_ms?, gold_no_damage?, bronze_progress?, silver_progress? };
  * `catalog`: src/challengeCatalog.json; `today`: the UTC day ('AAAA-MM-JJ'): the period must
- * begin later. Defaults: a campaign level keeps its slots, its start powers and the times of
+ * begin later, or (`options.running`, 2.60: the routes of the calendar, which check in the same
+ * write that nobody has a result on it) be running; a period that is over never. Defaults: a campaign level keeps its slots, its start powers and the times of
  * its gold and platinum medals; a community level gets 4 slots and no imposed power, and needs
  * its times (« Vitesse »). Hearts: the player's maximum. Stations and checkpoints on, Or
  * without damage; « Finir le niveau »: Bronze 50 %, Argent 80 % of the route.
@@ -153,13 +154,14 @@ function boolOr(field, raw, def) {
  * silver_ms, gold_ms, gold_no_damage, bronze_progress, silver_progress, warnings }; throws a
  * ChallengeSpecError (its field and a French message) at the first problem.
  */
-export function validateChallengeSpec(spec, catalog, today) {
+export function validateChallengeSpec(spec, catalog, today, options = {}) {
     const kind = spec.kind;
     if (!KINDS.includes(kind)) throw new ChallengeSpecError("kind", "sorte de défi inconnue (jour, semaine ou mois attendu)");
     const bounds = periodBounds(kind, spec.period);
     if (!bounds) throw new ChallengeSpecError("period", `période invalide « ${spec.period} »`);
     if (!isDate(today)) throw new ChallengeSpecError("period", "date du jour invalide");
-    if (bounds.start <= today)
+    const running = options?.running === true && bounds.start <= today && bounds.end > today;
+    if (bounds.start <= today && !running)
         throw new ChallengeSpecError(
             "period",
             `période ${spec.period} (début ${bounds.start}) refusée : un défi commencé ou passé ne change plus (aujourd'hui : ${today} UTC)`,

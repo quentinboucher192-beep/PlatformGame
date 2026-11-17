@@ -7,7 +7,8 @@
 // (hearts, power slots, imposed powers, stations, checkpoints), the canonical form of the
 // rules and its SHA-256, and the tiers. Challenges are drawn ahead (days to J+7, weeks to
 // S+2, months to M+1) so that the administrator can replace them, but a challenge is never
-// shown before its period begins, and once begun it never changes.
+// shown before its period begins, and once begun it changes only while nobody has a result on
+// it (2.60: anything the server received for it); a period that is over never changes.
 //
 // Runs follow the records: the player comes from the session, idempotence by attempt_id,
 // tier computed by the server, statuses PENDING / VERIFIED / REJECTED with the decision and
@@ -296,7 +297,7 @@ export interface ChallengeRow {
 export const OBJECTIVES = ["speed", "finish"] as const;
 export type Objective = (typeof OBJECTIVES)[number];
 
-interface RunRow {
+export interface RunRow {
     id: string;
     challenge_id: string;
     player_id: string;
@@ -331,6 +332,20 @@ export const CHALLENGE_SQL = `SELECT c.*, p.username AS author_name,
     END AS has_race,
     ${PRIZES_SQL} AS rewards_json
   FROM challenges c LEFT JOIN players p ON p.id = c.featured_player_id`;
+
+/**
+ * 2.60: whether a player has a result on the challenge whose id is the SQL expression `id`:
+ * anything the server received for it — a run (finished, its record, its place on the boards,
+ * its streak), an attempt (« Plus loin »), a reward won, its rewards granted — whatever its
+ * status. A challenge that has begun may change only while this is false (the routes of
+ * ADMINISTRATION › Calendrier des défis carry it in each write; the trigger
+ * challenges_have_results of migration 0117 backs them).
+ */
+export const HAS_RESULTS_SQL = (id: string) =>
+    `(EXISTS (SELECT 1 FROM challenge_runs WHERE challenge_id = ${id})
+      OR EXISTS (SELECT 1 FROM challenge_attempts WHERE challenge_id = ${id})
+      OR EXISTS (SELECT 1 FROM player_won_rewards WHERE challenge_id = ${id})
+      OR EXISTS (SELECT 1 FROM challenge_reward_grants WHERE challenge_id = ${id}))`;
 
 function powersOf(c: Pick<ChallengeRow, "powers">): string[] {
     try {
@@ -399,6 +414,10 @@ export function challengeJson(c: ChallengeRow) {
         // 2.43: the rewards an administrator gave it, each with its condition (granted by the
         // server once the period is over, from the verified results only).
         rewards: prizesJson(c.rewards_json),
+        // 2.60: when this version of the challenge was set (its draw, or an administrator's last
+        // change; a challenge that has begun may still change while nobody has a result on
+        // it). The game keeps the newest version it has read, never an older answer.
+        updated_at: c.updated_at,
     };
 }
 
@@ -753,7 +772,50 @@ export async function calendar(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
         first_month: first?.d ? first.d.slice(0, 7) : periodOf("monthly", today),
         challenges: rows.results.map(challengeJson),
         me,
+        // 2.60: the medals of each challenge (apart from the challenge objects: they change with
+        // every result, the challenge does not).
+        tier_counts: await tierCounts(
+            ctx,
+            rows.results.map((c) => c.id),
+        ),
     });
+}
+
+/** Players at each tier of a challenge (2.60, the player's calendar). */
+export interface TierCounts {
+    bronze: number;
+    silver: number;
+    gold: number;
+}
+
+/**
+ * 2.60: of each challenge `ids` (begun ones), how many players reached each tier, each player
+ * once at the best tier he reached — like the challenge's boards and rewards: VERIFIED results
+ * received in time (`late = 0`), active accounts only; a finished run's tier, and (« Finir le
+ * niveau ») a verified attempt's. Computed from the server's own rows; 0 for nobody.
+ */
+export async function tierCounts(ctx: Ctx, ids: string[]): Promise<Record<string, TierCounts>> {
+    const out: Record<string, TierCounts> = {};
+    for (const id of ids) out[id] = { bronze: 0, silver: 0, gold: 0 };
+    if (ids.length === 0) return out;
+    const rows = await ctx.env.DB.prepare(
+        `WITH items AS (
+           SELECT r.challenge_id, r.player_id, CASE r.tier WHEN 'gold' THEN 3 WHEN 'silver' THEN 2 WHEN 'bronze' THEN 1 ELSE 0 END AS t
+           FROM challenge_runs r WHERE r.challenge_id IN (SELECT value FROM json_each(?1)) AND r.status = 'VERIFIED' AND r.late = 0
+           UNION ALL
+           SELECT a.challenge_id, a.player_id, CASE a.tier WHEN 'silver' THEN 2 WHEN 'bronze' THEN 1 ELSE 0 END
+           FROM challenge_attempts a
+           WHERE a.challenge_id IN (SELECT value FROM json_each(?1)) AND a.status = 'VERIFIED' AND a.late = 0 AND a.tier IS NOT NULL),
+         best AS (
+           SELECT i.challenge_id, i.player_id, MAX(i.t) AS t FROM items i JOIN players p ON p.id = i.player_id
+           WHERE p.account_status = 'active' GROUP BY i.challenge_id, i.player_id)
+         SELECT challenge_id, SUM(t = 1) AS bronze, SUM(t = 2) AS silver, SUM(t = 3) AS gold FROM best GROUP BY challenge_id`,
+    )
+        .bind(JSON.stringify(ids))
+        .all<{ challenge_id: string; bronze: number; silver: number; gold: number }>();
+    for (const r of rows.results)
+        if (out[r.challenge_id]) out[r.challenge_id] = { bronze: r.bronze ?? 0, silver: r.silver ?? 0, gold: r.gold ?? 0 };
+    return out;
 }
 
 // ----------------------------------------------------------------- leaderboard
@@ -891,6 +953,9 @@ function playerJson(
 
 const PROGRESS_UNAVAILABLE = () =>
     Errors.conflict("PROGRESS_UNAVAILABLE", "Pas de classement « Plus loin » pour ce défi : son niveau n'a pas de tracé.");
+
+/** 2.60: the challenge changed (an administrator, nobody had a result yet) while this was being sent. */
+const CHANGED = () => Errors.conflict("CHALLENGE_CHANGED", "Ce défi a changé : rejouez sa nouvelle version.");
 
 /**
  * GET /challenges/{id}/leaderboard?scope=world|country|friends&country=&period=live|all&board=time|progress&limit=50:
@@ -1147,6 +1212,31 @@ function isLate(c: Pick<ChallengeRow, "end_date">, now: number): boolean {
     return now > Date.parse(instant(c.end_date)) + LATE_SUBMIT_MS;
 }
 
+/**
+ * 2.60: inserts a new run (PENDING) only on the version of its challenge it was checked
+ * against: in the same statement, the challenge still has the run's level and rules hashes and
+ * the updated_at `versionAt`. False when the challenge changed in between (an administrator,
+ * while nobody had a result on it): the run is then refused (CHALLENGE_CHANGED), never ranked
+ * on the new version — the results of two versions of a challenge are never mixed.
+ */
+export async function insertRunOnVersion(
+    db: Ctx["env"]["DB"],
+    run: Pick<RunRow, "id" | "challenge_id" | "player_id" | "attempt_id" | "time_ms" | "deaths" | "damage_taken" | "level_hash" | "rules_hash" | "game_version" | "tier" | "late" | "created_at">,
+    versionAt: string,
+): Promise<boolean> {
+    const res = await db
+        .prepare(
+            `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash,
+               game_version, tier, status, late, created_at)
+             SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'PENDING', ?12, ?13
+             WHERE EXISTS (SELECT 1 FROM challenges WHERE id = ?2 AND level_hash = ?8 AND rules_hash = ?9 AND updated_at = ?14)`,
+        )
+        .bind(run.id, run.challenge_id, run.player_id, run.attempt_id, run.time_ms, run.deaths, run.damage_taken, run.level_hash,
+            run.rules_hash, run.game_version, run.tier, run.late, run.created_at, versionAt)
+        .run();
+    return res.meta.changes > 0;
+}
+
 /** POST /challenges/{challengeId}/runs: a run of the challenge; idempotent by attempt_id. */
 export async function submitRun(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
@@ -1230,20 +1320,18 @@ export async function submitRun(ctx: Ctx): Promise<Response> {
         created_at: nowIso(),
         verified_at: null,
     };
+    let inserted: boolean;
     try {
-        await ctx.env.DB.prepare(
-            `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash,
-               game_version, tier, status, late, created_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, 'PENDING', ?12, ?13)`,
-        )
-            .bind(run.id, run.challenge_id, run.player_id, run.attempt_id, run.time_ms, run.deaths, run.damage_taken, run.level_hash,
-                run.rules_hash, run.game_version, run.tier, run.late, run.created_at)
-            .run();
+        // 2.60: only on the version of the challenge read above (its level, its rules, and its
+        // objective and tiers, which gave the tier): an administrator who changed it in between
+        // (while nobody had a result) wins, and this run is refused, never ranked on the new one.
+        inserted = await insertRunOnVersion(ctx.env.DB, run, c.updated_at);
     } catch (e) {
         // Two identical submissions racing each other.
         if (String(e).includes("UNIQUE")) throw Errors.conflict("DUPLICATE_SUBMISSION", "Tentative déjà enregistrée.");
         throw e;
     }
+    if (!inserted) throw CHANGED();
 
     let decision: Decision;
     if (run.time_ms < level.min_time_ms) {
@@ -1520,19 +1608,24 @@ export async function submitAttempt(ctx: Ctx): Promise<Response> {
         created_at: nowIso(),
         verified_at: null,
     };
+    let inserted: number;
     try {
-        await ctx.env.DB.prepare(
+        // 2.60: only on the version of the challenge read above, like a run.
+        const res = await ctx.env.DB.prepare(
             `INSERT INTO challenge_attempts (id, challenge_id, player_id, attempt_id, time_ms, level_hash, rules_hash, game_version, claim, late,
                status, reasons, created_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13)`,
+             SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13
+             WHERE EXISTS (SELECT 1 FROM challenges WHERE id = ?2 AND level_hash = ?6 AND rules_hash = ?7 AND updated_at = ?14)`,
         )
             .bind(a.id, a.challenge_id, a.player_id, a.attempt_id, a.time_ms, a.level_hash, a.rules_hash, a.game_version, a.claim, a.late,
-                a.status, a.reasons, a.created_at)
+                a.status, a.reasons, a.created_at, c.updated_at)
             .run();
+        inserted = res.meta.changes;
     } catch (e) {
         if (String(e).includes("UNIQUE")) throw Errors.conflict("DUPLICATE_SUBMISSION", "Essai déjà enregistré.");
         throw e;
     }
+    if (!inserted) throw CHANGED();
     return json(
         ctx,
         { duplicate: false, attempt: attemptJson(a), replay: { required: a.status === "PENDING", upload_path: attemptUploadPath(a.attempt_id) } },
@@ -1964,14 +2057,21 @@ interface WonRow extends Omit<CreationLookColumns, "kind"> {
     title_text: string | null;
     title_color: string | null;
     creation_name: string | null;
+    /** 2.60: the condition it was won by (the rule of that challenge), when the challenge still has it. */
+    rule_condition: string | null;
+    rule_value: number | null;
 }
+
+/** SQL: the rule of its challenge a reward won (`w`) was given by (a reward is given once per challenge). */
+const RULE_OF_WON = `WHERE rr.challenge_id = w.challenge_id AND rr.reward_kind = w.reward_kind AND rr.reward_ref = w.reward_ref ORDER BY rr.position LIMIT 1`;
 
 /**
  * GET /players/me/rewards (2.43): `{ rewards: [{ challenge: { id, kind, period, date, title },
  * kind: item|title|suit|trail|frame|victory, ref, item: { id, category, name } | null, title:
  * { id, text, color } | null, suit?: { id, name, colors: { suit, accent, scarf } }, creation?:
- * { id, kind, name, colors, style, ... } (2.59), granted_at }] }`: the rewards of challenges I
- * won, the most recent first (the rewards due are granted first). An item of the catalogue
+ * { id, kind, name, colors, style, ... } (2.59), granted_at, (2.60) condition, value }] }`: the
+ * rewards of challenges I won (`condition` and `value`: the rule of that challenge it was won by,
+ * "tier" 1..3, "top" N or "finished"; null when unknown), the most recent first (the rewards due are granted first). An item of the catalogue
  * unlocks in the Collection, a title ("srv:<id>") or a creation of the server (a suit
  * "srvsuit:<id>"; 2.59 a trail "srvtrail:<id>", a frame "srvframe:<id>", a victory effect
  * "srvvictory:<id>": its current name and look) may be worn (PUT /players/me/cosmetics).
@@ -1981,7 +2081,9 @@ export async function myRewards(ctx: Ctx): Promise<Response> {
     await grantQuietly(ctx, { limit: 5 });
     const rows = await ctx.env.DB.prepare(
         `SELECT w.challenge_id, w.reward_kind AS kind, w.reward_ref AS ref, w.granted_at, c.kind AS challenge_kind, c.period, c.date, c.level_title,
-                t.text AS title_text, t.color AS title_color, ${CREATION_COLUMNS("s")}
+                t.text AS title_text, t.color AS title_color, ${CREATION_COLUMNS("s")},
+                (SELECT rr.condition FROM challenge_reward_rules rr ${RULE_OF_WON}) AS rule_condition,
+                (SELECT rr.condition_value FROM challenge_reward_rules rr ${RULE_OF_WON}) AS rule_value
          FROM player_won_rewards w LEFT JOIN challenges c ON c.id = w.challenge_id
          LEFT JOIN server_titles t ON w.reward_kind = 'title' AND t.id = CAST(substr(w.reward_ref, 5) AS INTEGER)
          ${CREATION_JOIN("s", "w.reward_kind", "w.reward_ref")}
@@ -2016,6 +2118,9 @@ export async function myRewards(ctx: Ctx): Promise<Response> {
             ...(suit ? { suit } : {}),
             ...(creation ? { creation } : {}),
             granted_at: r.granted_at,
+            // 2.60: what it was won by (« Or atteint », « Top 10 final »...): the game's tooltips say it.
+            condition: r.rule_condition ?? null,
+            value: r.rule_condition ? (r.rule_value ?? 0) : null,
         });
     }
     return json(ctx, { rewards });

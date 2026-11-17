@@ -31,6 +31,46 @@ types `trail`, `frame`, `victory`, colonnes `color_a`, `color_b`, `style`, `widt
 avec leurs identifiants), `ui/screens/AdminCreations.*` (onglet), `GameServices::suitSheet` /
 `creationLook`, `ServerSuitBook` / `ServerLookBook` (listes gardées par le jeu).
 
+## La réserve du jeu (2.60)
+
+Le jeu apporte sa propre réserve de créations, prêtes à donner : **40 combinaisons, 30 traînées,
+30 cadres et 30 effets de victoire**, chacune avec un nom français (unique dans son type) et une
+palette (planètes du jeu, saisons, pierres précieuses, nébuleuses, métaux, ciel…). Migration
+`server/migrations/0118_creations_reserve.sql`, générée par
+`node server/scripts/creations-reserve.mjs` (sortie identique d'une exécution à l'autre ;
+`--check <fichier>` la compare) : le script vérifie chaque création comme le serveur (nom de
+32 caractères au plus, couleurs `#rrggbb`, style présent dans la liste du serveur **et** dans celle
+du jeu, bornes d'une traînée), et `server/test/creationsReserve.test.ts` envoie chacune à
+`POST /admin/creations` comme si un admin l'avait créée.
+
+- Colonne `game_reserve` (1 pour la réserve) ; `created_by` `NULL` : l'administration affiche
+  « Réserve du jeu » au lieu d'un auteur. Un admin peut ensuite les renommer, les redessiner, les
+  archiver ou les donner comme les autres.
+- Chaque `INSERT … WHERE NOT EXISTS` porte sur (`kind`, `name_key`), archivées comprises : une
+  création d'un admin n'est jamais remplacée, et appliquer la migration deux fois n'ajoute rien.
+- **Invisibles des joueurs** tant qu'aucun défi commencé ne les donne et que personne ne les a
+  gagnées : `GET /creations` ne liste que les créations gagnées par un joueur ou données par un
+  défi commencé (les défis à venir ne sont jamais montrés). Cela vaut pour toute création, pas
+  seulement la réserve.
+- ADMINISTRATION › Créations filtre et étiquette chaque création : « Réserve (jamais donnée) »,
+  « Donnée en récompense » (un défi la donne, ou un joueur l'a gagnée), « Archivée ».
+
+## Objets exclusifs et leur aura (2.60)
+
+Un objet **exclusif** ne s'obtient qu'en récompense de défi : toute création du serveur (et les
+titres créés sur le serveur), et les objets du catalogue dont la condition est un résultat de défis
+(`CosmeticItem::challengeReward()`). Partout où il est dessiné comme objet (Vestiaire, écran des
+nouvelles récompenses, récompenses d'un défi dans Défis et à la fin d'un défi, Calendrier des défis
+et Créations de l'administration), sa vignette porte une **aura** dorée qui pulse doucement, tenue
+dans la marge de la vignette (jamais sur le texte ni sur les voisines ; pas de réglage d'animations
+réduites dans le jeu, donc toujours affichée). Au survol ou au focus (clavier, manette), une
+infobulle dit d'où il vient : « Exclusif : défi du jour du 10/11/2026 · Or atteint » (défi de la
+semaine du …, défi du mois de …), d'après les récompenses gagnées (`GET /players/me/rewards` :
+`challenge`, `granted_at`, 2.60 `condition`, `value`) ou le défi dont il est la récompense ;
+« Exclusif aux défis : Réussir … » pour une récompense du catalogue ; dans l'administration,
+« Réserve : pas encore donné en récompense » ou le premier défi qui le donne (`given_by`). Hors
+ligne, le jeu garde ce que son cache connaît, sinon « Exclusif aux défis ».
+
 ## Règles
 
 - Le serveur vérifie tout (rôle admin par la session, `requireAdminRole` : `404` pour un autre
@@ -63,7 +103,7 @@ victoire à la sortie d'un niveau, les récompenses des défis. Les récompenses
 dessinée comme l'élément simple de sa catégorie (combinaison standard, pas de traînée, cadre
 simple, fin classique) et la liste est relue.
 
-## Le Studio et les images des créations (2.61)
+## Le Studio et les images des créations (2.63)
 
 *Administration › Créations › « Studio »* (à côté de « Bibliothèque », la liste et l'éditeur
 paramétrique ci-dessus) : un éditeur d'images complet, pour les admins (`ui/studio/`).

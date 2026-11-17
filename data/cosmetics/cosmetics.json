@@ -64,6 +64,7 @@
     {"id": "frame_couronne", "category": "frame", "name": "Couronne de la semaine", "description": "Une couronne d'or sertie de trois gemmes au-dessus de l'avatar.", "challenge": {"kind": "weekly", "tier": "gold", "count": 1}, "look": "crown"},
 
     {"id": "title_none", "category": "title", "name": "Sans titre", "description": "Aucun titre sous votre nom.", "default": true, "look": ""},
+    {"id": "title_premier_envol", "category": "title", "name": "Premier envol", "description": "Souvenir du didacticiel : le premier envol de Nova, avec Bip.", "souvenir": "tutorial", "look": "Premier envol"},
     {"id": "title_explorateur", "category": "title", "name": "Explorateur", "description": "Sous votre nom, sur le profil et dans les classements.", "achievement": "voyage_5", "look": "Explorateur"},
     {"id": "title_gardien_sylvanox", "category": "title", "name": "Gardien de Sylvanox", "description": "Pour avoir terminé Sylvanox.", "achievement": "voyage_sylvanox", "look": "Gardien de Sylvanox"},
     {"id": "title_architecte", "category": "title", "name": "Architecte", "description": "Pour avoir créé un niveau.", "achievement": "createur_level", "look": "Architecte"},

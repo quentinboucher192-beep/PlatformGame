@@ -7,6 +7,7 @@
 
 #include "engine/core/FileUtil.h"
 #include "game/achievements/Achievements.h"
+#include "game/progression/Progression.h"
 #include "game/records/BossStats.h"
 #include "game/records/PlayStats.h"
 #include "game/records/Records.h"
@@ -74,6 +75,8 @@ Json mergeProgressJson(const Json& mine, const Json& theirs) {
     out["playTimeSeconds"] = num(mine, "playTimeSeconds") + num(theirs, "playTimeSeconds");
     out["levelPlayTime"] = mergeNumbers(objectOr(mine, "levelPlayTime"), objectOr(theirs, "levelPlayTime"), false);
     out["introSeen"] = jget<bool>(mine, "introSeen", false) || jget<bool>(theirs, "introSeen", false);
+    // 2.64: the tutorial is never offered again once either side went through it (or skipped it).
+    out["tutorial"] = Progression::furthestTutorial(jstr(mine, "tutorial", "before"), jstr(theirs, "tutorial", "before"));
     if (!out.contains("lastPlanet")) out["lastPlanet"] = theirs.value("lastPlanet", Json("sylvanox"));
     if (!out.contains("lastLevel")) out["lastLevel"] = theirs.value("lastLevel", Json(""));
     return out;

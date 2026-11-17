@@ -494,6 +494,17 @@ private:
         ui.newBadge("training", toggleRect, "ghosts.training");
         y += ui.s(60);
         if (!training_) return;
+        // 2.60.3: an administrator makes the segment invincible right here (not ranked, as in the pause).
+        if (g_.online.isAdmin()) {
+            bool inv = g_.settings.gameplay.adminInvincible;
+            const Rect invRect{area.x, y, area.w, ui.s(50)};
+            if (ui.toggle("invincible", invRect, "Invincible (admin) · non classé", inv)) {
+                g_.settings.gameplay.adminInvincible = inv;
+                g_.saveSettings();
+            }
+            ui.newBadge("invincible", invRect, "ghosts.training.invincible");
+            y += ui.s(60);
+        }
         if (!routeReady_) {
             ui.label("Calcul du parcours…", {area.x, y}, fz(ui, 16), th.textDim);
             return;

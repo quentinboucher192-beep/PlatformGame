@@ -192,15 +192,23 @@ describe("creations: administration", () => {
 });
 
 describe("creations: the games draw them, and a challenge gives them", () => {
-    it("lists the suits in use publicly (no account), and the archived ones still won", async () => {
+    it("lists publicly (no account) the suits a challenge that has begun gives, and those won (archived too), never the others", async () => {
         const a = await admin();
         const kept = (await create(a, "Aurore")).body.data.creation;
         const gone = (await create(a, "Brume", { suit: "#101010", accent: "#202020", scarf: "#303030" })).body.data.creation;
         const won = (await create(a, "Cendre", { suit: "#404040", accent: "#505050", scarf: "#606060" })).body.data.creation;
+        const unseen = (await create(a, "Dune", { suit: "#707070", accent: "#808080", scarf: "#909090" })).body.data.creation;
         for (const id of [gone.id, won.id]) await api("POST", `${V}/admin/creations/${id}/archive`, { token: a.token, body: { archived: true } });
         const p = await registerPlayer("Orion");
         await env.DB.prepare("INSERT INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at) VALUES (?1, 'daily-2026-01-01', 'suit', ?2, ?3)")
             .bind(p.id, won.ref, new Date().toISOString())
+            .run();
+        // 2.60: in service but given by no challenge (« Dune »): not listed; « Aurore », given by today's challenge, is.
+        const today = await challenge(utcDate());
+        await env.DB.prepare(
+            "INSERT INTO challenge_reward_rules (challenge_id, position, reward_kind, reward_ref, condition, condition_value) VALUES (?1, 0, 'suit', ?2, 'finished', 0)",
+        )
+            .bind(today, kept.ref)
             .run();
         const pub = await api("GET", `${V}/creations`);
         expect(pub.status).toBe(200);
@@ -208,6 +216,7 @@ describe("creations: the games draw them, and a challenge gives them", () => {
             { id: kept.id, ref: kept.ref, kind: "suit", name: "Aurore", colors: GIVRE, updated_at: kept.updated_at },
             expect.objectContaining({ id: won.id, ref: won.ref, name: "Cendre", colors: { suit: "#404040", accent: "#505050", scarf: "#606060" } }),
         ]);
+        expect(pub.body.data.creations.map((c: any) => c.id)).not.toContain(unseen.id);
         // Nothing of the administration in it.
         expect(Object.keys(pub.body.data.creations[0]).sort()).toEqual(["colors", "id", "kind", "name", "ref", "updated_at"]);
     });
@@ -236,7 +245,8 @@ describe("creations: the games draw them, and a challenge gives them", () => {
         // Archived after being given: the challenge keeps it (its list saved again as it is).
         await api("POST", `${V}/admin/creations/${suit.id}/archive`, { token: a.token, body: { archived: true } });
         expect((await setRewards([{ kind: "suit", ref: suit.ref, condition: "tier", value: 3 }])).status).toBe(200);
-        expect((await api("GET", `${V}/creations`)).body.data.creations.map((c: any) => c.ref)).toEqual([suit.ref]);
+        // 2.60: the reward of a coming challenge only: still unknown to the players (listed once it begins).
+        expect((await api("GET", `${V}/creations`)).body.data.creations.map((c: any) => c.ref)).toEqual([]);
         await api("POST", `${V}/admin/creations/${suit.id}/archive`, { token: a.token, body: { archived: false } });
 
         // A challenge that ended: granted by its rule, like the other rewards.

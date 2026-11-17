@@ -252,15 +252,17 @@ export async function revalidateCosmetics(ctx: Ctx, playerId: string): Promise<v
  * server: "srvtrail:<n>").
  */
 export interface BoardCosmetics {
-    frame: string;
-    title: { id: string; name: string; color?: string } | null;
-    suit: string;
-    trail: string;
+    frame?: string;
+    title?: { id: string; name: string; color?: string } | null;
+    suit?: string;
+    trail?: string;
+    /** 2.66: the player's clan tag (shown as [TAG] next to the username), whatever the profile's privacy. */
+    clan_tag?: string;
 }
 
 /**
- * The leaderboard decorations of some players. A private profile gets nothing (the game
- * then draws the simple frame and no title).
+ * The leaderboard decorations of some players. A private profile gets no cosmetics (the game
+ * then draws the simple frame and no title); its clan tag (2.66) is public, like the clan's page.
  */
 export async function boardCosmetics(ctx: Ctx, playerIds: Iterable<string>): Promise<Map<string, BoardCosmetics>> {
     const ids = [...new Set(playerIds)];
@@ -268,18 +270,21 @@ export async function boardCosmetics(ctx: Ctx, playerIds: Iterable<string>): Pro
     for (let at = 0; at < ids.length; at += 90) {
         const chunk = ids.slice(at, at + 90);
         const rows = await ctx.env.DB.prepare(
-            `SELECT p.id, c.suit, c.frame, c.title, c.trail, t.text AS title_text, t.color AS title_color, s.id AS server_suit,
-                    f.id AS server_frame, tr.id AS server_trail
-             FROM players p LEFT JOIN player_cosmetics c ON c.player_id = p.id
+            `SELECT p.id, p.profile_visibility, kc.tag AS clan_tag, c.suit, c.frame, c.title, c.trail, t.text AS title_text, t.color AS title_color,
+                    s.id AS server_suit, f.id AS server_frame, tr.id AS server_trail
+             FROM players p LEFT JOIN player_cosmetics c ON c.player_id = p.id AND p.profile_visibility <> 'private'
+             LEFT JOIN clan_members km ON km.player_id = p.id LEFT JOIN clans kc ON kc.id = km.clan_id
              LEFT JOIN server_titles t ON c.title LIKE 'srv:%' AND t.id = CAST(substr(c.title, 5) AS INTEGER)
              LEFT JOIN creations s ON c.suit LIKE 'srvsuit:%' AND s.kind = 'suit' AND s.id = CAST(substr(c.suit, 9) AS INTEGER)
              LEFT JOIN creations f ON c.frame LIKE 'srvframe:%' AND f.kind = 'frame' AND f.id = CAST(substr(c.frame, 10) AS INTEGER)
              LEFT JOIN creations tr ON c.trail LIKE 'srvtrail:%' AND tr.kind = 'trail' AND tr.id = CAST(substr(c.trail, 10) AS INTEGER)
-             WHERE p.profile_visibility <> 'private' AND p.id IN (${chunk.map((_, i) => `?${i + 1}`).join(", ")})`,
+             WHERE (p.profile_visibility <> 'private' OR kc.tag IS NOT NULL) AND p.id IN (${chunk.map((_, i) => `?${i + 1}`).join(", ")})`,
         )
             .bind(...chunk)
             .all<{
                 id: string;
+                profile_visibility: string;
+                clan_tag: string | null;
                 suit: string | null;
                 frame: string | null;
                 title: string | null;
@@ -291,8 +296,14 @@ export async function boardCosmetics(ctx: Ctx, playerIds: Iterable<string>): Pro
                 server_trail: number | null;
             }>();
         for (const r of rows.results) {
+            const clan = r.clan_tag ? { clan_tag: r.clan_tag } : {};
+            if (r.profile_visibility === "private") {
+                out.set(r.id, clan);
+                continue;
+            }
             const title = shown("title", r.title);
             out.set(r.id, {
+                ...clan,
                 // 2.59: a frame created on the server: its reference (drawn from GET /creations).
                 frame: r.server_frame && r.frame ? r.frame : shown("frame", r.frame).look,
                 // 2.43: a server title shows its text in its colour.

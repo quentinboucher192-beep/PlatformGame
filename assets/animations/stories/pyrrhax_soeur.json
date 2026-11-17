@@ -1,0 +1,15 @@
+{
+  "texture": "stories/pyrrhax/soeur.png",
+  "frameWidth": 128,
+  "frameHeight": 88,
+  "pivot": [64, 82],
+  "clips": {
+    "idle": {"row": 0, "count": 8, "fps": 7, "loop": true},
+    "walk": {"row": 1, "count": 8, "fps": 10, "loop": true},
+    "watch": {"row": 2, "count": 6, "fps": 6, "loop": true},
+    "cheer": {"row": 3, "count": 6, "fps": 10, "loop": true},
+    "inhale": {"row": 4, "count": 4, "durations": [0.1, 0.1, 0.12, 0.16], "loop": false, "next": "fire"},
+    "fire": {"row": 5, "count": 4, "fps": 12, "loop": true},
+    "laugh": {"row": 6, "count": 6, "fps": 9, "loop": true}
+  }
+}

@@ -191,6 +191,8 @@ public:
     const std::string& currentAttackName() const;
     std::string debugInfo() const;
     Vec2 center() const { return box.center(); }
+    /// Its sprite as drawn now (display: where it shows on screen, Hud::bossOnScreen).
+    const Animator& animator() const { return anim_; }
 
     Rect box;
     Rect prevBox;

@@ -64,9 +64,12 @@ public:
     void drawWorld(Renderer& r, const WorldView& view, const AnimationSetPtr& set);
     /// The gap and the segments panel inside `area` (the HUD place « Fantômes », size factor
     /// `k`; `boxShown` false: hidden in the HUD settings), then the names above the ghosts,
-    /// kept clear of the HUD (`keepOut`: its elements' areas) and of each other.
+    /// kept clear of the HUD (`keepOut`: its elements' areas) and of each other. 2.60: the box
+    /// at `boxOpacity` (faded with the HUD over the action, Hud::opacity), the names never.
     void drawHud(UIContext& ui, const WorldView& view, const Rect& area, float k, bool boxShown, const Rect* keepOut,
-                 int keepOutCount);
+                 int keepOutCount, float boxOpacity = 1.0f);
+    /// What the box (gap, panel, status) really covered on screen the last time (empty: nothing).
+    const Rect& boxDrawn() const { return boxDrawn_; }
     /// HUD editor: the place of the comparison box, without any time.
     static void drawPreview(UIContext& ui, const Rect& area, float k);
 
@@ -99,6 +102,8 @@ private:
     Color colorFor(const GhostMeta& m, int sameKindBefore) const;
     void drawNames(UIContext& ui, const WorldView& view, const Rect* keepOut, int keepOutCount);
     void drawStatus(UIContext& ui, const Rect& area, float k);
+    /// The box of drawHud(): the gap and the segments panel, or the loading status.
+    void drawBox(UIContext& ui, const Rect& area, float k, bool boxShown);
     /// Name of the checkpoint nearest to `feet` (its label in the level), or "Point n".
     std::string checkpointName(Vec2 feet, int fallbackIndex) const;
 
@@ -125,6 +130,7 @@ private:
     bool visible_ = true;
     float recordFlash_ = 0.0f;  // "NOUVEAU RECORD" animation
     Rect hudRect_;
+    Rect boxDrawn_;
 };
 
 }  // namespace cosmic

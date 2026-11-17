@@ -19,6 +19,7 @@
 // level format, its id, planet, revision number, bounds and exit against the declared
 // manifest entry); the routes exist only for an active administrator (requireAdminRole).
 
+import { refreshAllClanPoints } from "./clans";
 import { audit, type AuthInfo } from "./auth";
 import { parseManifestLevel } from "./admin";
 import { parseLayout } from "./race";
@@ -467,6 +468,8 @@ export async function publish(ctx: Ctx): Promise<Response> {
         await refuse(ctx, auth, Errors.conflict("BASE_CHANGED", "La révision en ligne a changé entre-temps : rouvrez le niveau."), what);
     }
     const carried = carry?.carried ?? 0;
+    // 2.66: the clans' points follow the current revision of the EXTRÊME levels.
+    await refreshAllClanPoints(ctx.env.DB);
     await audit(ctx, auth.player.id, "admin_campaign_published", {
         campaign: { level_id: level.id, level_name: level.name, version, content_hash: m.content_hash, from_version: level.current_version, records, carried_bests: carried },
         by_username: auth.player.username,
@@ -548,6 +551,7 @@ export async function revert(ctx: Ctx): Promise<Response> {
     if (!results[0]?.meta.changes)
         await refuse(ctx, auth, Errors.conflict("BASE_CHANGED", "La révision en ligne a changé entre-temps : actualisez la liste."), what);
     const carried = carry?.carried ?? 0;
+    await refreshAllClanPoints(ctx.env.DB);
     await audit(ctx, auth.player.id, "admin_campaign_reverted", {
         campaign: {
             level_id: level.id,

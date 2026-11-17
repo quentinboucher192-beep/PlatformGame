@@ -8,11 +8,14 @@
 #include <cmath>
 #include <map>
 
+#include "engine/core/I18n.h"
+#include "game/online/Clans.h"
 #include "game/GameServices.h"
 #include "game/online/Replay.h"
 #include "game/online/OnlineGlobe.h"
 #include "game/progression/Progression.h"
 #include "ui/online/GlobeRenderer.h"
+#include "ui/online/ClanWidgets.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
@@ -288,9 +291,22 @@ private:
         std::string name = jstr(p, "username") + (me() ? " (vous)" : "");
         float nfs = ui.fitFont(name, FontFace::Title, 32, nameRoom * 0.75f);
         Vec2 ns = ui.label(name, {nx, y + ui.s(24)}, nfs, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        // 2.66: the tag of the player's clan next to the name (in the room the name leaves).
+        const Json clanJ = jfield(data_, "clan", Json());
+        float afterName = nx + ns.x;
+        if (const std::string tag = clanJ.is_object() ? clans::bracket(jstr(clanJ, "tag")) : std::string(); !tag.empty()) {
+            i18n::Verbatim words;  // the clan's tag as its chief chose it
+            const float room = nx + nameRoom - afterName - ui.s(14);
+            if (room > ui.s(30)) {
+                const float tf = ui.fitFont(tag, FontFace::Bold, 22, room, 0.7f);
+                Vec2 ts = ui.label(ui.elide(tag, FontFace::Bold, tf, room), {afterName + ui.s(14), y + ui.s(26)}, tf, Color{255, 210, 122, 255}, Align::Left,
+                                   FontFace::Bold, VAlign::Middle);
+                afterName += ui.s(14) + ts.x;
+            }
+        }
         if (isCreator) {
             float cw = ui.text().measure("CRÉATEUR", FontFace::Bold, ui.s(14)).x + ui.s(22);
-            Rect chip{nx + ns.x + ui.s(14), y + ui.s(24) - ui.s(14), cw, ui.s(28)};
+            Rect chip{afterName + ui.s(14), y + ui.s(24) - ui.s(14), cw, ui.s(28)};
             if (chip.right() <= nx + nameRoom) {
                 ui.r().fillRoundedRect(chip, ui.s(14), ui.theme().warm.withAlphaF(0.22f));
                 ui.r().drawRoundedRect(chip, ui.s(14), ui.theme().warm, ui.s(1.2f));
@@ -335,6 +351,36 @@ private:
             ui.label(ui_.countryName(cc), {nx + ui.s(36), ly}, ui.fitFont(ui_.countryName(cc), FontFace::Body, 17, nameRoom - ui.s(36)), ui.theme().textDim,
                      Align::Left, FontFace::Body, VAlign::Middle);
             ly += ui.s(28);
+        }
+        // 2.66: the player's clan (emblem, [TAG] name, role): its page opens from here.
+        if (clanJ.is_object()) {
+            const std::string clanText = clans::tagged(jstr(clanJ, "name"), jstr(clanJ, "tag"));
+            const std::string role = " · " + clans::roleLabel(jstr(clanJ, "role"));
+            float roleW = ui.text().measure(role, FontFace::Body, ui.s(15)).x;
+            float clanW;
+            {
+                i18n::Verbatim words;
+                clanW = ui.text().measure(clanText, FontFace::Bold, ui.s(15)).x;
+            }
+            Rect cr{nx, ly - ui.s(16), std::min(nameRoom, ui.s(48) + clanW + roleW + ui.s(16)), ui.s(32)};
+            UIContext::ButtonStyle cst;
+            cst.small = true;
+            cst.align = Align::Left;
+            if (ui.button("clan", cr, "", cst)) g_.app.pushScene(makeClans(g_, jstr(clanJ, "id"), true));
+            drawClanEmblem(ui, {cr.x + ui.s(6), cr.y + ui.s(4), ui.s(24), ui.s(24)}, clans::emblemFromJson(jfield(clanJ, "emblem", Json())));
+            const float tx = cr.x + ui.s(40), room = cr.right() - ui.s(10) - tx;
+            roleW = std::min(roleW, room * 0.4f);
+            Vec2 cs;
+            {
+                i18n::Verbatim words;  // the clan's name as its chief wrote it
+                const float f = ui.fitFont(clanText, FontFace::Bold, 15, room - roleW, 0.75f);
+                cs = ui.label(ui.elide(clanText, FontFace::Bold, f, room - roleW), {tx, cr.center().y}, f, Color{255, 210, 122, 255}, Align::Left,
+                              FontFace::Bold, VAlign::Middle);
+            }
+            const float rf = ui.fitFont(role, FontFace::Body, 15, roleW, 0.75f);
+            ui.label(ui.elide(role, FontFace::Body, rf, roleW), {tx + cs.x, cr.center().y}, rf, clanRoleColor(ui, jstr(clanJ, "role")), Align::Left,
+                     FontFace::Body, VAlign::Middle);
+            ly += ui.s(40);
         }
         std::string sub;
         if (!hidden && p.contains("created_at")) sub = "Inscrit le " + dateFr(jstr(p, "created_at"));

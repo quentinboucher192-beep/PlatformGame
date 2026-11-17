@@ -347,6 +347,7 @@ CosmeticProgress GameServices::cosmeticProgress() const {
     p.book = &achievements;
     p.challenges = &challenges.rewardProgress();
     p.won = &challenges.wonRewards();
+    p.tutorialFinished = progression.tutorialFinished();
     return p;
 }
 

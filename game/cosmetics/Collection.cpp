@@ -34,6 +34,7 @@ bool CosmeticCatalog::load(const fs::path& file, std::string* error) {
             item.look = jstr(e, "look");
             item.achievement = jstr(e, "achievement");
             item.isDefault = jget<bool>(e, "default", false);
+            item.souvenir = jstr(e, "souvenir");
             if (auto s = e.find("stars"); s != e.end()) {
                 if (s->is_string() && s->get<std::string>() == "all") item.allStars = true;
                 else if (s->is_number_integer()) item.stars = std::max(0, s->get<int>());
@@ -115,7 +116,7 @@ std::vector<CosmeticCatalog::Milestone> CosmeticCatalog::milestones(int totalSta
 }
 
 int cosmeticThreshold(const CosmeticItem& item, int totalStars) {
-    if (!item.achievement.empty() || item.challengeReward()) return -1;
+    if (!item.achievement.empty() || item.challengeReward() || !item.souvenir.empty()) return -1;
     if (item.isDefault) return 0;
     if (item.allStars) return std::max(1, totalStars);
     return item.stars;
@@ -171,6 +172,7 @@ bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p) {
     // 2.43: won at a challenge (never taken back); what was created on the server only so.
     if (p.won && p.won->has(item.id)) return true;
     if (item.serverMade()) return false;
+    if (!item.souvenir.empty()) return item.souvenir == "tutorial" && p.tutorialFinished;  // 2.64
     if (!item.achievement.empty()) return p.book && p.book->unlocked(item.achievement);
     if (item.challengeReward()) {
         auto [have, need] = cosmeticChallengeProgress(item, p);
@@ -335,6 +337,14 @@ std::optional<WonRewards> WonRewards::fromJson(const Json& rewards) {
         x.kind = jstr(r, "kind");
         x.ref = jstr(r, "ref");
         x.grantedAt = jstr(r, "granted_at");
+        // 2.60: what it was won by (a condition this game knows, its value in bounds; else nothing said).
+        if (std::string cond = jstr(r, "condition"); cond == "tier" || cond == "top" || cond == "finished") {
+            const int v = jget<int>(r, "value", 0);
+            if (cond == "finished" || (cond == "tier" && v >= 1 && v <= 3) || (cond == "top" && v >= 1 && v <= 100)) {
+                x.condition = cond;
+                x.value = cond == "finished" ? 0 : v;
+            }
+        }
         if (!safeRef(x.challengeId) || !safeRef(x.ref) || (x.kind != "item" && x.kind != "title" && x.kind != "suit" && !isCreationLookKind(x.kind)))
             continue;
         if (isCreationLookKind(x.kind)) {
@@ -404,6 +414,10 @@ Json WonRewards::toJson() const {
                   {"kind", x.kind},
                   {"ref", x.ref},
                   {"granted_at", x.grantedAt}};
+        if (!x.condition.empty()) {
+            r["condition"] = x.condition;
+            r["value"] = x.value;
+        }
         if (const CosmeticItem* t = x.kind == "title" ? title(x.ref) : nullptr) r["title"] = {{"id", t->id}, {"text", t->look}, {"color", t->color}};
         if (const CosmeticItem* s = x.kind == "suit" ? suit(x.ref) : nullptr; s && s->suitColors)
             r["suit"] = {{"id", s->id}, {"name", s->name}, {"colors", suitColorsToJson(*s->suitColors)}};

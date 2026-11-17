@@ -300,8 +300,45 @@ std::optional<DailyChallenge> DailyChallenge::fromJson(const Json& j, std::strin
     }
     // 2.43: its own rewards (absent: none).
     c.prizes = ChallengePrize::listFromJson(jfield(j, "rewards", Json()));
+    // 2.60: when this version was set (an ISO time; absent from older servers).
+    if (std::string at = jstr(j, "updated_at"); at.size() <= 40 && parseIsoUtc(at)) c.updatedAt = at;
     c.raw = j;
     return c;
+}
+
+bool sameChallengeVersion(const DailyChallenge& a, const DailyChallenge& b) {
+    if (a.id != b.id || a.level.source != b.level.source || a.level.levelId != b.level.levelId || a.level.version != b.level.version ||
+        a.level.hash != b.level.hash || a.rulesHash != b.rulesHash || a.finishObjective != b.finishObjective || a.goldNoDamage != b.goldNoDamage)
+        return false;
+    if (a.finishObjective) return a.bronzeProgress == b.bronzeProgress && a.silverProgress == b.silverProgress;
+    return a.silverMs == b.silverMs && a.goldMs == b.goldMs;
+}
+
+ChallengeUpdate challengeUpdate(const DailyChallenge* cached, const DailyChallenge& incoming) {
+    if (!cached) return ChallengeUpdate::Refresh;
+    if (cached->raw == incoming.raw) return ChallengeUpdate::Keep;
+    // An older reading (an answer kept offline, an edge cache): never over a newer version.
+    // Without a time (an older server) it cannot say it is newer than one that has one.
+    if (!cached->updatedAt.empty()) {
+        if (incoming.updatedAt.empty()) return ChallengeUpdate::Keep;
+        // The server writes them alike ("2026-11-17T10:00:00.123Z"): compared as written, to the
+        // millisecond; else to the second.
+        auto was = parseIsoUtc(cached->updatedAt), is = parseIsoUtc(incoming.updatedAt);
+        const bool older = incoming.updatedAt.size() == cached->updatedAt.size() ? incoming.updatedAt < cached->updatedAt : (was && is && *is < *was);
+        if (older) return ChallengeUpdate::Keep;
+    }
+    return sameChallengeVersion(*cached, incoming) ? ChallengeUpdate::Refresh : ChallengeUpdate::Changed;
+}
+
+std::optional<ChallengeTierCounts> ChallengeTierCounts::fromJson(const Json& j) {
+    if (!j.is_object()) return std::nullopt;
+    ChallengeTierCounts t;
+    for (auto [key, out] : {std::pair<const char*, int*>{"bronze", &t.bronze}, {"silver", &t.silver}, {"gold", &t.gold}}) {
+        const Json& v = jfield(j, key, Json());
+        if (!v.is_number_integer() || v.get<int64_t>() < 0) return std::nullopt;
+        *out = static_cast<int>(std::min<int64_t>(v.get<int64_t>(), 99'999'999));
+    }
+    return t;
 }
 
 std::vector<ChallengePrize> ChallengePrize::listFromJson(const Json& rewards) {
@@ -596,9 +633,15 @@ void ChallengeService::saveSubmissions() const {
 
 void ChallengeService::cache(const DailyChallenge& c) {
     auto it = challenges_.find(c.id);
-    // A challenge that has begun never changes (contract): the copy already here stays, unless
-    // it is not the same (then the server's is kept: it is the one runs are checked against).
-    if (it != challenges_.end() && it->second.raw == c.raw) return;
+    // The server's newest version is kept (it is the one runs are checked against), never an
+    // older answer; 2.60: a challenge that has begun may still change while nobody has a
+    // result on it, and then what this computer kept of its former version goes.
+    const ChallengeUpdate u = challengeUpdate(it == challenges_.end() ? nullptr : &it->second, c);
+    if (u == ChallengeUpdate::Keep) return;
+    if (u == ChallengeUpdate::Changed) {
+        Log::info("Défis : {} a changé (nouvelle version du {})", c.id, c.updatedAt);
+        forgetFormerVersion(c);
+    }
     challenges_[c.id] = c;
     if (dir_.empty()) return;
     std::error_code ec;
@@ -611,6 +654,48 @@ void ChallengeService::cache(const DailyChallenge& c) {
         fs::remove(dir_ / (oldest->first + ".json"), ec);
         challenges_.erase(oldest);
     }
+}
+
+const char* ChallengeService::changedNote() {
+    return "Ce défi a changé pendant votre partie : elle était sur son ancienne version et ne compte pas. Jouez sa nouvelle version depuis « Défis ».";
+}
+
+bool ChallengeService::changedSince(const DailyChallenge& c) const {
+    const DailyChallenge* now = find(c.id);
+    return now && !sameChallengeVersion(*now, c);
+}
+
+void ChallengeService::forgetFormerVersion(const DailyChallenge& now) {
+    bool dropped = false;
+    // My result of its former version (and its replay): another challenge's.
+    if (auto r = results_.find(now.id); r != results_.end()) {
+        std::error_code ec;
+        if (safeId(now.id)) fs::remove(bestReplayPath(now.id), ec);
+        results_.erase(r);
+        saveResults();
+        dropped = true;
+    }
+    // The server had no result on it (else it could not change): nothing of it to keep.
+    serverResults_.erase(now.id);
+    tierCounts_.erase(now.id);
+    // The runs and attempts of its former version not sent yet: never sent (refused at once).
+    bool any = false;
+    for (auto& s : submissions_)
+        if (s.challengeId == now.id && s.state == ChallengeRunState::Waiting) {
+            s.state = ChallengeRunState::Rejected;
+            s.note = "Ce défi a changé : cette partie était sur son ancienne version, elle ne compte pas.";
+            any = true;
+        }
+    if (any) saveSubmissions();
+    if ((dropped || any) && online_)
+        online_->notify(OnlineService::Notification::Kind::Warning, "Défi modifié",
+                        "Un défi que vous avez joué a changé avant que quiconque y ait un résultat : vos parties de son ancienne version ne comptent plus.");
+}
+
+std::optional<ChallengeTierCounts> ChallengeService::tierCounts(const std::string& challengeId) const {
+    auto it = tierCounts_.find(challengeId);
+    if (it == tierCounts_.end()) return std::nullopt;
+    return it->second;
 }
 
 const DailyChallenge* ChallengeService::note(const Json& challenge) {
@@ -763,6 +848,12 @@ void ChallengeService::loadCalendar(const std::string& month, bool force) {
         const Json& list = jfield(r.data, "challenges", Json::array());
         if (list.is_array())
             for (const Json& c : list) note(c);
+        // 2.60: the players at each tier of each challenge (the server's count, never this computer's).
+        const Json& counts = jfield(r.data, "tier_counts", Json());
+        if (counts.is_object())
+            for (const auto& [id, x] : counts.items())
+                if (const DailyChallenge* c = safeId(id) ? find(id) : nullptr; c && c->startsAtMs <= nowMs())
+                    if (auto t = ChallengeTierCounts::fromJson(x)) tierCounts_[id] = *t;
         std::string fm = jstr(r.data, "first_month");
         if (isMonth(fm) && fm != firstMonth_ && !r.fromCache) {
             firstMonth_ = fm;
@@ -1092,6 +1183,13 @@ ChallengeService::RunReport ChallengeService::recordRun(const DailyChallenge& c,
     rep.tier = c.tierFor(timeMs, damageTaken);
     // After the end (and its grace): « hors délai », in « Depuis » only, never the streak.
     rep.late = lateNow(c);
+    // 2.60: changed by an administrator while it was played: nothing kept, nothing sent.
+    if (changedSince(c)) {
+        rep.changed = true;
+        rep.tier = ChallengeTier::None;
+        rep.note = changedNote();
+        return rep;
+    }
     ChallengeResult& r = results_[c.id];
     bool first = r.finishes == 0;
     r.challengeId = c.id;
@@ -1271,9 +1369,12 @@ void ChallengeService::sendNext() {
                 return;
             }
             sub->state = ChallengeRunState::Rejected;
+            // 2.60: the challenge changed (an administrator, nobody had a result on it): its new
+            // version is read at once.
+            const bool changed = r.code == "CHALLENGE_CHANGED" || r.code == "RULES_MISMATCH" || r.code == "LEVEL_MISMATCH";
+            if (changed) refresh(true);
             if (r.code == "CHALLENGE_ENDED") sub->note = "Envoyé trop tard : ce serveur n'accepte pas encore les parties hors délai.";
-            else if (r.code == "RULES_MISMATCH") sub->note = "Règles différentes de celles du défi.";
-            else if (r.code == "LEVEL_MISMATCH") sub->note = "Version du niveau différente de celle du défi.";
+            else if (changed) sub->note = "Ce défi a changé : cette partie était sur son ancienne version, elle ne compte pas.";
             else if (r.code == "GAME_VERSION_UNSUPPORTED") sub->note = "Version du jeu trop ancienne : mettez le jeu à jour.";
             else if (r.code == "CHALLENGE_NOT_FOUND") sub->note = "Défi inconnu du serveur.";
             else if (r.code == "PROGRESS_UNAVAILABLE") sub->note = "Ce défi n'a pas de classement « Plus loin » sur le serveur.";
@@ -1392,6 +1493,12 @@ ChallengeService::AttemptReport ChallengeService::recordAttempt(const DailyChall
     rep.progress = std::clamp(std::floor(progress * 10.0f) / 10.0f, 0.0f, 99.9f);
     rep.late = lateNow(c);
     if (!c.progressAvailable) return rep;  // no route: no « Plus loin » for this challenge
+    // 2.60: as a run of a challenge changed while it was played.
+    if (changedSince(c)) {
+        rep.changed = true;
+        rep.note = changedNote();
+        return rep;
+    }
     rep.tier = c.tierForProgress(rep.progress);
     rep.previousBest = bestProgress(c.id);
     rep.newBest = beatsBestAttempt(rep.progress, rep.previousBest);

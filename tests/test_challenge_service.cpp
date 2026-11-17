@@ -953,3 +953,142 @@ TEST_CASE("challenge service: a run just verified reads the rewards again") {
     CHECK(rig.challenges.submission(rep.attemptId)->state == ChallengeRunState::Verified);
     CHECK(rig.challenges.rewardProgress().results("any", 3) == 1);
 }
+
+// ------------------------------------------------------------------ 2.60: a running challenge changed, the medals
+
+namespace {
+
+/// The day's challenge as a 2.60 server writes it: version `at` (its updated_at), `hearts`.
+Json versionJson(int64_t startMs, const std::string& at, int hearts = 2, int64_t silverMs = 85000) {
+    Json j = challengeJson(startMs);
+    j["rules"]["hearts"] = hearts;
+    j["rules_hash"] = ChallengeRules::fromJson(j["id"].get<std::string>(), j["rules"])->hash();
+    j["tiers"]["silver_ms"] = silverMs;
+    j["updated_at"] = at;
+    return j;
+}
+
+}  // namespace
+
+TEST_CASE("challenge service: a running challenge changed by an administrator replaces the copy here, never an older answer") {
+    Rig rig("changed");
+    int64_t start = todayStart();
+    rig.server->current = versionJson(start, "2026-11-17T08:00:00.000Z");
+    rig.server->serverNow = ChallengeService::localNowMs();
+    rig.challenges.refresh(true);
+    CHECK(rig.pump([&] { return rig.challenges.fetchState() == ChallengeService::Fetch::Ok; }));
+    const std::string id = rig.server->current["id"];
+    DailyChallenge v1 = *rig.challenges.find(id);
+    CHECK(v1.updatedAt == "2026-11-17T08:00:00.000Z");
+    // Played here without an account: my result of v1.
+    ReplayData rep = sampleReplay(v1);
+    CHECK(rig.challenges.recordRun(v1, 80000, 0, 0, v1.level.hash, rep.attemptId, &rep, true).newBest);
+    CHECK(rig.challenges.result(id) != nullptr);
+    CHECK(FileUtil::exists(rig.challenges.bestReplayPath(id)));
+    // Only its title changes (the same challenge to play): replaced, my result stays.
+    Json retitled = rig.server->current;
+    retitled["level"]["title"] = "Grottes de givre";
+    rig.challenges.note(retitled);
+    CHECK(rig.challenges.find(id)->level.title == "Grottes de givre");
+    CHECK(rig.challenges.result(id) != nullptr);
+    // An administrator changes its rules (nobody had a result on the server): the new version
+    // is read when the challenges are opened again.
+    rig.server->current = versionJson(start, "2026-11-17T09:30:00.000Z", 3);
+    rig.challenges.refresh(true);
+    CHECK(rig.pump([&] { return rig.challenges.find(id)->rules.hearts == 3; }));
+    const DailyChallenge* v2 = rig.challenges.find(id);
+    CHECK(v2->rulesHash != v1.rulesHash);
+    // What was kept of v1 goes: my result and its replay.
+    CHECK(rig.challenges.result(id) == nullptr);
+    CHECK(!FileUtil::exists(rig.challenges.bestReplayPath(id)));
+    CHECK(rig.challenges.changedSince(v1));
+    CHECK(!rig.challenges.changedSince(*v2));
+    // A run finished on v1 counts for nothing: said, neither kept nor sent.
+    auto late = rig.challenges.recordRun(v1, 60000, 0, 0, v1.level.hash, makeUuidV4(), &rep, true);
+    CHECK(late.changed);
+    CHECK(!late.newBest);
+    CHECK(late.tier == ChallengeTier::None);
+    CHECK(late.note == ChallengeService::changedNote());
+    CHECK(rig.challenges.result(id) == nullptr);
+    // An older answer (kept offline, an edge cache) never comes back over v2.
+    rig.challenges.note(versionJson(start, "2026-11-17T08:00:00.000Z"));
+    CHECK(rig.challenges.find(id)->rules.hearts == 3);
+    // Read again from the disk: v2.
+    ChallengeService again;
+    again.init(rig.online, rig.dir / "saves" / "challenges");
+    CHECK(again.find(id) && again.find(id)->rulesHash == v2->rulesHash);
+}
+
+TEST_CASE("challenge service: the runs of a challenge's former version waiting to be sent are never sent") {
+    Rig rig("changedqueue");
+    int64_t start = todayStart();
+    rig.server->current = versionJson(start, "2026-11-17T08:00:00.000Z");
+    rig.server->serverNow = ChallengeService::localNowMs();
+    CHECK(rig.login());
+    rig.challenges.note(rig.server->current);
+    const std::string id = rig.server->current["id"];
+    DailyChallenge v1 = *rig.challenges.find(id);
+    ReplayData rep = sampleReplay(v1);
+    rig.server->down = true;
+    CHECK(rig.challenges.recordRun(v1, 70000, 0, 0, v1.level.hash, rep.attemptId, &rep, true).state == ChallengeRunState::Waiting);
+    // Its tiers change (same level, same rules): another version all the same.
+    rig.challenges.note(versionJson(start, "2026-11-17T09:00:00.000Z", 2, 95000));
+    const ChallengeSubmission* s = rig.challenges.submission(rep.attemptId);
+    CHECK(s && s->state == ChallengeRunState::Rejected);
+    CHECK(s && s->note.find("a changé") != std::string::npos);
+    CHECK(rig.challenges.waitingCount() == 0);
+    rig.server->down = false;
+    rig.online.checkConnection();
+    rig.pump([&] { return false; }, 500);
+    std::lock_guard<std::mutex> lock(rig.server->m);
+    CHECK(rig.server->posts == 0);
+}
+
+TEST_CASE("challenge service: a run refused because the challenge changed reads its new version") {
+    Rig rig("mismatch");
+    int64_t start = todayStart();
+    rig.server->current = versionJson(start, "2026-11-17T08:00:00.000Z");
+    rig.server->serverNow = ChallengeService::localNowMs();
+    CHECK(rig.login());
+    rig.challenges.note(rig.server->current);
+    const std::string id = rig.server->current["id"];
+    DailyChallenge v1 = *rig.challenges.find(id);
+    // Changed on the server, not yet read here: the run of v1 is refused, its new version read.
+    rig.server->current = versionJson(start, "2026-11-17T09:00:00.000Z", 4);
+    rig.server->endedCode = "RULES_MISMATCH";
+    ReplayData rep = sampleReplay(v1);
+    rig.challenges.recordRun(v1, 70000, 0, 0, v1.level.hash, rep.attemptId, &rep, true);
+    CHECK(rig.pump([&] { return rig.challenges.find(id)->rules.hearts == 4; }, 10000));
+    const ChallengeSubmission* s = rig.challenges.submission(rep.attemptId);
+    CHECK(s && s->state == ChallengeRunState::Rejected);
+    CHECK(s && s->note.find("a changé") != std::string::npos);
+    CHECK(rig.challenges.result(id) == nullptr);
+}
+
+TEST_CASE("challenge service: the calendar's medals, the server's count, kept for its challenges only") {
+    Rig rig("medals");
+    int64_t start = todayStart();
+    Json c = challengeJson(start);
+    const std::string id = c["id"];
+    rig.server->serverNow = ChallengeService::localNowMs();
+    rig.server->calendar = {{"first_month", ChallengeService::utcMonth(start)},
+                            {"challenges", Json::array({c})},
+                            {"me", nullptr},
+                            {"tier_counts", {{id, {{"bronze", 12}, {"silver", 5}, {"gold", 2}}},
+                                             {"daily-2001-01-01", {{"bronze", 1}, {"silver", 1}, {"gold", 1}}}}}};
+    const std::string month = ChallengeService::utcMonth(start);
+    CHECK(!rig.challenges.tierCounts(id).has_value());
+    rig.challenges.loadCalendar(month, true);
+    CHECK(rig.pump([&] { return rig.challenges.calendar(month).state == ChallengeService::CalendarMonth::State::Ok; }));
+    auto t = rig.challenges.tierCounts(id);
+    CHECK(t.has_value());
+    CHECK(t && (*t == ChallengeTierCounts{12, 5, 2}));
+    CHECK(t && t->of(ChallengeTier::Gold) == 2);
+    // Not a challenge of the answer: left out.
+    CHECK(!rig.challenges.tierCounts("daily-2001-01-01").has_value());
+    // Offline: the last answer kept (the cached calendar), never made up.
+    rig.server->down = true;
+    rig.challenges.loadCalendar(month, true);
+    CHECK(rig.pump([&] { return rig.challenges.calendar(month).state != ChallengeService::CalendarMonth::State::Loading; }));
+    CHECK(rig.challenges.tierCounts(id).has_value());
+}

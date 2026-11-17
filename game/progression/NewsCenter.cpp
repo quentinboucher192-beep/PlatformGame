@@ -80,7 +80,7 @@ NewsCenter::Snapshot NewsCenter::snapshot(const ContentDatabase& content) {
         if (!kept.gameplay(id).empty()) s.keptLevels[id] = kept.gameplay(id);
     for (const PowerDefinition* p : content.powers()) s.powers.push_back({p->id, p->name});
     for (const EnemyDefinition* e : content.enemies()) {
-        if (!content.isNativeEnemy(e->id) || !e->variantOf.empty()) continue;  // echoes: their original is announced
+        if (!content.isNativeEnemy(e->id) || !e->variantOf.empty() || e->tutorial) continue;  // echoes: their original is announced
         (e->isBoss ? s.bosses : s.enemies).push_back({e->id, e->name});
     }
     return s;

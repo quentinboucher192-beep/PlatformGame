@@ -16,6 +16,7 @@ import * as achievements from "./achievements";
 import * as cosmetics from "./cosmetics";
 import * as badges from "./badges";
 import * as campaign from "./campaign";
+import * as clans from "./clans";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -224,6 +225,24 @@ route("GET", `${V}/social/blocks`, (ctx) => social.listBlocks(ctx));
 route("POST", `${V}/social/blocks`, (ctx) => social.blockPlayer(ctx));
 route("DELETE", `${V}/social/blocks/{playerId}`, (ctx) => social.unblockPlayer(ctx));
 
+// Clans (2.66, clans.ts): the literal routes come before /clans/{clanId}. Their discussion is a
+// group conversation of the social routes above.
+route("GET", `${V}/clans/me`, (ctx) => clans.myClan(ctx));
+route("GET", `${V}/clans/ranking`, clans.clanRanking, { viewer: true, cacheable: true });
+route("GET", `${V}/clans`, (ctx) => clans.searchClans(ctx), { cacheable: true });
+route("POST", `${V}/clans`, (ctx) => clans.createClan(ctx));
+route("GET", `${V}/clans/{clanId}`, clans.getClan, { viewer: true, cacheable: true });
+route("PATCH", `${V}/clans/{clanId}`, (ctx) => clans.updateClan(ctx));
+route("DELETE", `${V}/clans/{clanId}`, (ctx) => clans.dissolveClan(ctx));
+route("POST", `${V}/clans/{clanId}/join`, (ctx) => clans.joinClan(ctx));
+route("DELETE", `${V}/clans/{clanId}/join`, (ctx) => clans.withdrawRequest(ctx));
+route("POST", `${V}/clans/{clanId}/invites`, (ctx) => clans.invitePlayer(ctx));
+route("DELETE", `${V}/clans/{clanId}/invites/{playerId}`, (ctx) => clans.cancelInvite(ctx));
+route("POST", `${V}/clans/{clanId}/requests/{playerId}`, (ctx) => clans.answerApplication(ctx));
+route("POST", `${V}/clans/{clanId}/transfer`, (ctx) => clans.transferLeadership(ctx));
+route("PATCH", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.setMemberRole(ctx));
+route("DELETE", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.removeMember(ctx));
+
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
 route("POST", `${V}/community/levels`, (ctx) => community.startPublish(ctx));
@@ -375,6 +394,10 @@ route("POST", `${V}/admin/players/{playerId}/device`, (ctx) => devices.adminSetD
 // 2.50: ADMINISTRATION › Joueurs › « Migrer » : preview, then a full backup and the migration.
 route("GET", `${V}/admin/players/{playerId}/migration`, (ctx) => migration.adminPreview(ctx));
 route("POST", `${V}/admin/players/{playerId}/migrate`, (ctx) => migration.adminMigrate(ctx));
+// ADMINISTRATION › Clans (2.66): rename or dissolve a clan (each action in the Journal).
+route("GET", `${V}/admin/clans`, (ctx) => clans.adminListClans(ctx));
+route("PATCH", `${V}/admin/clans/{clanId}`, (ctx) => clans.adminRenameClan(ctx));
+route("DELETE", `${V}/admin/clans/{clanId}`, (ctx) => clans.adminDissolveClan(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
@@ -498,6 +521,8 @@ async function maintenance(env: Bindings, exec: ExecutionContext): Promise<void>
         log("error", "migration_maintenance_failed", { error: e instanceof Error ? e.message : String(e) });
     }
     const rechecked = await recheckHeldRecords(env, exec);
+    // 2.66: every clan's points, against the current revisions of the EXTRÊME levels.
+    await clans.refreshAllClanPoints(env.DB);
     let challengeRuns: number | null = null;
     let rewardsWon: number | null = null;
     try {
