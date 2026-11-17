@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <set>
@@ -216,6 +217,7 @@ private:
     float attackTimer_ = 0.0f;
     float attackCooldown_ = 0.0f;
     bool attackHitDone_ = false;
+    uint32_t meleeTag_ = 0;  // 2.54, statistics only: the tag of the last swing (GameWorld::newAttackTag)
     bool attackAir_ = false;
     float castTimer_ = 0.0f;
     float interactTimer_ = 0.0f;

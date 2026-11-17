@@ -34,6 +34,10 @@
 //                           open ADMINISTRATION (Joueurs, Calendrier des défis, Journal, Campagne)
 //                           with an admin account (calendar: that month, that period in the
 //                           editor, its tab « Objectif et paliers »; campaign: that level's history)
+//   --stats [<section>]     open the player's statistics (0 overview ... 5 data and saves)
+//   --stats-day <YYYY-MM-DD>
+//                           count the runs of this session on that day (automated checks of the
+//                           statistics: real runs spread over several days)
 //   --story <boss>[:<shot>|:titre]
 //                           tell the story of a giga boss over the main menu (from that shot,
 //                           1 = the first, its line typed; « titre »: the title card revealed)
@@ -526,6 +530,11 @@ int main(int argc, char** argv) {
         game.settings.language = i18n::code(*langArg);
         game.applySettings();
     }
+    // 2.54, automated checks: the day the statistics count this session's runs on.
+    if (std::string sd = value("--stats-day"); sd.size() == 10) {
+        int y = std::atoi(sd.substr(0, 4).c_str()), mo = std::atoi(sd.substr(5, 2).c_str()), d = std::atoi(sd.substr(8, 2).c_str());
+        if (y > 1970 && mo >= 1 && mo <= 12 && d >= 1 && d <= 31) game.playStats.dayOverride = daysFromCivil(y, mo, d);
+    }
     game.inputScript = value("--input");
     game.saveReplayPath = value("--save-replay");
     game.onlineFocus = value("--online-focus");
@@ -752,6 +761,12 @@ int main(int argc, char** argv) {
         // ADMINISTRATION (an admin account's session).
         app.pushScene(makeMainMenu(game));
         app.pushScene(makeAdmin(game, value("--admin")));
+    } else if (has("--stats")) {
+        // --stats [<section>[:<what>]]: the player's statistics on a section (screenshots).
+        std::string st = value("--stats");
+        if (auto colon = st.find(':'); colon != std::string::npos) game.onlineOpen = "stats:" + st.substr(colon + 1);
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeStatistics(game, st.empty() ? 0 : std::atoi(st.c_str())));
     } else if (std::string st = value("--story"); !st.empty()) {
         // --story <boss>[:<shot>|:titre] (screenshots): the story over the main menu.
         std::string boss = st.substr(0, st.find(':'));
@@ -859,6 +874,7 @@ int main(int argc, char** argv) {
     // « Retour » from a screen that replaced the main menu never closes the game.
     app.setRootScene([&game] { return makeMainMenu(game); });
     app.run();
+    game.playStats.flush();  // 2.54: the statistics written by their worker, before the game closes
     game.progression.save();
     game.records.save();
     game.presenceOffline();  // friends see « hors ligne » at once (else after 150 s)

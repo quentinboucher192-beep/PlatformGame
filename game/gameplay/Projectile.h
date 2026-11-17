@@ -45,6 +45,12 @@ struct Projectile {
     Color cloudColor{255, 122, 46, 255};  // display only
     bool cloudInk = false;                // display only (2.53, the Kraken): a cloud of ink, not of fire
     std::vector<const void*> hitTargets;  // already damaged (piercing)
+    // 2.54, statistics only (never read by the simulation): set by GameWorld::spawnProjectile.
+    uint32_t uid = 0;           // a serial of the run's shots
+    uint32_t attackTag = 0;     // Nova's shot: the attack it belongs to (GameWorld::newAttackTag)
+    uint32_t owner = 0;         // an enemy's shot: the enemy that fired it (Enemy::uid), 0 unknown
+    uint8_t origin = 0;         // an enemy's shot: HurtOrigin of what fired it
+    std::string attackName;     // an enemy's shot: the attack it belongs to (its name)
 };
 
 }  // namespace cosmic

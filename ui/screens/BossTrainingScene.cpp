@@ -611,7 +611,7 @@ private:
 
 class BossTrainingScene : public Scene {
 public:
-    BossTrainingScene(GameServices& g, std::string bossId) : g_(g), bossId_(std::move(bossId)) {}
+    BossTrainingScene(GameServices& g, std::string bossId, int phase) : g_(g), bossId_(std::move(bossId)), wantPhase_(phase) {}
 
     void onEnter() override {
         bg_.init(g_);
@@ -740,6 +740,7 @@ private:
             spawn_ = c->spawn;  // checked against the arena as it is now (checkSpawn)
         }
         chosen_ = fitTrainingPowers(g_.content, chosen_, slots_);
+        if (wantPhase_ >= -1) phase_ = wantPhase_;  // 2.54: opened on a phase (« Passages difficiles »)
         int phases = def_ ? static_cast<int>(def_->phases.size()) : 0;
         if (phase_ >= phases) phase_ = -1;
         // Automated screenshots (--boss-training-spawn): the usual start, the place proposed
@@ -1116,6 +1117,7 @@ private:
     int clip_ = 0;
     float clipT_ = 0.0f, t_ = 0.0f;
     int hearts_ = 10, slots_ = 2, phase_ = -1;
+    int wantPhase_ = -2;
     std::vector<std::string> chosen_;
     std::vector<std::string> keysFor_;     // the choice keys_ was computed for
     std::vector<ResolvedPowerKey> keys_;   // one per power of the grid (2.31)
@@ -1216,7 +1218,9 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeBossTraining(GameServices& g, const std::string& bossId) { return std::make_unique<BossTrainingScene>(g, bossId); }
+std::unique_ptr<Scene> makeBossTraining(GameServices& g, const std::string& bossId, int phase) {
+    return std::make_unique<BossTrainingScene>(g, bossId, phase);
+}
 
 std::unique_ptr<Scene> makeBossTrainingEnd(GameServices& g, GameScene& game, const BossTrainingResult& result) {
     return std::make_unique<BossTrainingEndScene>(g, game, result);

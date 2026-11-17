@@ -30,6 +30,7 @@
 #include "game/powers/PowerKeys.h"
 #include "game/progression/Progression.h"
 #include "game/records/BossStats.h"
+#include "game/records/PlayStats.h"
 #include "game/records/Records.h"
 #include "saves/Settings.h"
 #include "ui/widgets/UIContext.h"
@@ -61,6 +62,8 @@ public:
     /// Boss statistics (victories, phases and fights without being hit), and the giga bosses
     /// whose story has been told.
     BossStats bossStats;
+    /// 2.54: the player's statistics (main menu → Statistiques; saves/stats.json, this computer only).
+    PlayStatsStore playStats;
     /// « Histoire des giga-boss » (2.51): the stories told before the first fight against each
     /// giga boss (data/stories).
     BossStories stories;

@@ -457,6 +457,15 @@ private:
         ui.toggle("autosave", r, "Sauvegarde automatique de l'éditeur", working_.gameplay.editorAutosave);
         r.y += row();
         ui.sliderInt("autosavesec", r, "Intervalle de sauvegarde (s)", working_.gameplay.editorAutosaveSeconds, 10, 600);
+        // 2.54: the player's statistics, in the column at the right (the left one is full).
+        const float lane = scrolls ? ui.s(16) : 0.0f;
+        if (c.w - lane - r.w - ui.s(40) >= ui.s(360)) {
+            Rect sr{r.right() + ui.s(40), c.y - ui.scrollOffset(), c.w - lane - r.w - ui.s(40), ui.s(54)};
+            ui.toggle("recordstats", sr, "Enregistrer mes statistiques", working_.gameplay.recordStats);
+            ui.newBadge("recordstats", sr, "settings.record_stats");
+            const std::string about = "Menu principal › Statistiques : calculées à partir de vos parties, gardées sur cet ordinateur, jamais envoyées en ligne.";
+            ui.labelWrapped(about, {sr.x + ui.s(4), sr.bottom() + ui.s(10)}, sr.w - ui.s(8), 17, ui.theme().textDim);
+        }
         r.y += row() + ui.s(10);  // ten rows (2.52): the folder stays above the « Retour » button
         ui.label("Dossier des sauvegardes :", {r.x, r.y}, 20, ui.theme().textDim);
         const std::string dir = Paths::toUtf8(Paths::userDir());

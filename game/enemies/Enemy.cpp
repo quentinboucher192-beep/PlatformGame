@@ -705,6 +705,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     }
     float amount = dmg.amount * mult;
     hp_ -= amount;
+    w.noteEnemyDamaged(*this, dmg);  // 2.54: statistics only (which attack of Nova reached it)
     hurtFlash_ = 0.14f;
     invuln_ = 0.12f;
     engaged_ = true;

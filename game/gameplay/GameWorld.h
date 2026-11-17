@@ -19,6 +19,7 @@
 #include "game/gameplay/Entity.h"
 #include "game/gameplay/Projectile.h"
 #include "game/gameplay/RunStats.h"
+#include "game/gameplay/WorldListener.h"
 #include "game/levels/Cinematic.h"
 #include "game/levels/EventSystem.h"
 #include "game/levels/LevelData.h"
@@ -285,6 +286,31 @@ public:
     /// Callback used by the arena (enemy editor) to reset when the player dies.
     std::function<void()> onPlayerDied;
 
+    // ------------------------------------------- 2.54: statistics (never the simulation)
+    /// The listener of this run (game/records/PlayStats.h), or nullptr. Told what happens (a blow
+    /// to Nova and where it came from, an instant fall, an attack of hers and what it reached);
+    /// nothing it does is read back: a run plays the same with or without it.
+    WorldListener* listener = nullptr;
+    /// Nova's attacks are tagged: a swing or a power used gets a new tag (told to the listener),
+    /// its shots carry it, and damage dealt while it is the current tag is credited to it.
+    uint32_t newAttackTag(const std::string& power);
+    uint32_t attackTag() const { return attackTag_; }
+    /// The current tag while it lives (restored after).
+    struct AttackScope {
+        AttackScope(GameWorld& w, uint32_t tag) : w_(w), prev_(w.attackTag_) { w.attackTag_ = tag; }
+        ~AttackScope() { w_.attackTag_ = prev_; }
+        AttackScope(const AttackScope&) = delete;
+        AttackScope& operator=(const AttackScope&) = delete;
+
+    private:
+        GameWorld& w_;
+        uint32_t prev_;
+    };
+    /// Enemy::takeDamage: health taken from an enemy (credited to the current attack tag).
+    void noteEnemyDamaged(const Enemy& e, const DamageInfo& dmg);
+    /// Player::kill: Nova falls (told to the listener when no blow caused it).
+    void notePlayerKilled();
+
 private:
     void buildStatic();
     void createEntities();
@@ -375,6 +401,28 @@ private:
     bool hasSafeFeet_ = false;
     void practiceRespawnNow();  // 2.47.1: the clock waits for the end of Nova's materialisation
     int fallGuard_ = 0;
+    // 2.54, statistics only (WorldListener): what is stepping now, so that a blow to Nova knows
+    // where it comes from; the tags of Nova's attacks; the serial of the shots.
+    struct HurtScope {
+        HurtScope(GameWorld& w, HurtOrigin o, const Enemy* e = nullptr, uint32_t shot = 0, const std::string* attack = nullptr);
+        ~HurtScope();
+        HurtScope(const HurtScope&) = delete;
+        HurtScope& operator=(const HurtScope&) = delete;
+        GameWorld& w;
+        HurtOrigin origin;
+        const Enemy* enemy;
+        uint32_t shot;
+        const std::string* attack;
+    };
+    HurtSource hurtSource(const DamageInfo* dmg) const;
+    HurtOrigin hurtOrigin_ = HurtOrigin::Other;
+    const Enemy* hurtEnemy_ = nullptr;
+    uint32_t hurtShot_ = 0;
+    const std::string* hurtAttack_ = nullptr;
+    int inDamage_ = 0;
+    uint32_t attackTag_ = 0;
+    uint32_t attackSerial_ = 0;
+    uint32_t shotSerial_ = 0;
 
     friend class GameRenderer;
 };
