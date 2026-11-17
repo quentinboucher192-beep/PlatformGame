@@ -6,6 +6,7 @@
 //   --pause                 with --level: open the pause menu once playing (screenshots)
 //   --boss-attack <id>      with --level: the active boss uses this attack whenever it can (screenshots)
 //   --editor [<id>]         start in the level editor (--editor-help: with its help open)
+//   --tutorial              start the tutorial of the first launch at once (--tutorial-welcome: its welcome)
 //   --enemy-editor          start in the enemy editor
 //   --planets               start on the planet selection map
 //   --level-select <planet> start on the levels of a planet (the last level played selected)
@@ -704,6 +705,10 @@ int main(int argc, char** argv) {
             if (tf != "start") opt.trainingCheckpoint = tf;
         }
         app.pushScene(makeGameScene(game, level, opt));
+    } else if (has("--tutorial") || has("--tutorial-welcome")) {
+        // 2.64: the tutorial of the first launch at once, or its welcome (checks, captures).
+        std::unique_ptr<Scene> run = has("--tutorial") ? makeTutorialRun(game) : makeTutorialWelcome(game);
+        app.pushScene(run ? std::move(run) : makeMainMenu(game));
     } else if (has("--editor")) {
         if (has("--editor-help")) app.pushScene(makeLevelEditorHelp(game, value("--editor")));
         else app.pushScene(makeLevelEditor(game, value("--editor")));

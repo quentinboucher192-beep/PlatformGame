@@ -163,6 +163,22 @@ std::vector<ObjectTypeInfo> build() {
         add(t);
     }
     {
+        // 2.64: a carrying bubble (the tutorial's stream): Nova stands on it, it carries her
+        // along its route, pops at the end and comes back where it was born.
+        ObjectTypeInfo t;
+        t.id = "bubble";
+        t.name = "Bulle porteuse";
+        t.category = ObjCategory::Platforms;
+        t.defaultSize = {40, 16};
+        t.editorColor = {150, 220, 255, 255};
+        t.props = {pFloat("dx", "Déplacement X", 192, -4000, 4000, 8),
+                   pFloat("dy", "Déplacement Y", 0, -4000, 4000, 8),
+                   pFloat("speed", "Vitesse (px/s)", 55, 5, 400, 5),
+                   pFloat("respawn", "Retour après l'éclatement (s)", 1.2f, 0.2f, 20, 0.1f)};
+        t.help = "Part quand Nova se pose dessus, la porte jusqu'au bout de sa route, puis éclate et renaît à sa place.";
+        add(t);
+    }
+    {
         // 2.57: the altars of the Liche's crypt: the Liche floats over them and teleports from one
         // to another; one of them holds its phylactery. Their top can be stood on (as a ledge).
         ObjectTypeInfo t;
@@ -695,6 +711,7 @@ std::vector<PaletteEntry> buildPalette() {
     add("Corniche de glace", "oneway", {{"style", "ice_ledge"}});
     add("Pont enneigé", "oneway", {{"style", "snow_bridge"}});
     add("Plateforme mobile", "moving_platform");
+    add("Bulle porteuse", "bubble");
     add("Plateforme fragile", "crumble_platform");
     add("Champignon rebond", "bounce_pad");
     add("Lianes grimpables", "ladder");

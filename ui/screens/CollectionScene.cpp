@@ -485,6 +485,8 @@ private:
     /// the trails, frames and victory effects created on Cosmic Online that were won.
     std::vector<const CosmeticItem*> itemsOf(const std::string& category) const {
         auto items = g_.cosmetics.items(category);
+        // 2.64: a souvenir only once earned (nobody can still earn it afterwards).
+        std::erase_if(items, [&](const CosmeticItem* it) { return !cosmeticShown(*it, progress_); });
         if (category == "title" && progress_.won)
             for (const CosmeticItem& t : progress_.won->titles) items.push_back(&t);
         if (category == "suit" && progress_.won)
@@ -501,6 +503,7 @@ private:
     std::string shortReq(const CosmeticItem& it) const {
         if (std::string w = wonText(it); !w.empty()) return w;
         bool unlocked = cosmeticUnlocked(it, progress_);
+        if (!it.souvenir.empty()) return "Souvenir du didacticiel";
         if (!it.achievement.empty()) return unlocked ? "Succès obtenu" : "« " + achievementName(it.achievement) + " »";
         if (it.challengeReward()) return unlocked ? "Défis : obtenu" : "Défis : " + challengeConditionShort(it);
         if (it.isDefault) return "Dès le départ";
@@ -508,6 +511,7 @@ private:
     }
     std::string reqText(const CosmeticItem& it) const {
         if (std::string w = wonText(it); !w.empty()) return "Gagné : " + w;
+        if (!it.souvenir.empty()) return "Souvenir : le didacticiel « Le premier envol de Nova » terminé";
         if (!it.achievement.empty()) return "Récompense du succès « " + achievementName(it.achievement) + " »";
         if (it.challengeReward())
             return cosmeticUnlocked(it, progress_) ? "Récompense des défis : obtenue" : challengeProgressText(it, progress_);
@@ -516,6 +520,7 @@ private:
         return "Palier : " + std::to_string(it.stars) + " étoiles";
     }
     std::string lockText(const CosmeticItem& it) const {
+        if (!it.souvenir.empty()) return "Didacticiel requis";
         if (!it.achievement.empty()) return "Succès requis";
         if (it.challengeReward()) return "Défis requis";
         int missing = std::max(0, cosmeticThreshold(it, progress_.totalStars) - progress_.stars);
@@ -1377,7 +1382,7 @@ private:
             return out;
         }
         for (const EnemyDefinition* d : g_.content.enemies()) {
-            if (!d->builtin || d->isBoss != (tab == 1)) continue;
+            if (!d->builtin || d->tutorial || d->isBoss != (tab == 1)) continue;  // 2.64: not the tutorial's creatures
             auto pit = planetsOf_.find(d->id);
             if (pit == planetsOf_.end()) continue;  // not in the campaign
             GalItem it;

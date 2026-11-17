@@ -577,6 +577,11 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
             CHECK(it.challenge.count >= 1);
             CHECK(it.challenge.tier >= 1);
             CHECK(it.stars == 0);
+        } else if (!it.souvenir.empty()) {
+            // 2.64: a souvenir (the tutorial finished), never a milestone of the stars.
+            CHECK(it.souvenir == "tutorial");
+            CHECK(it.stars == 0);
+            CHECK(cosmeticThreshold(it, total) == -1);
         } else if (!it.isDefault && !it.allStars) {
             CHECK(it.stars > 0);
             CHECK(it.stars <= offline);

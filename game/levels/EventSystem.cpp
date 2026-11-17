@@ -36,6 +36,7 @@ const std::vector<std::pair<std::string, std::string>>& EventSystem::actionTypes
         {"heal", "Soigner le joueur"},
         {"killPlayer", "Tuer le joueur"},
         {"completeLevel", "Terminer le niveau"},
+        {"tutorial", "Didacticiel : explication bloquante"},
     };
     return v;
 }
@@ -220,6 +221,9 @@ void EventSystem::runAction(GameWorld& w, const EventAction& a) {
         w.player().heal(jget<int>(p, "amount", 10));
     } else if (t == "killPlayer") {
         w.player().kill(w);
+    } else if (t == "tutorial") {
+        // 2.64: an explanation card of the tutorial (the scene pauses the run while it is open).
+        w.requestTutorialCard(jstr(p, "card"));
     } else if (t == "completeLevel") {
         for (auto& e : w.entities())
             if (e->type() == "exit") {

@@ -1004,7 +1004,8 @@
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/DifficultyRating.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -2181,6 +2182,12 @@
    ]
   },
   {
+   "fr": "Appuie sur Saut pour bondir. Plus tu gardes la touche enfoncée, plus Nova monte haut : un petit appui pour une marche, un long pour le muret. En l'air, appuie encore une fois : double saut !",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Appuyez sur un bouton ou une gâchette de la manette",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -2727,6 +2734,12 @@
    ]
   },
   {
+   "fr": "Attaquer",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Attaques",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -2815,6 +2828,12 @@
    "fr": "Atteindre {0} % du parcours",
    "where": [
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "attend Nova",
+   "where": [
+    "game/gameplay/entities/PlatformEntities.cpp"
    ]
   },
   {
@@ -4843,6 +4862,24 @@
    ]
   },
   {
+   "fr": "Bienvenue, Nova !",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "BIP T'EXPLIQUE",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "BIP T'EXPLIQUE · {0} / {1}",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Biélorussie",
    "where": [
     "data/online/countries.json",
@@ -5013,6 +5050,12 @@
    ]
   },
   {
+   "fr": "Bonjour Nova, je suis Bip ! Pour marcher, utilise les touches de direction ou le stick gauche. Va vers la droite : la Pépinière d'étoiles t'attend.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "booléen attendu",
    "where": [
     "server/src/achievements.ts",
@@ -5060,6 +5103,7 @@
     "game/levels/ObjectTypes.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
+    "game/tutorial/Tutorial.cpp",
     "saves/HudLayout.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
@@ -5369,6 +5413,18 @@
    ]
   },
   {
+   "fr": "BRAVO, NOVA !",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
+   "fr": "Bravo, Nova !",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Brise-sorts",
    "where": [
     "data/achievements/achievements.json"
@@ -5500,6 +5556,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Bulle porteuse",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -6532,6 +6594,12 @@
    ]
   },
   {
+   "fr": "Ce que tu as appris",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Ce que verront les joueurs",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -6966,6 +7034,12 @@
    "fr": "Cette invitation n'est plus valable (expirée, épuisée ou révoquée).",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Cette lanterne est un point de passage : si Nova perd toute sa vie, elle repart d'ici aussitôt, avec ses pouvoirs. Ici, rien n'est compté : ni le temps, ni les chutes.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -7998,6 +8072,12 @@
    ]
   },
   {
+   "fr": "Chut… ces petites bêtes dorment et ne te feront aucun mal. Approche-toi et frappe-les : chaque coup les fait clignoter. Quand les trois sont parties, la porte du jardin s'ouvre.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Chypre",
    "where": [
     "data/online/countries.json",
@@ -8792,6 +8872,18 @@
    ]
   },
   {
+   "fr": "Commencer l'aventure",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "Commencer le didacticiel",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, additionnés ; temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -9031,6 +9123,12 @@
    ]
   },
   {
+   "fr": "Compris, je continue",
+   "where": [
+    "ui/screens/TutorialScenes.h"
+   ]
+  },
+  {
    "fr": "Compte",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -9223,6 +9321,12 @@
    "where": [
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Confirmer : passer le didacticiel",
+   "where": [
+    "ui/screens/PauseScene.cpp"
    ]
   },
   {
@@ -11177,6 +11281,12 @@
    ]
   },
   {
+   "fr": "dans le Vestiaire de la Collection",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Dans mon record",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -11253,9 +11363,11 @@
     "game/powers/PowerDefinition.cpp",
     "game/powers/PowerDemos.cpp",
     "game/powers/Powers.cpp",
+    "game/tutorial/Tutorial.cpp",
     "packaging/DependencyCollector.cpp",
     "ui/screens/AdminCreations.cpp",
-    "ui/screens/HudEditorScene.cpp"
+    "ui/screens/HudEditorScene.cpp",
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -12056,6 +12168,24 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Didacticiel : explication bloquante",
+   "where": [
+    "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Didacticiel du premier lancement, « Le premier envol de Nova » : au tout premier lancement du jeu (aucune progression), Bip, un petit robot compagnon, propose un vol d'essai d'environ six minutes dans la Pépinière d'étoiles, un petit monde tout doux hors de la campagne (aucune planète sur la carte, aucun classement, aucun record, rien d'envoyé en ligne). « Passer le didacticiel » est proposé au départ, avec confirmation.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Didacticiel requis",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -13074,6 +13204,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp"
    ]
   },
@@ -13105,6 +13236,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp"
    ]
   },
@@ -14468,6 +14600,12 @@
    "fr": "En pause",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "en route",
+   "where": [
+    "game/gameplay/entities/PlatformEntities.cpp"
    ]
   },
   {
@@ -16023,6 +16161,12 @@
    ]
   },
   {
+   "fr": "fichier introuvable : {0}",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Fichier introuvable.",
    "where": [
     "server/src/community.ts",
@@ -16174,6 +16318,12 @@
    "fr": "fin de sauvegarde incomplète",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Fin du didacticiel : « Bravo, Nova ! » avec ce qui a été appris, le souvenir « Premier envol » (un titre du Vestiaire, accordé sur cet ordinateur) et « Commencer l'aventure », qui ouvre Sylvanox. Le didacticiel ne se rejoue jamais, qu'on le finisse ou qu'on le passe ; un joueur qui avait déjà une progression ne le voit pas, et les copies de progression comme la migration de compte gardent ce choix.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -16990,6 +17140,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp"
    ]
@@ -17421,6 +17572,12 @@
    "fr": "Gloop de magma",
    "where": [
     "data/enemies/magma_gloop.json"
+   ]
+  },
+  {
+   "fr": "Gloop dormeur",
+   "where": [
+    "data/enemies/gloop_dormeur.json"
    ]
   },
   {
@@ -18041,6 +18198,12 @@
    ]
   },
   {
+   "fr": "Hop ! Bip te ramène sur la terre ferme.",
+   "where": [
+    "game/gameplay/GameWorld.cpp"
+   ]
+  },
+  {
    "fr": "Horizon",
    "where": [
     "data/enemies/echo_nyxara.json",
@@ -18646,6 +18809,12 @@
    "fr": "Il frôlait les volcans endormis et les vallées de verre noir. Partout où il passait, le jour se levait.",
    "where": [
     "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "Il ne sera plus proposé, même plus tard. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause) : tu pourras t'y reporter à tout moment.",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -19457,6 +19626,12 @@
    "fr": "Jardins gardés",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Je suis Bip, ton petit robot. Avant la grande aventure, je te propose un premier vol tout doux, d'environ six minutes, pour découvrir le jeu. Rien n'y est compté, et il ne se joue qu'une fois.",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -20572,6 +20747,18 @@
    ]
   },
   {
+   "fr": "La gardienne câline",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "La gardienne câline est apaisée : tu es prête pour l'aventure.",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "La glace ne retient personne : le vent décide.",
    "where": [
     "data/levels/glacior_04.json"
@@ -20611,6 +20798,12 @@
    "fr": "la Lame boomerang",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "La lanterne",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -20707,6 +20900,12 @@
    "fr": "La Mère-Racine",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "La Mère-Racine à moitié endormie : la gardienne du didacticiel, lente et prévenante, qui annonce longtemps chacune de ses attaques.",
+   "where": [
+    "data/enemies/mycelia_tendre.json"
    ]
   },
   {
@@ -20867,6 +21066,18 @@
    ]
   },
   {
+   "fr": "La Pépinière d'étoiles",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
+   "fr": "La Pépinière d'étoiles : herbes rondes, champignons rebondissants et bulles qui portent Nova. Bip, un petit robot, y présente chaque nouveauté avant l'aventure.",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
    "fr": "La reine des vents de la crevasse, plus vaste et plus rapide que ses sœurs.",
    "where": [
     "data/enemies/howling_wyrm.json"
@@ -20889,6 +21100,12 @@
    "fr": "La rouille rongea ses plaques, ses pistons s'usèrent, sa chaudière surchauffa. Jamais il ne s'arrêta.",
    "where": [
     "data/stories/titan.json"
+   ]
+  },
+  {
+   "fr": "La Ruée (le Dash) : file d'un coup, même en l'air.",
+   "where": [
+    "data/tutorial/premier_envol.json"
    ]
   },
   {
@@ -21070,6 +21287,12 @@
    "fr": "La table « {0} » ne fait jamais partie d'une sauvegarde : ce fichier n'a pas été produit par ce serveur.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "La tablette t'a donné la Ruée (le Dash) : Nova file d'un coup dans la direction choisie, même en l'air, et brise les murs de cristal. Elle prend un peu d'énergie, qui se recharge toute seule.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -21273,6 +21496,12 @@
    "fr": "Langue du jeu : français ou anglais, au choix dans l'installateur Windows, qui s'affiche lui-même dans la langue choisie ; le jeu démarre dans cette langue.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Lanterne",
+   "where": [
+    "data/tutorial/premier_envol.json"
    ]
   },
   {
@@ -21767,6 +21996,12 @@
    ]
   },
   {
+   "fr": "Le didacticiel ne se rejoue pas. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause).",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Le direct est désactivé dans vos paramètres en ligne.",
    "where": [
     "server/src/spectate.ts"
@@ -22021,9 +22256,21 @@
    ]
   },
   {
+   "fr": "Le jardin s'est rendormi : la porte s'ouvre.",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
    "fr": "Le jeu attend votre choix. Un pouvoir remplacé reste sur la tablette : revenez le reprendre quand vous voulez.",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le jeu est en pause tant que tu n'as pas lu.",
+   "where": [
+    "ui/screens/TutorialScenes.h"
    ]
   },
   {
@@ -22497,6 +22744,24 @@
    "fr": "Le Porteur d'aube",
    "where": [
     "data/stories/phenix.json"
+   ]
+  },
+  {
+   "fr": "Le premier envol",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
+   "fr": "LE PREMIER ENVOL DE NOVA",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
+   "fr": "Le premier envol de Nova",
+   "where": [
+    "data/tutorial/premier_envol.json"
    ]
   },
   {
@@ -23159,9 +23424,21 @@
    ]
   },
   {
+   "fr": "Les bulles porteuses",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Les Catacombes des Anciens",
    "where": [
     "data/levels/sylvanox_04.json"
+   ]
+  },
+  {
+   "fr": "Les champignons rebondissants",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -23851,6 +24128,12 @@
    "fr": "Les âmes perdues tourbillonnent autour d'elle !",
    "where": [
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Les éclats d'étoile",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -24860,6 +25143,12 @@
    "fr": "Marche du joueur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Marcher",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -26563,10 +26852,34 @@
    ]
   },
   {
+   "fr": "Mycélia bâille… et boude un tout petit peu !",
+   "where": [
+    "data/enemies/mycelia_tendre.json"
+   ]
+  },
+  {
+   "fr": "Mycélia la Câline",
+   "where": [
+    "data/enemies/mycelia_tendre.json"
+   ]
+  },
+  {
    "fr": "Mycélia réveille la forêt !",
    "where": [
     "data/enemies/echo_mycelia.json",
     "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "Mycélia s'endort, toute contente : le chemin s'ouvre !",
+   "where": [
+    "data/tutorial/premier_envol.json"
+   ]
+  },
+  {
+   "fr": "MYCÉLIA, LA GARDIENNE CÂLINE",
+   "where": [
+    "data/enemies/mycelia_tendre.json"
    ]
   },
   {
@@ -26809,6 +27122,12 @@
    "where": [
     "game/gameplay/Hud.cpp",
     "game/gameplay/entities/ZoneEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Neuf explications bloquantes : le jeu se met vraiment en pause, une carte montre Bip, un petit aperçu animé, le texte et les touches réelles du joueur (clavier ou manette Xbox / PlayStation) ; « Compris, je continue » (Entrée, A ou clic) reprend la partie.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -27763,6 +28082,12 @@
    "fr": "Non vérifié, meilleure progression {0} %",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Non, je le fais",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -29420,6 +29745,12 @@
    ]
   },
   {
+   "fr": "Oui, passer",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Ouvert aux joueurs le {0} à 00:00 UTC · modifiable jusque-là",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -30051,6 +30382,12 @@
    ]
   },
   {
+   "fr": "Part quand Nova se pose dessus, la porte jusqu'au bout de sa route, puis éclate et renaît à sa place.",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Partage",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -30550,6 +30887,19 @@
    ]
   },
   {
+   "fr": "Passer le didacticiel",
+   "where": [
+    "ui/screens/PauseScene.cpp",
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "Passer le didacticiel ?",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "PASSIF",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -30876,6 +31226,12 @@
    "fr": "Petit scarabée bioluminescent. Patrouille les corniches et mord ce qui s'approche. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
    "where": [
     "data/enemies/ember_mite.json"
+   ]
+  },
+  {
+   "fr": "Petite bouderie",
+   "where": [
+    "data/enemies/mycelia_tendre.json"
    ]
   },
   {
@@ -32229,6 +32585,12 @@
    ]
   },
   {
+   "fr": "Porter ce titre",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Porter en même temps une combinaison, une traînée, un cadre, un titre et un effet de victoire débloqués.",
    "where": [
     "data/achievements/achievements.json"
@@ -32326,6 +32688,12 @@
    "fr": "Pose une copie lumineuse de Nova : quelques secondes, ennemis et boss la visent à votre place. Elle disparaît dès qu'une attaque la touche.",
    "where": [
     "data/powers/decoy.json"
+   ]
+  },
+  {
+   "fr": "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau. Au bout de sa route, elle éclate : saute sur la rive avant ! Si tu tombes, je te ramène aussitôt sur la terre ferme.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -32758,6 +33126,7 @@
   {
    "fr": "Premier envol",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "data/levels/sylvanox_02.json"
    ]
   },
@@ -34069,6 +34438,7 @@
    "where": [
     "data/enemies/echo_mycelia.json",
     "data/enemies/mycelia.json",
+    "data/enemies/mycelia_tendre.json",
     "game/enemies/EnemyDefinition.cpp"
    ]
   },
@@ -34263,6 +34633,12 @@
    "fr": "Ramasser 500 éclats.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Ramasser les éclats",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -34462,6 +34838,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Rebondir sur les champignons",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -35409,6 +35791,12 @@
    ]
   },
   {
+   "fr": "Repartir d'une lanterne",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Replay",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -36000,6 +36388,12 @@
    ]
   },
   {
+   "fr": "Retour après l'éclatement (s)",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Retour arr.",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -36469,7 +36863,8 @@
     "ui/screens/AdminCreations.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CreatureArt.cpp",
-    "ui/screens/RewardsScene.cpp"
+    "ui/screens/RewardsScene.cpp",
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -36520,6 +36915,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Ruée",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -37163,6 +37564,12 @@
    ]
   },
   {
+   "fr": "Réveil tout doux",
+   "where": [
+    "data/enemies/mycelia_tendre.json"
+   ]
+  },
+  {
    "fr": "Révision automatique fidèle même quand d'autres modifications arrivent pendant son écriture.",
    "where": [
     "data/news/changelog.json"
@@ -37541,6 +37948,7 @@
     "data/enemies/echo_mycelia.json",
     "data/enemies/echo_spore_queen.json",
     "data/enemies/mycelia.json",
+    "data/enemies/mycelia_tendre.json",
     "data/enemies/spore_queen.json"
    ]
   },
@@ -37800,6 +38208,18 @@
    ]
   },
   {
+   "fr": "Saute sur un champignon : il te renvoie très haut, tout seul. Profites-en pour atteindre la corniche et les éclats qui flottent en l'air !",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Sauter",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Sauter 1 000 fois.",
    "where": [
     "data/achievements/achievements.json"
@@ -37815,6 +38235,12 @@
    "fr": "Sauter 50 000 fois.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Sauter plus haut, double saut",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -38057,6 +38483,18 @@
    "fr": "Se déconnecter (jouer en local)",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Se déplacer",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Se déplacer et sauter",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -38320,6 +38758,12 @@
    "fr": "Sept flammes s'allument au-dessus du portail, une par jour de la série.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Sept zones : se déplacer, sauter (plus haut en maintenant, double saut), rebondir sur les champignons et attraper les éclats en l'air, attaquer des petites bêtes endormies qui ne ripostent pas, prendre la Ruée (le Dash) sur une tablette et traverser un ruisseau sur des bulles porteuses, repartir d'une lanterne, puis affronter Mycélia la Câline : le boss le plus facile du jeu selon la note de difficulté des boss, ralenti, aux attaques longuement annoncées. Aucune chute n'est mortelle : Bip ramène Nova sur la terre ferme.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -39383,6 +39827,30 @@
    "fr": "Sous-titre",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Souvenir",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "Souvenir : le didacticiel « Le premier envol de Nova » terminé",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Souvenir du didacticiel",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Souvenir du didacticiel : le premier envol de Nova, avec Bip.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -41909,6 +42377,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/tutorial/premier_envol.json",
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp"
@@ -42253,6 +42722,18 @@
    ]
   },
   {
+   "fr": "Titre porté",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "Titre « Premier envol »",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Titres",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -42290,6 +42771,18 @@
    "fr": "Tomber 100 fois et toujours se relever.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Ton premier pouvoir : la Ruée",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Ton premier éclat ! Il y en a un peu partout : ramasse-les en passant. Ceux qui flottent très haut s'attrapent en rebondissant. Aucun n'est obligatoire.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -44400,6 +44893,12 @@
    ]
   },
   {
+   "fr": "Une petite bête de la Pépinière d'étoiles qui dort à poings fermés : elle ne riposte jamais.",
+   "where": [
+    "data/enemies/gloop_dormeur.json"
+   ]
+  },
+  {
    "fr": "Une phase seule : le boss commence à cette phase et l'entraînement s'arrête quand elle est battue. Fin d'entraînement : temps, dégâts reçus, phase atteinte ; Recommencer, Changer les réglages, Retour. Les derniers réglages sont gardés pour chaque boss.",
    "where": [
     "data/news/changelog.json"
@@ -44889,6 +45388,12 @@
    ]
   },
   {
+   "fr": "Utiliser un pouvoir : la Ruée",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Utiliser un pouvoir.",
    "where": [
     "data/achievements/achievements.json"
@@ -45294,6 +45799,12 @@
    "fr": "Vaincre un boss.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre un gardien",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -46207,6 +46718,12 @@
    ]
   },
   {
+   "fr": "Voici Mycélia, la gardienne câline ! Avant chaque attaque, elle se prépare un long moment : c'est le signal pour sauter ou filer avec la Ruée. Puis frappe-la jusqu'à vider sa barre de vie.",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
    "fr": "Voir",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -47046,6 +47563,12 @@
    "fr": "Voyage",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Voyager en bulle",
+   "where": [
+    "game/tutorial/Tutorial.cpp"
    ]
   },
   {
@@ -49616,6 +50139,12 @@
    ]
   },
   {
+   "fr": "{0} · souvenir",
+   "where": [
+    "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · succès",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -50994,6 +51523,12 @@
    ]
   },
   {
+   "fr": "éclatée",
+   "where": [
+    "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
    "fr": "Éclipse",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -51157,6 +51692,12 @@
    "fr": "Éditeur de niveaux",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Éditeur de niveaux : la « Bulle porteuse » (un objet de plateforme qui part quand Nova s'y pose, la porte jusqu'au bout de sa route, éclate et renaît à sa place) et l'action « Didacticiel : explication bloquante ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

@@ -179,3 +179,7 @@ supernova
 arc
 missile
 constellation
+hop
+robot
+skipped
+souvenir

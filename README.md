@@ -5,6 +5,30 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.61.0** :
+* **Didacticiel du premier lancement, « Le premier envol de Nova »** : au tout premier lancement (aucune
+  progression), **Bip**, un petit robot compagnon qui flotte près de Nova, propose un vol d'essai d'environ six
+  minutes dans la **Pépinière d'étoiles**, un petit monde pastel hors de la campagne : aucune planète sur la carte,
+  aucun classement, aucun record, aucun succès compté, rien d'envoyé en ligne. « Passer le didacticiel » est
+  proposé au départ (avec confirmation) et dans le menu Pause.
+* **Sept zones** : se déplacer ; sauter (plus haut en maintenant, double saut) ; rebondir sur les **champignons**
+  et attraper les éclats en l'air ; attaquer des **petites bêtes endormies** qui ne ripostent pas ; prendre la
+  **Ruée** (le Dash) sur une tablette, briser un mur de cristal et traverser un ruisseau sur des **bulles
+  porteuses** ; repartir d'une **lanterne** ; affronter **Mycélia la Câline**, variante ralentie du boss le plus
+  facile du jeu selon la note de difficulté des boss, aux attaques longuement annoncées. Aucune chute n'est
+  mortelle : Bip ramène Nova sur la dernière terre ferme.
+* **Neuf explications bloquantes** : la simulation s'arrête vraiment ; une carte montre Bip, « 3 / 9 », un
+  petit aperçu animé, le texte mesuré et les **touches réelles** du joueur (clavier, manette Xbox ou
+  PlayStation) ; « **Compris, je continue** » (Entrée, A ou clic) reprend la partie.
+* **Fin** : « Bravo, Nova ! », ce qui a été appris, le souvenir **« Premier envol »** (un titre du Vestiaire,
+  accordé sur cet ordinateur ; en ligne, le serveur ne pouvant pas le vérifier, le titre par défaut s'affiche) et
+  « Commencer l'aventure », qui ouvre Sylvanox. Le didacticiel ne se rejoue **jamais**, qu'on le finisse ou
+  qu'on le passe ; un joueur qui avait déjà une progression ne le voit pas ; les copies de progression et la
+  migration de compte gardent ce choix.
+* **Éditeur de niveaux** : la **Bulle porteuse** et l'action « Didacticiel : explication bloquante ». Le niveau
+  est généré par `tools/levelgen/tutorial.py` (`data/tutorial/premier_envol.json`) ; aucune règle des niveaux
+  existants ne change (même version de simulation, mêmes empreintes).
+
 **Nouveau dans la version 2.60.3** :
 * Entraînement par segment : interrupteur « Invincible (admin) · non classé » sur l'écran de choix du segment (administrateurs).
 
