@@ -2157,6 +2157,29 @@
    "parents": [
     "menu.stats"
    ]
+  },
+  {
+   "id": "admin.calendar.running",
+   "version": "2.60.2",
+   "parents": [
+    "menu.admin",
+    "admin.tab.calendar"
+   ]
+  },
+  {
+   "id": "challenges.calendar.medals",
+   "version": "2.60.2",
+   "parents": [
+    "menu.challenges",
+    "challenges.tab.calendar"
+   ]
+  },
+  {
+   "id": "ghosts.training.invincible",
+   "version": "2.60.3",
+   "parents": [
+    "ghosts.training"
+   ]
   }
  ]
 }

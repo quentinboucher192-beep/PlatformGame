@@ -330,12 +330,22 @@ describe("daily challenges: generation", () => {
         for (const r of rows.results) expect(r.n).toBe(1);
     });
 
-    it("never changes a challenge that has begun; missing days are drawn again", async () => {
+    it("never changes a challenge that is over, nor one that has begun once a player has a result (2.60); missing days are drawn again", async () => {
         await api("GET", "/api/v1/challenges/daily/current");
         const t = today();
         const daily = (d: string) => `daily-${d}`;
-        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(daily(t)).run()).rejects.toThrow(/already started/);
-        await expect(env.DB.prepare("UPDATE challenges SET level_id = 'pyralis_04' WHERE id = ?1").bind(daily(t)).run()).rejects.toThrow();
+        // Begun, nobody has a result on it: it may still change (ADMINISTRATION › Calendrier des défis)…
+        expect((await env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(daily(t)).run()).meta.changes).toBe(1);
+        // …until a player has one, whatever its status (here a run refused).
+        const p = await registerPlayer("Kestrel");
+        await env.DB.prepare(
+            `INSERT INTO challenge_runs (id, challenge_id, player_id, attempt_id, time_ms, deaths, damage_taken, level_hash, rules_hash, game_version,
+               tier, status, created_at) VALUES (?1, ?2, ?3, ?4, 60000, 0, 0, 'x', 'x', '2.60.0', 'bronze', 'REJECTED', ?5)`,
+        )
+            .bind(crypto.randomUUID(), daily(t), p.id, crypto.randomUUID(), new Date().toISOString())
+            .run();
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 2 WHERE id = ?1").bind(daily(t)).run()).rejects.toThrow(/has results/);
+        await expect(env.DB.prepare("UPDATE challenges SET level_id = 'pyralis_04' WHERE id = ?1").bind(daily(t)).run()).rejects.toThrow(/has results/);
         // A coming day may still change (the administrator's choice), and the bookkeeping of today may.
         await env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(daily(addDays(t, 2))).run();
         await env.DB.prepare("UPDATE challenges SET featured_notified_at = 'x' WHERE id = ?1").bind(daily(t)).run();
@@ -344,11 +354,24 @@ describe("daily challenges: generation", () => {
         await api("GET", "/api/v1/challenges/daily/current");
         expect(await env.DB.prepare("SELECT date FROM challenges WHERE id = ?1").bind(daily(addDays(t, 5))).first()).not.toBeNull();
         expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(daily(t)).first()).toEqual(before);
-        // The same for the week and the month that have begun; the next ones may still change.
+        // Over: never, even without any result.
+        const past = await insertChallenge(addDays(t, -3));
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(past.id).run()).rejects.toThrow(/already over/);
+        // The same for the week and the month that have begun (an attempt, a reward won are results too); the next ones may still change.
         const week = `weekly-${isoWeek(t)}`;
         const month = `monthly-${t.slice(0, 7)}`;
-        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(week).run()).rejects.toThrow(/already started/);
-        await expect(env.DB.prepare("UPDATE challenges SET rules_hash = 'x' WHERE id = ?1").bind(month).run()).rejects.toThrow(/already started/);
+        expect((await env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(week).run()).meta.changes).toBe(1);
+        await env.DB.prepare(
+            `INSERT INTO challenge_attempts (id, challenge_id, player_id, attempt_id, time_ms, level_hash, rules_hash, game_version, claim, created_at)
+             VALUES (?1, ?2, ?3, ?4, 40000, 'x', 'x', '2.60.0', '{}', ?5)`,
+        )
+            .bind(crypto.randomUUID(), week, p.id, crypto.randomUUID(), new Date().toISOString())
+            .run();
+        await env.DB.prepare("INSERT INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at) VALUES (?1, ?2, 'title', 'srv:1', ?3)")
+            .bind(p.id, month, new Date().toISOString())
+            .run();
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 2 WHERE id = ?1").bind(week).run()).rejects.toThrow(/has results/);
+        await expect(env.DB.prepare("UPDATE challenges SET rules_hash = 'x' WHERE id = ?1").bind(month).run()).rejects.toThrow(/has results/);
         const nextWeek = `weekly-${shiftPeriod("weekly", isoWeek(t), 1)}`;
         expect((await env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(nextWeek).run()).meta.changes).toBe(1);
     });
@@ -1565,5 +1588,60 @@ describe("« Plus loin »: the replays of the ranked players (2.34)", () => {
         // A suspended account's attempt is not found for the others.
         await env.DB.prepare("UPDATE players SET profile_visibility = 'public', account_status = 'suspended' WHERE id = ?1").bind(ana.id).run();
         expect((await api("GET", `/api/v1/challenges/attempts/${byName.Ana.attempt_id}/replay`)).body.error.code).toBe("ATTEMPT_NOT_FOUND");
+    });
+});
+
+describe("the medals of the calendar (2.60)", () => {
+    /** An attempt inserted directly (« Finir le niveau »: its tier from the server's progress). */
+    function insertAttempt(ch: TestChallenge, who: TestPlayer, tier: string | null, status: string, late = 0) {
+        return env.DB.prepare(
+            `INSERT INTO challenge_attempts (id, challenge_id, player_id, attempt_id, time_ms, level_hash, rules_hash, game_version, claim, late, status, progress, tier, created_at)
+             VALUES (?1, ?2, ?3, ?4, 40000, ?5, ?6, '2.60.0', '{}', ?7, ?8, 60, ?9, ?10)`,
+        ).bind(crypto.randomUUID(), ch.id, who.id, crypto.randomUUID(), ch.level_hash, ch.hash, late, status, tier, `${ch.date}T12:00:00.000Z`);
+    }
+
+    it("counts the players of each tier: verified results in time, each player once at his best, from the server's rows", async () => {
+        const players = await Promise.all(["Ana", "Ben", "Cleo", "Dan", "Eli", "Fox", "Gus"].map((n) => registerPlayer(n)));
+        const [ana, ben, cleo, dan, eli, fox, gus] = players as [TestPlayer, TestPlayer, TestPlayer, TestPlayer, TestPlayer, TestPlayer, TestPlayer];
+        const day = await insertChallenge("2026-10-05");
+        const week = await insertChallenge("2026-10-06", { kind: "weekly", level: "pyralis_04" });
+        const empty = await insertChallenge("2026-10-07");
+        await env.DB.batch([
+            // Ana: silver then gold (her best: gold, counted once).
+            insertRun(day, ana, 80000, "silver", "VERIFIED"),
+            insertRun(day, ana, 65000, "gold", "VERIFIED"),
+            insertRun(day, ben, 95000, "bronze", "VERIFIED"),
+            insertRun(day, cleo, 85000, "silver", "VERIFIED"),
+            // Not counted: waiting for its check, refused, late (« Depuis »), a suspended account.
+            insertRun(day, dan, 60000, "gold", "PENDING"),
+            insertRun(day, eli, 60000, "gold", "REJECTED"),
+            insertRun(day, fox, 60000, "gold", "VERIFIED", 1, "2026-11-10T08:00:00.000Z"),
+            insertRun(day, gus, 60000, "gold", "VERIFIED"),
+            // The week: an attempt's tier (« Finir le niveau ») counts like a run's; a better run wins.
+            insertAttempt(week, ana, "silver", "VERIFIED"),
+            insertAttempt(week, ben, "bronze", "VERIFIED"),
+            insertRun(week, ben, 99000, "gold", "VERIFIED"),
+            insertAttempt(week, cleo, "silver", "PENDING"),
+            insertAttempt(week, dan, null, "VERIFIED"),
+        ]);
+        await env.DB.prepare("UPDATE players SET account_status = 'suspended' WHERE id = ?1").bind(gus.id).run();
+        const cal = await api("GET", "/api/v1/challenges/calendar?month=2026-10");
+        expect(cal.status).toBe(200);
+        const counts = cal.body.data.tier_counts;
+        expect(counts[day.id]).toEqual({ bronze: 1, silver: 1, gold: 1 });
+        expect(counts[week.id]).toEqual({ bronze: 0, silver: 1, gold: 1 });
+        // Nobody: 0, never left out.
+        expect(counts[empty.id]).toEqual({ bronze: 0, silver: 0, gold: 0 });
+        // Only the challenges of the answer (begun ones), and the same for a player signed in.
+        expect(Object.keys(counts).sort()).toEqual(cal.body.data.challenges.map((c: any) => c.id).sort());
+        const mine = await api("GET", "/api/v1/challenges/calendar?month=2026-10", { token: ana.token });
+        expect(mine.body.data.tier_counts).toEqual(counts);
+        // The challenge objects stay as they were (the counts are apart from them).
+        expect(cal.body.data.challenges.every((c: any) => !("tier_counts" in c))).toBe(true);
+        // A coming challenge is never in it.
+        const cur = await api("GET", "/api/v1/challenges/calendar");
+        const tomorrow = `daily-${addDays(today(), 1)}`;
+        expect(cur.body.data.tier_counts[tomorrow]).toBeUndefined();
+        expect(cur.body.data.tier_counts[`daily-${today()}`]).toEqual({ bronze: 0, silver: 0, gold: 0 });
     });
 });

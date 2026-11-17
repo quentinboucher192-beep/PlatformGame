@@ -171,8 +171,10 @@ describe("cosmetics worn online", () => {
             achievement?: string;
             challenge?: unknown;
             challengeStreak?: unknown;
+            souvenir?: string;
         };
-        const items = (game as unknown as { items: GameItem[] }).items.map((i) => {
+        // 2.64: the souvenirs (given on the player's computer) are not the server's.
+        const items = (game as unknown as { items: GameItem[] }).items.filter((i) => !i.souvenir).map((i) => {
             const o: Record<string, unknown> = { id: i.id, category: i.category, look: i.look ?? "", name: i.name };
             if (i.default) o.default = true;
             else if (i.achievement) o.achievement = i.achievement;

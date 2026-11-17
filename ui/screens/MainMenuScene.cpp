@@ -5,6 +5,7 @@
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
+#include "game/tutorial/Tutorial.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -24,7 +25,8 @@ public:
         bool skip = t_ > 0.6f && (g_.app.input().anyMenuInput() || g_.app.input().mousePressed(SDL_BUTTON_LEFT));
         if ((t_ > 3.2f || skip) && !leaving_) {
             leaving_ = true;
-            g_.app.switchScene(makeMainMenu(g_), 0.6f);
+            // 2.64: a new player's very first launch: the tutorial is offered before the menu.
+            g_.app.switchScene(tutorial::due(g_.progression) ? makeTutorialWelcome(g_) : makeMainMenu(g_), 0.6f);
         }
     }
     void render(float) override {
@@ -134,6 +136,7 @@ public:
             auto p = g_.cosmeticProgress();
             int got = 0, all = 0;
             for (const auto& it : g_.cosmetics.items()) {
+                if (!cosmeticShown(it, p)) continue;  // 2.64: a souvenir counts once earned
                 ++all;
                 got += cosmeticUnlocked(it, p) ? 1 : 0;
             }

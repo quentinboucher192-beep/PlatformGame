@@ -158,7 +158,8 @@ public:
             const CosmeticCategory* cat = g_.cosmetics.category(it.category);
             std::string kind = cat ? cat->name : it.category;
             ui.label(ui.elide(it.name, FontFace::Bold, 17, c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(100)}, 17, ui.theme().text, Align::Left, FontFace::Bold);
-            std::string origin = !it.achievement.empty() ? kind + " · succès"
+            std::string origin = !it.souvenir.empty()      ? kind + " · souvenir"
+                                 : !it.achievement.empty() ? kind + " · succès"
                                  : it.challengeReward()   ? kind + " · défis"
                                                           : "Palier de " + std::to_string(cosmeticThreshold(it, progress_.totalStars)) + " étoiles";
             ui.label(ui.elide(origin, FontFace::Body, fz(ui, 13), c.w - ui.s(20)), {c.x + ui.s(10), c.y + ui.s(124)}, fz(ui, 13), ui.theme().textDim);

@@ -90,7 +90,7 @@ public:
     void onEnter() override {
         bg_.init(g_);
         for (const auto* d : g_.content.enemies())
-            if (d->isBoss) bosses_.push_back(d);
+            if (d->isBoss && !d->tutorial) bosses_.push_back(d);  // 2.64: not the tutorial's
         // Bosses met first (most victories), then the others by name.
         std::stable_sort(bosses_.begin(), bosses_.end(), [&](const EnemyDefinition* a, const EnemyDefinition* b) {
             const BossRecord* ra = g_.bossStats.find(a->id);
