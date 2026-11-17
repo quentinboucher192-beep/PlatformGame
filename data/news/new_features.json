@@ -2159,6 +2159,13 @@
     "menu.challenges",
     "challenges.tab.calendar"
    ]
+  },
+  {
+   "id": "ghosts.training.invincible",
+   "version": "2.60.3",
+   "parents": [
+    "ghosts.training"
+   ]
   }
  ]
 }

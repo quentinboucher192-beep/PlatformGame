@@ -1,4 +1,7 @@
 {
+  "2.60.3": [
+    "Entraînement par segment : un administrateur peut activer « Invincible » directement sur l'écran de choix du segment (non classé), en plus du menu pause."
+  ],
   "2.60.2": [
     "Administration › Calendrier des défis : un défi du jour, de la semaine ou du mois déjà commencé se change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) tant qu'aucun joueur n'y a de résultat ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de joueurs ont déjà un résultat. Un défi terminé ne change jamais.",
     "Le serveur vérifie cette condition dans l'écriture même (un joueur qui vient de jouer l'emporte, et la fiche se rafraîchit) et n'accepte aucune partie envoyée sur l'ancienne version d'un défi changé : le jeu reçoit la nouvelle version dès qu'il ouvre ou rafraîchit les défis, et dit « ce défi a changé » au lieu d'un faux succès.",

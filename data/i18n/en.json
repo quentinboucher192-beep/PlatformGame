@@ -8558,6 +8558,8 @@
     "verrouillé : passé, ou des joueurs ont un résultat": "locked: over, or players have a result",
     "{0} bronze · {1} argent · {2} or (joueurs vérifiés)": "{0} bronze · {1} silver · {2} gold (verified players)",
     "{0} joueur a déjà un résultat sur ce défi : il ne change plus.": "{0} player already has a result on this challenge: it no longer changes.",
-    "{0} joueurs ont déjà un résultat sur ce défi : il ne change plus.": "{0} players already have a result on this challenge: it no longer changes."
+    "{0} joueurs ont déjà un résultat sur ce défi : il ne change plus.": "{0} players already have a result on this challenge: it no longer changes.",
+    "Entraînement par segment : un administrateur peut activer « Invincible » directement sur l'écran de choix du segment (non classé), en plus du menu pause.": "Segment training: an administrator can turn on “Invincible” right on the segment selection screen (not ranked), as well as from the pause menu.",
+    "Invincible (admin) · non classé": "Invincible (admin) · not ranked"
   }
 }
