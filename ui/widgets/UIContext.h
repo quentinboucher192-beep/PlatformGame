@@ -79,6 +79,9 @@ public:
         bool small = false;
         bool enabled = true;
         bool selected = false;
+        /// The key / button this cell shows is held right now (lists of bindings): lit with
+        /// heldHighlight and a white label; same size and place.
+        bool lit = false;
         float fontSize = 0.0f;
         Align align = Align::Center;
         std::string icon;  // texture path
@@ -86,6 +89,9 @@ public:
         int iconCell = 32;
     };
     bool button(const std::string& name, const Rect& r, const std::string& text, const ButtonStyle& st);
+    /// The mark of a key held right now in a list of bindings: an accent fill, glow and edge
+    /// drawn inside `r` only (nothing moves, nothing grows). Draw it under the label.
+    void heldHighlight(const Rect& r);
     bool button(const std::string& name, const Rect& r, const std::string& text) { return button(name, r, text, ButtonStyle{}); }
     bool toggle(const std::string& name, const Rect& r, const std::string& text, bool& value);
     bool slider(const std::string& name, const Rect& r, const std::string& text, float& value, float minV, float maxV,

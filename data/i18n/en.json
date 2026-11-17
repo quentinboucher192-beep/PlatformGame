@@ -3,6 +3,7 @@
   "language": "en",
   "name": "English",
   "strings": {
+    "Touches : dans Paramètres › Clavier / souris et Manette, et dans « Touches de ce niveau » (panneaux des niveaux, défis, menu pause « Touches… »), la touche, le bouton de souris ou de manette, la gâchette ou la direction de stick que vous tenez s'allume en direct dans la liste, sans rien changer : de quoi vérifier que c'est bien la bonne touche. Relâchée, elle s'éteint ; rien ne s'allume pendant le choix d'une nouvelle touche.": "Keys: in Settings › Keyboard / mouse and Gamepad, and in « Keys of this level » (level panels, challenges, pause menu « Keys… »), the key, mouse or gamepad button, trigger or stick direction you are holding lights up live in the list, without changing anything: a way to check it is the right key. Released, it goes dark; nothing lights up while you are choosing a new key.",
     "%Y-%m-%d %H:%M": "%Y-%m-%d %H:%M",
     "(-1 morts = illimité)": "(-1 deaths = unlimited)",
     "(aucun niveau de la campagne ne l'utilise)": "(no campaign level uses it)",

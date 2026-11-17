@@ -194,6 +194,12 @@ private:
             std::string id = std::string(pad ? "p" : "k") + actionId(a) + std::to_string(slot);
             UIContext::ButtonStyle st;
             st.small = true;
+            // The key / button held right now is lit (a check, outside any rebinding).
+            {
+                const InputManager& in = g_.app.input();
+                const HeldInputs held = in.heldInputs();
+                st.lit = !in.capturing() && (pad ? padBindingHeld(pb, held) : keyBindingHeld(working_.input.keys[i][slot], held));
+            }
             float labelRoom = b.w - ui.s(16) - (icon ? 2.0f * (ui.s(8) + ui.s(32) + ui.s(4)) : 0.0f);
             st.fontSize = ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(30), labelRoom));
             if (ui.button(id, b, label, st)) {

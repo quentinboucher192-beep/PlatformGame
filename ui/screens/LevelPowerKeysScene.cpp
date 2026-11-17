@@ -276,6 +276,9 @@ private:
                  Align::Left, FontFace::Body, VAlign::Middle);
 
         const GamepadStyle style = g_.app.input().gamepadStyle();
+        // What is held right now lights its key / button, outside any rebinding.
+        const bool check = !g_.app.input().capturing();
+        const HeldInputs held = g_.app.input().heldInputs();
         const float by = row.y + ui.s(12), bh = ui.s(46);
         // Keyboard / mouse: the key used, the level's below.
         {
@@ -283,6 +286,7 @@ private:
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = r.keySource == PowerKeySource::Player;
+            st.lit = check && keyBindingHeld(r.key, held);  // the key held right now (a check)
             std::string label = keyName(r.key);
             if (std::string detail = mouseBindingDetail(r.key); !detail.empty()) {
                 std::string full = label + " · " + detail;
@@ -303,6 +307,7 @@ private:
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = r.padSource == PowerKeySource::Player;
+            st.lit = check && padBindingHeld(r.pad, held);
             const bool icon = r.pad.kind != PadBinding::Kind::None && glyphIndex(r.pad) >= 0;
             const std::string label = padBindingName(r.pad, style);
             const float room = b.w - ui.s(20) - (icon ? 2.0f * (ui.s(8) + ui.s(30) + ui.s(4)) : 0.0f);
@@ -364,19 +369,32 @@ private:
         ui.label(ui.elide(name, FontFace::Bold, nf, troom), {tx, row.center().y}, nf, def ? def->color : th.text, Align::Left, FontFace::Bold,
                  VAlign::Middle);
         const GamepadStyle style = g_.app.input().gamepadStyle();
+        // The key / button held right now is lit (a check): a mark around what is written, inside
+        // its column and the row (the columns are ui.s(16) apart), nothing moves.
+        const bool check = !g_.app.input().capturing();
+        const HeldInputs held = g_.app.input().heldInputs();
+        const auto mark = [&](float x0, float x1) {
+            ui.heldHighlight({x0 - ui.s(7), row.center().y - ui.s(17), x1 - x0 + ui.s(14), ui.s(34)});
+        };
         const std::string k = key == SDL_SCANCODE_UNKNOWN ? std::string("—") : keyName(key);
         float kf = std::max(ui.fitFont(k, FontFace::Bold, fz(ui, 18), c.keyW, 0.7f), fz(ui, 11.5f));
-        ui.label(ui.elide(k, FontFace::Bold, kf, c.keyW), {c.keyX, row.center().y}, kf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        const std::string ks = ui.elide(k, FontFace::Bold, kf, c.keyW);
+        const bool keyLit = check && keyBindingHeld(key, held);
+        if (keyLit) mark(c.keyX, c.keyX + std::min(c.keyW, ui.text().measure(ks, FontFace::Bold, ui.s(kf)).x));
+        ui.label(ks, {c.keyX, row.center().y}, kf, keyLit ? Color::white() : th.text, Align::Left, FontFace::Bold, VAlign::Middle);
         float px = c.padX;
         const bool glyph = pad.kind != PadBinding::Kind::None && glyphIndex(pad) >= 0;
+        const std::string p = pad.kind == PadBinding::Kind::None ? std::string("—") : padBindingName(pad, style);
+        const float proom = c.padX + c.padW - (glyph ? px + ui.s(34) : px);
+        float pf = std::max(ui.fitFont(p, FontFace::Bold, fz(ui, 18), proom, 0.7f), fz(ui, 11.5f));
+        const std::string ps = ui.elide(p, FontFace::Bold, pf, proom);
+        const bool padLit = check && padBindingHeld(pad, held);
+        if (padLit) mark(c.padX, (glyph ? px + ui.s(34) : px) + std::min(proom, ui.text().measure(ps, FontFace::Bold, ui.s(pf)).x));
         if (glyph) {
             Glyphs::drawPadButton(ui, pad, {px, row.center().y}, ui.s(28));
             px += ui.s(34);
         }
-        const std::string p = pad.kind == PadBinding::Kind::None ? std::string("—") : padBindingName(pad, style);
-        const float proom = c.padX + c.padW - px;
-        float pf = std::max(ui.fitFont(p, FontFace::Bold, fz(ui, 18), proom, 0.7f), fz(ui, 11.5f));
-        ui.label(ui.elide(p, FontFace::Bold, pf, proom), {px, row.center().y}, pf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label(ps, {px, row.center().y}, pf, padLit ? Color::white() : th.text, Align::Left, FontFace::Bold, VAlign::Middle);
         // A shared button given to another power in hand: this one uses a free button for now.
         if (!(pad == r.pad) && r.pad.kind != PadBinding::Kind::None) {
             const std::string why = "au lieu de « " + padBindingName(r.pad, style) + " » (partagé)";

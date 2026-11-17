@@ -380,6 +380,7 @@ bool UIContext::button(const std::string& name, const Rect& rc, const std::strin
     drawn.x -= grow * 0.5f;
     drawn.w += grow;
     drawFrame(drawn, hot, isFocus, st.primary, st.danger, enabled, st.selected);
+    if (st.lit) heldHighlight(drawn);
     float fs = st.fontSize > 0 ? st.fontSize : (st.small ? 20.0f : 26.0f);
     float textX = st.align == Align::Center ? drawn.center().x : drawn.x + s(20);
     if (!st.icon.empty() && st.iconIndex >= 0) {
@@ -391,9 +392,19 @@ bool UIContext::button(const std::string& name, const Rect& rc, const std::strin
     // The label always stays inside the button: it shrinks to the available width.
     fs = fitFont(t, FontFace::Bold, fs, st.align == Align::Center ? drawn.w - s(20) : drawn.right() - textX - s(12));
     Color tc = enabled ? Color::lerp(theme_.text, Color::white(), hot) : theme_.textDim;
+    if (st.lit) tc = Color::white();
     label(t, {textX, drawn.center().y}, fs, tc, st.align, FontFace::Bold, VAlign::Middle);
     if (clicked) app_->resources().playSound(st.danger ? "sounds/ui_back.wav" : "sounds/ui_confirm.wav", 0.6f);
     return clicked;
+}
+
+void UIContext::heldHighlight(const Rect& rc) {
+    Renderer& rr = r();
+    const float rad = std::min(s(8), rc.h * 0.5f);
+    rr.fillRoundedRect(rc, rad, theme_.accent.withAlpha(80));
+    // The glow stays inside the cell: its radius is half the smaller side.
+    rr.drawGlow(rc.center(), std::min(rc.w, rc.h) * 0.5f, theme_.accent.withAlphaF(0.35f));
+    rr.drawRoundedRect(rc, rad, theme_.accent, std::max(1.0f, s(2.5f)));
 }
 
 bool UIContext::toggle(const std::string& name, const Rect& rc, const std::string& t, bool& value) {
