@@ -885,7 +885,7 @@ private:
                 }
             std::vector<TileData> ts;
             ts.push_back({"RECORD (PB)", clockTime(r.pb), pbDay.empty() ? std::string("meilleure partie complète") : "le " + pbDay});
-            ts.push_back({"SOMME DES MEILLEURS (SOB)", clockTime(sob), "meilleurs segments additionnés"});
+            ts.push_back({"SOMME DES MEILLEURS (SOB)", clockTime(sob), "meilleurs segments, entraînement compris"});
             ts.push_back({"TEMPS GAGNABLE", r.pb > 0.0f && sob > 0.0f ? clockTime(std::max(0.0f, r.pb - sob)) : std::string("—"), "PB − SOB, en théorie"});
             ts.push_back({"ARRIVÉES", std::to_string(r.finished) + " / " + std::to_string(r.attempts),
                           r.attempts > 0 ? pct(static_cast<double>(r.finished) / r.attempts) + " des tentatives" : std::string("—")});
@@ -1072,7 +1072,9 @@ private:
                   "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties "
                   "de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les "
                   "temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de "
-                  "chaque segment du parcours de votre record, additionnés ; temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers "
+                  "chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, "
+                  "additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps "
+                  "gagnable = record − SOB. Temps perdu = médiane des 50 derniers "
                   "temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières "
                   "parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). "
                   "Une nouvelle version du niveau repart de zéro.");

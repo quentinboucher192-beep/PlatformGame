@@ -2166,6 +2166,13 @@
    "parents": [
     "ghosts.training"
    ]
+  },
+  {
+   "id": "ghosts.training.montage",
+   "version": "2.60.3",
+   "parents": [
+    "ghosts.training"
+   ]
   }
  ]
 }

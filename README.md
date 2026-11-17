@@ -7,6 +7,16 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.60.3** :
 * Entraînement par segment : interrupteur « Invincible (admin) · non classé » sur l'écran de choix du segment (administrateurs).
+* **Somme des meilleurs tout confondu** et **« Regarder »** (entraînement par segment) : la SOB prend le meilleur temps
+  de chaque segment parmi les courses complètes **et** les entraînements par segment de la même version du niveau
+  (écran d'entraînement, Statistiques et son graphique, panneau des fantômes, résumé des segments ; le record, les
+  temps et la régularité restent ceux des courses). « Regarder » enchaîne ces meilleurs segments, chacun **rejoué à
+  l'identique** depuis le replay exact de la course ou de l'essai qui l'a fait (bannière « Segment k · entraînement
+  du 17/11 · 0:23,45 » ou « course du 12/11 », chronomètre jusqu'à la SOB, écart au record). Replays gardés sur ce
+  PC seulement tant qu'un meilleur segment s'y rapporte ; un meilleur temps d'avant 2.60.3 sans replay est annoncé
+  comme tel. Affichage seulement : rien de classé, rien d'envoyé, simulation inchangée.
+* **Segments** (fin de course, en ligne) : colonne « Record du monde · pseudo » avec les temps de passage du record du
+  monde **vérifié** de la même version du niveau, lus dans son replay vérifié (durée, écart cumulé).
 
 **Nouveau dans la version 2.60.2** :
 * **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se

@@ -10,6 +10,10 @@
 // start, its end, the path of my record through it), with its references (best segment of
 // my full runs, its time in my record, my best training time), the Sum of Best of the level,
 // and the powers carried (the route's ones, or chosen, remembered per segment).
+//
+// 2.60.3: the Sum of Best counts the section trainings too (each segment's best, full runs and
+// trainings together), and « Regarder » plays it: the best segments one after the other, each
+// from the exact replay of the run or the attempt that did it (SobMontageScene).
 
 #include <algorithm>
 #include <chrono>
@@ -28,6 +32,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/LevelProgress.h"
 #include "game/ghost/GhostRace.h"
+#include "game/ghost/SobMontage.h"
 #include "game/ghost/TrainingSegments.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/player/Player.h"
@@ -543,7 +548,9 @@ private:
         const float statsH = drawStats({area.x, 0.0f, area.w, 0.0f}, false);
         const float powersH = ui.s(44);
         const float pillRoom = ui.s(18);  // the « NOUVEAU » pill of « Choisir… » stays off the preview
-        float previewH = area.bottom() - y - (powersH + pillRoom) - (statsH + gap) - (noteH + gap);
+        // 2.60.3: the Sum of Best and « Regarder » (two lines of text beside the button).
+        const float watchH = std::max(ui.s(46), ui.s(fz(ui, 16)) * 1.35f + ui.s(fz(ui, 14)) * 1.35f + ui.s(4));
+        float previewH = area.bottom() - y - (powersH + pillRoom) - (statsH + gap) - (pillRoom + watchH + gap) - (noteH + gap);
         if (previewH < ui.s(130)) {
             previewH += noteH + gap;  // too small a window: the note goes
             noteH = 0.0f;
@@ -555,7 +562,9 @@ private:
         drawPowersRow({area.x, yy, area.w, powersH});
         yy += powersH + gap;
         drawStats({area.x, yy, area.w, statsH}, true);
-        yy += statsH + gap;
+        yy += statsH + gap + pillRoom;  // the « NOUVEAU » pill of « Regarder » stays off the references
+        drawWatchRow({area.x, yy, area.w, watchH});
+        yy += watchH + gap;
         if (noteH > 0.0f) ui.labelWrapped(note, {area.x, yy}, area.w, nf, th.textDim);
     }
 
@@ -726,7 +735,119 @@ private:
             if (pb.splits.empty() && it != tracks_.end() && it->second.track) pb.splits = it->second.track->splits();
             if (pbCheckpoints_.size() == pb.splits.size()) pb.checkpoints = pbCheckpoints_;
         }
-        refs_ = buildSegmentReferences(g_.segments.goldSegments(levelKey_), g_.segments.goldCheckpoints(levelKey_), runs, pb, route);
+        // 2.60.3: the Sum of Best « tout confondu »: the section trainings' best times too.
+        const TrainingBests training = g_.training.bests(levelKey_);
+        refs_ = buildSegmentReferences(g_.segments.goldSegments(levelKey_), g_.segments.goldCheckpoints(levelKey_), runs, pb, route, training);
+        buildPlan(route, pb, training);
+    }
+
+    // -------------------------------------------------------------- « Regarder » (2.60.3)
+
+    /// The replay file `p` when it is still on this computer (UTF-8), else empty.
+    static std::string present(const fs::path& p) {
+        std::error_code ec;
+        return !p.empty() && fs::is_regular_file(p, ec) ? Paths::toUtf8(p) : std::string{};
+    }
+
+    /// The montage of the Sum of Best: which replay shows each segment (the same sum as refs_).
+    void buildPlan(const std::vector<std::string>& route, const SegmentReferences::RunInput& pbRun, const TrainingBests& training) {
+        MontageRun pb;
+        if (pbEntry_ && pbRun.time > 0.0f) {
+            pb.file = Paths::toUtf8(pbEntry_->file);
+            pb.date = pbEntry_->meta.date;
+            pb.splits = pbRun.splits;
+            pb.time = pbRun.time;
+            pb.checkpoints = pbRun.checkpoints;
+        }
+        // My other runs of this version kept here (previous record, last run): an old gold may be one of theirs.
+        std::vector<MontageRun> others;
+        for (const Row& r : rows_) {
+            const GhostMeta& m = r.entry.meta;
+            if (!r.sameVersion || r.state != Row::State::Ready || (m.source != "prev" && m.source != "last") || m.timeMs <= 0) continue;
+            others.push_back({Paths::toUtf8(r.entry.file), m.date, m.splits, static_cast<float>(m.timeMs) / 1000.0f, {}});
+        }
+        std::vector<SegmentHistory::GoldSource> sources = g_.segments.goldSources(levelKey_);
+        for (SegmentHistory::GoldSource& s : sources)
+            if (s.has()) s.replay = present(g_.segments.replayPath(levelKey_, s.replay));
+        MontageTrainings trainings;
+        for (const auto& [ends, best] : training) {
+            const TrainingRecords::Entry* e = g_.training.get(levelKey_, ends.first, ends.second);
+            if (!e) continue;
+            MontageTraining t;
+            t.best = e->best;
+            t.date = e->date;
+            if (!e->replay.empty()) t.file = present(g_.training.replayPath(levelKey_, e->replay));
+            if (!t.file.empty()) t.start = e->start;
+            trainings[ends] = std::move(t);
+        }
+        plan_ = buildMontagePlan(g_.segments.goldSegments(levelKey_), g_.segments.goldCheckpoints(levelKey_), sources, pb, others, route, trainings);
+    }
+
+    /// A checkpoint's name by its id ("" = the level's start, or its exit).
+    std::string boundaryName(const std::string& id, bool start) const {
+        if (id.empty()) return start ? "Départ du niveau" : "Arrivée";
+        for (size_t i = 0; i < checkpoints_.size(); ++i)
+            if (checkpoints_[i].id == id) return checkpoints_[i].label.empty() ? "Point " + std::to_string(i + 1) : checkpoints_[i].label;
+        return "Point de passage";
+    }
+
+    /// Under « Regarder »: what it will show, or why it cannot yet.
+    std::string watchNote() const {
+        const int n = static_cast<int>(plan_.segments.size());
+        if (n == 0) return "Terminez le niveau, ou entraînez chacun de ses segments, pour voir vos meilleurs segments à la suite.";
+        if (plan_.withReplay == 0) return "Aucun meilleur segment n'a encore de replay : battez-en un (course complète ou entraînement) pour le voir ici.";
+        if (plan_.withReplay == n) return "Vos meilleurs segments à la suite, chacun rejoué à l'identique (course ou entraînement).";
+        return std::to_string(plan_.withReplay) + " segments sur " + std::to_string(n) + " ont leur replay : le montage annonce les autres.";
+    }
+
+    void drawWatchRow(const Rect& row) {
+        UIContext& ui = g_.ui;
+        const UITheme& th = ui.theme();
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.enabled = plan_.withReplay > 0;
+        const float bw = std::min(ui.s(190), row.w * 0.3f);
+        const Rect br{row.right() - bw, row.y, bw, row.h};
+        const bool watch = ui.button("watch", br, "Regarder", st);
+        ui.newBadge("watch", br, "ghosts.training.montage");  // « NOUVEAU » (2.60.3)
+        const float room = br.x - ui.s(14) - row.x;
+        std::string line1 = "Somme des meilleurs : " + (refs_.sob > 0.0f ? formatGhostTime(refs_.sob) : std::string("incomplète"));
+        if (refs_.pbTime > 0.0f) line1 += " (record : " + formatGhostTime(refs_.pbTime) + ")";
+        const std::string line2 = watchNote();
+        const float f1 = ui.fitFont(line1, FontFace::Bold, fz(ui, 16), room, 0.75f);
+        const float f2 = ui.fitFont(line2, FontFace::Body, fz(ui, 14), room, 0.8f);
+        ui.label(ui.elide(line1, FontFace::Bold, f1, room), {row.x, row.y + ui.s(f1) * 0.675f}, f1, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label(ui.elide(line2, FontFace::Body, f2, room), {row.x, row.bottom() - ui.s(f2) * 0.675f}, f2, plan_.withReplay > 0 ? th.textDim : th.warm,
+                 Align::Left, FontFace::Body, VAlign::Middle);
+        if (watch && st.enabled) openMontage();
+    }
+
+    void openMontage() {
+        // Golds of before 2.60.3 found in my kept runs (exactly their time): a copy of that run's
+        // replay is kept with them from now on (the record or the last run may change later).
+        std::map<std::string, std::vector<SegmentHistory::Adoption>> byFile;
+        std::map<std::string, std::string> dateOf;
+        for (const MontageSegment& s : plan_.segments)
+            if (s.adopt && s.hasReplay()) {
+                byFile[s.file].push_back({static_cast<size_t>(s.index), s.start, s.end});
+                dateOf[s.file] = s.date;
+            }
+        bool adopted = false;
+        for (const auto& [file, list] : byFile) adopted = g_.segments.adoptReplay(levelKey_, Paths::fromUtf8(file), dateOf[file], list) || adopted;
+        if (adopted) {
+            g_.segments.save();
+            computeRefs();
+        }
+        SobMontageRequest req;
+        req.levelId = levelId_;
+        req.levelHash = hash_;
+        req.levelName = level_.name;
+        req.plan = plan_;
+        const size_t n = plan_.segments.size();
+        for (const MontageSegment& s : plan_.segments)
+            req.names.push_back(s.from.empty() && s.to.empty() && n > 1 ? "Segment " + std::to_string(s.index + 1)
+                                                                         : boundaryName(s.from, true) + "  →  " + boundaryName(s.to, false));
+        g_.app.pushScene(makeSobMontage(g_, std::move(req)));
     }
 
     /// Every frame once the route is known.
@@ -1190,6 +1311,7 @@ private:
     std::vector<std::string> pbCheckpoints_;  // the checkpoints of my record's splits (its replay)
     bool pbCheckpointsRead_ = false;
     SegmentReferences refs_;
+    MontagePlan plan_;  // 2.60.3: « Regarder »
     bool refsDirty_ = true;
     /// The level drawn small: loaded on the main thread (textures) once the training is shown,
     /// a frame after the « Chargement » line.

@@ -77,8 +77,8 @@ void GameScene::onEnter() {
     if (opt_.bossTraining) {
         if (!applyBossTraining(*world_, *opt_.bossTraining))
             Log::warn("Entraînement : boss {} introuvable dans {}", opt_.bossTraining->bossId, levelId_);
-    } else if (opt_.spawn) {
-        world_->startAt(*opt_.spawn);
+    } else if (opt_.spawn && !opt_.training) {
+        world_->startAt(*opt_.spawn);  // a section training starts in startTraining (its replay the same way)
     }
     // Daily challenge: its rules right after the load (simulation 11), its own recording.
     if (opt_.challenge) startChallenge();
@@ -111,7 +111,7 @@ void GameScene::onEnter() {
     if (!g_.inputScript.empty()) script_.parse(g_.inputScript);
     // Cosmic Online: official levels and community levels played from their start can be
     // ranked; a player level finished in an editor test (from its start) can be published.
-    if (!opt_.spawn && counted) {
+    if (!opt_.spawn && counted && !opt_.training) {
         bool community = !opt_.editorTest && !opt_.level && g_.online.communityInstall(levelId_) != nullptr;
         if (opt_.editorTest || community) {
             gameplayHash_ = fingerprintGameplay(g_.content, level_);
@@ -166,12 +166,21 @@ void GameScene::onEnter() {
         else ghostHash_ = fingerprintGameplay(g_.content, level_);
         startGhosts();
     }
+    // 2.60.3: a section training is recorded for this computer only (never sent, never ranked):
+    // its best attempt keeps its replay, which plays the segment again exactly (« Regarder »).
+    if (opt_.training && counted && !ghostHash_.empty() && !opt_.editorTest && !opt_.level) {
+        attemptId_ = makeUuidV4();
+        recorder_.begin(levelId_, ghostHash_, attemptId_, world_->gameplaySeed());
+        recordMode_ = RecordMode::Training;
+    }
     startSpectate();
     // 2.54: the player's statistics (they read the run, never change it); a classic campaign level
     // from its start counts its segments too.
     playStats_ = g_.playStats.beginRun(
         *world_, PlayStatsRun{levelId_, &level_, opt_.editorTest, opt_.training,
-                              counted && !opt_.training && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_},
+                              counted && !opt_.training && !workshop_ && !opt_.spawn && !opt_.level && !level_.extreme, ghostHash_,
+                              // 2.60.3: a section training of such a level: its segment's time joins the Sum of Best.
+                              counted && opt_.training && !workshop_ && !opt_.level && !level_.extreme && !ghostHash_.empty()},
         g_.content);
 }
 
@@ -360,6 +369,17 @@ void GameScene::startGhosts() {
     for (const GhostEntry& e : local)
         if (e.meta.source == "pb" && e.meta.levelHash == ghostHash_) pb = &e;
     if (pb) pbGhostMs_ = pb->meta.timeMs;
+    {
+        // 2.60.3: the Sum of Best « tout confondu » (the training screen's): the full runs' gold
+        // segments, completed with the record's, and the section trainings' best times.
+        const std::string key = GhostStore::levelKey(levelId_, ghostHash_);
+        SegmentReferences::RunInput pbRun;
+        if (pb) {
+            pbRun.time = static_cast<float>(pb->meta.timeMs) / 1000.0f;
+            pbRun.splits = pb->meta.splits;
+        }
+        sobAtStart_ = buildSegmentReferences(g_.segments.goldSegments(key), g_.segments.goldCheckpoints(key), {}, pbRun, {}, g_.training.bests(key)).sob;
+    }
     std::vector<GhostEntry> choices;
     if (opt_.ghostsChosen) choices = opt_.ghosts;
     else if (gs.enabled && gs.personalByDefault && pb) choices.push_back(*pb);
@@ -379,6 +399,7 @@ void GameScene::startGhosts() {
         ghostRun_.setPersonal(g_.segments.bestSegments(key, pb->meta.splits.size()), pb->meta.splits,
                               static_cast<float>(pb->meta.timeMs) / 1000.0f);
     }
+    ghostRun_.setSumOfBest(sobAtStart_);
     ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
 }
 
@@ -470,7 +491,11 @@ void GameScene::saveGhosts(const RunResult& r) {
     if (fingerprint_) m.levelVersion = fingerprint_->version;
     bool newBest = pbGhostMs_ <= 0 || m.timeMs < pbGhostMs_;
     g_.ghosts.recordRun(*lastReplay_, m, newBest);
-    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date, runCheckpoints_);
+    // 2.60.3: the run's exact replay stays with the gold segments it sets (« Regarder » the
+    // Sum of Best in section training); kept only while a gold segment refers to it.
+    std::vector<uint8_t> replay;
+    if (lastReplay_->exact()) replay = lastReplay_->encode();
+    g_.segments.add(GhostStore::levelKey(levelId_, ghostHash_), r.splits, r.time, r.date, runCheckpoints_, replay.empty() ? nullptr : &replay);
     g_.segments.save();
 }
 
@@ -1048,11 +1073,19 @@ void GameScene::finishRun(bool completed) {
         seg->pbSplits = gr.personalSplits();
         seg->pbTime = gr.personalTime();
         if (seg->bestSegments.empty()) seg->bestSegments = g_.segments.bestSegments(seg->levelKey, r.splits.size());
+        seg->sob = sobAtStart_;  // 2.60.3: section trainings included
+        // 2.60.3: the world record's splits (online, this version), shown by « Segments »: the
+        // official leaderboard lists verified records only and says whose replay was verified.
+        seg->levelHash = ghostHash_;
+        if (recordMode_ == RecordMode::Official && fingerprint_) {
+            seg->wrBoard = "/api/v1/leaderboards/level/" + levelId_ + "?category=ANY_PERCENT&limit=10&offset=0&period=all";
+            seg->wrReplayBase = "/api/v1/records/";
+        }
         for (int i = 0; i < gr.size(); ++i) {
             const GhostRace::Racer& g = gr.racer(i);
             std::string name = g.meta.sourceLabel();
             if (!g.meta.label.empty() && g.meta.label != "Moi") name += " · " + g.meta.label;
-            seg->ghosts.push_back({name, g.color, g.track.splits(), g.track.duration(), g.liveDelta, g.sameVersion});
+            seg->ghosts.push_back({name, g.meta.recordId, g.color, g.track.splits(), g.track.duration(), g.liveDelta, g.sameVersion});
         }
         data.segments = seg;
     }
@@ -1215,27 +1248,22 @@ void GameScene::update(float dt) {
     }
 }
 
-void GameScene::startTraining() {
-    // The checkpoint the segment starts from is reached (silently): the timer's first split.
-    if (!opt_.trainingCheckpoint.empty())
-        if (LevelEntity* e = world_->entity(opt_.trainingCheckpoint)) e->handleAction(*world_, "activate", Json::object());
-    if (opt_.trainingPowersChosen) {
-        // The powers chosen in the training setup, exactly these (the level's start powers
-        // only if chosen too), as a boss training does.
-        Player& p = world_->player();
-        p.clearPowers();
-        int slots = p.powerSlots() > 0 ? p.powerSlots() : LevelData::kMaxPowerSlots;
-        for (const std::string& id : fitTrainingPowers(g_.content, opt_.trainingPowers, slots))
-            if (const PowerDefinition* d = g_.content.power(id)) p.grantPower(*d);
-        return;
+SectionTrainingStart GameScene::trainingStart() const {
+    SectionTrainingStart s;
+    s.checkpointId = opt_.trainingCheckpoint;
+    if (opt_.spawn) {
+        s.hasSpawn = true;
+        s.spawn = *opt_.spawn;
     }
-    // The powers of the tablets placed before it on the route (the last ones if the slots are
-    // fewer: those a player would keep).
-    std::vector<std::string> powers = opt_.trainingPowers;
-    int slots = world_->player().powerSlots();
-    if (slots > 0 && static_cast<int>(powers.size()) > slots) powers.erase(powers.begin(), powers.end() - slots);
-    for (const std::string& id : powers)
-        if (const PowerDefinition* d = g_.content.power(id); d && !world_->player().hasPower(id)) world_->player().grantPower(*d);
+    s.powers = opt_.trainingPowers;
+    s.powersChosen = opt_.trainingPowersChosen;
+    return s;
+}
+
+void GameScene::startTraining() {
+    // At its checkpoint (reached silently: the timer's first split), with its powers: the same
+    // function sets up its replay (2.60.3), so that it plays again exactly.
+    applySectionTraining(*world_, trainingStart());
 }
 
 void GameScene::trainingSegmentDone() {
@@ -1256,8 +1284,22 @@ void GameScene::trainingSegmentDone() {
     if (!ghostHash_.empty()) {
         std::string lk = GhostStore::levelKey(levelId_, ghostHash_);
         if (const TrainingRecords::Entry* e = g_.training.get(lk, opt_.trainingCheckpoint, opt_.trainingEnd)) trainingBestBefore_ = e->best;
-        trainingNewBest_ = g_.training.add(lk, opt_.trainingCheckpoint, opt_.trainingEnd, t, FileUtil::nowString());
+        // 2.60.3: a new best attempt keeps its exact replay (this computer only), shown in the
+        // Sum of Best's montage. Compared to the millisecond, as the training records compare.
+        std::vector<uint8_t> replay;
+        const bool best = trainingBestBefore_ <= 0.0f ||
+                          std::llround(static_cast<double>(t) * 1000.0) < std::llround(static_cast<double>(trainingBestBefore_) * 1000.0);
+        if (recordMode_ == RecordMode::Training && recorder_.active()) {
+            recorder_.finish(*world_, t);
+            ReplayData rd = recorder_.take();
+            if (best && rd.exact()) replay = rd.encode();
+        }
+        const SectionTrainingStart start = trainingStart();
+        trainingNewBest_ = g_.training.add(lk, opt_.trainingCheckpoint, opt_.trainingEnd, t, FileUtil::nowString(), replay.empty() ? nullptr : &replay,
+                                           &start);
         g_.training.save();
+        // The statistics' Sum of Best counts it too (never the PB, the times nor the regularity).
+        if (playStats_) playStats_->noteTrainingSegment(opt_.trainingCheckpoint, opt_.trainingEnd, t);
     }
     segmentBanner_ = 3.0f;
     g_.uiSound(trainingNewBest_ || segmentBest_ < 0.0f || t < segmentBest_ ? "medal" : "ui_confirm", 0.6f);

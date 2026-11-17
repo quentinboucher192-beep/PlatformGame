@@ -392,6 +392,11 @@ void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) 
             if (sg <= 0.0f) sobOk = false;
             sob += sg;
         }
+        // 2.60.3: the Sum of Best « tout confondu » (section trainings too) when it is known.
+        if (sumOfBest_ > 0.0f) {
+            sob = sumOfBest_;
+            sobOk = true;
+        }
         if (sobOk) sobText = "Meilleurs segments " + formatGhostTime(sob);
         std::string foot = rec;
         if (!sobText.empty()) {

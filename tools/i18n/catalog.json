@@ -90,6 +90,12 @@
    ]
   },
   {
+   "fr": "(record : {0})",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "(remplace le tirage « {0} »)",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -3343,6 +3349,12 @@
    ]
   },
   {
+   "fr": "Aucun meilleur segment n'a encore de replay : battez-en un (course complète ou entraînement) pour le voir ici.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
    "fr": "aucun meilleur temps · empreinte {0}",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -6410,6 +6422,12 @@
    ]
   },
   {
+   "fr": "Ce niveau a changé depuis ces meilleurs segments : ils ne se rejouent que sur leur version.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce niveau de la communauté n'est pas installé.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -6460,7 +6478,8 @@
   {
    "fr": "Ce niveau n'est pas installé dans votre jeu.",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -6622,6 +6641,12 @@
    ]
   },
   {
+   "fr": "Ce replay n'est pas rejouable à l'identique (ancien format).",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce replay n'est plus sur ce PC.",
    "where": [
     "game/ghost/ReplayLibrary.cpp"
@@ -6637,6 +6662,24 @@
    "fr": "Ce replay ne contient pas de trajectoire.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay ne se rejoue plus à l'identique (moteur d'une autre version du jeu) : ce segment est passé, son temps compté.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay s'arrête avant le début du segment : il ne peut pas le montrer.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce replay vient d'une autre version du niveau : il ne peut pas être rejoué ici.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -7407,7 +7450,8 @@
   {
    "fr": "Chargement du niveau impossible : {0}",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -7454,7 +7498,8 @@
   {
    "fr": "chargement…",
    "where": [
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/SegmentsScene.cpp"
    ]
   },
   {
@@ -7526,6 +7571,7 @@
   {
    "fr": "checkpoint",
    "where": [
+    "game/gameplay/BossTraining.cpp",
     "game/gameplay/EntityFactory.cpp",
     "game/gameplay/GameWorld.cpp",
     "game/gameplay/entities/InteractiveEntities.cpp",
@@ -8792,7 +8838,7 @@
    ]
   },
   {
-   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, additionnés ; temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
+   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -10363,7 +10409,8 @@
    "fr": "course",
    "where": [
     "game/achievements/AchievementSuggestions.cpp",
-    "ui/screens/AdminCreations.cpp"
+    "ui/screens/AdminCreations.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -12648,6 +12695,12 @@
    ]
   },
   {
+   "fr": "du {0}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Dupliquer",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -13906,6 +13959,12 @@
    ]
   },
   {
+   "fr": "Désynchronisé",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Désynchronisé à {0} : ce replay vient d'une autre version du moteur",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -14897,6 +14956,12 @@
    ]
   },
   {
+   "fr": "entraînement",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Entraînement (boss, segments, essais) : {0} sur la période, compté à part : il n'entre dans aucune courbe.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -14924,6 +14989,12 @@
    "fr": "Entraînement avec réapparitions — hors classements, aucun record · chutes : {0} · INVINCIBLE",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "entraînement compris",
+   "where": [
+    "ui/screens/SegmentsScene.cpp"
    ]
   },
   {
@@ -14958,6 +15029,12 @@
   },
   {
    "fr": "Entraînement par segment : un administrateur peut activer « Invincible » directement sur l'écran de choix du segment (non classé), en plus du menu pause.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Entraînement par segment › « Regarder » : vos meilleurs segments à la suite, chacun rejoué à l'identique depuis le replay de la course ou de l'essai d'entraînement qui l'a fait ; à chaque coupure, « Segment 2 · entraînement du 17/11 · 0:23,45 » ou « course du 12/11 », et un chronomètre qui additionne jusqu'à la somme des meilleurs, comparée au record. Lecture, pause, segment précédent / suivant, vitesse, au clavier, à la manette et à la souris.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -16147,6 +16224,12 @@
    ]
   },
   {
+   "fr": "Fin de course › Segments, en ligne : une colonne « Record du monde · pseudo » avec les temps de passage du record du monde vérifié de la même version du niveau (lus dans son replay vérifié, jamais un record en attente), durée et écart cumulé ; « chargement… » pendant la requête, pas de colonne hors ligne ; s'il était déjà un fantôme de la course, sa colonne est renommée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fin de niveau",
    "where": [
     "data/music/tracks.json"
@@ -16174,6 +16257,12 @@
    "fr": "fin de sauvegarde incomplète",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Fin des meilleurs segments",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -22988,7 +23077,8 @@
    "fr": "Lecture",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -23013,6 +23103,12 @@
    "fr": "Lecture des niveaux…",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture des replays…",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -23712,6 +23808,12 @@
    "fr": "Les Remparts parent de près : abattez-les de loin au Tir chargé, il perce leur garde !",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Les replays des meilleurs segments restent sur cet ordinateur (jamais envoyés, rien de classé) tant qu'un meilleur segment s'y rapporte. Un meilleur temps fait avant cette version n'a pas de replay — sauf s'il vient de votre record, du précédent ou de votre dernière course, retrouvés au temps exact : le montage le dit au lieu de l'inventer.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -25296,15 +25398,21 @@
    ]
   },
   {
-   "fr": "meilleurs segments additionnés",
+   "fr": "MEILLEURS SEGMENTS - {0}",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
    "fr": "Meilleurs segments {0}",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "meilleurs segments, entraînement compris",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -30255,6 +30363,18 @@
    ]
   },
   {
+   "fr": "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le dans une course complète pour l'ajouter.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de replay pour ce meilleur temps : il date d'avant la version 2.60.3. Battez-le en entraînement par segment pour l'ajouter.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas de replay vérifié pour cette course.",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -30630,7 +30750,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "engine/input/InputTypes.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -32009,6 +32130,7 @@
   {
    "fr": "Point de passage",
    "where": [
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -33388,6 +33510,12 @@
    ]
   },
   {
+   "fr": "Préparation du segment… {0} %",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "PRÉPARER UNE MIGRATION",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -34668,6 +34796,12 @@
    ]
   },
   {
+   "fr": "Record : {0}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Record battu",
    "where": [
     "game/online/OnlineService.cpp",
@@ -34684,6 +34818,18 @@
    "fr": "Record du classement",
    "where": [
     "game/ghost/Ghost.cpp"
+   ]
+  },
+  {
+   "fr": "Record du monde",
+   "where": [
+    "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record du monde · {0}",
+   "where": [
+    "ui/screens/SegmentsScene.cpp"
    ]
   },
   {
@@ -34749,6 +34895,12 @@
    "where": [
     "game/gameplay/Hud.cpp",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "record {0}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -35100,6 +35252,7 @@
    "fr": "Regarder",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp",
+    "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -35168,6 +35321,12 @@
    "fr": "rejoué à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoué à l'identique · {0} contrôles vérifiés",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -35418,6 +35577,8 @@
    "fr": "replay",
    "where": [
     "game/ghost/GhostStore.cpp",
+    "game/ghost/SegmentHistory.cpp",
+    "game/ghost/TrainingSegments.cpp",
     "game/online/DailyChallenges.cpp",
     "ui/screens/CommunityPublishScene.cpp"
    ]
@@ -35492,7 +35653,8 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -35540,7 +35702,8 @@
   {
    "fr": "Replay introuvable sur ce PC.",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -35995,6 +36158,7 @@
     "ui/screens/PowerGuideScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SettingsScene.cpp",
+    "ui/screens/SobMontageScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -36131,6 +36295,12 @@
    "fr": "Revenu au tirage du serveur : « {0} ».",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Revoir",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -36464,6 +36634,7 @@
    "where": [
     "game/enemies/Enemy.cpp",
     "game/ghost/Ghost.cpp",
+    "game/ghost/KeptReplays.cpp",
     "game/online/DailyChallenges.cpp",
     "game/player/PlayerActions.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -38216,8 +38387,22 @@
    ]
   },
   {
+   "fr": "Segment précédent",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segment suivant",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Segment {0}",
    "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/SobMontageScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -38225,6 +38410,18 @@
    "fr": "Segment {0} : {1} → {2}",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segment {0} · {1} · temps inconnu",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segment {0} · {1} · {2}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -38913,6 +39110,12 @@
    ]
   },
   {
+   "fr": "SOMME DES MEILLEURS",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Somme des meilleurs",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -38937,9 +39140,40 @@
    ]
   },
   {
+   "fr": "Somme des meilleurs (SOB) tout confondu : le meilleur temps de chaque segment compte, qu'il ait été fait dans une course complète ou en entraînement par segment (même version du niveau) — écran d'entraînement, Statistiques (graphique compris), panneau des fantômes et résumé des segments. Le record, les temps des segments et la régularité restent ceux des courses complètes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs : incomplète",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs : {0}",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs incomplète : {0}",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Somme des meilleurs temps sur tous les niveaux de la planète",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "somme incomplète",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -39067,6 +39301,12 @@
    "fr": "Son phylactère est brisé : la Liche hurle de rage !",
    "where": [
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Son temps est ajouté au chronomètre.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -40391,7 +40631,8 @@
    "fr": "sur {0}",
    "where": [
     "ui/screens/AchievementsScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/SobMontageScene.cpp"
    ]
   },
   {
@@ -41262,6 +41503,12 @@
    ]
   },
   {
+   "fr": "Temps inconnu : aucune course complète ni aucun entraînement n'a fait ce segment seul.",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "temps invalide « {0} »",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -41842,6 +42089,12 @@
    "fr": "Terminez ce niveau connecté à Cosmic Online : une fois votre temps vérifié, vous pourrez le noter.",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Terminez le niveau, ou entraînez chacun de ses segments, pour voir vos meilleurs segments à la suite.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -46207,6 +46460,24 @@
    ]
   },
   {
+   "fr": "Vitesse ×0,5",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse ×1",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse ×2",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "Voir",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -46397,6 +46668,12 @@
    "fr": "Vos droits",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vos meilleurs segments à la suite, chacun rejoué à l'identique (course ou entraînement).",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {
@@ -48216,6 +48493,12 @@
    ]
   },
   {
+   "fr": "{0} d'entraînement",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} dans {1} pays",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -49075,6 +49358,12 @@
    ]
   },
   {
+   "fr": "{0} possible",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -49264,6 +49553,24 @@
    "fr": "{0} sauts précis ({1} au-dessus du vide)",
    "where": [
     "game/levels/DifficultyRating.cpp"
+   ]
+  },
+  {
+   "fr": "{0} segment sur {1} en replay",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} segments sur {1} en replay",
+   "where": [
+    "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} segments sur {1} ont leur replay : le montage annonce les autres.",
+   "where": [
+    "ui/screens/GhostSetupScene.cpp"
    ]
   },
   {

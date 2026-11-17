@@ -43,6 +43,66 @@ std::vector<std::string> fitTrainingPowers(const ContentDatabase& content, const
     return out;
 }
 
+Json SectionTrainingStart::toJson() const {
+    Json j{{"checkpoint", checkpointId}, {"powers", powers}, {"powers_chosen", powersChosen}};
+    if (hasSpawn) j["spawn"] = {spawn.x, spawn.y};
+    return j;
+}
+
+std::optional<SectionTrainingStart> SectionTrainingStart::fromJson(const Json& j) {
+    if (!j.is_object()) return std::nullopt;
+    auto validId = [](const std::string& s) {
+        if (s.size() > 96) return false;
+        for (unsigned char c : s)
+            if (c < 0x20 || c == 0x7f) return false;
+        return true;
+    };
+    SectionTrainingStart s;
+    s.checkpointId = jstr(j, "checkpoint");
+    if (!validId(s.checkpointId)) return std::nullopt;
+    s.powersChosen = jget<bool>(j, "powers_chosen", false);
+    if (j.contains("spawn")) {
+        const Json& p = j["spawn"];
+        if (!p.is_array() || p.size() != 2 || !p[0].is_number() || !p[1].is_number()) return std::nullopt;
+        s.spawn = {p[0].get<float>(), p[1].get<float>()};
+        if (!std::isfinite(s.spawn.x) || !std::isfinite(s.spawn.y) || std::abs(s.spawn.x) > 1e7f || std::abs(s.spawn.y) > 1e7f) return std::nullopt;
+        s.hasSpawn = true;
+    }
+    if (j.contains("powers")) {
+        const Json& p = j["powers"];
+        if (!p.is_array() || p.size() > 16) return std::nullopt;
+        for (const Json& id : p) {
+            if (!id.is_string() || id.get<std::string>().empty() || !validId(id.get<std::string>())) return std::nullopt;
+            s.powers.push_back(id.get<std::string>());
+        }
+    }
+    return s;
+}
+
+void applySectionTraining(GameWorld& w, const SectionTrainingStart& s) {
+    if (s.hasSpawn) w.startAt(s.spawn);
+    // The checkpoint the segment starts from is reached (silently): the timer's first split.
+    if (!s.checkpointId.empty())
+        if (LevelEntity* e = w.entity(s.checkpointId)) e->handleAction(w, "activate", Json::object());
+    Player& p = w.player();
+    if (s.powersChosen) {
+        // The powers chosen in the training setup, exactly these (the level's start powers
+        // only if chosen too), as a boss training does.
+        p.clearPowers();
+        int slots = p.powerSlots() > 0 ? p.powerSlots() : LevelData::kMaxPowerSlots;
+        for (const std::string& id : fitTrainingPowers(w.content(), s.powers, slots))
+            if (const PowerDefinition* d = w.content().power(id)) p.grantPower(*d);
+        return;
+    }
+    // The powers of the tablets placed before it on the route (the last ones if the slots are
+    // fewer: those a player would keep).
+    std::vector<std::string> powers = s.powers;
+    int slots = p.powerSlots();
+    if (slots > 0 && static_cast<int>(powers.size()) > slots) powers.erase(powers.begin(), powers.end() - slots);
+    for (const std::string& id : powers)
+        if (const PowerDefinition* d = w.content().power(id); d && !p.hasPower(id)) p.grantPower(*d);
+}
+
 namespace {
 
 EnemySpawnEntity* bossSpawn(GameWorld& w, const BossTrainingSetup& s) { return dynamic_cast<EnemySpawnEntity*>(w.entity(s.bossObject)); }
