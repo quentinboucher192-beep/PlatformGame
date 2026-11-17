@@ -1689,6 +1689,13 @@ private:
 
     void launch() {
         if (!challenge_ || !level_) return;
+        // 2.60: changed (an administrator, nobody had a result on it) while this screen was open:
+        // never its former version; its new one from « Défis ».
+        if (g_.challenges.changedSince(*challenge_)) {
+            g_.uiSound("ui_error");
+            say("Ce défi vient de changer : revenez aux défis pour jouer sa nouvelle version.");
+            return;
+        }
         // Ended while this screen was open: the run is « hors délai » now (said once), or a
         // practice when the level installed is not the challenge's version.
         if (!practice_ && !late_ && g_.challenges.ended(*challenge_)) {
