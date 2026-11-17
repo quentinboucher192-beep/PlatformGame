@@ -5,6 +5,16 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.63.1** :
+* L'**histoire du Phénix** (« Le Porteur d'aube ») devient un **petit dessin animé** : l'oiseau de lumière qui
+  porte l'aube, le jour qui se lève derrière lui sur les volcans et le verre noir, la longue nuit, les plumes
+  qui brûlent jusqu'aux cendres, la renaissance, le Phénix qui se consume dans son nid ; aube, fumées et
+  brume animées. Une pastille NOUVEAU mène à « Revoir l'histoire ».
+* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
+  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
+  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
+  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
+
 **Nouveau dans la version 2.63.0** :
 * **Coopération** sur les niveaux EXTRÊME, à **2 ou 3 joueurs** (menu principal › *Coopération*) : une vie
   chacun, les mêmes règles qu'en solo, **sur un même PC** (une manette par joueur en plus du clavier), **en
@@ -18,10 +28,6 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   joueur le plus avancé, vérification par le serveur avec les entrées de chaque joueur, confirmation de chaque
   joueur avec son compte (une partie sur un même PC n'est pas classée : un compte ne s'ouvre que sur son propre
   ordinateur). Les records solo restent tous valides. Architecture : [docs/COOP.md](docs/COOP.md).
-* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
-  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
-  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
-  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
 
 **Nouveau dans la version 2.62.5** :
 * L'**histoire du Kraken** (« La Lanterne des profondeurs ») devient un **petit dessin animé** : l'œuf qui éclot

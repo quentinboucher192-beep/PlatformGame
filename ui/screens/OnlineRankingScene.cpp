@@ -821,7 +821,7 @@ private:
             float nf = std::max(11.5f / ui.s(1.0f), ui.fitFont(name, FontFace::Bold, title.empty() ? 18 : 17, room, 0.75f));
             ui.label(ui.elide(name, FontFace::Bold, nf, room), {nx, nameY}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold,
                      VAlign::Middle);
-            // 2.63.0: the tag opens its clan's sheet.
+            // 2.63.1: the tag opens its clan's sheet.
             ui_.clanTagLink((pinned ? std::string("pinned") : "e" + std::to_string(index)), p, name, {nx, nameY}, nf, FontFace::Bold, room);
         }
         if (!title.empty()) {

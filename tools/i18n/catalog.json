@@ -23537,6 +23537,12 @@
    ]
   },
   {
+   "fr": "L'histoire du Phénix, « Le Porteur d'aube », devient elle aussi un petit dessin animé : le petit oiseau de lumière qui quitte l'étoile du centre, son vol au ras des volcans endormis et des vallées de verre noir où le jour se lève derrière lui, la longue nuit où il attend sur son rocher, ses plumes qui s'embrasent jusqu'aux cendres, sa renaissance plus grand et plus brillant, puis le Phénix qui se consume dans son nid au sommet du pic. Décors vivants (aube qui se lève, fumées des volcans, verre qui scintille, brume), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'Horizon des événements",
    "where": [
     "data/levels/aethra_04.json"
