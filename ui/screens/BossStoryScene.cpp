@@ -12,9 +12,11 @@
 #include "game/GameServices.h"
 #include "game/content/BossStories.h"
 #include "game/enemies/BossDifficulty.h"
+#include "game/tutorial/Tutorial.h"
 #include "game/enemies/EnemyDefinition.h"
 #include "ui/online/RatingWidgets.h"
 #include "ui/screens/CreatureArt.h"
+#include "ui/screens/MenuBackground.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -111,11 +113,16 @@ SkipHintMetrics skipHintMetrics(UIContext& ui) {
 
 class BossStoryScene : public Scene {
 public:
-    BossStoryScene(GameServices& g, const BossStory& story, int startAt, float atSeconds)
-        : g_(g), story_(story), startAt_(atSeconds >= 0.0f ? -1 : startAt), atSeconds_(atSeconds) {}
+    BossStoryScene(GameServices& g, const BossStory& story, int startAt, float atSeconds, bool attract = false)
+        : g_(g), story_(story), startAt_(atSeconds >= 0.0f ? -1 : startAt), atSeconds_(atSeconds), trailer_(story.isTrailer()),
+          attract_(attract) {}
+
+    /// 2.63: the trailer's passes (attract mode: it starts again at its end).
+    int passes() const { return passes_; }
+    bool attract() const { return attract_; }
 
     void onEnter() override {
-        def_ = g_.content.enemy(story_.bossId);
+        def_ = trailer_ ? nullptr : g_.content.enemy(story_.bossId);
         // The timeline, from the lines as they are shown (a shot lasts long enough to read its
         // line in the language in use).
         // Every texture of the story is loaded here, at its start (never while it plays): the
@@ -130,6 +137,10 @@ public:
             shot.dur = story::shotDuration(shot.shown);
             // A scene is written in seconds of its French line: stretched to the line shown.
             shot.stageScale = story::shotDuration(s.text) / std::max(0.01f, shot.dur);
+            if (s.duration > 0.0f) {  // 2.63 (the trailer): its own length, in every language
+                shot.dur = s.duration;
+                shot.stageScale = 1.0f;
+            }
             if (s.stage) shot.stageReady = loadStage(shot, *s.stage);
             if (!shot.stageReady) shot.tex = s.image.empty() ? nullptr : g_.app.resources().texture(s.image, false);
             t += shot.dur;
@@ -137,7 +148,7 @@ public:
         }
         if (def_ && !def_->animation.empty()) g_.app.resources().animation(def_->animation);
         titleStart_ = t;
-        total_ = t + story::kTitleCard;
+        total_ = t + story_.titleCard;
         if (startAt_ >= 0) {
             // Automated screenshots: that shot with its line typed, or the title card revealed.
             t_ = startAt_ < static_cast<int>(shots_.size()) ? shots_[static_cast<size_t>(startAt_)].start + 1.4f : titleStart_ + 1.8f;
@@ -148,10 +159,14 @@ public:
             sinceEnter_ = 10.0f;
         }
         roarLen_ = def_ ? creatureClipDuration(g_, *def_, story_.clip) : 0.0f;
-        g_.app.audio().setMusicDuck(0.3f);
+        activity_ = g_.app.input().activityCount();
+        if (trailer_ && !story_.music.empty()) g_.playMusic(story_.music);  // the trailer's own music
+        else g_.app.audio().setMusicDuck(0.3f);
     }
 
-    void onExit() override { g_.app.audio().setMusicDuck(1.0f); }
+    void onExit() override {
+        if (!trailer_ || story_.music.empty()) g_.app.audio().setMusicDuck(1.0f);
+    }
 
     bool isOverlay() const override { return true; }
     bool holdsNotifications() const override { return true; }
@@ -160,10 +175,28 @@ public:
         sinceEnter_ += dt;
         if (closing_) {
             closeT_ += dt;
-            if (closeT_ >= story::kFade) finish();
+            if (closeT_ >= (quickClose_ ? kQuickFade : story::kFade)) finish();
             return;
         }
+        // 2.63, attract mode: any input (a key, a button, a click, the mouse or a stick moving)
+        // closes it at once; it is shown over the menu until it is gone, so that the menu never
+        // acts on that input.
+        if (attract_) {
+            const uint64_t act = g_.app.input().activityCount();
+            if (act != activity_ && sinceEnter_ > 0.05f) {
+                closing_ = true;
+                quickClose_ = true;
+                return;
+            }
+            activity_ = act;
+        }
         t_ += dt;
+        if (attract_ && t_ >= total_) {  // attract mode: it starts again, through black
+            t_ = 0.0f;
+            roared_ = false;
+            ++passes_;
+            return;
+        }
         if (!roared_ && t_ >= titleStart_ + 0.2f) {
             roared_ = true;
             if (def_ && !def_->alertSound.empty()) g_.app.resources().playSound(def_->alertSound, 0.5f);
@@ -187,7 +220,7 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         Renderer& r = ui.r();
         const float in = startAt_ >= 0 || atSeconds_ >= 0.0f ? 1.0f : clamp01(sinceEnter_ / story::kFade);
-        const float out = closing_ ? 1.0f - clamp01(closeT_ / story::kFade) : 1.0f;
+        const float out = closing_ ? 1.0f - clamp01(closeT_ / (quickClose_ ? kQuickFade : story::kFade)) : 1.0f;
         const float alpha = std::min(in, out);
         // Faded in and out over the screen below: drawn on a target, then shown with its alpha.
         bool onTarget = false;
@@ -277,13 +310,19 @@ private:
         const bool title = t_ >= titleStart_;
         if (!title) {
             const int cur = currentShot();
-            const float a = cur > 0 ? smooth((t_ - shots_[static_cast<size_t>(cur)].start) / story::kCrossFade) : 1.0f;
+            const float a = cur > 0 ? smooth((t_ - shots_[static_cast<size_t>(cur)].start) / crossFade()) : 1.0f;
             if (cur > 0 && a < 1.0f) drawShot(cur - 1, img, 1.0f);
             drawShot(cur, img, a);
         } else {
-            const float a = smooth((t_ - titleStart_) / story::kCrossFade);
+            const float a = smooth((t_ - titleStart_) / crossFade());
             if (a < 1.0f && !shots_.empty()) drawShot(static_cast<int>(shots_.size()) - 1, img, 1.0f);
-            drawTitle(img, a);
+            if (trailer_) drawTrailerCard(img, a);
+            else drawTitle(img, a);
+        }
+        if (trailer_ && !title) drawTrailerTitle(currentShot(), img);
+        if (attract_) {  // between two passes: through black
+            const float through = std::min(clamp01(t_ / story::kFade), clamp01((total_ - t_) / story::kFade));
+            if (passes_ > 0 || t_ > story::kFade) r.fillRect(img, Color{0, 0, 0, 255}.withAlphaF(1.0f - through));
         }
         // Soft edges against the bands.
         const float soft = std::round(img.h * 0.08f);
@@ -293,6 +332,10 @@ private:
         r.fillRect({img.x, img.y - std::max(1.0f, ui.s(1.5f)), img.w, std::max(1.0f, ui.s(1.5f))}, story_.color.withAlpha(60));
         r.fillRect({img.x, img.bottom(), img.w, std::max(1.0f, ui.s(1.5f))}, story_.color.withAlpha(60));
 
+        if (trailer_) {  // the trailer: its titles are in the picture; below, how to leave it
+            drawTrailerHint({0, img.bottom(), W, H - img.bottom()});
+            return;
+        }
         // The bottom band: progress bar on its top, the line of narration, « Passer » at the right
         // (the line keeps to the room left of the measured hint: layoutStoryNarration).
         const int cur = currentShot();
@@ -308,7 +351,7 @@ private:
         Renderer& r = g_.ui.r();
         const Shot& s = shots_[static_cast<size_t>(i)];
         const float local = t_ - s.start;
-        const float p = easeInOut(local / (s.dur + story::kCrossFade));
+        const float p = easeInOut(local / (s.dur + crossFade()));
         if (s.stageReady) {
             Renderer& rr = g_.ui.r();
             if (alpha < 0.999f) {
@@ -528,6 +571,105 @@ private:
         }
     }
 
+    /// 2.63, the trailer: cuts are quicker than a story's cross-fades.
+    float crossFade() const { return trailer_ ? 0.18f : story::kCrossFade; }
+
+    /// 2.63, the trailer: the title of shot `i` in large letters where its focus says (a pop as it
+    /// comes, a fade as the shot ends), its subtitle under it; both fitted to the picture's width.
+    void drawTrailerTitle(int i, const Rect& img) {
+        if (i < 0 || i >= static_cast<int>(shots_.size())) return;
+        UIContext& ui = g_.ui;
+        const Shot& s = shots_[static_cast<size_t>(i)];
+        const float local = t_ - s.start;
+        const float in = smooth((local - 0.12f) / 0.28f);
+        const float out = clamp01((s.dur - local) / 0.22f);
+        const float a = in * out;
+        if (a <= 0.003f) return;
+        const std::string sub = s.data->subtitle.empty() ? std::string() : i18n::tr(s.data->subtitle);
+        i18n::Verbatim asShown;  // both already translated
+        const float maxW = img.w * 0.86f;
+        const float pop = 1.0f + 0.14f * (1.0f - in);
+        const float titlePx = ui.s(ui.fitFont(s.shown, FontFace::Title, 70, maxW / pop, 0.25f)) * pop;
+        const float subPx = sub.empty() ? 0.0f : ui.s(ui.fitFont(sub, FontFace::Body, 30, maxW, 0.4f));
+        const float gap = sub.empty() ? 0.0f : ui.s(14);
+        const float blockH = titlePx + gap + subPx;
+        float y = img.y + img.h * s.data->focus.y - blockH * 0.5f;
+        y = std::clamp(y, img.y + ui.s(12), img.bottom() - blockH - ui.s(12));
+        const Color c = s.data->glow;
+        TextStyle st;
+        st.face = FontFace::Title;
+        st.size = titlePx;
+        st.color = Color::white().withAlphaF(a);
+        st.align = Align::Center;
+        st.shadow = true;
+        st.shadowOffset = ui.s(3);
+        st.shadowColor = Color{0, 0, 0, static_cast<uint8_t>(200.0f * a)};
+        st.glow = ui.s(18);
+        st.glowColor = c.withAlphaF(0.55f * a);
+        const float cx = img.x + img.w * s.data->focus.x;
+        ui.text().draw(s.shown, {cx, y}, st);
+        if (sub.empty()) return;
+        TextStyle ss;
+        ss.face = FontFace::Body;
+        ss.size = subPx;
+        ss.color = Color::lerp(c, Color::white(), 0.55f).withAlphaF(a * smooth((local - 0.3f) / 0.3f));
+        ss.align = Align::Center;
+        ss.shadow = true;
+        ss.shadowColor = Color{0, 0, 0, static_cast<uint8_t>(190.0f * a)};
+        ui.text().draw(sub, {cx, y + titlePx + gap}, ss);
+    }
+
+    /// 2.63, the trailer's last card: the game's name, its line under it, stars and embers.
+    void drawTrailerCard(const Rect& img, float alpha) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const float u = t_ - titleStart_;
+        const Color c = story_.color;
+        r.fillGradientV(img, Color::lerp(Color{6, 6, 14, 255}, c, 0.18f).withAlphaF(alpha), Color{3, 3, 8, 255}.withAlphaF(alpha));
+        r.drawGlow(img.center(), img.h * 0.55f, c.withAlphaF(0.25f * alpha));
+        drawParticles("stars", Color::lerp(c, Color::white(), 0.5f), img, t_, alpha, 991U);
+        drawParticles("embers", story_.accent, img, t_, alpha * 0.7f, 4441U);
+        // The name (drawGameTitle: « COSMIC » over « PLATFORMER »), as large as the width allows.
+        float size = 104.0f;
+        size = std::min(size, ui.fitFont("COSMIC", FontFace::Title, size, img.w * 0.8f, 0.2f));
+        size = std::min(size, ui.fitFont("PLATFORMER", FontFace::Title, size * 0.62f, img.w * 0.8f, 0.2f) / 0.62f);
+        size = std::min(size, img.h * 0.32f / std::max(0.01f, ui.s(1.0f)));
+        const float appear = smooth(u / 0.5f);
+        const Vec2 at{img.center().x, img.y + img.h * 0.44f};
+        drawGameTitle(g_, at, size * (1.0f + 0.08f * (1.0f - appear)), alpha * appear);
+        const std::string line = i18n::tr(story_.title);
+        i18n::Verbatim asShown;
+        const float px = ui.s(ui.fitFont(line, FontFace::Body, 30, img.w * 0.8f, 0.4f));
+        TextStyle st;
+        st.face = FontFace::Body;
+        st.size = px;
+        st.color = Color{232, 236, 246, 255}.withAlphaF(alpha * smooth((u - 0.5f) / 0.5f));
+        st.align = Align::Center;
+        st.shadow = true;
+        ui.text().draw(line, {at.x, at.y + ui.s(size * 0.95f)}, st);
+    }
+
+    /// 2.63, the trailer's bottom band: in attract mode, that any input goes back to the menu
+    /// (blinking softly); else « Espace · Ⓐ Passer », as a story.
+    void drawTrailerHint(const Rect& band) {
+        UIContext& ui = g_.ui;
+        if (!attract_) {
+            const float margin = std::round(std::max(ui.s(56), 16.0f));
+            drawSkipHint({band.right() - margin, band.center().y});
+            return;
+        }
+        const std::string hint = i18n::tr("Appuyez sur une touche pour revenir au menu");
+        i18n::Verbatim asShown;
+        const float px = ui.s(ui.fitFont(hint, FontFace::Body, 22, band.w * 0.9f, 0.5f));
+        TextStyle st;
+        st.face = FontFace::Body;
+        st.size = px;
+        st.color = Color{200, 208, 224, 255}.withAlphaF(0.55f + 0.35f * std::sin(sinceEnter_ * 2.4f));
+        st.align = Align::Center;
+        st.valign = VAlign::Middle;
+        ui.text().draw(hint, band.center(), st);
+    }
+
     /// The title card: the boss (its sprite roaring), « GIGA-BOSS · 8 PHASES », its name, its
     /// subtitle and its difficulty.
     void drawTitle(const Rect& img, float alpha) {
@@ -684,6 +826,12 @@ private:
     bool done_ = false;
     bool roared_ = false;
     float roarLen_ = 0.0f;
+    bool trailer_ = false;      // 2.63: the game's trailer (its titles, its last card)
+    bool attract_ = false;      // 2.63: the main menu's attract mode (loops, any input leaves)
+    bool quickClose_ = false;   // left by an input in attract mode
+    int passes_ = 0;
+    uint64_t activity_ = 0;
+    static constexpr float kQuickFade = 0.2f;
     TexturePtr target_;
     TexturePtr shotTarget_;  // a scene cross-fading in
     TexturePtr drawTarget_;  // where the story is drawn this frame (nullptr: the window)
@@ -759,6 +907,28 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
     const float blockH = static_cast<float>(lay.lines.size()) * lay.lineH;
     lay.top = blockH <= lay.area.h ? lay.area.y + (lay.area.h - blockH) * 0.5f : lay.area.bottom() - blockH;
     return lay;
+}
+
+std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSeconds) {
+    if (!g.trailer || g.trailer->shots.empty()) return nullptr;
+    return std::make_unique<BossStoryScene>(g, *g.trailer, -1, std::isfinite(atSeconds) ? atSeconds : -1.0f, attract);
+}
+
+int trailerPasses(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t && t->attract() ? t->passes() : -1;
+}
+
+bool attractAllowed(GameServices& g) {
+    const InputManager& in = g.app.input();
+    if (!g.settings.gameplay.attractTrailer || !g.trailer) return false;
+    if (in.textInputActive()) return false;  // never while something is being typed
+    if (tutorial::due(g.progression)) return false;  // nor before the tutorial is done
+    if (const NewsCenter::Item* it = g.updates.offer()) {  // nor while an update downloads
+        const UpdateInstaller::State st = g.updates.state(it->target);
+        if (st == UpdateInstaller::State::Downloading || st == UpdateInstaller::State::Checking) return false;
+    }
+    return true;
 }
 
 std::unique_ptr<Scene> makeBossStory(GameServices& g, const std::string& bossId, int startAt, float atSeconds) {

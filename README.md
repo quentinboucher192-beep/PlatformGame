@@ -1,5 +1,7 @@
 # Cosmic Platformer
 
+<p align="center"><a href="docs/media/trailer.mp4"><img src="docs/media/trailer.gif" width="640" alt="Bande-annonce de Cosmic Platformer : Nova, les planètes et les sept giga-boss"></a><br><sub>La bande-annonce (40 s) — <a href="docs/media/trailer.mp4">en vidéo MP4, avec sa musique</a> ; le jeu la montre sur son écran d'accueil après une minute d'inactivité.</sub></p>
+
 <p align="center"><b>Nova traverse six mondes, apprend dix-neuf pouvoirs et tient tête à des giga-boss à huit phases.</b><br>
 Un jeu de plateforme 2D nerveux et précis, en C++20 / SDL3 : seul ou à deux ou trois, au clavier, à la
 manette ou à la souris, en français ou en anglais — et entièrement jouable hors ligne.</p>
@@ -454,6 +456,11 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.63.6** :
+* **Bande-annonce** (environ 40 s, [vidéo MP4](docs/media/trailer.mp4)) : plans rapides et grands titres faits de vraies
+  scènes du jeu (Nova sur trois planètes, les sept giga-boss dans les décors de leurs histoires, la coopération, Cosmic
+  Online) sur la musique de Singularis. Elle se lance sur l'écran d'accueil après **1 minute sans aucune action** et
+  tourne en boucle ; n'importe quelle entrée ramène au menu sans rien déclencher. Jamais pendant une saisie, une
+  fenêtre ouverte, un téléchargement ou avant le didacticiel ; désactivable dans Paramètres › Jeu.
 * **Coopération sur les niveaux EXTRÊME de la communauté** : le salon propose « Campagne / Communauté »
   (titre, auteur, version) et la page d'un niveau EXTRÊME de NIVEAUX EN LIGNE a « Jouer en coop ». Un invité
   sans le niveau (ou sans cette version) le reçoit avant « Prêt » : téléchargé depuis Cosmic Online, ou envoyé

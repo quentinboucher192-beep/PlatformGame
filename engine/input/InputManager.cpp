@@ -101,9 +101,13 @@ void InputManager::handleEvent(const SDL_Event& e) {
         case SDL_EVENT_KEY_DOWN: case SDL_EVENT_MOUSE_BUTTON_DOWN: case SDL_EVENT_MOUSE_MOTION: case SDL_EVENT_MOUSE_WHEEL:
         case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
             lastActivityMs_ = SDL_GetTicks();
+            ++activityCount_;
             break;
         case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-            if (e.gaxis.value > 12000 || e.gaxis.value < -12000) lastActivityMs_ = SDL_GetTicks();
+            if (e.gaxis.value > 12000 || e.gaxis.value < -12000) {
+                lastActivityMs_ = SDL_GetTicks();
+                ++activityCount_;
+            }
             break;
         default: break;
     }

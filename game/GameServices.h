@@ -70,6 +70,8 @@ public:
     /// « Histoire des giga-boss » (2.51): the stories told before the first fight against each
     /// giga boss (data/stories).
     BossStories stories;
+    /// 2.63: the game's trailer (data/trailer/trailer.json), played by the main menu's attract mode.
+    std::optional<BossStory> trailer;
     /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files)
     /// and the history of my segments.
     GhostStore ghosts;

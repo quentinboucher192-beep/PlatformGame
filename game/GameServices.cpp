@@ -29,6 +29,7 @@ void GameServices::loadAll() {
     playStats.open(Paths::savesDir() / "stats.json");
     playStats.currentStars = [this] { return achievements.stars(achievementCatalog); };
     if (std::string err; !stories.loadDefault(&err)) Log::warn("Histoires des giga-boss : {}", err);
+    if (std::string err; !(trailer = story::loadTrailer(&err))) Log::warn("Bande-annonce : {}", err);
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
     replayLibrary.open(Paths::userDir() / "replays" / "downloaded");

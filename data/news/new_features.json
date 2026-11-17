@@ -2380,6 +2380,13 @@
    "parents": [
     "online.nav.levels"
    ]
+  },
+  {
+   "id": "settings.game.attract_trailer",
+   "version": "2.63.6",
+   "parents": [
+    "settings.tab.game"
+   ]
   }
  ]
 }

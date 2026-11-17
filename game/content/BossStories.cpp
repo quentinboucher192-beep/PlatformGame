@@ -281,6 +281,9 @@ std::optional<BossStory> BossStory::fromJson(const Json& j, std::string* error) 
     s.color = hexOr(j, "color", Color::white());
     s.accent = hexOr(j, "accent", s.color);
     s.clip = jstr(j, "clip", "roar");
+    s.kind = jstr(j, "kind", "story");
+    s.music = jstr(j, "music");
+    s.titleCard = std::clamp(jget<float>(j, "titleCard", story::kTitleCard), 0.0f, 10.0f);
     s.version = jget<int>(j, "version", 1);
     if (s.version < 1 || s.version > story::kVersion) return fail("version " + std::to_string(s.version) + " not known");
     if (!j.contains("shots") || !j["shots"].is_array()) return fail("no shots");
@@ -296,6 +299,8 @@ std::optional<BossStory> BossStory::fromJson(const Json& j, std::string* error) 
         shot.zoom = std::clamp(jget<float>(x, "zoom", shot.zoom), 1.0f, 1.5f);
         shot.particles = jstr(x, "particles", shot.particles);
         shot.glow = hexOr(x, "glow", s.color);
+        if (x.contains("duration")) shot.duration = std::clamp(jget<float>(x, "duration", 0.0f), 0.5f, 20.0f);
+        shot.subtitle = jstr(x, "subtitle");
         if (s.version >= 2 && x.contains("stage")) {
             std::string why;
             shot.stage = StoryStage::fromJson(x["stage"], &why);
@@ -319,10 +324,21 @@ float shotDuration(std::string_view text) {
     return std::max(kMinShot, kShotBase + static_cast<float>(characters(text)) / kReadRate);
 }
 
+float shotLength(const StoryShot& shot) { return shot.duration > 0.0f ? shot.duration : shotDuration(shot.text); }
+
 float duration(const BossStory& s) {
-    float t = kTitleCard;
-    for (const auto& shot : s.shots) t += shotDuration(shot.text);
+    float t = s.titleCard;
+    for (const auto& shot : s.shots) t += shotLength(shot);
     return t;
+}
+
+std::optional<BossStory> loadTrailer(std::string* error) {
+    auto j = FileUtil::loadJson(Paths::dataDir() / "trailer" / "trailer.json");
+    if (!j) {
+        if (error) *error = "data/trailer/trailer.json introuvable";
+        return std::nullopt;
+    }
+    return BossStory::fromJson(*j, error);
 }
 
 StageAssets stageAssets(const BossStory& s) {
