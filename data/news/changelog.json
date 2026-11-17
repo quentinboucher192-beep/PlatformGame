@@ -1,4 +1,7 @@
 {
+  "2.64.1": [
+    "Touches : dans Paramètres › Clavier / souris et Manette, et dans « Touches de ce niveau » (panneaux des niveaux, défis, menu pause « Touches… »), la touche, le bouton de souris ou de manette, la gâchette ou la direction de stick que vous tenez s'allume en direct dans la liste, sans rien changer : de quoi vérifier que c'est bien la bonne touche. Relâchée, elle s'éteint ; rien ne s'allume pendant le choix d'une nouvelle touche."
+  ],
   "2.64.0": [
     "Les histoires des sept giga-boss et la bande-annonce ont désormais leurs bruitages : une ambiance sous chaque plan (vent de la nuit, grotte qui goutte, magma qui gronde, mer profonde, catacombes, fonderie, bourdonnement cosmique) et les bruits de ce qui s'y passe — l'œuf qui craque, le souffle des flammes, la pierre qui se fend, les ailes, l'étoile du centre qui s'effondre, les bulles, les bougies, les os, la vapeur et les marteaux, le chant de Lyse, les rugissements des boss. Placés dans l'image (gauche, droite), joués sur le volume « Effets » des Paramètres (et coupés avec lui) ; la musique baisse un peu sous les plus gros.",
     "Histoires des giga-boss : « Passer » (Espace, Entrée, Ⓐ ou un clic) ne passe plus que le plan en cours, avec un fondu rapide vers le suivant (au dernier plan, l'histoire se termine) ; « Quitter » (Échap, Ⓑ ou un clic sur son indication) quitte toute l'histoire."
