@@ -2129,6 +2129,13 @@
    "parents": [
     "menu.stats"
    ]
+  },
+  {
+   "id": "stats.sheet.attacks",
+   "version": "2.60.0",
+   "parents": [
+    "stats.sheet"
+   ]
   }
  ]
 }
