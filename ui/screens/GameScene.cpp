@@ -97,6 +97,7 @@ void GameScene::onEnter() {
     if (opt_.training) startTraining();
     if (const LevelRecord* rec = g_.records.get(levelId_); rec && !opt_.training && counted) world_->setReferenceSplits(rec->bestSplits);
     renderer_.build(g_.app.renderer(), res, *world_);
+    Hud::warmUp(*world_);  // 2.60: where Nova and the bosses show (the HUD fades over them)
     if (g_.settings.gameplay.progressBar > 0)
         trackFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return buildProgressTrack(level, content); });
     if (!opt_.editorTest && !opt_.training && counted) {
@@ -1293,6 +1294,7 @@ void GameScene::render(float alpha) {
     RenderOptions opt;
     opt.lighting = g_.settings.graphics.dynamicLighting;
     opt.debug = g_.app.debugOverlay;
+    opt.threats = hud_.threatProbe(*world_, g_.settings.gameplay);  // 2.60: the HUD fades over the boss's attacks
     renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
     if (ghostRun_.active()) ghostRun_.drawWorld(r, view, world_->player().anim.set());
     trail_.draw(r, trailLook_, true);
@@ -1318,7 +1320,22 @@ void GameScene::render(float alpha) {
         keepOut.insert(keepOut.end(), enemyArrowAreas_.begin(), enemyArrowAreas_.end());
         Hud::Place sp = hud_.place(g_.ui, *world_, gs, HudElement::Splits);
         ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut.data(),
-                          static_cast<int>(keepOut.size()));
+                          static_cast<int>(keepOut.size()), hud_.opacity(HudElement::Splits));
+        hud_.setDrawn(HudElement::Splits, ghostRun_.boxDrawn());  // 2.60: it fades like the HUD's blocks
+    }
+    {
+        // 2.60: in a boss arena that fits the view, the camera keeps the vault under the HUD's top
+        // blocks and the floor above its bottom ones, as far as the arena's spare height allows
+        // (where they were really drawn; display only).
+        const float H = g_.ui.screenH();
+        float top = 0.0f, bottom = 0.0f;
+        for (int i = 0; i < Hud::kFadeBlocks; ++i) {
+            const Rect& d = hud_.drawn(i);
+            if (d.w <= 0.0f || d.h <= 0.0f) continue;
+            if (d.y < H * 0.15f) top = std::max(top, d.bottom());
+            else if (d.bottom() > H * 0.85f) bottom = std::max(bottom, H - d.y);
+        }
+        world_->camera().setScreenMargins(top, bottom);
     }
     drawBossArrow(view);
     drawEnemyArrows(view);

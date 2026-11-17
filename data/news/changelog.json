@@ -1,5 +1,14 @@
 {
+  "2.60.1": [
+    "Le HUD s'efface quand il cache l'action : un bloc du HUD (chronomètre, barre de progression, vie et énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé au-dessus du boss, de Nova ou d'une attaque du boss (projectiles, télégraphes, réticules, zones dangereuses) devient presque transparent en un instant, puis revient dès que plus rien n'est dessous. Les giga-boss qui volent sous le chronomètre ou la barre de progression (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles, avec leurs attaques.",
+    "La barre de vie du boss, en bas, ne s'efface que lorsque Nova passe dessous ; les annonces de phase au centre de l'écran ne s'effacent jamais.",
+    "Paramètres › Jeu : nouvelle option « Effacer le HUD quand il cache l'action », activée par défaut.",
+    "Arènes de boss : quand l'arène tient à l'écran avec de la hauteur en trop, la caméra s'en sert pour garder la voûte sous le HUD du haut et le sol au-dessus de la barre de vie du boss, sans jamais couper l'arène ni l'éloigner. Les arènes des giga-boss, plus hautes que l'écran, gardent leur cadrage : le HUD s'y efface."
+  ],
   "2.60.0": [
+    "Pause : « Succès suivis » passe sous la carte, avec les cinq places visibles (une place libre est dessinée en pointillés) et la description de chaque succès ; sans la carte, la colonne garde une ligne de description quand il y a la place.",
+    "Touches de ce niveau : un changement de touche, de bouton ou « Par défaut » s'applique aussi aux niveaux qui avaient exactement les mêmes touches (option activée par défaut, avec le nombre de niveaux concernés).",
+    "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée.",
     "L'histoire de Pyrrhax, « Le Dragon d'Obsidienne », devient un petit dessin animé : ses six plans sont des scènes animées faites de vrais sprites, dans le style du jeu — la Fumerolle et ses frères et sœurs de feu, l'œuf qui éclot dans le nid de cendres, les flammes, la fumée, la pluie de braises, le ventre qui s'illumine, la transformation en dragon de verre noir, puis le grand Pyrrhax devant la dernière frontière.",
     "Chaque personnage joue ses animations image par image (éclosion, souffle de flammes, nuage de fumée, toux, braises avalées, transformation, rugissement), et le décor vit aussi : étoiles qui scintillent, nuages et brume qui dérivent, magma qui respire au pied des pics, braises qui crépitent au sol, cendres soulevées par le vent, lueurs et ombres qui suivent le feu. Les couches défilent à leur propre vitesse, la caméra suit l'action, l'écran tremble et s'illumine au rythme du texte, qui reste aussi long à lire qu'avant.",
     "Pour la revoir : Collection › Galerie › Boss, ou les statistiques des boss (« Revoir l'histoire ») ; une pastille NOUVEAU vous y mène."

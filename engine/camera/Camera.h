@@ -61,6 +61,21 @@ public:
     /// Zoom showing the whole of `area` on the current screen shape.
     float fitZoom(const Rect& area) const;
 
+    /// 2.60, display only: the screen pixels the HUD covers at the top and at the bottom. In a
+    /// boss arena that fits the view (CameraZone::fitArea), its spare height goes there: the
+    /// arena is centred in the band between them, as near as it can without leaving the view
+    /// (never cut, never zoomed out for it, never beyond the level). An arena taller than the view
+    /// (a giga boss's, followed at the widest) is framed as before. Eased in fixedUpdate().
+    void setScreenMargins(float top, float bottom) {
+        marginTop_ = std::max(0.0f, top);
+        marginBottom_ = std::max(0.0f, bottom);
+    }
+    /// The view's centre (y) showing `area` (world; no taller than the view) in the band between
+    /// `top` and `bottom` screen pixels of margin: its middle in the band's middle, or as near as
+    /// the whole area stays in view. `halfH`: half the view's height (world), `scale`: screen
+    /// pixels per world pixel.
+    static float bandCenterY(const Rect& area, float halfH, float scale, float top, float bottom);
+
 private:
     Vec2 clampCenter(Vec2 c, float zoom, int screenW, int screenH) const;
     Vec2 desiredCenter() const;
@@ -89,6 +104,8 @@ private:
     float shakeTime_ = 0.0f;
     Vec2 shakeOffset_;
     mutable int lastScreenW_ = 1920, lastScreenH_ = 1080;
+    float marginTop_ = 0.0f, marginBottom_ = 0.0f;  // asked (screen pixels)
+    float shownTop_ = 0.0f, shownBottom_ = 0.0f;    // eased toward them
 };
 
 }  // namespace cosmic

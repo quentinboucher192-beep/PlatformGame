@@ -214,13 +214,22 @@ void GhostRun::drawWorld(Renderer& r, const WorldView& view, const AnimationSetP
 }
 
 void GhostRun::drawHud(UIContext& ui, const WorldView& view, const Rect& area, float k, bool boxShown, const Rect* keepOut,
-                       int keepOutCount) {
+                       int keepOutCount, float boxOpacity) {
     hudRect_ = {};
+    boxDrawn_ = {};
     if (!visible_) return;
+    {
+        // 2.60: the box fades with the HUD over the action; the names above the ghosts do not.
+        DrawGroup box(ui.r(), boxOpacity);
+        drawBox(ui, area, k, boxShown);
+        boxDrawn_ = box.area();
+    }
+    drawNames(ui, view, keepOut, keepOutCount);
+}
+
+void GhostRun::drawBox(UIContext& ui, const Rect& area, float k, bool boxShown) {
     if (!boxShown || (!settings_.showDelta && !settings_.showPanel) || race_.empty()) {
-        if (boxShown && !race_.empty()) {}  // nothing in the box: only the names
-        else if (boxShown) drawStatus(ui, area, k);
-        drawNames(ui, view, keepOut, keepOutCount);
+        if (boxShown && race_.empty()) drawStatus(ui, area, k);  // otherwise nothing in the box: only the names
         return;
     }
     auto S = [&](float v) { return ui.s(v) * k; };
@@ -399,7 +408,6 @@ void GhostRun::drawHud(UIContext& ui, const WorldView& view, const Rect& area, f
         ui.label("NOUVEAU RECORD !", {box.center().x, cy + S(17)}, fs, gold, Align::Center, FontFace::Title, VAlign::Middle);
     }
     ui.r().popClip();
-    drawNames(ui, view, keepOut, keepOutCount);
 }
 
 void GhostRun::drawStatus(UIContext& ui, const Rect& area, float k) {
