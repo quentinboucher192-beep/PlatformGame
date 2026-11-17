@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "engine/physics/PhysicsWorld.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/enemies/Enemy.h"
@@ -83,6 +84,15 @@ void CombatZoneEntity::init(GameWorld& w) {
             if (o.type == "enemy" && box.contains(o.rect.center())) inside.push_back(o.id);
         if (!inside.empty()) waves_.push_back(inside);
     }
+    // 2.62.2: an ambush when none of its enemies is a boss.
+    ambush_ = !waves_.empty();
+    for (const auto& wave : waves_)
+        for (const auto& id : wave)
+            for (const auto& o : w.level().objects)
+                if (o.id == id && o.type == "enemy") {
+                    const EnemyDefinition* d = w.enemyDefinition(o.propStr("enemy", "glowmite"));
+                    if (o.prop<bool>("boss", false) || (d && d->isBoss)) ambush_ = false;
+                }
 }
 
 void CombatZoneEntity::setDoors(GameWorld& w, bool open) {
@@ -113,6 +123,19 @@ bool CombatZoneEntity::lists(const std::string& objectId) const {
 }
 
 void CombatZoneEntity::onPlayerEnter(GameWorld& w) {
+    if (suspended_ && started_ && !cleared_) {
+        // 2.62.2: Nova is back in the ambush she fell in: it goes on where it was.
+        suspended_ = false;
+        setDoors(w, false);
+        if (obj_.prop<bool>("lockCamera", true)) {
+            CameraZone z;
+            z.area = box.expanded(16);
+            z.clampToArea = true;
+            w.lockCameraZone(&z);
+        }
+        w.hint("L'embuscade reprend", 1.6f);
+        return;
+    }
     if (started_ || cleared_ || waves_.empty()) return;
     started_ = true;
     setDoors(w, false);
@@ -139,6 +162,7 @@ void CombatZoneEntity::onPlayerEnter(GameWorld& w) {
 
 void CombatZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (!started_ || cleared_) return;
+    if (ambush_) bringBack(w);
     if (waveDelay_ > 0.0f) {
         waveDelay_ -= dt;
         if (waveDelay_ <= 0.0f) startWave(w, wave_ + 1);
@@ -157,6 +181,7 @@ void CombatZoneEntity::fixedUpdate(GameWorld& w, float dt) {
         return;
     }
     cleared_ = true;
+    suspended_ = false;
     setDoors(w, true);
     w.lockCameraZone(nullptr);
     if (!obj_.propStr("music").empty()) w.restoreLevelMusic();
@@ -173,6 +198,10 @@ void CombatZoneEntity::fixedUpdate(GameWorld& w, float dt) {
 
 void CombatZoneEntity::onPlayerRespawn(GameWorld& w) {
     if (!started_ || cleared_) return;
+    if (ambush_) {  // 2.62.2 (simulation 14): kept as it is, waiting for Nova
+        suspend(w);
+        return;
+    }
     started_ = false;
     waveDelay_ = 0.0f;
     setDoors(w, true);
@@ -186,8 +215,98 @@ void CombatZoneEntity::onPlayerRespawn(GameWorld& w) {
             }
 }
 
+void CombatZoneEntity::suspend(GameWorld& w) {
+    if (!ambush_ || !started_ || cleared_ || suspended_) return;
+    suspended_ = true;
+    setDoors(w, true);  // she can walk back in; they close behind her (onPlayerEnter)
+    if (obj_.prop<bool>("lockCamera", true)) w.lockCameraZone(nullptr);
+}
+
+size_t CombatZoneEntity::enemyCount() const {
+    size_t n = 0;
+    for (const auto& wave : waves_) n += wave.size();
+    return n;
+}
+
+int CombatZoneEntity::enemiesLeft(GameWorld& w) const {
+    if (!started_) return static_cast<int>(enemyCount());
+    if (cleared_) return 0;
+    int n = 0;
+    for (size_t i = wave_; i < waves_.size(); ++i)
+        for (const auto& id : waves_[i]) {
+            auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id));
+            if (!es || es->defeated()) continue;
+            // The current wave: its enemies still alive; a wave to come: all of its own.
+            if (i > wave_ || es->enemyAlive(w)) ++n;
+        }
+    return n;
+}
+
+std::vector<const Enemy*> CombatZoneEntity::fightingEnemies(GameWorld& w) const {
+    std::vector<const Enemy*> out;
+    if (!started_ || cleared_ || wave_ >= waves_.size()) return out;
+    for (const auto& id : waves_[wave_])
+        if (auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id)))
+            if (const Enemy* e = es->enemy(w); e && e->alive() && !e->dormant()) out.push_back(e);
+    return out;
+}
+
+Vec2 CombatZoneEntity::returnPoint(GameWorld& w, const Enemy& e, Vec2 spawn) const {
+    MoveOptions opt;
+    opt.isEnemy = true;
+    const float hw = e.box.w * 0.5f, h = e.box.h;
+    auto at = [&](Vec2 feet) { return Rect{feet.x - hw, feet.y - h, e.box.w, h}; };
+    auto fits = [&](Vec2 feet) {
+        Rect c = at(feet);
+        return box.containsRect(c) && !w.physics().overlapsSolid(c, opt) && (e.def().flying || w.physics().groundBelow(c, opt));
+    };
+    if (fits(spawn)) return spawn;
+    // The nearest free place of the arena: columns 16 pixels apart (the same order on every
+    // machine); a walker on the first floor down its column, a flyer anywhere along it.
+    Vec2 best = spawn;
+    float bestD = 1e30f;
+    auto consider = [&](Vec2 feet) {
+        const float d = (feet - spawn).lengthSq();
+        if (d < bestD && fits(feet)) {
+            bestD = d;
+            best = feet;
+        }
+    };
+    for (float x = box.x + hw; x <= box.right() - hw; x += 16.0f) {
+        if (e.def().flying) {
+            for (float y = box.y + h; y <= box.bottom(); y += 16.0f) consider({x, y});
+            continue;
+        }
+        const Vec2 from{x, box.y + 1.0f}, to{x, box.bottom() + 2.0f};
+        if (auto t = w.physics().raycast(from, to, true)) consider({x, std::round(from.y + (to.y - from.y) * *t)});
+    }
+    return best;
+}
+
+void CombatZoneEntity::bringBack(GameWorld& w) {
+    // A few pixels of slack: an enemy pressed against a wall or a door stays where it is.
+    const Rect keep = box.expanded(24.0f);
+    for (const auto& wave : waves_)
+        for (const auto& id : wave) {
+            auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id));
+            Enemy* e = es ? es->enemy(w) : nullptr;
+            if (!e || !e->alive() || e->dormant() || e->skyborne() || keep.contains(e->center())) continue;
+            const Vec2 from = e->center();
+            const Vec2 feet = returnPoint(w, *e, es->spawnFeet());
+            e->box.x = feet.x - e->box.w * 0.5f;
+            e->box.y = feet.y - e->box.h;
+            e->prevBox = e->box;
+            e->vel = {0.0f, 0.0f};
+            // Seen: it vanishes where it was and appears in the arena (display only).
+            w.particles().emit("enemy_spawn", from, 1.0f);
+            w.particles().emit("enemy_spawn", e->center(), 1.0f);
+            w.playSound("sounds/summon.wav", e->center(), 0.6f);
+        }
+}
+
 bool CombatZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
     if (action == "activate" || action == "start") {
+        if (suspended_) return true;  // only Nova coming back resumes it (never behind her)
         bool was = playerInside;
         playerInside = true;
         onPlayerEnter(w);

@@ -1,4 +1,8 @@
 {
+  "2.62.3": [
+    "Embuscades : tomber pendant une embuscade ne la fait plus recommencer. Elle attend Nova telle qu'elle l'a laissée (même vague, ennemis vaincus toujours vaincus, les autres à leur place avec leur vie) ; ses portes s'ouvrent pour la laisser revenir et se referment derrière elle. Un ennemi d'une embuscade qui sort de son arène y est ramené : l'embuscade peut toujours être terminée. Records conservés.",
+    "HUD : « Embuscade : N ennemis restants » (et la vague en cours) pendant une embuscade, à placer ou masquer dans l'éditeur du HUD ; flèches violettes vers ses ennemis hors écran (Paramètres › Jeu › Flèches vers les ennemis hors écran)."
+  ],
   "2.62.2": [
     "Didacticiel : il est proposé une fois à tout joueur qui ne l'a pas encore vu, même avec une progression existante (avant, seuls les tout nouveaux joueurs le recevaient). « Passer le didacticiel » reste proposé au départ.",
     "SEGMENTS : la colonne « Record du monde » existe aussi pour les niveaux de la communauté (record vérifié de la même version, lu dans son replay)."

@@ -22,7 +22,7 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 13;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 14;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
                                        // 8: energy costs by strength (charge shot = reference),
@@ -54,6 +54,12 @@ constexpr int kSimulationVersion = 13;  // 6: energy 150, time slow, magnet, air
                                        //    skipped intro that shows her appearing no longer
                                        //    counts her materialisation (watching it gave ~1 s).
                                        //    The rankings are kept: no run became better.
+                                       // 14: (2.62.2) an ambush (an arena without a boss) is not
+                                       //    reset by a fall: it waits as Nova left it, its doors
+                                       //    open to let her back in and closing behind her; an
+                                       //    enemy of an ambush being fought that leaves its arena
+                                       //    is brought back into it. The rankings are kept: a run
+                                       //    without a fall in an ambush plays as before.
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and
@@ -64,7 +70,9 @@ constexpr int kSimulationVersion = 13;  // 6: energy 150, time slow, magnet, air
 ///        10 (2.24: keys per power slot; the moves and powers are the same, earlier runs
 ///        stay valid and comparable), 11 (2.32: the challenge rules only apply to a
 ///        challenge run; every other run plays as before, the records stay) and 12 (2.33:
-///        only additions for the giga boss's level; every earlier run plays as before).
+///        only additions for the giga boss's level; every earlier run plays as before),
+///        13 (2.47.1) and 14 (2.62.2: ambushes kept after a fall; the records stay, as the
+///        player asked).
 constexpr int kRankingGeneration = 8;
 
 struct LevelFingerprint {

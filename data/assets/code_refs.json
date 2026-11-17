@@ -507,7 +507,8 @@
   "sounds/summon.wav": {
    "game/enemies/Enemy.cpp": 1,
    "game/enemies/EnemyAttacks.cpp": 1,
-   "game/enemies/LicheAttacks.cpp": 2
+   "game/enemies/LicheAttacks.cpp": 2,
+   "game/gameplay/entities/ZoneEntities.cpp": 1
   },
   "sounds/supernova.wav": {
    "game/enemies/PhoenixAttacks.cpp": 1
@@ -740,6 +741,9 @@
    "game/levels/ObjectTypes.cpp": 1,
    "game/levels/TerrainRenderer.cpp": 1
   },
+  "ui/ambush_arrow.png": {
+   "game/gameplay/EnemyArrows.cpp": 1
+  },
   "ui/app_icon.png": {
    "engine/core/Application.cpp": 1
   },
@@ -753,7 +757,7 @@
    "ui/screens/GameScene.cpp": 1
   },
   "ui/enemy_arrow.png": {
-   "ui/screens/GameScene.cpp": 1
+   "game/gameplay/EnemyArrows.cpp": 1
   },
   "ui/glyphs/generic.png": {
    "packaging/DependencyCollector.cpp": 1,

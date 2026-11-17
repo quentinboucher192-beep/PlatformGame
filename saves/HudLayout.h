@@ -9,7 +9,8 @@ namespace cosmic {
 /// Elements of the in-game HUD that the player can place and size (Paramètres › HUD).
 /// Splits (2.18): the ghosts' comparison box (live gap and segments panel, Ghost Racing).
 /// Enemies (2.51): « Ennemis vaincus : X / Y », the run's kills against the level's enemies.
-enum class HudElement : int { Vitals, Powers, Collectibles, Timer, Progress, Boss, Splits, Enemies, Count };
+/// Ambush (2.62.2): « Embuscade : N ennemis restants » (and its wave), while an ambush is fought.
+enum class HudElement : int { Vitals, Powers, Collectibles, Timer, Progress, Boss, Splits, Enemies, Ambush, Count };
 constexpr int kHudElements = static_cast<int>(HudElement::Count);
 
 /// Where an element goes. `custom` false: the game's default place; true: the element's

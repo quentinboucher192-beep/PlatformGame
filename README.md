@@ -5,6 +5,10 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.62.3** :
+* Embuscades : une chute ne les fait plus recommencer (reprise à la même vague, ennemis ramenés dans l'arène) ;
+  HUD « Embuscade : N ennemis restants » et flèches violettes vers ses ennemis hors écran.
+
 **Nouveau dans la version 2.62.2** :
 * Didacticiel proposé une fois à tout joueur qui ne l'a pas vu (même avec une progression).
 * SEGMENTS : record du monde aussi pour les niveaux de la communauté.

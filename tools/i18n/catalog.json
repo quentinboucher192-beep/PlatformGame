@@ -16017,9 +16017,45 @@
    ]
   },
   {
+   "fr": "Embuscade : ennemis restants",
+   "where": [
+    "saves/HudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscade : {0} ennemi restant",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscade : {0} ennemi restant · vague {1} / {2}",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscade : {0} ennemis restants",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscade : {0} ennemis restants · vague {1} / {2}",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
    "fr": "Embuscades (vagues battues)",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscades : tomber pendant une embuscade ne la fait plus recommencer. Elle attend Nova telle qu'elle l'a laissée (même vague, ennemis vaincus toujours vaincus, les autres à leur place avec leur vie) ; ses portes s'ouvrent pour la laisser revenir et se referment derrière elle. Un ennemi d'une embuscade qui sort de son arène y est ramené : l'embuscade peut toujours être terminée. Records conservés.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -20711,6 +20747,12 @@
    ]
   },
   {
+   "fr": "HUD : « Embuscade : N ennemis restants » (et la vague en cours) pendant une embuscade, à placer ou masquer dans l'éditeur du HUD ; flèches violettes vers ses ennemis hors écran (Paramètres › Jeu › Flèches vers les ennemis hors écran).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "HUD : « Ennemis vaincus X / Y » pour les missions où il faut vaincre tous les ennemis d'un niveau (à placer dans l'éditeur du HUD).",
    "where": [
     "data/news/changelog.json"
@@ -22813,6 +22855,12 @@
    "fr": "L'effet de victoire se joue dès que Nova atteint la sortie, pendant la scène de fin du niveau (il commençait après elle et le passage aux résultats le cachait).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'embuscade reprend",
+   "where": [
+    "game/gameplay/entities/ZoneEntities.cpp"
    ]
   },
   {

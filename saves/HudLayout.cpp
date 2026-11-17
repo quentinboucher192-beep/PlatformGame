@@ -10,7 +10,7 @@ HudLayout::HudLayout() {
 }
 
 bool HudLayout::defaultFocus(HudElement e) {
-    return e == HudElement::Vitals || e == HudElement::Powers || e == HudElement::Boss;
+    return e == HudElement::Vitals || e == HudElement::Powers || e == HudElement::Boss || e == HudElement::Ambush;
 }
 
 const char* HudLayout::id(HudElement e) {
@@ -23,6 +23,7 @@ const char* HudLayout::id(HudElement e) {
         case HudElement::Boss: return "boss";
         case HudElement::Splits: return "splits";
         case HudElement::Enemies: return "enemies";
+        case HudElement::Ambush: return "ambush";
         default: return "";
     }
 }
@@ -37,6 +38,7 @@ const char* HudLayout::label(HudElement e) {
         case HudElement::Boss: return "Vie du boss";
         case HudElement::Splits: return "Fantômes : écart et segments";
         case HudElement::Enemies: return "Ennemis vaincus";
+        case HudElement::Ambush: return "Embuscade : ennemis restants";
         default: return "";
     }
 }

@@ -4,6 +4,7 @@
 // at the same place become one).
 
 #include <cmath>
+#include <string>
 #include <random>
 
 #include "game/gameplay/EnemyArrows.h"
@@ -45,6 +46,16 @@ bool onBorder(const EnemyArrows::Layout& l, Vec2 p) {
 }
 
 }  // namespace
+
+TEST_CASE("enemy arrows: violet for the enemies of the ambush being fought, the usual arrow for the others") {
+    using namespace EnemyArrows;
+    const Look fight = look(true), usual = look(false);
+    CHECK(std::string(fight.texture) == "ui/ambush_arrow.png");
+    CHECK(std::string(usual.texture) == "ui/enemy_arrow.png");  // unchanged, during an ambush too
+    CHECK(fight.count.r == kAmbushColor.r && fight.count.g == kAmbushColor.g && fight.count.b == kAmbushColor.b);
+    CHECK(usual.count.r == kUsualColor.r && usual.count.g == kUsualColor.g && usual.count.b == kUsualColor.b);
+    CHECK(fight.count.r != usual.count.r || fight.count.g != usual.count.g || fight.count.b != usual.count.b);
+}
 
 TEST_CASE("enemy arrows: a lone enemy out of view, one arrow without a count") {
     EnemyArrows::Layout l = layout1080();

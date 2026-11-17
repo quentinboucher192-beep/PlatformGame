@@ -32,6 +32,7 @@ class AudioSystem;
 class ResourceManager;
 class ContentDatabase;
 class Enemy;
+class CombatZoneEntity;
 struct EnemyDefinition;
 
 enum class WorldMode { Play, Editor, Arena };
@@ -255,6 +256,10 @@ public:
     const CameraZone* bossCameraZone() const { return boss_ && bossZone_ ? &*bossZone_ : nullptr; }
     /// The combat arena holding an enemy (named in its waves, or containing it).
     std::optional<Rect> arenaOf(const Enemy& e) const;
+    /// 2.62.2: the level's ambushes (arenas without a boss, CombatZoneEntity::ambush()), and the
+    /// one being fought (the one Nova is in first), nullptr when none.
+    const std::vector<CombatZoneEntity*>& ambushes() const { return ambushes_; }
+    CombatZoneEntity* activeAmbush() const;
     void setMusic(const std::string& rel);
     void restoreLevelMusic();
     LevelEntity* nearestInteractable() const { return interactable_; }
@@ -365,6 +370,7 @@ private:
     CinematicPlayer cinematic_;
     Player player_;
     std::vector<std::unique_ptr<LevelEntity>> entities_;
+    std::vector<CombatZoneEntity*> ambushes_;  // 2.62.2 (load)
     std::unordered_map<std::string, LevelEntity*> entityById_;
     std::vector<std::unique_ptr<Enemy>> enemies_;
     std::vector<std::unique_ptr<Enemy>> pendingEnemies_;

@@ -46,6 +46,7 @@ bool GameWorld::load(const LevelData& level) {
     hazards_ = BossHazards{};  // its colliders go with the physics below
     physics_.clear();
     entities_.clear();
+    ambushes_.clear();
     entityById_.clear();
     enemies_.clear();
     pendingEnemies_.clear();
@@ -84,6 +85,8 @@ bool GameWorld::load(const LevelData& level) {
     buildStatic();
     createEntities();
     for (auto& e : entities_) e->init(*this);
+    for (auto& e : entities_)
+        if (auto* cz = dynamic_cast<CombatZoneEntity*>(e.get()); cz && cz->ambush()) ambushes_.push_back(cz);
 
     // Player start
     respawn_ = {level_.bounds.x + 64, level_.bounds.y + 64};
@@ -991,6 +994,8 @@ void GameWorld::practiceRespawnNow() {
     hazards_.clear(*this);
     projectiles_.clear();
     pendingProjectiles_.clear();
+    // 2.62.2: an ambush she fell in waits for her as it is, its doors open to let her back in.
+    for (CombatZoneEntity* z : ambushes_) z->suspend(*this);
     const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
     player_.spawn(*this, at, player_.facing < 0.0f, true);
     player_.setInvulnerable(2.5f);  // after the materialisation (0.75 s): blinking, no damage
@@ -1129,6 +1134,16 @@ void GameWorld::failLevel(const std::string& reason) {
     failReason_ = reason;
     timer_.stop();
     player_.controlEnabled = false;
+}
+
+CombatZoneEntity* GameWorld::activeAmbush() const {
+    CombatZoneEntity* first = nullptr;
+    for (CombatZoneEntity* z : ambushes_)
+        if (z->fighting()) {
+            if (z->playerInside) return z;
+            if (!first) first = z;
+        }
+    return first;
 }
 
 std::optional<Rect> GameWorld::arenaOf(const Enemy& e) const {

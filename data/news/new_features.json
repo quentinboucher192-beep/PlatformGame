@@ -2252,6 +2252,13 @@
    "parents": [
     "ghosts.training"
    ]
+  },
+  {
+   "id": "hud.ambush",
+   "version": "2.62.3",
+   "parents": [
+    "settings.hud_editor"
+   ]
   }
  ]
 }

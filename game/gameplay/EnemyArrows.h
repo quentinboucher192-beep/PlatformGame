@@ -46,6 +46,17 @@ struct Arrow {
 /// arrows that would touch become one, for both packs. Sorted clockwise from the top left.
 std::vector<Arrow> layout(const Layout& l, const std::vector<Rect>& enemies);
 
+/// 2.62.2: how the arrow of an enemy out of view looks. An enemy of the ambush being fought
+/// has the ambush's (violet, the colour of its counter in the HUD), met or not; any other
+/// enemy keeps the usual one (amber, once met), during an ambush too.
+struct Look {
+    const char* texture;  // the arrow's image
+    Color count;          // the frame and the text of its « ×N »
+};
+Look look(bool ofActiveAmbush);
+constexpr Color kAmbushColor{196, 140, 255, 255};
+constexpr Color kUsualColor{255, 179, 71, 255};  // the theme's « warm »
+
 /// The enemies already met during this attempt: seen on screen (alive, awake) at least once.
 /// A dead enemy, or one no longer in the level, is forgotten: back, it has to be seen again.
 class Tracker {

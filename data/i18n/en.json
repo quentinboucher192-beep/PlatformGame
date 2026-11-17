@@ -9546,6 +9546,14 @@
     "{0} segments sur {1} en replay": "{0} segments of {1} in replay",
     "{0} segments sur {1} ont leur replay : le montage annonce les autres.": "{0} segments of {1} have their replay: the montage announces the others.",
     "Didacticiel : il est proposé une fois à tout joueur qui ne l'a pas encore vu, même avec une progression existante (avant, seuls les tout nouveaux joueurs le recevaient). « Passer le didacticiel » reste proposé au départ.": "Tutorial: it is offered once to every player who has not seen it yet, even with an existing progression (before, only brand-new players got it). « Skip the tutorial » is still offered at the start.",
-    "SEGMENTS : la colonne « Record du monde » existe aussi pour les niveaux de la communauté (record vérifié de la même version, lu dans son replay).": "SEGMENTS: the « World record » column is also shown for community levels (the checked record of the same version, read from its replay)."
+    "SEGMENTS : la colonne « Record du monde » existe aussi pour les niveaux de la communauté (record vérifié de la même version, lu dans son replay).": "SEGMENTS: the « World record » column is also shown for community levels (the checked record of the same version, read from its replay).",
+    "Embuscade : ennemis restants": "Ambush: enemies left",
+    "Embuscade : {0} ennemi restant": "Ambush: {0} enemy left",
+    "Embuscade : {0} ennemi restant · vague {1} / {2}": "Ambush: {0} enemy left · wave {1} / {2}",
+    "Embuscade : {0} ennemis restants": "Ambush: {0} enemies left",
+    "Embuscade : {0} ennemis restants · vague {1} / {2}": "Ambush: {0} enemies left · wave {1} / {2}",
+    "Embuscades : tomber pendant une embuscade ne la fait plus recommencer. Elle attend Nova telle qu'elle l'a laissée (même vague, ennemis vaincus toujours vaincus, les autres à leur place avec leur vie) ; ses portes s'ouvrent pour la laisser revenir et se referment derrière elle. Un ennemi d'une embuscade qui sort de son arène y est ramené : l'embuscade peut toujours être terminée. Records conservés.": "Ambushes: falling during an ambush no longer restarts it. It waits for Nova as she left it (same wave, defeated enemies stay defeated, the others stay where they are with their health); its doors open to let her back in and close behind her. An ambush enemy that leaves its arena is brought back into it: the ambush can always be finished. Records kept.",
+    "HUD : « Embuscade : N ennemis restants » (et la vague en cours) pendant une embuscade, à placer ou masquer dans l'éditeur du HUD ; flèches violettes vers ses ennemis hors écran (Paramètres › Jeu › Flèches vers les ennemis hors écran).": "HUD: “Ambush: N enemies left” (and the current wave) during an ambush, to place or hide in the HUD editor; violet arrows toward its enemies off screen (Settings › Game › Arrows toward off-screen enemies).",
+    "L'embuscade reprend": "The ambush resumes"
   }
 }
