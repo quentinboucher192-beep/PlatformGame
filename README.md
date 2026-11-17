@@ -5,6 +5,26 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.62.0** :
+* **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
+  lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
+  (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**
+  invitent, acceptent ou refusent les candidatures et excluent (un officier n'exclut pas un officier, personne
+  n'exclut le chef) ; le chef nomme les officiers, modifie le clan et peut le **dissoudre** (avec confirmation).
+* Adhésion **sur invitation**, **sur candidature** (avec un court message) ou **ouverte**, au choix du chef.
+  Chaque règle est décidée par le serveur dans une seule transaction : deux actions simultanées ne font jamais
+  un 51ᵉ membre, deux chefs ou un clan sans chef.
+* **Page d'un clan** : membres et rôles (la **présence** seulement pour les membres du clan, et si le joueur la
+  partage déjà), **meilleure équipe du clan sur chaque niveau EXTRÊME** (Solo pour l'instant, la coopération
+  Duo et Trio arrive bientôt), candidatures (chef et officiers) et **discussion du clan** (un groupe de SOCIAL
+  qui suit ses membres).
+* **Classement des clans** : la somme des meilleurs résultats **vérifiés par le serveur** de chaque clan sur les
+  niveaux EXTRÊME officiels. Le **tag** s'affiche à côté du pseudo dans les classements, le profil et SOCIAL.
+* **Administration › Clans** : un admin renomme ou dissout un clan ; chaque action va au **Journal**.
+* Serveur : migration D1 `0120_clans.sql`, routes `/api/v1/clans/*` et `/api/v1/admin/clans/*`
+  ([`server/openapi.yaml`](server/openapi.yaml)) ; le jeu reste jouable sans compte et sans Internet (la page
+  de son clan reste visible hors ligne, depuis le cache).
+
 **Nouveau dans la version 2.61.1** :
 * Didacticiel : bulles porteuses au-dessus de la terre ferme, traînée d'éclats à hauteur de Nova ; correctif des combinaisons recolorées.
 

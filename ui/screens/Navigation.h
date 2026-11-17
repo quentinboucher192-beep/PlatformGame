@@ -213,6 +213,10 @@ std::unique_ptr<Scene> makeCommunityPublish(GameServices& g, const std::string& 
 /// SOCIAL (in ONLINE): conversations with friends, groups, friends, blocked players.
 /// `conversationId`: open this conversation; `tab`: 0 Discussions, 1 Amis, 2 Bloqués.
 std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversationId = {}, int tab = 0);
+/// ONLINE › CLANS (2.66): the player's clan, the search of the clans, their ranking, the creation
+/// of a clan. `clanId`: that clan's page on arrival. `pushed`: opened over another screen (a
+/// profile, SOCIAL): « Retour » pops it instead of going back to the ONLINE screens.
+std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
 /// SOCIAL › Amis › « Regarder » (2.36, pushed over SOCIAL): a friend's run, live, re-simulated
 /// from the inputs their game streams (read only; the friend is never told).
 std::unique_ptr<Scene> makeSpectate(GameServices& g, const std::string& playerId, const std::string& name, const std::string& avatar);

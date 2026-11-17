@@ -62,6 +62,7 @@
 //   --online-open <what>    with --online: open register | login | settings |
 //                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
+//   --clans [<clan id>]     open ONLINE › CLANS (on that clan's page)
 //   --race <kind:level[:version]>
 //                           the « course à la vérification » of an EXTRÊME level, over
 //                           ONLINE RANKING (official) or ONLINE LEVELS (community)
@@ -833,6 +834,8 @@ int main(int argc, char** argv) {
         app.pushScene(makePlayerProfile(game, pid));
     } else if (has("--social")) {
         app.pushScene(makeSocial(game, value("--social")));
+    } else if (has("--clans")) {
+        app.pushScene(makeClans(game, value("--clans")));
     } else if (has("--online")) {
         app.pushScene(makeOnlineRanking(game, value("--online")));
     } else if (std::string cf = value("--compare"); !cf.empty()) {

@@ -14,6 +14,7 @@
 #include "engine/input/InputManager.h"
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "game/online/Clans.h"
 #include "ui/online/GlobeRenderer.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
@@ -309,7 +310,7 @@ private:
                     return;
                 }
                 msgCache_ = r.fromCache;
-                if (openModal_ == "members" && jstr(current_, "kind") == "group") {
+                if (openModal_ == "members" && jstr(current_, "kind") == "group" && !current_.contains("clan")) {
                     openModal_.clear();
                     renameText_ = jstr(current_, "name");
                     modal_ = Modal::Members;
@@ -563,6 +564,8 @@ private:
             if (unread > 0)
                 pillLeft = OnlineUi::countPill(ui, pillLeft, row.y + ui.s(46), unread, ui.theme().danger, Color::white(), 22, 13) - ui.s(8);
             std::string name = jstr(c, "name");
+            // 2.66: a clan's discussion carries the clan's tag.
+            if (c.contains("clan") && c["clan"].is_object()) name = clans::tagged(name, jstr(c["clan"], "tag"));
             std::string when = c.contains("last_message") && c["last_message"].is_object() ? clockText(jstr(c["last_message"], "created_at")) : "";
             float whenW = when.empty() ? 0.0f : ui.text().measure(when, FontFace::Body, ui.s(13)).x + ui.s(12);
             float room = row.right() - ui.s(12) - whenW - tx - ui.s(6);
@@ -773,11 +776,13 @@ private:
                 const std::string word = presence.empty() ? std::string() : presenceWord(presence);
                 float ww = word.empty() ? 0.0f : ui.text().measure(word, FontFace::Body, ui.s(14)).x + ui.s(14);
                 if (ww > room * 0.45f) ww = 0.0f;  // no room: the pill on the avatar says it
-                float nf = ui.fitFont(name, FontFace::Bold, 17, room - ww);
+                const std::string shown = clans::taggedName(pl);  // 2.66: « [TAG] name »
                 Vec2 ns;
                 {
                     i18n::Verbatim v;  // the name as its player chose it
-                    ns = ui.label(name, {nx, row.y + ui.s(23)}, nf, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+                    float nf = ui.fitFont(shown, FontFace::Bold, 17, room - ww);
+                    ns = ui.label(ui.elide(shown, FontFace::Bold, nf, room - ww), {nx, row.y + ui.s(23)}, nf, ui.theme().text, Align::Left, FontFace::Bold,
+                                  VAlign::Middle);
                 }
                 if (ww > 0.0f)
                     ui.label(word, {nx + ns.x + ui.s(12), row.y + ui.s(23)}, 14, presenceColor(presence), Align::Left, FontFace::Body, VAlign::Middle);
@@ -893,16 +898,21 @@ private:
         // Title bar
         Rect bar{zoneC_.x, zoneC_.y, zoneC_.w, ui.s(70)};
         bool group = jstr(current_, "kind") == "group";
+        // 2.66: a clan's discussion (its members are the clan's: managed from the clan's page).
+        const Json clan = current_.contains("clan") && current_["clan"].is_object() ? current_["clan"] : Json();
         drawConversationAvatar(current_, {bar.x + ui.s(14), bar.y + ui.s(11), ui.s(48), ui.s(48)});
-        std::string title = jstr(current_, "name");
+        std::string title = clan.is_object() ? clans::tagged(jstr(current_, "name"), jstr(clan, "tag")) : jstr(current_, "name");
         {
             i18n::Verbatim playerWords;  // the group's name as its players wrote it
-            ui.label(title, {bar.x + ui.s(74), bar.y + ui.s(26)}, ui.fitFont(title, FontFace::Bold, 22, bar.w - ui.s(420)), ui.theme().text,
+            const float titleFs = ui.fitFont(title, FontFace::Bold, 22, bar.w - ui.s(420));
+            ui.label(ui.elide(title, FontFace::Bold, titleFs, bar.w - ui.s(420)), {bar.x + ui.s(74), bar.y + ui.s(26)}, titleFs, ui.theme().text,
                      Align::Left, FontFace::Bold, VAlign::Middle);
         }
         size_t nMembers = current_.value("members", Json::array()).size();
-        Vec2 subSize = ui.label(group ? std::to_string(nMembers) + " membres" : "Conversation privée", {bar.x + ui.s(74), bar.y + ui.s(50)}, 14,
-                                ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        Vec2 subSize = ui.label(clan.is_object() ? std::to_string(nMembers) + " membres · discussion du clan"
+                                : group          ? std::to_string(nMembers) + " membres"
+                                                 : "Conversation privée",
+                                {bar.x + ui.s(74), bar.y + ui.s(50)}, 14, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         if (!group) {
             std::string other;
             for (const auto& m : current_.value("members", Json::array()))
@@ -920,7 +930,10 @@ private:
             return;
         }
         bx -= ui.s(120);
-        if (group) {
+        if (clan.is_object()) {
+            if (ui.button("clan", {bx - ui.s(140), bar.y + ui.s(16), ui.s(140), ui.s(38)}, "Voir le clan", st))
+                g_.app.pushScene(makeClans(g_, jstr(clan, "id"), true));
+        } else if (group) {
             if (ui.button("members", {bx - ui.s(140), bar.y + ui.s(16), ui.s(140), ui.s(38)}, "Membres", st)) {
                 renameText_ = title;
                 addPick_ = 0;
@@ -1335,8 +1348,14 @@ private:
             bool deleted = jget<bool>(m, "deleted", false);
             std::string id = jstr(m, "id");
             const Json& sender = m["sender"];
-            if (b.showName)
-                ui.label(jstr(sender, "username"), {view.x + ui.s(54), by - ui.s(10)}, 14, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+            if (b.showName) {
+                i18n::Verbatim playerWords;  // « [TAG] name » as the players chose them
+                const std::string who = clans::taggedName(sender);
+                const float room = view.right() - ui.s(18) - (view.x + ui.s(54));
+                const float nf = ui.fitFont(who, FontFace::Bold, 14, room);
+                ui.label(ui.elide(who, FontFace::Bold, nf, room), {view.x + ui.s(54), by - ui.s(10)}, nf, ui.theme().accent, Align::Left, FontFace::Bold,
+                         VAlign::Middle);
+            }
             float bx = b.mine ? view.right() - ui.s(18) - b.w : view.x + ui.s(54);
             if (!b.mine && group && b.showName)
                 ui_.drawAvatar(jstr(sender, "avatar", "avatar_01"), jstr(sender, "id"), {view.x + ui.s(10), by, ui.s(36), ui.s(36)});

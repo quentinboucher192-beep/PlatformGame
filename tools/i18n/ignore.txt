@@ -183,3 +183,16 @@ hop
 robot
 skipped
 souvenir
+ADMIN
+DEV
+MOD
+MODO
+NULL
+ROOT
+STAFF
+SYS
+clan
+clans
+invitations
+messages
+tag

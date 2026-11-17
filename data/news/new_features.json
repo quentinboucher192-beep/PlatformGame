@@ -2166,6 +2166,20 @@
    "parents": [
     "ghosts.training"
    ]
+  },
+  {
+   "id": "online.nav.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "admin.tab.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.admin"
+   ]
   }
  ]
 }

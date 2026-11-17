@@ -76,6 +76,11 @@ export const RULES = {
     raceSubmit: { name: "race_submit", limit: 240, windowSeconds: 3600 },
     // Runs of the daily challenges (2.31), like the records; their replays share replay_upload.
     challengeSubmit: { name: "challenge_submit", limit: 30, windowSeconds: 60 },
+    // Clans (2.66): creations; applications and invitations sent; the other changes (settings,
+    // roles, answers, exclusions, leaving). Their discussion shares social_message.
+    clanCreate: { name: "clan_create", limit: 5, windowSeconds: 3600 },
+    clanApply: { name: "clan_apply", limit: 30, windowSeconds: 3600 },
+    clanWrite: { name: "clan_write", limit: 120, windowSeconds: 3600 },
 } as const satisfies Record<string, RateRule>;
 
 /** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */
