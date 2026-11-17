@@ -470,7 +470,7 @@ def drowned_foundry():
     # A walker: the crust gives way on the two sides only (the Titan fights in the middle, under its
     # presses, on its belts).
     b.giga_arena("titan", "music/titan_boss.ogg", pits=[(4, 16), (80, 92)], flying=False, texts=TITAN_TEXTS,
-                 lights=TITAN_LIGHTS, flicker=0.1, ledges=TITAN_LEDGES, orbit=False, orbs=TITAN_ORBS,
+                 style="embers", lights=TITAN_LIGHTS, flicker=0.1, ledges=TITAN_LEDGES, orbit=False, orbs=TITAN_ORBS,
                  presses=TITAN_PRESSES, belts=TITAN_BELTS, valves=TITAN_VALVES)
     width = b.finish("Le Titan s'est arrêté. Dans la fonderie, les feux s'éteignent enfin.")
     ref = 360  # about six minutes of fight

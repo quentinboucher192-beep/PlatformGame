@@ -295,14 +295,14 @@ def shot2():
 
 def _sky_star(c):
     # the evening sky through the great open hatch of the roof: the star of the centre collapses
-    hatch = Mask().poly([(260, 0), (700, 0), (660, 150), (300, 150)]).get(0.8)
+    hatch = Mask().poly([(250, 72), (710, 72), (670, 214), (290, 214)]).get(0.8)
     sky = Canvas()
-    sky.vgradient([(0.0, "#05040e"), (0.3, "#1a0a26"), (0.6, "#3a1428"), (1.0, "#0a0408")])
-    sky.stars(5821, 300, "#e8e0ff", 0.8, region=(260, 0, 700, 150))
-    collapsed_star(sky, 480, 60, 16)
-    sky.rays(480, 60, 10, 160, 14, "#c88bff", 0.08, 5823, soft=8)
-    for i, (x0, y0, x1, y1) in enumerate(((420, 150, 380, 30), (520, 150, 600, 20), (470, 150, 520, 50))):
-        path = bezier((x0, y0), (x0, y0 - 60), (x1, y1), None, 20)
+    sky.vgradient([(0.0, "#05040e"), (0.2, "#1a0a26"), (0.4, "#3a1428"), (1.0, "#0a0408")])
+    sky.stars(5821, 300, "#e8e0ff", 0.8, region=(250, 72, 710, 214))
+    collapsed_star(sky, 480, 128, 16)
+    sky.rays(480, 128, 10, 140, 14, "#c88bff", 0.08, 5823, soft=8)
+    for i, (x0, y0, x1, y1) in enumerate(((420, 214, 370, 100), (520, 214, 610, 92), (470, 214, 540, 110))):
+        path = bezier((x0, y0), (x0, y0 - 50), (x1, y1), None, 20)
         tm = Mask().poly(tapered(path, 0.5, 2.4)).get(1.4)
         sky.add("#7ab8ff", tm, 0.45)
         a = math.atan2(path[-1][1] - path[-3][1], path[-1][0] - path[-3][0])
@@ -323,13 +323,13 @@ def shot3():
     worker(c, 380, 462, 2.6, "wave", light=AMBER, k=0.8)
     lad = Mask()
     for lx in (250, 268):
-        lad.line([(lx, 462), (lx + 40, 150)], 2.0)
-    for i in range(1, 16):
-        t = i / 16
-        lad.line([(250 + 40 * t, 462 - 312 * t), (268 + 40 * t, 462 - 312 * t)], 1.4)
+        lad.line([(lx, 462), (lx + 40, 214)], 2.0)
+    for i in range(1, 14):
+        t = i / 14
+        lad.line([(250 + 40 * t, 462 - 248 * t), (268 + 40 * t, 462 - 248 * t)], 1.4)
     c.over("#2a221c", lad.get(0.5), 0.95)
     for (t, s) in ((0.35, 1.5), (0.6, 1.3), (0.85, 1.1)):
-        worker(c, 262 + 40 * t, 462 - 312 * t, s, "stand", light="#c8a8ff", k=0.5)
+        worker(c, 262 + 40 * t, 462 - 248 * t, s, "stand", light="#c8a8ff", k=0.5)
     return finish(c, bloom=0.45, threshold=0.7, vignette=0.55)
 
 

@@ -135,7 +135,7 @@ float Enemy::titanFit(const GameWorld& w, const AttackDef& a, bool near, bool fa
     const BossHazards& hz = w.hazards();
     switch (a.type) {
         case AttackType::Press:
-            if (hz.pressCount(uid_) > 0) return 0.1f;
+            if (hz.pressCount(uid_) > 0) return 0.0f;  // never two patterns at once: a column spared stays spared
             return (near ? 0.8f : 1.3f) * (sheltered_ ? 0.6f : 1.0f);
         case AttackType::Missile:
             if (hz.missileCount(uid_) > 0) return 0.2f;

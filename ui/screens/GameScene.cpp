@@ -782,7 +782,8 @@ void GameScene::checkBossStory() {
     ctx.editorTest = opt_.editorTest;
     // Automated runs (scripted input, screenshots that force a boss's attack or phase, or open
     // the pause menu) are never held by a story.
-    ctx.scripted = script_.active() || opt_.forceBossPhase > 0 || !opt_.forceBossAttack.empty() || opt_.openPause || opt_.pauseAfter > 0.0f;
+    ctx.scripted = script_.active() || opt_.forceBossPhase > 0 || forcedPhase_ || !opt_.forceBossAttack.empty() || opt_.openPause ||
+                   opt_.pauseAfter > 0.0f;
     if (!storyDue(b->def(), g_.stories, g_.bossStats, g_.settings.gameplay.bossStories, ctx)) return;
     // Seen from now on (a story skipped counts), kept at once.
     storyBoss_ = b->def().id;
@@ -1126,6 +1127,7 @@ void GameScene::update(float dt) {
                                                                  b->state() == EnemyState::Idle || b->state() == EnemyState::Patrol ||
                                                                  b->state() == EnemyState::Recover))  // 2.57: its rest cut short
             b->forceAttack(*world_, opt_.forceBossAttack);
+    if (opt_.forceBossPhase > 0) forcedPhase_ = true;  // reached later, it stays a capture (no story)
     if (opt_.forceBossPhase > 0)
         if (Enemy* b = world_->activeBoss(); b && b->alive() && !b->dormant()) {
             // A capture never counts (boss statistics, achievements, records), as a training.

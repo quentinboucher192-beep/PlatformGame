@@ -1151,7 +1151,7 @@ void BossHazards::renderTitan(RenderContext& ctx) const {
             for (float x = x0 + 4.0f; x < x0 + w - 4.0f; x += 10.0f)
                 ctx.r.fillWorldRect({x, y - 5.0f, std::min(5.0f, x0 + w - 4.0f - x), 5.0f}, Color{255, 200, 40, a});
             const float k = std::clamp(pr.age / std::max(0.05f, pr.warn), 0.0f, 1.0f);
-            ctx.r.fillWorldRect({x0 + 4.0f, pr.top, w - 8.0f, y - pr.top}, Color{255, 120, 40, static_cast<uint8_t>(6 + 16 * k)}, BlendMode::Additive);
+            ctx.r.fillWorldRect({x0 + 4.0f, pr.top, w - 8.0f, y - pr.top}, Color{255, 120, 40, static_cast<uint8_t>(10 + 24 * k)}, BlendMode::Additive);
             ctx.r.drawWorldGlow({pr.x, y - 4.0f}, pr.half * 0.6f, pr.color.withAlpha(static_cast<uint8_t>(40 + 80 * k)));
         }
         // The rod (chrome) and the head (dark steel, a band of stripes, bolts).

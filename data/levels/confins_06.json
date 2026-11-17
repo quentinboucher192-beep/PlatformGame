@@ -1047,7 +1047,7 @@
     "visible": true,
     "shieldProtects": true,
     "active": false,
-    "style": "plasma",
+    "style": "embers",
     "bounce": true
    }
   },
@@ -1118,7 +1118,7 @@
     "visible": true,
     "shieldProtects": true,
     "active": false,
-    "style": "plasma",
+    "style": "embers",
     "bounce": true
    }
   },
@@ -1423,7 +1423,7 @@
     "visible": true,
     "shieldProtects": true,
     "active": false,
-    "style": "plasma",
+    "style": "embers",
     "bounce": false
    }
   },
@@ -1443,7 +1443,7 @@
     "visible": true,
     "shieldProtects": true,
     "active": false,
-    "style": "plasma",
+    "style": "embers",
     "bounce": false
    }
   },
@@ -1463,7 +1463,7 @@
     "visible": true,
     "shieldProtects": true,
     "active": false,
-    "style": "plasma",
+    "style": "embers",
     "bounce": false
    }
   },
@@ -1483,7 +1483,7 @@
     "visible": true,
     "shieldProtects": true,
     "active": false,
-    "style": "plasma",
+    "style": "embers",
     "bounce": false
    }
   },

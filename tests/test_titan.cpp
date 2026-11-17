@@ -804,6 +804,8 @@ TEST_CASE("titan: in its foundry it fights, walks on its floor, never falls, use
                     if (const AttackDef* a = chosen(*b)) {
                         used.insert(a->type);
                         names.insert(a->name);
+                        // Never two patterns of presses at once (a column spared stays spared).
+                        if (a->type == AttackType::Press) CHECK(m.w->hazards().pressCount(b->uid()) == 0);
                     }
                 last = b->state();
                 if (b->stalled()) break;
