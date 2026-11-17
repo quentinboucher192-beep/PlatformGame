@@ -185,10 +185,9 @@ void Studio::openDraft(const std::string& uid) {
     openDoc(std::move(*d), false);
 }
 
-const Json* Studio::imageInfoOf(int serverId) const {
-    for (const Json& i : adminImages_)
-        if (CreationImageInfo::fromJson(i) && CreationImageInfo::fromJson(i)->creationId() == serverId) return &i;
-    return nullptr;
+const CreationImageInfo* Studio::imageInfoOf(int serverId) const {
+    auto it = adminImages_.find(serverId);
+    return it == adminImages_.end() ? nullptr : &it->second;
 }
 
 void Studio::openServer(const Json& c) {
@@ -230,8 +229,7 @@ void Studio::openServer(const Json& c) {
     OpenDoc& od = *docs_.back();
     od.unsent = false;
     // Its image on the server, when it has one: downloaded (the administrators may read them all).
-    if (const Json* info = imageInfoOf(id)) {
-        auto ii = CreationImageInfo::fromJson(*info);
+    if (const CreationImageInfo* ii = imageInfoOf(id)) {
         od.loadingImage = true;
         const std::string uid = od.doc.uid;
         const CreationImageInfo copy = *ii;
@@ -280,7 +278,7 @@ void Studio::duplicateSelected() {
             }
     } else if (selKey_.rfind("s:", 0) == 0) {
         const int id = std::atoi(selKey_.c_str() + 2);
-        for (const Json& c : server_)
+        for (const Json& c : serverList())
             if (jget<int>(c, "id", 0) == id) {
                 openServer(c);
                 if (OpenDoc* d = active()) {
@@ -307,7 +305,7 @@ void Studio::archiveSelected() {
         // A creation of the server: archived there (it stays won by those who have it).
         int id = selKey_.rfind("s:", 0) == 0 ? std::atoi(selKey_.c_str() + 2) : active()->doc.serverId;
         bool archived = false;
-        for (const Json& c : server_)
+        for (const Json& c : serverList())
             if (jget<int>(c, "id", 0) == id) archived = jget<bool>(c, "archived", false);
         Json body{{"archived", !archived}};
         sending_ = true;
@@ -354,7 +352,7 @@ void Studio::startRename() {
         // Opened first: the new name goes with the creation (its draft, then the server).
         if (selKey_[0] == 'd') openDraft(selKey_.substr(2));
         else
-            for (const Json& c : server_)
+            for (const Json& c : serverList())
                 if (jget<int>(c, "id", 0) == std::atoi(selKey_.c_str() + 2)) openServer(c);
         if (OpenDoc* d = active()) {
             name = d->doc.name;
@@ -587,12 +585,13 @@ void Studio::drawNovaFrame(const Texture& sheet, const DocAnim& anim, int frame,
 // ------------------------------------------------------------------ the server
 
 void Studio::setServerList(const Json& creations, bool loaded) {
-    server_ = creations.is_array() ? creations : Json::array();
+    // Read where ADMINISTRATION › Créations keeps it (no copy each frame).
+    serverList_ = creations.is_array() ? &creations : nullptr;
     const bool first = loaded && !serverLoaded_;
     serverLoaded_ = loaded;
     // The archived state follows the server (an archive done elsewhere).
     for (auto& d : docs_)
-        for (const Json& c : server_)
+        for (const Json& c : serverList())
             if (d->doc.serverId > 0 && jget<int>(c, "id", 0) == d->doc.serverId) d->doc.archived = jget<bool>(c, "archived", false);
     if (first) loadAdminImages();
 }
@@ -602,7 +601,10 @@ void Studio::loadAdminImages() {
     g_.online.get("/api/v1/admin/creations/images", OnlineService::guard(life_, [this](const ApiResult& r) {
                       if (hooks_.lostRole(r)) return;
                       // A server before 2.61 (404 of an unknown route is lostRole's) or offline: no images.
-                      if (r.ok) adminImages_ = jfield(r.data, "images", Json::array());
+                      if (!r.ok) return;
+                      adminImages_.clear();
+                      for (const Json& i : jfield(r.data, "images", Json::array()))
+                          if (auto info = CreationImageInfo::fromJson(i)) adminImages_[info->creationId()] = std::move(*info);
                   }),
                   false);
 }
@@ -1086,7 +1088,7 @@ void Studio::drawExplorer(const Rect& r) {
             e.draft = true;
             if (matches(dr.name, e.kind, e.a, e.b)) entries.push_back(e);
         }
-    for (const Json& c : server_) {
+    for (const Json& c : serverList()) {
         const int id = jget<int>(c, "id", 0);
         if (std::find(represented.begin(), represented.end(), id) != represented.end()) continue;
         auto k = kindFromId(jstr(c, "kind", "suit"));
@@ -1159,7 +1161,7 @@ void Studio::drawExplorer(const Rect& r) {
             } else if (e.key[0] == 'd') {
                 openDraft(e.key.substr(2));
             } else {
-                for (const Json& c : server_)
+                for (const Json& c : serverList())
                     if ("s:" + std::to_string(jget<int>(c, "id", 0)) == e.key) openServer(c);
             }
             if (active()) selKey_ = "o:" + active()->doc.uid;
@@ -1290,7 +1292,7 @@ void Studio::drawExplorer(const Rect& r) {
         for (const StudioDoc& a : archived_)
             if (selKey_ == "d:" + a.uid) archivedSel = true;
         if (OpenDoc* d = active(); d && selKey_ == "o:" + d->doc.uid) archivedSel = archivedSel || d->doc.archived;
-        for (const Json& c : server_)
+        for (const Json& c : serverList())
             if (selKey_ == "s:" + std::to_string(jget<int>(c, "id", 0))) archivedSel = jget<bool>(c, "archived", false);
         if (smallButton("arch", {x + 2 * (third + bgap), y2, third, bh}, archivedSel ? "Restaurer" : "Archiver", any && !sending_)) archiveSelected();
         tip("arch", {x + 2 * (third + bgap), y2, third, bh}, archivedSel ? "Restaurer" : "Archiver",

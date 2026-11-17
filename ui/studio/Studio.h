@@ -19,6 +19,7 @@
 // Keyboard, gamepad (a cursor on the canvas, the tools on the shoulders) and mouse. Display only.
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <optional>
 #include <string>
@@ -82,7 +83,8 @@ public:
     Studio(GameServices& g, Hooks hooks);
     ~Studio();  // the open creations not saved are kept as drafts
 
-    /// The creations of GET /admin/creations (`loaded`: read at least once).
+    /// The creations of GET /admin/creations (`loaded`: read at least once); `creations` must
+    /// outlive the Studio (AdminCreations' list, which owns it).
     void setServerList(const Json& creations, bool loaded);
     /// Automated screenshots: "new:<kind>", "import:<file>", "draw", "onion", "<kind>"...
     void open(const std::string& arg);
@@ -147,7 +149,7 @@ private:
     void send();
     void sendImage(const std::string& uid, const std::vector<uint8_t>& png);
     void loadAdminImages();
-    const Json* imageInfoOf(int serverId) const;
+    const CreationImageInfo* imageInfoOf(int serverId) const;
     void loadDrafts();
     void saveSession() const;
     void loadSession();
@@ -242,9 +244,13 @@ private:
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     OnlineUi online_;
 
-    Json server_ = Json::array();
+    const Json* serverList_ = nullptr;  // GET /admin/creations, kept by AdminCreations
+    const Json& serverList() const {
+        static const Json empty = Json::array();
+        return serverList_ ? *serverList_ : empty;
+    }
     bool serverLoaded_ = false;
-    Json adminImages_ = Json::array();      // GET /admin/creations/images
+    std::map<int, CreationImageInfo> adminImages_;  // GET /admin/creations/images, by creation
     std::vector<StudioDoc> drafts_;        // the drafts of this computer
     std::vector<StudioDoc> archived_;      // the drafts put away (studio/archives)
     bool draftsLoaded_ = false;
