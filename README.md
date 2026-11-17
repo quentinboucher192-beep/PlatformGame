@@ -455,6 +455,13 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.66.1** :
+* **Asterion dessiné en pixel art, partie par partie** : dans CLANS › RAIDS et la fiche d'un événement, le titan
+  est un vrai sprite en calques (crâne, bras, torse, abdomen, jambes, cœur cosmique, aura) qui respire, dont le cœur bat
+  et autour duquel dérivent des particules ; survoler une partie à la souris (ses propres pixels) ou y aller au clavier
+  ou à la manette l'éclaire et affiche son infobulle : nom, gigaboss, état (intact, sous attaque, affaibli, détruit,
+  non découvert) et effet de sa destruction sur Asterion ; un clic sur le bras droit d'un raid en cours ouvre la carte de sa branche.
+
 **Nouveau dans la version 2.66.0** :
 * **Raids de clan, phase 2 : la branche « BRAS DROIT » d'Asterion est jouable** : 8 sous-zones générées par
   `tools/levelgen/raid_bras_droit.py` (Épaule à 3 points d'apparition, Biceps de basalte, Veine de magma et sa coulée,

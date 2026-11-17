@@ -3,7 +3,7 @@
 
 Run from the repository root:  python3 tools/assetgen/environment/generate.py
 Optional args: names of steps to run (tiles platforms backgrounds bg_pyralis bg_glacior decor
-decor_pyralis decor_glacior ui glyphs planets banners bg_aethra aethra_planet confins_planet stories),
+decor_pyralis decor_glacior ui glyphs planets banners bg_aethra aethra_planet confins_planet stories raids),
 --review to also write upscaled review sheets to /tmp/claude-0/assetreview/environment/,
 --no-validate to skip the contract checker.
 
@@ -25,6 +25,7 @@ Produces (paths relative to assets/):
   ui/planets/confins.png, ui/planets/confins_banner.png                       (confins_planet)
   stories/{singularis,pyrrhax,monolithe,kraken,phenix,liche,titan}_{1..6}.png (giga boss stories, 2.51; kraken 2.53, phenix 2.56, liche 2.57, titan 2.58)  (stories)
   stories/<boss>/*.png, animations/stories/<boss>_*.json, data/stories/<boss>.json (animated scenes: pyrrhax 2.60, the six others 2.63)  (stories)
+  ui/raids/asterion.png/.json (the titan of the clan raids in layers, its states and hit masks)  (raids)
 All generators are deterministic (fixed seeds).
 """
 import os
@@ -53,6 +54,7 @@ MODULES = {
     "aethra_planet": ("planet_aethra", "generate"),
     "confins_planet": ("planet_confins", "generate"),
     "stories": ("stories", "generate"),
+    "raids": ("raid_asterion", "generate"),
 }
 
 
@@ -64,7 +66,7 @@ def load_step(name):
 
 ORDER = ["tiles", "platforms", "backgrounds", "bg_pyralis", "bg_glacior", "decor", "decor_pyralis",
          "decor_glacior", "ui", "glyphs", "planets", "banners", "bg_aethra", "aethra_planet",
-         "confins_planet", "stories"]
+         "confins_planet", "stories", "raids"]
 
 
 def main(argv):

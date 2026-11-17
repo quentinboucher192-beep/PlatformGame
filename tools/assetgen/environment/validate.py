@@ -291,6 +291,9 @@ def check():
     # The giga bosses' story paintings (2.51): every one a story names, 960x540, within budget.
     import stories
     errs += stories.check()
+    # Asterion, the titan of the clan raids: its sheet within budget, the same bytes at every render.
+    import raid_asterion
+    errs += raid_asterion.check()
     return errs
 
 

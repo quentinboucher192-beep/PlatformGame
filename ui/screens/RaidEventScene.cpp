@@ -24,6 +24,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/widgets/AsterionFigure.h"
 
 namespace cosmic {
 
@@ -80,6 +81,7 @@ public:
             drawAside(aside);
         }
         drawStatus();
+        titan_.drawTooltip(g_);
         ui.popId();
         ui.inputEnabled = top;
         if (modal_ != Modal::None) drawModal();
@@ -172,12 +174,23 @@ private:
                 pill(ui, px, cy, raids::stateLabel(st), stateFill(st), stateText(st), left.right());
         }
         float y = left.y + ui.s(62);
-        fit(ui, e.displayName, {left.x, y + ui.s(26)}, 52, left.w, kText, FontFace::Title);
+        // The titan at the right of the title and the story when there is room (the texts end before it).
+        const float figW = left.w > ui.s(820) ? std::min(left.w * 0.3f, ui.s(330)) : 0.0f;
+        const float textRoom = figW > 0.0f ? left.w - figW - ui.s(18) : left.w, figTop = y;
+        fit(ui, e.displayName, {left.x, y + ui.s(26)}, 52, textRoom, kText, FontFace::Title);
         y += ui.s(58);
-        fit(ui, e.displayTitle, {left.x, y + ui.s(14)}, 22, left.w, kPeach, FontFace::Title);
+        fit(ui, e.displayTitle, {left.x, y + ui.s(14)}, 22, textRoom, kPeach, FontFace::Title);
         y += ui.s(38);
-        const auto desc = wrap(ui, jstr(data_, "description"), FontFace::Body, 17, std::min(left.w, ui.s(900)), 3);
+        const auto desc = wrap(ui, jstr(data_, "description"), FontFace::Body, 17, std::min(textRoom, ui.s(900)), 3);
         y += drawLines(ui, desc, {left.x, y}, 17, ui.s(25), Color{216, 219, 245, 255}) + ui.s(12);
+        if (figW > 0.0f) {
+            const float figH = std::max(y - ui.s(12) - figTop, ui.s(236));
+            // A click on the branch being played (raid running) opens its map, like the button below.
+            const std::vector<std::string> open = st == raids::State::Running ? std::vector<std::string>{"bras_droit"} : std::vector<std::string>{};
+            if (!titan_.draw(g_, "asterion", {left.right() - figW, figTop, figW, figH}, asterion::statesOf(at(data_, "event")), open).empty())
+                g_.app.pushScene(makeRaidBranch(g_, id_));
+            y = std::max(y, figTop + figH + ui.s(12));
+        }
         if (st == raids::State::Running) {
             // 2.65 (phase 2): the branch « BRAS DROIT » is playable; its map opens the combat.
             const Rect band{left.x, y, left.w, ui.s(54)};
@@ -608,6 +621,7 @@ private:
     GameServices& g_;
     std::string id_;
     MenuBackground bg_;
+    AsterionFigure titan_;  // beside the title and the story, its tooltip drawn last
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     Json data_, prefs_;
     bool loaded_ = false, busy_ = false;

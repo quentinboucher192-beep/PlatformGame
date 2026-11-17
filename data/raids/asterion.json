@@ -1,0 +1,16 @@
+{
+  "format": "cosmic.raid_body",
+  "version": 1,
+  "raid": "asterion",
+  "comment": "The body of the titan Asterion (ui/widgets/AsterionFigure, game/online/AsterionBody.h): its branches in focus order, their gigaboss (a name, never translated) and what destroying them does to the titan (description). The ids are the layers of assets/ui/raids/asterion.json. The state of each part comes from the server (body of an event), intact without it.",
+  "parts": [
+    {"id": "crane", "name": "CRÂNE", "boss": "Skullmaw", "description": "Détruire le crâne aveugle Asterion : ses attaques perdent en précision."},
+    {"id": "bras_gauche", "name": "BRAS GAUCHE", "boss": "Dreadfang", "description": "Détruire le bras gauche lui arrache ses griffes : plus de balayages."},
+    {"id": "bras_droit", "name": "BRAS DROIT", "boss": "Pyroclast", "description": "Détruire le bras droit éteint son poing de magme : plus de pluies de lave."},
+    {"id": "torse", "name": "TORSE", "boss": "Heartbreaker", "description": "Détruire le torse brise sa cage thoracique : la voie du cœur s'ouvre."},
+    {"id": "abdomen", "name": "ABDOMEN", "boss": "Voidworm", "description": "Détruire l'abdomen chasse ses parasites : plus de renforts."},
+    {"id": "jambe_gauche", "name": "JAMBE GAUCHE", "boss": "Graviton", "description": "Détruire la jambe gauche coupe ses générateurs : plus de pièges de gravité."},
+    {"id": "jambe_droite", "name": "JAMBE DROITE", "boss": "Titanus", "description": "Détruire la jambe droite le fait chanceler : ses charges ralentissent."},
+    {"id": "coeur", "name": "CŒUR COSMIQUE", "description": "Le cœur d'Asterion : le dernier combat, une fois ses branches tombées."}
+  ]
+}

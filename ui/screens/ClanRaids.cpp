@@ -181,6 +181,7 @@ void ClanRaids::draw(const Rect& body) {
         drawHistory({left.x + 2 * (bw + bgap), by, bw, bh}, lay);
     }
     drawNotes(aside);
+    titan_.drawTooltip(g_);
     ui.popId();
 }
 
@@ -192,7 +193,17 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     const float pad = ui.s(26);
     const bool titan = r.w > ui.s(760);
     const float titanW = titan ? std::min(r.w * 0.34f, ui.s(400)) : 0.0f;
-    if (titan) drawTitan(ui, {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(32)}, ui.time());
+    if (titan) {
+        Json heroJson;
+        if (lay.hero)
+            for (const Json& w : at(data_, "world"))
+                if (jstr(w, "id") == lay.heroId) heroJson = w;
+        // The world event running: a click on its playable branch opens the branch's map.
+        const bool running = lay.hero && raids::stateAt(raids::parseEvent(heroJson), now) == raids::State::Running;
+        const std::vector<std::string> open = running ? std::vector<std::string>{"bras_droit"} : std::vector<std::string>{};
+        if (!titan_.draw(g_, "asterion", {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(32)}, asterion::statesOf(heroJson), open).empty())
+            g_.app.pushScene(makeRaidBranch(g_, lay.heroId));
+    }
     const float x = r.x + pad, right = r.right() - (titan ? titanW + ui.s(28) : pad), room = right - x;
     const float by = r.bottom() - ui.s(22) - ui.s(48);  // the buttons' top
     float y = r.y + ui.s(22);

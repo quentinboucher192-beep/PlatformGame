@@ -806,6 +806,12 @@
   },
   "ui/planets/sun.png": {
    "ui/screens/PlanetMapScene.cpp": 1
+  },
+  "ui/raids/asterion.json": {
+   "ui/widgets/AsterionFigure.cpp": 2
+  },
+  "ui/raids/asterion.png": {
+   "ui/widgets/AsterionFigure.cpp": 1
   }
  }
 }

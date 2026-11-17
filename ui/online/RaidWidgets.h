@@ -1,8 +1,8 @@
 #pragma once
 // Pieces shared by the screens of the clan raids (CLANS › RAIDS, the sheet of an event,
 // ADMINISTRATION › Raids): the colours of the maquette, texts measured into their room
-// (smaller, then shortened, or wrapped on a counted number of lines), pills, sections, the
-// titan of the hero card, and the times shown in the computer's own zone.
+// (smaller, then shortened, or wrapped on a counted number of lines), pills, sections, and the
+// times shown in the computer's own zone (the titan: ui/widgets/AsterionFigure).
 
 #include <cstdint>
 #include <string>
@@ -45,8 +45,6 @@ float section(UIContext& ui, const Rect& r, const std::string& title, Color titl
 /// The colours of a state's pill.
 Color stateFill(raids::State s);
 Color stateText(raids::State s);
-/// The titan's silhouette (decoration of the hero card) inside `r`.
-void drawTitan(UIContext& ui, const Rect& r, float time);
 /// Toggle chips that wrap from (x, y) to `right`: each measured to its label. Returns the index
 /// clicked (-1 when none) and sets `bottom` under the last row.
 int chips(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, const std::vector<bool>& on,

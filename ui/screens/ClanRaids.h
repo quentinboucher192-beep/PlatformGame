@@ -20,6 +20,7 @@
 #include "engine/core/Json.h"
 #include "engine/core/Math.h"
 #include "game/online/Raids.h"
+#include "ui/widgets/AsterionFigure.h"
 
 namespace cosmic {
 
@@ -70,6 +71,7 @@ private:
     bool loaded_ = false, cache_ = false, acting_ = false;
     int gen_ = 0, unread_ = 0;
     int64_t skew_ = 0;
+    AsterionFigure titan_;  // the titan of the hero card, its tooltip drawn last
     std::string error_;
     float timer_ = 0.0f;
 

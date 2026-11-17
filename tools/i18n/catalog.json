@@ -980,6 +980,12 @@
    ]
   },
   {
+   "fr": "ABDOMEN",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
    "fr": "Abonnements",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -1581,6 +1587,12 @@
    "fr": "Aethra — Le Lac aux Reflets",
    "where": [
     "data/levels/aethra_02.json"
+   ]
+  },
+  {
+   "fr": "Affaibli",
+   "where": [
+    "game/online/AsterionBody.cpp"
    ]
   },
   {
@@ -3209,6 +3221,12 @@
     "game/online/Raids.cpp",
     "game/online/Raids.h",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion en vrai pixel art : dans CLANS › RAIDS et la fiche d'un événement, le titan est désormais un sprite détaillé, partie par partie (crâne Skullmaw, bras Dreadfang et Pyroclast, torse Heartbreaker, abdomen Voidworm, jambes Graviton et Titanus, cœur cosmique, aura) qui respire, dont le cœur bat et autour duquel dérivent des particules. Survolez une partie à la souris ou allez-y au clavier ou à la manette : elle s'éclaire et son infobulle donne son nom, son gigaboss, son état (sous attaque, affaiblie, détruite ou non découverte) et l'effet de sa destruction sur Asterion.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -6192,6 +6210,7 @@
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/online/AsterionBody.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "game/raid/RaidBranch.cpp",
@@ -6577,9 +6596,16 @@
   {
    "fr": "BRAS DROIT",
    "where": [
+    "data/raids/asterion.json",
     "data/raids/asterion/bras_droit/branch.json",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "BRAS GAUCHE",
+   "where": [
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -10437,6 +10463,12 @@
    ]
   },
   {
+   "fr": "Clic ou validation : carte de la branche",
+   "where": [
+    "ui/widgets/AsterionFigure.cpp"
+   ]
+  },
+  {
    "fr": "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -13272,6 +13304,12 @@
    ]
   },
   {
+   "fr": "CRÂNE",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
    "fr": "Crânes maudits",
    "where": [
     "data/enemies/liche.json"
@@ -13662,6 +13700,12 @@
    "fr": "CŒUR APAISÉ",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "CŒUR COSMIQUE",
+   "where": [
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -14795,6 +14839,7 @@
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
+    "game/online/AsterionBody.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
     "packaging/PackageExporter.cpp",
@@ -17197,6 +17242,42 @@
    ]
   },
   {
+   "fr": "Détruire l'abdomen chasse ses parasites : plus de renforts.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruire la jambe droite le fait chanceler : ses charges ralentissent.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruire la jambe gauche coupe ses générateurs : plus de pièges de gravité.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruire le bras droit éteint son poing de magme : plus de pluies de lave.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruire le bras gauche lui arrache ses griffes : plus de balayages.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruire le crâne aveugle Asterion : ses attaques perdent en précision.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
    "fr": "Détruire le soufflet est (un autre groupe)",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
@@ -17206,6 +17287,18 @@
    "fr": "Détruire le soufflet ouest (un groupe)",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Détruire le torse brise sa cage thoracique : la voie du cœur s'ouvre.",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "Détruit · gigaboss vaincu",
+   "where": [
+    "game/online/AsterionBody.cpp"
    ]
   },
   {
@@ -21160,6 +21253,12 @@
    ]
   },
   {
+   "fr": "Gigaboss : {0}",
+   "where": [
+    "ui/widgets/AsterionFigure.cpp"
+   ]
+  },
+  {
    "fr": "Gigaboss : {0} · prochaine version",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -22617,6 +22716,7 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/ghost/ReplayLibrary.cpp",
     "game/levels/LevelData.cpp",
+    "game/online/AsterionBody.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/Clans.cpp",
     "game/online/DailyChallenges.cpp",
@@ -23481,6 +23581,12 @@
    ]
   },
   {
+   "fr": "inconnu",
+   "where": [
+    "game/online/AsterionBody.cpp"
+   ]
+  },
+  {
    "fr": "inconnu de cette version du jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -23738,6 +23844,12 @@
    "fr": "Insulte ou harcèlement",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Intact",
+   "where": [
+    "game/online/AsterionBody.cpp"
    ]
   },
   {
@@ -24245,6 +24357,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "JAMBE DROITE",
+   "where": [
+    "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "JAMBE GAUCHE",
+   "where": [
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -27120,6 +27244,12 @@
    "fr": "Le Cœur",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Le cœur d'Asterion : le dernier combat, une fois ses branches tombées.",
+   "where": [
+    "data/raids/asterion.json"
    ]
   },
   {
@@ -34218,6 +34348,12 @@
    "fr": "Non connecté.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Non découvert",
+   "where": [
+    "game/online/AsterionBody.cpp"
    ]
   },
   {
@@ -47993,6 +48129,12 @@
    ]
   },
   {
+   "fr": "Sous attaque",
+   "where": [
+    "game/online/AsterionBody.cpp"
+   ]
+  },
+  {
    "fr": "Sous l'aurore éternelle de Glacior, des plaines de givre s'étendent jusqu'au lac gelé où rôde le Cryowyrm. Gravissez les falaises de glace grâce au triple saut et bravez le blizzard.",
    "where": [
     "data/levels/glacior_01.json"
@@ -51392,6 +51534,12 @@
    "fr": "Tornade",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "TORSE",
+   "where": [
+    "data/raids/asterion.json"
    ]
   },
   {
