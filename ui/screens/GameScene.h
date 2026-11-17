@@ -8,6 +8,8 @@
 
 #include "engine/core/Scene.h"
 #include "engine/input/InputScript.h"
+#include "game/achievements/Achievements.h"
+#include "game/gameplay/EnemyArrows.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
@@ -61,6 +63,8 @@ public:
     void onExit() override;
     void onResume() override;
     void handleEvent(const SDL_Event& e) override;
+    /// The giga boss whose story is being told over the run ("" when none): the run waits.
+    const std::string& storyBoss() const { return storyBoss_; }
     void fixedUpdate(float dt) override;
     void update(float dt) override;
     void render(float alpha) override;
@@ -97,6 +101,9 @@ public:
     void setGhostsVisible(bool on) { ghostRun_.setVisible(on); }
     void applyGhostSettings();
     GameWorld* world() { return world_.get(); }
+    /// 2.51: the achievements' counters with what this run has added so far, as leaving it now
+    /// would count them (the pause menu's « Succès suivis »); the saved ones when it counts for nothing.
+    AchievementStats liveAchievementStats() const;
     /// What the player has seen of the level so far (the pause menu's map).
     const ExploredMap& explored() const { return explored_; }
     /// The level as it is, drawn small in `dst` (the pause map): `win` is the part of the world shown.
@@ -147,8 +154,22 @@ private:
     /// Boss fights of the run: statistics, sound of a phase beaten without a hit.
     BossFightTracker bossFights_;
     void bossFeedback();
+    // « Histoire des giga-boss » (2.51): the fight against a giga boss whose story has not been
+    // seen starts: its story is told over the run, which waits (not a step is simulated nor an
+    // input recorded until it ends, as under the pause menu). `storyBoss_`: the boss whose story
+    // is due or being told; `storyOpen_`: its scene was opened (cleared when it closes).
+    void checkBossStory();
+    std::string storyBoss_;
+    bool storyOpen_ = false;
     /// A boss out of view: a textured arrow on the screen's border, turned towards it.
     void drawBossArrow(const WorldView& view);
+    Rect bossArrowRect_;  // where it was drawn last (empty: not drawn), kept clear by the enemy arrows
+    /// 2.52: the enemies already met that are out of view (display only): who was seen is noted
+    /// each frame; one arrow per pack on the border (« ×N »), clear of the HUD, of the boss arrow,
+    /// of the ghosts' box and of the banners.
+    void drawEnemyArrows(const WorldView& view);
+    EnemyArrows::Tracker metEnemies_;    // a new attempt is a new scene: nobody met yet
+    std::vector<Rect> enemyArrowAreas_;  // where they were drawn last (the ghosts' names keep clear)
     std::future<std::vector<Vec2>> raceRouteFuture_;
     // Ghost Racing: ghosts of the run, this level version's hash, my best ghost's time.
     void startGhosts();
@@ -169,6 +190,9 @@ private:
     int64_t pbGhostMs_ = 0;
     // Achievements: what this run adds to the lifetime counters (once, at its end).
     void noteAchievementStats(bool completed, const RecordUpdate* upd);
+    /// Adds this run's counters to `a` (false: a run that counts for nothing); `uses`: the
+    /// player's power uses of the run.
+    bool addRunCounters(AchievementStats& a, bool completed, int64_t& uses) const;
     bool statsNoted_ = false;
     // Boss training (PlayOptions::bossTraining): ends when the phase chosen (or the boss) is
     // beaten, or at the player's first death; then its end screen. Never a record.

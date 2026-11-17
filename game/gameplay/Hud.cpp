@@ -104,6 +104,7 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
             Place p = at(HudElement::Progress);
             drawProgress(ui, w, p.o, p.k, p.width);
         }
+        if (hudVisible(settings, HudElement::Enemies)) drawEnemies(ui, w, at(HudElement::Enemies));
         if (settings.showInputHints) drawInteractPrompt(ui, w, view);
     }
     if (messagesVisible(settings)) drawMessages(ui, w);
@@ -159,6 +160,33 @@ Hud::Place Hud::place(UIContext& ui, const GameWorld& w, const GameplaySettings&
             p.o = {left + p.width * 0.5f, y};
             break;
         }
+        case HudElement::Enemies: {
+            // On the left, under the power icons: the first of these places where it covers no
+            // other element shown (in either mode) and stays on screen.
+            GameplaySettings shown = s;
+            shown.focusMode = false;
+            auto freeAt = [&](Vec2 o) {
+                Place q = p;
+                q.o = o;
+                Rect a = area(ui, w, e, q);
+                if (a.right() > W || a.bottom() > H) return false;
+                for (int i = 0; i < kHudElements; ++i) {
+                    auto other = static_cast<HudElement>(i);
+                    if (other == e || !hudVisible(shown, other)) continue;
+                    Rect b = area(ui, w, other, place(ui, w, s, other));
+                    if (b.w > 0.0f && a.intersects(b)) return false;
+                }
+                return true;
+            };
+            const Vec2 spots[] = {{ui.s(40), ui.s(262)}, {ui.s(40), ui.s(352)}, {ui.s(40), H * 0.42f}, {ui.s(40), H * 0.56f}};
+            p.o = spots[0];
+            for (const Vec2& o : spots)
+                if (freeAt(o)) {
+                    p.o = o;
+                    break;
+                }
+            break;
+        }
         default: break;
     }
     return p;
@@ -187,6 +215,21 @@ Rect Hud::area(UIContext& ui, const GameWorld& w, HudElement e, const Place& p) 
         case HudElement::Progress: return {o.x - p.width * 0.5f - S(36), o.y - S(50), p.width + S(36) + S(104), S(108)};
         case HudElement::Boss: return {o.x - S(456), o.y - S(44), S(912), S(78)};
         case HudElement::Splits: return {o.x - S(460), o.y, S(460), S(300)};
+        case HudElement::Enemies: {
+            const int total = w.stats().totalEnemies;
+            if (total <= 0) return {};  // a level without enemies: nothing to count
+            // As wide as the longest numbers of this level (the kills get one digit more:
+            // split slimes count too), so that it never grows while the run goes on.
+            int digits = 1;
+            for (int t = total; t >= 10; t /= 10) ++digits;
+            auto eights = [](int n) {
+                int v = 0;
+                for (int i = 0; i < n; ++i) v = v * 10 + 8;
+                return v;
+            };
+            const float tw = ui.text().measure(enemiesText(eights(digits + 1), eights(digits)), FontFace::Bold, S(20)).x;
+            return {o.x, o.y, S(14) + S(28) + S(10) + tw + S(10) + S(24) + S(14), S(42)};
+        }
         default: return {};
     }
 }
@@ -394,6 +437,23 @@ void Hud::drawCollectibles(UIContext& ui, GameWorld& w, Vec2 o, float k) {
         st.color = s.relics > 0 ? Color{255, 217, 138, 255} : ui.theme().textDim;
         ui.text().draw(relics, {x + S(180), y + S(17)}, st);
     }
+}
+
+void Hud::drawEnemies(UIContext& ui, GameWorld& w, const Place& p) {
+    const Rect a = area(ui, w, HudElement::Enemies, p);
+    if (a.w <= 0.0f) return;  // no enemy in this level
+    auto S = [&](float v) { return ui.s(v) * p.k; };
+    const RunStats& s = w.stats();
+    // Every enemy of the level beaten (the rule of « Aucun survivant »: kills >= enemies).
+    const bool all = enemiesCleared(s.kills, s.totalEnemies);
+    const Color green{120, 230, 140, 255};
+    ui.r().fillRoundedRect(a, a.h * 0.5f, {6, 10, 22, 160});
+    ui.r().drawRoundedRect(a, a.h * 0.5f, all ? green.withAlpha(200) : Color{255, 255, 255, 40}, S(1.5f));
+    const float cy = a.center().y;
+    ui.icon(kHudIcons, EnemyIcon, 16, {a.x + S(14), cy - S(14), S(28), S(28)}, all ? green : Color::white());
+    TextStyle st = style(ui, p.k * 20, all ? green : ui.theme().text, FontFace::Bold, Align::Left, VAlign::Middle);
+    ui.text().draw(enemiesText(s.kills, s.totalEnemies), {a.x + S(14) + S(28) + S(10), cy}, st);
+    if (all) ui.icon(kHudIcons, Check, 16, {a.right() - S(14) - S(24), cy - S(12), S(24), S(24)}, green);
 }
 
 void Hud::drawProgress(UIContext& ui, GameWorld& w, Vec2 o, float k, float width) {

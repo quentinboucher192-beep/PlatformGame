@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "pyrrhax",
+ "title": "Le Dragon d'Obsidienne",
+ "color": "#ff6a3a",
+ "accent": "#ffc47a",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "nest",
+   "image": "stories/pyrrhax_1.png",
+   "text": "Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets.",
+   "focus": [
+    0.5,
+    0.6
+   ],
+   "zoom": 1.12,
+   "particles": "embers",
+   "glow": "#ffb066"
+  },
+  {
+   "scene": "smoke",
+   "image": "stories/pyrrhax_2.png",
+   "text": "Ses frères crachaient des flammes. Lui ne soufflait qu'un nuage de fumée. On l'appelait « la Fumerolle ».",
+   "focus": [
+    0.42,
+    0.55
+   ],
+   "zoom": 1.1,
+   "particles": "dust",
+   "glow": "#d8cfc4"
+  },
+  {
+   "scene": "ember_rain",
+   "image": "stories/pyrrhax_3.png",
+   "text": "La nuit où l'étoile du centre s'effondra, une pluie de braises tomba sur les Confins.",
+   "focus": [
+    0.5,
+    0.4
+   ],
+   "zoom": 1.1,
+   "particles": "embers",
+   "glow": "#ff8a3a"
+  },
+  {
+   "scene": "swallow",
+   "image": "stories/pyrrhax_4.png",
+   "text": "La Fumerolle les avala une à une, jusqu'à ce que son ventre brille comme une forge.",
+   "focus": [
+    0.5,
+    0.56
+   ],
+   "zoom": 1.14,
+   "particles": "embers",
+   "glow": "#ffb347"
+  },
+  {
+   "scene": "glass_scales",
+   "image": "stories/pyrrhax_5.png",
+   "text": "Le feu d'une étoile mourante n'est pas fait pour un petit dragon : ses écailles devinrent du verre noir.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.12,
+   "particles": "sparks",
+   "glow": "#ff6a3a"
+  },
+  {
+   "scene": "frontier",
+   "image": "stories/pyrrhax_6.png",
+   "text": "Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu.",
+   "focus": [
+    0.5,
+    0.58
+   ],
+   "zoom": 1.06,
+   "particles": "embers",
+   "glow": "#ff6a3a"
+  }
+ ]
+}

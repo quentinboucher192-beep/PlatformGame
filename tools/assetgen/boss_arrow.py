@@ -1,7 +1,10 @@
-"""Off-screen boss arrow (assets/ui/boss_arrow.png): drawn on the screen border, turned
-towards a boss that is out of view. Points right; the game rotates it. Drawn large then
-reduced (smooth edges): a faceted blade of red energy with a white-hot spine, a dark
-outline and a soft glow, in the colours of the boss bars.
+"""Off-screen arrows, drawn on the screen border and turned towards what is out of view.
+Point right; the game rotates them. Drawn large then reduced (smooth edges): a faceted blade
+of energy with a white-hot spine, a dark outline and a soft glow.
+
+* assets/ui/boss_arrow.png: a boss, in the red of the boss bars (blinking in game).
+* assets/ui/enemy_arrow.png (2.52): the enemies already met, in the amber of the HUD (steady,
+  smaller, one per pack with its count).
 
     python3 tools/assetgen/boss_arrow.py
 """
@@ -11,15 +14,16 @@ import os
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-OUT = os.path.join(ROOT, "assets", "ui", "boss_arrow.png")
 S = 4  # supersampling
 SIZE = 128
 
-DEEP = (150, 20, 46)
-RED = (255, 64, 96)
-HOT = (255, 168, 120)
-GOLD = (255, 244, 200)
-OUTLINE = (24, 4, 12)
+# Colours of each arrow: deep, main, hot, gold (spine and rim), outline, glow.
+PALETTES = {
+    "boss_arrow.png": dict(DEEP=(150, 20, 46), RED=(255, 64, 96), HOT=(255, 168, 120), GOLD=(255, 244, 200),
+                           OUTLINE=(24, 4, 12), GLOW=(255, 80, 110)),
+    "enemy_arrow.png": dict(DEEP=(150, 74, 10), RED=(255, 166, 48), HOT=(255, 214, 128), GOLD=(255, 250, 218),
+                            OUTLINE=(30, 14, 2), GLOW=(255, 176, 64)),
+}
 
 
 def lerp(a, b, t):
@@ -30,7 +34,7 @@ def sc(pts):
     return [(x * S, y * S) for x, y in pts]
 
 
-def main():
+def draw(name, DEEP, RED, HOT, GOLD, OUTLINE, GLOW):
     n = SIZE * S
     img = Image.new("RGBA", (n, n), (0, 0, 0, 0))
 
@@ -44,7 +48,7 @@ def main():
     # Glow behind.
     glow = Image.new("RGBA", (n, n), (0, 0, 0, 0))
     gd = ImageDraw.Draw(glow)
-    gd.polygon(sc([(124, 64), (30, 8), (50, 64), (30, 120)]), fill=(255, 80, 110, 255))
+    gd.polygon(sc([(124, 64), (30, 8), (50, 64), (30, 120)]), fill=GLOW + (255,))
     glow = glow.filter(ImageFilter.GaussianBlur(7 * S))
     img = Image.alpha_composite(img, glow)
     img = Image.alpha_composite(img, glow)  # twice: a brighter halo
@@ -96,9 +100,15 @@ def main():
     d.line(sc([(upper[0] + 3, upper[1] + 3), (tip[0] - 4, tip[1] - 1)]), fill=GOLD + (210,), width=2 * S)
 
     out = img.resize((SIZE, SIZE), Image.LANCZOS)
-    os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    out.save(OUT, optimize=True)
-    print("wrote", os.path.relpath(OUT, ROOT), out.size)
+    path = os.path.join(ROOT, "assets", "ui", name)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    out.save(path, optimize=True)
+    print("wrote", os.path.relpath(path, ROOT), out.size)
+
+
+def main():
+    for name, palette in PALETTES.items():
+        draw(name, **palette)
 
 
 if __name__ == "__main__":

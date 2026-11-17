@@ -169,4 +169,40 @@ describe("admin role", () => {
         expect((await api("POST", `${V}/admin/players/${kes.id}/role`, { token: nova.token, body: { admin: "yes" } })).status).toBe(400);
         expect((await api("POST", `${V}/admin/players/${kes.id}/role`, { token: nova.token, body: { admin: true, role: "admin" } })).status).toBe(400);
     });
+
+    it("shows the game version each player's client declared, and the latest installer (2.51)", async () => {
+        const nova = await registerPlayer("NovaRider");
+        const kes = await registerPlayer("Kestrel");
+        await makeAdmin(nova);
+        await env.DB.prepare(
+            `INSERT INTO client_releases (version, version_key, platform, file_key, file_name, size, sha256, notes, published_at)
+             VALUES ('2.51.0', 2051000, 'windows', 'releases/x.exe', 'x.exe', 1, ?1, '', '2026-11-16T00:00:00Z')`,
+        )
+            .bind("0".repeat(64))
+            .run();
+        const versionOf = async (id: string) =>
+            (await api("GET", `${V}/admin/players`, { token: nova.token })).body.data.players.find((p: { id: string }) => p.id === id);
+        // Never declared: null.
+        expect((await versionOf(kes.id)).client_version).toBeNull();
+        // Declared on a session renewal (the game's start), from X-Cosmic-Client.
+        const r = await api("POST", `${V}/auth/refresh`, {
+            body: { refresh_token: kes.refresh },
+            headers: { "x-cosmic-client": "CosmicPlatformer/2.50.0" },
+        });
+        expect(r.status).toBe(200);
+        const row = await versionOf(kes.id);
+        expect(row.client_version).toBe("2.50.0");
+        expect(typeof row.client_version_at).toBe("string");
+        // A malformed or foreign header is ignored (declarative, never trusted for anything else).
+        await api("POST", `${V}/auth/refresh`, {
+            body: { refresh_token: r.body.data.session.refresh_token },
+            headers: { "x-cosmic-client": "CosmicPlatformer/2.50.0; DROP TABLE", "user-agent": "curl/8.0" },
+        });
+        expect((await versionOf(kes.id)).client_version).toBe("2.50.0");
+        const list = await api("GET", `${V}/admin/players`, { token: nova.token });
+        expect(list.body.data.latest_client_version).toBe("2.51.0");
+        // Players never see it, not even their own public profile.
+        const pub = await api("GET", `${V}/players/${kes.id}`, { token: nova.token });
+        expect(JSON.stringify(pub.body)).not.toContain("client_version");
+    });
 });

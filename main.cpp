@@ -38,6 +38,9 @@
 //   --stats-day <YYYY-MM-DD>
 //                           count the runs of this session on that day (automated checks of the
 //                           statistics: real runs spread over several days)
+//   --story <boss>[:<shot>|:titre]
+//                           tell the story of a giga boss over the main menu (from that shot,
+//                           1 = the first, its line typed; « titre »: the title card revealed)
 //   --boss-stats [<boss>[:<clip>]]
 //                           open the boss statistics (that boss, that clip of its animation)
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
@@ -104,6 +107,7 @@
 #include "ui/online/OnlineToasts.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
+#include "ui/screens/BossStoryScene.h"
 
 using namespace cosmic;
 
@@ -736,7 +740,10 @@ int main(int argc, char** argv) {
         app.pushScene(makeGhostSetup(game, gs));
     } else if (has("--achievements")) {
         if (std::string a = value("--achievements"); !a.empty())
-            game.onlineOpen = a == "list" ? "ach-list" : a.rfind("zoom:", 0) == 0 ? "ach-" + a : "ach:" + a;
+            game.onlineOpen = a == "list"          ? "ach-list"
+                              : a == "suggestions" ? "ach-suggestions"  // 2.52: the Suggestions tab
+                              : a.rfind("zoom:", 0) == 0 ? "ach-" + a
+                                                         : "ach:" + a;
         app.pushScene(makeAchievements(game));
     } else if (has("--collection")) {
         // --collection [0-4][:detail] (tabs: Vestiaire, Route, Musiques, Galerie, Replays; details such as
@@ -760,6 +767,18 @@ int main(int argc, char** argv) {
         if (auto colon = st.find(':'); colon != std::string::npos) game.onlineOpen = "stats:" + st.substr(colon + 1);
         app.pushScene(makeMainMenu(game));
         app.pushScene(makeStatistics(game, st.empty() ? 0 : std::atoi(st.c_str())));
+    } else if (std::string st = value("--story"); !st.empty()) {
+        // --story <boss>[:<shot>|:titre] (screenshots): the story over the main menu.
+        std::string boss = st.substr(0, st.find(':'));
+        int at = -1;
+        if (size_t c = st.find(':'); c != std::string::npos) {
+            std::string w = st.substr(c + 1);
+            at = w == "titre" || w == "title" ? 1000 : std::max(0, std::atoi(w.c_str()) - 1);
+            if (const BossStory* s = game.stories.find(boss); s && at > static_cast<int>(s->shots.size())) at = static_cast<int>(s->shots.size());
+        }
+        app.pushScene(makeMainMenu(game));
+        if (auto story = makeBossStory(game, boss, at)) app.pushScene(std::move(story));
+        else Log::error("Pas d'histoire pour le boss '{}'", boss);
     } else if (has("--boss-stats")) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;

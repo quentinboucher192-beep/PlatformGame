@@ -443,7 +443,11 @@ private:
         ui.label(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", {c.x, y}, ui.fitFont(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", FontFace::Bold, 22, c.w),
                  ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(38);
-        float rowH = ui.s(52), gap = ui.s(6);
+        // The rows share what the settings below leave (2.52: eight elements): never under 44
+        // pixels at 100 %, never pushing the settings off the panel.
+        float gap = ui.s(6);
+        const float below = ui.s(48) + gap + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);
+        float rowH = std::clamp((c.bottom() - y - below) / static_cast<float>(kHudElements) - gap, ui.s(44), ui.s(52));
         for (int i = 0; i < kHudElements; ++i) {
             auto e = static_cast<HudElement>(i);
             char sub[96];
@@ -452,7 +456,14 @@ private:
                               work_.hud[e].custom && (e != HudElement::Progress || work_.progressBar == 3) ? " · déplacé" : "");
             else
                 std::snprintf(sub, sizeof sub, "Masqué");
-            if (ui.listItem("el" + std::to_string(i), {c.x, y, c.w, rowH}, HudLayout::label(e), i == selected_, sub)) selected_ = i;
+            const Rect row{c.x, y, c.w, rowH};
+            if (ui.listItem("el" + std::to_string(i), row, HudLayout::label(e), i == selected_, sub)) selected_ = i;
+            // « NOUVEAU » after the name of the element added in 2.52 (seen once focused).
+            if (e == HudElement::Enemies && ui.newBadge("el" + std::to_string(i), row, "hud.enemies", false, true)) {
+                const float nameW = ui.text().measure(HudLayout::label(e), FontFace::Bold, ui.s(21)).x;
+                if (row.x + ui.s(16) + nameW + ui.s(10) + ui.newPillWidth(true) <= row.right() - ui.s(10))
+                    ui.drawNewPill(row.x + ui.s(16) + nameW + ui.s(10) + ui.newPillWidth(true), row.y + row.h * 0.3f, true);
+            }
             y += rowH + gap;
         }
         // The level's messages (hints, signs, titles): not a place on screen, just shown or not.

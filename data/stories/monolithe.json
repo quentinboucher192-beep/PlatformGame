@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "monolithe",
+ "title": "Le Golem Primordial",
+ "color": "#ffb347",
+ "accent": "#9fd8a0",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "dust_pebble",
+   "image": "stories/monolithe_1.png",
+   "text": "Avant les planètes, il n'y avait que de la poussière. Et dans cette poussière, un caillou.",
+   "focus": [
+    0.5,
+    0.52
+   ],
+   "zoom": 1.14,
+   "particles": "dust",
+   "glow": "#e8d2a6"
+  },
+  {
+   "scene": "rune",
+   "image": "stories/monolithe_2.png",
+   "text": "Les premiers enfants des Confins le trouvèrent dans une caverne et y gravèrent une rune, pour jouer : « Protège-nous ».",
+   "focus": [
+    0.5,
+    0.58
+   ],
+   "zoom": 1.1,
+   "particles": "sparks",
+   "glow": "#ffb347"
+  },
+  {
+   "scene": "rising",
+   "image": "stories/monolithe_3.png",
+   "text": "Chaque génération ajouta la sienne. Rune après rune, le caillou grandit… et se leva.",
+   "focus": [
+    0.5,
+    0.45
+   ],
+   "zoom": 1.1,
+   "particles": "dust",
+   "glow": "#ffb347"
+  },
+  {
+   "scene": "village",
+   "image": "stories/monolithe_4.png",
+   "text": "Il veilla sur le village de la caverne pendant dix mille ans. Il connaissait chaque rire.",
+   "focus": [
+    0.52,
+    0.5
+   ],
+   "zoom": 1.08,
+   "particles": "sparks",
+   "glow": "#ffd27a"
+  },
+  {
+   "scene": "ships",
+   "image": "stories/monolithe_5.png",
+   "text": "Puis les gens partirent vers les étoiles. Personne ne pensa à effacer la rune.",
+   "focus": [
+    0.5,
+    0.35
+   ],
+   "zoom": 1.1,
+   "particles": "stars",
+   "glow": "#cfe6ff"
+  },
+  {
+   "scene": "alone",
+   "image": "stories/monolithe_6.png",
+   "text": "Le Monolithe garde toujours le cœur des Confins. Il ne reconnaît plus personne : tout visiteur est un étranger.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.14,
+   "particles": "dust",
+   "glow": "#ffb347"
+  }
+ ]
+}

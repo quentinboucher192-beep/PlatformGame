@@ -9,12 +9,14 @@
 #include "engine/core/Application.h"
 #include "game/achievements/Achievements.h"
 #include "game/cosmetics/Collection.h"
+#include "game/content/BossStories.h"
 #include "game/content/ContentDatabase.h"
 #include "game/ghost/GhostStore.h"
 #include "game/ghost/ReplayLibrary.h"
 #include "game/ghost/SegmentHistory.h"
 #include "game/ghost/TrainingSegments.h"
 #include "game/levels/RatingService.h"
+#include "game/online/AccountMigration.h"
 #include "game/online/CampaignRevisions.h"
 #include "game/records/KeptRecords.h"
 #include "game/online/EnemyRevisions.h"
@@ -57,10 +59,14 @@ public:
     Settings settings;
     Progression progression;
     RecordsManager records;
-    /// Boss statistics (victories, phases and fights without being hit).
+    /// Boss statistics (victories, phases and fights without being hit), and the giga bosses
+    /// whose story has been told.
     BossStats bossStats;
     /// 2.54: the player's statistics (main menu → Statistiques; saves/stats.json, this computer only).
     PlayStatsStore playStats;
+    /// « Histoire des giga-boss » (2.51): the stories told before the first fight against each
+    /// giga boss (data/stories).
+    BossStories stories;
     /// Ghost Racing: the replays kept on this computer (my runs, downloads, chosen files)
     /// and the history of my segments.
     GhostStore ghosts;
@@ -97,18 +103,27 @@ public:
     Json progressCopyBody() const;
     /// 2.50 « Migrer vers un nouveau compte »: the files of a copy (`files` of the body above,
     /// sent by the old account's game) added to this computer's saves, the best of each side
-    /// kept (game/online/ProgressMerge). The saves are copied first to
-    /// saves/avant_restauration_<date>/. False (and `error`) when a save could not be written.
-    bool restoreProgressCopy(const Json& files, std::string* error = nullptr);
-    /// The server offers the migration (GET /players/me/migration answers): checked at each
-    /// login; until then, nothing about it is shown (no button that a server without it fails).
-    bool migrationAvailable = false;
+    /// kept (game/online/ProgressMerge). The save files are copied first, as they are, to
+    /// saves/avant_restauration_<date>/ (its name in `keptFolder`; nothing changes if that
+    /// fails). `sha256` names the copy: a copy already restored here (saves/restored_copies.json,
+    /// or merged earlier in this session) is not added again (AlreadyRestored). Failed (and
+    /// `error`) when the saves could not be kept (`keptFolder` empty: nothing changed) or a save
+    /// could not be written (merged in memory, written by the next save).
+    enum class RestoreOutcome { Restored, AlreadyRestored, Failed };
+    RestoreOutcome restoreProgressCopy(const Json& files, const std::string& sha256, std::string* error = nullptr,
+                                       std::string* keptFolder = nullptr);
+    /// Whether the server offers the migration (GET /players/me/migration answers, asked once per
+    /// account and server: until then nothing about it is shown, no button that a server without
+    /// it would fail) and the progression waiting to be restored here. Updated every frame.
+    MigrationState migration;
     void sendProgressCopy(std::function<void(const ApiResult&)> done = {});
-    /// Every frame: sends a copy when one is due (connected, 10 minutes after the last one).
+    /// Every frame: sends a copy when one is due (connected, 10 minutes after the last one), and
+    /// asks the server whether it offers the migration (MigrationState).
     void updateProgressCopy(float dt);
     bool progressCopyDue = false;
     float progressCopyWait_ = 20.0f;
     bool progressCopyBusy_ = false;
+    std::set<std::string> copiesMergedThisSession_;  // 2.50: by SHA-256 (restoreProgressCopy)
     /// Collection (2.19): cosmetic rewards unlocked by the stars, equipped items, and the
     /// discoveries of the jukebox and the gallery. Display only.
     CosmeticCatalog cosmetics;

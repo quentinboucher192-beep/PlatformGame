@@ -21,6 +21,7 @@
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/BossBadge.h"
 #include "ui/online/RatingWidgets.h"
+#include "ui/screens/BossStoryScene.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -175,6 +176,20 @@ private:
         }
     }
 
+    /// « Revoir l'histoire » (2.51): a giga boss with a story, already met or whose story was told.
+    bool storyReplayable(const EnemyDefinition& d, const BossRecord* rec) const {
+        if (!isGigaBoss(d) || !g_.stories.find(d.id)) return false;
+        return g_.bossStats.storySeen(d.id) || (rec && rec->fights > 0) || g_.collection.met.count(d.id) > 0;
+    }
+    /// Told again over the sheet (no run is touched); seen from now on.
+    void openStory(const std::string& bossId) {
+        if (auto story = makeBossStory(g_, bossId)) {
+            g_.bossStats.markStorySeen(bossId);
+            g_.bossStats.save();
+            g_.app.pushScene(std::move(story));
+        }
+    }
+
     bool beaten(const EnemyDefinition& d) const {
         const BossRecord* r = g_.bossStats.find(d.id);
         return r && r->kills > 0;
@@ -266,8 +281,23 @@ private:
         Rect box{x, y, std::min(ui.s(360), w * 0.32f), topH};
         drawAnimation(box, d);
         float rx = box.right() + ui.s(26), rw = x + w - rx;
-        float tf = ui.fitFont(d.name, FontFace::Title, 32, rw, 0.6f);
-        ui.label(ui.elide(d.name, FontFace::Title, tf, rw), {rx, y + ui.s(20)}, tf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        // 2.51 « Revoir l'histoire »: a giga boss already met (or whose story was told), at the
+        // right of its name; the name keeps the room left.
+        float nameRoom = rw;
+        if (storyReplayable(d, rec)) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.fontSize = 16;
+            const std::string lbl = "Revoir l'histoire";
+            const float bw = std::min(rw * 0.45f, ui.text().measure(lbl, FontFace::Bold, ui.s(16)).x + ui.s(44));
+            const Rect sb{rx + rw - bw, y, bw, ui.s(40)};
+            if (ui.button("story", sb, lbl, st)) openStory(d.id);
+            ui.newBadge("story", sb, "stats.story", true, true);
+            nameRoom = rw - bw - ui.s(16);
+        }
+        float tf = ui.fitFont(d.name, FontFace::Title, 32, nameRoom, 0.6f);
+        ui.label(ui.elide(d.name, FontFace::Title, tf, nameRoom), {rx, y + ui.s(20)}, tf, ui.theme().text, Align::Left, FontFace::Title,
+                 VAlign::Middle);
         std::string title = d.bossTitle.empty() ? d.description : d.bossTitle;
         if (!title.empty())
             ui.label(ui.elide(title, FontFace::Body, fz(ui, 17), rw), {rx, y + ui.s(56)}, fz(ui, 17), ui.theme().textDim, Align::Left, FontFace::Body,

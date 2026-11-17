@@ -133,6 +133,9 @@ class GameScene;
 std::unique_ptr<Scene> makeGhostOptions(GameServices& g, GameScene* game);
 /// Main menu → Succès: every achievement on a spider web (categories, stars), or as a list.
 std::unique_ptr<Scene> makeAchievements(GameServices& g);
+/// 2.51: Succès over a paused run (pause › Succès suivis › Modifier), on its « Suggestions »
+/// tab; « Retour » goes back to the pause menu.
+std::unique_ptr<Scene> makeAchievementsFromPause(GameServices& g);
 /// Main menu → Collection: Vestiaire, Route des étoiles, Musiques (jukebox), Galerie.
 std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
 /// The Collection's Vestiaire on one reward (its category, the item selected), over the

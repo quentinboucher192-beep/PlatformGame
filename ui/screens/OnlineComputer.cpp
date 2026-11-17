@@ -35,10 +35,7 @@ void OnlineComputerTab::load() {
     if (loading_ || !g_.online.usable()) return;
     loading_ = true;
     // 2.50: the progression of an old account migrated here, waiting to be restored.
-    g_.online.get("/api/v1/players/me/progress-restore", OnlineService::guard(life_, [this](const ApiResult& r) {
-                      restore_ = r.ok ? jfield(r.data, "restore", Json()) : Json();
-                  }),
-                  false);
+    g_.migration.refreshRestore(g_.online);
     g_.online.get("/api/v1/players/me/device", OnlineService::guard(life_, [this](const ApiResult& r) {
                       loading_ = false;
                       if (!r.ok) return say_(r.message, true);
@@ -141,7 +138,7 @@ void OnlineComputerTab::draw(const Rect& c) {
 
         // ----- 2.50: migrate to a new account (right column, above the alerts), when the server offers it
         float rx = c.x + leftW + ui.s(30), rw = c.right() - rx, ry = c.y;
-        if (g_.migrationAvailable) {
+        if (g_.migration.available()) {
             ui.label("Migrer vers un nouveau compte", {rx, ry + ui.s(11)}, 19, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
             ry += ui.s(30);
             ry += ui.labelWrapped("Le compte ne sert que sur cet ordinateur. Sur un autre, créez un nouveau compte : un code préparé ici lui "
@@ -159,8 +156,8 @@ void OnlineComputerTab::draw(const Rect& c) {
                 ry += ui.s(42) + ui.s(8);
                 return hit;
             };
-            if (restore_.is_object() && sideButton("restore", "Restaurer la progression transférée", true))
-                g_.app.pushScene(makeProgressRestore(g_, restore_));
+            const Json& restore = g_.migration.pendingRestore();
+            if (restore.is_object() && sideButton("restore", "Restaurer la progression transférée", true)) g_.app.pushScene(makeProgressRestore(g_, restore));
             if (sideButton("prepare", "Préparer une migration", false)) g_.app.pushScene(makeMigrationPrepare(g_));
             if (sideButton("recover", "Récupérer un ancien compte", false)) g_.app.pushScene(makeMigrationRecover(g_));
             ry += ui.s(10);

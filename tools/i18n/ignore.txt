@@ -161,3 +161,10 @@ sob
 stats
 pb
 info
+kept
+migration
+a shot without text
+no boss
+no shots
+not an object
+unreadable
