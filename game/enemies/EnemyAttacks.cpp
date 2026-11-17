@@ -223,6 +223,10 @@ bool Enemy::forceAttack(GameWorld& w, const std::string& attackId) {
 }
 
 void Enemy::beginAttack(GameWorld& w) {
+    if (hasTitan_ && titan_ == TitanStage::Vent) {  // 2.58: an attack forced during its vents (editor test) closes them
+        titan_ = TitanStage::None;
+        heat_ = 0.0f;
+    }
     state_ = EnemyState::Telegraph;
     stateTimer_ = attack_->telegraph * telegraphScale() / std::max(0.3f, phaseSpeed());
     if (def_.isBoss) stateTimer_ = std::max(0.3f, stateTimer_);  // always readable

@@ -264,8 +264,8 @@
       "telegraphAnim": "telegraph_special",
       "attackAnim": "roar",
       "arms": 2,
-      "burstInterval": 1.3,
-      "duration": 0.6,
+      "burstInterval": 1.0,
+      "duration": 0.4,
       "knockback": 320
     },
     {
@@ -407,9 +407,10 @@
       "cooldown": 0.0,
       "telegraphAnim": "telegraph_special",
       "attackAnim": "roar",
-      "arms": 2,
-      "burstInterval": 1.3,
-      "duration": 0.6,
+      "arms": 3,
+      "stagger": 0.7,
+      "burstInterval": 1.0,
+      "duration": 0.4,
       "knockback": 320
     },
     {

@@ -1126,7 +1126,9 @@ void GameScene::update(float dt) {
         if (Enemy* b = world_->activeBoss(); b && b->alive() && (b->state() == EnemyState::Chase || b->state() == EnemyState::Alert ||
                                                                  b->state() == EnemyState::Idle || b->state() == EnemyState::Patrol ||
                                                                  b->state() == EnemyState::Recover))  // 2.57: its rest cut short
-            b->forceAttack(*world_, opt_.forceBossAttack);
+            // 2.58: the Titan's presses and missiles shown one pattern at a time (as in the fight).
+            if (!b->isTitan() || (world_->hazards().pressCount(b->uid()) == 0 && world_->hazards().missileCount(b->uid()) == 0 && !b->venting()))
+                b->forceAttack(*world_, opt_.forceBossAttack);
     if (opt_.forceBossPhase > 0) forcedPhase_ = true;  // reached later, it stays a capture (no story)
     if (opt_.forceBossPhase > 0)
         if (Enemy* b = world_->activeBoss(); b && b->alive() && !b->dormant()) {

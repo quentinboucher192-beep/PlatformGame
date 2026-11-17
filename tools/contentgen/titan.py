@@ -113,7 +113,7 @@ def attacks():
              origin=MUZZLE, color="#ff6c6c", beamTexture="flame", beamWidth=20),
         # Every press but one: the column spared is lit green, never far from her.
         _atk("sauf_une", "Toutes les presses sauf une", "press", 2, 1600, 0.75, 0.3, 0.5, 8.0, *HORN, arms=2,
-             burstInterval=1.3, duration=0.6, knockback=320),
+             burstInterval=1.0, duration=0.4, knockback=320),
         _atk("missiles_4", "Salve de missiles", "missile", 2, 1600, 0.7, 0.3, 0.5, 6.5, *POD, count=4, **missile),
         # 5 Surchauffe
         # Its belts carry her away from it, toward the magma of the broken crust.
@@ -131,8 +131,9 @@ def attacks():
              spread=60, radius=880, knockback=260),
         _atk("derniere_salve", "Dernière salve", "missile", 2, 3000, 0.6, 0.3, 0.3, 0.0, *POD, count=8, burstInterval=0.8,
              stagger=0.25, duration=0.8, radius=34, knockback=260),
-        _atk("dernieres_presses", "Dernières presses", "press", 2, 3000, 0.6, 0.3, 0.3, 0.0, *HORN, arms=2,
-             burstInterval=1.3, duration=0.6, knockback=320),
+        # A march (one press at a time): with the rest of its last salvo, a column is always free.
+        _atk("dernieres_presses", "Dernières presses", "press", 2, 3000, 0.6, 0.3, 0.3, 0.0, *HORN, arms=3, stagger=0.7,
+             burstInterval=1.0, duration=0.4, knockback=320),
         _atk("dernier_laser", "Dernier laser", "laser", 2, 3000, 0.8, 1.6, 0.3, 0.0, *CANNON, laserLength=1000,
              sweepDegrees=150, origin=MUZZLE, color="#f0fcff", beamTexture="star", beamWidth=24),
     ]
