@@ -1,9 +1,457 @@
 # Cosmic Platformer
 
-Jeu de plateforme 2D en C++20 / SDL3, avec éditeur de niveaux, éditeur d'ennemis,
-système de planètes, records et partage de niveaux par fichiers `.cplanet`.
-Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
-mondiaux, les records vérifiés et un globe terrestre interactif.
+<p align="center"><b>Nova traverse six mondes, apprend dix-neuf pouvoirs et tient tête à des giga-boss à huit phases.</b><br>
+Un jeu de plateforme 2D nerveux et précis, en C++20 / SDL3 : seul ou à deux ou trois, au clavier, à la
+manette ou à la souris, en français ou en anglais — et entièrement jouable hors ligne.</p>
+
+<p align="center"><img src="docs/media/hero_pyrrhax.gif" width="640" alt="Nova esquive les rayons de Pyrrhax, le dragon d'obsidienne, dans La Gueule du Dragon"></p>
+
+> **Télécharger (Windows)** : l'installateur est produit par la CI à chaque version — onglet **Actions**
+> du dépôt › workflow *Build* › dernier passage réussi › artefact **CosmicPlatformer-Setup** (ou
+> **CosmicPlatformer-portable-windows**, sans installation). Une fois le jeu installé, ses *Notifications*
+> annoncent chaque nouvelle version : l'installateur se télécharge, est vérifié (SHA-256), puis
+> « Lancer l'installateur ». Sous Linux, ou pour compiler vous-même : voir [Compiler](#compiler).
+
+<p align="center">
+<a href="#dix-neuf-pouvoirs">Pouvoirs</a> ·
+<a href="#six-mondes-et-une-campagne">Mondes</a> ·
+<a href="#giga-boss-et-histoires-animées">Giga-boss</a> ·
+<a href="#le-premier-envol-avec-bip">Didacticiel</a> ·
+<a href="#fantômes-et-entraînement">Fantômes</a> ·
+<a href="#fiches-des-boss-et-statistiques">Statistiques</a> ·
+<a href="#succès-et-vestiaire">Succès</a> ·
+<a href="#défis-du-jour-de-la-semaine-et-du-mois">Défis</a> ·
+<a href="#éditeurs-et-niveaux-de-la-communauté">Éditeurs</a> ·
+<a href="#coopération-à-deux-ou-trois">Coopération</a> ·
+<a href="#clans">Clans</a> ·
+<a href="#cosmic-online">Cosmic Online</a> ·
+<a href="#historique-des-versions">Versions</a>
+</p>
+
+## Dix-neuf pouvoirs
+
+Nova court, saute, glisse, s'accroupit sous les attaques et frappe — puis chaque monde lui apprend
+quelque chose de nouveau : **Dash** et **Ruée aérienne**, **Onde énergétique**, **Bouclier**,
+**Téléportation**, **Planeur**, **Grappin**, **Frappe sismique**, **Tir chargé**, **Triple saut**,
+**Ralenti temporel**, **Bombe plasma**, **Aimant**, **Lame boomerang** (et sa version chargée),
+**Nova de givre**, **Leurre holographique**, **Balise de rappel**… Quatre pouvoirs portés à la fois
+dans la plupart des niveaux : on choisit lesquels, et des **stations de pouvoirs** proposent ceux dont
+la suite a besoin, si bien qu'on ne reste jamais bloqué. Chaque emplacement de pouvoir a sa touche,
+que vous choisissez.
+
+<p align="center">
+<img src="docs/media/power_wave_dash.gif" width="49%" alt="Dans la Canopée des Spores, Nova lance une Onde énergétique sur une luciole puis file en Dash">
+<img src="docs/media/power_boomerang_frost.gif" width="49%" alt="Nova lance la Lame boomerang, gèle un ennemi avec la Nova de givre, puis s'éloigne en Dash">
+</p>
+<p align="center"><sub>À gauche, l'Onde puis le Dash dans « La Canopée des Spores » ; à droite, la Lame boomerang, la Nova de
+givre (l'ennemi gelé devient une plateforme) et un Dash, sur Aethra.</sub></p>
+
+Le **Guide des pouvoirs** (menu pause) montre chacun d'eux joué en boucle par le vrai moteur du jeu,
+avec son coût d'énergie et toutes ses caractéristiques :
+
+<p align="center"><img src="docs/media/power_guide.png" width="820" alt="Guide des pouvoirs : huit cartes animées avec coût, dégâts, rayon et portée"></p>
+
+## Six mondes et une campagne
+
+**25 niveaux** sur six mondes du système Kepler-Voss : **Sylvanox**, le monde-jardin des Anciens ;
+**Pyralis**, la forge en fusion ; **Glacior**, les plaines de cristal gelé ; **Aethra**, la planète des
+sanctuaires ; le **Noyau stellaire**, au cœur de l'étoile ; et **Les Confins**, au bord du système. Chaque
+niveau a son chronomètre, ses médailles de bronze à platine et ses boss ; les niveaux classiques cachent
+reliques et cœurs de cristal, et les **épreuves** et niveaux **EXTRÊME** (une seule vie) attendent les plus
+téméraires.
+
+<p align="center">
+<img src="docs/media/planet_map.png" width="49%" alt="Carte du système Kepler-Voss : les six mondes autour de l'étoile">
+<img src="docs/media/level_select_confins.png" width="49%" alt="Les Confins : la fiche du niveau EXTRÊME La Gueule du Dragon">
+</p>
+
+## Giga-boss et histoires animées
+
+Aux Confins vivent les **giga-boss** : Pyrrhax le dragon d'obsidienne, le Monolithe, le Kraken des
+Abysses, le Phénix stellaire, la Liche des Catacombes et le Titan mécanique — huit phases chacun, dans des
+arènes géantes, sans checkpoint ; au cœur de l'étoile, **Singularis**. Les boss lisent le combat, visent
+là où vous allez atterrir, enchaînent des combos et entrent en rage si le combat s'éternise ; leurs
+attaques sont annoncées avant de frapper.
+
+Avant le premier combat, chaque giga-boss raconte son **histoire**. Celles des Confins — **Pyrrhax**, le
+**Monolithe**, le **Kraken**, le Phénix, la Liche et le Titan — sont de petits dessins animés faits de vrais
+sprites du jeu, sur des décors en couches qui bougent :
+
+<p align="center">
+<img src="docs/media/story_pyrrhax.gif" width="32%" alt="Histoire de Pyrrhax : le petit dragon de fumée devient un dragon de verre noir">
+<img src="docs/media/story_monolithe.gif" width="32%" alt="Histoire du Monolithe : le caillou couvert de runes grandit et se lève">
+<img src="docs/media/story_kraken.gif" width="32%" alt="Histoire du Kraken : la petite lanterne des profondeurs devient le Kraken">
+</p>
+<p align="center"><sub>« Le Dragon d'Obsidienne », « Le Golem Primordial », « La Lanterne des profondeurs » —
+une pastille NOUVEAU mène à « Revoir l'histoire ».</sub></p>
+
+## Le premier envol avec Bip
+
+Au tout premier lancement, **Bip**, un petit robot compagnon, propose un vol d'essai d'environ six
+minutes dans la **Pépinière d'étoiles** : se déplacer, sauter, rebondir sur les champignons, attaquer,
+prendre la Ruée, traverser un ruisseau sur des bulles porteuses, puis affronter Mycélia la Câline. Neuf
+explications arrêtent vraiment le jeu, avec un aperçu animé et **vos** touches (clavier, manette Xbox
+ou PlayStation). Aucune chute n'est mortelle ; on peut passer le didacticiel à tout moment.
+
+<p align="center">
+<img src="docs/media/tutorial_welcome.png" width="49%" alt="Bienvenue, Nova ! Bip propose le didacticiel">
+<img src="docs/media/tutorial_card.png" width="49%" alt="Explication bloquante de Bip : Se déplacer, avec aperçu animé et touches">
+</p>
+
+## Fantômes et entraînement
+
+Courez contre vos **fantômes** — meilleur temps, record précédent, dernière course —, le **record
+mondial** ou ceux de vos amis (jusqu'à 8 à la fois), avec les **écarts en direct** sous le chronomètre
+et un **panneau des segments** façon LiveSplit (meilleurs segments en or). L'**entraînement par
+segment** répète une section depuis un point de sauvegarde ; la **somme des meilleurs segments** (SOB)
+réunit vos courses et vos entraînements, et **« Regarder »** enchaîne ces meilleurs segments, chacun
+rejoué à l'identique depuis son replay exact. Les boss ont aussi leur **entraînement** (phase, cœurs,
+pouvoirs et lieu d'apparition au choix). L'entraînement ne compte pour aucun record, et les fantômes,
+purement visuels, ne changent rien à la partie. Détails : [docs/GHOST_RACING.md](docs/GHOST_RACING.md).
+
+## Fiches des boss et statistiques
+
+Chaque boss a sa **fiche** : caractéristiques lues dans sa définition, phases, et chaque attaque qui se
+déplie avec ses dégâts, son annonce, sa recharge — et un **exemple animé joué par le moteur**, où Nova
+montre comment l'esquiver. L'écran **Statistiques** suit vos vraies parties, sur votre ordinateur :
+vue d'ensemble sur 7, 30 ou 90 jours, combat (esquive, précision), boss tentative après tentative,
+niveaux (record, somme des meilleurs segments, zones à travailler) et passages difficiles, chacun avec
+son entraînement. Voir [Statistiques](#statistiques).
+
+<p align="center"><img src="docs/media/boss_sheet_attack.gif" width="640" alt="Fiche de Pyrrhax : l'attaque Souffle d'obsidienne dépliée avec son exemple animé"></p>
+
+## Succès et Vestiaire
+
+**259 succès** et leurs **785 étoiles** de difficulté, présentés sur une **toile** (un secteur par
+catégorie, des fils entre les étapes) ou en liste, avec des suggestions de ce qui est à votre portée.
+Ils débloquent les récompenses de la **Collection** : combinaisons, traînées, cadres d'avatar, titres et
+effets de victoire du **Vestiaire**, la route des étoiles, le juke-box et la galerie. Les objets
+exclusifs gagnés en défi portent une aura dorée.
+
+<p align="center">
+<img src="docs/media/achievements.png" width="49%" alt="Succès : la toile des succès et la liste d'une catégorie">
+<img src="docs/media/wardrobe.png" width="49%" alt="Collection : le Vestiaire et les combinaisons de Nova">
+</p>
+<p align="center"><sub>Captures d'un profil neuf : tout reste à gagner.</sub></p>
+
+## Défis du jour, de la semaine et du mois
+
+Chaque jour, chaque semaine et chaque mois, un **défi** : un niveau, des règles (cœurs, pouvoirs,
+stations, checkpoints), des paliers **bronze, argent, or** et des **récompenses** exclusives pour le
+Vestiaire. Les parties sont vérifiées par Cosmic Online ; on peut aussi s'entraîner hors classement et
+rejouer les anciens défis depuis le **calendrier**, qui montre combien de joueurs ont atteint chaque palier.
+
+<p align="center">
+<img src="docs/media/challenge_daily.png" width="49%" alt="Défi du jour : niveau, règles, paliers, récompenses et classement du jour">
+<img src="docs/media/challenge_calendar.png" width="49%" alt="Calendrier des défis de novembre">
+</p>
+
+## Éditeurs et niveaux de la communauté
+
+Le jeu contient ses propres outils : l'**éditeur de niveaux** (calques, bibliothèque d'objets,
+événements et déclencheurs, cinématiques, test immédiat avec F5), l'**éditeur d'ennemis** (animations,
+comportements, attaques, phases de boss, arène de test) et l'éditeur du HUD. Un niveau se partage en
+fichier `.cplanet` vérifié, ou se publie dans **NIVEAUX EN LIGNE** (populaires, plus durs, récents,
+mieux notés, amis…) ; **PROJETS** permet de créer un niveau à plusieurs, en direct.
+
+<p align="center">
+<img src="docs/media/level_editor.png" width="49%" alt="Éditeur de niveaux sur Les Ruines Suspendues">
+<img src="docs/media/enemy_editor.png" width="49%" alt="Éditeur d'ennemis : Pyrrhax, ses animations et ses statistiques">
+</p>
+
+## Coopération à deux ou trois
+
+Les niveaux EXTRÊME se jouent aussi à **2 ou 3 joueurs** : **sur un même PC** (une manette par joueur en
+plus du clavier), **en réseau local** (sans compte ni serveur) ou **en ligne** avec vos amis. Une vie
+chacun, pas de coups entre alliés, des joueurs solides sur lesquels on peut se poser, des
+**réanimations**, une caméra commune — et des classements **Duo** et **Trio** à part. Architecture :
+[docs/COOP.md](docs/COOP.md).
+
+<p align="center"><img src="docs/media/coop_lobby.png" width="820" alt="Salon de la coopération : le niveau, l'équipe et les règles de l'équipe"></p>
+
+## Clans
+
+Un clan par joueur, jusqu'à **50 membres** : un nom, un **tag** (affiché **[AUBE]** à côté du pseudo),
+une devise, un **emblème**, un chef et des officiers, une adhésion sur invitation, sur candidature ou
+ouverte, et sa propre **discussion**. Le **classement des clans** additionne les meilleurs résultats
+vérifiés par le serveur sur les niveaux EXTRÊME officiels.
+
+<p align="center"><img src="docs/media/clan_page.png" width="820" alt="Page d'un clan : membres et rôles, meilleures équipes par niveau EXTRÊME, candidatures et discussion"></p>
+
+## Cosmic Online
+
+Facultatif, et jamais nécessaire pour jouer : un **globe 3D** interactif (rotation à la souris ou au
+stick, zoom, clic sur un pays ou un joueur), des **classements** par niveau, pays, amis, planète et
+points cosmiques (ANY%, 100 %, SANS MORT, SANS DÉGÂT ; historique ou hebdomadaire), des **profils**
+publics, des **amis**, une messagerie (**SOCIAL**) et des **replays exacts** : le moteur est
+déterministe, un replay rejoue la partie à l'identique et le serveur vérifie chaque record. La
+localisation se limite au pays choisi.
+
+<p align="center"><img src="docs/media/online_globe.png" width="820" alt="Cosmic Online : le globe terrestre et les classements"></p>
+<p align="center"><sub>Les captures des défis, du clan et du globe viennent d'un serveur Cosmic Online lancé en
+local, avec des comptes de démonstration (aucun record n'y est encore vérifié).</sub></p>
+
+<p align="center"><img src="docs/media/main_menu.png" width="640" alt="Menu principal de Cosmic Platformer"></p>
+
+---
+
+## Commandes
+
+| Action | Clavier AZERTY (QWERTY) – principal / secondaire | Manette (Xbox / PlayStation) |
+|---|---|---|
+| Se déplacer | Q D (A D) / ← → | Stick gauche / croix |
+| Haut / bas, grimper | Z S (W S) / ↑ ↓ | Stick gauche |
+| Sauter / double saut | Espace / W (Z) | A / Croix |
+| Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
+| S'accroupir | Bas seul au sol (même sur place) | Bas (stick / croix) sans direction |
+| Attaque | J / X | X / Carré |
+| Pouvoir 1 (1er emplacement du HUD) | K / Maj gauche | B / Rond |
+| Pouvoir 2 | L / C | RT / R2 |
+| Pouvoir 3 | O / V | LB / L1 |
+| Pouvoir 4 | I / B | RB / R1 |
+| Pouvoir 5 et 6 (niveaux à plus de 4 pouvoirs) | U / N, F / H | LT / L2, R3 |
+| Pouvoir 7 et 8 | à choisir | à choisir |
+| Planeur | maintenir Saut en tombant | maintenir A / Croix |
+| Frappe sismique | Bas + Attaque en l'air | Bas + X / Carré |
+| Tir chargé | maintenir Attaque, relâcher | maintenir X / Carré |
+| Grappin | Interagir près d'un point d'ancrage | Y / Triangle |
+| Triple saut | troisième Saut en l'air (passif) | A / Croix |
+| Interagir | E / Entrée | Y / Triangle |
+| Pause | Échap / P | Menu / Options |
+
+**Touches des pouvoirs (2.24)** : chaque emplacement de pouvoir du HUD a sa touche, que le
+joueur choisit (*Paramètres → Clavier / souris* et *Manette*, « Pouvoir 1 » à « Pouvoir 8 ») ;
+elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit (Dash, Onde, Bouclier,
+Impulsion, Téléportation, Ralenti, Bombe plasma, Lame boomerang, Nova de givre, Leurre,
+Balise de rappel). Deux pouvoirs de l'ancien bouton Spécial se portent donc ensemble. Les
+pouvoirs passifs (Aimant, Ruée aérienne) et ceux qui s'utilisent avec un mouvement (Planeur,
+Triple saut, Frappe sismique, Tir chargé, Grappin) n'utilisent pas la touche de leur
+emplacement : un **cadre pointillé doré** les distingue dans le HUD, le choix du pouvoir à
+remplacer et le guide des pouvoirs, avec leur mouvement (ou « passif ») à la place de la
+touche. Les paramètres d'avant la 2.24 sont repris : les touches choisies pour les six
+pouvoirs d'alors (Dash, Onde, Bouclier, Impulsion, Téléportation, Spécial) deviennent celles
+des emplacements 1 à 6.
+
+Les touches sont des **positions physiques** (scancodes) : les déplacements tombent sur ZQSD
+en AZERTY et sur WASD en QWERTY, et le jeu affiche toujours le nom réel de la touche. Toutes les commandes se reconfigurent dans
+*Paramètres → Clavier / souris* et *Paramètres → Manette* (profils indépendants, zones mortes,
+sensibilité, inversion des axes, vibrations, réinitialisation). Les icônes affichées
+s'adaptent à la manette utilisée (Xbox, PlayStation ou générique) et basculent
+automatiquement entre clavier et manette.
+
+Touches globales : **F3** mode debug (FPS, dt, colliders, hitboxes, position/vitesse du
+joueur, états des ennemis, chrono, particules), **F11** plein écran, **F12** capture d'écran.
+
+**HUD — ennemis hors écran (2.52)** : un ennemi déjà rencontré qui sort de l'écran est signalé
+par une flèche ambrée sur le bord, tournée vers lui (plus pâle s'il est loin) ; plusieurs ennemis
+dans la même direction n'ont qu'une flèche, vers le centre du groupe, avec leur nombre (« ×5 »).
+Ces flèches ne passent jamais sur le HUD, sur la flèche du boss (qui garde la sienne) ni les unes
+sur les autres ; option *Paramètres → Jeu → Flèches vers les ennemis hors écran* (activée par défaut).
+
+### Les pouvoirs
+
+Les cinq premiers (Dash, Onde, Bouclier, Impulsion, Téléportation) s'obtiennent dans
+« Les Ruines Suspendues » ; les suivants s'apprennent chacun dans un niveau : Planeur
+(La Canopée des Spores, courants ascendants), Grappin (Le Cœur de la Machine), Frappe
+sismique (Les Forges Englouties, sols fissurés), Tir chargé (Le Fleuve de Lave, récepteurs
+lointains, boucliers des Remparts) et Triple saut (Les Plaines de Givre). Les niveaux joués
+hors de l'ordre donnent d'office les pouvoirs des niveaux précédents.
+
+Sur Glacior, la glace est glissante et les attaques gelées ralentissent ; sur Pyralis, la
+lave, les éruptions et les bombes sont mortelles.
+
+Chaque pouvoir actif coûte de l'énergie selon sa force (jauge de 150) : Dash 5, Impulsion 8,
+Onde 10, Frappe sismique 10, Lame boomerang 12, Balise de rappel 15 (pour revenir ; la poser est
+gratuit), Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20, Téléportation 25, Leurre
+holographique 25, Nova de givre 30, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
+(menu pause) montre chaque pouvoir joué en boucle par le moteur avec son coût ; sa fiche donne
+toutes ses caractéristiques.
+
+Chaque niveau a un chrono (limite de 15 à 20 min), des médailles bronze / argent / or /
+platine, records locaux (meilleur temps, morts, collectibles, ennemis vaincus, score,
+pouvoirs utilisés, date) avec comparaison au meilleur essai.
+
+## Cosmic Online en détail
+
+Menu principal → **En ligne** (compte obligatoire pour cette section, jamais pour jouer) : globe 3D interactif (rotation à la souris ou au stick
+droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
+pays, amis, planète et points cosmiques, catégories ANY% / 100% / SANS MORT / SANS DÉGÂT,
+période historique ou hebdomadaire, profils publics, amis (avec notifications des
+demandes) et **replays exacts** : le moteur est déterministe (pas fixe de 1/120 s, hasard du
+gameplay à graine fixe par niveau, mathématiques identiques sous Windows et Linux), un replay
+contient les commandes de chaque pas et le jeu rejoue la partie à l'identique (mêmes
+animations, mêmes ennemis, mêmes attaques), avec vérification de l'état toutes les 0,5 s
+(`CosmicPlatformer --replay fichier.cprz`, *Revoir la partie* à la fin d'un niveau). Le jeu reste entièrement jouable sans compte ; hors ligne, les
+performances sont gardées et envoyées au retour de la connexion. La localisation se limite au pays choisi (affiché au centre du pays), jamais de
+position précise.
+
+Le serveur (Cloudflare Workers, D1, R2) est dans [`server/`](server/README.md) ; il se lance en
+local sans compte Cloudflare. Documentation complète : [docs/online/](docs/online/README.md).
+
+## Menu principal
+
+*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *Défis* · *Coopération* ·
+*En ligne* · *Notifications* · *Succès* (la toile des succès et de leurs étoiles) · *Collection*
+(vestiaire, route des étoiles, musiques, galerie, replays) · *Statistiques* (vos statistiques de jeu,
+et les fiches des boss) · *Paramètres* · *Quitter*.
+
+### Statistiques
+
+Calculées à partir de **vos vraies parties**, sans compte ni Internet, et gardées dans
+`saves/stats.json`. L'écran démarre vide et se remplit au fil des parties. Six sections :
+
+* **Vue d'ensemble** — sur 7, 30 ou 90 jours : temps de jeu et jours joués, taux d'esquive,
+  précision, morts par heure, chacun comparé à la période précédente de même durée (▲ / ▼, l'écart
+  et « en progrès » / « en recul ») ; étoiles de succès cumulées ; morts par heure jour après jour
+  avec la moyenne des 7 derniers jours joués.
+* **Combat** — taux d'esquive (une attaque ennemie vous menace quand elle passe à moins d'une tuile
+  et demie de vous ; esquivée si elle ne vous blesse pas) et précision (un tir, un coup ou une lame
+  touche s'il retire des points de vie à au moins un ennemi), précision par pouvoir, et ce qui vous
+  touche (tirs, attaques d'ennemis, de boss, contacts, pièges, chutes).
+* **Boss** — votre meilleure part des points de vie retirée, tentative après tentative (trois boss
+  à la fois, les plus récents d'abord), une fiche par boss, les défaites par phase ; les fiches des
+  boss d'avant (lieux, animations, entraînement) sont à un clic.
+* **Niveaux** (classiques, hors EXTRÊME, joués depuis le début) — évolution du record (PB) et de la
+  somme des meilleurs segments (SOB), temps gagnable, zones à travailler (temps perdu en moyenne
+  par segment, avec « S'entraîner sur ce segment »), constance de chaque segment et régularité des
+  parties complètes.
+* **Passages difficiles** — où vous tombez dans un niveau (40 tranches sur son vrai relief, avec
+  ses points de passage) et vos 5 passages les plus difficiles, niveaux et phases de boss mêlés,
+  chacun avec son entraînement.
+* **Données et sauvegarde** — ce qui est enregistré, où et quand, comment les statistiques
+  voyagent avec la progression, et « Réinitialiser les statistiques ». *Paramètres › Jeu ›
+  « Enregistrer mes statistiques »* (activé par défaut).
+
+**Avec votre progression** (2.55) : connecté à Cosmic Online, `stats.json` fait partie de la copie
+privée de la progression (comme les records et les succès ; aucun autre joueur ne la voit), et la
+progression restaurée après « Migrer vers un nouveau compte » apporte ses statistiques, copiées
+d'abord avec les autres sauvegardes dans `saves/avant_restauration_…`. La fusion ne compte jamais
+rien deux fois, et restaurer deux fois la même copie ne change rien :
+
+* chaque jour (et chaque mois de plus d'un an) : pour chaque compteur, le plus grand des deux côtés
+  (une même journée jouée sur deux ordinateurs est rare) ; de même pour les 40 tranches d'un niveau ;
+* tentatives de boss : réunies par leur identifiant (tiré au hasard quand la tentative est gardée),
+  puis les 200 plus récentes ; les totaux (tentatives, victoires, phases, attaques fatales) comptent
+  chaque tentative une fois ;
+* niveaux classiques (même version du niveau ; sinon celle jouée le plus récemment) : temps de
+  chaque segment réunis (50 gardés), meilleur temps et somme des meilleurs : le meilleur ; parties
+  complètes réunies par jour et temps ; historique du record et de la somme des meilleurs : réuni et
+  trié par jour ;
+* le fichier fusionné reste sous 300 Ko (mêmes plafonds qu'en jeu).
+
+Chaque graphique a une info-bulle à la souris, un curseur au clavier et à la manette (← →) et une
+vue **Tableau**. Les statistiques lisent la partie sans la changer : replays, records et classements
+sont identiques. L'entraînement est compté à part, le mode Invincible (admin), les replays relus et
+les parties d'amis regardées jamais.
+
+**En ligne** (compte requis) : **NIVEAUX EN LIGNE** (les niveaux publiés par les joueurs : Populaires,
+Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
+signaler, classement par niveau ; *ATELIER → Mes niveaux → Publier* après avoir terminé son
+niveau depuis le départ dans l'éditeur), **CLASSEMENTS** (classements, globe, profils), **SOCIAL**
+(messagerie privée avec vos amis, groupes de discussion jusqu'à 20 membres, amis et demandes,
+joueurs bloqués, signalement de messages ; notifications des nouveaux messages et demandes,
+gardées pendant une partie et affichées ensuite) et l'**ATELIER** (vos niveaux,
+niveaux importés, export / import `.cplanet`, éditeur d'ennemis). Dans ONLINE, un niveau se
+joue depuis sa fiche (*Jouer ce niveau*) ; à la fin (ou en quittant), on revient à ONLINE sur
+ce niveau.
+
+## Éditeurs
+
+Les **entités natives** (ennemis, boss, pouvoirs, effets et graphismes de la campagne) sont
+utilisables dans tous les niveaux des joueurs mais ne sont jamais modifiables : l'éditeur
+d'ennemis enregistre vos réglages dans une copie, et un fichier utilisateur ou un package qui
+réutilise l'identifiant d'une entité native est ignoré (renommé à l'import).
+
+* **Éditeur de niveaux** (*Online → Workshop → Mes niveaux* ou `CosmicPlatformer --editor [id]`) :
+  calques, bibliothèque d'objets, propriétés, grille magnétique, zoom, déplacement de vue,
+  sélection multiple, déplacement / redimensionnement / rotation / miroir, copier-coller,
+  annuler / rétablir, événements et déclencheurs, cinématiques d'intro / outro, chrono et
+  médailles, test immédiat (F5) avec retour à l'éditeur, sauvegarde automatique.
+* **Éditeur d'ennemis** (*Online → Workshop → Éditeur d'ennemis* ou `--enemy-editor`) : aperçu animé, statistiques, comportements IA,
+  attaques, phases de boss, arène de test où l'on peut contrôler le joueur.
+
+Voir [docs/EDITORS.md](docs/EDITORS.md).
+
+## Partager un niveau
+
+*Online → Workshop → Exporter* crée un fichier `.cplanet` autonome contenant le niveau,
+la planète, les ennemis, les pouvoirs, les effets et **tous** les fichiers graphiques et
+audio utilisés, avec un manifeste signé par empreintes SHA-256. *Importer* vérifie
+l'archive (empreintes, chemins, tailles, version, dépendances, conflits) avant de
+l'installer ; aucun code n'est jamais exécuté depuis un package. Avec l'installateur
+Windows, un double-clic sur un `.cplanet` ouvre directement l'écran d'import.
+
+En ligne de commande :
+
+```
+CosmicPlatformer --export sylvanox_01 MonNiveau.cplanet --author "Mon nom"
+CosmicPlatformer --import MonNiveau.cplanet
+```
+
+Voir [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md).
+
+## Langue / Language
+
+Le jeu est **en français ou en anglais**. L'installateur Windows demande la langue (il
+s'affiche lui-même dans cette langue) et le jeu démarre dans celle-ci ; elle se change à
+tout moment dans *Paramètres › Jeu › « Langue / Language »*, avec effet immédiat (ou
+`--lang en|fr` en ligne de commande). Le français reste la source de tous les textes ;
+l'anglais vient du dictionnaire `data/i18n/en.json`, appliqué à l'affichage. Les contenus
+des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) ne sont jamais
+traduits. Ajouter ou compléter une traduction : [docs/I18N.md](docs/I18N.md).
+
+## Données utilisateur
+
+Sauvegardes, paramètres, records, niveaux créés, packages importés, exports, captures et
+journal (`cosmic.log`) sont stockés dans :
+
+* Windows : `%APPDATA%\CosmicStudio\CosmicPlatformer\`
+* Linux : `~/.local/share/CosmicStudio/CosmicPlatformer/`
+
+Les statistiques des boss sont dans `saves/boss_stats.json`, celles de l'écran Statistiques dans
+`saves/stats.json` (seulement dans la copie privée de la progression, pour un compte connecté).
+Les fichiers sont versionnés et migrés automatiquement ; un fichier corrompu est mis de
+côté (`.corrupt`) au lieu de faire planter le jeu. La désinstallation les conserve, sauf
+demande explicite.
+
+## Compiler
+
+Prérequis : CMake ≥ 3.24, un compilateur C++20 (Visual Studio 2022, GCC 12+ ou Clang 15+),
+Git, et une connexion Internet **uniquement** au premier configure (téléchargement de SDL3,
+SDL3_image, SDL3_ttf, SDL3_mixer, nlohmann/json, miniz, aux versions épinglées).
+
+```
+cmake -S . -B build
+cmake --build build --config Release --parallel
+ctest --test-dir build -C Release --output-on-failure
+```
+
+L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_installer.ps1`
+(Inno Setup 6). Détails, options et compilation croisée : [docs/BUILDING.md](docs/BUILDING.md).
+
+## Documentation
+
+* [docs/COLLECTION.md](docs/COLLECTION.md) – récompenses de la collection, juke-box et galerie (2.19)
+* [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – modules, boucle de jeu, flux de données
+* [docs/LEVEL_FORMAT.md](docs/LEVEL_FORMAT.md) – format JSON des niveaux, objets, événements
+* [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md) – format `.cplanet` et vérifications à l'import
+* [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
+* [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
+* [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
+* [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
+* [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
+* [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
+* [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
+
+## Licences
+
+Code et assets du jeu : Cosmic Studio. Les assets (sprites, décors, sons, musiques) sont
+générés par les scripts de `tools/assetgen`. Bibliothèques et polices tierces : voir
+[licenses/](licenses/). Le globe utilise des données Natural Earth (domaine public), les
+drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumières des villes
+de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
+
+## Historique des versions
 
 **Nouveau dans la version 2.63.3** :
 * L'**histoire du Titan** (« Le Dernier Quart ») devient un **petit dessin animé** : la fonderie et ses
@@ -777,258 +1225,3 @@ successives, projectiles à tête chercheuse, salves re-visées) et des annonces
 cristal secrets par niveau. Par défaut, l'option *Paramètres → Jeu → Tout débloquer* rend
 toutes les planètes et tous les niveaux accessibles ; sans elle, ils se débloquent dans
 l'ordre.
-
-## Jouer
-
-| Action | Clavier AZERTY (QWERTY) – principal / secondaire | Manette (Xbox / PlayStation) |
-|---|---|---|
-| Se déplacer | Q D (A D) / ← → | Stick gauche / croix |
-| Haut / bas, grimper | Z S (W S) / ↑ ↓ | Stick gauche |
-| Sauter / double saut | Espace / W (Z) | A / Croix |
-| Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
-| S'accroupir | Bas seul au sol (même sur place) | Bas (stick / croix) sans direction |
-| Attaque | J / X | X / Carré |
-| Pouvoir 1 (1er emplacement du HUD) | K / Maj gauche | B / Rond |
-| Pouvoir 2 | L / C | RT / R2 |
-| Pouvoir 3 | O / V | LB / L1 |
-| Pouvoir 4 | I / B | RB / R1 |
-| Pouvoir 5 et 6 (niveaux à plus de 4 pouvoirs) | U / N, F / H | LT / L2, R3 |
-| Pouvoir 7 et 8 | à choisir | à choisir |
-| Planeur | maintenir Saut en tombant | maintenir A / Croix |
-| Frappe sismique | Bas + Attaque en l'air | Bas + X / Carré |
-| Tir chargé | maintenir Attaque, relâcher | maintenir X / Carré |
-| Grappin | Interagir près d'un point d'ancrage | Y / Triangle |
-| Triple saut | troisième Saut en l'air (passif) | A / Croix |
-| Interagir | E / Entrée | Y / Triangle |
-| Pause | Échap / P | Menu / Options |
-
-**Touches des pouvoirs (2.24)** : chaque emplacement de pouvoir du HUD a sa touche, que le
-joueur choisit (*Paramètres → Clavier / souris* et *Manette*, « Pouvoir 1 » à « Pouvoir 8 ») ;
-elle utilise le pouvoir équipé dans cet emplacement, quel qu'il soit (Dash, Onde, Bouclier,
-Impulsion, Téléportation, Ralenti, Bombe plasma, Lame boomerang, Nova de givre, Leurre,
-Balise de rappel). Deux pouvoirs de l'ancien bouton Spécial se portent donc ensemble. Les
-pouvoirs passifs (Aimant, Ruée aérienne) et ceux qui s'utilisent avec un mouvement (Planeur,
-Triple saut, Frappe sismique, Tir chargé, Grappin) n'utilisent pas la touche de leur
-emplacement : un **cadre pointillé doré** les distingue dans le HUD, le choix du pouvoir à
-remplacer et le guide des pouvoirs, avec leur mouvement (ou « passif ») à la place de la
-touche. Les paramètres d'avant la 2.24 sont repris : les touches choisies pour les six
-pouvoirs d'alors (Dash, Onde, Bouclier, Impulsion, Téléportation, Spécial) deviennent celles
-des emplacements 1 à 6.
-
-Les touches sont des **positions physiques** (scancodes) : les déplacements tombent sur ZQSD
-en AZERTY et sur WASD en QWERTY, et le jeu affiche toujours le nom réel de la touche. Toutes les commandes se reconfigurent dans
-*Paramètres → Clavier / souris* et *Paramètres → Manette* (profils indépendants, zones mortes,
-sensibilité, inversion des axes, vibrations, réinitialisation). Les icônes affichées
-s'adaptent à la manette utilisée (Xbox, PlayStation ou générique) et basculent
-automatiquement entre clavier et manette.
-
-Touches globales : **F3** mode debug (FPS, dt, colliders, hitboxes, position/vitesse du
-joueur, états des ennemis, chrono, particules), **F11** plein écran, **F12** capture d'écran.
-
-**HUD — ennemis hors écran (2.52)** : un ennemi déjà rencontré qui sort de l'écran est signalé
-par une flèche ambrée sur le bord, tournée vers lui (plus pâle s'il est loin) ; plusieurs ennemis
-dans la même direction n'ont qu'une flèche, vers le centre du groupe, avec leur nombre (« ×5 »).
-Ces flèches ne passent jamais sur le HUD, sur la flèche du boss (qui garde la sienne) ni les unes
-sur les autres ; option *Paramètres → Jeu → Flèches vers les ennemis hors écran* (activée par défaut).
-
-### Les pouvoirs
-
-Les cinq premiers (Dash, Onde, Bouclier, Impulsion, Téléportation) s'obtiennent dans
-« Les Ruines Suspendues » ; les suivants s'apprennent chacun dans un niveau : Planeur
-(La Canopée des Spores, courants ascendants), Grappin (Le Cœur de la Machine), Frappe
-sismique (Les Forges Englouties, sols fissurés), Tir chargé (Le Fleuve de Lave, récepteurs
-lointains, boucliers des Remparts) et Triple saut (Les Plaines de Givre). Les niveaux joués
-hors de l'ordre donnent d'office les pouvoirs des niveaux précédents.
-
-Sur Glacior, la glace est glissante et les attaques gelées ralentissent ; sur Pyralis, la
-lave, les éruptions et les bombes sont mortelles.
-
-Chaque pouvoir actif coûte de l'énergie selon sa force (jauge de 150) : Dash 5, Impulsion 8,
-Onde 10, Frappe sismique 10, Lame boomerang 12, Balise de rappel 15 (pour revenir ; la poser est
-gratuit), Tir chargé 20 (la référence), Bombe plasma 20, Bouclier 20, Téléportation 25, Leurre
-holographique 25, Nova de givre 30, Ralenti 60 ; les pouvoirs passifs sont gratuits. Le *Guide des pouvoirs*
-(menu pause) montre chaque pouvoir joué en boucle par le moteur avec son coût ; sa fiche donne
-toutes ses caractéristiques.
-
-Chaque niveau a un chrono (limite de 15 à 20 min), des médailles bronze / argent / or /
-platine, records locaux (meilleur temps, morts, collectibles, ennemis vaincus, score,
-pouvoirs utilisés, date) avec comparaison au meilleur essai.
-
-## Cosmic Online (classements en ligne)
-
-Menu principal → **En ligne** (compte obligatoire pour cette section, jamais pour jouer) : globe 3D interactif (rotation à la souris ou au stick
-droit, zoom molette / gâchettes, clic sur un marqueur ou un pays), classements par niveau,
-pays, amis, planète et points cosmiques, catégories ANY% / 100% / SANS MORT / SANS DÉGÂT,
-période historique ou hebdomadaire, profils publics, amis (avec notifications des
-demandes) et **replays exacts** : le moteur est déterministe (pas fixe de 1/120 s, hasard du
-gameplay à graine fixe par niveau, mathématiques identiques sous Windows et Linux), un replay
-contient les commandes de chaque pas et le jeu rejoue la partie à l'identique (mêmes
-animations, mêmes ennemis, mêmes attaques), avec vérification de l'état toutes les 0,5 s
-(`CosmicPlatformer --replay fichier.cprz`, *Revoir la partie* à la fin d'un niveau). Le jeu reste entièrement jouable sans compte ; hors ligne, les
-performances sont gardées et envoyées au retour de la connexion. La localisation se limite au pays choisi (affiché au centre du pays), jamais de
-position précise.
-
-Le serveur (Cloudflare Workers, D1, R2) est dans [`server/`](server/README.md) ; il se lance en
-local sans compte Cloudflare. Documentation complète : [docs/online/](docs/online/README.md).
-
-## Menu principal
-
-*Continuer* (dernier niveau joué) · *Campagne* (planètes et niveaux) · *En ligne* ·
-*Notifications* · *Succès* (toile des 218 succès et de leurs 597 étoiles) · *Collection*
-(vestiaire, route des étoiles, musiques, galerie) · *Statistiques* (vos statistiques de jeu, et
-les fiches des boss) · *Paramètres* · *Quitter*.
-
-### Statistiques
-
-Calculées à partir de **vos vraies parties**, sans compte ni Internet, et gardées dans
-`saves/stats.json`. L'écran démarre vide et se remplit au fil des parties. Six sections :
-
-* **Vue d'ensemble** — sur 7, 30 ou 90 jours : temps de jeu et jours joués, taux d'esquive,
-  précision, morts par heure, chacun comparé à la période précédente de même durée (▲ / ▼, l'écart
-  et « en progrès » / « en recul ») ; étoiles de succès cumulées ; morts par heure jour après jour
-  avec la moyenne des 7 derniers jours joués.
-* **Combat** — taux d'esquive (une attaque ennemie vous menace quand elle passe à moins d'une tuile
-  et demie de vous ; esquivée si elle ne vous blesse pas) et précision (un tir, un coup ou une lame
-  touche s'il retire des points de vie à au moins un ennemi), précision par pouvoir, et ce qui vous
-  touche (tirs, attaques d'ennemis, de boss, contacts, pièges, chutes).
-* **Boss** — votre meilleure part des points de vie retirée, tentative après tentative (trois boss
-  à la fois, les plus récents d'abord), une fiche par boss, les défaites par phase ; les fiches des
-  boss d'avant (lieux, animations, entraînement) sont à un clic.
-* **Niveaux** (classiques, hors EXTRÊME, joués depuis le début) — évolution du record (PB) et de la
-  somme des meilleurs segments (SOB), temps gagnable, zones à travailler (temps perdu en moyenne
-  par segment, avec « S'entraîner sur ce segment »), constance de chaque segment et régularité des
-  parties complètes.
-* **Passages difficiles** — où vous tombez dans un niveau (40 tranches sur son vrai relief, avec
-  ses points de passage) et vos 5 passages les plus difficiles, niveaux et phases de boss mêlés,
-  chacun avec son entraînement.
-* **Données et sauvegarde** — ce qui est enregistré, où et quand, comment les statistiques
-  voyagent avec la progression, et « Réinitialiser les statistiques ». *Paramètres › Jeu ›
-  « Enregistrer mes statistiques »* (activé par défaut).
-
-**Avec votre progression** (2.55) : connecté à Cosmic Online, `stats.json` fait partie de la copie
-privée de la progression (comme les records et les succès ; aucun autre joueur ne la voit), et la
-progression restaurée après « Migrer vers un nouveau compte » apporte ses statistiques, copiées
-d'abord avec les autres sauvegardes dans `saves/avant_restauration_…`. La fusion ne compte jamais
-rien deux fois, et restaurer deux fois la même copie ne change rien :
-
-* chaque jour (et chaque mois de plus d'un an) : pour chaque compteur, le plus grand des deux côtés
-  (une même journée jouée sur deux ordinateurs est rare) ; de même pour les 40 tranches d'un niveau ;
-* tentatives de boss : réunies par leur identifiant (tiré au hasard quand la tentative est gardée),
-  puis les 200 plus récentes ; les totaux (tentatives, victoires, phases, attaques fatales) comptent
-  chaque tentative une fois ;
-* niveaux classiques (même version du niveau ; sinon celle jouée le plus récemment) : temps de
-  chaque segment réunis (50 gardés), meilleur temps et somme des meilleurs : le meilleur ; parties
-  complètes réunies par jour et temps ; historique du record et de la somme des meilleurs : réuni et
-  trié par jour ;
-* le fichier fusionné reste sous 300 Ko (mêmes plafonds qu'en jeu).
-
-Chaque graphique a une info-bulle à la souris, un curseur au clavier et à la manette (← →) et une
-vue **Tableau**. Les statistiques lisent la partie sans la changer : replays, records et classements
-sont identiques. L'entraînement est compté à part, le mode Invincible (admin), les replays relus et
-les parties d'amis regardées jamais.
-
-**En ligne** (compte requis) : **NIVEAUX EN LIGNE** (les niveaux publiés par les joueurs : Populaires,
-Plus durs, Récents, Mieux notés, Amis, Recherche, Les miens ; télécharger et jouer, noter,
-signaler, classement par niveau ; *ATELIER → Mes niveaux → Publier* après avoir terminé son
-niveau depuis le départ dans l'éditeur), **CLASSEMENTS** (classements, globe, profils), **SOCIAL**
-(messagerie privée avec vos amis, groupes de discussion jusqu'à 20 membres, amis et demandes,
-joueurs bloqués, signalement de messages ; notifications des nouveaux messages et demandes,
-gardées pendant une partie et affichées ensuite) et l'**ATELIER** (vos niveaux,
-niveaux importés, export / import `.cplanet`, éditeur d'ennemis). Dans ONLINE, un niveau se
-joue depuis sa fiche (*Jouer ce niveau*) ; à la fin (ou en quittant), on revient à ONLINE sur
-ce niveau.
-
-## Éditeurs
-
-Les **entités natives** (ennemis, boss, pouvoirs, effets et graphismes de la campagne) sont
-utilisables dans tous les niveaux des joueurs mais ne sont jamais modifiables : l'éditeur
-d'ennemis enregistre vos réglages dans une copie, et un fichier utilisateur ou un package qui
-réutilise l'identifiant d'une entité native est ignoré (renommé à l'import).
-
-* **Éditeur de niveaux** (*Online → Workshop → Mes niveaux* ou `CosmicPlatformer --editor [id]`) :
-  calques, bibliothèque d'objets, propriétés, grille magnétique, zoom, déplacement de vue,
-  sélection multiple, déplacement / redimensionnement / rotation / miroir, copier-coller,
-  annuler / rétablir, événements et déclencheurs, cinématiques d'intro / outro, chrono et
-  médailles, test immédiat (F5) avec retour à l'éditeur, sauvegarde automatique.
-* **Éditeur d'ennemis** (*Online → Workshop → Éditeur d'ennemis* ou `--enemy-editor`) : aperçu animé, statistiques, comportements IA,
-  attaques, phases de boss, arène de test où l'on peut contrôler le joueur.
-
-Voir [docs/EDITORS.md](docs/EDITORS.md).
-
-## Partager un niveau
-
-*Online → Workshop → Exporter* crée un fichier `.cplanet` autonome contenant le niveau,
-la planète, les ennemis, les pouvoirs, les effets et **tous** les fichiers graphiques et
-audio utilisés, avec un manifeste signé par empreintes SHA-256. *Importer* vérifie
-l'archive (empreintes, chemins, tailles, version, dépendances, conflits) avant de
-l'installer ; aucun code n'est jamais exécuté depuis un package. Avec l'installateur
-Windows, un double-clic sur un `.cplanet` ouvre directement l'écran d'import.
-
-En ligne de commande :
-
-```
-CosmicPlatformer --export sylvanox_01 MonNiveau.cplanet --author "Mon nom"
-CosmicPlatformer --import MonNiveau.cplanet
-```
-
-Voir [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md).
-
-## Langue / Language
-
-Le jeu est **en français ou en anglais**. L'installateur Windows demande la langue (il
-s'affiche lui-même dans cette langue) et le jeu démarre dans celle-ci ; elle se change à
-tout moment dans *Paramètres › Jeu › « Langue / Language »*, avec effet immédiat (ou
-`--lang en|fr` en ligne de commande). Le français reste la source de tous les textes ;
-l'anglais vient du dictionnaire `data/i18n/en.json`, appliqué à l'affichage. Les contenus
-des joueurs (niveaux de la communauté, pseudonymes, commentaires, messages) ne sont jamais
-traduits. Ajouter ou compléter une traduction : [docs/I18N.md](docs/I18N.md).
-
-## Données utilisateur
-
-Sauvegardes, paramètres, records, niveaux créés, packages importés, exports, captures et
-journal (`cosmic.log`) sont stockés dans :
-
-* Windows : `%APPDATA%\CosmicStudio\CosmicPlatformer\`
-* Linux : `~/.local/share/CosmicStudio/CosmicPlatformer/`
-
-Les statistiques des boss sont dans `saves/boss_stats.json`, celles de l'écran Statistiques dans
-`saves/stats.json` (seulement dans la copie privée de la progression, pour un compte connecté).
-Les fichiers sont versionnés et migrés automatiquement ; un fichier corrompu est mis de
-côté (`.corrupt`) au lieu de faire planter le jeu. La désinstallation les conserve, sauf
-demande explicite.
-
-## Compiler
-
-Prérequis : CMake ≥ 3.24, un compilateur C++20 (Visual Studio 2022, GCC 12+ ou Clang 15+),
-Git, et une connexion Internet **uniquement** au premier configure (téléchargement de SDL3,
-SDL3_image, SDL3_ttf, SDL3_mixer, nlohmann/json, miniz, aux versions épinglées).
-
-```
-cmake -S . -B build
-cmake --build build --config Release --parallel
-ctest --test-dir build -C Release --output-on-failure
-```
-
-L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_installer.ps1`
-(Inno Setup 6). Détails, options et compilation croisée : [docs/BUILDING.md](docs/BUILDING.md).
-
-## Documentation
-
-* [docs/COLLECTION.md](docs/COLLECTION.md) – récompenses de la collection, juke-box et galerie (2.19)
-* [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – modules, boucle de jeu, flux de données
-* [docs/LEVEL_FORMAT.md](docs/LEVEL_FORMAT.md) – format JSON des niveaux, objets, événements
-* [docs/PACKAGE_FORMAT.md](docs/PACKAGE_FORMAT.md) – format `.cplanet` et vérifications à l'import
-* [docs/EDITORS.md](docs/EDITORS.md) – guide des éditeurs
-* [docs/BUILDING.md](docs/BUILDING.md) – compilation, tests, installateur
-* [docs/ASSET_SPEC.md](docs/ASSET_SPEC.md) – contrat des assets (sprites, animations, tuiles, audio)
-* [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
-* [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
-* [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
-
-## Licences
-
-Code et assets du jeu : Cosmic Studio. Les assets (sprites, décors, sons, musiques) sont
-générés par les scripts de `tools/assetgen`. Bibliothèques et polices tierces : voir
-[licenses/](licenses/). Le globe utilise des données Natural Earth (domaine public), les
-drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumières des villes
-de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
