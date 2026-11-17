@@ -1,0 +1,9 @@
+{
+  "texture": "stories/titan/echafaudage.png",
+  "frameWidth": 160,
+  "frameHeight": 160,
+  "pivot": [80, 159],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 4, "loop": true}
+  }
+}

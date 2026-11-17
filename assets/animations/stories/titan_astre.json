@@ -1,0 +1,9 @@
+{
+  "texture": "stories/titan/astre.png",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "pivot": [8, 8],
+  "clips": {
+    "twinkle": {"row": 0, "count": 6, "durations": [0.3, 0.12, 0.1, 0.16, 0.1, 0.14], "loop": true}
+  }
+}

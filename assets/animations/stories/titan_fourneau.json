@@ -1,0 +1,9 @@
+{
+  "texture": "stories/titan/fourneau.png",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "pivot": [48, 95],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 9, "loop": true}
+  }
+}

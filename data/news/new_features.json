@@ -2326,6 +2326,20 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "gallery.story.titan",
+   "version": "2.63.2",
+   "parents": [
+    "gallery.boss.titan"
+   ]
+  },
+  {
+   "id": "stats.story.titan",
+   "version": "2.63.2",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

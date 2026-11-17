@@ -126,6 +126,10 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   qui respirent et ombres qui suivent le feu ; la caméra suit l'action. Format des histoires en
   **version 2** (les autres histoires gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir
   l'histoire ».
+* L'**histoire du Titan** (« Le Dernier Quart ») devient un **petit dessin animé** : la fonderie et ses
+  ouvriers, le colosse qui s'éveille sur son échafaudage, la promesse du contremaître, la roche qui engloutit
+  la fonderie, la rouille et la vapeur, le Titan face à la visiteuse ; fourneaux, engrenages, chaînes et
+  fumée animés. Une pastille NOUVEAU mène à « Revoir l'histoire ».
 * **Clans** (EN LIGNE › **CLANS**) : un clan par joueur, **50 membres** au plus, un nom, un **tag** de 2 à 5
   lettres ou chiffres, unique sans tenir compte de la casse (affiché **[AUBE]**), une devise et un **emblème**
   (une forme et deux couleurs, comme les cadres). Le **chef** (un seul, rôle transmissible) et les **officiers**
