@@ -930,6 +930,8 @@ private:
             const Json& rep = jfield(ch, "replaced", Json());
             if (rep.is_object() && !jstr(rep, "title").empty())
                 text += jstr(rep, "source") == "auto" ? " (remplace le tirage « " + jstr(rep, "title") + " »)" : " (remplace « " + jstr(rep, "title") + " »)";
+            // 2.60: changed while it ran, nobody had a result on it.
+            if (jget<bool>(ch, "running", false)) text += " · en cours, sans résultat";
             return {"Défi", ui.theme().accent, text};
         }
         if (action == "admin_challenge_reset" && ch.is_object()) {
@@ -937,6 +939,7 @@ private:
             const Json& drawn = jfield(ch, "drawn", Json());
             if (drawn.is_object() && !jstr(drawn, "title").empty()) text += " (tiré à nouveau : « " + jstr(drawn, "title") + " »)";
             else if (!jstr(ch, "draws_on").empty()) text += " (tirage le " + shortDate(jstr(ch, "draws_on")) + ")";
+            if (jget<bool>(ch, "running", false)) text += " · en cours, sans résultat";
             return {"Défi", Color{185, 200, 218, 255}, text};
         }
         if (action == "admin_challenge_rewards" && ch.is_object()) {
@@ -1040,6 +1043,7 @@ private:
             std::string what = (act == "reset" ? "retour au tirage du défi " : act == "rewards" ? "modification des récompenses du défi " : "modification du défi ") +
                                periodPhrase(ch);
             std::string why = reason == "CHALLENGE_STARTED"    ? std::string("déjà commencé")
+                              : reason == "CHALLENGE_HAS_RESULTS" ? std::string("des joueurs y ont déjà un résultat")
                               : reason == "VALIDATION_ERROR"   ? std::string(act == "rewards" ? "récompenses invalides" : "règles invalides")
                               : reason == "LEVEL_UNAVAILABLE"  ? std::string("niveau indisponible")
                               : reason == "FINISH_NEEDS_ROUTE" ? std::string("« Finir le niveau » sans parcours tracé")

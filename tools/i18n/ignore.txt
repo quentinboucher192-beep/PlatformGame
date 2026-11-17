@@ -179,6 +179,10 @@ supernova
 arc
 missile
 constellation
+hop
+robot
+skipped
+souvenir
 ADMIN
 DEV
 MOD

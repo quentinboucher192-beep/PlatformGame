@@ -34,6 +34,7 @@ bool CosmeticCatalog::load(const fs::path& file, std::string* error) {
             item.look = jstr(e, "look");
             item.achievement = jstr(e, "achievement");
             item.isDefault = jget<bool>(e, "default", false);
+            item.souvenir = jstr(e, "souvenir");
             if (auto s = e.find("stars"); s != e.end()) {
                 if (s->is_string() && s->get<std::string>() == "all") item.allStars = true;
                 else if (s->is_number_integer()) item.stars = std::max(0, s->get<int>());
@@ -115,7 +116,7 @@ std::vector<CosmeticCatalog::Milestone> CosmeticCatalog::milestones(int totalSta
 }
 
 int cosmeticThreshold(const CosmeticItem& item, int totalStars) {
-    if (!item.achievement.empty() || item.challengeReward()) return -1;
+    if (!item.achievement.empty() || item.challengeReward() || !item.souvenir.empty()) return -1;
     if (item.isDefault) return 0;
     if (item.allStars) return std::max(1, totalStars);
     return item.stars;
@@ -171,6 +172,7 @@ bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p) {
     // 2.43: won at a challenge (never taken back); what was created on the server only so.
     if (p.won && p.won->has(item.id)) return true;
     if (item.serverMade()) return false;
+    if (!item.souvenir.empty()) return item.souvenir == "tutorial" && p.tutorialFinished;  // 2.64
     if (!item.achievement.empty()) return p.book && p.book->unlocked(item.achievement);
     if (item.challengeReward()) {
         auto [have, need] = cosmeticChallengeProgress(item, p);

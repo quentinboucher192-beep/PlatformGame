@@ -144,6 +144,18 @@ public:
     bool invincible() const { return invincible_ && training_ && !challenge_.has_value(); }
     /// Puts an invincible Nova back on her last solid ground (instead of a fall); false when not invincible.
     bool rescueInvincible();
+    /// 2.64, the tutorial (LevelData::tutorial): a fall never kills; Nova comes back at once on
+    /// the last solid ground she stood on (never a moving platform nor a bubble), a moment
+    /// invulnerable.
+    void rescueGently();
+    /// 2.64: an explanation card of the tutorial asked by the level (event action « tutorial »),
+    /// each card once. The scene playing the level takes it after the step and stops the
+    /// simulation while the card is open (display only: nothing of the run reads it back).
+    void requestTutorialCard(const std::string& card);
+    std::optional<std::string> takeTutorialCard();
+    bool tutorialCardPending() const { return !tutorialCards_.empty(); }
+    /// The cards already asked for (shown or waiting), in their order.
+    const std::vector<std::string>& tutorialCardsAsked() const { return tutorialAsked_; }
     bool training() const { return training_ || challenge_.has_value(); }
     /// A daily challenge (2.32, simulation 11): its rules apply now (call it right after
     /// load(), before the first step: hearts, slots, imposed powers) and for the rest of the
@@ -399,6 +411,8 @@ private:
     bool practiceRespawn_ = false;  // 2.48 (setPracticeRespawn)
     Vec2 safeFeet_{};               // where Nova last stood on solid ground (practice respawn)
     bool hasSafeFeet_ = false;
+    std::vector<std::string> tutorialCards_;  // 2.64: asked, not yet taken by the scene
+    std::vector<std::string> tutorialAsked_;  // 2.64: every card asked (each once)
     void practiceRespawnNow();  // 2.47.1: the clock waits for the end of Nova's materialisation
     int fallGuard_ = 0;
     // 2.54, statistics only (WorldListener): what is stepping now, so that a blow to Nova knows

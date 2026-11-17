@@ -42,7 +42,8 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
     res.init(nullptr, &audio);
     int tested = 0;
     for (const EnemyDefinition* def : content.enemies()) {
-        if (!def->isBoss || !def->builtin) continue;
+        // 2.64: the tutorial's boss is gentle on purpose (two slow attacks: test_tutorial.cpp).
+        if (!def->isBoss || !def->builtin || def->tutorial) continue;
         ++tested;
         WorldServices s{res, audio, content, nullptr, 1.0f, 1.0f};
         GameWorld w(s, WorldMode::Arena);
@@ -222,7 +223,7 @@ TEST_CASE("bosses: they read the fight — moving players get hit, campers get p
     };
     std::vector<Row> rows;
     for (const EnemyDefinition* def : content.enemies()) {
-        if (!def->isBoss || !def->builtin) continue;
+        if (!def->isBoss || !def->builtin || def->tutorial) continue;  // 2.64: the tutorial's is gentle on purpose
         // "Long" = 90 s, or longer for a boss whose rage comes later (the Astrarque: 90 s).
         float longFight = std::max(90.0f, def->enrageTime + 10.0f);
         Row r{def->id, fight(*def, false, 40.0f), fight(*def, true, 20.0f), fight(*def, false, longFight)};

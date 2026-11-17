@@ -82,7 +82,7 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
             }
         renderDecoy(ctx, world);  // Leurre holographique (2.19)
         world.player().render(ctx);
-        drawProjectiles(r, world, alpha, lights_);
+        drawProjectiles(r, world, alpha, lights_, opt.threats);
         world.particles().render(r, true, view.visibleWorld());
     };
 
@@ -94,11 +94,14 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     drawActors();
 
     if (!opt.mapView) {
-        // Lasting effects of the guardians' attacks (frost, lava, thorns, wells).
+        // Lasting effects of the guardians' attacks (frost, lava, thorns, wells), then the
+        // telegraphs, on top of everything in the world: the boss's threats (2.60: the HUD
+        // fades over them, RenderOptions::threats).
+        r.setListener(opt.threats);
         world.hazards().render(ctx);
-        // Telegraphs read on top of everything in the world.
         for (const auto& e : world.enemies())
             if (e->box.expanded(200).intersects(vis) && !e->frozen()) e->renderTelegraph(ctx);  // frozen: no threat
+        r.setListener(nullptr);
         parallax_.render(r, view, true);
     }
 
@@ -175,8 +178,14 @@ void GameRenderer::drawAshVeil(Renderer& r, GameWorld& world, const WorldView& v
     }
 }
 
-void GameRenderer::drawProjectiles(Renderer& r, GameWorld& world, float alpha, LightMap& lights) {
+void GameRenderer::drawProjectiles(Renderer& r, GameWorld& world, float alpha, LightMap& lights, CoverageProbe* threats) {
+    struct Quiet {  // the listener is off again after the shots, whatever path the loop takes
+        Renderer& r;
+        ~Quiet() { r.setListener(nullptr); }
+    } quiet{r};
     for (const auto& p : world.projectiles()) {
+        // 2.60: the enemies' shots are threats (the HUD fades over them), Nova's are not.
+        r.setListener(p.fromPlayer ? nullptr : threats);
         Vec2 pos = lerpv(p.prevPos, p.pos, alpha);
         lights.add(pos, p.lightRadius, p.light);
         if (p.clip == "feather") {

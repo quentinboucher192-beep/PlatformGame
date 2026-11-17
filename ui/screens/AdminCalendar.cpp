@@ -120,6 +120,55 @@ std::string errorText(const ApiResult& r) {
 
 }  // namespace
 
+// ------------------------------------------------------------------ a period (pure)
+
+std::string AdminChallengePeriod::lockNote() const {
+    if (past()) return "Défi passé : lecture seule.";
+    if (!running()) return {};
+    if (editable) return "En cours, personne n'a encore de résultat : vous pouvez encore le changer.";
+    // 2.60: why it is locked: the players who already have a result on it.
+    const std::string n = std::to_string(resultsCount);
+    if (resultsCount > 1) return n + " joueurs ont déjà un résultat sur ce défi : il ne change plus.";
+    if (resultsCount == 1) return n + " joueur a déjà un résultat sur ce défi : il ne change plus.";
+    return "Défi commencé : lecture seule. Un défi commencé ne change plus.";
+}
+
+std::vector<std::string> AdminChallengePeriod::pillTexts() const {
+    if (past()) return {"passé"};
+    if (running()) {
+        if (editable) return {"en cours · modifiable", "modifiable"};
+        return kind == "monthly" ? std::vector<std::string>{"en cours · verrouillé", "en cours"} : std::vector<std::string>{"en cours"};
+    }
+    if (!parsed) return {"+ choisir"};
+    return {parsed->source == "admin" ? "choisi" : "tirage"};
+}
+
+std::vector<AdminChallengePeriod> AdminChallengePeriod::listFromJson(const Json& data) {
+    std::vector<AdminChallengePeriod> out;
+    for (const Json& x : jfield(data, "periods", Json::array())) {
+        if (!x.is_object()) continue;
+        AdminChallengePeriod p;
+        p.id = jstr(x, "id");
+        p.kind = jstr(x, "kind");
+        p.period = jstr(x, "period");
+        p.date = jstr(x, "date");
+        p.endDate = jstr(x, "end_date");
+        p.state = jstr(x, "state");
+        if (p.id.empty() || (p.state != "past" && p.state != "running" && p.state != "coming")) continue;
+        p.drawsOn = jstr(x, "draws_on");
+        // The server checks every change again; a period that is over is never offered.
+        p.editable = jget<bool>(x, "editable", false) && !p.past();
+        const Json& n = jfield(x, "results_count", Json());
+        p.resultsCount = n.is_number_integer() ? static_cast<int>(std::clamp<int64_t>(n.get<int64_t>(), 0, 99'999'999)) : -1;
+        p.challenge = jfield(x, "challenge", Json());
+        if (p.challenge.is_object()) p.parsed = DailyChallenge::fromJson(p.challenge);
+        p.rewards = ChallengePrize::listFromJson(jfield(x, "rewards", Json()));
+        p.rewardsGrantedAt = jstr(x, "rewards_granted_at");
+        out.push_back(std::move(p));
+    }
+    return out;
+}
+
 AdminCalendar::AdminCalendar(GameServices& g, OnlineUi& ou, std::function<void(const std::string&, bool)> say, std::function<bool(const ApiResult&)> lostRole)
     : g_(g), ou_(ou), say_(std::move(say)), lostRole_(std::move(lostRole)), art_(g) {}
 
@@ -161,23 +210,7 @@ void AdminCalendar::loadMonth(const std::string& month) {
                           loadError_ = errorText(r);
                           return;
                       }
-                      periods_.clear();
-                      for (const Json& x : jfield(r.data, "periods", Json::array())) {
-                          Period p;
-                          p.id = jstr(x, "id");
-                          p.kind = jstr(x, "kind");
-                          p.period = jstr(x, "period");
-                          p.date = jstr(x, "date");
-                          p.endDate = jstr(x, "end_date");
-                          p.state = jstr(x, "state");
-                          p.drawsOn = jstr(x, "draws_on");
-                          p.editable = jget<bool>(x, "editable", false);
-                          p.challenge = jfield(x, "challenge", Json());
-                          if (p.challenge.is_object()) p.parsed = DailyChallenge::fromJson(p.challenge);
-                          p.rewards = ChallengePrize::listFromJson(jfield(x, "rewards", Json()));
-                          p.rewardsGrantedAt = jstr(x, "rewards_granted_at");
-                          periods_.push_back(std::move(p));
-                      }
+                      periods_ = AdminChallengePeriod::listFromJson(r.data);
                       firstMonth_ = jstr(r.data, "first_month");
                       lastMonth_ = jstr(r.data, "last_month");
                       today_ = jstr(r.data, "today");
@@ -192,6 +225,13 @@ void AdminCalendar::loadMonth(const std::string& month) {
                           g_.ui.setFocus("admin/cal/c" + want);
                       } else {
                           selected_.clear();
+                      }
+                      // 2.60: a change refused because the period had just locked: said again over the fiche read now.
+                      if (!refusedMsg_.empty()) {
+                          editorMsg_ = refusedMsg_;
+                          editorError_ = true;
+                          editorWarn_ = false;
+                          refusedMsg_.clear();
                       }
                   }),
                   false);
@@ -387,14 +427,32 @@ Json AdminCalendar::body() const {
     return b;
 }
 
+bool AdminCalendar::lockedRefusal(const ApiResult& r) {
+    if (r.ok || (r.code != "CHALLENGE_HAS_RESULTS" && r.code != "CHALLENGE_STARTED")) return false;
+    // Someone has just played it (or its period has just ended): the draft goes, the fiche is
+    // read again and says why it is locked now.
+    refusedMsg_ = r.code == "CHALLENGE_HAS_RESULTS" ? "Refusé : un joueur vient d'obtenir un résultat sur ce défi."
+                                                     : "Refusé : la période de ce défi vient de se terminer.";
+    editorMsg_ = refusedMsg_;
+    editorError_ = true;
+    editorWarn_ = false;
+    dirty_ = false;
+    prizesDirty_ = false;
+    say_(errorText(r), true);
+    loadMonth(month_);
+    return true;
+}
+
 void AdminCalendar::save() {
     const Period* p = find(selected_);
     if (!p || busy_) return;
     busy_ = true;
     std::string id = p->id;
-    g_.online.send("PUT", "/api/v1/admin/challenges/" + id, body(), OnlineService::guard(life_, [this, id](const ApiResult& r) {
+    const bool running = p->running();
+    g_.online.send("PUT", "/api/v1/admin/challenges/" + id, body(), OnlineService::guard(life_, [this, id, running](const ApiResult& r) {
                        busy_ = false;
                        if (lostRole_(r)) return;
+                       if (lockedRefusal(r)) return;
                        if (!r.ok) {
                            editorMsg_ = errorText(r);
                            editorError_ = true;
@@ -411,7 +469,9 @@ void AdminCalendar::save() {
                                p.drawsOn.clear();
                                if (selected_ == id) draftFrom(p);
                            }
-                       std::string msg = "Défi enregistré : il sera proposé aux joueurs à son début.";
+                       // 2.60: a running one is played in its new version at once.
+                       std::string msg = running ? std::string("Défi enregistré : les joueurs reçoivent sa nouvelle version dès maintenant.")
+                                                 : std::string("Défi enregistré : il sera proposé aux joueurs à son début.");
                        const Json& warnings = jfield(r.data, "warnings", Json::array());
                        if (warnings.is_array() && !warnings.empty() && warnings[0].is_string()) {
                            editorMsg_ = "Enregistré. Attention : " + warnings[0].get<std::string>() + ".";
@@ -438,6 +498,7 @@ void AdminCalendar::resetToDraw() {
     g_.online.send("DELETE", "/api/v1/admin/challenges/" + id, Json(), OnlineService::guard(life_, [this, id](const ApiResult& r) {
                        busy_ = false;
                        if (lostRole_(r)) return;
+                       if (lockedRefusal(r)) return;
                        if (!r.ok) {
                            editorMsg_ = errorText(r);
                            editorError_ = true;
@@ -584,15 +645,13 @@ void AdminCalendar::drawMonthBand(const Rect& r) {
                            std::max(1.0f, ui.s(sel ? 2.5f : focused ? 2.0f : 1.2f)));
     float x = r.x + ui.s(14), right = r.right() - ui.s(14), cy = r.center().y, h = std::min(ui.s(28), r.h * 0.56f);
     x += chip(ui, "Défi du mois", x, cy, h, ui.theme().violet, r.w * 0.3f, true) + ui.s(14);
-    // The pill at the right (measured first), the title in what is left.
+    // The pill at the right (measured first, as drawPill measures it), the title in what is left.
     if (p) {
-        float pw = 0.0f;
-        std::string text = p->state == "past" ? "passé" : p->state == "running" ? "en cours · verrouillé" : !c ? "+ choisir" : c->source == "admin" ? "choisi" : "tirage";
-        // As drawPill measures it (padding, padlock, text).
-        float fs = std::max(h / ui.s(1.0f) * 0.5f, 11.5f / ui.s(1.0f));
-        pw = ui.text().measure(text, FontFace::Bold, ui.s(fs)).x + h * 0.8f + (p->state != "coming" ? h * 0.62f : 0.0f);
-        drawPill(p, right - pw, cy, h, pw);
-        right -= pw + ui.s(14);
+        const float pw = pillWidth(*p, h, (right - x) * 0.45f);
+        if (pw > 0.0f) {
+            drawPill(p, right - pw, cy, h, pw);
+            right -= pw + ui.s(14);
+        }
     }
     if (c) {
         std::optional<i18n::Verbatim> v;
@@ -604,27 +663,42 @@ void AdminCalendar::drawMonthBand(const Rect& r) {
         std::string t = !p->drawsOn.empty() ? "Pas encore tiré : tirage le " + ddmm(p->drawsOn) + ", sauf choix d'un admin." : std::string("Pas de défi du mois.");
         fitLabel(ui, t, {x, cy}, 17, right - x, ui.theme().textDim);
     }
+    // 2.60 « NOUVEAU »: a challenge that runs may still change while nobody has a result on it.
+    if (p && p->running()) ui.newBadge(name, r, "admin.calendar.running", true, true);
+}
+
+float AdminCalendar::pillWidth(const Period& p, float h, float room, std::string* chosen) const {
+    UIContext& ui = g_.ui;
+    // Tight: padding, the padlock (when locked), the text, padding; the longest text that fits.
+    const float fs = std::max(h / ui.s(1.0f) * 0.5f, 11.5f / ui.s(1.0f));
+    const float extra = h * 0.8f + (p.editable ? 0.0f : h * 0.62f);
+    const std::vector<std::string> texts = p.pillTexts();
+    for (const std::string& t : texts) {
+        const float w = ui.text().measure(t, FontFace::Bold, ui.s(fs)).x + extra;
+        if (w <= room || &t == &texts.back()) {
+            if (chosen) *chosen = t;
+            return std::min(w, room);
+        }
+    }
+    return 0.0f;
 }
 
 void AdminCalendar::drawPill(const Period* p, float x, float cy, float h, float room) {
     UIContext& ui = g_.ui;
     if (!p) return;
     const DailyChallenge* c = p->parsed ? &*p->parsed : nullptr;
-    const bool locked = p->state != "coming";
+    // 2.60: locked once over, or begun with a result on it; a running one nobody has played yet is not.
+    const bool locked = !p->editable;
     std::string text;
+    float w = pillWidth(*p, h, room, &text);
     Color col = ui.theme().textDim;
     bool filled = false;
-    if (p->state == "past") text = "passé";
-    else if (p->state == "running") text = p->kind == "monthly" ? "en cours · verrouillé" : "en cours";
-    else if (!c) text = "+ choisir";
-    else if (c->source == "admin") text = "choisi", col = ui.theme().accent;
-    else text = "tirage", col = Color{185, 200, 218, 255};
-    if (p->state == "running") col = ui.theme().warm;
-    // Tight: padding, the padlock (when locked), the text, padding.
+    if (p->running()) col = ui.theme().warm;
+    else if (p->past() || !c) col = ui.theme().textDim;
+    else if (c->source == "admin") col = ui.theme().accent;
+    else col = Color{185, 200, 218, 255};
     const float pad = h * 0.4f, lockW = locked ? h * 0.62f : 0.0f;
     float fs = std::max(h / ui.s(1.0f) * 0.5f, 11.5f / ui.s(1.0f));
-    float tw = ui.text().measure(text, FontFace::Bold, ui.s(fs)).x;
-    float w = std::min(room, tw + 2 * pad + lockW);
     if (w < h * 1.4f) return;
     Rect pr{x, cy - h * 0.5f, w, h};
     ui.r().fillRoundedRect(pr, h * 0.5f, filled ? col : col.withAlphaF(text == "+ choisir" ? 0.06f : 0.16f));
@@ -684,7 +758,7 @@ void AdminCalendar::drawLegend(float x, float cy, float w) {
     };
     const Item items[3] = {{"tirage", "tiré au sort par le serveur, remplaçable", Color{185, 200, 218, 255}, false},
                            {"choisi", "par un admin", ui.theme().accent, false},
-                           {"", "commencé : verrouillé", ui.theme().textDim, true}};
+                           {"", "verrouillé : passé, ou des joueurs ont un résultat", ui.theme().textDim, true}};
     const float h = ui.s(24);
     float size = 15.0f;
     // One size for the whole line, smaller until it fits (never cut).
@@ -722,8 +796,8 @@ void AdminCalendar::drawEditor(const Rect& r) {
     if (!p) {
         fitLabel(ui, "Éditeur du défi", {x, y + ui.s(16)}, 24, w, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(50);
-        ui.labelWrapped("Choisissez un jour, une semaine ou le mois dans le calendrier (clic, Entrée ou bouton A). Un défi qui n'a pas commencé se choisit "
-                        "ici : niveau, règles, objectif et paliers. Un défi commencé ou passé se consulte seulement.",
+        ui.labelWrapped("Choisissez un jour, une semaine ou le mois dans le calendrier (clic, Entrée ou bouton A). Un défi à venir, ou en cours tant "
+                        "que personne n'y a de résultat, se choisit ici : niveau, règles, objectif et paliers. Les autres se consultent seulement.",
                         {x, y}, w, fz(ui, 17), ui.theme().textDim);
         ui.popId();
         return;
@@ -765,8 +839,10 @@ void AdminCalendar::drawEditor(const Rect& r) {
         msgC = ui.theme().warm;
     }
     if (!editable) {
-        msg = p->state == "past" ? "Défi passé : lecture seule." : "Défi commencé : lecture seule. Un défi commencé ne change plus.";
-        msgC = ui.theme().textDim;
+        // Why it is locked (2.60: the players who already have a result on it), after the
+        // refusal of a change that has just met it.
+        msg = editorError_ && !editorMsg_.empty() ? editorMsg_ + " " + p->lockNote() : p->lockNote();
+        msgC = editorError_ && !editorMsg_.empty() ? ui.theme().danger : ui.theme().textDim;
     }
     if (!msg.empty()) {
         float mh = ui.text().measureWrapped(msg, FontFace::Body, ui.s(fz(ui, 16)), w).y;
@@ -822,6 +898,7 @@ float AdminCalendar::drawEditorHead(const Period& p, float x, float y, float w) 
     // When it opens (and whether it may still change), then where it comes from: two lines.
     std::string when;
     if (p.state == "coming") when = "Ouvert aux joueurs le " + ddmm(p.date) + " à 00:00 UTC · modifiable jusque-là";
+    else if (p.openWhileRunning()) when = "Ouvert depuis le " + ddmm(p.date) + " à 00:00 UTC, jusqu'au " + ddmm(p.endDate) + " à 00:00 UTC";
     else if (p.state == "running") when = "Ouvert depuis le " + ddmm(p.date) + " à 00:00 UTC, jusqu'au " + ddmm(p.endDate) + " à 00:00 UTC · verrouillé";
     else when = "Terminé le " + ddmm(p.endDate) + " à 00:00 UTC · verrouillé";
     std::string from;
@@ -831,8 +908,8 @@ float AdminCalendar::drawEditorHead(const Period& p, float x, float y, float w) 
             std::string replaced = jstr(c, "replaced_title");
             from = replaced.empty() ? std::string("Choisi par un admin.") : "Choisi par un admin : remplace le tirage « " + replaced + " ».";
         } else {
-            from = "Tiré au sort par le serveur : un admin peut le remplacer tant qu'il n'a pas commencé.";
-            if (p.state != "coming") from = "Tiré au sort par le serveur.";
+            from = "Tiré au sort par le serveur : un admin peut le remplacer tant que personne n'y a de résultat.";
+            if (!p.editable) from = "Tiré au sort par le serveur.";
         }
     } else if (!p.drawsOn.empty()) {
         from = "Pas encore tiré : le serveur le tirera le " + ddmm(p.drawsOn) + ", sauf si un admin le choisit avant.";
@@ -842,7 +919,14 @@ float AdminCalendar::drawEditorHead(const Period& p, float x, float y, float w) 
     Vec2 s = ui.labelWrapped(when, {x, y}, w, fz(ui, 15), ui.theme().textDim);
     y += s.y + ui.s(2);
     s = ui.labelWrapped(from, {x, y}, w, fz(ui, 15), ui.theme().textDim);
-    return y + s.y + ui.s(12);
+    y += s.y;
+    // 2.60: a running one nobody has played yet, said under them (wrapped, measured).
+    if (p.openWhileRunning()) {
+        y += ui.s(4);
+        s = ui.labelWrapped(p.lockNote(), {x, y}, w, fz(ui, 15), ui.theme().warm);
+        y += s.y;
+    }
+    return y + ui.s(12);
 }
 
 void AdminCalendar::rowLabel(const std::string& t, float x, float cy, float w) { fitLabel(g_.ui, t, {x, cy}, 17, w, g_.ui.theme().text); }
@@ -1394,6 +1478,7 @@ void AdminCalendar::savePrizes() {
     g_.online.send("PUT", "/api/v1/admin/challenges/" + id + "/rewards", body, OnlineService::guard(life_, [this, id](const ApiResult& r) {
                        busy_ = false;
                        if (lostRole_(r)) return;
+                       if (lockedRefusal(r)) return;
                        if (!r.ok) {
                            editorMsg_ = errorText(r);
                            editorError_ = true;
@@ -1694,7 +1779,7 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
         if (p.editable) info = "Accordées par le serveur à la fin du défi, d'après les parties vérifiées reçues à l'heure. Une récompense gagnée n'est jamais retirée.";
         else if (!p.rewardsGrantedAt.empty()) info = "Accordées " + grantedText(p.rewardsGrantedAt) + ", d'après les parties vérifiées reçues à l'heure.";
         else if (p.state == "past") info = "Défi terminé : le serveur les accorde dans l'heure qui suit sa fin.";
-        else info = "Défi commencé : ses récompenses ne changent plus. Elles seront accordées à sa fin.";
+        else info = "Des joueurs ont un résultat sur ce défi : ses récompenses ne changent plus. Elles seront accordées à sa fin.";
         Vec2 s = ui.labelWrapped(info, {x, y}, w, fz(ui, 15), ui.theme().textDim);
         y += s.y + ui.s(10);
     }

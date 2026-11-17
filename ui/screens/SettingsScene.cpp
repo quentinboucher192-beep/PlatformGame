@@ -412,8 +412,8 @@ private:
 
     void gameplay(const Rect& c) {
         UIContext& ui = g_.ui;
-        // Ten rows, then where the saves are: they scroll when the window is too short for them.
-        const float total = row() * 10.0f + ui.s(20) + ui.s(28) + ui.s(28);
+        // Eleven rows, then where the saves are: they scroll when the window is too short for them.
+        const float total = row() * 11.0f + ui.s(20) + ui.s(28) + ui.s(28);
         const bool scrolls = total > c.h;
         ui.beginScroll("gamescroll", c, total);
         Rect r{c.x, c.y - ui.scrollOffset(), std::min(c.w - (scrolls ? ui.s(16) : 0.0f), ui.s(900)), ui.s(54)};
@@ -450,6 +450,10 @@ private:
         ui.newBadge("hudeditor", r, "settings.hud_editor", true, true);  // « NOUVEAU » (2.52: « Ennemis vaincus »)
         if (openHud) g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
         r.y += row();
+        // 2.60: a block of the HUD fades while the boss, Nova or an attack of the boss is under it.
+        ui.toggle("hudfade", r, "Effacer le HUD quand il cache l'action", working_.gameplay.fadeHud);
+        ui.newBadge("hudfade", r, "settings.game.hud_fade", true, true);
+        r.y += row();
         ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
         r.y += row();
         ui.toggle("unlockall", r, "Tout débloquer : planètes et niveaux (mode test)", working_.gameplay.unlockAll);
@@ -467,7 +471,7 @@ private:
                                       "dans la copie privée de votre progression.";
             ui.labelWrapped(about, {sr.x + ui.s(4), sr.bottom() + ui.s(10)}, sr.w - ui.s(8), 17, ui.theme().textDim);
         }
-        r.y += row() + ui.s(10);  // ten rows (2.52): the folder stays above the « Retour » button
+        r.y += row() + ui.s(10);  // eleven rows (2.60): the folder stays above the « Retour » button
         ui.label("Dossier des sauvegardes :", {r.x, r.y}, 20, ui.theme().textDim);
         const std::string dir = Paths::toUtf8(Paths::userDir());
         {

@@ -295,6 +295,7 @@ Json LevelData::toJson() const {
     if (damageFactor != 1.0f) j["damageFactor"] = damageFactor;
     if (lives > 0) j["lives"] = lives;
     if (extreme) j["extreme"] = true;
+    if (tutorial) j["tutorial"] = true;
     j["medals"] = {{"bronze", medals[0].toJson()},
                    {"silver", medals[1].toJson()},
                    {"gold", medals[2].toJson()},
@@ -361,6 +362,7 @@ std::optional<LevelData> LevelData::fromJson(const Json& j, std::string* error) 
         d.damageFactor = std::isfinite(df) ? std::clamp(df, 0.25f, 5.0f) : 1.0f;
         d.lives = std::clamp(jget<int>(j, "lives", 0), 0, 99);
         d.extreme = jget<bool>(j, "extreme", false);
+        d.tutorial = jget<bool>(j, "tutorial", false);
     }
     if (j.contains("medals")) {
         const Json& m = j["medals"];

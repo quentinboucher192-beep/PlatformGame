@@ -6,6 +6,7 @@
 // conditions of the tiers (« Vitesse » or « Finir le niveau »), and the calendar's cells (the
 // level's preview behind them, the tags of what makes a challenge what it is).
 
+#include <array>
 #include <map>
 #include <string>
 #include <utility>
@@ -67,6 +68,31 @@ std::string powerList(GameServices& g, const std::vector<std::string>& ids);
 /// moins, sans dégât"; « Finir le niveau »: "Atteindre 50 % du parcours", "Finir le niveau,
 /// sans dégât".
 std::string tierCondition(const DailyChallenge& c, ChallengeTier t);
+
+/// 2.60: how the medals of a challenge (its players at Bronze, Argent and Or) fit a room of the
+/// calendar: three pills (a disk of the tier, its number), else the numbers alone in their
+/// colours, else the Or one alone, else nothing. Pure: the caller measures the numbers.
+enum class MedalFit { None, GoldOnly, Numbers, Pills };
+struct MedalPlan {
+    MedalFit fit = MedalFit::None;
+    float width = 0.0f;              // from the left of the first medal shown to the right of the last
+    std::array<float, 3> x{}, w{};   // Bronze, Argent, Or: left (from the plan's left) and width (0: not shown)
+    /// The disk of a pill (its diameter), its padding, the gap between disk and number (Pills only).
+    static float disk(float h) { return h * 0.5f; }
+    static float pad(float h) { return h * 0.3f; }
+    static float inner(float h) { return h * 0.18f; }
+};
+/// `numW`: the width of each number (Bronze, Argent, Or) at the medals' font, `h` their height.
+MedalPlan planMedals(float room, float h, const std::array<float, 3>& numW);
+/// The medals' font for pills `h` high (pixels of the design, as chips).
+float medalFont(const UIContext& ui, float h);
+/// The widths planMedals needs: the three numbers at medalFont.
+std::array<float, 3> medalNumberWidths(UIContext& ui, const ChallengeTierCounts& t, float h);
+/// The medals planned, from `x` (their left), centred on `cy`; `mine`: my tier on this
+/// challenge (its medal outlined), None when I have none.
+void drawMedals(UIContext& ui, const MedalPlan& plan, const ChallengeTierCounts& t, float x, float cy, float h, ChallengeTier mine);
+/// « 12 bronze · 5 argent · 2 or (joueurs vérifiés) ».
+std::string medalsText(const ChallengeTierCounts& t);
 
 /// The calendar's cells (2.38): each challenge's level behind its cell (its preview, cropped
 /// and darkened under the text), and the tags of what makes it what it is.

@@ -160,8 +160,8 @@ describe("ADMINISTRATION › Calendrier des défis: the month", () => {
         expect(days.length).toBe((Date.parse(`${periodBounds("monthly", month)!.end}T00:00:00Z`) - Date.parse(`${month}-01T00:00:00Z`)) / 86400000);
         expect(d.periods.filter((p: any) => p.kind === "monthly").map((p: any) => p.id)).toEqual([`monthly-${month}`]);
         expect(d.periods.some((p: any) => p.kind === "weekly" && p.id === `weekly-${periodOf("weekly", t)}`)).toBe(true);
-        // Today: running, locked; the coming days drawn (J+7) are there, editable.
-        expect(byId.get(`daily-${t}`)).toMatchObject({ state: "running", editable: false, challenge: { source: "auto", kind: "daily" } });
+        // Today: running, nobody has a result yet: still editable (2.60); the coming days drawn (J+7) are there, editable.
+        expect(byId.get(`daily-${t}`)).toMatchObject({ state: "running", editable: true, results_count: 0, challenge: { source: "auto", kind: "daily" } });
         const tomorrow = addDays(t, 1);
         if (tomorrow.startsWith(month)) {
             const p = byId.get(`daily-${tomorrow}`);
@@ -333,25 +333,35 @@ describe("ADMINISTRATION › Calendrier des défis: setting a period", () => {
         expect(row?.source ?? "auto").toBe("auto");
     });
 
-    it("never changes nor removes a period that has begun or is over, and writes the refusal to the Journal", async () => {
+    it("never changes nor removes a period that is over, and writes the refusal to the Journal", async () => {
         const nova = await admin();
         const t = today();
         await api("GET", `${V}/admin/challenges`, { token: nova.token });
-        const before = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`daily-${t}`).first<any>();
-        for (const id of [`daily-${t}`, `daily-${addDays(t, -3)}`, `weekly-${periodOf("weekly", t)}`, `monthly-${periodOf("monthly", t)}`]) {
+        // Over, without any result: still never (the routes, each write, the trigger).
+        const past = await insertChallenge(addDays(t, -3), { objective: "speed" });
+        const lastWeek = await insertChallenge(addDays(t, -7), { kind: "weekly", objective: "speed" });
+        const before = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(past.id).first<any>();
+        for (const id of [past.id, lastWeek.id]) {
             const res = await put(nova, id, { level: { source: "campaign", id: "glacior_02" } });
             expect(res.status, id).toBe(409);
             expect(res.body.error.code).toBe("CHALLENGE_STARTED");
             const del = await reset(nova, id);
             expect(del.status, id).toBe(409);
             expect(del.body.error.code).toBe("CHALLENGE_STARTED");
+            const rw = await api("PUT", `${V}/admin/challenges/${id}/rewards`, { token: nova.token, body: { rewards: [] } });
+            expect(rw.body.error.code, id).toBe("CHALLENGE_STARTED");
         }
-        expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(`daily-${t}`).first<any>()).toEqual(before);
+        expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(past.id).first<any>()).toEqual(before);
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(past.id).run()).rejects.toThrow(/already over/);
+        await expect(env.DB.prepare("UPDATE challenges SET objective = 'finish' WHERE id = ?1").bind(lastWeek.id).run()).rejects.toThrow(/already over/);
         const refused = await log(nova, "refused");
-        expect(refused).toHaveLength(8);
+        expect(refused).toHaveLength(6);
         expect(refused.every((e) => e.reason === "CHALLENGE_STARTED")).toBe(true);
-        expect(refused.map((e) => e.challenge.action).sort()).toEqual(["reset", "reset", "reset", "reset", "set", "set", "set", "set"]);
-        expect(refused.find((e) => e.challenge.id === `daily-${t}`).challenge).toMatchObject({ kind: "daily", period: t, start: t });
+        expect(refused.map((e) => e.challenge.action).sort()).toEqual(["reset", "reset", "rewards", "rewards", "set", "set"]);
+        expect(refused.find((e) => e.challenge.id === past.id).challenge).toMatchObject({ kind: "daily", period: addDays(t, -3), start: addDays(t, -3) });
+        // The list says so.
+        const month = await api("GET", `${V}/admin/challenges?month=${addDays(t, -3).slice(0, 7)}`, { token: nova.token });
+        expect(month.body.data.periods.find((p: any) => p.id === past.id)).toMatchObject({ state: "past", editable: false, results_count: 0 });
         // A malformed id: not found.
         expect((await put(nova, "daily-2026-02-30", { level: { source: "campaign", id: "glacior_02" } })).status).toBe(404);
         expect((await reset(nova, "yearly-2027")).status).toBe(404);
@@ -392,6 +402,233 @@ describe("ADMINISTRATION › Calendrier des défis: setting a period", () => {
         expect((await log(nova, "all")).length).toBe(2);
         expect(JSON.stringify(await log(nova))).not.toContain("ip_hash");
         expect((await api("GET", `${V}/admin/log?kind=defis`, { token: nova.token })).status).toBe(400);
+    });
+});
+
+describe("ADMINISTRATION › Calendrier des défis: a running challenge nobody has played yet (2.60)", () => {
+    /** A run of `ch` (as the game sends it) by `p`. */
+    function run(p: TestPlayer, id: string, ch: { level: { level_hash: string }; rules_hash: string }, timeMs = 80000) {
+        return api("POST", `${V}/challenges/${id}/runs`, {
+            token: p.token,
+            body: {
+                attempt_id: crypto.randomUUID(),
+                time_ms: timeMs,
+                deaths: 0,
+                damage_taken: 0,
+                level_hash: ch.level.level_hash,
+                rules_hash: ch.rules_hash,
+                game_version: "2.60.0",
+                has_replay: true,
+            },
+        });
+    }
+
+    it("changes a running day, week and month while nobody has a result, and puts back the draw", async () => {
+        const nova = await admin();
+        const t = today();
+        const list = await api("GET", `${V}/admin/challenges`, { token: nova.token });
+        const byId = new Map<string, any>(list.body.data.periods.map((p: any) => [p.id, p]));
+        const id = `daily-${t}`;
+        expect(byId.get(id)).toMatchObject({ state: "running", editable: true, results_count: 0, challenge: { source: "auto" } });
+        const before = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        expect(before.updated_at).toBeTruthy();
+
+        const res = await put(nova, id, { level: { source: "campaign", id: "pyralis_04" }, hearts: 2, silver_ms: 120000, gold_ms: 90000 });
+        expect(res.status, JSON.stringify(res.body)).toBe(200);
+        expect(res.body.data.challenge).toMatchObject({ id, source: "admin", replaced_title: before.level.title, rules: { hearts: 2 } });
+        // The players read the new version at once: its level, its rules and their hash, a newer updated_at.
+        const after = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        expect(after).toMatchObject({ source: "admin", level: { level_id: "pyralis_04", level_hash: CAMPAIGN.pyralis_04 }, rules: { hearts: 2 } });
+        expect(after.rules_hash).not.toBe(before.rules_hash);
+        expect(after.rules_hash).toBe(await rulesHash(id, after.rules));
+        expect(after.updated_at > before.updated_at).toBe(true);
+        const current = (await api("GET", `${V}/challenges/current`)).body.data;
+        expect(current.daily).toEqual(after);
+        // Its rewards too.
+        const rw = await api("PUT", `${V}/admin/challenges/${id}/rewards`, {
+            token: nova.token,
+            body: { rewards: [{ kind: "item", ref: "frame_couronne", condition: "tier", value: 3 }] },
+        });
+        expect(rw.status, JSON.stringify(rw.body)).toBe(200);
+        expect((await api("GET", `${V}/challenges/${id}`)).body.data.rewards.map((r: any) => r.ref)).toEqual(["frame_couronne"]);
+        // The week and the month that run.
+        const week = `weekly-${periodOf("weekly", t)}`;
+        const w = await put(nova, week, { level: { source: "campaign", id: "glacior_04" }, hearts: 1 });
+        expect(w.status, JSON.stringify(w.body)).toBe(200);
+        expect(w.body.data.challenge).toMatchObject({ kind: "weekly", source: "admin", rules: { hearts: 1 } });
+        const month = `monthly-${periodOf("monthly", t)}`;
+        expect((await put(nova, month, { level: { source: "campaign", id: "noyau_02" } })).status).toBe(200);
+        // Still editable; the Journal says it ran.
+        const again = await api("GET", `${V}/admin/challenges`, { token: nova.token });
+        for (const pid of [id, week, month])
+            expect(again.body.data.periods.find((p: any) => p.id === pid), pid).toMatchObject({ state: "running", editable: true, results_count: 0 });
+        const sets = (await log(nova, "challenge")).filter((e) => e.action === "admin_challenge_set");
+        expect(sets).toHaveLength(3);
+        expect(sets.every((e) => e.challenge.running === true)).toBe(true);
+
+        // « Revenir au tirage »: drawn again at once (a running period is always in the drawn window).
+        const back = await reset(nova, id);
+        expect(back.status, JSON.stringify(back.body)).toBe(200);
+        expect(back.body.data).toMatchObject({ challenge: { id, source: "auto", replaced_title: null }, draws_on: null });
+        const drawn = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        expect(drawn.source).toBe("auto");
+        expect(drawn.updated_at > after.updated_at).toBe(true);
+        // The rewards stay with the period.
+        expect(drawn.rewards.map((r: any) => r.ref)).toEqual(["frame_couronne"]);
+        const resets = (await log(nova, "challenge")).filter((e) => e.action === "admin_challenge_reset");
+        expect(resets[0].challenge).toMatchObject({ id, running: true });
+    });
+
+    it("refuses a running challenge once a player has a result, and says how many (route, write and trigger)", async () => {
+        const nova = await admin();
+        const kestrel = await registerPlayer("Kestrel");
+        const t = today();
+        await api("GET", `${V}/admin/challenges`, { token: nova.token });
+        const id = `daily-${t}`;
+        const ch = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        // A run (its replay not even sent): a result.
+        expect((await run(kestrel, id, ch)).status).toBe(201);
+        const before = await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(id).first<any>();
+        const res = await put(nova, id, { level: { source: "campaign", id: "pyralis_04" } });
+        expect(res.status).toBe(409);
+        expect(res.body.error).toMatchObject({ code: "CHALLENGE_HAS_RESULTS", message: "Des joueurs ont déjà un résultat sur ce défi : il ne change plus." });
+        expect(res.body.error.details).toMatchObject({ results_count: 1 });
+        expect((await reset(nova, id)).body.error.code).toBe("CHALLENGE_HAS_RESULTS");
+        const rw = await api("PUT", `${V}/admin/challenges/${id}/rewards`, { token: nova.token, body: { rewards: [] } });
+        expect(rw.body.error.code).toBe("CHALLENGE_HAS_RESULTS");
+        expect(await env.DB.prepare("SELECT * FROM challenges WHERE id = ?1").bind(id).first<any>()).toEqual(before);
+        // The trigger backs the routes.
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(id).run()).rejects.toThrow(/has results/);
+        await expect(env.DB.prepare("UPDATE challenges SET silver_ms = silver_ms + 1000 WHERE id = ?1").bind(id).run()).rejects.toThrow(/has results/);
+        // The bookkeeping may still change.
+        expect((await env.DB.prepare("UPDATE challenges SET featured_notified_at = 'x' WHERE id = ?1").bind(id).run()).meta.changes).toBe(1);
+
+        // An attempt of « Plus loin » (the week), a reward won (the month): results too.
+        const week = `weekly-${periodOf("weekly", t)}`;
+        const month = `monthly-${periodOf("monthly", t)}`;
+        await env.DB.prepare(
+            `INSERT INTO challenge_attempts (id, challenge_id, player_id, attempt_id, time_ms, level_hash, rules_hash, game_version, claim, status, created_at)
+             VALUES (?1, ?2, ?3, ?4, 40000, 'x', 'x', '2.60.0', '{}', 'REJECTED', ?5)`,
+        )
+            .bind(crypto.randomUUID(), week, kestrel.id, crypto.randomUUID(), new Date().toISOString())
+            .run();
+        const vega = await registerPlayer("Vega");
+        for (const p of [kestrel, vega])
+            await env.DB.prepare("INSERT INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at) VALUES (?1, ?2, 'item', 'frame_couronne', ?3)")
+                .bind(p.id, month, new Date().toISOString())
+                .run();
+        const w = await put(nova, week, { level: { source: "campaign", id: "glacior_04" } });
+        expect(w.body.error).toMatchObject({ code: "CHALLENGE_HAS_RESULTS", details: { results_count: 1 } });
+        const m = await put(nova, month, { level: { source: "campaign", id: "noyau_02" } });
+        expect(m.body.error).toMatchObject({ code: "CHALLENGE_HAS_RESULTS", details: { results_count: 2 } });
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(week).run()).rejects.toThrow(/has results/);
+        await expect(env.DB.prepare("UPDATE challenges SET hearts = 1 WHERE id = ?1").bind(month).run()).rejects.toThrow(/has results/);
+
+        // The list says why each is locked.
+        const list = await api("GET", `${V}/admin/challenges`, { token: nova.token });
+        const byId = new Map<string, any>(list.body.data.periods.map((p: any) => [p.id, p]));
+        expect(byId.get(id)).toMatchObject({ state: "running", editable: false, results_count: 1 });
+        expect(byId.get(week)).toMatchObject({ editable: false, results_count: 1 });
+        expect(byId.get(month)).toMatchObject({ editable: false, results_count: 2 });
+        expect(byId.get(`daily-${addDays(t, 1)}`) ?? { editable: true }).toMatchObject({ editable: true });
+        // Each refusal in the Journal, distinct from CHALLENGE_STARTED, with the count.
+        const refused = await log(nova, "refused");
+        expect(refused).toHaveLength(5);
+        expect(refused.every((e) => e.reason === "CHALLENGE_HAS_RESULTS")).toBe(true);
+        expect(refused.find((e) => e.challenge.id === month).challenge).toMatchObject({ action: "set", results_count: 2 });
+    });
+
+    it("refuses at the write when a result arrives after the checks", async () => {
+        const nova = await admin();
+        const kestrel = await registerPlayer("Kestrel");
+        const t = today();
+        await api("GET", `${V}/admin/challenges`, { token: nova.token });
+        const id = `daily-${t}`;
+        const ch = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        // The administrator's write carries the condition: a run inserted by the same statement's
+        // time (here just before it, as a racing player would) wins.
+        const { HAS_RESULTS_SQL } = await import("../src/challenges");
+        expect((await env.DB.prepare(`SELECT ${HAS_RESULTS_SQL("?1")} AS has`).bind(id).first<{ has: number }>())!.has).toBe(0);
+        expect((await run(kestrel, id, ch)).status).toBe(201);
+        expect((await env.DB.prepare(`SELECT ${HAS_RESULTS_SQL("?1")} AS has`).bind(id).first<{ has: number }>())!.has).toBe(1);
+        const upd = await env.DB.prepare(
+            `UPDATE challenges SET hearts = 1 WHERE id = ?1 AND (date > date('now') OR (end_date > date('now') AND NOT ${HAS_RESULTS_SQL("?1")}))`,
+        )
+            .bind(id)
+            .run();
+        expect(upd.meta.changes).toBe(0);
+        const del = await env.DB.prepare(`DELETE FROM challenges WHERE id = ?1 AND (date > date('now') OR NOT ${HAS_RESULTS_SQL("?1")})`).bind(id).run();
+        expect(del.meta.changes).toBe(0);
+    });
+
+    it("refuses a run or an attempt of the former version, and never mixes two versions' results", async () => {
+        const nova = await admin();
+        const kestrel = await registerPlayer("Kestrel");
+        const t = today();
+        await withLayout("glacior_02");
+        await api("GET", `${V}/admin/challenges`, { token: nova.token });
+        const id = `daily-${t}`;
+        expect((await put(nova, id, { level: { source: "campaign", id: "glacior_02" }, hearts: 3, silver_ms: 120000, gold_ms: 90000 })).status).toBe(200);
+        const v1 = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        // Changed while the player was on v1: other rules (hearts), then another level.
+        expect((await put(nova, id, { level: { source: "campaign", id: "glacior_02" }, hearts: 2, silver_ms: 120000, gold_ms: 90000 })).status).toBe(200);
+        const v2 = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        expect(v2.rules_hash).not.toBe(v1.rules_hash);
+        const old = await run(kestrel, id, v1);
+        expect(old.status).toBe(409);
+        expect(old.body.error).toMatchObject({ code: "RULES_MISMATCH", details: { rules_hash: v2.rules_hash } });
+        const attempt = await api("POST", `${V}/challenges/${id}/attempts`, {
+            token: kestrel.token,
+            body: {
+                attempt_id: crypto.randomUUID(),
+                time_ms: 40000,
+                level_hash: v1.level.level_hash,
+                rules_hash: v1.rules_hash,
+                game_version: "2.60.0",
+                claim: { finished: false, bosses: [], waves: [] },
+            },
+        });
+        expect(attempt.body.error.code).toBe("RULES_MISMATCH");
+        expect((await put(nova, id, { level: { source: "campaign", id: "pyralis_04" }, hearts: 2 })).status).toBe(200);
+        const v3 = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        expect((await run(kestrel, id, v2)).body.error).toMatchObject({ code: "LEVEL_MISMATCH", details: { level_hash: CAMPAIGN.pyralis_04 } });
+        // Nothing was kept of the former versions: still open to a change.
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenge_runs").first<{ n: number }>())!.n).toBe(0);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenge_attempts").first<{ n: number }>())!.n).toBe(0);
+        // Only the tiers change (same level, same rules): the run is ranked with the tiers of the
+        // version the server holds, computed by the server.
+        expect((await put(nova, id, { level: { source: "campaign", id: "pyralis_04" }, hearts: 2, silver_ms: 200000, gold_ms: 100000 })).status).toBe(200);
+        const v4 = (await api("GET", `${V}/challenges/${id}`)).body.data;
+        expect(v4.rules_hash).toBe(v3.rules_hash);
+        const ok = await run(kestrel, id, v3, 150000);
+        expect(ok.status, JSON.stringify(ok.body)).toBe(201);
+        expect(ok.body.data.run.tier).toBe("silver");
+        const row = await env.DB.prepare("SELECT level_hash, rules_hash FROM challenge_runs").first<any>();
+        expect(row).toEqual({ level_hash: v4.level.level_hash, rules_hash: v4.rules_hash });
+        // Now frozen.
+        expect((await put(nova, id, { level: { source: "campaign", id: "glacior_02" } })).body.error.code).toBe("CHALLENGE_HAS_RESULTS");
+
+        // A run checked against a version that changed before its insert (a racing change): not inserted.
+        const { insertRunOnVersion } = await import("../src/challenges");
+        const base = {
+            challenge_id: id,
+            player_id: kestrel.id,
+            time_ms: 90000,
+            deaths: 0,
+            damage_taken: 0,
+            level_hash: v4.level.level_hash,
+            rules_hash: v4.rules_hash,
+            game_version: "2.60.0",
+            tier: "silver" as const,
+            late: 0,
+            created_at: new Date().toISOString(),
+        };
+        expect(await insertRunOnVersion(env.DB, { ...base, id: crypto.randomUUID(), attempt_id: crypto.randomUUID() }, v3.updated_at)).toBe(false);
+        expect(await insertRunOnVersion(env.DB, { ...base, id: crypto.randomUUID(), attempt_id: crypto.randomUUID(), rules_hash: v1.rules_hash }, v4.updated_at)).toBe(
+            false,
+        );
+        expect(await insertRunOnVersion(env.DB, { ...base, id: crypto.randomUUID(), attempt_id: crypto.randomUUID() }, v4.updated_at)).toBe(true);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenge_runs WHERE rules_hash = ?1").bind(v4.rules_hash).first<{ n: number }>())!.n).toBe(2);
     });
 });
 
