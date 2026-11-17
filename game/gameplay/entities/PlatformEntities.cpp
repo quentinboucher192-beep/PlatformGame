@@ -375,6 +375,122 @@ void AltarEntity::render(RenderContext& ctx) {
     ctx.lights.add({b.center().x, b.y - 6.0f}, 50.0f + 50.0f * g, soul);
 }
 
+// ------------------------------------------------------- the Titan's foundry (2.58)
+
+namespace {
+/// The light of the Titan's phase when it fights in this level (amber otherwise).
+Color foundryLight(const GameWorld& w) {
+    if (const Enemy* b = w.activeBoss(); b && b->alive() && b->isTitan()) return b->lightColor();
+    return {255, 194, 60, 255};
+}
+}  // namespace
+
+void ConveyorEntity::update(GameWorld& w, float dt) {
+    // Display only: its slats run with the belt the Titan set going on this strip.
+    color_ = foundryLight(w);
+    speed_ = 0.0f;
+    warn_ = 0.0f;
+    if (const BossHazards::Belt* b = w.hazards().beltOn(box)) {
+        speed_ = b->speed * b->running();
+        warn_ = b->age < b->warn ? 1.0f : 0.0f;
+    }
+    scroll_ = std::fmod(scroll_ + speed_ * dt + 1600.0f, 16.0f);
+}
+
+void ConveyorEntity::render(RenderContext& ctx) {
+    // A belt of dark rubber over the floor (its top at the surface), steel slats running on it,
+    // a roller at each end, lamps along its edge (lit and flashing before it starts).
+    const Rect b = box;
+    const float y = b.y;
+    ctx.r.fillWorldRect({b.x, y - 1.0f, b.w, 7.0f}, Color{26, 26, 30, 255});
+    for (float x = b.x - 16.0f + scroll_; x < b.right(); x += 16.0f) {
+        const float x0 = std::max(b.x + 2.0f, x), x1 = std::min(b.right() - 2.0f, x + 9.0f);
+        if (x1 > x0) ctx.r.fillWorldRect({x0, y, x1 - x0, 3.0f}, Color{86, 92, 104, 255});
+    }
+    ctx.r.fillWorldRect({b.x, y + 3.0f, b.w, 1.0f}, Color{58, 60, 68, 255});
+    for (float rx : {b.x + 3.0f, b.right() - 3.0f}) {
+        ctx.r.fillWorldCircle({rx, y + 3.0f}, 4.0f, Color{120, 126, 138, 255});
+        ctx.r.fillWorldCircle({rx, y + 3.0f}, 1.6f, Color{200, 170, 90, 255});
+    }
+    const bool on = warn_ > 0.0f ? (static_cast<int>(ctx.time * 10.0f) % 2 == 0) : std::abs(speed_) > 1.0f;
+    for (float x = b.x + 24.0f; x < b.right() - 16.0f; x += 64.0f) {
+        const Color lamp = on ? color_ : Color{70, 60, 40, 255};
+        ctx.r.fillWorldRect({x - 2.0f, y + 4.0f, 4.0f, 2.0f}, lamp);
+        if (on) ctx.r.drawWorldGlow({x, y + 5.0f}, 6.0f, color_.withAlpha(120));
+    }
+}
+
+void PressEntity::update(GameWorld& w, float dt) {
+    // Display only: the Titan's press there draws its own head while it is out.
+    color_ = foundryLight(w);
+    busy_ = false;
+    for (const BossHazards::Press& p : w.hazards().presses())
+        if (!p.safe && std::abs(p.x - box.center().x) < 2.0f) busy_ = true;
+    hiss_ = std::max(0.0f, hiss_ - dt);
+    if (busy_) hiss_ = 0.3f;
+}
+
+void PressEntity::render(RenderContext& ctx) {
+    // Its housing in the roof: a block of riveted steel, two hydraulic cylinders, a lamp; its head
+    // at rest under it (when the Titan's press is not out).
+    const Rect b = box;
+    ctx.r.fillWorldRect(b, Color{34, 36, 42, 255});
+    ctx.r.fillWorldRect({b.x + 2.0f, b.y, b.w - 4.0f, b.h - 3.0f}, Color{72, 78, 90, 255});
+    ctx.r.fillWorldRect({b.x + 2.0f, b.bottom() - 6.0f, b.w - 4.0f, 3.0f}, Color{240, 190, 40, 255});
+    for (float x = b.x + 6.0f; x < b.right() - 4.0f; x += 12.0f) ctx.r.fillWorldRect({x, b.bottom() - 6.0f, 6.0f, 3.0f}, Color{30, 30, 34, 255});
+    for (float cx : {b.x + b.w * 0.25f, b.right() - b.w * 0.25f}) {
+        ctx.r.fillWorldRect({cx - 5.0f, b.y + 3.0f, 10.0f, b.h - 10.0f}, Color{110, 118, 132, 255});
+        ctx.r.fillWorldRect({cx - 2.0f, b.y + 3.0f, 3.0f, b.h - 10.0f}, Color{200, 208, 220, 255});
+    }
+    for (float rx : {b.x + 4.0f, b.right() - 4.0f}) ctx.r.fillWorldCircle({rx, b.y + 4.0f}, 1.5f, Color{200, 170, 90, 255});
+    const bool lit = busy_ && static_cast<int>(ctx.time * 8.0f) % 2 == 0;
+    const Vec2 lamp{b.center().x, b.y + b.h * 0.45f};
+    ctx.r.fillWorldCircle(lamp, 3.0f, lit ? Color{255, 80, 50, 255} : Color{90, 50, 40, 255});
+    if (lit) {
+        ctx.r.drawWorldGlow(lamp, 12.0f, Color{255, 80, 50, 200});
+        ctx.lights.add(lamp, 60.0f, Color{255, 80, 50, 255});
+    }
+    if (!busy_) {
+        // Its head at rest.
+        const float head = 22.0f;
+        ctx.r.fillWorldRect({b.x, b.bottom(), b.w, head}, Color{40, 44, 52, 255});
+        ctx.r.fillWorldRect({b.x + 2.0f, b.bottom() + 2.0f, b.w - 4.0f, head - 4.0f}, Color{92, 100, 114, 255});
+        ctx.r.fillWorldRect({b.x + 2.0f, b.bottom() + 2.0f, b.w - 4.0f, 3.0f}, Color{150, 160, 176, 255});
+        for (float x = b.x + 4.0f; x < b.right() - 4.0f; x += 12.0f)
+            ctx.r.fillWorldRect({x, b.bottom() + head - 9.0f, std::min(6.0f, b.right() - 4.0f - x), 5.0f}, Color{240, 190, 40, 255});
+    }
+}
+
+void ValveSpotEntity::update(GameWorld& w, float dt) {
+    // Display only: a valve of the stalled Titan waits here.
+    color_ = foundryLight(w);
+    float want = 0.0f;
+    if (const Enemy* b = w.activeBoss(); b && b->alive() && b->isTitan() && b->stalled())
+        for (uint32_t id : b->valves())
+            if (const Enemy* v = w.findEnemy(id); v && v->alive() && v->box.intersects(box.expanded(8.0f))) want = 1.0f;
+    glow_ = approach(glow_, want, dt * 3.0f);
+}
+
+void ValveSpotEntity::render(RenderContext& ctx) {
+    // A pipe coming out of the wall (or the floor of its ledge), a flange, a pressure gauge.
+    const Rect b = box;
+    const float cx = b.center().x;
+    ctx.r.fillWorldRect({cx - 5.0f, b.y + 4.0f, 10.0f, b.h - 4.0f}, Color{70, 74, 84, 255});
+    ctx.r.fillWorldRect({cx - 3.0f, b.y + 4.0f, 3.0f, b.h - 4.0f}, Color{130, 138, 150, 255});
+    ctx.r.fillWorldRect({cx - 9.0f, b.bottom() - 4.0f, 18.0f, 4.0f}, Color{150, 120, 60, 255});
+    ctx.r.fillWorldRect({cx - 8.0f, b.y + 2.0f, 16.0f, 4.0f}, Color{150, 120, 60, 255});
+    const Vec2 gauge{cx + 9.0f, b.y + b.h * 0.55f};
+    ctx.r.fillWorldCircle(gauge, 4.0f, Color{200, 170, 90, 255});
+    ctx.r.fillWorldCircle(gauge, 3.0f, Color{235, 230, 215, 255});
+    const float ang = -2.4f + 3.2f * std::min(1.0f, glow_ + 0.2f * dmath::sin(ctx.time * 9.0f) * glow_);
+    ctx.r.drawWorldLine(gauge, gauge + Vec2{dmath::cos(ang), dmath::sin(ang)} * 2.6f, Color{200, 40, 30, 255}, std::max(1.0f, ctx.r.view().scale * 0.4f));
+    if (glow_ > 0.01f) {
+        const float pulse = 0.5f + 0.5f * dmath::sin(ctx.time * 6.0f);
+        ctx.r.drawWorldGlow({cx, b.y + b.h * 0.3f}, 18.0f + 6.0f * pulse, color_.withAlpha(static_cast<uint8_t>(110 * glow_)));
+        ctx.lights.add({cx, b.y}, 70.0f * glow_, color_);
+    }
+}
+
 // --------------------------------------------------------------- power gate
 
 void PowerGateEntity::init(GameWorld& w) {

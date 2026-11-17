@@ -1,0 +1,54 @@
+{
+  "format": "cosmic.enemy",
+  "id": "vanne",
+  "name": "Vanne de pression",
+  "description": "Une vanne de la fonderie du Titan, qui apparaît quand il cale. Tournez-les toutes (en les frappant) avant qu'il redémarre : sa chaudière explose.",
+  "family": "turret",
+  "animation": "animations/vanne.json",
+  "size": [
+    30,
+    30
+  ],
+  "scale": 1.0,
+  "hp": 12,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 800,
+    "drops": []
+  },
+  "light": {
+    "color": "#ff8a3c",
+    "radius": 70
+  },
+  "sounds": {
+    "hurt": "sounds/lever.wav",
+    "death": "sounds/lava_rise.wav",
+    "alert": ""
+  }
+}

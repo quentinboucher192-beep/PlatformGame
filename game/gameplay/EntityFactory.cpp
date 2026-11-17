@@ -16,6 +16,9 @@ std::map<std::string, EntityFactory::Creator>& EntityFactory::registry() {
         {"moving_platform", make<MovingPlatformEntity>()},
         {"crumble_platform", make<CrumblePlatformEntity>()},
         {"altar", make<AltarEntity>()},  // 2.57: the Liche's crypt
+        {"conveyor", make<ConveyorEntity>()},     // 2.58: the Titan's foundry
+        {"press", make<PressEntity>()},
+        {"valve_spot", make<ValveSpotEntity>()},
         {"power_gate", make<PowerGateEntity>()},
         {"bounce_pad", make<BouncePadEntity>()},
         {"ladder", make<LadderEntity>()},

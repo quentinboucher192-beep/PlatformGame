@@ -44,6 +44,10 @@ enum class AttackType {
     // 2.57: the spells of the Liche, the lich of Les Confins (game/enemies/LicheAttacks.cpp).
     Glyph,  // runes traced on the ground she stands on: armed, a rune bursts when she steps on it, all burst at their end
     Hex,    // a circle of runes closes around her: still inside, she is cursed (her jumps grow heavy for a while)
+    // 2.58: the machinery of the Titan Mécanique, the war machine of Les Confins (game/enemies/TitanAttacks.cpp).
+    Press,    // the presses of its foundry come down from the roof onto the floor (every other one, all but one, or a march)
+    Missile,  // reticles lock onto the target one after another; a missile falls on each locked spot
+    Belt,     // the conveyor belts of its foundry start running (toward it, or away from it) for a while
     Count
 };
 
@@ -156,6 +160,8 @@ struct AttackDef {
     bool isPhoenixType() const { return type >= AttackType::Sunbeam && type <= AttackType::Sweep; }
     /// The attack types of the lich (2.57, the Liche).
     bool isLicheType() const { return type >= AttackType::Glyph && type <= AttackType::Hex; }
+    /// The attack types of the war machine (2.58, the Titan Mécanique).
+    bool isTitanType() const { return type >= AttackType::Press && type <= AttackType::Belt; }
 
     Json toJson() const;
     static AttackDef fromJson(const Json& j);
@@ -189,6 +195,15 @@ struct BossPhase {
     /// boss hides its soul in its phylactery (this enemy, set on one of its altars): it cannot be
     /// hurt until the crystal is broken, then the next phase begins. "" = the phase ends as any other.
     std::string phylactery;
+    /// 2.58, the Titan's « Surchauffe »: each attack it ends fills this share of its heat gauge;
+    /// full, it vents its steam (low jets on both sides, then its core laid bare: it takes more
+    /// damage for a while) and the gauge empties. 0 = no gauge in this phase.
+    float heat = 0.0f;
+    /// 2.58, the Titan's « Calage »: when its health reaches the next phase's threshold, the machine
+    /// stalls (it cannot be hurt) and these enemies (its pressure valves) appear on the valve spots
+    /// of its arena: all of them turned before it starts again, its boiler bursts (a heavy blow);
+    /// otherwise it restarts with a pressure wave. Then the next phase begins. "" = no stall.
+    std::string stall;
     Json toJson() const;
     static BossPhase fromJson(const Json& j);
 };

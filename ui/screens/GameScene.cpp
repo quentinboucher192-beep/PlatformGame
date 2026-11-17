@@ -1134,12 +1134,13 @@ void GameScene::update(float dt) {
             const int target = std::min(opt_.forceBossPhase, n) - 1;
             bool rebirthPending = false;
             const BossPhase* before = opt_.forceBossPhase <= n && target > 0 ? &b->def().phases[static_cast<size_t>(target - 1)] : nullptr;
-            if (before && (before->rebirth > 0.0f || !before->phylactery.empty())) {
+            if (before && (before->rebirth > 0.0f || !before->phylactery.empty() || !before->stall.empty())) {
                 // 2.56: a phase reached by a rebirth (the Phénix's « Cendres ») is reached as in the
                 // fight: the boss burns to ashes at the end of the phase before, then is reborn into it.
                 // 2.57: one reached by the Liche's phylactery too: its soul hidden in the crystal on
                 // its altar (the capture shows it; the crystal broken, the phase begins).
-                if (b->inAshes() || b->warded() || b->phaseIndex() >= target) {
+                // 2.58: one reached by the Titan's stall too: stalled, its valves on their spots.
+                if (b->inAshes() || b->warded() || b->stalled() || b->phaseIndex() >= target) {
                     opt_.forceBossPhase = 0;
                 } else {
                     if (b->phaseIndex() < target - 1) jumpBossToPhase(*world_, *b, target - 1);

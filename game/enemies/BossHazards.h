@@ -29,7 +29,11 @@ struct RenderContext;
 ///    falling from the roof onto marked spots; (2.56, the Phénix) columns of sunlight falling
 ///    from the roof onto marked spots, the same way;
 ///  * (2.57, the Liche) runes traced on the ground: armed after a while, a rune bursts into a
-///    pillar of soul fire when Nova steps on it, and every rune left bursts at the end of its time.
+///    pillar of soul fire when Nova steps on it, and every rune left bursts at the end of its time;
+///  * (2.58, the Titan Mécanique) the presses of its foundry, which come down from the roof onto
+///    the surface under them (shown before: stripes, a shudder); missiles whose reticles follow
+///    Nova, lock, and on which they fall; its conveyor belts, which carry her along the floor (always
+///    below her run speed); the jets of steam of its vents, low along the ground.
 /// An effect belongs to the enemy that made it (its uid): it ends with its time, with the
 /// enemy (death, removal) or when the player respawns.
 class BossHazards {
@@ -152,6 +156,92 @@ public:
         Rect pad() const { return {at.x - half, at.y - 6.0f, half * 2.0f, 8.0f}; }
         Rect pillar() const { return {at.x - half * 0.85f, at.y - height, half * 1.7f, height}; }
     };
+    /// 2.58, a press of the Titan's foundry (« Presses hydrauliques »): its head rests under its
+    /// housing (`top`); it shudders and hisses for `warn` seconds (stripes on the surface it will
+    /// stamp), falls in kFall, stays down `down` seconds, then rises in kRise. Falling and down,
+    /// the column under its head crushes: once, it hurts and throws Nova out. A `safe` one never
+    /// falls: it only shows where nothing will (« toutes sauf une »), lit green.
+    struct Press {
+        static constexpr float kFall = 0.14f;
+        static constexpr float kRise = 0.45f;
+        static constexpr float kHead = 22.0f;  // the height of its head
+        uint32_t owner = 0;
+        float x = 0.0f;       // its middle
+        float half = 64.0f;   // half its width
+        float top = 0.0f;     // the bottom of its housing
+        float floor = 0.0f;   // the surface it stamps
+        float warn = 0.9f;
+        float down = 0.6f;
+        float age = 0.0f;
+        float damage = 2.0f;
+        float knockback = 320.0f;
+        bool hit = false;
+        bool safe = false;
+        Color color{255, 194, 60, 255};  // display: the light of the phase
+        /// The bottom of its head at its age.
+        float headY() const;
+        bool falling() const { return !safe && age >= warn && age < warn + kFall; }
+        bool crushing() const { return !safe && age >= warn && age < warn + kFall + down; }
+        bool done() const { return age >= warn + kFall + down + kRise; }
+        /// What it crushes: the column from its housing down to its head.
+        Rect column() const { return {x - half + 2.0f, top, half * 2.0f - 4.0f, headY() - top}; }
+    };
+    /// 2.58, a missile of the Titan (« Missiles à verrouillage »): its reticle follows Nova for
+    /// `track` seconds (at most kTrackSpeed px/s), then locks (red, a beep); the missile falls on
+    /// the locked spot `flight` seconds later: a blast of `radius`, once.
+    struct Missile {
+        static constexpr float kTrackSpeed = 230.0f;
+        static constexpr float kBoom = 0.35f;
+        uint32_t owner = 0;
+        Vec2 at;              // the reticle
+        Vec2 from;            // display: where it was launched (the Titan's back)
+        float track = 1.0f;
+        float flight = 0.8f;
+        float radius = 34.0f;
+        float age = 0.0f;
+        float damage = 1.0f;
+        float knockback = 260.0f;
+        bool hit = false;
+        int index = 0;        // display: its number in the volley
+        Color color{255, 194, 60, 255};
+        bool locked() const { return age >= track; }
+        bool landed() const { return age >= track + flight; }
+        bool done() const { return age >= track + flight + kBoom; }
+    };
+    /// 2.58, a conveyor belt of the Titan's foundry (« Tapis roulants »): a strip of the floor
+    /// (`strip`: its x range, y = the surface) that carries Nova along at `speed` (signed, px/s,
+    /// below her run speed) after `warn` seconds (its arrows flash), for `time` seconds.
+    struct Belt {
+        uint32_t owner = 0;
+        Rect strip;
+        float speed = 90.0f;
+        float warn = 0.8f;
+        float time = 5.0f;
+        float age = 0.0f;
+        Color color{255, 194, 60, 255};
+        /// How much it runs (0 .. 1: it starts and stops in a quarter second).
+        float running() const;
+        bool done() const { return age >= warn + time; }
+    };
+    /// 2.58, a jet of steam of the Titan's vents (« Surchauffe »): low along the ground from `from`
+    /// (on the surface) toward `dir`, `length` long and `height` high; it hisses for `warn` seconds,
+    /// then blasts for `time` seconds: inside, Nova is hurt once and pushed away.
+    struct Steam {
+        uint32_t owner = 0;
+        Vec2 from;
+        float dir = 1.0f;
+        float length = 140.0f;
+        float height = 28.0f;
+        float warn = 0.35f;
+        float time = 1.0f;
+        float age = 0.0f;
+        float damage = 1.0f;
+        float knockback = 240.0f;
+        bool hit = false;
+        bool blasting() const { return age >= warn && age < warn + time; }
+        bool done() const { return age >= warn + time + 0.4f; }
+        Rect area() const { return dir > 0.0f ? Rect{from.x, from.y - height, length, height} : Rect{from.x - length, from.y - height, length, height}; }
+    };
     struct Wind {
         uint32_t owner = 0;
         Vec2 center;           // Nova is pushed away from it, horizontally
@@ -166,6 +256,10 @@ public:
     void addWind(const Wind& wd);
     void addCrack(const Crack& c);
     void addRune(const Rune& r);
+    void addPress(const Press& p);      // 2.58: the Titan's machinery
+    void addMissile(const Missile& m);
+    void addBelt(const Belt& b);         // a belt already running on the same strip is replaced
+    void addSteam(const Steam& s);
     /// Freezes the floors, ledges and platforms whose top lies in `area` (grip < 1).
     void addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds);
     void addFlood(const Flood& f);
@@ -183,7 +277,7 @@ public:
 
     bool empty() const {
         return pulls_.empty() && ice_.empty() && floods_.empty() && walls_.empty() && clouds_.empty() && winds_.empty() &&
-               cracks_.empty() && runes_.empty();
+               cracks_.empty() && runes_.empty() && presses_.empty() && missiles_.empty() && belts_.empty() && steams_.empty();
     }
     bool hasIce(uint32_t owner) const;
     bool hasFlood(uint32_t owner) const;
@@ -192,6 +286,11 @@ public:
     int cloudCount(uint32_t owner) const;
     int crackCount(uint32_t owner) const;
     int runeCount(uint32_t owner) const;
+    int pressCount(uint32_t owner) const;
+    int missileCount(uint32_t owner) const;
+    bool beltsRunning(uint32_t owner) const;
+    /// The belt on a strip of the floor (display of the conveyors), or none.
+    const Belt* beltOn(const Rect& strip) const;
     const std::vector<Pull>& pulls() const { return pulls_; }
     const std::vector<Ice>& ice() const { return ice_; }
     const std::vector<Flood>& floods() const { return floods_; }
@@ -200,9 +299,14 @@ public:
     const std::vector<Wind>& winds() const { return winds_; }
     const std::vector<Crack>& cracks() const { return cracks_; }
     const std::vector<Rune>& runes() const { return runes_; }
+    const std::vector<Press>& presses() const { return presses_; }
+    const std::vector<Missile>& missiles() const { return missiles_; }
+    const std::vector<Belt>& belts() const { return belts_; }
+    const std::vector<Steam>& steams() const { return steams_; }
 
     /// Display only.
     void render(RenderContext& ctx) const;
+    void renderTitan(RenderContext& ctx) const;  // 2.58: its presses, missiles, belts and jets
 
 private:
     void restore(GameWorld& w, Ice& ice);
@@ -214,6 +318,10 @@ private:
     std::vector<Wind> winds_;
     std::vector<Crack> cracks_;
     std::vector<Rune> runes_;
+    std::vector<Press> presses_;
+    std::vector<Missile> missiles_;
+    std::vector<Belt> belts_;
+    std::vector<Steam> steams_;
 };
 
 }  // namespace cosmic

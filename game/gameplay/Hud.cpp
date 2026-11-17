@@ -461,6 +461,7 @@ void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settin
     struct Chip {
         std::string text;
         Color color;
+        float gauge = -1.0f;  // 2.58: >= 0, a gauge after the text (the Titan's heat)
     };
     std::vector<Chip> chips;
     const Player& pl = w.player();
@@ -468,17 +469,36 @@ void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settin
         chips.push_back({"Maudite : sauts alourdis " + std::to_string(static_cast<int>(std::ceil(pl.curseTime()))) + " s", Color{200, 140, 255, 255}});
     if (const Enemy* b = w.activeBoss(); b && b->alive() && b->warded())
         chips.push_back({"Intouchable : brisez le phylactère", Color{170, 240, 255, 255}});
+    if (const Enemy* b = w.activeBoss(); b && b->alive() && b->isTitan() && !b->lastStand()) {
+        // 2.58, the Titan Mécanique: stalled (its valves, the time before it restarts), venting (its
+        // core bare), or the heat of its phase.
+        const int ph = b->phaseIndex();
+        const bool gauge = ph >= 0 && ph < static_cast<int>(b->def().phases.size()) && b->def().phases[static_cast<size_t>(ph)].heat > 0.0f;
+        if (b->stalled()) {
+            const int left = b->valvesLeft();
+            const int secs = static_cast<int>(std::ceil(b->stallLeft()));
+            chips.push_back({"Calé : " + std::to_string(left) + (left > 1 ? " vannes à tourner · " : " vanne à tourner · ") + std::to_string(secs) + " s",
+                             Color{255, 170, 90, 255}});
+        } else if (b->venting()) {
+            chips.push_back({"Surchauffe : son cœur est à nu · " + std::to_string(static_cast<int>(std::ceil(b->ventLeft()))) + " s",
+                             Color{255, 120, 80, 255}});
+        } else if (gauge) {
+            chips.push_back({"Chaleur du Titan", Color{255, 194, 60, 255}, b->heat()});
+        }
+    }
     if (chips.empty()) return;
     const float W = ui.screenW(), H = ui.screenH();
     const float h = ui.s(40), pad = ui.s(14), dot = ui.s(10), maxW = std::min(ui.s(440), W - ui.s(80));
     // Each chip as wide as its text (smaller type for a long one), never wider than maxW.
     std::vector<float> sizes, widths;
     float total = 0.0f;
+    const float barW = ui.s(120);
     for (const Chip& c : chips) {
-        const float room = maxW - pad * 3.0f - dot;
+        const float bar = c.gauge >= 0.0f ? barW + pad : 0.0f;
+        const float room = maxW - pad * 3.0f - dot - bar;
         const float fs = ui.fitFont(c.text, FontFace::Bold, 20, room);
         sizes.push_back(fs);
-        widths.push_back(std::min(maxW, pad * 3.0f + dot + ui.text().measure(c.text, FontFace::Bold, ui.s(fs)).x));
+        widths.push_back(std::min(maxW, pad * 3.0f + dot + bar + ui.text().measure(c.text, FontFace::Bold, ui.s(fs)).x));
         total += h + ui.s(8);
     }
     // Where they cover nothing of the HUD shown: under the left column first, then lower down.
@@ -517,9 +537,26 @@ void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settin
         ui.r().drawRoundedRect(r, h * 0.5f, chips[i].color.withAlpha(static_cast<uint8_t>(120 + 100 * pulse)), ui.s(1.5f));
         ui.r().drawGlow({r.x + pad + dot * 0.5f, r.center().y}, dot * 1.6f, chips[i].color.withAlpha(static_cast<uint8_t>(90 + 80 * pulse)));
         ui.r().fillCircle({r.x + pad + dot * 0.5f, r.center().y}, dot * 0.5f, chips[i].color);
-        const float room = r.w - pad * 3.0f - dot;
+        const float bar = chips[i].gauge >= 0.0f ? barW + pad : 0.0f;
+        const float room = r.w - pad * 3.0f - dot - bar;
         TextStyle st = style(ui, sizes[i], chips[i].color, FontFace::Bold, Align::Left, VAlign::Middle);
         ui.text().draw(ui.elide(chips[i].text, FontFace::Bold, sizes[i], room), {r.x + pad * 2.0f + dot, r.center().y}, st);
+        if (chips[i].gauge >= 0.0f) {
+            // The gauge, at the right end of the chip: ten segments, amber to red; nearly full, it pulses.
+            const float g = std::clamp(chips[i].gauge, 0.0f, 1.0f);
+            const Rect gr{r.right() - pad - barW, r.center().y - ui.s(7), barW, ui.s(14)};
+            ui.r().fillRoundedRect(gr, ui.s(3), Color{40, 30, 26, 230});
+            const int seg = 10;
+            const float sw = (gr.w - ui.s(2) * (seg + 1)) / seg;
+            for (int k = 0; k < seg; ++k) {
+                const float u = static_cast<float>(k) / (seg - 1);
+                const bool lit = g * seg >= static_cast<float>(k) + 0.5f;
+                Color c{255, static_cast<uint8_t>(210 - 150 * u), static_cast<uint8_t>(70 - 40 * u), 255};
+                if (!lit) c = Color{70, 52, 40, 255};
+                else if (g > 0.75f) c = c.withAlpha(static_cast<uint8_t>(170 + 85 * pulse));
+                ui.r().fillRect({gr.x + ui.s(2) + (sw + ui.s(2)) * k, gr.y + ui.s(2), sw, gr.h - ui.s(4)}, c);
+            }
+        }
         at.y += h + ui.s(8);
     }
 }

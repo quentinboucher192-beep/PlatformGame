@@ -288,6 +288,11 @@ for _k in range(8):
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
     LOOPING[_id] = {"idle", "walk", "move", "special"}
 
+# The pressure valves of the Titan's foundry (2.58, vanne.py): they appear when it stalls.
+ANIMS["vanne"] = (48, 48, [24, 47], [("idle", 6), ("hurt", 2), ("death", 10)], {}, {})
+TEXTURES["vanne"] = "sprites/enemies/vanne.png"
+LOOPING["vanne"] = {"idle"}
+
 STATIC = {
     "sprites/objects/moving_platform.png": (48, 32),
     "sprites/objects/crumble_platform.png": (48, 48),

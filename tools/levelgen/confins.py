@@ -19,6 +19,11 @@ start (data/planets/confins.json):
                                 Catacombes (tools/contentgen/liche.py; it floats over four altars
                                 of its crypt and teleports between them; the crust gives way over two
                                 ossuaries at the ends, the floor between its two floor altars stays)
+  data/levels/confins_06.json  "La Fonderie Engloutie" (2.58, EXTRÊME): the same for the Titan
+                                Mécanique (tools/contentgen/titan.py; a walker in a foundry: eight
+                                presses hang from its roof over the floor, two conveyor belts run on
+                                it, three valve spots wait for its stall; the crust gives way on the
+                                two sides, under towers of catwalks)
 
 2.49: each level of Les Confins is its giga boss's fight alone (no platforming before it).
 
@@ -56,7 +61,7 @@ class Edge(Star):
     FIRE_LIGHTS = ((10, 26, "#ff7a2e"), (48, 30, "#ffc49a"), (86, 26, "#ff7a2e"), (30, 8, "#ff5ad2"), (66, 8, "#ff5ad2"))
 
     def giga_arena(self, boss, music, pits, flying, texts, style="plasma", lights=FIRE_LIGHTS, flicker=0.12,
-                   perches=(), altars=(), spawn=None):
+                   perches=(), altars=(), spawn=None, ledges=None, orbit=True, orbs=None, presses=(), belts=(), valves=()):
         """The giant arena (Star.GIANT_*) of a giga boss: the crust over each pit gives way at
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
@@ -66,7 +71,11 @@ class Edge(Star):
         instead (crumble platforms « ember »: they burn under Nova and are reborn). 2.57: `altars`
         (x, h): the altars of the Liche's crypt (objects « altar », 3 tiles wide, 2.5 tall, standing at
         the height h: 0 the floor, else a ledge), over which it floats and between which it teleports;
-        `spawn` (x, h): where the boss waits (by default x 70, in the air at 20 tiles when it flies)."""
+        `spawn` (x, h): where the boss waits (by default x 70, in the air at 20 tiles when it flies).
+        2.58 (the Titan's foundry): `ledges` replaces Star.GIANT_LEDGES and `orbs` Star.GIANT_ORBS;
+        without `orbit`, no debris in orbit (the 3rd phase only brings its orb); `presses` (x, w):
+        the housings of its presses in the roof; `belts` (x, w): its conveyor belts on the floor;
+        `valves` (x, h): its valve spots (2 tiles, on the floor or a ledge at the height h)."""
         L, f = self.L, self.f
         x0 = self.x
         X = x0 + 1
@@ -96,7 +105,7 @@ class Edge(Star):
             magma.append(L.obj("damage_zone", [(X + b0) * T, (f + 2) * T, (b1 - b0) * T, 2 * T], "gameplay",
                                {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False,
                                 "style": style, "bounce": True}))
-        for h, ls in self.GIANT_LEDGES.items():
+        for h, ls in (ledges if ledges is not None else self.GIANT_LEDGES).items():
             for (lx, lw) in ls:
                 if h in perches:
                     L.crumble(X + lx, f - h, lw, delay=0.6, respawn=3.5, style="ember")
@@ -104,15 +113,21 @@ class Edge(Star):
                     L.oneway(X + lx, X + lx + lw, f - h, ledge)
         for (ax, ah) in altars:
             L.obj("altar", [(X + ax - 1.5) * T, (f - ah - 2.5) * T, 3 * T, 2.5 * T], "terrain", {})
+        for (px, pw) in presses:
+            L.obj("press", [(X + px) * T, (f - Hh) * T, pw * T, 2 * T], "terrain", {})
+        for (bx, bw) in belts:
+            L.obj("conveyor", [(X + bx) * T, f * T, bw * T, 8], "terrain", {})
+        for (vx, vh) in valves:
+            L.obj("valve_spot", [(X + vx - 1) * T, (f - vh - 2) * T, 2 * T, 2 * T], "terrain", {})
         ocx, och, orx, ory = self.GIANT_ORBIT
         debris = []
-        for k in range(3):
+        for k in range(3 if orbit else 0):
             oid = L.moving(X + ocx - 2, f - och - 0.5, 4, orx, ory, speed=50, wait=0.0, phase=round(0.25 + k / 3.0, 3),
                            active=False, oneway=True)
             L.data["objects"][-1]["props"]["orbit"] = True
             debris.append(oid)
-        orbs = {}
-        for (ph, ox, oh) in self.GIANT_ORBS:
+        orb_spots, orbs = orbs, {}
+        for (ph, ox, oh) in (orb_spots if orb_spots is not None else self.GIANT_ORBS):
             L.orb("health_orb", X + ox, f - oh - 1.5)
             L.data["objects"][-1]["props"] = {"amount": 4, "hidden": True}
             orbs[ph] = L.data["objects"][-1]["id"]
@@ -131,8 +146,8 @@ class Edge(Star):
         for (lx, lh, col) in lights:
             L.light(X + lx, f - lh, col, 160, flicker=flicker)
         fire = magma + curtain1 + curtain2
-        L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(debris)},
-                                   {"type": "spawn", "target": orbs[3]},
+        L.event(bid, "bossPhase", ([{"type": "activate", "target": ",".join(debris)}] if debris else []) +
+                                  [{"type": "spawn", "target": orbs[3]},
                                    {"type": "hint", "params": {"text": texts[3][0], "duration": 3}}],
                 params={"phase": 3}, name=texts[3][1])
         L.event(bid, "bossPhase", [{"type": "activate", "target": ",".join(crust)},
@@ -405,9 +420,74 @@ def crypt_of_names():
     return width
 
 
+# ---------------------------------------------------------------- the drowned foundry (2.58)
+TITAN_TEXTS = {
+    3: ("Surtension : un soin vous attend sur la tour de gauche.", "Surtension : un soin"),
+    5: "Surchauffe : le sol cède sur les cuves de métal en fusion",
+    7: "Arc : un soin",
+    8: ("Le métal en fusion referme la fonderie !", "Cœur nucléaire : l'arène se resserre"),
+    "won": ("Le Titan s'arrête dans un dernier soupir de vapeur. La sortie est ouverte.", "Titan vaincu"),
+}
+# The lights of the foundry: amber furnaces high up, molten orange low over the vats.
+TITAN_LIGHTS = ((10, 26, "#ffc23c"), (48, 30, "#ffe0b0"), (86, 26, "#ffc23c"), (30, 8, "#ff7a2e"), (66, 8, "#ff7a2e"))
+# The sky of the Confins seen through the smoke of the foundry, brown and amber (display only).
+FOUNDRY_TINTS = {"sky.png": "#8a7462", "far.png": "#6a5a4c", "mid.png": "#52463c", "near.png": "#3a302a",
+                 "fg_embers.png": "#ffc890c0"}
+# A walker's foundry: the floor between the two vats (16 .. 80) is free up to the roof, eight
+# presses side by side hang over it, two conveyor belts run on it; the catwalks climb on the two
+# sides, over the vats (the crust gives way at the 5th phase). Its valves: one on a low catwalk on
+# each side, one on the floor in the middle.
+TITAN_LEDGES = {5: [(6, 8), (82, 8)], 10: [(2, 8), (86, 8)], 15: [(8, 8), (80, 8)], 20: [(2, 8), (86, 8)]}
+TITAN_ORBS = [(3, 6, 10), (5, 48, 0), (7, 90, 10)]
+TITAN_PRESSES = tuple((16 + 8 * k, 8) for k in range(8))
+TITAN_BELTS = ((18, 28), (50, 28))
+TITAN_VALVES = ((11, 5), (48, 0), (85, 5))
+
+
+def drowned_foundry():
+    b = Edge("confins_06", "La Fonderie Engloutie", "pyralis", seed=8601)
+    L, d = b.L, b.L.data
+    d["description"] = ("Sous les Confins, une fonderie engloutie où les feux n'ont jamais été éteints : le Titan "
+                        "Mécanique et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.")
+    d["difficulty"] = 5
+    d["extreme"] = True
+    d["bossMusic"] = "music/titan_boss.ogg"
+    d["ambientLight"] = "#a09080"
+    d["backgroundColor"] = "#140e0a"
+    for layer in d["background"]:
+        name = layer["texture"].rsplit("/", 1)[-1]
+        if name in FOUNDRY_TINTS:
+            layer["tint"] = FOUNDRY_TINTS[name]
+        if "fillBelow" in layer:
+            layer["fillBelow"] = "#24140c"
+    b.f = 40
+    # Only the fight, as the other giga bosses' levels: the choice of the powers, then the arena.
+    b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
+    b.opening("La Fonderie Engloutie : le Titan seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.")
+    b.tablets(giga_powers("confins_06"))  # every power of the game
+    b.zone_sign("Le Titan Mécanique.")
+    b.rooms.append({"type": "boss", "x": b.x, "floor": b.f, "boss": "titan"})
+    # A walker: the crust gives way on the two sides only (the Titan fights in the middle, under its
+    # presses, on its belts).
+    b.giga_arena("titan", "music/titan_boss.ogg", pits=[(4, 16), (80, 92)], flying=False, texts=TITAN_TEXTS,
+                 lights=TITAN_LIGHTS, flicker=0.1, ledges=TITAN_LEDGES, orbit=False, orbs=TITAN_ORBS,
+                 presses=TITAN_PRESSES, belts=TITAN_BELTS, valves=TITAN_VALVES)
+    width = b.finish("Le Titan s'est arrêté. Dans la fonderie, les feux s'éteignent enfin.")
+    ref = 360  # about six minutes of fight
+    d["timer"] = {"mode": "challenge", "limit": 3600, "onExpire": "gameover", "referenceTime": ref, "challengeMaxDeaths": 0}
+    d["medals"] = {"bronze": {}, "silver": {"maxTime": int(ref * 1.6)}, "gold": {"maxTime": int(ref * 1.2)},
+                   "platinum": {"maxTime": ref, "maxDeaths": 0}}
+    b.cinematics("LA FONDERIE ENGLOUTIE", "Les Confins", "Une seule vie. Une machine qui n'a jamais cessé de travailler. Huit phases.",
+                 "LE TITAN S'ARRÊTE")
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 1, "rooms": b.rooms, "noHealing": True}
+    L.save(os.path.join(ROOT, "data/levels/confins_06.json"))
+    return width
+
+
 if __name__ == "__main__":
     print("confins_01 :", dragon_maw(), "tuiles")
     print("confins_02 :", stone_heart(), "tuiles")  # 2.49
     print("confins_03 :", abyss_trench(), "tuiles")  # 2.53
     print("confins_04 :", phoenix_nest(), "tuiles")  # 2.56
     print("confins_05 :", crypt_of_names(), "tuiles")  # 2.57
+    print("confins_06 :", drowned_foundry(), "tuiles")  # 2.58

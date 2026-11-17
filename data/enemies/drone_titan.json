@@ -1,0 +1,83 @@
+{
+  "format": "cosmic.enemy",
+  "id": "drone_titan",
+  "name": "Drone du Titan",
+  "description": "Un drone de combat lancé du dos du Titan Mécanique : il garde ses distances et tire des éclairs.",
+  "family": "robot",
+  "animation": "animations/forge_drone.json",
+  "size": [
+    16,
+    14
+  ],
+  "scale": 1.0,
+  "hp": 6,
+  "contactDamage": 1,
+  "speed": 49.5,
+  "chaseSpeedMultiplier": 1.2,
+  "flying": true,
+  "knockbackResist": 0.2,
+  "detectionRange": 900,
+  "attackRange": 220,
+  "loseRange": 2000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 115,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "bolt",
+      "name": "Éclair de drone",
+      "type": "projectile",
+      "damage": 1,
+      "range": 230,
+      "telegraph": 0.65,
+      "active": 0.1,
+      "recover": 0.5,
+      "cooldown": 1.9,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "energy_disc",
+      "projectileSpeed": 155,
+      "count": 1,
+      "spread": 0,
+      "sound": "sounds/enemy_shoot.wav",
+      "hitEffect": "projectile_burst",
+      "projectileRadius": 4
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "wave": 1.5
+  },
+  "rewards": {
+    "score": 360,
+    "drops": [
+      {
+        "type": "energy_orb",
+        "chance": 0.5
+      }
+    ]
+  },
+  "light": {
+    "color": "#ffc23c",
+    "radius": 56
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/explosion.wav",
+    "alert": "sounds/enemy_alert.wav"
+  },
+  "tint": "#ffe2b8"
+}

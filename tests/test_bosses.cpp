@@ -81,8 +81,12 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
             // as soon as it stands (the blows wait for it).
             if (boss->warded())
                 if (Enemy* crystal = w.findEnemy(boss->phylactery()); crystal && crystal->alive()) crystal->kill(w);
+            // 2.58: a boss that stalls (the Titan): its valves are turned as soon as they stand.
+            if (boss->stalled())
+                for (uint32_t v : boss->valves())
+                    if (Enemy* valve = w.findEnemy(v); valve && valve->alive()) valve->kill(w);
             if (wearDue && !boss->perched() && !boss->curled() && !boss->dizzy() && !boss->outOfSight() && !boss->inAshes() &&
-                !boss->warded()) {
+                !boss->warded() && !boss->stalled()) {
                 wearDue = false;
                 DamageInfo d;
                 d.amount = boss->maxHp() * 0.15f;

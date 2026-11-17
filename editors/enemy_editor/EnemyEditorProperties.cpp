@@ -605,6 +605,44 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 default: break;
             }
         }
+        if (a.isTitanType()) {
+            // 2.58: the machinery of the war machine (the Titan Mécanique). A value left at 0 takes the
+            // type's default (see game/enemies/TitanAttacks.cpp).
+            auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
+                c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);
+            };
+            auto whole = [&](const char* id, const char* label, int& v, int lo, int hi) {
+                float f = static_cast<float>(v);
+                if (ui.numberField(id, row.field(label), f, 1, static_cast<float>(lo), static_cast<float>(hi), "%.0f")) {
+                    v = static_cast<int>(f);
+                    c = true;
+                }
+            };
+            switch (a.type) {
+                case AttackType::Press:
+                    whole("tarms", "Motif : 1 une sur deux, 2 sauf une, 3 en marche", a.arms, 0, 3);
+                    whole("tcnt", "Vagues (une sur deux)", a.count, 1, 4);
+                    num("twarn", "Annonce de chaque presse (s)", a.burstInterval, 0.05f, 0.3f, 3, "%.2f");
+                    num("tstg", "Entre deux vagues ou deux presses (s)", a.stagger, 0.05f, 0, 1, "%.2f");
+                    num("tdur", "Reste en bas (s)", a.duration, 0.05f, 0, 3, "%.2f");
+                    num("trad", "Demi-largeur (0 = celle de la presse)", a.radius, 2, 0, 200, "%.0f");
+                    break;
+                case AttackType::Missile:
+                    whole("mcnt", "Missiles", a.count, 1, 12);
+                    num("mtrk", "Le premier suit le joueur (s)", a.burstInterval, 0.05f, 0.2f, 3, "%.2f");
+                    num("mstg", "Entre deux verrouillages (s)", a.stagger, 0.02f, 0, 1, "%.2f");
+                    num("mdur", "Vol après le verrouillage (s)", a.duration, 0.05f, 0, 3, "%.2f");
+                    num("mrad", "Rayon de l'explosion", a.radius, 2, 0, 120, "%.0f");
+                    break;
+                case AttackType::Belt:
+                    whole("barms", "Sens (0 vers lui, 1 loin de lui)", a.arms, 0, 1);
+                    num("bpull", "Vitesse des tapis (px/s, 130 au plus)", a.pull, 5, 0, 130, "%.0f");
+                    num("bwarn", "Annonce (s)", a.burstInterval, 0.05f, 0.2f, 3, "%.2f");
+                    num("bdur", "Durée (s)", a.duration, 0.25f, 0, 12, "%.2f");
+                    break;
+                default: break;
+            }
+        }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");
         c |= stringCycle(ui, "asnd", {x, y, w, ui.s(46)}, "Son de l'attaque", a.sound, sounds);

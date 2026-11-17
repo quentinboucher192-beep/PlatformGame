@@ -3,7 +3,7 @@
   "id": "confins",
   "name": "Les Confins",
   "subtitle": "Au bord du système",
-  "description": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses, un phénix d'étoiles renaît de ses cendres sur son plus haut sommet et une liche veille sur les noms des morts dans ses catacombes.",
+  "description": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses, un phénix d'étoiles renaît de ses cendres sur son plus haut sommet, une liche veille sur les noms des morts dans ses catacombes et un titan de fer fait encore tourner une fonderie engloutie.",
   "type": "volcanic",
   "difficulty": 5,
   "color": "#ff7a6a",
@@ -16,7 +16,8 @@
     "confins_02",
     "confins_03",
     "confins_04",
-    "confins_05"
+    "confins_05",
+    "confins_06"
   ],
   "unlock": "always",
   "teaser": false,

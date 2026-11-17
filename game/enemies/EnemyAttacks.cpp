@@ -110,7 +110,8 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
         if (underneath && a->type != AttackType::Leap && a->type != AttackType::Rain && a->type != AttackType::Eruption &&
             a->type != AttackType::Arc && a->type != AttackType::Summon &&
             !(a->isGuardianType() && a->type != AttackType::Tracker && a->type != AttackType::Cage && a->type != AttackType::Orbit) &&
-            !(a->isGolemType() && a->type != AttackType::Shell))  // 2.52: its quake and its leap reach her
+            !(a->isGolemType() && a->type != AttackType::Shell) &&  // 2.52: its quake and its leap reach her
+            !(a->isTitanType() && a->type != AttackType::Belt))     // 2.58: its presses and its missiles too
             continue;
         float fit = a->weight;
         switch (a->type) {
@@ -135,6 +136,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
         }
         if (below) fit *= belowFit(*a);
         if (hasGolem_) fit *= golemFit(w, *a, near, far, air);  // 2.52: the golem reads its floor too
+        if (hasTitan_) fit *= titanFit(w, *a, near, far, air);  // 2.58: the Titan reads its foundry
         if (fit <= 0.0f) continue;
         if (!inRange) {
             if (!punish) continue;
@@ -168,6 +170,8 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Sweep: k = 1.6f; break;
                 case AttackType::Glyph: k = 1.8f; break;  // 2.57: the lich
                 case AttackType::Hex: k = 2.0f; break;
+                case AttackType::Press: k = 1.8f; break;  // 2.58: the war machine
+                case AttackType::Missile: k = 2.5f; break;
                 default: break;
             }
             if (k <= 0.0f) continue;
@@ -280,6 +284,7 @@ void Enemy::beginAttack(GameWorld& w) {
     if (attack_->isGolemType()) golemBegin(w);
     if (attack_->isPhoenixType()) phoenixBegin(w);
     if (attack_->isLicheType()) licheBegin(w);
+    if (attack_->isTitanType()) titanBegin(w);
     if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
@@ -455,6 +460,10 @@ void Enemy::performAttackStart(GameWorld& w) {
         licheStart(w);
         return;
     }
+    if (a.isTitanType()) {
+        titanStart(w);
+        return;
+    }
     switch (a.type) {
         case AttackType::Rain:
         case AttackType::Eruption: {
@@ -586,6 +595,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         licheActive(w, dt);
         return;
     }
+    if (a.isTitanType()) {
+        titanActive(w, dt);
+        return;
+    }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
     for (size_t k = 0; k < staged_.size();) {
         if (attackClock_ >= staged_[k].time) {
@@ -691,6 +704,7 @@ void Enemy::finishAttack(GameWorld& w) {
     if (attack_ && attack_->isGolemType()) golemEnd(w, false);
     if (attack_ && attack_->isPhoenixType()) phoenixEnd(w, false);
     if (attack_ && attack_->isLicheType()) licheEnd(w, false);
+    if (attack_ && attack_->isTitanType()) titanEnd(w, false);
     if (hasLiche_ && def_.isBoss && comboLeft_ <= 0) {
         // 2.57: after a few spells at the same altar, the Liche leaves for another one.
         ++castsHere_;
@@ -709,6 +723,7 @@ void Enemy::finishAttack(GameWorld& w) {
     burstsLeft_ = 0;
     playClip(anim_.has("recover") ? "recover" : "idle", true);
     attack_ = nullptr;
+    if (hasTitan_ && def_.isBoss) titanAfterAttack(w);  // 2.58: its heat; full, it vents
 }
 
 // ================================================================= render
@@ -732,7 +747,14 @@ void Enemy::render(RenderContext& ctx) const {
         if (warded_) tint.a = static_cast<uint8_t>(tint.a * (0.45f + 0.1f * dmath::sin(ctx.time * 3.0f)));
         renderAltarFx(ctx);
     }
+    if (hasTitan_ && stalled() && state_ != EnemyState::Dead) {
+        // 2.58: the Titan stalled: its lights dead, its metal dull.
+        tint.r = static_cast<uint8_t>(tint.r * 0.62f);
+        tint.g = static_cast<uint8_t>(tint.g * 0.62f);
+        tint.b = static_cast<uint8_t>(tint.b * 0.68f);
+    }
     ctx.r.drawWorldTexture(tex, &src, dst, tint, BlendMode::Alpha, flip);
+    if (hasTitan_) renderTitanFx(ctx);  // 2.58: its reactor's heat, its bare core, its restart
     if (warded_ && state_ != EnemyState::Dead)
         ctx.r.drawWorldTexture(tex, &src, dst, Color{150, 235, 255, static_cast<uint8_t>(50 + 30 * dmath::sin(ctx.time * 5.0f))}, BlendMode::Additive,
                                flip);
@@ -810,6 +832,10 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     }
     if (attack_->isLicheType()) {
         renderLiche(ctx, std::clamp(prog, 0.0f, 1.0f));
+        return;
+    }
+    if (attack_->isTitanType()) {
+        renderTitan(ctx, std::clamp(prog, 0.0f, 1.0f));
         return;
     }
     switch (attack_->type) {

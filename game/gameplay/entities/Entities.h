@@ -89,6 +89,50 @@ private:
     bool crystal_ = false;             // display: it holds the phylactery
 };
 
+/// 2.58, the machinery of the Titan's foundry, drawn by the game (game/enemies/TitanAttacks.cpp
+/// drives it through BossHazards):
+///  * a conveyor belt (« Tapis roulant »): a strip of the floor (its rect: the top of the floor);
+///    while the Titan runs its belts it carries Nova along, its arrows showing which way;
+///  * a press (« Presse hydraulique »): its housing in the roof (its rect); its head and its rod come
+///    down onto the surface under it when the Titan sets it off;
+///  * a valve spot (« Vanne de pression »): a pipe and its flange on a wall or a ledge; when the Titan
+///    stalls, a valve (an enemy to turn by hitting it) appears there.
+class ConveyorEntity : public LevelEntity {
+public:
+    using LevelEntity::LevelEntity;
+    void update(GameWorld& w, float dt) override;
+    void render(RenderContext& ctx) override;
+
+private:
+    float scroll_ = 0.0f;   // display: how far its slats have moved
+    float speed_ = 0.0f;    // display: its speed now (px/s, signed)
+    float warn_ = 0.0f;     // display: about to start (its arrows flash)
+    Color color_{255, 194, 60, 255};
+};
+
+class PressEntity : public LevelEntity {
+public:
+    using LevelEntity::LevelEntity;
+    void update(GameWorld& w, float dt) override;
+    void render(RenderContext& ctx) override;
+
+private:
+    bool busy_ = false;     // display: the Titan's press there is out (it draws the head)
+    float hiss_ = 0.0f;
+    Color color_{255, 194, 60, 255};
+};
+
+class ValveSpotEntity : public LevelEntity {
+public:
+    using LevelEntity::LevelEntity;
+    void update(GameWorld& w, float dt) override;
+    void render(RenderContext& ctx) override;
+
+private:
+    float glow_ = 0.0f;     // display: a valve waits there to be turned
+    Color color_{255, 194, 60, 255};
+};
+
 class PowerGateEntity : public LevelEntity {
 public:
     using LevelEntity::LevelEntity;

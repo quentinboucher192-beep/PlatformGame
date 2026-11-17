@@ -1,0 +1,82 @@
+{
+  "level": "confins_06",
+  "powerKeys": {
+    "boomerang": {
+      "key": "P",
+      "pad": {
+        "button": "leftshoulder"
+      }
+    },
+    "boomerang_charge": {
+      "key": "B",
+      "pad": {
+        "axis": "righty",
+        "dir": -1
+      }
+    },
+    "dash": {
+      "key": "K",
+      "pad": {
+        "button": "b"
+      }
+    },
+    "decoy": {
+      "key": "M",
+      "pad": {
+        "axis": "lefttrigger",
+        "dir": 1
+      }
+    },
+    "frost_nova": {
+      "key": "N",
+      "pad": {
+        "button": "rightshoulder"
+      }
+    },
+    "impulse": {
+      "key": "I",
+      "pad": {
+        "button": "rightshoulder"
+      }
+    },
+    "plasma_bomb": {
+      "key": "H",
+      "pad": {
+        "axis": "righty",
+        "dir": 1
+      }
+    },
+    "recall": {
+      "key": "Y",
+      "pad": {
+        "button": "rightstick"
+      }
+    },
+    "shield": {
+      "key": "O",
+      "pad": {
+        "button": "leftshoulder"
+      }
+    },
+    "teleport": {
+      "key": "U",
+      "pad": {
+        "axis": "lefttrigger",
+        "dir": 1
+      }
+    },
+    "time_slow": {
+      "key": "F",
+      "pad": {
+        "button": "rightstick"
+      }
+    },
+    "wave": {
+      "key": "L",
+      "pad": {
+        "axis": "righttrigger",
+        "dir": 1
+      }
+    }
+  }
+}

@@ -179,6 +179,46 @@ std::vector<ObjectTypeInfo> build() {
         add(t);
     }
     {
+        // 2.58: the machinery of the Titan's foundry, driven by the Titan Mécanique (its belts, its
+        // presses, its valves); elsewhere only scenery.
+        ObjectTypeInfo t;
+        t.id = "conveyor";
+        t.name = "Tapis roulant du Titan";
+        t.category = ObjCategory::Platforms;
+        t.defaultSize = {128, 8};
+        t.editorColor = {240, 190, 40, 255};
+        t.defaultLayer = "terrain";
+        t.props = {};
+        t.assets = {};  // drawn by the game
+        t.help = "Tapis roulant posé sur le sol (le haut du rectangle sur la surface). Dans l'arène du Titan Mécanique, "
+                 "il emporte le joueur quand le Titan le met en marche, toujours moins vite qu'il ne court.";
+        add(t);
+        ObjectTypeInfo p;
+        p.id = "press";
+        p.name = "Presse du Titan";
+        p.category = ObjCategory::Platforms;
+        p.defaultSize = {128, 32};
+        p.editorColor = {150, 160, 176, 255};
+        p.defaultLayer = "terrain";
+        p.props = {};
+        p.assets = {};
+        p.help = "Bâti d'une presse hydraulique, sous la voûte. Dans l'arène du Titan Mécanique, sa tête s'abat sur la "
+                 "surface située dessous quand le Titan la déclenche (des bandes jaunes et noires l'annoncent).";
+        add(p);
+        ObjectTypeInfo v;
+        v.id = "valve_spot";
+        v.name = "Vanne de pression du Titan";
+        v.category = ObjCategory::Platforms;
+        v.defaultSize = {32, 32};
+        v.editorColor = {200, 120, 60, 255};
+        v.defaultLayer = "terrain";
+        v.props = {};
+        v.assets = {};
+        v.help = "Conduite de vapeur (le bas du rectangle sur une surface). Quand le Titan Mécanique cale, une vanne "
+                 "apparaît ici : la tourner (la frapper) avant qu'il redémarre fait exploser sa chaudière.";
+        add(v);
+    }
+    {
         ObjectTypeInfo t;
         t.id = "crumble_platform";
         t.name = "Plateforme fragile";
