@@ -1,0 +1,10 @@
+{
+  "texture": "stories/singularis/volcan.png",
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "pivot": [24, 24],
+  "clips": {
+    "spin": {"row": 0, "count": 8, "fps": 6, "loop": true},
+    "bloom": {"row": 1, "count": 8, "fps": 8, "loop": true}
+  }
+}

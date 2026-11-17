@@ -23525,6 +23525,12 @@
    ]
   },
   {
+   "fr": "L'histoire de Singularis, « Le Cœur effondré », devient elle aussi un petit dessin animé : Lyse, la toute jeune étoile au centre de Kepler-Voss, son chant de lumière autour duquel tournent trois petites planètes, ses dons (sève, feu, éclat des glaces) qui les font fleurir, les machines venues boire sa lumière, la dernière étincelle qui tremble de froid, puis l'effondrement et Singularis qui s'éveille, affamé, en attirant tout à lui. Espace vivant (nébuleuse qui tourne, étoiles qui scintillent, voiles de poussière, débris), personnages animés image par image ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",
    "where": [
     "data/news/changelog.json"

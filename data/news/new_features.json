@@ -2342,22 +2342,42 @@
    ]
   },
   {
+   "id": "gallery.boss.singularis",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "gallery.story.singularis",
+   "version": "2.63.5",
+   "parents": [
+    "gallery.boss.singularis"
+   ]
+  },
+  {
+   "id": "stats.story.singularis",
+   "version": "2.63.5",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
    "id": "profile.tab.clan",
-   "version": "2.63.4",
+   "version": "2.63.5",
    "parents": [
     "menu.online"
    ]
   },
   {
    "id": "profile.clan.invite",
-   "version": "2.63.4",
+   "version": "2.63.5",
    "parents": [
     "profile.tab.clan"
    ]
   },
   {
    "id": "clans.tab.manage",
-   "version": "2.63.4",
+   "version": "2.63.5",
    "parents": [
     "online.nav.clans"
    ]

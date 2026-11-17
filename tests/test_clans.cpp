@@ -125,7 +125,7 @@ TEST_CASE("clans: the emblem (a shape, two colours) read, written and drawn") {
         for (const Vec2& p : clans::shapeOutline(s, c, r)) CHECK(std::hypot(p.x - c.x, p.y - c.y) <= r * 1.2f + 1e-3f);
 }
 
-TEST_CASE("clans: what a clan's sheet offers to a player who is not a member (2.63.4)") {
+TEST_CASE("clans: what a clan's sheet offers to a player who is not a member (2.63.5)") {
     const std::string id = "11111111-1111-1111-1111-111111111111";
     auto clan = [&](const char* policy, int members) { return Json{{"id", id}, {"join_policy", policy}, {"members", members}, {"max_members", 50}}; };
     const Json nobody = Json{{"role", nullptr}, {"request", nullptr}};
@@ -170,7 +170,7 @@ TEST_CASE("clans: what a clan's sheet offers to a player who is not a member (2.
     CHECK(!o.note.empty());
 }
 
-TEST_CASE("clans: the pending requests of the « Gestion » tab (2.63.4)") {
+TEST_CASE("clans: the pending requests of the « Gestion » tab (2.63.5)") {
     const Json requests = Json::array({
         Json{{"kind", "apply"},
              {"player", {{"id", "a1"}, {"username", "Lyra"}, {"avatar", "avatar_03"}}},
@@ -202,7 +202,7 @@ TEST_CASE("clans: the pending requests of the « Gestion » tab (2.63.4)") {
     CHECK(clans::pendingRequests(Json::object(), "apply").empty());
 }
 
-TEST_CASE("clans: « Inviter dans mon clan » on a player's profile (2.63.4)") {
+TEST_CASE("clans: « Inviter dans mon clan » on a player's profile (2.63.5)") {
     const std::string me = "me", target = "t1", mineId = "c-mine";
     auto mine = [&](const char* role, int members) {
         return Json{{"clan", {{"id", mineId}, {"role", role}, {"members", members}, {"max_members", 50}}}, {"invitations", Json::array()}};
@@ -252,7 +252,7 @@ TEST_CASE("clans: « Inviter dans mon clan » on a player's profile (2.63.4)") {
     CHECK(!o.enabled);
 }
 
-TEST_CASE("clans: a « [TAG] » finds its clan (2.63.4)") {
+TEST_CASE("clans: a « [TAG] » finds its clan (2.63.5)") {
     const Json list = Json::array({Json{{"id", "x"}, {"tag", "AUBEX"}}, Json{{"id", "y"}, {"tag", "Aube"}}});
     CHECK(clans::clanIdForTag(list, "AUBE") == "y");
     CHECK(clans::clanIdForTag(list, "aubex") == "x");

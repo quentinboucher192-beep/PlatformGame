@@ -1,7 +1,7 @@
 // Profile of a player (Cosmic Online), pushed over the current screen: identity (frame, title
 // and, 2.41, the badges chosen in the Collection), records, time played (total and per level,
 // in hours and minutes), creator card (computed by the server from the published levels),
-// creations, followers and followed creators, and the actions FOLLOW / friend / block; 2.63.4:
+// creations, followers and followed creators, and the actions FOLLOW / friend / block; 2.63.5:
 // the tab « Clan » (the sheet of the player's clan, and « Inviter dans mon clan » for the chief
 // and the officers of a clan). Every number comes from the server.
 
@@ -157,7 +157,7 @@ private:
                       }));
     }
 
-    /// Tab « Clan » (2.63.4): the sheet of the player's clan (GET /clans/{id}, public), and, for
+    /// Tab « Clan » (2.63.5): the sheet of the player's clan (GET /clans/{id}, public), and, for
     /// the chief or an officer of a clan, that clan's pending requests (whether this player was
     /// already invited, or applied).
     void loadClanTab() {
@@ -352,7 +352,7 @@ private:
                 const float tf = ui.fitFont(tag, FontFace::Bold, 22, room, 0.7f);
                 Vec2 ts = ui.label(ui.elide(tag, FontFace::Bold, tf, room), {afterName + ui.s(14), y + ui.s(26)}, tf, Color{255, 210, 122, 255}, Align::Left,
                                    FontFace::Bold, VAlign::Middle);
-                // 2.63.4: the tag opens the clan's sheet (the button under the name too, and the tab « Clan »).
+                // 2.63.5: the tag opens the clan's sheet (the button under the name too, and the tab « Clan »).
                 bool hovered = false;
                 const Rect tr{afterName + ui.s(14), y + ui.s(26) - ts.y * 0.5f, ts.x, ts.y};
                 if (ui.mouseClick("clantag", tr, &hovered)) g_.app.pushScene(makeClans(g_, jstr(clanJ, "id"), true));
@@ -517,7 +517,7 @@ private:
             y += hs.y + ui.s(10);
         }
         // Tabs.
-        // 2.63.4: « Clan » (the player's clan is public: shown even on a hidden profile).
+        // 2.63.5: « Clan » (the player's clan is public: shown even on a hidden profile).
         std::vector<std::string> labels = {"Créations", "Temps de jeu", "Meilleurs temps", "Meilleures progressions", "Abonnés", "Abonnements", "Clan"};
         std::vector<int> tabIds = {0, 1, 2, 3, 4, 5, kTabClan};
         if (hidden) {
@@ -529,7 +529,7 @@ private:
         const float tabsW = std::min(w, ui.s(230) * labels.size()), oneTab = tabsW / static_cast<float>(labels.size());
         ui.tabs("tabs", {x, y, tabsW, ui.s(42)}, labels, tab);
         if (!hidden) ui.newBadge("tabs", {x + oneTab * 3, y, oneTab, ui.s(42)}, "profile.races");  // « NOUVEAU » (2.32.2)
-        ui.newBadge("tabs", {x + oneTab * static_cast<float>(labels.size() - 1), y, oneTab, ui.s(42)}, "profile.tab.clan");  // 2.63.4
+        ui.newBadge("tabs", {x + oneTab * static_cast<float>(labels.size() - 1), y, oneTab, ui.s(42)}, "profile.tab.clan");  // 2.63.5
         if (tab != shownTab) {
             tab_ = tabIds[static_cast<size_t>(std::clamp(tab, 0, static_cast<int>(tabIds.size()) - 1))];
             query_.clear();
@@ -577,7 +577,7 @@ private:
         badgeRow_.drawTooltip(g_);
     }
 
-    // ------------------------------------------------------------ tab « Clan » (2.63.4)
+    // ------------------------------------------------------------ tab « Clan » (2.63.5)
     /// `t` at `size` (smaller down to 75 %, then shortened with « … ») in `room`; `verbatim`:
     /// a player's words (a clan's name, its motto) are never translated.
     Vec2 fitText(const std::string& t, Vec2 pos, float size, float room, Color c, FontFace face = FontFace::Body, Align a = Align::Left,
@@ -1237,7 +1237,7 @@ private:
     std::string query_;     // search of the current tab
     int filter_ = 0;        // filter of the current tab (category, finished or not)
     std::string fetching_;  // attempt whose replay is downloading
-    static constexpr int kTabClan = 6;  // 2.63.4: the player's clan
+    static constexpr int kTabClan = 6;  // 2.63.5: the player's clan
     Json tabData_;
     Json myClanPage_;  // tab « Clan »: GET /clans/{the viewer's clan} (its pending requests), chief and officers only
     std::string tabError_;

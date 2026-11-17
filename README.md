@@ -453,12 +453,18 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
-**Nouveau dans la version 2.63.4** :
-* Petits textes : les espaces entre les mots ne disparaissent plus en 1280×720.
+**Nouveau dans la version 2.63.5** :
+* L'**histoire de Singularis** (« Le Cœur effondré ») devient un **petit dessin animé** : Lyse, la jeune
+  étoile qui chante, les trois planètes qui fleurissent de ses dons, les machines qui boivent sa lumière, la
+  dernière étincelle, l'effondrement et Singularis affamé ; nébuleuse, étoiles et poussières animées. Une
+  pastille NOUVEAU mène à « Revoir l'histoire ».
 * **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
   rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
   onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
   **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
+
+**Nouveau dans la version 2.63.4** :
+* Petits textes : les espaces entre les mots ne disparaissent plus en 1280×720.
 
 **Nouveau dans la version 2.63.3** :
 * L'**histoire du Titan** (« Le Dernier Quart ») devient un **petit dessin animé** : la fonderie et ses
