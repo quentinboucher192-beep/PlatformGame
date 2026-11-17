@@ -1093,7 +1093,9 @@ void GameScene::update(float dt) {
         const Player& pl = world_->player();
         bool fast = std::abs(pl.vel.x) > 150.0f || std::abs(pl.vel.y) > 420.0f;
         trail_.update(pl.center(), dt, fast && pl.alive() && world_->state() == WorldState::Playing);
-        if (victoryT_ < 0.0f && world_->state() == WorldState::Completed) {
+        // The victory effect starts as Nova reaches the exit (2.59: with the level's closing
+        // scene, WorldState::Outro, no longer after it: its fade to the results hid the effect).
+        if (victoryT_ < 0.0f && (world_->state() == WorldState::Outro || world_->state() == WorldState::Completed)) {
             victoryT_ = 0.0f;
             victoryAt_ = pl.box.bottomCenter();
         } else if (victoryT_ >= 0.0f) {

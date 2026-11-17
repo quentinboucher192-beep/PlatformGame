@@ -778,7 +778,7 @@ void AdminCreations::drawEditor(const Rect& r) {
     const float paletteH = paletteHeight(ui, narrow);
     float contentH = ui.s(26) + nameH + ui.s(18) + ui.s(26) + cardH + ui.s(14) + 3 * (barH + barGap) + ui.s(6) + hexH + ui.s(14) + paletteH;
     if (!suitKind()) contentH += ui.s(26) + drawStyles(0, 0, narrow, true) + ui.s(18);
-    if (kindId() == "trail") contentH += ui.s(18) + drawTrailSettings(0, 0, narrow, true);
+    if (kindId() == "trail") contentH += drawTrailSettings(0, 0, narrow, true) + ui.s(18);
     const Rect ctl{x, y, cw, std::max(ui.s(40), noteY - ui.s(12) - y)};
     const bool scrolls = contentH > ctl.h;
     const float w = cw - (scrolls ? ui.s(16) : 0.0f);
@@ -810,6 +810,10 @@ void AdminCreations::drawEditor(const Rect& r) {
         fitLabel(ui, words.styleLabel, {x, cy + ui.s(11)}, 16, w, ui.theme().accent, Align::Left, FontFace::Bold);
         cy += ui.s(26);
         cy += drawStyles(x, cy, w, false) + ui.s(18);
+    }
+    // A trail: its width, its length in time, its sparkles (before its colours).
+    if (kindId() == "trail") {
+        cy += drawTrailSettings(x, cy, w, false) + ui.s(18);
     }
     // The colours, the one edited, its bars, its code, the palette.
     {
@@ -848,11 +852,6 @@ void AdminCreations::drawEditor(const Rect& r) {
             fitLabel(ui, example, {x + lw + fw + ui.s(14), cy + hexH * 0.5f}, 13, w - lw - fw - ui.s(14), ui.theme().textDim);
         cy += hexH + ui.s(14);
         cy += drawPalette(x, cy, w);
-    }
-    // A trail: its width, its length in time, its sparkles.
-    if (kindId() == "trail") {
-        cy += ui.s(18);
-        cy += drawTrailSettings(x, cy, w, false);
     }
     ui.endScroll();
     ui.popId();
@@ -1035,7 +1034,7 @@ float AdminCreations::drawTrailSettings(float x, float y, float w, bool measure)
     const float barH = ui.s(34), gap = ui.s(8), toggleH = ui.s(48);
     const float height = ui.s(26) + 2 * (barH + gap) + toggleH;
     if (measure) return height;
-    const std::string hint = "← → : de 10 en 10 · Maj : de 1 en 1";
+    const std::string hint = "← → : grands pas · Maj : petits pas";
     const float hw = std::min(w * 0.6f, ui.text().measure(hint, FontFace::Body, ui.s(fz(ui, 13))).x);
     fitLabel(ui, "Réglages", {x, y + ui.s(11)}, 16, w - hw - ui.s(12), ui.theme().accent, Align::Left, FontFace::Bold);
     fitLabel(ui, hint, {x + w, y + ui.s(11)}, 13, hw, ui.theme().textDim, Align::Right);
@@ -1160,20 +1159,20 @@ void AdminCreations::drawTrailPreview(const Rect& r, float top, float bottom) {
     UIContext& ui = g_.ui;
     Renderer& rr = ui.r();
     const float pad = ui.s(14);
-    // Nova runs from one side to the other and back, dashing halfway: her trail follows her
-    // (the game's own trail, fed with her drawn centre, in screen pixels).
+    // Nova runs across, again and again (coming in on the left, going out on the right),
+    // dashing halfway: her trail follows her (the game's own trail, fed with her drawn centre,
+    // in screen pixels).
     const float t = ui.time();
     const float dt = previewClock_ < 0.0f ? 0.0f : std::clamp(t - previewClock_, 0.0f, 0.05f);
     previewClock_ = t;
-    const float ground = bottom - (bottom - top) * 0.1f;
-    const float size = std::max(ui.s(32), std::min(r.w * 0.34f, (ground - top) * 0.62f));
-    const float pass = 1.7f;  // seconds to cross
-    const float u = std::fmod(t, 2.0f * pass) / pass;  // 0..2
-    const bool back = u >= 1.0f;
-    const float p = back ? u - 1.0f : u;
-    const float eased = p * p * (3.0f - 2.0f * p);
-    const float left = r.x + pad + size * 0.5f, right = r.right() - pad - size * 0.5f;
-    const float cx = back ? right - (right - left) * eased : left + (right - left) * eased;
+    const float ground = top + (bottom - top) * 0.68f;
+    const float size = std::max(ui.s(32), std::min(r.w * 0.42f, (ground - top) * 0.7f));
+    const float pass = 1.8f;  // seconds to cross
+    const float p = std::fmod(t, pass) / pass;  // 0..1
+    // Faster in the middle (the dash): the speed is 1 - 0.63 cos(2πp) times the mean one.
+    const float f = p - 0.1f * std::sin(p * 6.2831853f);
+    const float left = r.x - size * 0.4f, right = r.right() + size * 0.4f;
+    const float cx = left + (right - left) * f;
     const bool dash = p > 0.38f && p < 0.62f;
     const Vec2 center{cx, ground - size * 0.42f};
     if (previewTrailRect_.x != r.x || previewTrailRect_.y != r.y || previewTrailRect_.w != r.w || previewTrailRect_.h != r.h) {
@@ -1185,8 +1184,8 @@ void AdminCreations::drawTrailPreview(const Rect& r, float top, float bottom) {
              Align::Center);
     rr.fillRect({r.x + ui.s(2), ground, r.w - ui.s(4), ui.s(2)}, ui.theme().accent.withAlpha(90));
     rr.pushClip({r.x + ui.s(2), top, r.w - ui.s(4), bottom - top});
-    previewTrail_.draw(rr, "", false, size / 46.0f, 1.0f, &draft_.look);
-    drawNova(nullptr, dash ? "dash" : "run", t, Rect{cx - size * 0.5f, ground - size, size, size}, Color::white(), back);
+    previewTrail_.draw(rr, "", false, size / 40.0f, 1.0f, &draft_.look);
+    drawNova(nullptr, dash ? "dash" : "run", t, Rect{cx - size * 0.5f, ground - size, size, size});
     rr.popClip();
 }
 
@@ -1206,8 +1205,9 @@ void AdminCreations::drawFramePreview(const Rect& r, float top, float bottom) {
     const float capY = row.y - ui.s(14);
     // Above: the profile's avatar, as large as the room left allows (its frame included).
     const float room = capY - ui.s(14) - top - ui.s(30);  // the caption « Profil » under it
-    const float scale = std::max(ui.s(0.6f), std::min(ui.s(1.6f), room / 120.0f));
-    const float rad = std::max(ui.s(16), std::min((r.w - 2 * pad) * 0.5f - kAvatarFrameMargin * scale, room * 0.5f - kAvatarFrameMargin * scale));
+    const float k = 1.0f + kAvatarFrameMargin / 40.0f;    // the avatar and its frame, in radii
+    const float rad = std::max(ui.s(16), std::min((r.w - 2 * pad) * 0.5f, room * 0.5f) / k);
+    const float scale = rad / 40.0f;
     const Vec2 c{r.center().x, top + kAvatarFrameMargin * scale + rad + ui.s(4)};
     online_.drawAvatar(avatar, pid, Rect::fromCenter(c, {rad * 2, rad * 2}));
     drawAvatarFrame(rr, c, rad, "", scale, t, &draft_.look);
@@ -1234,10 +1234,10 @@ void AdminCreations::drawVictoryPreview(const Rect& r, float top, float bottom) 
     const float cycle = kVictoryFxTime + 0.5f;
     const float tt = std::fmod(t, cycle);
     fitLabel(ui, "Aperçu : sortie du niveau", {r.center().x, r.bottom() - pad - ui.s(12)}, 15, r.w - 2 * pad, ui.theme().textDim, Align::Center);
-    const float ground = bottom - (bottom - top) * 0.08f;
+    const float scale = std::max(0.2f, std::min((r.w - 2 * pad) / 230.0f, (bottom - top) / 240.0f));
+    const float ground = std::min(bottom - ui.s(8), (top + bottom) * 0.5f + 60.0f * scale);
     rr.fillRect({r.x + ui.s(2), ground, r.w - ui.s(4), ui.s(2)}, ui.theme().accent.withAlpha(90));
-    const float scale = std::max(0.2f, std::min((r.w - 2 * pad) / 260.0f, (ground - top) / 200.0f));
-    const float size = 44.0f * scale;
+    const float size = 52.0f * scale;
     const Vec2 at{r.center().x, ground};
     rr.pushClip({r.x + ui.s(2), top, r.w - ui.s(4), bottom - top});
     drawNova(nullptr, tt < kVictoryFxTime ? "victory" : "idle", tt, Rect{at.x - size * 0.5f, ground - size, size, size});
