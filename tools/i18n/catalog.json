@@ -331,6 +331,12 @@
    ]
   },
   {
+   "fr": "100 % (vaincu)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "12 caractères au moins.",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -496,6 +502,18 @@
    "fr": ": vérification manuelle.",
    "where": [
     "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "= aussi régulier qu'il y a 30 jours",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "= stable",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -1468,6 +1486,12 @@
    ]
   },
   {
+   "fr": "Algorithme : pour chaque tranche, difficulté = (morts + 1) ÷ (passages + 2), un lissage qui évite qu'une seule mort rende une tranche « impossible ». Les parties récentes pèsent plus (demi-vie de 14 jours) pour suivre vos progrès. Les tranches voisines au-dessus de 2 × la médiane du niveau sont fusionnées en un passage, retenu seulement avec au moins 5 passages ; sa difficulté = 1 − le produit des (1 − difficulté de chaque tranche). Phase de boss : défaites dans la phase ÷ tentatives arrivées à la phase (au moins 5). Le classement mélange tous les niveaux et les phases de boss. « S'entraîner sur ce segment » ouvre l'entraînement par segment depuis le point de passage précédent ; « S'entraîner sur cette phase », l'entraînement contre le boss sur cette phase.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Algérie",
    "where": [
     "data/online/countries.json",
@@ -1837,7 +1861,8 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -1944,7 +1969,8 @@
    "fr": "août",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp",
-    "ui/screens/ChallengeUi.cpp"
+    "ui/screens/ChallengeUi.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -2352,7 +2378,9 @@
     "ui/screens/GhostRun.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/Charts.cpp"
    ]
   },
   {
@@ -2365,6 +2393,12 @@
    "fr": "Arrivée {0}  ·  fantôme {1}",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "ARRIVÉES",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -2496,7 +2530,32 @@
    "where": [
     "engine/input/InputTypes.cpp",
     "game/enemies/EnemyDefinition.h",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque du boss",
+   "where": [
+    "game/records/PlayStatsRecorder.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque fatale",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque fatale la plus fréquente : {0} · {1} défaite sur {2} tentatives arrivées là · difficulté {3}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque fatale la plus fréquente : {0} · {1} défaites sur {2} tentatives arrivées là · difficulté {3}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -2513,6 +2572,18 @@
    ]
   },
   {
+   "fr": "Attaques d'ennemis",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Attaques de boss",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Attaques de la phase (le boss choisit selon la situation)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -2522,6 +2593,18 @@
    "fr": "Attaques enchaînées (combo)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Attaques qui touchent sur attaques lancées",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Attaques évitées sur attaques qui vous menaçaient",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -2747,6 +2830,12 @@
    ]
   },
   {
+   "fr": "au moins 3 parties complètes nécessaires",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "au moins un ami",
    "where": [
     "server/src/social.ts"
@@ -2908,6 +2997,12 @@
    "fr": "Aucun compte n'est lié à cet ordinateur : le premier compte créé ou connecté ici le sera, et ne pourra plus servir ailleurs.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun coup reçu sur la période.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -3157,6 +3252,12 @@
    ]
   },
   {
+   "fr": "Aucun passage ne se détache encore (il en faut au moins 5 passages pour en juger).",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun point de passage : une chute ramène au départ du niveau, cœurs pleins et pouvoirs du défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -3358,6 +3459,12 @@
    ]
   },
   {
+   "fr": "Aucune attaque lancée sur la période.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune combinaison créée pour l'instant : « Nouvelle combinaison » pour commencer.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -3424,6 +3531,12 @@
    ]
   },
   {
+   "fr": "Aucune donnée",
+   "where": [
+    "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
    "fr": "Aucune entité native dans ce jeu.",
    "where": [
     "ui/screens/AdminEnemies.cpp"
@@ -3476,6 +3589,18 @@
    "fr": "Aucune notification pour l'instant. Suivez des créateurs, ajoutez des niveaux à vos favoris et commentez : leurs nouveautés apparaîtront ici.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune partie complète pour l'instant.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune partie d'un niveau classique n'est encore enregistrée. Jouez un niveau de la campagne (hors EXTRÊME) depuis son début : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -3554,6 +3679,12 @@
    "fr": "Aucune tentative classée sur un niveau EXTRÊME : chaque tentative compte, même sans arriver au bout.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune tentative contre un boss n'est encore enregistrée. Chaque combat compte dès maintenant : la part des points de vie retirée, la phase atteinte et l'attaque fatale. Les statistiques de boss d'avant (victoires, phases sans dégât) restent dans les fiches des boss.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -3688,6 +3819,7 @@
   {
    "fr": "Autre",
    "where": [
+    "game/records/PlayStatsRecorder.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -3731,6 +3863,12 @@
    ]
   },
   {
+   "fr": "Autres (temps écoulé…)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Autriche",
    "where": [
     "data/online/countries.json",
@@ -3771,6 +3909,12 @@
    "fr": "Avant le premier combat",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "avant le suivi",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -4593,7 +4737,8 @@
    "fr": "Boss",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "ui/screens/NotificationsScene.cpp"
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -4640,6 +4785,12 @@
    "fr": "Boss : sa dernière attaque",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Boss : votre meilleure progression tentative après tentative, une fiche par boss (victoire après N tentatives, phase la plus dure, attaque fatale la plus fréquente) et les défaites par phase. Les fiches des boss d'avant sont à un clic.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -4712,6 +4863,12 @@
    "fr": "boss {0} sur {1}",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Boss {0} à {1} sur {2}, du plus récent au plus ancien",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -5740,6 +5897,12 @@
    ]
   },
   {
+   "fr": "Ce jour-là",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce n'est pas la version du niveau de ce défi.",
    "where": [
     "server/src/challenges.ts"
@@ -5904,6 +6067,12 @@
    ]
   },
   {
+   "fr": "CE QUI EST ENREGISTRÉ",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce qui est envoyé : le niveau, vos ennemis et pouvoirs personnalisés, vos fichiers propres et le replay de votre fin de niveau. Les autres joueurs pourront le télécharger, le noter, le signaler et y classer leurs temps.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -5919,6 +6088,12 @@
    "fr": "Ce qui est partagé",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "CE QUI VOUS TOUCHE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -6571,9 +6746,21 @@
    ]
   },
   {
+   "fr": "Chaque graphique a son info-bulle à la souris, un curseur au clavier et à la manette (← →) et une vue « Tableau ». Paramètres › Jeu : « Enregistrer mes statistiques » (activé par défaut) ; « Réinitialiser les statistiques » dans l'écran.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chaque génération ajouta la sienne. Rune après rune, le caillou grandit… et se leva.",
    "where": [
     "data/stories/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Chaque jour",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -6593,6 +6780,18 @@
    "fr": "Chaque modification est envoyée au serveur, qui la range dans un même ordre pour tous ; « Annuler » ne défait que vos propres modifications.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Chaque partie",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque partie, et la médiane des 5 dernières",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7219,6 +7418,12 @@
    ]
   },
   {
+   "fr": "Chute dans le vide",
+   "where": [
+    "game/records/PlayStatsRecorder.cpp"
+   ]
+  },
+  {
    "fr": "Chute de la voûte",
    "where": [
     "data/enemies/monolithe.json"
@@ -7257,6 +7462,12 @@
    "fr": "chutes",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Chutes dans le vide",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7816,7 +8027,14 @@
   {
    "fr": "Combat",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combat : taux d'esquive et précision avec leur moyenne sur 7 jours joués, précision par pouvoir, et ce qui vous touche (tirs, attaques d'ennemis et de boss, contacts, pièges, chutes).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8006,6 +8224,12 @@
    "fr": "commencé : verrouillé",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, additionnés ; temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -8774,6 +8998,12 @@
    ]
   },
   {
+   "fr": "CONSTANCE PAR SEGMENT",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Constellation",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -8791,6 +9021,19 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/gameplay/Damage.cpp"
+   ]
+  },
+  {
+   "fr": "Contact avec le boss",
+   "where": [
+    "game/records/PlayStatsRecorder.cpp"
+   ]
+  },
+  {
+   "fr": "Contact avec un ennemi",
+   "where": [
+    "game/records/PlayStatsRecorder.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -9360,6 +9603,12 @@
    "fr": "Coupe caméra",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Coups",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -10189,6 +10438,12 @@
    ]
   },
   {
+   "fr": "Dans le fichier stats.json, à côté de vos autres sauvegardes, avec un numéro de format pour les futures mises à jour. Il est écrit à la fin de chaque tentative (une chute, la fin ou l'abandon d'une partie) et quand le jeu se ferme, sur un fil secondaire (jamais pendant que vous jouez), par écriture atomique : fichier temporaire puis remplacement, comme les records.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "dans le jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -10654,6 +10909,12 @@
    ]
   },
   {
+   "fr": "Des compteurs par jour : temps joué, morts, menaces et esquives, attaques lancées et réussies (par attaque), origine des coups reçus, étoiles des succès. Par niveau : passages et morts dans chacune des 40 tranches. Par boss : chaque tentative (part des points de vie retirés, phase atteinte, attaque fatale). Par niveau classique : les temps de chaque segment, vos arrivées, votre record et votre somme des meilleurs. Aucune donnée personnelle, aucune position.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "des fichiers manquent dans la sauvegarde",
    "where": [
     "server/src/backups.ts"
@@ -10869,13 +11130,20 @@
   {
    "fr": "Difficulté",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
    "fr": "difficulté",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Difficulté (récente)",
+   "where": [
+    "ui/widgets/Charts.cpp"
    ]
   },
   {
@@ -10999,6 +11267,18 @@
    "fr": "Disparition",
    "where": [
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "Dispersion",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dispersion des temps (écart interquartile ÷ médiane)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -11215,6 +11495,12 @@
    "where": [
     "server/src/replay.ts",
     "server/src/zip.ts"
+   ]
+  },
+  {
+   "fr": "Données et sauvegarde",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -11631,6 +11917,12 @@
    ]
   },
   {
+   "fr": "déc.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Décalage (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -11866,7 +12158,14 @@
   {
    "fr": "Défaites",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Défaites par phase — choisissez un boss",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -12372,6 +12671,13 @@
    ]
   },
   {
+   "fr": "Départ",
+   "where": [
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
    "fr": "Départ : dans l'arène, à droite du boss, au sol",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -12608,6 +12914,12 @@
    "fr": "Effets de victoire",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Effets persistants (lave, nuages, ronces…)",
+   "where": [
+    "game/gameplay/GameWorld.cpp"
    ]
   },
   {
@@ -13231,6 +13543,12 @@
    ]
   },
   {
+   "fr": "Ennemis de l'arène",
+   "where": [
+    "game/records/PlayStatsRecorder.cpp"
+   ]
+  },
+  {
    "fr": "ennemis en une partie",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -13318,6 +13636,12 @@
    "fr": "Enregistrer l'image des 5 planètes depuis la Galerie.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Enregistrer mes statistiques",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -13409,6 +13733,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement (boss, segments, essais) : {0} sur la période, compté à part : il n'entre dans aucune courbe.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -13815,6 +14145,12 @@
    "fr": "Esprit masqué maîtrisant les pouvoirs : se téléporte, tire des orbes en salve et appelle des renforts. Fuit quand il faiblit. Variante de Pyralis forgée dans la lave : plus résistante et plus rapide.",
    "where": [
     "data/enemies/fire_wisp.json"
+   ]
+  },
+  {
+   "fr": "Esquive : un tir ennemi, ou une attaque portée par le corps d'un ennemi ou d'un boss (coup, charge, bond, piqué…), vous menace quand sa zone de dégâts passe à moins d'une tuile et demie de vous pendant qu'elle est dangereuse ; elle est esquivée si elle repart sans vous blesser. Chaque attaque compte une seule fois. Taux = esquivées ÷ menaces. Les attaques à distance sans tir (lasers, pluies, marées…) comptent dans « Ce qui vous touche », pas dans l'esquive.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -14374,6 +14710,12 @@
    ]
   },
   {
+   "fr": "Fiches des boss : lieux, animations, entraînement",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Fichier",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -14383,6 +14725,12 @@
    "fr": "Fichier .cplanet",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier : {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -14709,6 +15057,12 @@
    "fr": "Finir premier du classement final de ce défi.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Finissez le niveau depuis son début pour voir votre record et votre somme des meilleurs.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -15233,6 +15587,12 @@
    "fr": "Fusée",
    "where": [
     "data/online/avatars.json"
+   ]
+  },
+  {
+   "fr": "févr.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -15838,6 +16198,12 @@
    ]
   },
   {
+   "fr": "Graphique",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Graphismes",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -16386,6 +16752,12 @@
    "fr": "Hors de l'anneau",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "HORS DE LA SIMULATION",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -17922,9 +18294,16 @@
    ]
   },
   {
+   "fr": "Jouez quelques parties pour voir vos statistiques",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Jour",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -18166,6 +18545,24 @@
    "fr": "L'eau du lac est glaciale et mord la chair ! Passez par les blocs de glace ou au grappin.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "L'enregistrement est activé (Paramètres › Jeu › « Enregistrer mes statistiques »).",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'enregistrement est désactivé (Paramètres › Jeu › « Enregistrer mes statistiques ») : rien de nouveau n'est compté.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'enregistrement est désactivé : Paramètres › Jeu › « Enregistrer mes statistiques ».",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -19743,6 +20140,12 @@
    ]
   },
   {
+   "fr": "Le fichier des statistiques était abîmé : il a été gardé dans stats.json.bak et l'onglet repart de zéro.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Le fichier du niveau n'est pas valide.",
    "where": [
     "server/src/campaignRevisions.ts"
@@ -20135,6 +20538,12 @@
    "fr": "Le niveau du projet est illisible : {0}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau découpé en 40 tranches : plus c'est clair, plus on y meurt souvent",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -20559,6 +20968,12 @@
    "fr": "Le vestiaire, le juke-box et la galerie de la Collection.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "le {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -21303,6 +21718,12 @@
    ]
   },
   {
+   "fr": "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays relus et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est compté à part.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Les temps passent par la vérification habituelle avant d'entrer dans les classements. Une copie de la progression part dans quelques secondes.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -21566,6 +21987,12 @@
    "fr": "Lignes",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Lignes {0}–{1} sur {2}",
+   "where": [
+    "ui/widgets/Charts.cpp"
    ]
   },
   {
@@ -22566,6 +22993,12 @@
    ]
   },
   {
+   "fr": "Meilleur",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur combat",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -22603,6 +23036,18 @@
    ]
   },
   {
+   "fr": "Meilleur {0} · médiane {1} · perdu en moyenne {2} · {3} passage",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur {0} · médiane {1} · perdu en moyenne {2} · {3} passages",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleur à l'entraînement",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -22622,6 +23067,18 @@
    ]
   },
   {
+   "fr": "Meilleure part des points de vie retirés, tentative après tentative",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "meilleure partie complète",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleure série : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -22631,6 +23088,12 @@
    "fr": "Meilleures progressions",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "meilleurs segments additionnés",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -22739,6 +23202,12 @@
    "where": [
     "data/music/tracks.json",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Menu principal › Statistiques : calculées à partir de vos parties, gardées sur cet ordinateur, jamais envoyées en ligne.",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -23626,13 +24095,27 @@
   {
    "fr": "Morts",
    "where": [
-    "ui/screens/ResultsScene.cpp"
+    "ui/screens/ResultsScene.cpp",
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/Charts.cpp"
    ]
   },
   {
    "fr": "morts du replay ({0}) ≠ record ({1})",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "MORTS PAR HEURE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "MORTS PAR HEURE DE JEU",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -23677,6 +24160,12 @@
    "fr": "Moyenne calculée par Cosmic Online à partir des notes des joueurs qui ont terminé ce niveau (temps vérifié). Ce n'est pas la difficulté /5, calculée par le jeu à partir du niveau lui-même.",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Moyenne sur 7 jours joués",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -23875,6 +24364,18 @@
    "fr": "Médailles et records personnels.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "MÉDIANE (20 DERNIÈRES)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Médiane des 5 dernières",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -24501,6 +25002,12 @@
    ]
   },
   {
+   "fr": "Niveau {0} sur {1}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "niveau à créer",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -24539,13 +25046,20 @@
   {
    "fr": "Niveaux",
    "where": [
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
    "fr": "niveaux",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Niveaux (hors EXTRÊME) : évolution de votre record et de votre somme des meilleurs segments (SOB), zones où vous perdez du temps avec « S'entraîner sur ce segment », constance de chaque segment et régularité de vos parties.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -25142,6 +25656,12 @@
    ]
   },
   {
+   "fr": "Nouveau : l'écran Statistiques (menu principal), calculé à partir de vos vraies parties et gardé sur cet ordinateur. Vue d'ensemble sur 7, 30 ou 90 jours (temps de jeu, taux d'esquive, précision, morts par heure, comparés à la période précédente), étoiles de succès et morts par heure jour après jour.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Nouveau boss : {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -25643,6 +26163,12 @@
    "fr": "N°",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "n° {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -26370,9 +26896,21 @@
    ]
   },
   {
+   "fr": "Origine",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Origine de l'adresse",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Origine des coups reçus (et des chutes)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -26492,6 +27030,12 @@
    ]
   },
   {
+   "fr": "Ouvrir les Paramètres",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouvrir NIVEAUX EN LIGNE",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -26517,6 +27061,12 @@
    ]
   },
   {
+   "fr": "OÙ ET QUAND",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Où l'affronter",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -26526,6 +27076,18 @@
    "fr": "Où l'entendre",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "OÙ LE COMBAT S'ARRÊTE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "OÙ VOUS TOMBEZ",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -26979,6 +27541,18 @@
    ]
   },
   {
+   "fr": "Part",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Part des coups reçus",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "part du parcours de l'Argent (%)",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -27012,7 +27586,8 @@
   {
    "fr": "Partie",
    "where": [
-    "ui/screens/SettingsScene.cpp"
+    "ui/screens/SettingsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27040,6 +27615,12 @@
    ]
   },
   {
+   "fr": "Partie n° {0} — {1}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Partie rejouée à l'identique",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -27064,9 +27645,21 @@
    ]
   },
   {
+   "fr": "PARTIES ARRIVÉES AU BOUT",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Parties vérifiées par Cosmic Online",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "pas assez de parties il y a 30 jours",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27170,6 +27763,12 @@
    ]
   },
   {
+   "fr": "Pas de période précédente",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas de replay vérifié pour cette course.",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -27191,6 +27790,12 @@
    "fr": "Pas encore",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27239,6 +27844,18 @@
    "fr": "Pas encore de course complète de cette version du niveau : terminez-la pour voir vos meilleurs segments, votre record et la somme des meilleurs (SoB).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de données sur la période.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de segment chronométré.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27362,9 +27979,34 @@
    ]
   },
   {
+   "fr": "Passages",
+   "where": [
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "Passages difficiles",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passages difficiles : où vous tombez dans chaque niveau, sur son vrai relief, et vos 5 passages les plus difficiles (niveaux et phases de boss) avec l'entraînement qui va avec.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "passages à 1/30 s près",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passages à moins de 5 % du meilleur temps",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27570,6 +28212,12 @@
    ]
   },
   {
+   "fr": "PB − SOB, en théorie",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Peloton",
    "where": [
     "data/achievements/achievements.json"
@@ -27703,7 +28351,8 @@
     "game/enemies/Enemy.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/enemies/EnemyDefinition.h",
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27723,6 +28372,12 @@
    "fr": "Phase atteinte",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Phase la plus dure",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27748,7 +28403,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/GameScene.cpp"
+    "ui/screens/GameScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27760,7 +28416,8 @@
   {
    "fr": "Phase {0} : {1}",
    "where": [
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27773,7 +28430,8 @@
   {
    "fr": "phases",
    "where": [
-    "game/enemies/EnemyDefinition.cpp"
+    "game/enemies/EnemyDefinition.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27786,7 +28444,8 @@
    "fr": "Phases sans dégât",
    "where": [
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/CollectionScene.cpp"
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -27949,6 +28608,18 @@
    "fr": "Pièges & dangers",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pièges du niveau",
+   "where": [
+    "game/records/PlayStatsRecorder.cpp"
+   ]
+  },
+  {
+   "fr": "Pièges et dangers",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -28494,6 +29165,18 @@
    ]
   },
   {
+   "fr": "Plus la courbe descend, plus vous progressez",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Plus la dispersion est faible, plus vos temps se ressemblent",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Plus loin",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -28644,7 +29327,14 @@
   {
    "fr": "Point de passage",
    "where": [
-    "ui/screens/PauseScene.cpp"
+    "ui/screens/PauseScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Point de passage {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -29575,9 +30265,21 @@
    ]
   },
   {
+   "fr": "Progression : la période choisie est comparée à la précédente de même durée (▲ / ▼ avec l'écart, en points pour les taux, et « en progrès » ou « en recul » : jamais la couleur seule). Comptent les parties de la campagne, des défis et des niveaux des joueurs ; l'entraînement est compté à part, le mode Invincible jamais.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Progression : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Progression : à chaque tentative est enregistrée la part des points de vie totaux du boss (toutes phases) retirée au moment de la défaite ou de l'abandon ; la courbe montre le meilleur résultat obtenu jusque-là, une victoire vaut 100 %. Une tentative reprise après une mort retrouve le boss avec ses blessures. Les 200 dernières tentatives sont gardées par boss. Les victoires et phases sans dégât d'avant le suivi viennent des statistiques de boss existantes.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -29632,6 +30334,12 @@
    "fr": "Progression restaurée : elle s'ajoute à celle de cet ordinateur (sauvegardes d'avant : saves › {0}).",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "PROGRESSION SUR CHAQUE BOSS",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -29829,6 +30537,36 @@
    "fr": "Près d'un point d'ancrage, Interagir lance une ligne d'énergie qui vous propulse vers lui. Saut pour lâcher en avance.",
    "where": [
     "data/powers/grapple.json"
+   ]
+  },
+  {
+   "fr": "PRÉCISION",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Précision",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Précision : un coup de l'attaque, un tir ou une lame (Onde, Tir chargé, Bombe à plasma, Boomerangs, Frappe sismique) « touche » s'il retire des points de vie à au moins un ennemi ; un tir qui en traverse plusieurs compte une seule fois. Les pouvoirs qui n'infligent pas de dégâts (Nova de givre, Bouclier, Dash…) ne comptent pas. Le mode Invincible (admin) n'est jamais compté.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "PRÉCISION DES ATTAQUES",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "PRÉCISION PAR POUVOIR",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -30389,13 +31127,20 @@
   {
    "fr": "P{0}",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
    "fr": "Pèlerin d'Aethra",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Période",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -31096,6 +31841,18 @@
    ]
   },
   {
+   "fr": "RECORD (PB)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Record (PB)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Record battu",
    "where": [
     "game/online/OnlineService.cpp",
@@ -31578,6 +32335,12 @@
    "fr": "Relations",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Relief du niveau en préparation…",
+   "where": [
+    "ui/widgets/Charts.cpp"
    ]
   },
   {
@@ -32362,7 +33125,8 @@
     "ui/screens/PowerGuideScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SettingsScene.cpp",
-    "ui/screens/SpectateScene.cpp"
+    "ui/screens/SpectateScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -32723,6 +33487,7 @@
    "fr": "route",
    "where": [
     "game/race/Race.cpp",
+    "game/records/PlayStats.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -32814,7 +33579,9 @@
     "game/ghost/SegmentHistory.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/Spectate.cpp",
-    "ui/screens/OnlineComputer.cpp"
+    "game/records/PlayStats.cpp",
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -33207,6 +33974,18 @@
    "fr": "Réinitialiser les records",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "Réinitialiser les statistiques",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réinitialiser les statistiques ?",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -33646,6 +34425,18 @@
    "fr": "S'entraîner (hors classement)",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "S'entraîner sur ce segment",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "S'entraîner sur cette phase",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -34430,11 +35221,18 @@
    ]
   },
   {
+   "fr": "Sections",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Segment",
    "where": [
     "ui/screens/GhostRun.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/screens/SegmentsScene.cpp"
+    "ui/screens/SegmentsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -34459,6 +35257,18 @@
    "fr": "segment d'or",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Segment {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Segment {0} : {1} → {2}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -35095,6 +35905,24 @@
    "fr": "Somme de mes meilleurs segments",
    "where": [
     "ui/screens/SegmentsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "SOMME DES MEILLEURS (SOB)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Somme des meilleurs (SOB)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -35856,6 +36684,12 @@
    ]
   },
   {
+   "fr": "STATISTIQUES",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Statistiques",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -35901,6 +36735,12 @@
    "fr": "Statistiques des boss et galerie : les nouveaux gardiens et leurs échos y figurent. Musiques : 4 thèmes de combat et la musique d'Aethra.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Statistiques réinitialisées.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -36311,6 +37151,12 @@
    ]
   },
   {
+   "fr": "SUR CET ORDINATEUR",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "SUR CET ORDINATEUR, AVEC LE COMPTE {0}",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -36344,6 +37190,12 @@
    "fr": "Sur la première île-sanctuaire, un bosquet de Sylvanox s'est enfoncé dans la nébuleuse. Ses racines vivent encore, et la Mère-Racine les entend toutes.",
    "where": [
     "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Sur la période choisie",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -36736,6 +37588,12 @@
    ]
   },
   {
+   "fr": "Tableau",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tablette : Aimant",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -36910,6 +37768,12 @@
    ]
   },
   {
+   "fr": "TAILLE MAÎTRISÉE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tanzanie",
    "where": [
     "data/online/countries.json",
@@ -36932,6 +37796,12 @@
    "fr": "Tapez {0} pour confirmer",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "TAUX D'ESQUIVE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -37004,7 +37874,8 @@
     "ui/screens/GhostRun.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -37017,6 +37888,18 @@
    "fr": "Temps comptés après vérification du replay (structure, version, durée, trajectoire), non re-simulés.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "temps d'arrivée",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEMPS DE JEU",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -37086,9 +37969,33 @@
    ]
   },
   {
+   "fr": "TEMPS DES 20 DERNIÈRES PARTIES COMPLÈTES",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Temps du combat",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEMPS GAGNABLE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Temps gagnable",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Temps gardés",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -37178,6 +38085,12 @@
    ]
   },
   {
+   "fr": "Temps perdu en moyenne sur chaque segment : médiane des derniers temps − meilleur temps",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Temps refusé",
    "where": [
     "game/online/OnlineService.cpp"
@@ -37252,6 +38165,12 @@
    ]
   },
   {
+   "fr": "Tentative",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "tentative différente",
    "where": [
     "server/src/community.ts",
@@ -37276,6 +38195,24 @@
    "where": [
     "server/src/devices.ts",
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Tentative {0}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tentatives arrivées là",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -37932,6 +38869,12 @@
    ]
   },
   {
+   "fr": "Tirs ennemis",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tiré au sort par le serveur : un admin peut le remplacer tant qu'il n'a pas commencé.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -38094,6 +39037,12 @@
    ]
   },
   {
+   "fr": "Total cumulé, jour par jour",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Touche : {0}",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
@@ -38109,6 +39058,12 @@
    "fr": "touche suggérée : chaque niveau peut en choisir une autre, et vous aussi (choix du niveau, pause).",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Touchent",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -38280,6 +39235,12 @@
    ]
   },
   {
+   "fr": "Tous les niveaux et toutes les phases de boss",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "tous les objets ne sont pas récupérés",
    "where": [
     "server/src/records.ts"
@@ -38322,9 +39283,21 @@
    ]
   },
   {
+   "fr": "Tout effacer",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tout en or",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Tout est calculé à partir de vos vraies parties (campagne, défis, niveaux des joueurs), sur cet ordinateur, sans compte ni Internet. L'onglet se remplit au fil des parties.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -38431,6 +39404,12 @@
    ]
   },
   {
+   "fr": "Toutes vos statistiques (jours, combats, boss, niveaux, passages) seront effacées de cet ordinateur. Vos records, succès et statistiques de boss d'avant ne changent pas.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Traction",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -38508,6 +39487,30 @@
    "fr": "Trajet de mon record",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tranche",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tranche {0}–{1} %",
+   "where": [
+    "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "Tranche {0}–{1} % · {2} mort pour {3} passages · difficulté {4}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tranche {0}–{1} % · {2} morts pour {3} passages · difficulté {4}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -39537,6 +40540,12 @@
    ]
   },
   {
+   "fr": "Un point à chaque date où l'un des deux a changé",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Un pouvoir différent porte déjà cet identifiant",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -39600,6 +40609,12 @@
    "fr": "Un ruban vert et violet qui ondule.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Un résumé par jour, gardé 365 jours (les jours plus anciens sont fusionnés par mois). Par boss, les 200 dernières tentatives ; par segment, les 50 derniers temps. Au total, moins de 300 Ko même après des années de jeu.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -40671,6 +41686,12 @@
    ]
   },
   {
+   "fr": "vaincu",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Vaincu {0} fois, jamais sans être touché",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -41132,16 +42153,29 @@
    ]
   },
   {
+   "fr": "Victoire après",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Victoires",
    "where": [
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/CollectionScene.cpp"
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
    "fr": "victoires",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Victoires (au total)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -41626,6 +42660,12 @@
    ]
   },
   {
+   "fr": "VOS 5 PASSAGES LES PLUS DIFFICILES",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Vos amis n'ont pas encore publié de niveau.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -41665,6 +42705,12 @@
    "fr": "Vos résultats n'ont pas encore été lus sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Vos statistiques restent sur cet ordinateur : elles ne sont pas envoyées en ligne et ne font partie ni de la copie de la progression de Cosmic Online, ni de « Migrer vers un nouveau compte ». Pour les garder, copiez le fichier stats.json. Si le fichier est abîmé, l'onglet repart de zéro et l'ancien fichier est gardé en stats.json.bak.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -41964,6 +43010,12 @@
    "fr": "Vous devez accepter les conditions d'utilisation pour créer un compte.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "VOUS DÉCIDEZ",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -42300,6 +43352,12 @@
    ]
   },
   {
+   "fr": "Vue d'ensemble",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "v{0}  ·  {1} téléch.  ·  {2} favoris  ·  {3} commentaires",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -42613,6 +43671,12 @@
    "fr": "Zones & événements",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "ZONES À TRAVAILLER",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -43411,6 +44475,12 @@
    ]
   },
   {
+   "fr": "{0} de morts par passage",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} de retard sur {1}",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -43464,6 +44534,24 @@
    "fr": "{0} demandes de migration de ce compte refusées (code faux ou expiré) : quelqu'un connaît votre mot de passe.",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} des tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défaite sur {1} tentatives arrivées là · difficulté {2}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} défaites sur {1} tentatives arrivées là · difficulté {2}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -43835,6 +44923,12 @@
    ]
   },
   {
+   "fr": "{0} jour joué",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} jours",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -43844,6 +44938,12 @@
    "fr": "{0} jours de suite",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jours joués",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -43907,7 +45007,8 @@
     "game/progression/Progression.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/OnlineComputer.cpp",
-    "ui/screens/OnlineMigration.cpp"
+    "ui/screens/OnlineMigration.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -44353,6 +45454,12 @@
    ]
   },
   {
+   "fr": "{0} sur {1}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} sur {1} emplacement · le joueur part avec ces pouvoirs, à la place de ceux du niveau",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -44377,9 +45484,27 @@
    ]
   },
   {
+   "fr": "{0} sur {1} tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} sélectionnés",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentative",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tentatives",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -44735,6 +45860,24 @@
    ]
   },
   {
+   "fr": "{0} — phase {1}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} — phase {1} / {2}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} — phase {1} : {2}",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} — vaincu",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -44762,6 +45905,12 @@
    "fr": "{0},{1} Mo",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0},{1} s",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -45197,6 +46346,12 @@
    ]
   },
   {
+   "fr": "À moins de 5 % du meilleur",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "à n'importe quel palier",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -45320,9 +46475,21 @@
    ]
   },
   {
+   "fr": "Écart interquartile ÷ médiane",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Écart seg.",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "ÉCART TYPE (20 DERNIÈRES)",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -46376,7 +47543,8 @@
   {
    "fr": "Étoiles",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -46390,6 +47558,12 @@
    "where": [
     "data/enemies/echo_nyxara.json",
     "data/enemies/nyxara.json"
+   ]
+  },
+  {
+   "fr": "ÉTOILES DE SUCCÈS",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -46424,6 +47598,12 @@
    "fr": "Éventail d'étoiles",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "ÉVOLUTION DU RECORD ET DE LA SOMME DES MEILLEURS",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -46663,6 +47843,42 @@
    "fr": "−5 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "▲ plus régulier qu'il y a 30 jours",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▲ {0} — en progrès",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▲ {0} — en recul",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▼ moins régulier qu'il y a 30 jours",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▼ {0} — en progrès",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "▼ {0} — en recul",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   }
  ]
