@@ -712,6 +712,7 @@
           "colonnes",
           "battement",
           "lame",
+          "pique",
           "plumes"
         ],
         "speedMultiplier": 1.15,

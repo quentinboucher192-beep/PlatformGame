@@ -357,6 +357,9 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             break;
         default: break;
     }
+    // 2.55: the Phénix never stays against a wall nor under the roof of its arena (not during a
+    // dive, which goes to its end, nor in its ashes).
+    if (hasPhoenix_ && def_.flying && def_.isBoss && engaged_ && !inAshes() && stage_ != Stage::Dash) phoenixKeepOff(w);
     applyPhysics(w, dt);
     contactDamage(w);
 }

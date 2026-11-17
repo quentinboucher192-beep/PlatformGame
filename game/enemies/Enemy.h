@@ -374,7 +374,9 @@ private:
     float phoenixFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
     /// Its glide between two attacks (« vol plané »): wide swoops from one side of the target
     /// to the other, above her, never into a wall, a corner or the roof.
-    void phoenixGlide(GameWorld& w, float dt, float pace);
+    void phoenixGlide(GameWorld& w, float dt, float pace, bool steer = true);
+    bool glidesDuring(const AttackDef& a) const;  // it glides on while it throws this
+    void phoenixKeepOff(GameWorld& w);  // a soft push off the walls and the roof of its arena
     void planColumns(GameWorld& w);
     void planLane(GameWorld& w, bool low);
     void throwBlade(GameWorld& w);

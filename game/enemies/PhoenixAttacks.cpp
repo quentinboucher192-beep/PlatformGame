@@ -62,7 +62,25 @@ bool Enemy::ashVeil() const {
 
 // ============================================================ the glide
 
-void Enemy::phoenixGlide(GameWorld& w, float dt, float pace) {
+bool Enemy::glidesDuring(const AttackDef& a) const {
+    // What it throws, rains or calls down does not need it to hold still: it glides on (its
+    // beams, rings, crowns, wind and pulls are aimed from where it stands: it holds still).
+    if (!hasPhoenix_ || !def_.flying || !def_.isBoss || !engaged_ || lastStand_) return false;
+    switch (a.type) {
+        case AttackType::Spread:
+        case AttackType::Projectile:
+        case AttackType::Arc:
+        case AttackType::Rain:
+        case AttackType::Eruption:
+        case AttackType::CloudShot:
+        case AttackType::Sunbeam:
+        case AttackType::Sweep:
+        case AttackType::Summon: return true;
+        default: return false;
+    }
+}
+
+void Enemy::phoenixGlide(GameWorld& w, float dt, float pace, bool steer) {
     // A pendulum of swoops centred on the target: high at both ends of the swing, lowest over
     // her (a figure of eight), its speed carried from one moment to the next (it glides, it does
     // not hover). Kept off the walls, the corners and the roof of its arena.
@@ -80,8 +98,20 @@ void Enemy::phoenixGlide(GameWorld& w, float dt, float pace) {
     const float sp = def_.speed * def_.chaseSpeedMultiplier * phaseSpeed() * pace;
     const Vec2 want = d > 2.0f ? to / d * std::min(sp * 1.6f, d * 2.5f) : Vec2{};
     vel = lerpv(vel, want, damp(2.2f, dt));
+    if (!steer) return;  // during a blow: its pose and its aim stay
     face(std::abs(vel.x) > 25.0f ? vel.x : playerPos_.x - box.center().x);
     playClip("move");
+}
+
+void Enemy::phoenixKeepOff(GameWorld& w) {
+    // Back toward the middle when it comes within reach of a wall or of the roof (after a dive
+    // toward a wall, a blow begun there): the closer, the harder, never as fast as its dives.
+    const Rect arena = arenaArea(w);
+    constexpr float kWall = 120.0f, kRoof = 60.0f;
+    const float l = box.x - arena.x, r = arena.right() - box.right(), top = box.y - arena.y;
+    if (l < kWall) vel.x = std::max(vel.x, 170.0f * (1.0f - std::max(0.0f, l) / kWall));
+    if (r < kWall) vel.x = std::min(vel.x, -170.0f * (1.0f - std::max(0.0f, r) / kWall));
+    if (top < kRoof) vel.y = std::max(vel.y, 120.0f * (1.0f - std::max(0.0f, top) / kRoof));
 }
 
 // ============================================================ the wind-up
@@ -115,10 +145,10 @@ void Enemy::planColumns(GameWorld& w) {
     path2_.clear();
     for (float x : xs) {
         x = clampIn(x, arena.x + 24.0f, arena.right() - 24.0f);
-        float floor = arena.bottom();
-        float roof = arena.y;
+        float floor = std::max(arena.bottom(), aim.y + 12.0f);
+        float roof = std::min(arena.y, y0);
         const Vec2 from{x, y0};
-        const Vec2 down{x, arena.bottom() + 200.0f}, up{x, arena.y - 200.0f};
+        const Vec2 down{x, floor + 400.0f}, up{x, roof - 400.0f};
         if (auto t = w.physics().raycast(from, down, false, ColliderTag::Crumble)) floor = from.y + (down.y - from.y) * *t;
         if (auto t = w.physics().raycast(from, up, false, ColliderTag::Crumble)) roof = from.y + (up.y - from.y) * *t;
         roof = std::min(roof, floor - 40.0f);
@@ -239,7 +269,7 @@ void Enemy::phoenixStart(GameWorld& w) {
 
 void Enemy::phoenixActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
-    if (def_.flying) vel = lerpv(vel, {}, damp(5.0f, dt));
+    if (def_.flying && !glidesDuring(a)) vel = lerpv(vel, {}, damp(5.0f, dt));
     if (a.type == AttackType::Sweep && bladesLeft_ > 0) {
         burstTimer_ -= dt;
         if (burstTimer_ <= 0.0f) {

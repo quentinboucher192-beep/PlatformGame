@@ -288,6 +288,7 @@ Vec2 Enemy::attackOrigin() const {
 
 void Enemy::stepTelegraph(GameWorld& w, float dt) {
     if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
+    else if (attack_ && glidesDuring(*attack_)) phoenixGlide(w, dt, 0.55f, false);  // 2.55: the Phénix glides on
     else vel = lerpv(vel, {}, damp(6.0f, dt));
     if (!targets_.empty() && attack_) {
         warnTimer_ -= dt;
@@ -557,8 +558,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         guardianActive(w, dt);
         return;
     }
+    const bool glide = glidesDuring(a);  // 2.55: the Phénix glides on while it throws
     if (a.isDragonType()) {
         dragonActive(w, dt);
+        if (glide) phoenixGlide(w, dt, 0.55f, false);
         return;
     }
     if (a.isGolemType()) {
@@ -567,6 +570,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
     }
     if (a.isPhoenixType()) {
         phoenixActive(w, dt);
+        if (glide) phoenixGlide(w, dt, 0.55f, false);
         return;
     }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
@@ -656,6 +660,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
             break;
     }
+    if (glide) phoenixGlide(w, dt, 0.55f, false);
 }
 
 void Enemy::stepAttack(GameWorld& w, float dt) {

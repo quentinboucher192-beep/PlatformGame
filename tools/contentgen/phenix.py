@@ -172,7 +172,7 @@ def phases():
               "Il plane au cœur de sa nébuleuse !"),
         # « Cendres »: ash veils the arena; at its end it burns to ashes and is reborn with the
         # health of its phase (its share at the start of it), then « Renaissance » begins.
-        phase(4, "Cendres", ["nuees_cendres", "pluie_cendres", "colonnes", "battement", "lame", "plumes"], 1.15, 0.88,
+        phase(4, "Cendres", ["nuees_cendres", "pluie_cendres", "colonnes", "battement", "lame", "pique", "plumes"], 1.15, 0.88,
               0.75, "Ses plumes s'embrasent : les cendres pleuvent !", enterSound="sounds/boss_roar_fire.wav",
               rebirth=0.5, ashes=True),
         phase(5, "Renaissance", ["midi", "lame_double", "traqueuses", "double_pique", "anneaux", "spirale"], 1.2, 0.85,
