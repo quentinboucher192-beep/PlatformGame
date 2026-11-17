@@ -2146,7 +2146,7 @@
   },
   {
    "id": "admin.calendar.running",
-   "version": "2.60.0",
+   "version": "2.60.2",
    "parents": [
     "menu.admin",
     "admin.tab.calendar"
@@ -2154,7 +2154,7 @@
   },
   {
    "id": "challenges.calendar.medals",
-   "version": "2.60.0",
+   "version": "2.60.2",
    "parents": [
     "menu.challenges",
     "challenges.tab.calendar"
