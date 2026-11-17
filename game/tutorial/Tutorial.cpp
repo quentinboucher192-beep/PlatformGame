@@ -41,8 +41,8 @@ const std::vector<Card>& cards() {
          {{"Ruée", {}, "dash"}},
          Preview::Dash},
         {"bubbles", "Les bulles porteuses",
-         "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau. Au bout de sa route, elle éclate : saute sur la rive "
-         "avant ! Si tu tombes, je te ramène aussitôt sur la terre ferme.",
+         "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau, puis éclate au bout de sa route et renaît à sa place. "
+         "Si tu tombes, je te ramène aussitôt sur la terre ferme.",
          {{"Sauter", {Action::Jump}, {}}},
          Preview::Bubble},
         {"lantern", "La lanterne",

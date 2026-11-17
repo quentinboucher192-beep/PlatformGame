@@ -8648,6 +8648,8 @@
     "Voyager en bulle": "Travel by bubble",
     "{0} · souvenir": "{0} · souvenir",
     "éclatée": "popped",
-    "Éditeur de niveaux : la « Bulle porteuse » (un objet de plateforme qui part quand Nova s'y pose, la porte jusqu'au bout de sa route, éclate et renaît à sa place) et l'action « Didacticiel : explication bloquante ».": "Level editor: the \"Carrying bubble\" (a platform object that sets off when Nova lands on it, carries her to the end of its route, pops and is born again in its place) and the action \"Tutorial: explanation card (pauses the game)\"."
+    "Éditeur de niveaux : la « Bulle porteuse » (un objet de plateforme qui part quand Nova s'y pose, la porte jusqu'au bout de sa route, éclate et renaît à sa place) et l'action « Didacticiel : explication bloquante ».": "Level editor: the \"Carrying bubble\" (a platform object that sets off when Nova lands on it, carries her to the end of its route, pops and is born again in its place) and the action \"Tutorial: explanation card (pauses the game)\".",
+    "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau, puis éclate au bout de sa route et renaît à sa place. Si tu tombes, je te ramène aussitôt sur la terre ferme.": "Land on a bubble: it carries you over the stream, then pops at the end of its route and is born again in its place. If you fall, I'll bring you back to solid ground at once.",
+    "Didacticiel : les bulles porteuses finissent au-dessus de la terre ferme et la traînée d'éclats est à hauteur de Nova ; combinaisons recolorées : la liste reçue du serveur n'est plus remplacée quand elle est identique.": "Tutorial: carrier bubbles end above solid ground and the shard trail is at Nova's height; recoloured suits: the list received from the server is no longer replaced when it is unchanged."
   }
 }

@@ -5,6 +5,9 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.61.1** :
+* Didacticiel : bulles porteuses au-dessus de la terre ferme, traînée d'éclats à hauteur de Nova ; correctif des combinaisons recolorées.
+
 **Nouveau dans la version 2.61.0** :
 * **Didacticiel du premier lancement, « Le premier envol de Nova »** : au tout premier lancement (aucune
   progression), **Bip**, un petit robot compagnon qui flotte près de Nova, propose un vol d'essai d'environ six

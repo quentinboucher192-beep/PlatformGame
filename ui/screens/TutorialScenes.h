@@ -48,6 +48,14 @@ struct TutorialEndLayout {
 };
 TutorialEndLayout layoutTutorialEnd(UIContext& ui);
 
+/// The welcome of the first launch (`confirm`: « Passer le didacticiel ? »), the same checks.
+struct TutorialWelcomeLayout {
+    Rect panel, bip, titleRect, textRect, start, skip;
+    std::string title, text, startText, skipText;
+    float titlePx = 0, textPx = 0, buttonPx = 0;
+};
+TutorialWelcomeLayout layoutTutorialWelcome(UIContext& ui, bool confirm);
+
 std::unique_ptr<Scene> makeTutorialCard(GameServices& g, GameScene& game, const std::string& card);
 std::unique_ptr<Scene> makeTutorialEnd(GameServices& g);
 
