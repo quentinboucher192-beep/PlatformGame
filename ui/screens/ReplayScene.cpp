@@ -169,6 +169,7 @@ public:
         opt.lighting = g_.settings.graphics.dynamicLighting;
         WorldView view = makeView(r);
         float alpha = playback_ && playing_ ? std::clamp(acc_ / kSimDt, 0.0f, 1.0f) : 1.0f;
+        if (playback_) opt.threats = hud_.threatProbe(world(), g_.settings.gameplay);  // 2.60: its HUD fades over the boss's attacks
         renderer_.render(r, g_.app.resources(), world(), view, alpha, opt);
         r.setView(view);
         if ((comparing_ && showPaths_) || !playback_) drawPaths(r, view);

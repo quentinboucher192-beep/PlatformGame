@@ -180,14 +180,24 @@ describe("rewards of a challenge: administration", () => {
         const again = await api("PUT", `${V}/admin/challenges/${id}/rewards`, { token: a.token, body: { rewards: [body.rewards[1]] } });
         expect(again.body.data.rewards).toHaveLength(1);
         expect((await api("PUT", `${V}/admin/challenges/${id}/rewards`, { token: a.token, body: { rewards: [] } })).body.data.rewards).toEqual([]);
-        // A period that has begun never changes (nor its rewards): refused and written to the Journal.
-        for (const started of [`daily-${today()}`, `daily-${addDays(today(), -2)}`, `monthly-${periodOf("monthly", today())}`]) {
+        // A period that is over never changes (nor its rewards); one that has begun once a player
+        // has a result on it (2.60): refused and written to the Journal.
+        const thisMonth = `monthly-${periodOf("monthly", today())}`;
+        await env.DB.prepare("INSERT INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at) VALUES (?1, ?2, 'item', 'frame_couronne', ?3)")
+            .bind(a.id, thisMonth, new Date().toISOString())
+            .run();
+        for (const [started, code] of [
+            [`daily-${addDays(today(), -2)}`, "CHALLENGE_STARTED"],
+            [`daily-${addDays(today(), -1)}`, "CHALLENGE_STARTED"],
+            [thisMonth, "CHALLENGE_HAS_RESULTS"],
+        ]) {
             const r = await api("PUT", `${V}/admin/challenges/${started}/rewards`, { token: a.token, body });
             expect(r.status, started).toBe(409);
-            expect(r.body.error.code).toBe("CHALLENGE_STARTED");
+            expect(r.body.error.code, started).toBe(code);
         }
         const refused = (await api("GET", `${V}/admin/log?kind=refused`, { token: a.token })).body.data.entries;
-        expect(refused.filter((e: any) => e.reason === "CHALLENGE_STARTED" && e.challenge?.action === "rewards")).toHaveLength(3);
+        expect(refused.filter((e: any) => e.reason === "CHALLENGE_STARTED" && e.challenge?.action === "rewards")).toHaveLength(2);
+        expect(refused.filter((e: any) => e.reason === "CHALLENGE_HAS_RESULTS" && e.challenge?.action === "rewards")).toHaveLength(1);
         expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM challenge_reward_rules").first<{ n: number }>())!.n).toBe(0);
     });
 

@@ -66,22 +66,30 @@ Vec2 Camera::clampCenter(Vec2 c, float zoom, int screenW, int screenH) const {
     float scale = (screenH / kViewHeight) * zoom;
     float halfW = screenW / scale * 0.5f;
     float halfH = screenH / scale * 0.5f;
-    auto clampTo = [&](const Rect& b, Vec2 p) {
+    auto clampTo = [&](const Rect& b, Vec2 p, bool hud) {
         Vec2 out = p;
         if (b.w <= halfW * 2) out.x = b.center().x;
         else out.x = std::clamp(p.x, b.x + halfW, b.right() - halfW);
-        if (b.h <= halfH * 2) out.y = b.center().y;
+        if (b.h <= halfH * 2) out.y = hud ? bandCenterY(b, halfH, scale, shownTop_, shownBottom_) : b.center().y;
         else out.y = std::clamp(p.y, b.y + halfH, b.bottom() - halfH);
         return out;
     };
     Vec2 out = c;
-    if (zone_ && zone_->clampToArea && !zone_->lockCenter) out = clampTo(zone_->area, out);
-    if (hasBounds_) out = clampTo(bounds_, out);
+    if (zone_ && zone_->clampToArea && !zone_->lockCenter) out = clampTo(zone_->area, out, zone_->fitArea);
+    if (hasBounds_) out = clampTo(bounds_, out, false);
     return out;
+}
+
+float Camera::bandCenterY(const Rect& area, float halfH, float scale, float top, float bottom) {
+    const float want = area.center().y - (top - bottom) / (2.0f * std::max(0.001f, scale));
+    const float lo = area.bottom() - halfH, hi = area.y + halfH;  // the whole area in view
+    return lo <= hi ? std::clamp(want, lo, hi) : area.center().y;
 }
 
 void Camera::fixedUpdate(float dt) {
     prevPos_ = pos_;
+    shownTop_ = lerpf(shownTop_, marginTop_, damp(4.0f, dt));
+    shownBottom_ = lerpf(shownBottom_, marginBottom_, damp(4.0f, dt));
 
     if (zoomT_ < zoomDur_) {
         zoomT_ += dt;

@@ -4,6 +4,13 @@
  "comment": "Novelties of each update and the trail to them (game/progression/NewBadges.h). An entry with a version is a novelty: its « NOUVEAU » pill goes once its widget gets the focus or a click. « parents »: the widgets that lead to it (menu entry, tab, category…); an entry without a version is a step of that trail. A parent shows the pill as long as anything under it is new.",
  "features": [
   {
+   "id": "settings.game.hud_fade",
+   "version": "2.60.1",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
    "id": "pause.level_keys",
    "version": "2.31.0"
   },
@@ -2146,6 +2153,22 @@
    "version": "2.55.0",
    "parents": [
     "menu.stats"
+   ]
+  },
+  {
+   "id": "admin.calendar.running",
+   "version": "2.60.2",
+   "parents": [
+    "menu.admin",
+    "admin.tab.calendar"
+   ]
+  },
+  {
+   "id": "challenges.calendar.medals",
+   "version": "2.60.2",
+   "parents": [
+    "menu.challenges",
+    "challenges.tab.calendar"
    ]
   }
  ]

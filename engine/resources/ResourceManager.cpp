@@ -112,6 +112,7 @@ AnimationSetPtr ResourceManager::animation(const std::string& rel) {
     auto set = AnimationSet::fromJson(*j, rel);
     set->texture = texture(set->texturePath);
     if (!set->texture && offThread()) waitingTexture_.push_back(set);  // 2.62: finishDeferred()
+    if (auto file = resolve(set->texturePath)) set->textureFile = Paths::toUtf8(*file);
     animations_[key] = set;
     return set;
 }
@@ -122,6 +123,52 @@ void ResourceManager::finishDeferred() {
     for (auto& set : waitingTexture_)
         if (set && !set->texture) set->texture = texture(set->texturePath);
     waitingTexture_.clear();
+}
+
+Rect ResourceManager::visibleBox(const AnimationSet& set, const Rect& src) {
+    std::lock_guard<std::recursive_mutex> lock(mutex_);
+    if (set.textureFile.empty() || set.frameWidth <= 0 || set.frameHeight <= 0) return {};
+    auto it = visibleCells_.find(set.textureFile);  // read each frame: no string built for it
+    if (it == visibleCells_.end() || it->second.frameW != set.frameWidth || it->second.frameH != set.frameHeight) {
+        it = visibleCells_.insert_or_assign(set.textureFile, VisibleCells{}).first;
+        VisibleCells& vc = it->second;
+        vc.frameW = set.frameWidth;
+        vc.frameH = set.frameHeight;
+        SDL_Surface* loaded = IMG_Load(set.textureFile.c_str());
+        SDL_Surface* s = loaded ? SDL_ConvertSurface(loaded, SDL_PIXELFORMAT_RGBA32) : nullptr;
+        if (loaded) SDL_DestroySurface(loaded);
+        if (s) {
+            const int cols = s->w / set.frameWidth, rows = s->h / set.frameHeight;
+            vc.cols = std::max(0, cols);
+            vc.cells.assign(static_cast<size_t>(std::max(0, cols * rows)), Rect{});
+            const auto* px = static_cast<const uint8_t*>(s->pixels);
+            for (int cy = 0; cy < rows; ++cy)
+                for (int cx = 0; cx < cols; ++cx) {
+                    int x0 = set.frameWidth, y0 = set.frameHeight, x1 = -1, y1 = -1;
+                    for (int y = 0; y < set.frameHeight; ++y) {
+                        const uint8_t* row = px + static_cast<size_t>(cy * set.frameHeight + y) * static_cast<size_t>(s->pitch) +
+                                             static_cast<size_t>(cx * set.frameWidth) * 4;
+                        for (int x = 0; x < set.frameWidth; ++x)
+                            if (row[x * 4 + 3] > 24) {  // seen (the faintest edges of the art do not count)
+                                x0 = std::min(x0, x);
+                                x1 = std::max(x1, x);
+                                y0 = std::min(y0, y);
+                                y1 = std::max(y1, y);
+                            }
+                    }
+                    if (x1 >= x0 && y1 >= y0)
+                        vc.cells[static_cast<size_t>(cy * cols + cx)] = {static_cast<float>(x0), static_cast<float>(y0), static_cast<float>(x1 - x0 + 1),
+                                                                        static_cast<float>(y1 - y0 + 1)};
+                }
+            SDL_DestroySurface(s);
+        }
+    }
+    const VisibleCells& vc = it->second;
+    if (vc.cols <= 0 || src.x < 0.0f || src.y < 0.0f) return {};
+    const int cx = static_cast<int>(src.x) / set.frameWidth, cy = static_cast<int>(src.y) / set.frameHeight;
+    if (cx >= vc.cols) return {};
+    const size_t i = static_cast<size_t>(cy * vc.cols + cx);
+    return i < vc.cells.size() ? vc.cells[i] : Rect{};
 }
 
 std::optional<Json> ResourceManager::json(const std::string& rel) {
@@ -171,6 +218,7 @@ void ResourceManager::clearCaches() {
     textures_.clear();
     animations_.clear();
     soundPaths_.clear();
+    visibleCells_.clear();
 }
 
 }  // namespace cosmic

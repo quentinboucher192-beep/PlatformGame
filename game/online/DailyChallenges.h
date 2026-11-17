@@ -125,6 +125,9 @@ struct DailyChallenge {
     int silverProgress = 80;
     /// 2.43: its own rewards (an administrator's), in their order; none for most challenges.
     std::vector<ChallengePrize> prizes;
+    /// 2.60: when this version was set (its draw, or an administrator's last change: a challenge
+    /// that has begun may still change while nobody has a result on it); "" from an older server.
+    std::string updatedAt;
     Json raw;  // as received (cache)
 
     bool community() const { return level.source == "community"; }
@@ -134,6 +137,29 @@ struct DailyChallenge {
     /// « Finir le niveau »: the tier of an unfinished attempt's progress (0..100); None on « Vitesse ».
     ChallengeTier tierForProgress(float progress) const;
     static std::optional<DailyChallenge> fromJson(const Json& j, std::string* error = nullptr);
+};
+
+/// 2.60: the same challenge to play and to rank: its level version, its rules (their hash), its
+/// objective and its tiers. Two versions of one challenge that differ there are never mixed.
+bool sameChallengeVersion(const DailyChallenge& a, const DailyChallenge& b);
+
+/// 2.60: what a challenge read from the server does to the copy kept here.
+enum class ChallengeUpdate {
+    Keep,     // the same, or an older reading (a cached answer): the copy here stays
+    Refresh,  // new here, or the same challenge to play (its title, its author's name, its rewards…)
+    Changed,  // an administrator changed it while nobody had a result: its former version goes
+};
+/// `cached`: the copy kept here (nullptr when none). Pure: the decision of ChallengeService's cache.
+ChallengeUpdate challengeUpdate(const DailyChallenge* cached, const DailyChallenge& incoming);
+
+/// 2.60: players of a challenge at each tier (each one once, at the best he reached), from
+/// the server's verified results received in time (the calendar's `tier_counts`).
+struct ChallengeTierCounts {
+    int bronze = 0, silver = 0, gold = 0;
+    int of(ChallengeTier t) const { return t == ChallengeTier::Gold ? gold : t == ChallengeTier::Silver ? silver : t == ChallengeTier::Bronze ? bronze : 0; }
+    /// `{ bronze, silver, gold }` (whole numbers ≥ 0), nullopt when malformed.
+    static std::optional<ChallengeTierCounts> fromJson(const Json& j);
+    bool operator==(const ChallengeTierCounts& o) const { return bronze == o.bronze && silver == o.silver && gold == o.gold; }
 };
 
 /// Where a challenge run stands, as the player sees it.
@@ -261,6 +287,15 @@ public:
     /// The challenges known here that have begun and touch `month` (its days, the weeks that
     /// overlap it, the month itself), by start.
     std::vector<const DailyChallenge*> challengesOfMonth(const std::string& month) const;
+    /// 2.60: the players at each tier of a challenge, as the last calendar read (or, offline, its
+    /// last answer kept) gave them; nullopt when unknown (never read, a 2.59 server).
+    std::optional<ChallengeTierCounts> tierCounts(const std::string& challengeId) const;
+
+    /// 2.60: the version of `c` kept here is no longer the one played (an administrator changed
+    /// it): its runs count for nothing.
+    bool changedSince(const DailyChallenge& c) const;
+    /// What is said of a run or an attempt of a challenge's former version (French).
+    static const char* changedNote();
 
     // --------------------------------------------------------------- results
     const ChallengeResult* result(const std::string& challengeId) const;
@@ -321,6 +356,9 @@ public:
         int64_t previousBestMs = 0;
         ChallengeRunState state = ChallengeRunState::LocalOnly;
         std::string note;
+        /// 2.60: the challenge changed (an administrator) while it was played: this run, on its
+        /// former version, counts for nothing (neither kept nor sent).
+        bool changed = false;
     };
     /// Whether a run finished now would be « hors délai » (after the end and its grace).
     bool lateNow(const DailyChallenge& c) const { return nowMs() > c.endsAtMs + kLateGraceMs; }
@@ -356,6 +394,7 @@ public:
         float previousBest = 0.0f;  // my best before it
         ChallengeRunState state = ChallengeRunState::LocalOnly;
         std::string note;
+        bool changed = false;  // 2.60: as RunReport::changed
     };
     /// An unfinished attempt of a challenge with « Plus loin » (a fall, a restart, a return to
     /// the menu; without checkpoints, its first life): its progress (raceScore) only decides
@@ -393,6 +432,9 @@ private:
     void saveResults() const;
     void saveSubmissions() const;
     void cache(const DailyChallenge& c);
+    /// 2.60: a challenge changed by an administrator: what this computer kept of its former
+    /// version goes (my result and its replay, the runs waiting to be sent).
+    void forgetFormerVersion(const DailyChallenge& now);
     void fetchCurrent(bool legacy);
     void applyCurrent(const ApiResult& r, bool legacy);
     void loadCalendarLegacy(const std::string& month, const std::string& before, int page);
@@ -419,6 +461,7 @@ private:
     double lastFetch_ = -1e9;  // steady seconds
     double clock_ = 0.0;
     std::map<std::string, CalendarMonth> calendar_;
+    std::map<std::string, ChallengeTierCounts> tierCounts_;  // 2.60: from the calendar
     std::string firstMonth_;
     bool sending_ = false;
     bool wasOffline_ = false;
