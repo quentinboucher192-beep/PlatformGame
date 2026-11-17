@@ -1,0 +1,10 @@
+{
+  "texture": "stories/pyrrhax/coquille.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [16, 16],
+  "clips": {
+    "spin": {"row": 0, "count": 8, "fps": 14, "loop": true},
+    "rest": {"row": 1, "count": 4, "durations": [0.12, 0.14, 0.18, 0.4], "loop": true}
+  }
+}

@@ -41,9 +41,10 @@
 //   --stats-day <YYYY-MM-DD>
 //                           count the runs of this session on that day (automated checks of the
 //                           statistics: real runs spread over several days)
-//   --story <boss>[:<shot>|:titre]
+//   --story <boss>[:<shot>|:titre|@<seconds>]
 //                           tell the story of a giga boss over the main menu (from that shot,
-//                           1 = the first, its line typed; « titre »: the title card revealed)
+//                           1 = the first, its line typed; « titre »: the title card revealed;
+//                           @12.5: from that moment, as it plays then)
 //   --boss-stats [<boss>[:<clip>]]
 //                           open the boss statistics (that boss, that clip of its animation)
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
@@ -777,15 +778,17 @@ int main(int argc, char** argv) {
         app.pushScene(makeStatistics(game, st.empty() ? 0 : std::atoi(st.c_str())));
     } else if (std::string st = value("--story"); !st.empty()) {
         // --story <boss>[:<shot>|:titre] (screenshots): the story over the main menu.
-        std::string boss = st.substr(0, st.find(':'));
+        std::string boss = st.substr(0, st.find_first_of(":@"));
         int at = -1;
-        if (size_t c = st.find(':'); c != std::string::npos) {
+        float seconds = -1.0f;
+        if (size_t c = st.find('@'); c != std::string::npos) seconds = std::max(0.0f, static_cast<float>(std::atof(st.c_str() + c + 1)));
+        else if (size_t c = st.find(':'); c != std::string::npos) {
             std::string w = st.substr(c + 1);
             at = w == "titre" || w == "title" ? 1000 : std::max(0, std::atoi(w.c_str()) - 1);
             if (const BossStory* s = game.stories.find(boss); s && at > static_cast<int>(s->shots.size())) at = static_cast<int>(s->shots.size());
         }
         app.pushScene(makeMainMenu(game));
-        if (auto story = makeBossStory(game, boss, at)) app.pushScene(std::move(story));
+        if (auto story = makeBossStory(game, boss, at, seconds)) app.pushScene(std::move(story));
         else Log::error("Pas d'histoire pour le boss '{}'", boss);
     } else if (has("--boss-stats")) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).

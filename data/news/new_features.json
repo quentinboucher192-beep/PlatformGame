@@ -2180,6 +2180,20 @@
    "parents": [
     "menu.admin"
    ]
+  },
+  {
+   "id": "gallery.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "gallery.boss.pyrrhax"
+   ]
+  },
+  {
+   "id": "stats.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

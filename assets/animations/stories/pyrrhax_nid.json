@@ -1,0 +1,10 @@
+{
+  "texture": "stories/pyrrhax/nid.png",
+  "frameWidth": 224,
+  "frameHeight": 72,
+  "pivot": [112, 50],
+  "clips": {
+    "back": {"row": 0, "count": 4, "fps": 6, "loop": true},
+    "front": {"row": 1, "count": 4, "fps": 6, "loop": true}
+  }
+}

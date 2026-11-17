@@ -1,0 +1,12 @@
+{
+  "texture": "stories/pyrrhax/oeuf.png",
+  "frameWidth": 96,
+  "frameHeight": 80,
+  "pivot": [48, 74],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 5, "loop": true},
+    "crack": {"row": 1, "count": 8, "durations": [0.12, 0.1, 0.12, 0.1, 0.12, 0.1, 0.1, 0.14], "loop": false},
+    "hatch": {"row": 2, "count": 12, "durations": [0.12, 0.1, 0.12, 0.16, 0.2, 0.3, 0.3, 0.12, 0.2, 0.25, 0.2, 0.3], "loop": false, "next": "hatched"},
+    "hatched": {"row": 3, "count": 6, "fps": 5, "loop": true}
+  }
+}
