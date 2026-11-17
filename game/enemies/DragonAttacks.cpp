@@ -84,7 +84,7 @@ float Enemy::belowFit(const AttackDef& a) const {
         case AttackType::Laser:
         case AttackType::Prism:
         case AttackType::Vortex: return 0.4f;
-        case AttackType::Sunbeam: return 2.2f;  // 2.55: the Phénix's columns come down on her
+        case AttackType::Sunbeam: return 2.2f;  // 2.56: the Phénix's columns come down on her
         case AttackType::Sweep: return 1.1f;
         default: return 1.0f;
     }
@@ -333,7 +333,7 @@ void Enemy::breathe(GameWorld& w) {
     c.ground = true;
     c.color = lightColor();
     c.ink = a.look == "ink";  // 2.53, the Kraken (display only)
-    c.ash = a.look == "ash";  // 2.55, the Phénix (display only)
+    c.ash = a.look == "ash";  // 2.56, the Phénix (display only)
     w.hazards().addCloud(c);
 }
 

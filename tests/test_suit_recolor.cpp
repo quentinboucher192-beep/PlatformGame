@@ -38,6 +38,7 @@ const CatalogueSuit kSuits[] = {
     {"obsidienne", {52, 44, 60}, {255, 110, 40}, {190, 40, 110}},  // 2.48-2.53: the giga bosses of Les Confins
     {"granit", {128, 122, 116}, {255, 178, 70}, {110, 150, 80}},
     {"encre", {60, 52, 112}, {110, 235, 255}, {40, 210, 180}},
+    {"aube", {52, 47, 103}, {255, 208, 74}, {255, 110, 96}},  // 2.56: the Phénix
 };
 
 fs::path playerSprites() { return Paths::assetsDir() / "sprites" / "player"; }

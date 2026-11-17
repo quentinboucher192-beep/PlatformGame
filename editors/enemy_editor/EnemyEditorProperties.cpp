@@ -528,7 +528,7 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
             }
         }
         if (a.isPhoenixType()) {
-            // 2.55: the attacks of the phoenix (the Phénix). A value left at 0 takes the type's
+            // 2.56: the attacks of the phoenix (the Phénix). A value left at 0 takes the type's
             // default (see game/enemies/PhoenixAttacks.cpp).
             auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
                 c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);

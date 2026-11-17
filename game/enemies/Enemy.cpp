@@ -52,7 +52,7 @@ Enemy::Enemy(const EnemyDefinition& def, AnimationSetPtr anim, Vec2 feet, bool f
         if (a.type == AttackType::Mirror) hasMirror_ = true;
         if (a.isDragonType()) hasDragon_ = true;
         if (a.isGolemType()) hasGolem_ = true;  // 2.52: the golem walks with its own brain
-        if (a.isPhoenixType()) hasPhoenix_ = true;  // 2.55: the phoenix glides, its columns, its blade
+        if (a.isPhoenixType()) hasPhoenix_ = true;  // 2.56: the phoenix glides, its columns, its blade
     }
     standSize_ = def_.size;
     teleportTimer_ = def_.teleportCooldown;
@@ -296,7 +296,7 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         case EnemyState::Recover:
             vel.x = approach(vel.x, 0.0f, 700.0f * dt);
             if (hasPhoenix_ && def_.flying && def_.isBoss && engaged_) {
-                phoenixGlide(w, dt, 0.8f);  // 2.55: the phoenix glides between its blows
+                phoenixGlide(w, dt, 0.8f);  // 2.56: the phoenix glides between its blows
             } else if (def_.flying && def_.isBoss && engaged_) {
                 // Flying bosses keep repositioning between attacks (preferred distance, above).
                 Vec2 toP = playerPos_ - box.center();
@@ -343,7 +343,7 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             if (stateTimer_ <= 0.0f) state_ = engaged_ ? EnemyState::Chase : EnemyState::Patrol;
             break;
         case EnemyState::PhaseTransition:
-            if (inAshes()) {  // 2.55: the Phénix burns to ashes, lies in them, is reborn
+            if (inAshes()) {  // 2.56: the Phénix burns to ashes, lies in them, is reborn
                 stepAshes(w, dt);
                 break;
             }
@@ -357,7 +357,7 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
             break;
         default: break;
     }
-    // 2.55: the Phénix never stays against a wall nor under the roof of its arena (not during a
+    // 2.56: the Phénix never stays against a wall nor under the roof of its arena (not during a
     // dive, which goes to its end, nor in its ashes).
     if (hasPhoenix_ && def_.flying && def_.isBoss && engaged_ && !inAshes() && stage_ != Stage::Dash) phoenixKeepOff(w);
     applyPhysics(w, dt);
@@ -497,7 +497,7 @@ void Enemy::stepEngaged(GameWorld& w, float dt) {
         }
         case ReactionType::KeepDistance: {
             if (hasPhoenix_ && def_.flying && def_.isBoss) {
-                phoenixGlide(w, dt, 1.0f);  // 2.55: « vol plané »
+                phoenixGlide(w, dt, 1.0f);  // 2.56: « vol plané »
                 break;
             }
             Vec2 toP = playerPos_ - box.center();
@@ -557,7 +557,7 @@ void Enemy::tryTeleport(GameWorld& w) {
 
 void Enemy::setWounds(float hp, int phase) {
     phaseTime_ = 0.0f;
-    ashes_ = AshStage::None;  // 2.55: a fight resumed never starts in the Phénix's ashes
+    ashes_ = AshStage::None;  // 2.56: a fight resumed never starts in the Phénix's ashes
     hp_ = std::clamp(hp, 1.0f, maxHp_);
     phase_ = def_.phases.empty() ? 0 : std::clamp(phase, 0, static_cast<int>(def_.phases.size()) - 1);
 }
@@ -570,9 +570,9 @@ void Enemy::checkPhase(GameWorld& w) {
     // 2.52: a rolling or leaping golem roars once back on its floor (a new phase may break the
     // ground of its arena: never while it is over it).
     if (hasGolem_ && golemBusy()) return;
-    if (inAshes()) return;  // 2.55: in its ashes, the next phase comes with its rebirth
+    if (inAshes()) return;  // 2.56: in its ashes, the next phase comes with its rebirth
     if (def_.phases[static_cast<size_t>(phase_)].rebirth > 0.0f) {
-        // 2.55, the Phénix's « Cendres »: it burns to ashes, then is reborn into the next phase.
+        // 2.56, the Phénix's « Cendres »: it burns to ashes, then is reborn into the next phase.
         beginAshes(w, next);
         return;
     }
@@ -587,7 +587,7 @@ void Enemy::enterPhase(GameWorld& w, int next) {
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);  // a channel stops with the roar
     if (attack_ && attack_->isDragonType()) dragonEnd(w);      // a dive or a landing too (2.50)
     if (attack_ && attack_->isGolemType()) golemEnd(w);        // its quake, its curl, its crouch (2.52)
-    if (attack_ && attack_->isPhoenixType()) phoenixEnd(w);    // its blade (2.55)
+    if (attack_ && attack_->isPhoenixType()) phoenixEnd(w);    // its blade (2.56)
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
     invuln_ = 1.6f;
@@ -627,7 +627,7 @@ void Enemy::applyPhysics(GameWorld& w, float dt) {
     MoveOptions opt;
     opt.isEnemy = true;
     opt.dropThrough = dropThrough_;  // 2.50: the dragon dives and lands through the one-way ledges
-    if (hasPhoenix_) opt.ignoreTags |= ColliderTag::Crumble;  // 2.55: the Phénix flies through its perches of embers
+    if (hasPhoenix_) opt.ignoreTags |= ColliderTag::Crumble;  // 2.56: the Phénix flies through its perches of embers
     if (skyborne()) {
         // 2.52: the golem's titanic leap goes out of sight and comes down on its mark (through
         // the roof of its arena, out of the camera's view): no collision on the way.
@@ -671,7 +671,7 @@ void Enemy::applyPhysics(GameWorld& w, float dt) {
 
 void Enemy::contactDamage(GameWorld& w) {
     if (def_.contactDamage <= 0.0f || contactTimer_ > 0.0f || state_ == EnemyState::TeleportOut ||
-        state_ == EnemyState::TeleportIn || inAshes())  // 2.55: its ashes do not burn on contact
+        state_ == EnemyState::TeleportIn || inAshes())  // 2.56: its ashes do not burn on contact
         return;
     Player& p = w.player();
     if (!p.alive() || !box.expanded(-1).intersects(p.box)) return;
@@ -689,7 +689,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     if (!alive() || dormant() || invuln_ > 0.0f) return false;
     if (outOfSight()) return false;  // 2.52: the golem above its arena, out of reach
     if (inAshes()) {
-        // 2.55: the Phénix in its ashes cannot be hurt (sparks fly off them).
+        // 2.56: the Phénix in its ashes cannot be hurt (sparks fly off them).
         if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.5f);
         return false;
     }

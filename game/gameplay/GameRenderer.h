@@ -38,7 +38,7 @@ public:
 private:
     void drawProjectiles(Renderer& r, GameWorld& world, float alpha, LightMap& lights);
     void drawDebug(Renderer& r, GameWorld& world);
-    /// 2.55, the Phénix's « Cendres »: ash falling over the arena and a grey veil away from Nova
+    /// 2.56, the Phénix's « Cendres »: ash falling over the arena and a grey veil away from Nova
     /// (around her the view stays clear; the HUD is drawn after the world, never veiled).
     void drawAshVeil(Renderer& r, GameWorld& world, const WorldView& view, float alpha);
 

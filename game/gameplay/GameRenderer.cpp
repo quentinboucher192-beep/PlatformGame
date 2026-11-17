@@ -113,7 +113,7 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
         lights_.apply(r, view, ambient);
     }
 
-    // The Phénix's ashes (2.55): over the lit world, under the flash and the HUD.
+    // The Phénix's ashes (2.56): over the lit world, under the flash and the HUD.
     if (!opt.mapView && !opt.editor) drawAshVeil(r, world, view, alpha);
 
     // Screen flash
@@ -180,7 +180,7 @@ void GameRenderer::drawProjectiles(Renderer& r, GameWorld& world, float alpha, L
         Vec2 pos = lerpv(p.prevPos, p.pos, alpha);
         lights.add(pos, p.lightRadius, p.light);
         if (p.clip == "feather") {
-            // 2.55, the Phénix's feathers of light: a quill along its flight, two vanes of its
+            // 2.56, the Phénix's feathers of light: a quill along its flight, two vanes of its
             // colour, a white-hot tip.
             const float sp = p.vel.length();
             const Vec2 d = sp > 1.0f ? p.vel / sp : Vec2{1.0f, 0.0f};

@@ -11,7 +11,7 @@ start (data/planets/confins.json):
   data/levels/confins_03.json  "La Fosse des Abysses" (2.53, EXTRÊME): the same for the Kraken des
                                 Abysses (tools/contentgen/kraken.py; it swims: the crust gives way
                                 over two trenches of dark water, the middle stays)
-  data/levels/confins_04.json  "Le Nid de Cendres" (2.55, EXTRÊME): the same for the Phénix
+  data/levels/confins_04.json  "Le Nid de Cendres" (2.56, EXTRÊME): the same for the Phénix
                                 Stellaire (tools/contentgen/phenix.py; it flies: the crust gives
                                 way over two beds of embers at the ends, its nest in the middle
                                 stays; its perches of embers burn under Nova and are reborn)
@@ -57,8 +57,8 @@ class Edge(Star):
         the 5th phase (magma below), debris orbit from the 3rd, fire closes in at the 8th and at
         the boss's rage. `pits`: (first, last) inside columns of each crust; `flying`: where the
         boss waits (in the air, or on the floor). 2.53: `style` of what fills the pits and closes
-        in (« plasma », « abyss »: the dark water of the Kraken, or 2.55 « embers »: the Phénix's),
-        the arena's `lights`. 2.55: the ledges at the heights `perches` are perches of embers
+        in (« plasma », « abyss »: the dark water of the Kraken, or 2.56 « embers »: the Phénix's),
+        the arena's `lights`. 2.56: the ledges at the heights `perches` are perches of embers
         instead (crumble platforms « ember »: they burn under Nova and are reborn)."""
         L, f = self.L, self.f
         x0 = self.x
@@ -281,7 +281,7 @@ def abyss_trench():
     return width
 
 
-# ---------------------------------------------------------------- the nest of ashes (2.55)
+# ---------------------------------------------------------------- the nest of ashes (2.56)
 PHENIX_TEXTS = {
     3: ("Ses ailes arrachent la roche : les blocs tournoient !", "Aurore : les blocs en orbite"),
     5: "Cendres : le nid s'effondre sur les braises",
@@ -340,4 +340,4 @@ if __name__ == "__main__":
     print("confins_01 :", dragon_maw(), "tuiles")
     print("confins_02 :", stone_heart(), "tuiles")  # 2.49
     print("confins_03 :", abyss_trench(), "tuiles")  # 2.53
-    print("confins_04 :", phoenix_nest(), "tuiles")  # 2.55
+    print("confins_04 :", phoenix_nest(), "tuiles")  # 2.56

@@ -1,6 +1,7 @@
 // Every boss fights in an arena: its attacks (including rain and eruptions) run without
 // problems, the player can be hurt and slowed, phases change as it loses health and it dies.
 
+#include <algorithm>
 #include <cstdlib>
 #include <set>
 
@@ -55,8 +56,13 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
         bool hurt = false;
         int phases = 0;
         bool wearDue = false;
+        // 2.56: a boss reborn from its ashes (the Phénix) has health given back and lies in its
+        // ashes a while: one blow more, a little more time.
+        bool rebirth = false;
+        for (const BossPhase& ph : def->phases) rebirth = rebirth || ph.rebirth > 0.0f;
+        const float last = def->phases.empty() ? 0.25f : def->phases.back().hpThreshold;
         // Fight: the player keeps full health so that every attack gets a chance to play.
-        for (int step = 0; step < 120 * 40; ++step) {
+        for (int step = 0; step < 120 * (rebirth ? 52 : 40); ++step) {
             int before = w.player().health;
             w.fixedUpdate(PlayerInput{}, kDt);
             if (w.player().health < before) hurt = true;
@@ -70,11 +76,13 @@ TEST_CASE("bosses: every boss attacks, changes phase and dies") {
             // same blows for every boss: a dragon landed by its « Atterrissage » takes more
             // (2.50), so the blow waits for it to take off; the golem curled in its shell, dizzy
             // or out of sight (2.52) too.
-            if (step % 700 == 699 && boss->hpRatio() > 0.26f) wearDue = true;
-            if (wearDue && !boss->perched() && !boss->curled() && !boss->dizzy() && !boss->outOfSight()) {
+            if (step % 700 == 699 && boss->hpRatio() > (rebirth ? last + 0.01f : 0.26f)) wearDue = true;
+            if (wearDue && !boss->perched() && !boss->curled() && !boss->dizzy() && !boss->outOfSight() && !boss->inAshes()) {
                 wearDue = false;
                 DamageInfo d;
                 d.amount = boss->maxHp() * 0.15f;
+                // Reborn, it is worn down to its last phase, never to its death.
+                if (rebirth) d.amount = std::min(d.amount, (boss->hp() - boss->maxHp() * (last - 0.01f)) / 1.2f);
                 d.type = DamageType::ChargeShot;
                 d.source = boss->center() - Vec2{20, 0};
                 d.fromPlayer = true;

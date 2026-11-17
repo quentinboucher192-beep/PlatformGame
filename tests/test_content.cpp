@@ -59,7 +59,7 @@ TEST_CASE("content: every enemy has its sheet, clips, projectiles and references
                 fail(d->id + "/" + a.id + " : clip " + a.telegraphAnim + " manquant");
             if (a.type != AttackType::Contact && !anim->clip(a.attackAnim) && a.attackAnim != "attack")
                 fail(d->id + "/" + a.id + " : clip " + a.attackAnim + " manquant");
-            if (a.isProjectileType() && projectiles && !projectiles->clip(a.projectile))
+            if (a.isProjectileType() && projectiles && !projectiles->clip(a.projectile) && !drawnProjectile(a.projectile))
                 fail(d->id + "/" + a.id + " : projectile " + a.projectile + " inconnu");
             if (a.type == AttackType::Summon && !env.content.enemy(a.summonId))
                 fail(d->id + "/" + a.id + " : renfort " + a.summonId + " inconnu");

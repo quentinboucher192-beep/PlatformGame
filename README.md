@@ -5,6 +5,15 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.56.0** :
+* **« Le Nid de Cendres »** (EXTRÊME, Les Confins) : le combat seul du **Phénix Stellaire**, giga-boss à huit
+  phases qui plane : colonnes solaires tombant de la voûte, lame de plumes au ras du sol ou à hauteur de
+  saut, plumes traqueuses, piqués, cendres qui voilent l'arène ; à la fin de la phase « Cendres » il se
+  consume puis **renaît avec les PV de sa phase**. Ses perchoirs de braise brûlent et renaissent.
+* Son **histoire** avant le premier combat (« Le Porteur d'aube ») ; ses succès et son Vestiaire (Plumage
+  d'aube, Plumes de lumière, Renaissance, Couronne de plumes, titre Porteur d'aube).
+* Sa musique, **« Le Phénix Stellaire »**, au juke-box (24 morceaux).
+
 **Nouveau dans la version 2.54.0** :
 * **Statistiques** (menu principal) : vos vraies parties en courbes et en chiffres, sur cet ordinateur
   (vue d'ensemble, combat, boss, niveaux classiques avec somme des meilleurs segments, passages

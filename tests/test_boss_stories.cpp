@@ -74,6 +74,7 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
         }
     }
     CHECK(giga.count("singularis") && giga.count("pyrrhax") && giga.count("monolithe") && giga.count("kraken"));  // 2.53: the Kraken
+    CHECK(giga.count("phenix"));  // 2.56: the Phénix
     // Every story is a giga boss's (the echoes and the bosses of three phases have none).
     for (const auto& [id, s] : stories.all()) {
         const EnemyDefinition* d = content.enemy(id);
@@ -91,11 +92,16 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
           "Le Kraken allume toujours ses lueurs au fond de la Fosse. Il attend qu'on le suive, comme autrefois.");
     CHECK(stories.find("pyrrhax")->title == "Le Dragon d'Obsidienne");
     CHECK(stories.find("kraken")->title == "La Lanterne des profondeurs");  // its name on the card: « LE KRAKEN DES ABYSSES »
+    CHECK(stories.find("phenix")->shots[0].text ==
+          "Autrefois, chaque matin, un petit oiseau de lumière quittait l'étoile du centre pour porter l'aube aux Confins.");
+    CHECK(stories.find("phenix")->shots[5].text ==
+          "Depuis, le Phénix se consume chaque matin dans son nid. Il ne sait plus s'arrêter, de peur que la nuit gagne.");
+    CHECK(stories.find("phenix")->title == "Le Porteur d'aube");  // its name on the card: « LE PHÉNIX STELLAIRE »
     // Time to read: max(4.5 s, 1.2 s + characters / 16); 35 to 50 s with the title card.
     CHECK_NEAR(story::shotDuration("court"), 4.5f, 1e-4f);
     CHECK_NEAR(story::shotDuration(std::string(160, 'a')), 11.2f, 1e-4f);
     CHECK(story::characters("éàü") == 3);
-    for (const char* id : {"singularis", "pyrrhax", "monolithe", "kraken"}) {
+    for (const char* id : {"singularis", "pyrrhax", "monolithe", "kraken", "phenix"}) {
         float t = story::duration(*stories.find(id));
         CHECK(t >= 35.0f && t <= 50.0f);
     }

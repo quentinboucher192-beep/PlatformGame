@@ -105,7 +105,7 @@ public:
     Vec2 shadow() const { return shadow_; }
     float floorLeft() const { return floorL_; }
     float floorRight() const { return floorR_; }
-    /// The phoenix (2.55, the Phénix): burnt to ashes on the floor of its arena between two
+    /// The phoenix (2.56, the Phénix): burnt to ashes on the floor of its arena between two
     /// phases (it cannot be hurt), then reborn (BossPhase::rebirth); the lane of its blade of
     /// feathers (low: jump over it; high: stay down) and the columns of its sun (attackPath).
     bool inAshes() const { return ashes_ != AshStage::None; }
@@ -362,7 +362,7 @@ private:
     Vec2 shadow_;                 // where it will fall (titanic leap)
     bool shadowLocked_ = false;
 
-    // The phoenix (2.55, the Phénix): its new attack types, its glide and its rebirth, in
+    // The phoenix (2.56, the Phénix): its new attack types, its glide and its rebirth, in
     // PhoenixAttacks.cpp.
     enum class AshStage : uint8_t { None, Burn, Ash, Rise };
     void phoenixBegin(GameWorld& w);   // wind-up: the columns' marks, the blade's lane

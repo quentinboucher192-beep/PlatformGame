@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "phenix",
+ "title": "Le Porteur d'aube",
+ "color": "#ffd04a",
+ "accent": "#ff9ac6",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "dawn_bird",
+   "image": "stories/phenix_1.png",
+   "text": "Autrefois, chaque matin, un petit oiseau de lumière quittait l'étoile du centre pour porter l'aube aux Confins.",
+   "focus": [
+    0.46,
+    0.42
+   ],
+   "zoom": 1.12,
+   "particles": "sparks",
+   "glow": "#ffd04a"
+  },
+  {
+   "scene": "waking",
+   "image": "stories/phenix_2.png",
+   "text": "Il frôlait les volcans endormis et les vallées de verre noir. Partout où il passait, le jour se levait.",
+   "focus": [
+    0.58,
+    0.56
+   ],
+   "zoom": 1.1,
+   "particles": "embers",
+   "glow": "#ffb070"
+  },
+  {
+   "scene": "long_night",
+   "image": "stories/phenix_3.png",
+   "text": "La nuit où l'étoile du centre s'effondra, l'oiseau attendit sa lumière. Elle ne revint jamais.",
+   "focus": [
+    0.5,
+    0.46
+   ],
+   "zoom": 1.1,
+   "particles": "dust",
+   "glow": "#c88bff"
+  },
+  {
+   "scene": "burning",
+   "image": "stories/phenix_4.png",
+   "text": "Alors, pour que l'aube revienne, il alluma ses propres plumes. Il brûla, brûla… et tomba en cendres.",
+   "focus": [
+    0.5,
+    0.46
+   ],
+   "zoom": 1.14,
+   "particles": "embers",
+   "glow": "#ff7a3a"
+  },
+  {
+   "scene": "reborn",
+   "image": "stories/phenix_5.png",
+   "text": "Le lendemain, il renaquit de ses cendres, plus grand et plus brillant. Et il recommença.",
+   "focus": [
+    0.5,
+    0.48
+   ],
+   "zoom": 1.1,
+   "particles": "sparks",
+   "glow": "#ffd04a"
+  },
+  {
+   "scene": "nest",
+   "image": "stories/phenix_6.png",
+   "text": "Depuis, le Phénix se consume chaque matin dans son nid. Il ne sait plus s'arrêter, de peur que la nuit gagne.",
+   "focus": [
+    0.5,
+    0.6
+   ],
+   "zoom": 1.06,
+   "particles": "embers",
+   "glow": "#ff9ac6"
+  }
+ ]
+}

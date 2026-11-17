@@ -40,6 +40,8 @@ SUITS = {
     "granit": ((128, 122, 116), (255, 178, 70), (110, 150, 80)),
     # 2.53: le Kraken des Abysses (ink violet, a cyan photophore visor, a turquoise scarf)
     "encre": ((60, 52, 112), (110, 235, 255), (40, 210, 180)),
+    # 2.56: le Phénix Stellaire (a starry night blue, a gold visor of dawn, a scarf of crimson fire)
+    "aube": ((52, 47, 103), (255, 208, 74), (255, 110, 96)),
 }
 
 

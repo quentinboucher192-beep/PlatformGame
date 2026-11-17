@@ -1,4 +1,4 @@
-// The attacks of the phoenix (2.55, le Phénix Stellaire): « Colonnes solaires » (columns of
+// The attacks of the phoenix (2.56, le Phénix Stellaire): « Colonnes solaires » (columns of
 // sunlight fall from the roof onto marks shown on the ground, one after the other: a march through
 // where Nova stands, or from both walls closing in on her), « Lame d'ailes » (its wings throw a
 // blade of feathers across the whole arena: low, she jumps over it; high, she stays down), its

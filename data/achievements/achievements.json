@@ -239,7 +239,7 @@
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 22 niveaux de la campagne.",
+   "description": "Terminer les 23 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
@@ -329,6 +329,20 @@
    "condition": {
     "type": "level",
     "level": "confins_03"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_nid_cendres",
+   "category": "voyage",
+   "name": "Au cœur du nid",
+   "description": "Terminer Le Nid de Cendres, aux Confins.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "confins_04"
    },
    "requires": [
     "voyage_first"
@@ -1215,6 +1229,20 @@
    ]
   },
   {
+   "id": "gardiens_phenix",
+   "category": "gardiens",
+   "name": "Phénix",
+   "description": "Vaincre le Phénix Stellaire.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "phenix"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
    "id": "gardiens_50",
    "category": "gardiens",
    "name": "Tueur de titans",
@@ -1315,7 +1343,7 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 22 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 23 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
@@ -1608,6 +1636,35 @@
    },
    "requires": [
     "gardiens_kraken"
+   ]
+  },
+  {
+   "id": "maitrise_phenix_nohit",
+   "category": "maitrise",
+   "name": "Pas une plume",
+   "description": "Vaincre le Phénix sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "phenix",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_phenix"
+   ]
+  },
+  {
+   "id": "maitrise_phases_phenix",
+   "category": "maitrise",
+   "name": "Les huit aubes",
+   "description": "Battre chaque phase du Phénix sans être touché (pas forcément dans le même combat).",
+   "stars": 5,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "phenix"
+   },
+   "requires": [
+    "gardiens_phenix"
    ]
   },
   {
@@ -3070,6 +3127,36 @@
    ]
   },
   {
+   "id": "extreme_cendres_gold",
+   "category": "extreme",
+   "name": "Or des cendres",
+   "description": "Obtenir l'or dans Le Nid de Cendres.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_04",
+    "medal": 3
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_cendres_platinum",
+   "category": "extreme",
+   "name": "Platine des cendres",
+   "description": "Obtenir le platine dans Le Nid de Cendres.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_04",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_cendres_gold"
+   ]
+  },
+  {
    "id": "extreme_attempts_100",
    "category": "extreme",
    "name": "Increvable",
@@ -3482,11 +3569,11 @@
    "id": "collection_tracks_all",
    "category": "collection",
    "name": "Mélomane",
-   "description": "Débloquer les 23 morceaux du juke-box.",
+   "description": "Débloquer les 24 morceaux du juke-box.",
    "stars": 3,
    "condition": {
     "type": "tracks_heard",
-    "count": 23
+    "count": 24
    },
    "requires": [
     "collection_tracks_10"

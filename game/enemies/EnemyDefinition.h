@@ -38,7 +38,7 @@ enum class AttackType {
     Shell,    // it curls into a stone shell and rolls at the target, bouncing off the walls; armoured, then dizzy
     Quake,    // the arena shakes: cracks open under the target and burst, rocks fall from the roof on marks
     Skyfall,  // it leaps out of sight, its shadow follows the target, it falls on it: shockwaves along the floor
-    // 2.55: the attacks of the Phénix, the phoenix of Les Confins (game/enemies/PhoenixAttacks.cpp).
+    // 2.56: the attacks of the Phénix, the phoenix of Les Confins (game/enemies/PhoenixAttacks.cpp).
     Sunbeam,  // columns of sunlight fall from the roof onto marks, one after the other (a march, or from both walls)
     Sweep,    // its wings throw a blade of feathers across the arena, low (jump over it) or high (stay down)
     Count
@@ -127,7 +127,7 @@ struct AttackDef {
     /// "plasma" (a tide of star plasma instead of lava), Cage "star" (walls of starlight).
     /// 2.53 (the Kraken): Flood "tide" (dark water), Cage "tentacle" (tentacles out of the floor),
     /// CloudShot / Perch "ink" (clouds of ink instead of fire).
-    /// 2.55 (the Phénix): CloudShot "ash" (clouds of grey ash, embers glowing in them).
+    /// 2.56 (the Phénix): CloudShot "ash" (clouds of grey ash, embers glowing in them).
     std::string look;
     // v5 (2.50, the dragon): Perch: damage it takes while landed (0 = the type's default, 1.5).
     // 2.52, the golem: Shell: damage it takes while dizzy after its roll (0 = 1.5).
@@ -145,7 +145,7 @@ struct AttackDef {
     bool isDragonType() const { return type >= AttackType::Dive && type <= AttackType::Gust; }
     /// The attack types of the golem (2.52, the Monolithe).
     bool isGolemType() const { return type >= AttackType::Shell && type <= AttackType::Skyfall; }
-    /// The attack types of the phoenix (2.55, the Phénix).
+    /// The attack types of the phoenix (2.56, the Phénix).
     bool isPhoenixType() const { return type >= AttackType::Sunbeam && type <= AttackType::Sweep; }
 
     Json toJson() const;
@@ -169,11 +169,11 @@ struct BossPhase {
     std::string animation;           // sheet of this phase ("" = the enemy's own): a new look
     Color lightColor{0, 0, 0, 0};    // its light during this phase (alpha 0 = the enemy's own)
     std::string enterSound;          // played when the phase starts, with the roar
-    /// 2.55, the Phénix's « Cendres »: when its health reaches the next phase's threshold, the
+    /// 2.56, the Phénix's « Cendres »: when its health reaches the next phase's threshold, the
     /// boss burns to ashes on the floor of its arena (it cannot be hurt), then is reborn with
     /// this share of its health (> 0) and the next phase begins. 0 = the phase ends as any other.
     float rebirth = 0.0f;
-    /// Appearance only (2.55): ash falls over the arena and veils it during this phase (and
+    /// Appearance only (2.56): ash falls over the arena and veils it during this phase (and
     /// while the boss lies in its ashes), Nova and the HUD stay clear.
     bool ashes = false;
     Json toJson() const;

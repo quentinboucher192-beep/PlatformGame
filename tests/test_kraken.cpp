@@ -218,8 +218,8 @@ TEST_CASE("kraken: a giga boss of eight phases, eight lights, its tentacles and 
 TEST_CASE("kraken: « La Fosse des Abysses », the last level of Les Confins, the fight alone") {
     const PlanetData* confins = content().planet("confins");
     REQUIRE(confins != nullptr);
-    REQUIRE(!confins->levels.empty());
-    CHECK(confins->levels.back() == "confins_03");
+    REQUIRE(confins->levels.size() >= 3);
+    CHECK(confins->levels[2] == "confins_03");  // 2.56: « Le Nid de Cendres » after it
     auto level = content().loadLevel("confins_03");
     REQUIRE(level.has_value());
     CHECK(level->name == "La Fosse des Abysses");

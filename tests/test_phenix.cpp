@@ -1,4 +1,4 @@
-// Le Phénix Stellaire (2.55): the fourth giga boss of Les Confins and « Le Nid de Cendres ». It
+// Le Phénix Stellaire (2.56): the fourth giga boss of Les Confins and « Le Nid de Cendres ». It
 // flies and glides between its blows (« vol plané »), its feathers are its shots, and it has two
 // attack types of its own (game/enemies/PhoenixAttacks.cpp): « Colonnes solaires » (columns of
 // sunlight fall from the roof onto marks, a march through Nova or pairs closing in from both
@@ -311,7 +311,7 @@ TEST_CASE("phenix: a giga boss of eight phases, eight lights, its feathers, its 
 }
 
 TEST_CASE("phenix: its sheets are anchored at the tips of its plumes (nothing drawn under its feet)") {
-    // The pivot is the bottom of the art (2.55, as the Kraken's in 2.53): low over the floor it
+    // The pivot is the bottom of the art (2.56, as the Kraken's in 2.53): low over the floor it
     // never goes through it nor under the HUD.
     for (int k = 1; k <= 8; ++k) {
         const std::string id = k == 1 ? std::string("phenix") : "phenix_p" + std::to_string(k);

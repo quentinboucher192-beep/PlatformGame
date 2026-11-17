@@ -163,7 +163,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Shell: k = above > 48.0f ? 0.0f : 1.5f; break;  // 2.52: the golem
                 case AttackType::Quake: k = 2.0f; break;
                 case AttackType::Skyfall: k = 2.5f; break;
-                case AttackType::Sunbeam: k = 2.2f; break;  // 2.55: the phoenix
+                case AttackType::Sunbeam: k = 2.2f; break;  // 2.56: the phoenix
                 case AttackType::Sweep: k = 1.6f; break;
                 default: break;
             }
@@ -288,7 +288,7 @@ Vec2 Enemy::attackOrigin() const {
 
 void Enemy::stepTelegraph(GameWorld& w, float dt) {
     if (!def_.flying) vel.x = approach(vel.x, 0.0f, 900.0f * dt);
-    else if (attack_ && glidesDuring(*attack_)) phoenixGlide(w, dt, 0.55f, false);  // 2.55: the Phénix glides on
+    else if (attack_ && glidesDuring(*attack_)) phoenixGlide(w, dt, 0.55f, false);  // 2.56: the Phénix glides on
     else vel = lerpv(vel, {}, damp(6.0f, dt));
     if (!targets_.empty() && attack_) {
         warnTimer_ -= dt;
@@ -310,7 +310,7 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
     }
     if (attack_ && attack_->isDragonType()) dragonTelegraph(w, dt);
     if (attack_ && attack_->isGolemType()) golemTelegraph(w, dt);
-    if (attack_ && attack_->type == AttackType::Sunbeam && stateTimer_ > 0.25f) planColumns(w);  // 2.55: they follow her, then hold
+    if (attack_ && attack_->type == AttackType::Sunbeam && stateTimer_ > 0.25f) planColumns(w);  // 2.56: they follow her, then hold
     if (stateTimer_ <= 0.0f && attack_) {
         state_ = EnemyState::Attack;
         stateTimer_ = attack_->active;
@@ -338,7 +338,7 @@ void Enemy::spawnImpact(GameWorld& w, const AttackDef& a, Vec2 t) {
     p.type = DamageType::Projectile;
     p.clip = a.projectile;
     p.radius = a.projectileRadius > 0 ? a.projectileRadius : 5.0f;
-    p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.55: the Phénix's feathers glow with its phase
+    p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.56: the Phénix's feathers glow with its phase
     p.knockback = a.knockback;
     p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
     p.slow = a.slow;
@@ -381,7 +381,7 @@ void Enemy::fireProjectiles(GameWorld& w, const AttackDef& a) {
         p.clip = a.projectile;
         p.radius = a.projectileRadius > 0 ? a.projectileRadius : (a.projectile == "boss_orb" ? 7.0f : 4.5f);
         p.life = a.homing > 0.0f ? std::max(4.0f, a.homingTime + 2.5f) : 4.0f;
-        p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.55: the Phénix's feathers glow with its phase
+        p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.56: the Phénix's feathers glow with its phase
         p.knockback = a.knockback;
         p.hitSound = "sounds/explosion.wav";
         p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
@@ -558,7 +558,7 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         guardianActive(w, dt);
         return;
     }
-    const bool glide = glidesDuring(a);  // 2.55: the Phénix glides on while it throws
+    const bool glide = glidesDuring(a);  // 2.56: the Phénix glides on while it throws
     if (a.isDragonType()) {
         dragonActive(w, dt);
         if (glide) phoenixGlide(w, dt, 0.55f, false);
@@ -743,7 +743,7 @@ void Enemy::render(RenderContext& ctx) const {
         Vec2 eye = feet + Vec2{facing * box.w * 0.2f, -box.h * 0.6f};
         ctx.lights.add(eye, def_.lightRadius, lightColor());
     }
-    if (inAshes()) renderAshes(ctx);  // 2.55: the Phénix in its ashes, its rebirth
+    if (inAshes()) renderAshes(ctx);  // 2.56: the Phénix in its ashes, its rebirth
 }
 
 void Enemy::renderTelegraph(RenderContext& ctx) const {

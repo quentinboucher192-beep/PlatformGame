@@ -9,6 +9,10 @@
 
 namespace cosmic {
 
+/// Projectiles drawn by the game rather than taken from animations/projectiles.json: the waves of
+/// a slam (« shockwave ») and (2.56) the Phénix's feathers of light (« feather »).
+inline bool drawnProjectile(const std::string& clip) { return clip == "shockwave" || clip == "feather"; }
+
 struct Projectile {
     Vec2 pos;
     Vec2 prevPos;
@@ -44,7 +48,7 @@ struct Projectile {
     uint32_t cloudOwner = 0;
     Color cloudColor{255, 122, 46, 255};  // display only
     bool cloudInk = false;                // display only (2.53, the Kraken): a cloud of ink, not of fire
-    bool cloudAsh = false;                // display only (2.55, the Phénix): a cloud of ash, embers in it
+    bool cloudAsh = false;                // display only (2.56, the Phénix): a cloud of ash, embers in it
     std::vector<const void*> hitTargets;  // already damaged (piercing)
     // 2.54, statistics only (never read by the simulation): set by GameWorld::spawnProjectile.
     uint32_t uid = 0;           // a serial of the run's shots

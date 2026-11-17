@@ -35,7 +35,7 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               // 2.52: the golem (the Monolithe)
                               {"shell", "Carapace roulante"},    {"quake", "Tremblement de terre"},
                               {"skyfall", "Bond titanesque"},
-                              // 2.55: the phoenix (the Phénix)
+                              // 2.56: the phoenix (the Phénix)
                               {"sunbeam", "Colonnes solaires"},  {"sweep", "Lame d'ailes"}};
 static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
 }  // namespace
@@ -183,7 +183,7 @@ Json AttackDef::toJson() const {
         if (armor > 0) j["armor"] = armor;
     }
     if (isPhoenixType()) {
-        // 2.55, written only for the phoenix's types (the definitions of before keep their fingerprints).
+        // 2.56, written only for the phoenix's types (the definitions of before keep their fingerprints).
         j["projectile"] = projectile;
         j["projectileSpeed"] = projectileSpeed;
         j["count"] = count;
@@ -278,7 +278,7 @@ Json BossPhase::toJson() const {
     if (!animation.empty()) j["animation"] = animation;
     if (lightColor.a > 0) j["lightColor"] = lightColor.toHex();
     if (!enterSound.empty()) j["enterSound"] = enterSound;
-    // 2.55: the Phénix's rebirth and its ashes (written only when set).
+    // 2.56: the Phénix's rebirth and its ashes (written only when set).
     if (rebirth > 0) j["rebirth"] = rebirth;
     if (ashes) j["ashes"] = true;
     return j;

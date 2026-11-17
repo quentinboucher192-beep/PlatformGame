@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Le Phénix Stellaire (version 2.55): the fourth giga boss of Les Confins, at the end of
+"""Le Phénix Stellaire (version 2.56): the fourth giga boss of Les Confins, at the end of
 « Le Nid de Cendres » (confins_04, tools/levelgen/confins.py).
 
 A phoenix of starlight and plasma that burns itself to ashes and is born again from them. It

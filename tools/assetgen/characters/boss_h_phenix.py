@@ -21,7 +21,7 @@ those five colours swapped (exact LUT, `recolour`), see PHASES.
 
 Frames 256x192, pivot [128, 190] = bottom-centre of the 64x96 collision box (x 96..160,
 y 94..190) around the body (torso and legs; not the wings, the neck or the head) and down to the
-tips of the tail plumes (2.55: the pivot was at the talons, y 150, and the plumes of form II hung
+tips of the tail plumes (2.56: the pivot was at the talons, y 150, and the plumes of form II hung
 ~40 px under the box: low over the floor they went through it and under the HUD, as the Kraken's
 arms in 2.53; the art is unchanged, only the anchor and the box; its ashes settle at y 184, inside
 the box). Drawn at scale 1.25 in game (320x240 px frame, 80x120 px box).
@@ -55,7 +55,7 @@ from raster import TCanvas
 PI = math.pi
 W, H = 256, 192
 PIVOT = [128, 190]
-BOX = (96, 94, 160, 190)  # x0, y0, x1, y1 (collision box, frame pixels; 2.55: down to the plumes)
+BOX = (96, 94, 160, 190)  # x0, y0, x1, y1 (collision box, frame pixels; 2.56: down to the plumes)
 BX, BY = 128.0, 112.0  # centre of the body (body coordinates): the whole bird tilts around it
 GROUND = 184.0  # where the ashes settle (death)
 WHITE = "#ffffff"

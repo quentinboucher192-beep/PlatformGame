@@ -181,7 +181,7 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
         const std::string style = obj_.propStr("style", "toxic");
         bool plasma = style == "plasma";
         bool abyss = style == "abyss";  // 2.53: the dark water of the Kraken's arena
-        bool embers = style == "embers";  // 2.55: the embers under the ash of the Phénix's nest
+        bool embers = style == "embers";  // 2.56: the embers under the ash of the Phénix's nest
         fxTimer_ = std::max(0.05f, (plasma || abyss || embers ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
         w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : (embers ? "embers_rising" : "toxic_mist")),
                            {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
@@ -274,7 +274,7 @@ void DamageZoneEntity::renderPlasma(RenderContext& ctx) const {
 }
 
 void DamageZoneEntity::renderEmbers(RenderContext& ctx) const {
-    // The embers under the ash of the Phénix's nest (2.55): a pool (grey ash crusted over a bed
+    // The embers under the ash of the Phénix's nest (2.56): a pool (grey ash crusted over a bed
     // of embers that breathe, their glow showing through, sparks rising) or a curtain (a wall of
     // fire, its heat wavering, ash swept up in it), fading in when switched on. Display only.
     const float a = shown_;

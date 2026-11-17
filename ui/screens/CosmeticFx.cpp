@@ -265,6 +265,31 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
                 r.drawGlow(s, (3.0f + 5.0f * lit) * scale, Color{110, 235, 255, static_cast<uint8_t>(70 + 170 * lit)});
             }
         }
+    } else if (look == "plumage") {
+        // « Couronne de plumes » (2.56, Phénix): feathers of night blue fanned round the avatar,
+        // their edges of gold, their tips lighting up one after the other like a dawn going round.
+        // Within kAvatarFrameMargin: the tips stay 13 units beyond the avatar.
+        r.drawGlow(center, radius + 16 * scale, Color{255, 190, 90, 70});
+        ring(main, 2.5f, Color{30, 26, 64, 255});
+        const int n = 18;
+        const float dawn = std::fmod(time * 0.35f, 1.0f);
+        for (int i = 0; i < n; ++i) {
+            const float u = static_cast<float>(i) / static_cast<float>(n);
+            const float a = u * 2.0f * kFxPi - kFxPi * 0.5f;
+            const Vec2 d{std::cos(a), std::sin(a)};
+            const Vec2 t{-d.y, d.x};
+            const Vec2 base = center + d * (main - 1.0f * scale);
+            const Vec2 tip = center + d * (main + 11.0f * scale) + t * (3.0f * scale);
+            const Vec2 l = base + t * (3.2f * scale), rr = base - t * (3.2f * scale);
+            r.fillTriangle(l, rr, tip, Color{52, 47, 103, 255});
+            r.drawLine(l, tip, Color{255, 208, 74, 220}, 1.3f * scale, BlendMode::Additive);
+            float lit = std::fabs(u - dawn);
+            lit = 1.0f - std::min(lit, 1.0f - lit) * 6.0f;
+            lit = std::max(0.0f, lit);
+            r.drawGlow(tip, (2.5f + 5.0f * lit) * scale, Color{255, 230, 160, static_cast<uint8_t>(90 + 160 * lit)});
+            r.fillCircle(tip, (0.8f + 0.6f * lit) * scale, Color{255, 250, 230, 255}, BlendMode::Additive);
+        }
+        ring(main - 1.5f * scale, 1.2f, Color{255, 208, 74, 200});
     } else if (look == "laurels") {
         r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
         ring(main, 4, Color{255, 214, 90, 255});
@@ -412,6 +437,21 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
             cv.ring(q, sz * k + 0.8f, 1.0f, Color{170, 240, 255, alpha(0.85f * f)});
             cv.dot(cv.off(q, {-sz * 0.35f, -sz * 0.35f}), 0.6f, Color{255, 255, 255, alpha(0.9f * f)}, BlendMode::Additive);
         }
+    } else if (look == "feathers") {
+        // « Plumes de lumière » (2.56, Phénix): feathers of golden light spinning down behind
+        // Nova, going out into embers as they fall.
+        if (seed % 2 == 1) return;
+        const float spin = age * 9.0f + static_cast<float>(seed) * 1.3f;
+        Vec2 j{(noise(seed) - 0.5f) * 12.0f + std::sin(age * 5.0f + static_cast<float>(seed)) * 4.0f, age * 26.0f + noise(seed * 5u + 3u) * 5.0f};
+        Vec2 q = cv.off(p, j);
+        const float len = 5.5f * (0.5f + 0.5f * k) + 1.5f;
+        Vec2 d{std::cos(spin), std::sin(spin) * 0.6f + 0.4f};
+        const float dl = std::sqrt(d.x * d.x + d.y * d.y);
+        d = d / std::max(0.001f, dl);
+        Color c = mix(Color{255, 110, 60, 255}, Color{255, 214, 90, 255}, k);
+        cv.glow(q, 6.0f * k + 1.5f, c.withAlpha(alpha(0.4f * f)));
+        cv.line(cv.off(q, d * -len), cv.off(q, d * len), c.withAlpha(alpha(0.9f * f)), 2.4f * k + 0.8f);
+        cv.dot(cv.off(q, d * len), 1.0f, Color{255, 250, 225, alpha(0.9f * f)}, BlendMode::Additive);
     } else if (look == "prism") {
         // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
         Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
@@ -630,6 +670,47 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
             const float a = fade * std::clamp(1.0f - tb / 1.4f, 0.0f, 1.0f);
             cv.glow(q, 6.0f, Color{110, 230, 255, alpha(0.5f * a)});
             cv.ring(q, 3.0f, 1.0f, Color{180, 240, 255, alpha(0.9f * a)});
+        }
+    } else if (look == "rebirth") {
+        // « Renaissance » (2.56, Phénix): the portal flares up, falls to ash, then a phoenix of
+        // light is born from it and flies up, wings wide, a rain of golden sparks behind it.
+        const float burn = std::clamp(t / 0.7f, 0.0f, 1.0f);
+        const float ashes = std::clamp((t - 0.7f) / 0.5f, 0.0f, 1.0f);
+        const float rise = std::clamp((t - 1.1f) / 1.3f, 0.0f, 1.0f);
+        // The flames round the portal, then a heap of glowing ash.
+        for (int i = 0; i < 14; ++i) {
+            const float u = static_cast<float>(i) / 13.0f;
+            const float x = -46.0f + 92.0f * u;
+            const float h = (30.0f + 40.0f * noise(static_cast<uint32_t>(i) * 17u + 5u)) * burn * (1.0f - ashes) *
+                            (0.7f + 0.3f * std::sin(t * 18.0f + static_cast<float>(i)));
+            if (h > 1.0f) {
+                cv.line(cv.off(at, {x, 0.0f}), cv.off(at, {x + std::sin(t * 9.0f + x) * 4.0f, -h}), Color{255, 150, 60, alpha(0.8f * fade)}, 4.0f);
+                cv.glow(cv.off(at, {x, -h * 0.6f}), 10.0f, Color{255, 120, 40, alpha(0.35f * fade)});
+            }
+            if (ashes > 0.0f && rise < 1.0f) cv.dot(cv.off(at, {x * 0.8f, -2.0f - 3.0f * std::sin(u * kFxPi)}), 3.0f, Color{140, 130, 124, alpha(ashes * (1.0f - rise) * fade)});
+        }
+        if (rise > 0.0f) {
+            // The bird of light: a body, two wings beating, three tail plumes.
+            const Vec2 o = cv.off(at, {10.0f * rise, -20.0f - 120.0f * rise});
+            const float beat = std::sin(t * 12.0f) * 0.5f + 0.5f;
+            const Color gold{255, 214, 90, alpha(0.95f * fade)};
+            cv.glow(o, 30.0f, Color{255, 190, 90, alpha(0.5f * fade)});
+            for (int side = -1; side <= 1; side += 2)
+                for (int f = 0; f < 5; ++f) {
+                    const float a = -kFxPi * 0.5f + static_cast<float>(side) * (0.5f + 0.22f * static_cast<float>(f) + 0.35f * beat);
+                    const float L = 30.0f - 3.0f * static_cast<float>(f);
+                    cv.line(o, cv.off(o, {std::cos(a) * L, std::sin(a) * L}), gold, 2.2f);
+                }
+            for (int k = -1; k <= 1; ++k)
+                cv.line(o, cv.off(o, {static_cast<float>(k) * 7.0f, 34.0f + 6.0f * std::fabs(static_cast<float>(k))}), Color{255, 140, 70, alpha(0.8f * fade)}, 2.0f);
+            cv.dot(o, 4.0f, Color{255, 250, 230, alpha(fade)}, BlendMode::Additive);
+            // Golden sparks falling from its wings.
+            for (int i = 0; i < 16; ++i) {
+                const float ts = t - 1.2f - 0.06f * static_cast<float>(i);
+                if (ts < 0.0f) continue;
+                Vec2 q = cv.off(at, {-40.0f + 80.0f * noise(static_cast<uint32_t>(i) * 41u + 9u), -30.0f - 110.0f * noise(static_cast<uint32_t>(i) * 7u + 1u) + 50.0f * ts});
+                star(cv, q, 2.0f, Color{255, 230, 150, alpha(0.8f * fade * std::clamp(1.0f - ts, 0.0f, 1.0f))});
+            }
         }
     } else if (look == "corona") {
         // An eclipse above the portal: a dark disc ringed with light, its rays turning.

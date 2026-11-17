@@ -159,7 +159,7 @@ void CrumblePlatformEntity::init(GameWorld& w) {
     collider_ = w.physics().add(box, ColliderKind::Solid, ColliderTag::Crumble, this);
     // Planet look: ruins (Sylvanox), basalt (Pyralis) or ice (Glacior).
     std::string style = obj_.propStr("style", "ruins");
-    ember_ = style == "ember";  // 2.55: drawn by the game (the basalt sheet only in the editor)
+    ember_ = style == "ember";  // 2.56: drawn by the game (the basalt sheet only in the editor)
     tex_ = ember_ ? w.resources().texture("sprites/objects/crumble_platform_basalt.png")
                   : w.resources().texture(style == "ruins" ? std::string("sprites/objects/crumble_platform.png")
                                                            : "sprites/objects/crumble_platform_" + style + ".png");
@@ -197,7 +197,7 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
                 phase_ = Phase::Fallen;
                 timer_ = obj_.prop<float>("respawn", 3.0f);
                 w.physics().setEnabled(collider_, false);
-                // 2.55: a perch of embers burns to ash (display only).
+                // 2.56: a perch of embers burns to ash (display only).
                 w.particles().emit(ember_ ? "ash_cloud" : "crumble_debris", box.center(), std::max(1.0f, box.w / 48.0f));
                 if (ember_) w.particles().emit("fire_burst", box.center(), 1.2f);
                 w.playSound("sounds/crumble.wav", box.center(), 0.9f);
@@ -213,7 +213,7 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
                         phase_ = Phase::Solid;
                         w.physics().setEnabled(collider_, true);
                         w.particles().emit("reform", box.center(), 1.0f);
-                        if (ember_) w.particles().emit("embers_rising", box.center(), 1.2f);  // 2.55: reborn from its ash
+                        if (ember_) w.particles().emit("embers_rising", box.center(), 1.2f);  // 2.56: reborn from its ash
                     }
                 }
             }
@@ -247,7 +247,7 @@ void CrumblePlatformEntity::render(RenderContext& ctx) {
 }
 
 void CrumblePlatformEntity::renderEmber(RenderContext& ctx) const {
-    // A perch of embers (2.55, the Phénix's nest): charcoal veined with fire. Under Nova it
+    // A perch of embers (2.56, the Phénix's nest): charcoal veined with fire. Under Nova it
     // catches fire (flames rising, it trembles), burns to ash; while it is gone a glowing outline
     // of ash gathers where it was, brighter as it is about to be reborn. Display only.
     const float t = ctx.time;

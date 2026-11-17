@@ -61,7 +61,7 @@ public:
 
 private:
     void giveWay(GameWorld& w);
-    /// 2.55, style « ember »: a perch of embers of the Phénix's nest; it catches fire under Nova,
+    /// 2.56, style « ember »: a perch of embers of the Phénix's nest; it catches fire under Nova,
     /// burns to ash, then is reborn from it (display only: the same simulation as any other).
     void renderEmber(RenderContext& ctx) const;
     enum class Phase { Solid, Shaking, Fallen } phase_ = Phase::Solid;
@@ -167,7 +167,7 @@ public:
 private:
     void renderPlasma(RenderContext& ctx) const;
     void renderAbyss(RenderContext& ctx) const;  // 2.53: the dark water of the Kraken's arena
-    void renderEmbers(RenderContext& ctx) const;  // 2.55: the embers under the ash of the Phénix's nest
+    void renderEmbers(RenderContext& ctx) const;  // 2.56: the embers under the ash of the Phénix's nest
     float tick_ = 0.0f;
     float fxTimer_ = 0.0f;
     float shown_ = 0.0f;  // display: fades in when enabled (2.33)
