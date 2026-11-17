@@ -211,6 +211,24 @@ TEST_CASE("achievements: every condition is known and names real content") {
     }
 }
 
+TEST_CASE("achievements: « all the levels » means every level of the campaign, as its text says") {
+    // 2.58: these stayed at 19 while Les Confins brought the campaign to 25 levels. A new
+    // campaign level must raise them (and their text, and the title they give) together.
+    Fixture f;
+    size_t campaign = 0;
+    for (const PlanetData* p : f.content.planets()) campaign += f.content.levelsForPlanet(p->id).size();
+    CHECK(campaign >= 25);
+    const std::string n = std::to_string(campaign);
+    for (const char* id : {"chrono_gold_all", "chrono_platinum_all", "combat_clear_all", "maitrise_nodeath_all", "communaute_rate_campaign_all"}) {
+        const AchievementDef* a = f.catalog.find(id);
+        CHECK(a != nullptr);
+        if (!a) continue;
+        if (a->condition.count != static_cast<int64_t>(campaign)) std::printf("  %s : %lld niveaux au lieu de %s\n", id, static_cast<long long>(a->condition.count), n.c_str());
+        CHECK(a->condition.count == static_cast<int64_t>(campaign));
+        CHECK(a->description.find(n + " niveaux") != std::string::npos);
+    }
+}
+
 TEST_CASE("achievements: nothing is unlocked without having done it") {
     Fixture f;
     auto got = f.evaluate();

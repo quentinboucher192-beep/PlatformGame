@@ -21925,7 +21925,7 @@
    ]
   },
   {
-   "fr": "Le platine sur les 19 niveaux.",
+   "fr": "Le platine sur les 25 niveaux.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -27267,7 +27267,7 @@
    ]
   },
   {
-   "fr": "Noter les 19 niveaux de la campagne en ligne.",
+   "fr": "Noter les 25 niveaux de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -28171,7 +28171,7 @@
    ]
   },
   {
-   "fr": "Obtenir l'or sur les 19 niveaux.",
+   "fr": "Obtenir l'or sur les 25 niveaux.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -28249,7 +28249,7 @@
    ]
   },
   {
-   "fr": "Obtenir le platine sur les 19 niveaux.",
+   "fr": "Obtenir le platine sur les 25 niveaux.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -44436,7 +44436,7 @@
    ]
   },
   {
-   "fr": "Vaincre tous les ennemis des 19 niveaux de la campagne.",
+   "fr": "Vaincre tous les ennemis des 25 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
