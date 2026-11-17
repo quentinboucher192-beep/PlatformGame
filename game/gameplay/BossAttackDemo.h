@@ -39,9 +39,10 @@ EnemyDefinition demoDefinition(const EnemyDefinition& d, const std::string& atta
 float demoNovaDistance(const AttackDef& a);
 
 /// The part of the world shown in a frame of proportions `aspect` (width / height): the boss
-/// and Nova with room around them, at least `minWidth` wide, inside `arena` (a little beyond
-/// its edges when the frame is wider than the arena).
-Rect demoWindow(const Rect& arena, const Rect& boss, const Rect& nova, float aspect, float minWidth = 520.0f);
+/// and Nova with room around them, from `minWidth` to `maxWidth` wide (Nova always in view: of
+/// a boss too far or too high, what fits), inside `arena` (a little beyond its edges when the
+/// frame is wider than the arena).
+Rect demoWindow(const Rect& arena, const Rect& boss, const Rect& nova, float aspect, float minWidth = 520.0f, float maxWidth = 1000.0f);
 
 class BossAttackDemo {
 public:

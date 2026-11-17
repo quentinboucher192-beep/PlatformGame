@@ -43,10 +43,10 @@
 //   --story <boss>[:<shot>|:titre]
 //                           tell the story of a giga boss over the main menu (from that shot,
 //                           1 = the first, its line typed; « titre »: the title card revealed)
-//   --boss-stats [<boss>[:<clip>][:fiche][:attaque=<attack>|:tout]]
+//   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout]]
 //                           open the boss statistics (that boss, that clip of its animation;
-//                           « fiche »: its sheet; that attack unfolded with its example, or
-//                           every attack unfolded)
+//                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
+//                           unfolded with its example, or every attack unfolded)
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
 //                           open the settings of a boss training (and enter its arena);
 //                           <where>: usual | suggested | <x>,<y> (« Lieu d'apparition »),

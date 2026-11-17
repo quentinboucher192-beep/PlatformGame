@@ -6,6 +6,8 @@
 
 #include "engine/core/FileUtil.h"
 #include "engine/core/Log.h"
+#include "engine/rendering/Renderer.h"
+#include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
 #include "game/content/ContentDatabase.h"
 #include "game/content/CreaturePlaces.h"
@@ -13,6 +15,7 @@
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/player/Player.h"
+#include "ui/widgets/UIContext.h"
 
 namespace cosmic {
 
@@ -250,6 +253,12 @@ void BossAttackPreview::draw(UIContext& ui, const Rect& frame, float alpha) {
         r.pushClip(frame);
         renderer_->render(r, g_.app.resources(), *demo_->world(), v, paused_ ? 1.0f : alpha, opt);
         r.setView(WorldView{});
+        // Nova is small in a whole arena: a little mark over her head (display only).
+        const Rect nb = demo_->world()->player().box;
+        const Vec2 tip = v.toScreen({nb.center().x, nb.y - 5.0f});
+        const float k = std::max(ui.s(5), 3.0f);
+        r.fillTriangle({tip.x - k - 1.5f, tip.y - k * 1.6f - 1.5f}, {tip.x + k + 1.5f, tip.y - k * 1.6f - 1.5f}, {tip.x, tip.y + 1.5f}, Color{6, 8, 16, 220});
+        r.fillTriangle({tip.x - k, tip.y - k * 1.6f}, {tip.x + k, tip.y - k * 1.6f}, {tip.x, tip.y}, th.accent);
         r.popClip();
         return;
     }

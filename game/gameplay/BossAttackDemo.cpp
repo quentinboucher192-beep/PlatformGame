@@ -99,16 +99,21 @@ float demoNovaDistance(const AttackDef& a) {
     }
 }
 
-Rect demoWindow(const Rect& arena, const Rect& boss, const Rect& nova, float aspect, float minWidth) {
+Rect demoWindow(const Rect& arena, const Rect& boss, const Rect& nova, float aspect, float minWidth, float maxWidth) {
     aspect = std::max(0.3f, aspect);
     const float margin = 96.0f;
     const float left = std::min(boss.x, nova.x) - margin, right = std::max(boss.right(), nova.right()) + margin;
     const float top = std::min(boss.y, nova.y) - 64.0f;
     const float bottom = std::max(boss.bottom(), nova.bottom()) + 40.0f;
     float w = std::max({right - left, minWidth, (bottom - top) * aspect});
-    if (arena.w > 0.0f) w = std::min(w, std::max(arena.w + 64.0f, (bottom - top) * aspect));
-    float h = w / aspect;
+    w = std::min(w, std::max(minWidth, maxWidth));  // never so wide that Nova is lost in it
+    if (arena.w > 0.0f) w = std::min(w, arena.w + 64.0f);
+    const float h = w / aspect;
     Vec2 c{(left + right) * 0.5f, (top + bottom) * 0.5f};
+    // Nova always in view (with some room): when both do not fit, as much of the boss as can be.
+    const float mx = std::min(64.0f, w * 0.15f), my = std::min(40.0f, h * 0.15f);
+    c.x = std::clamp(c.x, nova.right() + mx - w * 0.5f, std::max(nova.right() + mx - w * 0.5f, nova.x - mx + w * 0.5f));
+    c.y = std::clamp(c.y, nova.bottom() + my - h * 0.5f, std::max(nova.bottom() + my - h * 0.5f, nova.y - my + h * 0.5f));
     // Inside the arena (a little beyond its walls when the frame is wider or taller).
     if (arena.w > 0.0f && arena.h > 0.0f) {
         const Rect a = arena.expanded(32.0f);

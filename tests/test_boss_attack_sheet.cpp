@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <map>
 
 #include "engine/audio/AudioSystem.h"
 #include "engine/resources/ResourceManager.h"
@@ -262,40 +263,54 @@ TEST_CASE("boss attack example: the part of the arena shown") {
     const Rect ws = demoWindow(small, Rect{600, 260, 60, 60}, Rect{300, 298, 10, 22}, aspect);
     CHECK(ws.containsRect(Rect{300, 298, 10, 22}) && ws.containsRect(Rect{600, 260, 60, 60}));
     CHECK(ws.w <= small.w + 64.5f);
+    // A boss high above a giga arena (the Kraken): Nova kept in view, the frame never too wide.
+    const Rect kraken{2319, 110, 130, 210}, low{1700, 618, 10, 22};
+    const Rect wk = demoWindow(arena, kraken, low, aspect);
+    CHECK(wk.w <= 1000.5f);
+    CHECK(wk.containsRect(low));
+    CHECK(wk.intersects(kraken));
 }
 
 namespace {
 
-/// The example of `attackId` of `bossId` in its own level (or a neutral arena when `ownLevel`
-/// is false), brought to the attack; the steps it took.
-struct Example {
+/// The game's content, its resources (no window), and where each boss is placed in the levels
+/// of the game (its level, its level object): read once per test.
+struct Bench {
     std::shared_ptr<ContentDatabase> content = std::make_shared<ContentDatabase>();
     ResourceManager res;
     AudioSystem audio;
-    BossAttackDemo demo;
-    bool setUp = false;
-    Example(const std::string& bossId, const std::string& attackId, bool ownLevel = true, const EnemyDefinition* custom = nullptr) {
+    std::map<std::string, std::pair<std::string, std::string>> places;  // boss -> level, object
+    Bench() {
         content->reload();
         res.init(nullptr, &audio);
-        const EnemyDefinition* d = custom ? custom : content->enemy(bossId);
+        for (const LevelEntry* e : content->levels()) {
+            if (e->source != ContentSource::Builtin) continue;
+            auto l = content->loadLevel(e->id);
+            if (!l) continue;
+            for (const LevelObject& o : l->objects)
+                if (o.type == "enemy" && !places.count(o.propStr("enemy"))) places[o.propStr("enemy")] = {e->id, o.id};
+        }
+    }
+};
+
+/// The example of `attackId` of `bossId` in its own level (or a neutral arena when `ownLevel`
+/// is false), brought to its first wind-up by warm().
+struct Example {
+    Bench& bench;
+    BossAttackDemo demo;
+    bool setUp = false;
+    Example(Bench& b, const std::string& bossId, const std::string& attackId, bool ownLevel = true, const EnemyDefinition* custom = nullptr)
+        : bench(b) {
+        const EnemyDefinition* d = custom ? custom : bench.content->enemy(bossId);
         if (!d) return;
         std::optional<LevelData> level;
         std::string object;
-        if (ownLevel) {
-            for (const LevelEntry* e : content->levels()) {
-                if (e->source != ContentSource::Builtin) continue;
-                auto l = content->loadLevel(e->id);
-                if (!l) continue;
-                for (const LevelObject& o : l->objects)
-                    if (o.type == "enemy" && o.propStr("enemy") == bossId) object = o.id;
-                if (!object.empty()) {
-                    level = std::move(l);
-                    break;
-                }
-            }
+        if (auto it = bench.places.find(bossId); ownLevel && it != bench.places.end()) {
+            level = bench.content->loadLevel(it->second.first);
+            object = it->second.second;
         }
         std::string error;
-        setUp = demo.setup(content, res, *d, attackId, std::move(level), object, &error);
+        setUp = demo.setup(bench.content, bench.res, *d, attackId, std::move(level), object, &error);
         if (!setUp) std::printf("    %s / %s : %s\n", bossId.c_str(), attackId.c_str(), error.c_str());
     }
     bool warm() {
@@ -312,24 +327,25 @@ TEST_CASE("boss attack example: the boss gives the attack again and again, never
         const char* boss;
         const char* attack;
     };
+    Bench bench;
     // A classic boss, a guardian of Aethra, giga bosses (one of them at its last stand).
     for (const Case& c : {Case{"thornwarden", "charge"}, Case{"aurorax", "mirror"}, Case{"titan", "presses"}, Case{"singularis", "derniere_lumiere"},
                           Case{"phenix", "lame"}}) {
-        Example ex(c.boss, c.attack);
+        Example ex(bench, c.boss, c.attack);
         CHECK(ex.setUp);
         CHECK(ex.warm());
         GameWorld& w = *ex.demo.world();
         // A training world where Nova cannot be hurt: every recorder ignores it.
         CHECK(w.training());
         CHECK(w.invincible());
-        const EnemyDefinition& def = *ex.content->enemy(c.boss);
+        const EnemyDefinition& def = *bench.content->enemy(c.boss);
         const AttackPreviewPlan plan = attackPreviewPlan(def, *def.attack(c.attack));
         CHECK(ex.demo.lastStand() == plan.lastStand);
         if (!plan.lastStand) CHECK(ex.demo.phase() == plan.phase);
         // The boss plays the example's definition (this attack only): the game's own is untouched.
         CHECK(ex.demo.boss() != nullptr);
         CHECK(&ex.demo.boss()->def() != &def);
-        CHECK(ex.content->enemy(c.boss)->phases.size() == def.phases.size());
+        CHECK(ex.demo.boss()->def().phases.size() == def.phases.size());
         // A while later: given again, Nova whole and in the arena.
         for (int i = 0; i < 120 * 14; ++i) ex.demo.step();
         std::printf("  %-12s %-18s %d fois en %.0f s\n", c.boss, c.attack, ex.demo.shown(), ex.demo.time());
@@ -341,12 +357,11 @@ TEST_CASE("boss attack example: the boss gives the attack again and again, never
 }
 
 TEST_CASE("boss attack example: a boss in no level of the game, in a neutral arena") {
-    ContentDatabase base;
-    base.reload();
-    EnemyDefinition custom = *base.enemy("glaciarch");
+    Bench bench;
+    EnemyDefinition custom = *bench.content->enemy("glaciarch");
     custom.id = "boss_de_l_editeur";
     custom.builtin = false;
-    Example ex("boss_de_l_editeur", "slam", false, &custom);
+    Example ex(bench, "boss_de_l_editeur", "slam", false, &custom);
     CHECK(ex.setUp);
     CHECK(ex.warm());
     CHECK(ex.demo.world()->training());
@@ -355,7 +370,33 @@ TEST_CASE("boss attack example: a boss in no level of the game, in a neutral are
     // An attack its phases never use: no example, the reason given.
     EnemyDefinition unused = custom;
     for (BossPhase& p : unused.phases) p.attacks.erase(std::remove(p.attacks.begin(), p.attacks.end(), "slam"), p.attacks.end());
-    Example none("boss_de_l_editeur", "slam", false, &unused);
+    Example none(bench, "boss_de_l_editeur", "slam", false, &unused);
     CHECK(!none.setUp);
     CHECK(none.demo.failed() && !none.demo.failure().empty());
+}
+
+TEST_CASE("boss attack example: every boss of the game gets its examples, in its own arena") {
+    // For each boss with a sheet (the planets' bosses and their echoes, the guardians of Aethra,
+    // the giga bosses of Les Confins, Singularis): the example of its first attack, and of the
+    // first attack of its last stand, starts in its arena.
+    Bench bench;
+    std::vector<std::pair<std::string, std::string>> cases;
+    for (const EnemyDefinition* d : bench.content->enemies()) {
+        if (!d->isBoss || !d->builtin || d->attacks.empty()) continue;
+        CHECK(bench.places.count(d->id) == 1);
+        cases.push_back({d->id, d->attacks.front().id});
+        if (!d->finalAttacks.empty()) cases.push_back({d->id, d->finalAttacks.front()});
+    }
+    int failed = 0;
+    for (const auto& [boss, attack] : cases) {
+        Example ex(bench, boss, attack);
+        const bool ok = ex.setUp && ex.warm() && ex.demo.world()->training() && ex.demo.world()->invincible() && ex.demo.shown() >= 1;
+        if (!ok) {
+            std::printf("  exemple RATÉ : %s / %s\n", boss.c_str(), attack.c_str());
+            ++failed;
+        }
+    }
+    std::printf("  %zu exemples préparés, %d ratés\n", cases.size(), failed);
+    CHECK(cases.size() >= 40);
+    CHECK(failed == 0);
 }

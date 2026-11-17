@@ -127,50 +127,50 @@ std::string attackSummary(const AttackDef& a) {
 
 std::string attackTypeDescription(AttackType t) {
     switch (t) {
-        case AttackType::Contact: return "Dégâts infligés au simple contact de son corps.";
-        case AttackType::Melee: return "Un coup porté au corps à corps, juste devant lui : reculez hors de sa portée pendant l'annonce.";
-        case AttackType::Lunge: return "Il bondit sur vous : écartez-vous ou sautez au moment où il s'élance.";
+        case AttackType::Contact: return "Dégâts infligés au simple contact du corps du boss.";
+        case AttackType::Melee: return "Le boss frappe au corps à corps, juste devant lui : reculez hors de sa portée pendant l'annonce.";
+        case AttackType::Lunge: return "Le boss bondit sur vous : écartez-vous ou sautez au moment où il s'élance.";
         case AttackType::Projectile: return "Des tirs visés sur vous : changez de hauteur ou de place pendant leur vol.";
         case AttackType::Spread: return "Une salve de projectiles en éventail : glissez-vous entre deux tirs ou sautez par-dessus.";
         case AttackType::Arc: return "Des tirs en cloche qui retombent là où vous êtes : changez de place pendant l'annonce.";
         case AttackType::Slam:
-            return "Il frappe le sol : un impact sous lui et deux ondes de choc qui filent au ras du sol de chaque côté. Sautez par-dessus.";
-        case AttackType::Charge: return "Il fonce droit devant lui au ras du sol : sautez par-dessus ou montez sur une plateforme.";
+            return "Le boss frappe le sol : un impact sous lui et deux ondes de choc qui filent au ras du sol de chaque côté. Sautez par-dessus.";
+        case AttackType::Charge: return "Le boss fonce droit devant lui au ras du sol : sautez par-dessus ou montez sur une plateforme.";
         case AttackType::Laser: return "Un rayon tiré vers vous, qui peut balayer l'arène : sortez de sa ligne pendant l'annonce.";
-        case AttackType::Summon: return "Il appelle des renforts autour de lui.";
+        case AttackType::Summon: return "Le boss appelle des renforts autour de lui.";
         case AttackType::Rain: return "Des projectiles tombent d'en haut sur des points marqués avant l'impact : quittez les marques.";
         case AttackType::Eruption: return "Le sol jaillit sur des points marqués avant l'éruption : quittez les marques.";
-        case AttackType::Leap: return "Il saute sur vous et retombe en frappant le sol : deux ondes de choc partent de chaque côté à l'atterrissage.";
+        case AttackType::Leap: return "Le boss saute sur vous et retombe en frappant le sol : deux ondes de choc partent de chaque côté à l'atterrissage.";
         case AttackType::Tracker: return "Une bosse court sous le sol jusqu'à vous, puis un pic jaillit à l'endroit atteint : changez de place.";
         case AttackType::Cage: return "Deux murs s'élèvent de part et d'autre de vous et vous enferment, des projectiles tombent entre eux.";
-        case AttackType::Vortex: return "Il vous aspire vers lui : une aspiration limitée, courir dans l'autre sens suffit.";
-        case AttackType::Mirror: return "Des doubles translucides copient ses attaques (dégâts réduits) ; un coup suffit à briser un double.";
+        case AttackType::Vortex: return "Le boss vous aspire vers lui : une aspiration limitée, courir dans l'autre sens suffit.";
+        case AttackType::Mirror: return "Des doubles translucides du boss copient ses attaques (dégâts réduits) ; un coup suffit à briser un double.";
         case AttackType::FrostFloor: return "Le sol de l'arène gèle un moment : vous glissez bien plus longtemps.";
         case AttackType::Prism: return "Un rayon qui rebondit sur les murs et le plafond ; son trajet est montré pendant l'annonce.";
-        case AttackType::Orbit: return "Des tirs tournent autour de lui ; leur cercle s'élargit puis se resserre.";
+        case AttackType::Orbit: return "Des tirs tournent autour du boss ; leur cercle s'élargit puis se resserre.";
         case AttackType::Spiral: return "Des tirs partent en spirale tournante, sur plusieurs bras.";
         case AttackType::Flood: return "Le fond de l'arène est inondé jusqu'aux plateformes un moment, puis l'inondation redescend : montez.";
         case AttackType::Well: return "Un puits gravitationnel vous attire et dévie vos tirs ; son cœur blesse.";
-        case AttackType::Blink: return "Une marque apparaît derrière vous ; il s'y téléporte et frappe autour de lui.";
-        case AttackType::Ring: return "Un anneau s'étend depuis lui avec une seule ouverture : passez par l'ouverture.";
+        case AttackType::Blink: return "Une marque apparaît derrière vous ; le boss s'y téléporte et frappe autour de lui.";
+        case AttackType::Ring: return "Un anneau s'étend depuis le boss avec une seule ouverture : passez par l'ouverture.";
         case AttackType::Dive:
-            return "Une ligne se trace vers l'endroit où vous serez, puis il fonce le long de cette ligne, la dépasse et remonte.";
-        case AttackType::Perch: return "Il se pose là où vous êtes, souffle un nuage de feu durable au ras du sol, puis repart.";
+            return "Une ligne se trace vers l'endroit où vous serez, puis le boss fonce le long de cette ligne, la dépasse et remonte.";
+        case AttackType::Perch: return "Le boss se pose là où vous êtes, souffle un nuage de feu durable au ras du sol, puis repart.";
         case AttackType::CloudShot: return "Des boules de feu qui laissent un nuage brûlant là où elles éclatent.";
-        case AttackType::Gust: return "Ses ailes vous repoussent : une poussée limitée, que vous pouvez remonter en courant.";
+        case AttackType::Gust: return "Les ailes du boss vous repoussent : une poussée limitée, que vous pouvez remonter en courant.";
         case AttackType::Shell:
-            return "Il se roule en carapace et fonce sur vous en rebondissant sur les murs : blindé pendant le roulement, étourdi ensuite.";
+            return "Le boss se roule en carapace et fonce sur vous en rebondissant sur les murs : blindé pendant le roulement, étourdi ensuite.";
         case AttackType::Quake: return "L'arène tremble : des fissures s'ouvrent sous vous puis éclatent, des rochers tombent du plafond sur des marques.";
-        case AttackType::Skyfall: return "Il bondit hors de vue, son ombre vous suit puis il retombe dessus : des ondes de choc filent le long du sol.";
+        case AttackType::Skyfall: return "Le boss bondit hors de vue, son ombre vous suit puis il retombe dessus : des ondes de choc filent le long du sol.";
         case AttackType::Sunbeam: return "Des colonnes de lumière tombent de la voûte sur des marques, l'une après l'autre.";
-        case AttackType::Sweep: return "Ses ailes lancent une lame de plumes à travers l'arène : basse, sautez par-dessus ; haute, restez au sol.";
+        case AttackType::Sweep: return "Les ailes du boss lancent une lame de plumes à travers l'arène : basse, sautez par-dessus ; haute, restez au sol.";
         case AttackType::Glyph:
             return "Des runes tracées sur le sol où vous vous tenez : armées, elles éclatent quand vous marchez dessus, toutes éclatent à la fin.";
         case AttackType::Hex: return "Un cercle de runes se referme autour de vous : encore dedans quand il se ferme, vos sauts s'alourdissent un moment. Un pas hors du cercle suffit.";
-        case AttackType::Press: return "Les presses de sa fonderie s'abattent de la voûte ; des bandes au sol montrent où avant leur chute.";
+        case AttackType::Press: return "Les presses de la fonderie du boss s'abattent de la voûte ; des bandes au sol montrent où avant leur chute.";
         case AttackType::Missile:
             return "Des réticules se posent sur vous et vous suivent, puis se verrouillent ; un missile tombe sur chacun. Bouger suffit.";
-        case AttackType::Belt: return "Les tapis roulants de sa fonderie démarrent : ils vous emportent moins vite que vous ne courez, un saut vous libère.";
+        case AttackType::Belt: return "Les tapis roulants de la fonderie du boss démarrent : ils vous emportent moins vite que vous ne courez, un saut vous libère.";
         case AttackType::Count: break;
     }
     return {};
