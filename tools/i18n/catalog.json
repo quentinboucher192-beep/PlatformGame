@@ -3913,6 +3913,12 @@
    ]
   },
   {
+   "fr": "Aucun niveau EXTRÊME de la communauté installé : choisissez-en un dans NIVEAUX EN LIGNE, puis « Jouer en coop ».",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun niveau EXTRÊME installé.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -6699,6 +6705,7 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -7337,9 +7344,21 @@
    ]
   },
   {
+   "fr": "Ce niveau de la campagne n'est pas dans la même version sur ce PC : mettez le jeu à jour pour jouer ensemble.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce niveau de la communauté n'est pas installé.",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce niveau de la communauté n'est pas sur ce PC dans la version du salon : la partie ne peut pas commencer.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -7398,9 +7417,21 @@
    ]
   },
   {
+   "fr": "Ce niveau n'est pas publié dans cette version.",
+   "where": [
+    "server/src/coop.ts"
+   ]
+  },
+  {
    "fr": "Ce niveau n'est pas un niveau EXTRÊME publié.",
    "where": [
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Ce niveau n'est plus sur ce PC dans cette version.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -7435,6 +7466,18 @@
   },
   {
    "fr": "Ce PC fait le relais de la partie : les joueurs du réseau local la trouvent dans leur liste. Ni compte ni serveur.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce PC n'a pas ce niveau : l'hôte l'envoie par le réseau local.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce PC n'a pas ce niveau dans cette version : téléchargement depuis Cosmic Online.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
    ]
@@ -7979,6 +8022,12 @@
    "fr": "Cette conversation n'est plus accessible.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cette copie du niveau n'est pas sa version publiée : retéléchargez-la.",
+   "where": [
+    "server/src/coop.ts"
    ]
   },
   {
@@ -9443,6 +9492,12 @@
    ]
   },
   {
+   "fr": "Classement Duo",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Classement en ligne",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -9470,6 +9525,12 @@
    "fr": "Classement local",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement Trio",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -10416,7 +10477,26 @@
    "fr": "Communauté",
    "where": [
     "data/achievements/achievements.json",
-    "ui/screens/ChallengeUi.cpp"
+    "ui/screens/ChallengeUi.cpp",
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Communauté · par un joueur · version {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Communauté · par {0} · version {1}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Communauté · version {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -11277,6 +11357,12 @@
    ]
   },
   {
+   "fr": "Coopération sur les niveaux EXTRÊME de la communauté : le salon de COOPÉRATION propose « Campagne / Communauté » (titre, auteur, version des niveaux installés depuis NIVEAUX EN LIGNE), et la page d'un niveau EXTRÊME gagne « Jouer en coop ». Tout le monde joue la même version : un invité qui n'a pas le niveau le reçoit avant « Prêt » (téléchargé depuis Cosmic Online, ou envoyé par le PC hôte en réseau local, même sans Internet), avec sa progression ; sa taille est bornée et son empreinte vérifiée avant l'installation, et une partie ne démarre jamais avec deux versions différentes. Les classements Duo et Trio de chaque version s'affichent sur la page du niveau et à la fin de la partie (les points de clan restent ceux des niveaux officiels).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Copie ajoutée à l'ATELIER → Mes niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -11578,6 +11664,12 @@
    "fr": "Cosmic Online est indisponible.",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "Cosmic Online est injoignable : le niveau du salon ne peut pas être téléchargé.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -12083,14 +12175,9 @@
    "fr": "Course à la vérification",
    "where": [
     "game/online/OnlineService.cpp",
+    "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ResultsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Course à la vérification (classement de progression)",
-   "where": [
-    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -14714,6 +14801,7 @@
     "game/online/Clans.cpp",
     "game/online/OnlineCoop.cpp",
     "ui/screens/CoopGameScene.cpp",
+    "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -21318,6 +21406,7 @@
     "game/content/AssetCatalog.cpp",
     "game/content/BossStories.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/coop/CoopLevels.cpp",
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
     "game/ghost/ReplayLibrary.cpp",
@@ -22273,6 +22362,12 @@
    ]
   },
   {
+   "fr": "Installation du niveau impossible : {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Installation impossible : {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -22283,6 +22378,12 @@
    "fr": "installation impossible : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Installation…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -22919,6 +23020,12 @@
    "fr": "Jouer dix heures.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Jouer en coop…",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -23598,6 +23705,12 @@
    ]
   },
   {
+   "fr": "L'hôte n'a pas gardé le fichier de ce niveau et Cosmic Online est injoignable : téléchargez-le dans NIVEAUX EN LIGNE, puis rejoignez la partie.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "L'identifiant du niveau ne correspond pas au manifeste",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -23890,6 +24003,12 @@
    ]
   },
   {
+   "fr": "la coopération se joue sur les niveaux EXTRÊME",
+   "where": [
+    "server/src/coop.ts"
+   ]
+  },
+  {
    "fr": "La copie continue sur le serveur : la liste l'affichera « prête » une fois terminée (Actualiser).",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -23911,6 +24030,12 @@
    "fr": "La copie n'a pas pu être terminée (détails dans les journaux du serveur).",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "La copie reçue n'est pas la version de ce salon (empreintes différentes) : la partie ne peut pas commencer.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -26178,6 +26303,18 @@
    ]
   },
   {
+   "fr": "Le niveau de ce salon est illisible.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau de l'hôte est trop volumineux (16 Mo au plus) : il n'est pas reçu.",
+   "where": [
+    "game/coop/CoopProtocol.cpp"
+   ]
+  },
+  {
    "fr": "Le niveau du projet est illisible : format inconnu",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -26193,6 +26330,30 @@
    "fr": "Le niveau découpé en 40 tranches : plus c'est clair, plus on y meurt souvent",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau envoyé par l'hôte est illisible : il n'est pas installé.",
+   "where": [
+    "game/coop/CoopProtocol.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau envoyé par l'hôte est incohérent : il n'est pas installé.",
+   "where": [
+    "game/coop/CoopProtocol.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau reçu est abîmé (son empreinte SHA-256 ne correspond pas) : il n'est pas installé.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le niveau reçu est vide ou trop volumineux : il n'est pas installé.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -31301,6 +31462,12 @@
    ]
   },
   {
+   "fr": "Niveau du salon",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau débloqué, jamais terminé",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -31316,6 +31483,12 @@
    "fr": "Niveau en lecture seule : dupliquez-le pour choisir ses touches.",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau en route…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -31467,6 +31640,12 @@
    ]
   },
   {
+   "fr": "Niveau manquant",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveau modifié",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -31507,6 +31686,18 @@
    "fr": "Niveau publié",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau refusé : paquet invalide",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau refusé : {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -31729,6 +31920,12 @@
    ]
   },
   {
+   "fr": "Niveaux en ligne…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "niveaux et projets",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -31750,6 +31947,12 @@
    "fr": "Niveaux EXTRÊME : « Réessayer en entraînement » après une chute réapparaît sur place, clignotant et protégé un instant ; un bandeau rappelle que la partie est hors classements (R recommence).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Niveaux EXTRÊME de la communauté",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -34398,6 +34601,12 @@
    ]
   },
   {
+   "fr": "par un joueur · version {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "par {0}",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp",
@@ -34476,6 +34685,12 @@
    "fr": "par {0} (vous)",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "par {0} · version {1}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -39811,6 +40026,12 @@
    ]
   },
   {
+   "fr": "Recherche du niveau sur ce PC…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Recherche instantanée (nom, chemin, dossier, type, « utilisé par »), filtres par type et « Inutilisés » ; résultats en grille de vignettes ou en liste, seules les vignettes visibles sont chargées.",
    "where": [
     "data/news/changelog.json"
@@ -43790,6 +44011,8 @@
     "game/online/OnlineService.cpp",
     "game/records/Records.cpp",
     "ui/screens/ClanScene.cpp",
+    "ui/screens/CoopGameScene.cpp",
+    "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -49468,6 +49691,7 @@
     "game/online/Clans.cpp",
     "game/online/OnlineCoop.cpp",
     "ui/screens/CoopGameScene.cpp",
+    "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -49758,6 +49982,18 @@
    "fr": "téléchargement de son image…",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargement du niveau impossible : {0}",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Téléchargement du niveau refusé ({0}).",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -52300,6 +52536,8 @@
     "game/achievements/Achievements.cpp",
     "game/content/BossStories.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/coop/CoopLevels.cpp",
+    "game/coop/CoopRelay.cpp",
     "game/cosmetics/CreationLooks.cpp",
     "game/cosmetics/SuitRecolor.cpp",
     "game/ghost/ReplayLibrary.cpp",
@@ -52329,6 +52567,7 @@
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -54127,6 +54366,12 @@
    ]
   },
   {
+   "fr": "Vérification de l'empreinte et installation du niveau…",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "Vérification de l'installateur (SHA-256)…",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -54159,6 +54404,7 @@
   {
    "fr": "Vérification…",
    "where": [
+    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp"
    ]
@@ -54675,6 +54921,12 @@
    ]
   },
   {
+   "fr": "{0} % · {1} Mo reçus",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} (brouillon archivé)",
    "where": [
     "ui/studio/Studio.cpp"
@@ -54850,9 +55102,27 @@
    ]
   },
   {
+   "fr": "{0} : 1re équipe {1} · {2} %",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : aucune équipe classée pour l'instant.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : ce contenu est déjà la révision {1} de ce niveau.",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : chargement…",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -54883,6 +55153,18 @@
    "fr": "{0} : entier de {1} à {2} attendu",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "{0} : indisponible hors ligne.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : indisponible.",
+   "where": [
+    "ui/screens/CoopGameScene.cpp"
    ]
   },
   {
@@ -56137,6 +56419,12 @@
    ]
   },
   {
+   "fr": "{0} Mo reçus",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} modifie cet objet : attendez qu'il le relâche.",
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp"
@@ -56933,9 +57221,27 @@
    ]
   },
   {
+   "fr": "{0} · aucune équipe classée",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · Boss",
    "where": [
     "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · chargement…",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · classement indisponible",
+   "where": [
+    "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
   {
@@ -58734,6 +59040,12 @@
    "fr": "écriture des fichiers impossible",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Écriture du niveau impossible sur ce PC.",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {

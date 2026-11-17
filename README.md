@@ -453,15 +453,23 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.63.6** :
+* **Coopération sur les niveaux EXTRÊME de la communauté** : le salon propose « Campagne / Communauté »
+  (titre, auteur, version) et la page d'un niveau EXTRÊME de NIVEAUX EN LIGNE a « Jouer en coop ». Un invité
+  sans le niveau (ou sans cette version) le reçoit avant « Prêt » : téléchargé depuis Cosmic Online, ou envoyé
+  par le PC hôte en réseau local (16 Mo au plus, SHA-256 puis empreinte de jeu vérifiés) ; jamais deux versions
+  dans une même partie. Classements Duo et Trio par version sur la page du niveau et à la fin de la partie (sans
+  points de clan). Une pastille NOUVEAU signale « Communauté » et « Jouer en coop ».
+* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
+  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
+  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
+  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
+
 **Nouveau dans la version 2.63.5** :
 * L'**histoire de Singularis** (« Le Cœur effondré ») devient un **petit dessin animé** : Lyse, la jeune
   étoile qui chante, les trois planètes qui fleurissent de ses dons, les machines qui boivent sa lumière, la
   dernière étincelle, l'effondrement et Singularis affamé ; nébuleuse, étoiles et poussières animées. Une
   pastille NOUVEAU mène à « Revoir l'histoire ».
-* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
-  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
-  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
-  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
 
 **Nouveau dans la version 2.63.4** :
 * Petits textes : les espaces entre les mots ne disparaissent plus en 1280×720.

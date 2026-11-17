@@ -49,6 +49,8 @@ public:
         : g_(g), ui_(g), kind_(std::move(kind)), levelId_(std::move(levelId)), version_(version), levelHash_(std::move(levelHash)) {}
 
     bool isOverlay() const override { return true; }
+    /// 2.63.5: the board shown first (1 Solo, 2 Duo, 3 Trio).
+    void setSize(int size) { size_ = std::clamp(size, 1, 3); }
 
     void onEnter() override {
         g_.ui.setFocus("race/close");
@@ -399,7 +401,7 @@ private:
             float nf = ui.fitFont(name, FontFace::Bold, 19, room, 0.8f);
             name = ui.elide(name, FontFace::Bold, nf, room);
             ns = ui.label(name, {nx, cy - ui.s(11)}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
-            ui_.clanTagLink("r" + pid, p, name, {nx, cy - ui.s(11)}, nf, FontFace::Bold, room);  // 2.63.5: the clan's sheet
+            ui_.clanTagLink("r" + pid, p, name, {nx, cy - ui.s(11)}, nf, FontFace::Bold, room);  // 2.63.6: the clan's sheet
         }
         if (!chip.empty()) {
             Color cc = isVerifier ? ui.theme().warm : ui.theme().success;
@@ -540,8 +542,11 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version, const std::string& levelHash) {
-    return std::make_unique<RaceScene>(g, kind, levelId, version, levelHash);
+std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version, const std::string& levelHash,
+                                     int size) {
+    auto s = std::make_unique<RaceScene>(g, kind, levelId, version, levelHash);
+    s->setSize(size);
+    return s;
 }
 
 }  // namespace cosmic

@@ -7,14 +7,18 @@
 #include <vector>
 
 #include "engine/audio/AudioSystem.h"
+#include "engine/core/FileUtil.h"
 #include "engine/core/Random.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
+#include "game/coop/CoopLevels.h"
 #include "game/coop/CoopProtocol.h"
 #include "game/coop/CoopRelay.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
+#include "packaging/Sha256.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -261,4 +265,142 @@ TEST_CASE("coop net: a team replay (format 5) is read back and plays the team's 
     while (cheat.step()) {
     }
     CHECK(cheat.desynced());
+}
+
+// ------------------------------------------------------------- 2.63.5: community levels
+
+namespace {
+
+/// A copy of a level of the game under another id, as a level of this PC (a community install).
+fs::path copyLevel(const ContentDatabase& content, const std::string& from, const std::string& id) {
+    const LevelEntry* e = content.level(from);
+    CHECK(e != nullptr);
+    auto j = FileUtil::loadJson(e->path);
+    CHECK(j.has_value());
+    (*j)["id"] = id;
+    fs::create_directories(Paths::userLevelsDir());
+    const fs::path file = Paths::userLevelsDir() / (id + ".json");
+    CHECK(FileUtil::saveJson(file, *j));
+    return file;
+}
+
+}  // namespace
+
+TEST_CASE("coop: the lobby offers the community's EXTRÊME levels, in their published version only") {
+    ContentDatabase content;
+    content.reload();
+    const fs::path extreme = copyLevel(content, "confins_01", "coop_comm_extreme");
+    const fs::path other = copyLevel(content, "confins_02", "coop_comm_other");
+    const fs::path plain = copyLevel(content, "sylvanox_01", "coop_comm_plain");
+    content.reload();
+    auto lvl = content.loadLevel("coop_comm_extreme");
+    CHECK(lvl.has_value() && lvl->extreme && lvl->oneLife());
+    const std::string fp = fingerprintGameplay(content, *lvl);
+    const std::string id = "0b6c58b4-5d0e-4c3a-9f1e-6a2d9e0c1b11";
+    Json installs = Json::object();
+    installs["coop_comm_extreme"] = {{"id", id}, {"version", 3}, {"level_hash", fp}, {"title", "Le Gouffre"}, {"author", "Lyra"}};
+    // A copy that differs from its published version, and a level that is not EXTRÊME: never offered.
+    installs["coop_comm_other"] = {{"id", "1b6c58b4-5d0e-4c3a-9f1e-6a2d9e0c1b11"}, {"version", 1}, {"level_hash", std::string(64, 'e')}, {"title", "Autre"}};
+    installs["coop_comm_plain"] = {{"id", "2b6c58b4-5d0e-4c3a-9f1e-6a2d9e0c1b11"}, {"version", 1}, {"level_hash", std::string(64, 'e')}, {"title", "Calme"}};
+    const fs::path downloads = Paths::userDir() / "test_tmp" / "coop_downloads";
+    fs::create_directories(downloads);
+    CHECK(FileUtil::writeBinary(communityPackagePath(downloads, id, 3), std::vector<uint8_t>{1, 2, 3}));
+    const auto levels = findCoopLevels(content, installs, downloads);
+    int campaign = 0, community = 0;
+    bool campaignFirst = true;
+    const CoopLevel* found = nullptr;
+    for (const CoopLevel& l : levels) {
+        if (l.community) {
+            ++community;
+            if (l.communityId == id) found = &l;
+        } else {
+            ++campaign;
+            if (community > 0) campaignFirst = false;
+        }
+    }
+    CHECK(campaign >= 1);  // the campaign's EXTRÊME levels are still there, first
+    CHECK(campaignFirst);
+    CHECK(community == 1);
+    CHECK(found != nullptr);
+    if (found) {
+        CHECK(found->id == "coop_comm_extreme");
+        CHECK(found->name == "Le Gouffre");
+        CHECK(found->author == "Lyra");
+        CHECK(found->version == 3);
+        CHECK(found->hash == fp);
+        CHECK(found->package == communityPackagePath(downloads, id, 3));  // what the host sends on the local network
+    }
+    // A room's level: the same id, version and fingerprint, or nothing (never another version).
+    CHECK(findRoomLevel(levels, id, 3, fp) == found);
+    CHECK(findRoomLevel(levels, id, 4, fp) == nullptr);
+    CHECK(findRoomLevel(levels, id, 3, std::string(64, 'f')) == nullptr);
+    CHECK(findRoomLevel(levels, "1b6c58b4-5d0e-4c3a-9f1e-6a2d9e0c1b11", 1, std::string(64, 'e')) == nullptr);
+    std::error_code ec;
+    for (const auto& f : {extreme, other, plain}) fs::remove(f, ec);
+    fs::remove_all(downloads, ec);
+}
+
+TEST_CASE("coop net: the host sends a community level's package, bounded and checked by its SHA-256") {
+    Wire w;
+    w.relay.setLevel("0b6c58b4-5d0e-4c3a-9f1e-6a2d9e0c1b11", std::string(64, 'a'), "Le Gouffre", "community", 3);
+    w.relay.connected(1, 0);
+    w.relay.connected(2, 0);
+    w.send(1, hello(255, "Nova"));
+    w.send(2, hello(255, "Lyra"));
+    const Json lobby = Json::parse(w.relay.lobbyJson());
+    CHECK(jstr(lobby, "source") == "community");
+    CHECK(jget<int>(lobby, "version", 0) == 3);
+    // No package kept on the host's PC: it says so (the guest downloads it from Cosmic Online).
+    w.send(2, packageAsk(0));
+    {
+        const auto parts = w.of(2, Msg::PackagePart);
+        CHECK(parts.size() == 1);
+        PackageReceiver none;
+        CHECK(!none.accept(parts[0].data() + 1, parts[0].size() - 1));
+        CHECK(none.unavailable());
+    }
+    // A package of 130 000 bytes: three parts, asked one after the other.
+    std::vector<uint8_t> package(130000);
+    Random rng(7);
+    for (auto& b : package) b = static_cast<uint8_t>(rng.rangeInt(0, 255));
+    w.relay.setPackage(std::make_shared<const std::vector<uint8_t>>(package));
+    w.got[2].clear();
+    PackageReceiver rx;
+    w.send(2, packageAsk(0));
+    for (int guard = 0; guard < 10 && !rx.complete(); ++guard) {
+        const auto parts = w.of(2, Msg::PackagePart);
+        CHECK(!parts.empty());
+        if (parts.empty()) break;
+        CHECK(parts.back().size() <= 64 * 1024);  // one message of the protocol
+        CHECK(rx.accept(parts.back().data() + 1, parts.back().size() - 1));
+        if (!rx.complete()) w.send(2, packageAsk(rx.nextOffset()));
+    }
+    CHECK(rx.complete());
+    CHECK(rx.total() == package.size());
+    CHECK(w.of(2, Msg::PackagePart).size() == 3);
+    const std::string sha = rx.sha256();
+    CHECK(sha == Sha256::hex(package));
+    std::vector<uint8_t> got = rx.take();
+    CHECK(got == package);
+    CHECK(packageMatches(got, sha));
+    // One byte changed on the way: refused before anything is installed.
+    got[777] ^= 0x40;
+    CHECK(!packageMatches(got, sha));
+    CHECK(!packageMatches({}, sha));
+    // Never trusted: a part out of order, or a package over 16 MiB.
+    const std::array<uint8_t, 32> hash{};
+    const std::vector<uint8_t> chunk(100, 1);
+    PackageReceiver order;
+    auto p0 = packagePart(1000, 0, hash, chunk.data(), chunk.size());
+    auto p2 = packagePart(1000, 300, hash, chunk.data(), chunk.size());
+    CHECK(order.accept(p0.data() + 1, p0.size() - 1));
+    CHECK(!order.accept(p2.data() + 1, p2.size() - 1));
+    CHECK(order.failed());
+    PackageReceiver big;
+    auto huge = packagePart(kMaxPackage + 1, 0, hash, chunk.data(), chunk.size());
+    CHECK(!big.accept(huge.data() + 1, huge.size() - 1));
+    CHECK(big.failed());
+    // An offset beyond the package, or a request once the game started: the connection closes.
+    w.send(2, packageAsk(static_cast<uint32_t>(package.size()) + 5));
+    CHECK(!w.closed.empty());
 }

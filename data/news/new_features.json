@@ -2362,22 +2362,42 @@
    ]
   },
   {
+   "id": "coop.community",
+   "version": "2.63.6",
+   "parents": [
+    "menu.coop"
+   ]
+  },
+  {
+   "id": "online.nav.levels",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "online.levels.coop",
+   "version": "2.63.6",
+   "parents": [
+    "online.nav.levels"
+   ]
+  },
+  {
    "id": "profile.tab.clan",
-   "version": "2.63.5",
+   "version": "2.63.6",
    "parents": [
     "menu.online"
    ]
   },
   {
    "id": "profile.clan.invite",
-   "version": "2.63.5",
+   "version": "2.63.6",
    "parents": [
     "profile.tab.clan"
    ]
   },
   {
    "id": "clans.tab.manage",
-   "version": "2.63.5",
+   "version": "2.63.6",
    "parents": [
     "online.nav.clans"
    ]

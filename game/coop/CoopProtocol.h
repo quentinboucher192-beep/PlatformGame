@@ -6,6 +6,7 @@
 // against the previous one of the same player in the message (a step where nothing changed
 // takes one byte).
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <optional>
@@ -28,6 +29,10 @@ constexpr uint32_t kMaxAhead = 64;
 constexpr uint32_t kMaxTicks = 120u * 7200u;
 /// The recorded actions (InputFrame::kActions bits).
 constexpr uint32_t kActionMask = (1u << InputFrame::kActions) - 1u;
+/// 2.63.5: a community level's package sent by the PC that hosts on the local network: 16 MiB
+/// at most (as a download from Cosmic Online), in parts of 48 KiB (a message stays < 64 KiB).
+constexpr uint32_t kMaxPackage = 16u << 20;
+constexpr uint32_t kPackageChunk = 48u * 1024u;
 
 enum class Msg : uint8_t {
     Hello = 1,        // game → relay: u8 protocol, u8 wanted seat (255: any), str name, [str account]
@@ -37,6 +42,7 @@ enum class Msg : uint8_t {
     Start = 5,        // game → relay (host, lobby): u8 players
     CatchupDone = 6,  // game → relay: u32 last step simulated
     Leave = 7,        // game → relay
+    PackageAsk = 9,   // game → relay (lobby, 2.63.5): u32 offset in the level's package
     Welcome = 10,     // relay → game: u8 seat, u8 protocol
     Lobby = 11,       // relay → game: JSON text
     Go = 12,          // relay → game: u64 seed, u8 players, u8 delay, str level, str hash, str attempt
@@ -44,6 +50,18 @@ enum class Msg : uint8_t {
     Pong = 14,        // relay → game: u32 game clock echoed
     Rejoin = 15,      // relay → game: u8 seat, u32 tick
     End = 16,         // relay → game: u8 reason
+    PackagePart = 17, // relay → game (2.63.5): u32 total (0: none), u32 offset, 32 bytes SHA-256 of the whole, the bytes
+};
+
+/// 2.63.5: the level of a room. `source` "campaign" (`id`: the level of the game) or
+/// "community" (`id`: its Cosmic Online id, `version`: its published version); `hash`: its
+/// fingerprint, the same on every PC of the team or the game does not start.
+struct RoomLevel {
+    std::string source = "campaign";
+    std::string id, hash, title;
+    int version = 0;
+    bool community() const { return source == "community"; }
+    bool operator==(const RoomLevel&) const = default;
 };
 
 enum class EndReason : uint8_t { Finished = 0, HostLeft = 1, TooLong = 2, Refused = 3 };
@@ -140,6 +158,43 @@ std::vector<uint8_t> framesMsg(uint32_t firstTick, const InputFrame* frames, siz
 std::vector<uint8_t> pong(uint32_t clockMs);
 std::vector<uint8_t> rejoin(uint8_t seat, uint32_t tick);
 std::vector<uint8_t> end(EndReason r);
+
+std::vector<uint8_t> packageAsk(uint32_t offset);
+/// `total` 0: this relay has no package to send (the bytes are then empty).
+std::vector<uint8_t> packagePart(uint32_t total, uint32_t offset, const std::array<uint8_t, 32>& sha, const uint8_t* data, size_t n);
+
+/// 2.63.5: a level's package received from the PC that hosts, part by part and in order
+/// (PACKAGE_PART). Never trusted: a total over kMaxPackage, a part out of order or too long, a
+/// total or a SHA-256 that changes are refused. Its SHA-256 is checked (packageMatches) off
+/// the main thread before anything is installed.
+class PackageReceiver {
+public:
+    void reset() { *this = PackageReceiver{}; }
+    /// The content of one PACKAGE_PART (after its type byte). False when refused (error()).
+    bool accept(const uint8_t* data, size_t size);
+    /// Every byte announced is there.
+    bool complete() const { return total_ > 0 && bytes_.size() == total_; }
+    bool failed() const { return !error_.empty(); }
+    /// The host has no package for its level (none kept on its PC).
+    bool unavailable() const { return unavailable_; }
+    const std::string& error() const { return error_; }
+    uint32_t received() const { return static_cast<uint32_t>(bytes_.size()); }
+    uint32_t total() const { return total_; }
+    uint32_t nextOffset() const { return received(); }
+    /// The SHA-256 the host announced (lower-case hex).
+    std::string sha256() const;
+    std::vector<uint8_t> take() { return std::move(bytes_); }
+
+private:
+    std::vector<uint8_t> bytes_;
+    uint32_t total_ = 0;
+    std::array<uint8_t, 32> sha_{};
+    bool unavailable_ = false;
+    std::string error_;
+};
+
+/// True when `bytes` (kMaxPackage at most) has the SHA-256 `sha256Hex` (hex, any case).
+bool packageMatches(const std::vector<uint8_t>& bytes, const std::string& sha256Hex);
 
 /// The input delay for the worst round trip measured (docs/COOP.md: 3 to 15 steps).
 int inputDelayFor(int worstRoundTripMs);

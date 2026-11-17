@@ -222,7 +222,8 @@ interface Seat {
 interface RoomInfo {
     id: string;
     host: string;
-    level: { source: string; id: string; hash: string; title: string };
+    /** 2.63.5: a community level carries its published version and its package's size. */
+    level: { source: string; id: string; hash: string; title: string; version?: number; size?: number };
     invited: string[];
     created: number;
 }
@@ -651,6 +652,9 @@ export class CoopRoom extends DurableObject<Bindings> {
             level: this.info?.level.id ?? "",
             hash: this.info?.level.hash ?? "",
             title: this.info?.level.title ?? "",
+            source: this.info?.level.source ?? "campaign",
+            version: this.info?.level.version ?? 0,
+            size: this.info?.level.size ?? 0,
             started: this.started,
             seats: this.seats.map((s, i) => ({ seat: i, name: s.name, account: s.playerId, ready: s.ready || i === 0, ping: s.rtt, connected: s.ws !== null })),
         };
@@ -700,7 +704,12 @@ async function ask<T>(env: Bindings, roomId: string, path: string, body?: unknow
     return (await res.json()) as T;
 }
 
-/** POST /coop/rooms {level: {source, id, hash, title}} : a room hosted by me. */
+/**
+ * POST /coop/rooms {level: {source, id, hash, title, version?}} : a room hosted by me. 2.63.5: a
+ * community level (`id` its online id, `version` a published version) must be an EXTRÊME level
+ * published, and `hash` that version's fingerprint: every guest downloads exactly that version
+ * (its title and package size come from here, never from the game).
+ */
 export async function createRoom(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     const body = await readJsonObject(ctx);
@@ -708,15 +717,33 @@ export async function createRoom(ctx: Ctx): Promise<Response> {
     const level = body.level as Record<string, unknown> | undefined;
     if (!level || typeof level !== "object") v.fail("level", "niveau attendu");
     v.done();
-    const lv = new Validator(level!, ["source", "id", "hash", "title"]);
+    const lv = new Validator(level!, ["source", "id", "hash", "title", "version"]);
     const source = lv.oneOf("source", ["campaign", "community"] as const)!;
-    const id = lv.str("id", { min: 1, max: 64, pattern: LEVEL_ID_RE })!;
+    const id = lv.str("id", { min: 1, max: 64, pattern: source === "community" ? ID_RE : LEVEL_ID_RE })!;
     const hash = lv.str("hash", { min: 64, max: 64, pattern: HASH_RE })!;
-    const title = lv.str("title", { min: 1, max: 80 })!;
+    let title = lv.str("title", { min: 1, max: 80 })!;
+    const version = lv.int("version", { min: 1, max: 100000, optional: source !== "community" });
     lv.done();
+    const info: RoomInfo["level"] = { source, id, hash, title };
+    if (source === "community") {
+        const row = await ctx.env.DB.prepare(
+            `SELECT l.title, l.extreme, l.status, v.level_hash, v.package_size, v.status AS version_status
+             FROM community_levels l JOIN community_level_versions v ON v.level_id = l.id AND v.version = ?2 WHERE l.id = ?1`,
+        )
+            .bind(id, version)
+            .first<{ title: string; extreme: number; status: string; level_hash: string; package_size: number | null; version_status: string }>();
+        if (!row || row.status !== "published" || row.version_status === "uploading")
+            throw Errors.notFound("COMMUNITY_VERSION_NOT_FOUND", "Ce niveau n'est pas publié dans cette version.");
+        if (!row.extreme) throw Errors.validation([{ field: "level", message: "la coopération se joue sur les niveaux EXTRÊME" }]);
+        if (row.level_hash !== hash) throw Errors.conflict("LEVEL_VERSION_MISMATCH", "Cette copie du niveau n'est pas sa version publiée : retéléchargez-la.");
+        title = row.title.slice(0, 80);
+        info.title = title;
+        info.version = version!;
+        info.size = row.package_size ?? 0;
+    }
     const roomId = crypto.randomUUID();
-    await ask(ctx.env, roomId, "/create", { id: roomId, host: auth.player.id, host_name: auth.player.username, level: { source, id, hash, title } });
-    return json(ctx, { room: { id: roomId, host: auth.player.id, level: { source, id, hash, title } } }, { status: 201 });
+    await ask(ctx.env, roomId, "/create", { id: roomId, host: auth.player.id, host_name: auth.player.username, level: info });
+    return json(ctx, { room: { id: roomId, host: auth.player.id, level: info } }, { status: 201 });
 }
 
 /** POST /coop/rooms/{roomId}/invite {player_id} : the host invites an accepted friend. */

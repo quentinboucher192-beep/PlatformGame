@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <deque>
 #include <functional>
 #include <map>
@@ -206,6 +207,8 @@ public:
     /// level_hash, title, verified} (null when it is not one).
     const Json* communityInstall(const std::string& localLevelId) const;
     void noteCommunityInstall(const std::string& localLevelId, const Json& info);
+    /// Every one (local id → info): copied for a search off the main thread (co-op lobby).
+    const Json& communityInstalls() const { return communityInstalls_; }
     /// A completed run of an installed community level (replay attached): sent to its
     /// leaderboard; the result is notified (rank, or why the time was refused).
     /// An attempt of an EXTRÊME level's « course à la vérification »: declared, then its
@@ -242,7 +245,10 @@ public:
     /// The same with a body already written out as JSON text (2.55: the copy of the progression,
     /// written out off the main thread).
     void sendJsonText(const std::string& method, const std::string& path, std::string json, ApiCallback cb, int timeoutMs = 0);
-    void getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes = 2 * 1024 * 1024);
+    /// `received` (2.63.5): the bytes of the body received so far, updated by the transfer's
+    /// thread (a progress bar), when given.
+    void getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes = 2 * 1024 * 1024,
+                   std::shared_ptr<std::atomic<size_t>> received = nullptr);
     /// POST of a JSON body whose answer is a file (the encrypted backups, ADMINISTRATION ›
     /// Sauvegardes): the session is renewed first when needed; errors come back as JSON.
     void postForBinary(const std::string& path, const Json& body, std::function<void(const HttpResponse&)> cb, size_t maxBytes,

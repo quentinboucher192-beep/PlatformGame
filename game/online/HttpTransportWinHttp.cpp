@@ -235,6 +235,7 @@ private:
             DWORD read = 0;
             if (!WinHttpReadData(request.h, res.body.data() + at, avail, &read)) return failLast("lecture impossible");
             res.body.resize(at + read);
+            if (rq.received) rq.received->store(res.body.size());
         }
         res.status = static_cast<int>(status);
         return res;

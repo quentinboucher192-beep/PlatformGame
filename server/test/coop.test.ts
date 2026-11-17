@@ -6,7 +6,8 @@
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { ACTION_MASK, FLAG_STANDBY, Msg, canonical, emptyFrame, readFrames, writeFrames, type Frame } from "../src/coop";
-import { LEVEL_HASH, api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { EXIT, LEVEL_HASH, SPAWN, api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
+import { LH, PNG, octet, publish, zip } from "./publish";
 
 beforeEach(seedAll);
 
@@ -251,5 +252,72 @@ describe("coop: the relay", () => {
         const row = await env.DB.prepare("SELECT players, size FROM coop_sessions").first<{ players: string; size: number }>();
         expect(row?.size).toBe(2);
         expect(JSON.parse(row!.players)).toEqual([nova.id, lyra.id]);
+    });
+});
+
+/** An EXTRÊME (one life) community level, published (version 1, fingerprint LH). */
+async function publishExtreme(author: TestPlayer): Promise<string> {
+    const route = Array.from({ length: 60 }, (_, i) => [SPAWN.x + ((EXIT.x + 10 - SPAWN.x) * i) / 59, SPAWN.y + ((EXIT.y + 40 - SPAWN.y) * i) / 59]);
+    const start = await api("POST", `${V}/community/levels`, {
+        token: author.token,
+        body: { title: "Le Gouffre Final", planet: "pyralis", difficulty: 5, level_hash: LH, min_game_version: "2.16.0", race: { route, bosses: [], ambushes: [] } },
+    });
+    expect(start.status).toBe(201);
+    const level = JSON.stringify({
+        format: "cosmic.level",
+        id: "mon_niveau",
+        name: "Mon niveau",
+        extreme: true,
+        lives: 1,
+        bounds: [0, 0, 6000, 1200],
+        timer: { mode: "limited", limit: 600 },
+        objects: [
+            { id: "o1", type: "player_start", rect: [SPAWN.x - 5, SPAWN.y - 22, 10, 22] },
+            { id: "o2", type: "exit", rect: [EXIT.x, EXIT.y, EXIT.w, EXIT.h] },
+        ],
+    });
+    const data = await zip({
+        "COSMIC_LEVEL/manifest.json": JSON.stringify({ format: "cosmic.package", levelId: "mon_niveau" }),
+        "COSMIC_LEVEL/level.json": level,
+        "COSMIC_LEVEL/metadata/thumbnail.png": PNG,
+    });
+    const p = await api("PUT", start.body.data.upload.package, { token: author.token, raw: data, headers: octet });
+    expect(p.status).toBeLessThan(300);
+    return start.body.data.id as string;
+}
+
+describe("coop: a community EXTRÊME level (2.63.5)", () => {
+    it("only its published version, by its fingerprint; the lobby gives its version so a guest downloads exactly it", async () => {
+        const nova = await registerPlayer("Nova");
+        const levelId = await publishExtreme(nova);
+        const room = (level: Record<string, unknown>) => api("POST", `${V}/coop/rooms`, { token: nova.token, body: { level } });
+        // Another fingerprint than the version's: refused (another copy would not play the same run).
+        expect((await room({ source: "community", id: levelId, version: 1, hash: "f".repeat(64), title: "Copie" })).status).toBe(409);
+        // A version that does not exist, no version, a campaign id: refused.
+        expect((await room({ source: "community", id: levelId, version: 2, hash: LH, title: "Copie" })).status).toBe(404);
+        expect((await room({ source: "community", id: levelId, hash: LH, title: "Copie" })).status).toBe(400);
+        expect((await room({ source: "community", id: "test_01", version: 1, hash: LH, title: "Copie" })).status).toBe(400);
+        // A community level that is not EXTRÊME: no co-op.
+        const plain = await publish(nova, { title: "Niveau tranquille" });
+        expect((await room({ source: "community", id: plain.id, version: plain.version, hash: LH, title: "Copie" })).status).toBe(400);
+        const ok = await room({ source: "community", id: levelId, version: 1, hash: LH, title: "Titre venu du jeu" });
+        expect(ok.status).toBe(201);
+        expect(ok.body.data.room.level.title).toBe("Le Gouffre Final"); // the server's, never the game's
+        expect(ok.body.data.room.level.version).toBe(1);
+        const a = await connect(nova, ok.body.data.room.id as string);
+        a.send(hello());
+        await settle();
+        const lobby = JSON.parse(new TextDecoder().decode(a.of(Msg.Lobby).at(-1)!.subarray(1)));
+        expect(lobby.source).toBe("community");
+        expect(lobby.level).toBe(levelId);
+        expect(lobby.version).toBe(1);
+        expect(lobby.hash).toBe(LH);
+        expect(lobby.size).toBeGreaterThan(0);
+        // The Duo / Trio boards of this version exist (kind community), empty for now.
+        const board = await api("GET", `${V}/coop/board?size=2&kind=community&level_id=${levelId}&version=1`);
+        expect(board.status).toBe(200);
+        expect(board.body.data.race.kind).toBe("community");
+        expect(board.body.data.race.version).toBe(1);
+        expect(board.body.data.ranking).toEqual([]);
     });
 });
