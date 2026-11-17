@@ -2238,6 +2238,13 @@
    "parents": [
     "stats.sheet"
    ]
+  },
+  {
+   "id": "admin.tab.assets",
+   "version": "2.62.0",
+   "parents": [
+    "menu.admin"
+   ]
   }
  ]
 }

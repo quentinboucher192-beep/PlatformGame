@@ -12,7 +12,9 @@
 //                edited in the game's editor and published without a game update;
 //   « Créations » (AdminCreations.cpp): the suits an administrator makes (a name, three
 //                colours, a live preview), given as rewards of the challenges; 2.59, the
-//                trails, avatar frames and victory effects (a style, two colours).
+//                trails, avatar frames and victory effects (a style, two colours);
+//   « Assets » (2.63, AdminAssets.cpp): every file of assets/ sorted in a tree, searched,
+//                previewed, with who uses it (read only).
 // The country, the last activity and the presence of a player appear only as they share them.
 
 #include <algorithm>
@@ -29,6 +31,7 @@
 #include "game/progression/NewsCenter.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/OnlineMigration.h"
+#include "ui/screens/AdminAssets.h"
 #include "ui/screens/AdminBackups.h"
 #include "ui/screens/AdminCampaign.h"
 #include "ui/screens/AdminClans.h"
@@ -98,8 +101,10 @@ std::string presenceText(const std::string& p) {
 const char* kFilters[] = {"all", "admins", "online"};
 const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "clan", "refused"};
 
-/// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46), Clans (2.66).
-constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6, kTabClans = 7;
+/// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46),
+/// Clans (2.66), Assets (2.63).
+constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6,
+              kTabClans = 7, kTabAssets = 8;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -123,7 +128,8 @@ public:
           campaign_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           enemies_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
-          clans_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+          clans_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          assets_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const std::string& id) { showEnemy(id); }) {
         if (open.rfind("clans", 0) == 0) tab_ = kTabClans;  // 2.66
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
         // "creations[:new]" (the editor opened on a new suit); 2.59 "creations:<kind>[:new|:<id>]".
@@ -132,6 +138,11 @@ public:
             if (open.size() > 10) creations_.open(open.substr(10));
         }
         if (open.rfind("enemies", 0) == 0) tab_ = kTabEnemies;  // 2.46
+        // 2.63: "assets[:<asset path>]" (that asset selected: the way back from a sheet).
+        if (open.rfind("assets", 0) == 0) {
+            tab_ = kTabAssets;
+            if (open.size() > 7) assets_.open(open.substr(7));
+        }
         // 2.61: the Studio's « Donner en récompense… »: the calendar, where a challenge to come
         // gets its rewards (the creation is in the list of its kind there).
         creations_.giveReward = [this](const std::string&, const std::string& name) {
@@ -209,7 +220,8 @@ public:
                     (!modal && !(tab_ == kTabCreations && creations_.capturesBack()) && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
-        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis", "Clans"};
+        static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
+                                                       "Clans", "Assets"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -237,7 +249,10 @@ public:
         ui.newBadge("tabenemies", enTab, "admin.tab.enemies", true, true);
         Rect clanTab{tabsR.x + kTabClans * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabclans", clanTab, "admin.tab.clans", true, true);
+        Rect assetsTab{tabsR.x + kTabAssets * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabassets", assetsTab, "admin.tab.assets", true, true);
         if (tab != tab_) {
+            if (tab_ == kTabAssets) assets_.leave();  // its sound stops
             tab_ = tab;
             if (tab_ == kTabLog) loadLog(false);
             if (tab_ == kTabBackups) {
@@ -264,6 +279,10 @@ public:
                 if (ui.featureSeen && ui.isNew("admin.tab.clans")) ui.featureSeen("admin.tab.clans");
                 clans_.enter();
             }
+            if (tab_ == kTabAssets) {
+                if (ui.featureSeen && ui.isNew("admin.tab.assets")) ui.featureSeen("admin.tab.assets");
+                assets_.enter();
+            }
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
         if (tab_ == kTabCalendar) {
@@ -279,6 +298,7 @@ public:
             else if (tab_ == kTabCreations) creations_.draw(inner);
             else if (tab_ == kTabEnemies) enemies_.draw(inner);
             else if (tab_ == kTabClans) clans_.draw(inner);
+            else if (tab_ == kTabAssets) assets_.draw(inner);
             else drawLog(inner);
         }
         drawStatus();
@@ -333,6 +353,16 @@ private:
         if (tab_ == kTabCreations) creations_.enter(true);
         if (tab_ == kTabEnemies) enemies_.enter(true);
         if (tab_ == kTabClans) clans_.enter(true);
+        if (tab_ == kTabAssets) assets_.enter();
+    }
+
+    /// ADMINISTRATION › Assets › « Fiche » of a native enemy: its page in « Ennemis ».
+    void showEnemy(const std::string& id) {
+        assets_.leave();
+        tab_ = kTabEnemies;
+        if (g_.ui.featureSeen && g_.ui.isNew("admin.tab.enemies")) g_.ui.featureSeen("admin.tab.enemies");
+        enemies_.enter();
+        enemies_.show(id);
     }
 
     void loadPlayers() {
@@ -1228,6 +1258,7 @@ private:
     AdminCreations creations_;  // « Créations »: the suits, trails, frames and victory effects made on the server
     AdminEnemies enemies_;  // « Ennemis » (2.46)
     AdminClans clans_;      // « Clans » (2.66)
+    AdminAssets assets_;    // « Assets » (2.63)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

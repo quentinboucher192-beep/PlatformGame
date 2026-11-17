@@ -258,8 +258,8 @@ private:
 
 class LevelSelectScene : public Scene {
 public:
-    LevelSelectScene(GameServices& g, std::string planet, std::string level, std::string fromBoss)
-        : g_(g), planetId_(std::move(planet)), levelId_(std::move(level)), fromBoss_(std::move(fromBoss)) {}
+    LevelSelectScene(GameServices& g, std::string planet, std::string level, std::string fromBoss, std::string fromAsset = {})
+        : g_(g), planetId_(std::move(planet)), levelId_(std::move(level)), fromBoss_(std::move(fromBoss)), fromAsset_(std::move(fromAsset)) {}
 
     void onEnter() override {
         planet_ = g_.content.planet(planetId_);
@@ -322,9 +322,11 @@ public:
         float fy = ui.screenH() - ui.s(44);
         float x = ui.s(60);
         x += Glyphs::drawHint(ui, Action::MenuConfirm, "Jouer", {x, fy}, ui.s(30)) + ui.s(40);
-        Glyphs::drawHint(ui, Action::MenuBack, fromBoss_.empty() ? "Carte des planètes" : "Statistiques des boss", {x, fy}, ui.s(30));
+        Glyphs::drawHint(ui, Action::MenuBack,
+                         !fromAsset_.empty() ? "Administration" : fromBoss_.empty() ? "Carte des planètes" : "Statistiques des boss", {x, fy}, ui.s(30));
         if (ui.backPressed()) {
-            if (fromBoss_.empty()) g_.app.switchScene(makePlanetMap(g_));
+            if (!fromAsset_.empty()) g_.app.switchScene(makeAdmin(g_, "assets:" + fromAsset_), 0.3f);  // 2.63
+            else if (fromBoss_.empty()) g_.app.switchScene(makePlanetMap(g_));
             else g_.app.switchScene(makeBossStats(g_, fromBoss_), 0.3f);
         }
         ui.end();
@@ -572,6 +574,7 @@ private:
     std::string planetId_;
     std::string levelId_;   // selected on arrival ("" = the last one played)
     std::string fromBoss_;  // opened from the boss statistics (« Retour » goes back there)
+    std::string fromAsset_;  // 2.63: opened from ADMINISTRATION › Assets on this asset (« Retour » goes back there)
     const PlanetData* planet_ = nullptr;
     std::vector<const LevelEntry*> levels_;
     int selected_ = 0;
@@ -586,8 +589,9 @@ private:
 }  // namespace
 
 std::unique_ptr<Scene> makePlanetMap(GameServices& g) { return std::make_unique<PlanetMapScene>(g); }
-std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId, const std::string& fromBoss) {
-    return std::make_unique<LevelSelectScene>(g, planetId, levelId, fromBoss);
+std::unique_ptr<Scene> makeLevelSelect(GameServices& g, const std::string& planetId, const std::string& levelId, const std::string& fromBoss,
+                                       const std::string& fromAsset) {
+    return std::make_unique<LevelSelectScene>(g, planetId, levelId, fromBoss, fromAsset);
 }
 
 }  // namespace cosmic

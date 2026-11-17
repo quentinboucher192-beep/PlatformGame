@@ -6,6 +6,24 @@ Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les c
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.62.0** :
+* **Administration › Assets** : tous les fichiers installés sous `assets/`, rangés en arbre —
+  Personnages (Nova, combinaisons), Ennemis et Boss et giga-boss (par monde), Pouvoirs, Décors et tuiles
+  (par planète), Interface et icônes, Effets et particules, Histoires, Musiques (par groupe du juke-box),
+  Sons, Polices —, chaque dossier avec son nombre d'assets et son poids.
+* **Recherche instantanée** (nom, chemin, dossier, type et « utilisé par » : un ennemi, un niveau…), filtres
+  par type et **« Inutilisés »** ; résultats en **grille de vignettes** ou en **liste**, seules les lignes
+  visibles sont lues (vignettes décodées hors du thread principal, cache LRU de textures).
+* **Aperçu** : image à l'échelle sur damier, animation qui défile (clip, images par seconde, pause), son et
+  musique à l'écoute (la musique du menu attend ou baisse, puis reprend), spécimen d'une police, début d'un
+  fichier texte ; taille, dimensions (lues dans l'en-tête PNG), images et clips, durée (en-têtes WAV et Ogg).
+* **Utilisé par** : chaque ennemi, boss, niveau (compté objet par objet), planète, pouvoir, histoire,
+  combinaison du Vestiaire, effet de particules, morceau du juke-box, et le code du jeu
+  (`data/assets/code_refs.json`, écrit par `tools/assets/code_refs.py`) ; une ligne montre tout ce
+  qu'utilise ce « client », **Fiche** ouvre sa fiche dans le jeu (fiche du boss, niveau, entité dans
+  Administration › Ennemis, Vestiaire, histoire, guide des pouvoirs) et « Retour » ramène à l'asset.
+  « **Ouvrir le dossier** » montre le fichier sur le PC. Lecture seule : rien n'est modifié.
+* Pour le Studio de Créations : le catalogue (`game/content/AssetCatalog.h` : liste, filtre) et ses
+  vignettes et aperçus (`ui/widgets/AssetPreview.h`) forment une API documentée et réutilisable.
 * **Statistiques des boss › Fiche** : chaque **attaque se déplie et se replie** (clic, Entrée / A, flèches ;
   « Tout déplier », « Tout replier ») ; dépliée, elle dit ce qu'elle fait et donne ses **caractéristiques
   lues dans la définition du boss** (dégâts, annonce et recharge dans chaque phase où elle sort, récupération,

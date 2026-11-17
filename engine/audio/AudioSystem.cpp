@@ -49,6 +49,10 @@ void AudioSystem::shutdown() {
         }
         if (ambience_) MIX_DestroyTrack(ambience_);
         ambience_ = nullptr;
+        if (preview_) MIX_DestroyTrack(preview_);
+        preview_ = nullptr;
+        if (previewAudio_) MIX_DestroyAudio(previewAudio_);
+        previewAudio_ = nullptr;
         for (auto& [k, l] : loops_)
             if (l.track) MIX_DestroyTrack(l.track);
         loops_.clear();
@@ -196,6 +200,44 @@ void AudioSystem::stopMusic(int fadeMs) {
 void AudioSystem::setMusicDuck(float factor) {
     duck_ = std::clamp(factor, 0.0f, 1.0f);
     applyMusicGain();
+}
+
+void AudioSystem::playPreview(MIX_Audio* audio, AudioBus bus) {
+    if (!audio) return;
+    if (!mixer_) {
+        MIX_DestroyAudio(audio);
+        return;
+    }
+    if (!preview_) preview_ = MIX_CreateTrack(mixer_);
+    if (!preview_) {
+        MIX_DestroyAudio(audio);
+        return;
+    }
+    MIX_StopTrack(preview_, 0);
+    MIX_SetTrackAudio(preview_, audio);
+    // SDL_mixer counts the references of an audio: the previous one may go now.
+    if (previewAudio_) MIX_DestroyAudio(previewAudio_);
+    previewAudio_ = audio;
+    MIX_SetTrackGain(preview_, busGain(bus));
+    playTrack(preview_, 0, 0);
+}
+
+void AudioSystem::stopPreview(int fadeMs) {
+    if (mixer_ && preview_ && MIX_TrackPlaying(preview_)) MIX_StopTrack(preview_, fadeMs > 0 ? MIX_TrackMSToFrames(preview_, fadeMs) : 0);
+}
+
+bool AudioSystem::previewPlaying() const { return mixer_ && preview_ && MIX_TrackPlaying(preview_); }
+
+int64_t AudioSystem::previewPositionMs() const {
+    if (!previewPlaying()) return 0;
+    Sint64 f = MIX_GetTrackPlaybackPosition(preview_);
+    return f < 0 ? 0 : MIX_TrackFramesToMS(preview_, f);
+}
+
+int64_t AudioSystem::previewDurationMs() const {
+    if (!mixer_ || !previewAudio_) return 0;
+    Sint64 f = MIX_GetAudioDuration(previewAudio_);
+    return f < 0 ? 0 : MIX_AudioFramesToMS(previewAudio_, f);
 }
 
 void AudioSystem::playAmbience(const std::string& path, int fadeMs) {

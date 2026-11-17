@@ -332,6 +332,12 @@
    ]
   },
   {
+   "fr": "1 asset",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "1 défi {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -341,6 +347,12 @@
    "fr": "1 heure",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "1 image",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -358,6 +370,7 @@
   {
    "fr": "1 utilisation",
    "where": [
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -554,6 +567,12 @@
    ]
   },
   {
+   "fr": "60 images/s",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
    "fr": "7 jours",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -581,6 +600,12 @@
    "fr": "9. Modifications",
    "where": [
     "data/online/terms_fr.txt"
+   ]
+  },
+  {
+   "fr": "999,9 Mo",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -1266,7 +1291,8 @@
   {
    "fr": "Administration",
    "where": [
-    "ui/screens/MainMenuScene.cpp"
+    "ui/screens/MainMenuScene.cpp",
+    "ui/screens/PlanetMapScene.cpp"
    ]
   },
   {
@@ -1289,6 +1315,12 @@
   },
   {
    "fr": "Administration : nouvel onglet « Sauvegardes » : copies de toutes les données (une chaque nuit, ou à la demande), téléchargement d'une copie chiffrée par une phrase secrète, et import d'une sauvegarde (vérifiée d'abord, puis remplacement de toutes les données après confirmation).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Administration › Assets : tous les fichiers du jeu (images, animations, sons, musiques, polices, données), rangés en arbre — Personnages, Ennemis, Boss et giga-boss par monde, Pouvoirs, Décors et tuiles par planète, Interface et icônes, Effets et particules, Histoires, Musiques par groupe du juke-box, Sons, Polices —, chaque dossier avec son nombre d'assets et son poids.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -1992,6 +2024,7 @@
    "fr": "Animation",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "game/content/AssetCatalog.cpp",
     "ui/screens/CreatureArt.cpp"
    ]
   },
@@ -2035,6 +2068,12 @@
    "fr": "Animation suivante ({0} / {1})",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Animations",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -2312,6 +2351,12 @@
    "fr": "APERÇU AVANT D'IMPORTER",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu de l'asset choisi : image sur damier, animation qui défile (clip, images par seconde), son et musique à l'écoute (la musique du menu attend, puis reprend), police et texte ; taille, dimensions, images et clips, durée.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -2836,6 +2881,12 @@
    ]
   },
   {
+   "fr": "Arrêter",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
    "fr": "arrêtée",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -2926,6 +2977,12 @@
    "where": [
     "game/enemies/BossAttackSheet.cpp",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Assets",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -3469,6 +3526,18 @@
    ]
   },
   {
+   "fr": "Aucun asset inutilisé ici.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun asset ne correspond.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Aucun autre niveau n'a exactement les mêmes touches : vos choix valent pour ce niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -3527,6 +3596,12 @@
    "fr": "Aucun classement n'est remis à zéro : votre record et les classements restent les mêmes.",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun clip.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -3864,6 +3939,18 @@
    "fr": "Aucun projet ouvert aux autres joueurs pour l'instant.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun périphérique audio : rien ne peut être écouté.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun périphérique audio.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -4526,9 +4613,21 @@
    ]
   },
   {
+   "fr": "Autres",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Autres (temps écoulé…)",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autres sons",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -5514,6 +5613,7 @@
    "fr": "Boss",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/content/AssetCatalog.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -5594,6 +5694,12 @@
    "fr": "Boss du niveau",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Boss et giga-boss",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -5776,6 +5882,12 @@
    "fr": "bouton supplémentaire",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Boutons des manettes",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -6937,6 +7049,12 @@
    ]
   },
   {
+   "fr": "Ce fichier ne se lit pas.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
    "fr": "Ce joueur a choisi de masquer son profil public : seuls son pseudonyme, son avatar et ses niveaux publiés sont visibles.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -7549,6 +7667,12 @@
    ]
   },
   {
+   "fr": "Cet asset n'est plus installé.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Cet essai a déjà été envoyé avec d'autres données.",
    "where": [
     "server/src/challenges.ts"
@@ -7635,6 +7759,12 @@
    ]
   },
   {
+   "fr": "Cette animation ne se lit pas.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
    "fr": "Cette attaque est introuvable dans la définition du boss.",
    "where": [
     "game/gameplay/BossAttackDemo.cpp",
@@ -7684,9 +7814,21 @@
    ]
   },
   {
+   "fr": "Cette histoire ne se lit pas dans ce jeu.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Cette image",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Cette image ne se lit pas.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -7717,6 +7859,12 @@
    "fr": "Cette partie ne vous appartient pas.",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Cette police ne se lit pas.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -8209,13 +8357,20 @@
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaceScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
    "fr": "chargement…",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargé à chaque partie",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -8521,6 +8676,12 @@
    "fr": "Choisissez les notifications Cosmic Online que vous recevez. Une catégorie désactivée n'est plus enregistrée par le serveur ; les autres joueurs n'en sont pas informés.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un asset : son aperçu, ce que l'on sait de lui et ce qui l'utilise apparaissent ici.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -9289,6 +9450,12 @@
    ]
   },
   {
+   "fr": "Clips",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Cliquez pour télécharger{0} et installer : le jeu se ferme.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -9408,6 +9575,12 @@
    "fr": "Code de migration (préparé sur l'ancien ordinateur)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Code du jeu",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -9767,6 +9940,7 @@
    "fr": "Combinaisons",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "game/content/AssetCatalog.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/studio/Studio.cpp"
    ]
@@ -13506,6 +13680,12 @@
    ]
   },
   {
+   "fr": "Dimensions",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "dimensions différentes de celles annoncées",
    "where": [
     "game/cosmetics/CreationImages.cpp"
@@ -13862,6 +14042,8 @@
   {
    "fr": "Données",
    "where": [
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
@@ -13951,6 +14133,18 @@
    "fr": "Doré",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Dossier",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Dossier de l'asset ouvert.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -14176,6 +14370,7 @@
    "where": [
     "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/GhostRun.cpp"
@@ -14651,6 +14846,12 @@
    ]
   },
   {
+   "fr": "Décors et tuiles",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "DÉCOUPE",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -14702,6 +14903,12 @@
    "fr": "Découvrir un secret.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Décrit par",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -15556,7 +15763,8 @@
   {
    "fr": "Effet de particules",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -15626,6 +15834,12 @@
     "data/cosmetics/cosmetics.json",
     "ui/screens/AdminCreations.cpp",
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Effets et particules",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -16009,6 +16223,7 @@
   {
    "fr": "En ligne",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "game/online/OnlineTypes.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp",
@@ -16289,6 +16504,7 @@
   {
    "fr": "Ennemi",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/AdminScene.cpp"
    ]
@@ -16353,6 +16569,7 @@
    "fr": "Ennemis",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
+    "game/content/AssetCatalog.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/AdminScene.cpp"
    ]
@@ -17718,6 +17935,7 @@
   {
    "fr": "Fiche",
    "where": [
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/BossStatsScene.cpp"
    ]
   },
@@ -17980,6 +18198,12 @@
    "fr": "Fichier vide ou introuvable.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier vide.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -18448,6 +18672,12 @@
    "fr": "Forges englouties",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Format",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -19606,6 +19836,7 @@
    "fr": "Grille",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -20042,9 +20273,21 @@
    ]
   },
   {
+   "fr": "Histoire",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Histoire des giga-boss",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Histoires",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -20138,6 +20381,7 @@
   {
    "fr": "Hors campagne",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp"
    ]
@@ -20200,6 +20444,12 @@
    "fr": "Hors délai : votre temps ira dans le classement « Depuis », sans compter pour la série.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors juke-box",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -20443,6 +20693,12 @@
    ]
   },
   {
+   "fr": "Icônes et images",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Id",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -20454,6 +20710,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorLive.cpp",
     "game/achievements/Achievements.cpp",
+    "game/content/AssetCatalog.cpp",
     "game/content/BossStories.cpp",
     "game/content/ContentDatabase.cpp",
     "game/cosmetics/Collection.cpp",
@@ -20846,6 +21103,12 @@
    ]
   },
   {
+   "fr": "Image",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "image",
    "where": [
     "game/content/BossStories.cpp",
@@ -20950,6 +21213,12 @@
    "fr": "image.png illisible.",
    "where": [
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Images",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -21447,6 +21716,18 @@
    ]
   },
   {
+   "fr": "Interface",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Interface et icônes",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Intervalle (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -21504,6 +21785,25 @@
    "fr": "Introduction",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Inutilisé",
+   "where": [
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Inutilisé : rien dans le jeu ne le nomme.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Inutilisés · {0}",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -22126,6 +22426,12 @@
    "where": [
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Juke-box",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -23177,6 +23483,18 @@
    "fr": "La marée monte dans l'arène !",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "La musique du menu attend pendant l'écoute.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "La musique du menu baisse pendant l'écoute.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -24439,6 +24757,12 @@
    "fr": "Le dossier est vide pour l'instant :\n{0}",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Le dossier ne s'ouvre pas sur cet ordinateur.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -25723,7 +26047,8 @@
    "fr": "Lecture",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/ReplayScene.cpp",
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -25742,6 +26067,12 @@
    "fr": "Lecture de la définition en ligne et des niveaux de la campagne…",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture des assets installés…",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -25799,6 +26130,12 @@
    "fr": "Lecture seule : aucun record, aucune progression, rien n'est envoyé. Les replays en ligne sont téléchargés avant la lecture.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture seule : rien n'est modifié ici.",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -27077,7 +27414,8 @@
   {
    "fr": "Liste",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -29381,6 +29719,12 @@
    ]
   },
   {
+   "fr": "Moteur du jeu",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Motif",
    "where": [
     "game/enemies/BossAttackSheet.cpp",
@@ -29493,6 +29837,7 @@
    "fr": "Musique",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/content/AssetCatalog.cpp",
     "ui/screens/SettingsScene.cpp"
    ]
   },
@@ -29535,6 +29880,8 @@
   {
    "fr": "Musiques",
    "where": [
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -29883,6 +30230,7 @@
    "fr": "Niveau",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
+    "game/content/AssetCatalog.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -31457,6 +31805,7 @@
     "data/levels/sylvanox_01.json",
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
+    "game/content/AssetCatalog.cpp",
     "game/records/Records.cpp",
     "game/records/Records.h",
     "ui/screens/CollectionScene.cpp",
@@ -31469,6 +31818,12 @@
    "where": [
     "data/powers/frost_nova.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Nova et niveaux",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -31836,6 +32191,12 @@
    "where": [
     "ui/screens/PlanetMapScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objets des niveaux",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -32704,6 +33065,7 @@
   {
    "fr": "Ouvrir le dossier",
    "where": [
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -33330,6 +33692,12 @@
    ]
   },
   {
+   "fr": "Particules",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Particules par seconde",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -33947,7 +34315,8 @@
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "engine/input/InputTypes.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/studio/StudioFrise.cpp"
+    "ui/studio/StudioFrise.cpp",
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
@@ -34151,6 +34520,12 @@
    "fr": "Personnage",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Personnages",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -34651,6 +35026,12 @@
    ]
   },
   {
+   "fr": "Planche",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "planche de Nova · 320 × 864",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -34741,6 +35122,7 @@
    "fr": "Planète",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/content/AssetCatalog.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -34820,6 +35202,7 @@
   {
    "fr": "Planètes",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -35559,6 +35942,19 @@
    ]
   },
   {
+   "fr": "Police",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Polices",
+   "where": [
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Pologne",
    "where": [
     "data/online/countries.json",
@@ -36048,6 +36444,7 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPowerKeys.cpp",
+    "game/content/AssetCatalog.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/NotificationsScene.cpp"
@@ -36166,6 +36563,7 @@
    "where": [
     "data/achievements/achievements.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
+    "game/content/AssetCatalog.cpp",
     "saves/HudLayout.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
@@ -36646,6 +37044,12 @@
    "fr": "Projectiles",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Projectiles et attaques",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -37870,6 +38274,12 @@
    ]
   },
   {
+   "fr": "Rangement",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Rangée {0} · {1} images",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -38219,10 +38629,22 @@
    ]
   },
   {
+   "fr": "Recherche instantanée (nom, chemin, dossier, type, « utilisé par »), filtres par type et « Inutilisés » ; résultats en grille de vignettes ou en liste, seules les vignettes visibles sont chargées.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Rechercher",
    "where": [
     "ui/screens/ClanScene.cpp",
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Rechercher : nom, chemin, dossier, type, ennemi, niveau…",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -39655,6 +40077,7 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -41353,6 +41776,12 @@
    ]
   },
   {
+   "fr": "Sa planche ne se lit pas.",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
    "fr": "Sa prochaine partie s'affichera ici dès qu'elle commencera.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -43041,7 +43470,8 @@
   {
    "fr": "Son",
    "where": [
-    "editors/level_editor/LevelEditorDialogs.cpp"
+    "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -43169,6 +43599,13 @@
    "fr": "son écho",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sons",
+   "where": [
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -44103,6 +44540,12 @@
    "fr": "style inconnu",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "stéréo",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -45196,6 +45639,7 @@
   {
    "fr": "Taille",
    "where": [
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/HudEditorScene.cpp",
     "ui/studio/StudioCanvas.cpp"
@@ -46288,6 +46732,7 @@
     "engine/animation/Animation.cpp",
     "engine/rendering/Parallax.cpp",
     "engine/rendering/ParticleSystem.cpp",
+    "game/content/AssetCatalog.cpp",
     "game/levels/DecorAtlas.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/TerrainRenderer.cpp",
@@ -46816,6 +47261,13 @@
    ]
   },
   {
+   "fr": "Tous les assets",
+   "where": [
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Tous les auteurs",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -46867,6 +47319,12 @@
    "fr": "Tous vos amis sont déjà dans le groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -47542,6 +48000,12 @@
    ]
   },
   {
+   "fr": "Tuiles et matériaux",
+   "where": [
+    "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Tunisie",
    "where": [
     "data/online/countries.json",
@@ -47583,6 +48047,7 @@
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/enemies/BossAttackSheet.cpp",
     "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminBackups.cpp"
    ]
   },
@@ -47595,6 +48060,7 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/levels/LevelData.cpp",
     "game/planets/PlanetData.cpp",
+    "ui/screens/AdminAssets.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -48802,6 +49268,12 @@
    ]
   },
   {
+   "fr": "Une image",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "Une image vide après celle-ci (16 au plus).",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -49490,9 +49962,27 @@
    ]
   },
   {
+   "fr": "Utilisé par",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Utilisé par : les ennemis, boss, niveaux (avec le compte), planètes, pouvoirs, histoires, combinaisons, effets, morceaux du juke-box et le code qui s'en servent ; chaque ligne montre ce qu'utilise ce « client », « Fiche » ouvre sa fiche dans le jeu, « Ouvrir le dossier » le fichier sur le PC. Lecture seule.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Utilisé par l'événement « {0} »",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Utilisés par :",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
    ]
   },
   {
@@ -50423,6 +50913,7 @@
   {
    "fr": "Vestiaire",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -52924,6 +53415,12 @@
    ]
   },
   {
+   "fr": "{0} assets",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "{0} attaque à survivre",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -53543,8 +54040,15 @@
    ]
   },
   {
+   "fr": "{0} Hz · {1}",
+   "where": [
+    "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
    "fr": "{0} images",
    "where": [
+    "ui/screens/AdminAssets.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
   },
@@ -53725,6 +54229,7 @@
   {
    "fr": "{0} Ko",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/studio/StudioImport.cpp"
@@ -53833,6 +54338,7 @@
   {
    "fr": "{0} Mo",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
@@ -54745,6 +55251,7 @@
   {
    "fr": "{0} × {1} px",
    "where": [
+    "ui/screens/AdminAssets.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -56254,6 +56761,12 @@
    "fr": "Économie",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Écouter",
+   "where": [
+    "ui/widgets/AssetPreview.cpp"
    ]
   },
   {
