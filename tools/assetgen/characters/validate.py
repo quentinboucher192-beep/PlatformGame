@@ -253,7 +253,7 @@ for _k in range(8):
 # Eight sheets packed like Pyrrhax' (no teleport: it swims, flying movement); the lash fires on f1.
 for _k in range(8):
     _id = "kraken" if _k == 0 else "kraken_p%d" % (_k + 1)
-    ANIMS[_id] = (256, 224, [128, 136], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
+    ANIMS[_id] = (256, 224, [128, 196], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
     LOOPING[_id] = {"idle", "walk", "move", "special"}
 

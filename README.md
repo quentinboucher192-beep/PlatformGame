@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.53.0** :
+* **« La Fosse des Abysses »** (EXTRÊME, Les Confins) : le combat seul du **Kraken des Abysses**, giga-boss à
+  huit phases qui nage : fouet plongeant, tentacules jaillissant du sol, encre, marées d'eau noire,
+  tourbillons, ondes sonar ; rester sous lui ou à côté ne protège pas.
+* Son **histoire** avant le premier combat ; ses succès et son Vestiaire (Encre des abysses, Bulles des
+  abysses, Raz-de-marée, Étreinte du Kraken, titre Chasseur de Kraken).
+* Sa musique, **« Le Kraken des Abysses »**, au juke-box (23 morceaux).
+
 **Nouveau dans la version 2.52.0** :
 * **Le Monolithe se réveille** : il marche vers vous (fini les coins et les fosses), Carapace roulante,
   Tremblement de terre, Bond titanesque et ses ondes de choc ; aucun classement remis à zéro.

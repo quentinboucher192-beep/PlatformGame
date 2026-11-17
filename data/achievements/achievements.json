@@ -239,7 +239,7 @@
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 21 niveaux de la campagne.",
+   "description": "Terminer les 22 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
@@ -315,6 +315,20 @@
    "condition": {
     "type": "level",
     "level": "confins_02"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_fosse_abysses",
+   "category": "voyage",
+   "name": "Au fond des abysses",
+   "description": "Terminer La Fosse des Abysses, aux Confins.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "confins_03"
    },
    "requires": [
     "voyage_first"
@@ -1187,6 +1201,20 @@
    ]
   },
   {
+   "id": "gardiens_kraken",
+   "category": "gardiens",
+   "name": "Kraken",
+   "description": "Vaincre le Kraken des Abysses.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "kraken"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
    "id": "gardiens_50",
    "category": "gardiens",
    "name": "Tueur de titans",
@@ -1287,7 +1315,7 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 21 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 22 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
@@ -1551,6 +1579,35 @@
    },
    "requires": [
     "gardiens_monolithe"
+   ]
+  },
+  {
+   "id": "maitrise_kraken_nohit",
+   "category": "maitrise",
+   "name": "Pas une goutte d'encre",
+   "description": "Vaincre le Kraken sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "kraken",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_kraken"
+   ]
+  },
+  {
+   "id": "maitrise_phases_kraken",
+   "category": "maitrise",
+   "name": "Les huit lueurs",
+   "description": "Battre chaque phase du Kraken sans être touché (pas forcément dans le même combat).",
+   "stars": 5,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "kraken"
+   },
+   "requires": [
+    "gardiens_kraken"
    ]
   },
   {
@@ -2983,6 +3040,36 @@
    ]
   },
   {
+   "id": "extreme_abysses_gold",
+   "category": "extreme",
+   "name": "Or des abysses",
+   "description": "Obtenir l'or dans La Fosse des Abysses.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_03",
+    "medal": 3
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_abysses_platinum",
+   "category": "extreme",
+   "name": "Platine des abysses",
+   "description": "Obtenir le platine dans La Fosse des Abysses.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_03",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_abysses_gold"
+   ]
+  },
+  {
    "id": "extreme_attempts_100",
    "category": "extreme",
    "name": "Increvable",
@@ -3395,11 +3482,11 @@
    "id": "collection_tracks_all",
    "category": "collection",
    "name": "Mélomane",
-   "description": "Débloquer les 22 morceaux du juke-box.",
+   "description": "Débloquer les 23 morceaux du juke-box.",
    "stars": 3,
    "condition": {
     "type": "tracks_heard",
-    "count": 22
+    "count": 23
    },
    "requires": [
     "collection_tracks_10"

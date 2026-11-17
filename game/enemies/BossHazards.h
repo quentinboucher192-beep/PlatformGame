@@ -58,7 +58,8 @@ public:
         float rise = 1.0f, hold = 4.0f, fall = 1.0f;
         float damage = 2.0f;
         float age = 0.0f;
-        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33)
+        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33), "tide" = dark water (2.53)
+        Color color{122, 230, 255, 255};  // display: the light of its crests ("tide": the boss's phase)
         /// Surface height above the floor (0 .. height) at the current age.
         float level() const;
         float surfaceY() const { return floorY - level(); }
@@ -71,7 +72,9 @@ public:
         float time = 4.0f;
         float age = 0.0f;
         float damage = 1.0f;
-        std::string look;  // display: "" = thorns, "star" = starlight (2.33)
+        std::string look;  // display: "" = thorns, "star" = starlight (2.33), "tentacle" = the Kraken's (2.53)
+        float side = 1.0f;                // display: the cage's side of it (a tentacle curls over it)
+        Color color{122, 230, 255, 255};  // display: the light of its suckers ("tentacle")
     };
 
     struct Cloud {
@@ -84,6 +87,7 @@ public:
         float damage = 1.0f;
         bool ground = false;   // display: a carpet of fire along the ground (else a puff)
         Color color{255, 122, 46, 255};  // display: the fire of the phase
+        bool ink = false;                // display (2.53, the Kraken): a cloud of ink lit by the phase
         float emitTimer = 0.0f;          // display: its smoke
         /// The part of its area reached at its age.
         Rect current() const;
@@ -130,7 +134,7 @@ public:
     void addFlood(const Flood& f);
     /// A solid wall; Nova standing where it rises is pushed to the `inside` side (+1: right).
     void addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside,
-                 const std::string& look = {});
+                 const std::string& look = {}, Color color = Color{122, 230, 255, 255});
     /// Ends what an enemy channels (pulls and walls); the ice and the lava keep their time.
     void endChannel(GameWorld& w, uint32_t owner);
     /// Ends every effect of an enemy (it died or left the world).

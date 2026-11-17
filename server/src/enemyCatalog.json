@@ -225,6 +225,10 @@
    "name": "Ignivore"
   },
   {
+   "id": "kraken",
+   "name": "Kraken"
+  },
+  {
    "id": "lava_burrower",
    "name": "Fouisseur de lave"
   },
@@ -263,6 +267,10 @@
   {
    "id": "nyxara",
    "name": "Nyxara"
+  },
+  {
+   "id": "photophore",
+   "name": "Photophore abyssal"
   },
   {
    "id": "prime_sentinel",

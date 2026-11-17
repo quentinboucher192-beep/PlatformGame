@@ -117,9 +117,11 @@ void BossHazards::addFlood(const Flood& f) {
 }
 
 void BossHazards::addWall(GameWorld& w, uint32_t owner, const Rect& rect, float seconds, float damage, float inside,
-                          const std::string& look) {
+                          const std::string& look, Color color) {
     Wall wall;
     wall.look = look;
+    wall.side = inside >= 0.0f ? 1.0f : -1.0f;
+    wall.color = color;
     wall.owner = owner;
     wall.rect = rect;
     wall.time = seconds;
@@ -309,8 +311,9 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
             Rect r = c.current();
             if (r.w > 2.0f) {
                 Vec2 at{w.fxRng().range(r.x, r.right()), w.fxRng().range(r.y + r.h * 0.3f, r.bottom() - 2.0f)};
-                w.particles().emit("fire_cloud", at, 1.0f, {}, &c.color);
-                if (w.fxRng().chance(0.35f)) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
+                // 2.53: the Kraken's ink sheds bubbles of its light, no smoke.
+                w.particles().emit(c.ink ? "bubbles" : "fire_cloud", at, 1.0f, {}, &c.color);
+                if (w.fxRng().chance(0.35f) && !c.ink) w.particles().emit("fire_smoke", at + Vec2{0.0f, -r.h * 0.3f}, 1.0f);
             }
         }
         if (!exposed || c.damage <= 0.0f || !c.burning() || !c.current().intersects(p.box)) continue;
@@ -383,6 +386,73 @@ void BossHazards::bendShot(Projectile& p, float dt) const {
 
 // ================================================================== render
 
+namespace {
+/// A tide of the abyss (2.53, the Kraken): dark water, its crests lit with the boss's light,
+/// foam where the swell peaks, bubbles rising inside. Display only (time-driven).
+void drawTide(RenderContext& ctx, const BossHazards::Flood& f, float t) {
+    const float top = f.surfaceY();
+    const Rect body{f.left, top, f.right - f.left, f.floorY + 64.0f - top};
+    const Color c = f.color;
+    ctx.r.fillWorldRect(body, Color{10, 22, 52, 228});
+    ctx.r.fillWorldRect({body.x, top + 10.0f, body.w, std::max(0.0f, body.h - 10.0f)}, Color{c.r, c.g, c.b, 30}, BlendMode::Additive);
+    for (float x = f.left; x < f.right; x += 8.0f) {
+        const float wdt = std::min(8.0f, f.right - x);
+        const float swell = 3.0f * dmath::sin(t * 1.8f + x * 0.025f) + 1.5f * dmath::sin(t * 4.3f + x * 0.11f);
+        ctx.r.fillWorldRect({x, top - 3.0f + swell, wdt, 5.0f}, Color{30, 70, 120, 240});
+        ctx.r.fillWorldRect({x, top - 3.0f + swell, wdt, 2.0f}, c.withAlpha(210), BlendMode::Additive);
+        if (swell < -2.6f) ctx.r.fillWorldRect({x, top - 5.0f + swell, wdt, 2.0f}, Color{235, 250, 255, 190}, BlendMode::Additive);
+    }
+    const float depth = std::min(f.level(), 220.0f);
+    const int bubbles = static_cast<int>(body.w / 40.0f);
+    for (int k = 0; k < bubbles && depth > 12.0f; ++k) {
+        const float ph = std::fmod(t * 0.45f + static_cast<float>(k) * 0.618f, 1.0f);
+        const float x = f.left + std::fmod(static_cast<float>(k) * 97.3f, body.w) + 4.0f * dmath::sin(t * 3.0f + static_cast<float>(k));
+        const float y = top + 8.0f + (1.0f - ph) * (depth - 8.0f);
+        ctx.r.drawWorldCircle({x, y}, 1.5f + 1.5f * ph, Color{200, 240, 255, static_cast<uint8_t>(150 * ph)}, 1.0f);
+    }
+    for (float x = f.left + 48.0f; x < f.right; x += 120.0f) ctx.lights.add({x, top}, 110.0f, c);
+}
+
+/// A tentacle out of the floor (2.53, the Kraken's « Étau de tentacules »): it sways, its tip
+/// curls over the cage, a row of suckers lit with the boss's light along its inner side.
+void drawTentacle(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& vis, float t) {
+    const float h = vis.h;
+    if (h < 1.0f) return;
+    const int n = std::max(4, static_cast<int>(h / 6.0f));
+    const float base = vis.bottom(), cx = vis.center().x, side = wl.side, seed = wl.rect.x * 0.037f;
+    auto at = [&](int i, float& rad) {
+        const float s = static_cast<float>(i) / static_cast<float>(n);
+        const float sway = (2.0f + 7.0f * s) * dmath::sin(t * 2.6f + s * 3.6f + seed);
+        rad = 10.5f * (1.0f - 0.78f * s) + 1.2f;
+        return Vec2{cx + sway + side * 16.0f * s * s * s, base - h * s};
+    };
+    const Color outline{22, 14, 44, 255}, skin{67, 64, 126, 255}, sheen{95, 138, 168, 255}, belly{157, 147, 194, 255};
+    float rad = 0.0f;
+    for (int i = 0; i <= n; ++i) {
+        const Vec2 p = at(i, rad);
+        ctx.r.fillWorldCircle(p, rad + 1.5f, outline);
+    }
+    for (int i = 0; i <= n; ++i) {
+        const Vec2 p = at(i, rad);
+        ctx.r.fillWorldCircle(p, rad, skin);
+    }
+    for (int i = 0; i <= n; ++i) {
+        const Vec2 p = at(i, rad);
+        ctx.r.fillWorldCircle(p + Vec2{-side * rad * 0.45f, -rad * 0.2f}, rad * 0.35f, sheen);
+    }
+    for (int i = 1; i < n; i += 3) {
+        const Vec2 p = at(i, rad);
+        const Vec2 q = p + Vec2{side * rad * 0.62f, 0.0f};
+        const float pulse = 0.55f + 0.45f * dmath::sin(t * 5.0f - static_cast<float>(i) * 0.7f);
+        ctx.r.fillWorldCircle(q, std::max(1.2f, rad * 0.32f), belly);
+        ctx.r.drawWorldGlow(q, 5.0f + rad * 0.4f, wl.color.withAlpha(static_cast<uint8_t>(150 * pulse)));
+    }
+    const Vec2 tip = at(n, rad);
+    ctx.r.drawWorldGlow(tip, 9.0f, wl.color.withAlpha(160));
+    ctx.lights.add(vis.center(), 60.0f, wl.color.withAlpha(200));
+}
+}  // namespace
+
 void BossHazards::render(RenderContext& ctx) const {
     if (empty()) return;
     // The art of 2.19 gives each effect its own sheet (animations/<name>.json).
@@ -426,6 +496,10 @@ void BossHazards::render(RenderContext& ctx) const {
     for (const Flood& f : floods_) {
         float level = f.level();
         if (level < 0.5f) continue;
+        if (f.look == "tide") {
+            drawTide(ctx, f, t);
+            continue;
+        }
         const bool plasma = f.look == "plasma";
         const AnimationSetPtr& lavaFx = plasma && clipIn(plasmaFx, "surface") ? plasmaFx : lavaSheet;
         const AnimationClip* lava = clipIn(lavaFx, "surface");
@@ -462,6 +536,10 @@ void BossHazards::render(RenderContext& ctx) const {
         Rect r = wl.rect;
         float h = r.h * grow;
         Rect vis{r.x, r.bottom() - h, r.w, h};
+        if (wl.look == "tentacle") {
+            drawTentacle(ctx, wl, vis, t);
+            continue;
+        }
         const bool star = wl.look == "star";
         const AnimationSetPtr& thornFx = star && clipIn(starFx, "idle") ? starFx : thornSheet;
         const AnimationClip* thorn = clipIn(thornFx, "idle");
@@ -505,6 +583,14 @@ void BossHazards::render(RenderContext& ctx) const {
                 float seed = x * 0.071f + static_cast<float>(row) * 1.7f;
                 float rad = r.h / static_cast<float>(rows) * (0.55f + 0.12f * dmath::sin(t * 2.3f + seed * 3.1f));
                 Vec2 pc{x + 3.0f * dmath::sin(t * 1.7f + seed), y - 2.0f * dmath::sin(t * 2.9f + seed * 2.0f)};
+                if (c.ink) {
+                    // 2.53, the Kraken: dense ink, only its rim lit by the light of its phase.
+                    ctx.r.drawWorldGlow(pc, rad * 1.7f, fire.withAlpha(static_cast<uint8_t>(50 * a)));
+                    ctx.r.fillWorldCircle(pc, rad, Color{16, 10, 34, static_cast<uint8_t>(210 * a)});
+                    ctx.r.fillWorldCircle(pc + Vec2{-rad * 0.3f, -rad * 0.3f}, rad * 0.35f, Color{fire.r, fire.g, fire.b, static_cast<uint8_t>(45 * a)},
+                                          BlendMode::Additive);
+                    continue;
+                }
                 ctx.r.drawWorldGlow(pc, rad * 1.9f, fire.withAlpha(static_cast<uint8_t>(95 * a)));
                 ctx.r.fillWorldCircle(pc, rad, Color{58, 20, 16, static_cast<uint8_t>(120 * a)});
                 ctx.r.fillWorldCircle(pc + Vec2{0.0f, rad * 0.25f}, rad * 0.55f,
@@ -512,7 +598,9 @@ void BossHazards::render(RenderContext& ctx) const {
             }
         }
         if (c.ground)
-            ctx.r.fillWorldRect({r.x, r.bottom() - 3.0f, r.w, 3.0f}, Color{255, 214, 120, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+            ctx.r.fillWorldRect({r.x, r.bottom() - 3.0f, r.w, 3.0f},
+                                c.ink ? fire.withAlpha(static_cast<uint8_t>(150 * a)) : Color{255, 214, 120, static_cast<uint8_t>(200 * a)},
+                                BlendMode::Additive);
         for (float x = r.x + 40.0f; x < r.right(); x += 110.0f)
             ctx.lights.add({x, r.center().y}, 90.0f, fire.withAlpha(static_cast<uint8_t>(220 * a)));
         if (r.w < 80.0f) ctx.lights.add(r.center(), 80.0f, fire.withAlpha(static_cast<uint8_t>(220 * a)));

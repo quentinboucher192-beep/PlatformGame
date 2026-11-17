@@ -330,6 +330,7 @@ void Enemy::breathe(GameWorld& w) {
     c.damage = a.damage;
     c.ground = true;
     c.color = lightColor();
+    c.ink = a.look == "ink";  // 2.53, the Kraken (display only)
     w.hazards().addCloud(c);
 }
 
@@ -356,6 +357,7 @@ void Enemy::fireClouds(GameWorld& w) {
         p.cloudDamage = a.damage;
         p.cloudOwner = uid_;
         p.cloudColor = lightColor();
+        p.cloudInk = a.look == "ink";
         w.spawnProjectile(p);
     };
     if (a.gravity > 0.0f && !path_.empty()) {
@@ -688,10 +690,11 @@ void Enemy::renderDragon(RenderContext& ctx, float prog) const {
                 ctx.r.drawWorldLine(markPos_ + Vec2{0.0f, -r - 6.0f}, markPos_ + Vec2{0.0f, r + 6.0f}, Color{255, 70, 60, 220}, 2.0f * s);
                 ctx.r.drawWorldGlow(markPos_, 30.0f, Color{255, 60, 40, static_cast<uint8_t>(60 + 60 * pulse)});
             } else if (stage_ == Stage::Dash) {
-                // Its wake of fire.
+                // Its wake of fire (2.53: never wider than a dragon's, the Kraken's body is twice as
+                // tall: a streak, not a block of light).
                 Vec2 mv = vel.lengthSq() > 1.0f ? vel.normalized() : diveDir_;
                 Vec2 tail = c - mv * std::min(diveTravel_ + 20.0f, 170.0f);
-                ctx.r.drawWorldLine(tail, c, fire.withAlpha(150), box.h * 0.6f * ctx.r.view().scale, BlendMode::Additive);
+                ctx.r.drawWorldLine(tail, c, fire.withAlpha(150), std::min(box.h * 0.6f, 46.0f) * ctx.r.view().scale, BlendMode::Additive);
                 ctx.r.drawWorldGlow(c, box.w * 0.8f, fire.withAlpha(120));
                 ctx.lights.add(c, 170.0f, fire);
             }
