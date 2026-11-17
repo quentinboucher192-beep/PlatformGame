@@ -6,6 +6,11 @@ Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les c
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
 **Nouveau dans la version 2.60.0** :
+* **Pause › Succès suivis** sous la carte : les cinq places toujours visibles (une place libre en pointillés) et
+  la description de chaque succès, mesurée pour ne jamais déborder.
+* **Touches de ce niveau** : un changement s'applique aussi aux niveaux qui avaient **exactement les mêmes
+  touches** (option, activée par défaut) ; plus besoin de les refaire niveau par niveau.
+* **Invincible (admin)** : « activé · non classé » sur le bouton de la pause.
 * **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se
   change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) **tant qu'aucun joueur n'y
   a de résultat** ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de
