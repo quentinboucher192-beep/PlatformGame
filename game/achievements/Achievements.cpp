@@ -375,6 +375,7 @@ std::vector<const AchievementDef*> AchievementBook::evaluate(const AchievementCa
             if (unlocked(a.id) || !available(a)) continue;
             if (!progress(a, in).done()) continue;
             unlocked_[a.id] = date;
+            untrack(a.id);  // done: no longer followed (its slot is free again)
             announce_.push_back(a.id);
             out.push_back(&a);
             changed = true;
@@ -382,6 +383,18 @@ std::vector<const AchievementDef*> AchievementBook::evaluate(const AchievementCa
     }
     return out;
 }
+
+bool AchievementBook::isTracked(const std::string& id) const { return std::find(tracked_.begin(), tracked_.end(), id) != tracked_.end(); }
+
+bool AchievementBook::track(const std::string& id) {
+    if (id.empty() || id.size() > 64 || unlocked(id)) return false;
+    if (isTracked(id)) return true;
+    if (tracked_.size() >= kMaxTracked) return false;
+    tracked_.push_back(id);
+    return true;
+}
+
+void AchievementBook::untrack(const std::string& id) { tracked_.erase(std::remove(tracked_.begin(), tracked_.end(), id), tracked_.end()); }
 
 std::vector<std::string> AchievementBook::takeAnnouncements() {
     std::vector<std::string> v;
@@ -397,11 +410,13 @@ Json AchievementBook::toJson() const {
     for (const auto& [k, v] : stats_.powerUses) powers[k] = v;
     for (const auto& [k, v] : unlocked_) unlocked[k] = v;
     return Json{{"format", "cosmic.achievement_book"}, {"version", kVersion}, {"unlocked", unlocked},
-                {"counters", counters},             {"maxima", maxima},       {"sets", sets}, {"power_uses", powers}};
+                {"counters", counters},             {"maxima", maxima},       {"sets", sets}, {"power_uses", powers},
+                {"tracked", tracked_}};
 }
 
 void AchievementBook::fromJson(const Json& j) {
     unlocked_.clear();
+    tracked_.clear();
     stats_ = AchievementStats{};
     if (!j.is_object()) return;
     // A save is user data: keys and values are bounded and checked.
@@ -419,6 +434,10 @@ void AchievementBook::fromJson(const Json& j) {
         for (const auto& [k, v] : j[key].items())
             if (okKey(k) && out.size() < 500) out[k] = num(v);
     };
+    // Followed achievements (2.52): each once, at most kMaxTracked, none already unlocked.
+    if (j.contains("tracked") && j["tracked"].is_array())
+        for (const Json& x : j["tracked"])
+            if (x.is_string()) track(x.get<std::string>());
     readMap("counters", stats_.counters);
     readMap("maxima", stats_.maxima);
     readMap("power_uses", stats_.powerUses);

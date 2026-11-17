@@ -151,6 +151,17 @@ public:
     /// New unlocks not shown yet (toasts, results screen), oldest first.
     std::vector<std::string> takeAnnouncements();
 
+    /// Achievements the player follows (2.51, « Suivre »): at most kMaxTracked, in the order
+    /// they were ticked; their progress is shown in the pause menu. One unlocked is no longer
+    /// followed (evaluate() lets it go, and an unlocked one cannot be ticked).
+    static constexpr size_t kMaxTracked = 5;
+    const std::vector<std::string>& tracked() const { return tracked_; }
+    bool isTracked(const std::string& id) const;
+    /// Follows `id`: false when it cannot be (already kMaxTracked followed, unlocked, no id);
+    /// true when it is followed (now, or already).
+    bool track(const std::string& id);
+    void untrack(const std::string& id);
+
     Json toJson() const;
     void fromJson(const Json& j);
 
@@ -158,6 +169,7 @@ private:
     fs::path file_;
     std::map<std::string, std::string> unlocked_;  // id -> date
     std::vector<std::string> announce_;
+    std::vector<std::string> tracked_;
     AchievementStats stats_;
 };
 

@@ -3,7 +3,7 @@
 
 Run from the repository root:  python3 tools/assetgen/environment/generate.py
 Optional args: names of steps to run (tiles platforms backgrounds bg_pyralis bg_glacior decor
-decor_pyralis decor_glacior ui glyphs planets banners bg_aethra aethra_planet confins_planet),
+decor_pyralis decor_glacior ui glyphs planets banners bg_aethra aethra_planet confins_planet stories),
 --review to also write upscaled review sheets to /tmp/claude-0/assetreview/environment/,
 --no-validate to skip the contract checker.
 
@@ -23,6 +23,7 @@ Produces (paths relative to assets/):
   textures/tiles/{sanctum_stone,nebula_rock}.png/.json (Aethra, in tiles)
   ui/planets/aethra.png, ui/planets/aethra_banner.png                         (aethra_planet)
   ui/planets/confins.png, ui/planets/confins_banner.png                       (confins_planet)
+  stories/{singularis,pyrrhax,monolithe}_{1..6}.png (giga boss stories, 2.51)  (stories)
 All generators are deterministic (fixed seeds).
 """
 import os
@@ -50,6 +51,7 @@ MODULES = {
     "bg_aethra": ("bg_aethra", "generate"),
     "aethra_planet": ("planet_aethra", "generate"),
     "confins_planet": ("planet_confins", "generate"),
+    "stories": ("stories", "generate"),
 }
 
 
@@ -61,7 +63,7 @@ def load_step(name):
 
 ORDER = ["tiles", "platforms", "backgrounds", "bg_pyralis", "bg_glacior", "decor", "decor_pyralis",
          "decor_glacior", "ui", "glyphs", "planets", "banners", "bg_aethra", "aethra_planet",
-         "confins_planet"]
+         "confins_planet", "stories"]
 
 
 def main(argv):

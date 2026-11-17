@@ -35,6 +35,10 @@ public:
     /// Screen area an element covers at a place (HUD editor, overlap checks); empty when
     /// the element has nothing to show in this world.
     Rect area(UIContext& ui, const GameWorld& w, HudElement e, const Place& p) const;
+    /// « Ennemis vaincus : X / Y » (2.51): the text of the element, and whether the run has
+    /// beaten every enemy of the level as « Aucun survivant » counts them (kills >= enemies).
+    static std::string enemiesText(int kills, int total) { return "Ennemis vaincus : " + std::to_string(kills) + " / " + std::to_string(total); }
+    static bool enemiesCleared(int kills, int total) { return total > 0 && kills >= total; }
     /// Anchor of a place whose area has its top-left corner at `topLeft` (dragging).
     Vec2 anchorForArea(UIContext& ui, const GameWorld& w, HudElement e, const Place& p, Vec2 topLeft) const;
 
@@ -58,6 +62,9 @@ private:
     void drawTimer(UIContext& ui, GameWorld& w, const LevelRecord* record, Vec2 o, float k);
     void drawCollectibles(UIContext& ui, GameWorld& w, Vec2 o, float k);
     void drawBoss(UIContext& ui, GameWorld& w, Vec2 o, float k);
+    /// « Ennemis vaincus : X / Y » (2.51): the run's kills (RunStats::kills) against the
+    /// level's enemies (RunStats::totalEnemies), as « Aucun survivant » counts them. Display only.
+    void drawEnemies(UIContext& ui, GameWorld& w, const Place& p);
     void drawMessages(UIContext& ui, GameWorld& w);
     /// How to use a power just picked up, centred on `center`: the key of its slot, or its
     /// move / « passif » in the dashed gold frame of the powers off their slot key.

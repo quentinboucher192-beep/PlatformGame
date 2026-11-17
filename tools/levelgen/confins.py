@@ -186,6 +186,8 @@ def stone_heart():
                         "phases, dans une arène géante. Une seule vie, aucun checkpoint.")
     d["difficulty"] = 5
     d["extreme"] = True
+    # 2.52: its own music when its fight starts (the theme of Les Confins gives Pyrrhax's).
+    d["bossMusic"] = "music/monolithe_boss.ogg"
     b.f = 40
     # Only the fight, as Pyrrhax' level: the choice of the powers, then the giant arena.
     b.th.update(floor="obsidian", roof="obsidian", accent="obsidian")
@@ -203,7 +205,9 @@ def stone_heart():
     b.cinematics("LE CŒUR DE PIERRE", "Les Confins", "Une seule vie. Un golem plus ancien que les planètes. Huit phases.",
                  "LE GOLEM S'EFFONDRE")
     # 2.50: every power (revision 9), the records of revision 8 kept (data/levels/kept_records.json).
-    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 9, "rooms": b.rooms, "noHealing": True}
+    # 2.52: the Monolithe reworked (its brain, its shell, its quake, its titanic leap): revision 10,
+    # the records of revisions 8 and 9 kept.
+    d["metadata"] = {"generator": "tools/levelgen/confins.py", "revision": 10, "rooms": b.rooms, "noHealing": True}
     L.save(os.path.join(ROOT, "data/levels/confins_02.json"))
     return width
 

@@ -24,6 +24,7 @@ void GameServices::loadAll() {
     progression.load();
     records.load();
     bossStats.load();
+    if (std::string err; !stories.loadDefault(&err)) Log::warn("Histoires des giga-boss : {}", err);
     ghosts.open(Paths::userDir() / "ghosts");
     ghosts.trimCache(static_cast<uint64_t>(settings.ghosts.cacheMB) * 1024 * 1024);
     replayLibrary.open(Paths::userDir() / "replays" / "downloaded");
@@ -528,40 +529,49 @@ Json GameServices::progressCopyBody() const {
     return {{"format", "cosmic.progress_copy"}, {"game_version", std::string(COSMIC_VERSION_STRING)}, {"summary", summary}, {"files", files}};
 }
 
-bool GameServices::restoreProgressCopy(const Json& files, std::string* error) {
+GameServices::RestoreOutcome GameServices::restoreProgressCopy(const Json& files, const std::string& sha256, std::string* error,
+                                                               std::string* keptFolder) {
+    if (keptFolder) keptFolder->clear();
     if (!files.is_object()) {
         if (error) *error = "Copie de la progression illisible.";
-        return false;
+        return RestoreOutcome::Failed;
     }
-    // The saves as they are, kept first (a folder per restoration).
-    std::string stamp = FileUtil::nowString();
-    for (char& c : stamp)
-        if (c == ':' || c == ' ' || c == '/') c = '-';
-    const fs::path keep = Paths::savesDir() / ("avant_restauration_" + stamp);
-    std::error_code ec;
-    fs::create_directories(keep, ec);
-    const Json current = progressCopyBody()["files"];
-    for (const auto& [name, body] : current.items())
-        if (!FileUtil::writeTextAtomic(keep / (name + ".json"), body.dump(1))) {
-            if (error) *error = "Impossible de garder une copie des sauvegardes actuelles.";
-            return false;
-        }
-    auto part = [&](const char* key) -> const Json& {
-        static const Json empty = Json::object();
-        auto it = files.find(key);
-        return it != files.end() && it->is_object() ? *it : empty;
-    };
-    progression.fromJson(mergeProgressJson(progression.toJson(), part("progress")));
-    records.fromJson(mergeRecordsJson(records.toJson(), part("records")));
-    bossStats.fromJson(mergeBossStatsJson(bossStats.toJson(), part("boss_stats")));
-    achievements.fromJson(mergeAchievementsJson(achievements.toJson(), part("achievements")));
-    collection.fromJson(mergeCollectionJson(collection.toJson(), part("collection")));
+    const fs::path registry = Paths::savesDir() / "restored_copies.json";
+    if (copiesMergedThisSession_.count(sha256) || progressCopyRestored(registry, sha256)) return RestoreOutcome::AlreadyRestored;
+    // The save files as they are on disk, kept first (a folder per restoration): nothing is
+    // changed if they cannot be kept.
+    fs::path kept;
+    if (!backupSaveFiles(Paths::savesDir(), FileUtil::nowString(), &kept, error)) return RestoreOutcome::Failed;
+    if (keptFolder) *keptFolder = Paths::toUtf8(kept.filename());
+    const Json merged = mergeProgressCopyFiles(progressCopyBody()["files"], files);
+    progression.fromJson(merged["progress"]);
+    records.fromJson(merged["records"]);
+    bossStats.fromJson(merged["boss_stats"]);
+    achievements.fromJson(merged["achievements"]);
+    collection.fromJson(merged["collection"]);
     bossStats.touch();
-    const bool ok = progression.save() && records.save() && bossStats.save() && achievements.save() && collection.save();
-    if (!ok && error) *error = "Une sauvegarde n'a pas pu être écrite (les anciennes sont dans " + Paths::toUtf8(keep) + ").";
+    if (!sha256.empty()) copiesMergedThisSession_.insert(sha256);  // in memory now: never added twice
+    // Every save is written, even after one failed (the next save writes what is in memory).
+    std::string failed;
+    auto save = [&](bool ok, const char* name) {
+        if (!ok) failed += (failed.empty() ? "" : ", ") + std::string(name) + ".json";
+    };
+    save(progression.save(), "progress");
+    save(records.save(), "records");
+    save(bossStats.save(), "boss_stats");
+    save(achievements.save(), "achievements");
+    save(collection.save(), "collection");
     checkAchievements(false);
     progressCopyDue = true;
-    return ok;
+    if (!failed.empty()) {
+        if (error)
+            *error = "Progression ajoutée, mais une sauvegarde n'a pas pu être écrite (" + failed + ") : les précédentes sont dans saves › " +
+                     Paths::toUtf8(kept.filename()) + ".";
+        return RestoreOutcome::Failed;
+    }
+    // On disk: a later « Restaurer » of the same copy only tells the server.
+    noteProgressCopyRestored(registry, sha256);
+    return RestoreOutcome::Restored;
 }
 
 void GameServices::sendProgressCopy(std::function<void(const ApiResult&)> done) {
@@ -583,6 +593,8 @@ void GameServices::sendProgressCopy(std::function<void(const ApiResult&)> done) 
 }
 
 void GameServices::updateProgressCopy(float dt) {
+    migration.update(online, dt);  // 2.50: does the server offer « Migrer vers un nouveau compte » ?
+    online.setAchievementsMerge(migration.pendingRestore().is_object());
     progressCopyWait_ = std::max(0.0f, progressCopyWait_ - dt);
     if (!progressCopyDue || progressCopyBusy_ || progressCopyWait_ > 0.0f) return;
     if (!online.loggedIn() || !online.usable() || online.state() != OnlineState::Online) return;
@@ -604,7 +616,6 @@ void GameServices::noteStartedLocal() {
 }
 
 void GameServices::noteSessionStarted() {
-    online.get("/api/v1/players/me/migration", [this](const ApiResult& r) { migrationAvailable = r.ok; }, false);
     progressCopyDue = true;
     progressCopyWait_ = std::min(progressCopyWait_, 8.0f);
     auto snap = FileUtil::loadJson(localSnapshotPath());

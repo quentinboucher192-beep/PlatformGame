@@ -42,10 +42,12 @@ Json Settings::toJson() const {
                      {"adminInvincible", gameplay.adminInvincible},
                      {"showMessages", gameplay.showMessages},
                      {"focusMessages", gameplay.focusMessages},
+                     {"enemyArrows", gameplay.enemyArrows},
                      {"debugMode", gameplay.debugMode},
                      {"editorAutosave", gameplay.editorAutosave},
                      {"editorAutosaveSeconds", gameplay.editorAutosaveSeconds},
-                     {"unlockAll", gameplay.unlockAll}};
+                     {"unlockAll", gameplay.unlockAll},
+                     {"bossStories", gameplay.bossStories}};
     j["ghosts"] = {{"enabled", ghosts.enabled},
                    {"personalByDefault", ghosts.personalByDefault},
                    {"maxGhosts", ghosts.maxGhosts},
@@ -102,11 +104,13 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.adminInvincible = jget<bool>(g, "adminInvincible", false);
         s.gameplay.showMessages = jget<bool>(g, "showMessages", true);
         s.gameplay.focusMessages = jget<bool>(g, "focusMessages", false);
+        s.gameplay.enemyArrows = jget<bool>(g, "enemyArrows", true);
         if (s.gameplay.progressBar == 3 && !s.gameplay.hud[HudElement::Progress].custom) s.gameplay.progressBar = 1;
         s.gameplay.debugMode = jget<bool>(g, "debugMode", false);
         s.gameplay.editorAutosave = jget<bool>(g, "editorAutosave", true);
         s.gameplay.editorAutosaveSeconds = std::clamp(jget<int>(g, "editorAutosaveSeconds", 60), 10, 600);
         s.gameplay.unlockAll = jget<bool>(g, "unlockAll", true);
+        s.gameplay.bossStories = std::clamp(jget<int>(g, "bossStories", 0), 0, 1);
     }
     if (j.contains("ghosts")) {
         const Json& g = j["ghosts"];

@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.51.0** :
+* **L'histoire des giga-boss** : une cinématique illustrée avant le premier combat (passable, hors chrono),
+  « Revoir l'histoire » sur la fiche du boss et dans la Galerie, option dans Paramètres › Jeu.
+* **Migrer vers un nouveau compte** : code à usage unique, le meilleur des deux comptes gardé, progression
+  restaurée après une copie de sauvegarde.
+* Succès du Boomerang chargé ; mode **Invincible** des admins en entraînement ; colonne **Version du jeu**
+  dans Administration › Joueurs.
+
 **Nouveau dans la version 2.50.0** :
 * **Pyrrhax déchaîné** : Piqué traversant, Atterrissage et souffle au sol, Boules de feu à nuage,
   Rafale d'ailes ; rester sous lui ne protège plus.
@@ -532,6 +540,12 @@ automatiquement entre clavier et manette.
 
 Touches globales : **F3** mode debug (FPS, dt, colliders, hitboxes, position/vitesse du
 joueur, états des ennemis, chrono, particules), **F11** plein écran, **F12** capture d'écran.
+
+**HUD — ennemis hors écran (2.52)** : un ennemi déjà rencontré qui sort de l'écran est signalé
+par une flèche ambrée sur le bord, tournée vers lui (plus pâle s'il est loin) ; plusieurs ennemis
+dans la même direction n'ont qu'une flèche, vers le centre du groupe, avec leur nombre (« ×5 »).
+Ces flèches ne passent jamais sur le HUD, sur la flèche du boss (qui garde la sienne) ni les unes
+sur les autres ; option *Paramètres → Jeu → Flèches vers les ennemis hors écran* (activée par défaut).
 
 ### Les pouvoirs
 

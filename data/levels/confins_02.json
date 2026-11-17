@@ -9,7 +9,7 @@
  "version": "1.0",
  "difficulty": 5,
  "music": "music/pyralis_level.ogg",
- "bossMusic": "music/pyrrhax_boss.ogg",
+ "bossMusic": "music/monolithe_boss.ogg",
  "ambience": "music/pyralis_ambience.ogg",
  "bounds": [
   0,
@@ -2072,7 +2072,7 @@
  },
  "metadata": {
   "generator": "tools/levelgen/confins.py",
-  "revision": 9,
+  "revision": 10,
   "rooms": [
    {
     "type": "boss",

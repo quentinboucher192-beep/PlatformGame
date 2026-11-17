@@ -77,6 +77,13 @@ public:
     int maxFrames = 0;
     std::vector<std::pair<int, std::string>> scheduledScreenshots;
     uint64_t frameIndex() const { return frame_; }
+    /// Automated checks (tests): `n` more frames of the main loop, then back to the caller (it
+    /// may be called again, the scenes kept).
+    void runFrames(int n) {
+        maxFrames = static_cast<int>(frame_) + n;
+        running_ = true;
+        run();
+    }
     /// Simulated frame delta used in headless mode (deterministic).
     float headlessDt = 1.0f / 60.0f;
     /// Headless runs that talk to a real server: frames paced at real time (tests).

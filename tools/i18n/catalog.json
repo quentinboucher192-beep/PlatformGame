@@ -144,6 +144,12 @@
    ]
   },
   {
+   "fr": "* compté après la partie, pas pendant",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "+ Ajouter",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -557,6 +563,12 @@
    ]
   },
   {
+   "fr": "a fait une sauvegarde complète avant une migration ({0})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a fixé les récompenses du défi {0} : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -564,6 +576,12 @@
   },
   {
    "fr": "a lié {0} à un nouvel ordinateur",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a migré les données de {0} vers {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -617,6 +635,12 @@
    ]
   },
   {
+   "fr": "a remplacé les données de {0} par celles de {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a restauré la combinaison {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -630,6 +654,12 @@
   },
   {
    "fr": "a retiré les récompenses du défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a récupéré les données de {0} avec un code de migration",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -862,6 +892,7 @@
     "game/online/Spectate.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
+    "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
@@ -1059,6 +1090,12 @@
    ]
   },
   {
+   "fr": "Administration : mode Invincible pour les comptes admin, en entraînement uniquement (menu pause) ; jamais pris en compte dans les records ni les classements.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration : nouvel onglet « Calendrier des défis » : le mois avec les tirages à venir, choix du niveau (campagne ou en ligne), des règles, de l'objectif et des paliers d'un défi qui n'a pas commencé, ou « Revenir au tirage ».",
    "where": [
     "data/news/changelog.json"
@@ -1090,6 +1127,12 @@
   },
   {
    "fr": "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur ».",
    "where": [
     "data/news/changelog.json"
    ]
@@ -1254,6 +1297,12 @@
    "fr": "Affiché · {0} %{1}",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Affronté {0} fois, pas encore vaincu",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -1488,6 +1537,12 @@
    ]
   },
   {
+   "fr": "Alors elle se replia sur elle-même… et s'éveilla affamée. Plus rien ne s'éloignerait jamais d'elle.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
    "fr": "Aléatoire",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -1543,6 +1598,12 @@
    ]
   },
   {
+   "fr": "ami",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Ami ajouté au groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -1568,6 +1629,12 @@
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "amis",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -1603,9 +1670,9 @@
    ]
   },
   {
-   "fr": "Ancien pseudonyme",
+   "fr": "ancienne",
    "where": [
-    "ui/screens/OnlineMigration.cpp"
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -1987,6 +2054,12 @@
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Appuyez sur « Aperçu » pour vérifier le compte cible.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -2656,6 +2729,18 @@
    ]
   },
   {
+   "fr": "Au mieux {0} chute dans ce niveau",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Au mieux {0} chutes dans ce niveau",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Au millimètre",
    "where": [
     "data/achievements/achievements.json"
@@ -3210,6 +3295,12 @@
    ]
   },
   {
+   "fr": "Aucun succès suivi. Choisissez « Suivre » sur une suggestion, cochez la case d'un succès dans la Liste ou validez-le sur la Toile : jusqu'à 5 à la fois.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun survivant",
    "where": [
     "data/achievements/achievements.json"
@@ -3388,9 +3479,15 @@
    ]
   },
   {
+   "fr": "Aucune progression n'attend plus d'être restaurée sur ce compte.",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune progression n'attend plus d'être restaurée.",
    "where": [
-    "ui/screens/OnlineMigration.cpp"
+    "game/online/AccountMigration.cpp"
    ]
   },
   {
@@ -3445,6 +3542,12 @@
    "fr": "Aucune sortie : le niveau ne peut pas être terminé",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune suggestion : tous les succès accessibles sont obtenus.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -3647,6 +3750,12 @@
    ]
   },
   {
+   "fr": "Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "avance",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -3656,6 +3765,18 @@
    "fr": "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » des CLASSEMENTS, « Course contre un fantôme… » des NIVEAUX EN LIGNE) : choix des fantômes, options d'affichage, mode entraînement.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Avant le premier combat",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avant les planètes, il n'y avait que de la poussière. Et dans cette poussière, un caillou.",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -3713,6 +3834,12 @@
    "fr": "avatars",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avec Cosmic Online (compte gratuit)",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4476,6 +4603,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorTools.cpp",
     "game/achievements/Achievements.cpp",
+    "game/content/BossStories.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
@@ -4528,9 +4656,21 @@
    ]
   },
   {
+   "fr": "Boss de la planète jouée récemment",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Boss du niveau",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Boss jamais affronté",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4543,6 +4683,12 @@
    "fr": "Boss rencontrés",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "boss sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4579,6 +4725,12 @@
    "fr": "boss {0}/{1}",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "boss à vaincre",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -4931,12 +5083,14 @@
   {
    "fr": "C'est le compte connecté : saisissez le pseudonyme de l'ANCIEN compte.",
    "where": [
-    "server/src/accountMigration.ts"
+    "server/src/accountMigration.ts",
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
    "fr": "C'est le dernier compte admin : il ne peut pas être fermé.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "server/src/accountMigration.ts"
    ]
   },
@@ -5078,6 +5232,12 @@
    "fr": "calculée d'après ses PV, ses phases et ses attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Calculées d'après votre progression : les plus proches du but, faisables maintenant, de catégories variées.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -6169,6 +6329,12 @@
    ]
   },
   {
+   "fr": "Cette progression était déjà restaurée sur cet ordinateur.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Cette roche fissurée cédera sous une Impulsion.",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -6416,6 +6582,12 @@
    "fr": "Chaque exemple est joué en boucle par le moteur du jeu.",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque génération ajouta la sienne. Rune après rune, le caillou grandit… et se leva.",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -6812,6 +6984,12 @@
    ]
   },
   {
+   "fr": "Choisir des succès",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Choisir la musique du menu principal dans le juke-box.",
    "where": [
     "data/achievements/achievements.json"
@@ -7036,6 +7214,12 @@
    ]
   },
   {
+   "fr": "chute",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Chute d'astre",
    "where": [
     "data/enemies/singularis.json"
@@ -7081,6 +7265,12 @@
    "fr": "Chute en planant",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "chutes",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -7479,6 +7669,12 @@
    ]
   },
   {
+   "fr": "Cochez jusqu'à 5 succès dans Succès pour suivre leur avancée ici.",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Code",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -7496,6 +7692,12 @@
   },
   {
    "fr": "Code de migration",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Code de migration (préparé sur l'ancien ordinateur)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -7531,6 +7733,7 @@
    "fr": "collection",
    "where": [
     "game/GameServices.cpp",
+    "game/online/ProgressMerge.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -7826,6 +8029,12 @@
    ]
   },
   {
+   "fr": "commentaire",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "commentaire d'un autre fil",
    "where": [
     "server/src/workshop.ts"
@@ -7901,6 +8110,12 @@
    "fr": "Commentaires",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "commentaires",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -8056,8 +8271,8 @@
   {
    "fr": "Compte cible introuvable.",
    "where": [
-    "server/src/accountMigration.ts",
-    "ui/screens/OnlineMigration.cpp"
+    "game/online/AccountMigration.cpp",
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -8206,6 +8421,12 @@
    "fr": "Confirmation",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "confirmation manquante",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -8690,7 +8911,8 @@
   {
    "fr": "Copie de la progression illisible.",
    "where": [
-    "game/GameServices.cpp"
+    "game/GameServices.cpp",
+    "game/online/AccountMigration.cpp"
    ]
   },
   {
@@ -8984,8 +9206,15 @@
    ]
   },
   {
+   "fr": "Cosmic Online ne répond pas : réessayez plus tard (HTTP {0}).",
+   "where": [
+    "game/online/AccountMigration.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Online ne répond pas : réessayez plus tard.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -9243,6 +9472,7 @@
   {
    "fr": "course",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
   },
@@ -9356,6 +9586,12 @@
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "courses",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -9629,6 +9865,12 @@
    ]
   },
   {
+   "fr": "créature",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Créature terrestre",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -9638,6 +9880,12 @@
    "fr": "Créature volante",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "créatures",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -10311,6 +10559,12 @@
    ]
   },
   {
+   "fr": "Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -10964,7 +11218,13 @@
    ]
   },
   {
-   "fr": "Données de « {0} » migrées vers « {1} ». Sauvegarde faite avant : {2}.",
+   "fr": "Données de « {0} » migrées vers « {1} » ; « {2} » est fermé.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Données de « {0} » migrées vers « {1} ».",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -12083,6 +12343,12 @@
    ]
   },
   {
+   "fr": "Déjà 5 succès suivis : décochez-en un pour suivre « {0} ».",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "déjà commencé",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -12438,7 +12704,13 @@
    ]
   },
   {
-   "fr": "Elle s'ajoute à la progression de {0} sur cet ordinateur (le meilleur de chaque côté est gardé). Une copie de la progression actuelle est faite avant.",
+   "fr": "Elle leur donnait tout : la sève des forêts, le feu des volcans, l'éclat des glaces.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Elle s'ajoute à la progression de cet ordinateur : le meilleur de chaque côté est gardé (meilleurs temps, succès, statistiques des boss) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées dans le dossier saves.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -12601,6 +12873,12 @@
    "fr": "en Bronze",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "En commun : {0} meilleurs temps ({1} meilleurs côté source), {2} succès nouveaux pour la cible.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -12942,6 +13220,7 @@
    "fr": "ennemi",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
+    "game/achievements/AchievementSuggestions.cpp",
     "game/content/ContentDatabase.cpp"
    ]
   },
@@ -12949,6 +13228,12 @@
    "fr": "Ennemi créé : {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "ennemi en une partie",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -12982,11 +13267,29 @@
    ]
   },
   {
+   "fr": "ennemi à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Ennemis",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/ObjectTypes.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "ennemis",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "ennemis en une partie",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -13002,9 +13305,27 @@
    ]
   },
   {
+   "fr": "Ennemis vaincus",
+   "where": [
+    "saves/HudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Ennemis vaincus : {0} / {1}",
+   "where": [
+    "game/gameplay/Hud.h"
+   ]
+  },
+  {
    "fr": "Ennemis vaincus, niveau par niveau et au total.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "ennemis à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -13559,6 +13880,12 @@
    ]
   },
   {
+   "fr": "essai",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Essai déjà enregistré.",
    "where": [
     "server/src/challenges.ts"
@@ -13580,6 +13907,12 @@
    "fr": "Essai refusé par le serveur.",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "essais",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -13698,6 +14031,12 @@
    "fr": "Explosion",
    "where": [
     "game/gameplay/Damage.cpp"
+   ]
+  },
+  {
+   "fr": "export",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -14587,6 +14926,18 @@
    ]
   },
   {
+   "fr": "Flèches vers les ennemis hors écran",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fléau des ombres",
    "where": [
     "data/achievements/achievements.json"
@@ -14686,6 +15037,7 @@
     "game/ghost/TrainingSegments.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/RatingService.cpp",
+    "game/online/AccountMigration.cpp",
     "game/online/CampaignRevisions.cpp",
     "game/online/DailyChallenges.cpp",
     "game/online/DeviceIdentity.cpp",
@@ -15309,6 +15661,12 @@
    "fr": "Gibraltar",
    "where": [
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "GIGA-BOSS · {0} PHASES",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -15992,6 +16350,12 @@
    ]
   },
   {
+   "fr": "Histoire des giga-boss",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Historique",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -16283,6 +16647,12 @@
    "fr": "hp : de 1 à 10 000 000",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "HUD : « Ennemis vaincus X / Y » pour les missions où il faut vaincre tous les ennemis d'un niveau (à placer dans l'éditeur du HUD).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -16633,9 +17003,21 @@
    ]
   },
   {
+   "fr": "Il veilla sur le village de la caverne pendant dix mille ans. Il connaissait chaque rire.",
+   "where": [
+    "data/stories/monolithe.json"
+   ]
+  },
+  {
    "fr": "Il vole trop haut... Tirs chargés quand il plonge !",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Il y a très longtemps, au centre de Kepler-Voss, brillait une toute jeune étoile. Elle s'appelait Lyse.",
+   "where": [
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -16665,6 +17047,7 @@
   {
    "fr": "image",
    "where": [
+    "game/content/BossStories.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -16834,9 +17217,15 @@
    ]
   },
   {
-   "fr": "Impossible de garder une copie des sauvegardes actuelles.",
+   "fr": "Impossible de créer le dossier de copie des sauvegardes actuelles.",
    "where": [
-    "game/GameServices.cpp"
+    "game/online/ProgressMerge.cpp"
+   ]
+  },
+  {
+   "fr": "Impossible de garder une copie des sauvegardes actuelles ({0}.json).",
+   "where": [
+    "game/online/ProgressMerge.cpp"
    ]
   },
   {
@@ -16900,6 +17289,12 @@
    "fr": "inconnu de cette version du jeu",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "inconnue",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -17323,6 +17718,12 @@
    "fr": "J'aime",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Jamais",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -17751,6 +18152,12 @@
    ]
   },
   {
+   "fr": "L'ancien compte",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "l'ancien compte",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -17875,6 +18282,12 @@
    "fr": "L'extension n'est pas .cplanet",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -18165,7 +18578,7 @@
    ]
   },
   {
-   "fr": "La copie de la progression n'a pas pu partir.",
+   "fr": "La copie de la progression n'a pas pu partir : {0}",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -18301,6 +18714,12 @@
    ]
   },
   {
+   "fr": "La Fumerolle les avala une à une, jusqu'à ce que son ventre brille comme une forge.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "La galerie de la Collection utilise la même recherche des lieux.",
    "where": [
     "data/news/changelog.json"
@@ -18391,6 +18810,12 @@
    ]
   },
   {
+   "fr": "La nuit où l'étoile du centre s'effondra, une pluie de braises tomba sur les Confins.",
+   "where": [
+    "data/stories/pyrrhax.json"
+   ]
+  },
+  {
    "fr": "La nuit polaire tombe sur le lac !",
    "where": [
     "data/enemies/aurorax.json",
@@ -18473,6 +18898,12 @@
    "fr": "La presse : frappez le sol, deux fois.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "La progression attend d'être restaurée par « {0} ».",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -19086,12 +19517,14 @@
   {
    "fr": "Le compte cible est fermé ou suspendu.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "server/src/accountMigration.ts"
    ]
   },
   {
    "fr": "Le compte cible est le compte source.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "server/src/accountMigration.ts"
    ]
   },
@@ -19102,8 +19535,15 @@
    ]
   },
   {
+   "fr": "Le compte source est fermé (ses données ont déjà été migrées).",
+   "where": [
+    "game/online/AccountMigration.cpp"
+   ]
+  },
+  {
    "fr": "Le compte source est fermé ou suspendu.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "server/src/accountMigration.ts"
    ]
   },
@@ -19281,7 +19721,8 @@
   {
    "fr": "Le Cœur effondré",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -19335,7 +19776,8 @@
   {
    "fr": "Le Dragon d'Obsidienne",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -19366,6 +19808,12 @@
    "fr": "Le défi peut être un niveau de la campagne ou un niveau ONLINE LEVELS choisi par l'administrateur ; « Télécharger » l'installe depuis le défi, et son créateur est prévenu que son niveau est à l'honneur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le feu d'une étoile mourante n'est pas fait pour un petit dragon : ses écailles devinrent du verre noir.",
+   "where": [
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -19402,6 +19850,12 @@
    "fr": "le fichier n'est pas un objet JSON",
    "where": [
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "Le fichier reçu est incomplet ou abîmé : réessayez.",
+   "where": [
+    "game/online/AccountMigration.cpp"
    ]
   },
   {
@@ -19503,7 +19957,8 @@
   {
    "fr": "Le Golem Primordial",
    "where": [
-    "data/music/tracks.json"
+    "data/music/tracks.json",
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -19673,6 +20128,12 @@
    ]
   },
   {
+   "fr": "Le Monolithe garde toujours le cœur des Confins. Il ne reconnaît plus personne : tout visiteur est un étranger.",
+   "where": [
+    "data/stories/monolithe.json"
+   ]
+  },
+  {
    "fr": "Le Monolithe ouvre son œil.",
    "where": [
     "data/enemies/monolithe.json"
@@ -19688,6 +20149,12 @@
    "fr": "Le Monolithe s'est tu. Le cœur des Confins se refroidit.",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le Monolithe se réveille : il marche vers vous et se replace au milieu de son sol (il ne reste plus coincé au bord des fosses ni dans les coins, et n'y tombe plus). Trois nouvelles attaques : Carapace roulante (il se roule en boule de pierre runique et fonce en rebondissant sur les murs : sautez par-dessus avec un double saut ; en carapace il encaisse, étourdi ensuite il prend plus de dégâts), Tremblement de terre (des fissures éclatent sous vos pieds et des rochers tombent de la voûte : ne restez pas immobile) et Bond titanesque (il disparaît en haut, son ombre vous suit, il retombe sur vous et ses ondes de choc filent au sol : sautez-les). Vos records du Cœur de Pierre restent valables.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -20238,6 +20705,12 @@
    ]
   },
   {
+   "fr": "Lecture de l'aperçu…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Lecture de la définition en ligne et des niveaux de la campagne…",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -20324,6 +20797,12 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "lecture…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -20534,13 +21013,25 @@
    ]
   },
   {
-   "fr": "Les données de {0} ont été migrées sur {1} (copie de la progression du {2}).",
+   "fr": "Les données de {0} ont été migrées sur {1}. Voici la progression de son ordinateur (« {2} »), copiée le {3}.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
-   "fr": "Les données de {0} sont maintenant sur {1}.",
+   "fr": "Les données de {0} ont été migrées sur {1}. Voici la progression de son ordinateur, copiée le {2}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de {0} sont maintenant sur {1} ; {2} est fermé. Il reste à restaurer la progression de son ordinateur sur celui-ci.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Les données de {0} sont maintenant sur {1} ; {2} est fermé. Le serveur n'avait aucune copie de la progression de son ordinateur.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -20761,6 +21252,12 @@
    "fr": "Les pouvoirs qui n'utilisent pas la touche de leur emplacement ont un cadre pointillé doré dans le HUD, au choix d'un pouvoir et dans le guide : passifs (aimant, dash aérien) ou utilisés avec un mouvement (planeur, triple saut, frappe au sol, tir chargé, grappin), avec la touche concernée.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les premiers enfants des Confins le trouvèrent dans une caverne et y gravèrent une rune, pour jouer : « Protège-nous ».",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -20987,6 +21484,12 @@
    "fr": "Lettres, chiffres, « _ », « . » ou « - » (3 à 20, pas au début ni à la fin)",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -21512,6 +22015,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Lyse chantait de la lumière, et trois petites planètes venaient se réchauffer autour d'elle.",
+   "where": [
+    "data/stories/singularis.json"
    ]
   },
   {
@@ -22205,6 +22714,12 @@
    ]
   },
   {
+   "fr": "Meilleure médaille : {0}",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Meilleure série : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -22581,7 +23096,25 @@
    ]
   },
   {
+   "fr": "migration des données de {0} refusée : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Migration en cours…",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Migration refusée par le serveur.",
+   "where": [
+    "game/online/AccountMigration.cpp"
+   ]
+  },
+  {
+   "fr": "MIGRER",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -22614,6 +23147,12 @@
    "fr": "Migrer vers un nouveau compte",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Migrer vers un nouveau compte : l'ancien ordinateur donne un code de migration à usage unique, le nouveau compte récupère records, succès, récompenses et temps de jeu (le meilleur des deux côtés), puis propose de restaurer la progression. Une copie des sauvegardes actuelles est faite avant toute restauration.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -22696,6 +23235,7 @@
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/OnlineRecord.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -22835,7 +23375,8 @@
    "fr": "Modifier",
    "where": [
     "ui/online/CommentsPanel.cpp",
-    "ui/screens/AdminEnemies.cpp"
+    "ui/screens/AdminEnemies.cpp",
+    "ui/screens/PauseScene.cpp"
    ]
   },
   {
@@ -23116,6 +23657,12 @@
    ]
   },
   {
+   "fr": "morceau",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "morceau hors de son ordre",
    "where": [
     "game/online/Spectate.cpp"
@@ -23125,6 +23672,12 @@
    "fr": "Morceaux",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "morceaux",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23386,6 +23939,12 @@
    ]
   },
   {
+   "fr": "médaille",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Médaille {0}",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -23400,6 +23959,7 @@
   {
    "fr": "médailles",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -23533,7 +24093,7 @@
    ]
   },
   {
-   "fr": "Ne le donnez à personne. Il faut aussi le mot de passe de {0}.",
+   "fr": "Ne le donnez à personne : avec le mot de passe de {0}, il donne toutes ses données. Une fois la migration faite, ce compte est fermé.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -23543,6 +24103,12 @@
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ne plus suivre",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -23606,6 +24172,7 @@
   {
    "fr": "niveau",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "game/ghost/GhostStore.cpp"
    ]
   },
@@ -23631,6 +24198,12 @@
    "fr": "niveau créé avec une version plus récente du jeu",
    "where": [
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "niveau de joueur",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23710,6 +24283,18 @@
    "fr": "niveau du défi invalide",
    "where": [
     "game/online/DailyChallenges.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau débloqué, jamais terminé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau déjà terminé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23885,6 +24470,12 @@
    ]
   },
   {
+   "fr": "niveau nettoyé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau non installé",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
@@ -23907,6 +24498,24 @@
    "fr": "Niveau retiré.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau sans dégât",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau sans mourir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau sans pouvoir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -23952,6 +24561,12 @@
    ]
   },
   {
+   "fr": "niveau tout ramassé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau trop volumineux pour un projet (2 Mo au plus).",
    "where": [
     "server/src/projects.ts"
@@ -23984,9 +24599,33 @@
    ]
   },
   {
+   "fr": "niveau à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Niveau à exporter",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveau à finir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau à noter",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau à publier",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -24002,9 +24641,21 @@
    ]
   },
   {
+   "fr": "niveaux",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "niveaux classés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux de joueurs",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -24044,6 +24695,12 @@
    ]
   },
   {
+   "fr": "niveaux et projets",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Niveaux EXTRÊME : un encadrement qui avertit (fond rouge sang, bordure fissurée qui bat comme un cœur, sang qui coule, flammes, braises, griffes) dans le choix du niveau et dans CLASSEMENTS.",
    "where": [
     "data/news/changelog.json"
@@ -24075,6 +24732,12 @@
    ]
   },
   {
+   "fr": "niveaux nettoyés",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "niveaux publiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -24084,6 +24747,54 @@
    "fr": "Niveaux publiés et projets, le créateur change ({0} · {1} projets)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux sans dégât",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux sans mourir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux sans pouvoir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux tout ramassés",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à créer",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à finir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à noter",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveaux à publier",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -26599,6 +27310,12 @@
    ]
   },
   {
+   "fr": "Pas encore commencé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore créée : « Créer » l'envoie au serveur.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -26761,9 +27478,15 @@
    ]
   },
   {
-   "fr": "Passent sur {0} : records et replays, succès, récompenses, temps joué, et la copie de la progression (rechargée sur ce PC). Le meilleur des deux côtés est gardé si {1} a déjà joué.",
+   "fr": "Passent sur {0} : records et replays, succès, récompenses, temps de jeu, et la progression de l'ancien ordinateur (à restaurer ici ensuite). Le meilleur des deux côtés est gardé.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Passer",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -27113,6 +27836,12 @@
    ]
   },
   {
+   "fr": "phase sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Phase unique",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -27162,6 +27891,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "phases sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -27454,6 +28189,7 @@
   {
    "fr": "planète",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -27527,6 +28263,12 @@
    "fr": "Planètes",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "planètes",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -27880,6 +28622,30 @@
    "fr": "plus que la limite : elle passe à {0}",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0}",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0} phase sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0} phases sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Plus que {0} {1}",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28474,6 +29240,12 @@
    ]
   },
   {
+   "fr": "pouvoir",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoir 1",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -28558,6 +29330,12 @@
    ]
   },
   {
+   "fr": "pouvoir utilisé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Pouvoir utilisé (source = id du pouvoir)",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -28580,6 +29358,12 @@
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoirs",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28646,6 +29430,12 @@
    "fr": "Pouvoirs portés au maximum",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoirs utilisés",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28733,6 +29523,18 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "preuve de fin",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "preuves de fin",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -28871,9 +29673,21 @@
    ]
   },
   {
+   "fr": "progression",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Progression : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Progression ajoutée, mais une sauvegarde n'a pas pu être écrite ({0}) : les précédentes sont dans saves › {1}.",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
@@ -28884,6 +29698,12 @@
   },
   {
    "fr": "Progression locale (dernière copie) : le jeu du compte cible propose de la restaurer",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Progression locale : aucune copie sur le serveur",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -28913,7 +29733,7 @@
    ]
   },
   {
-   "fr": "Progression restaurée : elle s'ajoute à celle de cet ordinateur.",
+   "fr": "Progression restaurée : elle s'ajoute à celle de cet ordinateur (sauvegardes d'avant : saves › {0}).",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -29268,6 +30088,12 @@
    ]
   },
   {
+   "fr": "Pseudonyme de l'ancien compte",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Pseudonyme de votre ami",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -29491,6 +30317,18 @@
    "fr": "Publiés sur votre profil Cosmic Online : visibles par ceux qui peuvent voir votre profil.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Puis des machines vinrent boire sa lumière. Un peu plus chaque jour.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Puis les gens partirent vers les étoiles. Personne ne pensa à effacer la rune.",
+   "where": [
+    "data/stories/monolithe.json"
    ]
   },
   {
@@ -30464,12 +31302,19 @@
    ]
   },
   {
+   "fr": "record à battre",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "records",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/GameServices.cpp",
     "game/ghost/GhostStore.cpp",
+    "game/online/ProgressMerge.cpp",
     "game/records/Records.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminEnemies.cpp",
@@ -30514,7 +31359,19 @@
    ]
   },
   {
+   "fr": "records à battre",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Records, meilleurs temps et replays ({0} · {1} meilleurs temps ; cible : {2})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Records, meilleurs temps et replays ({0} · {1} meilleurs temps)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -30846,6 +31703,12 @@
    ]
   },
   {
+   "fr": "relique",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Relique ancienne",
    "where": [
     "data/achievements/achievements.json",
@@ -30856,6 +31719,12 @@
    "fr": "Relique secrète",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "reliques",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -31454,6 +32323,13 @@
    ]
   },
   {
+   "fr": "Restaurer la progression",
+   "where": [
+    "ui/screens/NotificationsScene.cpp",
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "RESTAURER LA PROGRESSION TRANSFÉRÉE",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -31737,6 +32613,13 @@
    "fr": "Revenu au tirage du serveur : « {0} ».",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Revoir l'histoire",
+   "where": [
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -32243,6 +33126,12 @@
    ]
   },
   {
+   "fr": "récompense",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Récompense de défi",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -32286,9 +33175,22 @@
    ]
   },
   {
+   "fr": "récompenses",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp",
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompenses de ce défi",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses de défis, titres et combinaisons créées ({0} ; cible : {1})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -32494,6 +33396,12 @@
    "fr": "Réponse du serveur incohérente.",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Réponse du serveur incomplète : réessayez.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -33240,6 +34148,12 @@
    ]
   },
   {
+   "fr": "saut",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Saut + double saut + Impulsion pour gravir la falaise.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -33309,9 +34223,21 @@
    ]
   },
   {
+   "fr": "sauts",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Sauts en plus",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Sauvegarde",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -33351,6 +34277,12 @@
    ]
   },
   {
+   "fr": "Sauvegarde faite avant : {0}.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Sauvegarde introuvable.",
    "where": [
     "server/src/backups.ts"
@@ -33360,6 +34292,12 @@
    "fr": "Sauvegarde lisible et compatible. Pour remplacer toutes les données, tapez la phrase de confirmation.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "sauvegarde {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -33533,6 +34471,12 @@
    ]
   },
   {
+   "fr": "secret",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Secret découvert !",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -33547,6 +34491,7 @@
   {
    "fr": "secrets",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "game/gameplay/RunCounters.cpp",
     "game/records/Records.cpp"
    ]
@@ -33633,6 +34578,12 @@
    ]
   },
   {
+   "fr": "segment d'or",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "SEGMENTS",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -33642,6 +34593,12 @@
    "fr": "Segments",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "segments d'or",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -33788,6 +34745,12 @@
    "fr": "Ses ailes déchaînent la tempête !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Ses frères crachaient des flammes. Lui ne soufflait qu'un nuage de fumée. On l'appelait « la Fumerolle ».",
+   "where": [
+    "data/stories/pyrrhax.json"
    ]
   },
   {
@@ -35143,6 +36106,7 @@
   {
    "fr": "succès",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
   },
@@ -35171,6 +36135,12 @@
    ]
   },
   {
+   "fr": "Succès du Boomerang chargé : « Maîtrise : Boomerang chargé » et « Virtuose : Boomerang chargé ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès du Monolithe (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Granit (590 étoiles), la traînée Éclats de roche (600), l'effet de victoire Séisme runique (610), le Cercle runique et le titre Briseur de pierre.",
    "where": [
     "data/news/changelog.json"
@@ -35184,6 +36154,12 @@
   },
   {
    "fr": "Succès déclarés ({0} · {1} étoiles ; cible : {2})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Succès déclarés ({0} · {1} étoiles)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -35205,6 +36181,30 @@
    "fr": "Succès requis",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "SUCCÈS SUIVIS",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Succès suivis",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Succès › Suggestions : 5 succès proposés d'après votre progression (les plus proches du but, faisables maintenant, de catégories variées), avec ce qu'il reste à faire (« Plus que 70 sauts »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Suggestions",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -35246,6 +36246,12 @@
    ]
   },
   {
+   "fr": "Suivez jusqu'à 5 succès (case « Suivre » dans la liste, la toile ou les suggestions) : leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "SUIVI",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -35253,9 +36259,27 @@
    ]
   },
   {
+   "fr": "Suivi",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
    "fr": "SUIVRE",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre / ne plus suivre",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -35268,6 +36292,12 @@
    "fr": "Suivre B",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivre ce succès",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -35427,6 +36457,12 @@
    ]
   },
   {
+   "fr": "Sur la planète jouée récemment",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Sur la première île-sanctuaire, un bosquet de Sylvanox s'est enfoncé dans la nébuleuse. Ses racines vivent encore, et la Mère-Racine les entend toutes.",
    "where": [
     "data/levels/aethra_01.json"
@@ -35436,6 +36472,18 @@
    "fr": "Sur le lac, chaque reflet peut mordre.",
    "where": [
     "data/levels/aethra_02.json"
+   ]
+  },
+  {
+   "fr": "Sur le niveau joué en dernier",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Sur le nouvel ordinateur, connecté au nouveau compte : PARAMÈTRES EN LIGNE › Cet ordinateur › « Récupérer un ancien compte ».",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -36003,7 +37051,7 @@
    ]
   },
   {
-   "fr": "Tapez MIGRER pour confirmer",
+   "fr": "Tapez {0} pour confirmer",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -36191,6 +37239,18 @@
    ]
   },
   {
+   "fr": "temps joué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Temps joué ({0} ; cible : {1})",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "Temps joué ({0})",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -36368,6 +37428,12 @@
    "fr": "Tenter 25 fois le même niveau.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Tenté {0} fois, jamais terminé",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -36706,6 +37772,12 @@
    "fr": "Terminé le {0} à 00:00 UTC · verrouillé",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Terminé, encore sans médaille",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -38312,6 +39384,12 @@
    ]
   },
   {
+   "fr": "Un compte gratuit suffit",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "un compte supprimé",
    "where": [
     "ui/screens/AdminCampaign.cpp",
@@ -38483,6 +39561,12 @@
    "where": [
     "server/src/accountMigration.ts",
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "un import était en cours",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -38663,6 +39747,12 @@
    ]
   },
   {
+   "fr": "Un soir, il ne lui resta qu'une étincelle. Elle eut froid. Elle eut peur d'être seule dans le noir.",
+   "where": [
+    "data/stories/singularis.json"
+   ]
+  },
+  {
    "fr": "Un souffle de feu balaie le portail, puis retombe en braises.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -38789,7 +39879,7 @@
    ]
   },
   {
-   "fr": "Une copie de la progression vient d'être envoyée. Ce code permet à un nouveau compte, sur un autre ordinateur, de récupérer toutes vos données.",
+   "fr": "Une copie de la progression vient d'être envoyée. Avec ce code, un nouveau compte, sur un autre ordinateur, récupère toutes vos données.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -38882,6 +39972,12 @@
    "fr": "Une niche de cristal au sommet des cimes !",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Une nouvelle copie de la progression n'a pas pu partir ({0}) : c'est celle du {1} qui sera transférée.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -38990,12 +40086,6 @@
    "fr": "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs reçoivent une notification.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
-   ]
-  },
-  {
-   "fr": "Une sauvegarde n'a pas pu être écrite (les anciennes sont dans {0}).",
-   "where": [
-    "game/GameServices.cpp"
    ]
   },
   {
@@ -39710,13 +40800,19 @@
    ]
   },
   {
-   "fr": "Valable 24 h · une seule fois",
+   "fr": "Vaincu {0} fois, jamais sans être touché",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Valable 24 h, une seule fois : jusqu'au {0}.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
-   "fr": "Valable 24 h · une seule fois · jusqu'au {0}",
+   "fr": "Valable 24 h, une seule fois.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -39982,6 +41078,24 @@
    ]
   },
   {
+   "fr": "Version du jeu",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Version du jeu : inconnue (aucune connexion depuis la version 2.51).",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Version du jeu installée : {0} (déclarée par son jeu {1})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Version du jeu trop ancienne : mettez le jeu à jour.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -40142,6 +41256,7 @@
   {
    "fr": "victoire",
    "where": [
+    "game/achievements/AchievementSuggestions.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
   },
@@ -40150,6 +41265,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "victoires",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {
@@ -41097,6 +42218,7 @@
   {
    "fr": "Vous ne pouvez pas fermer votre propre compte.",
    "where": [
+    "game/online/AccountMigration.cpp",
     "server/src/accountMigration.ts"
    ]
   },
@@ -41644,6 +42766,7 @@
    "fr": "zoom",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
+    "game/content/BossStories.cpp",
     "game/gameplay/GameWorld.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/Cinematic.cpp",
@@ -41840,6 +42963,12 @@
    ]
   },
   {
+   "fr": "{0} % fait",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "{0} (copie)",
    "where": [
     "editors/enemy_editor/EnemyEditAccess.cpp",
@@ -41961,6 +43090,12 @@
    "fr": "{0} / {1} récompenses",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} suivis",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -42286,6 +43421,12 @@
    "fr": "{0} autre(s) à voir ensuite",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Avec ce code, un nouveau compte, sur un autre ordinateur, récupère toutes vos données.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -42617,7 +43758,7 @@
    ]
   },
   {
-   "fr": "{0} est ensuite fermé ; son pseudonyme se libère après 30 jours.",
+   "fr": "{0} est ensuite fermé : plus de connexion, son pseudonyme se libère après 30 jours.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -42683,9 +43824,21 @@
    ]
   },
   {
+   "fr": "{0} fermé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} fichier(s) manquant(s)",
    "where": [
     "packaging/PackageExporter.cpp"
+   ]
+  },
+  {
+   "fr": "{0} fichiers de replays remplacés restent sur le serveur.",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
    ]
   },
   {
@@ -43771,6 +44924,18 @@
    ]
   },
   {
+   "fr": "{0}, c'est la dernière publiée.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}, la dernière publiée est la {1}.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0},{1} Mo",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -43885,6 +45050,12 @@
    ]
   },
   {
+   "fr": "« Plus tard » la garde sur le serveur : PARAMÈTRES EN LIGNE › Cet ordinateur › « Restaurer la progression transférée ».",
+   "where": [
+    "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
    "fr": "« Point",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -43894,6 +45065,12 @@
    "fr": "« Regarder » apparaît ici quand un ami joue et vous autorise à le regarder.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Revoir l'histoire » sur la fiche de chaque giga-boss déjà rencontré et dans Collection › Galerie › Gardiens ; Paramètres › Jeu : « Histoire des giga-boss : Avant le premier combat / Jamais ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -43996,6 +45173,12 @@
    "fr": "« {0} » est dans l'ATELIER → Mes niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« {0} » est déjà obtenu : rien à suivre.",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -44140,6 +45323,12 @@
    "fr": "À jouer depuis la carte des planètes.",
    "where": [
     "game/progression/NewsCenter.cpp"
+   ]
+  },
+  {
+   "fr": "à jour",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -44769,6 +45958,12 @@
    ]
   },
   {
+   "fr": "éclat",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
    "fr": "Éclat d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -44797,6 +45992,12 @@
    "where": [
     "data/enemies/aurorax.json",
     "data/enemies/echo_aurorax.json"
+   ]
+  },
+  {
+   "fr": "éclats",
+   "where": [
+    "game/achievements/AchievementSuggestions.cpp"
    ]
   },
   {

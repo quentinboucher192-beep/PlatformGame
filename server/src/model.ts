@@ -10,6 +10,9 @@ export interface PlayerRow {
     device_rebind?: number;
     /** 2.50: closed after its data was migrated to another account (`merged_into`); account_status is then « suspended ». */
     closed_at?: string | null;
+    /** 2.51: game version declared by the client (X-Cosmic-Client), for administrators only. */
+    client_version?: string | null;
+    client_version_at?: string | null;
     merged_into?: string | null;
     presence_state?: string | null;
     presence_at?: string | null;

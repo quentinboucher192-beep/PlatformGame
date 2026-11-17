@@ -13,6 +13,7 @@
 #include "game/gameplay/RunCounters.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
+#include "ui/screens/BossStoryScene.h"
 #include "ui/screens/PauseScene.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
@@ -370,17 +371,11 @@ void GameScene::startGhosts() {
     ghostRun_.setVisible(gs.enabled || opt_.ghostsChosen);
 }
 
-void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
-    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_) return;
-    statsNoted_ = true;
-    // Section training (its powers may be chosen): never counted for the achievements.
-    if (opt_.training) return;
-    AchievementStats& a = g_.achievements.stats();
-    const RunStats& s = world_->stats();
+bool GameScene::addRunCounters(AchievementStats& a, bool completed, int64_t& uses) const {
     // The world's counters (kills, by family too, deaths, collectibles, powers carried): none for a training.
-    if (!noteRunCounters(a, *world_, completed)) return;
+    if (!noteRunCounters(a, *world_, completed)) return false;
     a.add("jumps", runJumps_);
-    int64_t uses = 0;
+    uses = 0;
     for (const auto& [id, n] : runPowers_) {
         if (!g_.content.power(id)) continue;  // only the player's powers
         a.powerUses[id] += n;
@@ -389,6 +384,26 @@ void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
     }
     a.add("power_uses", uses);
     if (level_.extreme && !opt_.spawn) a.add("extreme_attempts");
+    return true;
+}
+
+AchievementStats GameScene::liveAchievementStats() const {
+    AchievementStats a = g_.achievements.stats();
+    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_ || opt_.training) return a;
+    int64_t uses = 0;
+    addRunCounters(a, false, uses);  // as the run would count if it were left now
+    return a;
+}
+
+void GameScene::noteAchievementStats(bool completed, const RecordUpdate* upd) {
+    if (statsNoted_ || !world_ || opt_.editorTest || loadFailed_) return;
+    statsNoted_ = true;
+    // Section training (its powers may be chosen): never counted for the achievements.
+    if (opt_.training) return;
+    AchievementStats& a = g_.achievements.stats();
+    const RunStats& s = world_->stats();
+    int64_t uses = 0;
+    if (!addRunCounters(a, completed, uses)) return;
     if (completed) {
         // Level achievements: a campaign level played from its start.
         if (!workshop_ && !opt_.level && !opt_.spawn && !opt_.training) {
@@ -475,6 +490,12 @@ void GameScene::onExit() {
 void GameScene::applyGhostSettings() { ghostRun_.setSettings(g_.settings.ghosts); }
 
 void GameScene::onResume() {
+    if (storyOpen_) {
+        // The story of the giga boss is over (or skipped): the fight starts where it was, the
+        // presses made during the story dropped (below) so that nothing jumps or strikes.
+        storyOpen_ = false;
+        storyBoss_.clear();
+    }
     g_.app.audio().setMusicDuck(1.0f);
     refreshPowerKeys();  // « Touches de ce niveau », the settings: maybe other keys now
     g_.app.input().consumePlayerInput();
@@ -642,6 +663,8 @@ std::string GameScene::nextLevelId() const {
 
 void GameScene::fixedUpdate(float dt) {
     if (!world_) return;
+    // The story of a giga boss is due: the run waits for it (no step, no input recorded).
+    if (!storyBoss_.empty()) return;
     // A power offer waits for the player's answer (PowerChoiceScene): nothing is simulated
     // or recorded until it comes. Scripted runs leave the power unless told otherwise.
     uint8_t choice = 0;
@@ -687,6 +710,7 @@ void GameScene::fixedUpdate(float dt) {
         bossFights_.step(*world_, g_.bossStats);
         bossFeedback();
     }
+    if (!ended_) checkBossStory();
     if (!ended_ && race_.active()) {
         race_.update(*world_);
         recorder_.raceProgress(race_.progress().bossRemoved, race_.progress().wavesDone);
@@ -705,6 +729,7 @@ void GameScene::fixedUpdate(float dt) {
 }
 
 void GameScene::drawBossArrow(const WorldView& view) {
+    bossArrowRect_ = {};
     Enemy* boss = world_->activeBoss();
     if (!boss || !boss->alive() || world_->cinematic().active()) return;
     UIContext& ui = g_.ui;
@@ -731,11 +756,103 @@ void GameScene::drawBossArrow(const WorldView& view) {
     float pulse = 1.0f + 0.1f * std::sin(ui.time() * 12.0f);
     float size = ui.s(84) * (bright ? pulse : 0.92f);
     Rect dst = Rect::fromCenter(p, {size, size});
+    bossArrowRect_ = Rect::fromCenter(p, {ui.s(84) * 1.5f, ui.s(84) * 1.5f});  // its halo at its largest
     ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(bright ? 1.0f : 0.45f), BlendMode::Alpha, false, false, angle);
     if (bright) {
         Rect halo = Rect::fromCenter(p, {size * 1.35f, size * 1.35f});
         ui.r().drawTexture(*tex, nullptr, halo, Color{255, 150, 150, 255}.withAlphaF(0.55f), BlendMode::Additive, false, false, angle);
         ui.r().drawTexture(*tex, nullptr, dst, Color::white().withAlphaF(0.5f), BlendMode::Additive, false, false, angle);
+    }
+}
+
+void GameScene::checkBossStory() {
+    Enemy* b = world_->activeBoss();
+    if (!b || !b->alive() || !isGigaBoss(b->def())) return;
+    StoryContext ctx;
+    ctx.bossTraining = opt_.bossTraining.has_value();
+    ctx.editorTest = opt_.editorTest;
+    // Automated runs (scripted input, screenshots that force a boss's attack or phase, or open
+    // the pause menu) are never held by a story.
+    ctx.scripted = script_.active() || opt_.forceBossPhase > 0 || !opt_.forceBossAttack.empty() || opt_.openPause || opt_.pauseAfter > 0.0f;
+    if (!storyDue(b->def(), g_.stories, g_.bossStats, g_.settings.gameplay.bossStories, ctx)) return;
+    // Seen from now on (a story skipped counts), kept at once.
+    storyBoss_ = b->def().id;
+    g_.bossStats.markStorySeen(storyBoss_);
+    g_.bossStats.save();
+}
+
+void GameScene::drawEnemyArrows(const WorldView& view) {
+    enemyArrowAreas_.clear();
+    // Only what the player saw while playing (not the camera of a cinematic or of the intro).
+    if (world_->cinematic().active() || world_->state() != WorldState::Playing) return;
+    UIContext& ui = g_.ui;
+    const float W = ui.screenW(), H = ui.screenH();
+    const Rect screen{0.0f, 0.0f, W, H};
+    // Who is on screen now (noted whatever the setting: turned on again, the arrows know them).
+    // The boss is left out: it has its own arrow.
+    std::vector<EnemyArrows::Tracker::Enemy> seen;
+    seen.reserve(world_->enemies().size());
+    for (const auto& e : world_->enemies())
+        seen.push_back({e->uid(), view.toScreen(e->box), e->alive() && !e->dormant() && !e->def().isBoss});
+    const std::vector<Rect> away = metEnemies_.update(screen, seen);
+    if (!g_.settings.gameplay.enemyArrows || away.empty()) return;
+    auto tex = g_.app.resources().texture("ui/enemy_arrow.png");
+    if (!tex) return;
+    EnemyArrows::Layout l;
+    l.screen = screen;
+    l.arrowSize = ui.s(54);
+    l.gap = ui.s(6);
+    l.inset = l.arrowSize * 0.5f + ui.s(14);
+    l.packGap = ui.s(120);
+    l.packSpan = ui.s(360);
+    // The count of a pack: its room is that of the largest count possible (every enemy away).
+    const float fs = std::max(22.0f, 13.0f / ui.s(1.0f));
+    const Vec2 widest = ui.text().measure("×" + std::to_string(away.size()), FontFace::Bold, ui.s(fs));
+    l.badgeSize = {widest.x + ui.s(16), std::max(widest.y, ui.s(fs)) + ui.s(6)};
+    // Kept clear: the HUD as it is drawn, the boss arrow, the ghosts' box, the banners at the
+    // bottom left (training, challenge) and the frame counter.
+    const GameplaySettings& gs = g_.settings.gameplay;
+    const Enemy* boss = world_->activeBoss();
+    for (int e = 0; e < kHudElements; ++e) {
+        auto el = static_cast<HudElement>(e);
+        if (el == HudElement::Splits || !hudVisible(gs, el)) continue;
+        if (el == HudElement::Boss && !(boss && boss->alive())) continue;
+        Rect a = hud_.area(ui, *world_, el, hud_.place(ui, *world_, gs, el));
+        if (!a.empty()) l.keepOut.push_back(a);
+    }
+    if (!bossArrowRect_.empty()) l.keepOut.push_back(bossArrowRect_);
+    if (ghostRun_.active() && ghostRun_.hudRect().w > 0.0f) l.keepOut.push_back(ghostRun_.hudRect());
+    if (opt_.training) {
+        l.keepOut.push_back(trainingRefsRect_);
+        l.keepOut.push_back(trainingTagRect_);
+        if (segmentBanner_ > 0.0f) l.keepOut.push_back(trainingBannerRect_);
+    }
+    if (opt_.training || opt_.bossTraining || world_->practiceRespawn() || opt_.challenge) {
+        const float bfs = std::max(15.0f, 11.5f / ui.s(1.0f));  // the banners' text (drawTrainingBanner)
+        const float bh = ui.s(16) + ui.s(bfs + 18) + ui.s(6);
+        l.keepOut.push_back({0.0f, H - bh, W * 0.62f + ui.s(16), bh});
+    }
+    if (g_.settings.graphics.showFps) l.keepOut.push_back({0.0f, H - ui.s(48), ui.s(170), ui.s(48)});
+    // A dialogue's box at the bottom (Hud::drawMessages).
+    if (messagesVisible(gs))
+        for (const WorldMessage& m : world_->messages())
+            if (m.style == WorldMessage::Style::Dialogue) {
+                l.keepOut.push_back({(W - ui.s(1100)) * 0.5f, H - ui.s(200), ui.s(1100), ui.s(150)});
+                break;
+            }
+    for (const EnemyArrows::Arrow& a : EnemyArrows::layout(l, away)) {
+        // Steady (the boss arrow blinks), fainter for a pack far away.
+        const float distK = std::clamp((a.target - a.pos).length() / (W * 1.2f), 0.0f, 1.0f);
+        const float alpha = 1.0f - 0.45f * distK;
+        ui.r().drawTexture(*tex, nullptr, a.box, Color::white().withAlphaF(alpha), BlendMode::Alpha, false, false, a.angle * 57.29578f);
+        if (a.count > 1) {
+            const std::string n = "×" + std::to_string(a.count);
+            ui.r().fillRoundedRect(a.badge, a.badge.h * 0.5f, Color{8, 12, 26, 220});
+            ui.r().drawRoundedRect(a.badge, a.badge.h * 0.5f, ui.theme().warm.withAlphaF(0.8f * alpha), std::max(1.0f, ui.s(1.5f)));
+            ui.label(n, a.badge.center(), ui.fitFont(n, FontFace::Bold, fs, a.badge.w - ui.s(10), 0.6f), ui.theme().warm, Align::Center,
+                     FontFace::Bold, VAlign::Middle);
+        }
+        enemyArrowAreas_.push_back(a.area.expanded(ui.s(6)));  // with room for a frame's move
     }
 }
 
@@ -937,6 +1054,18 @@ void GameScene::update(float dt) {
         return;
     }
     if (!world_) return;
+    // The story of a giga boss whose fight just started, over the waiting run.
+    if (!storyBoss_.empty()) {
+        if (!storyOpen_) {
+            if (auto story = makeBossStory(g_, storyBoss_)) {
+                storyOpen_ = true;
+                g_.app.pushScene(std::move(story));
+            } else {
+                storyBoss_.clear();
+            }
+        }
+        if (storyOpen_) return;
+    }
     syncPowerKeys();
     world_->update(dt);
     // The pause map: what the camera has shown (display only, outside the simulation).
@@ -1129,23 +1258,26 @@ void GameScene::render(float alpha) {
     // The ghosts' HUD: not under the results screen (nor under its notifications).
     if (ghostRun_.active() && !world_->cinematic().active() && world_->state() != WorldState::Intro && (!ended_ || opt_.training)) {
         const GameplaySettings& gs = g_.settings.gameplay;
-        Rect keepOut[kHudElements + 3];
-        int n = 0;
+        std::vector<Rect> keepOut;
         for (int e = 0; e < kHudElements; ++e) {
             auto el = static_cast<HudElement>(e);
-            if (el != HudElement::Splits && hudVisible(gs, el)) keepOut[n++] = hud_.area(g_.ui, *world_, el, hud_.place(g_.ui, *world_, gs, el));
+            if (el != HudElement::Splits && hudVisible(gs, el)) keepOut.push_back(hud_.area(g_.ui, *world_, el, hud_.place(g_.ui, *world_, gs, el)));
         }
         // Section training: the ghosts' names never go under its references, its tag or the
         // banner of an attempt (their places of the previous frame).
         if (opt_.training) {
-            keepOut[n++] = trainingRefsRect_;
-            keepOut[n++] = trainingTagRect_;
-            if (segmentBanner_ > 0.0f) keepOut[n++] = trainingBannerRect_;
+            keepOut.push_back(trainingRefsRect_);
+            keepOut.push_back(trainingTagRect_);
+            if (segmentBanner_ > 0.0f) keepOut.push_back(trainingBannerRect_);
         }
+        // Nor under the arrows towards the enemies out of view (2.52, their places of the previous frame).
+        keepOut.insert(keepOut.end(), enemyArrowAreas_.begin(), enemyArrowAreas_.end());
         Hud::Place sp = hud_.place(g_.ui, *world_, gs, HudElement::Splits);
-        ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut, n);
+        ghostRun_.drawHud(g_.ui, view, hud_.area(g_.ui, *world_, HudElement::Splits, sp), sp.k, hudVisible(gs, HudElement::Splits), keepOut.data(),
+                          static_cast<int>(keepOut.size()));
     }
     drawBossArrow(view);
+    drawEnemyArrows(view);
     if (opt_.training || opt_.bossTraining || (world_ && world_->practiceRespawn())) drawTrainingBanner();
     else if (opt_.challenge && !ended_) drawChallengeBanner();
     if (g_.settings.graphics.showFps) {

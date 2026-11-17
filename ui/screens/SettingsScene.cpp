@@ -412,7 +412,11 @@ private:
 
     void gameplay(const Rect& c) {
         UIContext& ui = g_.ui;
-        Rect r{c.x, c.y, std::min(c.w, ui.s(900)), ui.s(54)};
+        // Ten rows, then where the saves are: they scroll when the window is too short for them.
+        const float total = row() * 10.0f + ui.s(20) + ui.s(28) + ui.s(28);
+        const bool scrolls = total > c.h;
+        ui.beginScroll("gamescroll", c, total);
+        Rect r{c.x, c.y - ui.scrollOffset(), std::min(c.w - (scrolls ? ui.s(16) : 0.0f), ui.s(900)), ui.s(54)};
         // Language of every text, applied at once (the texts are translated when drawn).
         // The caption and the names stay in both languages, so that anyone finds them.
         int lang = settingsLanguage(working_) == Language::English ? 1 : 0;
@@ -428,12 +432,23 @@ private:
         r.y += row();
         ui.toggle("hints", r, "Afficher les touches à l'écran", working_.gameplay.showInputHints);
         r.y += row();
+        // 2.52: an arrow on the border towards the enemies already met that are out of view.
+        ui.toggle("enemyarrows", r, "Flèches vers les ennemis hors écran", working_.gameplay.enemyArrows);
+        ui.newBadge("enemyarrows", r, "settings.game.enemy_arrows", true, true);
+        r.y += row();
         std::vector<std::string> bars = {"Masquée", "En haut de l'écran", "En bas de l'écran"};
         if (working_.gameplay.hud[HudElement::Progress].custom) bars.push_back("Placée dans l'éditeur du HUD");
         ui.cycle("progress", r, "Barre de progression du niveau", working_.gameplay.progressBar, bars);
         r.y += row();
-        if (ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)"))
-            g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
+        // 2.51: the story told before the first fight against each giga boss.
+        int story = std::clamp(working_.gameplay.bossStories, 0, 1);
+        if (ui.cycle("bossstories", r, "Histoire des giga-boss", story, {"Avant le premier combat", "Jamais"}))
+            working_.gameplay.bossStories = story;
+        ui.newBadge("bossstories", r, "settings.boss_stories", true, true);
+        r.y += row();
+        bool openHud = ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)");
+        ui.newBadge("hudeditor", r, "settings.hud_editor", true, true);  // « NOUVEAU » (2.52: « Ennemis vaincus »)
+        if (openHud) g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
         r.y += row();
         ui.toggle("debug", r, "Mode debug (F3 en jeu)", working_.gameplay.debugMode);
         r.y += row();
@@ -442,9 +457,14 @@ private:
         ui.toggle("autosave", r, "Sauvegarde automatique de l'éditeur", working_.gameplay.editorAutosave);
         r.y += row();
         ui.sliderInt("autosavesec", r, "Intervalle de sauvegarde (s)", working_.gameplay.editorAutosaveSeconds, 10, 600);
-        r.y += row() + ui.s(20);
+        r.y += row() + ui.s(10);  // ten rows (2.52): the folder stays above the « Retour » button
         ui.label("Dossier des sauvegardes :", {r.x, r.y}, 20, ui.theme().textDim);
-        ui.label(Paths::toUtf8(Paths::userDir()), {r.x, r.y + ui.s(28)}, 18, ui.theme().text);
+        const std::string dir = Paths::toUtf8(Paths::userDir());
+        {
+            i18n::Verbatim asIs;  // a path, never translated
+            ui.label(ui.elide(dir, FontFace::Body, 18, r.w), {r.x, r.y + ui.s(28)}, 18, ui.theme().text);
+        }
+        ui.endScroll();
     }
 
     void handleCapture() {

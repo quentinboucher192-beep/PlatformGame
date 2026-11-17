@@ -1285,7 +1285,7 @@
   },
   {
    "id": "boss.monolithe",
-   "version": "2.49.0",
+   "version": "2.52.0",
    "parents": [
     "menu.stats"
    ]
@@ -1527,6 +1527,78 @@
   {
    "id": "pause.invincible",
    "version": "2.51.0"
+  },
+  {
+   "id": "settings.tab.game",
+   "parents": [
+    "menu.settings"
+   ]
+  },
+  {
+   "id": "settings.boss_stories",
+   "version": "2.51.0",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
+   "id": "stats.story",
+   "version": "2.51.0",
+   "parents": [
+    "menu.stats"
+   ]
+  },
+  {
+   "id": "gallery.story",
+   "version": "2.51.0",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "admin.players.version",
+   "version": "2.51.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "achievements.suggestions",
+   "version": "2.52.0",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "achievements.track",
+   "version": "2.52.0",
+   "parents": [
+    "menu.achievements"
+   ]
+  },
+  {
+   "id": "pause.tracked_achievements",
+   "version": "2.52.0"
+  },
+  {
+   "id": "hud.enemies",
+   "version": "2.52.0",
+   "parents": [
+    "settings.hud_editor"
+   ]
+  },
+  {
+   "id": "settings.hud_editor",
+   "parents": [
+    "settings.tab.game"
+   ]
+  },
+  {
+   "id": "settings.game.enemy_arrows",
+   "version": "2.52.0",
+   "parents": [
+    "settings.tab.game"
+   ]
   }
  ]
 }

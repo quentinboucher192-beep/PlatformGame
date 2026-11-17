@@ -24,6 +24,7 @@
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
+#include "game/progression/NewsCenter.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/OnlineMigration.h"
 #include "ui/screens/AdminBackups.h"
@@ -368,14 +369,16 @@ private:
     }
 
     // ------------------------------------------------------------- Joueurs
+    // 2.51: « Version du jeu » (the version the player's game declared last).
+    static constexpr int kColumns = 8;
     struct Columns {
-        float x[8];
+        float x[kColumns + 1];
     };
     Columns columns(const Rect& r) const {
-        static const float share[] = {0.22f, 0.12f, 0.10f, 0.14f, 0.12f, 0.10f, 0.20f};
+        static const float share[kColumns] = {0.20f, 0.10f, 0.09f, 0.12f, 0.11f, 0.11f, 0.09f, 0.18f};
         Columns c{};
         c.x[0] = r.x;
-        for (int i = 0; i < 7; ++i) c.x[i + 1] = c.x[i] + r.w * share[i];
+        for (int i = 0; i < kColumns; ++i) c.x[i + 1] = c.x[i] + r.w * share[i];
         return c;
     }
 
@@ -463,11 +466,21 @@ private:
     void drawHeader(const Rect& r) {
         UIContext& ui = g_.ui;
         Columns c = columns(r);
-        static const char* titles[] = {"Joueur", "Pays", "Inscrit le", "Dernière activité", "Présence", "Créations", "Rôle · ordinateur"};
-        for (int i = 0; i < 7; ++i) {
+        static const char* titles[] = {"Joueur", "Pays", "Inscrit le", "Dernière activité", "Présence", "Version du jeu", "Créations",
+                                       "Rôle · ordinateur"};
+        for (int i = 0; i < kColumns; ++i) {
             float room = c.x[i + 1] - c.x[i] - ui.s(14);
-            ui.label(ui.elide(titles[i], FontFace::Bold, 14, room), {c.x[i] + ui.s(12), r.y + r.h * 0.5f}, 14, ui.theme().textDim, Align::Left,
-                     FontFace::Bold, VAlign::Middle);
+            std::string t = ui.elide(titles[i], FontFace::Bold, 14, room);
+            ui.label(t, {c.x[i] + ui.s(12), r.y + r.h * 0.5f}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+            if (i == 5) {
+                // 2.51: « NOUVEAU » after the title of the version column, only when it fits whole.
+                float tw = ui.text().measure(t, FontFace::Bold, ui.s(14)).x;
+                Rect tr{c.x[i] + ui.s(12), r.y, tw, r.h};
+                float pw = ui.newPillWidth(true);
+                bool fits = tr.right() + ui.s(6) + pw <= c.x[i + 1] - ui.s(2);
+                if (ui.newBadge("hdrversion", tr, "admin.players.version", false, true) && fits)
+                    ui.drawNewPill(tr.right() + ui.s(6) + pw, r.y + r.h * 0.5f, true);
+            }
         }
     }
 
@@ -475,6 +488,44 @@ private:
         UIContext& ui = g_.ui;
         float room = c.x[col + 1] - c.x[col] - ui.s(16);
         ui.label(ui.elide(t, face, 16, room), {c.x[col] + ui.s(12), row.y + row.h * 0.5f}, 16, color, Align::Left, face, VAlign::Middle);
+    }
+
+    /// 2.51: the game version the player's client declared last (header X-Cosmic-Client), « à jour »
+    /// or « ancienne » against the latest published installer (the date is in « Ordinateur »).
+    void drawVersionCell(const Columns& c, int col, const Rect& row, const Json& p) {
+        UIContext& ui = g_.ui;
+        const std::string v = jstr(p, "client_version");
+        const std::string latest = jstr(players_, "latest_client_version");
+        if (v.empty()) {
+            cell(c, col, row, "inconnue", ui.theme().textDim);
+            return;
+        }
+        const bool old = !latest.empty() && versionNewer(latest, v);
+        const std::string tag = latest.empty() ? "" : (old ? "ancienne" : "à jour");
+        const float x = c.x[col] + ui.s(12), room = c.x[col + 1] - c.x[col] - ui.s(16);
+        const float vw = std::min(room, ui.text().measure(v, FontFace::Bold, ui.s(16)).x);
+        const Color tagColor = old ? ui.theme().warm : ui.theme().accent;
+        ui.label(ui.elide(v, FontFace::Bold, 16, room), {x, row.y + row.h * 0.5f}, 16, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        // The tag goes after the number only when it fits whole; otherwise it is left out (the
+        // tooltip still says it).
+        if (!tag.empty()) {
+            const float tw = ui.text().measure(tag, FontFace::Bold, ui.s(12)).x + ui.s(12);
+            Rect pr{x + vw + ui.s(6), row.y + row.h * 0.5f - ui.s(10), tw, ui.s(20)};
+            if (pr.right() <= c.x[col + 1] - ui.s(4)) {
+                ui.r().fillRoundedRect(pr, ui.s(10), tagColor.withAlphaF(0.16f));
+                ui.label(tag, {pr.center().x, pr.center().y}, 12, tagColor, Align::Center, FontFace::Bold, VAlign::Middle);
+            }
+        }
+    }
+
+    /// The sentence of the « Ordinateur » window about the game version (2.51).
+    std::string versionSentence(const Json& p) const {
+        const std::string v = jstr(p, "client_version");
+        if (v.empty()) return "Version du jeu : inconnue (aucune connexion depuis la version 2.51).";
+        const std::string latest = jstr(players_, "latest_client_version");
+        std::string t = "Version du jeu installée : " + v + " (déclarée par son jeu " + OnlineUi::ageOf(jstr(p, "client_version_at")) + ")";
+        if (latest.empty()) return t + ".";
+        return t + (versionNewer(latest, v) ? ", la dernière publiée est la " + latest + "." : ", c'est la dernière publiée.");
     }
 
     void drawPlayerRow(const Json& p, const Rect& row, const std::string& prefix) {
@@ -521,16 +572,17 @@ private:
             ui.label(ui.elide(presenceText(pres), FontFace::Body, 16, r2), {dx + ui.s(16), row.y + row.h * 0.5f}, 16,
                      pres == "hidden" ? ui.theme().textDim : ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
         }
+        drawVersionCell(c, 5, row, p);
         int made = jget<int>(p, "creations", 0);
-        cell(c, 5, row, made == 0 ? "—" : std::to_string(made) + (made > 1 ? " niveaux" : " niveau"), made == 0 ? ui.theme().textDim : ui.theme().text);
+        cell(c, 6, row, made == 0 ? "—" : std::to_string(made) + (made > 1 ? " niveaux" : " niveau"), made == 0 ? ui.theme().textDim : ui.theme().text);
         // Role: a button (never one's own); 2.47: the computer the account is bound to.
-        const float colW = row.right() - c.x[6] - ui.s(16);
-        Rect rb{c.x[6] + ui.s(8), row.y + ui.s(8), std::min(ui.s(110), colW * 0.45f), row.h - ui.s(16)};
+        const float colW = row.right() - c.x[7] - ui.s(16);
+        Rect rb{c.x[7] + ui.s(8), row.y + ui.s(8), std::min(ui.s(110), colW * 0.45f), row.h - ui.s(16)};
         {
             UIContext::ButtonStyle ds;
             ds.small = true;
             ds.fontSize = 15;
-            Rect db{rb.right() + ui.s(8), rb.y, std::max(0.0f, c.x[6] + ui.s(8) + colW - rb.right() - ui.s(8)), rb.h};
+            Rect db{rb.right() + ui.s(8), rb.y, std::max(0.0f, c.x[7] + ui.s(8) + colW - rb.right() - ui.s(8)), rb.h};
             std::string label = ui.elide("Ordinateur", FontFace::Bold, 15, db.w - ui.s(16));
             if (db.w > ui.s(60) && ui.button("device" + prefix + id, db, label, ds)) openDevice(p);
         }
@@ -600,7 +652,8 @@ private:
             std::string bound = d.is_object() ? "Lié à « " + jstr(d, "name") + " » depuis le " + stampText(jstr(d, "bound_at")) + "."
                                               : std::string("Aucun ordinateur lié (le compte se liera à sa prochaine connexion).");
             if (jget<bool>(deviceData_, "rebind_allowed", false)) bound += " Délié : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.";
-            y += ui.labelWrapped(bound, {x, y}, w, 17, ui.theme().text).y + ui.s(16);
+            y += ui.labelWrapped(bound, {x, y}, w, 17, ui.theme().text).y + ui.s(8);
+            y += ui.labelWrapped(versionSentence(devicePlayer_), {x, y}, w, 16, ui.theme().textDim).y + ui.s(14);
             ui.label("Tentatives refusées depuis un autre ordinateur", {x, y + ui.s(10)}, 16, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
             y += ui.s(28);
             const Json& attempts = jfield(deviceData_, "attempts", Json::array());
@@ -632,7 +685,7 @@ private:
         if (ui.button("unbind", {x, by, ui.s(330), bh}, "Délier (nouvel ordinateur autorisé)", un))
             deviceAction(Json{{"action", "unbind"}}, name + " est délié : sa prochaine connexion le liera de nouveau.");
         // 2.50: the data of this player moved to another account (when the server offers it).
-        if (g_.migrationAvailable) {
+        if (g_.migration.available()) {
             const float mx = x + ui.s(330) + ui.s(14), mw = box.right() - ui.s(32) - ui.s(170) - ui.s(14) - mx;
             UIContext::ButtonStyle ms;
             ms.enabled = !busyDevice_;
@@ -798,6 +851,39 @@ private:
         // 2.47: the computer an account is bound to.
         if (action == "admin_device_unbound") return {"Compte", ui.theme().warm, "a délié " + target + " de son ordinateur"};
         if (action == "admin_device_bound") return {"Compte", ui.theme().warm, "a lié " + target + " à un nouvel ordinateur"};
+        // 2.50: an account's data migrated to another one, by an admin or by the player with a code.
+        const Json& mig = jfield(e, "migration", Json());
+        if (mig.is_object() && (action == "admin_account_migrated" || action == "account_migrated")) {
+            const std::string from = "« " + jstr(jfield(mig, "from", Json()), "username", "un compte supprimé") + " »";
+            const std::string to = "« " + jstr(jfield(mig, "to", Json()), "username", "un compte supprimé") + " »";
+            std::string text = action == "account_migrated" ? "a récupéré les données de " + from + " avec un code de migration"
+                                                            : std::string(jstr(mig, "mode") == "replace" ? "a remplacé les données de " + to + " par celles de " + from
+                                                                                                         : "a migré les données de " + from + " vers " + to);
+            if (action == "admin_account_migrated") {
+                std::string parts;
+                for (const Json& i : jfield(mig, "items", Json::array())) {
+                    const std::string id = i.is_string() ? i.get<std::string>() : std::string();
+                    const char* p = id == "records" ? "records" : id == "achievements" ? "succès" : id == "rewards" ? "récompenses" : id == "playtime" ? "temps joué"
+                                    : id == "levels" ? "niveaux et projets" : id == "progress" ? "progression" : nullptr;
+                    if (p) parts += (parts.empty() ? "" : ", ") + std::string(p);
+                }
+                if (!parts.empty()) text += " · " + parts;
+            }
+            if (jget<bool>(mig, "close_source", false)) text += " · " + from + " fermé";
+            if (!jstr(mig, "backup_id").empty()) text += " · sauvegarde " + jstr(mig, "backup_id");
+            return {"Compte", ui.theme().warm, text};
+        }
+        if (action == "backup_created" && jstr(e, "reason") == "migration")
+            return {"Sauvegarde", Color{185, 200, 218, 255}, "a fait une sauvegarde complète avant une migration (" + jstr(e, "backup_id") + ")"};
+        if (action == "admin_refused" && jstr(e, "role").empty() && !target.empty() &&
+            (reason == "CONFIRMATION_REQUIRED" || reason == "TARGET_NOT_FOUND" || reason == "SAME_ACCOUNT" || reason == "SOURCE_INACTIVE" ||
+             reason == "TARGET_INACTIVE" || reason == "OWN_ACCOUNT" || reason == "IMPORT_IN_PROGRESS" || reason == "LAST_ADMIN")) {
+            // A migration refused (its details carry no role, unlike a role refused).
+            const std::string why = reason == "CONFIRMATION_REQUIRED" ? std::string("confirmation manquante")
+                                    : reason == "IMPORT_IN_PROGRESS"  ? std::string("un import était en cours")
+                                                                      : migrationProblemText(reason);
+            return {"Refus", ui.theme().textDim, "migration des données de " + target + " refusée : " + why};
+        }
         if (action == "admin_challenge_set" && ch.is_object()) {
             // 2.41: « a choisi le défi du jour du 20/11 : … (remplace le tirage « … ») ».
             std::string text = "a choisi le défi " + periodPhrase(ch) + " : " + challengeSummary(ch);

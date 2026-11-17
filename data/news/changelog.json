@@ -1,4 +1,19 @@
 {
+  "2.52.0": [
+    "Succès › Suggestions : 5 succès proposés d'après votre progression (les plus proches du but, faisables maintenant, de catégories variées), avec ce qu'il reste à faire (« Plus que 70 sauts »).",
+    "Suivez jusqu'à 5 succès (case « Suivre » dans la liste, la toile ou les suggestions) : leur avancée s'affiche dans le menu pause, avec ce que la partie en cours y ajoute.",
+    "HUD : « Ennemis vaincus X / Y » pour les missions où il faut vaincre tous les ennemis d'un niveau (à placer dans l'éditeur du HUD).",
+    "Flèches vers les ennemis hors écran : un ennemi déjà rencontré qui sort de l'écran est signalé par une flèche sur le bord, tournée vers lui ; un groupe d'ennemis n'a qu'une flèche, vers son centre, avec leur nombre (« ×5 »). Option dans Paramètres › Jeu, activée par défaut.",
+    "Le Monolithe se réveille : il marche vers vous et se replace au milieu de son sol (il ne reste plus coincé au bord des fosses ni dans les coins, et n'y tombe plus). Trois nouvelles attaques : Carapace roulante (il se roule en boule de pierre runique et fonce en rebondissant sur les murs : sautez par-dessus avec un double saut ; en carapace il encaisse, étourdi ensuite il prend plus de dégâts), Tremblement de terre (des fissures éclatent sous vos pieds et des rochers tombent de la voûte : ne restez pas immobile) et Bond titanesque (il disparaît en haut, son ombre vous suit, il retombe sur vous et ses ondes de choc filent au sol : sautez-les). Vos records du Cœur de Pierre restent valables."
+  ],
+  "2.51.0": [
+    "L'histoire des giga-boss : avant votre premier combat contre Singularis, Pyrrhax ou le Monolithe, une cinématique illustrée raconte comment il est devenu ce qu'il est (environ 45 secondes, texte laissé le temps de lire). Espace, Entrée, A ou un clic la passent ; elle ne compte pas dans le chrono.",
+    "« Revoir l'histoire » sur la fiche de chaque giga-boss déjà rencontré et dans Collection › Galerie › Gardiens ; Paramètres › Jeu : « Histoire des giga-boss : Avant le premier combat / Jamais ».",
+    "Migrer vers un nouveau compte : l'ancien ordinateur donne un code de migration à usage unique, le nouveau compte récupère records, succès, récompenses et temps de jeu (le meilleur des deux côtés), puis propose de restaurer la progression. Une copie des sauvegardes actuelles est faite avant toute restauration.",
+    "Succès du Boomerang chargé : « Maîtrise : Boomerang chargé » et « Virtuose : Boomerang chargé ».",
+    "Administration : mode Invincible pour les comptes admin, en entraînement uniquement (menu pause) ; jamais pris en compte dans les records ni les classements.",
+    "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur »."
+  ],
   "2.50.0": [
     "Pyrrhax déchaîné : de vraies attaques de dragon. Piqué traversant (sa ligne se verrouille avant le plongeon), Atterrissage et souffle au sol (posé, il prend plus de dégâts), Boules de feu qui laissent un nuage brûlant, Rafale d'ailes qui repousse. Rester sous lui ne protège plus.",
     "Nouveau pouvoir : le Boomerang chargé. Maintenez pour charger, relâchez pour lancer : la lame s'accroche au premier ennemi touché et tourne sur lui (0,4 à 2 s selon la charge), 1 dégât puis 1 toutes les 0,3 s, puis revient. 25 d'énergie.",

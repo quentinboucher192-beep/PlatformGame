@@ -33,7 +33,8 @@ struct BossRecord {
     static BossRecord fromJson(const Json& j);
 };
 
-/// Every boss's statistics (saves/boss_stats.json).
+/// Every boss's statistics (saves/boss_stats.json), and the giga bosses whose story the player
+/// has seen (2.51, game/content/BossStories.h).
 class BossStats {
 public:
     static constexpr int kVersion = 1;
@@ -46,9 +47,16 @@ public:
     void fromJson(const Json& j);
     bool dirty() const { return dirty_; }
     void touch() { dirty_ = true; }
+    /// « Histoire des giga-boss »: the story of this boss was told (or skipped, which counts).
+    bool storySeen(const std::string& bossId) const { return storiesSeen_.count(bossId) > 0; }
+    void markStorySeen(const std::string& bossId) {
+        if (storiesSeen_.insert(bossId).second) dirty_ = true;
+    }
+    const std::set<std::string>& storiesSeen() const { return storiesSeen_; }
 
 private:
     std::map<std::string, BossRecord> bosses_;
+    std::set<std::string> storiesSeen_;
     bool dirty_ = false;
 };
 
