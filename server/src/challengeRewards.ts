@@ -129,8 +129,10 @@ export function streakMet(p: ChallengeRewardProgress, c: StreakCondition): boole
 // An administrator gives a challenge that has not begun its own rewards (ADMINISTRATION ›
 // Calendrier des défis › Récompenses, adminChallenges.ts): each one an item of the catalogue
 // (src/cosmeticCatalog.json), a title created on the server (server_titles, worn as
-// "srv:<id>": no game update needed) or a suit created in ADMINISTRATION › Créations
-// (creations.ts, worn as "srvsuit:<id>", drawn by the game from its three colours), and a condition on that challenge's results received in
+// "srv:<id>": no game update needed) or a creation of ADMINISTRATION › Créations (creations.ts:
+// a suit "srvsuit:<id>", drawn by the game from its three colours; 2.59, a trail
+// "srvtrail:<id>", an avatar frame "srvframe:<id>" or a victory effect "srvvictory:<id>", drawn
+// from its colours and style), and a condition on that challenge's results received in
 // time and VERIFIED by this server: a tier reached (that tier or better, both objectives: the
 // finished runs and, on « Finir le niveau », the attempts whose progress reached Bronze or
 // Argent), a place of the final ranking (the challenge's main board, ties as the board breaks
@@ -138,7 +140,7 @@ export function streakMet(p: ChallengeRewardProgress, c: StreakCondition): boole
 // and settled (GRANT_DELAY_MS), by the daily cron or a reading of the results; never twice,
 // never taken back. The same items then unlock in the Collection (cosmetics.ts: `won`).
 
-export const PRIZE_KINDS = ["item", "title", "suit"] as const;
+export const PRIZE_KINDS = ["item", "title", "suit", "trail", "frame", "victory"] as const;
 export type PrizeKind = (typeof PRIZE_KINDS)[number];
 export const PRIZE_CONDITIONS = ["tier", "top", "finished"] as const;
 export type PrizeCondition = (typeof PRIZE_CONDITIONS)[number];
@@ -189,6 +191,25 @@ export function suitIdOf(ref: string | null | undefined): number | null {
     return m ? Number(m[1]) : null;
 }
 
+/** The kinds of the creations of ADMINISTRATION › Créations (creations.ts); each one is also a category of the Collection. */
+export const CREATION_KINDS = ["suit", "trail", "frame", "victory"] as const;
+export type CreationKind = (typeof CREATION_KINDS)[number];
+/** 2.59: the kinds drawn from two colours and a style (a trail, an avatar frame, a victory effect). */
+export const LOOK_KINDS = ["trail", "frame", "victory"] as const;
+export type LookKind = (typeof LOOK_KINDS)[number];
+export const isCreationKind = (k: unknown): k is CreationKind => typeof k === "string" && (CREATION_KINDS as readonly string[]).includes(k);
+export const isLookKind = (k: unknown): k is LookKind => typeof k === "string" && (LOOK_KINDS as readonly string[]).includes(k);
+
+/** The reference of a creation: "srvsuit:<id>", "srvtrail:<id>", "srvframe:<id>", "srvvictory:<id>". */
+export const creationRef = (kind: CreationKind, id: number) => `srv${kind}:${id}`;
+/** SQL: the reference of the creation `alias` (its kind and id), as creationRef() writes it. */
+export const creationRefSql = (alias: string) => `'srv' || ${alias}.kind || ':' || ${alias}.id`;
+/** The kind and id of a creation's reference, null for anything else. */
+export function creationOfRef(ref: string | null | undefined): { kind: CreationKind; id: number } | null {
+    const m = /^srv(suit|trail|frame|victory):([1-9]\d{0,9})$/.exec(ref ?? "");
+    return m ? { kind: m[1] as CreationKind, id: Number(m[2]) } : null;
+}
+
 /** A suit created on the server as the games read it: its three colours ("#rrggbb"). */
 export interface SuitColors {
     suit: string;
@@ -202,6 +223,69 @@ export interface SuitJson {
 }
 export function suitJson(ref: string, name: string, suit: string, accent: string, scarf: string): SuitJson {
     return { id: ref, name, colors: { suit, accent, scarf } };
+}
+
+/** 2.59: the names of the two colours of a trail, an avatar frame or a victory effect, in order. */
+export const LOOK_COLOR_KEYS: Record<LookKind, readonly [string, string]> = {
+    trail: ["start", "end"],
+    frame: ["border", "glow"],
+    victory: ["main", "second"],
+};
+
+/** The columns of a creation that make its look (creations.ts, the joins of the rewards). */
+export interface CreationLookColumns {
+    kind: string;
+    suit_color?: string | null;
+    accent_color?: string | null;
+    scarf_color?: string | null;
+    color_a?: string | null;
+    color_b?: string | null;
+    style?: string | null;
+    width?: number | null;
+    life_ms?: number | null;
+    particles?: number | null;
+}
+
+/**
+ * What every game needs to draw a creation: a suit `{ colors: { suit, accent, scarf } }`; a
+ * trail `{ colors: { start, end }, style, width, life_ms, particles }`; a frame `{ colors:
+ * { border, glow }, style }`; a victory effect `{ colors: { main, second }, style }`. Null when
+ * a column is missing (a row of another kind, a join that found nothing).
+ */
+export function creationLook(r: CreationLookColumns): Record<string, unknown> | null {
+    if (r.kind === "suit") {
+        if (!r.suit_color || !r.accent_color || !r.scarf_color) return null;
+        return { colors: { suit: r.suit_color, accent: r.accent_color, scarf: r.scarf_color } };
+    }
+    if (!isLookKind(r.kind) || !r.color_a || !r.color_b || !r.style) return null;
+    const [a, b] = LOOK_COLOR_KEYS[r.kind];
+    const out: Record<string, unknown> = { colors: { [a]: r.color_a, [b]: r.color_b }, style: r.style };
+    if (r.kind === "trail") {
+        if (r.width == null || r.life_ms == null || r.particles == null) return null;
+        out.width = r.width;
+        out.life_ms = r.life_ms;
+        out.particles = r.particles === 1;
+    }
+    return out;
+}
+
+/** 2.59: a trail, an avatar frame or a victory effect created on the server, as the games read it. */
+export interface CreationJson {
+    id: string;
+    kind: LookKind;
+    name: string;
+    colors: Record<string, string>;
+    style: string;
+    width?: number;
+    life_ms?: number;
+    particles?: boolean;
+}
+
+/** `{ id: ref, kind, name, colors, style, ... }` of the columns of a trail, a frame or a victory effect (null otherwise). */
+export function creationJson(ref: string, name: string | null | undefined, cols: CreationLookColumns): CreationJson | null {
+    if (!name || !isLookKind(cols.kind)) return null;
+    const look = creationLook(cols);
+    return look ? ({ id: ref, kind: cols.kind, name, ...look } as CreationJson) : null;
 }
 
 /** Letters, marks, digits, punctuation and spaces: what the game's fonts draw (no emoji, no control). */
@@ -224,23 +308,37 @@ export function titleKey(text: string): string {
         .trim();
 }
 
-/** The server titles (`t`) and the suits created on the server (`s`) of the rules `r`. */
-const PRIZE_JOINS = `LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)
-     LEFT JOIN creations s ON r.reward_kind = 'suit' AND s.kind = 'suit' AND s.id = CAST(substr(r.reward_ref, 9) AS INTEGER)`;
+/**
+ * SQL: the creation (`alias`) a reward or a worn item `kindCol` / `refCol` names: of that kind
+ * ("srv<kind>:<id>"), by its id. Nothing for an item of the catalogue or a title.
+ */
+export const CREATION_JOIN = (alias: string, kindCol: string, refCol: string) =>
+    `LEFT JOIN creations ${alias} ON ${kindCol} IN ('suit', 'trail', 'frame', 'victory') AND ${alias}.kind = ${kindCol}
+       AND ${alias}.id = CAST(substr(${refCol}, instr(${refCol}, ':') + 1) AS INTEGER) AND ${refCol} = ${creationRefSql(alias)}`;
 
-/** SQL (a column of challenges `c`): its rewards as a JSON array, the titles (text, colour) and suits (name, colours) joined. */
+/** SQL: the columns of the creation `alias` that make its look (creationLook()), its name as `creation_name`. */
+export const CREATION_COLUMNS = (alias: string) =>
+    `${alias}.name AS creation_name, ${alias}.suit_color, ${alias}.accent_color, ${alias}.scarf_color, ${alias}.color_a, ${alias}.color_b,
+     ${alias}.style, ${alias}.width, ${alias}.life_ms, ${alias}.particles`;
+
+/** The server titles (`t`) and the creations of the server (`s`: suits, trails, frames, victory effects) of the rules `r`. */
+const PRIZE_JOINS = `LEFT JOIN server_titles t ON r.reward_kind = 'title' AND t.id = CAST(substr(r.reward_ref, 5) AS INTEGER)
+     ${CREATION_JOIN("s", "r.reward_kind", "r.reward_ref")}`;
+
+/** SQL (a column of challenges `c`): its rewards as a JSON array, the titles (text, colour) and creations (name, look) joined. */
 export const PRIZES_SQL = `(SELECT json_group_array(json_object('position', r.position, 'kind', r.reward_kind, 'ref', r.reward_ref,
       'condition', r.condition, 'value', r.condition_value, 'title_text', t.text, 'title_color', t.color,
-      'suit_name', s.name, 'suit_color', s.suit_color, 'accent_color', s.accent_color, 'scarf_color', s.scarf_color))
+      'creation_name', s.name, 'suit_color', s.suit_color, 'accent_color', s.accent_color, 'scarf_color', s.scarf_color,
+      'color_a', s.color_a, 'color_b', s.color_b, 'style', s.style, 'width', s.width, 'life_ms', s.life_ms, 'particles', s.particles))
     FROM challenge_reward_rules r ${PRIZE_JOINS}
     WHERE r.challenge_id = c.id)`;
 
-/** The rules of some challenges (?1: a JSON array of their ids), the titles and suits joined. */
+/** The rules of some challenges (?1: a JSON array of their ids), the titles and creations joined. */
 export const PRIZE_ROWS_SQL = `SELECT r.challenge_id, r.position, r.reward_kind AS kind, r.reward_ref AS ref, r.condition, r.condition_value AS value,
-       t.text AS title_text, t.color AS title_color, s.name AS suit_name, s.suit_color, s.accent_color, s.scarf_color
+       t.text AS title_text, t.color AS title_color, ${CREATION_COLUMNS("s")}
      FROM challenge_reward_rules r ${PRIZE_JOINS}`;
 
-export interface PrizeRow {
+export interface PrizeRow extends Omit<CreationLookColumns, "kind"> {
     position: number;
     kind: string;
     ref: string;
@@ -248,16 +346,15 @@ export interface PrizeRow {
     value: number;
     title_text: string | null;
     title_color: string | null;
-    suit_name?: string | null;
-    suit_color?: string | null;
-    accent_color?: string | null;
-    scarf_color?: string | null;
+    /** A creation's name (a suit, a trail, a frame, a victory effect). */
+    creation_name?: string | null;
 }
 
 /**
  * A reward as the game reads it: `item` (its id, category and name), `title` (its text and
- * colour) or `suit` (a suit created on the server: its name and colours; the key is only
- * present for one, so the earlier forms are unchanged).
+ * colour), `suit` (a suit created on the server: its name and colours) or (2.59) `creation` (a
+ * trail, an avatar frame or a victory effect created on the server: creationJson()). The keys
+ * `suit` and `creation` are only present for one, so the earlier forms are unchanged.
  */
 export interface PrizeJson {
     kind: PrizeKind;
@@ -267,6 +364,7 @@ export interface PrizeJson {
     item: { id: string; category: string; name: string } | null;
     title: { id: string; text: string; color: string } | null;
     suit?: SuitJson;
+    creation?: CreationJson;
 }
 
 /** The rewards (rows or the JSON of PRIZES_SQL) in their order; an unknown item or title is left out. */
@@ -289,33 +387,41 @@ export function prizesJson(raw: string | PrizeRow[] | null | undefined): PrizeJs
             if (i) out.push({ kind: "item", ...base, item: { id: i.id, category: i.category, name: i.name }, title: null });
         } else if (r.kind === "title" && r.title_text) {
             out.push({ kind: "title", ...base, item: null, title: { id: r.ref, text: r.title_text, color: r.title_color ?? "gold" } });
-        } else if (r.kind === "suit" && r.suit_name && r.suit_color && r.accent_color && r.scarf_color) {
-            out.push({ kind: "suit", ...base, item: null, title: null, suit: suitJson(r.ref, r.suit_name, r.suit_color, r.accent_color, r.scarf_color) });
+        } else if (r.kind === "suit" && r.creation_name && r.suit_color && r.accent_color && r.scarf_color) {
+            out.push({ kind: "suit", ...base, item: null, title: null, suit: suitJson(r.ref, r.creation_name, r.suit_color, r.accent_color, r.scarf_color) });
+        } else if (isLookKind(r.kind)) {
+            const creation = creationJson(r.ref, r.creation_name, { ...r, kind: r.kind });
+            if (creation) out.push({ kind: r.kind, ...base, item: null, title: null, creation });
         }
     }
     return out;
 }
 
 /** The name a reward goes by (notifications, the Journal). */
-export function prizeName(p: { kind: string; ref: string; title_text?: string | null; suit_name?: string | null }): string {
+export function prizeName(p: { kind: string; ref: string; title_text?: string | null; creation_name?: string | null }): string {
     if (p.kind === "title") return p.title_text ?? p.ref;
-    if (p.kind === "suit") return p.suit_name ?? p.ref;
+    if (isCreationKind(p.kind)) return p.creation_name ?? p.ref;
     return prizeItem(p.ref)?.name ?? p.ref;
 }
 
-/** What a player won: catalogue items, server titles ("srv:<id>") and suits created on the server ("srvsuit:<id>"). */
+/**
+ * What a player won: catalogue items, server titles ("srv:<id>"), suits created on the server
+ * ("srvsuit:<id>") and (2.59) trails, frames and victory effects created on the server
+ * ("srvtrail:<id>", "srvframe:<id>", "srvvictory:<id>": `looks`).
+ */
 export interface WonRewards {
     items: Set<string>;
     titles: Set<string>;
     suits: Set<string>;
+    looks: Set<string>;
 }
 
 export async function wonRewards(ctx: Ctx, playerId: string): Promise<WonRewards> {
     const rows = await ctx.env.DB.prepare("SELECT DISTINCT reward_kind AS kind, reward_ref AS ref FROM player_won_rewards WHERE player_id = ?1")
         .bind(playerId)
         .all<{ kind: string; ref: string }>();
-    const out: WonRewards = { items: new Set(), titles: new Set(), suits: new Set() };
-    for (const r of rows.results) (r.kind === "title" ? out.titles : r.kind === "suit" ? out.suits : out.items).add(r.ref);
+    const out: WonRewards = { items: new Set(), titles: new Set(), suits: new Set(), looks: new Set() };
+    for (const r of rows.results) (r.kind === "title" ? out.titles : r.kind === "suit" ? out.suits : isLookKind(r.kind) ? out.looks : out.items).add(r.ref);
     return out;
 }
 
@@ -347,7 +453,7 @@ export async function grantPrizes(ctx: Ctx, c: PrizeChallenge, rankedSql: string
          SELECT w.pid, ?1, ?3, ?4, ?5 FROM (${select}) w JOIN players p ON p.id = w.pid WHERE p.account_status = 'active'`;
     for (const r of rules.results) {
         // A reward the server no longer knows (an item gone from the catalogue) is not given.
-        if (r.kind === "item" ? !prizeItem(r.ref) : r.kind === "suit" ? !r.suit_name : !r.title_text) continue;
+        if (r.kind === "item" ? !prizeItem(r.ref) : isCreationKind(r.kind) ? !r.creation_name : !r.title_text) continue;
         if (r.condition === "tier") {
             const best = `SELECT x.player_id AS pid FROM (
                 SELECT player_id, ${TIER_SQL("tier")} AS t FROM challenge_runs WHERE challenge_id = ?1 AND status = 'VERIFIED' AND late = ?2

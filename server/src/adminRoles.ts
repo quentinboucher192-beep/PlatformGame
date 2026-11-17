@@ -23,7 +23,7 @@ export const ADMIN_ACTIONS = {
     refused: ["admin_refused", "backup_refused"],
     // 2.45: ADMINISTRATION › Campagne (campaignRevisions.ts): a revision published, or an earlier one made current again.
     campaign: ["admin_campaign_published", "admin_campaign_reverted"],
-    // ADMINISTRATION › Créations (creations.ts): a suit created, edited, archived or restored.
+    // ADMINISTRATION › Créations (creations.ts): a suit (2.59: a trail, a frame, a victory effect) created, edited, archived or restored.
     creation: ["admin_creation_created", "admin_creation_updated", "admin_creation_archived", "admin_creation_restored"],
     // 2.46: ADMINISTRATION › Ennemis (enemyRevisions.ts): a native entity published as a revision.
     enemy: ["admin_enemy_published"],
@@ -276,8 +276,9 @@ function campaignOfDetails(d: Record<string, unknown>) {
 
 /**
  * What the Journal shows of a creation (ADMINISTRATION › Créations) created, edited, archived,
- * restored or refused: its id, kind, name and colours, what it was before an edit, and (a
- * refusal) what was tried. Only the keys the server writes.
+ * restored or refused: its id, kind, name, colours and (2.59) style, a trail's width, life and
+ * sparkles, what it was before an edit, and (a refusal) what was tried. Only the keys the
+ * server writes.
  */
 function creationOfDetails(d: Record<string, unknown>) {
     const c = d.creation;
@@ -288,6 +289,10 @@ function creationOfDetails(d: Record<string, unknown>) {
         kind: typeof o.kind === "string" ? o.kind : null,
         name: typeof o.name === "string" ? o.name : null,
         colors: isObject(o.colors) ? o.colors : null,
+        style: typeof o.style === "string" ? o.style : null,
+        width: typeof o.width === "number" ? o.width : null,
+        life_ms: typeof o.life_ms === "number" ? o.life_ms : null,
+        particles: typeof o.particles === "boolean" ? o.particles : null,
     });
     return { ...pick(c), action: typeof c.action === "string" ? c.action : null, previous: isObject(c.previous) ? pick(c.previous) : null };
 }

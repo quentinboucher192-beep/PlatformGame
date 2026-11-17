@@ -22,7 +22,8 @@ import {
     cleanTitleText,
     prizeItem,
     prizesJson,
-    suitIdOf,
+    creationOfRef,
+    isCreationKind,
     titleIdOf,
     titleKey,
     titleRef,
@@ -48,7 +49,7 @@ import {
     type Period,
 } from "./challenges";
 import { normalizeTitle } from "./community";
-import { knownSuits } from "./creations";
+import { knownCreations, type CreationKind } from "./creations";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator, paging, queryEnum, queryString } from "./validate";
@@ -671,10 +672,19 @@ export async function createTitle(ctx: Ctx): Promise<Response> {
 
 type FieldErrors = { field: string; message: string }[];
 
+/** The words of the refusals about a creation of each kind (« combinaison inconnue du serveur »...). */
+const CREATION_WORDS: Record<CreationKind, { one: string; expected: string; unknown: string; archived: string; it: string }> = {
+    suit: { one: "combinaison", expected: "attendue", unknown: "inconnue", archived: "archivée", it: "la" },
+    trail: { one: "traînée", expected: "attendue", unknown: "inconnue", archived: "archivée", it: "la" },
+    frame: { one: "cadre", expected: "attendu", unknown: "inconnu", archived: "archivé", it: "le" },
+    victory: { one: "effet de victoire", expected: "attendu", unknown: "inconnu", archived: "archivé", it: "le" },
+};
+
 /**
  * The body's rewards, checked: kinds, references the server knows, conditions and their
- * values, no reward twice. A suit created on the server must exist and not be archived, unless
- * the challenge `challengeId` already gives it (archived since: kept as it was).
+ * values, no reward twice. A creation of the server (a suit; 2.59, a trail, a frame, a victory
+ * effect) must exist with that kind and not be archived, unless the challenge `challengeId`
+ * already gives it (archived since: kept as it was).
  */
 async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: string): Promise<{ rules: PrizeRule[]; errors: FieldErrors }> {
     const errors: FieldErrors = [...new Validator(body, ["rewards"]).errors];
@@ -685,7 +695,7 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: 
         return { rules, errors };
     }
     const titleIds = new Set<number>();
-    const suitIds = new Set<number>();
+    const creationIds = new Map<CreationKind, Set<number>>();
     list.forEach((raw: unknown, i) => {
         const field = `rewards[${i}]`;
         if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
@@ -712,13 +722,14 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: 
             }
             titleIds.add(id);
         }
-        if (kind === "suit") {
-            const id = suitIdOf(ref);
-            if (id === null) {
-                errors.push({ field: `${field}.ref`, message: "combinaison « srvsuit:<n> » attendue" });
+        if (isCreationKind(kind)) {
+            const c = creationOfRef(ref);
+            if (c === null || c.kind !== kind) {
+                errors.push({ field: `${field}.ref`, message: `${CREATION_WORDS[kind].one} « srv${kind}:<n> » ${CREATION_WORDS[kind].expected}` });
                 return;
             }
-            suitIds.add(id);
+            if (!creationIds.has(kind)) creationIds.set(kind, new Set());
+            creationIds.get(kind)!.add(c.id);
         }
         if (rules.some((r) => r.kind === kind && r.ref === ref)) {
             errors.push({ field: `${field}.ref`, message: "cette récompense est déjà dans la liste" });
@@ -735,24 +746,26 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: 
             if (r.kind === "title" && !have.has(titleIdOf(r.ref)!)) errors.push({ field: `rewards[${i}].ref`, message: "titre inconnu du serveur" });
         });
     }
-    if (suitIds.size > 0 && errors.length === 0) {
-        const known = await knownSuits(ctx, [...suitIds]);
-        const given = await ctx.env.DB.prepare("SELECT reward_ref AS ref FROM challenge_reward_rules WHERE challenge_id = ?1 AND reward_kind = 'suit'")
+    if (creationIds.size > 0 && errors.length === 0) {
+        const known = new Map<CreationKind, Map<number, { archived: boolean }>>();
+        for (const [kind, ids] of creationIds) known.set(kind, await knownCreations(ctx, kind, [...ids]));
+        const given = await ctx.env.DB.prepare("SELECT reward_kind AS kind, reward_ref AS ref FROM challenge_reward_rules WHERE challenge_id = ?1")
             .bind(challengeId)
-            .all<{ ref: string }>();
-        const already = new Set(given.results.map((r) => r.ref));
+            .all<{ kind: string; ref: string }>();
+        const already = new Set(given.results.map((r) => `${r.kind} ${r.ref}`));
         rules.forEach((r, i) => {
-            if (r.kind !== "suit") return;
-            const s = known.get(suitIdOf(r.ref)!);
-            if (!s) errors.push({ field: `rewards[${i}].ref`, message: "combinaison inconnue du serveur" });
-            else if (s.archived && !already.has(r.ref)) errors.push({ field: `rewards[${i}].ref`, message: "combinaison archivée : restaurez-la d'abord" });
+            if (!isCreationKind(r.kind)) return;
+            const s = known.get(r.kind)?.get(creationOfRef(r.ref)!.id);
+            const w = CREATION_WORDS[r.kind];
+            if (!s) errors.push({ field: `rewards[${i}].ref`, message: `${w.one} ${w.unknown} du serveur` });
+            else if (s.archived && !already.has(`${r.kind} ${r.ref}`)) errors.push({ field: `rewards[${i}].ref`, message: `${w.one} ${w.archived} : restaurez-${w.it} d'abord` });
         });
     }
     return { rules, errors };
 }
 
 /**
- * PUT /admin/challenges/{challengeId}/rewards `{ rewards: [{ kind: item|title|suit, ref, condition:
+ * PUT /admin/challenges/{challengeId}/rewards `{ rewards: [{ kind: item|title|suit|trail|frame|victory, ref, condition:
  * tier|top|finished, value }] }` (at most MAX_PRIZES, in their order; [] removes them): the
  * rewards of a period that has not begun, set even before the server draws its challenge
  * (they stay with the period through « Revenir au tirage »). value: tier 1 Bronze, 2 Argent,
@@ -792,8 +805,8 @@ export async function setRewards(ctx: Ctx): Promise<Response> {
         prizesJson(rows).map((r) => ({
             kind: r.kind,
             ref: r.ref,
-            name: r.item?.name ?? r.title?.text ?? r.suit?.name ?? r.ref,
-            category: r.item?.category ?? (r.kind === "suit" ? "suit" : "title"),
+            name: r.item?.name ?? r.title?.text ?? r.suit?.name ?? r.creation?.name ?? r.ref,
+            category: r.item?.category ?? (isCreationKind(r.kind) ? r.kind : "title"),
             color: r.title?.color ?? null,
             condition: r.condition,
             value: r.value,

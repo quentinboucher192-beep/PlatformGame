@@ -25,7 +25,20 @@
 
 import catalogJson from "./challengeCatalog.json";
 import { audit, requireAuth, type AuthInfo } from "./auth";
-import { GRANT_DELAY_MS, PRIZES_SQL, challengeRewardProgress, grantPrizes, prizeItem, prizesJson, suitJson } from "./challengeRewards";
+import {
+    CREATION_COLUMNS,
+    CREATION_JOIN,
+    GRANT_DELAY_MS,
+    PRIZES_SQL,
+    challengeRewardProgress,
+    creationJson,
+    grantPrizes,
+    isLookKind,
+    prizeItem,
+    prizesJson,
+    suitJson,
+    type CreationLookColumns,
+} from "./challengeRewards";
 import { pseudoVersionOf } from "./community";
 import { boardCosmetics, withCosmetics, type BoardCosmetics } from "./cosmetics";
 import { sha256Hex } from "./crypto";
@@ -1939,7 +1952,7 @@ async function grantQuietly(ctx: Ctx, o: { limit?: number; onlyId?: string }): P
     }
 }
 
-interface WonRow {
+interface WonRow extends Omit<CreationLookColumns, "kind"> {
     challenge_id: string;
     kind: string;
     ref: string;
@@ -1950,29 +1963,28 @@ interface WonRow {
     level_title: string | null;
     title_text: string | null;
     title_color: string | null;
-    suit_name: string | null;
-    suit_color: string | null;
-    accent_color: string | null;
-    scarf_color: string | null;
+    creation_name: string | null;
 }
 
 /**
  * GET /players/me/rewards (2.43): `{ rewards: [{ challenge: { id, kind, period, date, title },
- * kind: item|title|suit, ref, item: { id, category, name } | null, title: { id, text, color } |
- * null, suit?: { id, name, colors: { suit, accent, scarf } }, granted_at }] }`: the rewards of
- * challenges I won, the most recent first (the rewards due are granted first). An item of the
- * catalogue unlocks in the Collection, a title ("srv:<id>") or a suit created on the server
- * ("srvsuit:<id>", its current name and colours) may be worn (PUT /players/me/cosmetics).
+ * kind: item|title|suit|trail|frame|victory, ref, item: { id, category, name } | null, title:
+ * { id, text, color } | null, suit?: { id, name, colors: { suit, accent, scarf } }, creation?:
+ * { id, kind, name, colors, style, ... } (2.59), granted_at }] }`: the rewards of challenges I
+ * won, the most recent first (the rewards due are granted first). An item of the catalogue
+ * unlocks in the Collection, a title ("srv:<id>") or a creation of the server (a suit
+ * "srvsuit:<id>"; 2.59 a trail "srvtrail:<id>", a frame "srvframe:<id>", a victory effect
+ * "srvvictory:<id>": its current name and look) may be worn (PUT /players/me/cosmetics).
  */
 export async function myRewards(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
     await grantQuietly(ctx, { limit: 5 });
     const rows = await ctx.env.DB.prepare(
         `SELECT w.challenge_id, w.reward_kind AS kind, w.reward_ref AS ref, w.granted_at, c.kind AS challenge_kind, c.period, c.date, c.level_title,
-                t.text AS title_text, t.color AS title_color, s.name AS suit_name, s.suit_color, s.accent_color, s.scarf_color
+                t.text AS title_text, t.color AS title_color, ${CREATION_COLUMNS("s")}
          FROM player_won_rewards w LEFT JOIN challenges c ON c.id = w.challenge_id
          LEFT JOIN server_titles t ON w.reward_kind = 'title' AND t.id = CAST(substr(w.reward_ref, 5) AS INTEGER)
-         LEFT JOIN creations s ON w.reward_kind = 'suit' AND s.kind = 'suit' AND s.id = CAST(substr(w.reward_ref, 9) AS INTEGER)
+         ${CREATION_JOIN("s", "w.reward_kind", "w.reward_ref")}
          WHERE w.player_id = ?1 ORDER BY w.granted_at DESC, w.challenge_id, w.reward_ref LIMIT 500`,
     )
         .bind(auth.player.id)
@@ -1983,10 +1995,12 @@ export async function myRewards(ctx: Ctx): Promise<Response> {
         const item = r.kind === "item" ? prizeItem(r.ref) : null;
         const title = r.kind === "title" && r.title_text ? { id: r.ref, text: r.title_text, color: r.title_color ?? "gold" } : null;
         const suit =
-            r.kind === "suit" && r.suit_name && r.suit_color && r.accent_color && r.scarf_color
-                ? suitJson(r.ref, r.suit_name, r.suit_color, r.accent_color, r.scarf_color)
+            r.kind === "suit" && r.creation_name && r.suit_color && r.accent_color && r.scarf_color
+                ? suitJson(r.ref, r.creation_name, r.suit_color, r.accent_color, r.scarf_color)
                 : null;
-        if (!item && !title && !suit) continue;
+        // 2.59: a trail, a frame or a victory effect created on the server.
+        const creation = isLookKind(r.kind) ? creationJson(r.ref, r.creation_name, { ...r, kind: r.kind }) : null;
+        if (!item && !title && !suit && !creation) continue;
         rewards.push({
             challenge: {
                 id: r.challenge_id,
@@ -2000,6 +2014,7 @@ export async function myRewards(ctx: Ctx): Promise<Response> {
             item: item ? { id: item.id, category: item.category, name: item.name } : null,
             title,
             ...(suit ? { suit } : {}),
+            ...(creation ? { creation } : {}),
             granted_at: r.granted_at,
         });
     }

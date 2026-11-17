@@ -7,18 +7,21 @@
 // word), or (2.43) won as the reward of one challenge (player_won_rewards). From 2.43 a title
 // may also be one an administrator created on the server ("srv:<id>"), worn only by the
 // players who won it, and a suit one created in ADMINISTRATION › Créations ("srvsuit:<id>",
-// creations.ts), worn the same way. Anything else becomes the category's default before it is
-// stored; names shown are always the catalogue's (or the server title's or suit's). A server
-// suit's look is its reference: the games draw it from its colours (GET /creations).
+// creations.ts), worn the same way; 2.59, a trail ("srvtrail:<id>"), an avatar frame
+// ("srvframe:<id>") or a victory effect ("srvvictory:<id>") created there too. Anything else
+// becomes the category's default before it is stored; names shown are always the catalogue's
+// (or the server title's or creation's). A creation's look is its reference: the games draw it
+// from its colours and style (GET /creations).
 import achievementCatalog from "./achievementCatalog.json";
 import catalog from "./cosmeticCatalog.json";
 import {
     challengeRewardProgress,
     resultsMet,
+    creationOfRef,
+    creationRef,
     streakMet,
-    suitIdOf,
-    suitRef,
     titleIdOf,
+    type CreationKind,
     wonRewards,
     type ChallengeRewardProgress,
     type ResultsCondition,
@@ -52,8 +55,8 @@ const BY_ID = new Map(ITEMS.map((i) => [i.id, i]));
 const DEFAULTS = new Map(ITEMS.filter((i) => i.default).map((i) => [i.category, i]));
 /** Every star of the server's achievement catalogue (« Constellation »). */
 const ALL_STARS = Object.values((achievementCatalog as { stars: Record<string, number> }).stars).reduce((s, v) => s + v, 0);
-/** An item of the catalogue, (2.43) a title created on the server, or a suit created on the server. */
-const ID_RE = /^(?:[a-z0-9_]{1,64}|srv:[1-9][0-9]{0,9}|srvsuit:[1-9][0-9]{0,9})$/;
+/** An item of the catalogue, (2.43) a title created on the server, or a creation of the server (a suit; 2.59 a trail, a frame, a victory effect). */
+const ID_RE = /^(?:[a-z0-9_]{1,64}|srv:[1-9][0-9]{0,9}|srv(?:suit|trail|frame|victory):[1-9][0-9]{0,9})$/;
 
 export type Equipped = Record<CosmeticCategory, string>;
 
@@ -95,9 +98,11 @@ export function effective(wanted: Partial<Record<CosmeticCategory, string>>, p: 
     for (const c of COSMETIC_CATEGORIES) {
         const i = wanted[c] ? BY_ID.get(wanted[c]!) : undefined;
         out[c] = i && i.category === c && unlocked(i, p) ? i.id : defaultItem(c).id;
-        // 2.43: a server title, only when won; a suit created on the server the same way.
+        // 2.43: a server title, only when won; a creation of the server (a suit; 2.59 a trail, a
+        // frame, a victory effect) the same way, and only in its own category.
         if (c === "title" && titleIdOf(wanted.title) !== null && p.won?.titles.has(wanted.title!)) out.title = wanted.title!;
-        if (c === "suit" && suitIdOf(wanted.suit) !== null && p.won?.suits.has(wanted.suit!)) out.suit = wanted.suit!;
+        const made = creationOfRef(wanted[c]);
+        if (made && made.kind === c && (c === "suit" ? p.won?.suits : p.won?.looks)?.has(wanted[c]!)) out[c] = wanted[c]!;
     }
     return out;
 }
@@ -137,21 +142,29 @@ export async function serverTitles(ctx: Ctx, refs: Iterable<string | null | unde
     return out;
 }
 
-/** A suit created on the server (ADMINISTRATION › Créations, "srvsuit:<id>"), worn: its name. */
-export interface ServerSuitLook {
+/**
+ * A creation of the server (ADMINISTRATION › Créations: a suit "srvsuit:<id>"; 2.59 a trail
+ * "srvtrail:<id>", a frame "srvframe:<id>", a victory effect "srvvictory:<id>"), worn: its name.
+ */
+export interface ServerCreationLook {
     id: string;
+    kind: CreationKind;
     name: string;
 }
 
-/** The suits created on the server among `refs` ("srvsuit:<id>"; anything else ignored), by reference. */
-export async function serverSuits(ctx: Ctx, refs: Iterable<string | null | undefined>): Promise<Map<string, ServerSuitLook>> {
-    const ids = [...new Set([...refs].map(suitIdOf).filter((i): i is number => i !== null))];
-    const out = new Map<string, ServerSuitLook>();
-    if (ids.length === 0) return out;
-    const rows = await ctx.env.DB.prepare("SELECT id, name FROM creations WHERE kind = 'suit' AND id IN (SELECT value FROM json_each(?1))")
+/** The creations of the server among `refs` (anything else ignored; a reference of the wrong kind too), by reference. */
+export async function serverCreations(ctx: Ctx, refs: Iterable<string | null | undefined>): Promise<Map<string, ServerCreationLook>> {
+    const wanted = new Set([...refs].filter((r): r is string => !!r && creationOfRef(r) !== null));
+    const out = new Map<string, ServerCreationLook>();
+    if (wanted.size === 0) return out;
+    const ids = [...new Set([...wanted].map((r) => creationOfRef(r)!.id))];
+    const rows = await ctx.env.DB.prepare("SELECT id, kind, name FROM creations WHERE id IN (SELECT value FROM json_each(?1))")
         .bind(JSON.stringify(ids))
-        .all<{ id: number; name: string }>();
-    for (const r of rows.results) out.set(suitRef(r.id), { id: suitRef(r.id), name: r.name });
+        .all<{ id: number; kind: CreationKind; name: string }>();
+    for (const r of rows.results) {
+        const ref = creationRef(r.kind, r.id);
+        if (wanted.has(ref)) out.set(ref, { id: ref, kind: r.kind, name: r.name });
+    }
     return out;
 }
 
@@ -174,13 +187,14 @@ async function store(ctx: Ctx, playerId: string, e: Equipped): Promise<void> {
 /**
  * {suit: {id, look, name}, ...}: what the profile shows (defaults when nothing was sent). A
  * server title (2.43): `{ id: "srv:<n>", look: its text, name: its text, color }` (`titles`:
- * the server titles known; one that is not falls back to the default). A suit created on the
- * server: `{ id: "srvsuit:<n>", look: "srvsuit:<n>", name }` (its colours: GET /creations).
+ * the server titles known; one that is not falls back to the default). A creation of the
+ * server (a suit; 2.59 a trail, a frame, a victory effect): `{ id: "srv<kind>:<n>", look: the
+ * same reference, name }` (its colours and style: GET /creations).
  */
 export function cosmeticsJson(
     row: Partial<StoredRow> | null,
     titles: Map<string, ServerTitleLook> = new Map(),
-    suits: Map<string, ServerSuitLook> = new Map(),
+    creations: Map<string, ServerCreationLook> = new Map(),
 ) {
     const out = {} as Record<CosmeticCategory, { id: string; look: string; name: string; color?: string }>;
     for (const c of COSMETIC_CATEGORIES) {
@@ -189,8 +203,8 @@ export function cosmeticsJson(
             out[c] = { id: t.id, look: t.text, name: t.text, color: t.color };
             continue;
         }
-        const s = c === "suit" ? suits.get(row?.suit ?? "") : undefined;
-        if (s) {
+        const s = creations.get(row?.[c] ?? "");
+        if (s && s.kind === c) {
             out[c] = { id: s.id, look: s.id, name: s.name };
             continue;
         }
@@ -202,7 +216,7 @@ export function cosmeticsJson(
 
 export async function profileCosmetics(ctx: Ctx, playerId: string) {
     const row = await stored(ctx, playerId);
-    return cosmeticsJson(row, await serverTitles(ctx, [row?.title]), await serverSuits(ctx, [row?.suit]));
+    return cosmeticsJson(row, await serverTitles(ctx, [row?.title]), await serverCreations(ctx, [row?.suit, row?.trail, row?.frame, row?.victory]));
 }
 
 /** PUT /players/me/cosmetics {suit, trail, frame, title, victory}: item ids. */
@@ -217,7 +231,7 @@ export async function putCosmetics(ctx: Ctx): Promise<Response> {
     v.done();
     const e = effective(wanted, await progressOf(ctx, me));
     await store(ctx, me, e);
-    return json(ctx, { cosmetics: cosmeticsJson(e, await serverTitles(ctx, [e.title]), await serverSuits(ctx, [e.suit])) });
+    return json(ctx, { cosmetics: cosmeticsJson(e, await serverTitles(ctx, [e.title]), await serverCreations(ctx, [e.suit, e.trail, e.frame, e.victory])) });
 }
 
 /**
@@ -233,12 +247,15 @@ export async function revalidateCosmetics(ctx: Ctx, playerId: string): Promise<v
 
 /**
  * In a leaderboard entry's `player`: the look of the frame and the suit (a suit created on the
- * server: its reference "srvsuit:<n>"), the title (2.43: a server title's colour).
+ * server: its reference "srvsuit:<n>"; 2.59 a frame "srvframe:<n>"), the title (2.43: a server
+ * title's colour) and (2.59) the trail, drawn behind the player's ghost (a trail created on the
+ * server: "srvtrail:<n>").
  */
 export interface BoardCosmetics {
     frame: string;
     title: { id: string; name: string; color?: string } | null;
     suit: string;
+    trail: string;
 }
 
 /**
@@ -251,10 +268,13 @@ export async function boardCosmetics(ctx: Ctx, playerIds: Iterable<string>): Pro
     for (let at = 0; at < ids.length; at += 90) {
         const chunk = ids.slice(at, at + 90);
         const rows = await ctx.env.DB.prepare(
-            `SELECT p.id, c.suit, c.frame, c.title, t.text AS title_text, t.color AS title_color, s.id AS server_suit
+            `SELECT p.id, c.suit, c.frame, c.title, c.trail, t.text AS title_text, t.color AS title_color, s.id AS server_suit,
+                    f.id AS server_frame, tr.id AS server_trail
              FROM players p LEFT JOIN player_cosmetics c ON c.player_id = p.id
              LEFT JOIN server_titles t ON c.title LIKE 'srv:%' AND t.id = CAST(substr(c.title, 5) AS INTEGER)
              LEFT JOIN creations s ON c.suit LIKE 'srvsuit:%' AND s.kind = 'suit' AND s.id = CAST(substr(c.suit, 9) AS INTEGER)
+             LEFT JOIN creations f ON c.frame LIKE 'srvframe:%' AND f.kind = 'frame' AND f.id = CAST(substr(c.frame, 10) AS INTEGER)
+             LEFT JOIN creations tr ON c.trail LIKE 'srvtrail:%' AND tr.kind = 'trail' AND tr.id = CAST(substr(c.trail, 10) AS INTEGER)
              WHERE p.profile_visibility <> 'private' AND p.id IN (${chunk.map((_, i) => `?${i + 1}`).join(", ")})`,
         )
             .bind(...chunk)
@@ -263,14 +283,18 @@ export async function boardCosmetics(ctx: Ctx, playerIds: Iterable<string>): Pro
                 suit: string | null;
                 frame: string | null;
                 title: string | null;
+                trail: string | null;
                 title_text: string | null;
                 title_color: string | null;
                 server_suit: number | null;
+                server_frame: number | null;
+                server_trail: number | null;
             }>();
         for (const r of rows.results) {
             const title = shown("title", r.title);
             out.set(r.id, {
-                frame: shown("frame", r.frame).look,
+                // 2.59: a frame created on the server: its reference (drawn from GET /creations).
+                frame: r.server_frame && r.frame ? r.frame : shown("frame", r.frame).look,
                 // 2.43: a server title shows its text in its colour.
                 title:
                     r.title_text && r.title
@@ -280,6 +304,8 @@ export async function boardCosmetics(ctx: Ctx, playerIds: Iterable<string>): Pro
                           : { id: title.id, name: title.name },
                 // A suit created on the server: its reference (the games draw it from GET /creations).
                 suit: r.server_suit && r.suit ? r.suit : shown("suit", r.suit).look,
+                // 2.59: the trail, behind the player's ghost (one created on the server: its reference).
+                trail: r.server_trail && r.trail ? r.trail : shown("trail", r.trail).look,
             });
         }
     }

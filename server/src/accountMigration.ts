@@ -140,7 +140,7 @@ export async function countsOf(ctx: Ctx, playerId: string, copy: ProgressCopyRow
            (SELECT COALESCE(MAX(CASE WHEN json_valid(ids) THEN json_array_length(ids) ELSE 0 END), 0) FROM player_badges WHERE player_id = ?1) AS badges,
            (SELECT COUNT(*) FROM player_won_rewards WHERE player_id = ?1) AS won,
            (SELECT COUNT(*) FROM player_won_rewards WHERE player_id = ?1 AND reward_kind = 'title') AS titles,
-           (SELECT COUNT(*) FROM player_won_rewards WHERE player_id = ?1 AND reward_kind = 'suit') AS creations,
+           (SELECT COUNT(*) FROM player_won_rewards WHERE player_id = ?1 AND reward_kind IN ('suit', 'trail', 'frame', 'victory')) AS creations,
            (SELECT COUNT(*) FROM player_won_rewards WHERE player_id = ?1 AND reward_kind = 'item') AS items,
            (SELECT COUNT(*) FROM player_cosmetics WHERE player_id = ?1) AS look,
            (SELECT COALESCE(SUM(seconds), 0) FROM player_playtime WHERE player_id = ?1) AS seconds,
