@@ -34,10 +34,9 @@ MAX_BYTES = 420 * 1024        # per painting
 MAX_TOTAL = 14 * 1024 * 1024  # every painting of every story (2.53: room for the next giga bosses; 2.57: the Liche, 12 MiB; 2.58: the Titan, 14 MiB)
 
 
-MODULES = {"singularis": "story_singularis",
-           "kraken": "story_kraken", "phenix": "story_phenix", "liche": "story_liche", "titan": "story_titan"}  # 2.53, 2.56, 2.57, 2.58
+MODULES = {"singularis": "story_singularis", "phenix": "story_phenix", "liche": "story_liche", "titan": "story_titan"}  # 2.53, 2.56, 2.57, 2.58
 SCENES = {"pyrrhax": "story_pyrrhax_scene",  # 2.60: animated scenes (their stills are the paintings)
-          "monolithe": "story_monolithe_scene"}  # 2.63: the other giga bosses follow (story_stage.py)
+          "monolithe": "story_monolithe_scene", "kraken": "story_kraken_scene"}  # 2.63: the other giga bosses follow (story_stage.py)
 
 
 def bosses(names=None):
