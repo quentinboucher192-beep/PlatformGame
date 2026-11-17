@@ -301,6 +301,31 @@ ResolvedPowerKey levelPowerKey(const std::string& power, const LevelData& level,
 
 bool padsShared(size_t keyPowers) { return keyPowers > std::size(kPadFallback); }
 
+std::string powerKeySignature(const PowerKeyMap& keys) {
+    std::vector<std::string> parts;
+    for (const auto& r : keys.powers)
+        parts.push_back(r.power + "=" + std::to_string(static_cast<int>(r.wantedKey)) + "/" + std::to_string(static_cast<int>(r.wantedPad.kind)) +
+                        ":" + std::to_string(r.wantedPad.code));
+    std::sort(parts.begin(), parts.end());
+    std::string out;
+    for (const auto& p : parts) out += (out.empty() ? "" : ";") + p;
+    return out;
+}
+
+bool matchPowerKeys(PowerKeyOverrides& overrides, const std::string& toLevelId, const PowerKeyMap& toKeys, const PowerKeyMap& fromKeys) {
+    bool changed = false;
+    for (const auto& r : toKeys.powers) {
+        const ResolvedPowerKey* f = fromKeys.find(r.power);
+        if (!f) continue;
+        const Json before = overrides.level(toLevelId).contains(r.power) ? overrides.level(toLevelId)[r.power] : Json();
+        overrides.setKey(toLevelId, r.power, f->wantedKey == r.levelKey ? SDL_SCANCODE_UNKNOWN : f->wantedKey);
+        overrides.setPad(toLevelId, r.power, f->wantedPad == r.levelPad ? PadBinding{} : f->wantedPad);
+        const Json after = overrides.level(toLevelId).contains(r.power) ? overrides.level(toLevelId)[r.power] : Json();
+        changed = changed || before != after;
+    }
+    return changed;
+}
+
 std::vector<std::string> applyPowerSlotKeys(InputManager& in, const Player& player, const PowerKeyMap& keys) {
     std::vector<std::string> missing;
     const auto& powers = player.powers();

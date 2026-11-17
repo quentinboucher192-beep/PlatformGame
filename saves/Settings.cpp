@@ -40,6 +40,7 @@ Json Settings::toJson() const {
                      {"hud", gameplay.hud.toJson()},
                      {"focusMode", gameplay.focusMode},
                      {"adminInvincible", gameplay.adminInvincible},
+                     {"powerKeysShared", gameplay.powerKeysShared},
                      {"showMessages", gameplay.showMessages},
                      {"focusMessages", gameplay.focusMessages},
                      {"enemyArrows", gameplay.enemyArrows},
@@ -103,6 +104,7 @@ Settings Settings::fromJson(const Json& j) {
         if (g.contains("hud")) s.gameplay.hud = HudLayout::fromJson(g["hud"]);
         s.gameplay.focusMode = jget<bool>(g, "focusMode", false);
         s.gameplay.adminInvincible = jget<bool>(g, "adminInvincible", false);
+        s.gameplay.powerKeysShared = jget<bool>(g, "powerKeysShared", true);
         s.gameplay.showMessages = jget<bool>(g, "showMessages", true);
         s.gameplay.focusMessages = jget<bool>(g, "focusMessages", false);
         s.gameplay.enemyArrows = jget<bool>(g, "enemyArrows", true);

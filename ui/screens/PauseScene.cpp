@@ -22,13 +22,55 @@ void PauseScene::onEnter() {
     achInputs_.stats = &liveStats_;
 }
 
-void PauseScene::drawTracked(const Rect& r, const PauseLayout& L, const std::vector<const AchievementDef*>& rows, bool note) {
+namespace {
+
+/// `text` in at most `maxLines` lines no wider than `width` at `size` (unscaled), the last one
+/// shortened with « … » when words are left over.
+std::vector<std::string> wrapLines(UIContext& ui, const std::string& text, float size, float width, int maxLines) {
+    std::vector<std::string> words, lines;
+    std::string w;
+    for (char ch : text) {
+        if (ch == ' ') {
+            if (!w.empty()) words.push_back(w);
+            w.clear();
+        } else {
+            w += ch;
+        }
+    }
+    if (!w.empty()) words.push_back(w);
+    const float px = ui.s(size);
+    std::string cur;
+    size_t i = 0;
+    for (; i < words.size(); ++i) {
+        std::string cand = cur.empty() ? words[i] : cur + " " + words[i];
+        if (!cur.empty() && ui.text().measure(cand, FontFace::Body, px).x > width) {
+            lines.push_back(cur);
+            cur = words[i];
+            if (static_cast<int>(lines.size()) == maxLines) break;
+        } else {
+            cur = std::move(cand);
+        }
+    }
+    if (static_cast<int>(lines.size()) < maxLines) {
+        if (!cur.empty()) lines.push_back(cur);
+    } else {
+        // Words left over: the last line takes them, shortened.
+        std::string rest = lines.back();
+        for (; i < words.size(); ++i) rest += " " + words[i];
+        lines.back() = ui.elide(rest, FontFace::Body, size, width);
+    }
+    for (auto& l : lines)
+        if (ui.text().measure(l, FontFace::Body, px).x > width) l = ui.elide(l, FontFace::Body, size, width);
+    return lines;
+}
+
+}  // namespace
+
+void PauseScene::drawTrackedHeader(const Rect& r, float headH, float fs, int count) {
+    // Title, the count, and « Modifier » (opens Succès over the run, to tick or untick).
     UIContext& ui = g_.ui;
     const UITheme& th = ui.theme();
-    const float fs = std::max(16.0f, 11.5f / ui.s(1.0f));  // never under 11.5 pixels
-    // Title, the count, and « Modifier » (opens Succès over the run, to tick or untick).
-    const float headH = ui.s(L.headerH);
-    const std::string edit = rows.empty() ? "Choisir des succès" : "Modifier";
+    const std::string edit = count == 0 ? "Choisir des succès" : "Modifier";
     UIContext::ButtonStyle st;
     st.small = true;
     st.fontSize = fs;
@@ -45,12 +87,49 @@ void PauseScene::drawTracked(const Rect& r, const PauseLayout& L, const std::vec
         room -= ui.newPillWidth(true) + ui.s(8);
     }
     const std::string title = "SUCCÈS SUIVIS";
-    const std::string count = std::to_string(rows.size()) + " / " + std::to_string(AchievementBook::kMaxTracked);
-    const float cw = ui.text().measure(count, FontFace::Body, ui.s(fs)).x;
+    const std::string countText = std::to_string(count) + " / " + std::to_string(AchievementBook::kMaxTracked);
+    const float cw = ui.text().measure(countText, FontFace::Body, ui.s(fs)).x;
     const float tf = std::max(ui.fitFont(title, FontFace::Bold, 18, std::max(ui.s(40), room - cw - ui.s(10)), 0.64f), 11.5f / ui.s(1.0f));
     const Vec2 tsz = ui.label(title, {r.x, r.y + headH * 0.5f}, tf, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
     if (tsz.x + ui.s(10) + cw <= room)
-        ui.label(count, {r.x + tsz.x + ui.s(10), r.y + headH * 0.5f}, fs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        ui.label(countText, {r.x + tsz.x + ui.s(10), r.y + headH * 0.5f}, fs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+}
+
+void PauseScene::drawTrackedRow(const AchievementDef& a, const Rect& row, float nameH, float lineH, float barH, const std::vector<std::string>& desc,
+                                float fs, float dfs) {
+    UIContext& ui = g_.ui;
+    const UITheme& th = ui.theme();
+    const AchievementProgress p = AchievementBook::progress(a, achInputs_);
+    const bool live = achievementMovesDuringRun(a.condition);
+    const AchievementCategory* k = g_.achievementCatalog.category(a.category);
+    const Color col = p.done() ? th.success : k ? k->color : th.accent;
+    // Name on the left, numbers on the right (the name gives way), the description under
+    // them, the bar under everything.
+    const std::string nums = achievementProgressText(a, p) + (live ? "" : " *");
+    const float textY = row.y + nameH * 0.5f;
+    const float nw = ui.text().measure(nums, FontFace::Bold, ui.s(fs)).x;
+    ui.label(nums, {row.right(), textY}, fs, live ? th.text : th.textDim, Align::Right, FontFace::Bold, VAlign::Middle);
+    ui.label(ui.elide(a.name, FontFace::Bold, fs, row.w - nw - ui.s(14)), {row.x, textY}, fs, th.text, Align::Left, FontFace::Bold, VAlign::Middle);
+    float y = row.y + nameH;
+    for (const std::string& l : desc) {
+        ui.label(l, {row.x, y + lineH * 0.5f}, dfs, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        y += lineH;
+    }
+    const float f = std::clamp(static_cast<float>(p.value) / static_cast<float>(std::max<int64_t>(1, p.target)), 0.0f, 1.0f);
+    const Rect bar{row.x, y + ui.s(4), row.w, barH};
+    ui.r().fillRoundedRect(bar, barH * 0.5f, Color{20, 28, 52, 255});
+    if (f > 0.0f) ui.r().fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * f), bar.h}, barH * 0.5f, col);
+}
+
+void PauseScene::drawTracked(const Rect& r, const PauseLayout& L, const std::vector<const AchievementDef*>& rows, bool note) {
+    // The column (no map on the right): name, numbers, one line of description when there is
+    // room, the bar; then how many places are free.
+    UIContext& ui = g_.ui;
+    const UITheme& th = ui.theme();
+    const float fs = std::max(16.0f, 11.5f / ui.s(1.0f));  // never under 11.5 pixels
+    const float dfs = std::max(14.0f, 11.5f / ui.s(1.0f));
+    const float headH = ui.s(L.headerH);
+    drawTrackedHeader(r, headH, fs, static_cast<int>(rows.size()));
     float y = r.y + headH;
     if (rows.empty()) {
         const std::string invite = "Cochez jusqu'à 5 succès dans Succès pour suivre leur avancée ici.";
@@ -60,27 +139,81 @@ void PauseScene::drawTracked(const Rect& r, const PauseLayout& L, const std::vec
         return;
     }
     const float rowH = ui.s(L.rowH), barH = std::max(3.0f, ui.s(7));
+    const bool withDesc = L.rowDescription();
+    const float lineH = withDesc ? ui.s(20) : 0.0f;
+    const float nameH = rowH - lineH - barH - ui.s(10);
     for (const AchievementDef* a : rows) {
-        const AchievementProgress p = AchievementBook::progress(*a, achInputs_);
-        const bool live = achievementMovesDuringRun(a->condition);
-        const AchievementCategory* k = g_.achievementCatalog.category(a->category);
-        const Color col = p.done() ? th.success : k ? k->color : th.accent;
-        // Name on the left, numbers on the right (the name gives way), the bar under both.
-        const std::string nums = achievementProgressText(*a, p) + (live ? "" : " *");
-        const float textY = y + (rowH - barH - ui.s(4)) * 0.5f;
-        const float nw = ui.text().measure(nums, FontFace::Bold, ui.s(fs)).x;
-        ui.label(nums, {r.right(), textY}, fs, live ? th.text : th.textDim, Align::Right, FontFace::Bold, VAlign::Middle);
-        ui.label(ui.elide(a->name, FontFace::Body, fs, r.w - nw - ui.s(14)), {r.x, textY}, fs, th.text, Align::Left, FontFace::Body, VAlign::Middle);
-        const float f = std::clamp(static_cast<float>(p.value) / static_cast<float>(std::max<int64_t>(1, p.target)), 0.0f, 1.0f);
-        const Rect bar{r.x, y + rowH - barH - ui.s(4), r.w, barH};
-        ui.r().fillRoundedRect(bar, barH * 0.5f, Color{20, 28, 52, 255});
-        if (f > 0.0f) ui.r().fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * f), bar.h}, barH * 0.5f, col);
+        std::vector<std::string> desc;
+        if (withDesc) desc = wrapLines(ui, a->description, dfs, r.w, 1);
+        drawTrackedRow(*a, {r.x, y, r.w, rowH}, nameH, lineH, barH, desc, fs, dfs);
         y += rowH;
+    }
+    if (rows.size() < static_cast<size_t>(AchievementBook::kMaxTracked)) {
+        const int free = AchievementBook::kMaxTracked - static_cast<int>(rows.size());
+        const std::string t = free == 1 ? "1 place libre : « Modifier » pour suivre un autre succès"
+                                        : std::to_string(free) + " places libres : « Modifier » pour suivre d'autres succès";
+        const float f = std::max(ui.fitFont(t, FontFace::Body, 14, r.w, 0.8f), 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(t, FontFace::Body, f, r.w), {r.x, y + ui.s(L.emptyH) * 0.5f}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        y += ui.s(L.emptyH);
     }
     if (note) {
         const std::string n = "* compté après la partie, pas pendant";
         const float f = std::max(ui.fitFont(n, FontFace::Body, 14, r.w, 0.82f), 11.5f / ui.s(1.0f));
         ui.label(ui.elide(n, FontFace::Body, f, r.w), {r.x, y + ui.s(L.noteH) * 0.5f}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
+    }
+}
+
+std::vector<int> PauseScene::trackedSideLines(const std::vector<const AchievementDef*>& rows, float width, int maxLines) {
+    UIContext& ui = g_.ui;
+    const float dfs = std::max(14.0f, 11.5f / ui.s(1.0f));
+    std::vector<int> out;
+    for (const AchievementDef* a : rows) out.push_back(std::max(1, static_cast<int>(wrapLines(ui, a->description, dfs, width, maxLines).size())));
+    return out;
+}
+
+void PauseScene::drawTrackedSide(const Rect& r, const PauseSideTracked& M, const std::vector<const AchievementDef*>& rows, bool note,
+                                 int maxLines) {
+    // Under the map (2.60): the five places, each achievement with its description.
+    UIContext& ui = g_.ui;
+    const UITheme& th = ui.theme();
+    const float fs = std::max(17.0f, 11.5f / ui.s(1.0f));
+    const float dfs = std::max(14.0f, 11.5f / ui.s(1.0f));
+    const float headH = ui.s(M.headerH);
+    drawTrackedHeader(r, headH, fs, static_cast<int>(rows.size()));
+    float y = r.y + headH;
+    const float barH = std::max(3.0f, ui.s(M.barH));
+    for (const AchievementDef* a : rows) {
+        const std::vector<std::string> desc = wrapLines(ui, a->description, dfs, r.w, maxLines);
+        const int n = std::max(1, static_cast<int>(desc.size()));
+        const float h = ui.s(M.rowHeight(n));
+        drawTrackedRow(*a, {r.x, y, r.w, h}, ui.s(M.nameH), ui.s(M.lineH), barH, desc, fs, dfs);
+        y += h;
+    }
+    for (int i = static_cast<int>(rows.size()); i < AchievementBook::kMaxTracked; ++i) {
+        // A free place: a dashed slot, what it is for.
+        const Rect slot{r.x, y, r.w, ui.s(M.freeH)};
+        const float dash = ui.s(10), gap = ui.s(6);
+        const Color c = th.textDim.withAlpha(90);
+        for (float x = slot.x; x < slot.right(); x += dash + gap) {
+            const float w = std::min(dash, slot.right() - x);
+            ui.r().fillRect({x, slot.y, w, std::max(1.0f, ui.s(1.5f))}, c);
+            ui.r().fillRect({x, slot.bottom() - std::max(1.0f, ui.s(1.5f)), w, std::max(1.0f, ui.s(1.5f))}, c);
+        }
+        for (float yy = slot.y; yy < slot.bottom(); yy += dash + gap) {
+            const float h = std::min(dash, slot.bottom() - yy);
+            ui.r().fillRect({slot.x, yy, std::max(1.0f, ui.s(1.5f)), h}, c);
+            ui.r().fillRect({slot.right() - std::max(1.0f, ui.s(1.5f)), yy, std::max(1.0f, ui.s(1.5f)), h}, c);
+        }
+        const std::string t = "Place libre — « Modifier » pour suivre un succès";
+        const float f = std::max(ui.fitFont(t, FontFace::Body, 14, slot.w - ui.s(24), 0.8f), 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(t, FontFace::Body, f, slot.w - ui.s(24)), {slot.x + ui.s(12), slot.center().y}, f, th.textDim, Align::Left,
+                 FontFace::Body, VAlign::Middle);
+        y += ui.s(M.freeH + 8.0f);
+    }
+    if (note) {
+        const std::string n = "* compté après la partie, pas pendant";
+        const float f = std::max(ui.fitFont(n, FontFace::Body, 14, r.w, 0.82f), 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(n, FontFace::Body, f, r.w), {r.x, y + ui.s(M.noteH) * 0.5f}, f, th.textDim, Align::Left, FontFace::Body, VAlign::Middle);
     }
 }
 
@@ -101,7 +234,7 @@ void PauseScene::update(float dt) {
     }
 }
 
-void PauseScene::drawMapPanel(const Rect& panel) {
+void PauseScene::drawMapPanel(const Rect& panel, const std::vector<const AchievementDef*>* tracked, bool note) {
     UIContext& ui = g_.ui;
     GameWorld* world = game_.world();
     if (!world) return;
@@ -134,7 +267,22 @@ void PauseScene::drawMapPanel(const Rect& panel) {
         pos.push_back({lx, static_cast<float>(lines - 1)});
         lx += ew + ui.s(22);
     }
-    const float legendTop = panel.bottom() - pad - lines * lineH;
+    // 2.60: « Succès suivis » at the bottom, the legend just under the map. The descriptions
+    // take two lines while the map keeps 150 px, one line otherwise.
+    PauseSideTracked M;
+    int descMax = 2;
+    float trackedH = 0.0f;
+    if (tracked) {
+        const float hintRoom = ui.s(26) + ui.s(14);
+        auto mapRoom = [&](float th) { return panel.bottom() - pad - th - ui.s(22) - lines * lineH - hintRoom - (panel.y + ui.s(96)); };
+        trackedH = ui.s(M.height(trackedSideLines(*tracked, w, 2), note));
+        if (mapRoom(trackedH) < ui.s(150)) {
+            descMax = 1;
+            trackedH = ui.s(M.height(trackedSideLines(*tracked, w, 1), note));
+        }
+    }
+    const float trackedTop = panel.bottom() - pad - trackedH;
+    const float legendTop = (tracked ? trackedTop - ui.s(22) : panel.bottom() - pad) - lines * lineH;
     for (size_t i = 0; i < pos.size(); ++i) {
         const Entry& e = entries[i];
         Vec2 m{x + pos[i].first + marker * 0.5f, legendTop + pos[i].second * lineH + lineH * 0.5f};
@@ -169,6 +317,10 @@ void PauseScene::drawMapPanel(const Rect& panel) {
         if (in.keyDown(SDL_SCANCODE_RIGHT) || in.held(Action::MenuTabNext)) mapPan_ += step * 2.0f * dt;
         mapPan_ = std::clamp(mapPan_, v.minPan, v.maxPan);
     }
+    if (tracked) {
+        ui.separator({x, trackedTop - ui.s(11)}, w);
+        drawTrackedSide({x, trackedTop, w, trackedH}, M, *tracked, note, descMax);
+    }
 }
 
 void PauseScene::render(float /*alpha*/) {
@@ -192,17 +344,27 @@ void PauseScene::render(float /*alpha*/) {
             note = note || !achievementMovesDuringRun(a->condition);
         }
     const int buttons = 6 + (keys ? 1 : 0) + (invincible ? 1 : 0) + (ghosts ? 1 : 0);
-    const PauseLayout L = pauseLayout(buttons, static_cast<int>(tracked.size()), note, ui.scale(), ui.screenH());
-    float w = ui.s(560), h = ui.s(L.height);
-    // The map of what was explored sits on the right of the menu when the window has room.
+    // The map of what was explored sits on the right of the menu when the window has room;
+    // « Succès suivis » then goes under it (2.60), the column keeping the buttons.
+    float w = ui.s(560);
     GameWorld* mapWorld = game_.world();
     const float gap = ui.s(24);
     float mapW = mapWorld ? std::min(ui.s(820), ui.screenW() - ui.s(80) - w - gap) : 0.0f;
     if (mapW < ui.s(360)) mapW = 0.0f;
-    float total = w + (mapW > 0.0f ? gap + mapW : 0.0f);
+    const bool side = mapW > 0.0f;
+    const PauseLayout L = pauseLayout(buttons, static_cast<int>(tracked.size()), note, ui.scale(), ui.screenH(), !side);
+    float h = ui.s(L.height);
+    if (side) {
+        // Tall enough for the map (160 px at least), its legend and the five places.
+        const PauseSideTracked M;
+        const float inner = mapW - 2.0f * ui.s(24);
+        const float need = ui.s(96 + 160 + 40 + 52 + 22 + 24) + ui.s(M.height(trackedSideLines(tracked, inner, 2), note));
+        h = std::min(std::max(h, need), ui.screenH() - ui.s(40));
+    }
+    float total = w + (side ? gap + mapW : 0.0f);
     float slide = (1.0f - applyEase(Ease::OutCubic, k)) * ui.s(40);
     Rect panel{(ui.screenW() - total) * 0.5f, (ui.screenH() - h) * 0.5f + slide, w, h};
-    if (mapW > 0.0f) drawMapPanel({panel.right() + gap, panel.y, mapW, h});
+    if (side) drawMapPanel({panel.right() + gap, panel.y, mapW, h}, &tracked, note);
     ui.panel(panel, true, 18);
     ui.label("PAUSE", {panel.center().x, panel.y + ui.s(40)}, 52, ui.theme().text, Align::Center, FontFace::Title);
     GameWorld* world = game_.world();
@@ -249,7 +411,8 @@ void PauseScene::render(float /*alpha*/) {
         const bool on = game_.invincible();
         UIContext::ButtonStyle st;
         st.selected = on;
-        const std::string label = std::string("Invincible (admin) : ") + (on ? "activé" : "désactivé");
+        // Never ranked: only in training runs, which record nothing (said on the button).
+        const std::string label = std::string("Invincible (admin) : ") + (on ? "activé · non classé" : "désactivé");
         st.fontSize = ui.fitFont(label, FontFace::Bold, 26, bw - ui.s(24));
         if (ui.button("invincible", {bx, y, bw, bh}, label, st)) game_.setInvincible(!on);
         ui.newBadge("invincible", {bx, y, bw, bh}, "pause.invincible");
@@ -291,7 +454,9 @@ void PauseScene::render(float /*alpha*/) {
             confirmQuit_ = true;
         }
     }
-    drawTracked({bx, panel.y + ui.s(L.sectionTop(buttons)), bw, ui.s(L.sectionHeight(static_cast<int>(tracked.size()), note))}, L, tracked, note);
+    if (!side)
+        drawTracked({bx, panel.y + ui.s(L.sectionTop(buttons)), bw, ui.s(L.sectionHeight(static_cast<int>(tracked.size()), note))}, L, tracked,
+                    note);
     ui.popId();
     if (resume || ui.backPressed() || (g_.app.input().menuPressed(Action::Pause) && t_ > 0.1f)) {
         g_.app.popScene();

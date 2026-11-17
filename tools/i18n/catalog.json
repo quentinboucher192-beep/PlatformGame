@@ -313,6 +313,12 @@
    ]
   },
   {
+   "fr": "1 place libre : « Modifier » pour suivre un autre succès",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "1 utilisation",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -2157,6 +2163,18 @@
    ]
   },
   {
+   "fr": "Appliquer aussi aux {0} autres niveaux qui ont exactement les mêmes touches",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Appliquer aussi à l'autre niveau qui a exactement les mêmes touches",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Appuyez sur un bouton ou une gâchette de la manette",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp",
@@ -3115,6 +3133,12 @@
    ]
   },
   {
+   "fr": "Aucun autre niveau n'a exactement les mêmes touches : vos choix valent pour ce niveau.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun badge pour l'instant",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -3921,6 +3945,18 @@
    "fr": "AURORE RALLUMÉE",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Aussi dans 1 autre niveau aux mêmes touches.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aussi dans {0} autres niveaux aux mêmes touches.",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -7225,7 +7261,7 @@
    ]
   },
   {
-   "fr": "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous et pour ce niveau ; « Par défaut » reprend la touche du niveau.",
+   "fr": "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous : pour ce niveau, et pour les niveaux qui ont exactement les mêmes touches si l'option ci-dessous est cochée ; « Par défaut » reprend la touche du niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
    ]
@@ -19089,7 +19125,7 @@
    ]
   },
   {
-   "fr": "Invincible (admin) : activé",
+   "fr": "Invincible (admin) : activé · non classé",
    "where": [
     "ui/screens/PauseScene.cpp"
    ]
@@ -31019,6 +31055,12 @@
    ]
   },
   {
+   "fr": "Place libre — « Modifier » pour suivre un succès",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "Placez d'abord un départ du joueur",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -34366,6 +34408,12 @@
    "fr": "Recherche des fantômes en ligne…",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recherche des niveaux qui ont exactement les mêmes touches…",
+   "where": [
+    "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
@@ -48828,6 +48876,12 @@
    ]
   },
   {
+   "fr": "{0} places libres : « Modifier » pour suivre d'autres succès",
+   "where": [
+    "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -49774,7 +49828,7 @@
    ]
   },
   {
-   "fr": "« {0} » : « {1} » dans ce niveau.",
+   "fr": "« {0} » : « {1} » dans ce niveau.{2}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
    ]
@@ -49828,13 +49882,13 @@
    ]
   },
   {
-   "fr": "« {0} » prend « {1} » : les deux pouvoirs échangent leurs boutons.",
+   "fr": "« {0} » prend « {1} » : les deux pouvoirs échangent leurs boutons.{2}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
    ]
   },
   {
-   "fr": "« {0} » prend « {1} » : les deux pouvoirs échangent leurs touches.",
+   "fr": "« {0} » prend « {1} » : les deux pouvoirs échangent leurs touches.{2}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
    ]
@@ -49846,7 +49900,7 @@
    ]
   },
   {
-   "fr": "« {0} » reprend les touches du niveau.",
+   "fr": "« {0} » reprend les touches du niveau.{1}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
    ]
