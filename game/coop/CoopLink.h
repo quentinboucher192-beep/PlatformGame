@@ -31,6 +31,10 @@ struct CoopSetup {
     enum class Mode { SamePc, Lan, Online };
     Mode mode = Mode::SamePc;
     std::string levelId;
+    /// 2.63.5: a community level (EXTRÊME): its Cosmic Online id and published version (its
+    /// Duo / Trio boards); "" for a level of the campaign.
+    std::string communityId;
+    int communityVersion = 0;
     std::vector<CoopSeat> seats;
     /// This computer's player online or on the local network (one per computer); -1 on one PC.
     int localSeat = -1;

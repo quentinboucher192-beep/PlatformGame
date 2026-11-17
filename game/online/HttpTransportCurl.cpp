@@ -27,6 +27,7 @@ size_t onBody(char* data, size_t size, size_t n, void* user) {
         return 0;  // aborts the transfer
     }
     t->response->body.append(data, bytes);
+    if (t->request->received) t->request->received->store(t->response->body.size());
     return bytes;
 }
 

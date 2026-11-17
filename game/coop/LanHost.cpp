@@ -5,7 +5,9 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <optional>
 
+#include "engine/core/FileUtil.h"
 #include "engine/core/Json.h"
 #include "game/coop/CoopRelay.h"
 #include "game/coop/NetSocket.h"
@@ -18,16 +20,15 @@ constexpr const char* kAnswer = "COSMIC-COOP!";
 uint32_t nowMs() { return static_cast<uint32_t>(SDL_GetTicks()); }
 }  // namespace
 
-bool LanHost::start(const std::string& name, const std::string& levelId, const std::string& levelHash, const std::string& levelTitle) {
+bool LanHost::start(const std::string& name, const coopnet::RoomLevel& level, const fs::path& package) {
     stop();
     listen_ = net::tcpListen(net::kLanPort);
     if (listen_ == net::kNoSocket) return false;
     udp_ = net::udpSocket(net::kDiscoveryPort);
     port_ = net::kLanPort;
     name_ = name.substr(0, 24);
-    level_ = levelId;
-    hash_ = levelHash;
-    title_ = levelTitle;
+    level_ = level;
+    package_ = package;
     stop_ = false;
     running_ = true;
     thread_ = std::thread([this] { run(); });
@@ -43,11 +44,10 @@ void LanHost::stop() {
     running_ = false;
 }
 
-void LanHost::setLevel(const std::string& id, const std::string& hash, const std::string& title) {
+void LanHost::setLevel(const coopnet::RoomLevel& level, const fs::path& package) {
     std::lock_guard<std::mutex> lock(mutex_);
-    level_ = id;
-    hash_ = hash;
-    title_ = title;
+    level_ = level;
+    package_ = package;
     levelChanged_ = true;
 }
 
@@ -64,10 +64,29 @@ void LanHost::run() {
             if (it != conns.end()) it->second->close();
         });
     std::string title;  // this thread's copy (setLevel changes it from the main thread)
+    // The level, and the package of a community level read here (16 MiB at most), never by
+    // the game's main thread.
+    auto apply = [&](const coopnet::RoomLevel& l, const fs::path& package) {
+        relay.setLevel(l.id, l.hash, l.title, l.source, l.version);
+        std::shared_ptr<const std::vector<uint8_t>> bytes;
+        std::error_code ec;
+        if (l.community() && !package.empty()) {
+            const auto size = fs::file_size(package, ec);
+            if (!ec && size > 0 && size <= coopnet::kMaxPackage)
+                if (auto b = FileUtil::readBinary(package)) bytes = std::make_shared<const std::vector<uint8_t>>(std::move(*b));
+        }
+        relay.setPackage(std::move(bytes));
+        title = l.title;
+    };
     {
-        std::lock_guard<std::mutex> lock(mutex_);
-        relay.setLevel(level_, hash_, title_);
-        title = title_;
+        coopnet::RoomLevel l;
+        fs::path package;
+        {
+            std::lock_guard<std::mutex> lock(mutex_);
+            l = level_;
+            package = package_;
+        }
+        apply(l, package);
     }
     std::deque<std::vector<uint8_t>> msgs;
     while (!stop_) {
@@ -76,12 +95,13 @@ void LanHost::run() {
         net::waitReadable(fds, 2);
         const uint32_t now = nowMs();
         {
-            std::lock_guard<std::mutex> lock(mutex_);
-            if (levelChanged_) {
-                relay.setLevel(level_, hash_, title_);
-                title = title_;
+            std::optional<std::pair<coopnet::RoomLevel, fs::path>> changed;
+            {
+                std::lock_guard<std::mutex> lock(mutex_);
+                if (levelChanged_) changed.emplace(level_, package_);
                 levelChanged_ = false;
             }
+            if (changed) apply(changed->first, changed->second);
         }
         // New games.
         for (int k = 0; k < 4; ++k) {

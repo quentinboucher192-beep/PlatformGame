@@ -2360,6 +2360,26 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "coop.community",
+   "version": "2.63.6",
+   "parents": [
+    "menu.coop"
+   ]
+  },
+  {
+   "id": "online.nav.levels",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "online.levels.coop",
+   "version": "2.63.6",
+   "parents": [
+    "online.nav.levels"
+   ]
   }
  ]
 }

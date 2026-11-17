@@ -748,16 +748,18 @@ void OnlineService::submitRaceAttempt(RaceAttempt a, std::vector<uint8_t> replay
     });
 }
 
-void OnlineService::getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes) {
+void OnlineService::getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes,
+                              std::shared_ptr<std::atomic<size_t>> received) {
     if (!usable()) {
         HttpResponse r;
         r.error = NetError::Unsupported;
         cb(r);
         return;
     }
-    auto go = [this, path, cb, maxBytes](bool withSession) {
+    auto go = [this, path, cb, maxBytes, received](bool withSession) {
         HttpRequest rq;
         rq.url = config_.serverUrl + path;
+        rq.received = received;
         if (withSession && loggedIn() && !tokens_.accessToken.empty()) rq.headers.push_back({"Authorization", "Bearer " + tokens_.accessToken});
         rq.timeoutMs = maxBytes > (2u << 20) ? 90000 : 20000;
         rq.maxResponseBytes = maxBytes;

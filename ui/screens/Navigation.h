@@ -250,9 +250,9 @@ std::unique_ptr<Scene> makePlayerProfile(GameServices& g, const std::string& pla
 std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// « Course à la vérification » of an EXTRÊME level (pushed over the current screen):
 /// `kind` "official" (campaign level, `levelHash` optional) or "community" (online id,
-/// `version` 0 = the current one).
+/// `version` 0 = the current one). `size` (2.63.5): the board shown first, 1 Solo, 2 Duo, 3 Trio.
 std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version = 0,
-                                     const std::string& levelHash = {});
+                                     const std::string& levelHash = {}, int size = 1);
 /// « Avis et commentaires » (pushed over ONLINE, 2.19): `thread` = "level:<official level
 /// id>" (the players' rating and the level's comments) or "run:<record id>" (the comments of
 /// a run of the leaderboards; `levelId` names its level until the record is read).

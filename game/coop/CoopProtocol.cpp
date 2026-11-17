@@ -1,7 +1,10 @@
 #include "game/coop/CoopProtocol.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+
+#include "packaging/Sha256.h"
 
 namespace cosmic::coopnet {
 
@@ -180,6 +183,76 @@ std::vector<uint8_t> end(EndReason r) {
     auto o = msg(Msg::End);
     Writer{o}.u8(static_cast<uint8_t>(r));
     return o;
+}
+
+std::vector<uint8_t> packageAsk(uint32_t offset) {
+    auto o = msg(Msg::PackageAsk);
+    Writer{o}.u32(offset);
+    return o;
+}
+
+std::vector<uint8_t> packagePart(uint32_t total, uint32_t offset, const std::array<uint8_t, 32>& sha, const uint8_t* data, size_t n) {
+    auto o = msg(Msg::PackagePart);
+    Writer w{o};
+    w.u32(total);
+    w.u32(offset);
+    o.insert(o.end(), sha.begin(), sha.end());
+    if (data && n > 0) o.insert(o.end(), data, data + n);
+    return o;
+}
+
+bool PackageReceiver::accept(const uint8_t* data, size_t size) {
+    if (failed() || unavailable_ || complete()) return false;
+    Reader r{data, data + size};
+    const uint32_t total = r.u32();
+    const uint32_t offset = r.u32();
+    std::array<uint8_t, 32> sha{};
+    if (r.need(32)) {
+        std::copy(r.p, r.p + 32, sha.begin());
+        r.p += 32;
+    }
+    if (!r.ok) {
+        error_ = "Le niveau envoyé par l'hôte est illisible : il n'est pas installé.";
+        return false;
+    }
+    const size_t n = static_cast<size_t>(r.end - r.p);
+    if (total == 0) {
+        unavailable_ = true;  // the host keeps no package of its level
+        return false;
+    }
+    if (total > kMaxPackage) {
+        error_ = "Le niveau de l'hôte est trop volumineux (16 Mo au plus) : il n'est pas reçu.";
+        return false;
+    }
+    if (total_ == 0) {
+        total_ = total;
+        sha_ = sha;
+        bytes_.reserve(total);
+    }
+    if (total != total_ || sha != sha_ || offset != bytes_.size() || n == 0 || n > kPackageChunk || bytes_.size() + n > total_) {
+        error_ = "Le niveau envoyé par l'hôte est incohérent : il n'est pas installé.";
+        bytes_.clear();
+        return false;
+    }
+    bytes_.insert(bytes_.end(), r.p, r.end);
+    return true;
+}
+
+std::string PackageReceiver::sha256() const {
+    static const char* kHex = "0123456789abcdef";
+    std::string s;
+    for (uint8_t b : sha_) {
+        s.push_back(kHex[b >> 4]);
+        s.push_back(kHex[b & 15]);
+    }
+    return s;
+}
+
+bool packageMatches(const std::vector<uint8_t>& bytes, const std::string& sha256Hex) {
+    if (bytes.empty() || bytes.size() > kMaxPackage || sha256Hex.size() != 64) return false;
+    std::string want = sha256Hex;
+    for (char& c : want) c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    return Sha256::hex(bytes) == want;
 }
 
 int inputDelayFor(int worstRoundTripMs) {

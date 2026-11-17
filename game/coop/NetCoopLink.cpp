@@ -153,6 +153,15 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             if (r.ok && seat == seat_) rejoinAt_ = at;
             break;
         }
+        case Msg::PackagePart: {
+            if (!askingPackage_) return;
+            if (!package_.accept(r.p, static_cast<size_t>(r.end - r.p)) || package_.complete()) {
+                askingPackage_ = false;  // refused, none on the host's PC, or every byte is here
+                return;
+            }
+            post(packageAsk(package_.nextOffset()));
+            break;
+        }
         case Msg::End: {
             const auto reason = static_cast<EndReason>(r.u8());
             endReason_ = reason == EndReason::HostLeft  ? "L'hôte a quitté la partie."
@@ -168,6 +177,13 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
 
 void NetCoopLink::setReady(bool on) { post(coopnet::ready(on)); }
 void NetCoopLink::startGame(int players) { post(coopnet::start(static_cast<uint8_t>(players))); }
+
+void NetCoopLink::requestPackage() {
+    if (askingPackage_ || go_) return;
+    package_.reset();
+    askingPackage_ = true;
+    post(packageAsk(0));
+}
 void NetCoopLink::catchupDone(uint32_t tick) { post(coopnet::catchupDone(tick)); }
 
 void NetCoopLink::result(uint32_t ticks) {

@@ -17,6 +17,7 @@
 #include "packaging/PackageImporter.h"
 #include "ui/online/CommentsPanel.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/CoopGameScene.h"
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -268,9 +269,38 @@ private:
                     return;
                 }
                 detail_ = r.data;
+                const Json& l = detail_.value("level", Json::object());
+                if (jget<bool>(l, "extreme", false)) loadCoopBoards(id, jget<int>(l, "version", 1));
             }),
             false);
     }
+
+    /// 2.63.5: the Duo and Trio boards of an EXTRÊME level's current version (their best team).
+    void loadCoopBoards(const std::string& id, int version) {
+        coopBoards_[0] = coopBoards_[1] = Json();
+        for (int size = 2; size <= 3; ++size)
+            g_.online.get("/api/v1/coop/board?size=" + std::to_string(size) + "&kind=community&level_id=" + id + "&version=" + std::to_string(version),
+                          OnlineService::guard(life_, [this, id, size](const ApiResult& r) {
+                              if (id != selected_) return;
+                              coopBoards_[size - 2] = r.ok ? r.data : Json{{"error", r.message.empty() ? std::string("indisponible") : r.message}};
+                          }),
+                          false);
+    }
+
+    /// « Duo · Nova + Lyra · 87,5 % »: the best team of a board, or why there is none.
+    std::string coopBest(int size) const {
+        const Json& b = coopBoards_[size - 2];
+        std::string t = size == 2 ? "Duo" : "Trio";
+        if (b.is_null()) return t + " · chargement…";
+        if (b.contains("error")) return t + " · classement indisponible";
+        const Json ranking = b.value("ranking", Json::array());
+        if (!ranking.is_array() || ranking.empty()) return t + " · aucune équipe classée";
+        std::string names;
+        for (const auto& p : ranking[0].value("players", Json::array())) names += (names.empty() ? "" : " + ") + jstr(p, "username");
+        return t + " · " + names + " · " + decimal(jget<double>(ranking[0], "score", 0.0)) + " %";
+    }
+
+    void openCoop(const std::string& localId) { g_.app.switchScene(makeCoopLobby(g_, std::nullopt, localId), 0.3f); }
 
     TexturePtr thumbnail(const std::string& id) {
         auto it = thumbs_.find(id);
@@ -300,6 +330,7 @@ private:
         std::string id = jstr(level, "id");
         int version = jget<int>(level, "version", 1);
         std::string title = jstr(level, "title");
+        std::string author = jstr(level.value("author", Json::object()), "username");
         // A version published before the 2.17 rules (energy costs, minions) has another
         // gameplay fingerprint: its times are no longer ranked until a new version.
         std::string minGame;
@@ -310,7 +341,7 @@ private:
         say("Téléchargement…", false);
         g_.online.getBinary(
             "/api/v1/community/levels/" + id + "/package",
-            [this, id, version, title, olderRules, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+            [this, id, version, title, author, olderRules, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
                 if (!life.lock()) return;
                 working_ = false;
                 if (r.status != 200) return say(r.networkFailure() ? "Connexion impossible : " + r.errorMessage : "Téléchargement refusé (" + std::to_string(r.status) + ").", true);
@@ -331,11 +362,22 @@ private:
                 if (!lvl) return say("Niveau installé illisible.", true);
                 std::string serverHash = r.header("x-level-hash");
                 bool verified = !serverHash.empty() && fingerprintGameplay(g_.content, *lvl) == serverHash;
-                g_.online.noteCommunityInstall(installed, {{"id", id}, {"version", version}, {"level_hash", serverHash}, {"title", title}, {"verified", verified}});
+                g_.online.noteCommunityInstall(installed, {{"id", id},
+                                                           {"version", version},
+                                                           {"level_hash", serverHash},
+                                                           {"title", title},
+                                                           {"author", author},
+                                                           {"verified", verified}});
                 if (!verified)
                     say(olderRules ? "Publié avant les règles de la 2.17 : vos temps n'y sont plus classés tant que son auteur n'en publie pas une nouvelle version."
                                    : "Installé, mais cette copie diffère de la version publiée : vos temps n'y seront pas classés.",
                         true);
+                if (coopAfterInstall_) {
+                    // 2.63.5: « Jouer en coop »: the lobby, on this level (its published version only).
+                    coopAfterInstall_ = false;
+                    if (verified && lvl->extreme && lvl->oneLife()) openCoop(installed);
+                    return;
+                }
                 if (ghostAfterInstall_) {
                     ghostAfterInstall_ = false;
                     GhostSetupRequest q;
@@ -672,12 +714,16 @@ private:
         {
             std::vector<std::pair<std::string, float>> all = {{working_ ? "Téléchargement…" : playLabel, w}, {"Course contre un fantôme…", w},
                                                               {"Touches des pouvoirs…", w}, {favLabel, half}, {comLabel, half}};
-            if (extreme) all.push_back({"Course à la vérification (classement de progression)", w});
+            if (extreme) {
+                all.push_back({"Jouer en coop…", half});
+                all.push_back({"Course à la vérification", half});
+            }
             for (const auto& [label, bw] : all) cardFont = std::min(cardFont, ui.fitFont(label, FontFace::Bold, 20.0f, bw - ui.s(24), 0.55f));
         }
         p.fontSize = cardFont;
         if (ui.button("play", {x, y, w, ui.s(48)}, working_ ? "Téléchargement…" : playLabel, p)) {
             ghostAfterInstall_ = false;
+            coopAfterInstall_ = false;
             if (!local.empty() && ver == current) play(local);
             else downloadAndPlay(l);
         }
@@ -695,6 +741,7 @@ private:
                     g_.app.pushScene(makeGhostSetup(g_, local, q));
                 } else {
                     ghostAfterInstall_ = true;
+                    coopAfterInstall_ = false;
                     downloadAndPlay(l);
                 }
             }
@@ -720,12 +767,39 @@ private:
             }
         }
         if (extreme) {
+            // 2.63.5: the level in co-op (the lobby, on this version: downloaded first if needed),
+            // its race (Solo), and its Duo and Trio boards' best teams (each opens its board).
+            UIContext::ButtonStyle cs;
+            cs.small = true;
+            cs.fontSize = cardFont;
+            cs.enabled = !working_;
+            const Rect coopR{x, y, half, ui.s(42)};
+            if (ui.button("coop", coopR, "Jouer en coop…", cs)) {
+                ghostAfterInstall_ = false;
+                if (!local.empty() && ver == current && verified) {
+                    openCoop(local);
+                } else {
+                    coopAfterInstall_ = true;
+                    downloadAndPlay(l);
+                }
+            }
+            ui.newBadge("coop", coopR, "online.levels.coop");  // « NOUVEAU » (2.63.5)
             UIContext::ButtonStyle rs;
             rs.small = true;
             rs.fontSize = cardFont;
-            if (ui.button("race", {x, y, w, ui.s(42)}, "Course à la vérification (classement de progression)", rs))
+            if (ui.button("race", {x + half + ui.s(10), y, half, ui.s(42)}, "Course à la vérification", rs))
                 g_.app.pushScene(makeRaceBoard(g_, "community", id, current));
             y += ui.s(52);
+            for (int size = 2; size <= 3; ++size) {
+                const std::string t = coopBest(size);
+                UIContext::ButtonStyle bs;
+                bs.small = true;
+                bs.fontSize = std::min(cardFont, 16.0f);
+                const Rect br{x + (size - 2) * (half + ui.s(10)), y, half, ui.s(36)};
+                if (ui.button(size == 2 ? "duo" : "trio", br, ui.elide(t, FontFace::Bold, bs.fontSize, br.w - ui.s(28)), bs))
+                    g_.app.pushScene(makeRaceBoard(g_, "community", id, current, {}, size));
+            }
+            y += ui.s(46);
         }
         // Favorites and comments.
         {
@@ -931,6 +1005,8 @@ private:
     std::map<std::string, TexturePtr> thumbs_;
     bool working_ = false, autoPlay_ = false;
     bool ghostAfterInstall_ = false;
+    bool coopAfterInstall_ = false;  // 2.63.5: « Jouer en coop » after the download
+    Json coopBoards_[2];             // 2.63.5: the Duo and Trio boards of the level shown
     std::string keysLevelId_;               // the installed level whose power keys can be set (2.31)
     std::optional<LevelData> keysLevel_;    // loaded once; empty when none of its powers has a key  // « Course contre un fantôme » on a level to install first
     bool confirmReport_ = false, confirmRemove_ = false;

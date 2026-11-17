@@ -3,17 +3,26 @@
 // the mouse (and a gamepad if it chooses one), players 2 and 3 take a place by pressing Start
 // or A on their own gamepad, and leave it with B. Every text is measured and placed one after
 // the other (fitted, wrapped or shortened): nothing overlaps.
+// 2.63.5: « Campagne / Communauté »: the EXTRÊME community levels installed from Cosmic Online
+// too (docs/COOP.md § 9). A player of a room who does not have its level (or not that version)
+// gets it before « Prêt »: downloaded from Cosmic Online, or sent by the PC that hosts on the
+// local network (bounded, SHA-256 checked off the main thread), then its fingerprint compared:
+// a game never starts with two versions of a level.
 
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cmath>
+#include <cstdio>
 #include <future>
 #include <map>
 #include <set>
 
+#include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
 #include "engine/input/LocalPad.h"
 #include "game/GameServices.h"
+#include "game/coop/CoopLevels.h"
 #include "game/coop/LanHost.h"
 #include "game/coop/NetCoopLink.h"
 #include "game/coop/NetSocket.h"
@@ -22,6 +31,7 @@
 #include "game/enemies/EnemyDefinition.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/online/Replay.h"
+#include "packaging/PackageImporter.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/CoopGameScene.h"
 #include "ui/screens/Navigation.h"
@@ -30,32 +40,15 @@ namespace cosmic {
 
 namespace {
 
-/// An EXTRÊME level of the campaign (one life), as the lobby offers it.
-struct CoopLevel {
-    std::string id, name, planet;
-    std::vector<std::string> bosses;
-    int hearts = 0;
-};
+/// The packages downloaded from Cosmic Online (NIVEAUX EN LIGNE, this lobby).
+fs::path downloadsDir() { return Paths::userDir() / "online" / "downloads"; }
 
-/// The EXTRÊME levels of the campaign, read off the main thread (each level file is parsed).
-std::vector<CoopLevel> findCoopLevels(const ContentDatabase& content) {
-    std::vector<CoopLevel> out;
-    for (const LevelEntry* e : content.levels()) {
-        if (content.campaignPlanetOf(e->id).empty()) continue;
-        auto data = content.loadLevel(e->id);
-        if (!data || !data->extreme || !data->oneLife()) continue;
-        CoopLevel l;
-        l.id = e->id;
-        l.name = data->name;
-        if (const PlanetData* p = content.planet(data->planet)) l.planet = p->name;
-        for (const auto& o : data->objects) {
-            if (o.type != "enemy") continue;
-            const EnemyDefinition* d = content.enemyFor(o.propStr("enemy"), *data);
-            if (d && d->isBoss) l.bosses.push_back(d->bossTitle.empty() ? d->name : d->bossTitle);
-        }
-        out.push_back(std::move(l));
-    }
-    return out;
+/// A Cosmic Online id as the relay gives it (never trusted: it goes into a path).
+bool onlineId(const std::string& s) {
+    if (s.size() != 36) return false;
+    for (char c : s)
+        if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || c == '-')) return false;
+    return true;
 }
 
 struct Rule {
@@ -80,12 +73,13 @@ const Rule kRules[] = {
 
 class CoopLobbyScene : public Scene {
 public:
-    CoopLobbyScene(GameServices& g, std::optional<CoopSetup> previous) : g_(g), previous_(std::move(previous)) {}
+    CoopLobbyScene(GameServices& g, std::optional<CoopSetup> previous, std::string wanted)
+        : g_(g), previous_(std::move(previous)), wantedLevel_(std::move(wanted)) {}
 
     ~CoopLobbyScene() override { g_.app.input().setReservedPads({}); }
 
     void onEnter() override {
-        levelsFuture_ = std::async(std::launch::async, [&content = g_.content] { return findCoopLevels(content); });
+        startLevelSearch();
         p1Pad_ = g_.app.input().gamepadId();
         seats_.clear();
         CoopSeat me;
@@ -122,25 +116,231 @@ public:
         t_ += dt;
         anim_.update(dt);
         if (levelsFuture_.valid() && levelsFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+            // The level chosen stays chosen when the list is read again (a level installed).
+            const std::string keep = levelsLoaded_ && chosenLevel() ? chosenLevel()->id : wantedLevel_;
             levels_ = levelsFuture_.get();
             levelsLoaded_ = true;
-            level_ = 0;
+            level_ = -1;
             for (size_t i = 0; i < levels_.size(); ++i)
-                if (levels_[i].id == wantedLevel_) level_ = static_cast<int>(i);
+                if (levels_[i].id == keep) level_ = static_cast<int>(i);
+            if (level_ >= 0) source_ = levels_[static_cast<size_t>(level_)].community ? 1 : 0;
+            else level_ = firstOfSource(source_);
         }
         if (mode_ == 0) watchPads(dt);
         updateNet(dt);
+    }
+
+    // ------------------------------------------------------------------ levels
+
+    /// The search of the levels (campaign, community installs), off the main thread.
+    void startLevelSearch() {
+        levelsFuture_ = std::async(std::launch::async, [&content = g_.content, installs = g_.online.communityInstalls(), dir = downloadsDir()] {
+            return findCoopLevels(content, installs, dir);
+        });
+    }
+
+    /// The first level of a source (0: the campaign, 1: the community), -1 if none.
+    int firstOfSource(int source) const {
+        for (size_t i = 0; i < levels_.size(); ++i)
+            if (levels_[i].community == (source == 1)) return static_cast<int>(i);
+        return -1;
+    }
+    int countOfSource(int source) const {
+        return static_cast<int>(std::count_if(levels_.begin(), levels_.end(), [source](const CoopLevel& l) { return l.community == (source == 1); }));
     }
 
     // ------------------------------------------------------------------ network
 
     std::string myName() const { return g_.online.loggedIn() ? g_.online.username() : "Joueur"; }
 
-    const CoopLevel* chosenLevel() const { return levels_.empty() ? nullptr : &levels_[static_cast<size_t>(level_)]; }
+    const CoopLevel* chosenLevel() const {
+        return level_ >= 0 && level_ < static_cast<int>(levels_.size()) ? &levels_[static_cast<size_t>(level_)] : nullptr;
+    }
 
     std::string levelHash(const std::string& id) {
         const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, id);
         return fp ? fp->hash : std::string(64, '0');
+    }
+
+    /// What the relay is told of a level: a community level by its online id and version.
+    coopnet::RoomLevel roomLevelOf(const CoopLevel& l) {
+        coopnet::RoomLevel r;
+        r.title = l.name.substr(0, 80);
+        if (l.community) {
+            r.source = "community";
+            r.id = l.communityId;
+            r.hash = l.hash;
+            r.version = l.version;
+        } else {
+            r.id = l.id;
+            r.hash = levelHash(l.id);
+        }
+        return r;
+    }
+
+    /// The level of the room, as the relay says it (never trusted: bounded, checked here).
+    coopnet::RoomLevel lobbyLevel() const {
+        coopnet::RoomLevel r;
+        const Json& j = link_->lobby();
+        if (!j.is_object()) return r;
+        r.id = jstr(j, "level").substr(0, 64);
+        r.hash = jstr(j, "hash").substr(0, 64);
+        r.title = jstr(j, "title").substr(0, 80);
+        r.source = jstr(j, "source", "campaign") == "community" ? "community" : "campaign";
+        r.version = std::clamp(jget<int>(j, "version", 0), 0, 100000);
+        return r;
+    }
+
+    void failRoom(const std::string& why) {
+        room_ = Room::Failed;
+        roomError_ = why;
+    }
+
+    /// Every frame in a room: the room's level is on this PC in its version, or it comes.
+    void followRoomLevel() {
+        if (!link_ || !link_->connected() || !link_->lobby().is_object()) return;
+        const coopnet::RoomLevel l = lobbyLevel();
+        if (l.id.empty()) return;
+        if (!(l == roomLevel_)) {
+            roomLevel_ = l;
+            ++roomGen_;
+            room_ = Room::Checking;
+            roomLocal_.clear();
+            roomError_.clear();
+            if (ready_) {
+                ready_ = false;
+                link_->setReady(false);
+            }
+        }
+        if (room_ == Room::Checking) resolveRoomLevel();
+        if (room_ == Room::Fetching && fromHost_) followHostPackage();
+    }
+
+    void resolveRoomLevel() {
+        const coopnet::RoomLevel& l = roomLevel_;
+        if (!l.community()) {
+            if (g_.content.level(l.id) && !g_.content.campaignPlanetOf(l.id).empty() && levelHash(l.id) == l.hash) {
+                room_ = Room::Ready;
+                roomLocal_ = l.id;
+            } else {
+                failRoom("Ce niveau de la campagne n'est pas dans la même version sur ce PC : mettez le jeu à jour pour jouer ensemble.");
+            }
+            return;
+        }
+        if (!levelsLoaded_ || levelsFuture_.valid() || installFuture_.valid()) return;  // still reading the levels
+        if (const CoopLevel* c = findRoomLevel(levels_, l.id, l.version, l.hash)) {
+            room_ = Room::Ready;
+            roomLocal_ = c->id;
+            return;
+        }
+        if (!onlineId(l.id) || l.version <= 0 || l.hash.size() != 64) return failRoom("Le niveau de ce salon est illisible.");
+        if (link_->seat() == 0) return failRoom("Ce niveau n'est plus sur ce PC dans cette version.");
+        // Missing here (or another version): the host sends it on the local network, Cosmic
+        // Online otherwise.
+        if (mode_ == 1) {
+            fromHost_ = true;
+            room_ = Room::Fetching;
+            link_->requestPackage();
+        } else {
+            downloadRoomLevel();
+        }
+    }
+
+    void followHostPackage() {
+        const coopnet::PackageReceiver& p = link_->package();
+        if (p.failed()) return failRoom(p.error());
+        if (p.unavailable()) return downloadRoomLevel();  // no package kept on the host's PC
+        if (p.complete()) {
+            const std::string sha = p.sha256();
+            install(link_->takePackage(), sha, true);
+        }
+    }
+
+    void downloadRoomLevel() {
+        fromHost_ = false;
+        if (!g_.online.usable()) {
+            return failRoom(mode_ == 1 ? "L'hôte n'a pas gardé le fichier de ce niveau et Cosmic Online est injoignable : téléchargez-le dans "
+                                         "NIVEAUX EN LIGNE, puis rejoignez la partie."
+                                       : "Cosmic Online est injoignable : le niveau du salon ne peut pas être téléchargé.");
+        }
+        room_ = Room::Fetching;
+        received_ = std::make_shared<std::atomic<size_t>>(0);
+        const int gen = roomGen_;
+        g_.online.getBinary(
+            "/api/v1/community/levels/" + roomLevel_.id + "/package?version=" + std::to_string(roomLevel_.version),
+            [this, gen, life = std::weak_ptr<int>(life_)](const HttpResponse& r) {
+                if (life.expired() || gen != roomGen_) return;
+                if (r.status != 200)
+                    return failRoom(r.networkFailure() ? "Téléchargement du niveau impossible : " + r.errorMessage
+                                                       : "Téléchargement du niveau refusé (" + std::to_string(r.status) + ").");
+                install(std::vector<uint8_t>(r.body.begin(), r.body.end()), r.header("x-content-sha256"), false);
+            },
+            coopnet::kMaxPackage, received_);
+    }
+
+    /// Checks (SHA-256), keeps and installs a package off the main thread. `shaRequired`: the
+    /// local network always announces it; Cosmic Online gives it in a header.
+    void install(std::vector<uint8_t> bytes, std::string sha, bool shaRequired) {
+        room_ = Room::Installing;
+        installGen_ = roomGen_;
+        installFuture_ = std::async(std::launch::async, [&content = g_.content, bytes = std::move(bytes), sha = std::move(sha), shaRequired,
+                                                         level = roomLevel_]() -> Installed {
+            Installed out;
+            out.level = level;
+            const std::string& id = level.id;
+            const int version = level.version;
+            if (bytes.empty() || bytes.size() > coopnet::kMaxPackage) {
+                out.error = "Le niveau reçu est vide ou trop volumineux : il n'est pas installé.";
+                return out;
+            }
+            if ((shaRequired || !sha.empty()) && !coopnet::packageMatches(bytes, sha)) {
+                out.error = "Le niveau reçu est abîmé (son empreinte SHA-256 ne correspond pas) : il n'est pas installé.";
+                return out;
+            }
+            std::error_code ec;
+            fs::create_directories(downloadsDir(), ec);
+            out.file = communityPackagePath(downloadsDir(), id, version);
+            if (!FileUtil::writeBinary(out.file, bytes)) {
+                out.error = "Écriture du niveau impossible sur ce PC.";
+                return out;
+            }
+            // The same verifications as any package (paths, types, sizes, hashes...).
+            PackageImporter imp(content);
+            PackageInspection insp = imp.inspect(out.file);
+            if (!insp.valid) {
+                out.error = "Niveau refusé : " + (insp.errors.empty() ? std::string("paquet invalide") : insp.errors.front());
+                return out;
+            }
+            std::string err;
+            if (!imp.install(insp, ConflictPolicy::Replace, &out.id, &err)) out.error = "Installation du niveau impossible : " + err;
+            return out;
+        });
+    }
+
+    /// The package installed (or refused): the content is read again on the main thread, once
+    /// no search reads it any more; the fingerprint decides whether it is the room's version.
+    void finishInstall() {
+        Installed res = installFuture_.get();
+        const bool current = installGen_ == roomGen_;  // the room did not change its level meanwhile
+        std::error_code ec;
+        if (!res.error.empty()) {
+            if (!res.file.empty()) fs::remove(res.file, ec);
+            if (current) failRoom(res.error);
+            return;
+        }
+        g_.content.reload();
+        g_.ratings.contentChanged();
+        auto lvl = g_.content.loadLevel(res.id);
+        const bool same = lvl && fingerprintGameplay(g_.content, *lvl) == res.level.hash;
+        g_.online.noteCommunityInstall(res.id, {{"id", res.level.id},
+                                                {"version", res.level.version},
+                                                {"level_hash", res.level.hash},
+                                                {"title", res.level.title},
+                                                {"verified", same}});
+        if (!same) fs::remove(res.file, ec);
+        if (current && !same) failRoom("La copie reçue n'est pas la version de ce salon (empreintes différentes) : la partie ne peut pas commencer.");
+        else if (current) room_ = Room::Checking;  // found in the list read again
+        startLevelSearch();
     }
 
     void joinNet(std::unique_ptr<CoopTransport> transport, uint8_t wantedSeat = 255) {
@@ -156,13 +356,19 @@ public:
         host_.reset();
         roomId_.clear();
         ready_ = false;
+        roomLevel_ = {};
+        ++roomGen_;
+        room_ = Room::None;
+        roomLocal_.clear();
+        roomError_.clear();
     }
 
     void hostLan() {
         const CoopLevel* l = chosenLevel();
         if (!l) return;
         auto host = std::make_shared<LanHost>();
-        if (!host->start(myName(), l->id, levelHash(l->id), l->name)) {
+        hosted_ = roomLevelOf(*l);
+        if (!host->start(myName(), hosted_, l->package)) {
             netError_ = "Impossible d'héberger : le port 47620 de ce PC est déjà pris.";
             return;
         }
@@ -174,7 +380,10 @@ public:
         const CoopLevel* l = chosenLevel();
         if (!l || busy_) return;
         busy_ = true;
-        Json body = {{"level", {{"source", "campaign"}, {"id", l->id}, {"hash", levelHash(l->id)}, {"title", l->name}}}};
+        const coopnet::RoomLevel rl = roomLevelOf(*l);
+        Json level = {{"source", rl.source}, {"id", rl.id}, {"hash", rl.hash}, {"title", rl.title}};
+        if (rl.community()) level["version"] = rl.version;
+        Json body = {{"level", level}};
         g_.online.send("POST", "/api/v1/coop/rooms", body, OnlineService::guard(life_, [this](const ApiResult& r) {
             busy_ = false;
             if (!r.ok) {
@@ -234,6 +443,9 @@ public:
                 if (r.ok) friends_ = r.data.value("friends", Json::array());
             }));
         }
+        // A level installed for a room: the content is read again once no search reads it.
+        if (installFuture_.valid() && !levelsFuture_.valid() && installFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+            finishInstall();
         if (!link_) return;
         link_->update(dt);
         if (!link_->error().empty()) {
@@ -247,24 +459,43 @@ public:
             return;
         }
         // The level the host chose follows on the local network.
-        if (host_ && chosenLevel() && chosenLevel()->id != hostedLevel_) {
-            hostedLevel_ = chosenLevel()->id;
-            host_->setLevel(hostedLevel_, levelHash(hostedLevel_), chosenLevel()->name);
+        if (host_ && chosenLevel()) {
+            const coopnet::RoomLevel rl = roomLevelOf(*chosenLevel());
+            if (!(rl == hosted_)) {
+                hosted_ = rl;
+                host_->setLevel(rl, chosenLevel()->package);
+            }
         }
+        followRoomLevel();
         if (link_->go()) startNetGame();
     }
 
     void startNetGame() {
         const auto& go = *link_->go();
-        // The level must be the same version here: the simulation would not be the same.
-        if (!g_.content.level(go.level) || levelHash(go.level) != go.hash) {
-            netError_ = "Ce niveau n'est pas dans la même version sur ce PC : mettez le jeu à jour.";
+        if (!levelsLoaded_ || levelsFuture_.valid() || installFuture_.valid()) return;  // the levels are being read: soon
+        // The level must be the same version here: the simulation would not be the same. A
+        // community level by its online id and its fingerprint (and the room's version).
+        std::string local, communityId;
+        int version = 0;
+        for (const CoopLevel& l : levels_)
+            if (l.community && l.communityId == go.level && l.hash == go.hash && (!roomLevel_.community() || l.version == roomLevel_.version)) {
+                local = l.id;
+                communityId = l.communityId;
+                version = l.version;
+            }
+        if (local.empty() && g_.content.level(go.level) && !g_.content.campaignPlanetOf(go.level).empty() && levelHash(go.level) == go.hash)
+            local = go.level;
+        if (local.empty()) {
+            netError_ = roomLevel_.community() ? "Ce niveau de la communauté n'est pas sur ce PC dans la version du salon : la partie ne peut pas commencer."
+                                               : "Ce niveau n'est pas dans la même version sur ce PC : mettez le jeu à jour.";
             leaveNet();
             return;
         }
         CoopSetup s;
         s.mode = mode_ == 1 ? CoopSetup::Mode::Lan : CoopSetup::Mode::Online;
-        s.levelId = go.level;
+        s.levelId = local;
+        s.communityId = communityId;
+        s.communityVersion = version;
         s.localSeat = link_->seat();
         s.seed = go.seed;
         s.attemptId = go.attempt;
@@ -368,10 +599,15 @@ public:
     }
 
     void start() {
-        if (seats_.size() < 2 || levels_.empty()) return;
+        const CoopLevel* l = chosenLevel();
+        if (seats_.size() < 2 || !l) return;
         CoopSetup s;
         s.mode = CoopSetup::Mode::SamePc;
-        s.levelId = levels_[static_cast<size_t>(level_)].id;
+        s.levelId = l->id;
+        if (l->community) {
+            s.communityId = l->communityId;
+            s.communityVersion = l->version;
+        }
         s.seats = seats_;
         s.localSeat = -1;
         s.seed = levelSeed(s.levelId);
@@ -434,6 +670,9 @@ public:
         return y + ui.text().measure(t, FontFace::Bold, ui.s(14)).y + ui.s(10);
     }
 
+    /// A guest of a network room: the room's level (the host chooses it), and how it comes.
+    bool showsRoomLevel() const { return link_ && link_->connected() && link_->seat() > 0 && !roomLevel_.id.empty(); }
+
     void drawLevel(const Rect& box) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
@@ -441,28 +680,62 @@ public:
         r.drawRoundedRect(box, ui.s(14), Color{34, 48, 90, 255}, ui.s(1));
         const float in = ui.s(16), x = box.x + in, w = box.w - in * 2.0f;
         float y = heading("NIVEAU", x, box.y + in);
-        if (!levelsLoaded_ || levels_.empty()) {
-            const std::string m = levelsLoaded_ ? "Aucun niveau EXTRÊME installé." : "Recherche des niveaux EXTRÊME…";
-            ui.labelWrapped(m, {x, y}, w, 17, ui.theme().textDim);
+        const bool guest = showsRoomLevel();
+        if (!guest) {
+            // 2.63.5: the campaign's EXTRÊME levels or the community's installed ones (fixed in a room).
+            const Rect tabs{x, y, w, ui.s(40)};
+            int src = source_;
+            if (ui.tabs("source", tabs, {"Campagne", "Communauté"}, src) && src != source_ && !link_) {
+                source_ = src;
+                level_ = firstOfSource(source_);
+            }
+            ui.newBadge("source", tabs, "coop.community");  // « NOUVEAU » (2.63.5)
+            y = tabs.bottom() + ui.s(12);
+        }
+        const CoopLevel* shown = chosenLevel();
+        if (guest) {
+            shown = nullptr;
+            for (const CoopLevel& l : levels_)
+                if (l.id == roomLocal_ && room_ == Room::Ready) shown = &l;
+        }
+        if (!shown) {
+            if (guest) {
+                drawRoomLevelState(x, y, w);
+                return;
+            }
+            const std::string m = !levelsLoaded_ ? "Recherche des niveaux EXTRÊME…"
+                                  : source_ == 0
+                                      ? "Aucun niveau EXTRÊME installé."
+                                      : "Aucun niveau EXTRÊME de la communauté installé : choisissez-en un dans NIVEAUX EN LIGNE, puis « Jouer en coop ».";
+            y += ui.labelWrapped(m, {x, y}, w, 17, ui.theme().textDim).y + ui.s(14);
+            if (levelsLoaded_ && source_ == 1 && !link_ && ui.button("online", {x, y, w, ui.s(44)}, "Niveaux en ligne…")) {
+                leaveNet();
+                g_.app.switchScene(makeOnlineLevels(g_), 0.3f);
+            }
             return;
         }
-        const CoopLevel& l = levels_[static_cast<size_t>(level_)];
+        const CoopLevel& l = *shown;
         // The planet's picture with the EXTRÊME badge.
-        const Rect pic{x, y, w, std::min(ui.s(180), box.h * 0.3f)};
+        const Rect pic{x, y, w, std::min(ui.s(180), box.h * 0.26f)};
         r.fillRoundedRect(pic, ui.s(10), Color{26, 18, 64, 255});
-        if (const LevelEntry* e = g_.content.level(l.id))
-            if (const PlanetData* p = g_.content.planet(g_.content.campaignPlanetOf(e->id)); p && !p->illustration.empty())
-                if (auto tex = g_.app.resources().texture(p->illustration, false)) {
-                    const float s = std::min(pic.w / static_cast<float>(tex->width()), pic.h / static_cast<float>(tex->height())) * 0.9f;
-                    const Vec2 sz{tex->width() * s, tex->height() * s};
-                    r.drawTexture(*tex, nullptr, Rect::fromCenter(pic.center(), sz));
-                }
+        if (const PlanetData* p = g_.content.planet(l.planetId); p && !p->illustration.empty())
+            if (auto tex = g_.app.resources().texture(p->illustration, false)) {
+                const float s = std::min(pic.w / static_cast<float>(tex->width()), pic.h / static_cast<float>(tex->height())) * 0.9f;
+                const Vec2 sz{tex->width() * s, tex->height() * s};
+                r.drawTexture(*tex, nullptr, Rect::fromCenter(pic.center(), sz));
+            }
         ui.extremeBadge({pic.x + ui.s(10), pic.y + ui.s(22)}, ui.s(26));
         y = pic.bottom() + ui.s(14);
-        const float nameFs = ui.fitFont(l.name, FontFace::Bold, 22, w, 0.7f);
-        ui.label(ui.elide(l.name, FontFace::Bold, nameFs, w), {x, y}, nameFs, ui.theme().text, Align::Left, FontFace::Bold);
-        y += ui.text().measure(l.name, FontFace::Bold, ui.s(nameFs)).y + ui.s(8);
-        std::string detail = l.planet;
+        {
+            std::optional<i18n::Verbatim> theirs;  // a community level's title: its author's words
+            if (l.community) theirs.emplace();
+            const float nameFs = ui.fitFont(l.name, FontFace::Bold, 22, w, 0.7f);
+            ui.label(ui.elide(l.name, FontFace::Bold, nameFs, w), {x, y}, nameFs, ui.theme().text, Align::Left, FontFace::Bold);
+            y += ui.text().measure(l.name, FontFace::Bold, ui.s(nameFs)).y + ui.s(8);
+        }
+        std::string detail = l.community ? "Communauté · par " + (l.author.empty() ? std::string("un joueur") : l.author) + " · version " +
+                                               std::to_string(l.version)
+                                         : l.planet;
         if (!l.bosses.empty()) {
             detail += detail.empty() ? "" : " · ";
             for (size_t i = 0; i < l.bosses.size(); ++i) detail += (i ? ", " : "") + l.bosses[i];
@@ -481,11 +754,68 @@ public:
             ui.labelWrapped(rank, {x + ui.s(12), y + ui.s(10)}, w - ui.s(24), 15, Color{201, 179, 255, 255});
             y = rb.bottom() + ui.s(12);
         }
+        if (guest) return;  // the host chooses
         UIContext::ButtonStyle bs;
-        bs.enabled = levels_.size() > 1;
+        // In an online room, the level is the room's; on the local network it follows the host.
+        bs.enabled = countOfSource(source_) > 1 && !(link_ && mode_ == 2);
         if (ui.button("level", {x, box.bottom() - in - ui.s(44), w, ui.s(44)}, "Changer de niveau…", bs)) {
             choosingLevel_ = true;
             ui.setFocus("coop/levels/" + std::to_string(level_));
+        }
+    }
+
+    /// The room's level not (yet) here: its title, how it comes (with its progress), or why not.
+    void drawRoomLevelState(float x, float y, float w) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        {
+            i18n::Verbatim theirs;  // the title the host's level has
+            const std::string t = roomLevel_.title.empty() ? std::string("Niveau du salon") : roomLevel_.title;
+            const float fs = ui.fitFont(t, FontFace::Bold, 22, w, 0.7f);
+            ui.label(ui.elide(t, FontFace::Bold, fs, w), {x, y}, fs, ui.theme().text, Align::Left, FontFace::Bold);
+            y += ui.text().measure(t, FontFace::Bold, ui.s(fs)).y + ui.s(8);
+        }
+        if (roomLevel_.community()) {
+            y += ui.labelWrapped("Communauté · version " + std::to_string(roomLevel_.version), {x, y}, w, 16, Color{201, 211, 238, 255}).y + ui.s(12);
+        }
+        std::string what;
+        Color c = Color{201, 211, 238, 255};
+        float progress = -1.0f;
+        switch (room_) {
+            case Room::Checking: what = "Recherche du niveau sur ce PC…"; break;
+            case Room::Fetching: {
+                const uint32_t got = fromHost_ ? link_->package().received() : static_cast<uint32_t>(received_ ? received_->load() : 0);
+                uint32_t total = fromHost_ ? link_->package().total() : static_cast<uint32_t>(std::max(0, jget<int>(link_->lobby(), "size", 0)));
+                what = fromHost_ ? "Ce PC n'a pas ce niveau : l'hôte l'envoie par le réseau local."
+                                 : "Ce PC n'a pas ce niveau dans cette version : téléchargement depuis Cosmic Online.";
+                if (total > 0) progress = std::min(1.0f, static_cast<float>(got) / static_cast<float>(total));
+                char mb[48];
+                std::snprintf(mb, sizeof mb, "%.1f", static_cast<double>(got) / (1024.0 * 1024.0));
+                std::string t = mb;
+                for (char& ch : t)
+                    if (ch == '.') ch = ',';
+                what += "\n" + (progress >= 0.0f ? std::to_string(static_cast<int>(progress * 100.0f)) + " % · " : std::string()) + t + " Mo reçus";
+                break;
+            }
+            case Room::Installing: what = "Vérification de l'empreinte et installation du niveau…"; break;
+            case Room::Failed:
+                what = roomError_;
+                c = ui.theme().danger;
+                break;
+            default: break;
+        }
+        if (!what.empty()) y += ui.labelWrapped(what, {x, y}, w, 15, c).y + ui.s(12);
+        if (room_ == Room::Fetching || room_ == Room::Installing) {
+            // The bar: what came of the package (a moving part while its size is unknown).
+            const Rect bar{x, y, w, ui.s(12)};
+            r.fillRoundedRect(bar, ui.s(6), Color{26, 36, 70, 255});
+            if (room_ == Room::Installing) progress = 1.0f;
+            if (progress >= 0.0f) {
+                r.fillRoundedRect({bar.x, bar.y, std::max(bar.h, bar.w * progress), bar.h}, ui.s(6), ui.theme().accent);
+            } else {
+                const float k = std::fmod(t_ * 0.6f, 1.0f);
+                r.fillRoundedRect({bar.x + (bar.w - bar.w * 0.25f) * k, bar.y, bar.w * 0.25f, bar.h}, ui.s(6), ui.theme().accent);
+            }
         }
     }
 
@@ -757,8 +1087,14 @@ public:
             const std::string t = "Lancer · " + std::to_string(ready) + " / " + std::to_string(seats.size()) + " prêts";
             if (ui.button("start", {box.right() - bw, rowY, bw, rowH}, t, ps)) link_->startGame(static_cast<int>(seats.size()));
         } else {
+            // 2.63.5: « Prêt » only once the room's level is here, in its version.
+            const bool levelHere = room_ == Room::Ready;
             ps.selected = ready_;
-            if (ui.button("ready", {box.right() - bw, rowY, bw, rowH}, ready_ ? "Prêt · annuler" : "Je suis prêt", ps)) {
+            ps.enabled = levelHere;
+            std::string label = ready_ ? "Prêt · annuler" : "Je suis prêt";
+            if (!levelHere)
+                label = room_ == Room::Fetching ? "Niveau en route…" : room_ == Room::Installing ? "Installation…" : room_ == Room::Failed ? "Niveau manquant" : "Vérification…";
+            if (ui.button("ready", {box.right() - bw, rowY, bw, rowH}, label, ps) && levelHere) {
                 ready_ = !ready_;
                 link_->setReady(ready_);
             }
@@ -900,17 +1236,25 @@ public:
         r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 200});
         const float rowH = ui.s(64), gap = ui.s(8);
         const float W = std::min(ui.s(720), ui.screenW() - ui.s(40));
-        const float listH = std::min(ui.screenH() - ui.s(220), static_cast<float>(levels_.size()) * (rowH + gap));
+        const int count = countOfSource(source_);
+        const float listH = std::min(ui.screenH() - ui.s(220), static_cast<float>(count) * (rowH + gap));
         const Rect box{(ui.screenW() - W) * 0.5f, (ui.screenH() - listH - ui.s(150)) * 0.5f, W, listH + ui.s(150)};
         ui.panel(box, true, 16);
-        ui.label("Choisir un niveau EXTRÊME", {box.center().x, box.y + ui.s(36)}, 28, ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
+        const std::string title = source_ == 1 ? "Niveaux EXTRÊME de la communauté" : "Choisir un niveau EXTRÊME";
+        ui.label(title, {box.center().x, box.y + ui.s(36)}, ui.fitFont(title, FontFace::Title, 28, box.w - ui.s(48)), ui.theme().text, Align::Center,
+                 FontFace::Title, VAlign::Middle);
         const Rect view{box.x + ui.s(24), box.y + ui.s(70), box.w - ui.s(48), listH};
-        ui.beginScroll("levellist", view, static_cast<float>(levels_.size()) * (rowH + gap));
+        ui.beginScroll("levellist", view, static_cast<float>(count) * (rowH + gap));
         float y = view.y - ui.scrollOffset();
         ui.pushId("levels");
         for (size_t i = 0; i < levels_.size(); ++i) {
             const CoopLevel& l = levels_[i];
-            if (ui.listItem(std::to_string(i), {view.x, y, view.w - ui.s(14), rowH}, l.name, static_cast<int>(i) == level_, l.planet)) {
+            if (l.community != (source_ == 1)) continue;
+            const std::string sub = l.community ? "par " + (l.author.empty() ? std::string("un joueur") : l.author) + " · version " + std::to_string(l.version)
+                                                : l.planet;
+            std::optional<i18n::Verbatim> theirs;  // a community level's title and author
+            if (l.community) theirs.emplace();
+            if (ui.listItem(std::to_string(i), {view.x, y, view.w - ui.s(14), rowH}, l.name, static_cast<int>(i) == level_, sub)) {
                 level_ = static_cast<int>(i);
                 choosingLevel_ = false;
                 ui.setFocus("coop/level");
@@ -930,7 +1274,8 @@ public:
     std::future<std::vector<CoopLevel>> levelsFuture_;
     std::vector<CoopLevel> levels_;
     bool levelsLoaded_ = false;
-    int level_ = 0;
+    int level_ = -1;
+    int source_ = 0;  // 0: the campaign, 1: the community (2.63.5)
     std::string wantedLevel_;
     std::vector<CoopSeat> seats_;
     std::map<SDL_JoystickID, std::unique_ptr<LocalPad>> watchers_;
@@ -946,7 +1291,22 @@ public:
     std::shared_ptr<LanHost> host_;
     LanSearch search_;
     bool searching_ = false;
-    std::string joinAddress_, roomId_, hostedLevel_, netError_;
+    std::string joinAddress_, roomId_, netError_;
+    coopnet::RoomLevel hosted_;  // the level this PC's relay offers (local network)
+    // 2.63.5: the level of the room on this PC: found, coming (host or Cosmic Online), or why not.
+    enum class Room { None, Checking, Ready, Fetching, Installing, Failed };
+    struct Installed {
+        coopnet::RoomLevel level;
+        std::string id, error;
+        fs::path file;
+    };
+    Room room_ = Room::None;
+    coopnet::RoomLevel roomLevel_;
+    std::string roomLocal_, roomError_;
+    int roomGen_ = 0, installGen_ = 0;
+    bool fromHost_ = false;
+    std::shared_ptr<std::atomic<size_t>> received_;
+    std::future<Installed> installFuture_;
     Json invitations_, friends_;
     std::set<std::string> invited_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
@@ -956,8 +1316,10 @@ public:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeCoopLobby(GameServices& g, std::optional<CoopSetup> previous) {
-    return std::make_unique<CoopLobbyScene>(g, std::move(previous));
+std::unique_ptr<Scene> makeCoopLobby(GameServices& g, std::optional<CoopSetup> previous, const std::string& level) {
+    std::string wanted = level;
+    if (wanted.empty() && previous) wanted = previous->levelId;
+    return std::make_unique<CoopLobbyScene>(g, std::move(previous), std::move(wanted));
 }
 
 }  // namespace cosmic

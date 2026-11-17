@@ -49,6 +49,8 @@ public:
         : g_(g), ui_(g), kind_(std::move(kind)), levelId_(std::move(levelId)), version_(version), levelHash_(std::move(levelHash)) {}
 
     bool isOverlay() const override { return true; }
+    /// 2.63.5: the board shown first (1 Solo, 2 Duo, 3 Trio).
+    void setSize(int size) { size_ = std::clamp(size, 1, 3); }
 
     void onEnter() override {
         g_.ui.setFocus("race/close");
@@ -539,8 +541,11 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version, const std::string& levelHash) {
-    return std::make_unique<RaceScene>(g, kind, levelId, version, levelHash);
+std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version, const std::string& levelHash,
+                                     int size) {
+    auto s = std::make_unique<RaceScene>(g, kind, levelId, version, levelHash);
+    s->setSize(size);
+    return s;
 }
 
 }  // namespace cosmic
