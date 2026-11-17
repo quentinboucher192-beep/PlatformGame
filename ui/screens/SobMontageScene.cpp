@@ -363,7 +363,7 @@ private:
         hs.showMessages = false;
         hs.focusMessages = false;
         hs.showInputHints = false;
-        for (HudElement e : {HudElement::Splits, HudElement::Enemies, HudElement::Collectibles, HudElement::Boss}) hs.hud[e].visible = false;
+        for (HudElement e : {HudElement::Splits, HudElement::Enemies, HudElement::Ambush, HudElement::Collectibles, HudElement::Boss}) hs.hud[e].visible = false;
         for (HudElement e : {HudElement::Vitals, HudElement::Powers}) hs.hud[e].custom = false;
         for (HudElement e : {HudElement::Vitals, HudElement::Powers}) {
             if (!hudVisible(hs, e)) continue;

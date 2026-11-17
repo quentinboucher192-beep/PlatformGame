@@ -7,6 +7,7 @@
 #include "game/enemies/Enemy.h"
 #include "game/content/ContentDatabase.h"
 #include "game/gameplay/BossBadge.h"
+#include "game/gameplay/EnemyArrows.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/HudFade.h"
 #include "game/gameplay/entities/Entities.h"
@@ -182,6 +183,8 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
             drawBlock(ui, id(HudElement::Progress), [&] { drawProgress(ui, w, p.o, p.k, p.width); });
         }
         if (hudVisible(settings, HudElement::Enemies)) drawBlock(ui, id(HudElement::Enemies), [&] { drawEnemies(ui, w, at(HudElement::Enemies)); });
+        if (hudVisible(settings, HudElement::Ambush) && (w.activeAmbush() || (editorPreview_ && !w.ambushes().empty())))
+            drawBlock(ui, id(HudElement::Ambush), [&] { drawAmbush(ui, w, at(HudElement::Ambush)); });
         drawBlock(ui, kStatusBlock, [&] { drawStatus(ui, w, settings); });
         if (settings.showInputHints) drawInteractPrompt(ui, w, view);
     }
@@ -250,13 +253,42 @@ Hud::Place Hud::place(UIContext& ui, const GameWorld& w, const GameplaySettings&
                 if (a.right() > W || a.bottom() > H) return false;
                 for (int i = 0; i < kHudElements; ++i) {
                     auto other = static_cast<HudElement>(i);
-                    if (other == e || !hudVisible(shown, other)) continue;
+                    // The ambush's counter takes its place after this one (never a loop).
+                    if (other == e || other == HudElement::Ambush || !hudVisible(shown, other)) continue;
                     Rect b = area(ui, w, other, place(ui, w, s, other));
                     if (b.w > 0.0f && a.intersects(b)) return false;
                 }
                 return true;
             };
             const Vec2 spots[] = {{ui.s(40), ui.s(262)}, {ui.s(40), ui.s(352)}, {ui.s(40), H * 0.42f}, {ui.s(40), H * 0.56f}};
+            p.o = spots[0];
+            for (const Vec2& o : spots)
+                if (freeAt(o)) {
+                    p.o = o;
+                    break;
+                }
+            break;
+        }
+        case HudElement::Ambush: {
+            // 2.62.2: on the left too, under « Ennemis vaincus »: the first of these places where
+            // it covers no other element shown (in either mode) and stays on screen.
+            GameplaySettings shown = s;
+            shown.focusMode = false;
+            auto freeAt = [&](Vec2 o) {
+                Place q = p;
+                q.o = o;
+                Rect a = area(ui, w, e, q);
+                if (a.right() > W || a.bottom() > H) return false;
+                for (int i = 0; i < kHudElements; ++i) {
+                    auto other = static_cast<HudElement>(i);
+                    if (other == e || !hudVisible(shown, other)) continue;
+                    Rect b = area(ui, w, other, place(ui, w, s, other));
+                    if (b.w > 0.0f && a.intersects(b.expanded(ui.s(4)))) return false;
+                }
+                return true;
+            };
+            const Vec2 spots[] = {{ui.s(40), ui.s(262)}, {ui.s(40), ui.s(316)}, {ui.s(40), ui.s(370)}, {ui.s(40), H * 0.42f},
+                                  {ui.s(40), H * 0.50f}, {ui.s(40), H * 0.58f}, {W * 0.5f - ui.s(260), ui.s(222)}};
             p.o = spots[0];
             for (const Vec2& o : spots)
                 if (freeAt(o)) {
@@ -307,6 +339,26 @@ Rect Hud::area(UIContext& ui, const GameWorld& w, HudElement e, const Place& p) 
             };
             const float tw = ui.text().measure(enemiesText(eights(digits + 1), eights(digits)), FontFace::Bold, S(20)).x;
             return {o.x, o.y, S(14) + S(28) + S(10) + tw + S(10) + S(24) + S(14), S(42)};
+        }
+        case HudElement::Ambush: {
+            // As wide as the longest text of this level's ambushes (most enemies, most waves),
+            // so that it never grows during a fight; nothing for a level without an ambush.
+            size_t most = 0, waves = 0;
+            for (const CombatZoneEntity* z : w.ambushes()) {
+                most = std::max(most, z->enemyCount());
+                waves = std::max(waves, z->waveCount());
+            }
+            if (most == 0) return {};
+            auto eights = [](size_t n) {
+                int digits = 1;
+                for (; n >= 10; n /= 10) ++digits;
+                int v = 0;
+                for (int i = 0; i < digits; ++i) v = v * 10 + 8;
+                return v;
+            };
+            const int many = std::max(2, eights(most)), n = static_cast<int>(waves);
+            const float tw = ui.text().measure(ambushText(many, n > 1 ? eights(waves) : 1, n > 1 ? eights(waves) : 1), FontFace::Bold, S(20)).x;
+            return {o.x, o.y, S(14) + S(28) + S(10) + tw + S(18), S(42)};
         }
         default: return {};
     }
@@ -534,6 +586,37 @@ void Hud::drawEnemies(UIContext& ui, GameWorld& w, const Place& p) {
     if (all) ui.icon(kHudIcons, Check, 16, {a.right() - S(14) - S(24), cy - S(12), S(24), S(24)}, green);
 }
 
+std::string Hud::ambushText(int left, int wave, int waves) {
+    const std::string n = std::to_string(left);
+    if (waves > 1) {
+        const std::string k = std::to_string(wave), t = std::to_string(waves);
+        if (left == 1) return "Embuscade : " + n + " ennemi restant · vague " + k + " / " + t;
+        return "Embuscade : " + n + " ennemis restants · vague " + k + " / " + t;
+    }
+    if (left == 1) return "Embuscade : " + n + " ennemi restant";
+    return "Embuscade : " + n + " ennemis restants";
+}
+
+void Hud::drawAmbush(UIContext& ui, GameWorld& w, const Place& p) {
+    CombatZoneEntity* z = w.activeAmbush();
+    if (!z && editorPreview_ && !w.ambushes().empty()) z = w.ambushes().front();
+    const Rect a = area(ui, w, HudElement::Ambush, p);
+    if (!z || a.w <= 0.0f) return;
+    auto S = [&](float v) { return ui.s(v) * p.k; };
+    const Color violet = EnemyArrows::kAmbushColor;  // the colour of the ambush's arrows
+    ui.r().fillRoundedRect(a, a.h * 0.5f, {6, 10, 22, 170});
+    ui.r().drawRoundedRect(a, a.h * 0.5f, violet.withAlpha(z->suspended() ? 110 : 200), S(1.5f));
+    const float cy = a.center().y;
+    ui.icon(kHudIcons, Skull, 16, {a.x + S(14), cy - S(14), S(28), S(28)}, violet);
+    const std::string text = ambushText(z->enemiesLeft(w), static_cast<int>(z->currentWave()) + 1, static_cast<int>(z->waveCount()));
+    // Measured into the room left (the area is that of the longest text: a safety only).
+    const float x = a.x + S(14) + S(28) + S(10), room = a.right() - S(12) - x;
+    float size = 20.0f * p.k;
+    const float tw = ui.text().measure(text, FontFace::Bold, ui.s(size)).x;
+    if (tw > room && tw > 0.0f) size *= room / tw;
+    ui.text().draw(text, {x, cy}, style(ui, size, ui.theme().text, FontFace::Bold, Align::Left, VAlign::Middle));
+}
+
 void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settings) {
     struct Chip {
         std::string text;
@@ -584,12 +667,13 @@ void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settin
         auto e = static_cast<HudElement>(i);
         if (e == HudElement::Splits || !hudVisible(settings, e)) continue;
         if (e == HudElement::Boss && !(w.activeBoss() && w.activeBoss()->alive())) continue;
+        if (e == HudElement::Ambush && !w.activeAmbush()) continue;
         Rect a = area(ui, w, e, place(ui, w, settings, e));
         if (a.w > 0.0f) taken.push_back(a.expanded(ui.s(6)));
     }
     float below = ui.s(34);
-    for (HudElement e : {HudElement::Vitals, HudElement::Powers, HudElement::Enemies}) {
-        if (!hudVisible(settings, e)) continue;
+    for (HudElement e : {HudElement::Vitals, HudElement::Powers, HudElement::Enemies, HudElement::Ambush}) {
+        if (!hudVisible(settings, e) || (e == HudElement::Ambush && !w.activeAmbush())) continue;
         Rect a = area(ui, w, e, place(ui, w, settings, e));
         if (a.w > 0.0f && a.x < W * 0.5f) below = std::max(below, a.bottom() + ui.s(12));
     }

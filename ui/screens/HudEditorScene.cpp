@@ -204,6 +204,7 @@ private:
         renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
         r.setView(WorldView{});
         hud_.setFadeAllowed(false);  // 2.60: the blocks being placed never fade
+        hud_.setEditorPreview(true);   // 2.62.2: the ambush's counter shown without a fight
         hud_.render(g_.ui, *world_, view, nullptr, work_);
         if (hudVisible(work_, HudElement::Splits)) {
             Hud::Place sp = hud_.place(g_.ui, *world_, work_, HudElement::Splits);
@@ -444,7 +445,7 @@ private:
         ui.label(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", {c.x, y}, ui.fitFont(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", FontFace::Bold, 22, c.w),
                  ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(38);
-        // The rows share what the settings below leave (2.52: eight elements): never under 44
+        // The rows share what the settings below leave (2.62.2: nine elements): never under 44
         // pixels at 100 %, never pushing the settings off the panel.
         float gap = ui.s(6);
         const float below = ui.s(48) + gap + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);
@@ -459,8 +460,9 @@ private:
                 std::snprintf(sub, sizeof sub, "Masqué");
             const Rect row{c.x, y, c.w, rowH};
             if (ui.listItem("el" + std::to_string(i), row, HudLayout::label(e), i == selected_, sub)) selected_ = i;
-            // « NOUVEAU » after the name of the element added in 2.52 (seen once focused).
-            if (e == HudElement::Enemies && ui.newBadge("el" + std::to_string(i), row, "hud.enemies", false, true)) {
+            // « NOUVEAU » after the name of the elements added in 2.52 and 2.62.2 (seen once focused).
+            const char* novelty = e == HudElement::Enemies ? "hud.enemies" : e == HudElement::Ambush ? "hud.ambush" : nullptr;
+            if (novelty && ui.newBadge("el" + std::to_string(i), row, novelty, false, true)) {
                 const float nameW = ui.text().measure(HudLayout::label(e), FontFace::Bold, ui.s(21)).x;
                 if (row.x + ui.s(16) + nameW + ui.s(10) + ui.newPillWidth(true) <= row.right() - ui.s(10))
                     ui.drawNewPill(row.x + ui.s(16) + nameW + ui.s(10) + ui.newPillWidth(true), row.y + row.h * 0.3f, true);

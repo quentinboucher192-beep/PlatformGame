@@ -10,6 +10,7 @@
 #include "game/GameServices.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/BossTraining.h"
+#include "game/gameplay/entities/Entities.h"
 #include "game/gameplay/RunCounters.h"
 #include "game/levels/LevelAnalyzer.h"
 #include "game/online/LevelFingerprint.h"
@@ -899,14 +900,25 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
     const Rect screen{0.0f, 0.0f, W, H};
     // Who is on screen now (noted whatever the setting: turned on again, the arrows know them).
     // The boss is left out: it has its own arrow.
+    // 2.62.2: the enemies of the ambush being fought have arrows of their own (violet), met or
+    // not; the others keep theirs (amber, those already met).
+    std::vector<Rect> ambushAway;
+    std::unordered_set<uint32_t> inAmbush;
+    if (const CombatZoneEntity* ambush = world_->activeAmbush())
+        for (const Enemy* e : ambush->fightingEnemies(*world_)) {
+            inAmbush.insert(e->uid());
+            if (Rect r = view.toScreen(e->box); !r.intersects(screen)) ambushAway.push_back(r);
+        }
     std::vector<EnemyArrows::Tracker::Enemy> seen;
     seen.reserve(world_->enemies().size());
     for (const auto& e : world_->enemies())
-        seen.push_back({e->uid(), view.toScreen(e->box), e->alive() && !e->dormant() && !e->def().isBoss});
+        seen.push_back({e->uid(), view.toScreen(e->box), e->alive() && !e->dormant() && !e->def().isBoss && !inAmbush.count(e->uid())});
     const std::vector<Rect> away = metEnemies_.update(screen, seen);
-    if (!g_.settings.gameplay.enemyArrows || away.empty()) return;
-    auto tex = g_.app.resources().texture("ui/enemy_arrow.png");
-    if (!tex) return;
+    if (!g_.settings.gameplay.enemyArrows || (away.empty() && ambushAway.empty())) return;
+    const EnemyArrows::Look usual = EnemyArrows::look(false), fight = EnemyArrows::look(true);
+    auto tex = g_.app.resources().texture(usual.texture);
+    auto ambushTex = g_.app.resources().texture(fight.texture);
+    if (!tex || !ambushTex) return;
     EnemyArrows::Layout l;
     l.screen = screen;
     l.arrowSize = ui.s(54);
@@ -916,7 +928,7 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
     l.packSpan = ui.s(360);
     // The count of a pack: its room is that of the largest count possible (every enemy away).
     const float fs = std::max(22.0f, 13.0f / ui.s(1.0f));
-    const Vec2 widest = ui.text().measure("×" + std::to_string(away.size()), FontFace::Bold, ui.s(fs));
+    const Vec2 widest = ui.text().measure("×" + std::to_string(std::max(away.size(), ambushAway.size())), FontFace::Bold, ui.s(fs));
     l.badgeSize = {widest.x + ui.s(16), std::max(widest.y, ui.s(fs)) + ui.s(6)};
     // Kept clear: the HUD as it is drawn, the boss arrow, the ghosts' box, the banners at the
     // bottom left (training, challenge) and the frame counter.
@@ -926,6 +938,7 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
         auto el = static_cast<HudElement>(e);
         if (el == HudElement::Splits || !hudVisible(gs, el)) continue;
         if (el == HudElement::Boss && !(boss && boss->alive())) continue;
+        if (el == HudElement::Ambush && !world_->activeAmbush()) continue;  // drawn during an ambush only
         Rect a = hud_.area(ui, *world_, el, hud_.place(ui, *world_, gs, el));
         if (!a.empty()) l.keepOut.push_back(a);
     }
@@ -949,20 +962,25 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
                 l.keepOut.push_back({(W - ui.s(1100)) * 0.5f, H - ui.s(200), ui.s(1100), ui.s(150)});
                 break;
             }
-    for (const EnemyArrows::Arrow& a : EnemyArrows::layout(l, away)) {
-        // Steady (the boss arrow blinks), fainter for a pack far away.
-        const float distK = std::clamp((a.target - a.pos).length() / (W * 1.2f), 0.0f, 1.0f);
-        const float alpha = 1.0f - 0.45f * distK;
-        ui.r().drawTexture(*tex, nullptr, a.box, Color::white().withAlphaF(alpha), BlendMode::Alpha, false, false, a.angle * 57.29578f);
-        if (a.count > 1) {
-            const std::string n = "×" + std::to_string(a.count);
-            ui.r().fillRoundedRect(a.badge, a.badge.h * 0.5f, Color{8, 12, 26, 220});
-            ui.r().drawRoundedRect(a.badge, a.badge.h * 0.5f, ui.theme().warm.withAlphaF(0.8f * alpha), std::max(1.0f, ui.s(1.5f)));
-            ui.label(n, a.badge.center(), ui.fitFont(n, FontFace::Bold, fs, a.badge.w - ui.s(10), 0.6f), ui.theme().warm, Align::Center,
-                     FontFace::Bold, VAlign::Middle);
+    auto draw = [&](const std::vector<Rect>& targets, const Texture& arrow, Color badge) {
+        for (const EnemyArrows::Arrow& a : EnemyArrows::layout(l, targets)) {
+            // Steady (the boss arrow blinks), fainter for a pack far away.
+            const float distK = std::clamp((a.target - a.pos).length() / (W * 1.2f), 0.0f, 1.0f);
+            const float alpha = 1.0f - 0.45f * distK;
+            ui.r().drawTexture(arrow, nullptr, a.box, Color::white().withAlphaF(alpha), BlendMode::Alpha, false, false, a.angle * 57.29578f);
+            if (a.count > 1) {
+                const std::string n = "×" + std::to_string(a.count);
+                ui.r().fillRoundedRect(a.badge, a.badge.h * 0.5f, Color{8, 12, 26, 220});
+                ui.r().drawRoundedRect(a.badge, a.badge.h * 0.5f, badge.withAlphaF(0.8f * alpha), std::max(1.0f, ui.s(1.5f)));
+                ui.label(n, a.badge.center(), ui.fitFont(n, FontFace::Bold, fs, a.badge.w - ui.s(10), 0.6f), badge, Align::Center,
+                         FontFace::Bold, VAlign::Middle);
+            }
+            enemyArrowAreas_.push_back(a.area.expanded(ui.s(6)));  // with room for a frame's move
+            l.keepOut.push_back(a.area);                             // the next set never covers it
         }
-        enemyArrowAreas_.push_back(a.area.expanded(ui.s(6)));  // with room for a frame's move
-    }
+    };
+    draw(ambushAway, *ambushTex, fight.count);  // first: the fight under way
+    draw(away, *tex, usual.count);
 }
 
 void GameScene::bossFeedback() {

@@ -41,6 +41,9 @@ public:
     /// beaten every enemy of the level as « Aucun survivant » counts them (kills >= enemies).
     static std::string enemiesText(int kills, int total) { return "Ennemis vaincus : " + std::to_string(kills) + " / " + std::to_string(total); }
     static bool enemiesCleared(int kills, int total) { return total > 0 && kills >= total; }
+    /// « Embuscade : N ennemis restants » (2.62.2), with « · vague k / n » when it has several
+    /// waves: the enemies of the ambush still to beat (CombatZoneEntity::enemiesLeft).
+    static std::string ambushText(int left, int wave, int waves);
     /// Anchor of a place whose area has its top-left corner at `topLeft` (dragging).
     Vec2 anchorForArea(UIContext& ui, const GameWorld& w, HudElement e, const Place& p, Vec2 topLeft) const;
 
@@ -74,6 +77,8 @@ public:
     const Rect& drawn(int block) const { return drawn_[static_cast<size_t>(block)]; }
     /// The HUD editor: its blocks never fade (they are what is being placed).
     void setFadeAllowed(bool on) { fadeAllowed_ = on; }
+    /// The HUD editor (2.62.2): the ambush's counter shows the level's first ambush, fought or not.
+    void setEditorPreview(bool on) { editorPreview_ = on; }
     /// Where Nova and the active boss show on screen: the visible pixels of the frame drawn
     /// (ResourceManager::visibleBox). Empty when not shown.
     static Rect novaOnScreen(GameWorld& w, const WorldView& view);
@@ -92,6 +97,7 @@ private:
     CoverageProbe probe_;
     bool probeArmed_ = false;
     bool fadeAllowed_ = true;
+    bool editorPreview_ = false;
     /// Draws a block at its opacity and keeps where it was drawn.
     template <class F>
     void drawBlock(UIContext& ui, int block, F&& draw);
@@ -107,6 +113,8 @@ private:
     /// « Ennemis vaincus : X / Y » (2.51): the run's kills (RunStats::kills) against the
     /// level's enemies (RunStats::totalEnemies), as « Aucun survivant » counts them. Display only.
     void drawEnemies(UIContext& ui, GameWorld& w, const Place& p);
+    /// The ambush being fought (2.62.2): its enemies left and its wave. Display only.
+    void drawAmbush(UIContext& ui, GameWorld& w, const Place& p);
     /// 2.57: what the Liche does to the fight, as long as it lasts: Nova cursed (her jumps
     /// heavy, the seconds left), the boss's soul in its phylactery (it cannot be hurt). Chips
     /// on the left of the screen, one under the other, measured and placed where they cover no

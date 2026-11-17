@@ -210,6 +210,11 @@ std::vector<Arrow> layout(const Layout& l, const std::vector<Rect>& enemies) {
     return out;
 }
 
+Look look(bool ofActiveAmbush) {
+    if (ofActiveAmbush) return {"ui/ambush_arrow.png", kAmbushColor};
+    return {"ui/enemy_arrow.png", kUsualColor};
+}
+
 std::vector<Rect> Tracker::update(const Rect& screen, const std::vector<Enemy>& enemies) {
     std::vector<Rect> away;
     std::unordered_set<uint32_t> present;

@@ -337,6 +337,7 @@ private:
         hs.showInputHints = false;
         hs.hud[HudElement::Splits].visible = false;
         hs.hud[HudElement::Enemies].visible = false;  // 2.52: placed for the game, not for this layout
+        hs.hud[HudElement::Ambush].visible = false;   // 2.62.2: the same
         const float W = ui.screenW(), H = ui.screenH();
         const Rect free{0, 0, W, H - barH_};
         const float m = ui.s(10);
