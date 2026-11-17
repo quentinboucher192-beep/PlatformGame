@@ -8,7 +8,10 @@
   "2.60.0": [
     "Pause : « Succès suivis » passe sous la carte, avec les cinq places visibles (une place libre est dessinée en pointillés) et la description de chaque succès ; sans la carte, la colonne garde une ligne de description quand il y a la place.",
     "Touches de ce niveau : un changement de touche, de bouton ou « Par défaut » s'applique aussi aux niveaux qui avaient exactement les mêmes touches (option activée par défaut, avec le nombre de niveaux concernés).",
-    "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée."
+    "Invincible (admin) : le bouton de la pause indique « activé · non classé » ; une partie avec Invincible n'est jamais classée.",
+    "Administration › Calendrier des défis : un défi du jour, de la semaine ou du mois déjà commencé se change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) tant qu'aucun joueur n'y a de résultat ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de joueurs ont déjà un résultat. Un défi terminé ne change jamais.",
+    "Le serveur vérifie cette condition dans l'écriture même (un joueur qui vient de jouer l'emporte, et la fiche se rafraîchit) et n'accepte aucune partie envoyée sur l'ancienne version d'un défi changé : le jeu reçoit la nouvelle version dès qu'il ouvre ou rafraîchit les défis, et dit « ce défi a changé » au lieu d'un faux succès.",
+    "Défis › Calendrier : chaque défi commencé montre combien de joueurs vérifiés ont atteint le bronze, l'argent et l'or (votre médaille entourée), avec le détail au survol ou au focus ; les derniers nombres reçus restent affichés hors ligne."
   ],
   "2.59.0": [
     "Administration › Créations : en plus des combinaisons, un admin crée des traînées (une forme que le jeu sait dessiner — comète, poussière d'étoiles, ruban, flammèches, aurore, bulles —, la couleur près de Nova et celle du bout, la largeur, la durée et les étincelles), des cadres d'avatar (un style — anneau poli, gemmes serties, orbite, nébuleuse, constellation, cercle runique —, la couleur du bord et de la lueur) et des effets de victoire (feu d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun avec son aperçu animé ; il les modifie ou les archive.",

@@ -26,6 +26,13 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 * **Touches de ce niveau** : un changement s'applique aussi aux niveaux qui avaient **exactement les mêmes
   touches** (option, activée par défaut) ; plus besoin de les refaire niveau par niveau.
 * **Invincible (admin)** : « activé · non classé » sur le bouton de la pause.
+* **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se
+  change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) **tant qu'aucun joueur n'y
+  a de résultat** ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de
+  joueurs ont déjà un résultat. Le serveur porte la condition dans l'écriture même (migration `0117`) et refuse
+  toute partie de l'ancienne version ; le jeu reçoit la nouvelle version et dit « ce défi a changé ».
+* **Défis › Calendrier** : chaque défi montre combien de joueurs vérifiés ont atteint le **bronze**, l'**argent**
+  et l'**or** (votre médaille entourée, détail au survol ou au focus), comptés par le serveur.
 
 **Nouveau dans la version 2.59.0** :
 * **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme

@@ -29,6 +29,7 @@
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayDownloadUi.h"
 #include "ui/screens/Thumbnail.h"
+#include "ui/widgets/Charts.h"
 
 namespace cosmic {
 
@@ -348,6 +349,8 @@ public:
         } else {
             detail_.clear();
             drawCalendar(body);
+            // 2.60: the medals' tooltip, over the other cells.
+            charts::drawTip(ui, medalTip_);
         }
         // The tooltip of a reward, over the card and the leaderboard; of a download icon.
         if (rewardsShown_) rewardRow_.drawTooltip(g_);
@@ -1156,23 +1159,49 @@ private:
             fitLabel(ui, levelTitle(g_, *c), {px, l2}, 15, room, Color{185, 200, 218, 255});
         }
         // Line 3: where my best run stands (nothing when I did not play it), then (2.38) the
-        // tags of what makes this challenge what it is, as many as fit whole.
-        float tx = px;
+        // tags of what makes this challenge what it is, as many as fit whole, and (2.60) at the
+        // right its medals, measured first: the text and the tags take what they leave.
+        std::string st;
+        Color sc = ui.theme().textDim;
         if (day.bestMs > 0) {
-            std::string st;
-            Color sc = ui.theme().textDim;
             if (day.state == ChallengeRunState::Rejected) st = "Refusé", sc = ui.theme().danger;
             else if (day.late) st = "Hors délai", sc = ui.theme().warm;
             else if (day.state == ChallengeRunState::Verified) st = "Vérifié", sc = ui.theme().success;
             else if (day.state == ChallengeRunState::Pending || day.state == ChallengeRunState::Sent) st = "En attente", sc = ui.theme().accent;
             else if (day.state == ChallengeRunState::Waiting) st = "À l'envoi", sc = ui.theme().warm;
             else st = "Sur ce PC";
-            tx += fitLabel(ui, st, {px, l3}, 14, room, sc, Align::Left, FontFace::Bold).x + ui.s(8);
         } else if (float pr = c->finishObjective ? g_.challenges.bestProgress(c->id) : 0.0f; pr > 0.0f) {
             // « Finir le niveau » (2.41): how far I went.
-            tx += fitLabel(ui, percentText(pr), {px, l3}, 14, room, ui.theme().accent, Align::Left, FontFace::Bold).x + ui.s(8);
+            st = percentText(pr), sc = ui.theme().accent;
         }
-        art_.drawTags(*c, tx, l3, r.right() - ui.s(8), std::min(ui.s(20), r.h * 0.2f));
+        const float tagH = std::min(ui.s(20), r.h * 0.2f);
+        float right = r.right() - ui.s(8);
+        const float stW = st.empty() ? 0.0f : std::min(ui.text().measure(st, FontFace::Bold, ui.s(fz(ui, 14))).x, room * 0.5f) + ui.s(8);
+        medalsAt(*c, px + stW, right, l3, tagH, day.tier, hovered || focused, r);
+        float tx = px;
+        if (!st.empty()) tx += fitLabel(ui, st, {px, l3}, 14, right - px - ui.s(4), sc, Align::Left, FontFace::Bold).x + ui.s(8);
+        art_.drawTags(*c, tx, l3, right, tagH);
+    }
+
+    /// 2.60: the medals of a challenge (its players at Bronze, Argent, Or, from the server) at
+    /// the right of [left, right] on the line `cy`, as many as fit (MedalPlan); `right` becomes
+    /// the left of what was drawn. Hovered or focused (`lit`): their tooltip, drawn last.
+    void medalsAt(const DailyChallenge& c, float left, float& right, float cy, float h, ChallengeTier mine, bool lit, const Rect& owner) {
+        UIContext& ui = g_.ui;
+        const std::optional<ChallengeTierCounts> t = g_.challenges.tierCounts(c.id);
+        if (!t) return;  // never read (offline without a kept answer): nothing, never made up
+        const MedalPlan plan = planMedals(right - left, h, medalNumberWidths(ui, *t, h));
+        Rect area{right - plan.width, cy - h * 0.5f, plan.width, h};
+        if (plan.fit != MedalFit::None) {
+            drawMedals(ui, plan, *t, area.x, cy, h, mine);
+            right = area.x - ui.s(6);
+        }
+        if (lit || (plan.fit != MedalFit::None && ui.mouseOver(area))) {
+            medalTip_.show = true;
+            medalTip_.anchor = plan.fit != MedalFit::None ? Vec2{area.center().x, area.y} : Vec2{owner.center().x, owner.y};
+            medalTip_.title.clear();
+            medalTip_.rows = {{charts::kNoSwatch, medalsText(*t), {}}};
+        }
     }
 
     /// The month's challenge, at the head of the calendar.
@@ -1212,6 +1241,12 @@ private:
             chip(ui, challengeTierLabel(day.tier), right - tw, cy, h, tierColor(day.tier), tw, true);
             right -= tw + ui.s(14);
         }
+        // 2.60: its medals, left of them (a third of what is left at most: the title keeps its room).
+        {
+            float mright = right;
+            medalsAt(*c, right - (right - x) * 0.34f, mright, cy, std::min(ui.s(24), r.h * 0.45f), day.tier, hovered || focused, r);
+            if (mright < right) right = mright - ui.s(8);
+        }
         float used = 0.0f;
         {
             std::optional<i18n::Verbatim> v;
@@ -1226,6 +1261,9 @@ private:
         UIContext& ui = g_.ui;
         ChallengeService& cs = g_.challenges;
         art_.beginFrame();  // one level preview rendered per frame at most (CalendarArt::cellThumb)
+        medalTip_.show = false;  // 2.60: the medals' tooltip of the cell hovered or focused
+        // « NOUVEAU » (2.60) on « Calendrier » until the calendar with its medals is seen once.
+        if (ui.isNew("challenges.calendar.medals") && ui.featureSeen) ui.featureSeen("challenges.calendar.medals");
         // « NOUVEAU » (2.38) on « Calendrier » until the calendar with its images is seen once.
         if (ui.isNew("challenges.calendar.look") && ui.featureSeen) ui.featureSeen("challenges.calendar.look");
         ui.panel(body, false, 16);
@@ -1355,6 +1393,7 @@ private:
     int boardKind_ = 0;  // 0: « Meilleurs temps », 1: « Plus loin » (board=progress, 2.33)
     ChallengeRewardRow rewardRow_;  // the rewards of the card shown (2.35)
     bool rewardsShown_ = false;
+    charts::Tip medalTip_;          // 2.60: the medals of the calendar's cell hovered or focused
     Json board_;
     std::string boardFor_, boardId_;
     std::string boardMsg_, boardCode_;
@@ -1650,6 +1689,13 @@ private:
 
     void launch() {
         if (!challenge_ || !level_) return;
+        // 2.60: changed (an administrator, nobody had a result on it) while this screen was open:
+        // never its former version; its new one from « Défis ».
+        if (g_.challenges.changedSince(*challenge_)) {
+            g_.uiSound("ui_error");
+            say("Ce défi vient de changer : revenez aux défis pour jouer sa nouvelle version.");
+            return;
+        }
         // Ended while this screen was open: the run is « hors délai » now (said once), or a
         // practice when the level installed is not the challenge's version.
         if (!practice_ && !late_ && g_.challenges.ended(*challenge_)) {
@@ -1740,14 +1786,20 @@ public:
         const float W = ui.screenW(), H = ui.screenH();
         ui.r().fillRect({0, 0, W, H}, Color{4, 6, 14, 180});
         ui.pushId("cend");
-        const bool late = d_.completed && !d_.practice && d_.report.late;
+        // 2.60: the challenge changed (an administrator, nobody had a result on it) while it was
+        // played, or since: this run was on its former version and counts for nothing. Said
+        // instead of a success (no time « new best », no tier, no sending).
+        const bool changed = !d_.practice && (d_.report.changed || (d_.attempt && d_.attempt->changed) || g_.challenges.changedSince(d_.challenge));
+        const bool late = d_.completed && !d_.practice && !changed && d_.report.late;
         // « Plus loin » (2.33): an unfinished attempt, its progress (and, when it went further
         // than my best one, its sending state).
-        const bool attempt = !d_.completed && d_.attempt.has_value();
+        const bool attempt = !changed && !d_.completed && d_.attempt.has_value();
         // Time, tier, (the streak: not for a run « hors délai »), the sending state; a fall:
         // why, (the attempt's progress and its sending state).
         const bool finishTier = attempt && d_.challenge.finishObjective;  // 2.41: an attempt's tier
-        const int rows = d_.completed ? (d_.practice ? 2 : late ? 3 : 4) : 1 + (attempt ? (d_.attempt->newBest ? 2 : 1) : 0) + (finishTier ? 1 : 0);
+        const int rows = changed       ? 1
+                         : d_.completed ? (d_.practice ? 2 : late ? 3 : 4)
+                                        : 1 + (attempt ? (d_.attempt->newBest ? 2 : 1) : 0) + (finishTier ? 1 : 0);
         // The sending state, followed live (and why, when it says more than the state).
         ChallengeRunState state = attempt ? d_.attempt->state : d_.report.state;
         std::string note = attempt ? d_.attempt->note : d_.completed && !d_.practice ? d_.report.note : std::string();
@@ -1758,8 +1810,9 @@ public:
         if (d_.practice) note = "Hors classement : ce temps n'est ni envoyé ni gardé comme meilleur temps.";
         // The notes under the rows, one after the other.
         std::vector<std::pair<std::string, Color>> notes;
+        if (changed) notes.push_back({ChallengeService::changedNote(), ui.theme().warm});
         if (late) notes.push_back({"Hors délai : classé dans « Depuis », ne compte pas pour la série.", ui.theme().warm});
-        if (!note.empty()) notes.push_back({note, ui.theme().textDim});
+        if (!note.empty() && !changed) notes.push_back({note, ui.theme().textDim});
         float pw = std::min(ui.s(900), W - ui.s(80));
         const float w = pw - ui.s(72);
         float noteH = 0.0f;
@@ -1769,8 +1822,8 @@ public:
         Rect p{(W - pw) * 0.5f, (H - ph) * 0.5f, pw, ph};
         ui.panel(p, true, 18);
         float x = p.x + ui.s(36), y = p.y + ui.s(30);
-        std::string title = !d_.completed ? "DÉFI ÉCHOUÉ" : d_.practice ? "ENTRAÎNEMENT TERMINÉ" : "DÉFI RÉUSSI";
-        Color tc = !d_.completed ? ui.theme().danger : d_.practice ? ui.theme().warm : ui.theme().success;
+        std::string title = changed ? "DÉFI CHANGÉ" : !d_.completed ? "DÉFI ÉCHOUÉ" : d_.practice ? "ENTRAÎNEMENT TERMINÉ" : "DÉFI RÉUSSI";
+        Color tc = changed ? ui.theme().warm : !d_.completed ? ui.theme().danger : d_.practice ? ui.theme().warm : ui.theme().success;
         fitLabel(ui, title, {p.center().x, y + ui.s(28)}, 44, w, tc, Align::Center, FontFace::Title, VAlign::Middle, 0.6f);
         y += ui.s(56) + ui.s(24);
         {
@@ -1802,7 +1855,11 @@ public:
             if (ew > 0.0f) chip(ui, extra, rr.right() - ui.s(18) - vw - ui.s(12) - ew, rr.center().y, ui.s(28), extraC, ew);
             y += ui.s(64);
         };
-        if (!d_.completed) {
+        if (changed) {
+            // Only what happened, never a success of a version that no longer exists.
+            if (d_.completed) row("Temps", formatRunTime(d_.timeMs), ui.theme().textDim);
+            else row("Raison", d_.failReason.empty() ? std::string("Partie terminée") : d_.failReason, ui.theme().danger);
+        } else if (!d_.completed) {
             std::string why = d_.failReason.empty() ? std::string("Partie terminée") : d_.failReason;
             row("Raison", why, ui.theme().danger);
             if (attempt) {
@@ -1844,7 +1901,8 @@ public:
         float bw = (w - 2 * gap) / 3.0f;
         UIContext::ButtonStyle primary;
         primary.primary = true;
-        bool again = ui.button("again", {x, by, bw, ui.s(60)}, "Recommencer", primary);
+        // A changed challenge: its new version (from « Défis »), never its former one again.
+        bool again = ui.button("again", {x, by, bw, ui.s(60)}, changed ? "Nouvelle version" : "Recommencer", primary);
         UIContext::ButtonStyle rs;
         rs.enabled = d_.completed && d_.replay != nullptr;
         bool watch = ui.button("watch", {x + bw + gap, by, bw, ui.s(60)}, "Revoir la partie", rs);

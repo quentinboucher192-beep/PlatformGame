@@ -81,4 +81,5 @@ export function isoWeek(date: string): string;
 export function periodBounds(kind: string, period: string): { start: string; end: string } | null;
 export function parseTime(s: string): number;
 export function formatTime(ms: number): string;
-export function validateChallengeSpec(spec: ChallengeSpec, catalog: SpecCatalog, today: string): ValidatedChallenge;
+/** `options.running` (2.60): a running period is accepted too (never one that is over). */
+export function validateChallengeSpec(spec: ChallengeSpec, catalog: SpecCatalog, today: string, options?: { running?: boolean }): ValidatedChallenge;

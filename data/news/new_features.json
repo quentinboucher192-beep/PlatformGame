@@ -2143,6 +2143,22 @@
    "parents": [
     "menu.stats"
    ]
+  },
+  {
+   "id": "admin.calendar.running",
+   "version": "2.60.0",
+   "parents": [
+    "menu.admin",
+    "admin.tab.calendar"
+   ]
+  },
+  {
+   "id": "challenges.calendar.medals",
+   "version": "2.60.0",
+   "parents": [
+    "menu.challenges",
+    "challenges.tab.calendar"
+   ]
   }
  ]
 }
