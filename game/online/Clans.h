@@ -68,7 +68,7 @@ bool canExclude(const std::string& myRole, const std::string& targetRole);
 /// then the members, each by seniority). Their username, "" when the chief is alone.
 std::string successorName(const Json& members, const std::string& leaderId);
 
-// ------------------------------------------------------------- the sheet (2.63.3)
+// ------------------------------------------------------------- the sheet (2.63.4)
 
 /// What a clan's sheet offers to a player who is not one of its members: the button (its
 /// action and label) and the note that explains what waits or why nothing is offered.
