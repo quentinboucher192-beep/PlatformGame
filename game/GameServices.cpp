@@ -2,6 +2,8 @@
 
 #include "game/online/ProgressMerge.h"
 
+#include <chrono>
+#include <future>
 #include <memory>
 #include <set>
 
@@ -516,7 +518,7 @@ namespace {
 fs::path localSnapshotPath() { return Paths::userDir() / "online" / "local_snapshot.json"; }
 }  // namespace
 
-Json GameServices::progressCopyBody() const {
+Json GameServices::progressCopyBody(bool withStats) const {
     int bosses = 0;
     for (const auto& [id, b] : bossStats.all()) bosses += b.kills > 0 ? 1 : 0;
     Json summary = {{"levels", progression.completedCount()},
@@ -529,6 +531,7 @@ Json GameServices::progressCopyBody() const {
                   {"boss_stats", bossStats.toJson()},
                   {"achievements", achievements.toJson()},
                   {"collection", collection.toJson()}};
+    if (withStats) files["stats"] = playStats.data().toJson();  // 2.55: the « Statistiques » screen
     return {{"format", "cosmic.progress_copy"}, {"game_version", std::string(COSMIC_VERSION_STRING)}, {"summary", summary}, {"files", files}};
 }
 
@@ -544,15 +547,18 @@ GameServices::RestoreOutcome GameServices::restoreProgressCopy(const Json& files
     // The save files as they are on disk, kept first (a folder per restoration): nothing is
     // changed if they cannot be kept.
     fs::path kept;
+    playStats.flush();  // stats.json as it is in memory (written on its worker thread)
     if (!backupSaveFiles(Paths::savesDir(), FileUtil::nowString(), &kept, error)) return RestoreOutcome::Failed;
     if (keptFolder) *keptFolder = Paths::toUtf8(kept.filename());
-    const Json merged = mergeProgressCopyFiles(progressCopyBody()["files"], files);
+    const Json merged = mergeProgressCopyFiles(progressCopyBody()["files"], files, playStats.today());
     progression.fromJson(merged["progress"]);
     records.fromJson(merged["records"]);
     bossStats.fromJson(merged["boss_stats"]);
     achievements.fromJson(merged["achievements"]);
     collection.fromJson(merged["collection"]);
     bossStats.touch();
+    // 2.55: the statistics (written on their worker thread, like after a run).
+    if (files.contains("stats")) playStats.replace(PlayStatsData::fromJson(merged["stats"]));
     if (!sha256.empty()) copiesMergedThisSession_.insert(sha256);  // in memory now: never added twice
     // Every save is written, even after one failed (the next save writes what is in memory).
     std::string failed;
@@ -583,19 +589,47 @@ void GameServices::sendProgressCopy(std::function<void(const ApiResult&)> done) 
         return;
     }
     progressCopyBusy_ = true;
-    online.send("PUT", "/api/v1/players/me/progress-copy", progressCopyBody(), [this, done](const ApiResult& r) {
-        progressCopyBusy_ = false;
-        if (r.ok) {
-            progressCopyDue = false;
-            progressCopyWait_ = 600.0f;  // at most every 10 minutes
-        } else {
-            progressCopyWait_ = 120.0f;  // again in 2 minutes
+    // 2.55: the statistics (up to 300 KB) are written out with the body on a worker thread, from
+    // a copy of them; the copy leaves once ready (updateProgressCopy).
+    Json body = progressCopyBody(false);
+    PlayStatsData stats = playStats.data();
+    preparedCopies_.push_back({std::async(std::launch::async,
+                                          [body = std::move(body), stats = std::move(stats)]() mutable {
+                                              body["files"]["stats"] = stats.toJson();
+                                              return body.dump(-1, ' ', false, Json::error_handler_t::replace);
+                                          }),
+                               std::move(done)});
+}
+
+void GameServices::sendPreparedCopies() {
+    for (auto it = preparedCopies_.begin(); it != preparedCopies_.end();) {
+        if (it->text.wait_for(std::chrono::seconds(0)) != std::future_status::ready) {
+            ++it;
+            continue;
         }
-        if (done) done(r);
-    }, 60000);
+        std::string text = it->text.get();
+        auto done = std::move(it->done);
+        it = preparedCopies_.erase(it);
+        if (!online.loggedIn() || !online.usable()) {
+            progressCopyBusy_ = !preparedCopies_.empty();
+            if (done) done(ApiResult{});
+            continue;
+        }
+        online.sendJsonText("PUT", "/api/v1/players/me/progress-copy", std::move(text), [this, done](const ApiResult& r) {
+            progressCopyBusy_ = false;
+            if (r.ok) {
+                progressCopyDue = false;
+                progressCopyWait_ = 600.0f;  // at most every 10 minutes
+            } else {
+                progressCopyWait_ = 120.0f;  // again in 2 minutes
+            }
+            if (done) done(r);
+        }, 60000);
+    }
 }
 
 void GameServices::updateProgressCopy(float dt) {
+    sendPreparedCopies();
     migration.update(online, dt);  // 2.50: does the server offer « Migrer vers un nouveau compte » ?
     online.setAchievementsMerge(migration.pendingRestore().is_object());
     progressCopyWait_ = std::max(0.0f, progressCopyWait_ - dt);

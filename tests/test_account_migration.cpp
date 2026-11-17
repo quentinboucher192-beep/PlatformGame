@@ -5,6 +5,7 @@
 // requests the game makes around it (an expiring session renewed before a private download,
 // the achievements added while a migrated progression waits).
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <mutex>
@@ -18,6 +19,7 @@
 #include "game/online/ProgressMerge.h"
 #include "game/progression/Progression.h"
 #include "game/records/BossStats.h"
+#include "game/records/PlayStats.h"
 #include "game/records/Records.h"
 #include "packaging/Sha256.h"
 #include "tests/TestFramework.h"
@@ -400,12 +402,14 @@ TEST_CASE("migration: the saves are kept as they are before a restoration, a cop
     fs::create_directories(saves);
     CHECK(FileUtil::writeTextAtomic(saves / "progress.json", "{\"format\":\"cosmic.progress\",\"version\":1,\"data\":{}}"));
     CHECK(FileUtil::writeTextAtomic(saves / "records.json", "{\"x\":1}"));
+    CHECK(FileUtil::writeTextAtomic(saves / "stats.json", "{\"format\":\"cosmic.stats\",\"version\":1,\"data\":{\"seq\":4}}"));
     fs::path kept;
     std::string err;
     CHECK(backupSaveFiles(saves, "2026-11-16 21:54", &kept, &err));
     CHECK(kept.filename().string() == "avant_restauration_2026-11-16-21-54");
     CHECK(*FileUtil::readText(kept / "progress.json") == "{\"format\":\"cosmic.progress\",\"version\":1,\"data\":{}}");
     CHECK(*FileUtil::readText(kept / "records.json") == "{\"x\":1}");
+    CHECK(*FileUtil::readText(kept / "stats.json") == "{\"format\":\"cosmic.stats\",\"version\":1,\"data\":{\"seq\":4}}");  // 2.55
     CHECK(!fs::exists(kept / "collection.json"));  // none here: nothing to keep
     // The same minute again: another folder, the first one untouched.
     fs::path kept2;
@@ -421,6 +425,58 @@ TEST_CASE("migration: the saves are kept as they are before a restoration, a cop
     CHECK(!progressCopyRestored(registry, ""));
     std::error_code ec;
     fs::remove_all(dir, ec);
+}
+
+TEST_CASE("migration: the statistics travel in the copy, merged without counting twice; the same copy restored twice adds nothing") {
+    // 2.55: stats.json is one of the parts of a copy (sent, kept before a restoration, restored).
+    const auto& parts = progressCopyParts();
+    CHECK(std::find(parts.begin(), parts.end(), "stats") != parts.end());
+    const int today = daysFromCivil(2026, 11, 17);
+    PlayStatsData mineStats, theirStats;
+    mineStats.at(today - 1).playSec = 1200.0;
+    mineStats.at(today - 1).deaths = 3;
+    theirStats.at(today - 1).playSec = 600.0;
+    theirStats.at(today - 1).deaths = 8;
+    theirStats.at(today - 30).playSec = 900.0;
+    BossAttemptRec r;
+    r.day = today - 30;
+    r.id = 42;
+    r.removed = 0.5f;
+    r.attack = "Piqué";
+    BossHistory& b = theirStats.bosses["pyrrhax"];
+    b.phases = 1;
+    b.attempts = 1;
+    b.reached = {1};
+    b.defeats = {1};
+    b.fatal["Piqué"] = 1;
+    b.recent = {r};
+    Json mine = savesOf({"sylvanox_01"}, 100.0, "sylvanox_01", 80.0f, 1, {}, {});
+    Json theirs = savesOf({"sylvanox_02"}, 50.0, "sylvanox_01", 70.0f, 2, {}, {});
+    mine["stats"] = mineStats.toJson();
+    theirs["stats"] = theirStats.toJson();
+    HttpResponse resp;
+    resp.status = 200;
+    resp.body = serverCopyFile(theirs);
+    resp.headers["x-progress-sha256"] = Sha256::hex(resp.body);
+    const RestoreDownload d = readRestoreDownload(resp);
+    CHECK(d.ok);
+    const Json merged = mergeProgressCopyFiles(mine, d.files, today);
+    const PlayStatsData m = PlayStatsData::fromJson(merged["stats"]);
+    CHECK(m.find(today - 1) && m.find(today - 1)->c.deaths == 8);  // the highest of both sides, not 11
+    CHECK_NEAR(m.find(today - 1)->c.playSec, 1200.0, 1e-6);         // not 1800
+    CHECK(m.find(today - 30) != nullptr);
+    CHECK(m.bosses.at("pyrrhax").attempts == 1 && m.bosses.at("pyrrhax").recent.at(0).id == 42);
+    // Merged a second time (a restoration noted nowhere, the game closed before): the statistics
+    // stay the same. The other parts are guarded by saves/restored_copies.json (tested below).
+    const Json twice = mergeProgressCopyFiles(merged, d.files, today);
+    CHECK(twice["stats"] == merged["stats"]);
+    // A copy of an older game (no statistics): this computer's stay as they are.
+    Json older = d.files;
+    older.erase("stats");
+    CHECK(mergeProgressCopyFiles(mine, older, today)["stats"] == mine["stats"]);
+    // A damaged part (not an object): ignored.
+    older["stats"] = Json::array({1, 2, 3});
+    CHECK(mergeProgressCopyFiles(mine, older, today)["stats"] == mine["stats"]);
 }
 
 TEST_CASE("migration: a private download renews an expiring session first") {

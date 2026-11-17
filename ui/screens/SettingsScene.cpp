@@ -463,7 +463,8 @@ private:
             Rect sr{r.right() + ui.s(40), c.y - ui.scrollOffset(), c.w - lane - r.w - ui.s(40), ui.s(54)};
             ui.toggle("recordstats", sr, "Enregistrer mes statistiques", working_.gameplay.recordStats);
             ui.newBadge("recordstats", sr, "settings.record_stats");
-            const std::string about = "Menu principal › Statistiques : calculées à partir de vos parties, gardées sur cet ordinateur, jamais envoyées en ligne.";
+            const std::string about = "Menu principal › Statistiques : calculées à partir de vos parties, gardées avec vos sauvegardes et, avec un compte, "
+                                      "dans la copie privée de votre progression.";
             ui.labelWrapped(about, {sr.x + ui.s(4), sr.bottom() + ui.s(10)}, sr.w - ui.s(8), 17, ui.theme().textDim);
         }
         r.y += row() + ui.s(10);  // ten rows (2.52): the folder stays above the « Retour » button

@@ -143,4 +143,27 @@ describe("copies of the progression", () => {
         expect(del.status).toBe(200);
         expect((await env.STORAGE.list({ prefix: `progress/${p.id}/` })).objects).toHaveLength(0);
     });
+
+    it("2.55: carries the statistics (stats), an object of 512 KB at most", async () => {
+        const p = await registerPlayer("Lyra");
+        const files = (stats: unknown) => ({ files: { progress: { completedLevels: ["sylvanox_01"] }, stats } });
+        const stats = { names: ["attack"], days: [[20774, 600.5, 0, 2, 10, 7, 20, 9, 12, [0, 1, 0, 0, 0, 0, 2, 0], [[0, 15, 6]]]], seq: 3 };
+        const ok = await api("PUT", `${V}/players/me/progress-copy`, { token: p.token, body: copyBody(1, files(stats)) });
+        expect(ok.status, JSON.stringify(ok.body)).toBe(201);
+        const objects = (await env.STORAGE.list({ prefix: `progress/${p.id}/` })).objects;
+        expect(objects).toHaveLength(1);
+        const kept = JSON.parse(await (await env.STORAGE.get(objects[0]!.key))!.text());
+        expect(kept.files.stats).toEqual(stats); // kept as sent, for the restoration
+        // Not an object, or bigger than 512 KB (the game keeps it under 300 KB): refused, nothing kept.
+        const big = { names: [], days: [], pad: "x".repeat(512 * 1024) };
+        for (const bad of [copyBody(1, files([1, 2])), copyBody(1, files("stats")), copyBody(1, files(big))]) {
+            const r = await api("PUT", `${V}/players/me/progress-copy`, { token: p.token, body: bad });
+            expect(r.status).toBe(400);
+            expect(JSON.stringify(r.body)).toContain("files.stats");
+        }
+        expect((await env.STORAGE.list({ prefix: `progress/${p.id}/` })).objects).toHaveLength(1);
+        // Just under the limit: accepted.
+        const fits = { pad: "x".repeat(512 * 1024 - 20) };
+        expect((await api("PUT", `${V}/players/me/progress-copy`, { token: p.token, body: copyBody(1, files(fits)) })).status).toBe(201);
+    });
 });

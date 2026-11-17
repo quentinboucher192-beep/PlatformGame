@@ -4029,6 +4029,12 @@
    ]
   },
   {
+   "fr": "AVEC VOTRE PROGRESSION",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Avertissement",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -8922,6 +8928,12 @@
    ]
   },
   {
+   "fr": "Connecté à Cosmic Online, le jeu envoie vos statistiques dans la copie privée de votre progression, avec vos records et vos succès (aucun autre joueur ne la voit). Sans compte ni Internet, rien ne part et tout fonctionne ; pour les garder vous-même, copiez stats.json. Si le fichier est abîmé, l'onglet repart de zéro et l'ancien fichier est gardé en stats.json.bak.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Connexion",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -13144,7 +13156,7 @@
    ]
   },
   {
-   "fr": "Elle s'ajoute à la progression de cet ordinateur : le meilleur de chaque côté est gardé (meilleurs temps, succès, statistiques des boss) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées dans le dossier saves.",
+   "fr": "Elle s'ajoute à la progression de cet ordinateur : le meilleur de chaque côté est gardé (meilleurs temps, succès, statistiques, sans double compte) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées dans le dossier saves.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -19537,6 +19549,12 @@
    ]
   },
   {
+   "fr": "La progression restaurée apporte ses statistiques, ajoutées aux vôtres sans double compte : chaque jour garde le plus grand des deux compteurs, chaque tentative de boss n'est comptée qu'une fois (les 200 plus récentes gardées), les temps des segments sont réunis, le meilleur record et la meilleure somme des meilleurs sont gardés. Restaurer deux fois la même copie ne change rien. Avant, vos sauvegardes, stats.json compris, sont copiées dans saves › avant_restauration_…",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "La préparation du niveau a échoué.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
@@ -23663,7 +23681,7 @@
    ]
   },
   {
-   "fr": "Menu principal › Statistiques : calculées à partir de vos parties, gardées sur cet ordinateur, jamais envoyées en ligne.",
+   "fr": "Menu principal › Statistiques : calculées à partir de vos parties, gardées avec vos sauvegardes et, avec un compte, dans la copie privée de votre progression.",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -23970,6 +23988,12 @@
    "fr": "Migrer les données…",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "MIGRER VERS UN NOUVEAU COMPTE",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -37796,12 +37820,6 @@
    ]
   },
   {
-   "fr": "SUR CET ORDINATEUR",
-   "where": [
-    "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
    "fr": "SUR CET ORDINATEUR, AVEC LE COMPTE {0}",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -41284,7 +41302,7 @@
    ]
   },
   {
-   "fr": "Un résumé par jour, gardé 365 jours (les jours plus anciens sont fusionnés par mois). Par boss, les 200 dernières tentatives ; par segment, les 50 derniers temps. Au total, moins de 300 Ko même après des années de jeu.",
+   "fr": "Un résumé par jour, gardé 365 jours (les jours plus anciens sont fusionnés par mois). Par boss, les 200 dernières tentatives ; par segment, les 50 derniers temps. Au total, moins de 300 Ko même après des années de jeu ou une migration.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -43434,9 +43452,9 @@
    ]
   },
   {
-   "fr": "Vos statistiques restent sur cet ordinateur : elles ne sont pas envoyées en ligne et ne font partie ni de la copie de la progression de Cosmic Online, ni de « Migrer vers un nouveau compte ». Pour les garder, copiez le fichier stats.json. Si le fichier est abîmé, l'onglet repart de zéro et l'ancien fichier est gardé en stats.json.bak.",
+   "fr": "Vos statistiques voyagent avec vos sauvegardes : elles font partie de la copie privée de votre progression sur Cosmic Online et de « Migrer vers un nouveau compte ». Restaurées sur le nouvel ordinateur, elles s'ajoutent aux siennes sans double compte (chaque jour garde le plus grand des deux compteurs, chaque tentative de boss compte une fois, les temps des segments sont réunis, le meilleur record est gardé) ; restaurer deux fois la même copie ne change rien. Détails dans Statistiques › Données et sauvegarde.",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "data/news/changelog.json"
    ]
   },
   {

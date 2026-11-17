@@ -614,6 +614,10 @@ void OnlineService::send(const std::string& method, const std::string& path, con
          timeoutMs);
 }
 
+void OnlineService::sendJsonText(const std::string& method, const std::string& path, std::string json, ApiCallback cb, int timeoutMs) {
+    call(method, path, std::move(json), "application/json", true, std::move(cb), false, timeoutMs);
+}
+
 void OnlineService::sendBytes(const std::string& method, const std::string& path, std::string bytes, ApiCallback cb, int timeoutMs) {
     call(method, path, std::move(bytes), "application/octet-stream", true, std::move(cb), false, timeoutMs);
 }

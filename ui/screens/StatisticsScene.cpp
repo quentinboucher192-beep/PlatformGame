@@ -9,7 +9,8 @@
 //    time is lost, their consistency, the regularity of the full runs;
 //  * Passages difficiles: where the player falls in a level (40 slices over its real relief),
 //    the 5 hardest passages of every level and boss phase, with their training;
-//  * Données et sauvegarde: what is kept, where, how big, how to reset it.
+//  * Données et sauvegarde: what is kept, where, how big, how it travels with the copy of the
+//    progression and « Migrer vers un nouveau compte » (2.55), how to reset it.
 // Every chart: tooltip under the mouse, a cursor with ← → when focused, a « Tableau » view.
 // The screen starts empty and fills up with the runs: no example data anywhere.
 
@@ -201,6 +202,16 @@ public:
         int before = tab_;
         ui.tabs("tabs", tabsR, {"Vue d'ensemble", "Combat", "Boss", "Niveaux", "Passages difficiles", "Données et sauvegarde"}, tab_);
         if (tab_ != before) tip_ = Tip{};
+        // « NOUVEAU » (2.55) on « Données et sauvegarde » until it is opened; its new cards keep
+        // theirs during that visit.
+        if (ui.isNew("stats.tab.data")) {
+            if (tab_ == kTabData && ui.featureSeen) {
+                ui.featureSeen("stats.tab.data");
+                dataFresh_ = true;
+            } else {
+                ui.drawNewPill(tabsR.right() - ui.s(10), tabsR.y);
+            }
+        }
         Rect view{m, tabsR.bottom() + ui.s(4), W - 2 * m, H - tabsR.bottom() - ui.s(4) - ui.s(56)};
         ui.beginScroll("page" + std::to_string(tab_), view, contentH_[tab_]);
         const float x = view.x, w = view.w - ui.s(16);
@@ -237,7 +248,8 @@ private:
 
     /// A card: its frame, its title, its subtitle; at its right the « Tableau / Graphique » switch
     /// when `table` is given. Returns the room under the header.
-    Rect card(const Rect& r, const std::string& title, const std::string& sub, const std::string& table = {}, Color top = {0, 0, 0, 0}) {
+    Rect card(const Rect& r, const std::string& title, const std::string& sub, const std::string& table = {}, Color top = {0, 0, 0, 0},
+              bool fresh = false) {
         UIContext& ui = g_.ui;
         ui.r().fillRoundedRect(r, ui.s(12), kCard);
         ui.r().drawRoundedRect(r, ui.s(12), kLine, std::max(1.0f, ui.s(1.0f)));
@@ -257,9 +269,14 @@ private:
         const float tf = fz(ui, 16), sf = fz(ui, 14);
         const float room = right - (r.x + pad);
         float y = r.y + ui.s(14);
-        float f1 = ui.fitFont(title, FontFace::Bold, tf, room, 0.8f);
-        ui.label(ui.elide(title, FontFace::Bold, f1, room), {r.x + pad, y}, f1, ui.theme().text, Align::Left, FontFace::Bold);
-        y += ui.text().measure("Ag", FontFace::Bold, ui.s(f1)).y + ui.s(3);
+        // `fresh` (2.55): a « NOUVEAU » pill right after the title, in room kept for it.
+        const float pill = fresh ? ui.newPillWidth(true) + ui.s(10) : 0.0f;
+        float f1 = ui.fitFont(title, FontFace::Bold, tf, room - pill, 0.8f);
+        const std::string shownTitle = ui.elide(title, FontFace::Bold, f1, room - pill);
+        ui.label(shownTitle, {r.x + pad, y}, f1, ui.theme().text, Align::Left, FontFace::Bold);
+        const float th = ui.text().measure("Ag", FontFace::Bold, ui.s(f1)).y;
+        if (fresh) ui.drawNewPill(r.x + pad + ui.text().measure(shownTitle, FontFace::Bold, ui.s(f1)).x + pill, y + th * 0.5f, true);
+        y += th + ui.s(3);
         if (!sub.empty()) {
             ui.label(ui.elide(sub, FontFace::Body, sf, room), {r.x + pad, y}, sf, ui.theme().textDim, Align::Left, FontFace::Body);
             y += ui.text().measure("Ag", FontFace::Body, ui.s(sf)).y;
@@ -1243,6 +1260,7 @@ private:
         const std::string path = Paths::toUtf8(g_.playStats.file());
         struct Block {
             std::string title, body;
+            bool fresh = false;  // new in 2.55: « NOUVEAU » during the first visit
         };
         std::vector<Block> blocks = {
             {"CE QUI EST ENREGISTRÉ",
@@ -1256,15 +1274,22 @@ private:
              "pendant que vous jouez), par écriture atomique : fichier temporaire puis remplacement, comme les records."},
             {"TAILLE MAÎTRISÉE",
              "Un résumé par jour, gardé 365 jours (les jours plus anciens sont fusionnés par mois). Par boss, les 200 dernières tentatives ; par "
-             "segment, les 50 derniers temps. Au total, moins de 300 Ko même après des années de jeu."},
+             "segment, les 50 derniers temps. Au total, moins de 300 Ko même après des années de jeu ou une migration."},
             {"HORS DE LA SIMULATION",
              "Les statistiques lisent ce qui se passe sans rien changer à la partie : replays, records et classements ne bougent pas. Les replays "
              "relus et les parties d'amis regardées ne sont pas comptés, ni les tests de l'éditeur ni le mode Invincible ; l'entraînement est "
              "compté à part."},
-            {"SUR CET ORDINATEUR",
-             "Vos statistiques restent sur cet ordinateur : elles ne sont pas envoyées en ligne et ne font partie ni de la copie de la progression "
-             "de Cosmic Online, ni de « Migrer vers un nouveau compte ». Pour les garder, copiez le fichier stats.json. Si le fichier est abîmé, "
-             "l'onglet repart de zéro et l'ancien fichier est gardé en stats.json.bak."},
+            {"AVEC VOTRE PROGRESSION",
+             "Connecté à Cosmic Online, le jeu envoie vos statistiques dans la copie privée de votre progression, avec vos records et vos succès "
+             "(aucun autre joueur ne la voit). Sans compte ni Internet, rien ne part et tout fonctionne ; pour les garder vous-même, copiez "
+             "stats.json. Si le fichier est abîmé, l'onglet repart de zéro et l'ancien fichier est gardé en stats.json.bak.",
+             true},
+            {"MIGRER VERS UN NOUVEAU COMPTE",
+             "La progression restaurée apporte ses statistiques, ajoutées aux vôtres sans double compte : chaque jour garde le plus grand des "
+             "deux compteurs, chaque tentative de boss n'est comptée qu'une fois (les 200 plus récentes gardées), les temps des segments sont "
+             "réunis, le meilleur record et la meilleure somme des meilleurs sont gardés. Restaurer deux fois la même copie ne change rien. "
+             "Avant, vos sauvegardes, stats.json compris, sont copiées dans saves › avant_restauration_…",
+             true},
         };
         const float gap = ui.s(14);
         const int per = w >= ui.s(1000) ? 2 : 1;
@@ -1278,7 +1303,7 @@ private:
             rowH += ui.s(70) + ui.s(16);
             for (size_t k = i; k < std::min(blocks.size(), i + static_cast<size_t>(per)); ++k) {
                 Rect r{x + (cw + gap) * static_cast<float>(k - i), y, cw, rowH};
-                Rect in = card(r, blocks[k].title, {});
+                Rect in = card(r, blocks[k].title, {}, {}, {0, 0, 0, 0}, blocks[k].fresh && dataFresh_);
                 ui.labelWrapped(blocks[k].body, {in.x, in.y}, in.w, f, kText2);
             }
             y += rowH + gap;
@@ -1357,6 +1382,7 @@ private:
     int group_ = 0;
     std::string phaseBoss_, wantSlices_, wantRuns_, focusChart_;
     bool confirmReset_ = false;
+    bool dataFresh_ = false;  // « Données et sauvegarde » was new when opened (2.55)
     std::string status_;
 };
 

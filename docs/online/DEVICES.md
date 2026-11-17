@@ -38,7 +38,7 @@ copie de la progression.
 ## Copies de la progression
 
 Le jeu envoie une copie de ses sauvegardes (`progress`, `records`, `boss_stats`, `achievements`,
-`collection`) avec un résumé : après les parties (au plus toutes les 10 minutes), à chaque
+`collection`, et depuis la 2.55 `stats`, l'écran Statistiques) avec un résumé : après les parties (au plus toutes les 10 minutes), à chaque
 connexion, et sur demande. Le serveur en garde 5 par compte, dans le bucket privé
 (`progress/<joueur>/…`), supprimées avec le compte, avec le nom de l'ordinateur qui l'a envoyée
 (2.50). Elles servent à migrer vers un nouveau compte (2.50, ci-dessous) et aux admins.
@@ -92,7 +92,7 @@ compte est fermé.
 | Records et replays | `records`, `replay_metadata`, `player_bests`, `community_records`, `community_level_players`, `race_runs`, `race_victors`, `community_levels.verified_by`, `challenge_runs`, `challenge_attempts` | Tout passe au nouveau compte. Meilleurs temps (un par révision et catégorie) : le **meilleur temps** gagne (à égalité le plus ancien, puis celui du nouveau compte) ; celui qui perd est retiré, ses records restent dans l'historique. Une ligne dont la clé unique `(joueur, tentative)` existe déjà côté nouveau compte reste sur l'ancien (jamais d'erreur d'unicité, jamais de doublon). Niveau de confiance (gagné par les records vérifiés) : le plus haut des deux. |
 | Succès | `player_achievements`, `player_badges` | **Union** des succès (seulement ceux du catalogue du serveur ; étoiles recomptées par le serveur). Le serveur ne connaît pas les dates des succès (elles sont dans la copie de la progression). Badges du profil : ceux du nouveau compte, ou ceux de l'ancien s'il n'en a pas. |
 | Récompenses | `player_won_rewards` (titres du serveur, combinaisons d'ADMINISTRATION › Créations, objets), `player_cosmetics` | **Union**, la date la plus ancienne. Tenue portée : celle du nouveau compte ; chaque pièce restée « par défaut » prend celle de l'ancien. Ce qui n'est plus débloqué revient au défaut (comme partout). |
-| Temps de jeu | `player_playtime` | **Additionné** niveau par niveau. Les statistiques des boss ne sont que dans le jeu : elles viennent avec la progression à restaurer. |
+| Temps de jeu | `player_playtime` | **Additionné** niveau par niveau. Les statistiques des boss et celles de l'écran Statistiques ne sont que dans le jeu : elles viennent avec la progression à restaurer. |
 | Progression | `progress_restores` | La dernière copie de l'ancien ordinateur, à restaurer (voir plus haut). |
 
 Les niveaux publiés et les projets de l'ancien compte ne bougent pas dans la migration du
@@ -123,6 +123,18 @@ jeu lit des réponses), `game/online/ProgressMerge.*` (la restauration), tests
   `saves/restored_copies.json`) n'est jamais ajoutée deux fois : si `done` n'est pas arrivé,
   « Restaurer » de nouveau ne fait que prévenir le serveur. **« Plus tard »** envoie `later` :
   elle reste proposée dans Cet ordinateur.
+- **Statistiques** (2.55, `stats` → `saves/stats.json`, `mergePlayStats` dans
+  `game/records/PlayStatsMerge.cpp`) : fusionnées sans double compte, et une seconde fusion de la
+  même copie ne change rien (testé) : par jour (et par mois), chaque compteur le plus grand des
+  deux côtés ; les 40 tranches d'un niveau de même ; tentatives de boss réunies par identifiant
+  (30 bits tirés au hasard quand la tentative est gardée ; une tentative d'un côté plus ancienne
+  que la liste de l'autre, quand celui-ci n'a plus toutes les siennes, compte avec le reste non
+  détaillé, fusionné au plus grand), puis les 200 plus récentes ; segments des niveaux classiques
+  (même empreinte du niveau) : temps réunis, meilleurs temps, record et somme des meilleurs : le
+  meilleur ; parties complètes réunies par (jour, temps) ; historique du record et de la somme
+  des meilleurs : réuni, trié par jour. Puis les plafonds habituels (moins de 300 Ko). Un jour de
+  la copie plus de 31 jours après aujourd'hui est ignoré. Le serveur n'accepte `stats` que comme
+  objet JSON de 512 Ko au plus.
 - Tant qu'une progression migrée attend, les succès du jeu sont envoyés avec `merge: true` : ceux
   que la migration a apportés au compte restent sur le profil jusqu'à la restauration.
 - L'ancien ordinateur : son compte fermé répond `403 ACCOUNT_CLOSED` au bon mot de passe ; le jeu

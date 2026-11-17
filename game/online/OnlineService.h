@@ -220,6 +220,9 @@ public:
     void get(const std::string& pathAndQuery, ApiCallback cb, bool useCache = true);
     /// `timeoutMs`: 0 = the default (15 s); long server operations (backups) give more.
     void send(const std::string& method, const std::string& path, const Json& body, ApiCallback cb, int timeoutMs = 0);
+    /// The same with a body already written out as JSON text (2.55: the copy of the progression,
+    /// written out off the main thread).
+    void sendJsonText(const std::string& method, const std::string& path, std::string json, ApiCallback cb, int timeoutMs = 0);
     void getBinary(const std::string& path, std::function<void(const HttpResponse&)> cb, size_t maxBytes = 2 * 1024 * 1024);
     /// POST of a JSON body whose answer is a file (the encrypted backups, ADMINISTRATION ›
     /// Sauvegardes): the session is renewed first when needed; errors come back as JSON.
