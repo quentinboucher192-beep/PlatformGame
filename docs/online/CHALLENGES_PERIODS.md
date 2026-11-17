@@ -425,3 +425,41 @@ habituelle. Profil : `cosmetics.title = { id, look, name, color }` ; classements
   `saves/challenges/state.json` (hors ligne). Collection : les titres gagnés dans « Titres »
   (« Défi du jour du 20/11 »), équipables ; un titre du serveur s'affiche dans sa couleur (profil,
   classements).
+
+## 9. Défi en cours modifiable tant que personne n'y a de résultat (2.60.0)
+
+Un défi **commencé** (jour, semaine ou mois dont la période court) se change encore —
+`PUT /admin/challenges/{id}`, `DELETE` (« Revenir au tirage », retiré aussitôt), `PUT …/rewards` —
+**tant qu'aucun joueur n'y a de résultat** : rien de ce que le serveur a reçu pour lui, quel que
+soit son statut (partie de `challenge_runs`, essai de `challenge_attempts`, récompense gagnée
+`player_won_rewards`, récompenses accordées `challenge_reward_grants` ; le record, la place au
+classement et la série en découlent). Un défi **terminé** ne change jamais.
+
+- Atomique : chaque écriture porte la condition (`… WHERE date > date('now') OR (end_date >
+  date('now') AND NOT <résultats>)`), pas seulement une lecture avant ; la migration
+  `0117_challenge_running_edit.sql` remplace le déclencheur `challenges_frozen` (refus pour un défi
+  terminé) et ajoute `challenges_have_results` (refus pour un défi commencé avec un résultat). La
+  suppression est gardée par la condition de l'écriture et les clés étrangères des parties et des
+  essais (pas de déclencheur : l'import d'une sauvegarde vide la table avant de la remplir).
+- Refus, au Journal comme les autres : `409 CHALLENGE_STARTED` (défi terminé), `409
+  CHALLENGE_HAS_RESULTS` (« Des joueurs ont déjà un résultat sur ce défi : il ne change plus. »,
+  `details.results_count`). Un changement d'un défi en cours a `running: true` au Journal.
+- `GET /admin/challenges` : `editable` = à venir, ou en cours sans résultat ; `results_count` =
+  joueurs qui ont un résultat (parties, essais, récompenses), pour dire pourquoi un défi en cours est
+  figé.
+- Versions jamais mélangées : l'objet défi gagne `updated_at` (heure de sa version). Une partie ou
+  un essai n'est inséré que si le défi a toujours le `level_hash`, le `rules_hash` et
+  l'`updated_at` lus pour le vérifier, dans la même requête ; sinon `RULES_MISMATCH`,
+  `LEVEL_MISMATCH` ou `409 CHALLENGE_CHANGED`. Comme un changement n'est permis que sans aucun
+  résultat, une partie de l'ancienne version ne peut pas rejoindre celles de la nouvelle ; si seuls
+  les paliers ou l'objectif changent (mêmes empreintes), le serveur classe la partie avec ceux de
+  la version qu'il a.
+- Côté jeu : le cache garde la version la plus récente (`updated_at`, jamais une réponse plus
+  ancienne gardée hors ligne) ; une version changée (niveau, règles, objectif ou paliers) remplace
+  l'ancienne, dont le résultat gardé sur le PC, son replay et les parties pas encore envoyées
+  disparaissent (« ce défi a changé »). Une partie finie sur l'ancienne version ne compte pas :
+  l'écran de fin dit « DÉFI CHANGÉ » au lieu d'un succès, « Nouvelle version » ramène aux Défis.
+- Calendrier joueur (`GET /challenges/calendar`) : `tier_counts: { "<id>": { bronze, silver, gold } }`
+  pour chaque défi commencé de la réponse : les joueurs (comptes actifs) à leur meilleur palier,
+  parties et essais **vérifiés reçus à l'heure** seulement (comme les classements et les
+  récompenses), 0 sans personne ; à part des objets défi (qui ne changent pas à chaque résultat).

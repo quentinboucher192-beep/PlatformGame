@@ -6,6 +6,14 @@
     "Fin du didacticiel : « Bravo, Nova ! » avec ce qui a été appris, le souvenir « Premier envol » (un titre du Vestiaire, accordé sur cet ordinateur) et « Commencer l'aventure », qui ouvre Sylvanox. Le didacticiel ne se rejoue jamais, qu'on le finisse ou qu'on le passe ; un joueur qui avait déjà une progression ne le voit pas, et les copies de progression comme la migration de compte gardent ce choix.",
     "Éditeur de niveaux : la « Bulle porteuse » (un objet de plateforme qui part quand Nova s'y pose, la porte jusqu'au bout de sa route, éclate et renaît à sa place) et l'action « Didacticiel : explication bloquante »."
   ],
+  "2.60.3": [
+    "Entraînement par segment : un administrateur peut activer « Invincible » directement sur l'écran de choix du segment (non classé), en plus du menu pause."
+  ],
+  "2.60.2": [
+    "Administration › Calendrier des défis : un défi du jour, de la semaine ou du mois déjà commencé se change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) tant qu'aucun joueur n'y a de résultat ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de joueurs ont déjà un résultat. Un défi terminé ne change jamais.",
+    "Le serveur vérifie cette condition dans l'écriture même (un joueur qui vient de jouer l'emporte, et la fiche se rafraîchit) et n'accepte aucune partie envoyée sur l'ancienne version d'un défi changé : le jeu reçoit la nouvelle version dès qu'il ouvre ou rafraîchit les défis, et dit « ce défi a changé » au lieu d'un faux succès.",
+    "Défis › Calendrier : chaque défi commencé montre combien de joueurs vérifiés ont atteint le bronze, l'argent et l'or (votre médaille entourée), avec le détail au survol ou au focus ; les derniers nombres reçus restent affichés hors ligne."
+  ],
   "2.60.1": [
     "Le HUD s'efface quand il cache l'action : un bloc du HUD (chronomètre, barre de progression, vie et énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé au-dessus du boss, de Nova ou d'une attaque du boss (projectiles, télégraphes, réticules, zones dangereuses) devient presque transparent en un instant, puis revient dès que plus rien n'est dessous. Les giga-boss qui volent sous le chronomètre ou la barre de progression (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles, avec leurs attaques.",
     "La barre de vie du boss, en bas, ne s'efface que lorsque Nova passe dessous ; les annonces de phase au centre de l'écran ne s'effacent jamais.",

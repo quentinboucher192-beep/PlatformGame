@@ -6,8 +6,11 @@
 // of scripts/challenge-set.mjs (src/challengeSpec.mjs), the rules' hash the canonical one
 // (shared with the game and its replays: the objective is not part of it). Every change and
 // every refusal is written to the Journal (audit_log). The administrator comes from the
-// session only (requireAdminRole); a period that has begun never changes (the routes check it,
-// the SQL guards each write, and the trigger challenges_frozen backs both).
+// session only (requireAdminRole). 2.60: a period that has begun may still change (its
+// challenge, its draw again, its rewards) as long as nobody has a result on it (anything the
+// server received for it: HAS_RESULTS_SQL); a period that is over never changes. The routes
+// check it, each write carries the condition itself (never only a reading before it), and the
+// triggers challenges_frozen and challenges_have_results (migration 0117) back both.
 
 import { audit, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
@@ -35,6 +38,7 @@ import {
     AHEAD,
     CATALOG,
     CHALLENGE_SQL,
+    HAS_RESULTS_SQL,
     KINDS,
     challengeJson,
     drawable,
@@ -73,6 +77,37 @@ function stateOf(p: Period, today: string): "past" | "running" | "coming" {
     return p.end <= today ? "past" : p.start <= today ? "running" : "coming";
 }
 
+/**
+ * 2.60: of each period id, the players with a result on it (runs, attempts, rewards won, as
+ * HAS_RESULTS_SQL, whatever their status); a period missing from the map has none.
+ */
+async function resultsByPeriod(ctx: Ctx, ids: string[]): Promise<Map<string, number>> {
+    if (ids.length === 0) return new Map();
+    const rows = await ctx.env.DB.prepare(
+        `SELECT challenge_id, COUNT(DISTINCT player_id) AS players FROM (
+           SELECT challenge_id, player_id FROM challenge_runs WHERE challenge_id IN (SELECT value FROM json_each(?1))
+           UNION ALL SELECT challenge_id, player_id FROM challenge_attempts WHERE challenge_id IN (SELECT value FROM json_each(?1))
+           UNION ALL SELECT challenge_id, player_id FROM player_won_rewards WHERE challenge_id IN (SELECT value FROM json_each(?1)))
+         GROUP BY challenge_id`,
+    )
+        .bind(JSON.stringify(ids))
+        .all<{ challenge_id: string; players: number }>();
+    return new Map(rows.results.map((r) => [r.challenge_id, r.players]));
+}
+
+/** 2.60: whether a period may change now, and if not why: over, or (begun) players with a result on it. */
+async function lockOf(ctx: Ctx, p: Period): Promise<{ state: "past" | "running" | "coming"; results: number; locked: boolean }> {
+    const state = stateOf(p, utcDate());
+    if (state !== "running") return { state, results: 0, locked: state === "past" };
+    const id = `${p.kind}-${p.period}`;
+    const [players, any] = await Promise.all([
+        resultsByPeriod(ctx, [id]),
+        ctx.env.DB.prepare(`SELECT ${HAS_RESULTS_SQL("?1")} AS has`).bind(id).first<{ has: number }>(),
+    ]);
+    const results = players.get(id) ?? 0;
+    return { state, results, locked: results > 0 || any?.has === 1 };
+}
+
 /** The periods of a month: the month, the ISO weeks that overlap it, its days. */
 function periodsOfMonth(month: Period): Period[] {
     const out: Period[] = [month];
@@ -89,8 +124,10 @@ function periodsOfMonth(month: Period): Period[] {
  * GET /admin/challenges?month=AAAA-MM (default: the current month): `{ month, today,
  * server_time, first_month, last_month, ahead, periods }`. `periods`: the month, the weeks
  * that overlap it and its days, each `{ id, kind, period, date, end_date, starts_at, ends_at,
- * state: past|running|coming, editable, draws_on, challenge }` (challenge null when there is
- * none: a coming period not drawn yet says when it will be, `draws_on`). The periods the
+ * state: past|running|coming, editable, results_count, draws_on, challenge }` (challenge null
+ * when there is none: a coming period not drawn yet says when it will be, `draws_on`).
+ * `editable` (2.60): coming, or running while nobody has a result on it; `results_count`: the
+ * players who have one (runs, attempts, rewards won, whatever their status). The periods the
  * server draws ahead are drawn first, so that the coming draws are those players will get.
  */
 export async function listChallenges(ctx: Ctx): Promise<Response> {
@@ -121,12 +158,15 @@ export async function listChallenges(ctx: Ctx): Promise<Response> {
     const prizesOf = new Map<string, PrizeRow[]>();
     for (const r of prizeRows.results) prizesOf.set(r.challenge_id, [...(prizesOf.get(r.challenge_id) ?? []), r]);
     const grantedOf = new Map(grants.results.map((g) => [g.challenge_id, g.granted_at]));
+    // 2.60: who already has a result on each period (a running one changes only without any).
+    const resultsOf = await resultsByPeriod(ctx, JSON.parse(ids) as string[]);
     const first = await ctx.env.DB.prepare("SELECT MIN(date) AS d FROM challenges").first<{ d: string | null }>();
     const current = periodOf("monthly", today);
     const periods = monthPeriods.map((p) => {
         const id = `${p.kind}-${p.period}`;
         const c = byId.get(id);
         const state = stateOf(p, today);
+        const results = resultsOf.get(id) ?? 0;
         return {
             id,
             kind: p.kind,
@@ -136,7 +176,10 @@ export async function listChallenges(ctx: Ctx): Promise<Response> {
             starts_at: `${p.start}T00:00:00Z`,
             ends_at: `${p.end}T00:00:00Z`,
             state,
-            editable: state === "coming",
+            // 2.60: coming, or running while nobody has a result on it (`results_count`: the
+            // players who have one, why a running period is locked).
+            editable: state === "coming" || (state === "running" && results === 0 && !grantedOf.has(id)),
+            results_count: results,
             draws_on: !c && state === "coming" ? drawsOn(p, today) : null,
             challenge: c ? adminChallengeJson(c) : null,
             rewards: prizesJson(prizesOf.get(id) ?? []),
@@ -289,7 +332,34 @@ async function refuse(ctx: Ctx, auth: AuthInfo, error: ApiError, details: Record
     throw error;
 }
 
-const STARTED = () => Errors.conflict("CHALLENGE_STARTED", "Ce défi a déjà commencé : il ne change plus.");
+/** A period that is over (2.60: one that has begun may change while nobody has a result on it). */
+const STARTED = () => Errors.conflict("CHALLENGE_STARTED", "Ce défi est terminé : il ne change plus.");
+/** 2.60: a period that has begun, and players already have a result on it. */
+const HAS_RESULTS = (players: number) =>
+    Errors.conflict("CHALLENGE_HAS_RESULTS", "Des joueurs ont déjà un résultat sur ce défi : il ne change plus.", { results_count: players });
+
+/**
+ * 2.60: why a period may not change (over, or begun with results), refused and written to the
+ * Journal; nothing when it may. Read before a write, and again after a write that changed
+ * nothing (the write itself carries the condition: someone may have just played).
+ */
+async function refuseLocked(ctx: Ctx, auth: AuthInfo, p: Period, what: Record<string, unknown>): Promise<"coming" | "running"> {
+    const lock = await lockOf(ctx, p);
+    if (lock.state === "past") await refuse(ctx, auth, STARTED(), what);
+    if (lock.locked) await refuse(ctx, auth, HAS_RESULTS(lock.results), { ...what, results_count: lock.results });
+    return lock.state as "coming" | "running";
+}
+
+/** A write refused by the triggers of migration 0117 (the condition of the write should have caught it first). */
+const isFrozen = (e: unknown) => /already over|has results|already started/.test(String(e));
+
+/**
+ * The SQL condition of each write of the period whose first day is `start`, last day `end` (its
+ * exclusive end) and id `id` (SQL expressions): it has not begun, or it runs and nobody has a
+ * result on it.
+ */
+const OPEN_SQL = (start: string, end: string, id: string) =>
+    `(${start} > date('now') OR (${end} > date('now') AND NOT ${HAS_RESULTS_SQL(id)}))`;
 
 /** The challenge's period; a malformed id is « not found ». */
 function periodOfId(ctx: Ctx): Period {
@@ -446,18 +516,32 @@ const COLUMNS = [
     "created_at",
     "updated_at",
 ] as const;
-/** Changed when an existing (coming) challenge is set again; its id, period and creation stay. */
+/** Changed when an existing challenge is set again; its id, period and creation stay. */
 const UPDATED = COLUMNS.filter((c) => !["id", "kind", "period", "date", "end_date", "created_at"].includes(c));
+/**
+ * 2.60: what the update of an existing challenge writes; the creator already told that his
+ * level is the challenge (a running one) is not told again when it stays his level.
+ */
+const UPDATE_SET = UPDATED.map((c) =>
+    c === "featured_notified_at"
+        ? "featured_notified_at = CASE WHEN challenges.featured_player_id IS excluded.featured_player_id THEN challenges.featured_notified_at ELSE NULL END"
+        : `${c} = excluded.${c}`,
+).join(", ");
 
 /**
  * PUT /admin/challenges/{challengeId} `{ level: { source, id, version? }, hearts?, slots?,
  * powers?, stations?, checkpoints?, objective?, silver_ms?, gold_ms?, gold_no_damage?,
- * bronze_progress?, silver_progress? }`: the challenge of a period that has not begun, chosen
- * by an administrator (source 'admin'). Defaults as scripts/challenge-set.mjs. Refused, and
- * written to the Journal: a period that has begun (409 CHALLENGE_STARTED), invalid rules (400),
- * a level the server does not rank or a version not published (409 LEVEL_UNAVAILABLE),
- * « Finir le niveau » without a route (409 FINISH_NEEDS_ROUTE). Answers `{ challenge,
- * warnings }`, the challenge as the calendar shows it.
+ * bronze_progress?, silver_progress? }`: the challenge of a period that has not begun or (2.60)
+ * that runs while nobody has a result on it, chosen by an administrator (source 'admin').
+ * Defaults as scripts/challenge-set.mjs. Refused, and written to the Journal: a period that is
+ * over (409 CHALLENGE_STARTED), one that has begun with results (409 CHALLENGE_HAS_RESULTS,
+ * `details.results_count`; also when a player's result arrives before the write: the write
+ * carries the condition), invalid rules (400), a level the server does not rank or a version
+ * not published (409 LEVEL_UNAVAILABLE), « Finir le niveau » without a route (409
+ * FINISH_NEEDS_ROUTE). Answers `{ challenge, warnings }`, the challenge as the calendar shows it.
+ * A running challenge changed gets a new `rules_hash` with its new rules and a new
+ * `updated_at`: a run of its former version is refused (RULES_MISMATCH, LEVEL_MISMATCH, or
+ * CHALLENGE_CHANGED when it was read before the change).
  */
 export async function setChallenge(ctx: Ctx): Promise<Response> {
     const auth = await requireAdminRole(ctx);
@@ -465,14 +549,14 @@ export async function setChallenge(ctx: Ctx): Promise<Response> {
     const p = periodOfId(ctx);
     const what = { ...periodDetails(p), action: "set" };
     const today = utcDate();
-    if (p.start <= today) await refuse(ctx, auth, STARTED(), what);
+    const state = await refuseLocked(ctx, auth, p, what);
     const body = await readJsonObject(ctx, 4 * 1024);
     const v = new Validator(body, SPEC_FIELDS);
     const input = readSpecBody(body, v);
     if (v.errors.length > 0) await refuse(ctx, auth, Errors.validation(v.errors), { ...what, field: v.errors[0]!.field });
     let spec: ValidatedChallenge;
     try {
-        spec = validateChallengeSpec({ kind: p.kind, period: p.period, ...input }, CATALOG, today);
+        spec = validateChallengeSpec({ kind: p.kind, period: p.period, ...input }, CATALOG, today, { running: state === "running" });
     } catch (e) {
         if (!(e instanceof ChallengeSpecError)) throw e;
         return refuse(ctx, auth, Errors.validation([{ field: e.field, message: e.message }]), { ...what, field: e.field, message: e.message });
@@ -534,20 +618,35 @@ export async function setChallenge(ctx: Ctx): Promise<Response> {
         updated_at: now,
     };
     const n = COLUMNS.length;
-    // Only while the period has not begun (?n+1: its first day), on the insert and on the update.
-    const res = await db
-        .prepare(
-            `INSERT INTO challenges (${COLUMNS.join(", ")}) SELECT ${COLUMNS.map((_c, i) => `?${i + 1}`).join(", ")} WHERE ?${n + 1} > date('now')
-             ON CONFLICT (id) DO UPDATE SET ${UPDATED.map((c) => `${c} = excluded.${c}`).join(", ")} WHERE challenges.date > date('now')`,
-        )
-        .bind(...COLUMNS.map((c) => values[c]), spec.start)
-        .run();
-    if (!res.meta.changes) await refuse(ctx, auth, STARTED(), what);
+    // Only while the period has not begun, or runs while nobody has a result on it (?n+1: its
+    // first day, ?n+2: the day after its end), on the insert and on the update: checked by the
+    // write itself, so a result received since the checks above wins.
+    let changes = 0;
+    try {
+        const res = await db
+            .prepare(
+                `INSERT INTO challenges (${COLUMNS.join(", ")}) SELECT ${COLUMNS.map((_c, i) => `?${i + 1}`).join(", ")}
+                 WHERE ${OPEN_SQL(`?${n + 1}`, `?${n + 2}`, "?1")}
+                 ON CONFLICT (id) DO UPDATE SET ${UPDATE_SET} WHERE ${OPEN_SQL("challenges.date", "challenges.end_date", "challenges.id")}`,
+            )
+            .bind(...COLUMNS.map((c) => values[c]), spec.start, spec.end)
+            .run();
+        changes = res.meta.changes;
+    } catch (e) {
+        if (!isFrozen(e)) throw e;
+    }
+    if (!changes) {
+        await refuseLocked(ctx, auth, p, what);
+        // Neither over nor with results now: the period has just turned (a day has begun).
+        await refuse(ctx, auth, STARTED(), what);
+    }
     const row = (await db.prepare(`${CHALLENGE_SQL} WHERE c.id = ?1`).bind(spec.id).first<ChallengeRow>())!;
     await audit(ctx, auth.player.id, "admin_challenge_set", {
         ...periodDetails(p),
         ...challengeSummary(row),
         replaced: previous ? { source: previous.source, title: previous.level_title } : null,
+        // 2.60: changed while it ran (nobody had a result on it).
+        ...(state === "running" ? { running: true } : {}),
         by_username: auth.player.username,
     });
     return json(ctx, { challenge: adminChallengeJson(row), warnings: spec.warnings });
@@ -555,10 +654,12 @@ export async function setChallenge(ctx: Ctx): Promise<Response> {
 
 /**
  * DELETE /admin/challenges/{challengeId}: « Revenir au tirage ». The administrator's choice of
- * a period that has not begun goes, and the server draws the period again at once when it is
- * within the days, weeks and months it draws ahead (else on the day `draws_on`). Answers `{
- * challenge, draws_on }` (the new draw, or null). Refused and written to the Journal: a period
- * that has begun, a challenge that is already the server's draw.
+ * a period that has not begun or (2.60) that runs while nobody has a result on it goes, and the
+ * server draws the period again at once when it is within the days, weeks and months it draws
+ * ahead — always for a running one — (else on the day `draws_on`). Answers `{ challenge,
+ * draws_on }` (the new draw, or null). Refused and written to the Journal: a period that is
+ * over (CHALLENGE_STARTED), one that has begun with results (CHALLENGE_HAS_RESULTS, also when
+ * checked by the write itself), a challenge that is already the server's draw.
  */
 export async function resetChallenge(ctx: Ctx): Promise<Response> {
     const auth = await requireAdminRole(ctx);
@@ -566,16 +667,27 @@ export async function resetChallenge(ctx: Ctx): Promise<Response> {
     const p = periodOfId(ctx);
     const what = { ...periodDetails(p), action: "reset" };
     const today = utcDate();
-    if (p.start <= today) await refuse(ctx, auth, STARTED(), what);
+    const state = await refuseLocked(ctx, auth, p, what);
     const db = ctx.env.DB;
     const chosen = await db.prepare(`${CHALLENGE_SQL} WHERE c.id = ?1`).bind(`${p.kind}-${p.period}`).first<ChallengeRow>();
     if (!chosen || chosen.source !== "admin")
         await refuse(ctx, auth, Errors.conflict("NOT_CHOSEN", "Ce défi est déjà celui du tirage du serveur."), what);
-    const res = await db
-        .prepare("DELETE FROM challenges WHERE id = ?1 AND source = 'admin' AND date > date('now')")
-        .bind(chosen!.id)
-        .run();
-    if (!res.meta.changes) await refuse(ctx, auth, STARTED(), what);
+    // The condition in the write itself (a run may have just arrived); the runs' and attempts'
+    // foreign keys back it.
+    let changes = 0;
+    try {
+        const res = await db
+            .prepare(`DELETE FROM challenges WHERE id = ?1 AND source = 'admin' AND ${OPEN_SQL("date", "end_date", "?1")}`)
+            .bind(chosen!.id)
+            .run();
+        changes = res.meta.changes;
+    } catch (e) {
+        if (!/FOREIGN KEY/i.test(String(e))) throw e;
+    }
+    if (!changes) {
+        await refuseLocked(ctx, auth, p, what);
+        await refuse(ctx, auth, STARTED(), what);
+    }
     try {
         await ensureChallenges(ctx);
     } catch (e) {
@@ -588,6 +700,7 @@ export async function resetChallenge(ctx: Ctx): Promise<Response> {
         removed: challengeSummary(chosen!),
         drawn: drawn ? { title: drawn.level_title, level: { source: drawn.level_source, id: drawn.level_id } } : null,
         draws_on: when,
+        ...(state === "running" ? { running: true } : {}),
         by_username: auth.player.username,
     });
     return json(ctx, { challenge: drawn ? adminChallengeJson(drawn) : null, draws_on: when });
@@ -783,39 +896,46 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: 
 /**
  * PUT /admin/challenges/{challengeId}/rewards `{ rewards: [{ kind: item|title|suit|trail|frame|victory, ref, condition:
  * tier|top|finished, value }] }` (at most MAX_PRIZES, in their order; [] removes them): the
- * rewards of a period that has not begun, set even before the server draws its challenge
- * (they stay with the period through « Revenir au tirage »). value: tier 1 Bronze, 2 Argent,
- * 3 Or (that tier or better); top 1..100; finished: none. Refused, and written to the
- * Journal: a period that has begun (409 CHALLENGE_STARTED, also guarded by each write),
- * invalid rewards (400). Answers `{ rewards }`, as the calendar shows them.
+ * rewards of a period that has not begun or (2.60) that runs while nobody has a result on it,
+ * set even before the server draws its challenge (they stay with the period through « Revenir
+ * au tirage »). value: tier 1 Bronze, 2 Argent, 3 Or (that tier or better); top 1..100;
+ * finished: none. Refused, and written to the Journal: a period that is over (409
+ * CHALLENGE_STARTED), one that has begun with results (409 CHALLENGE_HAS_RESULTS), both also
+ * guarded by each write, invalid rewards (400). Answers `{ rewards }`, as the calendar shows them.
  */
 export async function setRewards(ctx: Ctx): Promise<Response> {
     const auth = await requireAdminRole(ctx);
     await rateLimit(ctx, RULES.adminWrite, "player:" + auth.player.id);
     const p = periodOfId(ctx);
     const what = { ...periodDetails(p), action: "rewards" };
-    if (p.start <= utcDate()) await refuse(ctx, auth, STARTED(), what);
+    const state = await refuseLocked(ctx, auth, p, what);
     const body = await readJsonObject(ctx, 4 * 1024);
     const id = `${p.kind}-${p.period}`;
     const { rules, errors } = await readPrizes(ctx, body, id);
     if (errors.length > 0) await refuse(ctx, auth, Errors.validation(errors), { ...what, field: errors[0]!.field });
     const db = ctx.env.DB;
     const before = await db.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id = ?1 ORDER BY r.position`).bind(id).all<PrizeRow>();
-    // Each write only while the period has not begun (?2: its first day); the last statement says whether it had not.
+    // Each write only while the period has not begun or runs without any result (?2: its first
+    // day, ?3: the day after its end), in one batch (one transaction); the last statement says
+    // whether it was open.
+    const open3 = OPEN_SQL("?2", "?3", "?1");
     const res = await db.batch([
-        db.prepare("DELETE FROM challenge_reward_rules WHERE challenge_id = ?1 AND ?2 > date('now')").bind(id, p.start),
+        db.prepare(`DELETE FROM challenge_reward_rules WHERE challenge_id = ?1 AND ${open3}`).bind(id, p.start, p.end),
         ...rules.map((r, i) =>
             db
                 .prepare(
                     `INSERT INTO challenge_reward_rules (challenge_id, position, reward_kind, reward_ref, condition, condition_value)
-                     SELECT ?1, ?3, ?4, ?5, ?6, ?7 WHERE ?2 > date('now')`,
+                     SELECT ?1, ?4, ?5, ?6, ?7, ?8 WHERE ${open3}`,
                 )
-                .bind(id, p.start, i, r.kind, r.ref, r.condition, r.value),
+                .bind(id, p.start, p.end, i, r.kind, r.ref, r.condition, r.value),
         ),
-        db.prepare("SELECT ?1 > date('now') AS open").bind(p.start),
+        db.prepare(`SELECT ${open3} AS open`).bind(id, p.start, p.end),
     ]);
     const open = (res[res.length - 1]!.results as { open: number }[])[0]?.open === 1;
-    if (!open) await refuse(ctx, auth, STARTED(), what);
+    if (!open) {
+        await refuseLocked(ctx, auth, p, what);
+        await refuse(ctx, auth, STARTED(), what);
+    }
     const after = await db.prepare(`${PRIZE_ROWS_SQL} WHERE r.challenge_id = ?1 ORDER BY r.position`).bind(id).all<PrizeRow>();
     const summary = (rows: PrizeRow[]) =>
         prizesJson(rows).map((r) => ({
@@ -831,6 +951,7 @@ export async function setRewards(ctx: Ctx): Promise<Response> {
         ...periodDetails(p),
         rewards: summary(after.results),
         previous: summary(before.results),
+        ...(state === "running" ? { running: true } : {}),
         by_username: auth.player.username,
     });
     return json(ctx, { rewards: prizesJson(after.results) });

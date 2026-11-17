@@ -29,6 +29,18 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   est généré par `tools/levelgen/tutorial.py` (`data/tutorial/premier_envol.json`) ; aucune règle des niveaux
   existants ne change (même version de simulation, mêmes empreintes).
 
+**Nouveau dans la version 2.60.3** :
+* Entraînement par segment : interrupteur « Invincible (admin) · non classé » sur l'écran de choix du segment (administrateurs).
+
+**Nouveau dans la version 2.60.2** :
+* **Administration › Calendrier des défis** : un défi du jour, de la semaine ou du mois **déjà commencé** se
+  change encore (niveau, règles, objectif, paliers, récompenses, ou retour au tirage) **tant qu'aucun joueur n'y
+  a de résultat** ; dès qu'une partie, un essai ou une récompense existe, il est figé et la fiche dit combien de
+  joueurs ont déjà un résultat. Le serveur porte la condition dans l'écriture même (migration `0117`) et refuse
+  toute partie de l'ancienne version ; le jeu reçoit la nouvelle version et dit « ce défi a changé ».
+* **Défis › Calendrier** : chaque défi montre combien de joueurs vérifiés ont atteint le **bronze**, l'**argent**
+  et l'**or** (votre médaille entourée, détail au survol ou au focus), comptés par le serveur.
+
 **Nouveau dans la version 2.60.1** :
 * **Le HUD s'efface quand il cache l'action** : un bloc du HUD (chronomètre, barre de progression, vie et
   énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé
