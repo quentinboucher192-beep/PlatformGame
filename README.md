@@ -5,6 +5,13 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.62.4** :
+* L'**histoire du Monolithe** (« Le Golem Primordial ») devient elle aussi un **petit dessin animé** : le caillou
+  dans la poussière des origines, les enfants de la caverne qui gravent leur rune, la pierre qui grandit puis se
+  lève, le village, les vaisseaux qui partent, le golem seul dans les ruines ; décors en couches animées
+  (cristaux, torches, brume), personnages animés image par image. Une pastille NOUVEAU mène à « Revoir
+  l'histoire ».
+
 **Nouveau dans la version 2.62.3** :
 * Embuscades : une chute ne les fait plus recommencer (reprise à la même vague, ennemis ramenés dans l'arène) ;
   HUD « Embuscade : N ennemis restants » et flèches violettes vers ses ennemis hors écran.

@@ -1,7 +1,7 @@
 {
  "format": "cosmic.boss_story",
- "version": 1,
- "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "version": 2,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Version 2: each shot is an animated scene (« stage »: parallax layers, sprites moved by keyframes, glows, particles, camera, shakes, flashes), written by tools/assetgen/environment/story_monolithe_scene.py (edit it there); its image is the still rendered from the scene. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
  "boss": "monolithe",
  "title": "Le Golem Primordial",
  "color": "#ffb347",
@@ -16,9 +16,808 @@
     0.5,
     0.52
    ],
-   "zoom": 1.14,
-   "particles": "dust",
-   "glow": "#e8d2a6"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#e8d2a6",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#050308",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       480.0,
+       270.0
+      ],
+      "zoom": 1.04
+     },
+     {
+      "t": 2.4,
+      "pos": [
+       488.0,
+       278.0
+      ],
+      "zoom": 1.12
+     },
+     {
+      "t": 6.825,
+      "pos": [
+       518.0,
+       286.0
+      ],
+      "zoom": 1.62
+     }
+    ],
+    "elements": [
+     {
+      "id": "cosmos",
+      "sprite": "animations/stories/monolithe_cosmos.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/monolithe_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       4.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         870.3,
+         171.0
+        ],
+        "clip": "twinkle",
+        "offset": 0.942,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         299.0,
+         407.5
+        ],
+        "clip": "twinkle",
+        "offset": 1.043,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         360.4,
+         428.7
+        ],
+        "clip": "twinkle",
+        "offset": 0.269,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         639.2,
+         217.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.037,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         827.4,
+         260.9
+        ],
+        "clip": "twinkle",
+        "offset": 0.468,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         613.7,
+         165.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.609,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         366.4,
+         43.2
+        ],
+        "clip": "twinkle",
+        "offset": 0.3,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         760.0,
+         300.3
+        ],
+        "clip": "twinkle",
+        "offset": 0.565,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "soleil_lointain",
+      "glow": "#ffe0b0",
+      "radius": 280.0,
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         840.0,
+         96.0
+        ],
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.3,
+       3.2
+      ]
+     },
+     {
+      "id": "soleil",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.06,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         840.0,
+         96.0
+        ],
+        "clip": "twinkle",
+        "scale": 3.0
+       }
+      ]
+     },
+     {
+      "id": "poussiere_loin",
+      "sprite": "animations/stories/monolithe_poussiere.json",
+      "depth": 0.15,
+      "drift": [
+       -6.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         40.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "poussiere_bas",
+      "sprite": "animations/stories/monolithe_poussiere.json",
+      "depth": 0.22,
+      "drift": [
+       9.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         360.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle",
+        "offset": 0.6
+       }
+      ]
+     },
+     {
+      "id": "grain1",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.45,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         361.9,
+         386.1
+        ],
+        "clip": "spin",
+        "offset": 0.923,
+        "scale": 0.95
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         379.4,
+         369.2
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain2",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.75,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         790.2,
+         222.0
+        ],
+        "clip": "spin",
+        "offset": 0.805,
+        "scale": 1.25
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         880.7,
+         199.5
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain3",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.45,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         455.7,
+         92.0
+        ],
+        "clip": "spin",
+        "offset": 0.39,
+        "scale": 0.95
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         531.1,
+         98.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain4",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         357.9,
+         334.3
+        ],
+        "clip": "spin",
+        "offset": 0.371,
+        "scale": 1.1
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         328.7,
+         334.9
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain5",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.45,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         270.3,
+         408.0
+        ],
+        "clip": "spin",
+        "offset": 0.471,
+        "scale": 0.95
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         331.1,
+         421.7
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain6",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.3,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         874.7,
+         407.7
+        ],
+        "clip": "spin",
+        "offset": 0.956,
+        "scale": 0.8
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         826.0,
+         413.2
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain7",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.3,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         370.3,
+         263.3
+        ],
+        "clip": "spin",
+        "offset": 0.714,
+        "scale": 0.8
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         373.7,
+         296.2
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain8",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.75,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         394.4,
+         260.2
+        ],
+        "clip": "spin",
+        "offset": 0.229,
+        "scale": 1.25
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         316.5,
+         259.5
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain9",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.45,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         136.7,
+         164.2
+        ],
+        "clip": "spin",
+        "offset": 0.568,
+        "scale": 0.95
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         174.7,
+         137.9
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain10",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.3,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         566.2,
+         456.8
+        ],
+        "clip": "spin",
+        "offset": 0.035,
+        "scale": 0.8
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         558.2,
+         479.3
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain11",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.3,
+      "tint": "#a09088",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         883.5,
+         98.5
+        ],
+        "clip": "spin",
+        "offset": 0.675,
+        "scale": 0.8
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         961.4,
+         70.3
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain12",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         81.2,
+         104.0
+        ],
+        "clip": "spin",
+        "offset": 0.783,
+        "scale": 1.1
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         11.4,
+         136.8
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "sprite": "animations/stories/monolithe_poussiere.json",
+      "depth": 0.5,
+      "drift": [
+       14.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         220.0
+        ],
+        "alpha": 0.55,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "caillou_lueur",
+      "glow": "#ffcf9a",
+      "radius": 90.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         510.0,
+         284.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         532.0,
+         276.0
+        ],
+        "alpha": 0.45
+       }
+      ],
+      "pulse": [
+       0.35,
+       2.4
+      ]
+     },
+     {
+      "id": "caillou",
+      "sprite": "animations/stories/monolithe_caillou.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         292.0
+        ],
+        "clip": "spin",
+        "scale": 1.4
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         522.0,
+         284.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_vive",
+      "particles": "dust",
+      "color": "#e8d2a6",
+      "area": [
+       0.0,
+       80.0,
+       960.0,
+       400.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#fff0d8",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       300.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "grain_proche1",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 1.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         140.0
+        ],
+        "clip": "spin",
+        "scale": 2.2,
+        "offset": 0.0
+       },
+       {
+        "t": 0.6,
+        "pos": [
+         -60.0,
+         140.0
+        ]
+       },
+       {
+        "t": 3.8,
+        "pos": [
+         1040.0,
+         100.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain_proche2",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 1.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         290.0
+        ],
+        "clip": "spin",
+        "scale": 2.2,
+        "offset": 0.3
+       },
+       {
+        "t": 2.3,
+        "pos": [
+         -60.0,
+         290.0
+        ]
+       },
+       {
+        "t": 5.5,
+        "pos": [
+         1040.0,
+         250.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     },
+     {
+      "id": "grain_proche3",
+      "sprite": "animations/stories/monolithe_grain.json",
+      "depth": 1.3,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -60.0,
+         440.0
+        ],
+        "clip": "spin",
+        "scale": 2.2,
+        "offset": 0.6
+       },
+       {
+        "t": 4.0,
+        "pos": [
+         -60.0,
+         440.0
+        ]
+       },
+       {
+        "t": 6.825,
+        "pos": [
+         1040.0,
+         400.0
+        ],
+        "ease": "linear"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "rune",
@@ -28,9 +827,537 @@
     0.5,
     0.58
    ],
-   "zoom": 1.1,
-   "particles": "sparks",
-   "glow": "#ffb347"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffb347",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0806",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       420.0,
+       330.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 2.0,
+      "pos": [
+       462.0,
+       348.0
+      ],
+      "zoom": 1.3
+     },
+     {
+      "t": 3.4,
+      "pos": [
+       520.0,
+       384.0
+      ],
+      "zoom": 1.62
+     },
+     {
+      "t": 6.2,
+      "pos": [
+       528.0,
+       384.0
+      ],
+      "zoom": 1.7
+     },
+     {
+      "t": 8.637,
+      "pos": [
+       500.0,
+       372.0
+      ],
+      "zoom": 1.48
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/monolithe_grotte_fond.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "stalactites_loin",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.15,
+      "tint": "#6a6058",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -110.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "piliers",
+      "sprite": "animations/stories/monolithe_piliers.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/monolithe_brume.json",
+      "depth": 0.4,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8b090",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "torche1",
+      "sprite": "animations/stories/monolithe_torche.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         236.0,
+         300.0
+        ],
+        "clip": "idle",
+        "offset": 0.0
+       }
+      ]
+     },
+     {
+      "id": "torche1_lueur",
+      "glow": "#ffa040",
+      "radius": 120.0,
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         236.0,
+         266.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "torche2",
+      "sprite": "animations/stories/monolithe_torche.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         742.0,
+         296.0
+        ],
+        "clip": "idle",
+        "offset": 0.17
+       }
+      ]
+     },
+     {
+      "id": "torche2_lueur",
+      "glow": "#ffa040",
+      "radius": 120.0,
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         742.0,
+         262.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.63,
+       0.3
+      ]
+     },
+     {
+      "id": "stalactites",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         -40.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "rocher",
+      "sprite": "animations/stories/monolithe_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        130.0,
+        20.8
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         566.0,
+         446.0
+        ],
+        "clip": "idle",
+        "scale": 0.6
+       },
+       {
+        "t": 3.0,
+        "clip": "carve"
+       }
+      ]
+     },
+     {
+      "id": "rune_lueur",
+      "glow": "#ffb347",
+      "radius": 44.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.2,
+         406.2
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 3.3,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.1,
+        "alpha": 0.5,
+        "ease": "out"
+       },
+       {
+        "t": 8.637,
+        "alpha": 0.55
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.1
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffc870",
+      "area": [
+       520.24,
+       376.15999999999997,
+       80.0,
+       60.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 3.2,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.0,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.4,
+        "alpha": 0.3
+       }
+      ]
+     },
+     {
+      "id": "enfant2",
+      "sprite": "animations/stories/monolithe_enfant2.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        56.0,
+        9.0
+       ],
+       "light": [
+        742.0,
+        296.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         120.0,
+         452.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 1.0,
+        "pos": [
+         120.0,
+         452.0
+        ]
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         404.0,
+         452.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.41,
+        "clip": "idle",
+        "ease": "step"
+       },
+       {
+        "t": 5.4,
+        "clip": "look_up"
+       },
+       {
+        "t": 6.5,
+        "clip": "cheer"
+       },
+       {
+        "t": 7.6,
+        "clip": "wave"
+       }
+      ]
+     },
+     {
+      "id": "torche_enfant",
+      "glow": "#ffa040",
+      "radius": 110.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         132.0,
+         380.0
+        ],
+        "alpha": 0.6
+       },
+       {
+        "t": 1.0,
+        "pos": [
+         132.0,
+         380.0
+        ]
+       },
+       {
+        "t": 3.4,
+        "pos": [
+         416.0,
+         380.0
+        ],
+        "ease": "linear"
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.45
+      ]
+     },
+     {
+      "id": "enfant1",
+      "sprite": "animations/stories/monolithe_enfant1.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        56.0,
+        9.0
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         200.0,
+         448.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 0.4,
+        "pos": [
+         200.0,
+         448.0
+        ]
+       },
+       {
+        "t": 2.6,
+        "pos": [
+         488.0,
+         448.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 2.61,
+        "clip": "idle",
+        "ease": "step"
+       },
+       {
+        "t": 2.8,
+        "clip": "carve"
+       },
+       {
+        "t": 5.3,
+        "clip": "idle"
+       },
+       {
+        "t": 6.3,
+        "clip": "cheer"
+       },
+       {
+        "t": 7.5,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#e8c890",
+      "area": [
+       120.0,
+       260.0,
+       720.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/monolithe_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "rising",
@@ -40,9 +1367,750 @@
     0.5,
     0.45
    ],
-   "zoom": 1.1,
-   "particles": "dust",
-   "glow": "#ffb347"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffb347",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0806",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       470.0,
+       372.0
+      ],
+      "zoom": 1.42
+     },
+     {
+      "t": 3.9,
+      "pos": [
+       490.0,
+       334.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 4.5,
+      "pos": [
+       500.0,
+       304.0
+      ],
+      "zoom": 1.08
+     },
+     {
+      "t": 6.45,
+      "pos": [
+       500.0,
+       292.0
+      ],
+      "zoom": 1.04
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/monolithe_grotte_fond.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "stalactites_loin",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.15,
+      "tint": "#6a6058",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -110.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "piliers",
+      "sprite": "animations/stories/monolithe_piliers.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/monolithe_brume.json",
+      "depth": 0.4,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8b090",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "torche1",
+      "sprite": "animations/stories/monolithe_torche.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         236.0,
+         300.0
+        ],
+        "clip": "idle",
+        "offset": 0.0
+       }
+      ]
+     },
+     {
+      "id": "torche1_lueur",
+      "glow": "#ffa040",
+      "radius": 120.0,
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         236.0,
+         266.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "torche2",
+      "sprite": "animations/stories/monolithe_torche.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         742.0,
+         296.0
+        ],
+        "clip": "idle",
+        "offset": 0.17
+       }
+      ]
+     },
+     {
+      "id": "torche2_lueur",
+      "glow": "#ffa040",
+      "radius": 120.0,
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         742.0,
+         262.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.63,
+       0.3
+      ]
+     },
+     {
+      "id": "stalactites",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         -40.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "runes_lueur",
+      "glow": "#ffb347",
+      "radius": 90.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         406.0
+        ],
+        "alpha": 0.25
+       },
+       {
+        "t": 3.9,
+        "pos": [
+         500.0,
+         362.0
+        ],
+        "alpha": 0.6,
+        "scale": 2.0
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.9
+       },
+       {
+        "t": 4.8,
+        "alpha": 0.0
+       }
+      ],
+      "pulse": [
+       0.25,
+       0.9
+      ]
+     },
+     {
+      "id": "ancien",
+      "sprite": "animations/stories/monolithe_ancien.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        66.0,
+        10.6
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         436.0,
+         448.0
+        ],
+        "clip": "carve"
+       },
+       {
+        "t": 1.5,
+        "clip": "walk",
+        "flip": true
+       },
+       {
+        "t": 1.6,
+        "pos": [
+         436.0,
+         448.0
+        ]
+       },
+       {
+        "t": 2.9,
+        "pos": [
+         318.0,
+         448.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 2.91,
+        "clip": "idle",
+        "flip": false,
+        "ease": "step"
+       },
+       {
+        "t": 4.6,
+        "clip": "look_up"
+       }
+      ]
+     },
+     {
+      "id": "villageois",
+      "sprite": "animations/stories/monolithe_villageois.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        66.0,
+        10.6
+       ],
+       "light": [
+        742.0,
+        296.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         690.0,
+         446.0
+        ],
+        "clip": "walk",
+        "flip": true
+       },
+       {
+        "t": 0.9,
+        "pos": [
+         586.0,
+         446.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 0.91,
+        "clip": "carve",
+        "ease": "step"
+       },
+       {
+        "t": 2.5,
+        "clip": "walk",
+        "flip": false
+       },
+       {
+        "t": 2.6,
+        "pos": [
+         586.0,
+         446.0
+        ]
+       },
+       {
+        "t": 3.7,
+        "pos": [
+         720.0,
+         446.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.71,
+        "clip": "idle",
+        "flip": true,
+        "ease": "step"
+       },
+       {
+        "t": 4.7,
+        "clip": "look_up"
+       }
+      ]
+     },
+     {
+      "id": "villageoise",
+      "sprite": "animations/stories/monolithe_villageoise.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        66.0,
+        10.6
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         250.0,
+         450.0
+        ],
+        "clip": "kneel"
+       },
+       {
+        "t": 4.5,
+        "clip": "look_up"
+       }
+      ]
+     },
+     {
+      "id": "enfant3",
+      "sprite": "animations/stories/monolithe_enfant3.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        50.0,
+        8.0
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         150.0,
+         454.0
+        ],
+        "clip": "run"
+       },
+       {
+        "t": 0.5,
+        "pos": [
+         150.0,
+         454.0
+        ]
+       },
+       {
+        "t": 2.2,
+        "pos": [
+         360.0,
+         454.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 2.21,
+        "clip": "cheer",
+        "ease": "step"
+       },
+       {
+        "t": 3.4,
+        "clip": "idle"
+       },
+       {
+        "t": 4.65,
+        "clip": "look_up"
+       }
+      ]
+     },
+     {
+      "id": "rocher",
+      "sprite": "animations/stories/monolithe_rocher.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        140.0,
+        22.4
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         446.0
+        ],
+        "clip": "grow",
+        "scale": 0.62
+       },
+       {
+        "t": 0.2,
+        "scale": 0.62
+       },
+       {
+        "t": 3.9,
+        "scale": 1.24,
+        "clip": "wake"
+       },
+       {
+        "t": 4.5,
+        "alpha": 1.0
+       },
+       {
+        "t": 4.52,
+        "alpha": 0.0,
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "golem",
+      "sprite": "animations/monolithe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        220.0,
+        35.2
+       ],
+       "light": [
+        236.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         500.0,
+         446.0
+        ],
+        "alpha": 0.0,
+        "scale": 0.85,
+        "clip": "uncurl"
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.52,
+        "alpha": 1.0,
+        "clip": "uncurl",
+        "ease": "step"
+       },
+       {
+        "t": 4.9,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "oeil",
+      "glow": "#ffd27a",
+      "radius": 28.9,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0,
+        "pos": [
+         574.8,
+         274.3
+        ]
+       },
+       {
+        "t": 4.8,
+        "alpha": 0.0
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.9,
+        "ease": "out"
+       },
+       {
+        "t": 6.45,
+        "alpha": 0.8
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.3
+      ]
+     },
+     {
+      "id": "nuage1",
+      "sprite": "animations/stories/monolithe_nuage.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         430.0,
+         450.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.3
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.52,
+        "alpha": 1.0,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "nuage2",
+      "sprite": "animations/stories/monolithe_nuage.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         570.0,
+         452.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.3,
+        "flip": true
+       },
+       {
+        "t": 4.5,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 4.52,
+        "alpha": 1.0,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "eclats",
+      "particles": "sparks",
+      "color": "#ffc870",
+      "area": [
+       380.0,
+       300.0,
+       240.0,
+       140.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 3.9,
+        "alpha": 1.0
+       },
+       {
+        "t": 5.1,
+        "alpha": 0.2
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#e8c890",
+      "area": [
+       100.0,
+       240.0,
+       760.0,
+       220.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       },
+       {
+        "t": 4.5,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/monolithe_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 3.9,
+      "to": 4.5,
+      "amount": 2.0
+     },
+     {
+      "from": 4.5,
+      "to": 5.2,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 4.5,
+      "in": 0.08,
+      "out": 0.6,
+      "color": "#ffd8a0",
+      "alpha": 0.7
+     }
+    ]
+   }
   },
   {
    "scene": "village",
@@ -52,9 +2120,659 @@
     0.52,
     0.5
    ],
-   "zoom": 1.08,
-   "particles": "sparks",
-   "glow": "#ffd27a"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffd27a",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#0a0806",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       320.0,
+       350.0
+      ],
+      "zoom": 1.28
+     },
+     {
+      "t": 1.8,
+      "pos": [
+       380.0,
+       352.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 6.762,
+      "pos": [
+       600.0,
+       340.0
+      ],
+      "zoom": 1.16
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/monolithe_grotte_fond.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "stalactites_loin",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.15,
+      "tint": "#6a6058",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -110.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "piliers",
+      "sprite": "animations/stories/monolithe_piliers.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/monolithe_brume.json",
+      "depth": 0.4,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.8,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8b090",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "torche1",
+      "sprite": "animations/stories/monolithe_torche.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         120.0,
+         296.0
+        ],
+        "clip": "idle",
+        "offset": 0.0
+       }
+      ]
+     },
+     {
+      "id": "torche1_lueur",
+      "glow": "#ffa040",
+      "radius": 120.0,
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         120.0,
+         262.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.5,
+       0.0
+      ]
+     },
+     {
+      "id": "torche2",
+      "sprite": "animations/stories/monolithe_torche.json",
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         300.0
+        ],
+        "clip": "idle",
+        "offset": 0.17
+       }
+      ]
+     },
+     {
+      "id": "torche2_lueur",
+      "glow": "#ffa040",
+      "radius": 120.0,
+      "depth": 0.45,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         266.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.35,
+       0.63,
+       0.3
+      ]
+     },
+     {
+      "id": "stalactites",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         -40.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "hutte_loin",
+      "sprite": "animations/stories/monolithe_hutte.json",
+      "depth": 0.8,
+      "tint": "#c0a890",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         424.0
+        ],
+        "clip": "idle",
+        "scale": 0.7,
+        "offset": 0.5
+       }
+      ]
+     },
+     {
+      "id": "hutte1",
+      "sprite": "animations/stories/monolithe_hutte.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        150.0,
+        24.0
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         196.0,
+         446.0
+        ],
+        "clip": "idle",
+        "scale": 0.95
+       }
+      ]
+     },
+     {
+      "id": "hutte2",
+      "sprite": "animations/stories/monolithe_hutte.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        150.0,
+        24.0
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -40.0,
+         452.0
+        ],
+        "clip": "idle",
+        "scale": 1.0,
+        "offset": 0.3,
+        "flip": true
+       }
+      ]
+     },
+     {
+      "id": "feu_lueur",
+      "glow": "#ff9a3a",
+      "radius": 230.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         380.0,
+         428.0
+        ],
+        "alpha": 0.6
+       }
+      ],
+      "pulse": [
+       0.3,
+       0.6
+      ]
+     },
+     {
+      "id": "feu",
+      "sprite": "animations/stories/monolithe_feu.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         380.0,
+         458.0
+        ],
+        "clip": "idle",
+        "scale": 1.1
+       }
+      ]
+     },
+     {
+      "id": "villageoise",
+      "sprite": "animations/stories/monolithe_villageoise.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         320.0,
+         454.0
+        ],
+        "clip": "kneel"
+       }
+      ]
+     },
+     {
+      "id": "villageois",
+      "sprite": "animations/stories/monolithe_villageois.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        62.0,
+        9.9
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         40.0,
+         452.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 3.6,
+        "pos": [
+         270.0,
+         452.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.61,
+        "clip": "idle",
+        "ease": "step"
+       },
+       {
+        "t": 4.8,
+        "clip": "point"
+       }
+      ]
+     },
+     {
+      "id": "golem",
+      "sprite": "animations/monolithe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        210.0,
+        33.6
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         790.0,
+         446.0
+        ],
+        "clip": "idle",
+        "flip": true,
+        "scale": 0.8
+       },
+       {
+        "t": 3.4,
+        "clip": "crouch"
+       },
+       {
+        "t": 5.6,
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "oeil",
+      "glow": "#ffd27a",
+      "radius": 27.200000000000003,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7,
+        "pos": [
+         719.6,
+         284.4
+        ]
+       },
+       {
+        "t": 3.4,
+        "alpha": 0.7
+       },
+       {
+        "t": 3.9,
+        "alpha": 1.0
+       },
+       {
+        "t": 6.762,
+        "alpha": 0.9
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.3
+      ]
+     },
+     {
+      "id": "rune_golem",
+      "glow": "#ffb347",
+      "radius": 40.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         776.0,
+         326.0
+        ],
+        "alpha": 0.3
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.6
+      ]
+     },
+     {
+      "id": "enfant3",
+      "sprite": "animations/stories/monolithe_enfant3.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        50.0,
+        8.0
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         230.0,
+         460.0
+        ],
+        "clip": "run"
+       },
+       {
+        "t": 0.4,
+        "pos": [
+         230.0,
+         460.0
+        ]
+       },
+       {
+        "t": 3.0,
+        "pos": [
+         640.0,
+         458.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.01,
+        "clip": "cheer",
+        "ease": "step"
+       },
+       {
+        "t": 4.3,
+        "clip": "wave"
+       }
+      ]
+     },
+     {
+      "id": "enfant1",
+      "sprite": "animations/stories/monolithe_enfant1.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        50.0,
+        8.0
+       ],
+       "light": [
+        380.0,
+        458.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         110.0,
+         462.0
+        ],
+        "clip": "walk"
+       },
+       {
+        "t": 1.0,
+        "pos": [
+         110.0,
+         462.0
+        ]
+       },
+       {
+        "t": 1.01,
+        "clip": "cheer",
+        "ease": "step"
+       },
+       {
+        "t": 1.9,
+        "clip": "walk"
+       },
+       {
+        "t": 4.6,
+        "pos": [
+         560.0,
+         460.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 4.61,
+        "clip": "cheer",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "braises",
+      "particles": "embers",
+      "color": "#ffb066",
+      "area": [
+       320.0,
+       300.0,
+       120.0,
+       150.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.9
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#e8c890",
+      "area": [
+       60.0,
+       260.0,
+       840.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.5
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/monolithe_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "ships",
@@ -64,9 +2782,702 @@
     0.5,
     0.35
    ],
-   "zoom": 1.1,
-   "particles": "stars",
-   "glow": "#cfe6ff"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#cfe6ff",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060812",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       380.0,
+       360.0
+      ],
+      "zoom": 1.24
+     },
+     {
+      "t": 1.4,
+      "pos": [
+       430.0,
+       322.0
+      ],
+      "zoom": 1.16
+     },
+     {
+      "t": 6.075,
+      "pos": [
+       560.0,
+       230.0
+      ],
+      "zoom": 1.12
+     }
+    ],
+    "elements": [
+     {
+      "id": "ciel",
+      "sprite": "animations/stories/monolithe_ciel.json",
+      "depth": 0.03,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "etoiles",
+      "sprite": "animations/stories/monolithe_etoiles.json",
+      "depth": 0.08,
+      "drift": [
+       5.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -20.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "astre1",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         916.9,
+         163.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.503,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre2",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         798.0,
+         248.4
+        ],
+        "clip": "twinkle",
+        "offset": 0.088,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre3",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         769.4,
+         46.5
+        ],
+        "clip": "twinkle",
+        "offset": 0.871,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre4",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         787.6,
+         85.2
+        ],
+        "clip": "twinkle",
+        "offset": 0.466,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre5",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         218.9,
+         146.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.937,
+        "scale": 1.0
+       }
+      ]
+     },
+     {
+      "id": "astre6",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         669.1,
+         45.6
+        ],
+        "clip": "twinkle",
+        "offset": 0.969,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre7",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         417.6,
+         177.7
+        ],
+        "clip": "twinkle",
+        "offset": 1.075,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "astre8",
+      "sprite": "animations/stories/monolithe_astre.json",
+      "depth": 0.08,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         368.9,
+         58.8
+        ],
+        "clip": "twinkle",
+        "offset": 0.495,
+        "scale": 1.5
+       }
+      ]
+     },
+     {
+      "id": "nuages_loin",
+      "sprite": "animations/stories/monolithe_nuages.json",
+      "depth": 0.12,
+      "drift": [
+       -8.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         120.0
+        ],
+        "alpha": 0.75,
+        "clip": "idle",
+        "offset": 0.3
+       }
+      ]
+     },
+     {
+      "id": "montagnes",
+      "sprite": "animations/stories/monolithe_montagnes.json",
+      "depth": 0.25,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -240.0,
+         170.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/monolithe_brume.json",
+      "depth": 0.4,
+      "drift": [
+       12.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.7,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "nuage_depart1",
+      "sprite": "animations/stories/monolithe_nuage.json",
+      "depth": 0.55,
+      "tint": "#a0a8c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         434.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.2
+       },
+       {
+        "t": 0.3,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 0.32,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "trainee1",
+      "glow": "#8ad0ff",
+      "radius": 46.0,
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         450.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 0.3,
+        "alpha": 0.0
+       },
+       {
+        "t": 0.5,
+        "alpha": 0.45
+       },
+       {
+        "t": 3.5,
+        "pos": [
+         780.0,
+         -70.0
+        ],
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "vaisseau1",
+      "sprite": "animations/stories/monolithe_vaisseau.json",
+      "depth": 0.55,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         560.0,
+         420.0
+        ],
+        "clip": "idle",
+        "scale": 0.9
+       },
+       {
+        "t": 0.3,
+        "clip": "launch",
+        "rot": 0.0
+       },
+       {
+        "t": 3.5,
+        "pos": [
+         820.0,
+         -160.0
+        ],
+        "rot": 22.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "nuage_depart2",
+      "sprite": "animations/stories/monolithe_nuage.json",
+      "depth": 0.62,
+      "tint": "#a0a8c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         434.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.2
+       },
+       {
+        "t": 1.3,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 1.32,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "trainee2",
+      "glow": "#8ad0ff",
+      "radius": 46.0,
+      "depth": 0.62,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         450.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 1.3,
+        "alpha": 0.0
+       },
+       {
+        "t": 1.5,
+        "alpha": 0.45
+       },
+       {
+        "t": 4.5,
+        "pos": [
+         920.0,
+         -70.0
+        ],
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "vaisseau2",
+      "sprite": "animations/stories/monolithe_vaisseau.json",
+      "depth": 0.62,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         700.0,
+         420.0
+        ],
+        "clip": "idle",
+        "scale": 0.9
+       },
+       {
+        "t": 1.3,
+        "clip": "launch",
+        "rot": 0.0
+       },
+       {
+        "t": 4.5,
+        "pos": [
+         960.0,
+         -160.0
+        ],
+        "rot": 22.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "nuage_depart3",
+      "sprite": "animations/stories/monolithe_nuage.json",
+      "depth": 0.7,
+      "tint": "#a0a8c0",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         434.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.2
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 2.42,
+        "alpha": 0.9,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "trainee3",
+      "glow": "#8ad0ff",
+      "radius": 46.0,
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         450.0
+        ],
+        "alpha": 0.0
+       },
+       {
+        "t": 2.4,
+        "alpha": 0.0
+       },
+       {
+        "t": 2.6,
+        "alpha": 0.45
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         690.0,
+         -70.0
+        ],
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "vaisseau3",
+      "sprite": "animations/stories/monolithe_vaisseau.json",
+      "depth": 0.7,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         470.0,
+         420.0
+        ],
+        "clip": "idle",
+        "scale": 0.9
+       },
+       {
+        "t": 2.4,
+        "clip": "launch",
+        "rot": 0.0
+       },
+       {
+        "t": 5.6,
+        "pos": [
+         730.0,
+         -160.0
+        ],
+        "rot": 22.0,
+        "ease": "in"
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "golem",
+      "sprite": "animations/monolithe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.4,
+       "size": [
+        210.0,
+        33.6
+       ],
+       "light": [
+        600.0,
+        200.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         250.0,
+         448.0
+        ],
+        "clip": "idle",
+        "scale": 0.82
+       }
+      ]
+     },
+     {
+      "id": "oeil",
+      "glow": "#ffd27a",
+      "radius": 27.88,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.8,
+        "pos": [
+         322.2,
+         282.4
+        ]
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.3
+      ]
+     },
+     {
+      "id": "rune_golem",
+      "glow": "#ffb347",
+      "radius": 40.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         262.0,
+         330.0
+        ],
+        "alpha": 0.3
+       }
+      ],
+      "pulse": [
+       0.4,
+       1.5
+      ]
+     },
+     {
+      "id": "etincelles",
+      "particles": "embers",
+      "color": "#8ad0ff",
+      "area": [
+       420.0,
+       300.0,
+       380.0,
+       140.0
+      ],
+      "depth": 0.6,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.0
+       },
+       {
+        "t": 0.3,
+        "alpha": 0.8
+       },
+       {
+        "t": 6.075,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "etoiles_vives",
+      "particles": "stars",
+      "color": "#d8e8ff",
+      "area": [
+       0.0,
+       0.0,
+       960.0,
+       260.0
+      ],
+      "depth": 0.1,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#c8d0e0",
+      "area": [
+       60.0,
+       320.0,
+       840.0,
+       140.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/monolithe_avant.json",
+      "depth": 1.35,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ]
+   }
   },
   {
    "scene": "alone",
@@ -76,9 +3487,486 @@
     0.5,
     0.5
    ],
-   "zoom": 1.14,
-   "particles": "dust",
-   "glow": "#ffb347"
+   "zoom": 1.04,
+   "particles": "none",
+   "glow": "#ffb347",
+   "stage": {
+    "size": [
+     960,
+     540
+    ],
+    "backdrop": "#060508",
+    "camera": [
+     {
+      "t": 0.0,
+      "pos": [
+       610.0,
+       318.0
+      ],
+      "zoom": 1.36
+     },
+     {
+      "t": 2.6,
+      "pos": [
+       520.0,
+       330.0
+      ],
+      "zoom": 1.16
+     },
+     {
+      "t": 3.9,
+      "pos": [
+       450.0,
+       340.0
+      ],
+      "zoom": 1.08
+     },
+     {
+      "t": 5.2,
+      "pos": [
+       480.0,
+       330.0
+      ],
+      "zoom": 1.2
+     },
+     {
+      "t": 8.137,
+      "pos": [
+       490.0,
+       326.0
+      ],
+      "zoom": 1.26
+     }
+    ],
+    "elements": [
+     {
+      "id": "fond",
+      "sprite": "animations/stories/monolithe_grotte_fond.json",
+      "depth": 0.03,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -80.0,
+         -30.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "stalactites_loin",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.15,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -200.0,
+         -110.0
+        ],
+        "clip": "idle",
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "piliers",
+      "sprite": "animations/stories/monolithe_piliers.json",
+      "depth": 0.45,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -320.0,
+         150.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "brume",
+      "sprite": "animations/stories/monolithe_brume.json",
+      "depth": 0.4,
+      "drift": [
+       10.0,
+       0.0
+      ],
+      "repeat": true,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -160.0,
+         330.0
+        ],
+        "alpha": 0.9,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "poussiere_voute",
+      "particles": "dustfall",
+      "color": "#c8b090",
+      "area": [
+       0.0,
+       40.0,
+       960.0,
+       380.0
+      ],
+      "depth": 0.5,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.7
+       }
+      ]
+     },
+     {
+      "id": "stalactites",
+      "sprite": "animations/stories/monolithe_stalactites.json",
+      "depth": 0.6,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -300.0,
+         -40.0
+        ],
+        "clip": "idle",
+        "offset": 0.2
+       }
+      ]
+     },
+     {
+      "id": "sol",
+      "sprite": "animations/stories/monolithe_sol.json",
+      "depth": 1.0,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -280.0,
+         400.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "ruine1",
+      "sprite": "animations/stories/monolithe_hutte.json",
+      "depth": 0.85,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         330.0,
+         440.0
+        ],
+        "clip": "ruin",
+        "scale": 0.85
+       }
+      ]
+     },
+     {
+      "id": "ruine2",
+      "sprite": "animations/stories/monolithe_hutte.json",
+      "depth": 1.0,
+      "tint": "#8a8aa8",
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        150.0,
+        24.0
+       ],
+       "light": [
+        600.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         850.0,
+         452.0
+        ],
+        "clip": "ruin",
+        "scale": 1.0,
+        "flip": true,
+        "offset": 0.4
+       }
+      ]
+     },
+     {
+      "id": "rune_golem",
+      "glow": "#ffb347",
+      "radius": 50.0,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         584.0,
+         316.0
+        ],
+        "alpha": 0.3
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.3
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.7
+       },
+       {
+        "t": 8.137,
+        "alpha": 0.5
+       }
+      ],
+      "pulse": [
+       0.35,
+       1.8
+      ]
+     },
+     {
+      "id": "golem",
+      "sprite": "animations/monolithe.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.5,
+       "size": [
+        220.0,
+        35.2
+       ],
+       "light": [
+        600.0,
+        200.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         600.0,
+         446.0
+        ],
+        "clip": "idle",
+        "flip": true,
+        "scale": 0.9
+       },
+       {
+        "t": 5.0,
+        "clip": "roar"
+       }
+      ]
+     },
+     {
+      "id": "oeil",
+      "glow": "#ffd27a",
+      "radius": 30.6,
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6,
+        "pos": [
+         520.8,
+         264.2
+        ]
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.6
+       },
+       {
+        "t": 5.2,
+        "alpha": 1.0,
+        "scale": 1.8,
+        "ease": "out"
+       },
+       {
+        "t": 8.137,
+        "alpha": 0.9,
+        "scale": 1.3
+       }
+      ],
+      "pulse": [
+       0.3,
+       1.3
+      ]
+     },
+     {
+      "id": "nova",
+      "sprite": "animations/nova.json",
+      "depth": 1.0,
+      "shadow": {
+       "alpha": 0.45,
+       "size": [
+        40.0,
+        6.4
+       ],
+       "light": [
+        600.0,
+        300.0
+       ]
+      },
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -40.0,
+         446.0
+        ],
+        "clip": "walk",
+        "scale": 1.1
+       },
+       {
+        "t": 1.4,
+        "pos": [
+         -40.0,
+         446.0
+        ]
+       },
+       {
+        "t": 3.9,
+        "pos": [
+         286.0,
+         446.0
+        ],
+        "ease": "linear"
+       },
+       {
+        "t": 3.91,
+        "clip": "idle",
+        "ease": "step"
+       },
+       {
+        "t": 5.2,
+        "clip": "hurt"
+       },
+       {
+        "t": 5.6,
+        "clip": "idle"
+       }
+      ]
+     },
+     {
+      "id": "nuage",
+      "sprite": "animations/stories/monolithe_nuage.json",
+      "depth": 1.0,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         600.0,
+         452.0
+        ],
+        "alpha": 0.0,
+        "scale": 1.6
+       },
+       {
+        "t": 5.3,
+        "alpha": 0.0,
+        "ease": "step"
+       },
+       {
+        "t": 5.32,
+        "alpha": 0.8,
+        "clip": "puff",
+        "ease": "step"
+       }
+      ]
+     },
+     {
+      "id": "chute",
+      "particles": "dustfall",
+      "color": "#c8b090",
+      "area": [
+       100.0,
+       60.0,
+       760.0,
+       360.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 5.0,
+        "alpha": 0.4
+       },
+       {
+        "t": 5.4,
+        "alpha": 1.0
+       }
+      ]
+     },
+     {
+      "id": "poussiere",
+      "particles": "dust",
+      "color": "#b8b0c8",
+      "area": [
+       60.0,
+       260.0,
+       840.0,
+       200.0
+      ],
+      "depth": 1.0,
+      "keys": [
+       {
+        "t": 0.0,
+        "alpha": 0.6
+       }
+      ]
+     },
+     {
+      "id": "avant",
+      "sprite": "animations/stories/monolithe_avant.json",
+      "depth": 1.35,
+      "tint": "#8a8aa8",
+      "keys": [
+       {
+        "t": 0.0,
+        "pos": [
+         -420.0,
+         316.0
+        ],
+        "clip": "idle"
+       }
+      ]
+     }
+    ],
+    "shake": [
+     {
+      "from": 5.1,
+      "to": 6.2,
+      "amount": 6.0
+     }
+    ],
+    "flash": [
+     {
+      "t": 5.2,
+      "in": 0.08,
+      "out": 0.6,
+      "color": "#ffc070",
+      "alpha": 0.35
+     }
+    ]
+   }
   }
  ]
 }

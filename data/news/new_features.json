@@ -2259,6 +2259,20 @@
    "parents": [
     "settings.hud_editor"
    ]
+  },
+  {
+   "id": "gallery.story.monolithe",
+   "version": "2.62.4",
+   "parents": [
+    "gallery.boss.monolithe"
+   ]
+  },
+  {
+   "id": "stats.story.monolithe",
+   "version": "2.62.4",
+   "parents": [
+    "stats.bosses"
+   ]
   }
  ]
 }

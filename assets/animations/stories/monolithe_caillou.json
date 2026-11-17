@@ -1,0 +1,9 @@
+{
+  "texture": "stories/monolithe/caillou.png",
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "pivot": [24, 24],
+  "clips": {
+    "spin": {"row": 0, "count": 12, "fps": 5, "loop": true}
+  }
+}

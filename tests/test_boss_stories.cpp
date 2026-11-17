@@ -9,6 +9,7 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <initializer_list>
 #include <memory>
 #include <set>
 
@@ -120,32 +121,20 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
 }
 
 // 2.60: version 2 of the stories. Pyrrhax's story is told in six animated scenes: its sprites
-// (sheets in the game's animation format), its layers of scenery, its keys within each shot;
-// the six other stories are still read as version 1 (their paintings).
-TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip there, keys within their shots") {
-    BossStories stories;
-    std::string err;
-    CHECK(stories.loadDefault(&err));
-    CHECK(err.empty());
-    const BossStory* p = stories.find("pyrrhax");
-    CHECK(p != nullptr);
-    if (!p) return;
-    CHECK(p->version == 2);
-    CHECK(p->shots.size() == 6);
-    // The other stories: version 1, their paintings, no scene.
-    int others = 0;
-    for (const auto& [id, s] : stories.all()) {
-        if (id == "pyrrhax") continue;
-        ++others;
-        CHECK(s.version == 1);
-        for (const StoryShot& shot : s.shots) {
-            CHECK(!shot.stage.has_value());
-            CHECK(!shot.image.empty());
-        }
-    }
-    CHECK(others == 6);
-    std::set<std::string> sheets;
-    for (const StoryShot& shot : p->shots) {
+// (sheets in the game's animation format), its layers of scenery, its keys within each shot.
+// 2.63: the other giga bosses' stories follow, one by one (kAnimated); the remaining ones are still
+// read as version 1 (their paintings).
+namespace {
+
+const std::set<std::string> kAnimated = {"pyrrhax", "monolithe"};
+
+// The checks every story told in animated scenes passes; the sheets its scenes use go in `sheets`.
+// `shadowShots`: the shots where a character casts its shadow on the ground (not in deep space).
+void checkAnimatedStory(const BossStory& p, std::set<std::string>& sheets, int shadowShots) {
+    CHECK(p.version == 2);
+    CHECK(p.shots.size() == 6);
+    int shadowed = 0;
+    for (const StoryShot& shot : p.shots) {
         CHECK(shot.stage.has_value());
         if (!shot.stage) continue;
         const StoryStage& st = *shot.stage;
@@ -212,22 +201,84 @@ TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip ther
         CHECK(depths.size() >= 4);  // …at depths of their own (a real parallax)
         CHECK(sprites >= 12);
         CHECK(pulses >= 2);         // lights that breathe
-        CHECK(shadows >= 1);        // characters casting their shadow
         CHECK(kinds >= 2);          // embers, dust, ash, sparks…
+        shadowed += shadows >= 1 ? 1 : 0;  // characters casting their shadow
     }
-    // The hatchlings, the egg, the nest, fire, smoke, embers, the sky, the frontier, and the boss's
-    // own sheet when it has grown.
-    for (const char* s : {"fumerolle", "frere", "soeur", "jeune", "oeuf", "coquille", "nid", "flamme", "fumee", "volute", "braise",
-                          "etoile", "astre", "lune", "porte", "rocher"})
-        CHECK(sheets.count(std::string("animations/stories/pyrrhax_") + s + ".json") == 1);
-    CHECK(sheets.count("animations/pyrrhax.json") == 1);
-    const story::StageAssets assets = story::stageAssets(*p);
+    CHECK(shadowed >= shadowShots);
+    const story::StageAssets assets = story::stageAssets(p);
     CHECK(assets.animations.size() == sheets.size());
     CHECK(assets.textures.empty());  // no fixed layer: every layer of scenery is an animated sheet
-    for (const char* s : {"ciel_nuit", "ciel_rouge", "etoiles", "nuages", "brume", "pics_loin", "pics", "sol", "avant", "flammeches", "lave"})
-        CHECK(sheets.count(std::string("animations/stories/pyrrhax_") + s + ".json") == 1);
     // Its duration and its title card do not change.
-    CHECK(story::duration(*p) >= 35.0f && story::duration(*p) <= 50.0f);
+    CHECK(story::duration(p) >= 35.0f && story::duration(p) <= 50.0f);
+}
+
+bool hasSheets(const std::set<std::string>& sheets, const char* boss, std::initializer_list<const char*> names) {
+    bool all = true;
+    for (const char* s : names) {
+        const bool there = sheets.count(std::string("animations/stories/") + boss + "_" + s + ".json") == 1;
+        if (!there) std::printf("  %s: no sheet %s in its scenes\n", boss, s);
+        all = all && there;
+    }
+    return all;
+}
+
+}  // namespace
+
+TEST_CASE("boss stories v2: the stories in animated scenes and the ones still painted") {
+    BossStories stories;
+    std::string err;
+    CHECK(stories.loadDefault(&err));
+    CHECK(err.empty());
+    int others = 0;
+    for (const auto& [id, s] : stories.all()) {
+        if (kAnimated.count(id)) {
+            CHECK(s.version == 2);
+            continue;
+        }
+        // The other stories: version 1, their paintings, no scene.
+        ++others;
+        CHECK(s.version == 1);
+        for (const StoryShot& shot : s.shots) {
+            CHECK(!shot.stage.has_value());
+            CHECK(!shot.image.empty());
+        }
+    }
+    CHECK(others == 7 - static_cast<int>(kAnimated.size()));
+}
+
+TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip there, keys within their shots") {
+    BossStories stories;
+    CHECK(stories.loadDefault());
+    const BossStory* p = stories.find("pyrrhax");
+    CHECK(p != nullptr);
+    if (!p) return;
+    std::set<std::string> sheets;
+    checkAnimatedStory(*p, sheets, 6);
+    // The hatchlings, the egg, the nest, fire, smoke, embers, the sky, the frontier, and the boss's
+    // own sheet when it has grown.
+    CHECK(hasSheets(sheets, "pyrrhax", {"fumerolle", "frere", "soeur", "jeune", "oeuf", "coquille", "nid", "flamme", "fumee", "volute",
+                                        "braise", "etoile", "astre", "lune", "porte", "rocher"}));
+    CHECK(sheets.count("animations/pyrrhax.json") == 1);
+    CHECK(hasSheets(sheets, "pyrrhax", {"ciel_nuit", "ciel_rouge", "etoiles", "nuages", "brume", "pics_loin", "pics", "sol", "avant",
+                                        "flammeches", "lave"}));
+}
+
+// 2.63: the Monolithe's story (« Le Golem Primordial »): the pebble in the dust, the children of the
+// cave and their rune, the stone growing and standing up, the village, the ships, the ruins.
+TEST_CASE("boss stories v2: the Monolithe in animated scenes") {
+    BossStories stories;
+    CHECK(stories.loadDefault());
+    const BossStory* p = stories.find("monolithe");
+    CHECK(p != nullptr);
+    if (!p) return;
+    std::set<std::string> sheets;
+    checkAnimatedStory(*p, sheets, 5);  // the first shot is in the dust of space
+    CHECK(hasSheets(sheets, "monolithe", {"caillou", "grain", "rocher", "enfant1", "enfant2", "enfant3", "ancien", "villageois",
+                                          "villageoise", "hutte", "feu", "torche", "vaisseau", "nuage", "astre"}));
+    CHECK(hasSheets(sheets, "monolithe", {"cosmos", "etoiles", "poussiere", "grotte_fond", "stalactites", "piliers", "brume", "sol",
+                                          "avant", "ciel", "montagnes", "nuages"}));
+    CHECK(sheets.count("animations/monolithe.json") == 1);  // the golem, once it stands up
+    CHECK(sheets.count("animations/nova.json") == 1);       // the visitor it does not know
 }
 
 TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; version 1 unchanged)") {

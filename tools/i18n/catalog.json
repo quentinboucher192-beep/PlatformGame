@@ -22930,6 +22930,12 @@
    ]
   },
   {
+   "fr": "L'histoire du Monolithe, « Le Golem Primordial », devient à son tour un petit dessin animé : le caillou qui tourne dans la poussière des origines, les enfants de la caverne qui y gravent leur rune, la pierre qui grandit de génération en génération avant de se lever, le village et son feu, les vaisseaux qui partent vers les étoiles, puis le golem seul dans les ruines face à une visiteuse qu'il ne reconnaît pas. Décors vivants (cristaux qui respirent, torches, brume, poussière), personnages animés image par image, caméra qui suit l'action ; une pastille NOUVEAU mène à « Revoir l'histoire ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "L'Horizon des événements",
    "where": [
     "data/levels/aethra_04.json"
