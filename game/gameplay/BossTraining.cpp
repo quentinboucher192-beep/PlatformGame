@@ -188,7 +188,10 @@ bool applyBossTraining(GameWorld& w, const BossTrainingSetup& s) {
 void jumpBossToPhase(GameWorld& w, Enemy& boss, int phase) {
     const auto& phases = boss.def().phases;
     if (phase <= 0 || phase >= static_cast<int>(phases.size())) return;
-    boss.setWounds(boss.maxHp() * phases[static_cast<size_t>(phase)].hpThreshold, phase);
+    // 2.55: a phase that follows a rebirth (the Phénix's « Cendres ») starts with the health the
+    // boss is reborn with, as in the whole fight.
+    const float rebirth = phases[static_cast<size_t>(phase - 1)].rebirth;
+    boss.setWounds(boss.maxHp() * (rebirth > 0.0f ? rebirth : phases[static_cast<size_t>(phase)].hpThreshold), phase);
     // The arena as the phases before left it (2.33: Singularis's floor collapsed, its plasma,
     // its platforms in orbit): the level's answers to those phases, at once.
     if (!boss.objectId().empty())

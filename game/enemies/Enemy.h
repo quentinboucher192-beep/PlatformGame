@@ -105,6 +105,18 @@ public:
     Vec2 shadow() const { return shadow_; }
     float floorLeft() const { return floorL_; }
     float floorRight() const { return floorR_; }
+    /// The phoenix (2.55, the Phénix): burnt to ashes on the floor of its arena between two
+    /// phases (it cannot be hurt), then reborn (BossPhase::rebirth); the lane of its blade of
+    /// feathers (low: jump over it; high: stay down) and the columns of its sun (attackPath).
+    bool inAshes() const { return ashes_ != AshStage::None; }
+    bool ashesBurning() const { return ashes_ == AshStage::Burn; }
+    bool ashesLying() const { return ashes_ == AshStage::Ash; }
+    bool rising() const { return ashes_ == AshStage::Rise; }
+    Vec2 ashSpot() const { return ashSpot_; }
+    bool laneLow() const { return laneLow_; }
+    Rect lane() const { return lane_; }
+    /// Ash veils the arena (display): in a phase with ashes, or while it lies in its ashes.
+    bool ashVeil() const;
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -349,6 +361,37 @@ private:
     int ringsLeft_ = 0;           // shockwaves still to send after a titanic landing
     Vec2 shadow_;                 // where it will fall (titanic leap)
     bool shadowLocked_ = false;
+
+    // The phoenix (2.55, the Phénix): its new attack types, its glide and its rebirth, in
+    // PhoenixAttacks.cpp.
+    enum class AshStage : uint8_t { None, Burn, Ash, Rise };
+    void phoenixBegin(GameWorld& w);   // wind-up: the columns' marks, the blade's lane
+    void phoenixStart(GameWorld& w);
+    void phoenixActive(GameWorld& w, float dt);
+    void phoenixEnd(GameWorld& w, bool cut = true);
+    void renderPhoenix(RenderContext& ctx, float prog) const;
+    void renderAshes(RenderContext& ctx) const;
+    float phoenixFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
+    /// Its glide between two attacks (« vol plané »): wide swoops from one side of the target
+    /// to the other, above her, never into a wall, a corner or the roof.
+    void phoenixGlide(GameWorld& w, float dt, float pace);
+    void planColumns(GameWorld& w);
+    void planLane(GameWorld& w, bool low);
+    void throwBlade(GameWorld& w);
+    void beginAshes(GameWorld& w, int next);
+    void stepAshes(GameWorld& w, float dt);
+    void enterPhase(GameWorld& w, int next);  // the roar of a new phase (checkPhase, a rebirth)
+    bool hasPhoenix_ = false;
+    AshStage ashes_ = AshStage::None;
+    float ashTimer_ = 0.0f;
+    int ashNext_ = 0;          // the phase it is reborn into
+    Vec2 ashSpot_;             // where its ashes lie (on the floor)
+    float emberTimer_ = 0.0f;  // embers thrown out of its ashes
+    bool laneLow_ = true;      // the blade's lane: low (jump over it) or high (stay down)
+    Rect lane_;
+    float laneFloor_ = 0.0f;
+    int bladesLeft_ = 0;
+    float glideClock_ = 0.0f;
 };
 
 }  // namespace cosmic

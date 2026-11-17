@@ -159,8 +159,10 @@ void CrumblePlatformEntity::init(GameWorld& w) {
     collider_ = w.physics().add(box, ColliderKind::Solid, ColliderTag::Crumble, this);
     // Planet look: ruins (Sylvanox), basalt (Pyralis) or ice (Glacior).
     std::string style = obj_.propStr("style", "ruins");
-    tex_ = w.resources().texture(style == "ruins" ? std::string("sprites/objects/crumble_platform.png")
-                                                  : "sprites/objects/crumble_platform_" + style + ".png");
+    ember_ = style == "ember";  // 2.55: drawn by the game (the basalt sheet only in the editor)
+    tex_ = ember_ ? w.resources().texture("sprites/objects/crumble_platform_basalt.png")
+                  : w.resources().texture(style == "ruins" ? std::string("sprites/objects/crumble_platform.png")
+                                                           : "sprites/objects/crumble_platform_" + style + ".png");
     if (!tex_) tex_ = w.resources().texture("sprites/objects/crumble_platform.png");
 }
 
@@ -168,7 +170,7 @@ void CrumblePlatformEntity::giveWay(GameWorld& w) {
     phase_ = Phase::Fallen;
     timer_ = obj_.prop<float>("respawn", 3.0f);
     w.physics().setEnabled(collider_, false);
-    w.particles().emit("crumble_debris", box.center(), std::max(1.0f, box.w / 48.0f));
+    w.particles().emit(ember_ ? "ash_cloud" : "crumble_debris", box.center(), std::max(1.0f, box.w / 48.0f));
     w.playSound("sounds/crumble.wav", box.center(), 0.9f);
 }
 
@@ -195,7 +197,9 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
                 phase_ = Phase::Fallen;
                 timer_ = obj_.prop<float>("respawn", 3.0f);
                 w.physics().setEnabled(collider_, false);
-                w.particles().emit("crumble_debris", box.center(), std::max(1.0f, box.w / 48.0f));
+                // 2.55: a perch of embers burns to ash (display only).
+                w.particles().emit(ember_ ? "ash_cloud" : "crumble_debris", box.center(), std::max(1.0f, box.w / 48.0f));
+                if (ember_) w.particles().emit("fire_burst", box.center(), 1.2f);
                 w.playSound("sounds/crumble.wav", box.center(), 0.9f);
             }
             break;
@@ -209,6 +213,7 @@ void CrumblePlatformEntity::fixedUpdate(GameWorld& w, float dt) {
                         phase_ = Phase::Solid;
                         w.physics().setEnabled(collider_, true);
                         w.particles().emit("reform", box.center(), 1.0f);
+                        if (ember_) w.particles().emit("embers_rising", box.center(), 1.2f);  // 2.55: reborn from its ash
                     }
                 }
             }
@@ -223,6 +228,10 @@ void CrumblePlatformEntity::onPlayerRespawn(GameWorld& w) {
 }
 
 void CrumblePlatformEntity::render(RenderContext& ctx) {
+    if (ember_ && !ctx.editor) {
+        renderEmber(ctx);
+        return;
+    }
     if (!tex_ || phase_ == Phase::Fallen) {
         if (ctx.editor && tex_) drawThreeSlice(ctx, *tex_, 0, box);
         return;
@@ -235,6 +244,52 @@ void CrumblePlatformEntity::render(RenderContext& ctx) {
         r.x += dmath::sin(ctx.time * 70.0f) * 1.0f;
     }
     drawThreeSlice(ctx, *tex_, row, r);
+}
+
+void CrumblePlatformEntity::renderEmber(RenderContext& ctx) const {
+    // A perch of embers (2.55, the Phénix's nest): charcoal veined with fire. Under Nova it
+    // catches fire (flames rising, it trembles), burns to ash; while it is gone a glowing outline
+    // of ash gathers where it was, brighter as it is about to be reborn. Display only.
+    const float t = ctx.time;
+    const float respawn = obj_.prop<float>("respawn", 3.0f);
+    if (phase_ == Phase::Fallen) {
+        if (respawn <= 0.0f) return;
+        const float k = 1.0f - std::clamp(timer_ / std::max(0.05f, respawn), 0.0f, 1.0f);
+        const float pulse = 0.5f + 0.5f * dmath::sin(t * (4.0f + 10.0f * k));
+        const Color ash{255, 140, 70, static_cast<uint8_t>((30.0f + 150.0f * k) * (0.6f + 0.4f * pulse))};
+        ctx.r.drawWorldRect(box, ash, 1.0f + 1.5f * k);
+        for (float x = box.x + 6.0f; x < box.right() - 2.0f; x += 12.0f)
+            ctx.r.fillWorldRect({x, box.y + box.h * 0.5f - 1.0f, 4.0f, 2.0f}, ash, BlendMode::Additive);
+        if (k > 0.6f) ctx.lights.add(box.center(), 50.0f * k, Color{255, 150, 80, 255});
+        return;
+    }
+    Rect r = box;
+    float burn = 0.0f;
+    if (phase_ == Phase::Shaking) {
+        burn = 1.0f - timer_ / std::max(0.05f, obj_.prop<float>("delay", 0.45f));
+        r.x += dmath::sin(t * 70.0f) * 1.0f;
+    }
+    // Charcoal, a lighter top edge, fiery seams pulsing slowly.
+    ctx.r.fillWorldRect(r, Color{40, 30, 30, 255});
+    ctx.r.fillWorldRect({r.x, r.y, r.w, 3.0f}, Color{92, 70, 62, 255});
+    ctx.r.fillWorldRect({r.x, r.bottom() - 2.0f, r.w, 2.0f}, Color{22, 16, 18, 255});
+    const float glow = 0.55f + 0.25f * dmath::sin(t * 2.2f + box.x * 0.05f) + 0.45f * burn;
+    const Color seam{255, static_cast<uint8_t>(120 + 80 * burn), 50, static_cast<uint8_t>(std::clamp(150.0f * glow, 0.0f, 255.0f))};
+    for (float x = r.x + 5.0f; x < r.right() - 4.0f; x += 11.0f) {
+        const float y0 = r.y + 4.0f + std::fmod(x * 0.37f, 5.0f);
+        ctx.r.drawWorldLine({x, y0}, {x + 6.0f, std::min(r.bottom() - 2.0f, y0 + 5.0f)}, seam, std::max(1.0f, ctx.r.view().scale * 0.5f),
+                            BlendMode::Additive);
+    }
+    ctx.lights.add(r.center(), 40.0f + 50.0f * burn, Color{255, 140, 60, static_cast<uint8_t>(150 + 100 * burn)});
+    if (burn > 0.0f) {
+        // On fire: tongues of flame along its top.
+        for (float x = r.x + 4.0f; x < r.right() - 2.0f; x += 8.0f) {
+            const float h = (6.0f + 10.0f * burn) * (0.6f + 0.4f * dmath::sin(t * 18.0f + x));
+            ctx.r.drawWorldLine({x, r.y}, {x + dmath::sin(t * 9.0f + x) * 2.0f, r.y - h}, Color{255, 170, 60, static_cast<uint8_t>(200 * burn)},
+                                std::max(1.0f, ctx.r.view().scale * 1.2f), BlendMode::Additive);
+        }
+        ctx.r.drawWorldGlow(r.center() + Vec2{0.0f, -4.0f}, r.w * 0.6f, Color{255, 120, 50, static_cast<uint8_t>(120 * burn)});
+    }
 }
 
 // --------------------------------------------------------------- power gate

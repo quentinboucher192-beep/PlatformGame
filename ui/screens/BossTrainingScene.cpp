@@ -899,9 +899,11 @@ private:
             for (size_t i = 0; i < def_->phases.size(); ++i) {
                 if (y + ui.s(24) > area.bottom() - ui.s(10)) break;
                 const BossPhase& ph = def_->phases[i];
-                int pct = static_cast<int>(std::lround(ph.hpThreshold * 100.0f));
+                // 2.55: after a rebirth (the Phénix's « Cendres »), the health it is reborn with.
+                const float reborn = i > 0 ? def_->phases[i - 1].rebirth : 0.0f;
+                int pct = static_cast<int>(std::lround((reborn > 0.0f ? reborn : ph.hpThreshold) * 100.0f));
                 std::string text = std::to_string(i + 1) + ". " + (ph.name.empty() ? "Phase " + std::to_string(i + 1) : ph.name) + " · " +
-                                   std::to_string(pct) + " % de vie";
+                                   std::to_string(pct) + " % de vie" + (reborn > 0.0f ? " (renaissance)" : "");
                 float f = fit(ui, text, FontFace::Body, 16, w, 0.75f);
                 ui.label(ui.elide(text, FontFace::Body, f, w), {x, y}, f, phase_ == static_cast<int>(i) ? ui.theme().text : ui.theme().textDim);
                 y += ui.s(28);

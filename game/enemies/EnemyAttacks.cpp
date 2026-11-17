@@ -129,6 +129,7 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
             default:
                 if (a->isGuardianType()) fit *= guardianFit(w, *a, near, far, air);
                 else if (a->isDragonType()) fit *= dragonFit(w, *a, near, far, air);
+                else if (a->isPhoenixType()) fit *= phoenixFit(w, *a, near, far, air);
                 break;
         }
         if (below) fit *= belowFit(*a);
@@ -162,6 +163,8 @@ bool Enemy::chooseBossAttack(GameWorld& w, const std::vector<const AttackDef*>& 
                 case AttackType::Shell: k = above > 48.0f ? 0.0f : 1.5f; break;  // 2.52: the golem
                 case AttackType::Quake: k = 2.0f; break;
                 case AttackType::Skyfall: k = 2.5f; break;
+                case AttackType::Sunbeam: k = 2.2f; break;  // 2.55: the phoenix
+                case AttackType::Sweep: k = 1.6f; break;
                 default: break;
             }
             if (k <= 0.0f) continue;
@@ -272,6 +275,7 @@ void Enemy::beginAttack(GameWorld& w) {
     if (attack_->isGuardianType()) guardianBegin(w);
     if (attack_->isDragonType()) dragonBegin(w);
     if (attack_->isGolemType()) golemBegin(w);
+    if (attack_->isPhoenixType()) phoenixBegin(w);
     if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
@@ -305,6 +309,7 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
     }
     if (attack_ && attack_->isDragonType()) dragonTelegraph(w, dt);
     if (attack_ && attack_->isGolemType()) golemTelegraph(w, dt);
+    if (attack_ && attack_->type == AttackType::Sunbeam && stateTimer_ > 0.25f) planColumns(w);  // 2.55: they follow her, then hold
     if (stateTimer_ <= 0.0f && attack_) {
         state_ = EnemyState::Attack;
         stateTimer_ = attack_->active;
@@ -332,7 +337,7 @@ void Enemy::spawnImpact(GameWorld& w, const AttackDef& a, Vec2 t) {
     p.type = DamageType::Projectile;
     p.clip = a.projectile;
     p.radius = a.projectileRadius > 0 ? a.projectileRadius : 5.0f;
-    p.light = def_.lightColor;
+    p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.55: the Phénix's feathers glow with its phase
     p.knockback = a.knockback;
     p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
     p.slow = a.slow;
@@ -375,7 +380,7 @@ void Enemy::fireProjectiles(GameWorld& w, const AttackDef& a) {
         p.clip = a.projectile;
         p.radius = a.projectileRadius > 0 ? a.projectileRadius : (a.projectile == "boss_orb" ? 7.0f : 4.5f);
         p.life = a.homing > 0.0f ? std::max(4.0f, a.homingTime + 2.5f) : 4.0f;
-        p.light = def_.lightColor;
+        p.light = hasPhoenix_ ? lightColor() : def_.lightColor;  // 2.55: the Phénix's feathers glow with its phase
         p.knockback = a.knockback;
         p.hitSound = "sounds/explosion.wav";
         p.hitEffect = a.hitEffect.empty() ? "projectile_burst" : a.hitEffect;
@@ -434,6 +439,10 @@ void Enemy::performAttackStart(GameWorld& w) {
     }
     if (a.isGolemType()) {
         golemStart(w);
+        return;
+    }
+    if (a.isPhoenixType()) {
+        phoenixStart(w);
         return;
     }
     switch (a.type) {
@@ -556,6 +565,10 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
         golemActive(w, dt);
         return;
     }
+    if (a.isPhoenixType()) {
+        phoenixActive(w, dt);
+        return;
+    }
     // Staggered impacts (eruption lines) and further volleys (bursts), re-aimed each time.
     for (size_t k = 0; k < staged_.size();) {
         if (attackClock_ >= staged_[k].time) {
@@ -658,6 +671,7 @@ void Enemy::finishAttack(GameWorld& w) {
     if (attack_ && attack_->isGuardianType()) guardianEnd(w);
     if (attack_ && attack_->isDragonType()) dragonEnd(w, false);
     if (attack_ && attack_->isGolemType()) golemEnd(w, false);
+    if (attack_ && attack_->isPhoenixType()) phoenixEnd(w, false);
     if (hasGolem_) {
         walkTime_ = 0.0f;  // 2.52: its steps before the next blow
         dropThrough_ = false;
@@ -724,6 +738,7 @@ void Enemy::render(RenderContext& ctx) const {
         Vec2 eye = feet + Vec2{facing * box.w * 0.2f, -box.h * 0.6f};
         ctx.lights.add(eye, def_.lightRadius, lightColor());
     }
+    if (inAshes()) renderAshes(ctx);  // 2.55: the Phénix in its ashes, its rebirth
 }
 
 void Enemy::renderTelegraph(RenderContext& ctx) const {
@@ -752,6 +767,10 @@ void Enemy::renderTelegraph(RenderContext& ctx) const {
     }
     if (attack_->isGolemType()) {
         renderGolem(ctx, std::clamp(prog, 0.0f, 1.0f));
+        return;
+    }
+    if (attack_->isPhoenixType()) {
+        renderPhoenix(ctx, std::clamp(prog, 0.0f, 1.0f));
         return;
     }
     switch (attack_->type) {

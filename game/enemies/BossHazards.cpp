@@ -331,7 +331,13 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         const bool was = c.bursting();
         c.age += dt;
         if (!was && c.bursting()) {
-            if (c.rock) {
+            if (c.sun) {
+                // 2.55: the column of sunlight strikes the ground.
+                w.particles().emit("eruption_fire", c.at, 1.1f, {}, &c.color);
+                w.particles().emit("embers_rising", c.at + Vec2{0.0f, -8.0f}, 1.0f, {}, &c.color);
+                w.playSound("sounds/laser_fire.wav", c.at, 0.45f, 1.3f);
+                w.shake(0.08f);
+            } else if (c.rock) {
                 w.particles().emit("rock_shatter", c.at + Vec2{0.0f, -c.half}, 0.9f);
                 w.particles().emit("slam_dust", c.at, 0.8f);
                 w.playSound("sounds/golem_slam.wav", c.at, 0.5f, 1.5f);
@@ -450,6 +456,62 @@ void drawTentacle(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& v
     const Vec2 tip = at(n, rad);
     ctx.r.drawWorldGlow(tip, 9.0f, wl.color.withAlpha(160));
     ctx.lights.add(vis.center(), 60.0f, wl.color.withAlpha(200));
+}
+
+/// A column of sunlight (2.55, the Phénix's « Colonnes solaires »): first a thread of light from
+/// the roof and a mark burning brighter on the ground (it trembles at the end), then a beam of
+/// white-hot light with the phase's colour around it, sparks at its foot, which fades. Display
+/// only (time-driven).
+void drawSunColumn(RenderContext& ctx, const BossHazards::Crack& c, float t) {
+    const Color col = c.color;
+    const float px = ctx.r.view().scale / 3.0f;
+    const float top = c.at.y - c.height;
+    const float h = c.half;
+    if (!c.bursting()) {
+        const float k = c.delay > 0.0f ? std::clamp(c.age / c.delay, 0.0f, 1.0f) : 1.0f;
+        const float shake = k > 0.75f ? dmath::sin(t * 60.0f + c.at.x) * 1.0f : 0.0f;
+        const float x = c.at.x + shake;
+        // The thread from the roof, its edges where the column will burn.
+        ctx.r.drawWorldLine({x, top}, {x, c.at.y}, col.withAlpha(static_cast<uint8_t>(40 + 120 * k)),
+                            std::max(1.0f, (1.0f + 2.0f * k) * px), BlendMode::Additive);
+        if (k > 0.35f) {
+            const uint8_t ea = static_cast<uint8_t>(60 * (k - 0.35f) / 0.65f);
+            ctx.r.drawWorldLine({c.at.x - h, top}, {c.at.x - h, c.at.y}, col.withAlpha(ea), std::max(1.0f, px), BlendMode::Additive);
+            ctx.r.drawWorldLine({c.at.x + h, top}, {c.at.x + h, c.at.y}, col.withAlpha(ea), std::max(1.0f, px), BlendMode::Additive);
+        }
+        // The mark on the ground: a disc of light widening, a red line under it.
+        const float wdt = h * (0.6f + 0.8f * k);
+        ctx.r.fillWorldRect(Rect::fromCenter(c.at + Vec2{0.0f, -2.0f}, {wdt * 2.0f, 4.0f}), col.withAlpha(static_cast<uint8_t>(80 + 150 * k)),
+                            BlendMode::Additive);
+        ctx.r.fillWorldRect(Rect::fromCenter(c.at + Vec2{0.0f, -1.0f}, {h * 2.6f, 2.0f}), Color{255, 80, 60, static_cast<uint8_t>(90 + 130 * k)},
+                            BlendMode::Additive);
+        ctx.r.drawWorldGlow(c.at + Vec2{0.0f, -4.0f}, h * (0.8f + 1.2f * k), col.withAlpha(static_cast<uint8_t>(40 + 120 * k)));
+        if (k > 0.5f) ctx.lights.add(c.at, 60.0f * k, col);
+        return;
+    }
+    // The beam: it flashes in at once, burns, then thins out and fades.
+    const float e = c.age - c.delay;
+    const float in = std::clamp(e / 0.05f, 0.0f, 1.0f);
+    const float out = 1.0f - std::clamp((e - c.burst) / 0.3f, 0.0f, 1.0f);
+    const float a = in * out;
+    if (a <= 0.0f) return;
+    const float wdt = h * (0.55f + 0.45f * out);
+    const Rect beam{c.at.x - wdt, top, wdt * 2.0f, c.height};
+    ctx.r.fillWorldRect(beam.expanded(6.0f), col.withAlpha(static_cast<uint8_t>(50 * a)), BlendMode::Additive);
+    ctx.r.fillWorldRect(beam, col.withAlpha(static_cast<uint8_t>(170 * a)), BlendMode::Additive);
+    const float core = wdt * 0.42f;
+    ctx.r.fillWorldRect({c.at.x - core, top, core * 2.0f, c.height}, Color{255, 252, 236, static_cast<uint8_t>(230 * a)}, BlendMode::Additive);
+    // Ripples running down the beam (the light pouring from the roof).
+    for (int i = 0; i < 4; ++i) {
+        const float ph = std::fmod(t * 2.2f + static_cast<float>(i) * 0.25f, 1.0f);
+        const float y = top + ph * c.height;
+        ctx.r.fillWorldRect({c.at.x - wdt - 3.0f, y, wdt * 2.0f + 6.0f, 3.0f}, Color{255, 255, 255, static_cast<uint8_t>(90 * a * (1.0f - ph))},
+                            BlendMode::Additive);
+    }
+    ctx.r.drawWorldGlow(c.at + Vec2{0.0f, -6.0f}, h * 2.2f, col.withAlpha(static_cast<uint8_t>(200 * a)));
+    ctx.r.drawWorldGlow({c.at.x, top + 8.0f}, h * 1.6f, col.withAlpha(static_cast<uint8_t>(120 * a)));
+    for (float y = top + 40.0f; y < c.at.y; y += 120.0f) ctx.lights.add({c.at.x, y}, 90.0f, col.withAlpha(static_cast<uint8_t>(255 * a)));
+    ctx.lights.add(c.at, 120.0f, col);
 }
 }  // namespace
 
@@ -626,6 +688,10 @@ void BossHazards::render(RenderContext& ctx) const {
     for (const Crack& c : cracks_) {
         const Color col = c.color;
         const float line = std::max(1.0f, 2.0f * px * ctx.r.view().scale);
+        if (c.sun) {
+            drawSunColumn(ctx, c, t);
+            continue;
+        }
         if (c.rock) {
             const float k = c.delay > 0.0f ? std::clamp(c.age / c.delay, 0.0f, 1.0f) : 1.0f;
             if (!c.bursting()) {

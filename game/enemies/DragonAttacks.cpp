@@ -84,6 +84,8 @@ float Enemy::belowFit(const AttackDef& a) const {
         case AttackType::Laser:
         case AttackType::Prism:
         case AttackType::Vortex: return 0.4f;
+        case AttackType::Sunbeam: return 2.2f;  // 2.55: the Phénix's columns come down on her
+        case AttackType::Sweep: return 1.1f;
         default: return 1.0f;
     }
 }

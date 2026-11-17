@@ -527,6 +527,48 @@ void EnemyEditorScene::tabAttacks(float x, float& y, float w) {
                 default: break;
             }
         }
+        if (a.isPhoenixType()) {
+            // 2.55: the attacks of the phoenix (the Phénix). A value left at 0 takes the type's
+            // default (see game/enemies/PhoenixAttacks.cpp).
+            auto num = [&](const char* id, const char* label, float& v, float step, float lo, float hi, const char* fmt) {
+                c |= ui.numberField(id, row.field(label), v, step, lo, hi, fmt);
+            };
+            auto whole = [&](const char* id, const char* label, int& v, int lo, int hi) {
+                float f = static_cast<float>(v);
+                if (ui.numberField(id, row.field(label), f, 1, static_cast<float>(lo), static_cast<float>(hi), "%.0f")) {
+                    v = static_cast<int>(f);
+                    c = true;
+                }
+            };
+            switch (a.type) {
+                case AttackType::Sunbeam:
+                    whole("pcnt", "Colonnes (par côté)", a.count, 1, 11);
+                    num("pspr", "Écart entre les colonnes (px)", a.spread, 5, 0, 400, "%.0f");
+                    num("pdel", "Première colonne après (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    num("pstg", "Entre deux colonnes (s)", a.stagger, 0.02f, 0, 1, "%.2f");
+                    num("prad", "Demi-largeur d'une colonne", a.radius, 1, 0, 80, "%.0f");
+                    num("pdur", "Durée d'une colonne (s)", a.duration, 0.05f, 0, 3, "%.2f");
+                    whole("parms", "Depuis les deux murs (2)", a.arms, 0, 2);
+                    c |= ui.numberField("plead", row.field("Anticipation (0 = vise le joueur, 1 = où il va)"), a.lead, 0.05f, 0, 1, "%.2f");
+                    break;
+                case AttackType::Sweep: {
+                    std::vector<std::string> proj;
+                    if (auto pa = g_.app.resources().animation("animations/projectiles.json"))
+                        for (const auto& [k, _] : pa->clips) proj.push_back(k);
+                    proj.push_back("feather");
+                    std::sort(proj.begin(), proj.end());
+                    c |= stringCycle(ui, "pproj", {x, y, w, ui.s(46)}, "Plumes de la lame", a.projectile, proj);
+                    y += ui.s(54);
+                    whole("pcnt", "Lames (basse et haute)", a.count, 1, 4);
+                    num("pint", "Entre deux lames (s)", a.burstInterval, 0.05f, 0.05f, 3, "%.2f");
+                    num("pspd", "Vitesse de la lame", a.projectileSpeed, 10, 120, 1000, "%.0f");
+                    num("phgt", "Hauteur de la lame basse", a.height, 2, 0, 80, "%.0f");
+                    num("pprad", "Rayon d'une plume", a.projectileRadius, 1, 0, 20, "%.0f");
+                    break;
+                }
+                default: break;
+            }
+        }
         auto sounds = PropertyEditor::assetFiles("sounds", ".wav");
         sounds.insert(sounds.begin(), "");
         c |= stringCycle(ui, "asnd", {x, y, w, ui.s(46)}, "Son de l'attaque", a.sound, sounds);

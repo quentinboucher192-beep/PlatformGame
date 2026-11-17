@@ -172,8 +172,8 @@ std::vector<ObjectTypeInfo> build() {
         t.props = {pFloat("delay", "Délai avant chute (s)", 0.45f, 0.05f, 5, 0.05f),
                    pFloat("respawn", "Réapparition (s, 0 = jamais)", 3.0f, 0, 60, 0.5f),
                    pBool("onEvent", "Ne cède qu'à un événement", false, "Action « Activer » : elle s'effondre"),
-                   pEnum("style", "Apparence", "ruins", {"ruins", "basalt", "ice", "star"},
-                         {"Pierre des ruines", "Basalte", "Glace", "Croûte d'étoile"})};
+                   pEnum("style", "Apparence", "ruins", {"ruins", "basalt", "ice", "star", "ember"},
+                         {"Pierre des ruines", "Basalte", "Glace", "Croûte d'étoile", "Perchoir de braise"})};
         t.assets = {};  // texture per style, collected by the exporter
         add(t);
     }
@@ -257,7 +257,8 @@ std::vector<ObjectTypeInfo> build() {
                    pBool("visible", "Visible (brume toxique)", true),
                    pBool("shieldProtects", "Le bouclier protège", true),
                    pBool("active", "Active au départ", true, "Sinon, un événement l'active"),
-                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma", "abyss"}, {"Brume toxique", "Plasma d'étoile", "Eaux abyssales"}),
+                   pEnum("style", "Apparence", "toxic", {"toxic", "plasma", "abyss", "embers"},
+                         {"Brume toxique", "Plasma d'étoile", "Eaux abyssales", "Braises sous la cendre"}),
                    pBool("bounce", "Projette vers le haut", false)};
         add(t);
     }

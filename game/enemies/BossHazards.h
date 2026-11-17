@@ -26,7 +26,8 @@ struct RenderContext;
 ///    (they hurt inside), and the wind of its wings that pushes Nova away from it (a limited
 ///    push, always below her run speed: running against it still moves her forward);
 ///  * (2.52, the golem's quake) cracks in the ground that glow, then burst out of it, and rocks
-///    falling from the roof onto marked spots.
+///    falling from the roof onto marked spots; (2.55, the Phénix) columns of sunlight falling
+///    from the roof onto marked spots, the same way.
 /// An effect belongs to the enemy that made it (its uid): it ends with its time, with the
 /// enemy (death, removal) or when the player respawns.
 class BossHazards {
@@ -111,6 +112,10 @@ public:
         float fromY = 0.0f;      // a rock: where it falls from (the roof)
         bool hit = false;        // it has hurt (once)
         Color color{255, 179, 71, 255};  // display: the light of the phase
+        /// 2.55, the Phénix's « Colonnes solaires »: a column of sunlight from the roof (`fromY`)
+        /// down to its mark; it burns `burst` seconds over its whole `height` (display: a beam
+        /// of light, no stone; the hurting is a crack's).
+        bool sun = false;
         bool bursting() const { return age >= delay; }
         bool done() const { return age >= delay + burst + (rock ? 0.35f : 0.25f); }
         /// A rock: the centre of the falling stone at its age (it speeds up).

@@ -521,8 +521,11 @@ private:
             const BossPhase& ph = d.phases[i];
             std::string title = std::to_string(i + 1) + ". " + (ph.name.empty() ? "Phase " + std::to_string(i + 1) : ph.name);
             std::string from = i == 0 ? std::string("dès le début") : "à " + num(ph.hpThreshold * 100.0f, 1) + " % des PV";
+            // 2.55: after the Phénix's « Cendres », the phase begins with its rebirth.
+            if (i > 0 && d.phases[i - 1].rebirth > 0.0f) from = "renaît avec " + num(d.phases[i - 1].rebirth * 100.0f, 1) + " % des PV";
             std::string rhythm = "Vitesse " + times(ph.speedMultiplier) + "  ·  Recharge " + times(ph.cooldownMultiplier) + "  ·  Annonces " +
                                  times(ph.telegraphMultiplier);
+            if (ph.rebirth > 0.0f) rhythm += "  ·  Se consume puis renaît";
             if (ph.combo > 1) rhythm += "  ·  Enchaîne " + std::to_string(ph.combo) + " attaques";
             if (ph.summonOnEnter) rhythm += "  ·  Appelle des renforts";
             if (ph.enrageTime > 0.0f) rhythm += "  ·  Rage après " + num(ph.enrageTime, 0) + " s";
@@ -556,6 +559,12 @@ private:
                            num(a.duration > 0.0f ? a.duration : 3.6f, 1) + " s";
             } else if (a.type == AttackType::Skyfall) {
                 details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " ondes de choc" : " onde de choc");
+            } else if (a.type == AttackType::Sunbeam) {  // 2.55: the phoenix's attacks
+                const int columns = a.arms >= 2 ? 2 * a.count + 1 : a.count;
+                details += "  ·  " + std::to_string(columns) + (columns > 1 ? " colonnes" : " colonne") +
+                           (a.arms >= 2 ? " depuis les deux murs" : " en marche");
+            } else if (a.type == AttackType::Sweep) {
+                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " lames, basse et haute" : " lame, basse ou haute");
             } else if (a.count > 1) {
                 details += "  ·  " + std::to_string(a.count) + " projectiles";
             }

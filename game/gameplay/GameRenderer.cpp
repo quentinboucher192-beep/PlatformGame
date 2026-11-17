@@ -113,6 +113,9 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
         lights_.apply(r, view, ambient);
     }
 
+    // The Phénix's ashes (2.55): over the lit world, under the flash and the HUD.
+    if (!opt.mapView && !opt.editor) drawAshVeil(r, world, view, alpha);
+
     // Screen flash
     Color f = opt.mapView ? Color{0, 0, 0, 0} : world.flashColor();
     if (f.a > 0) r.fillRect({0, 0, static_cast<float>(r.width()), static_cast<float>(r.height())}, f, BlendMode::Additive);
@@ -120,10 +123,80 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     if (opt.debug) drawDebug(r, world);
 }
 
+void GameRenderer::drawAshVeil(Renderer& r, GameWorld& world, const WorldView& view, float alpha) {
+    const float now = world.time();
+    const float dt = ashClock_ < 0.0f ? 0.0f : std::clamp(now - ashClock_, 0.0f, 0.1f);
+    ashClock_ = now;
+    const Enemy* boss = world.activeBoss();
+    const bool on = boss && boss->ashVeil();
+    ashVeil_ = std::clamp(ashVeil_ + (on ? 0.6f : -0.9f) * dt, 0.0f, 1.0f);
+    if (ashVeil_ <= 0.01f) return;
+    const float k = ashVeil_;
+    const float W = static_cast<float>(view.screenW), H = static_cast<float>(view.screenH);
+    const Vec2 o = view.origin;
+    const Player& p = world.player();
+    const Vec2 nova = o + view.toScreen(lerpv(p.prevBox.center(), p.box.center(), alpha));
+    // The veil: a grid whose corners are clear near Nova and grey-brown far from her.
+    const float clear = 95.0f * view.scale, thick = 330.0f * view.scale;
+    constexpr int kCols = 24, kRows = 14;
+    std::vector<SDL_Vertex> verts;
+    std::vector<int> idx;
+    verts.reserve((kCols + 1) * (kRows + 1));
+    for (int j = 0; j <= kRows; ++j)
+        for (int i = 0; i <= kCols; ++i) {
+            const float x = o.x + W * static_cast<float>(i) / kCols, y = o.y + H * static_cast<float>(j) / kRows;
+            const float d = std::sqrt((x - nova.x) * (x - nova.x) + (y - nova.y) * (y - nova.y));
+            float a = std::clamp((d - clear) / std::max(1.0f, thick - clear), 0.0f, 1.0f);
+            a = a * a * (3.0f - 2.0f * a);
+            SDL_Vertex v{};
+            v.position = {x, y};
+            v.color = {0.30f, 0.27f, 0.25f, 0.62f * a * k};
+            verts.push_back(v);
+        }
+    for (int j = 0; j < kRows; ++j)
+        for (int i = 0; i < kCols; ++i) {
+            const int a = j * (kCols + 1) + i, b = a + 1, c = a + kCols + 1, d = c + 1;
+            idx.insert(idx.end(), {a, b, c, b, d, c});
+        }
+    r.drawGeometry(nullptr, verts, idx, BlendMode::Alpha);
+    // The ash falling slantwise (screen space, wrapping), a few embers still glowing in it.
+    const float t = now;
+    for (int n = 0; n < 140; ++n) {
+        const float fx = std::fmod(static_cast<float>(n) * 0.6180339f, 1.0f), fy = std::fmod(static_cast<float>(n) * 0.4142135f, 1.0f);
+        const float speed = 0.06f + 0.05f * std::fmod(static_cast<float>(n) * 0.7548777f, 1.0f);
+        float x = std::fmod(fx * W + t * speed * W * 0.35f + 9.0f * std::sin(t * 1.3f + static_cast<float>(n)), W);
+        float y = std::fmod(fy * H + t * speed * H, H);
+        if (x < 0.0f) x += W;
+        const float size = (1.2f + 1.6f * std::fmod(static_cast<float>(n) * 0.3819660f, 1.0f)) * std::max(1.0f, view.scale * 0.5f);
+        const bool ember = n % 9 == 0;
+        const Color c = ember ? Color{255, 150, 80, static_cast<uint8_t>(200 * k)} : Color{170, 160, 152, static_cast<uint8_t>(170 * k)};
+        if (ember) r.drawGlow(o + Vec2{x, y}, size * 3.0f, c.withAlpha(static_cast<uint8_t>(90 * k)));
+        r.fillRect({o.x + x, o.y + y, size, size}, c);
+    }
+}
+
 void GameRenderer::drawProjectiles(Renderer& r, GameWorld& world, float alpha, LightMap& lights) {
     for (const auto& p : world.projectiles()) {
         Vec2 pos = lerpv(p.prevPos, p.pos, alpha);
         lights.add(pos, p.lightRadius, p.light);
+        if (p.clip == "feather") {
+            // 2.55, the Phénix's feathers of light: a quill along its flight, two vanes of its
+            // colour, a white-hot tip.
+            const float sp = p.vel.length();
+            const Vec2 d = sp > 1.0f ? p.vel / sp : Vec2{1.0f, 0.0f};
+            const Vec2 n{-d.y, d.x};
+            const float len = std::max(12.0f, p.radius * 3.2f), wid = std::max(3.0f, p.radius * 0.9f);
+            const Vec2 tip = pos + d * (len * 0.5f), tail = pos - d * (len * 0.5f);
+            const auto& v = r.view();
+            const Vec2 st = v.toScreen(tip), sb = v.toScreen(tail), sl = v.toScreen(pos + n * wid - d * (len * 0.1f)),
+                       sr = v.toScreen(pos - n * wid - d * (len * 0.1f));
+            r.drawWorldGlow(pos, len * 0.9f, p.light.withAlpha(90));
+            r.fillTriangle(st, sl, sb, p.light.withAlpha(235));
+            r.fillTriangle(st, sr, sb, Color{p.light.r, p.light.g, p.light.b, 200});
+            r.drawWorldLine(tail - d * 3.0f, tip, Color{255, 250, 236, 255}, std::max(1.0f, v.scale * 0.6f));
+            r.drawWorldGlow(tip, wid * 1.6f, Color{255, 255, 255, 200});
+            continue;
+        }
         if (p.clip == "shockwave") {
             // Its size follows its radius (2.52: the golem's waves are taller), its colour its light.
             float t = std::fmod(p.age * 3.0f, 1.0f);

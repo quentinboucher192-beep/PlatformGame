@@ -181,15 +181,16 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
         const std::string style = obj_.propStr("style", "toxic");
         bool plasma = style == "plasma";
         bool abyss = style == "abyss";  // 2.53: the dark water of the Kraken's arena
-        fxTimer_ = std::max(0.05f, (plasma || abyss ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
-        w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : "toxic_mist"),
+        bool embers = style == "embers";  // 2.55: the embers under the ash of the Phénix's nest
+        fxTimer_ = std::max(0.05f, (plasma || abyss || embers ? 1.2f : 2.0f) / std::max(1.0f, box.w * box.h / 2000.0f));
+        w.particles().emit(plasma ? "lava_bubbles" : (abyss ? "bubbles" : (embers ? "embers_rising" : "toxic_mist")),
                            {w.fxRng().range(box.x, box.right()), w.fxRng().range(box.y, box.bottom())}, 1.0f);
     }
 }
 
 bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
     const std::string style = obj_.propStr("style", "toxic");
-    if ((action == "enable" || action == "activate") && !active && (style == "plasma" || style == "abyss")) {
+    if ((action == "enable" || action == "activate") && !active && (style == "plasma" || style == "abyss" || style == "embers")) {
         w.playSound("sounds/lava_rise.wav", box.center(), 0.9f);
         w.shake(0.3f);
     }
@@ -212,6 +213,10 @@ void DamageZoneEntity::render(RenderContext& ctx) {
     }
     if (obj_.propStr("style", "toxic") == "abyss") {
         renderAbyss(ctx);
+        return;
+    }
+    if (obj_.propStr("style", "toxic") == "embers") {
+        renderEmbers(ctx);
         return;
     }
     if (active) {
@@ -266,6 +271,52 @@ void DamageZoneEntity::renderPlasma(RenderContext& ctx) const {
         ctx.lights.add({x, pool ? box.y : box.center().y}, 120.0f, Color{255, 110, 220, static_cast<uint8_t>(255 * a)});
     if (!pool)
         for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 140.0f, Color{255, 110, 220, static_cast<uint8_t>(255 * a)});
+}
+
+void DamageZoneEntity::renderEmbers(RenderContext& ctx) const {
+    // The embers under the ash of the Phénix's nest (2.55): a pool (grey ash crusted over a bed
+    // of embers that breathe, their glow showing through, sparks rising) or a curtain (a wall of
+    // fire, its heat wavering, ash swept up in it), fading in when switched on. Display only.
+    const float a = shown_;
+    const float t = ctx.time;
+    const bool pool = box.w >= box.h;
+    if (pool) {
+        ctx.r.fillWorldRect(box, Color{46, 26, 22, static_cast<uint8_t>(235 * a)});
+        ctx.r.fillWorldRect({box.x, box.y + 6.0f, box.w, std::max(0.0f, box.h - 6.0f)}, Color{255, 90, 30, static_cast<uint8_t>(40 * a)},
+                            BlendMode::Additive);
+        for (float x = box.x; x < box.right(); x += 8.0f) {
+            const float wdt = std::min(8.0f, box.right() - x);
+            const float breath = 0.5f + 0.5f * dmath::sin(t * 1.6f + x * 0.031f) * dmath::sin(t * 0.7f + x * 0.013f);
+            ctx.r.fillWorldRect({x, box.y - 1.0f, wdt, 4.0f}, Color{120, 108, 100, static_cast<uint8_t>(230 * a)});
+            ctx.r.fillWorldRect({x, box.y + 3.0f, wdt, 3.0f},
+                                Color{255, static_cast<uint8_t>(110 + 90 * breath), 40, static_cast<uint8_t>(200 * a * breath)}, BlendMode::Additive);
+        }
+        const int sparks = static_cast<int>(box.w / 40.0f);
+        for (int k = 0; k < sparks; ++k) {
+            const float ph = std::fmod(t * 0.6f + static_cast<float>(k) * 0.618f, 1.0f);
+            const float x = box.x + std::fmod(static_cast<float>(k) * 97.3f, box.w) + 5.0f * dmath::sin(t * 2.0f + static_cast<float>(k));
+            const float y = box.y - ph * 60.0f;
+            ctx.r.fillWorldRect({x, y, 2.0f, 2.0f}, Color{255, 190, 90, static_cast<uint8_t>(220 * a * (1.0f - ph))}, BlendMode::Additive);
+        }
+    } else {
+        ctx.r.fillWorldRect(box, Color{255, 100, 40, static_cast<uint8_t>(70 * a)}, BlendMode::Additive);
+        ctx.r.fillWorldRect(box, Color{60, 20, 14, static_cast<uint8_t>(100 * a)});
+        for (float y = box.y; y < box.bottom(); y += 6.0f) {
+            const float wv = 2.0f * dmath::sin(t * 6.0f + y * 0.09f);
+            ctx.r.fillWorldRect({box.x - 1.0f + wv, y, 3.0f, 6.0f}, Color{255, 200, 120, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+            ctx.r.fillWorldRect({box.right() - 2.0f - wv, y, 3.0f, 6.0f}, Color{255, 200, 120, static_cast<uint8_t>(200 * a)}, BlendMode::Additive);
+        }
+        for (int k = 0; k < 8; ++k) {
+            const float ph = std::fmod(t * 0.5f + static_cast<float>(k) / 8.0f, 1.0f);
+            const float x = box.x + box.w * (0.1f + 0.8f * std::fmod(static_cast<float>(k) * 0.381f, 1.0f));
+            const float y = box.bottom() - ph * box.h;
+            ctx.r.fillWorldRect({x, y, 3.0f, 18.0f}, Color{255, 170, 80, static_cast<uint8_t>(80 * a * (1.0f - ph))}, BlendMode::Additive);
+        }
+    }
+    const Color glow{255, 120, 50, static_cast<uint8_t>(255 * a)};
+    for (float x = box.x + 40.0f; x < box.right(); x += 120.0f) ctx.lights.add({x, pool ? box.y : box.center().y}, 120.0f, glow);
+    if (!pool)
+        for (float y = box.y + 60.0f; y < box.bottom(); y += 140.0f) ctx.lights.add({box.center().x, y}, 140.0f, glow);
 }
 
 void DamageZoneEntity::renderAbyss(RenderContext& ctx) const {

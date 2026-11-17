@@ -34,7 +34,9 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               {"cloud_shot", "Boule de feu à nuage"}, {"gust", "Rafale qui repousse"},
                               // 2.52: the golem (the Monolithe)
                               {"shell", "Carapace roulante"},    {"quake", "Tremblement de terre"},
-                              {"skyfall", "Bond titanesque"}};
+                              {"skyfall", "Bond titanesque"},
+                              // 2.55: the phoenix (the Phénix)
+                              {"sunbeam", "Colonnes solaires"},  {"sweep", "Lame d'ailes"}};
 static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
 }  // namespace
 
@@ -180,6 +182,20 @@ Json AttackDef::toJson() const {
         if (vulnerability > 0) j["vulnerability"] = vulnerability;
         if (armor > 0) j["armor"] = armor;
     }
+    if (isPhoenixType()) {
+        // 2.55, written only for the phoenix's types (the definitions of before keep their fingerprints).
+        j["projectile"] = projectile;
+        j["projectileSpeed"] = projectileSpeed;
+        j["count"] = count;
+        j["spread"] = spread;
+        j["burstInterval"] = burstInterval;
+        if (projectileRadius > 0) j["projectileRadius"] = projectileRadius;
+        if (!hitEffect.empty()) j["hitEffect"] = hitEffect;
+        if (duration > 0) j["duration"] = duration;
+        if (radius > 0) j["radius"] = radius;
+        if (height > 0) j["height"] = height;
+        if (arms > 0) j["arms"] = arms;
+    }
     return j;
 }
 
@@ -262,6 +278,9 @@ Json BossPhase::toJson() const {
     if (!animation.empty()) j["animation"] = animation;
     if (lightColor.a > 0) j["lightColor"] = lightColor.toHex();
     if (!enterSound.empty()) j["enterSound"] = enterSound;
+    // 2.55: the Phénix's rebirth and its ashes (written only when set).
+    if (rebirth > 0) j["rebirth"] = rebirth;
+    if (ashes) j["ashes"] = true;
     return j;
 }
 
@@ -282,6 +301,8 @@ BossPhase BossPhase::fromJson(const Json& j) {
     p.animation = jstr(j, "animation", "");
     if (j.contains("lightColor")) p.lightColor = colorFromJson(j["lightColor"], Color{0, 0, 0, 0});
     p.enterSound = jstr(j, "enterSound", "");
+    p.rebirth = std::clamp(jget<float>(j, "rebirth", 0.0f), 0.0f, 1.0f);
+    p.ashes = jget<bool>(j, "ashes", false);
     return p;
 }
 
