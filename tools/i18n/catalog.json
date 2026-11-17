@@ -2596,6 +2596,12 @@
    ]
   },
   {
+   "fr": "Arènes de boss : quand l'arène tient à l'écran avec de la hauteur en trop, la caméra s'en sert pour garder la voûte sous le HUD du haut et le sol au-dessus de la barre de vie du boss, sans jamais couper l'arène ni l'éloigner. Les arènes des giga-boss, plus hautes que l'écran, gardent leur cadrage : le HUD s'y efface.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Ascenseur des Anciens",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -5042,6 +5048,7 @@
     "editors/level_editor/LevelEditorTools.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/BossStories.cpp",
+    "game/gameplay/Hud.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
@@ -13881,6 +13888,12 @@
    ]
   },
   {
+   "fr": "Effacer le HUD quand il cache l'action",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Effet",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -20128,6 +20141,12 @@
    ]
   },
   {
+   "fr": "La barre de vie du boss, en bas, ne s'efface que lorsque Nova passe dessous ; les annonces de phase au centre de l'écran ne s'effacent jamais.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "la Bombe plasma",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -21903,6 +21922,12 @@
    "fr": "Le Grappin rend vos sauts aériens : enchaînez traction, saut et Planeur.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Le HUD s'efface quand il cache l'action : un bloc du HUD (chronomètre, barre de progression, vie et énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé au-dessus du boss, de Nova ou d'une attaque du boss (projectiles, télégraphes, réticules, zones dangereuses) devient presque transparent en un instant, puis revient dès que plus rien n'est dessous. Les giga-boss qui volent sous le chronomètre ou la barre de progression (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles, avec leurs attaques.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -29835,6 +29860,12 @@
   },
   {
    "fr": "Paramètres › Clavier / souris et Manette : une seule touche (ou un seul bouton) par commande, en une colonne ; les secondes touches cachées sont retirées, seule la touche affichée fonctionne. Les flèches du clavier et la croix de la manette déplacent toujours Nova.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Paramètres › Jeu : nouvelle option « Effacer le HUD quand il cache l'action », activée par défaut.",
    "where": [
     "data/news/changelog.json"
    ]

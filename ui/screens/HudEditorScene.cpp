@@ -203,6 +203,7 @@ private:
         opt.lighting = false;
         renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
         r.setView(WorldView{});
+        hud_.setFadeAllowed(false);  // 2.60: the blocks being placed never fade
         hud_.render(g_.ui, *world_, view, nullptr, work_);
         if (hudVisible(work_, HudElement::Splits)) {
             Hud::Place sp = hud_.place(g_.ui, *world_, work_, HudElement::Splits);

@@ -18,6 +18,10 @@ struct RenderOptions {
     bool debug = false;          // colliders, hitboxes, AI states
     float zoomOverride = 0.0f;   // editor camera
     bool mapView = false;        // the level drawn small (pause map): no foreground planes, telegraphs or flash
+    /// 2.60, display only: told about the shapes of the boss's attacks — the enemies' shots, the
+    /// telegraphs and the lasting effects that hurt — to fade the blocks of the HUD over them
+    /// (Hud::threatProbe). nullptr: none.
+    CoverageProbe* threats = nullptr;
 };
 
 /// Draws a GameWorld: parallax planes, layered terrain and entities, enemies, player,
@@ -36,7 +40,7 @@ public:
     size_t lastLightCount() const { return lastLights_; }
 
 private:
-    void drawProjectiles(Renderer& r, GameWorld& world, float alpha, LightMap& lights);
+    void drawProjectiles(Renderer& r, GameWorld& world, float alpha, LightMap& lights, CoverageProbe* threats);
     void drawDebug(Renderer& r, GameWorld& world);
     /// 2.56, the Phénix's « Cendres »: ash falling over the arena and a grey veil away from Nova
     /// (around her the view stays clear; the HUD is drawn after the world, never veiled).

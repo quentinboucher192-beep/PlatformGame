@@ -35,6 +35,7 @@ struct AnimationClip {
 struct AnimationSet {
     std::string sourcePath;   // relative path of the json
     std::string texturePath;  // relative path of the texture
+    std::string textureFile;  // the file it was loaded from (2.60: ResourceManager::visibleCells)
     TexturePtr texture;
     int frameWidth = 16;
     int frameHeight = 16;

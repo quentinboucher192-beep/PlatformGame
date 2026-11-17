@@ -752,9 +752,19 @@ void BossHazards::render(RenderContext& ctx) const {
     const float t = ctx.time;
     const float px = 1.0f / std::max(0.05f, ctx.r.view().scale);  // one screen pixel in world units
 
+    // 2.60: what does not hurt (frozen ground, the wind of wings, conveyor belts) is no threat
+    // the HUD should fade over (Renderer::listener, RenderOptions::threats).
+    ShapeListener* const threats = ctx.r.listener();
+    struct Heard {
+        Renderer& r;
+        ShapeListener* l;
+        ~Heard() { r.setListener(l); }
+    } heard{ctx.r, threats};
+
     // Frozen ground: a pale veil on every frozen surface.
     AnimationSetPtr fx = sheetOf("frost_floor");
     const AnimationClip* veil = clipIn(fx, "idle");
+    ctx.r.setListener(nullptr);
     for (const Ice& ice : ice_) {
         float a = std::min({1.0f, ice.age / 0.35f, ice.time / 0.6f});
         if (a <= 0.0f) continue;
@@ -780,6 +790,8 @@ void BossHazards::render(RenderContext& ctx) const {
             ctx.lights.add(top.center(), std::min(160.0f, top.w * 0.5f), Color{150, 220, 255, static_cast<uint8_t>(120 * a)});
         }
     }
+
+    ctx.r.setListener(threats);
 
     // Lava tide (or star plasma, 2.33).
     AnimationSetPtr lavaSheet = sheetOf("lava_flood");
@@ -913,6 +925,7 @@ void BossHazards::render(RenderContext& ctx) const {
     }
 
     // The wind of its wings (2.50): streaks of ash blowing away from it on both sides.
+    ctx.r.setListener(nullptr);
     for (const Wind& wd : winds_) {
         float a = std::clamp(std::min(wd.age / 0.25f, wd.time / 0.4f), 0.0f, 1.0f);
         float reach = std::min(wd.range, 720.0f);
@@ -926,6 +939,8 @@ void BossHazards::render(RenderContext& ctx) const {
             ctx.r.drawWorldLine({x, y}, {x - side * len, y + 2.0f}, c, std::max(1.0f, 2.0f * px * ctx.r.view().scale));
         }
     }
+
+    ctx.r.setListener(threats);
 
     // The golem's quake (2.52): glowing cracks that burst into stone spikes, rocks falling from
     // the roof onto their marks.
@@ -1108,7 +1123,10 @@ void BossHazards::renderTitan(RenderContext& ctx) const {
     const float t = ctx.time;
     const float line = std::max(1.0f, ctx.r.view().scale * 0.6f);
 
-    // Its belts: chevrons running along them (flashing before they start).
+    // Its belts: chevrons running along them (flashing before they start). 2.60: they do not
+    // hurt, no threat the HUD should fade over.
+    ShapeListener* const threats = ctx.r.listener();
+    ctx.r.setListener(nullptr);
     for (const Belt& b : belts_) {
         const float k = b.running();
         const float dir = b.speed >= 0.0f ? 1.0f : -1.0f;
@@ -1124,6 +1142,8 @@ void BossHazards::renderTitan(RenderContext& ctx) const {
             ctx.r.drawWorldLine(at + Vec2{-dir * 4.0f, 4.0f}, at + Vec2{dir * 4.0f, 0.0f}, b.color.withAlpha(a), line * 1.6f, BlendMode::Additive);
         }
     }
+
+    ctx.r.setListener(threats);
 
     // Its presses: stripes where they will stamp, the rod and the head coming down.
     for (const Press& pr : presses_) {
