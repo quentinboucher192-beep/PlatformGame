@@ -43,12 +43,10 @@ export const CREATION_NAME_MAX = TITLE_MAX_CHARS;
 /** The colours of a suit, in the order of nova_suits.py: the suit, its accent (visor, energy), its scarf. */
 export const SUIT_COLOR_KEYS = ["suit", "accent", "scarf"] as const;
 /**
- * 2.59: the styles the game draws (ui/screens/CosmeticFx.cpp, drawn in the creation's colours):
- * a trail like the catalogue's « Comète », « Poussière d'étoiles », « Prisme » (a ribbon),
- * « Flammèches », « Aurore » or « Bulles des abysses »; a frame like « Bronze » / « Argent » / « Or »
- * (metal), « Émeraude », « Orbite », « Nébuleuse », « Constellation » or « Cercle runique »; a
- * victory effect like « Feu d'artifice », « Pluie d'étoiles », « Supernova », « Vortex »,
- * « Aurore boréale » or « Couronne solaire ».
+ * 2.59: the styles the game draws (ui/screens/CosmeticFx.cpp, in the two colours of the
+ * creation): each one the shape of a trail, a frame or a victory effect of the catalogue with
+ * the same name (metal: the bronze, silver and gold frames), as game/cosmetics/CreationLooks.cpp
+ * lists them, in the same order.
  */
 export const TRAIL_STYLES = ["comet", "stardust", "prism", "flame", "aurora", "bubbles"] as const;
 export const FRAME_STYLES = ["metal", "emerald", "orbit", "nebula", "constellation", "runic"] as const;
@@ -140,18 +138,14 @@ async function refuse(ctx: Ctx, auth: AuthInfo, error: ApiError, details: Record
 }
 
 const NOT_FOUND = () => Errors.notFound("CREATION_NOT_FOUND", "Création introuvable.");
-const WHO: Record<CreationKind, string> = {
-    suit: "Une combinaison",
-    trail: "Une traînée",
-    frame: "Un cadre",
-    victory: "Un effet de victoire",
+const EXISTS_MESSAGE: Record<CreationKind, string> = {
+    suit: "Une combinaison porte déjà ce nom : choisissez-en un autre.",
+    trail: "Une traînée porte déjà ce nom : choisissez-en un autre.",
+    frame: "Un cadre porte déjà ce nom : choisissez-en un autre.",
+    victory: "Un effet de victoire porte déjà ce nom : choisissez-en un autre.",
 };
 const EXISTS = (kind: CreationKind, existing?: CreationRow | null) =>
-    Errors.conflict(
-        "CREATION_EXISTS",
-        `${WHO[kind]} porte déjà ce nom : choisissez-en un autre.`,
-        existing ? { creation: adminJson(existing) } : undefined,
-    );
+    Errors.conflict("CREATION_EXISTS", EXISTS_MESSAGE[kind], existing ? { creation: adminJson(existing) } : undefined);
 
 /** The fields of a body that describe a creation of `kind` (besides its name). */
 function lookFields(kind: CreationKind): string[] {

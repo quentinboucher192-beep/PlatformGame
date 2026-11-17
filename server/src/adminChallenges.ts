@@ -672,12 +672,28 @@ export async function createTitle(ctx: Ctx): Promise<Response> {
 
 type FieldErrors = { field: string; message: string }[];
 
-/** The words of the refusals about a creation of each kind (« combinaison inconnue du serveur »...). */
-const CREATION_WORDS: Record<CreationKind, { one: string; expected: string; unknown: string; archived: string; it: string }> = {
-    suit: { one: "combinaison", expected: "attendue", unknown: "inconnue", archived: "archivée", it: "la" },
-    trail: { one: "traînée", expected: "attendue", unknown: "inconnue", archived: "archivée", it: "la" },
-    frame: { one: "cadre", expected: "attendu", unknown: "inconnu", archived: "archivé", it: "le" },
-    victory: { one: "effet de victoire", expected: "attendu", unknown: "inconnu", archived: "archivé", it: "le" },
+/** The refusals about a creation of each kind: its reference malformed, unknown to the server, archived. */
+const CREATION_REFUSALS: Record<CreationKind, { expected: string; unknown: string; archived: string }> = {
+    suit: {
+        expected: "combinaison « srvsuit:<n> » attendue",
+        unknown: "combinaison inconnue du serveur",
+        archived: "combinaison archivée : restaurez-la d'abord",
+    },
+    trail: {
+        expected: "traînée « srvtrail:<n> » attendue",
+        unknown: "traînée inconnue du serveur",
+        archived: "traînée archivée : restaurez-la d'abord",
+    },
+    frame: {
+        expected: "cadre « srvframe:<n> » attendu",
+        unknown: "cadre inconnu du serveur",
+        archived: "cadre archivé : restaurez-le d'abord",
+    },
+    victory: {
+        expected: "effet de victoire « srvvictory:<n> » attendu",
+        unknown: "effet de victoire inconnu du serveur",
+        archived: "effet de victoire archivé : restaurez-le d'abord",
+    },
 };
 
 /**
@@ -725,7 +741,7 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: 
         if (isCreationKind(kind)) {
             const c = creationOfRef(ref);
             if (c === null || c.kind !== kind) {
-                errors.push({ field: `${field}.ref`, message: `${CREATION_WORDS[kind].one} « srv${kind}:<n> » ${CREATION_WORDS[kind].expected}` });
+                errors.push({ field: `${field}.ref`, message: CREATION_REFUSALS[kind].expected });
                 return;
             }
             if (!creationIds.has(kind)) creationIds.set(kind, new Set());
@@ -756,9 +772,9 @@ async function readPrizes(ctx: Ctx, body: Record<string, unknown>, challengeId: 
         rules.forEach((r, i) => {
             if (!isCreationKind(r.kind)) return;
             const s = known.get(r.kind)?.get(creationOfRef(r.ref)!.id);
-            const w = CREATION_WORDS[r.kind];
-            if (!s) errors.push({ field: `rewards[${i}].ref`, message: `${w.one} ${w.unknown} du serveur` });
-            else if (s.archived && !already.has(`${r.kind} ${r.ref}`)) errors.push({ field: `rewards[${i}].ref`, message: `${w.one} ${w.archived} : restaurez-${w.it} d'abord` });
+            const w = CREATION_REFUSALS[r.kind];
+            if (!s) errors.push({ field: `rewards[${i}].ref`, message: w.unknown });
+            else if (s.archived && !already.has(`${r.kind} ${r.ref}`)) errors.push({ field: `rewards[${i}].ref`, message: w.archived });
         });
     }
     return { rules, errors };

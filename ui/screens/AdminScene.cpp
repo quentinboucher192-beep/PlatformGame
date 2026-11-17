@@ -826,13 +826,10 @@ private:
         if (kind == "suit") return "combinaison " + jstr(c, "suit", "?") + ", accent " + jstr(c, "accent", "?") + ", écharpe " + jstr(c, "scarf", "?");
         std::string style = creationStyleName(kind, jstr(creation, "style"));
         if (style.empty()) style = "style inconnu";
-        if (kind == "trail") {
-            std::string t = style + ", début " + jstr(c, "start", "?") + ", fin " + jstr(c, "end", "?");
-            if (jfield(creation, "width", Json()).is_number_integer()) t += ", largeur " + std::to_string(jget<int>(creation, "width", 0)) + " %";
-            if (jfield(creation, "life_ms", Json()).is_number_integer()) t += ", durée " + std::to_string(jget<int>(creation, "life_ms", 0)) + " ms";
-            if (jfield(creation, "particles", Json()).is_boolean()) t += jget<bool>(creation, "particles", false) ? ", étincelles" : ", sans étincelles";
-            return t;
-        }
+        if (kind == "trail")
+            return style + ", début " + jstr(c, "start", "?") + ", fin " + jstr(c, "end", "?") + ", largeur " + std::to_string(jget<int>(creation, "width", 0)) +
+                   " %, durée " + std::to_string(jget<int>(creation, "life_ms", 0)) + " ms" +
+                   (jget<bool>(creation, "particles", false) ? ", étincelles" : ", sans étincelles");
         if (kind == "frame") return style + ", bord " + jstr(c, "border", "?") + ", lueur " + jstr(c, "glow", "?");
         return style + ", principale " + jstr(c, "main", "?") + ", secondaire " + jstr(c, "second", "?");
     }

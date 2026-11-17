@@ -484,7 +484,7 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     // Agreed with the category's noun: « Titre créé », « Combinaison créée », « Traînée créée »...
     const bool feminine = pz.prize.suit() || pz.prize.kind == "trail";
     const std::string sub = cosmeticCategorySingular(it.category) +
-                            (pz.prize.serverMade() ? (feminine ? " créée sur Cosmic Online" : " créé sur Cosmic Online") : "") +
+                            (!pz.prize.serverMade() ? "" : feminine ? " créée sur Cosmic Online" : " créé sur Cosmic Online") +
                             " · récompense de ce défi";
     const std::string cond = prizeConditionText(pz.prize);
     const std::string note = "Accordée par Cosmic Online à la fin du défi, d'après les parties vérifiées reçues à l'heure. Jamais retirée.";

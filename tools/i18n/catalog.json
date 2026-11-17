@@ -168,7 +168,25 @@
    ]
   },
   {
+   "fr": "+ Nouveau cadre",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "+ Nouvel effet",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "+ Nouvelle combinaison",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "+ Nouvelle traînée",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
@@ -533,7 +551,7 @@
    ]
   },
   {
-   "fr": "a archivé la combinaison {0}",
+   "fr": "a archivé {0} {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -545,13 +563,13 @@
    ]
   },
   {
-   "fr": "a créé la combinaison {0} ({1})",
+   "fr": "a créé le titre « {0} » ({1})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
   },
   {
-   "fr": "a créé le titre « {0} » ({1})",
+   "fr": "a créé {0} {1} ({2})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -605,7 +623,7 @@
    ]
   },
   {
-   "fr": "a modifié la combinaison {0} ({1})",
+   "fr": "a modifié {0} {1} ({2})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -659,7 +677,7 @@
    ]
   },
   {
-   "fr": "a restauré la combinaison {0}",
+   "fr": "a restauré {0} {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1827,6 +1845,12 @@
    ]
   },
   {
+   "fr": "Anneau poli",
+   "where": [
+    "game/cosmetics/CreationLooks.cpp"
+   ]
+  },
+  {
    "fr": "Anneaux d'or",
    "where": [
     "data/enemies/monolithe.json"
@@ -2001,6 +2025,30 @@
    "fr": "Aperçu",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu : course",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu : profil et classements",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu : ruée",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Aperçu : sortie du niveau",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -2181,7 +2229,7 @@
    ]
   },
   {
-   "fr": "archivage de la combinaison {0}",
+   "fr": "archivage de {0} {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -2217,6 +2265,30 @@
    ]
   },
   {
+   "fr": "Archives",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "archivé",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent. « Restaurer » pour le modifier.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Archivé : restaurez-le pour le modifier.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "archivée",
    "where": [
     "ui/screens/AdminCampaign.cpp",
@@ -2232,12 +2304,6 @@
   },
   {
    "fr": "Archivée : restaurez-la pour la modifier.",
-   "where": [
-    "ui/screens/AdminCreations.cpp"
-   ]
-  },
-  {
-   "fr": "Archivées",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
@@ -3019,6 +3085,12 @@
    ]
   },
   {
+   "fr": "Aucun cadre créé pour l'instant : « Nouveau cadre » pour commencer.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Aucun classement n'est remis à zéro : les classements restent les mêmes. Les meilleurs temps de la révision {0} passent sur la révision {1} (le meilleur temps de chaque joueur, en ligne et dans son jeu, et sa progression dans la course à la vérification, EXTRÊME). Seulement si les deux révisions se jouent exactement de la même façon (décor seul).",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -3100,6 +3172,12 @@
    "fr": "aucun départ du joueur",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "Aucun effet de victoire créé pour l'instant : « Nouvel effet » pour commencer.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -3526,18 +3604,6 @@
    ]
   },
   {
-   "fr": "Aucune combinaison en service : « Archivées » montre celle qui est archivée.",
-   "where": [
-    "ui/screens/AdminCreations.cpp"
-   ]
-  },
-  {
-   "fr": "Aucune combinaison en service : « Archivées » montre les {0} combinaisons archivées.",
-   "where": [
-    "ui/screens/AdminCreations.cpp"
-   ]
-  },
-  {
    "fr": "aucune copie de la progression",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -3743,6 +3809,12 @@
    ]
   },
   {
+   "fr": "Aucune traînée créée pour l'instant : « Nouvelle traînée » pour commencer.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Aucune version nommée pour l'instant.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -3792,7 +3864,8 @@
     "data/cosmetics/cosmetics.json",
     "data/enemies/aurorax.json",
     "data/enemies/echo_aurorax.json",
-    "data/enemies/phenix.json"
+    "data/enemies/phenix.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -3804,7 +3877,8 @@
   {
    "fr": "Aurore boréale",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -3888,6 +3962,12 @@
    "fr": "Autoriser les demandes d'amis",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autour de l'avatar, sur le profil et dans les classements. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -3986,6 +4066,12 @@
    ]
   },
   {
+   "fr": "avant : {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Avant le départ (bouton « Fantômes… » des niveaux, « Course contre ce temps » des CLASSEMENTS, « Course contre un fantôme… » des NIVEAUX EN LIGNE) : choix des fantômes, options d'affichage, mode entraînement.",
    "where": [
     "data/news/changelog.json"
@@ -4040,6 +4126,7 @@
     "game/online/LiveSession.cpp",
     "game/online/OnlineGlobe.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -4850,6 +4937,12 @@
    ]
   },
   {
+   "fr": "Bord",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Bosnie-Herzégovine",
    "where": [
     "data/online/countries.json",
@@ -5319,6 +5412,12 @@
    ]
   },
   {
+   "fr": "Bulles",
+   "where": [
+    "game/cosmetics/CreationLooks.cpp"
+   ]
+  },
+  {
    "fr": "Bulles de lumière",
    "where": [
     "data/enemies/photophore.json"
@@ -5458,6 +5557,12 @@
    ]
   },
   {
+   "fr": "cadre archivé : restaurez-le d'abord",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "Cadre argent.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -5473,6 +5578,12 @@
    "fr": "Cadre d'avatar",
    "where": [
     "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "cadre inconnu du serveur",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -5506,9 +5617,40 @@
    ]
   },
   {
+   "fr": "Cadre « {0} » archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Cadre « {0} » créé. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Cadre « {0} » enregistré : les jeux le redessinent à leur prochaine lecture de la liste.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Cadre « {0} » restauré : de nouveau proposé en récompense.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Cadres",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Cadres d'avatar",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -6507,7 +6649,8 @@
   {
    "fr": "Cercle runique",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -7438,6 +7581,18 @@
    ]
   },
   {
+   "fr": "Choisissez un cadre dans la liste pour le modifier, ou « Nouveau cadre » pour en créer un : un nom, un style que le jeu sait dessiner et deux couleurs (le bord, la lueur). Il se donne ensuite en récompense d'un défi : ceux qui le gagnent l'équipent, et tous les jeux le dessinent sans mise à jour, sur leur profil et dans les classements.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez un effet dans la liste pour le modifier, ou « Nouvel effet » pour en créer un : un nom, un effet que le jeu sait jouer et deux couleurs. Il se donne ensuite en récompense d'un défi : ceux qui le gagnent l'équipent, et tous les jeux le jouent sans mise à jour à la sortie de leurs niveaux.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un fichier .cplanet. Avant toute installation le package est vérifié : format, version du moteur, chemins dangereux, types de fichiers, intégrité (SHA-256), dépendances et conflits d'identifiants. Aucun code provenant d'un package n'est jamais exécuté.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -7501,6 +7656,12 @@
    "fr": "Choisissez une révision à comparer, puis « Comparer ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une traînée dans la liste pour la modifier, ou « Nouvelle traînée » pour en créer une : un nom, une forme que le jeu sait dessiner, deux couleurs (près de Nova, puis au bout), sa largeur, sa durée et ses étincelles. Elle se donne ensuite en récompense d'un défi : ceux qui la gagnent l'équipent, et tous les jeux la dessinent sans mise à jour, derrière eux et derrière leurs fantômes.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -7858,6 +8019,7 @@
   {
    "fr": "Classements",
    "where": [
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -8785,7 +8947,8 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/phenix.json",
-    "data/online/avatars.json"
+    "data/online/avatars.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -9253,7 +9416,8 @@
   {
    "fr": "Constellation",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -9771,9 +9935,33 @@
    ]
   },
   {
+   "fr": "Couleur de la fin",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur de la lueur",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Couleur de lueur",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur du bord",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur du début",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -9786,6 +9974,18 @@
    "fr": "Couleur du rayon",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur principale",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Couleur secondaire",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -9962,7 +10162,8 @@
    "fr": "Couronne solaire",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "data/enemies/phenix.json"
+    "data/enemies/phenix.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -10353,15 +10554,15 @@
    ]
   },
   {
-   "fr": "création de la combinaison {0}",
-   "where": [
-    "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
    "fr": "Création de la publication…",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "création de {0} {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -10381,6 +10582,12 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Créations indisponibles : {0}",
+   "where": [
+    "ui/screens/AdminCalendar.cpp"
    ]
   },
   {
@@ -10507,6 +10714,12 @@
    ]
   },
   {
+   "fr": "Créé le {0}",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "créé par un admin",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -10516,6 +10729,12 @@
    "fr": "créé par un admin · pas besoin de mise à jour",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Créé par {0} le {1}",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -11302,6 +11521,12 @@
    ]
   },
   {
+   "fr": "Derrière Nova quand elle court ou fonce, et derrière ses fantômes. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Des bougies d'âme s'allument une à une autour du portail, puis leurs flammes vertes s'envolent comme des âmes libérées.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -11876,6 +12101,24 @@
    ]
   },
   {
+   "fr": "Donné par aucun défi",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Donné par {0} défi",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Donné par {0} défis",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Donnée par aucun défi",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -12147,6 +12390,7 @@
    "fr": "Durée",
    "where": [
     "game/powers/PowerStats.cpp",
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/GhostRun.cpp"
    ]
@@ -12373,6 +12617,7 @@
   {
    "fr": "Début",
    "where": [
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -13397,7 +13642,8 @@
    "fr": "Effet",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -13419,6 +13665,42 @@
    ]
   },
   {
+   "fr": "effet de victoire archivé : restaurez-le d'abord",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "effet de victoire inconnu du serveur",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Effet de victoire « {0} » archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Effet de victoire « {0} » créé. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Effet de victoire « {0} » enregistré : les jeux le rejouent à leur prochaine lecture de la liste.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Effet de victoire « {0} » restauré : de nouveau proposé en récompense.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Effet {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -13427,7 +13709,8 @@
   {
    "fr": "Effets de victoire",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -15225,7 +15508,8 @@
   {
    "fr": "Feu d'artifice",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -15493,6 +15777,12 @@
    ]
   },
   {
+   "fr": "Fin",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Fin de course : écart final sur chaque fantôme et écran « Segments » (durées, temps cumulés, meilleurs segments, record, fantômes, historique de vos courses).",
    "where": [
     "data/news/changelog.json"
@@ -15677,7 +15967,8 @@
   {
    "fr": "Flammèches",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -15941,6 +16232,12 @@
    ]
   },
   {
+   "fr": "Forme",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Forêt de glace",
    "where": [
     "data/enemies/echo_glaciarch.json",
@@ -16194,6 +16491,24 @@
    "fr": "Gagné : {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "gagné par personne",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "gagné par {0} joueur",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "gagné par {0} joueurs",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -16485,6 +16800,12 @@
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Gemmes serties",
+   "where": [
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -17860,6 +18181,12 @@
    ]
   },
   {
+   "fr": "il avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Il crache son encre !",
    "where": [
     "data/enemies/kraken.json"
@@ -17869,6 +18196,12 @@
    "fr": "Il doit toujours rester au moins un admin.",
    "where": [
     "server/src/adminRoles.ts"
+   ]
+  },
+  {
+   "fr": "il est archivé",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -19011,6 +19344,12 @@
    ]
   },
   {
+   "fr": "Joués à la sortie du niveau. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "JSON invalide",
    "where": [
     "game/online/LevelFingerprint.cpp",
@@ -19268,6 +19607,12 @@
    "fr": "L'eau du lac est glaciale et mord la chair ! Passez par les blocs de glace ou au grappin.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "l'effet de victoire",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -19585,6 +19930,12 @@
    "fr": "La colonne obligatoire « {0}.{1} » manque dans la sauvegarde et n'a pas de valeur par défaut.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "la combinaison",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -20297,6 +20648,12 @@
    ]
   },
   {
+   "fr": "la traînée",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "la Téléportation",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -20493,7 +20850,8 @@
   {
    "fr": "Largeur",
    "where": [
-    "editors/level_editor/LevelEditorPanels.cpp"
+    "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -20636,6 +20994,12 @@
    "fr": "Le bouclier protège",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "le cadre",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -23459,7 +23823,8 @@
   {
    "fr": "Lueur",
    "where": [
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -24922,15 +25287,15 @@
    ]
   },
   {
-   "fr": "modification de la combinaison {0}",
-   "where": [
-    "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
    "fr": "Modification de votre commentaire",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "modification de {0} {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -25014,7 +25379,25 @@
    ]
   },
   {
+   "fr": "Modifier l'effet de victoire",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Modifier la combinaison",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Modifier la traînée",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Modifier le cadre",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
@@ -26540,6 +26923,12 @@
    ]
   },
   {
+   "fr": "Nom de l'effet (32 caractères au plus)",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Nom de l'ordinateur",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -26553,6 +26942,18 @@
   },
   {
    "fr": "Nom de la combinaison (32 caractères au plus)",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Nom de la traînée (32 caractères au plus)",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Nom du cadre (32 caractères au plus)",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
@@ -26614,6 +27015,12 @@
   },
   {
    "fr": "nom ou couleurs invalides",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "nom, couleurs ou réglages invalides",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -26961,6 +27368,12 @@
    ]
   },
   {
+   "fr": "Nouveau cadre",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Nouveau calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -27147,6 +27560,12 @@
    ]
   },
   {
+   "fr": "Nouvel effet de victoire",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Nouvel ennemi",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -27216,6 +27635,12 @@
    "fr": "Nouvelle touche : {0}",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouvelle traînée",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -27526,7 +27951,8 @@
    "fr": "Nébuleuse",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "data/enemies/phenix.json"
+    "data/enemies/phenix.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -28240,7 +28666,8 @@
   {
    "fr": "Orbite",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -29208,6 +29635,12 @@
    ]
   },
   {
+   "fr": "Pas encore créé : « Créer » l'envoie au serveur.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore créée : « Créer » l'envoie au serveur.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -29265,6 +29698,12 @@
    "fr": "Pas encore de temps sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore donné en récompense",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -30509,7 +30948,8 @@
    "fr": "Pluie d'étoiles",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "data/enemies/singularis.json"
+    "data/enemies/singularis.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -31367,7 +31807,8 @@
   {
    "fr": "Poussière d'étoiles",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -31691,6 +32132,12 @@
    ]
   },
   {
+   "fr": "Principale",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Prisme",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -31762,6 +32209,7 @@
   {
    "fr": "Profil",
    "where": [
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -34562,15 +35010,15 @@
    ]
   },
   {
-   "fr": "restauration de la combinaison {0}",
-   "where": [
-    "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
    "fr": "Restauration de la révision {0}",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "restauration de {0} {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -34981,6 +35429,12 @@
    ]
   },
   {
+   "fr": "Rien en service ici : « Archives » en montre {0}.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Rien ne se perd",
    "where": [
     "data/achievements/achievements.json"
@@ -35206,6 +35660,12 @@
    "where": [
     "engine/input/InputTypes.cpp",
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ruban",
+   "where": [
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -35640,6 +36100,7 @@
   {
    "fr": "Réglages",
    "where": [
+    "ui/screens/AdminCreations.cpp",
     "ui/screens/NotificationsScene.cpp"
    ]
   },
@@ -36835,6 +37296,12 @@
    "fr": "Se téléporte sur une courte distance dans la direction visée, à travers les barrières de phase.",
    "where": [
     "data/powers/teleport.json"
+   ]
+  },
+  {
+   "fr": "Secondaire",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -38649,13 +39116,20 @@
   {
    "fr": "Style",
    "where": [
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
    "fr": "Style (title / caption)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "style inconnu",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -38893,7 +39367,8 @@
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/phenix.json",
     "data/enemies/pyrogyre.json",
-    "data/enemies/singularis.json"
+    "data/enemies/singularis.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
@@ -41508,10 +41983,22 @@
    ]
   },
   {
+   "fr": "traînée archivée : restaurez-la d'abord",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "Traînée de feu",
    "where": [
     "data/enemies/echo_ignivore.json",
     "data/enemies/ignivore.json"
+   ]
+  },
+  {
+   "fr": "traînée inconnue du serveur",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -41521,9 +42008,40 @@
    ]
   },
   {
+   "fr": "traînée « srvtrail:<n> » attendue",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Traînée « {0} » archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Traînée « {0} » créée. À donner en récompense : Calendrier des défis › Récompenses.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Traînée « {0} » enregistrée : les jeux la redessinent à leur prochaine lecture de la liste.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Traînée « {0} » restaurée : de nouveau proposée en récompense.",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
    "fr": "Traînées",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -42144,6 +42662,30 @@
    ]
   },
   {
+   "fr": "Un cadre d'avatar créé sur Cosmic Online, gagné à un défi.",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "Un cadre d'avatar créé sur Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "un cadre porte déjà ce nom",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un cadre porte déjà ce nom : choisissez-en un autre.",
+   "where": [
+    "server/src/creations.ts"
+   ]
+  },
+  {
    "fr": "Un clic sur l'avatar d'un joueur ouvre son profil, partout dans le jeu.",
    "where": [
     "data/news/changelog.json"
@@ -42296,6 +42838,30 @@
    "fr": "Un défi réussi en Or.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Un effet de victoire créé sur Cosmic Online, gagné à un défi.",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "Un effet de victoire créé sur Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "un effet de victoire porte déjà ce nom",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un effet de victoire porte déjà ce nom : choisissez-en un autre.",
+   "where": [
+    "server/src/creations.ts"
    ]
   },
   {
@@ -43015,6 +43581,30 @@
    "fr": "Une touche et un bouton de manette pour chaque pouvoir du niveau qui s'utilise avec une touche à lui : les mêmes quel que soit l'emplacement du pouvoir. Sans choix ici, un pouvoir garde sa touche suggérée. Chaque joueur peut changer les siennes (choix du niveau, pause).",
    "where": [
     "editors/level_editor/LevelEditorPowerKeys.cpp"
+   ]
+  },
+  {
+   "fr": "Une traînée créée sur Cosmic Online, gagnée à un défi.",
+   "where": [
+    "game/cosmetics/Collection.cpp"
+   ]
+  },
+  {
+   "fr": "Une traînée créée sur Cosmic Online.",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "une traînée porte déjà ce nom",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Une traînée porte déjà ce nom : choisissez-en un autre.",
+   "where": [
+    "server/src/creations.ts"
    ]
   },
   {
@@ -43912,6 +44502,7 @@
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
+    "game/cosmetics/CreationLooks.cpp",
     "game/cosmetics/SuitRecolor.cpp",
     "game/ghost/ReplayLibrary.cpp",
     "game/ghost/SegmentHistory.cpp",
@@ -44698,12 +45289,14 @@
   {
    "fr": "Vortex",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "game/cosmetics/CreationLooks.cpp"
    ]
   },
   {
    "fr": "vortex",
    "where": [
+    "game/cosmetics/CreationLooks.cpp",
     "game/enemies/EnemyDefinition.cpp"
    ]
   },
@@ -44934,6 +45527,12 @@
    "fr": "votre pays",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre pseudo",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -46730,13 +47329,7 @@
    ]
   },
   {
-   "fr": "{0} en service · {1} archivée",
-   "where": [
-    "ui/screens/AdminCreations.cpp"
-   ]
-  },
-  {
-   "fr": "{0} en service · {1} archivées",
+   "fr": "{0} en service · {1} en archive",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
@@ -47152,6 +47745,12 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/records/Records.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ms",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -48035,13 +48634,37 @@
    ]
   },
   {
+   "fr": "{0}, bord {1}, lueur {2}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}, c'est la dernière publiée.",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
   },
   {
+   "fr": "{0}, début {1}, fin {2}, largeur {3} %, durée {4} ms, sans étincelles",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}, début {1}, fin {2}, largeur {3} %, durée {4} ms, étincelles",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "{0}, la dernière publiée est la {1}.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}, principale {1}, secondaire {2}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -49765,7 +50388,14 @@
   {
    "fr": "Étincelles",
    "where": [
-    "data/enemies/phenix.json"
+    "data/enemies/phenix.json",
+    "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Étincelles autour de la traînée",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
@@ -50085,6 +50715,12 @@
    "fr": "›  {0} objets sélectionnés",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "← → : de 10 en 10 · Maj : de 1 en 1",
+   "where": [
+    "ui/screens/AdminCreations.cpp"
    ]
   },
   {
