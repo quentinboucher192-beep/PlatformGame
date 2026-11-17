@@ -5,6 +5,14 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.60.0** :
+* L'**histoire de Pyrrhax** (« Le Dragon d'Obsidienne ») devient un **petit dessin animé** : ses six plans sont
+  des scènes animées faites de vrais sprites dans le style du jeu (la Fumerolle et ses frères et sœurs de feu,
+  l'œuf qui éclot dans le nid de cendres, flammes, fumée, pluie de braises, ventre qui s'illumine,
+  transformation en dragon de verre noir), animés image par image, sur un décor en couches qui défile
+  (parallaxe), avec une caméra qui suit l'action ; format des histoires en **version 2** (les autres histoires
+  gardent leurs peintures). Une pastille NOUVEAU mène à « Revoir l'histoire ».
+
 **Nouveau dans la version 2.59.0** :
 * **Administration › Créations**, trois nouveaux types en plus des combinaisons : des **traînées** (une forme
   que le jeu sait dessiner, la couleur près de Nova et celle du bout, la largeur, la durée, les étincelles),

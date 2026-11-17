@@ -1608,7 +1608,9 @@ private:
                         g_.bossStats.save();
                         g_.app.pushScene(std::move(scene));
                     }
-                ui.newBadge("story", storyR, "gallery.story", true, true);
+                // 2.60: a story told anew (Pyrrhax's, in animated scenes) has its own novelty.
+                const std::string fresh = "gallery.story." + sel->id;
+                ui.newBadge("story", storyR, ui.isNew(fresh) ? fresh : std::string("gallery.story"), true, true);
             }
         }
     }

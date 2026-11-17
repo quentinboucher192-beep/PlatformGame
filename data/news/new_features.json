@@ -4,6 +4,20 @@
  "comment": "Novelties of each update and the trail to them (game/progression/NewBadges.h). An entry with a version is a novelty: its « NOUVEAU » pill goes once its widget gets the focus or a click. « parents »: the widgets that lead to it (menu entry, tab, category…); an entry without a version is a step of that trail. A parent shows the pill as long as anything under it is new.",
  "features": [
   {
+   "id": "gallery.story.pyrrhax",
+   "version": "2.60.0",
+   "parents": [
+    "gallery.boss.pyrrhax"
+   ]
+  },
+  {
+   "id": "stats.story.pyrrhax",
+   "version": "2.60.0",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
    "id": "pause.level_keys",
    "version": "2.31.0"
   },

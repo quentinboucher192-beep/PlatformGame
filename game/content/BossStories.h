@@ -130,7 +130,7 @@ struct StoryShot {
     std::string text;             // the narration
     Vec2 focus{0.5f, 0.5f};       // the point the zoom goes to (0..1 of the painting)
     float zoom = 1.1f;            // the painting's scale at the end of the shot (1 at its start)
-    std::string particles = "dust";  // over the painting: dust, embers, sparks, snow, stars, none
+    std::string particles = "dust";  // over the painting: dust, embers, sparks, snow, stars, ember_rain (2.60), none
     Color glow = Color::white();  // the particles' colour
     std::optional<StoryStage> stage;  // version 2: the animated scene
 };

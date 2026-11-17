@@ -158,12 +158,12 @@ def shot_nest(D):
         sprite("volute1", "volute", [K(0, pos=(400, 436), clip="rise", alpha=0.7)]),
         sprite("volute2", "volute", [K(0, pos=(570, 432), clip="rise", offset=0.5, alpha=0.6, flip=True)]),
         sprite("nid_fond", "nid", [K(0, pos=nest, clip="back")]),
-        sprite("frere_fond", "frere", [K(0, pos=(612, 414), clip="watch", flip=True, scale=0.86), K(3.75, clip="cheer"),
+        sprite("frere_fond", "frere", [K(0, pos=(598, 410), clip="watch", flip=True, scale=0.8), K(3.75, clip="cheer"),
                                        K(5.4, clip="watch", offset=0.3)], depth=0.96),
         sprite("coquilles", "coquilles", [K(0, pos=(372, 452), clip="idle")]),
         sprite("coquilles2", "coquilles", [K(0, pos=(600, 450), clip="idle", flip=True, offset=0.4)]),
         sprite("frere", "frere", [K(0, pos=(262, 444), clip="watch"), K(3.7, clip="cheer"), K(5.6, clip="watch")]),
-        sprite("soeur", "soeur", [K(0, pos=(720, 448), clip="watch", flip=True, offset=0.2), K(3.85, clip="cheer"),
+        sprite("soeur", "soeur", [K(0, pos=(768, 448), clip="watch", flip=True, offset=0.2), K(3.85, clip="cheer"),
                                   K(5.5, clip="idle")]),
         glow("lueur_nid", "#ff8a3a", 240, [K(0, pos=(480, 440), alpha=0.3), K(2.2, alpha=0.36), K(3.5, alpha=0.62, ease="out"),
                                            K(D, alpha=0.4)]),
@@ -223,7 +223,7 @@ def shot_smoke(D):
     px, py = fumx[0] + mb[0], fumx[1] + mb[1]
     cx, cy = fumx[0] + mc[0], fumx[1] + mc[1]
     els += [
-        sprite("fumee", "fumee", [K(0, pos=(px, py), alpha=0.0), K(4.05, alpha=0.0, ease="step"),
+        sprite("fumee", "fumee", [K(0, pos=(px, py), alpha=0.0, scale=1.7), K(4.05, alpha=0.0, ease="step"),
                                   K(4.06, alpha=1.0, clip="puff", ease="step"), K(5.5, pos=(px + 30, py - 16), ease="linear")]),
         sprite("toux1", "fumee", [K(0, pos=(cx, cy), alpha=0.0), K(5.06, alpha=0.0, ease="step"),
                                   K(5.07, alpha=0.9, clip="small", ease="step"), K(5.7, pos=(cx + 10, cy - 12), ease="linear")]),
@@ -283,14 +283,16 @@ def shot_ember_rain(D):
         x0 = rng.uniform(280, 1300)
         dur = rng.uniform(1.3, 1.9) if not far else rng.uniform(1.9, 2.4)
         els.append(_fall(k, x0, t, dur, 0.55 if far else 1.0, rng, land_y=410 if far else rng.uniform(430, 452),
-                         scale=0.7 if far else 1.0, impact=not far, end=D))
+                         scale=0.8 if far else 1.35, impact=not far, end=D))
         k += 1
-        t += rng.uniform(0.12, 0.3)
+        t += rng.uniform(0.07, 0.18)
     els += [
         sprite("fumerolle", "fumerolle", [K(0, pos=(250, 436), clip="walk"), K(2.3, pos=(420, 436), ease="linear"),
                                           K(2.31, clip="idle", ease="step"), K(2.8, clip="look_up")]),
         particles("braises", "embers", "#ff8a3a", (100, 180, 760, 280), [K(0, alpha=0.0), K(2.2, alpha=0.0), K(3.0, alpha=1.0)]),
         particles("etincelles", "sparks", "#ffb070", (100, 340, 760, 110), [K(0, alpha=0.0), K(3.2, alpha=0.0), K(3.8, alpha=0.9)]),
+        particles("pluie", "ember_rain", "#ff9a40", (0, -40, 1000, 520), [K(0, alpha=0.0), K(2.0, alpha=0.0), K(2.8, alpha=1.0)],
+                  depth=0.7),
     ]
     els += front()
     cam = [K(0, pos=(570, 190), zoom=1.32), K(2.2, pos=(560, 200), zoom=1.3), K(4.4, pos=(450, 352), zoom=1.2),
@@ -311,7 +313,8 @@ def shot_swallow(D):
     # background rain, far
     for j in range(6):
         els.append(_fall(30 + j, rng.uniform(500, 1200), 0.2 + j * 0.9, 2.2, 0.55, rng, land_y=410, scale=0.7, impact=False, end=D))
-    belly = (fum[0] + (63 - 56) * PIX, fum[1] - (74 - 61) * PIX)
+    els.append(particles("pluie", "ember_rain", "#ff8a3a", (0, -40, 1000, 470), [K(0, alpha=0.55)], depth=0.5))
+    belly =(fum[0] + (63 - 56) * PIX, fum[1] - (74 - 61) * PIX)
     els.append(glow("forge", "#ff7a2a", 300, [K(0, pos=belly, alpha=0.0), K(1.5, alpha=0.1), K(2.9, alpha=0.2),
                                               K(4.1, alpha=0.45, ease="out"), K(D, alpha=0.4)]))
     keys = [K(0, pos=fum, clip="idle")]
@@ -341,8 +344,8 @@ def shot_swallow(D):
         particles("braises", "embers", "#ff8a3a", (300, 160, 400, 300), [K(0, alpha=0.4), K(4.0, alpha=0.4), K(4.6, alpha=0.9)]),
     ]
     els += front()
-    cam = [K(0, pos=(520, 352), zoom=1.62), K(1.2, pos=(510, 360), zoom=1.7), K(4.0, pos=(490, 372), zoom=1.88),
-           K(D, pos=(486, 378), zoom=1.98)]
+    cam = [K(0, pos=(530, 352), zoom=2.0), K(1.2, pos=(520, 360), zoom=2.06), K(4.0, pos=(500, 376), zoom=2.24),
+           K(D, pos=(496, 380), zoom=2.34)]
     return dict(backdrop="#12040e", camera=cam, elements=els, still=5.2)
 
 
@@ -383,7 +386,7 @@ def shot_glass(D):
 
 def shot_frontier(D):
     """Depuis, il garde la dernière frontière. Plus personne ne se moquera jamais de son feu."""
-    moon = (690, 190)
+    moon = (600, 168)
     els = [layer("ciel", "ciel_rouge", 0.03, (-80, -30)),
            layer("etoiles", "etoiles", 0.08, (-80, -20), drift=(5, 0), repeat=True)]
     els += twinkles(606, 6, (40, 20, 600, 200))
@@ -399,14 +402,15 @@ def shot_frontier(D):
         layer("pics", "pics", 0.5, (-320, 150)),
         layer("sol", "sol", 1.0, (-280, 400)),
     ]
-    px, py = 690, 316
+    px, py = 700, 380
     t_in, t_fire = 3.5, 4.26
-    mouth = (px - (228 - 128) * PIX * 1.0, py + (95 - 152) * PIX * 1.0)
+    PS = 0.85  # the boss a little smaller than in its arena: the whole dragon in the frame
+    mouth = (px - (228 - 128) * PIX * PS, py + (95 - 152) * PIX * PS)
     els += [
-        sprite("rocher", "rocher", [K(0, pos=(700, 476), clip="idle")]),
-        sprite("pyrrhax", BOSS, [K(0, pos=(px, py), clip="idle", flip=True), K(t_in, clip="telegraph_special"),
+        sprite("rocher", "rocher", [K(0, pos=(706, 524), clip="idle")]),
+        sprite("pyrrhax", BOSS, [K(0, pos=(px, py), clip="idle", flip=True, scale=PS), K(t_in, clip="telegraph_special"),
                                  K(t_fire, clip="special")]),
-        sprite("souffle", "flamme", [K(0, pos=mouth, alpha=0.0, flip=True, scale=1.5), K(t_fire, alpha=0.0, ease="step"),
+        sprite("souffle", "flamme", [K(0, pos=mouth, alpha=0.0, flip=True, scale=1.3), K(t_fire, alpha=0.0, ease="step"),
                                      K(t_fire + 0.01, alpha=1.0, clip="start", ease="step")], blend="add"),
         glow("souffle_lueur", "#ff8a3a", 220, [K(0, pos=(mouth[0] - 200, mouth[1]), alpha=0.0), K(t_fire, alpha=0.0),
                                                K(t_fire + 0.3, alpha=0.8), K(D, alpha=0.8)]),
@@ -415,8 +419,8 @@ def shot_frontier(D):
                                                                            K(t_fire + 0.4, alpha=1.0)]),
     ]
     els += front()
-    cam = [K(0, pos=(380, 320), zoom=1.24), K(1.0, pos=(400, 318), zoom=1.22), K(3.2, pos=(600, 300), zoom=1.12),
-           K(D, pos=(560, 292), zoom=1.06)]
+    cam = [K(0, pos=(390, 312), zoom=1.16), K(1.0, pos=(410, 310), zoom=1.15), K(3.2, pos=(590, 300), zoom=1.08),
+           K(D, pos=(560, 296), zoom=1.04)]
     shake = [{"from": t_fire, "to": D, "amount": 2.5}]
     return dict(backdrop="#12040e", camera=cam, elements=els, shake=shake, still=5.6)
 

@@ -7225,6 +7225,12 @@
    ]
   },
   {
+   "fr": "Chaque personnage joue ses animations image par image (éclosion, souffle de flammes, nuage de fumée, toux, braises avalées, transformation, rugissement) ; le décor défile en plusieurs couches, la caméra suit l'action, l'écran tremble et s'illumine au rythme du texte, qui reste aussi long à lire qu'avant.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous et pour ce niveau ; « Par défaut » reprend la touche du niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -18232,6 +18238,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorLive.cpp",
     "game/achievements/Achievements.cpp",
+    "game/content/BossStories.cpp",
     "game/content/ContentDatabase.cpp",
     "game/cosmetics/Collection.cpp",
     "game/enemies/EnemyDefinition.cpp",
@@ -19917,6 +19924,12 @@
    "fr": "L'extension n'est pas .cplanet",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "L'histoire de Pyrrhax, « Le Dragon d'Obsidienne », devient un petit dessin animé : ses six plans sont des scènes animées faites de vrais sprites, dans le style du jeu — la Fumerolle et ses frères et sœurs de feu, l'œuf qui éclot dans le nid de cendres, les flammes, la fumée, la pluie de braises, le ventre qui s'illumine, la transformation en dragon de verre noir, puis le grand Pyrrhax devant la dernière frontière.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -32281,6 +32294,12 @@
    ]
   },
   {
+   "fr": "Pour la revoir : Collection › Galerie › Boss, ou les statistiques des boss (« Revoir l'histoire ») ; une pastille NOUVEAU vous y mène.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pour les tâches les plus lourdes, ils bâtirent un colosse d'acier et de laiton : le Titan.",
    "where": [
     "data/stories/titan.json"
@@ -39312,6 +39331,7 @@
    "fr": "sprite",
    "where": [
     "editors/level_editor/LevelEditorViewport.cpp",
+    "game/content/BossStories.cpp",
     "game/levels/ObjectTypes.cpp"
    ]
   },
@@ -45335,6 +45355,7 @@
     "editors/level_editor/LevelEditorCampaign.cpp",
     "game/GameServices.cpp",
     "game/achievements/Achievements.cpp",
+    "game/content/BossStories.cpp",
     "game/content/ContentDatabase.cpp",
     "game/cosmetics/CreationLooks.cpp",
     "game/cosmetics/SuitRecolor.cpp",

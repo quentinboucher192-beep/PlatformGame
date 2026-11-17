@@ -12,6 +12,7 @@
 #include <memory>
 #include <set>
 
+#include "engine/animation/Animation.h"
 #include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
@@ -115,6 +116,254 @@ TEST_CASE("boss stories: every giga boss of the game has its story of six lines,
     for (const char* id : {"singularis", "pyrrhax", "monolithe", "kraken", "phenix", "liche", "titan"}) {
         float t = story::duration(*stories.find(id));
         CHECK(t >= 35.0f && t <= 50.0f);
+    }
+}
+
+// 2.60: version 2 of the stories. Pyrrhax's story is told in six animated scenes: its sprites
+// (sheets in the game's animation format), its layers of scenery, its keys within each shot;
+// the six other stories are still read as version 1 (their paintings).
+TEST_CASE("boss stories v2: Pyrrhax in animated scenes, every file and clip there, keys within their shots") {
+    BossStories stories;
+    std::string err;
+    CHECK(stories.loadDefault(&err));
+    CHECK(err.empty());
+    const BossStory* p = stories.find("pyrrhax");
+    CHECK(p != nullptr);
+    if (!p) return;
+    CHECK(p->version == 2);
+    CHECK(p->shots.size() == 6);
+    // The other stories: version 1, their paintings, no scene.
+    int others = 0;
+    for (const auto& [id, s] : stories.all()) {
+        if (id == "pyrrhax") continue;
+        ++others;
+        CHECK(s.version == 1);
+        for (const StoryShot& shot : s.shots) {
+            CHECK(!shot.stage.has_value());
+            CHECK(!shot.image.empty());
+        }
+    }
+    CHECK(others == 6);
+    std::set<std::string> sheets;
+    for (const StoryShot& shot : p->shots) {
+        CHECK(shot.stage.has_value());
+        if (!shot.stage) continue;
+        const StoryStage& st = *shot.stage;
+        // Its still stays (the shot's image when the scene cannot be played).
+        auto [w, h] = pngSize(Paths::assetsDir() / shot.image);
+        CHECK(w == 960 && h == 540);
+        CHECK(st.size.x == 960.0f && st.size.y == 540.0f);
+        // Every time it names is within the shot (seconds of its French line).
+        const float dur = story::shotDuration(shot.text);
+        CHECK(st.lastTime() <= dur + 1e-3f);
+        CHECK(st.camera.size() >= 2);
+        for (const StoryKey& k : st.camera) CHECK(k.t >= 0.0f && k.t <= dur + 1e-3f);
+        for (const StoryShake& s : st.shakes) CHECK(s.from >= 0.0f && s.to <= dur + 1e-3f && s.from <= s.to);
+        for (const StoryFlash& f : st.flashes) CHECK(f.t >= 0.0f && f.t <= dur + 1e-3f);
+        // The camera moves in every shot, and nothing stays still: every sprite plays a clip of
+        // several frames or moves, every layer slides by itself or with the camera (parallax).
+        const auto [c0, z0] = st.cameraAt(0.0f);
+        const auto [c1, z1] = st.cameraAt(dur);
+        const bool cameraMoves = c0.x != c1.x || c0.y != c1.y || z0 != z1;
+        CHECK(cameraMoves);
+        int layers = 0, sprites = 0;
+        for (const StoryElement& e : st.elements) {
+            CHECK(!e.keys.empty());
+            for (size_t k = 1; k < e.keys.size(); ++k) CHECK(e.keys[k - 1].t <= e.keys[k].t);
+            for (const StoryKey& k : e.keys) CHECK(k.t >= 0.0f && k.t <= dur + 1e-3f);
+            bool keysMove = false;
+            for (const StoryKey& k : e.keys) keysMove |= (k.pos && e.keys.size() > 1) || k.alpha || k.rot || k.scale;
+            if (e.kind == StoryElementKind::Layer) {
+                ++layers;
+                CHECK(e.source.rfind("stories/pyrrhax/", 0) == 0);
+                auto [lw, lh] = pngSize(Paths::assetsDir() / e.source);
+                CHECK(lw > 0 && lh > 0);
+                CHECK(e.drift.x != 0.0f || e.depth > 0.0f || keysMove);
+            } else if (e.kind == StoryElementKind::Sprite) {
+                ++sprites;
+                sheets.insert(e.source);
+                auto j = FileUtil::loadJson(Paths::assetsDir() / e.source);
+                CHECK(j.has_value());
+                if (!j) continue;
+                auto set = AnimationSet::fromJson(*j, e.source);
+                auto [sw, sh] = pngSize(Paths::assetsDir() / set->texturePath);
+                CHECK(sw >= set->frameWidth && sh >= set->frameHeight);
+                bool animated = false;
+                for (const StoryKey& k : e.keys) {
+                    if (k.clip.empty()) continue;
+                    const AnimationClip* c = set->clip(k.clip);
+                    CHECK(c != nullptr);
+                    if (!c) std::printf("  %s: no clip %s in %s\n", e.id.c_str(), k.clip.c_str(), e.source.c_str());
+                    if (c) {
+                        animated |= c->frameCount() > 1;
+                        // every frame it plays is inside its sheet
+                        CHECK((c->start + c->frameCount()) * set->frameWidth <= sw && (c->row + 1) * set->frameHeight <= sh);
+                    }
+                }
+                CHECK(animated || keysMove);
+            } else if (e.kind == StoryElementKind::Particles) {
+                CHECK(e.area.w > 0.0f && e.area.h > 0.0f);
+            }
+        }
+        CHECK(layers >= 4);  // the sky, far, middle, near (parallax)
+        CHECK(sprites >= 3);
+    }
+    // The hatchlings, the egg, the nest, fire, smoke, embers, the sky, the frontier, and the boss's
+    // own sheet when it has grown.
+    for (const char* s : {"fumerolle", "frere", "soeur", "jeune", "oeuf", "coquille", "nid", "flamme", "fumee", "volute", "braise",
+                          "etoile", "astre", "lune", "porte", "rocher"})
+        CHECK(sheets.count(std::string("animations/stories/pyrrhax_") + s + ".json") == 1);
+    CHECK(sheets.count("animations/pyrrhax.json") == 1);
+    const story::StageAssets assets = story::stageAssets(*p);
+    CHECK(assets.animations.size() == sheets.size());
+    CHECK(assets.textures.size() >= 6);
+    // Its duration and its title card do not change.
+    CHECK(story::duration(*p) >= 35.0f && story::duration(*p) <= 50.0f);
+}
+
+TEST_CASE("boss stories v2: the format (keys, clips, camera, shakes, flashes; version 1 unchanged)") {
+    // Keys: what a key does not give is kept; pos goes from one key to the next with its ease;
+    // flip and clip change at the key; a clip starts at its key, `offset` seconds in.
+    std::vector<StoryKey> keys(4);
+    keys[0].t = 0.0f;
+    keys[0].pos = Vec2{0.0f, 10.0f};
+    keys[0].clip = "idle";
+    keys[1].t = 2.0f;
+    keys[1].pos = Vec2{100.0f, 10.0f};
+    keys[1].ease = StoryEase::Linear;
+    keys[2].t = 3.0f;
+    keys[2].clip = "walk";
+    keys[2].offset = 0.5f;
+    keys[2].flip = true;
+    keys[2].alpha = 0.0f;
+    keys[2].ease = StoryEase::Step;
+    keys[3].t = 4.0f;
+    keys[3].alpha = 1.0f;
+    keys[3].ease = StoryEase::Linear;
+    StoryElementState s = storyStateAt(keys, 1.0f);
+    CHECK_NEAR(s.pos.x, 50.0f, 1e-3f);
+    CHECK_NEAR(s.pos.y, 10.0f, 1e-3f);
+    CHECK(s.clip == "idle");
+    CHECK_NEAR(s.clipTime, 1.0f, 1e-4f);
+    CHECK(!s.flip);
+    s = storyStateAt(keys, 2.9f);  // a step: still the value before
+    CHECK_NEAR(s.alpha, 1.0f, 1e-4f);
+    CHECK_NEAR(s.pos.x, 100.0f, 1e-3f);
+    s = storyStateAt(keys, 3.2f);
+    CHECK(s.clip == "walk" && s.flip);
+    CHECK_NEAR(s.clipTime, 0.7f, 1e-4f);
+    CHECK_NEAR(s.alpha, 0.0f, 1e-4f);
+    s = storyStateAt(keys, 3.5f);
+    CHECK_NEAR(s.alpha, 0.5f, 1e-4f);
+    s = storyStateAt(keys, 9.0f);  // after the last key: its values
+    CHECK_NEAR(s.alpha, 1.0f, 1e-4f);
+    CHECK_NEAR(s.pos.x, 100.0f, 1e-3f);
+    // Before its first clip starts, a sprite shows that clip's first frame.
+    std::vector<StoryKey> late(2);
+    late[0].t = 0.0f;
+    late[1].t = 1.5f;
+    late[1].clip = "hatch";
+    s = storyStateAt(late, 0.4f);
+    CHECK(s.clip == "hatch");
+    CHECK_NEAR(s.clipTime, 0.0f, 1e-5f);
+    CHECK_NEAR(storyEase(StoryEase::InOut, 0.5f), 0.5f, 1e-5f);
+    CHECK_NEAR(storyEase(StoryEase::In, 0.5f), 0.25f, 1e-5f);
+    CHECK_NEAR(storyEase(StoryEase::Out, 0.5f), 0.75f, 1e-5f);
+
+    // A story of version 2, read from its JSON.
+    Json j = Json::parse(R"({
+      "boss": "test", "version": 2, "title": "Essai",
+      "shots": [
+        {"text": "Une ligne.", "image": "stories/x_1.png",
+         "stage": {"backdrop": "#102030",
+                   "camera": [{"t": 0, "pos": [480, 270], "zoom": 1}, {"t": 4, "pos": [500, 300], "zoom": 2, "ease": "linear"}],
+                   "shake": [{"from": 1, "to": 2, "amount": 5}],
+                   "flash": [{"t": 3, "in": 0.2, "out": 0.5, "color": "#ffffff", "alpha": 0.8}],
+                   "elements": [
+                     {"id": "ciel", "layer": "stories/pyrrhax/ciel_nuit.png", "depth": 0.05, "drift": [4, 0], "repeat": true,
+                      "keys": [{"t": 0, "pos": [-80, -30]}]},
+                     {"id": "x", "sprite": "animations/stories/pyrrhax_oeuf.json", "blend": "add",
+                      "keys": [{"t": 2, "clip": "crack"}, {"t": 0, "pos": [480, 450], "clip": "idle"}]},
+                     {"id": "l", "glow": "#ff8a3a", "radius": 120, "keys": [{"t": 0, "alpha": 0.5}]},
+                     {"id": "p", "particles": "embers", "color": "#ffb066", "area": [0, 0, 960, 540], "keys": [{"t": 0}]}
+                   ]}},
+        {"text": "Une autre.", "image": "stories/x_2.png"}
+      ]})");
+    std::string why;
+    auto v2 = BossStory::fromJson(j, &why);
+    if (!v2) std::printf("  %s\n", why.c_str());
+    CHECK(v2.has_value());
+    if (v2) {
+        CHECK(v2->version == 2);
+        CHECK(v2->shots.size() == 2);
+        CHECK(v2->shots[0].stage.has_value() && !v2->shots[1].stage.has_value());
+        const StoryStage& st = *v2->shots[0].stage;
+        CHECK(st.elements.size() == 4);
+        CHECK(st.elements[0].kind == StoryElementKind::Layer && st.elements[0].repeat && st.elements[0].drift.x == 4.0f);
+        CHECK(st.elements[1].kind == StoryElementKind::Sprite && st.elements[1].additive);
+        CHECK(st.elements[1].keys.front().t == 0.0f);  // its keys sorted by time
+        CHECK(st.elements[2].kind == StoryElementKind::Glow && st.elements[2].radius == 120.0f);
+        CHECK(st.elements[3].kind == StoryElementKind::Particles && st.elements[3].source == "embers");
+        CHECK(st.backdrop.r == 0x10 && st.backdrop.g == 0x20 && st.backdrop.b == 0x30);
+        auto [cam, zoom] = st.cameraAt(2.0f);
+        CHECK_NEAR(cam.x, 490.0f, 1e-3f);
+        CHECK_NEAR(zoom, 1.5f, 1e-4f);
+        // The view never leaves the stage: a view as large as the stage is centred.
+        Vec2 c = st.clampCamera({900.0f, 10.0f}, {480.0f, 270.0f});
+        CHECK_NEAR(c.x, 720.0f, 1e-3f);
+        CHECK_NEAR(c.y, 135.0f, 1e-3f);
+        c = st.clampCamera({900.0f, 10.0f}, {960.0f, 540.0f});
+        CHECK_NEAR(c.x, 480.0f, 1e-3f);
+        CHECK_NEAR(c.y, 270.0f, 1e-3f);
+        CHECK(st.shakeAt(0.5f).x == 0.0f && st.shakeAt(2.5f).y == 0.0f);
+        const Vec2 sh = st.shakeAt(1.5f);
+        CHECK(sh.x != 0.0f || sh.y != 0.0f);
+        CHECK(std::fabs(sh.x) <= 5.0f + 1e-3f && std::fabs(sh.y) <= 5.0f + 1e-3f);
+        Color fc = Color::black();
+        CHECK_NEAR(st.flashAt(3.0f, &fc), 0.8f, 1e-4f);
+        CHECK(st.flashAt(2.5f) == 0.0f && st.flashAt(3.6f) == 0.0f);
+        CHECK_NEAR(st.lastTime(), 4.0f, 1e-4f);
+    }
+    // Damaged scenes are refused (the story is skipped, never half read).
+    Json bad = j;
+    bad["shots"][0]["stage"]["elements"][0].erase("layer");
+    CHECK(!BossStory::fromJson(bad).has_value());
+    bad = j;
+    bad["shots"][0]["stage"]["elements"][1]["keys"] = Json::array();
+    CHECK(!BossStory::fromJson(bad).has_value());
+    bad = j;
+    bad["version"] = 3;  // a newer format: not read
+    CHECK(!BossStory::fromJson(bad).has_value());
+    // Version 1: a « stage » is not read (a story of version 1 stays painted).
+    Json v1 = j;
+    v1["version"] = 1;
+    auto old = BossStory::fromJson(v1);
+    CHECK(old.has_value() && old->version == 1 && !old->shots[0].stage.has_value());
+    Json none = j;
+    none.erase("version");
+    auto implicit = BossStory::fromJson(none);
+    CHECK(implicit.has_value() && implicit->version == 1);
+
+    // The frames a sprite plays: a looping clip wraps, the hatching egg goes on with its
+    // « hatched » clip, a clip it does not have is its idle one.
+    auto ej = FileUtil::loadJson(Paths::assetsDir() / "animations/stories/pyrrhax_oeuf.json");
+    CHECK(ej.has_value());
+    if (ej) {
+        auto set = AnimationSet::fromJson(*ej, "animations/stories/pyrrhax_oeuf.json");
+        const AnimationClip* idle = set->clip("idle");
+        const AnimationClip* hatch = set->clip("hatch");
+        const AnimationClip* hatched = set->clip("hatched");
+        CHECK(idle && hatch && hatched);
+        if (idle && hatch && hatched) {
+            CHECK(hatch->next == "hatched" && !hatch->loop && hatched->loop);
+            const float total = hatch->totalDuration();
+            CHECK(storySpriteFrame(*set, "hatch", 0.0f).y == set->frameRect(*hatch, 0).y);
+            const Rect after = storySpriteFrame(*set, "hatch", total + 0.01f);
+            CHECK(after.y == set->frameRect(*hatched, 0).y && after.x == set->frameRect(*hatched, 0).x);
+            const Rect wrapped = storySpriteFrame(*set, "idle", idle->totalDuration() * 3.0f + 0.001f);
+            CHECK(wrapped.x == set->frameRect(*idle, 0).x);
+            CHECK(storySpriteFrame(*set, "no_such_clip", 0.0f).y == set->frameRect(*idle, 0).y);
+        }
     }
 }
 
@@ -240,7 +489,13 @@ TEST_CASE("boss stories: the run waits while the story is told (headless game lo
             const Vec2 player = w->player().box.pos();
             const float bossHp = w->activeBoss() ? w->activeBoss()->hp() : -1.0f;
             const Vec2 boss = w->activeBoss() ? w->activeBoss()->box.pos() : Vec2{};
-            app.runFrames(300);  // five seconds of story
+            // 2.60: its scenes' textures were all loaded when it started (its layers, its sprite
+            // sheets): none is read while it plays.
+            const size_t textures = app.resources().textureCount();
+            for (const std::string& tex : story::stageAssets(*g.stories.find("pyrrhax")).textures)
+                CHECK(app.resources().exists(tex));
+            app.runFrames(300);  // five seconds of story (its first scene, the second one starting)
+            CHECK(app.resources().textureCount() == textures);
             CHECK(app.sceneCount() == 2);
             CHECK(w->time() == time);
             CHECK(w->timer().elapsed() == timer);

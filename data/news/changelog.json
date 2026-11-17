@@ -1,4 +1,9 @@
 {
+  "2.60.0": [
+    "L'histoire de Pyrrhax, « Le Dragon d'Obsidienne », devient un petit dessin animé : ses six plans sont des scènes animées faites de vrais sprites, dans le style du jeu — la Fumerolle et ses frères et sœurs de feu, l'œuf qui éclot dans le nid de cendres, les flammes, la fumée, la pluie de braises, le ventre qui s'illumine, la transformation en dragon de verre noir, puis le grand Pyrrhax devant la dernière frontière.",
+    "Chaque personnage joue ses animations image par image (éclosion, souffle de flammes, nuage de fumée, toux, braises avalées, transformation, rugissement) ; le décor défile en plusieurs couches, la caméra suit l'action, l'écran tremble et s'illumine au rythme du texte, qui reste aussi long à lire qu'avant.",
+    "Pour la revoir : Collection › Galerie › Boss, ou les statistiques des boss (« Revoir l'histoire ») ; une pastille NOUVEAU vous y mène."
+  ],
   "2.59.0": [
     "Administration › Créations : en plus des combinaisons, un admin crée des traînées (une forme que le jeu sait dessiner — comète, poussière d'étoiles, ruban, flammèches, aurore, bulles —, la couleur près de Nova et celle du bout, la largeur, la durée et les étincelles), des cadres d'avatar (un style — anneau poli, gemmes serties, orbite, nébuleuse, constellation, cercle runique —, la couleur du bord et de la lueur) et des effets de victoire (feu d'artifice, pluie d'étoiles, supernova, vortex, aurore boréale ou couronne solaire, en deux couleurs), chacun avec son aperçu animé ; il les modifie ou les archive.",
     "Comme les combinaisons, ils se donnent en récompense d'un défi (Calendrier des défis › Récompenses) ; gagnés, ils rejoignent leur catégorie du Vestiaire et s'équipent, sans mise à jour du jeu, même hors ligne : la traînée derrière Nova et derrière vos fantômes, le cadre sur votre profil et dans les classements, l'effet de victoire à la sortie des niveaux.",

@@ -87,6 +87,40 @@ def generate(names=None, review=None):
     return files
 
 
+_SHEETS_OK = {}
+
+
+def check_sheet(rel, meta):
+    """A sprite sheet of a scene: RGBA, every frame of every clip inside it and not empty."""
+    if rel in _SHEETS_OK:
+        return []
+    import numpy as np
+    errs = []
+    tp = os.path.join(ASSETS, meta["texture"])
+    if not os.path.isfile(tp):
+        return [f"{rel}: missing texture {meta['texture']}"]
+    im = Image.open(tp)
+    if im.mode != "RGBA":
+        errs.append(f"{meta['texture']}: mode {im.mode} (expected RGBA)")
+    a = np.array(im.convert("RGBA"))[:, :, 3]
+    fw, fh = meta["frameWidth"], meta["frameHeight"]
+    for name, c in meta["clips"].items():
+        n = c["count"]
+        durs = c.get("durations")
+        if (durs is not None and (len(durs) != n or min(durs) <= 0)) or (durs is None and not c.get("fps", 0) > 0):
+            errs.append(f"{rel}.{name}: bad timing")
+        if c.get("next") and c["next"] not in meta["clips"]:
+            errs.append(f"{rel}.{name}: next -> unknown clip {c['next']}")
+        for f in range(n):
+            x0, y0 = (c.get("start", 0) + f) * fw, c["row"] * fh
+            if x0 + fw > a.shape[1] or y0 + fh > a.shape[0]:
+                errs.append(f"{rel}.{name}: frame {f} outside its sheet")
+            elif a[y0:y0 + fh, x0:x0 + fw].max() == 0:
+                errs.append(f"{rel}.{name}: frame {f} is empty")
+    _SHEETS_OK[rel] = not errs
+    return errs
+
+
 def check_stage(where, shot):
     """A shot's scene (version 2): its files (returned, to be counted in the budget) present, the
     clips its sprites play in their sheets, its keys within the shot (seconds of its French line)."""
@@ -113,6 +147,7 @@ def check_stage(where, shot):
                 continue
             meta = json.load(open(jp, encoding="utf-8"))
             files += [jp, os.path.join(ASSETS, meta["texture"])]
+            errs += check_sheet(el["sprite"], meta)
             for k in keys:
                 if "clip" in k and k["clip"] not in meta["clips"]:
                     errs.append(f"{where}: {el.get('id')}: no clip {k['clip']} in {el['sprite']}")

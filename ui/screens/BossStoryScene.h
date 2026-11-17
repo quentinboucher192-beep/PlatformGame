@@ -8,6 +8,9 @@
 // shot ends; a progress bar and « Espace · Ⓐ Passer » sit at the bottom right. The title card
 // reveals the boss (its sprite, « GIGA-BOSS · 8 PHASES », its name, its subtitle, its difficulty).
 // Space, Enter, the gamepad's A or a click skips it (a short fade, then the screen below again).
+// 2.60: a shot of version 2 is played as its animated scene instead (parallax layers, sprites
+// moved by keyframes, glows, particles, a camera, shakes, flashes; with the same slow zoom and
+// cross-fades); every file of the story is loaded when it opens, none while it plays.
 // Display only.
 
 #include <memory>

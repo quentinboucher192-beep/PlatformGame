@@ -398,7 +398,26 @@ private:
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         const float u = std::max(0.5f, ui.s(1.0f));
-        const int n = kind == "stars" ? 46 : kind == "dust" ? 34 : kind == "sparks" ? 26 : 32;
+        const int n = kind == "stars" ? 46 : kind == "dust" ? 34 : kind == "sparks" ? 26 : kind == "ember_rain" ? 40 : 32;
+        if (kind == "ember_rain") {
+            // 2.60: burning embers falling down and to the left, each with its trail.
+            for (int k = 0; k < n; ++k) {
+                const uint32_t h = seed * 131U + static_cast<uint32_t>(k) * 2654435761U;
+                const float a = hash01(h), b = hash01(h + 1), c2 = hash01(h + 2), d = hash01(h + 3);
+                const float span = area.h + u * 80.0f;
+                const float speed = u * (120.0f + 140.0f * b);
+                const float y = std::fmod(t * speed + c2 * span, span);
+                const Vec2 head{area.x + a * (area.w + span * 0.5f) - y * 0.5f, area.y - u * 40.0f + y};
+                const Vec2 dir = Vec2{-0.447f, 0.894f};
+                const float len = u * (14.0f + 22.0f * d);
+                const float op = alpha * (0.5f + 0.5f * std::sin(t * (7.0f + 4.0f * d) + a * 30.0f)) * 0.8f + alpha * 0.2f;
+                if (op <= 0.01f || head.x < area.x - len || head.x > area.right() + len) continue;
+                r.drawLine(head - dir * len, head, c.withAlphaF(0.5f * op), std::max(1.0f, u * 1.5f), BlendMode::Additive);
+                r.drawGlow(head, u * (6.0f + 6.0f * d), c.withAlphaF(0.5f * op));
+                r.fillCircle(head, u * (1.2f + 1.2f * d), Color::lerp(c, Color::white(), 0.6f).withAlphaF(op), BlendMode::Additive);
+            }
+            return;
+        }
         for (int k = 0; k < n; ++k) {
             const uint32_t h = seed * 131U + static_cast<uint32_t>(k) * 2654435761U;
             const float a = hash01(h), b = hash01(h + 1), c2 = hash01(h + 2), d = hash01(h + 3), e = hash01(h + 4);
