@@ -30,10 +30,12 @@
 //   --export <level> <file.cplanet> [--author <name>]
 //                           export a level and all its dependencies without opening a window
 //   --admin [players[:<search>[:confirm]]|calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]|log|
-//            campaign[:<level id>]]
+//            campaign[:<level id>]|creations[:new|:<kind>[:new|:<id>]]]
 //                           open ADMINISTRATION (Joueurs, Calendrier des défis, Journal, Campagne)
 //                           with an admin account (calendar: that month, that period in the
-//                           editor, its tab « Objectif et paliers »; campaign: that level's history)
+//                           editor, its tab « Objectif et paliers »; campaign: that level's history;
+//                           creations: a kind's list (suit, trail, frame, victory), a new one, one
+//                           creation by its id)
 //   --stats [<section>]     open the player's statistics (0 overview ... 5 data and saves)
 //   --stats-day <YYYY-MM-DD>
 //                           count the runs of this session on that day (automated checks of the

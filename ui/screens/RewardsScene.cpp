@@ -242,18 +242,19 @@ private:
         } else if (it.category == "trail") {
             // The trail as the game draws it (2.24: one look per trail, the new ones too).
             r.pushClip(box);
-            drawTrailSample(r, it.look, box.expanded(-ui.s(4)), t_);
+            drawTrailSample(r, it.look, box.expanded(-ui.s(4)), t_, 1.0f, it.creationLook ? &*it.creationLook : nullptr);
             r.popClip();
         } else if (it.category == "victory") {
             r.pushClip(box);
-            drawVictoryFx(r, it.look, {box.center().x, box.bottom() - ui.s(6)}, std::fmod(t_, 2.4f) + 0.15f, false, box.h / 220.0f);
+            drawVictoryFx(r, it.look, {box.center().x, box.bottom() - ui.s(6)}, std::fmod(t_, 2.4f) + 0.15f, false, box.h / 220.0f,
+                          it.creationLook ? &*it.creationLook : nullptr);
             r.popClip();
         } else if (it.category == "frame") {
             // The frame itself around an empty avatar (as on the profile and the leaderboards).
             float scale = ui.s(0.7f);
             float rad = std::max(ui.s(8), box.h * 0.5f - kAvatarFrameMargin * scale - ui.s(2));
             r.fillCircle(box.center(), rad, Color{24, 34, 60, 255});
-            drawAvatarFrame(r, box.center(), rad, it.look, scale, t_);
+            drawAvatarFrame(r, box.center(), rad, it.look, scale, t_, it.creationLook ? &*it.creationLook : nullptr);
         }
     }
 

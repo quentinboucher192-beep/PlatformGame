@@ -445,26 +445,28 @@ private:
         Renderer& r = ui.r();
         r.fillRoundedRect(box, ui.s(8), Color{11, 18, 38, 255});
         Color tint = unlocked ? Color::white() : Color{255, 255, 255, 90};
+        // 2.59: a trail, a frame or a victory effect created on Cosmic Online carries its look.
+        const CreationLook* made = it.creationLook ? &*it.creationLook : nullptr;
         if (it.category == "suit") {
             float s = std::min(box.h, box.w);
             drawNova(g_, it.look, "idle", t_, Rect::fromCenter(box.center(), {s, s}), tint);
         } else if (it.category == "frame") {
             float rad = box.h * 0.32f;
             online_.drawAvatar("avatar_01", "", Rect::fromCenter(box.center(), {rad * 2, rad * 2}));
-            drawAvatarFrame(r, box.center(), rad, it.look, ui.s(0.8f), t_);
+            drawAvatarFrame(r, box.center(), rad, it.look, ui.s(0.8f), t_, made);
             if (!unlocked) r.fillRoundedRect(box, ui.s(8), Color{11, 18, 38, 150});
         } else if (it.category == "title") {
             drawTitleChip(ui, box.center(), it.isDefault ? "Sans titre" : it.look, 13, unlocked && !it.isDefault, box.w - ui.s(8), chipColor(&it));
         } else if (it.category == "trail") {
             // A sample of the trail, drawn as in the game, from left (oldest) to right.
             r.pushClip(box);
-            drawTrailSample(r, it.look, box.expanded(-ui.s(4)), t_, unlocked ? 1.0f : 0.35f);
+            drawTrailSample(r, it.look, box.expanded(-ui.s(4)), t_, unlocked ? 1.0f : 0.35f, made);
             r.popClip();
             if (it.look == "none") ui.label("—", box.center(), 20, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
         } else if (it.category == "victory") {
             r.pushClip(box);
             if (it.look == "classic") r.drawGlow(box.center(), box.h * 0.4f, ui.theme().accent.withAlpha(unlocked ? 110 : 40));
-            else drawVictoryFx(r, it.look, {box.center().x, box.bottom() - ui.s(6)}, std::fmod(t_, 2.4f) + 0.15f, false, box.h / 220.0f);
+            else drawVictoryFx(r, it.look, {box.center().x, box.bottom() - ui.s(6)}, std::fmod(t_, 2.4f) + 0.15f, false, box.h / 220.0f, made);
             if (!unlocked) r.fillRect(box, Color{11, 18, 38, 160});
             r.popClip();
         }
@@ -479,14 +481,17 @@ private:
         const WonReward* w = progress_.won ? progress_.won->origin(it.id) : nullptr;
         return w ? wonOriginText(*w) : std::string();
     }
-    /// The catalogue's items of a category, then the server titles (2.43) or the suits created
-    /// on Cosmic Online that were won.
+    /// The catalogue's items of a category, then the server titles (2.43), the suits or (2.59)
+    /// the trails, frames and victory effects created on Cosmic Online that were won.
     std::vector<const CosmeticItem*> itemsOf(const std::string& category) const {
         auto items = g_.cosmetics.items(category);
         if (category == "title" && progress_.won)
             for (const CosmeticItem& t : progress_.won->titles) items.push_back(&t);
         if (category == "suit" && progress_.won)
             for (const CosmeticItem& s : progress_.won->suits) items.push_back(&s);
+        if (progress_.won)
+            for (const CosmeticItem& l : progress_.won->looks)
+                if (l.category == category) items.push_back(&l);
         return items;
     }
     const CosmeticItem* findItem(const std::string& id) const {

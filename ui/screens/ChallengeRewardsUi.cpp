@@ -224,6 +224,20 @@ std::optional<CosmeticItem> prizeLook(GameServices& g, const ChallengePrize& p) 
         it.description = "Une combinaison créée sur Cosmic Online.";
         return it;
     }
+    if (p.creation()) {
+        // 2.59: a trail, a frame or a victory effect created on the server: drawn from its look.
+        if (!p.creationLook) return std::nullopt;
+        CosmeticItem it;
+        it.id = p.ref;
+        it.category = p.kind;
+        it.name = p.name;
+        it.look = p.ref;
+        it.creationLook = p.creationLook;
+        it.description = p.kind == "trail"   ? "Une traînée créée sur Cosmic Online."
+                         : p.kind == "frame" ? "Un cadre d'avatar créé sur Cosmic Online."
+                                             : "Un effet de victoire créé sur Cosmic Online.";
+        return it;
+    }
     const CosmeticItem* it = g.cosmetics.find(p.ref);
     if (!it || it->isDefault) return std::nullopt;
     return *it;
@@ -240,6 +254,8 @@ void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& bo
     UIContext& ui = g.ui;
     Renderer& r = ui.r();
     Color tint = unlocked ? Color::white() : Color{255, 255, 255, 110};
+    // 2.59: a creation of the server carries its look (else found by its reference).
+    const CreationLook* made = it.creationLook ? &*it.creationLook : nullptr;
     if (it.category == "suit") {
         float s = std::min(box.w, box.h) * 1.15f;
         r.pushClip(box);
@@ -248,20 +264,20 @@ void drawCosmeticPreview(GameServices& g, const CosmeticItem& it, const Rect& bo
         r.popClip();
     } else if (it.category == "trail") {
         r.pushClip(box);
-        drawTrailSample(r, it.look, box, time, unlocked ? 1.0f : 0.4f);
+        drawTrailSample(r, it.look, box, time, unlocked ? 1.0f : 0.4f, made);
         r.popClip();
     } else if (it.category == "frame") {
         float scale = box.h / 80.0f;
         float rad = std::max(ui.s(5), box.h * 0.5f - kAvatarFrameMargin * scale - ui.s(1));
         Vec2 c{box.center().x, box.center().y + kAvatarFrameMargin * scale * 0.25f};
         r.fillCircle(c, rad, Color{24, 34, 60, 255});
-        drawAvatarFrame(r, c, rad, it.look, scale, time);
+        drawAvatarFrame(r, c, rad, it.look, scale, time, made);
         if (!unlocked) r.fillRect(box, Color{11, 18, 38, 100});
     } else if (it.category == "title") {
         drawTitleChip(ui, box, it.isDefault ? std::string("Sans titre") : it.look, unlocked, it.color.empty() ? kGold : titleColor(it.color));
     } else if (it.category == "victory") {
         r.pushClip(box);
-        drawVictoryFx(r, it.look, {box.center().x, box.bottom() - box.h * 0.04f}, std::fmod(time, 1.6f) + 0.3f, false, box.h / 105.0f);
+        drawVictoryFx(r, it.look, {box.center().x, box.bottom() - box.h * 0.04f}, std::fmod(time, 1.6f) + 0.3f, false, box.h / 105.0f, made);
         if (!unlocked) r.fillRect(box, Color{11, 18, 38, 100});
         r.popClip();
     }
@@ -465,8 +481,10 @@ void ChallengeRewardRow::drawPrizeTooltip(GameServices& g, const Prize& pz) {
     const float w = std::min(ui.s(420), W - ui.s(24));
     const float pad = ui.s(16), inner = w - 2 * pad;
     // The texts, measured first: the box is as high as they need.
+    // Agreed with the category's noun: « Titre créé », « Combinaison créée », « Traînée créée »...
+    const bool feminine = pz.prize.suit() || pz.prize.kind == "trail";
     const std::string sub = cosmeticCategorySingular(it.category) +
-                            (pz.prize.title() ? " créé sur Cosmic Online" : pz.prize.suit() ? " créée sur Cosmic Online" : "") +
+                            (pz.prize.serverMade() ? (feminine ? " créée sur Cosmic Online" : " créé sur Cosmic Online") : "") +
                             " · récompense de ce défi";
     const std::string cond = prizeConditionText(pz.prize);
     const std::string note = "Accordée par Cosmic Online à la fin du défi, d'après les parties vérifiées reçues à l'heure. Jamais retirée.";

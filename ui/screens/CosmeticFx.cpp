@@ -10,6 +10,8 @@ namespace cosmic {
 namespace {
 
 constexpr float kTrailLife = 0.45f;
+/// The samples are kept this long (the longest trail created on Cosmic Online, kTrailLifeMax).
+constexpr float kTrailKeep = static_cast<float>(kTrailLifeMax) / 1000.0f;
 constexpr float kFxPi = 3.14159265f;
 
 /// Small deterministic noise for the sparkles' spread (display only).
@@ -86,9 +88,249 @@ void fillStar(Renderer& r, Vec2 c, float radius, Color col) {
     for (int i = 0; i < 10; ++i) r.fillTriangle(c, pts[i], pts[(i + 1) % 10], col);
 }
 
+// ------------------------------------------------------------------ created on Cosmic Online (2.59)
+
+Color rgb(Rgb8 c) { return Color{c.r, c.g, c.b, 255}; }
+Color lighter(Color c, float k) { return mix(c, Color{255, 255, 255, c.a}, k); }
+Color darker(Color c, float k) { return mix(c, Color{0, 0, 0, c.a}, k); }
+
+/// The look of a creation of `kind` to draw for `look`: `custom` when it is of that kind, else
+/// the one this game knows for a reference "srv<kind>:<n>"; nullopt for the catalogue's looks
+/// (and for a reference not known yet: the category's simple look meanwhile).
+std::optional<CreationLook> customLook(const char* kind, const std::string& look, const CreationLook* custom) {
+    if (custom && custom->kind == kind) return *custom;
+    std::string k;
+    if (!isServerLookRef(look, &k) || k != kind) return std::nullopt;
+    auto l = resolveCreationLook(look);
+    if (l && l->kind != kind) return std::nullopt;
+    return l;
+}
+
+/// One sample of a trail created on Cosmic Online: the shape of a catalogue trail in its two
+/// colours (the start one by Nova, the end one at the tail), at its width, with its sparkles.
+void drawCustomTrailPoint(const Canvas& cv, const CreationLook& L, Vec2 p, float k, float age, uint32_t seed, const Vec2* prev, float fade) {
+    const float f = k * fade;
+    const float w = static_cast<float>(L.width) / 100.0f;
+    const Color A = rgb(L.a), B = rgb(L.b);
+    const Color c = mix(B, A, k);
+    const std::string& st = L.style;
+    if (st == "comet") {
+        cv.glow(p, (9.0f * k + 2.0f) * w, c.withAlpha(alpha(0.67f * f)));
+        cv.dot(p, 2.6f * k * w, lighter(c, 0.7f).withAlpha(alpha(0.78f * f)), BlendMode::Additive);
+    } else if (st == "stardust") {
+        Vec2 j{(noise(seed) - 0.5f) * 10.0f * w, (noise(seed * 7u + 3u) - 0.5f) * 12.0f * w};
+        Vec2 q = cv.off(p, j);
+        cv.glow(q, 5.0f * k * w, c.withAlpha(alpha(0.59f * f)));
+        if (seed % 2 == 0) cv.dot(q, (1.3f * k + 0.4f) * w, lighter(c, 0.5f).withAlpha(alpha(0.9f * f)), BlendMode::Additive);
+    } else if (st == "prism") {
+        // A ribbon from the start colour to the end one.
+        if (prev) cv.line(*prev, p, c.withAlpha(alpha(0.9f * f)), (4.5f * k + 1.2f) * w);
+        cv.glow(p, (5.0f * k + 1.5f) * w, c.withAlpha(alpha(0.45f * f)));
+    } else if (st == "flame") {
+        Vec2 j{(noise(seed) - 0.5f) * 8.0f * w + std::sin(age * 18.0f + static_cast<float>(seed)) * 2.5f, -age * 50.0f - noise(seed * 5u + 1u) * 4.0f};
+        Vec2 q = cv.off(p, j);
+        cv.glow(q, (8.0f * k + 2.0f) * w, c.withAlpha(alpha(0.8f * f)));
+        cv.dot(q, (2.2f * k + 0.6f) * w, lighter(c, 0.6f).withAlpha(alpha(0.9f * f)), BlendMode::Additive);
+    } else if (st == "aurora") {
+        float wave = std::sin(age * 14.0f + static_cast<float>(seed) * 0.6f) * 5.0f * w;
+        Vec2 q = cv.off(p, {0, wave});
+        cv.glow(q, (8.0f * k + 1.5f) * w, c.withAlpha(alpha(0.63f * f)));
+    } else if (st == "bubbles") {
+        Vec2 j{(noise(seed) - 0.5f) * 10.0f * w + std::sin(age * 9.0f + static_cast<float>(seed)) * 3.0f, -age * 36.0f - noise(seed * 3u + 5u) * 5.0f};
+        Vec2 q = cv.off(p, j);
+        const float sz = (1.6f + 2.0f * noise(seed * 7u + 1u)) * w;
+        cv.glow(q, sz * 2.4f * k + 1.5f, c.withAlpha(alpha(0.35f * f)));
+        cv.ring(q, sz * k + 0.8f, 1.0f, lighter(c, 0.45f).withAlpha(alpha(0.85f * f)));
+        cv.dot(cv.off(q, {-sz * 0.35f, -sz * 0.35f}), 0.6f, Color{255, 255, 255, alpha(0.9f * f)}, BlendMode::Additive);
+    }
+    // Sparkles: a small star now and then around the trail, between its two colours.
+    if (L.particles && seed % 3 == 0) {
+        Vec2 j{(noise(seed * 13u + 5u) - 0.5f) * 16.0f * w, (noise(seed * 17u + 9u) - 0.5f) * 16.0f * w - age * 12.0f};
+        star(cv, cv.off(p, j), (1.6f + 1.4f * k) * w, lighter(mix(A, B, 0.5f), 0.5f).withAlpha(alpha(0.9f * f)));
+    }
+}
+
+/// A frame created on Cosmic Online: the shape of a catalogue frame, its ring in the border
+/// colour (lighter for its sheen, darker for its inner ring), its halo and details in the glow
+/// colour. Within kAvatarFrameMargin like the catalogue's.
+void drawCustomFrame(Renderer& r, Vec2 center, float radius, const CreationLook& L, float scale, float time) {
+    const Color A = rgb(L.a), G = rgb(L.b);
+    const Color light = lighter(A, 0.6f), dark = darker(A, 0.72f);
+    auto ring = [&](float rad, float th, Color c) { r.drawRing(center, rad, th * scale, c); };
+    auto shine = [&](float rad, Color c) { r.drawArc(center, rad, 1.6f * scale, kFxPi * 1.05f, kFxPi * 1.45f, c); };
+    const float main = radius + 2 * scale;
+    const std::string& st = L.style;
+    if (st == "emerald") {
+        r.drawGlow(center, radius + 16 * scale, G.withAlpha(110));
+        ring(main, 5, A);
+        shine(main, light.withAlpha(230));
+        ring(radius + 6 * scale, 2, dark);
+        const Color gemLight = lighter(G, 0.55f), gemDark = darker(G, 0.35f);
+        for (int i = 0; i < 8; ++i) {
+            float a = kFxPi / 8.0f + static_cast<float>(i) * kFxPi / 4.0f;
+            Vec2 d{std::cos(a), std::sin(a)}, t{-d.y, d.x};
+            Vec2 p = center + d * main;
+            Vec2 out = p + d * (4.2f * scale), in = p - d * (4.2f * scale), l = p + t * (2.6f * scale), rr = p - t * (2.6f * scale);
+            r.fillTriangle(out, l, rr, gemLight);
+            r.fillTriangle(in, l, rr, gemDark);
+        }
+    } else if (st == "orbit") {
+        r.drawGlow(center, radius + 16 * scale, G.withAlpha(100));
+        ring(main, 4, A);
+        shine(main, light.withAlpha(230));
+        const float orbit = radius + 11 * scale;
+        ring(orbit, 1.2f, G.withAlpha(170));
+        float a = -kFxPi * 0.5f + time * 0.9f;
+        Vec2 moon{center.x + std::cos(a) * orbit, center.y + std::sin(a) * orbit};
+        Vec2 moon2{center.x - std::cos(a) * orbit, center.y - std::sin(a) * orbit};
+        r.drawGlow(moon, 9 * scale, light.withAlpha(190));
+        r.fillCircle(moon, 3.4f * scale, lighter(A, 0.8f));
+        r.drawGlow(moon2, 7 * scale, G.withAlpha(160));
+        r.fillCircle(moon2, 2.4f * scale, lighter(G, 0.3f));
+    } else if (st == "nebula") {
+        r.drawGlow(center, radius + 26 * scale, G.withAlpha(110));
+        r.drawGlow(center, radius + 18 * scale, mix(A, G, 0.5f).withAlpha(120));
+        ring(main, 5, A);
+        ring(radius + 6 * scale, 1.5f, dark);
+        const Color clouds[3] = {lighter(A, 0.3f).withAlpha(235), lighter(G, 0.2f).withAlpha(235), mix(A, G, 0.5f).withAlpha(235)};
+        for (int i = 0; i < 3; ++i) {
+            float a = time * 0.8f + static_cast<float>(i) * 2.0f * kFxPi / 3.0f;
+            r.drawArc(center, radius + 9 * scale, 3 * scale, a, a + 1.3f, clouds[i]);
+        }
+        for (int i = 0; i < 5; ++i) {
+            float a = -time * 0.5f + static_cast<float>(i) * 2.0f * kFxPi / 5.0f;
+            Vec2 p{center.x + std::cos(a) * (radius + 13 * scale), center.y + std::sin(a) * (radius + 13 * scale)};
+            float tw = 0.6f + 0.4f * std::sin(time * 4.0f + static_cast<float>(i) * 2.1f);
+            r.drawGlow(p, 5 * scale, Color{255, 255, 255, alpha(0.6f * tw)});
+            r.fillCircle(p, 1.2f * scale, Color{255, 255, 255, 255});
+        }
+    } else if (st == "constellation") {
+        r.drawGlow(center, radius + 30 * scale, G.withAlpha(150));
+        ring(main, 5, light);
+        ring(radius + 7 * scale, 3, A);
+        ring(radius + 11 * scale, 3, G);
+        const int stars = 6;
+        for (int i = 0; i < stars; ++i) {
+            float a = -kFxPi * 0.5f + time * 0.15f + static_cast<float>(i) * 2.0f * kFxPi / stars;
+            Vec2 p{center.x + std::cos(a) * (radius + 10 * scale), center.y + std::sin(a) * (radius + 10 * scale)};
+            float tw = 0.85f + 0.15f * std::sin(time * 3.0f + static_cast<float>(i) * 1.7f);
+            r.drawGlow(p, 10 * scale, Color{255, 255, 255, static_cast<uint8_t>(170 * tw)});
+            fillStar(r, p, 5.2f * scale, Color{20, 16, 48, 255});
+            fillStar(r, p, 4.4f * scale * tw, i % 2 == 0 ? Color{255, 255, 255, 255} : lighter(G, 0.4f));
+        }
+    } else if (st == "runic") {
+        ring(main, 7, A);
+        ring(main + 2.5f * scale, 1.2f, light);
+        ring(main - 3.0f * scale, 1.0f, dark);
+        const int runes = 8;
+        const float lit = std::fmod(time * 1.6f, static_cast<float>(runes));
+        for (int i = 0; i < runes; ++i) {
+            const float a = -kFxPi * 0.5f + static_cast<float>(i) * 2.0f * kFxPi / runes;
+            const Vec2 d{std::cos(a), std::sin(a)}, t{-d.y, d.x};
+            const Vec2 p = center + d * main;
+            float glow = 0.25f;
+            const float dist = std::fabs(lit - static_cast<float>(i));
+            if (dist < 1.0f) glow = 1.0f - 0.75f * dist;
+            const Color c = lighter(G, 0.25f).withAlpha(static_cast<uint8_t>(255 * glow));
+            if (glow > 0.5f) r.drawGlow(p, 8 * scale, G.withAlpha(static_cast<uint8_t>(150 * glow)));
+            r.drawLine(p - t * (3.0f * scale), p + t * (3.0f * scale), c, 1.4f * scale, BlendMode::Additive);
+            r.drawLine(p - t * (1.5f * scale), p - t * (1.5f * scale) + d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
+            r.drawLine(p + t * (1.5f * scale), p + t * (1.5f * scale) - d * (2.4f * scale), c, 1.2f * scale, BlendMode::Additive);
+        }
+    } else {
+        // « metal »: a polished ring (as « Bronze », « Argent », « Or »), its halo in the glow colour.
+        r.drawGlow(center, radius + 20 * scale, G.withAlpha(130));
+        ring(main, 5, A);
+        shine(main, light.withAlpha(235));
+        ring(radius + 6 * scale, 2, dark);
+    }
+}
+
+/// A victory effect created on Cosmic Online: the shape of a catalogue effect in its two colours.
+void drawCustomVictory(const Canvas& cv, const CreationLook& L, Vec2 at, float t, float fade) {
+    const Color A = rgb(L.a), B = rgb(L.b), M = mix(A, B, 0.5f);
+    const std::string& st = L.style;
+    if (st == "fireworks") {
+        const Vec2 offs[3] = {{-46, -72}, {38, -96}, {4, -54}};
+        const Color cols[3] = {A, B, M};
+        for (int b = 0; b < 3; ++b) {
+            float tb = t - 0.35f * static_cast<float>(b);
+            if (tb < 0.0f || tb > 1.6f) continue;
+            Vec2 c = cv.off(at, offs[b]);
+            float rad = 64.0f * (1.0f - std::exp(-3.2f * tb));
+            float a = std::clamp(1.0f - tb / 1.6f, 0.0f, 1.0f) * fade;
+            if (tb < 0.18f) cv.glow(c, 26.0f, cols[b].withAlpha(static_cast<uint8_t>(220 * (1.0f - tb / 0.18f))));
+            for (int i = 0; i < 18; ++i) {
+                float ang = static_cast<float>(i) / 18.0f * 2.0f * kFxPi + static_cast<float>(b);
+                Vec2 d{std::cos(ang) * rad, std::sin(ang) * rad + 22.0f * tb * tb};
+                Vec2 p = cv.off(c, d);
+                cv.glow(p, 4.5f, cols[b].withAlpha(static_cast<uint8_t>(200 * a)));
+                cv.dot(p, 1.4f, Color{255, 255, 255, static_cast<uint8_t>(230 * a)}, BlendMode::Additive);
+            }
+        }
+    } else if (st == "starfall") {
+        for (int i = 0; i < 16; ++i) {
+            float ts = t - 0.11f * static_cast<float>(i);
+            if (ts < 0.0f || ts > 1.5f) continue;
+            float x = (noise(static_cast<uint32_t>(i) * 977u + 11u) - 0.5f) * 190.0f;
+            float y = -150.0f + 150.0f * std::min(1.0f, ts / 1.1f);
+            float a = std::clamp(1.0f - (ts - 1.1f) / 0.4f, 0.0f, 1.0f) * fade;
+            star(cv, cv.off(at, {x, y - 10.0f}), 4.0f, (i % 2 == 0 ? A : B).withAlpha(static_cast<uint8_t>(240 * a)));
+        }
+    } else if (st == "supernova") {
+        float k = std::clamp(t / 1.8f, 0.0f, 1.0f);
+        if (t < 0.5f) cv.glow(cv.off(at, {0, -16}), 30.0f + 120.0f * (t / 0.5f), lighter(A, 0.8f).withAlpha(static_cast<uint8_t>(220 * (1.0f - t / 0.5f))));
+        float ringR = 26.0f + 210.0f * (1.0f - std::exp(-2.6f * t));
+        Color ringC = mix(A, B, k);
+        cv.ring(cv.off(at, {0, -16}), ringR, 5.0f, ringC.withAlpha(static_cast<uint8_t>(230 * (1.0f - k) * fade)));
+        cv.ring(cv.off(at, {0, -16}), ringR * 0.7f, 2.5f, Color{255, 255, 255, static_cast<uint8_t>(160 * (1.0f - k) * fade)});
+    } else if (st == "vortex") {
+        Vec2 o = cv.off(at, {0, -24});
+        float open = 1.0f - std::exp(-2.2f * t);
+        float in = std::clamp(t / 0.2f, 0.0f, 1.0f);
+        if (t < 0.4f) cv.glow(o, 14.0f + 40.0f * (t / 0.4f), B.withAlpha(alpha(0.8f * (1.0f - t / 0.4f))));
+        for (int arm = 0; arm < 3; ++arm)
+            for (int i = 0; i < 14; ++i) {
+                float f = static_cast<float>(i) / 13.0f;
+                float ang = static_cast<float>(arm) * 2.0f * kFxPi / 3.0f + f * 3.2f + t * 5.0f;
+                float rad = (10.0f + f * 80.0f) * open;
+                Vec2 q = cv.off(o, {std::cos(ang) * rad, std::sin(ang) * rad * 0.8f});
+                float a = fade * in * (1.0f - f * 0.5f);
+                cv.glow(q, 5.0f * (1.0f - f * 0.4f), mix(A, B, f).withAlpha(alpha(0.75f * a)));
+                if (i % 2 == 0) cv.dot(q, 1.3f, Color{255, 255, 255, alpha(0.86f * a)}, BlendMode::Additive);
+            }
+    } else if (st == "borealis") {
+        float in = std::clamp(t / 0.6f, 0.0f, 1.0f);
+        for (int c = 0; c < 5; ++c) {
+            float x0 = -100.0f + 50.0f * static_cast<float>(c);
+            float h = 120.0f + 30.0f * noise(static_cast<uint32_t>(c) * 31u + 7u);
+            for (int i = 0; i < 12; ++i) {
+                float f = static_cast<float>(i) / 11.0f;
+                float x = x0 + std::sin(f * 4.0f + t * 2.6f + static_cast<float>(c) * 1.3f) * 12.0f;
+                float y = -20.0f - f * h * in;
+                float a = fade * in * (1.0f - f * 0.6f);
+                cv.glow(cv.off(at, {x, y}), 9.0f - f * 3.0f, mix(A, B, f).withAlpha(alpha(0.5f * a)));
+            }
+        }
+    } else if (st == "corona") {
+        Vec2 o = cv.off(at, {0, -70});
+        float grow = 1.0f - std::exp(-3.0f * t);
+        cv.glow(o, 60.0f * grow + 4.0f, B.withAlpha(alpha(0.6f * fade)));
+        for (int i = 0; i < 16; ++i) {
+            float ang = static_cast<float>(i) * 2.0f * kFxPi / 16.0f + t * 0.6f;
+            float len = (34.0f + 22.0f * noise(static_cast<uint32_t>(i) * 13u + 5u)) * grow;
+            Vec2 d{std::cos(ang), std::sin(ang)};
+            cv.line(cv.off(o, d * (21.0f * grow)), cv.off(o, d * (21.0f * grow + len)), A.withAlpha(alpha(0.8f * fade)), 2.0f);
+        }
+        cv.dot(o, 18.0f * grow, Color{20, 10, 24, alpha(0.95f * fade)});
+        cv.ring(o, 19.0f * grow, 2.0f, lighter(A, 0.7f).withAlpha(alpha(0.9f * fade)));
+    }
+}
+
 }  // namespace
 
-void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time) {
+void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time, const CreationLook* custom) {
+    if (auto c = customLook("frame", look, custom)) return drawCustomFrame(r, center, radius, *c, scale, time);
     auto ring = [&](float rad, float th, Color c) { r.drawRing(center, rad, th * scale, c); };
     // A polished edge: a lighter arc on the upper left of the main ring.
     auto shine = [&](float rad, Color c) { r.drawArc(center, rad, 1.6f * scale, kFxPi * 1.05f, kFxPi * 1.45f, c); };
@@ -384,7 +626,8 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
 
 void TrailFx::update(Vec2 center, float dt, bool emit) {
     for (auto& p : pts_) p.age += dt;
-    while (!pts_.empty() && pts_.front().age > kTrailLife) pts_.pop_front();
+    // Kept as long as the longest trail lasts (each look draws only its own length, 2.59).
+    while (!pts_.empty() && pts_.front().age > kTrailKeep) pts_.pop_front();
     acc_ += dt;
     if (!emit) {
         have_ = false;
@@ -397,7 +640,7 @@ void TrailFx::update(Vec2 center, float dt, bool emit) {
     last_ = center;
     have_ = true;
     pts_.push_back({center, 0.0f, ++counter_});
-    while (pts_.size() > 40) pts_.pop_front();
+    while (pts_.size() > 72) pts_.pop_front();
 }
 
 namespace {
@@ -531,23 +774,31 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
 
 }  // namespace
 
-void TrailFx::draw(Renderer& r, const std::string& look, bool world, float scale) const {
-    if (look.empty() || look == "none" || pts_.empty()) return;
+void TrailFx::draw(Renderer& r, const std::string& look, bool world, float scale, float fade, const CreationLook* custom) const {
+    if (pts_.empty()) return;
+    // 2.59: a trail created on Cosmic Online (its look known: else nothing, like « none »).
+    const std::optional<CreationLook> made = customLook("trail", look, custom);
+    if (!made && (look.empty() || look == "none" || isServerLookRef(look))) return;
+    const float life = made ? made->life() : kTrailLife;
     Canvas cv{r, world, {}, scale};
     size_t n = pts_.size();
     // The newest samples sit on Nova herself: the trail starts just behind her.
     for (size_t i = 0; i + 2 < n; ++i) {
         const Pt& pt = pts_[i];
-        float k = 1.0f - pt.age / kTrailLife;  // 1 = fresh, 0 = gone
+        float k = 1.0f - pt.age / life;  // 1 = fresh, 0 = gone
         if (k <= 0.0f) continue;
-        // The sample before it, unless Nova jumped away in between (teleport, respawn).
-        const Vec2* prev = i > 0 && (pt.p - pts_[i - 1].p).lengthSq() < 48.0f * 48.0f ? &pts_[i - 1].p : nullptr;
-        drawTrailPoint(cv, look, pt.p, k, pt.age, pt.seed, prev, 1.0f);
+        // The sample before it (still part of this trail), unless Nova jumped away in between
+        // (teleport, respawn).
+        const Vec2* prev = i > 0 && pts_[i - 1].age <= life && (pt.p - pts_[i - 1].p).lengthSq() < 48.0f * 48.0f ? &pts_[i - 1].p : nullptr;
+        if (made) drawCustomTrailPoint(cv, *made, pt.p, k, pt.age, pt.seed, prev, fade);
+        else drawTrailPoint(cv, look, pt.p, k, pt.age, pt.seed, prev, fade);
     }
 }
 
-void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, float time, float fade) {
-    if (look.empty() || look == "none") return;
+void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, float time, float fade, const CreationLook* custom) {
+    const std::optional<CreationLook> made = customLook("trail", look, custom);
+    if (!made && (look.empty() || look == "none" || isServerLookRef(look))) return;
+    const float life = made ? made->life() : kTrailLife;
     // Samples from the oldest (left) to the newest (right), on a gentle wave, sized to the box.
     const int n = 16;
     const float scale = box.h / 60.0f;
@@ -555,18 +806,24 @@ void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, floa
     Vec2 prev;
     for (int i = 0; i < n; ++i) {
         float u = static_cast<float>(i) / static_cast<float>(n - 1);
-        float age = kTrailLife * (1.0f - u) * 0.95f;
+        float age = life * (1.0f - u) * 0.95f;
         Vec2 p{box.x + box.w * (0.12f + 0.72f * u), box.center().y + box.h * 0.12f + std::sin(u * 5.0f + time * 1.5f) * box.h * 0.08f};
-        drawTrailPoint(cv, look, p, 1.0f - age / kTrailLife, age, static_cast<uint32_t>(i) + 1u, i > 0 ? &prev : nullptr, fade);
+        if (made) drawCustomTrailPoint(cv, *made, p, 1.0f - age / life, age, static_cast<uint32_t>(i) + 1u, i > 0 ? &prev : nullptr, fade);
+        else drawTrailPoint(cv, look, p, 1.0f - age / life, age, static_cast<uint32_t>(i) + 1u, i > 0 ? &prev : nullptr, fade);
         prev = p;
     }
 }
 
-void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale) {
-    if (t < 0.0f || t > kVictoryFxTime || look.empty() || look == "classic") return;
+void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale, const CreationLook* custom) {
+    if (t < 0.0f || t > kVictoryFxTime) return;
+    // 2.59: an effect created on Cosmic Online (its look not known yet: the classic finish).
+    const std::optional<CreationLook> made = customLook("victory", look, custom);
+    if (!made && (look.empty() || look == "classic" || isServerLookRef(look))) return;
     Canvas cv{r, world, at, scale};
     float fade = std::clamp((kVictoryFxTime - t) / 0.6f, 0.0f, 1.0f);
-    if (look == "fireworks") {
+    if (made) {
+        drawCustomVictory(cv, *made, at, t, fade);
+    } else if (look == "fireworks") {
         const Vec2 offs[3] = {{-46, -72}, {38, -96}, {4, -54}};
         const Color cols[3] = {{255, 118, 150, 255}, {255, 214, 90, 255}, {110, 214, 255, 255}};
         for (int b = 0; b < 3; ++b) {

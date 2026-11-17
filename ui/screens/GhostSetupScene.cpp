@@ -274,6 +274,7 @@ private:
         m.validated = true;
         m.community = !officialBoard;
         m.suit = jstr(p, "suit");  // the suit of its player (2.23), checked when drawn
+        m.trail = jstr(p, "trail");  // 2.59: their trail, drawn behind the ghost (checked the same way)
         Row r;
         r.recordId = rid;
         r.sameVersion = true;
@@ -281,6 +282,7 @@ private:
             r.entry = std::move(*cached);
             r.entry.meta.source = source;  // what it is to this player now (world / friend)
             r.entry.meta.suit = m.suit;      // and what they wear now
+            r.entry.meta.trail = m.trail;
             r.sameVersion = r.entry.meta.levelHash == hash_;
         } else {
             r.entry.meta = m;

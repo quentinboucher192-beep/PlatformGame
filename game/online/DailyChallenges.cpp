@@ -326,7 +326,7 @@ std::vector<ChallengePrize> ChallengePrize::listFromJson(const Json& rewards) {
         p.ref = jstr(r, "ref");
         p.condition = jstr(r, "condition");
         p.value = jget<int>(r, "value", 0);
-        if ((p.kind != "item" && p.kind != "title" && p.kind != "suit") || !safe(p.ref)) continue;
+        if ((p.kind != "item" && p.kind != "title" && p.kind != "suit" && !p.creation()) || !safe(p.ref)) continue;
         if (p.condition == "tier") p.value = std::clamp(p.value, 1, 3);
         else if (p.condition == "top") p.value = std::clamp(p.value, 1, 100);
         else if (p.condition == "finished") p.value = 0;
@@ -345,6 +345,14 @@ std::vector<ChallengePrize> ChallengePrize::listFromJson(const Json& rewards) {
             p.suitColors = suitColorsFromJson(jfield(s, "colors", Json()));
             p.category = "suit";
             if (p.name.empty() || !p.suitColors || !isServerSuitRef(p.ref)) continue;
+        } else if (p.creation()) {
+            // 2.59: a trail, a frame or a victory effect created on the server: its name and look.
+            const Json& c = jfield(r, "creation", Json());
+            p.name = clean(jstr(c, "name"));
+            p.creationLook = creationLookFromJson(p.kind, c);
+            p.category = p.kind;
+            std::string refKind;
+            if (p.name.empty() || !p.creationLook || !isServerLookRef(p.ref, &refKind) || refKind != p.kind || jstr(c, "kind") != p.kind) continue;
         } else {
             const Json& it = jfield(r, "item", Json());
             p.name = clean(jstr(it, "name"));

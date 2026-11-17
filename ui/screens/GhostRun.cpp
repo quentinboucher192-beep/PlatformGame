@@ -27,6 +27,8 @@ void GhostRun::begin(std::vector<GhostEntry> choices, const LevelData& level, co
     race_.clear();
     anims_.clear();
     sheets_.clear();
+    trailLooks_.clear();
+    trails_.clear();
     labels_.clear();
     refused_.clear();
     seenSplits_ = 0;
@@ -143,8 +145,13 @@ void GhostRun::update(const GameWorld& w, float dt) {
     }
     race_.update(w.timer().elapsed(), w.player().feet(), dt);
     if (race_.finished() && !race_.splits().empty() && race_.splits().back().aheadOfRecord) recordFlash_ += dt;
+    if (trails_.size() < static_cast<size_t>(race_.size())) trails_.resize(static_cast<size_t>(race_.size()));
     for (int i = 0; i < race_.size(); ++i) {
         const GhostRace::Racer& g = race_.racer(i);
+        // 2.59: its trail, fed like the player's (display only: fast enough, visible).
+        const bool shown = g.pose.visible && static_cast<PlayerState>(g.pose.state) != PlayerState::Hidden;
+        const bool fast = std::abs(g.pose.vel.x) > 150.0f || std::abs(g.pose.vel.y) > 420.0f;
+        trails_[static_cast<size_t>(i)].update({g.pose.feet.x, g.pose.feet.y - 14.0f}, dt, shown && fast);
         ReplayFrame f;
         f.state = g.pose.state;
         f.flags = g.pose.flags;
@@ -179,6 +186,11 @@ void GhostRun::drawWorld(Renderer& r, const WorldView& view, const AnimationSetP
         float fade = std::clamp(1.0f - (t - g.track.duration() - 1.5f) / 0.6f, 0.0f, 1.0f);
         if (fade <= 0.0f) continue;
         float al = alpha * fade;
+        // 2.59: its player's trail behind it, as translucent as the ghost.
+        if (trailLooks_.size() < static_cast<size_t>(race_.size())) trailLooks_.resize(static_cast<size_t>(race_.size()));
+        auto& trail = trailLooks_[static_cast<size_t>(i)];
+        if (!trail.first) trail = {true, trailLook_ ? trailLook_(g.meta) : std::string()};
+        if (static_cast<size_t>(i) < trails_.size()) trails_[static_cast<size_t>(i)].draw(r, trail.second, true, 1.0f, al);
         bool flip = (g.pose.flags & ReplayFrame::FacingLeft) != 0;
         Rect src = a.sourceRect();
         Rect dst = a.destRect(g.pose.feet, flip);

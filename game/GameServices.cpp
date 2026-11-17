@@ -101,9 +101,29 @@ TexturePtr GameServices::suitSheet(const std::string& look, const SuitColors* co
     return suitTextures.get(app.resources(), app.renderer(), *c);
 }
 
+std::optional<CreationLook> GameServices::creationLook(const std::string& ref) {
+    std::string kind;
+    if (!isServerLookRef(ref, &kind)) return std::nullopt;
+    if (const ServerLook* s = serverLooks.find(ref)) return s->look;
+    if (const CosmeticItem* w = challenges.wonRewards().serverLook(ref); w && w->creationLook) return w->creationLook;
+    // Not known yet (created since the last reading): the simple look meanwhile, and the list
+    // read again (at most every two minutes, as for the suits).
+    const uint64_t now = SDL_GetTicks();
+    if (serverSuitsFetch_ && online.usable() && (serverSuitsAskedMs_ == 0 || now - serverSuitsAskedMs_ > 120000)) {
+        serverSuitsAskedMs_ = now;
+        refreshServerSuits();
+    }
+    return std::nullopt;
+}
+
 void GameServices::startServerSuits(bool fetch) {
     serverSuits.setFile(Paths::userDir() / "online" / "creations.json");
     serverSuits.load();  // drawn offline after one reading
+    // 2.59: the trails, frames and victory effects, kept beside them (a game before 2.59 keeps
+    // the suits' file as it knows it).
+    serverLooks.setFile(Paths::userDir() / "online" / "creation_looks.json");
+    serverLooks.load();
+    setCreationLookResolver([this](const std::string& ref) { return creationLook(ref); });
     serverSuitsFetch_ = fetch;
     serverSuitsTimer_ = 0.0f;
     if (fetch) refreshServerSuits();
@@ -117,7 +137,9 @@ void GameServices::refreshServerSuits() {
         serverSuitsBusy_ = false;
         // A cached answer (no network) changes nothing that the file does not already keep.
         if (!r.ok || r.fromCache) return;
-        if (serverSuits.applyList(jfield(r.data, "creations", Json()))) serverSuits.save();
+        const Json list = jfield(r.data, "creations", Json());
+        if (serverSuits.applyList(list)) serverSuits.save();
+        if (serverLooks.applyList(list)) serverLooks.save();
     });
 }
 
@@ -309,7 +331,7 @@ void GameServices::challengeRewardsChanged(bool announce) {
     std::vector<const CosmeticItem*> all;
     for (const CosmeticItem& i : cosmetics.items()) all.push_back(&i);
     if (p.won)
-        for (const auto* list : {&p.won->titles, &p.won->suits})
+        for (const auto* list : {&p.won->titles, &p.won->suits, &p.won->looks})
             for (const CosmeticItem& t : *list) {
                 now.insert(t.id);
                 all.push_back(&t);

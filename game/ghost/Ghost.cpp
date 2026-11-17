@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "game/cosmetics/CreationLooks.h"
 #include "game/gameplay/LevelProgress.h"
 #include "game/player/Player.h"
 
@@ -27,6 +28,7 @@ Json GhostMeta::toJson() const {
                 {"community", community},
                 {"game_version", gameVersion}};
     if (!suit.empty()) j["suit"] = suit;
+    if (!trail.empty()) j["trail"] = trail;
     return j;
 }
 
@@ -47,10 +49,15 @@ GhostMeta GhostMeta::fromJson(const Json& j) {
     m.levelVersion = std::clamp(jget<int>(j, "level_version", 0), 0, 1000000);
     m.timeMs = std::clamp<int64_t>(jget<int64_t>(j, "time_ms", 0), 0, 7200000);
     m.date = clip(jstr(j, "date"), 32);
-    // A suit's look: lowercase letters, digits and « _ » only (else the normal sheet).
+    // A suit's or a trail's look: lowercase letters, digits and « _ » only, or (2.59) the
+    // reference of one created on Cosmic Online (else the normal sheet, no trail).
+    auto plainLook = [](const std::string& s) {
+        return std::all_of(s.begin(), s.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; });
+    };
     m.suit = clip(jstr(j, "suit"), 32);
-    if (!std::all_of(m.suit.begin(), m.suit.end(), [](char c) { return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'; }))
-        m.suit.clear();
+    if (!plainLook(m.suit) && !isServerSuitRef(m.suit)) m.suit.clear();
+    m.trail = clip(jstr(j, "trail"), 32);
+    if (std::string kind; !plainLook(m.trail) && !(isServerLookRef(m.trail, &kind) && kind == "trail")) m.trail.clear();
     if (j.is_object() && j.contains("splits") && j["splits"].is_array()) {
         for (const Json& s : j["splits"]) {
             if (!s.is_number() || m.splits.size() >= 255) break;

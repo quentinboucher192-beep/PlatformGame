@@ -155,7 +155,15 @@ public:
     /// folder, online/creations.json), and their recoloured sheets.
     ServerSuitBook serverSuits;
     SuitTextureCache suitTextures;
-    /// The list kept on disk at once; with `fetch`, read from the server now and every 30 minutes.
+    /// 2.59: the trails, frames and victory effects created there (the same list, kept in
+    /// online/creation_looks.json).
+    ServerLookBook serverLooks;
+    /// The look of a trail, a frame or a victory effect created on Cosmic Online
+    /// ("srvtrail:<n>"...): from the list kept on this computer, else from the rewards won;
+    /// unknown yet: nullopt (the category's simple look is drawn meanwhile) and the list is read
+    /// again soon. What the drawing code asks (setCreationLookResolver, set by startServerSuits).
+    std::optional<CreationLook> creationLook(const std::string& ref);
+    /// The lists kept on disk at once; with `fetch`, read from the server now and every 30 minutes.
     void startServerSuits(bool fetch);
     void refreshServerSuits();
     void updateServerSuits(float dt);

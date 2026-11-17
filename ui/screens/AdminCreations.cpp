@@ -31,10 +31,64 @@ const Rgb8 kPalette[] = {{240, 244, 250}, {180, 190, 210}, {80, 90, 120},  {35, 
                          {150, 80, 255},  {240, 120, 200}, {140, 90, 70},  {140, 20, 48}};
 constexpr int kPaletteCount = static_cast<int>(sizeof(kPalette) / sizeof(kPalette[0]));
 
-const char* const kColorNames[3] = {"Combinaison", "Accent", "Écharpe"};
 const char* const kChannelNames[3] = {"Rouge", "Vert", "Bleu"};
 
-/// The poses of the preview, one after the other.
+/// The words of each kind (the order of the selector: suits, trails, frames, victory effects).
+struct KindWords {
+    const char* id;
+    const char* tab;          // the selector
+    const char* title;        // above the list
+    const char* add;          // « + Nouvelle combinaison »
+    const char* newTitle;     // the editor's title for a new one
+    const char* editTitle;    // ... for one being edited
+    const char* placeholder;  // the name field
+    const char* info;         // what they are for, under the list's buttons
+    const char* none;         // nothing created yet
+    const char* intro;        // the editor while nothing is open
+    const char* styleLabel;   // « Forme », « Style », « Effet » ("" for a suit)
+    const char* colorNames[3];
+    bool feminine;            // « créée », « archivée »...
+};
+const KindWords kKinds[4] = {
+    {"suit", "Combinaisons", "Combinaisons", "+ Nouvelle combinaison", "Nouvelle combinaison", "Modifier la combinaison",
+     "Nom de la combinaison (32 caractères au plus)",
+     "Dessinées par tous les jeux, sans mise à jour. À donner en récompense : Calendrier des défis › Récompenses.",
+     "Aucune combinaison créée pour l'instant : « Nouvelle combinaison » pour commencer.",
+     "Choisissez une combinaison dans la liste pour la modifier, ou « Nouvelle combinaison » pour en créer une : un nom et trois couleurs, "
+     "appliquées à Nova comme pour les combinaisons du jeu. Elle se donne ensuite en récompense d'un défi (Calendrier des défis › "
+     "Récompenses) : ceux qui la gagnent la portent, et tous les jeux la dessinent sans mise à jour.",
+     "", {"Combinaison", "Accent", "Écharpe"}, true},
+    {"trail", "Traînées", "Traînées", "+ Nouvelle traînée", "Nouvelle traînée", "Modifier la traînée", "Nom de la traînée (32 caractères au plus)",
+     "Derrière Nova quand elle court ou fonce, et derrière ses fantômes. À donner en récompense : Calendrier des défis › Récompenses.",
+     "Aucune traînée créée pour l'instant : « Nouvelle traînée » pour commencer.",
+     "Choisissez une traînée dans la liste pour la modifier, ou « Nouvelle traînée » pour en créer une : un nom, une forme que le jeu sait "
+     "dessiner, deux couleurs (près de Nova, puis au bout), sa largeur, sa durée et ses étincelles. Elle se donne ensuite en récompense "
+     "d'un défi : ceux qui la gagnent l'équipent, et tous les jeux la dessinent sans mise à jour, derrière eux et derrière leurs fantômes.",
+     "Forme", {"Début", "Fin", ""}, true},
+    {"frame", "Cadres", "Cadres d'avatar", "+ Nouveau cadre", "Nouveau cadre", "Modifier le cadre", "Nom du cadre (32 caractères au plus)",
+     "Autour de l'avatar, sur le profil et dans les classements. À donner en récompense : Calendrier des défis › Récompenses.",
+     "Aucun cadre créé pour l'instant : « Nouveau cadre » pour commencer.",
+     "Choisissez un cadre dans la liste pour le modifier, ou « Nouveau cadre » pour en créer un : un nom, un style que le jeu sait dessiner "
+     "et deux couleurs (le bord, la lueur). Il se donne ensuite en récompense d'un défi : ceux qui le gagnent l'équipent, et tous les jeux "
+     "le dessinent sans mise à jour, sur leur profil et dans les classements.",
+     "Style", {"Bord", "Lueur", ""}, false},
+    {"victory", "Effets de victoire", "Effets de victoire", "+ Nouvel effet", "Nouvel effet de victoire", "Modifier l'effet de victoire",
+     "Nom de l'effet (32 caractères au plus)", "Joués à la sortie du niveau. À donner en récompense : Calendrier des défis › Récompenses.",
+     "Aucun effet de victoire créé pour l'instant : « Nouvel effet » pour commencer.",
+     "Choisissez un effet dans la liste pour le modifier, ou « Nouvel effet » pour en créer un : un nom, un effet que le jeu sait jouer et "
+     "deux couleurs. Il se donne ensuite en récompense d'un défi : ceux qui le gagnent l'équipent, et tous les jeux le jouent sans mise à "
+     "jour à la sortie de leurs niveaux.",
+     "Effet", {"Principale", "Secondaire", ""}, false},
+};
+constexpr int kKindCount = 4;
+
+int kindIndex(const std::string& id) {
+    for (int i = 0; i < kKindCount; ++i)
+        if (id == kKinds[i].id) return i;
+    return -1;
+}
+
+/// The poses of the suit's preview, one after the other.
 struct Pose {
     const char* clip;
     const char* name;
@@ -102,7 +156,17 @@ std::string fieldLabel(const std::string& f) {
     if (f == "colors.suit") return "Couleur de la combinaison";
     if (f == "colors.accent") return "Couleur d'accent";
     if (f == "colors.scarf") return "Couleur de l'écharpe";
+    if (f == "colors.start") return "Couleur du début";
+    if (f == "colors.end") return "Couleur de la fin";
+    if (f == "colors.border") return "Couleur du bord";
+    if (f == "colors.glow") return "Couleur de la lueur";
+    if (f == "colors.main") return "Couleur principale";
+    if (f == "colors.second") return "Couleur secondaire";
     if (f.rfind("colors", 0) == 0) return "Couleurs";
+    if (f == "style") return "Style";
+    if (f == "width") return "Largeur";
+    if (f == "life_ms") return "Durée";
+    if (f == "particles") return "Étincelles";
     if (f == "archived") return "Archivage";
     return "Données";
 }
@@ -114,6 +178,36 @@ std::string errorText(const ApiResult& r) {
         return fieldLabel(jstr(r.details[0], "field")) + " : " + jstr(r.details[0], "message");
     return r.message.empty() ? std::string("Refusé par le serveur.") : r.message;
 }
+
+/// What a creation became, said after the server's answer (each kind with its own words).
+std::string createdText(const std::string& kind, const std::string& n) {
+    if (kind == "trail") return "Traînée « " + n + " » créée. À donner en récompense : Calendrier des défis › Récompenses.";
+    if (kind == "frame") return "Cadre « " + n + " » créé. À donner en récompense : Calendrier des défis › Récompenses.";
+    if (kind == "victory") return "Effet de victoire « " + n + " » créé. À donner en récompense : Calendrier des défis › Récompenses.";
+    return "Combinaison « " + n + " » créée. À donner en récompense : Calendrier des défis › Récompenses.";
+}
+std::string savedText(const std::string& kind, const std::string& n) {
+    if (kind == "trail") return "Traînée « " + n + " » enregistrée : les jeux la redessinent à leur prochaine lecture de la liste.";
+    if (kind == "frame") return "Cadre « " + n + " » enregistré : les jeux le redessinent à leur prochaine lecture de la liste.";
+    if (kind == "victory") return "Effet de victoire « " + n + " » enregistré : les jeux le rejouent à leur prochaine lecture de la liste.";
+    return "Combinaison « " + n + " » enregistrée : les jeux la redessinent à leur prochaine lecture de la liste.";
+}
+std::string archivedText(const std::string& kind, const std::string& n, bool archived) {
+    if (kind == "trail")
+        return archived ? "Traînée « " + n + " » archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent."
+                        : "Traînée « " + n + " » restaurée : de nouveau proposée en récompense.";
+    if (kind == "frame")
+        return archived ? "Cadre « " + n + " » archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent."
+                        : "Cadre « " + n + " » restauré : de nouveau proposé en récompense.";
+    if (kind == "victory")
+        return archived ? "Effet de victoire « " + n + " » archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent."
+                        : "Effet de victoire « " + n + " » restauré : de nouveau proposé en récompense.";
+    return archived ? "Combinaison « " + n + " » archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent."
+                    : "Combinaison « " + n + " » restaurée : de nouveau proposée en récompense.";
+}
+
+/// The look of a creation of the list (`kind` its kind): nullopt when its fields are not readable.
+std::optional<CreationLook> lookOf(const Json& c) { return creationLookFromJson(jstr(c, "kind"), c); }
 
 /// Buttons side by side in `w` (shrunk, and their text with them, when they do not fit).
 struct ButtonRow {
@@ -169,15 +263,34 @@ PaletteLayout paletteLayout(UIContext& ui, float w) {
 }
 float paletteHeight(UIContext& ui, float w) { return paletteLayout(ui, w).height; }
 
+/// "140 %", "700 ms": the value of a trail's setting.
+std::string widthText(int v) { return std::to_string(v) + " %"; }
+std::string lifeText(int v) { return std::to_string(v) + " ms"; }
+
 }  // namespace
 
 AdminCreations::AdminCreations(GameServices& g, std::function<void(const std::string&, bool)> say, std::function<bool(const ApiResult&)> lostRole)
-    : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)) {}
+    : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), online_(g) {}
 
-void AdminCreations::open(const std::string& arg) { wantOpen_ = arg; }
+void AdminCreations::open(const std::string& arg) {
+    // "<kind>[:new|:<id>]": that kind's list at once; the rest once the list is read.
+    const size_t colon = arg.find(':');
+    const int k = kindIndex(arg.substr(0, colon));
+    if (k >= 0) {
+        kind_ = k;
+        wantOpen_ = colon == std::string::npos ? std::string() : arg.substr(colon + 1);
+    } else {
+        wantOpen_ = arg;
+    }
+}
 
 void AdminCreations::enter(bool force) {
     if (!loaded_ || force) load();
+}
+
+const std::string& AdminCreations::kindId() const {
+    static const std::string ids[kKindCount] = {"suit", "trail", "frame", "victory"};
+    return ids[std::clamp(kind_, 0, kKindCount - 1)];
 }
 
 void AdminCreations::load() {
@@ -194,7 +307,7 @@ void AdminCreations::load() {
                       loadError_.clear();
                       list_ = jfield(r.data, "creations", Json::array());
                       loaded_ = true;
-                      // The suit in the editor follows the server (archived or edited elsewhere), changes kept.
+                      // The creation in the editor follows the server (archived or edited elsewhere), changes kept.
                       if (editing_ && draft_.id > 0)
                           if (const Json* c = byId(draft_.id)) {
                               base_.archived = draft_.archived = jget<bool>(*c, "archived", false);
@@ -212,14 +325,25 @@ const Json* AdminCreations::byId(int id) const {
 }
 
 Rgb8& AdminCreations::current() {
-    colorTab_ = std::clamp(colorTab_, 0, 2);
-    return colorTab_ == 0 ? draft_.colors.suit : colorTab_ == 1 ? draft_.colors.accent : draft_.colors.scarf;
+    colorTab_ = std::clamp(colorTab_, 0, colorCount() - 1);
+    if (suitKind()) return colorTab_ == 0 ? draft_.colors.suit : colorTab_ == 1 ? draft_.colors.accent : draft_.colors.scarf;
+    return colorTab_ == 0 ? draft_.look.a : draft_.look.b;
 }
 
-bool AdminCreations::dirty() const { return editing_ && (draft_.name != base_.name || draft_.colors != base_.colors); }
+Rgb8 AdminCreations::colorAt(int i) const {
+    if (suitKind()) return i == 0 ? draft_.colors.suit : i == 1 ? draft_.colors.accent : draft_.colors.scarf;
+    return i == 0 ? draft_.look.a : draft_.look.b;
+}
+
+bool AdminCreations::dirty() const {
+    if (!editing_) return false;
+    if (draft_.name != base_.name) return true;
+    return draft_.kind == "suit" ? draft_.colors != base_.colors : draft_.look != base_.look;
+}
 
 std::string AdminCreations::problem() const {
-    if (draft_.archived) return "Archivée : restaurez-la pour la modifier.";
+    const bool fem = kKinds[kind_].feminine;
+    if (draft_.archived) return fem ? "Archivée : restaurez-la pour la modifier." : "Archivé : restaurez-le pour le modifier.";
     const std::string name = cleaned(draft_.name);
     if (name.empty()) return "Donnez-lui un nom.";
     if (codepoints(name) > kNameMax) return "Nom : 32 caractères au plus.";
@@ -228,7 +352,9 @@ std::string AdminCreations::problem() const {
 
 void AdminCreations::startNew() {
     draft_ = Draft{};
+    draft_.kind = kindId();
     draft_.colors = kDefaultColors;
+    draft_.look = defaultCreationLook(suitKind() ? "trail" : kindId());
     base_ = draft_;
     editing_ = true;
     colorTab_ = 0;
@@ -241,19 +367,23 @@ void AdminCreations::startNew() {
 void AdminCreations::select(const Json& c) {
     Draft d;
     d.id = jget<int>(c, "id", 0);
+    d.kind = jstr(c, "kind", "suit");
     d.name = jstr(c, "name");
     d.colors = suitColorsFromJson(jfield(c, "colors", Json())).value_or(kDefaultColors);
+    d.look = lookOf(c).value_or(defaultCreationLook(d.kind == "suit" ? "trail" : d.kind));
     d.updatedAt = jstr(c, "updated_at");
     d.archived = jget<bool>(c, "archived", false);
+    if (const int k = kindIndex(d.kind); k >= 0) kind_ = k;
     draft_ = d;
     base_ = d;
     editing_ = true;
     hexTab_ = -1;
     pendingChoice_ = 0;
+    pendingKind_ = -1;
 }
 
 void AdminCreations::choose(int id) {
-    // Already open: nothing to do (a new suit being made stays as it is).
+    // Already open: nothing to do (a new one being made stays as it is).
     if (editing_ && ((id == -1 && draft_.id == 0) || (id > 0 && draft_.id == id))) return;
     if (dirty() && pendingChoice_ != id) {
         pendingChoice_ = id;
@@ -267,21 +397,41 @@ void AdminCreations::choose(int id) {
     if (const Json* c = byId(id)) select(*c);
 }
 
+void AdminCreations::chooseKind(int kind) {
+    if (kind == kind_ || kind < 0 || kind >= kKindCount) return;
+    if (dirty() && pendingKind_ != kind) {
+        pendingKind_ = kind;
+        msg_ = "Modifications non enregistrées : « Enregistrer », ou faites le même choix encore une fois pour les abandonner.";
+        msgError_ = false;
+        msgWarn_ = true;
+        return;
+    }
+    kind_ = kind;
+    pendingKind_ = -1;
+    pendingChoice_ = 0;
+    editing_ = false;
+    msg_.clear();
+    colorTab_ = 0;
+    hexTab_ = -1;
+}
+
 void AdminCreations::save() {
     if (saving_ || !editing_ || !problem().empty()) return;
     saving_ = true;
     const std::string name = cleaned(draft_.name);
     const bool isNew = draft_.id == 0;
+    const std::string kind = draft_.kind;
     Json body = Json::object();
+    if (kind == "suit") body["colors"] = suitColorsToJson(draft_.colors);
+    else body = creationLookToJson(draft_.look);
     body["name"] = name;
-    body["colors"] = suitColorsToJson(draft_.colors);
     std::string path = "/api/v1/admin/creations";
-    if (isNew) body["kind"] = "suit";
+    if (isNew) body["kind"] = kind;
     else {
         path += "/" + std::to_string(draft_.id);
         body["updated_at"] = draft_.updatedAt;
     }
-    g_.online.send(isNew ? "POST" : "PUT", path, body, OnlineService::guard(life_, [this, isNew](const ApiResult& r) {
+    g_.online.send(isNew ? "POST" : "PUT", path, body, OnlineService::guard(life_, [this, isNew, kind](const ApiResult& r) {
                        saving_ = false;
                        if (lostRole_(r)) return;
                        if (!r.ok) {
@@ -301,15 +451,14 @@ void AdminCreations::save() {
                        }
                        select(c);
                        const std::string n = jstr(c, "name");
-                       if (isNew) msg_ = "Combinaison « " + n + " » créée. À donner en récompense : Calendrier des défis › Récompenses.";
-                       else if (jget<bool>(r.data, "changed", true))
-                           msg_ = "Combinaison « " + n + " » enregistrée : les jeux la redessinent à leur prochaine lecture de la liste.";
+                       if (isNew) msg_ = createdText(kind, n);
+                       else if (jget<bool>(r.data, "changed", true)) msg_ = savedText(kind, n);
                        else msg_ = "Rien à changer : le serveur l'avait déjà ainsi.";
                        msgError_ = false;
                        msgWarn_ = false;
                        say_(msg_, false);
                        load();
-                       g_.refreshServerSuits();  // this game draws it at once
+                       g_.refreshServerSuits();  // this game draws it at once (the suits and the other kinds)
                    }));
 }
 
@@ -318,8 +467,9 @@ void AdminCreations::setArchived(bool archived) {
     saving_ = true;
     Json body = Json::object();
     body["archived"] = archived;
+    const std::string kind = draft_.kind;
     g_.online.send("POST", "/api/v1/admin/creations/" + std::to_string(draft_.id) + "/archive", body,
-                   OnlineService::guard(life_, [this, archived](const ApiResult& r) {
+                   OnlineService::guard(life_, [this, archived, kind](const ApiResult& r) {
                        saving_ = false;
                        if (lostRole_(r)) return;
                        if (!r.ok) {
@@ -331,9 +481,7 @@ void AdminCreations::setArchived(bool archived) {
                        }
                        const Json& c = jfield(r.data, "creation", Json());
                        if (c.is_object()) select(c);
-                       const std::string n = jstr(c, "name", draft_.name);
-                       msg_ = archived ? "Combinaison « " + n + " » archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent."
-                                       : "Combinaison « " + n + " » restaurée : de nouveau proposée en récompense.";
+                       msg_ = archivedText(kind, jstr(c, "name", draft_.name), archived);
                        msgError_ = false;
                        msgWarn_ = false;
                        say_(msg_, false);
@@ -348,35 +496,66 @@ void AdminCreations::draw(const Rect& in) {
     UIContext& ui = g_.ui;
     if (!wantOpen_.empty() && loaded_) {
         if (wantOpen_ == "new") startNew();
+        else if (const int id = std::atoi(wantOpen_.c_str()); id > 0)
+            if (const Json* c = byId(id)) select(*c);
         wantOpen_.clear();
     }
     ui.pushId("creations");
+    // The kinds over the whole width, then the list and the editor.
+    const float kh = ui.s(42);
+    drawKinds({in.x, in.y, in.w, kh});
+    const float top = in.y + kh + ui.s(14);
+    const Rect body{in.x, top, in.w, in.bottom() - top};
     const float gap = ui.s(20);
-    const float lw = std::floor((in.w - gap) * 0.36f);
-    drawList({in.x, in.y, lw, in.h});
-    drawEditor({in.x + lw + gap, in.y, in.w - lw - gap, in.h});
+    const float lw = std::floor((body.w - gap) * 0.36f);
+    drawList({body.x, body.y, lw, body.h});
+    drawEditor({body.x + lw + gap, body.y, body.w - lw - gap, body.h});
+    ui.popId();
+}
+
+void AdminCreations::drawKinds(const Rect& r) {
+    UIContext& ui = g_.ui;
+    ui.pushId("kinds");
+    std::vector<std::string> labels;
+    for (const KindWords& k : kKinds) labels.emplace_back(k.tab);
+    const float gap = ui.s(8);
+    // Equal tabs as wide as the longest label needs (never wider than the row).
+    float tw = 0.0f;
+    for (const std::string& l : labels) tw = std::max(tw, ui.text().measure(l, FontFace::Bold, ui.s(17)).x + ui.s(40));
+    tw = std::min(tw, (r.w - gap * (kKindCount - 1)) / kKindCount);
+    float font = 17.0f;
+    for (const std::string& l : labels) font = std::min(font, ui.fitFont(l, FontFace::Bold, 17.0f, tw - ui.s(24), 0.6f));
+    for (int i = 0; i < kKindCount; ++i) {
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = font;
+        st.selected = i == kind_;
+        st.enabled = !saving_;
+        if (ui.button("k" + std::to_string(i), {r.x + static_cast<float>(i) * (tw + gap), r.y, tw, r.h}, labels[static_cast<size_t>(i)], st)) chooseKind(i);
+    }
     ui.popId();
 }
 
 void AdminCreations::drawList(const Rect& r) {
     UIContext& ui = g_.ui;
+    const KindWords& words = kKinds[kind_];
     ui.pushId("list");
     float y = r.y;
-    // Title and counts.
+    // Title and counts (of this kind).
     int inService = 0, archived = 0;
-    for (const Json& c : list_) (jget<bool>(c, "archived", false) ? archived : inService)++;
+    for (const Json& c : list_)
+        if (jstr(c, "kind", "suit") == kindId()) (jget<bool>(c, "archived", false) ? archived : inService)++;
     {
-        const std::string count = loaded_ ? std::to_string(inService) + " en service" +
-                                                (archived > 0 ? " · " + std::to_string(archived) + (archived > 1 ? " archivées" : " archivée") : std::string())
+        const std::string count = loaded_ ? std::to_string(inService) + " en service" + (archived > 0 ? " · " + std::to_string(archived) + " en archive" : std::string())
                                           : std::string();
         const float cw = count.empty() ? 0.0f : std::min(r.w * 0.5f, ui.text().measure(count, FontFace::Body, ui.s(fz(ui, 15))).x);
-        fitLabel(ui, "Combinaisons", {r.x, y + ui.s(14)}, 21, r.w - cw - ui.s(12), ui.theme().text, Align::Left, FontFace::Bold);
+        fitLabel(ui, words.title, {r.x, y + ui.s(14)}, 21, r.w - cw - ui.s(12), ui.theme().text, Align::Left, FontFace::Bold);
         if (!count.empty()) fitLabel(ui, count, {r.right(), y + ui.s(14)}, 15, cw, ui.theme().textDim, Align::Right);
         y += ui.s(36);
     }
-    // « Nouvelle combinaison », « Actualiser », « Archivées ».
+    // « Nouvelle… », « Actualiser », « Archives ».
     {
-        const std::vector<std::string> labels = {"+ Nouvelle combinaison", "Actualiser", "Archivées"};
+        const std::vector<std::string> labels = {words.add, "Actualiser", "Archives"};
         const float bh = ui.s(42), gap = ui.s(8);
         ButtonRow row = fitButtons(ui, labels, r.w, gap);
         float x = r.x;
@@ -398,16 +577,15 @@ void AdminCreations::drawList(const Rect& r) {
     }
     // What they are for.
     {
-        const std::string info = "Dessinées par tous les jeux, sans mise à jour. À donner en récompense : Calendrier des défis › Récompenses.";
         const float fs = fz(ui, 14.5f);
-        const float th = ui.text().measureWrapped(info, FontFace::Body, ui.s(fs), r.w).y;
-        ui.labelWrapped(info, {r.x, y}, r.w, fs, ui.theme().textDim);
+        const float th = ui.text().measureWrapped(words.info, FontFace::Body, ui.s(fs), r.w).y;
+        ui.labelWrapped(words.info, {r.x, y}, r.w, fs, ui.theme().textDim);
         y += th + ui.s(12);
     }
-    // The rows: those in service, then (« Archivées ») the archived ones.
+    // The rows of this kind: those in service, then (« Archives ») the archived ones.
     std::vector<const Json*> rows;
     for (const Json& c : list_)
-        if (showArchived_ || !jget<bool>(c, "archived", false)) rows.push_back(&c);
+        if (jstr(c, "kind", "suit") == kindId() && (showArchived_ || !jget<bool>(c, "archived", false))) rows.push_back(&c);
     Rect area{r.x, y, r.w, r.bottom() - y};
     if (rows.empty()) {
         std::string t;
@@ -418,10 +596,9 @@ void AdminCreations::drawList(const Rect& r) {
         } else if (!loaded_) {
             t = "Chargement…";
         } else if (archived > 0) {
-            t = archived > 1 ? "Aucune combinaison en service : « Archivées » montre les " + std::to_string(archived) + " combinaisons archivées."
-                             : std::string("Aucune combinaison en service : « Archivées » montre celle qui est archivée.");
+            t = "Rien en service ici : « Archives » en montre " + std::to_string(archived) + ".";
         } else {
-            t = "Aucune combinaison créée pour l'instant : « Nouvelle combinaison » pour commencer.";
+            t = words.none;
         }
         ui.labelWrapped(t, {area.x, area.y + ui.s(6)}, area.w, fz(ui, 16), col);
         ui.popId();
@@ -439,15 +616,48 @@ void AdminCreations::drawList(const Rect& r) {
             if (ui.hotspot("row" + std::to_string(jget<int>(*rows[i], "id", 0)), row)) choose(jget<int>(*rows[i], "id", 0));
             continue;
         }
-        drawRow(*rows[i], row, static_cast<int>(i));
+        drawRow(*rows[i], row);
     }
     ui.endScroll();
     ui.popId();
 }
 
-void AdminCreations::drawRow(const Json& c, const Rect& row, int /*index*/) {
+void AdminCreations::drawRowPreview(const Json& c, const Rect& pv, bool selected, bool archived) {
     UIContext& ui = g_.ui;
     Renderer& r = ui.r();
+    const float ps = pv.h;
+    const float t = ui.time();
+    r.pushClip(pv);
+    if (suitKind()) {
+        // Nova in the suit (its colours as the server has them; the editor's draft for the one open).
+        const SuitColors colors = selected ? draft_.colors : suitColorsFromJson(jfield(c, "colors", Json())).value_or(kDefaultColors);
+        drawNova(&colors, "idle", t, Rect::fromCenter({pv.center().x, pv.center().y - ps * 0.04f}, {ps * 1.1f, ps * 1.1f}),
+                 archived ? Color{255, 255, 255, 140} : Color::white());
+    } else if (auto look = selected ? std::optional<CreationLook>(draft_.look) : lookOf(c)) {
+        const float fade = archived ? 0.55f : 1.0f;
+        if (look->kind == "trail") {
+            drawTrailSample(r, "", pv, t, fade, &*look);
+        } else if (look->kind == "frame") {
+            const float scale = ps / 80.0f;
+            const float rad = std::max(ui.s(6), ps * 0.5f - kAvatarFrameMargin * scale - ui.s(1));
+            online_.drawAvatar("avatar_01", "", Rect::fromCenter(pv.center(), {rad * 2, rad * 2}));
+            drawAvatarFrame(r, pv.center(), rad, "", scale, t, &*look);
+        } else {
+            // A small Nova at the exit, the effect around her (replayed).
+            const float ns = ps * 0.42f;
+            const Vec2 at{pv.center().x, pv.bottom() - ps * 0.08f};
+            drawNova(nullptr, "victory", t, Rect{at.x - ns * 0.5f, at.y - ns, ns, ns});
+            drawVictoryFx(r, "", at, std::fmod(t, 2.4f) + 0.15f, false, ps / 190.0f, &*look);
+        }
+        if (archived) r.fillRect(pv, Color{11, 18, 38, 110});
+    }
+    r.popClip();
+}
+
+void AdminCreations::drawRow(const Json& c, const Rect& row) {
+    UIContext& ui = g_.ui;
+    Renderer& r = ui.r();
+    const bool fem = kKinds[kind_].feminine;
     const int id = jget<int>(c, "id", 0);
     const bool archived = jget<bool>(c, "archived", false);
     const bool selected = editing_ && draft_.id == id;
@@ -458,60 +668,71 @@ void AdminCreations::drawRow(const Json& c, const Rect& row, int /*index*/) {
     r.fillRoundedRect(row, ui.s(10), selected ? Color{26, 38, 72, 240} : archived ? Color{22, 22, 32, 235} : Color{18, 26, 50, 235});
     r.drawRoundedRect(row, ui.s(10), selected || focused || hovered ? ui.theme().accent : Color{57, 70, 100, 140},
                       std::max(1.0f, ui.s(selected || focused ? 1.8f : 1.0f)));
-    // Nova in the suit (its colours as the server has them; the editor's draft for the one open).
-    const SuitColors colors = selected ? draft_.colors : suitColorsFromJson(jfield(c, "colors", Json())).value_or(kDefaultColors);
+    // Its preview (as every game draws it).
     const float ps = row.h - ui.s(14);
     Rect pv{row.x + ui.s(8), row.y + ui.s(7), ps, ps};
     r.fillRoundedRect(pv, ui.s(8), Color{11, 18, 38, 255});
-    r.pushClip(pv);
-    drawNova(colors, "idle", ui.time(), Rect::fromCenter({pv.center().x, pv.center().y - ps * 0.04f}, {ps * 1.1f, ps * 1.1f}),
-             archived ? Color{255, 255, 255, 140} : Color::white());
-    r.popClip();
-    // The three colours at the top right.
+    drawRowPreview(c, pv, selected, archived);
+    // Its colours at the top right (as the server has them).
+    std::vector<Rgb8> swatches;
+    if (suitKind()) {
+        const SuitColors s = suitColorsFromJson(jfield(c, "colors", Json())).value_or(kDefaultColors);
+        swatches = {s.suit, s.accent, s.scarf};
+    } else if (auto l = lookOf(c)) {
+        swatches = {l->a, l->b};
+    }
     const float sw = ui.s(16), sg = ui.s(4);
-    const float swX = row.right() - ui.s(12) - 3 * sw - 2 * sg;
-    const SuitColors shown = suitColorsFromJson(jfield(c, "colors", Json())).value_or(kDefaultColors);
-    const Rgb8 three[3] = {shown.suit, shown.accent, shown.scarf};
-    for (int k = 0; k < 3; ++k) {
+    const float swX = row.right() - ui.s(12) - static_cast<float>(swatches.size()) * sw - static_cast<float>(std::max<size_t>(1, swatches.size()) - 1) * sg;
+    for (size_t k = 0; k < swatches.size(); ++k) {
         Rect s{swX + static_cast<float>(k) * (sw + sg), row.y + ui.s(14), sw, sw};
-        r.fillRoundedRect(s, ui.s(3), colorOf(three[k]));
+        r.fillRoundedRect(s, ui.s(3), colorOf(swatches[k]));
         r.drawRoundedRect(s, ui.s(3), Color{8, 12, 26, 255}, std::max(1.0f, ui.s(1.0f)));
     }
     const float tx = pv.right() + ui.s(12), room = row.right() - ui.s(12) - tx;
-    // Its name (in the room left of the colours), what it is used for, who made it.
+    // Its name (in the room left of the colours), its style and what it is used for, who made it.
     fitLabel(ui, jstr(c, "name"), {tx, row.y + ui.s(22)}, 18, swX - ui.s(10) - tx, archived ? ui.theme().textDim : ui.theme().text, Align::Left,
              FontFace::Bold);
     const int uses = jget<int>(c, "uses", 0), owners = jget<int>(c, "owners", 0);
     std::string use;
-    if (uses == 0 && owners == 0) use = "Pas encore donnée en récompense";
+    if (uses == 0 && owners == 0) use = fem ? "Pas encore donnée en récompense" : "Pas encore donné en récompense";
     else {
-        use = uses == 0 ? std::string("Donnée par aucun défi") : "Donnée par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
-        use += " · " + (owners == 0 ? std::string("gagnée par personne") : "gagnée par " + std::to_string(owners) + (owners > 1 ? " joueurs" : " joueur"));
+        if (fem) use = uses == 0 ? std::string("Donnée par aucun défi") : "Donnée par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
+        else use = uses == 0 ? std::string("Donné par aucun défi") : "Donné par " + std::to_string(uses) + (uses > 1 ? " défis" : " défi");
+        if (fem) use += " · " + (owners == 0 ? std::string("gagnée par personne") : "gagnée par " + std::to_string(owners) + (owners > 1 ? " joueurs" : " joueur"));
+        else use += " · " + (owners == 0 ? std::string("gagné par personne") : "gagné par " + std::to_string(owners) + (owners > 1 ? " joueurs" : " joueur"));
     }
+    if (!suitKind())
+        if (const std::string style = creationStyleName(kindId(), jstr(c, "style")); !style.empty()) use = style + " · " + use;
     fitLabel(ui, use, {tx, row.y + ui.s(47)}, 14, room, ui.theme().textDim);
     float lx = tx;
     if (archived) {
-        const std::string a = "archivée";
+        const std::string a = fem ? "archivée" : "archivé";
         if (pillWidth(ui, a) < room) lx += pill(ui, a, tx, row.y + ui.s(70), ui.theme().warm) + ui.s(8);
     }
     const std::string by = jstr(c, "created_by");
-    const std::string made = (by.empty() ? std::string("Créée") : "Créée par " + by) + " le " + dayOf(jstr(c, "created_at"));
+    std::string made;
+    if (fem) made = (by.empty() ? std::string("Créée") : "Créée par " + by) + " le " + dayOf(jstr(c, "created_at"));
+    else made = (by.empty() ? std::string("Créé") : "Créé par " + by) + " le " + dayOf(jstr(c, "created_at"));
     fitLabel(ui, made, {lx, row.y + ui.s(70)}, 13, row.right() - ui.s(12) - lx, ui.theme().textDim);
 }
 
 void AdminCreations::drawEditor(const Rect& r) {
     UIContext& ui = g_.ui;
     Renderer& rr = ui.r();
+    const KindWords& words = kKinds[kind_];
     rr.fillRoundedRect(r, ui.s(12), Color{14, 20, 42, 235});
     rr.drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
     const Rect in{r.x + ui.s(18), r.y + ui.s(16), r.w - ui.s(36), r.h - ui.s(32)};
     ui.pushId("ed");
     if (!editing_) {
-        const std::string t =
-            "Choisissez une combinaison dans la liste pour la modifier, ou « Nouvelle combinaison » pour en créer une : un nom et trois couleurs, "
-            "appliquées à Nova comme pour les combinaisons du jeu. Elle se donne ensuite en récompense d'un défi (Calendrier des défis › "
-            "Récompenses) : ceux qui la gagnent la portent, et tous les jeux la dessinent sans mise à jour.";
-        ui.labelWrapped(t, {in.x, in.y + ui.s(6)}, std::min(in.w, ui.s(760)), fz(ui, 17), ui.theme().textDim);
+        // The message of a kind changed with changes left (or any other) stays in sight.
+        float y = in.y + ui.s(6);
+        if (!msg_.empty()) {
+            const float fs = fz(ui, 16);
+            ui.labelWrapped(msg_, {in.x, y}, std::min(in.w, ui.s(760)), fs, msgError_ ? ui.theme().danger : msgWarn_ ? ui.theme().warm : ui.theme().success);
+            y += ui.text().measureWrapped(msg_, FontFace::Body, ui.s(fs), std::min(in.w, ui.s(760))).y + ui.s(14);
+        }
+        ui.labelWrapped(words.intro, {in.x, y}, std::min(in.w, ui.s(760)), fz(ui, 17), ui.theme().textDim);
         ui.popId();
         return;
     }
@@ -520,10 +741,11 @@ void AdminCreations::drawEditor(const Rect& r) {
     const Rect preview{in.x + cw + colGap, in.y, in.w - cw - colGap, in.h};
     float y = in.y;
     const float x = in.x;
+    const bool fem = words.feminine;
     // Title (and « archivée »).
     {
-        const std::string title = draft_.id == 0 ? "Nouvelle combinaison" : "Modifier la combinaison";
-        const std::string a = "archivée";
+        const std::string title = draft_.id == 0 ? words.newTitle : words.editTitle;
+        const std::string a = fem ? "archivée" : "archivé";
         const float aw = draft_.archived ? pillWidth(ui, a) + ui.s(12) : 0.0f;
         Vec2 ts = fitLabel(ui, title, {x, y + ui.s(17)}, 25, cw - aw, ui.theme().text, Align::Left, FontFace::Title);
         if (draft_.archived) pill(ui, a, x + ts.x + ui.s(12), y + ui.s(17), ui.theme().warm);
@@ -538,10 +760,13 @@ void AdminCreations::drawEditor(const Rect& r) {
     Color noteC = msgError_ ? ui.theme().danger : msgWarn_ ? ui.theme().warm : ui.theme().success;
     if (note.empty()) {
         const std::string p = problem();
-        if (draft_.archived) note = "Archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent. « Restaurer » pour la modifier.";
+        if (draft_.archived)
+            note = fem ? "Archivée : elle n'est plus proposée en récompense ; ceux qui l'ont gagnée la gardent. « Restaurer » pour la modifier."
+                       : "Archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent. « Restaurer » pour le modifier.";
         else if (saving_) note = "Envoi au serveur…";
         else if (dirty() && !p.empty()) note = p;
-        else if (dirty()) note = draft_.id == 0 ? "Pas encore créée : « Créer » l'envoie au serveur." : "Modifications non enregistrées.";
+        else if (dirty() && draft_.id == 0) note = fem ? "Pas encore créée : « Créer » l'envoie au serveur." : "Pas encore créé : « Créer » l'envoie au serveur.";
+        else if (dirty()) note = "Modifications non enregistrées.";
         noteC = draft_.archived || (dirty() && !p.empty()) ? ui.theme().warm : ui.theme().textDim;
     }
     const float noteFs = fz(ui, 15);
@@ -549,8 +774,11 @@ void AdminCreations::drawEditor(const Rect& r) {
     const float noteY = by - ui.s(10) - noteH;
     // The controls between the title and the message (they scroll when the window is small).
     const float nameH = ui.s(46), cardH = ui.s(58), barH = ui.s(34), barGap = ui.s(8), hexH = ui.s(40);
-    const float paletteH = paletteHeight(ui, cw - ui.s(16));  // the narrower width: never more rows than drawn
-    const float contentH = ui.s(26) + nameH + ui.s(18) + ui.s(26) + cardH + ui.s(14) + 3 * (barH + barGap) + ui.s(6) + hexH + ui.s(14) + paletteH;
+    const float narrow = cw - ui.s(16);  // the narrower width (with a scroll bar): never more rows than drawn
+    const float paletteH = paletteHeight(ui, narrow);
+    float contentH = ui.s(26) + nameH + ui.s(18) + ui.s(26) + cardH + ui.s(14) + 3 * (barH + barGap) + ui.s(6) + hexH + ui.s(14) + paletteH;
+    if (!suitKind()) contentH += ui.s(26) + drawStyles(0, 0, narrow, true) + ui.s(18);
+    if (kindId() == "trail") contentH += ui.s(18) + drawTrailSettings(0, 0, narrow, true);
     const Rect ctl{x, y, cw, std::max(ui.s(40), noteY - ui.s(12) - y)};
     const bool scrolls = contentH > ctl.h;
     const float w = cw - (scrolls ? ui.s(16) : 0.0f);
@@ -573,11 +801,17 @@ void AdminCreations::drawEditor(const Rect& r) {
             focusName_ = false;
             ui.setFocus("name");
         }
-        ui.textField("name", {x, cy, w, nameH}, draft_.name, "Nom de la combinaison (32 caractères au plus)", 160);
+        ui.textField("name", {x, cy, w, nameH}, draft_.name, words.placeholder, 160);
         if (codepoints(draft_.name) > kNameMax + 8) draft_.name = firstCodepoints(draft_.name, kNameMax + 8);  // the field stays short
         cy += nameH + ui.s(18);
     }
-    // The three colours, the one edited, its bars, its code, the palette.
+    // The style (a trail's shape, a frame's style, a victory's effect): those the game draws.
+    if (!suitKind()) {
+        fitLabel(ui, words.styleLabel, {x, cy + ui.s(11)}, 16, w, ui.theme().accent, Align::Left, FontFace::Bold);
+        cy += ui.s(26);
+        cy += drawStyles(x, cy, w, false) + ui.s(18);
+    }
+    // The colours, the one edited, its bars, its code, the palette.
     {
         const std::string hint = "← → : de 5 en 5 · Maj : de 1 en 1 · souris : glisser";
         const float hw = std::min(w * 0.62f, ui.text().measure(hint, FontFace::Body, ui.s(fz(ui, 13))).x);
@@ -615,6 +849,11 @@ void AdminCreations::drawEditor(const Rect& r) {
         cy += hexH + ui.s(14);
         cy += drawPalette(x, cy, w);
     }
+    // A trail: its width, its length in time, its sparkles.
+    if (kindId() == "trail") {
+        cy += ui.s(18);
+        cy += drawTrailSettings(x, cy, w, false);
+    }
     ui.endScroll();
     ui.popId();
     ui.inputEnabled = prevInput;
@@ -637,6 +876,7 @@ void AdminCreations::drawEditor(const Rect& r) {
         if (ui.button("revert", {bx, by, row.widths[1], bh}, labels[1], st)) {
             draft_ = base_;
             pendingChoice_ = 0;
+            pendingKind_ = -1;
             msg_.clear();
         }
         if (labels.size() > 2) {
@@ -650,13 +890,41 @@ void AdminCreations::drawEditor(const Rect& r) {
     ui.popId();
 }
 
+float AdminCreations::drawStyles(float x, float y, float w, bool measure) {
+    UIContext& ui = g_.ui;
+    const std::vector<std::string>& styles = creationStyles(kindId());
+    if (styles.empty()) return 0.0f;
+    // Equal buttons, as wide as the longest name needs, as many per row as fit.
+    const float gap = ui.s(8), h = ui.s(40);
+    float bw = 0.0f;
+    for (const std::string& s : styles) bw = std::max(bw, ui.text().measure(creationStyleName(kindId(), s), FontFace::Bold, ui.s(15)).x + ui.s(30));
+    bw = std::min(bw, w);
+    const int perRow = std::max(1, static_cast<int>((w + gap) / (bw + gap)));
+    bw = (w - gap * static_cast<float>(perRow - 1)) / static_cast<float>(perRow);  // the row filled
+    const int rows = (static_cast<int>(styles.size()) + perRow - 1) / perRow;
+    const float height = static_cast<float>(rows) * (h + gap) - gap;
+    if (measure) return height;
+    float font = 15.0f;
+    for (const std::string& s : styles) font = std::min(font, ui.fitFont(creationStyleName(kindId(), s), FontFace::Bold, 15.0f, bw - ui.s(20), 0.6f));
+    for (size_t i = 0; i < styles.size(); ++i) {
+        const int col = static_cast<int>(i) % perRow, row = static_cast<int>(i) / perRow;
+        Rect b{x + static_cast<float>(col) * (bw + gap), y + static_cast<float>(row) * (h + gap), bw, h};
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = font;
+        st.selected = draft_.look.style == styles[i];
+        if (ui.button("style" + std::to_string(i), b, creationStyleName(kindId(), styles[i]), st)) draft_.look.style = styles[i];
+    }
+    return height;
+}
+
 float AdminCreations::drawColorCards(float x, float y, float w) {
     UIContext& ui = g_.ui;
     Renderer& r = ui.r();
+    const int n = colorCount();
     const float gap = ui.s(10), h = ui.s(58);
-    const float cw = (w - 2 * gap) / 3.0f;
-    const Rgb8 colors[3] = {draft_.colors.suit, draft_.colors.accent, draft_.colors.scarf};
-    for (int i = 0; i < 3; ++i) {
+    const float cw = (w - static_cast<float>(n - 1) * gap) / static_cast<float>(n);
+    for (int i = 0; i < n; ++i) {
         Rect card{x + static_cast<float>(i) * (cw + gap), y, cw, h};
         const std::string name = "card" + std::to_string(i);
         bool hovered = false;
@@ -667,12 +935,12 @@ float AdminCreations::drawColorCards(float x, float y, float w) {
                           std::max(1.0f, ui.s(on || focused ? 2.0f : 1.0f)));
         const float sw = h - ui.s(20);
         Rect sq{card.x + ui.s(10), card.y + ui.s(10), sw, sw};
-        r.fillRoundedRect(sq, ui.s(6), colorOf(colors[i]));
+        r.fillRoundedRect(sq, ui.s(6), colorOf(colorAt(i)));
         r.drawRoundedRect(sq, ui.s(6), Color{230, 236, 245, 200}, std::max(1.0f, ui.s(1.0f)));
         const float tx = sq.right() + ui.s(10), room = card.right() - ui.s(8) - tx;
-        fitLabel(ui, kColorNames[i], {tx, card.y + ui.s(19)}, 15, room, on ? Color::white() : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle,
-                 0.6f);
-        fitLabel(ui, hexColor(colors[i]), {tx, card.y + ui.s(40)}, 13, room, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle, 0.6f);
+        fitLabel(ui, kKinds[kind_].colorNames[i], {tx, card.y + ui.s(19)}, 15, room, on ? Color::white() : ui.theme().text, Align::Left, FontFace::Bold,
+                 VAlign::Middle, 0.6f);
+        fitLabel(ui, hexColor(colorAt(i)), {tx, card.y + ui.s(40)}, 13, room, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle, 0.6f);
     }
     return h;
 }
@@ -713,9 +981,9 @@ bool AdminCreations::channelBar(int channel, const Rect& rc) {
         if (in.menuPressed(Action::MenuRight)) value += step;
         ui.consumeNavigation(true, false);  // ← → change the value, never the focus
     }
-    if (ui.acceptsInput() && hovered && in.mousePressed(SDL_BUTTON_LEFT)) dragChannel_ = channel;
-    if (dragChannel_ == channel) {
-        if (!ui.acceptsInput() || !in.mouseDown(SDL_BUTTON_LEFT)) dragChannel_ = -1;
+    if (ui.acceptsInput() && hovered && in.mousePressed(SDL_BUTTON_LEFT)) dragBar_ = channel;
+    if (dragBar_ == channel) {
+        if (!ui.acceptsInput() || !in.mouseDown(SDL_BUTTON_LEFT)) dragBar_ = -1;
         else value = static_cast<int>(std::lround(std::clamp((in.mousePos().x - track.x) / std::max(1.0f, track.w), 0.0f, 1.0f) * 255.0f));
     }
     value = std::clamp(value, 0, 255);
@@ -723,7 +991,7 @@ bool AdminCreations::channelBar(int channel, const Rect& rc) {
     v = static_cast<uint8_t>(value);
     // The bar: the gradient of this channel, the other two as they are.
     r.fillRoundedRect(rc, ui.s(8), focused ? Color{28, 40, 74, 245} : Color{18, 26, 50, 235});
-    r.drawRoundedRect(rc, ui.s(8), focused || hovered || dragChannel_ == channel ? ui.theme().accent : Color{57, 70, 100, 160},
+    r.drawRoundedRect(rc, ui.s(8), focused || hovered || dragBar_ == channel ? ui.theme().accent : Color{57, 70, 100, 160},
                       std::max(1.0f, ui.s(focused ? 2.0f : 1.0f)));
     constexpr int kSteps = 32;
     for (int i = 0; i < kSteps; ++i) {
@@ -762,7 +1030,74 @@ float AdminCreations::drawPalette(float x, float y, float w) {
     return l.height;
 }
 
-void AdminCreations::drawNova(const SuitColors& c, const std::string& clip, float t, const Rect& dst, Color tint) {
+float AdminCreations::drawTrailSettings(float x, float y, float w, bool measure) {
+    UIContext& ui = g_.ui;
+    const float barH = ui.s(34), gap = ui.s(8), toggleH = ui.s(48);
+    const float height = ui.s(26) + 2 * (barH + gap) + toggleH;
+    if (measure) return height;
+    const std::string hint = "← → : de 10 en 10 · Maj : de 1 en 1";
+    const float hw = std::min(w * 0.6f, ui.text().measure(hint, FontFace::Body, ui.s(fz(ui, 13))).x);
+    fitLabel(ui, "Réglages", {x, y + ui.s(11)}, 16, w - hw - ui.s(12), ui.theme().accent, Align::Left, FontFace::Bold);
+    fitLabel(ui, hint, {x + w, y + ui.s(11)}, 13, hw, ui.theme().textDim, Align::Right);
+    float cy = y + ui.s(26);
+    // The labels and the values measured first: the bars take what is left between them.
+    float lw = 0.0f;
+    for (const char* n : {"Largeur", "Durée"}) lw = std::max(lw, ui.text().measure(n, FontFace::Body, ui.s(15)).x);
+    lw = std::min(lw + ui.s(14), w * 0.3f);
+    const float vw = std::max(ui.text().measure(widthText(kTrailWidthMax), FontFace::Bold, ui.s(16)).x,
+                              ui.text().measure(lifeText(kTrailLifeMax), FontFace::Bold, ui.s(16)).x) +
+                     ui.s(14);
+    fitLabel(ui, "Largeur", {x, cy + barH * 0.5f}, 15, lw - ui.s(8), ui.theme().text);
+    valueBar("width", 10, {x + lw, cy, w - lw - vw, barH}, draft_.look.width, kTrailWidthMin, kTrailWidthMax, 10, 1);
+    ui.label(widthText(draft_.look.width), {x + w, cy + barH * 0.5f}, 16, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+    cy += barH + gap;
+    fitLabel(ui, "Durée", {x, cy + barH * 0.5f}, 15, lw - ui.s(8), ui.theme().text);
+    valueBar("life", 11, {x + lw, cy, w - lw - vw, barH}, draft_.look.lifeMs, kTrailLifeMin, kTrailLifeMax, 50, 10);
+    ui.label(lifeText(draft_.look.lifeMs), {x + w, cy + barH * 0.5f}, 16, ui.theme().text, Align::Right, FontFace::Bold, VAlign::Middle);
+    cy += barH + gap;
+    ui.toggle("sparkles", {x, cy, w, toggleH}, "Étincelles autour de la traînée", draft_.look.particles);
+    return height;
+}
+
+bool AdminCreations::valueBar(const std::string& name, int bar, const Rect& rc, int& value, int minV, int maxV, int step, int fine) {
+    UIContext& ui = g_.ui;
+    Renderer& r = ui.r();
+    InputManager& in = ui.input();
+    bool hovered = false;
+    ui.hotspot(name, rc, &hovered);
+    const bool focused = ui.focused(name);
+    int v = value;
+    const Rect track{rc.x + ui.s(10), rc.center().y - ui.s(5), rc.w - ui.s(20), ui.s(10)};
+    if (ui.acceptsInput() && focused && !ui.editingText()) {
+        const int d = in.shift() ? fine : step;
+        if (in.menuPressed(Action::MenuLeft)) v -= d;
+        if (in.menuPressed(Action::MenuRight)) v += d;
+        ui.consumeNavigation(true, false);  // ← → change the value, never the focus
+    }
+    if (ui.acceptsInput() && hovered && in.mousePressed(SDL_BUTTON_LEFT)) dragBar_ = bar;
+    if (dragBar_ == bar) {
+        if (!ui.acceptsInput() || !in.mouseDown(SDL_BUTTON_LEFT)) dragBar_ = -1;
+        else {
+            const float k = std::clamp((in.mousePos().x - track.x) / std::max(1.0f, track.w), 0.0f, 1.0f);
+            v = minV + static_cast<int>(std::lround(k * static_cast<float>(maxV - minV) / static_cast<float>(fine))) * fine;
+        }
+    }
+    v = std::clamp(v, minV, maxV);
+    const bool changed = v != value;
+    value = v;
+    r.fillRoundedRect(rc, ui.s(8), focused ? Color{28, 40, 74, 245} : Color{18, 26, 50, 235});
+    r.drawRoundedRect(rc, ui.s(8), focused || hovered || dragBar_ == bar ? ui.theme().accent : Color{57, 70, 100, 160},
+                      std::max(1.0f, ui.s(focused ? 2.0f : 1.0f)));
+    const float k = static_cast<float>(v - minV) / static_cast<float>(std::max(1, maxV - minV));
+    r.fillRoundedRect(track, track.h * 0.5f, Color{40, 50, 70, 255});
+    r.fillRoundedRect({track.x, track.y, track.w * k, track.h}, track.h * 0.5f, ui.theme().accent);
+    const Vec2 knob{track.x + track.w * k, track.center().y};
+    r.fillCircle(knob, ui.s(9), Color{8, 12, 26, 255});
+    r.fillCircle(knob, ui.s(7), Color::white());
+    return changed;
+}
+
+void AdminCreations::drawNova(const SuitColors* c, const std::string& clip, float t, const Rect& dst, Color tint, bool flip) {
     AnimationSetPtr set = g_.app.resources().animation("animations/nova.json");
     if (!set || !set->texture) return;
     const AnimationClip* cl = set->clip(clip);
@@ -779,10 +1114,10 @@ void AdminCreations::drawNova(const SuitColors& c, const std::string& clip, floa
             break;
         }
     }
-    TexturePtr tex = g_.suitTextures.get(g_.app.resources(), g_.app.renderer(), c);
+    TexturePtr tex = c ? g_.suitTextures.get(g_.app.resources(), g_.app.renderer(), *c) : nullptr;
     if (!tex) tex = set->texture;
     const Rect src = set->frameRect(*cl, frame);
-    g_.app.renderer().drawTexture(*tex, &src, dst, tint);
+    g_.app.renderer().drawTexture(*tex, &src, dst, tint, BlendMode::Alpha, flip);
 }
 
 void AdminCreations::drawPreview(const Rect& r) {
@@ -791,23 +1126,122 @@ void AdminCreations::drawPreview(const Rect& r) {
     rr.fillRoundedRectGradient(r, ui.s(14), Color{17, 26, 54, 255}, Color{10, 15, 32, 255});
     rr.drawRoundedRect(r, ui.s(14), ui.theme().accent.withAlpha(80), std::max(1.0f, ui.s(1.5f)));
     const float pad = ui.s(14);
-    // Its name at the top (the draft's), then Nova, large, on a ground, in pose after pose.
+    // Its name at the top (the draft's); what is shown below, then its caption at the bottom.
     const std::string name = cleaned(draft_.name).empty() ? std::string("Sans nom") : cleaned(draft_.name);
     fitLabel(ui, firstCodepoints(name, kNameMax), {r.center().x, r.y + pad + ui.s(14)}, 21, r.w - 2 * pad,
              cleaned(draft_.name).empty() ? ui.theme().textDim : ui.theme().text, Align::Center, FontFace::Bold);
+    const float top = r.y + pad + ui.s(40);
+    const float bottom = r.bottom() - pad - ui.s(36);  // the caption's line under it
+    if (kindId() == "trail") drawTrailPreview(r, top, bottom);
+    else if (kindId() == "frame") drawFramePreview(r, top, bottom);
+    else if (kindId() == "victory") drawVictoryPreview(r, top, bottom);
+    else drawSuitPreview(r, top, bottom);
+}
+
+void AdminCreations::drawSuitPreview(const Rect& r, float top, float bottom) {
+    UIContext& ui = g_.ui;
+    Renderer& rr = ui.r();
+    const float pad = ui.s(14);
+    // Nova, large, on a ground, in pose after pose.
     const int poses = static_cast<int>(sizeof(kPoses) / sizeof(kPoses[0]));
     const float t = ui.time();
     const Pose& pose = kPoses[static_cast<int>(t / kPoseSeconds) % poses];
-    const std::string caption = std::string("Aperçu : ") + pose.name;
-    const float capY = r.bottom() - pad - ui.s(12);
-    fitLabel(ui, caption, {r.center().x, capY}, 15, r.w - 2 * pad, ui.theme().textDim, Align::Center);
-    const float top = r.y + pad + ui.s(40), bottom = capY - ui.s(24);
+    fitLabel(ui, std::string("Aperçu : ") + pose.name, {r.center().x, r.bottom() - pad - ui.s(12)}, 15, r.w - 2 * pad, ui.theme().textDim, Align::Center);
     const float ground = bottom - (bottom - top) * 0.12f;
     rr.fillRect({r.x + ui.s(2), ground, r.w - ui.s(4), ui.s(2)}, ui.theme().accent.withAlpha(90));
     const float size = std::max(ui.s(32), std::min(r.w - 2 * pad, (ground - top) * 1.05f));
     rr.pushClip({r.x + ui.s(2), top, r.w - ui.s(4), bottom - top});
     // The sheet's frames stand on their bottom edge (pivot at the feet): Nova stands on the ground.
-    drawNova(draft_.colors, pose.clip, std::fmod(t, kPoseSeconds), Rect{r.center().x - size * 0.5f, ground - size, size, size});
+    drawNova(&draft_.colors, pose.clip, std::fmod(t, kPoseSeconds), Rect{r.center().x - size * 0.5f, ground - size, size, size});
+    rr.popClip();
+}
+
+void AdminCreations::drawTrailPreview(const Rect& r, float top, float bottom) {
+    UIContext& ui = g_.ui;
+    Renderer& rr = ui.r();
+    const float pad = ui.s(14);
+    // Nova runs from one side to the other and back, dashing halfway: her trail follows her
+    // (the game's own trail, fed with her drawn centre, in screen pixels).
+    const float t = ui.time();
+    const float dt = previewClock_ < 0.0f ? 0.0f : std::clamp(t - previewClock_, 0.0f, 0.05f);
+    previewClock_ = t;
+    const float ground = bottom - (bottom - top) * 0.1f;
+    const float size = std::max(ui.s(32), std::min(r.w * 0.34f, (ground - top) * 0.62f));
+    const float pass = 1.7f;  // seconds to cross
+    const float u = std::fmod(t, 2.0f * pass) / pass;  // 0..2
+    const bool back = u >= 1.0f;
+    const float p = back ? u - 1.0f : u;
+    const float eased = p * p * (3.0f - 2.0f * p);
+    const float left = r.x + pad + size * 0.5f, right = r.right() - pad - size * 0.5f;
+    const float cx = back ? right - (right - left) * eased : left + (right - left) * eased;
+    const bool dash = p > 0.38f && p < 0.62f;
+    const Vec2 center{cx, ground - size * 0.42f};
+    if (previewTrailRect_.x != r.x || previewTrailRect_.y != r.y || previewTrailRect_.w != r.w || previewTrailRect_.h != r.h) {
+        previewTrail_.reset();
+        previewTrailRect_ = r;
+    }
+    previewTrail_.update(center, dt, true);
+    fitLabel(ui, dash ? "Aperçu : ruée" : "Aperçu : course", {r.center().x, r.bottom() - pad - ui.s(12)}, 15, r.w - 2 * pad, ui.theme().textDim,
+             Align::Center);
+    rr.fillRect({r.x + ui.s(2), ground, r.w - ui.s(4), ui.s(2)}, ui.theme().accent.withAlpha(90));
+    rr.pushClip({r.x + ui.s(2), top, r.w - ui.s(4), bottom - top});
+    previewTrail_.draw(rr, "", false, size / 46.0f, 1.0f, &draft_.look);
+    drawNova(nullptr, dash ? "dash" : "run", t, Rect{cx - size * 0.5f, ground - size, size, size}, Color::white(), back);
+    rr.popClip();
+}
+
+void AdminCreations::drawFramePreview(const Rect& r, float top, float bottom) {
+    UIContext& ui = g_.ui;
+    Renderer& rr = ui.r();
+    const float pad = ui.s(14);
+    const float t = ui.time();
+    const bool logged = g_.online.loggedIn();
+    const std::string avatar = logged ? jstr(g_.online.profile(), "avatar", "avatar_01") : std::string("avatar_01");
+    const std::string pid = logged ? g_.online.playerId() : std::string();
+    fitLabel(ui, "Aperçu : profil et classements", {r.center().x, r.bottom() - pad - ui.s(12)}, 15, r.w - 2 * pad, ui.theme().textDim, Align::Center);
+    // Below: a row as the leaderboards draw it (the avatar at their size, the admin's name).
+    const float rowH = ui.s(56);
+    const Rect row{r.x + pad, bottom - rowH, r.w - 2 * pad, rowH};
+    const float capFs = fz(ui, 14);
+    const float capY = row.y - ui.s(14);
+    // Above: the profile's avatar, as large as the room left allows (its frame included).
+    const float room = capY - ui.s(14) - top - ui.s(30);  // the caption « Profil » under it
+    const float scale = std::max(ui.s(0.6f), std::min(ui.s(1.6f), room / 120.0f));
+    const float rad = std::max(ui.s(16), std::min((r.w - 2 * pad) * 0.5f - kAvatarFrameMargin * scale, room * 0.5f - kAvatarFrameMargin * scale));
+    const Vec2 c{r.center().x, top + kAvatarFrameMargin * scale + rad + ui.s(4)};
+    online_.drawAvatar(avatar, pid, Rect::fromCenter(c, {rad * 2, rad * 2}));
+    drawAvatarFrame(rr, c, rad, "", scale, t, &draft_.look);
+    fitLabel(ui, "Profil", {c.x, c.y + rad + kAvatarFrameMargin * scale + ui.s(14)}, 14, r.w - 2 * pad, ui.theme().textDim, Align::Center);
+    fitLabel(ui, "Classements", {r.center().x, capY}, capFs, r.w - 2 * pad, ui.theme().textDim, Align::Center);
+    rr.fillRoundedRect(row, ui.s(10), Color{18, 26, 50, 235});
+    rr.drawRoundedRect(row, ui.s(10), Color{57, 70, 100, 140}, std::max(1.0f, ui.s(1.0f)));
+    const float avs = row.h - ui.s(14);
+    const Vec2 avc{row.x + ui.s(12) + kAvatarFrameMargin * ui.s(0.5f) + avs * 0.5f, row.center().y};
+    online_.drawAvatar(avatar, pid, Rect::fromCenter(avc, {avs, avs}));
+    drawAvatarFrame(rr, avc, avs * 0.5f, "", ui.s(0.5f), t, &draft_.look);
+    const float nx = avc.x + avs * 0.5f + ui.s(kAvatarFrameMargin * 0.5f + 10);
+    const std::string who = logged ? g_.online.username() : std::string("Votre pseudo");
+    fitLabel(ui, who, {nx, row.center().y}, 17, row.right() - ui.s(12) - nx, ui.theme().text, Align::Left, FontFace::Bold);
+}
+
+void AdminCreations::drawVictoryPreview(const Rect& r, float top, float bottom) {
+    UIContext& ui = g_.ui;
+    Renderer& rr = ui.r();
+    const float pad = ui.s(14);
+    // Nova at the exit of a level, the effect played around her, again and again (the game's
+    // effect at its proportions: it spreads about 120 pixels on each side and 170 above her).
+    const float t = ui.time();
+    const float cycle = kVictoryFxTime + 0.5f;
+    const float tt = std::fmod(t, cycle);
+    fitLabel(ui, "Aperçu : sortie du niveau", {r.center().x, r.bottom() - pad - ui.s(12)}, 15, r.w - 2 * pad, ui.theme().textDim, Align::Center);
+    const float ground = bottom - (bottom - top) * 0.08f;
+    rr.fillRect({r.x + ui.s(2), ground, r.w - ui.s(4), ui.s(2)}, ui.theme().accent.withAlpha(90));
+    const float scale = std::max(0.2f, std::min((r.w - 2 * pad) / 260.0f, (ground - top) / 200.0f));
+    const float size = 44.0f * scale;
+    const Vec2 at{r.center().x, ground};
+    rr.pushClip({r.x + ui.s(2), top, r.w - ui.s(4), bottom - top});
+    drawNova(nullptr, tt < kVictoryFxTime ? "victory" : "idle", tt, Rect{at.x - size * 0.5f, ground - size, size, size});
+    drawVictoryFx(rr, "", at, tt, false, scale, &draft_.look);
     rr.popClip();
 }
 

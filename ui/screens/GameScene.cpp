@@ -247,6 +247,7 @@ void GameScene::startChallenge() {
         ghostRun_.setSuitSheet([this](const GhostMeta& m) -> TexturePtr {
             return g_.suitSheet(m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit));
         });
+        ghostRun_.setTrailLook([this](const GhostMeta& m) { return m.mine() ? g_.cosmeticLook("trail") : g_.cosmetics.lookOr("trail", m.trail); });
         ghostRun_.begin(opt_.ghosts, level_, g_.content, ghostHash_, g_.settings.ghosts, false);
         ghostRun_.setVisible(true);
     }
@@ -368,6 +369,8 @@ void GameScene::startGhosts() {
     ghostRun_.setSuitSheet([this](const GhostMeta& m) -> TexturePtr {
         return g_.suitSheet(m.mine() ? g_.cosmeticLook("suit") : g_.cosmetics.lookOr("suit", m.suit));
     });
+    // 2.59: and leaves its player's trail (mine: the one equipped now).
+    ghostRun_.setTrailLook([this](const GhostMeta& m) { return m.mine() ? g_.cosmeticLook("trail") : g_.cosmetics.lookOr("trail", m.trail); });
     ghostRun_.begin(std::move(choices), level_, g_.content, ghostHash_, gs, opt_.training);
     if (opt_.training && opt_.spawn) ghostRun_.setTrainingFrom(*opt_.spawn);
     if (pb) {

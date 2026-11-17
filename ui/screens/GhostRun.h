@@ -10,6 +10,7 @@
 #include "game/ghost/GhostRace.h"
 #include "game/ghost/GhostStore.h"
 #include "saves/Settings.h"
+#include "ui/screens/CosmeticFx.h"
 
 namespace cosmic {
 
@@ -51,6 +52,14 @@ public:
     void setSuitSheet(SuitSheet f) {
         suitSheet_ = std::move(f);
         sheets_.clear();
+    }
+    /// 2.59: the look of the trail a ghost leaves when it runs or dashes (its player's, as the
+    /// game draws it: « none », a catalogue look, "srvtrail:<n>"), asked once per ghost. Drawn
+    /// as translucent as the ghost. Display only.
+    using TrailLook = std::function<std::string(const GhostMeta&)>;
+    void setTrailLook(TrailLook f) {
+        trailLook_ = std::move(f);
+        trailLooks_.clear();
     }
     void drawWorld(Renderer& r, const WorldView& view, const AnimationSetPtr& set);
     /// The gap and the segments panel inside `area` (the HUD place « Fantômes », size factor
@@ -99,6 +108,9 @@ private:
     std::vector<Animator> anims_;
     SuitSheet suitSheet_;
     std::vector<std::pair<bool, TexturePtr>> sheets_;  // per ghost: asked yet, its suit's sheet
+    TrailLook trailLook_;
+    std::vector<std::pair<bool, std::string>> trailLooks_;  // per ghost: asked yet, its trail's look
+    std::vector<TrailFx> trails_;                            // per ghost
     std::vector<std::string> labels_;  // "Astrid · 2:05,12" (built once)
     std::vector<std::string> refused_;
     struct Checkpoint {

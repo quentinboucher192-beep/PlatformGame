@@ -1351,7 +1351,8 @@ void AdminCalendar::loadTitles() {
                       titles_ = jfield(r.data, "titles", Json::array());
                   }),
                   false);
-    // The suits created in « Créations » (those not archived are offered in « Combinaisons »).
+    // The creations of « Créations » (those not archived are offered in their category: the suits,
+    // 2.59 the trails, frames and victory effects).
     g_.online.get("/api/v1/admin/creations", OnlineService::guard(life_, [this](const ApiResult& r) {
                       if (lostRole_(r)) return;
                       suitsError_ = r.ok ? std::string() : errorText(r);
@@ -1665,10 +1666,11 @@ bool AdminCalendar::drawPrizeRow(size_t i, const Rect& row, bool editable) {
             ui.label(ui.elide(name, FontFace::Bold, nf, nameRoom), {tx + catW + ui.s(10), row.y + ui.s(20)}, nf,
                      p.title() ? titleColor(p.color) : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
         }
-        const std::string from = p.title()  ? "créé par un admin · pas besoin de mise à jour"
-                                 : p.suit() ? "créée par un admin · pas besoin de mise à jour"
-                                 : look     ? "dans le jeu"
-                                            : "inconnu de cette version du jeu";
+        const std::string from = p.title()                         ? "créé par un admin · pas besoin de mise à jour"
+                                 : p.suit() || p.kind == "trail" ? "créée par un admin · pas besoin de mise à jour"
+                                 : p.creation()                  ? "créé par un admin · pas besoin de mise à jour"
+                                 : look                          ? "dans le jeu"
+                                                                 : "inconnu de cette version du jeu";
         ui.label(ui.elide(from, FontFace::Body, fz(ui, 14), room), {tx, row.y + ui.s(43)}, fz(ui, 14), ui.theme().textDim, Align::Left, FontFace::Body,
                  VAlign::Middle);
     }
@@ -1852,6 +1854,24 @@ void AdminCalendar::drawItemPicker() {
             y += ui.s(28);
         }
     }
+    // 2.59: the trails, frames and victory effects created there (not archived), in their category.
+    if (isCreationLookKind(catId)) {
+        for (const Json& c : suits_) {
+            if (jget<bool>(c, "archived", false) || jstr(c, "kind") != catId) continue;
+            CosmeticItem it;
+            it.id = jstr(c, "ref");
+            it.category = catId;
+            it.name = jstr(c, "name");
+            it.look = it.id;
+            it.creationLook = creationLookFromJson(catId, c);
+            std::string kind;
+            if (isServerLookRef(it.id, &kind) && kind == catId && !it.name.empty() && it.creationLook) list.push_back(std::move(it));
+        }
+        if (!suitsError_.empty()) {
+            fitLabel(ui, "Créations indisponibles : " + suitsError_, {x, y + ui.s(10)}, 15, w, ui.theme().warm);
+            y += ui.s(28);
+        }
+    }
     Rect grid{x, y, w, condY - ui.s(14) - y};
     const float gap = ui.s(12), tileH = ui.s(124);
     int cols = std::max(2, static_cast<int>((grid.w + gap) / (ui.s(170) + gap)));
@@ -1896,12 +1916,13 @@ void AdminCalendar::drawItemPicker() {
         for (const CosmeticItem& it : list)
             if (it.id == pickRef_) {
                 ChallengePrize p;
-                p.kind = it.serverTitle() ? "title" : it.serverSuit() ? "suit" : "item";
+                p.kind = it.serverTitle() ? "title" : it.serverSuit() ? "suit" : it.serverLook() ? it.category : "item";
                 p.ref = it.id;
                 p.name = it.name;
                 p.category = it.category;
                 p.color = it.color;
                 p.suitColors = it.suitColors;
+                p.creationLook = it.creationLook;
                 p.condition = condKind_;
                 p.value = condValue_;
                 addPrize(p);

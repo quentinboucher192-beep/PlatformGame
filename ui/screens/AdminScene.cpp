@@ -11,7 +11,8 @@
 //   « Campagne » (2.45, AdminCampaign.cpp): the campaign levels and their revision online,
 //                edited in the game's editor and published without a game update;
 //   « Créations » (AdminCreations.cpp): the suits an administrator makes (a name, three
-//                colours, a live preview), given as rewards of the challenges.
+//                colours, a live preview), given as rewards of the challenges; 2.59, the
+//                trails, avatar frames and victory effects (a style, two colours).
 // The country, the last activity and the presence of a player appear only as they share them.
 
 #include <algorithm>
@@ -121,7 +122,7 @@ public:
           creations_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           enemies_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
-        // "creations[:new]" (the editor opened on a new suit).
+        // "creations[:new]" (the editor opened on a new suit); 2.59 "creations:<kind>[:new|:<id>]".
         if (open.rfind("creations", 0) == 0) {
             tab_ = kTabCreations;
             if (open.size() > 10) creations_.open(open.substr(10));
@@ -815,11 +816,25 @@ private:
         return c == "silver" ? "Argent" : c == "cyan" ? "Cyan" : c == "violet" ? "Violet" : "Or";
     }
 
-    /// « combinaison #c8e1ff, accent #78c8ff, écharpe #ebf5ff »: the colours of a creation as the Journal keeps them.
+    /// « combinaison #c8e1ff, accent #78c8ff, écharpe #ebf5ff »: the colours of a creation as the
+    /// Journal keeps them; 2.59, a trail, a frame or a victory effect: « Comète, début #ffd75a,
+    /// fin #9646ff, largeur 140 %, durée 700 ms, étincelles ».
     static std::string colorsText(const Json& creation) {
         const Json& c = jfield(creation, "colors", Json());
         if (!c.is_object()) return "couleurs inconnues";
-        return "combinaison " + jstr(c, "suit", "?") + ", accent " + jstr(c, "accent", "?") + ", écharpe " + jstr(c, "scarf", "?");
+        const std::string kind = jstr(creation, "kind", "suit");
+        if (kind == "suit") return "combinaison " + jstr(c, "suit", "?") + ", accent " + jstr(c, "accent", "?") + ", écharpe " + jstr(c, "scarf", "?");
+        std::string style = creationStyleName(kind, jstr(creation, "style"));
+        if (style.empty()) style = "style inconnu";
+        if (kind == "trail") {
+            std::string t = style + ", début " + jstr(c, "start", "?") + ", fin " + jstr(c, "end", "?");
+            if (jfield(creation, "width", Json()).is_number_integer()) t += ", largeur " + std::to_string(jget<int>(creation, "width", 0)) + " %";
+            if (jfield(creation, "life_ms", Json()).is_number_integer()) t += ", durée " + std::to_string(jget<int>(creation, "life_ms", 0)) + " ms";
+            if (jfield(creation, "particles", Json()).is_boolean()) t += jget<bool>(creation, "particles", false) ? ", étincelles" : ", sans étincelles";
+            return t;
+        }
+        if (kind == "frame") return style + ", bord " + jstr(c, "border", "?") + ", lueur " + jstr(c, "glow", "?");
+        return style + ", principale " + jstr(c, "main", "?") + ", secondaire " + jstr(c, "second", "?");
     }
 
     /// The rewards of a challenge as the Journal keeps them: « Titre « X » (Or atteint) · Cadre Y (Top 10 final) » (2.43).
@@ -949,32 +964,40 @@ private:
             std::string what = jstr(camp, "action") == "revert" ? "remise en ligne d'une révision de « " + lname + " »" : "publication d'une révision de « " + lname + " »";
             return {"Refus", ui.theme().textDim, what + " refusée : " + why};
         }
-        // A suit made in « Créations »: created, edited, archived, restored, or refused.
+        // A creation of « Créations » (a suit; 2.59 a trail, a frame, a victory effect): created,
+        // edited, archived, restored, or refused.
         const Json& crea = jfield(e, "creation", Json());
         if (crea.is_object()) {
+            const std::string kind = jstr(crea, "kind", "suit");
+            const bool fem = kind != "frame" && kind != "victory";
+            const std::string noun = kind == "trail" ? "la traînée" : kind == "frame" ? "le cadre" : kind == "victory" ? "l'effet de victoire" : "la combinaison";
             const std::string name = "« " + jstr(crea, "name", "?") + " »";
-            if (action == "admin_creation_created") return {"Création", ui.theme().accent, "a créé la combinaison " + name + " (" + colorsText(crea) + ")"};
+            if (action == "admin_creation_created") return {"Création", ui.theme().accent, "a créé " + noun + " " + name + " (" + colorsText(crea) + ")"};
             if (action == "admin_creation_updated") {
                 const Json& prev = jfield(crea, "previous", Json());
-                std::string text = "a modifié la combinaison " + name + " (" + colorsText(crea) + ")";
+                std::string text = "a modifié " + noun + " " + name + " (" + colorsText(crea) + ")";
                 if (prev.is_object()) {
                     if (jstr(prev, "name") != jstr(crea, "name")) text += " · ancien nom « " + jstr(prev, "name") + " »";
-                    if (colorsText(prev) != colorsText(crea)) text += " · anciennes couleurs " + colorsText(prev);
+                    if (colorsText(prev) != colorsText(crea)) text += (kind == "suit" ? " · anciennes couleurs " : " · avant : ") + colorsText(prev);
                 }
                 return {"Création", ui.theme().accent, text};
             }
-            if (action == "admin_creation_archived") return {"Création", Color{185, 200, 218, 255}, "a archivé la combinaison " + name};
-            if (action == "admin_creation_restored") return {"Création", ui.theme().accent, "a restauré la combinaison " + name};
+            if (action == "admin_creation_archived") return {"Création", Color{185, 200, 218, 255}, "a archivé " + noun + " " + name};
+            if (action == "admin_creation_restored") return {"Création", ui.theme().accent, "a restauré " + noun + " " + name};
             const std::string act = jstr(crea, "action");
-            const std::string what = act == "create"    ? "création de la combinaison " + name
-                                     : act == "update"  ? "modification de la combinaison " + name
-                                     : act == "restore" ? "restauration de la combinaison " + name
-                                                        : "archivage de la combinaison " + name;
-            const std::string why = reason == "CREATION_EXISTS"     ? std::string("une combinaison porte déjà ce nom")
-                                    : reason == "CREATION_CHANGED"  ? std::string("elle avait changé entre-temps")
-                                    : reason == "CREATION_ARCHIVED" ? std::string("elle est archivée")
-                                    : reason == "VALIDATION_ERROR"  ? std::string("nom ou couleurs invalides")
-                                                                    : std::string("refus du serveur");
+            const std::string what = act == "create"    ? "création de " + noun + " " + name
+                                     : act == "update"  ? "modification de " + noun + " " + name
+                                     : act == "restore" ? "restauration de " + noun + " " + name
+                                                        : "archivage de " + noun + " " + name;
+            std::string why = "refus du serveur";
+            if (reason == "CREATION_EXISTS")
+                why = kind == "trail"     ? "une traînée porte déjà ce nom"
+                      : kind == "frame"   ? "un cadre porte déjà ce nom"
+                      : kind == "victory" ? "un effet de victoire porte déjà ce nom"
+                                          : "une combinaison porte déjà ce nom";
+            else if (reason == "CREATION_CHANGED") why = fem ? "elle avait changé entre-temps" : "il avait changé entre-temps";
+            else if (reason == "CREATION_ARCHIVED") why = fem ? "elle est archivée" : "il est archivé";
+            else if (reason == "VALIDATION_ERROR") why = kind == "suit" ? "nom ou couleurs invalides" : "nom, couleurs ou réglages invalides";
             return {"Refus", ui.theme().textDim, what + " refusée : " + why};
         }
         const Json& title = jfield(e, "title", Json());
@@ -1129,7 +1152,7 @@ private:
     AdminBackups backups_;    // « Sauvegardes » (2.43)
     AdminCampaign campaign_;  // « Campagne » (2.45)
     std::string campaignSelect_;
-    AdminCreations creations_;  // « Créations »: the suits made on the server
+    AdminCreations creations_;  // « Créations »: the suits, trails, frames and victory effects made on the server
     AdminEnemies enemies_;  // « Ennemis » (2.46)
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);

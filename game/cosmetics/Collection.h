@@ -13,6 +13,7 @@
 
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
+#include "game/cosmetics/CreationLooks.h"
 #include "game/cosmetics/SuitRecolor.h"
 
 namespace cosmic {
@@ -53,9 +54,15 @@ struct CosmeticItem {
     /// A suit created on Cosmic Online by an administrator (ADMINISTRATION › Créations: id and
     /// look "srvsuit:<n>"): the three colours Nova's sheet is recoloured with at run time.
     std::optional<SuitColors> suitColors;
+    /// 2.59: a trail, an avatar frame or a victory effect created there too (id and look
+    /// "srvtrail:<n>", "srvframe:<n>", "srvvictory:<n>"): its colours and style.
+    std::optional<CreationLook> creationLook;
     bool challengeReward() const { return !challenge.kind.empty(); }
     bool serverTitle() const { return id.rfind("srv:", 0) == 0; }
     bool serverSuit() const { return id.rfind("srvsuit:", 0) == 0; }
+    bool serverLook() const { return isServerLookRef(id); }
+    /// Created on Cosmic Online (a title, a suit, a trail, a frame, a victory effect): never in the catalogue.
+    bool serverMade() const { return serverTitle() || serverSuit() || serverLook(); }
 };
 
 /// 2.43: a reward won at one challenge, granted by Cosmic Online once the challenge was over
@@ -65,24 +72,27 @@ struct WonReward {
     std::string challengeKind; // "daily", "weekly", "monthly"
     std::string period;        // "2026-11-20", "2026-W47", "2026-11"
     std::string date;          // its first day
-    std::string kind;          // "item" (of the catalogue), "title" or "suit" (created on the server)
-    std::string ref;           // the item's id, "srv:<n>" or "srvsuit:<n>"
+    std::string kind;          // "item" (of the catalogue), "title", "suit", "trail", "frame" or "victory" (created on the server)
+    std::string ref;           // the item's id, "srv:<n>", "srvsuit:<n>", "srvtrail:<n>", "srvframe:<n>" or "srvvictory:<n>"
     std::string grantedAt;
 };
 
 /// 2.43: what the player won at single challenges: catalogue items (unlocked whatever their
 /// usual condition) and the server's titles, as items of the category « title »; and the suits
-/// created on the server (ADMINISTRATION › Créations), as items of the category « suit ».
+/// created on the server (ADMINISTRATION › Créations), as items of the category « suit »; 2.59,
+/// the trails, frames and victory effects created there, as items of their category.
 struct WonRewards {
     bool known = false;               // read from the server (else: nothing won here)
     std::vector<WonReward> list;      // the most recent first
     std::vector<CosmeticItem> titles; // the server titles won, once each
     std::vector<CosmeticItem> suits;  // the server suits won, once each (with their colours)
+    std::vector<CosmeticItem> looks;  // 2.59: the server trails, frames, victory effects won, once each (with their look)
     bool has(const std::string& ref) const;
     bool wonAt(const std::string& challengeId, const std::string& ref) const;
     const CosmeticItem* title(const std::string& ref) const;
     const CosmeticItem* suit(const std::string& ref) const;
-    /// A server title or suit won (nullptr for anything else).
+    const CosmeticItem* serverLook(const std::string& ref) const;
+    /// A server title, suit, trail, frame or victory effect won (nullptr for anything else).
     const CosmeticItem* item(const std::string& ref) const;
     /// The first challenge (the oldest) where `ref` was won, nullptr when never.
     const WonReward* origin(const std::string& ref) const;
@@ -120,7 +130,8 @@ public:
     const CosmeticCategory* category(const std::string& id) const;
     /// `look` when an item of the category has it, else the category default's look: what
     /// another player's data (leaderboards, ghosts) may make this game draw (2.23). A suit
-    /// created on the server ("srvsuit:<n>") passes as it is: drawn from its colours.
+    /// created on the server ("srvsuit:<n>") passes as it is: drawn from its colours; 2.59, a
+    /// trail, a frame or a victory effect created there too, in its own category only.
     std::string lookOr(const std::string& category, const std::string& look) const;
     /// Star milestones in order, each with its rewards (the route of the stars).
     struct Milestone {

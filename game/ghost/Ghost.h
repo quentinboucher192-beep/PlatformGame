@@ -34,6 +34,9 @@ struct GhostMeta {
     /// it was started from). Display only, never part of the replay; the player's own runs
     /// wear the suit equipped now instead.
     std::string suit;
+    /// 2.59: the look of their trail the same way (« comet »…, "srvtrail:<n>" for one created on
+    /// Cosmic Online), drawn behind the ghost. Display only.
+    std::string trail;
 
     /// The player's own run on this computer (best, previous best, last).
     bool mine() const { return source == "pb" || source == "prev" || source == "last"; }
