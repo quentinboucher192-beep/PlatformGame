@@ -6,6 +6,7 @@
 //   --pause                 with --level: open the pause menu once playing (screenshots)
 //   --boss-attack <id>      with --level: the active boss uses this attack whenever it can (screenshots)
 //   --editor [<id>]         start in the level editor (--editor-help: with its help open)
+//   --tutorial              start the tutorial of the first launch at once (--tutorial-welcome: its welcome)
 //   --enemy-editor          start in the enemy editor
 //   --planets               start on the planet selection map
 //   --level-select <planet> start on the levels of a planet (the last level played selected)
@@ -40,9 +41,10 @@
 //   --stats-day <YYYY-MM-DD>
 //                           count the runs of this session on that day (automated checks of the
 //                           statistics: real runs spread over several days)
-//   --story <boss>[:<shot>|:titre]
+//   --story <boss>[:<shot>|:titre|@<seconds>]
 //                           tell the story of a giga boss over the main menu (from that shot,
-//                           1 = the first, its line typed; « titre »: the title card revealed)
+//                           1 = the first, its line typed; « titre »: the title card revealed;
+//                           @12.5: from that moment, as it plays then)
 //   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout]]
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
@@ -63,6 +65,7 @@
 //   --online-open <what>    with --online: open register | login | settings |
 //                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
+//   --clans [<clan id>]     open ONLINE › CLANS (on that clan's page)
 //   --race <kind:level[:version]>
 //                           the « course à la vérification » of an EXTRÊME level, over
 //                           ONLINE RANKING (official) or ONLINE LEVELS (community)
@@ -706,6 +709,10 @@ int main(int argc, char** argv) {
             if (tf != "start") opt.trainingCheckpoint = tf;
         }
         app.pushScene(makeGameScene(game, level, opt));
+    } else if (has("--tutorial") || has("--tutorial-welcome")) {
+        // 2.64: the tutorial of the first launch at once, or its welcome (checks, captures).
+        std::unique_ptr<Scene> run = has("--tutorial") ? makeTutorialRun(game) : makeTutorialWelcome(game);
+        app.pushScene(run ? std::move(run) : makeMainMenu(game));
     } else if (has("--editor")) {
         if (has("--editor-help")) app.pushScene(makeLevelEditorHelp(game, value("--editor")));
         else app.pushScene(makeLevelEditor(game, value("--editor")));
@@ -773,15 +780,17 @@ int main(int argc, char** argv) {
         app.pushScene(makeStatistics(game, st.empty() ? 0 : std::atoi(st.c_str())));
     } else if (std::string st = value("--story"); !st.empty()) {
         // --story <boss>[:<shot>|:titre] (screenshots): the story over the main menu.
-        std::string boss = st.substr(0, st.find(':'));
+        std::string boss = st.substr(0, st.find_first_of(":@"));
         int at = -1;
-        if (size_t c = st.find(':'); c != std::string::npos) {
+        float seconds = -1.0f;
+        if (size_t c = st.find('@'); c != std::string::npos) seconds = std::max(0.0f, static_cast<float>(std::atof(st.c_str() + c + 1)));
+        else if (size_t c = st.find(':'); c != std::string::npos) {
             std::string w = st.substr(c + 1);
             at = w == "titre" || w == "title" ? 1000 : std::max(0, std::atoi(w.c_str()) - 1);
             if (const BossStory* s = game.stories.find(boss); s && at > static_cast<int>(s->shots.size())) at = static_cast<int>(s->shots.size());
         }
         app.pushScene(makeMainMenu(game));
-        if (auto story = makeBossStory(game, boss, at)) app.pushScene(std::move(story));
+        if (auto story = makeBossStory(game, boss, at, seconds)) app.pushScene(std::move(story));
         else Log::error("Pas d'histoire pour le boss '{}'", boss);
     } else if (has("--boss-stats")) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
@@ -830,6 +839,8 @@ int main(int argc, char** argv) {
         app.pushScene(makePlayerProfile(game, pid));
     } else if (has("--social")) {
         app.pushScene(makeSocial(game, value("--social")));
+    } else if (has("--clans")) {
+        app.pushScene(makeClans(game, value("--clans")));
     } else if (has("--online")) {
         app.pushScene(makeOnlineRanking(game, value("--online")));
     } else if (std::string cf = value("--compare"); !cf.empty()) {

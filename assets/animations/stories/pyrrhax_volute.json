@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/volute.png",
+  "frameWidth": 48,
+  "frameHeight": 80,
+  "pivot": [24, 78],
+  "clips": {
+    "rise": {"row": 0, "count": 8, "fps": 8, "loop": true}
+  }
+}

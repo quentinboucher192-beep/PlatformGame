@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/rocher.png",
+  "frameWidth": 176,
+  "frameHeight": 96,
+  "pivot": [88, 90],
+  "clips": {
+    "idle": {"row": 0, "count": 4, "fps": 4, "loop": true}
+  }
+}

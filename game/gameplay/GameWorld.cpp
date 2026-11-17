@@ -282,6 +282,14 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
         player_.state() != PlayerState::Respawn && player_.vel.y >= 0.0f) {
         safeFeet_ = player_.feet();
         hasSafeFeet_ = true;
+    } else if (level_.tutorial && player_.grounded() && player_.state() != PlayerState::Dead && player_.state() != PlayerState::Respawn &&
+               player_.vel.y >= 0.0f) {
+        // 2.64, the tutorial: the last solid ground that does not move (a bubble pops, a platform goes).
+        const Collider* ground = physics_.get(player_.groundCollider());
+        if (ground && !ground->dynamic) {
+            safeFeet_ = player_.feet();
+            hasSafeFeet_ = true;
+        }
     }
 
     // Time slow power: enemies (and, in updateProjectiles, their shots) run slower.
@@ -589,6 +597,10 @@ void GameWorld::explodeProjectile(const Projectile& p, Vec2 at) {
 void GameWorld::checkKillPlane() {
     if (!player_.alive()) return;
     if (player_.box.y > level_.effectiveKillY()) {
+        if (level_.tutorial) {  // 2.64: no deadly fall in the tutorial
+            rescueGently();
+            return;
+        }
         HurtScope fall(*this, HurtOrigin::Fall);  // 2.54 (statistics)
         player_.kill(*this);
         // Falling death: no point waiting at the bottom of the screen.
@@ -912,6 +924,10 @@ void GameWorld::onPlayerDeathAnimationDone() {
         player_.spawn(*this, respawn_, respawnFaceLeft_, true);
         return;
     }
+    if (level_.tutorial) {  // 2.64: back at the last lantern at once, nothing lost
+        respawnPlayer();
+        return;
+    }
     if (practiceRespawn_) {  // 2.48: a practice run of a hardcore level goes on where Nova fell
         practiceRespawnNow();
         return;
@@ -993,6 +1009,32 @@ bool GameWorld::rescueInvincible() {
     player_.setInvulnerable(1.0f);
     particles_.emit("shield_up", player_.center(), 0.8f);
     return true;
+}
+
+void GameWorld::rescueGently() {
+    const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
+    player_.box.x = at.x - player_.box.w * 0.5f;
+    player_.box.y = at.y - player_.box.h;
+    player_.prevBox = player_.box;
+    player_.vel = {0.0f, 0.0f};
+    player_.setInvulnerable(1.0f);
+    particles_.emit("shield_up", player_.center(), 0.8f);
+    playSound("sounds/respawn.wav", 0.6f, 1.2f);
+    hint("Hop ! Bip te ramène sur la terre ferme.", 2.0f);
+}
+
+void GameWorld::requestTutorialCard(const std::string& card) {
+    if (card.empty() || mode_ == WorldMode::Editor) return;
+    if (std::find(tutorialAsked_.begin(), tutorialAsked_.end(), card) != tutorialAsked_.end()) return;
+    tutorialAsked_.push_back(card);
+    tutorialCards_.push_back(card);
+}
+
+std::optional<std::string> GameWorld::takeTutorialCard() {
+    if (tutorialCards_.empty()) return std::nullopt;
+    std::string card = std::move(tutorialCards_.front());
+    tutorialCards_.erase(tutorialCards_.begin());
+    return card;
 }
 
 void GameWorld::respawnPlayer() {

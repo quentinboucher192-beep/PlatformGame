@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/ciel_rouge.png",
+  "frameWidth": 560,
+  "frameHeight": 300,
+  "pivot": [0, 0],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 3, "loop": true}
+  }
+}

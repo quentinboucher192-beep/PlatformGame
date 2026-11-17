@@ -1,6 +1,7 @@
 // Player profiles, privacy settings, statistics, search, GDPR export and account deletion,
 // custom avatars.
 
+import { clanAfterAccountDeletion, clanOfPlayer } from "./clans";
 import { progressCopyKeys } from "./devices";
 import { presenceOf } from "./friends";
 import { achievementSummary } from "./achievements";
@@ -112,6 +113,7 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             achievements: await achievementSummary(ctx, p.id),
             cosmetics: await profileCosmetics(ctx, p.id),
             badges: await profileBadges(ctx, p.id),
+            clan: await clanOfPlayer(ctx.env.DB, p.id),
         });
     if (p.profile_visibility === "private")
         return json(ctx, {
@@ -123,6 +125,8 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             achievements: null,
             cosmetics: null,
             badges: null,
+            // 2.66: a clan is public (its page lists its members): its tag shows even here.
+            clan: await clanOfPlayer(ctx.env.DB, p.id),
         });
     let friendship: string | null = null;
     if (viewer) {
@@ -149,6 +153,8 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
         cosmetics: await profileCosmetics(ctx, p.id),
         // 2.41: the badges chosen in the game, only those still valid (achievements, stars).
         badges: await profileBadges(ctx, p.id),
+        // 2.66: the player's clan (tag, name, emblem, role), null without one.
+        clan: await clanOfPlayer(ctx.env.DB, p.id),
     });
 }
 
@@ -346,6 +352,20 @@ export async function exportMe(ctx: Ctx): Promise<Response> {
         badges: badgeRows?.results ?? [],
         // 2.19: ratings of the official levels, comments of the campaign and of the runs.
         ...(await campaignExport(ctx, id)),
+        // 2.66: the player's clan (role, since when) and their pending invitations or applications.
+        clan: await ctx.env.DB.prepare(
+            `SELECT c.id, c.name, c.tag, m.role, m.joined_at FROM clan_members m JOIN clans c ON c.id = m.clan_id WHERE m.player_id = ?1`,
+        )
+            .bind(id)
+            .first(),
+        clan_requests: (
+            await ctx.env.DB.prepare(
+                `SELECT q.clan_id, c.tag, q.kind, q.message, q.created_at FROM clan_requests q JOIN clans c ON c.id = q.clan_id
+                 WHERE q.player_id = ?1 ORDER BY q.created_at`,
+            )
+                .bind(id)
+                .all()
+        ).results,
         // 2.31: runs of the daily challenges.
         challenge_runs: (
             await ctx.env.DB.prepare(
@@ -417,6 +437,8 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
     // 2.47: the copies of the progression sent by the game.
     toDelete.push(...(await progressCopyKeys(ctx, id)));
     for (let i = 0; i < toDelete.length; i += 500) await ctx.env.STORAGE.delete(toDelete.slice(i, i + 500));
+    // 2.66: the player's clan gets a new chief (or disappears when it was its last member).
+    const clanAfter = await clanAfterAccountDeletion(ctx.env.DB, id);
     await ctx.env.DB.batch([
         ctx.env.DB.prepare("DELETE FROM audit_log WHERE player_id = ?1").bind(id),
         // The races of the player's community levels go with the levels (their own attempts
@@ -435,10 +457,11 @@ export async function deleteMe(ctx: Ctx): Promise<Response> {
         ctx.env.DB.prepare(
             `UPDATE conversation_members SET role = 'owner' WHERE rowid IN (
                SELECT (SELECT m2.rowid FROM conversation_members m2 WHERE m2.conversation_id = c.id ORDER BY m2.joined_at LIMIT 1)
-               FROM conversations c WHERE c.kind = 'group'
+               FROM conversations c WHERE c.kind = 'group' AND c.clan_id IS NULL
                  AND NOT EXISTS (SELECT 1 FROM conversation_members m3 WHERE m3.conversation_id = c.id AND m3.role = 'owner'))`,
         ),
         ctx.env.DB.prepare("DELETE FROM conversations WHERE NOT EXISTS (SELECT 1 FROM conversation_members m WHERE m.conversation_id = conversations.id)"),
+        ...clanAfter,
     ]);
     await clearSpectateRoom(ctx.env, id);  // a run being played live (memory only)
     // A trace without any personal identifier.

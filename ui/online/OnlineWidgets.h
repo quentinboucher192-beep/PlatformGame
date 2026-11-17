@@ -36,6 +36,9 @@ public:
     void drawConnection(Vec2 pos) const;
     /// Pseudonym as shown to this player (hidden in streaming mode).
     std::string displayName(const std::string& name, int rank, bool me) const;
+    /// The same for a player object of the server ({username, clan_tag?}): « [TAG] name » (2.66,
+    /// the tag of their clan before the name), both hidden in streaming mode.
+    std::string displayName(const Json& player, int rank, bool me) const;
 
     /// Searchable country list; returns true when the player picked one (`code` updated).
     bool countryPicker(const std::string& id, const Rect& area, std::string& filter, std::string& code);

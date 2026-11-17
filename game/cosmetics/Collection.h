@@ -48,6 +48,11 @@ struct CosmeticItem {
     std::string achievement;   // unlocked by this achievement instead of stars
     ChallengeUnlock challenge; // 2.35: or by verified challenge results
     bool isDefault = false;    // the category's starting item
+    /// 2.64: a souvenir, unlocked on this computer by what the player did (« tutorial »: the
+    /// tutorial of the first launch finished). Never shown while locked (nobody can still earn
+    /// it once the tutorial is behind them); Cosmic Online cannot check it: online, the
+    /// category's default is worn instead.
+    std::string souvenir;
     /// 2.43: a title created on Cosmic Online by an administrator (id "srv:<n>", `look` its
     /// text): its colour, "gold", "silver", "cyan" or "violet"; "" for the catalogue's items.
     std::string color;
@@ -75,6 +80,10 @@ struct WonReward {
     std::string kind;          // "item" (of the catalogue), "title", "suit", "trail", "frame" or "victory" (created on the server)
     std::string ref;           // the item's id, "srv:<n>", "srvsuit:<n>", "srvtrail:<n>", "srvframe:<n>" or "srvvictory:<n>"
     std::string grantedAt;
+    /// 2.60: the rule of that challenge it was won by ("tier" value 1..3, "top" value N,
+    /// "finished"; "" when the server did not say), for the tooltips of the exclusive items.
+    std::string condition;
+    int value = 0;
 };
 
 /// 2.43: what the player won at single challenges: catalogue items (unlocked whatever their
@@ -152,12 +161,15 @@ struct CosmeticProgress {
     const AchievementBook* book = nullptr;
     const ChallengeRewardProgress* challenges = nullptr;  // 2.35: nullptr / unknown: locked
     const WonRewards* won = nullptr;                      // 2.43: rewards won at single challenges
+    bool tutorialFinished = false;                        // 2.64: the souvenir « tutorial »
 };
 
 /// Stars needed for an item (its milestone; every star for « all »), -1 when an
 /// achievement (or, 2.35, challenge results) unlocks it instead.
 int cosmeticThreshold(const CosmeticItem& item, int totalStars);
 bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p);
+/// 2.64: shown in the Collection: every item, but a souvenir only once it is unlocked.
+inline bool cosmeticShown(const CosmeticItem& item, const CosmeticProgress& p) { return item.souvenir.empty() || cosmeticUnlocked(item, p); }
 /// « Combinaison », « Traînée », « Cadre d'avatar », « Titre », « Effet de victoire ».
 std::string cosmeticCategorySingular(const std::string& category);
 /// A reward of the challenges: how far the verified results go ({have, need}, `have` never

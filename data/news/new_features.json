@@ -2146,7 +2146,7 @@
   },
   {
    "id": "admin.calendar.running",
-   "version": "2.60.0",
+   "version": "2.60.2",
    "parents": [
     "menu.admin",
     "admin.tab.calendar"
@@ -2154,10 +2154,59 @@
   },
   {
    "id": "challenges.calendar.medals",
-   "version": "2.60.0",
+   "version": "2.60.2",
    "parents": [
     "menu.challenges",
     "challenges.tab.calendar"
+   ]
+  },
+  {
+   "id": "ghosts.training.invincible",
+   "version": "2.60.3",
+   "parents": [
+    "ghosts.training"
+   ]
+  },
+  {
+   "id": "online.nav.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "admin.tab.clans",
+   "version": "2.62.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "gallery.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "gallery.boss.pyrrhax"
+   ]
+  },
+  {
+   "id": "stats.story.pyrrhax",
+   "version": "2.62.0",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "admin.creations.reserve",
+   "version": "2.62.0",
+   "parents": [
+    "admin.tab.creations"
+   ]
+  },
+  {
+   "id": "collection.exclusive",
+   "version": "2.62.0",
+   "parents": [
+    "collection.tab.wardrobe"
    ]
   },
   {
