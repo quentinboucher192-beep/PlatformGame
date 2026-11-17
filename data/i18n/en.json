@@ -8897,6 +8897,7 @@
     "Réserve : pas encore donné en récompense": "Reserve: not given as a reward yet",
     "Réserve du jeu": "Game's reserve",
     "réserve du jeu · pas besoin de mise à jour": "game's reserve · no update needed",
-    "Une création reste invisible des joueurs tant qu'aucun défi commencé ne la donne et que personne ne l'a gagnée : la réserve et les récompenses des défis à venir ne se découvrent pas avant l'heure.": "A creation stays hidden from the players until a challenge that has begun gives it or someone has won it: the reserve and the rewards of the coming challenges are not revealed ahead of time."
+    "Une création reste invisible des joueurs tant qu'aucun défi commencé ne la donne et que personne ne l'a gagnée : la réserve et les récompenses des défis à venir ne se découvrent pas avant l'heure.": "A creation stays hidden from the players until a challenge that has begun gives it or someone has won it: the reserve and the rewards of the coming challenges are not revealed ahead of time.",
+    "Notification de mise à jour : elle montre les nouveautés de toutes les versions publiées depuis celle du joueur (et de chaque version sans installateur propre), pas seulement celles de la dernière.": "Update notification: it shows what changed in every version published since the player's (including versions without an installer of their own), not only the latest one."
   }
 }

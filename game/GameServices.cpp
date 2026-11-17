@@ -508,12 +508,25 @@ void GameServices::checkAchievements(bool announce) {
 
 void GameServices::checkForUpdate() {
     if (!online.usable()) return;
-    online.get("/api/v1/client/latest?platform=windows", [this](const ApiResult& r) {
+    // 2.62: `since` = this game's version: the notes of every installer published after it
+    // (a player several versions behind sees all that changed, not only the newest).
+    online.get(std::string("/api/v1/client/latest?platform=windows&since=") + COSMIC_VERSION_STRING, [this](const ApiResult& r) {
         if (!r.ok || !r.data.is_object() || !r.data.contains("release") || !r.data["release"].is_object()) return;
         const Json& rel = r.data["release"];
         std::string v = jstr(rel, "version");
         if (v.empty() || !versionNewer(v, COSMIC_VERSION_STRING)) return;
-        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), jstr(rel, "notes"));
+        std::string notes;
+        if (r.data.contains("changes") && r.data["changes"].is_array()) {
+            for (const Json& c : r.data["changes"]) {
+                const std::string cv = jstr(c, "version"), cn = jstr(c, "notes");
+                if (cv.empty() || cn.empty() || !versionNewer(cv, COSMIC_VERSION_STRING)) continue;
+                if (!notes.empty()) notes += "\n\n";
+                // Notes written from the changelog already start with « Version x.y.z : ».
+                notes += cn.rfind("Version ", 0) == 0 ? cn : "Version " + cv + " :\n" + cn;
+            }
+        }
+        if (notes.empty()) notes = jstr(rel, "notes");  // an older server: the newest installer's notes
+        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), notes);
     }, false);
 }
 

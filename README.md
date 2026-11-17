@@ -38,6 +38,7 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
 * Serveur : migration D1 `0120_clans.sql`, routes `/api/v1/clans/*` et `/api/v1/admin/clans/*`
   ([`server/openapi.yaml`](server/openapi.yaml)) ; le jeu reste jouable sans compte et sans Internet (la page
   de son clan reste visible hors ligne, depuis le cache).
+* Notification de mise à jour : les nouveautés de toutes les versions depuis celle du joueur.
 
 **Nouveau dans la version 2.61.1** :
 * Didacticiel : bulles porteuses au-dessus de la terre ferme, traînée d'éclats à hauteur de Nova ; correctif des combinaisons recolorées.

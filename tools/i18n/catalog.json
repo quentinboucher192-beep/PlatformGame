@@ -29137,6 +29137,12 @@
    ]
   },
   {
+   "fr": "Notification de mise à jour : elle montre les nouveautés de toutes les versions publiées depuis celle du joueur (et de chaque version sans installateur propre), pas seulement celles de la dernière.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Notification introuvable.",
    "where": [
     "server/src/notifications.ts"
@@ -47511,6 +47517,12 @@
    ]
   },
   {
+   "fr": "Version invalide.",
+   "where": [
+    "server/src/releases.ts"
+   ]
+  },
+  {
    "fr": "Version {0}",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -47535,6 +47547,12 @@
    "where": [
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Version {0} :\n{1}",
+   "where": [
+    "game/GameServices.cpp"
    ]
   },
   {
