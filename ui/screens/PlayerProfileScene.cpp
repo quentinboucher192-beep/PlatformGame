@@ -1,8 +1,9 @@
 // Profile of a player (Cosmic Online), pushed over the current screen: identity (frame, title
 // and, 2.41, the badges chosen in the Collection), records, time played (total and per level,
 // in hours and minutes), creator card (computed by the server from the published levels),
-// creations, followers and followed creators, and the actions FOLLOW / friend / block. Every
-// number comes from the server.
+// creations, followers and followed creators, and the actions FOLLOW / friend / block; 2.62.4:
+// the tab « Clan » (the sheet of the player's clan, and « Inviter dans mon clan » for the chief
+// and the officers of a clan). Every number comes from the server.
 
 #include <algorithm>
 #include <cmath>
@@ -61,7 +62,7 @@ public:
     void onEnter() override {
         g_.ui.setFocus("profile/close");
         if (g_.onlineOpen.rfind("profile-tab:", 0) == 0) {  // automated screenshots
-            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, 5);
+            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, kTabClan);
             g_.onlineOpen.clear();
         }
         load();
@@ -129,7 +130,7 @@ private:
                           data_ = r.data;
                           fromCache_ = r.fromCache;
                           bool hidden = jget<bool>(data_.value("player", Json::object()), "hidden", false);
-                          if (hidden) tab_ = 0;
+                          if (hidden && tab_ != kTabClan) tab_ = 0;  // a clan is public: its tab stays
                           loadTab();
                       }));
     }
@@ -137,6 +138,7 @@ private:
     void loadTab() {
         tabData_ = Json();
         tabError_.clear();
+        if (tab_ == kTabClan) return loadClanTab();
         std::string base = "/api/v1/players/" + playerId_;
         std::string path;
         if (tab_ == 0) path = base + "/creations?limit=30&sort=" + kCreationSorts[creationSort_];
@@ -153,6 +155,55 @@ private:
                           if (!r.ok) tabError_ = r.code == "FOLLOWS_PRIVATE" ? "Ce joueur garde ses listes d'abonnés et d'abonnements privées." : r.message;
                           else tabData_ = r.data;
                       }));
+    }
+
+    /// Tab « Clan » (2.62.4): the sheet of the player's clan (GET /clans/{id}, public), and, for
+    /// the chief or an officer of a clan, that clan's pending requests (whether this player was
+    /// already invited, or applied).
+    void loadClanTab() {
+        const int gen = ++tabGeneration_;
+        const std::string id = jstr(jfield(data_, "clan", Json()), "id");
+        tabLoading_ = !id.empty();
+        if (!id.empty())
+            g_.online.get("/api/v1/clans/" + id, OnlineService::guard(life_, [this, gen](const ApiResult& r) {
+                              if (gen != tabGeneration_) return;
+                              tabLoading_ = false;
+                              if (!r.ok) tabError_ = r.message;
+                              else tabData_ = r.data;
+                          }));
+        loadMyClan(gen);
+    }
+
+    void loadMyClan(int gen) {
+        if (!g_.online.loggedIn() || me()) return;
+        g_.online.refreshMyClan(OnlineService::guard(life_, [this, gen](const ApiResult& r) {
+            if (gen != tabGeneration_ || !r.ok) return;
+            const Json c = jfield(r.data, "clan", Json());
+            if (!c.is_object() || !clans::canManage(jstr(c, "role"))) {
+                myClanPage_ = Json();
+                return;
+            }
+            g_.online.get("/api/v1/clans/" + jstr(c, "id"), OnlineService::guard(life_, [this, gen](const ApiResult& p) {
+                              if (gen == tabGeneration_ && p.ok) myClanPage_ = p.data;
+                          }));
+        }));
+    }
+
+    /// « Inviter dans mon clan »: the server checks the role, the room, the blocks, the clan of
+    /// the player (who is always the session's chief or officer, never an id sent by the game).
+    void inviteToMyClan() {
+        const std::string clanId = jstr(jfield(g_.online.myClan(), "clan", Json()), "id");
+        if (clanId.empty() || busy_) return;
+        busy_ = true;
+        const std::string name = jstr(data_["player"], "username");
+        g_.online.send("POST", "/api/v1/clans/" + clanId + "/invites", {{"player_id", playerId_}}, OnlineService::guard(life_, [this, name](const ApiResult& r) {
+                           busy_ = false;
+                           if (!r.ok) return say(r.message, true);
+                           if (jget<bool>(r.data, "joined", false)) say(name + " a rejoint votre clan.", false);
+                           else if (jget<bool>(r.data, "already", false)) say("Invitation déjà envoyée à " + name + ".", false);
+                           else say("Invitation envoyée à " + name + ".", false);
+                           load();  // the profile (its clan, if the player joined) and this tab again
+                       }));
     }
 
     void openOther(const std::string& id) {
@@ -301,6 +352,11 @@ private:
                 const float tf = ui.fitFont(tag, FontFace::Bold, 22, room, 0.7f);
                 Vec2 ts = ui.label(ui.elide(tag, FontFace::Bold, tf, room), {afterName + ui.s(14), y + ui.s(26)}, tf, Color{255, 210, 122, 255}, Align::Left,
                                    FontFace::Bold, VAlign::Middle);
+                // 2.62.4: the tag opens the clan's sheet (the button under the name too, and the tab « Clan »).
+                bool hovered = false;
+                const Rect tr{afterName + ui.s(14), y + ui.s(26) - ts.y * 0.5f, ts.x, ts.y};
+                if (ui.mouseClick("clantag", tr, &hovered)) g_.app.pushScene(makeClans(g_, jstr(clanJ, "id"), true));
+                if (hovered) ui.r().fillRect({tr.x, tr.bottom() - ui.s(2), tr.w, std::max(1.0f, ui.s(1.5f))}, Color{255, 210, 122, 255});
                 afterName += ui.s(14) + ts.x;
             }
         }
@@ -461,19 +517,31 @@ private:
             y += hs.y + ui.s(10);
         }
         // Tabs.
-        std::vector<std::string> labels = {"Créations", "Temps de jeu", "Meilleurs temps", "Meilleures progressions", "Abonnés", "Abonnements"};
-        if (hidden) labels = {"Créations"};
-        int tab = tab_;
-        ui.tabs("tabs", {x, y, std::min(w, ui.s(230) * labels.size()), ui.s(42)}, labels, tab);
-        ui.newBadge("tabs", {x + std::min(w, ui.s(230) * labels.size()) / labels.size() * 3, y, std::min(w, ui.s(230) * labels.size()) / labels.size(), ui.s(42)},
-                    "profile.races");  // « NOUVEAU » (2.32.2)
-        if (tab != tab_) {
-            tab_ = tab;
+        // 2.62.4: « Clan » (the player's clan is public: shown even on a hidden profile).
+        std::vector<std::string> labels = {"Créations", "Temps de jeu", "Meilleurs temps", "Meilleures progressions", "Abonnés", "Abonnements", "Clan"};
+        std::vector<int> tabIds = {0, 1, 2, 3, 4, 5, kTabClan};
+        if (hidden) {
+            labels = {"Créations", "Clan"};
+            tabIds = {0, kTabClan};
+        }
+        const int shownTab = static_cast<int>(std::find(tabIds.begin(), tabIds.end(), tab_) - tabIds.begin()) % static_cast<int>(tabIds.size());
+        int tab = shownTab;
+        const float tabsW = std::min(w, ui.s(230) * labels.size()), oneTab = tabsW / static_cast<float>(labels.size());
+        ui.tabs("tabs", {x, y, tabsW, ui.s(42)}, labels, tab);
+        if (!hidden) ui.newBadge("tabs", {x + oneTab * 3, y, oneTab, ui.s(42)}, "profile.races");  // « NOUVEAU » (2.32.2)
+        ui.newBadge("tabs", {x + oneTab * static_cast<float>(labels.size() - 1), y, oneTab, ui.s(42)}, "profile.tab.clan");  // 2.62.4
+        if (tab != shownTab) {
+            tab_ = tabIds[static_cast<size_t>(std::clamp(tab, 0, static_cast<int>(tabIds.size()) - 1))];
             query_.clear();
             filter_ = 0;
             loadTab();
         }
         y += ui.s(54);
+        if (tab_ == kTabClan) {
+            drawClanTab({x, y, w, box_.bottom() - y - ui.s(44)});
+            drawFooter(x, w);
+            return;
+        }
         // Every tab: a search field (and a filter where it means something), 2.32.2.
         {
             float sw = std::min(ui.s(420), w * 0.42f);
@@ -494,13 +562,236 @@ private:
             case 3: drawRaces(area); break;
             default: drawPlayers(area); break;
         }
+        drawFooter(x, w);
+    }
+
+    /// The last answer of the server (or the offline note) at the bottom, then the badges' tooltip.
+    void drawFooter(float x, float w) {
+        UIContext& ui = g_.ui;
         std::string foot = fromCache_ ? "Hors ligne : profil en cache" : std::string{};
         if (!status_.empty() && ui.time() - statusT_ < 8.0f) foot = status_;
         if (!foot.empty())
-            ui.label(foot, {x, box_.bottom() - ui.s(24)}, ui.fitFont(foot, FontFace::Body, 15, w), statusError_ && foot == status_ ? ui.theme().danger : ui.theme().success,
-                     Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(ui.elide(foot, FontFace::Body, ui.fitFont(foot, FontFace::Body, 15, w), w), {x, box_.bottom() - ui.s(24)}, ui.fitFont(foot, FontFace::Body, 15, w),
+                     statusError_ && foot == status_ ? ui.theme().danger : ui.theme().success, Align::Left, FontFace::Body, VAlign::Middle);
         // The name of the badge under the mouse or the focus, over the rest of the profile.
         badgeRow_.drawTooltip(g_);
+    }
+
+    // ------------------------------------------------------------ tab « Clan » (2.62.4)
+    /// `t` at `size` (smaller down to 75 %, then shortened with « … ») in `room`; `verbatim`:
+    /// a player's words (a clan's name, its motto) are never translated.
+    Vec2 fitText(const std::string& t, Vec2 pos, float size, float room, Color c, FontFace face = FontFace::Body, Align a = Align::Left,
+                 bool verbatim = false) {
+        UIContext& ui = g_.ui;
+        if (t.empty() || room <= ui.s(10)) return {};
+        i18n::Verbatim v(verbatim);
+        const float f = std::max(fz(ui, 11.5f), ui.fitFont(t, face, size, room, 0.75f));
+        return ui.label(ui.elide(t, face, f, room), pos, f, c, a, face, VAlign::Middle);
+    }
+
+    float textWidth(const std::string& t, float size, FontFace face = FontFace::Body, bool verbatim = false) {
+        i18n::Verbatim v(verbatim);
+        return g_.ui.text().measure(t, face, g_.ui.s(size)).x;
+    }
+
+    /// A small pill whose left edge is `x`; its width (0 when it does not fit before `maxRight`).
+    float clanPill(float x, float cy, const std::string& t, Color border, Color text, float maxRight) {
+        UIContext& ui = g_.ui;
+        const float w = textWidth(t, 13) + ui.s(20);
+        if (x + w > maxRight) return 0.0f;
+        const Rect r{x, cy - ui.s(13), w, ui.s(26)};
+        ui.r().drawRoundedRect(r, ui.s(10), border, ui.s(1.2f));
+        ui.label(t, r.center(), 13, text, Align::Center, FontFace::Body, VAlign::Middle);
+        return w;
+    }
+
+    void drawClanTab(const Rect& area) {
+        UIContext& ui = g_.ui;
+        const Color gold{255, 210, 122, 255}, violet{166, 107, 255, 255}, panelC{15, 23, 48, 235};
+        const Json clanJ = jfield(data_, "clan", Json());
+        float y = area.y;
+        // « Inviter dans mon clan » (the chief or an officer of a clan, on someone else's profile):
+        // the button first, the reason (or what it does) in the room at its right.
+        const bool blocked = jget<bool>(jfield(data_, "follow", Json::object()), "blocked", false);
+        const clans::InviteOffer offer = g_.online.loggedIn()
+                                             ? clans::inviteOffer(g_.online.myClan(), myClanPage_, clanJ, playerId_, g_.online.playerId(), blocked)
+                                             : clans::InviteOffer{};
+        if (offer.shown) {
+            const std::string label = "Inviter dans mon clan";
+            const float bw = std::min(textWidth(label, 17, FontFace::Bold) + ui.s(44), area.w * 0.45f);
+            const Rect b{area.x, y, bw, ui.s(46)};
+            UIContext::ButtonStyle st;
+            st.primary = true;
+            st.enabled = offer.enabled && !busy_;
+            if (ui.button("clan/invite", b, label, st)) inviteToMyClan();
+            ui.newBadge("clan/invite", b, "profile.clan.invite");  // « NOUVEAU »
+            fitText(offer.note, {b.right() + ui.s(16), b.center().y}, 15, area.right() - b.right() - ui.s(16), offer.enabled ? ui.theme().textDim : ui.theme().warm);
+            y += b.h + ui.s(16);
+        }
+        if (!clanJ.is_object()) {
+            fitText(me() ? "Vous n'êtes dans aucun clan." : "Ce joueur n'est dans aucun clan.", {area.x, y + ui.s(22)}, 22, area.w, ui.theme().text, FontFace::Bold);
+            static const char* kAbout =
+                "Un clan réunit jusqu'à 50 joueurs autour d'un tag, d'une devise et d'un emblème ; ses membres additionnent leurs meilleurs "
+                "résultats vérifiés sur les niveaux EXTRÊME. Les clans se trouvent dans COSMIC ONLINE › CLANS.";
+            const Vec2 ts = ui.labelWrapped(kAbout, {area.x, y + ui.s(48)}, std::min(area.w, ui.s(900)), 16, ui.theme().textDim);
+            const std::string see = "Voir les clans";
+            if (ui.button("clan/all", {area.x, y + ui.s(48) + ts.y + ui.s(18), textWidth(see, 17, FontFace::Bold) + ui.s(44), ui.s(46)}, see))
+                g_.app.pushScene(makeClans(g_, {}, true));
+            return;
+        }
+        const Json c = jfield(tabData_, "clan", Json());
+        const std::string id = jstr(clanJ, "id");
+        if (jstr(c, "id").empty()) {
+            const std::string t = tabLoading_ ? std::string("Chargement de la fiche du clan…") : !tabError_.empty() ? tabError_ : std::string("Fiche du clan indisponible.");
+            fitText(t, {area.x, y + ui.s(20)}, 17, area.w, tabError_.empty() ? ui.theme().textDim : ui.theme().danger);
+            return;
+        }
+        if (area.bottom() - y < ui.s(128)) {
+            // Too little room for the sheet (a small window): its name and the button that opens it.
+            const std::string open = "Voir la fiche du clan";
+            const float ow = std::min(textWidth(open, 16, FontFace::Bold) + ui.s(40), area.w * 0.45f);
+            const Rect ob{area.right() - ow, y, ow, ui.s(44)};
+            if (ui.button("clan/open", ob, open)) g_.app.pushScene(makeClans(g_, id, true));
+            fitText(clans::tagged(jstr(c, "name"), jstr(c, "tag")), {area.x, ob.center().y}, 18, ob.x - ui.s(16) - area.x, ui.theme().text, FontFace::Bold,
+                    Align::Left, true);
+            return;
+        }
+        // The sheet's head: emblem, name and [TAG], motto and foundation, pills; « Voir la fiche du
+        // clan » at its right (placed first), how to join under it.
+        const Rect card{area.x, y, area.w, ui.s(128)};
+        ui.r().fillRoundedRectGradient(card, ui.s(14), Color{28, 20, 54, 240}, Color{15, 23, 48, 240});
+        ui.r().drawRoundedRect(card, ui.s(14), violet, ui.s(1.2f));
+        const float em = card.h - ui.s(32);
+        drawClanEmblem(ui, {card.x + ui.s(16), card.y + ui.s(16), em, em}, clans::emblemFromJson(jfield(c, "emblem", Json())));
+        const float tx = card.x + ui.s(16) + em + ui.s(18);
+        const std::string open = "Voir la fiche du clan";
+        const float ow = std::min(textWidth(open, 16, FontFace::Bold) + ui.s(40), card.w * 0.3f);
+        const Rect ob{card.right() - ui.s(16) - ow, card.y + ui.s(16), ow, ui.s(44)};
+        UIContext::ButtonStyle ost;
+        ost.primary = true;
+        if (ui.button("clan/open", ob, open, ost)) g_.app.pushScene(makeClans(g_, id, true));
+        const Json& page = tabData_;
+        const std::string role = jstr(jfield(page, "me", Json()), "role");
+        std::string hint = !role.empty() ? "Vous êtes membre de ce clan : " + clans::roleLabel(role) + "."
+                                         : clans::joinHint(clans::joinOffer(c, jfield(page, "me", Json()), g_.online.loggedIn(),
+                                                                            !g_.online.loggedIn() || g_.online.myClan().is_object(),
+                                                                            jstr(jfield(g_.online.myClan(), "clan", Json()), "id")));
+        const float hintRoom = std::min(textWidth(hint, 14) + ui.s(4), (card.right() - ui.s(16) - tx) * 0.42f);
+        fitText(hint, {card.right() - ui.s(16), card.y + ui.s(96)}, 14, hintRoom, ui.theme().warm, FontFace::Body, Align::Right);
+        const float room = ob.x - ui.s(20) - tx;
+        // Line 1: the name, then [TAG] after it.
+        const std::string tag = clans::bracket(jstr(c, "tag"));
+        const float tagW = std::min(textWidth(tag, 19, FontFace::Bold, true), room * 0.3f);
+        const Vec2 ns = fitText(jstr(c, "name"), {tx, card.y + ui.s(32)}, 26, room - tagW - ui.s(12), ui.theme().text, FontFace::Title, Align::Left, true);
+        fitText(tag, {tx + ns.x + ui.s(12), card.y + ui.s(33)}, 19, tagW, gold, FontFace::Bold, Align::Left, true);
+        // Line 2: « motto » · fondé le … (the date measured first).
+        const std::string founded = "Fondé le " + dateFr(jstr(c, "created_at"));
+        const std::string motto = jstr(c, "motto");
+        if (motto.empty()) {
+            fitText(founded, {tx, card.y + ui.s(64)}, 15, room, ui.theme().textDim);
+        } else {
+            const float fw = std::min(textWidth(" · " + founded, 15), room * 0.4f);
+            const Vec2 ms = fitText("« " + motto + " »", {tx, card.y + ui.s(64)}, 15, room - fw, Color{201, 211, 238, 255}, FontFace::Body, Align::Left, true);
+            fitText(" · " + founded, {tx + ms.x, card.y + ui.s(64)}, 15, fw, ui.theme().textDim);
+        }
+        // Line 3: pills while they fit (left of the joining hint).
+        float px = tx;
+        const float pmax = card.right() - ui.s(16) - hintRoom - ui.s(16);
+        auto addPill = [&](const std::string& t, Color border, Color text) {
+            const float pw = clanPill(px, card.y + ui.s(98), t, border, text, pmax);
+            if (pw > 0.0f) px += pw + ui.s(8);
+        };
+        const Color plain{34, 48, 90, 255};
+        addPill(std::to_string(jget<int>(c, "members", 0)) + " membres sur " + std::to_string(jget<int>(c, "max_members", clans::kMaxMembers)), plain,
+                ui.theme().text);
+        addPill(clans::policyLabel(jstr(c, "join_policy")), plain, ui.theme().text);
+        const int rank = jget<int>(c, "rank", 0);
+        addPill(rank > 0 ? clans::ordinal(rank) + " au classement des clans" : std::string("Pas encore classé"), violet, Color{201, 179, 255, 255});
+        addPill(clans::pointsLabel(jget<double>(c, "points", 0.0)), gold, gold);
+        // Under the head: its members (and their role) at the left, its best EXTRÊME results at the right.
+        const float top = card.bottom() + ui.s(14);
+        const Rect cols{area.x, top, area.w, area.bottom() - top};
+        if (cols.h < ui.s(120)) return;
+        const float mw = std::floor(cols.w * 0.45f);
+        const Rect mr{cols.x, cols.y, mw, cols.h};
+        const Rect br{mr.right() + ui.s(14), cols.y, cols.right() - mr.right() - ui.s(14), cols.h};
+        auto panelTitle = [&](const Rect& r, const std::string& t, const std::string& right, Color rc) {
+            ui.r().fillRoundedRect(r, ui.s(12), panelC);
+            ui.r().drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1.2f));
+            const float cy = r.y + ui.s(22), xl = r.x + ui.s(14), xr = r.right() - ui.s(14);
+            const float rw = right.empty() ? 0.0f : std::min(textWidth(right, 14, FontFace::Bold) + ui.s(4), (xr - xl) * 0.45f);
+            if (rw > 0.0f) fitText(right, {xr, cy}, 14, rw, rc, FontFace::Bold, Align::Right);
+            fitText(t, {xl, cy}, 14, xr - xl - rw - (rw > 0.0f ? ui.s(12) : 0.0f), ui.theme().textDim, FontFace::Bold);
+            return Rect{r.x + ui.s(8), r.y + ui.s(42), r.w - ui.s(16), r.h - ui.s(50)};
+        };
+        // Members: name (their profile opens from the row), role, best result.
+        Json members = jfield(page, "members", Json::array());
+        if (!members.is_array()) members = Json::array();
+        Rect mv = panelTitle(mr, "MEMBRES", std::to_string(members.size()) + " / " + std::to_string(jget<int>(c, "max_members", clans::kMaxMembers)),
+                             ui.theme().textDim);
+        const float rowH = ui.s(42);
+        std::string chosen;
+        ui.beginScroll("clan/members", mv, static_cast<float>(members.size()) * (rowH + ui.s(5)));
+        float ry = mv.y - ui.scrollOffset();
+        for (const auto& m : members) {
+            const Json p = jfield(m, "player", Json());
+            const std::string pid = jstr(p, "id"), mrole = jstr(m, "role");
+            const Rect rr{mv.x, ry, mv.w - ui.s(12), rowH};
+            ry += rowH + ui.s(5);
+            UIContext::ButtonStyle st;
+            st.align = Align::Left;
+            st.selected = pid == playerId_;
+            if (ui.button("clan/m" + pid, rr, "", st) && pid != playerId_) chosen = pid;
+            const float w = rr.w - ui.s(20), nameW = w * 0.42f, roleW = w * 0.2f, bestW = w - nameW - roleW - ui.s(16);
+            const float x0 = rr.x + ui.s(10);
+            fitText(jstr(p, "username"), {x0, rr.center().y}, 15, nameW - ui.s(6), pid == playerId_ ? ui.theme().accent : ui.theme().text, FontFace::Bold,
+                    Align::Left, true);
+            fitText(clans::roleLabel(mrole), {x0 + nameW + ui.s(8), rr.center().y}, 13, roleW - ui.s(6), clanRoleColor(ui, mrole));
+            const Json best = jfield(m, "best", Json());
+            const std::string b = best.is_object() ? clans::resultLabel(jget<double>(best, "score", 0.0), jget<bool>(best, "finished", false), 0) + " · " +
+                                                         jstr(best, "title")
+                                                   : std::string("—");
+            fitText(b, {x0 + nameW + roleW + ui.s(16), rr.center().y}, 13, bestW, Color{201, 211, 238, 255});
+        }
+        ui.endScroll();
+        // Best results: one row per EXTRÊME level (its race board opens from it).
+        Json levels = jfield(page, "levels", Json::array());
+        if (!levels.is_array()) levels = Json::array();
+        Rect bv = panelTitle(br, "MEILLEURS RÉSULTATS EXTRÊME", clans::pointsLabel(jget<double>(c, "points", 0.0)), gold);
+        if (levels.empty()) {
+            fitText("Aucun niveau EXTRÊME classé pour l'instant.", {bv.x + ui.s(6), bv.y + ui.s(12)}, 15, bv.w - ui.s(12), ui.theme().textDim);
+        } else {
+            const float lh = ui.s(50);
+            ui.beginScroll("clan/bests", bv, static_cast<float>(levels.size()) * (lh + ui.s(5)));
+            float ly = bv.y - ui.scrollOffset();
+            for (const auto& l : levels) {
+                const Rect rr{bv.x, ly, bv.w - ui.s(12), lh};
+                ly += lh + ui.s(5);
+                const std::string lid = jstr(l, "level_id");
+                UIContext::ButtonStyle st;
+                st.align = Align::Left;
+                if (ui.button("clan/l" + lid, rr, "", st)) g_.app.pushScene(makeRaceBoard(g_, "official", lid));
+                const Json best = jfield(l, "best", Json());
+                const float resultW = std::min(ui.s(150), rr.w * 0.35f), xr = rr.right() - ui.s(10), x0 = rr.x + ui.s(10);
+                const float lroom = xr - resultW - ui.s(12) - x0;
+                std::string title = jstr(l, "title");
+                if (const LevelEntry* e = g_.content.level(lid)) title = e->name;
+                fitText(title, {x0, rr.y + ui.s(17)}, 15, lroom, ui.theme().text, FontFace::Bold);
+                if (best.is_object()) {
+                    std::string team;
+                    for (const auto& p : jfield(best, "players", Json::array())) team += (team.empty() ? "" : " · ") + jstr(p, "username", "?");
+                    fitText(team, {x0, rr.y + ui.s(35)}, 12, lroom, ui.theme().textDim, FontFace::Body, Align::Left, true);
+                    const bool fin = jget<bool>(best, "finished", false);
+                    fitText(clans::resultLabel(jget<double>(best, "score", 0.0), fin, jget<int>(best, "rank", 0)), {xr, rr.center().y}, 14, resultW,
+                            fin ? gold : ui.theme().accent, FontFace::Bold, Align::Right);
+                } else {
+                    fitText("Aucune tentative vérifiée", {x0, rr.y + ui.s(35)}, 12, lroom, ui.theme().textDim);
+                    fitText("—", {xr, rr.center().y}, 14, resultW, ui.theme().textDim, FontFace::Bold, Align::Right);
+                }
+            }
+            ui.endScroll();
+        }
+        if (!chosen.empty()) openOther(chosen);
     }
 
     /// The badges of the profile (2.41): achievements the server checked against the player's
@@ -946,7 +1237,9 @@ private:
     std::string query_;     // search of the current tab
     int filter_ = 0;        // filter of the current tab (category, finished or not)
     std::string fetching_;  // attempt whose replay is downloading
+    static constexpr int kTabClan = 6;  // 2.62.4: the player's clan
     Json tabData_;
+    Json myClanPage_;  // tab « Clan »: GET /clans/{the viewer's clan} (its pending requests), chief and officers only
     std::string tabError_;
     bool tabLoading_ = false;
     int tabGeneration_ = 0;

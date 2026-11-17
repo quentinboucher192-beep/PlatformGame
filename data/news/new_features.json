@@ -2273,6 +2273,27 @@
    "parents": [
     "stats.bosses"
    ]
+  },
+  {
+   "id": "profile.tab.clan",
+   "version": "2.62.4",
+   "parents": [
+    "menu.online"
+   ]
+  },
+  {
+   "id": "profile.clan.invite",
+   "version": "2.62.4",
+   "parents": [
+    "profile.tab.clan"
+   ]
+  },
+  {
+   "id": "clans.tab.manage",
+   "version": "2.62.4",
+   "parents": [
+    "online.nav.clans"
+   ]
   }
  ]
 }

@@ -11,6 +11,10 @@ mondiaux, les records vérifiés et un globe terrestre interactif.
   lève, le village, les vaisseaux qui partent, le golem seul dans les ruines ; décors en couches animées
   (cristaux, torches, brume), personnages animés image par image. Une pastille NOUVEAU mène à « Revoir
   l'histoire ».
+* **Clans** : une **fiche de clan** publique, comme un profil (emblème, tag, devise, membres et rôles, points et
+  rang, meilleurs résultats EXTRÊME, « Rejoindre » / « Postuler »), ouverte d'un clic sur un tag [TAG] partout ;
+  onglet **« Clan »** dans les profils, avec **« Inviter dans mon clan »** pour le chef et les officiers ; onglet
+  **« Gestion »** dans CLANS (candidatures, invitations envoyées, membres et rôles, paramètres du chef).
 
 **Nouveau dans la version 2.62.3** :
 * Embuscades : une chute ne les fait plus recommencer (reprise à la même vague, ennemis ramenés dans l'arène) ;

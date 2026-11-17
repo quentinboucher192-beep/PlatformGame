@@ -124,3 +124,139 @@ TEST_CASE("clans: the emblem (a shape, two colours) read, written and drawn") {
     for (const auto& s : clans::emblemShapes())
         for (const Vec2& p : clans::shapeOutline(s, c, r)) CHECK(std::hypot(p.x - c.x, p.y - c.y) <= r * 1.2f + 1e-3f);
 }
+
+TEST_CASE("clans: what a clan's sheet offers to a player who is not a member (2.62.4)") {
+    const std::string id = "11111111-1111-1111-1111-111111111111";
+    auto clan = [&](const char* policy, int members) { return Json{{"id", id}, {"join_policy", policy}, {"members", members}, {"max_members", 50}}; };
+    const Json nobody = Json{{"role", nullptr}, {"request", nullptr}};
+    // A member: the band shows their own buttons, nothing here.
+    CHECK(clans::joinOffer(clan("open", 3), Json{{"role", "member"}}, true, true, id).action.empty());
+    // Without an account: log in first; the sheet stays readable.
+    CHECK(clans::joinOffer(clan("open", 3), nobody, false, false, "").action == "login");
+    CHECK(!clans::joinHint(clans::joinOffer(clan("open", 3), nobody, false, false, "")).empty());
+    // GET /clans/me not answered yet: nothing offered.
+    clans::JoinOffer o = clans::joinOffer(clan("open", 3), nobody, true, false, "");
+    CHECK(o.action.empty());
+    CHECK(o.note.empty());
+    // Already in another clan.
+    o = clans::joinOffer(clan("open", 3), nobody, true, true, "22222222-2222-2222-2222-222222222222");
+    CHECK(o.action.empty());
+    CHECK(o.note == "Vous êtes déjà dans un clan.");
+    // Each joining mode.
+    o = clans::joinOffer(clan("open", 3), nobody, true, true, "");
+    CHECK(o.action == "join");
+    CHECK(o.label == "Rejoindre");
+    CHECK(o.enabled);
+    o = clans::joinOffer(clan("request", 3), nobody, true, true, "");
+    CHECK(o.action == "apply");
+    CHECK(o.label == "Postuler");
+    CHECK(clans::joinHint(o).find("Postuler") != std::string::npos);
+    o = clans::joinOffer(clan("invite", 3), nobody, true, true, "");
+    CHECK(o.action.empty());
+    CHECK(o.note == "Ce clan recrute sur invitation.");
+    CHECK(clans::joinHint(o) == o.note);
+    // Full: the button stays, disabled, with the reason.
+    o = clans::joinOffer(clan("request", 50), nobody, true, true, "");
+    CHECK(o.action == "apply");
+    CHECK(!o.enabled);
+    CHECK(o.note == "Ce clan est complet.");
+    CHECK(clans::joinHint(o) == o.note);
+    // A request already there: the invitation received wins over the mode, an application is withdrawn.
+    o = clans::joinOffer(clan("invite", 3), Json{{"role", nullptr}, {"request", {{"kind", "invite"}}}}, true, true, "");
+    CHECK(o.action == "accept");
+    CHECK(o.enabled);
+    o = clans::joinOffer(clan("request", 3), Json{{"role", nullptr}, {"request", {{"kind", "apply"}}}}, true, true, "");
+    CHECK(o.action == "withdraw");
+    CHECK(!o.note.empty());
+}
+
+TEST_CASE("clans: the pending requests of the « Gestion » tab (2.62.4)") {
+    const Json requests = Json::array({
+        Json{{"kind", "apply"},
+             {"player", {{"id", "a1"}, {"username", "Lyra"}, {"avatar", "avatar_03"}}},
+             {"message", "dispo le soir"},
+             {"created_at", "2026-11-10T10:00:00Z"},
+             {"by", nullptr}},
+        Json{{"kind", "invite"},
+             {"player", {{"id", "b2"}, {"username", "Vega"}}},
+             {"message", ""},
+             {"created_at", "2026-11-11T10:00:00Z"},
+             {"by", {{"id", "c3"}, {"username", "Nova"}}}},
+        Json{{"kind", "invite"}, {"player", nullptr}, {"created_at", "2026-11-12T10:00:00Z"}},  // damaged: skipped
+        Json{{"kind", "invite"}, {"player", {{"id", "d4"}, {"username", "Orion"}}}, {"created_at", "2026-11-13T10:00:00Z"}, {"by", nullptr}},
+    });
+    const auto apps = clans::pendingRequests(requests, "apply");
+    CHECK(apps.size() == 1);
+    CHECK(apps[0].username == "Lyra");
+    CHECK(apps[0].message == "dispo le soir");
+    CHECK(apps[0].avatar == "avatar_03");
+    const auto inv = clans::pendingRequests(requests, "invite");
+    CHECK(inv.size() == 2);
+    CHECK(inv[0].playerId == "b2");
+    CHECK(inv[0].byName == "Nova");
+    CHECK(inv[0].byId == "c3");
+    CHECK(inv[0].avatar == "avatar_01");
+    CHECK(inv[1].byName.empty());
+    CHECK(inv[1].createdAt == "2026-11-13T10:00:00Z");
+    CHECK(clans::pendingRequests(Json(), "invite").empty());
+    CHECK(clans::pendingRequests(Json::object(), "apply").empty());
+}
+
+TEST_CASE("clans: « Inviter dans mon clan » on a player's profile (2.62.4)") {
+    const std::string me = "me", target = "t1", mineId = "c-mine";
+    auto mine = [&](const char* role, int members) {
+        return Json{{"clan", {{"id", mineId}, {"role", role}, {"members", members}, {"max_members", 50}}}, {"invitations", Json::array()}};
+    };
+    auto page = [&](Json requests) { return Json{{"clan", {{"id", mineId}}}, {"requests", std::move(requests)}}; };
+    // Not shown: without a clan, a plain member, one's own profile.
+    CHECK(!clans::inviteOffer(Json{{"clan", nullptr}}, Json(), Json(), target, me, false).shown);
+    CHECK(!clans::inviteOffer(Json(), Json(), Json(), target, me, false).shown);
+    CHECK(!clans::inviteOffer(mine("member", 5), Json(), Json(), target, me, false).shown);
+    CHECK(!clans::inviteOffer(mine("leader", 5), Json(), Json(), me, me, false).shown);
+    // The chief and the officers: enabled, the requests still unknown or empty.
+    clans::InviteOffer o = clans::inviteOffer(mine("leader", 5), Json(), Json(), target, me, false);
+    CHECK(o.shown);
+    CHECK(o.enabled);
+    o = clans::inviteOffer(mine("officer", 5), page(Json::array()), Json(), target, me, false);
+    CHECK(o.enabled);
+    // Disabled, each with its reason.
+    o = clans::inviteOffer(mine("leader", 5), Json(), Json(), target, me, true);
+    CHECK(o.shown);
+    CHECK(!o.enabled);
+    CHECK(o.note.find("bloqué") != std::string::npos);
+    o = clans::inviteOffer(mine("leader", 5), Json(), Json{{"id", "other"}, {"tag", "AUBE"}}, target, me, false);
+    CHECK(!o.enabled);
+    CHECK(o.note == "Ce joueur est déjà dans un clan.");
+    o = clans::inviteOffer(mine("leader", 5), Json(), Json{{"id", mineId}}, target, me, false);
+    CHECK(!o.enabled);
+    CHECK(o.note == "Ce joueur est déjà membre de votre clan.");
+    o = clans::inviteOffer(mine("officer", 50), Json(), Json(), target, me, false);
+    CHECK(!o.enabled);
+    CHECK(o.note == "Votre clan est complet (50 membres).");
+    const Json invited = Json::array({Json{{"kind", "invite"}, {"player", {{"id", target}}}}});
+    o = clans::inviteOffer(mine("leader", 5), page(invited), Json(), target, me, false);
+    CHECK(!o.enabled);
+    CHECK(o.note.find("déjà envoyée") != std::string::npos);
+    // The same answer for another clan (a page still on screen) says nothing.
+    Json stale = page(invited);
+    stale["clan"]["id"] = "c-other";
+    CHECK(clans::inviteOffer(mine("leader", 5), stale, Json(), target, me, false).enabled);
+    // An application of that player: inviting accepts it.
+    o = clans::inviteOffer(mine("leader", 5), page(Json::array({Json{{"kind", "apply"}, {"player", {{"id", target}}}}})), Json(), target, me, false);
+    CHECK(o.enabled);
+    CHECK(o.note.find("postulé") != std::string::npos);
+    // Too many pending requests (the server's limit).
+    Json many = Json::array();
+    for (int i = 0; i < clans::kMaxPending; ++i) many.push_back(Json{{"kind", "invite"}, {"player", {{"id", "p" + std::to_string(i)}}}});
+    o = clans::inviteOffer(mine("leader", 5), page(many), Json(), target, me, false);
+    CHECK(!o.enabled);
+}
+
+TEST_CASE("clans: a « [TAG] » finds its clan (2.62.4)") {
+    const Json list = Json::array({Json{{"id", "x"}, {"tag", "AUBEX"}}, Json{{"id", "y"}, {"tag", "Aube"}}});
+    CHECK(clans::clanIdForTag(list, "AUBE") == "y");
+    CHECK(clans::clanIdForTag(list, "aubex") == "x");
+    CHECK(clans::clanIdForTag(list, "NOVA").empty());
+    CHECK(clans::clanIdForTag(list, "").empty());
+    CHECK(clans::clanIdForTag(Json(), "AUBE").empty());
+}
