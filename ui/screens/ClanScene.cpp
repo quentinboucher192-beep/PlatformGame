@@ -73,7 +73,7 @@ std::string dayText(const std::string& iso) {
     bool ok = false;
     std::tm m = localOf(iso, &ok);
     if (!ok) return {};
-    char b[24];
+    char b[48];
     std::snprintf(b, sizeof b, "%02d/%02d/%04d", m.tm_mday, m.tm_mon + 1, m.tm_year + 1900);
     return b;
 }
@@ -90,7 +90,7 @@ std::string clockText(const std::string& iso) {
 #else
     localtime_r(&now, &n);
 #endif
-    char b[32];
+    char b[48];
     if (m.tm_year == n.tm_year && m.tm_yday == n.tm_yday) std::snprintf(b, sizeof b, "%02d:%02d", m.tm_hour, m.tm_min);
     else std::snprintf(b, sizeof b, "%02d/%02d %02d:%02d", m.tm_mday, m.tm_mon + 1, m.tm_hour, m.tm_min);
     return b;

@@ -27,7 +27,7 @@ std::string day(const std::string& iso) {
 #else
     localtime_r(&tt, &m);
 #endif
-    char b[24];
+    char b[48];
     std::snprintf(b, sizeof b, "%02d/%02d/%04d", m.tm_mday, m.tm_mon + 1, m.tm_year + 1900);
     return b;
 }
