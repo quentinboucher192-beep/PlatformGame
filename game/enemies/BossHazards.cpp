@@ -1151,7 +1151,7 @@ void BossHazards::renderTitan(RenderContext& ctx) const {
             for (float x = x0 + 4.0f; x < x0 + w - 4.0f; x += 10.0f)
                 ctx.r.fillWorldRect({x, y - 5.0f, std::min(5.0f, x0 + w - 4.0f - x), 5.0f}, Color{255, 200, 40, a});
             const float k = std::clamp(pr.age / std::max(0.05f, pr.warn), 0.0f, 1.0f);
-            ctx.r.fillWorldRect({x0 + 4.0f, pr.top, w - 8.0f, y - pr.top}, Color{255, 120, 40, static_cast<uint8_t>(10 + 26 * k)}, BlendMode::Additive);
+            ctx.r.fillWorldRect({x0 + 4.0f, pr.top, w - 8.0f, y - pr.top}, Color{255, 120, 40, static_cast<uint8_t>(6 + 16 * k)}, BlendMode::Additive);
             ctx.r.drawWorldGlow({pr.x, y - 4.0f}, pr.half * 0.6f, pr.color.withAlpha(static_cast<uint8_t>(40 + 80 * k)));
         }
         // The rod (chrome) and the head (dark steel, a band of stripes, bolts).
@@ -1159,9 +1159,9 @@ void BossHazards::renderTitan(RenderContext& ctx) const {
         if (pr.age < pr.warn) hy += dmath::sin(t * 60.0f + pr.x) * 1.2f;  // it shudders
         const float headTop = hy - Press::kHead;
         if (headTop > pr.top + 1.0f) {
-            ctx.r.fillWorldRect({pr.x - 9.0f, pr.top, 18.0f, headTop - pr.top}, Color{70, 76, 86, 255});
-            ctx.r.fillWorldRect({pr.x - 6.0f, pr.top, 12.0f, headTop - pr.top}, Color{186, 196, 210, 255});
-            ctx.r.fillWorldRect({pr.x - 3.0f, pr.top, 3.0f, headTop - pr.top}, Color{240, 246, 252, 255});
+            ctx.r.fillWorldRect({pr.x - 8.0f, pr.top, 16.0f, headTop - pr.top}, Color{36, 40, 48, 255});
+            ctx.r.fillWorldRect({pr.x - 6.0f, pr.top, 12.0f, headTop - pr.top}, Color{104, 112, 126, 255});
+            ctx.r.fillWorldRect({pr.x - 3.0f, pr.top, 2.0f, headTop - pr.top}, Color{176, 184, 196, 255});
         }
         ctx.r.fillWorldRect({x0, headTop, w, Press::kHead}, Color{40, 44, 52, 255});
         ctx.r.fillWorldRect({x0 + 2.0f, headTop + 2.0f, w - 4.0f, Press::kHead - 4.0f}, Color{92, 100, 114, 255});

@@ -12,7 +12,7 @@
   "scale": 1.25,
   "hp": 800,
   "contactDamage": 2,
-  "speed": 55,
+  "speed": 70,
   "chaseSpeedMultiplier": 1.35,
   "flying": false,
   "knockbackResist": 1,

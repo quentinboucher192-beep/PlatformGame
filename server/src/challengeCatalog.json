@@ -302,6 +302,44 @@
    "gold_ms": 360000,
    "auto": false
   },
+  "confins_06": {
+   "name": "La Fonderie Engloutie",
+   "planet": "confins",
+   "order": 6,
+   "last": false,
+   "revision": 8,
+   "slots": 4,
+   "start_powers": [
+    "dash",
+    "grapple",
+    "glide",
+    "charge_shot"
+   ],
+   "level_powers": [
+    "air_dash",
+    "boomerang",
+    "boomerang_charge",
+    "charge_shot",
+    "dash",
+    "decoy",
+    "frost_nova",
+    "glide",
+    "grapple",
+    "ground_pound",
+    "impulse",
+    "magnet",
+    "plasma_bomb",
+    "recall",
+    "shield",
+    "teleport",
+    "time_slow",
+    "triple_jump",
+    "wave"
+   ],
+   "silver_ms": 432000,
+   "gold_ms": 360000,
+   "auto": false
+  },
   "glacior_01": {
    "name": "Les Plaines de Givre",
    "planet": "glacior",

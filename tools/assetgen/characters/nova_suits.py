@@ -44,6 +44,8 @@ SUITS = {
     "aube": ((52, 47, 103), (255, 208, 74), (255, 110, 96)),
     # 2.57: la Liche des Catacombes (the purple-black of its robes, a visor of soul fire, a scarf of old bone)
     "linceul": ((58, 46, 78), (180, 245, 102), (226, 214, 184)),
+    # 2.58: le Titan Mécanique (riveted gunmetal, a visor of boiler amber, a scarf of brass)
+    "fonte": ((96, 104, 118), (255, 194, 60), (204, 166, 84)),
 }
 
 

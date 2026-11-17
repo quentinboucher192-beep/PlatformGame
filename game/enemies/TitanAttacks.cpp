@@ -46,7 +46,7 @@ float orDefault(float v, float d) { return v > 0.0f ? v : d; }
 constexpr float kVentTime = 3.6f;          // its vents open this long
 constexpr float kVentJets = 1.35f;         // its jets of steam (hiss, then blast) at their start
 constexpr float kVentVulnerability = 1.8f; // its bare core takes this much more damage
-constexpr float kStallTime = 14.0f;        // stalled: it restarts after this long
+constexpr float kStallTime = 16.0f;        // stalled: it restarts after this long
 constexpr float kBurstShare = 0.06f;       // its boiler bursting: this share of its health
 constexpr float kPressHalf = 64.0f;        // the presses of a room without them: half their width
 constexpr float kPressGap = 1.6f;          // between two rounds of presses (every other one)
@@ -161,8 +161,8 @@ void Enemy::titanThink(GameWorld& w, float dt) {
     findMachinery(w);
     const float want = golemSpot(w, dt);
     const float gap = std::abs(want - box.center().x);
-    float beat = 0.3f * phaseCooldown();
-    if (gap > 90.0f) beat += std::min(0.4f, gap / 350.0f);
+    float beat = 0.45f * phaseCooldown();
+    if (gap > 90.0f) beat += std::min(1.0f, gap / 280.0f);  // far from where it fights: it walks there first
     if (comboLeft_ > 0 || edgeTime_ > 0.5f) beat = 0.0f;
     walkTime_ += dt;
     if (playerVisible_ && walkTime_ >= beat && chooseAttack(w)) return;

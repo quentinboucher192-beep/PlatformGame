@@ -552,7 +552,7 @@ void Hud::drawStatus(UIContext& ui, GameWorld& w, const GameplaySettings& settin
                 const float u = static_cast<float>(k) / (seg - 1);
                 const bool lit = g * seg >= static_cast<float>(k) + 0.5f;
                 Color c{255, static_cast<uint8_t>(210 - 150 * u), static_cast<uint8_t>(70 - 40 * u), 255};
-                if (!lit) c = Color{70, 52, 40, 255};
+                if (!lit) c = Color{58, 44, 36, 255};
                 else if (g > 0.75f) c = c.withAlpha(static_cast<uint8_t>(170 + 85 * pulse));
                 ui.r().fillRect({gr.x + ui.s(2) + (sw + ui.s(2)) * k, gr.y + ui.s(2), sw, gr.h - ui.s(4)}, c);
             }

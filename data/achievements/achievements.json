@@ -239,7 +239,7 @@
    "id": "voyage_all",
    "category": "voyage",
    "name": "Système conquis",
-   "description": "Terminer les 24 niveaux de la campagne.",
+   "description": "Terminer les 25 niveaux de la campagne.",
    "stars": 5,
    "condition": {
     "type": "all_levels"
@@ -357,6 +357,20 @@
    "condition": {
     "type": "level",
     "level": "confins_05"
+   },
+   "requires": [
+    "voyage_first"
+   ]
+  },
+  {
+   "id": "voyage_fonderie",
+   "category": "voyage",
+   "name": "Fin de quart",
+   "description": "Terminer La Fonderie Engloutie, aux Confins.",
+   "stars": 4,
+   "condition": {
+    "type": "level",
+    "level": "confins_06"
    },
    "requires": [
     "voyage_first"
@@ -1271,6 +1285,20 @@
    ]
   },
   {
+   "id": "gardiens_titan",
+   "category": "gardiens",
+   "name": "Titan",
+   "description": "Vaincre le Titan Mécanique.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "titan"
+   },
+   "requires": [
+    "gardiens_first"
+   ]
+  },
+  {
    "id": "gardiens_50",
    "category": "gardiens",
    "name": "Tueur de titans",
@@ -1371,7 +1399,7 @@
    "id": "maitrise_nodeath_all",
    "category": "maitrise",
    "name": "Immortel",
-   "description": "Terminer les 24 niveaux de la campagne sans mourir.",
+   "description": "Terminer les 25 niveaux de la campagne sans mourir.",
    "stars": 4,
    "condition": {
     "type": "levels_no_death",
@@ -1722,6 +1750,35 @@
    },
    "requires": [
     "gardiens_liche"
+   ]
+  },
+  {
+   "id": "maitrise_titan_nohit",
+   "category": "maitrise",
+   "name": "Pas une rayure",
+   "description": "Vaincre le Titan Mécanique sans être touché.",
+   "stars": 5,
+   "condition": {
+    "type": "boss",
+    "boss": "titan",
+    "nohit": true
+   },
+   "requires": [
+    "gardiens_titan"
+   ]
+  },
+  {
+   "id": "maitrise_phases_titan",
+   "category": "maitrise",
+   "name": "Les huit régimes",
+   "description": "Battre chaque phase du Titan Mécanique sans être touché (pas forcément dans le même combat).",
+   "stars": 5,
+   "condition": {
+    "type": "boss_phases_nohit",
+    "boss": "titan"
+   },
+   "requires": [
+    "gardiens_titan"
    ]
   },
   {
@@ -3244,6 +3301,36 @@
    ]
   },
   {
+   "id": "extreme_fonderie_gold",
+   "category": "extreme",
+   "name": "Or de la fonderie",
+   "description": "Obtenir l'or dans La Fonderie Engloutie.",
+   "stars": 4,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_06",
+    "medal": 3
+   },
+   "requires": [
+    "extreme_first"
+   ]
+  },
+  {
+   "id": "extreme_fonderie_platinum",
+   "category": "extreme",
+   "name": "Platine de la fonderie",
+   "description": "Obtenir le platine dans La Fonderie Engloutie.",
+   "stars": 5,
+   "condition": {
+    "type": "medal_level",
+    "level": "confins_06",
+    "medal": 4
+   },
+   "requires": [
+    "extreme_fonderie_gold"
+   ]
+  },
+  {
    "id": "extreme_attempts_100",
    "category": "extreme",
    "name": "Increvable",
@@ -3656,11 +3743,11 @@
    "id": "collection_tracks_all",
    "category": "collection",
    "name": "Mélomane",
-   "description": "Débloquer les 25 morceaux du juke-box.",
+   "description": "Débloquer les 26 morceaux du juke-box.",
    "stars": 3,
    "condition": {
     "type": "tracks_heard",
-    "count": 25
+    "count": 26
    },
    "requires": [
     "collection_tracks_10"

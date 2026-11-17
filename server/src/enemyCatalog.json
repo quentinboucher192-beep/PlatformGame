@@ -53,6 +53,10 @@
    "name": "Dragonnet de braise"
   },
   {
+   "id": "drone_titan",
+   "name": "Drone du Titan"
+  },
+  {
    "id": "echo_archon_catacombs",
    "name": "Écho : Archonte des Catacombes"
   },
@@ -331,6 +335,14 @@
   {
    "id": "thornwarden",
    "name": "Thornwarden"
+  },
+  {
+   "id": "titan",
+   "name": "Titan Mécanique"
+  },
+  {
+   "id": "vanne",
+   "name": "Vanne de pression"
   },
   {
    "id": "weaver",

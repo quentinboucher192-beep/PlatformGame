@@ -18,7 +18,7 @@ tools/assetgen/characters/boss_j_titan.py: one per phase; phases 5-8 the damaged
   4 Laser           the laser of its cannon sweeps the arena, the presses all but one (the column
                     spared lit green), its missiles; at the end of the phase it stalls (« Calage »):
                     it cannot be hurt and three pressure valves appear in its foundry: all turned
-                    (broken) before it restarts (14 s), its boiler bursts; otherwise it restarts
+                    (broken) before it restarts (16 s), its boiler bursts; otherwise it restarts
                     with a pressure wave along the floor
   5 Surchauffe      damaged, it heats faster: steam geysers, presses in a march, its missiles, its
                     belts carry Nova away from it (toward the magma of the broken crust)
@@ -177,7 +177,7 @@ def titan():
                         "phases, huit lumières : ses presses, ses tapis, ses missiles, sa surchauffe et son calage, "
                         "et sa dernière salve à survivre."),
         "family": "miniboss", "animation": SHEETS[0], "size": [95, 185], "scale": 1.25, "hp": 800, "contactDamage": 2,
-        "speed": 55, "chaseSpeedMultiplier": 1.35, "flying": False, "knockbackResist": 1, "detectionRange": 1000,
+        "speed": 70, "chaseSpeedMultiplier": 1.35, "flying": False, "knockbackResist": 1, "detectionRange": 1000,
         "attackRange": 900, "loseRange": 4000, "needsLineOfSight": False, "movement": "guard",
         "reaction": "chase", "fleeHealthRatio": 0, "preferredDistance": 190, "hopVelocity": 0,
         "attacks": attacks(),
@@ -223,7 +223,7 @@ def vanne():
         "format": "cosmic.enemy", "id": "vanne", "name": "Vanne de pression",
         "description": ("Une vanne de la fonderie du Titan, qui apparaît quand il cale. Tournez-les toutes (en les "
                         "frappant) avant qu'il redémarre : sa chaudière explose."),
-        "family": "turret", "animation": "animations/vanne.json", "size": [30, 30], "scale": 1.0, "hp": 12,
+        "family": "turret", "animation": "animations/vanne.json", "size": [30, 30], "scale": 1.0, "hp": 6,
         "contactDamage": 0, "speed": 0, "chaseSpeedMultiplier": 1.0, "flying": True, "knockbackResist": 1,
         "detectionRange": 2000, "attackRange": 0, "loseRange": 4000, "needsLineOfSight": False,
         "movement": "stationary", "reaction": "none", "fleeHealthRatio": 0, "preferredDistance": 0, "hopVelocity": 0,
