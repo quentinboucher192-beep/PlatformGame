@@ -1,0 +1,9 @@
+{
+  "texture": "stories/pyrrhax/porte.png",
+  "frameWidth": 192,
+  "frameHeight": 160,
+  "pivot": [96, 158],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true}
+  }
+}
