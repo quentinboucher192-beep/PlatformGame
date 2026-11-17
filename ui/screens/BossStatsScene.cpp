@@ -527,6 +527,9 @@ private:
                                  times(ph.telegraphMultiplier);
             if (ph.rebirth > 0.0f) rhythm += "  ·  Se consume puis renaît";
             if (!ph.phylactery.empty()) rhythm += "  ·  Cache son âme dans un phylactère";  // 2.57: the Liche
+            // 2.58: the Titan's heat gauge (how many attacks before it vents) and its stall.
+            if (ph.heat > 0.0f) rhythm += "  ·  Surchauffe après " + std::to_string(static_cast<int>(std::ceil(1.0f / ph.heat - 0.001f))) + " attaques";
+            if (!ph.stall.empty()) rhythm += "  ·  Cale à la fin : tournez les vannes";
             if (ph.combo > 1) rhythm += "  ·  Enchaîne " + std::to_string(ph.combo) + " attaques";
             if (ph.summonOnEnter) rhythm += "  ·  Appelle des renforts";
             if (ph.enrageTime > 0.0f) rhythm += "  ·  Rage après " + num(ph.enrageTime, 0) + " s";
@@ -571,6 +574,14 @@ private:
                 details += "  ·  " + std::to_string(runes) + (runes > 1 ? " runes" : " rune") + (a.arms >= 2 ? " autour du joueur" : " en ligne");
             } else if (a.type == AttackType::Hex) {
                 details += "  ·  Sauts alourdis " + num(a.duration > 0.0f ? a.duration : 5.0f, 1) + " s";
+            } else if (a.type == AttackType::Press) {  // 2.58: the war machine's machinery
+                if (a.arms == 2) details += "  ·  Toutes sauf une";
+                else if (a.arms == 3) details += "  ·  En marche, l'une après l'autre";
+                else details += "  ·  Une sur deux, " + std::to_string(a.count) + (a.count > 1 ? " vagues" : " vague");
+            } else if (a.type == AttackType::Missile) {
+                details += "  ·  " + std::to_string(a.count) + (a.count > 1 ? " missiles verrouillés" : " missile verrouillé");
+            } else if (a.type == AttackType::Belt) {
+                details += std::string(a.arms == 1 ? "  ·  Loin de lui" : "  ·  Vers lui") + "  ·  " + num(a.duration > 0.0f ? a.duration : 5.0f, 1) + " s";
             } else if (a.count > 1) {
                 details += "  ·  " + std::to_string(a.count) + " projectiles";
             }

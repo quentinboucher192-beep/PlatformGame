@@ -80,18 +80,20 @@ std::vector<CreaturePlace> scanLevel(const ContentDatabase& content, const Level
                     s.boss = sd && sd->isBoss;
                     out.push_back(s);
                 }
-        // 2.57: the crystal a boss hides its soul in (the Liche's phylactery) too.
+        // 2.57: the crystal a boss hides its soul in (the Liche's phylactery) too; 2.58: the valves
+        // of a stalled boss (the Titan's).
         if (def)
             for (const BossPhase& ph : def->phases)
-                if (!ph.phylactery.empty() && summonedHere.insert(ph.phylactery).second) {
-                    CreaturePlace s = p;
-                    s.enemyId = ph.phylactery;
-                    s.objectId.clear();
-                    s.summoned = true;
-                    const EnemyDefinition* sd = content.enemy(ph.phylactery);
-                    s.boss = sd && sd->isBoss;
-                    out.push_back(s);
-                }
+                for (const std::string& extra : {ph.phylactery, ph.stall})
+                    if (!extra.empty() && summonedHere.insert(extra).second) {
+                        CreaturePlace s = p;
+                        s.enemyId = extra;
+                        s.objectId.clear();
+                        s.summoned = true;
+                        const EnemyDefinition* sd = content.enemy(extra);
+                        s.boss = sd && sd->isBoss;
+                        out.push_back(s);
+                    }
     }
     // The bosses' order along the route (an arena of several bosses: « 5 sur 16 »).
     std::vector<CreaturePlace*> bosses;

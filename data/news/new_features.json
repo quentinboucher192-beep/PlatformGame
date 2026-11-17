@@ -1959,6 +1959,130 @@
    ]
   },
   {
+   "id": "level.confins_06",
+   "version": "2.58.0",
+   "parents": [
+    "planet.confins"
+   ]
+  },
+  {
+   "id": "boss.titan",
+   "version": "2.58.0",
+   "parents": [
+    "stats.bosses"
+   ]
+  },
+  {
+   "id": "gallery.boss.titan",
+   "version": "2.58.0",
+   "parents": [
+    "gallery.tab.bosses"
+   ]
+  },
+  {
+   "id": "gallery.creature.drone_titan",
+   "version": "2.58.0",
+   "parents": [
+    "gallery.tab.creatures"
+   ]
+  },
+  {
+   "id": "gallery.creature.vanne",
+   "version": "2.58.0",
+   "parents": [
+    "gallery.tab.creatures"
+   ]
+  },
+  {
+   "id": "ach.voyage_fonderie",
+   "version": "2.58.0",
+   "parents": [
+    "achievements.cat.voyage"
+   ]
+  },
+  {
+   "id": "ach.gardiens_titan",
+   "version": "2.58.0",
+   "parents": [
+    "achievements.cat.gardiens"
+   ]
+  },
+  {
+   "id": "ach.maitrise_titan_nohit",
+   "version": "2.58.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.maitrise_phases_titan",
+   "version": "2.58.0",
+   "parents": [
+    "achievements.cat.maitrise"
+   ]
+  },
+  {
+   "id": "ach.extreme_fonderie_gold",
+   "version": "2.58.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "ach.extreme_fonderie_platinum",
+   "version": "2.58.0",
+   "parents": [
+    "achievements.cat.extreme"
+   ]
+  },
+  {
+   "id": "cos.suit_fonte",
+   "version": "2.58.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.trail_rouages",
+   "version": "2.58.0",
+   "parents": [
+    "collection.cat.trail",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_engrenages",
+   "version": "2.58.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_briseur_titans",
+   "version": "2.58.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.victory_coulee",
+   "version": "2.58.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "track.titan_boss",
+   "version": "2.58.0",
+   "parents": [
+    "collection.tab.music"
+   ]
+  },
+  {
    "id": "stats.player",
    "version": "2.54.0",
    "parents": [

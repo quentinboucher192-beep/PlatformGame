@@ -1,0 +1,84 @@
+{
+ "format": "cosmic.boss_story",
+ "version": 1,
+ "comment": "Story of a giga boss (game/content/BossStories.h), told before the first fight against it. Each shot: its painting (assets/, tools/assetgen/environment/stories.py), its line of narration, the point the slow zoom goes to, the live particles over it. A shot lasts max(4.5 s, 1.2 s + characters / 16); then the title card (3 s).",
+ "boss": "titan",
+ "title": "Le Dernier Quart",
+ "color": "#ffc23c",
+ "accent": "#ff7a2e",
+ "clip": "roar",
+ "shots": [
+  {
+   "scene": "foundry",
+   "image": "stories/titan_1.png",
+   "text": "Sous les Confins grondait une fonderie. Mille ouvriers y coulaient l'acier des vaisseaux du système.",
+   "focus": [
+    0.5,
+    0.55
+   ],
+   "zoom": 1.1,
+   "particles": "embers",
+   "glow": "#ff8a2e"
+  },
+  {
+   "scene": "builders",
+   "image": "stories/titan_2.png",
+   "text": "Pour les tâches les plus lourdes, ils bâtirent un colosse d'acier et de laiton : le Titan.",
+   "focus": [
+    0.5,
+    0.45
+   ],
+   "zoom": 1.12,
+   "particles": "sparks",
+   "glow": "#bfe0ff"
+  },
+  {
+   "scene": "promise",
+   "image": "stories/titan_3.png",
+   "text": "Le soir où l'étoile du centre s'effondra, le contremaître lui confia les feux, jusqu'à leur retour.",
+   "focus": [
+    0.47,
+    0.42
+   ],
+   "zoom": 1.08,
+   "particles": "stars",
+   "glow": "#c88bff"
+  },
+  {
+   "scene": "alone",
+   "image": "stories/titan_4.png",
+   "text": "Personne ne revint. Siècle après siècle, le Titan garda les feux allumés, et la roche engloutit la fonderie.",
+   "focus": [
+    0.52,
+    0.56
+   ],
+   "zoom": 1.14,
+   "particles": "dust",
+   "glow": "#ff8a2e"
+  },
+  {
+   "scene": "rust",
+   "image": "stories/titan_5.png",
+   "text": "La rouille rongea ses plaques, ses pistons s'usèrent, sa chaudière surchauffa. Jamais il ne s'arrêta.",
+   "focus": [
+    0.5,
+    0.5
+   ],
+   "zoom": 1.1,
+   "particles": "sparks",
+   "glow": "#ff7c3c"
+  },
+  {
+   "scene": "titan",
+   "image": "stories/titan_6.png",
+   "text": "Le Titan Mécanique travaille toujours. Pour lui, chaque visiteur est un voleur venu éteindre ses feux.",
+   "focus": [
+    0.5,
+    0.48
+   ],
+   "zoom": 1.06,
+   "particles": "embers",
+   "glow": "#ffc23c"
+  }
+ ]
+}

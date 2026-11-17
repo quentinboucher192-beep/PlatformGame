@@ -785,7 +785,8 @@ void GameScene::checkBossStory() {
     ctx.editorTest = opt_.editorTest;
     // Automated runs (scripted input, screenshots that force a boss's attack or phase, or open
     // the pause menu) are never held by a story.
-    ctx.scripted = script_.active() || opt_.forceBossPhase > 0 || !opt_.forceBossAttack.empty() || opt_.openPause || opt_.pauseAfter > 0.0f;
+    ctx.scripted = script_.active() || opt_.forceBossPhase > 0 || forcedPhase_ || !opt_.forceBossAttack.empty() || opt_.openPause ||
+                   opt_.pauseAfter > 0.0f;
     if (!storyDue(b->def(), g_.stories, g_.bossStats, g_.settings.gameplay.bossStories, ctx)) return;
     // Seen from now on (a story skipped counts), kept at once.
     storyBoss_ = b->def().id;
@@ -1130,7 +1131,10 @@ void GameScene::update(float dt) {
         if (Enemy* b = world_->activeBoss(); b && b->alive() && (b->state() == EnemyState::Chase || b->state() == EnemyState::Alert ||
                                                                  b->state() == EnemyState::Idle || b->state() == EnemyState::Patrol ||
                                                                  b->state() == EnemyState::Recover))  // 2.57: its rest cut short
-            b->forceAttack(*world_, opt_.forceBossAttack);
+            // 2.58: the Titan's presses and missiles shown one pattern at a time (as in the fight).
+            if (!b->isTitan() || (world_->hazards().pressCount(b->uid()) == 0 && world_->hazards().missileCount(b->uid()) == 0 && !b->venting()))
+                b->forceAttack(*world_, opt_.forceBossAttack);
+    if (opt_.forceBossPhase > 0) forcedPhase_ = true;  // reached later, it stays a capture (no story)
     if (opt_.forceBossPhase > 0)
         if (Enemy* b = world_->activeBoss(); b && b->alive() && !b->dormant()) {
             // A capture never counts (boss statistics, achievements, records), as a training.
@@ -1139,12 +1143,13 @@ void GameScene::update(float dt) {
             const int target = std::min(opt_.forceBossPhase, n) - 1;
             bool rebirthPending = false;
             const BossPhase* before = opt_.forceBossPhase <= n && target > 0 ? &b->def().phases[static_cast<size_t>(target - 1)] : nullptr;
-            if (before && (before->rebirth > 0.0f || !before->phylactery.empty())) {
+            if (before && (before->rebirth > 0.0f || !before->phylactery.empty() || !before->stall.empty())) {
                 // 2.56: a phase reached by a rebirth (the Phénix's « Cendres ») is reached as in the
                 // fight: the boss burns to ashes at the end of the phase before, then is reborn into it.
                 // 2.57: one reached by the Liche's phylactery too: its soul hidden in the crystal on
                 // its altar (the capture shows it; the crystal broken, the phase begins).
-                if (b->inAshes() || b->warded() || b->phaseIndex() >= target) {
+                // 2.58: one reached by the Titan's stall too: stalled, its valves on their spots.
+                if (b->inAshes() || b->warded() || b->stalled() || b->phaseIndex() >= target) {
                     opt_.forceBossPhase = 0;
                 } else {
                     if (b->phaseIndex() < target - 1) jumpBossToPhase(*world_, *b, target - 1);

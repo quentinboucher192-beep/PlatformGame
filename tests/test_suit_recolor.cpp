@@ -40,6 +40,7 @@ const CatalogueSuit kSuits[] = {
     {"encre", {60, 52, 112}, {110, 235, 255}, {40, 210, 180}},
     {"aube", {52, 47, 103}, {255, 208, 74}, {255, 110, 96}},  // 2.56: the Phénix
     {"linceul", {58, 46, 78}, {180, 245, 102}, {226, 214, 184}},  // 2.57: the Liche
+    {"fonte", {96, 104, 118}, {255, 194, 60}, {204, 166, 84}},    // 2.58: the Titan
 };
 
 fs::path playerSprites() { return Paths::assetsDir() / "sprites" / "player"; }

@@ -364,11 +364,11 @@ TEST_CASE("liche: its sheets are anchored at the tips of the tails of its robe (
     CHECK_NEAR(liche().size.y, 200.0, 1e-6);
 }
 
-TEST_CASE("liche: « La Crypte des Noms », the last level of Les Confins, the fight alone among its altars") {
+TEST_CASE("liche: « La Crypte des Noms », the fifth level of Les Confins, the fight alone among its altars") {
     const PlanetData* confins = content().planet("confins");
     REQUIRE(confins != nullptr);
-    REQUIRE(!confins->levels.empty());
-    CHECK(confins->levels.back() == "confins_05");
+    REQUIRE(confins->levels.size() >= 5);
+    CHECK(confins->levels[4] == "confins_05");  // 2.58: « La Fonderie Engloutie » after it
     auto level = content().loadLevel("confins_05");
     REQUIRE(level.has_value());
     CHECK(level->name == "La Crypte des Noms");

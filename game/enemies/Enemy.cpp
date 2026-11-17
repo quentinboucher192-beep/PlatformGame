@@ -54,6 +54,7 @@ Enemy::Enemy(const EnemyDefinition& def, AnimationSetPtr anim, Vec2 feet, bool f
         if (a.isGolemType()) hasGolem_ = true;  // 2.52: the golem walks with its own brain
         if (a.isPhoenixType()) hasPhoenix_ = true;  // 2.56: the phoenix glides, its columns, its blade
         if (a.isLicheType()) hasLiche_ = true;      // 2.57: the lich, its altars, its runes, its curse
+        if (a.isTitanType()) hasTitan_ = true;      // 2.58: the war machine, its presses, its missiles, its belts
     }
     standSize_ = def_.size;
     teleportTimer_ = def_.teleportCooldown;
@@ -266,6 +267,7 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         }
         phylactery_ = 0;
     }
+    if (hasTitan_ && !stalled() && !valves_.empty()) clearValves(w);  // 2.58: a fight resumed while it was stalled
     stateTimer_ -= dt;
     simDt_ = dt;
     if (def_.isBoss && engaged_) {
@@ -304,6 +306,10 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         case EnemyState::Telegraph: stepTelegraph(w, dt); break;
         case EnemyState::Attack: stepAttack(w, dt); break;
         case EnemyState::Recover:
+            if (hasTitan_ && venting()) {  // 2.58: the Titan vents its steam, its core bare
+                stepVent(w, dt);
+                break;
+            }
             vel.x = approach(vel.x, 0.0f, 700.0f * dt);
             if (hasPhoenix_ && def_.flying && def_.isBoss && engaged_) {
                 phoenixGlide(w, dt, 0.8f);  // 2.56: the phoenix glides between its blows
@@ -361,6 +367,10 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
         case EnemyState::PhaseTransition:
             if (inAshes()) {  // 2.56: the Phénix burns to ashes, lies in them, is reborn
                 stepAshes(w, dt);
+                break;
+            }
+            if (hasTitan_ && stalled()) {  // 2.58: the Titan stalled, its valves to turn
+                stepStall(w, dt);
                 break;
             }
             vel.x = approach(vel.x, 0.0f, 900.0f * dt);
@@ -489,6 +499,11 @@ void Enemy::stepEngaged(GameWorld& w, float dt) {
         licheThink(w, dt);
         return;
     }
+    // 2.58: the war machine walks with the golem's steps and runs its machinery (TitanAttacks.cpp).
+    if (hasTitan_ && def_.isBoss && !def_.flying) {
+        titanThink(w, dt);
+        return;
+    }
 
     if (playerVisible_ && chooseAttack(w)) return;
 
@@ -582,6 +597,9 @@ void Enemy::setWounds(float hp, int phase) {
     // 2.57: nor with the Liche's soul in its phylactery (the crystal goes at the next step).
     warded_ = false;
     phylacteryAltar_ = -1;
+    // 2.58: nor stalled nor venting (the valves go at the next step), its heat gauge empty.
+    titan_ = TitanStage::None;
+    heat_ = 0.0f;
     hp_ = std::clamp(hp, 1.0f, maxHp_);
     phase_ = def_.phases.empty() ? 0 : std::clamp(phase, 0, static_cast<int>(def_.phases.size()) - 1);
 }
@@ -596,6 +614,12 @@ void Enemy::checkPhase(GameWorld& w) {
     if (hasGolem_ && golemBusy()) return;
     if (inAshes()) return;  // 2.56: in its ashes, the next phase comes with its rebirth
     if (warded_) return;    // 2.57: its soul in its phylactery, the next phase comes when it breaks
+    if (stalled()) return;  // 2.58: stalled, the next phase comes when it restarts
+    if (hasTitan_ && !def_.phases[static_cast<size_t>(phase_)].stall.empty()) {
+        // 2.58, the Titan's « Calage »: the machine stalls, its valves appear.
+        beginStall(w, next);
+        return;
+    }
     if (!def_.phases[static_cast<size_t>(phase_)].phylactery.empty()) {
         // 2.57, the Liche's « Phylactère »: its soul hidden in a crystal on an altar.
         beginWard(w, next);
@@ -619,6 +643,11 @@ void Enemy::enterPhase(GameWorld& w, int next) {
     if (attack_ && attack_->isGolemType()) golemEnd(w);        // its quake, its curl, its crouch (2.52)
     if (attack_ && attack_->isPhoenixType()) phoenixEnd(w);    // its blade (2.56)
     if (attack_ && attack_->isLicheType()) licheEnd(w);        // its runes stay, its curse is lifted (2.57)
+    if (attack_ && attack_->isTitanType()) titanEnd(w);        // its presses fall on (2.58)
+    if (hasTitan_ && venting()) {                              // its vents close with the roar (2.58)
+        titan_ = TitanStage::None;
+        heat_ = 0.0f;
+    }
     state_ = EnemyState::PhaseTransition;
     stateTimer_ = 1.6f;
     invuln_ = 1.6f;
@@ -731,6 +760,12 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         return false;
     }
     if (state_ == EnemyState::TeleportOut || state_ == EnemyState::TeleportIn) return false;
+    if (stalled()) {
+        // 2.58: the Titan stalled: its armour is locked, its valves must be turned.
+        if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
+        hurtFlash_ = 0.05f;
+        return false;
+    }
     if (warded_) {
         // 2.57: the Liche's soul is in its phylactery: nothing hurts it until the crystal breaks.
         if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
@@ -773,6 +808,8 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
             mult *= attack_->vulnerability > 0.0f ? attack_->vulnerability : 1.5f;
         }
     }
+    // 2.58: the Titan venting its steam: its core is bare.
+    if (hasTitan_ && coreExposed()) mult *= 1.8f;
     float amount = dmg.amount * mult;
     hp_ -= amount;
     w.noteEnemyDamaged(*this, dmg);  // 2.54: statistics only (which attack of Nova reached it)
@@ -812,6 +849,7 @@ void Enemy::kill(GameWorld& w) {
     stage_ = Stage::None;
     ashes_ = AshStage::None;
     warded_ = false;  // 2.57: its crystal vanishes with it (a boss's creatures do)
+    titan_ = TitanStage::None;  // 2.58: its valves too
     if (hasGolem_ && golem_ != GolemStage::None) {  // 2.52: it dies standing, on its floor
         if (skyborne()) box = Rect::fromBottomCenter({box.center().x, floorY_}, box.size());
         box = Rect::fromBottomCenter(box.bottomCenter(), standSize_);
@@ -827,6 +865,10 @@ void Enemy::kill(GameWorld& w) {
 
 void Enemy::onAnimEvent(GameWorld& w, const std::string& e) {
     if (e.rfind("sfx:", 0) == 0) w.playSound("sounds/" + e.substr(4) + ".wav", box.center(), 0.8f);
+    if (e == "footstep" && grounded_ && hasTitan_ && def_.isBoss) {  // 2.58: the Titan's steps shake the foundry
+        w.playSound("sounds/golem_slam.wav", box.bottomCenter(), 0.35f, 0.7f);
+        w.shake(0.08f);
+    }
     if (e == "footstep" && grounded_ && def_.family == EnemyFamily::Heavy) {
         w.playSound("sounds/land.wav", box.bottomCenter(), 0.4f, 0.6f);
         w.shake(0.05f);
@@ -888,6 +930,8 @@ void Enemy::beginLastStand(GameWorld& w) {
     if (attack_ && attack_->isGolemType()) golemEnd(w);
     if (attack_ && attack_->isPhoenixType()) phoenixEnd(w);
     if (attack_ && attack_->isLicheType()) licheEnd(w);
+    if (attack_ && attack_->isTitanType()) titanEnd(w);
+    titan_ = TitanStage::None;  // 2.58: no vent nor stall in its last stand
     attack_ = nullptr;
     staged_.clear();
     comboLeft_ = 0;

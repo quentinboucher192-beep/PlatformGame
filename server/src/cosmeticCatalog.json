@@ -121,6 +121,13 @@
    "stars": 680
   },
   {
+   "id": "suit_fonte",
+   "category": "suit",
+   "look": "fonte",
+   "name": "Fonte et laiton",
+   "stars": 710
+  },
+  {
    "id": "suit_sanctuaire",
    "category": "suit",
    "look": "sanctuaire",
@@ -221,6 +228,13 @@
    "look": "souls",
    "name": "Âmes errantes",
    "stars": 690
+  },
+  {
+   "id": "trail_rouages",
+   "category": "trail",
+   "look": "gears",
+   "name": "Rouages",
+   "stars": 720
   },
   {
    "id": "trail_runes",
@@ -337,6 +351,13 @@
    "look": "ossuary",
    "name": "Ossuaire",
    "achievement": "maitrise_liche_nohit"
+  },
+  {
+   "id": "frame_engrenages",
+   "category": "frame",
+   "look": "cogs",
+   "name": "Engrenages",
+   "achievement": "maitrise_titan_nohit"
   },
   {
    "id": "frame_plumes",
@@ -460,6 +481,13 @@
    "look": "Gardien des noms",
    "name": "Gardien des noms",
    "achievement": "gardiens_liche"
+  },
+  {
+   "id": "title_briseur_titans",
+   "category": "title",
+   "look": "Briseur de titans",
+   "name": "Briseur de titans",
+   "achievement": "gardiens_titan"
   },
   {
    "id": "title_analyste",
@@ -604,6 +632,13 @@
    "look": "candles",
    "name": "Veillée des âmes",
    "stars": 700
+  },
+  {
+   "id": "victory_coulee",
+   "category": "victory",
+   "look": "foundry",
+   "name": "Coulée d'acier",
+   "stars": 730
   },
   {
    "id": "victory_serie_feu",

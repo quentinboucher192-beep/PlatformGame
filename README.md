@@ -5,6 +5,20 @@ système de planètes, records et partage de niveaux par fichiers `.cplanet`.
 Fonctionne entièrement hors ligne ; **Cosmic Online** (facultatif) ajoute les classements
 mondiaux, les records vérifiés et un globe terrestre interactif.
 
+**Nouveau dans la version 2.58.0** :
+* **« La Fonderie Engloutie »** (EXTRÊME, Les Confins) : le combat seul du **Titan Mécanique**, giga-boss à
+  huit phases, une machine de guerre qui marche dans sa fonderie : **presses hydrauliques** qui s'abattent de
+  la voûte (une sur deux, toutes sauf une — la colonne épargnée s'éclaire en vert —, ou en marche ; des bandes
+  jaunes et noires les annoncent), **missiles à verrouillage** (les réticules vous suivent puis se
+  verrouillent), **tapis roulants** qui vous emportent vers lui ou loin de lui, poing-piston, canon rotatif,
+  laser, drones.
+* **Surchauffe** : chaque attaque fait monter sa jauge de chaleur (affichée à l'écran) ; pleine, il évacue sa
+  vapeur au ras du sol et son cœur reste à nu quelques secondes. **Calage** : à la fin de sa quatrième phase,
+  il cale ; tournez ses trois vannes avant qu'il redémarre et sa chaudière explose.
+* Son **histoire** avant le premier combat (« Le Dernier Quart ») ; ses succès et son Vestiaire (Fonte et
+  laiton, Rouages, Coulée d'acier, Engrenages, titre Briseur de titans).
+* Sa musique, **« Le Titan Mécanique »**, au juke-box (26 morceaux).
+
 **Nouveau dans la version 2.57.0** :
 * **« La Crypte des Noms »** (EXTRÊME, Les Confins) : le combat seul de la **Liche des Catacombes**,
   giga-boss à huit phases qui flotte au-dessus des **autels** de sa crypte et se téléporte de l'un à

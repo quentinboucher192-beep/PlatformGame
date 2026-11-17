@@ -131,6 +131,38 @@ public:
     int phylacteryAltar() const { return phylacteryAltar_; }
     /// The curse of its last « Maléfice » reached Nova (tests, statistics of display).
     bool hexLanded() const { return hexLanded_; }
+    /// The war machine (2.58, the Titan Mécanique): it walks; each attack it ends heats it (the
+    /// gauge of its phase, BossPhase::heat); full, it vents its steam: jets along the ground on both
+    /// sides, then its core laid bare (it takes more damage). At the end of a phase with a stall
+    /// (BossPhase::stall) it stalls: it cannot be hurt, its pressure valves appear on the valve spots
+    /// of its arena, and it restarts after a while (stallLeft); all valves turned before, its boiler
+    /// bursts. Its machinery: the presses of its arena (pressSpots), its conveyor belts (beltStrips).
+    bool isTitan() const { return hasTitan_; }
+    float heat() const { return heat_; }
+    bool venting() const { return titan_ == TitanStage::Vent; }
+    /// Venting, its jets over: its core is bare (it takes kVentVulnerability times the damage).
+    bool coreExposed() const;
+    float ventLeft() const { return venting() ? titanTimer_ : 0.0f; }
+    int vents() const { return vents_; }
+    bool stalled() const { return titan_ == TitanStage::Stall; }
+    float stallLeft() const { return stalled() ? titanTimer_ : 0.0f; }
+    int valvesTotal() const { return valvesTotal_; }
+    int valvesLeft() const;
+    const std::vector<uint32_t>& valves() const { return valves_; }
+    const std::vector<Vec2>& valveSpots() const { return valveSpots_; }
+    /// How its last stall ended: its boiler burst (every valve turned in time).
+    bool boilerBurst() const { return boilerBurst_; }
+    struct PressSpot {
+        float x = 0.0f;     // its middle
+        float half = 64.0f;
+        float top = 0.0f;   // the bottom of its housing
+        float floor = 0.0f; // the surface under it
+    };
+    const std::vector<PressSpot>& pressSpots() const { return pressSpots_; }
+    const std::vector<Rect>& beltStrips() const { return beltStrips_; }
+    /// The presses of its last « Presses hydrauliques » (indices in pressSpots), round by round, and
+    /// the column spared in a pattern « toutes sauf une » (-1: none).
+    const std::vector<std::vector<int>>& pressRounds() const { return pressRounds_; }
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -443,6 +475,43 @@ private:
     uint32_t phylactery_ = 0;   // the crystal (its uid)
     int phylacteryAltar_ = -1;
     bool hexLanded_ = false;
+
+    // The war machine (2.58, the Titan Mécanique): its machinery (presses, missiles, belts), its
+    // heat gauge and its vents, its stall and its valves, in TitanAttacks.cpp.
+    enum class TitanStage : uint8_t { None, Vent, Stall };
+    void titanBegin(GameWorld& w);  // wind-up: which presses, the reticles' launch
+    void titanStart(GameWorld& w);
+    void titanActive(GameWorld& w, float dt);
+    void titanEnd(GameWorld& w, bool cut = true);
+    void renderTitan(RenderContext& ctx, float prog) const;
+    void renderTitanFx(RenderContext& ctx) const;  // its heat gauge, its bare core, its stall
+    float titanFit(const GameWorld& w, const AttackDef& a, bool near, bool far, bool air) const;
+    /// A walker's brain (the golem's steps, GolemAttacks.cpp); venting or stalled, it stands.
+    void titanThink(GameWorld& w, float dt);
+    void findMachinery(GameWorld& w);  // the presses, the belts and the valve spots of its arena
+    void planPresses(GameWorld& w);
+    void titanAfterAttack(GameWorld& w);  // the heat of an attack; full, it vents
+    void beginVent(GameWorld& w);
+    void stepVent(GameWorld& w, float dt);
+    void beginStall(GameWorld& w, int next);
+    void stepStall(GameWorld& w, float dt);
+    void endStall(GameWorld& w, bool burst);
+    void clearValves(GameWorld& w);
+    bool hasTitan_ = false;
+    TitanStage titan_ = TitanStage::None;
+    float titanTimer_ = 0.0f;   // venting: seconds left; stalled: seconds before it restarts
+    float heat_ = 0.0f;
+    int vents_ = 0;
+    bool machineryKnown_ = false;
+    std::vector<PressSpot> pressSpots_;
+    std::vector<Rect> beltStrips_;
+    std::vector<Vec2> valveSpots_;
+    std::vector<uint32_t> valves_;
+    int valvesTotal_ = 0;
+    int valvesLeft_ = 0;
+    int stallNext_ = 0;
+    bool boilerBurst_ = false;
+    std::vector<std::vector<int>> pressRounds_;
 };
 
 }  // namespace cosmic

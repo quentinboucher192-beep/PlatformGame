@@ -38,7 +38,10 @@ constexpr Named kAttacks[] = {{"contact", "Contact"},           {"melee", "Corps
                               // 2.56: the phoenix (the Phénix)
                               {"sunbeam", "Colonnes solaires"},  {"sweep", "Lame d'ailes"},
                               // 2.57: the lich (the Liche)
-                              {"glyph", "Runes funestes"},       {"hex", "Maléfice"}};
+                              {"glyph", "Runes funestes"},       {"hex", "Maléfice"},
+                              // 2.58: the war machine (the Titan Mécanique)
+                              {"press", "Presses hydrauliques"}, {"missile", "Missiles à verrouillage"},
+                              {"belt", "Tapis roulants"}};
 static_assert(sizeof(kAttacks) / sizeof(kAttacks[0]) == static_cast<size_t>(AttackType::Count), "one label per attack type");
 }  // namespace
 
@@ -209,6 +212,17 @@ Json AttackDef::toJson() const {
         if (arms > 0) j["arms"] = arms;
         if (curse > 0) j["curse"] = curse;
     }
+    if (isTitanType()) {
+        // 2.58, written only for the war machine's types (the definitions of before keep their fingerprints).
+        j["count"] = count;
+        j["spread"] = spread;
+        j["burstInterval"] = burstInterval;
+        if (duration > 0) j["duration"] = duration;
+        if (pull > 0) j["pull"] = pull;
+        if (radius > 0) j["radius"] = radius;
+        if (height > 0) j["height"] = height;
+        if (arms > 0) j["arms"] = arms;
+    }
     return j;
 }
 
@@ -297,6 +311,9 @@ Json BossPhase::toJson() const {
     if (ashes) j["ashes"] = true;
     // 2.57: the Liche's phylactery (written only when set).
     if (!phylactery.empty()) j["phylactery"] = phylactery;
+    // 2.58: the Titan's heat gauge and its stall (written only when set).
+    if (heat > 0) j["heat"] = heat;
+    if (!stall.empty()) j["stall"] = stall;
     return j;
 }
 
@@ -320,6 +337,8 @@ BossPhase BossPhase::fromJson(const Json& j) {
     p.rebirth = std::clamp(jget<float>(j, "rebirth", 0.0f), 0.0f, 1.0f);
     p.ashes = jget<bool>(j, "ashes", false);
     p.phylactery = jstr(j, "phylactery", "");
+    p.heat = std::clamp(jget<float>(j, "heat", 0.0f), 0.0f, 1.0f);
+    p.stall = jstr(j, "stall", "");
     return p;
 }
 

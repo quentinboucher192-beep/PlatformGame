@@ -37,6 +37,29 @@ float BossHazards::Flood::level() const {
     return height * (1.0f - smooth((age - rise - hold) / std::max(0.05f, fall)));
 }
 
+float BossHazards::Press::headY() const {
+    // At rest under its housing; it sinks a little while it warns, falls (faster and faster),
+    // stays down, then rises.
+    const float rest = top + kHead;
+    if (safe) return rest;
+    if (age < warn) return rest + 6.0f * std::clamp(age / std::max(0.05f, warn), 0.0f, 1.0f);
+    const float low = rest + 6.0f;
+    if (age < warn + kFall) {
+        const float k = (age - warn) / kFall;
+        return low + (floor - low) * k * k;
+    }
+    if (age < warn + kFall + down) return floor;
+    const float k = std::clamp((age - warn - kFall - down) / kRise, 0.0f, 1.0f);
+    return floor + (rest - floor) * smooth(k);
+}
+
+float BossHazards::Belt::running() const {
+    if (age < warn) return 0.0f;
+    const float k = std::min(1.0f, (age - warn) / 0.25f);
+    const float end = std::clamp((warn + time - age) / 0.25f, 0.0f, 1.0f);
+    return std::min(k, end);
+}
+
 // ================================================================ creation
 
 void BossHazards::addPull(const Pull& p) {
@@ -90,6 +113,28 @@ void BossHazards::addRune(const Rune& r) {
             }
     runes_.push_back(r);
 }
+
+void BossHazards::addPress(const Press& p) { presses_.push_back(p); }
+
+void BossHazards::addMissile(const Missile& m) {
+    // A dozen at most per enemy: the oldest goes first.
+    if (missileCount(m.owner) >= 12)
+        for (auto it = missiles_.begin(); it != missiles_.end(); ++it)
+            if (it->owner == m.owner) {
+                missiles_.erase(it);
+                break;
+            }
+    missiles_.push_back(m);
+}
+
+void BossHazards::addBelt(const Belt& b) {
+    belts_.erase(std::remove_if(belts_.begin(), belts_.end(),
+                                [&](const Belt& o) { return o.strip.x == b.strip.x && o.strip.y == b.strip.y && o.strip.w == b.strip.w; }),
+                 belts_.end());
+    belts_.push_back(b);
+}
+
+void BossHazards::addSteam(const Steam& s) { steams_.push_back(s); }
 
 void BossHazards::addIce(GameWorld& w, uint32_t owner, const Rect& area, float grip, float seconds) {
     for (auto& i : ice_)
@@ -183,6 +228,10 @@ void BossHazards::removeOwner(GameWorld& w, uint32_t owner) {
     clouds_.erase(std::remove_if(clouds_.begin(), clouds_.end(), [&](const Cloud& c) { return c.owner == owner; }), clouds_.end());
     cracks_.erase(std::remove_if(cracks_.begin(), cracks_.end(), [&](const Crack& c) { return c.owner == owner; }), cracks_.end());
     runes_.erase(std::remove_if(runes_.begin(), runes_.end(), [&](const Rune& r) { return r.owner == owner; }), runes_.end());
+    presses_.erase(std::remove_if(presses_.begin(), presses_.end(), [&](const Press& p) { return p.owner == owner; }), presses_.end());
+    missiles_.erase(std::remove_if(missiles_.begin(), missiles_.end(), [&](const Missile& m) { return m.owner == owner; }), missiles_.end());
+    belts_.erase(std::remove_if(belts_.begin(), belts_.end(), [&](const Belt& b) { return b.owner == owner; }), belts_.end());
+    steams_.erase(std::remove_if(steams_.begin(), steams_.end(), [&](const Steam& s) { return s.owner == owner; }), steams_.end());
 }
 
 void BossHazards::clear(GameWorld& w) {
@@ -196,6 +245,10 @@ void BossHazards::clear(GameWorld& w) {
     winds_.clear();
     cracks_.clear();
     runes_.clear();
+    presses_.clear();
+    missiles_.clear();
+    belts_.clear();
+    steams_.clear();
 }
 
 bool BossHazards::hasIce(uint32_t owner) const {
@@ -218,6 +271,20 @@ int BossHazards::crackCount(uint32_t owner) const {
 }
 int BossHazards::runeCount(uint32_t owner) const {
     return static_cast<int>(std::count_if(runes_.begin(), runes_.end(), [&](const Rune& r) { return r.owner == owner; }));
+}
+int BossHazards::pressCount(uint32_t owner) const {
+    return static_cast<int>(std::count_if(presses_.begin(), presses_.end(), [&](const Press& p) { return p.owner == owner; }));
+}
+int BossHazards::missileCount(uint32_t owner) const {
+    return static_cast<int>(std::count_if(missiles_.begin(), missiles_.end(), [&](const Missile& m) { return m.owner == owner; }));
+}
+bool BossHazards::beltsRunning(uint32_t owner) const {
+    return std::any_of(belts_.begin(), belts_.end(), [&](const Belt& b) { return b.owner == owner; });
+}
+const BossHazards::Belt* BossHazards::beltOn(const Rect& strip) const {
+    for (const Belt& b : belts_)
+        if (std::abs(b.strip.x - strip.x) < 1.0f && std::abs(b.strip.y - strip.y) < 1.0f && std::abs(b.strip.w - strip.w) < 1.0f) return &b;
+    return nullptr;
 }
 
 // ================================================================= stepping
@@ -412,6 +479,82 @@ void BossHazards::fixedUpdate(GameWorld& w, float dt) {
         if (w.damagePlayer(dmg)) r.hit = true;
     }
     runes_.erase(std::remove_if(runes_.begin(), runes_.end(), [](const Rune& r) { return r.done(); }), runes_.end());
+
+    // 2.58, the Titan's presses: falling and down, the column under the head crushes (once).
+    for (Press& pr : presses_) {
+        const bool wasFalling = pr.age < pr.warn + Press::kFall;
+        pr.age += dt;
+        if (!pr.safe && wasFalling && pr.age >= pr.warn + Press::kFall) {
+            w.particles().emit("slam_dust", {pr.x, pr.floor}, 1.6f);
+            w.particles().emit("steam_burst", {pr.x, pr.top + 10.0f}, 0.6f);
+            w.playSound("sounds/golem_slam.wav", {pr.x, pr.floor}, 0.75f, 1.25f);
+            w.shake(0.18f);
+        }
+        if (!exposed || pr.hit || pr.damage <= 0.0f || !pr.crushing()) continue;
+        if (!pr.column().intersects(p.box)) continue;
+        DamageInfo dmg;
+        dmg.amount = pr.damage;
+        dmg.type = DamageType::Contact;
+        dmg.source = {pr.x + (p.center().x >= pr.x ? -1.0f : 1.0f) * pr.half * 0.5f, p.center().y + 6.0f};  // thrown out sideways
+        dmg.knockback = pr.knockback;
+        if (w.damagePlayer(dmg)) pr.hit = true;
+    }
+    presses_.erase(std::remove_if(presses_.begin(), presses_.end(), [](const Press& pr) { return pr.done(); }), presses_.end());
+
+    // 2.58, its missiles: the reticle follows Nova (slower than she runs), locks, the missile falls.
+    for (Missile& m : missiles_) {
+        const bool wasFlying = !m.landed();
+        if (!m.locked() && exposed) {
+            const Vec2 d = p.center() - m.at;
+            const float len = d.length();
+            const float step = Missile::kTrackSpeed * dt;
+            m.at = len <= step ? p.center() : m.at + d / len * step;
+        }
+        const bool wasTracking = !m.locked();
+        m.age += dt;
+        if (wasTracking && m.locked()) w.playSound("sounds/timer_tick.wav", m.at, 0.6f, 1.5f);
+        if (!(wasFlying && m.landed())) continue;
+        w.particles().emit("explosion", m.at, std::max(0.8f, m.radius / 30.0f));
+        w.playSound("sounds/bomb_explode.wav", m.at, 0.7f, 1.1f);
+        w.shake(0.2f);
+        if (!exposed || m.damage <= 0.0f || !Collision::circleIntersectsRect(m.at, m.radius, p.box)) continue;
+        DamageInfo dmg;
+        dmg.amount = m.damage;
+        dmg.type = DamageType::Explosion;
+        dmg.source = m.at + Vec2{0.0f, 8.0f};
+        dmg.knockback = m.knockback;
+        if (w.damagePlayer(dmg)) m.hit = true;
+    }
+    missiles_.erase(std::remove_if(missiles_.begin(), missiles_.end(), [](const Missile& m) { return m.done(); }), missiles_.end());
+
+    // 2.58, its belts: Nova standing on one is carried along (outside her own movement: running
+    // against it still wins, a jump frees her).
+    for (Belt& b : belts_) {
+        b.age += dt;
+        const float k = b.running();
+        if (!exposed || k <= 0.0f || !p.grounded()) continue;
+        const float feet = p.box.bottom();
+        const float cx = p.center().x;
+        if (std::abs(feet - b.strip.y) > 3.0f || cx < b.strip.x || cx > b.strip.right()) continue;
+        w.physics().move(p.box, Vec2{b.speed * k * dt, 0.0f}, p.moveOptions());
+    }
+    belts_.erase(std::remove_if(belts_.begin(), belts_.end(), [](const Belt& b) { return b.done(); }), belts_.end());
+
+    // 2.58, the jets of its vents: low along the ground, they scald (once) and push away.
+    for (Steam& s : steams_) {
+        const bool wasWarning = s.age < s.warn;
+        s.age += dt;
+        if (wasWarning && s.blasting()) w.playSound("sounds/lava_rise.wav", s.from, 0.7f, 1.6f);
+        if (!exposed || s.hit || s.damage <= 0.0f || !s.blasting()) continue;
+        if (!s.area().intersects(p.box)) continue;
+        DamageInfo dmg;
+        dmg.amount = s.damage;
+        dmg.type = DamageType::Contact;
+        dmg.source = {s.from.x - s.dir * 20.0f, p.center().y + 4.0f};
+        dmg.knockback = s.knockback;
+        if (w.damagePlayer(dmg)) s.hit = true;
+    }
+    steams_.erase(std::remove_if(steams_.begin(), steams_.end(), [](const Steam& s) { return s.done(); }), steams_.end());
 }
 
 void BossHazards::bendShot(Projectile& p, float dt) const {
@@ -955,6 +1098,162 @@ void BossHazards::render(RenderContext& ctx) const {
                                      : Color{215, 190, 255, static_cast<uint8_t>(150 * a * phase)};
             ctx.r.drawWorldLine(p0, p1, c, std::max(1.0f, 2.0f * px * ctx.r.view().scale), BlendMode::Additive);
         }
+    }
+
+    renderTitan(ctx);
+}
+
+void BossHazards::renderTitan(RenderContext& ctx) const {
+    // 2.58, the Titan's machinery. Display only (time-driven).
+    const float t = ctx.time;
+    const float line = std::max(1.0f, ctx.r.view().scale * 0.6f);
+
+    // Its belts: chevrons running along them (flashing before they start).
+    for (const Belt& b : belts_) {
+        const float k = b.running();
+        const float dir = b.speed >= 0.0f ? 1.0f : -1.0f;
+        const bool warn = b.age < b.warn;
+        const uint8_t a = warn ? ((static_cast<int>(t * 10.0f) % 2) ? 230 : 70) : static_cast<uint8_t>(120 + 110 * k);
+        const float shift = std::fmod(t * std::abs(b.speed) * (warn ? 0.0f : std::max(k, 0.3f)), 48.0f) * dir;
+        for (float x = b.strip.x + 16.0f; x < b.strip.right() - 8.0f; x += 48.0f) {
+            float cx = x + shift;
+            if (cx < b.strip.x + 6.0f) cx += 48.0f;
+            if (cx > b.strip.right() - 6.0f) cx -= 48.0f;
+            const Vec2 at{cx, b.strip.y - 9.0f};
+            ctx.r.drawWorldLine(at + Vec2{-dir * 4.0f, -4.0f}, at + Vec2{dir * 4.0f, 0.0f}, b.color.withAlpha(a), line * 1.6f, BlendMode::Additive);
+            ctx.r.drawWorldLine(at + Vec2{-dir * 4.0f, 4.0f}, at + Vec2{dir * 4.0f, 0.0f}, b.color.withAlpha(a), line * 1.6f, BlendMode::Additive);
+        }
+    }
+
+    // Its presses: stripes where they will stamp, the rod and the head coming down.
+    for (const Press& pr : presses_) {
+        const float x0 = pr.x - pr.half, w = pr.half * 2.0f;
+        if (pr.safe) {
+            // The column spared: a green light on the ground and up its column.
+            const float pulse = 0.5f + 0.5f * dmath::sin(t * 6.0f);
+            const float fade = std::min({1.0f, pr.age / 0.2f, (pr.warn + Press::kFall + pr.down + Press::kRise - pr.age) / 0.3f});
+            if (fade <= 0.0f) continue;
+            const uint8_t ga = static_cast<uint8_t>((120 + 100 * pulse) * fade);
+            ctx.r.fillWorldRect({x0 + 6.0f, pr.floor - 4.0f, w - 12.0f, 4.0f}, Color{90, 255, 140, ga}, BlendMode::Additive);
+            ctx.r.fillWorldRect({x0 + 10.0f, pr.top, w - 20.0f, pr.floor - pr.top}, Color{90, 255, 140, static_cast<uint8_t>(26 * fade)},
+                                BlendMode::Additive);
+            ctx.r.drawWorldGlow({pr.x, pr.floor - 6.0f}, pr.half * 0.7f, Color{90, 255, 140, static_cast<uint8_t>(90 * fade)});
+            ctx.lights.add({pr.x, pr.floor - 20.0f}, 90.0f, Color{90, 255, 140, 255});
+            continue;
+        }
+        if (pr.age < pr.warn) {
+            // Stripes on the ground, faster as it is about to fall; its column lit.
+            const float left = pr.warn - pr.age;
+            const bool on = left > 0.45f ? (static_cast<int>(t * 6.0f) % 2 == 0) : (static_cast<int>(t * 16.0f) % 2 == 0);
+            const uint8_t a = static_cast<uint8_t>(on ? 230 : 120);
+            const float y = pr.floor;
+            ctx.r.fillWorldRect({x0 + 4.0f, y - 5.0f, w - 8.0f, 5.0f}, Color{20, 18, 16, 200});
+            for (float x = x0 + 4.0f; x < x0 + w - 4.0f; x += 10.0f)
+                ctx.r.fillWorldRect({x, y - 5.0f, std::min(5.0f, x0 + w - 4.0f - x), 5.0f}, Color{255, 200, 40, a});
+            const float k = std::clamp(pr.age / std::max(0.05f, pr.warn), 0.0f, 1.0f);
+            ctx.r.fillWorldRect({x0 + 4.0f, pr.top, w - 8.0f, y - pr.top}, Color{255, 120, 40, static_cast<uint8_t>(10 + 24 * k)}, BlendMode::Additive);
+            ctx.r.drawWorldGlow({pr.x, y - 4.0f}, pr.half * 0.6f, pr.color.withAlpha(static_cast<uint8_t>(40 + 80 * k)));
+        }
+        // The rod (chrome) and the head (dark steel, a band of stripes, bolts).
+        float hy = pr.headY();
+        if (pr.age < pr.warn) hy += dmath::sin(t * 60.0f + pr.x) * 1.2f;  // it shudders
+        const float headTop = hy - Press::kHead;
+        if (headTop > pr.top + 1.0f) {
+            ctx.r.fillWorldRect({pr.x - 8.0f, pr.top, 16.0f, headTop - pr.top}, Color{36, 40, 48, 255});
+            ctx.r.fillWorldRect({pr.x - 6.0f, pr.top, 12.0f, headTop - pr.top}, Color{104, 112, 126, 255});
+            ctx.r.fillWorldRect({pr.x - 3.0f, pr.top, 2.0f, headTop - pr.top}, Color{176, 184, 196, 255});
+        }
+        ctx.r.fillWorldRect({x0, headTop, w, Press::kHead}, Color{40, 44, 52, 255});
+        ctx.r.fillWorldRect({x0 + 2.0f, headTop + 2.0f, w - 4.0f, Press::kHead - 4.0f}, Color{92, 100, 114, 255});
+        ctx.r.fillWorldRect({x0 + 2.0f, headTop + 2.0f, w - 4.0f, 3.0f}, Color{150, 160, 176, 255});
+        for (float x = x0 + 4.0f; x < x0 + w - 4.0f; x += 12.0f)
+            ctx.r.fillWorldRect({x, hy - 9.0f, std::min(6.0f, x0 + w - 4.0f - x), 5.0f}, Color{240, 190, 40, 255});
+        for (float bx : {x0 + 6.0f, x0 + w - 6.0f}) ctx.r.fillWorldCircle({bx, headTop + 7.0f}, 2.0f, Color{200, 170, 90, 255});
+        if (pr.crushing()) {
+            ctx.r.fillWorldRect({x0 - 2.0f, hy - 3.0f, w + 4.0f, 3.0f}, pr.color.withAlpha(180), BlendMode::Additive);
+            ctx.lights.add({pr.x, hy - 8.0f}, 70.0f, pr.color);
+        }
+    }
+
+    // Its missiles: the reticle (yellow while it follows, red once locked, the ring of the time
+    // left), the missile falling in the last part of its flight, the flash of its blast.
+    for (const Missile& m : missiles_) {
+        const bool locked = m.locked();
+        const float spin = t * (locked ? 1.5f : 4.0f) + static_cast<float>(m.index);
+        const Color c = locked ? Color{255, 70, 60, 255} : Color{255, 210, 60, 255};
+        if (!m.landed()) {
+            const float appear = std::min(1.0f, m.age / 0.2f);
+            const uint8_t a = static_cast<uint8_t>(230 * appear);
+            const float r = m.radius;
+            ctx.r.drawWorldCircle(m.at, r, c.withAlpha(static_cast<uint8_t>(a * 0.8f)), line * 1.4f);
+            ctx.r.drawWorldCircle(m.at, r * 0.35f, c.withAlpha(a), line);
+            for (int k = 0; k < 4; ++k) {
+                const float ang = spin + static_cast<float>(k) * 1.5707963f;
+                const Vec2 d{dmath::cos(ang), dmath::sin(ang)};
+                ctx.r.drawWorldLine(m.at + d * (r * 0.55f), m.at + d * (r * 1.15f), c.withAlpha(a), line * 1.6f, BlendMode::Additive);
+            }
+            if (locked) {
+                const float left = std::clamp(1.0f - (m.age - m.track) / std::max(0.05f, m.flight), 0.0f, 1.0f);
+                const int seg = 24, shown = std::max(1, static_cast<int>(seg * left));
+                for (int i = 0; i < shown; ++i) {
+                    const float a0 = -1.5707963f + 6.2831853f * static_cast<float>(i) / seg;
+                    const float a1 = -1.5707963f + 6.2831853f * static_cast<float>(i + 1) / seg;
+                    ctx.r.drawWorldLine(m.at + Vec2{dmath::cos(a0), dmath::sin(a0)} * (r + 5.0f),
+                                        m.at + Vec2{dmath::cos(a1), dmath::sin(a1)} * (r + 5.0f), Color{255, 90, 70, 220}, line * 1.3f,
+                                        BlendMode::Additive);
+                }
+                ctx.r.fillWorldCircle(m.at, r, Color{255, 60, 40, static_cast<uint8_t>(26 + 30 * (1.0f - left))});
+                // The missile comes down in the last 0.45 s of its flight.
+                const float fall = m.age - (m.track + m.flight - 0.45f);
+                if (fall > 0.0f) {
+                    const float k = std::clamp(fall / 0.45f, 0.0f, 1.0f);
+                    const Vec2 tip = m.at + Vec2{-40.0f * (1.0f - k), -340.0f * (1.0f - k * k)};
+                    const Vec2 tail = tip + Vec2{-12.0f, -40.0f};
+                    ctx.r.drawWorldLine(tail, tip, Color{60, 64, 74, 255}, std::max(2.0f, 3.6f * line));
+                    ctx.r.drawWorldLine(tail, tip, Color{170, 178, 190, 255}, std::max(1.0f, 1.6f * line));
+                    ctx.r.drawWorldGlow(tail, 9.0f, Color{255, 170, 70, 220});
+                    ctx.r.drawWorldGlow(tail + Vec2{-6.0f, -18.0f}, 7.0f, Color{200, 200, 210, 120});
+                    ctx.lights.add(tail, 60.0f, Color{255, 170, 70, 255});
+                }
+            }
+            // Its launch: a streak rising out of the Titan's back.
+            if (m.age < 0.5f) {
+                const float k = m.age / 0.5f;
+                const Vec2 a0 = m.from + Vec2{0.0f, -260.0f * k * k}, a1 = a0 + Vec2{0.0f, 26.0f};
+                ctx.r.drawWorldLine(a0, a1, Color{220, 224, 232, static_cast<uint8_t>(230 * (1.0f - k))}, std::max(1.0f, 2.4f * line));
+                ctx.r.drawWorldGlow(a1, 8.0f, Color{255, 170, 70, static_cast<uint8_t>(220 * (1.0f - k))});
+            }
+            ctx.lights.add(m.at, 40.0f, c);
+        } else {
+            const float k = std::clamp((m.age - m.track - m.flight) / Missile::kBoom, 0.0f, 1.0f);
+            ctx.r.drawWorldGlow(m.at, m.radius * (1.0f + k), Color{255, 200, 120, static_cast<uint8_t>(220 * (1.0f - k))});
+            ctx.r.drawWorldCircle(m.at, m.radius * (0.6f + 0.8f * k), Color{255, 140, 60, static_cast<uint8_t>(200 * (1.0f - k))}, line * 2.0f);
+            ctx.lights.add(m.at, m.radius * 3.0f, Color{255, 160, 80, static_cast<uint8_t>(255 * (1.0f - k))});
+        }
+    }
+
+    // The jets of its vents: puffs while they hiss, then a roaring jet of white steam.
+    for (const Steam& s : steams_) {
+        const Rect r = s.area();
+        if (s.age < s.warn) {
+            const float k = s.age / std::max(0.05f, s.warn);
+            for (int i = 0; i < 3; ++i) {
+                const Vec2 at = s.from + Vec2{s.dir * (8.0f + 10.0f * static_cast<float>(i)) * k, -6.0f - 3.0f * static_cast<float>(i)};
+                ctx.r.drawWorldGlow(at, 6.0f + 4.0f * k, Color{240, 240, 245, static_cast<uint8_t>(90 + 60 * k)});
+            }
+            continue;
+        }
+        const float end = s.warn + s.time;
+        const float fade = s.age < end ? std::min(1.0f, (s.age - s.warn) / 0.1f) : std::clamp(1.0f - (s.age - end) / 0.4f, 0.0f, 1.0f);
+        if (fade <= 0.0f) continue;
+        for (int i = 0; i < 9; ++i) {
+            const float u = (static_cast<float>(i) + 0.5f) / 9.0f;
+            const float wob = dmath::sin(t * 30.0f + static_cast<float>(i) * 1.7f) * 2.5f;
+            const Vec2 at{s.from.x + s.dir * u * s.length, s.from.y - s.height * (0.35f + 0.25f * u) + wob};
+            ctx.r.drawWorldGlow(at, s.height * (0.45f + 0.5f * u), Color{245, 245, 250, static_cast<uint8_t>(150 * fade * (1.0f - 0.5f * u))});
+        }
+        ctx.r.fillWorldRect(r, Color{255, 255, 255, static_cast<uint8_t>(40 * fade)}, BlendMode::Additive);
+        ctx.lights.add(r.center(), 70.0f, Color{230, 230, 240, static_cast<uint8_t>(200 * fade)});
     }
 }
 

@@ -1881,6 +1881,18 @@
    ]
   },
   {
+   "fr": "Annonce (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Annonce de chaque presse (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Annoncer le combat (titres)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -2216,6 +2228,18 @@
    ]
   },
   {
+   "fr": "Arc",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Arc : un soin",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
    "fr": "Architecte",
    "where": [
     "data/achievements/achievements.json",
@@ -2319,6 +2343,12 @@
    "fr": "Archéologue",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Arcs électriques",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -2992,7 +3022,7 @@
    ]
   },
   {
-   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses, un phénix d'étoiles renaît de ses cendres sur son plus haut sommet et une liche veille sur les noms des morts dans ses catacombes.",
+   "fr": "Au-delà de l'étoile morte, au bord du système, un monde de verre noir craquelé sur un feu vivant. Ses cendres tombent d'un ciel pourpre ; un dragon d'obsidienne y garde la dernière frontière, un golem plus ancien que les planètes veille sous sa croûte, un kraken hante les mers noires de ses abysses, un phénix d'étoiles renaît de ses cendres sur son plus haut sommet, une liche veille sur les noms des morts dans ses catacombes et un titan de fer fait encore tourner une fonderie engloutie.",
    "where": [
     "data/planets/confins.json"
    ]
@@ -4623,6 +4653,12 @@
    ]
   },
   {
+   "fr": "Battre chaque phase du Titan Mécanique sans être touché (pas forcément dans le même combat).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Battre son meilleur segment entre deux points de sauvegarde.",
    "where": [
     "data/achievements/achievements.json"
@@ -5303,6 +5339,12 @@
    ]
   },
   {
+   "fr": "Briseur de titans",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Brisez la dalle fissurée (Frappe sismique) pour descendre dans la salle des leviers.",
    "where": [
     "data/levels/glacior_03.json"
@@ -5447,6 +5489,12 @@
    "fr": "Butin",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Bâti d'une presse hydraulique, sous la voûte. Dans l'arène du Titan Mécanique, sa tête s'abat sur la surface située dessous quand le Titan la déclenche (des bandes jaunes et noires l'annoncent).",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -5674,6 +5722,12 @@
    ]
   },
   {
+   "fr": "Calage : à la fin de sa quatrième phase, le Titan cale et devient intouchable ; trois vannes de pression apparaissent dans la fonderie. Tournez-les toutes (en les frappant) avant qu'il redémarre et sa chaudière explose ; sinon, il repart avec une onde de pression à sauter.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Calcul de l'arène…",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -5707,6 +5761,12 @@
    "fr": "calcul…",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cale à la fin : tournez les vannes",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -5769,6 +5829,18 @@
    "fr": "Calque {0}",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Calé : {0} vanne à tourner · {1} s",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Calé : {0} vannes à tourner · {1} s",
+   "where": [
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -5835,6 +5907,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Canon rotatif",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -6986,6 +7064,12 @@
    "fr": "Chacun de ses pas fait trembler les Confins !",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Chaleur du Titan",
+   "where": [
+    "game/gameplay/Hud.cpp"
    ]
   },
   {
@@ -8440,6 +8524,12 @@
    ]
   },
   {
+   "fr": "Combat contre le Titan",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
    "fr": "Combat contre Monolithe",
    "where": [
     "data/music/tracks.json"
@@ -9011,6 +9101,12 @@
    "fr": "Conduit de la presse",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Conduite de vapeur (le bas du rectangle sur une surface). Quand le Titan Mécanique cale, une vanne apparaît ici : la tourner (la frapper) avant qu'il redémarre fait exploser sa chaudière.",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
    ]
   },
   {
@@ -10023,6 +10119,12 @@
    ]
   },
   {
+   "fr": "Coulée d'acier",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Coulée de lave",
    "where": [
     "data/enemies/astrarque.json",
@@ -10143,6 +10245,12 @@
    "fr": "Couronne de photophores",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Couronne de plasma",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -10897,6 +11005,24 @@
    ]
   },
   {
+   "fr": "Cœur nucléaire",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Cœur nucléaire ! Le Titan donne tout !",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Cœur nucléaire : l'arène se resserre",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
    "fr": "Cœurs",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -11130,6 +11256,12 @@
    ]
   },
   {
+   "fr": "De petits engrenages de laiton tournent derrière Nova, entre quelques bouffées de vapeur.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "DE RETOUR EN LIGNE",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -11268,6 +11400,12 @@
    ]
   },
   {
+   "fr": "Demi-largeur (0 = celle de la presse)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Demi-largeur d'une colonne",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -11376,6 +11514,12 @@
    ]
   },
   {
+   "fr": "Dernier laser",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "dernier niveau {0}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -11467,6 +11611,12 @@
    ]
   },
   {
+   "fr": "Dernière onde",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "dernière partie {0}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -11476,6 +11626,12 @@
    "fr": "Dernière pluie d'os",
    "where": [
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Dernière salve",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -11515,6 +11671,12 @@
    ]
   },
   {
+   "fr": "Dernières presses",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Dernières runes",
    "where": [
     "data/enemies/liche.json"
@@ -11524,6 +11686,12 @@
    "fr": "Derrière Nova quand elle court ou fonce, et derrière ses fantômes. À donner en récompense : Calendrier des défis › Récompenses.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Des arcs électriques courent sur sa carcasse !",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -11554,6 +11722,12 @@
    "fr": "Des compteurs par jour : temps joué, morts, menaces et esquives, attaques lancées et réussies (par attaque), origine des coups reçus, étoiles des succès. Par niveau : passages et morts dans chacune des 40 tranches. Par boss : chaque tentative (part des points de vie retirés, phase atteinte, attaque fatale). Par niveau classique : les temps de chaque segment, vos arrivées, votre record et votre somme des meilleurs. Aucune donnée personnelle, aucune position.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Des engrenages tournent autour du portail, puis une coulée d'acier en fusion jaillit en gerbe d'étincelles dans un panache de vapeur.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -12317,9 +12491,21 @@
    ]
   },
   {
+   "fr": "Drone du Titan",
+   "where": [
+    "data/enemies/drone_titan.json"
+   ]
+  },
+  {
    "fr": "Drone sentinelle",
    "where": [
     "data/enemies/sentinel.json"
+   ]
+  },
+  {
+   "fr": "Drones de combat",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -12603,7 +12789,7 @@
    ]
   },
   {
-   "fr": "Débloquer les 25 morceaux du juke-box.",
+   "fr": "Débloquer les 26 morceaux du juke-box.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -12775,6 +12961,7 @@
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
     "data/levels/confins_05.json",
+    "data/levels/confins_06.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -12805,6 +12992,7 @@
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
     "data/levels/confins_05.json",
+    "data/levels/confins_06.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -13403,6 +13591,12 @@
    "fr": "Délié : la prochaine connexion, depuis n'importe quel ordinateur, le liera de nouveau.",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Démarrage",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -14102,6 +14296,12 @@
    ]
   },
   {
+   "fr": "En marche, l'une après l'autre",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "en mouvement",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -14282,6 +14482,7 @@
   {
    "fr": "Engrenages",
    "where": [
+    "data/cosmetics/cosmetics.json",
     "data/enemies/archon_catacombs.json",
     "data/enemies/echo_archon_catacombs.json"
    ]
@@ -14667,6 +14868,18 @@
   },
   {
    "fr": "Entre deux runes (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Entre deux vagues ou deux presses (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Entre deux verrouillages (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
@@ -15807,6 +16020,12 @@
    ]
   },
   {
+   "fr": "Fin de quart",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "fin de sauvegarde incomplète",
    "where": [
     "server/src/backups.ts"
@@ -16122,6 +16341,12 @@
    "fr": "Fondu",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Fonte et laiton",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -16604,6 +16829,7 @@
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
     "data/levels/confins_05.json",
+    "data/levels/confins_06.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -16844,6 +17070,12 @@
    "fr": "Geysers de roche",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Geysers de vapeur",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -17227,6 +17459,12 @@
    "fr": "Grimpez aux lianes (Haut) ou rebondissez entre les murs avec le saut mural.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Gris acier riveté, visière ambre de chaudière, écharpe de laiton : la tenue du Titan.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -19398,6 +19636,12 @@
    ]
   },
   {
+   "fr": "Juke-box : la musique du combat, « Le Titan Mécanique » (26 morceaux à débloquer).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Jump",
    "where": [
     "game/player/Player.cpp"
@@ -20071,6 +20315,24 @@
    ]
   },
   {
+   "fr": "LA FONDERIE ENGLOUTIE",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "La Fonderie Engloutie",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "La Fonderie Engloutie : le Titan seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
    "fr": "La fonderie entière s'embrase !",
    "where": [
     "data/enemies/echo_forge_core.json",
@@ -20455,6 +20717,12 @@
    ]
   },
   {
+   "fr": "La rouille rongea ses plaques, ses pistons s'usèrent, sa chaudière surchauffa. Jamais il ne s'arrêta.",
+   "where": [
+    "data/stories/titan.json"
+   ]
+  },
+  {
    "fr": "la Ruée aérienne",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -20657,6 +20925,12 @@
    "fr": "la Téléportation",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "La vapeur monte : la fonderie tourne à plein !",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -20870,6 +21144,7 @@
   {
    "fr": "Laser",
    "where": [
+    "data/enemies/titan.json",
     "ui/screens/CreatureArt.cpp"
    ]
   },
@@ -20886,6 +21161,12 @@
    "fr": "Laser ancien",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Laser du canon",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -21296,6 +21577,12 @@
    "fr": "Le dernier gardien des Anciens n'a jamais quitté son trône de glace.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Le Dernier Quart",
+   "where": [
+    "data/stories/titan.json"
    ]
   },
   {
@@ -21821,6 +22108,12 @@
    ]
   },
   {
+   "fr": "Le métal en fusion referme la fonderie !",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
    "fr": "LE NID DE CENDRES",
    "where": [
     "data/levels/confins_04.json"
@@ -22041,6 +22334,12 @@
    "fr": "Le premier joueur qui termine un niveau EXTRÊME en devient le vérificateur ; les autres participants et l'auteur sont prévenus. Le classement s'ouvre depuis la fiche du niveau, CLASSEMENTS et l'écran de fin.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le premier suit le joueur (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -22308,6 +22607,12 @@
    ]
   },
   {
+   "fr": "Le soir où l'étoile du centre s'effondra, le contremaître lui confia les feux, jusqu'à leur retour.",
+   "where": [
+    "data/stories/titan.json"
+   ]
+  },
+  {
    "fr": "Le sol craque par endroits... Une Frappe sismique (Bas + Attaque en l'air) le briserait.",
    "where": [
     "data/levels/glacior_01.json"
@@ -22362,6 +22667,72 @@
    "fr": "Le Tir chargé coûte de l'énergie : ramassez les orbes d'énergie.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Le Titan : ses presses hydrauliques s'abattent de la voûte (une sur deux, toutes sauf une — la colonne épargnée s'éclaire en vert —, ou en marche, l'une après l'autre ; des bandes jaunes et noires les annoncent), ses missiles à verrouillage (les réticules vous suivent puis se verrouillent : bougez), ses tapis roulants vous emportent vers lui ou loin de lui (toujours moins vite que vous ne courez ; un saut vous libère), son poing-piston, son canon rotatif, son laser, ses drones, et sa dernière salve à survivre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le Titan cale !",
+   "where": [
+    "game/enemies/TitanAttacks.cpp"
+   ]
+  },
+  {
+   "fr": "LE TITAN MÉCANIQUE",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Le Titan Mécanique",
+   "where": [
+    "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Le Titan Mécanique se met en marche.",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Le Titan Mécanique travaille toujours. Pour lui, chaque visiteur est un voleur venu éteindre ses feux.",
+   "where": [
+    "data/stories/titan.json"
+   ]
+  },
+  {
+   "fr": "Le Titan Mécanique.",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Le Titan redémarre : sautez l'onde !",
+   "where": [
+    "game/enemies/TitanAttacks.cpp"
+   ]
+  },
+  {
+   "fr": "LE TITAN S'ARRÊTE",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Le Titan s'arrête dans un dernier soupir de vapeur. La sortie est ouverte.",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Le Titan s'est arrêté. Dans la fonderie, les feux s'éteignent enfin.",
+   "where": [
+    "data/levels/confins_06.json"
    ]
   },
   {
@@ -22553,7 +22924,7 @@
    ]
   },
   {
-   "fr": "Les 25 morceaux du juke-box débloqués.",
+   "fr": "Les 26 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -22662,6 +23033,7 @@
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
     "data/levels/confins_05.json",
+    "data/levels/confins_06.json",
     "data/music/tracks.json",
     "data/planets/confins.json"
    ]
@@ -22670,6 +23042,12 @@
    "fr": "Les Confins — La Crypte des Noms",
    "where": [
     "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Les Confins — La Fonderie Engloutie",
+   "where": [
+    "data/levels/confins_06.json"
    ]
   },
   {
@@ -22710,6 +23088,12 @@
   },
   {
    "fr": "Les Confins, quatrième niveau : « Le Nid de Cendres » (EXTRÊME) : le combat seul du Phénix Stellaire, giga-boss à huit phases qui plane. Une seule vie, aucun checkpoint ; ses perchoirs de braise brûlent sous vos pieds et renaissent.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les Confins, sixième niveau : « La Fonderie Engloutie » (EXTRÊME) : le combat seul du Titan Mécanique, giga-boss à huit phases, une machine de guerre qui marche dans sa fonderie. Une seule vie, aucun checkpoint ; le sol cède sur les cuves de métal en fusion à la cinquième phase.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -22944,6 +23328,12 @@
   },
   {
    "fr": "Les huit runes",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Les huit régimes",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -23790,6 +24180,18 @@
    ]
   },
   {
+   "fr": "Loin de lui",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Loin de lui  ·  {0} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Long-courrier",
    "where": [
     "data/achievements/achievements.json"
@@ -24259,6 +24661,12 @@
    "fr": "Mar",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Marche des presses",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -25216,6 +25624,19 @@
    ]
   },
   {
+   "fr": "Missiles",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Missiles à verrouillage",
+   "where": [
+    "data/enemies/titan.json",
+    "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
    "fr": "Mode",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -25782,6 +26203,12 @@
     "ui/online/CommentsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Motif : 1 une sur deux, 2 sauf une, 3 en marche",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -28128,6 +28555,12 @@
    ]
   },
   {
+   "fr": "Obtenir l'or dans La Fonderie Engloutie.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Obtenir l'or dans La Fosse des Abysses.",
    "where": [
     "data/achievements/achievements.json"
@@ -28189,6 +28622,12 @@
   },
   {
    "fr": "Obtenir le platine dans La Crypte des Noms.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Obtenir le platine dans La Fonderie Engloutie.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -28304,6 +28743,12 @@
    ]
   },
   {
+   "fr": "Obus",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Octobre",
    "where": [
     "ui/screens/ChallengeUi.cpp",
@@ -28413,6 +28858,12 @@
    "fr": "Onde tellurique",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Onde électrique",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -28563,6 +29014,12 @@
   },
   {
    "fr": "Or de la crypte",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Or de la fonderie",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -29797,6 +30254,12 @@
    ]
   },
   {
+   "fr": "Pas une rayure",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Pas utile",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -30142,6 +30605,12 @@
    "fr": "Personne n'est encore classé. Toute tentative compte, même sans arriver au bout.",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Personne ne revint. Siècle après siècle, le Titan garda les feux allumés, et la roche engloutit la fonderie.",
+   "where": [
+    "data/stories/titan.json"
    ]
   },
   {
@@ -30744,6 +31213,7 @@
   {
    "fr": "Plasma",
    "where": [
+    "data/enemies/titan.json",
     "game/gameplay/BeamRenderer.cpp"
    ]
   },
@@ -30826,6 +31296,12 @@
   },
   {
    "fr": "Platine de la crypte",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Platine de la fonderie",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -30987,6 +31463,12 @@
     "data/enemies/astrarque.json",
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Pluie de missiles",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -31251,6 +31733,12 @@
    "fr": "Poids (probabilité)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Poing-piston",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -31703,6 +32191,12 @@
    ]
   },
   {
+   "fr": "Pour avoir arrêté le Titan Mécanique.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Pour avoir créé un niveau.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -31760,6 +32254,12 @@
    "fr": "pour l'utiliser",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Pour les tâches les plus lourdes, ils bâtirent un colosse d'acier et de laiton : le Titan.",
+   "where": [
+    "data/stories/titan.json"
    ]
   },
   {
@@ -32117,6 +32617,19 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Presse du Titan",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Presses hydrauliques",
+   "where": [
+    "data/enemies/titan.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -33464,6 +33977,7 @@
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
     "data/levels/confins_05.json",
+    "data/levels/confins_06.json",
     "data/levels/noyau_03.json"
    ]
   },
@@ -33603,6 +34117,12 @@
     "data/enemies/astrarque.json",
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Rayon de l'explosion",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -35116,6 +35636,12 @@
    ]
   },
   {
+   "fr": "Reste en bas (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "retard",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -35600,6 +36126,12 @@
    "fr": "Rouage primordial",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Rouages",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -36605,6 +37137,12 @@
    ]
   },
   {
+   "fr": "Sa cuirasse saute : le Titan surchauffe !",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Sa cuirasse éclate : le magma monte des fissures !",
    "where": [
     "data/enemies/monolithe.json"
@@ -36754,6 +37292,12 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json"
+   ]
+  },
+  {
+   "fr": "Salve de missiles",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -37500,6 +38044,12 @@
    ]
   },
   {
+   "fr": "Sens (0 vers lui, 1 loin de lui)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Sensibilité",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -38207,9 +38757,21 @@
    ]
   },
   {
+   "fr": "Son canon chauffe au rouge : gare au laser !",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Son cœur de cristal vous attire !",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Son cœur de plasma s'emballe !",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -38226,6 +38788,12 @@
   },
   {
    "fr": "Son histoire, avant le premier combat : « la Lanterne », le petit poulpe des mers enfouies qui devint le Kraken.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Son histoire, avant le premier combat : « Le Dernier Quart », la machine à qui l'on avait demandé de garder les feux allumés.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -38499,9 +39067,21 @@
    ]
   },
   {
+   "fr": "Sous les Confins grondait une fonderie. Mille ouvriers y coulaient l'acier des vaisseaux du système.",
+   "where": [
+    "data/stories/titan.json"
+   ]
+  },
+  {
    "fr": "Sous les Confins, des catacombes de verre noir où brûlent des bougies d'âme : la Liche des Catacombes et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "Sous les Confins, une fonderie engloutie où les feux n'ont jamais été éteints : le Titan Mécanique et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
+   "where": [
+    "data/levels/confins_06.json"
    ]
   },
   {
@@ -39206,6 +39786,12 @@
    ]
   },
   {
+   "fr": "Succès du Titan (6 nouveaux, 28 étoiles) ; au Vestiaire : la combinaison Fonte et laiton (710 étoiles), la traînée Rouages (720), l'effet de victoire Coulée d'acier (730), le cadre Engrenages et le titre Briseur de titans.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Succès débloqué : {0}",
    "where": [
     "game/GameServices.cpp"
@@ -39582,10 +40168,70 @@
    ]
   },
   {
+   "fr": "Surchauffe",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Surchauffe : chaque attaque du Titan fait monter sa jauge de chaleur (affichée à l'écran) ; pleine, il évacue sa vapeur en jets au ras du sol, puis son cœur est à nu : il subit 80 % de dégâts en plus.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Surchauffe : le sol cède sur les cuves de métal en fusion",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Surchauffe : son cœur est à nu · {0} s",
+   "where": [
+    "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Surchauffe après {0} attaques",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "Suriname",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Surpression : sa chaudière explose !",
+   "where": [
+    "game/enemies/TitanAttacks.cpp"
+   ]
+  },
+  {
+   "fr": "Surtension",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Surtension ! Ses missiles vous verrouillent !",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Surtension : un soin",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Surtension : un soin vous attend sur la tour de gauche.",
+   "where": [
+    "data/levels/confins_06.json"
    ]
   },
   {
@@ -40140,6 +40786,31 @@
    "fr": "Tapez {0} pour confirmer",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Tapis en reflux",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Tapis roulant du Titan",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Tapis roulant posé sur le sol (le haut du rectangle sur la surface). Dans l'arène du Titan Mécanique, il emporte le joueur quand le Titan le met en marche, toujours moins vite qu'il ne court.",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Tapis roulants",
+   "where": [
+    "data/enemies/titan.json",
+    "game/enemies/EnemyDefinition.cpp"
    ]
   },
   {
@@ -40740,6 +41411,12 @@
    ]
   },
   {
+   "fr": "Terminer La Fonderie Engloutie, aux Confins.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Terminer La Fosse des Abysses, aux Confins.",
    "where": [
     "data/achievements/achievements.json"
@@ -40795,13 +41472,13 @@
    ]
   },
   {
-   "fr": "Terminer les 24 niveaux de la campagne sans mourir.",
+   "fr": "Terminer les 25 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
    ]
   },
   {
-   "fr": "Terminer les 24 niveaux de la campagne.",
+   "fr": "Terminer les 25 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -40975,6 +41652,7 @@
     "data/levels/confins_03.json",
     "data/levels/confins_04.json",
     "data/levels/confins_05.json",
+    "data/levels/confins_06.json",
     "data/levels/glacior_01.json",
     "data/levels/glacior_02.json",
     "data/levels/glacior_03.json",
@@ -41273,6 +41951,24 @@
    "fr": "Tisseuse de givre",
    "where": [
     "data/enemies/frost_weaver.json"
+   ]
+  },
+  {
+   "fr": "Titan",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Titan Mécanique",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Titan vaincu",
+   "where": [
+    "data/levels/confins_06.json"
    ]
   },
   {
@@ -41576,6 +42272,12 @@
    ]
   },
   {
+   "fr": "Tournez les vannes",
+   "where": [
+    "game/enemies/TitanAttacks.cpp"
+   ]
+  },
+  {
    "fr": "Tous",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -41758,6 +42460,12 @@
    ]
   },
   {
+   "fr": "Toutes les presses sauf une",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Toutes les récompenses des paliers sont débloquées",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -41767,6 +42475,12 @@
    "fr": "Toutes les étoiles : le cadre ultime.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Toutes sauf une",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -42811,6 +43525,12 @@
    ]
   },
   {
+   "fr": "Un drone de combat lancé du dos du Titan Mécanique : il garde ses distances et tire des éclairs.",
+   "where": [
+    "data/enemies/drone_titan.json"
+   ]
+  },
+  {
    "fr": "un défi (du jour, de la semaine ou du mois)",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -43265,6 +43985,12 @@
    ]
   },
   {
+   "fr": "Une couronne d'engrenages de laiton qui tournent autour du cadre, des rivets d'acier entre eux : pour avoir vaincu le Titan sans être touché.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Une couronne d'or sertie de trois gemmes au-dessus de l'avatar.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -43334,6 +44060,12 @@
    "fr": "Une lueur de nacre monte de son cœur !",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Une machine de guerre restée en marche au fond d'une fonderie engloutie des Confins. Huit phases, huit lumières : ses presses, ses tapis, ses missiles, sa surchauffe et son calage, et sa dernière salve à survivre.",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -43548,9 +44280,27 @@
    ]
   },
   {
+   "fr": "Une seule vie. Une machine qui n'a jamais cessé de travailler. Huit phases.",
+   "where": [
+    "data/levels/confins_06.json"
+   ]
+  },
+  {
    "fr": "Une seule vie. Une étoile morte. Huit phases.",
    "where": [
     "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "Une sur deux, {0} vague",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Une sur deux, {0} vagues",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -43623,6 +44373,12 @@
    "fr": "une valeur par boss ({0}) et par embuscade ({1}) du tracé du niveau",
    "where": [
     "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Une vanne de la fonderie du Titan, qui apparaît quand il cale. Tournez-les toutes (en les frappant) avant qu'il redémarre : sa chaudière explose.",
+   "where": [
+    "data/enemies/vanne.json"
    ]
   },
   {
@@ -43916,6 +44672,12 @@
    ]
   },
   {
+   "fr": "Vagues (une sur deux)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "vagues différentes du replay",
    "where": [
     "server/src/race.ts"
@@ -44132,6 +44894,18 @@
    ]
   },
   {
+   "fr": "Vaincre le Titan Mécanique sans être touché.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Titan Mécanique.",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Vaincre les 12 gardiens des planètes.",
    "where": [
     "data/achievements/achievements.json"
@@ -44329,10 +45103,28 @@
    ]
   },
   {
+   "fr": "Vanne de pression",
+   "where": [
+    "data/enemies/vanne.json"
+   ]
+  },
+  {
+   "fr": "Vanne de pression du Titan",
+   "where": [
+    "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
    "fr": "Vanuatu",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Vapeur",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -44478,6 +45270,18 @@
    "fr": "Verrouillée",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vers lui",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vers lui  ·  {0} s",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -45089,6 +45893,12 @@
    ]
   },
   {
+   "fr": "Vitesse des tapis (px/s, 130 au plus)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Vitesse des tirs",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -45247,6 +46057,12 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "Vol après le verrouillage (s)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -47708,6 +48524,18 @@
    ]
   },
   {
+   "fr": "{0} missile verrouillé",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} missiles verrouillés",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} Mo",
    "where": [
     "ui/screens/AdminBackups.cpp",
@@ -49762,6 +50590,12 @@
     "data/enemies/cryo_drone.json",
     "data/enemies/forge_drone.json",
     "data/enemies/sentinel.json"
+   ]
+  },
+  {
+   "fr": "Éclair de drone",
+   "where": [
+    "data/enemies/drone_titan.json"
    ]
   },
   {

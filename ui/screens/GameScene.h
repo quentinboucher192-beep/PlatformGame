@@ -160,6 +160,7 @@ private:
     // is due or being told; `storyOpen_`: its scene was opened (cleared when it closes).
     void checkBossStory();
     std::string storyBoss_;
+    bool forcedPhase_ = false;  // 2.58: a capture that forced a boss phase (still one once the phase is reached)
     bool storyOpen_ = false;
     /// A boss out of view: a textured arrow on the screen's border, turned towards it.
     void drawBossArrow(const WorldView& view);

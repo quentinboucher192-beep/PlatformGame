@@ -562,6 +562,31 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
             r.fillCircle(c + Vec2{2.0f * scale, -0.4f * scale}, 1.3f * scale, eye);
             if (lit > 0.0f) r.drawGlow(c, (3.0f + 6.0f * lit) * scale, Color{180, 245, 102, static_cast<uint8_t>(60 + 150 * lit)});
         }
+    } else if (look == "cogs") {
+        // « Engrenages » (2.58, Titan): a crown of brass gears turning round the avatar, each one
+        // the other way from its neighbours, steel rivets between them. Within kAvatarFrameMargin:
+        // the teeth stay 11 units beyond the avatar.
+        r.drawGlow(center, radius + 14 * scale, Color{255, 194, 60, 60});
+        ring(main, 3.0f, Color{60, 64, 74, 255});
+        const int gears = 8;
+        for (int k = 0; k < gears; ++k) {
+            const float a = static_cast<float>(k) / gears * 2.0f * kFxPi;
+            const Vec2 c = center + Vec2{std::cos(a), std::sin(a)} * (main + 2.0f * scale);
+            const float spin = (k % 2 ? -1.0f : 1.0f) * time * 1.6f + static_cast<float>(k) * 0.4f;
+            const float rr = 6.4f * scale;
+            for (int t = 0; t < 8; ++t) {
+                const float ta = spin + static_cast<float>(t) / 8.0f * 2.0f * kFxPi;
+                const Vec2 d{std::cos(ta), std::sin(ta)};
+                r.drawLine(c + d * (rr * 0.6f), c + d * (rr * 1.35f), Color{150, 116, 54, 255}, 2.2f * scale);
+            }
+            r.fillCircle(c, rr, Color{204, 166, 84, 255});
+            r.fillCircle(c, rr * 0.62f, Color{150, 116, 54, 255});
+            r.fillCircle(c, rr * 0.3f, Color{246, 222, 150, 255});
+            const float rv = a + kFxPi / gears;
+            r.fillCircle(center + Vec2{std::cos(rv), std::sin(rv)} * main, 1.5f * scale, Color{196, 204, 216, 255});
+        }
+        const float lamp = 0.5f + 0.5f * std::sin(time * 3.0f);
+        r.drawGlow(center + Vec2{0.0f, -main - 2.0f * scale}, (4.0f + 3.0f * lamp) * scale, Color{255, 194, 60, static_cast<uint8_t>(90 + 100 * lamp)});
     } else if (look == "laurels") {
         r.drawGlow(center, radius + 18 * scale, Color{255, 214, 90, 110});
         ring(main, 4, Color{255, 214, 90, 255});
@@ -740,6 +765,24 @@ void drawTrailPoint(const Canvas& cv, const std::string& look, Vec2 p, float k, 
         cv.dot(q, sz, Color{230, 255, 220, alpha(0.85f * f)});
         cv.dot(cv.off(q, {-sz * 0.35f, -sz * 0.1f}), sz * 0.22f, Color{20, 30, 24, alpha(0.9f * f)});
         cv.dot(cv.off(q, {sz * 0.35f, -sz * 0.1f}), sz * 0.22f, Color{20, 30, 24, alpha(0.9f * f)});
+    } else if (look == "gears") {
+        // « Rouages » (2.58, Titan): little brass gears spin behind Nova and fall away, a puff of
+        // steam now and then.
+        if (seed % 3 == 2) {
+            Vec2 q = cv.off(p, {(noise(seed) - 0.5f) * 8.0f, -age * 18.0f - 3.0f});
+            cv.glow(q, 6.0f * k + 2.0f, Color{240, 240, 246, alpha(0.35f * f)});
+            return;
+        }
+        Vec2 q = cv.off(p, {(noise(seed) - 0.5f) * 10.0f, age * age * 30.0f});
+        const float sz = 2.6f * (0.5f + 0.5f * k) + 0.8f;
+        const float spin = age * (seed % 2 ? 6.0f : -6.0f) + static_cast<float>(seed);
+        for (int t = 0; t < 6; ++t) {
+            const float ta = spin + static_cast<float>(t) * 1.0471976f;
+            cv.line(cv.off(q, {std::cos(ta) * sz * 0.5f, std::sin(ta) * sz * 0.5f}), cv.off(q, {std::cos(ta) * sz * 1.35f, std::sin(ta) * sz * 1.35f}),
+                    Color{150, 116, 54, alpha(0.9f * f)}, 1.4f);
+        }
+        cv.dot(q, sz, Color{204, 166, 84, alpha(0.95f * f)});
+        cv.dot(q, sz * 0.4f, Color{246, 222, 150, alpha(f)});
     } else if (look == "prism") {
         // A ribbon whose colour runs through the rainbow along the trail, and keeps turning.
         Color c = rainbow(static_cast<float>(seed) * 0.06f + age * 0.8f);
@@ -1039,6 +1082,41 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
                 cv.glow(q, 9.0f, Color{150, 240, 110, alpha(0.45f * fade * (1.0f - fly * 0.6f))});
                 cv.dot(q, 3.0f, Color{230, 255, 220, alpha(fade * (1.0f - fly * 0.5f))}, BlendMode::Additive);
             }
+        }
+    } else if (look == "foundry") {
+        // « Coulée d'acier » (2.58, Titan): gears turn round the portal, then molten steel bursts
+        // up in a sheaf of sparks out of a plume of steam.
+        const float in = std::clamp(t / 0.4f, 0.0f, 1.0f);
+        for (int g = 0; g < 4; ++g) {
+            const Vec2 c = cv.off(at, {g < 2 ? -50.0f : 50.0f, g % 2 ? -26.0f : -66.0f});
+            const float rr = (g % 2 ? 9.0f : 13.0f) * in;
+            const float spin = (g % 2 ? -1.0f : 1.0f) * t * 2.4f;
+            for (int k = 0; k < 10; ++k) {
+                const float a = spin + static_cast<float>(k) * 0.6283185f;
+                cv.line(cv.off(c, {std::cos(a) * rr * 0.6f, std::sin(a) * rr * 0.6f}), cv.off(c, {std::cos(a) * rr * 1.3f, std::sin(a) * rr * 1.3f}),
+                        Color{150, 116, 54, alpha(fade)}, 2.4f);
+            }
+            cv.dot(c, rr, Color{204, 166, 84, alpha(fade)});
+            cv.dot(c, rr * 0.35f, Color{246, 222, 150, alpha(fade)});
+        }
+        const float pour = std::clamp((t - 0.6f) / 1.2f, 0.0f, 1.0f);
+        if (pour > 0.0f) {
+            // The plume of steam, then the sheaf of molten steel and its sparks.
+            for (int k = 0; k < 6; ++k) {
+                const float u = static_cast<float>(k) / 5.0f;
+                cv.glow(cv.off(at, {std::sin(u * 7.0f + t) * 8.0f, -20.0f - 70.0f * u * pour}), 16.0f + 10.0f * u,
+                        Color{240, 240, 246, alpha(0.3f * fade * (1.0f - u * 0.6f))});
+            }
+            const int sparks = 18;
+            for (int i = 0; i < sparks; ++i) {
+                const float a = -kFxPi * 0.5f + (noise(static_cast<uint32_t>(i) * 7u + 3u) - 0.5f) * 1.6f;
+                const float sp = 70.0f + 60.0f * noise(static_cast<uint32_t>(i) * 13u + 1u);
+                const float ts = pour * 1.2f;
+                const Vec2 q = cv.off(at, {std::cos(a) * sp * ts, std::sin(a) * sp * ts + 60.0f * ts * ts});
+                cv.glow(q, 5.0f, Color{255, 170, 60, alpha(0.6f * fade * (1.0f - pour * 0.5f))});
+                cv.dot(q, 1.6f, Color{255, 236, 180, alpha(fade * (1.0f - pour * 0.5f))}, BlendMode::Additive);
+            }
+            cv.glow(cv.off(at, {0.0f, -10.0f}), 18.0f * pour, Color{255, 140, 40, alpha(0.5f * fade)});
         }
     } else if (look == "corona") {
         // An eclipse above the portal: a dark disc ringed with light, its rays turning.

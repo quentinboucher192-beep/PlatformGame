@@ -188,6 +188,12 @@
       "group": "confins",
       "title": "La Liche des Catacombes",
       "where": "Combat contre la Liche"
+    },
+    {
+      "file": "music/titan_boss.ogg",
+      "group": "confins",
+      "title": "Le Titan Mécanique",
+      "where": "Combat contre le Titan"
     }
   ]
 }
