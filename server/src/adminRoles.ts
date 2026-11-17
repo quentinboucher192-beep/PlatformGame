@@ -249,6 +249,9 @@ function challengeOfDetails(d: Record<string, unknown>) {
         // 2.43: its rewards (set, or tried), and those they replaced.
         rewards: Array.isArray(d.rewards) ? d.rewards.filter(isObject) : null,
         previous: Array.isArray(d.previous) ? d.previous.filter(isObject) : null,
+        // 2.60: changed while it ran (nobody had a result on it), or refused because players had one.
+        running: d.running === true,
+        results_count: typeof d.results_count === "number" ? d.results_count : null,
     };
 }
 
