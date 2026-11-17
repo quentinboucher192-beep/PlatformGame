@@ -119,13 +119,21 @@ public:
         auto fullJump = [&] {
             if (p.grounded() && jumpHold_ == 0) jumpHold_ = 34;
         };
-        // The sleeping garden: strike the creature ahead.
+        // The sleeping garden: the nearest creature, struck until it is gone.
+        const Enemy* critter = nullptr;
         for (const auto& e : w.enemies()) {
-            if (!e->alive() || e->def().isBoss) continue;
-            const float dx = e->center().x - x;
-            if (dx > -6.0f && dx < 34.0f && std::abs(e->center().y - p.center().y) < 40.0f) {
-                dir = dx < 12.0f ? 0 : 1;
-                attack = step % 24 == 0;
+            if (!e->alive() || e->def().isBoss || std::abs(e->center().y - p.center().y) > 48.0f) continue;
+            const float d = std::abs(e->center().x - x);
+            if (d < 200.0f && (!critter || d < std::abs(critter->center().x - x))) critter = e.get();
+        }
+        if (critter) {
+            const float dx = critter->center().x - x;
+            if (std::abs(dx) > 14.0f) {
+                dir = dx > 0.0f ? 1 : -1;
+            } else {
+                dir = 0;
+                face_ = dx < 0.0f ? -1 : 1;
+                attack = step % 30 == 0;
             }
         }
         // The guardian: close in, strike, jump when it gets ready.
@@ -261,9 +269,12 @@ TEST_CASE("tutorial: a script of inputs finishes the level, and plays the same r
         script.push_back(f);
         sim.step(f);
     }
-    if (sim.w->state() != WorldState::Completed)
+    if (sim.w->state() != WorldState::Completed) {
         std::printf("  bloqué à x=%.0f (tuile %.1f), y=%.0f, chutes %d\n", sim.w->player().center().x, sim.w->player().center().x / 16.0f,
                     sim.w->player().center().y, sim.w->stats().deaths);
+        for (const auto& e : sim.w->enemies())
+            std::printf("    %s pv %.1f x=%.0f y=%.0f\n", e->def().id.c_str(), e->hp(), e->center().x, e->center().y);
+    }
     CHECK(sim.w->state() == WorldState::Completed);
     std::printf("  didacticiel fini en %.1f s de jeu (%d chutes), %zu explications\n", steps / 120.0, sim.w->stats().deaths, sim.cards.size());
     // Every card was asked on the way, each once, in the route's order.
@@ -451,6 +462,46 @@ TEST_CASE("tutorial: the levels of the campaign are untouched (no tutorial rule,
                 if (o.type == "enemy") CHECK(!content().enemy(o.propStr("enemy")) || !content().enemy(o.propStr("enemy"))->tutorial);
         }
     CHECK(levels >= 25);
+    // Their ranked fingerprints are those Cosmic Online holds (server/migrations/0113_levels_2_58_0.sql,
+    // the last time the levels changed): records, replays and ghosts stay valid.
+    static const std::map<std::string, std::string> ranked = {
+        {"aethra_01", "233486c417575fab7791d74dce2b0b9efd0a691f5373abb59f5fcd1a0e952158"},
+        {"aethra_02", "7490679679aae98e1bb87a97ad5ea361c524cdf0c0d2a6a96c0d586233e7d6fa"},
+        {"aethra_03", "973d1e5f219f97fce747d544859698c35231aedda4068b987c62500a1ca7924c"},
+        {"aethra_04", "30467f96c0833dffd283bf6698a4004866cee294787c594056760958e3bdba32"},
+        {"confins_01", "3e066c2b86050e19990f5f1b933b464710600ae7dfe79a668a36905c482931b4"},
+        {"confins_02", "77bd69b0efbc6f23c529c5f92abd13342652a0cc2975ebdc9688a58adf2a2ac5"},
+        {"confins_03", "949ef666095455e496a6a092e8671b2f393526490973f57f3c020e2cec4b8b4f"},
+        {"confins_04", "279b37a2e963a15feefce477702e364370a65521625861b0d8f0e298a1f71892"},
+        {"confins_05", "319bcc1fb92d5290cdb22463c172f92efda6e04c5caff64fcb74151716e525e1"},
+        {"confins_06", "782c4fd35c1306d0aa0a006a882114e25f8ee6eef08fb850611445eeae80b7fb"},
+        {"glacior_01", "7ce1fc5d51b4030941264b36e16a7bc02dd27a0ddab5cc26989898ade5004c8a"},
+        {"glacior_02", "67007fd953554208502a0c5a556454633fa132c771747d60d86f389e6d2469d2"},
+        {"glacior_03", "2464b36267b5cfe18c5a9fe94e51a4ce6fe070d86d1beb1182804b41da088342"},
+        {"glacior_04", "323a9dbbc3d6b7f45e80e34727ac984e05932a7375f790c3c4d1ec8e24cb97d0"},
+        {"noyau_01", "ddb2a07685215f202bad0ea01cfd75117a53a31d7bba68089e0081f583992f61"},
+        {"noyau_02", "ed48dc0ef0bcde1e10dc431daba926953c774b0753330615d4585345fc604dac"},
+        {"noyau_03", "b3a88f4ca0c15df46ea83e1ca06168bc62a6685f8c476c762280c21a2a41d26d"},
+        {"pyralis_01", "87819685a33efc1128f02785063b5080f9991b04358448e8a4a88bf4843311b4"},
+        {"pyralis_02", "0273ae751c6e127556d856af086fe75f0d2e778b6137409b2034e212df71816d"},
+        {"pyralis_03", "eb8a3004b1b364fb67c16b7b852cef027872bf7ee1fcbdacfd332d30611d98be"},
+        {"pyralis_04", "9b9e80b62e474175383b9a2fc04320303a3d0c3917a9b8b3884f98ce669cc320"},
+        {"sylvanox_01", "49d7d22cc13e1286a88914755e0a3151c9288ae0b6f776b8fab05647398bbb0a"},
+        {"sylvanox_02", "d9060b739c93dac2399c3e296e6c92008a90a0071b410bcfa151731f6db4cb8b"},
+        {"sylvanox_03", "228fb791e64a318b95b04766c998f47eba4a3848cce3b882841f5c438dbf2b46"},
+        {"sylvanox_04", "d5ecbc117ca88f26f1fc1b7063003deee6c1304df24c80ff10fb707e05a9206e"},
+    };
+    for (const auto& [id, hash] : ranked) {
+        const LevelEntry* e = content().level(id);
+        CHECK(e != nullptr);
+        if (!e) continue;
+        auto text = FileUtil::readText(e->path);
+        CHECK(text.has_value());
+        if (!text) continue;
+        auto fp = fingerprintRankedLevel(content(), Json::parse(*text));
+        if (!fp || fp->hash != hash) std::printf("  empreinte changée : %s\n", id.c_str());
+        CHECK(fp && fp->hash == hash);
+    }
 }
 
 // The cards over the run in the real game loop (headless): the run waits while a card is open —
@@ -569,6 +620,19 @@ TEST_CASE("tutorial: every explanation card stops the run until it is read (head
                     CHECK(inside(E.souvenirLabel, E.souvenirBox) && inside(E.souvenirPill, E.souvenirBox));
                     CHECK(!overlaps(E.souvenirLabel, E.souvenirPill));
                     CHECK(E.learnt.size() == tutorial::learnt().size());
+                    for (bool confirm : {false, true}) {
+                        const TutorialWelcomeLayout W = layoutTutorialWelcome(g.ui, confirm);
+                        CHECK(inside(W.panel, screen));
+                        const std::vector<Rect> wp = {W.bip, W.titleRect, W.textRect, W.start, W.skip};
+                        for (size_t i = 0; i < wp.size(); ++i) {
+                            CHECK(inside(wp[i], W.panel));
+                            for (size_t j = i + 1; j < wp.size(); ++j) CHECK(!overlaps(wp[i], wp[j]));
+                        }
+                        CHECK(g.ui.text().measure(W.title, FontFace::Title, W.titlePx).x <= W.titleRect.w + 0.5f);
+                        CHECK(g.ui.text().measureWrapped(W.text, FontFace::Body, W.textPx, W.textRect.w).y <= W.textRect.h + 0.5f);
+                        CHECK(g.ui.text().measure(W.startText, FontFace::Bold, W.buttonPx).x <= W.start.w - g.ui.s(28));
+                        CHECK(g.ui.text().measure(W.skipText, FontFace::Bold, W.buttonPx).x <= W.skip.w - g.ui.s(28));
+                    }
                 }
             }
             i18n::setLanguage(Language::French);

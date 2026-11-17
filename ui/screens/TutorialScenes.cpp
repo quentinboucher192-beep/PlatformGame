@@ -506,7 +506,7 @@ TutorialEndLayout layoutTutorialEnd(UIContext& ui) {
     const std::string reminder = "Le didacticiel ne se rejoue pas. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause).";
     const float buttonsW = startW + ui.s(16) + wearW;
     const float remRoom = inner - buttonsW - ui.s(28);
-    const bool side = remRoom >= ui.s(300);
+    const bool side = remRoom >= ui.s(420);
     const float remW = side ? remRoom : inner;
     const float remH = ui.text().measureWrapped(reminder, FontFace::Body, L.reminderPx, remW).y;
     const float footH = side ? std::max(btnH, remH) : remH + ui.s(14) + btnH;
@@ -549,6 +549,51 @@ TutorialEndLayout layoutTutorialEnd(UIContext& ui) {
         L.reminder = {x0, y, remW, remH};
         L.start = {x0 + inner - startW, y + remH + ui.s(14), startW, btnH};
         L.wear = {L.start.x - ui.s(16) - wearW, L.start.y, wearW, btnH};
+    }
+    return L;
+}
+
+TutorialWelcomeLayout layoutTutorialWelcome(UIContext& ui, bool confirm) {
+    TutorialWelcomeLayout L;
+    const float W = ui.screenW(), H = ui.screenH();
+    const float pad = ui.s(44), panelW = std::min(W - ui.s(60), ui.s(1000)), inner = panelW - 2 * pad;
+    const float bip = ui.s(110);
+    L.title = confirm ? "Passer le didacticiel ?" : "Bienvenue, Nova !";
+    L.text = confirm ? "Il ne sera plus proposé, même plus tard. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause) : tu "
+                       "pourras t'y reporter à tout moment."
+                     : "Je suis Bip, ton petit robot. Avant la grande aventure, je te propose un premier vol tout doux, d'environ six minutes, "
+                       "pour découvrir le jeu. Rien n'y est compté, et il ne se joue qu'une fois.";
+    L.startText = confirm ? "Non, je le fais" : "Commencer le didacticiel";
+    L.skipText = confirm ? "Oui, passer" : "Passer le didacticiel";
+    const float room = inner - bip - ui.s(24);
+    L.titlePx = ui.s(ui.fitFont(L.title, FontFace::Title, std::max(48.0f, 19.0f / ui.scale()), room, 0.5f));
+    L.textPx = px(ui, 23, 13.0f);
+    const float titleH = ui.text().measure(L.title, FontFace::Title, L.titlePx).y;
+    const float textH = ui.text().measureWrapped(L.text, FontFace::Body, L.textPx, room).y;
+    const float headH = std::max(bip, titleH + ui.s(12) + textH);
+    L.buttonPx = px(ui, 24, 13.0f);
+    const float btnH = std::max(ui.s(70), L.buttonPx * 2.4f);
+    float aw = ui.text().measure(L.startText, FontFace::Bold, L.buttonPx).x + ui.s(64);
+    float bw = ui.text().measure(L.skipText, FontFace::Bold, L.buttonPx).x + ui.s(64);
+    const bool side = aw + bw + ui.s(18) <= inner;
+    if (!side) aw = bw = inner;
+    const float buttonsH = side ? btnH : btnH * 2 + ui.s(14);
+    const float panelH = pad + headH + ui.s(30) + buttonsH + pad;
+    L.panel = {(W - panelW) * 0.5f, std::max(ui.s(10), (H - panelH) * 0.5f), panelW, panelH};
+    const float x0 = L.panel.x + pad;
+    float y = L.panel.y + pad;
+    L.bip = {x0, y + (headH - bip) * 0.5f, bip, bip};
+    const float tx = x0 + bip + ui.s(24);
+    const float hy = y + (headH - titleH - ui.s(12) - textH) * 0.5f;
+    L.titleRect = {tx, hy, std::min(room, ui.text().measure(L.title, FontFace::Title, L.titlePx).x), titleH};
+    L.textRect = {tx, hy + titleH + ui.s(12), room, textH};
+    y += headH + ui.s(30);
+    if (side) {
+        L.start = {x0 + inner - aw, y, aw, btnH};
+        L.skip = {L.start.x - ui.s(18) - bw, y, bw, btnH};
+    } else {
+        L.start = {x0, y, inner, btnH};
+        L.skip = {x0, y + btnH + ui.s(14), inner, btnH};
     }
     return L;
 }
@@ -653,51 +698,19 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.45f);
         Renderer& r = ui.r();
-        const float W = ui.screenW(), H = ui.screenH();
-        const float pad = ui.s(44), panelW = std::min(W - ui.s(60), ui.s(1000)), inner = panelW - 2 * pad;
-        const float bip = ui.s(110);
-        const std::string title = confirm_ ? "Passer le didacticiel ?" : "Bienvenue, Nova !";
-        const std::string text =
-            confirm_ ? "Il ne sera plus proposé, même plus tard. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause) : tu "
-                       "pourras t'y reporter à tout moment."
-                     : "Je suis Bip, ton petit robot. Avant la grande aventure, je te propose un premier vol tout doux, d'environ six minutes, "
-                       "pour découvrir le jeu. Rien n'y est compté, et il ne se joue qu'une fois.";
-        const float titlePx = ui.s(ui.fitFont(title, FontFace::Title, std::max(48.0f, 19.0f / ui.scale()), inner - bip - ui.s(24), 0.5f));
-        const float textPx = px(ui, 23, 13.0f);
-        const float titleH = ui.text().measure(title, FontFace::Title, titlePx).y;
-        const float textH = ui.text().measureWrapped(text, FontFace::Body, textPx, inner - bip - ui.s(24)).y;
-        const float headH = std::max(bip, titleH + ui.s(12) + textH);
-        const float btnPx = px(ui, 24, 13.0f);
-        const std::string a = confirm_ ? "Non, je le fais" : "Commencer le didacticiel";
-        const std::string b = confirm_ ? "Oui, passer" : "Passer le didacticiel";
-        const float btnH = std::max(ui.s(70), btnPx * 2.4f);
-        float aw = ui.text().measure(a, FontFace::Bold, btnPx).x + ui.s(64), bw = ui.text().measure(b, FontFace::Bold, btnPx).x + ui.s(64);
-        const bool side = aw + bw + ui.s(18) <= inner;
-        if (!side) aw = bw = inner;
-        const float buttonsH = side ? btnH : btnH * 2 + ui.s(14);
-        const float panelH = pad + headH + ui.s(30) + buttonsH + pad;
-        const Rect panel{(W - panelW) * 0.5f, (H - panelH) * 0.5f, panelW, panelH};
-        r.fillRoundedRect(panel.expanded(ui.s(4)), ui.s(34), confirm_ ? kGold : kPink);
-        r.fillRoundedRect(panel, ui.s(30), kCream);
-        const float x0 = panel.x + pad;
-        float y = panel.y + pad;
-        drawBip(r, {x0 + bip * 0.5f, y + headH * 0.5f}, bip * 0.72f, t_);
-        const float tx = x0 + bip + ui.s(24);
-        const float hy = y + (headH - titleH - ui.s(12) - textH) * 0.5f;
-        ui.label(title, {tx, hy}, titlePx / ui.scale(), kInk, Align::Left, FontFace::Title);
+        const TutorialWelcomeLayout L = layoutTutorialWelcome(ui, confirm_);
+        r.fillRoundedRect(L.panel.expanded(ui.s(4)), ui.s(34), confirm_ ? kGold : kPink);
+        r.fillRoundedRect(L.panel, ui.s(30), kCream);
+        drawBip(r, L.bip.center(), L.bip.w * 0.72f, t_);
+        ui.label(L.title, L.titleRect.pos(), L.titlePx / ui.scale(), kInk, Align::Left, FontFace::Title);
         TextStyle st;
-        st.size = textPx;
+        st.size = L.textPx;
         st.color = kInk;
-        ui.text().drawWrapped(text, {tx, hy + titleH + ui.s(12)}, inner - bip - ui.s(24), st);
-        y += headH + ui.s(30);
-        Rect ra, rb;
-        if (side) {
-            ra = {x0 + inner - aw, y, aw, btnH};
-            rb = {ra.x - ui.s(18) - bw, y, bw, btnH};
-        } else {
-            ra = {x0, y, inner, btnH};
-            rb = {x0, y + btnH + ui.s(14), inner, btnH};
-        }
+        ui.text().drawWrapped(L.text, L.textRect.pos(), L.textRect.w, st);
+        const std::string& a = L.startText;
+        const std::string& b = L.skipText;
+        const Rect ra = L.start, rb = L.skip;
+        const float btnPx = L.buttonPx;
         const bool ready = t_ > 0.5f;
         ui.pushId("twel");
         const bool pa = softButton(ui, "start", ra, a, btnPx, true, ready);

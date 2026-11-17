@@ -32691,7 +32691,7 @@
    ]
   },
   {
-   "fr": "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau. Au bout de sa route, elle éclate : saute sur la rive avant ! Si tu tombes, je te ramène aussitôt sur la terre ferme.",
+   "fr": "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau, puis éclate au bout de sa route et renaît à sa place. Si tu tombes, je te ramène aussitôt sur la terre ferme.",
    "where": [
     "game/tutorial/Tutorial.cpp"
    ]

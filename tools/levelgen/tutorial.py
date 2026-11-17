@@ -163,12 +163,12 @@ t_bub = L.trigger(190, 18, 192, F)
 card(t_bub, "enter", "bubbles")
 stream(196, 230)
 L.emitter(196, WATER - 3, 230, WATER, "fireflies", 1.0)
-# Two bubbles: one to a small floating island, the other to the far bank (each ends level with
-# its ground: Nova walks off before it pops).
-L.obj("bubble", [196 * T, F * T, 40, 16], props={"dx": 16 * T, "dy": -1 * T, "speed": 50, "respawn": 1.2})
-L.solid(213, F - 1, 218, F + 1, "ruin_stone")
-L.decor("glow_flowers", 215.5, F - 1, "bg_decor")
-L.obj("bubble", [217 * T, (F - 1) * T, 40, 16], props={"dx": 12 * T, "dy": 1 * T, "speed": 50, "respawn": 1.2})
+# Two bubbles: one to a small floating island, the other to the far bank (each ends right over
+# its ground, level with it: wherever Nova stands on it, she is on solid ground when it pops).
+L.obj("bubble", [196 * T, F * T, 40, 16], props={"dx": 17 * T, "dy": 0, "speed": 50, "respawn": 1.2})
+L.solid(213, F, 218, F + 2, "ruin_stone")
+L.decor("glow_flowers", 215.5, F, "bg_decor")
+L.obj("bubble", [217 * T, F * T, 40, 16], props={"dx": 13 * T, "dy": 0, "speed": 50, "respawn": 1.2})
 L.shards_line(204, F - 3, 210, F - 4, 3)
 L.shards_line(221, F - 3.5, 226, F - 3, 3)
 light(205, F - 4, "#9ad7ff", 120)

@@ -8620,7 +8620,6 @@
     "Passer le didacticiel ?": "Skip the tutorial?",
     "Petite bouderie": "A little sulk",
     "Porter ce titre": "Wear this title",
-    "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau. Au bout de sa route, elle éclate : saute sur la rive avant ! Si tu tombes, je te ramène aussitôt sur la terre ferme.": "Land on a bubble: it carries you over the stream. At the end of its route it pops: jump onto the bank before! If you fall, I'll bring you back to solid ground at once.",
     "Ramasser les éclats": "Collect the shards",
     "Rebondir sur les champignons": "Bounce on the mushrooms",
     "Repartir d'une lanterne": "Start again from a lantern",
@@ -8648,6 +8647,7 @@
     "Voyager en bulle": "Travel by bubble",
     "{0} · souvenir": "{0} · souvenir",
     "éclatée": "popped",
-    "Éditeur de niveaux : la « Bulle porteuse » (un objet de plateforme qui part quand Nova s'y pose, la porte jusqu'au bout de sa route, éclate et renaît à sa place) et l'action « Didacticiel : explication bloquante ».": "Level editor: the \"Carrying bubble\" (a platform object that sets off when Nova lands on it, carries her to the end of its route, pops and is born again in its place) and the action \"Tutorial: explanation card (pauses the game)\"."
+    "Éditeur de niveaux : la « Bulle porteuse » (un objet de plateforme qui part quand Nova s'y pose, la porte jusqu'au bout de sa route, éclate et renaît à sa place) et l'action « Didacticiel : explication bloquante ».": "Level editor: the \"Carrying bubble\" (a platform object that sets off when Nova lands on it, carries her to the end of its route, pops and is born again in its place) and the action \"Tutorial: explanation card (pauses the game)\".",
+    "Pose-toi sur une bulle : elle t'emporte au-dessus du ruisseau, puis éclate au bout de sa route et renaît à sa place. Si tu tombes, je te ramène aussitôt sur la terre ferme.": "Land on a bubble: it carries you over the stream, then pops at the end of its route and is born again in its place. If you fall, I'll bring you back to solid ground at once."
   }
 }
