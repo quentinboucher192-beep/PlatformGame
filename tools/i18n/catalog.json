@@ -50718,13 +50718,13 @@
    ]
   },
   {
-   "fr": "← → : de 10 en 10 · Maj : de 1 en 1",
+   "fr": "← → : de 5 en 5 · Maj : de 1 en 1 · souris : glisser",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
   },
   {
-   "fr": "← → : de 5 en 5 · Maj : de 1 en 1 · souris : glisser",
+   "fr": "← → : grands pas · Maj : petits pas",
    "where": [
     "ui/screens/AdminCreations.cpp"
    ]
