@@ -191,6 +191,7 @@ public:
 
 private:
     TeamInfo team_;
+    bool raidView_ = false;
     Rect teamPanel_;
     std::vector<size_t> teamHints_;
     std::vector<float> teamAt_;  // each player's place on the route (0..1)
@@ -202,6 +203,10 @@ private:
 public:
     float skipProgress() const { return skipHold_; }
     void setSkipHold(float v) { skipHold_ = v; }
+    /// 2.65 (raids, docs/RAIDS.md): the vitals and powers of the current player (the scene draws
+    /// it in a GameWorld::PlayerScope of this computer's player) in place of the team panel; the
+    /// raid scene draws the group panel of 8 itself. Names over the players stay.
+    void setRaidView(bool on) { raidView_ = on; }
 };
 
 }  // namespace cosmic

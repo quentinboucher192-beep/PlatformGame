@@ -19,10 +19,13 @@ import { requireAuth } from "./auth";
 import { toHex } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Bindings, type Ctx } from "./http";
 import { notify } from "./notifications";
+import { branchMaskOf } from "./raidZones";
 import { HASH_RE, LEVEL_ID_RE, Validator } from "./validate";
 
 export const PROTOCOL = 1;
 export const MAX_PLAYERS = 3;
+/** 2.65: a raid instance (raidZones.ts, docs/RAIDS.md): 8 seats, vacant ones flagged. */
+export const MAX_RAID_PLAYERS = 8;
 export const MAX_BATCH = 255;
 export const SILENCE_MS = 3000;
 export const MAX_AHEAD = 64;
@@ -32,6 +35,8 @@ export const STANDBY_LIMIT_TICKS = 60 * 120;
 export const ACTION_MASK = (1 << 21) - 1;
 export const FLAG_SKIP = 1;
 export const FLAG_STANDBY = 2;
+/** 2.65 (raids): a seat nobody holds; set by the relay only, like Standby. */
+export const FLAG_VACANT = 4;
 /** Messages of one socket per second at most (inputs come about 60 times a second). */
 export const MAX_MESSAGES_PER_SECOND = 200;
 export const MAX_MESSAGE_BYTES = 16 * 1024;
@@ -54,6 +59,7 @@ export const Msg = {
     Pong: 14,
     Rejoin: 15,
     End: 16,
+    RaidState: 18,
 } as const;
 export const EndReason = { Finished: 0, HostLeft: 1, TooLong: 2, Refused: 3 } as const;
 
@@ -173,7 +179,7 @@ export function readFrames(r: In, count: number): Frame[] | null {
         };
         if (!r.ok) return null;
         if ((f.held | f.pressed | f.released) & ~ACTION_MASK) return null;
-        if (f.flags & ~(FLAG_SKIP | FLAG_STANDBY) || !validChoice(f.choice) || f.mx === -128 || f.my === -128) return null;
+        if (f.flags & ~(FLAG_SKIP | FLAG_STANDBY | FLAG_VACANT) || !validChoice(f.choice) || f.mx === -128 || f.my === -128) return null;
         out.push(f);
         prev = f;
     }
@@ -217,6 +223,16 @@ interface Seat {
     rejoinAt: number;
     pending: (Frame | null)[];
     budget: { start: number; count: number };
+    /** 2.65 (raids): nobody holds this seat (Vacant frames). */
+    vacant: boolean;
+}
+
+/** 2.65: what makes a room a raid instance (raidZones.ts). */
+export interface RaidRoomInfo {
+    instance_id: string;
+    event_id: string;
+    branch: string;
+    revision: number;
 }
 
 interface RoomInfo {
@@ -226,6 +242,7 @@ interface RoomInfo {
     level: { source: string; id: string; hash: string; title: string; version?: number; size?: number };
     invited: string[];
     created: number;
+    raid?: RaidRoomInfo;
 }
 
 export class CoopRoom extends DurableObject<Bindings> {
@@ -240,6 +257,10 @@ export class CoopRoom extends DurableObject<Bindings> {
     private history: Frame[] = [];
     private flushed = 0;
     private resultWritten = false;
+    // 2.65 (raids): the branch's state given so far ((step, mask) in order) and its last poll.
+    private raidStates: [number, number][] = [];
+    private raidMask = 0;
+    private raidPolled = 0;
 
     async fetch(request: Request): Promise<Response> {
         const url = new URL(request.url);
@@ -247,9 +268,12 @@ export class CoopRoom extends DurableObject<Bindings> {
             case "/create": {
                 const body = (await request.json()) as RoomInfo & { host_name: string };
                 if (this.info) return Response.json({ error: "exists" }, { status: 409 });
-                this.info = { id: body.id, host: body.host, level: body.level, invited: [], created: Date.now() };
+                this.info = { id: body.id, host: body.host, level: body.level, invited: [], created: Date.now(), raid: body.raid };
                 return Response.json({ ok: true });
             }
+            case "/raid-state": // the routes and the tests: the branch's state now (else the alarm reads it)
+                await this.pollRaidState(true);
+                return Response.json(this.status());
             case "/invite": {
                 const body = (await request.json()) as { player_id: string };
                 if (!this.info) return Response.json({ error: "gone" }, { status: 404 });
@@ -270,6 +294,7 @@ export class CoopRoom extends DurableObject<Bindings> {
 
     async alarm(): Promise<void> {
         this.poll(Date.now());
+        if (this.info?.raid && this.started) await this.pollRaidState(false);
         if (this.seats.some((s) => s.ws)) await this.ctx.storage.setAlarm(Date.now() + 1000);
     }
 
@@ -281,7 +306,8 @@ export class CoopRoom extends DurableObject<Bindings> {
             invited: this.info?.invited ?? [],
             started: this.started,
             next: this.next,
-            seats: this.seats.map((s, i) => ({ seat: i, player_id: s.playerId, name: s.name, connected: s.ws !== null && !s.absent, absent: s.absent })),
+            seats: this.seats.map((s, i) => ({ seat: i, player_id: s.playerId, name: s.name, connected: s.ws !== null && !s.absent, absent: s.absent, vacant: s.vacant })),
+            raid: this.info?.raid ? { mask: this.raidMask, states: this.raidStates.length } : null,
         };
     }
 
@@ -290,7 +316,8 @@ export class CoopRoom extends DurableObject<Bindings> {
         const name = (request.headers.get("x-player-name") ?? "Joueur").slice(0, 24);
         if (!this.info || request.headers.get("upgrade")?.toLowerCase() !== "websocket")
             return Response.json({ error: "no room" }, { status: 404 });
-        if (playerId !== this.info.host && !this.info.invited.includes(playerId)) return Response.json({ error: "not invited" }, { status: 403 });
+        // A raid instance: the Worker checked the registration (raidZones.ts); a room: invited only.
+        if (!this.info.raid && playerId !== this.info.host && !this.info.invited.includes(playerId)) return Response.json({ error: "not invited" }, { status: 403 });
         const pair = new WebSocketPair();
         const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
         server.accept();
@@ -345,8 +372,20 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.endTo(ws, EndReason.Refused);
             return -1;
         }
-        let seat = this.seats.findIndex((s) => s.playerId === playerId);
-        if (this.started) {
+        let seat = this.seats.findIndex((s) => s.playerId === playerId && !s.vacant);
+        const maxSeats = this.info!.raid ? MAX_RAID_PLAYERS : MAX_PLAYERS;
+        if (this.started && this.info!.raid && seat < 0) {
+            // 2.65 (raids): a late join takes a vacant seat (vacant frames until its REJOIN).
+            seat = this.seats.findIndex((s) => s.vacant && !s.ws);
+            if (seat < 0) {
+                this.endTo(ws, EndReason.Refused);
+                return -1;
+            }
+            const v = this.seats[seat]!;
+            v.playerId = playerId;
+            v.rejoinAt = 0;
+            v.pending = [];
+        } else if (this.started) {
             // Coming back: its own seat, in standby until it caught up.
             if (seat < 0 || !this.seats[seat]!.absent || this.seats[seat]!.ws) {
                 this.endTo(ws, EndReason.Refused);
@@ -357,7 +396,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             seat = this.seats.findIndex((s) => s.playerId === playerId);
             if (seat < 0) seat = this.addSeat(playerId, name);
         } else {
-            if (this.seats.length >= MAX_PLAYERS) {
+            if (this.seats.length >= maxSeats) {
                 this.endTo(ws, EndReason.Refused);
                 return -1;
             }
@@ -381,6 +420,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         if (this.started) {
             this.send(ws, this.goMessage());
             this.flush();
+            for (const [t, m] of this.raidStates) this.send(ws, this.raidStateMessage(t, m)); // before the frames
             for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
         } else {
             this.welcomeAll();
@@ -402,6 +442,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             rejoinAt: 0,
             pending: [],
             budget: { start: Date.now(), count: 0 },
+            vacant: false,
         });
         return this.seats.length - 1;
     }
@@ -459,7 +500,8 @@ export class CoopRoom extends DurableObject<Bindings> {
             }
             case Msg.Start: {
                 r.u8();
-                if (!r.end() || this.started || seat !== 0) return this.drop(ws, seat);
+                // 2.65: any seat starts a raid instance.
+                if (!r.end() || this.started || (seat !== 0 && !this.info?.raid)) return this.drop(ws, seat);
                 this.start();
                 return;
             }
@@ -472,7 +514,7 @@ export class CoopRoom extends DurableObject<Bindings> {
                 r.u32();
                 if (!r.end() || !this.started || !s.absent) return this.drop(ws, seat);
                 const at = this.next + this.delay + 1;
-                if (at - s.absentFrom > STANDBY_LIMIT_TICKS) {
+                if (!s.vacant && at - s.absentFrom > STANDBY_LIMIT_TICKS) {
                     this.endTo(ws, EndReason.Refused);
                     return this.drop(ws, seat);
                 }
@@ -517,21 +559,83 @@ export class CoopRoom extends DurableObject<Bindings> {
     }
 
     private start() {
+        const raid = !!this.info?.raid;
         const connected = this.seats.filter((s) => s.ws);
-        if (connected.length < 2 || connected.length !== this.seats.length) return;
-        if (!this.seats.every((s, i) => i === 0 || s.ready)) return;
+        if (connected.length < (raid ? 1 : 2) || connected.length !== this.seats.length) return;
+        if (!raid && !this.seats.every((s, i) => i === 0 || s.ready)) return;
+        const held = this.seats.length;
         this.started = true;
+        // 2.65 (raids): always 8 seats; those nobody holds are vacant from the first step.
+        if (raid) while (this.seats.length < MAX_RAID_PLAYERS) this.seats[this.addSeat("", "")]!.vacant = true;
+        for (const s of this.seats) if (s.vacant) s.absent = true;
         this.players = this.seats.length;
         const worst = Math.max(0, ...this.seats.map((s) => s.rtt));
         this.delay = Math.min(15, Math.max(3, Math.ceil((worst + 16) / (1000 / 120))));
         this.attempt = crypto.randomUUID();
         this.history = [];
-        for (let t = 0; t < this.delay * this.players; ++t) this.history.push(emptyFrame());
+        for (let t = 0; t < this.delay; ++t) for (let k = 0; k < this.players; ++k) this.history.push(k < held ? emptyFrame() : { ...emptyFrame(), flags: FLAG_VACANT });
         this.next = this.delay;
         this.flushed = 0;
         this.sendAll(this.goMessage());
+        if (raid) {
+            this.raidStates = [[0, this.raidMask]];
+            this.sendAll(this.raidStateMessage(0, this.raidMask));
+            this.seats.forEach((s, i) => {
+                if (!s.vacant) void this.writeMember(i, true, false);
+            });
+        }
         this.flush();
-        void this.writeSession();
+        if (!raid) void this.writeSession();
+    }
+
+    private raidStateMessage(tick: number, mask: number): Uint8Array {
+        const o = new Out();
+        o.u8(Msg.RaidState);
+        o.u32(tick);
+        o.u32(mask >>> 0);
+        return o.done();
+    }
+
+    /** 2.65: the branch's state (raidZones.ts) from D1: a change is given from the next step on. */
+    async pollRaidState(force: boolean): Promise<void> {
+        const raid = this.info?.raid;
+        if (!raid || (!force && Date.now() - this.raidPolled < 3000)) return;
+        this.raidPolled = Date.now();
+        let mask = 0;
+        try {
+            mask = await branchMaskOf(this.env.DB, raid.event_id, raid.branch);
+        } catch {
+            return; /* before migration 0142 */
+        }
+        if (mask === this.raidMask) return;
+        this.raidMask = mask;
+        if (!this.started) return;
+        this.raidStates.push([this.next, mask]);
+        this.sendAll(this.raidStateMessage(this.next, mask));
+    }
+
+    /** 2.65: who plays in the instance (the consensus counts its active players). */
+    private async writeMember(seat: number, active: boolean, left: boolean) {
+        const raid = this.info?.raid;
+        const s = this.seats[seat];
+        if (!raid || !s || !s.playerId) return;
+        const now = nowIso();
+        const players = this.seats.filter((x) => !x.vacant && !x.absent && x.playerId).length;
+        try {
+            await this.env.DB.batch([
+                this.env.DB.prepare(
+                    `INSERT INTO raid_instance_members (instance_id, player_id, seat, active, joined_at, left_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+                     ON CONFLICT (instance_id, player_id) DO UPDATE SET seat = ?3, active = ?4, left_at = ?6`,
+                ).bind(raid.instance_id, s.playerId, seat, active ? 1 : 0, now, left ? now : null),
+                this.env.DB.prepare("UPDATE raid_instances SET players = ?2, started_at = COALESCE(started_at, ?3), updated_at = ?3 WHERE id = ?1").bind(
+                    raid.instance_id,
+                    players,
+                    now,
+                ),
+            ]);
+        } catch {
+            /* before migration 0142 */
+        }
     }
 
     private goMessage(): Uint8Array {
@@ -575,6 +679,13 @@ export class CoopRoom extends DurableObject<Bindings> {
             let complete = true;
             for (let k = 0; k < this.players && complete; ++k) {
                 const s = this.seats[k]!;
+                // 2.65 (raids): 60 s of absence free the seat (the simulation counts the same).
+                if (this.info?.raid && s.absent && !s.vacant && s.rejoinAt === 0 && this.next - s.absentFrom > STANDBY_LIMIT_TICKS) {
+                    s.vacant = true;
+                    void this.writeMember(k, false, true).then(() => {
+                        if (s.vacant) s.playerId = "";
+                    });
+                }
                 if (s.absent && (s.rejoinAt === 0 || this.next < s.rejoinAt)) continue;
                 if (!s.pending[0]) complete = false;
             }
@@ -583,11 +694,13 @@ export class CoopRoom extends DurableObject<Bindings> {
                 const s = this.seats[k]!;
                 let f: Frame;
                 if (s.absent && (s.rejoinAt === 0 || this.next < s.rejoinAt)) {
-                    f = { ...emptyFrame(), flags: FLAG_STANDBY };
+                    f = { ...emptyFrame(), flags: s.vacant ? FLAG_VACANT : FLAG_STANDBY };
                 } else {
                     if (s.absent) {
                         s.absent = false;
+                        s.vacant = false;
                         s.rejoinAt = 0;
+                        void this.writeMember(k, true, false);
                     }
                     f = s.pending[0]!;
                 }
@@ -615,6 +728,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         if (!s.absent) {
             s.absent = true;
             s.absentFrom = this.next;
+            void this.writeMember(seat, false, false);
         }
         s.rejoinAt = 0;
         s.pending = [];
@@ -656,7 +770,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             version: this.info?.level.version ?? 0,
             size: this.info?.level.size ?? 0,
             started: this.started,
-            seats: this.seats.map((s, i) => ({ seat: i, name: s.name, account: s.playerId, ready: s.ready || i === 0, ping: s.rtt, connected: s.ws !== null })),
+            seats: this.seats.map((s, i) => ({ seat: i, name: s.name, account: s.playerId, ready: s.ready || i === 0 || !!this.info?.raid, ping: s.rtt, connected: s.ws !== null })),
         };
         const text = new TextEncoder().encode(JSON.stringify(data));
         const o = new Uint8Array(text.length + 1);
@@ -695,11 +809,11 @@ export class CoopRoom extends DurableObject<Bindings> {
 
 // ------------------------------------------------------------------ routes
 
-function stub(env: Bindings, roomId: string) {
+export function stub(env: Bindings, roomId: string) {
     return env.COOP_ROOMS.get(env.COOP_ROOMS.idFromName(roomId));
 }
 
-async function ask<T>(env: Bindings, roomId: string, path: string, body?: unknown): Promise<T> {
+export async function ask<T>(env: Bindings, roomId: string, path: string, body?: unknown): Promise<T> {
     const res = await stub(env, roomId).fetch("https://coop" + path, body === undefined ? {} : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
     return (await res.json()) as T;
 }

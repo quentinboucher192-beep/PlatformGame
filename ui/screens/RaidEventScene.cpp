@@ -4,7 +4,7 @@
 // text of the server, and at the right my clan's side: register or unregister (myself, or my
 // clan by its chief or an officer), « Inviter des membres… », the groups of 8 with their leader,
 // the clans taking part, the invitations of a raid in common, and the player's reminders.
-// The combat itself comes in a later version: « en cours » says so.
+// 2.65: « en cours », the map of the branch « Bras droit » opens the combat (phase 2).
 //
 // Every rule is the server's (server/src/raids.ts): the screen offers what the player's role
 // allows and shows what the server answers. Placement: each text is measured into the room left
@@ -179,11 +179,22 @@ private:
         const auto desc = wrap(ui, jstr(data_, "description"), FontFace::Body, 17, std::min(left.w, ui.s(900)), 3);
         y += drawLines(ui, desc, {left.x, y}, 17, ui.s(25), Color{216, 219, 245, 255}) + ui.s(12);
         if (st == raids::State::Running) {
-            const Rect band{left.x, y, left.w, ui.s(46)};
+            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; its map opens the combat.
+            const Rect band{left.x, y, left.w, ui.s(54)};
             ui.r().fillRoundedRect(band, ui.s(10), Color{122, 26, 26, 235});
-            fit(ui, "Le combat arrive dans une prochaine version : le raid est ouvert, rien à jouer pour l'instant.", {band.x + ui.s(16), band.center().y}, 16,
-                band.w - ui.s(32), kText, FontFace::Bold);
-            y += ui.s(58);
+            const std::string label = "Carte du Bras droit";
+            const float bw = std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.45f);
+            UIContext::ButtonStyle bs;
+            bs.primary = true;
+            const Rect br{band.right() - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
+            if (ui.button("branch", br, label, bs)) {
+                if (ui.featureSeen && ui.isNew("raids.branch_map")) ui.featureSeen("raids.branch_map");
+                g_.app.pushScene(makeRaidBranch(g_, id_));
+            }
+            ui.newBadge("branch", br, "raids.branch_map", true, true);  // « NOUVEAU »
+            fit(ui, "Le raid est en cours : la branche « Bras droit » est ouverte aux groupes (le gigaboss, dans une prochaine version).",
+                {band.x + ui.s(16), band.center().y}, 15, band.w - bw - ui.s(40), kText, FontFace::Bold);
+            y += ui.s(66);
         }
         // Four figures.
         {
@@ -378,7 +389,7 @@ private:
         {
             const auto lines = wrap(ui,
                                     "Groupes de 8 dans l'ordre des inscriptions : le chef de raid mène le groupe 1, le premier inscrit de chaque autre groupe mène "
-                                    "le sien. La répartition en instances arrivera avec les combats.",
+                                    "le sien. Pendant le raid, chaque groupe joue dans sa propre instance (8 joueurs au plus).",
                                     FontFace::Body, 13, w, 4);
             if (visible(y, static_cast<float>(lines.size()) * ui.s(19))) drawLines(ui, lines, {x, y}, 13, ui.s(19), Color{154, 160, 200, 255});
             y += static_cast<float>(lines.size()) * ui.s(19) + ui.s(14);

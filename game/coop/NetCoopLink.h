@@ -69,6 +69,7 @@ public:
     bool waitingRejoin() const { return joinedLate_ && rejoinAt_ == 0; }
     /// The end of the attempt (its steps): the online relay notes the inputs played (ranking).
     void result(uint32_t ticks) override;
+    uint32_t raidStateAt(uint32_t tick) const override;
 
 private:
     void run();
@@ -107,6 +108,7 @@ private:
     mutable std::mutex framesMutex_;
     std::vector<InputFrame> frames_;
     uint32_t ticks_ = 0;
+    std::vector<std::pair<uint32_t, uint32_t>> raidStates_;  // 2.65: (step, mask), in order (framesMutex_)
 };
 
 }  // namespace cosmic

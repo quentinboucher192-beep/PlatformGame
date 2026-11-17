@@ -85,7 +85,7 @@ TEST_CASE("coop net: inputs are compact on the wire and read back exactly") {
     const uint8_t* q = bad.data();
     InputFrame f;
     CHECK(!readFrames(q, bad.data() + bad.size(), &f, 1));
-    bad = {32, 4};
+    bad = {32, 8};  // 2.65: 4 is Vacant (raids, relay only); 8 is unknown
     q = bad.data();
     CHECK(!readFrames(q, bad.data() + bad.size(), &f, 1));
     bad = {64, 9};

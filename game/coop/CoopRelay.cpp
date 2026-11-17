@@ -61,6 +61,14 @@ void CoopRelay::drop(int conn) {
     disconnected(conn, 0);
 }
 
+void CoopRelay::setRaidState(uint32_t mask) {
+    if (mask == raidMask_) return;
+    raidMask_ = mask;
+    if (!started_) return;
+    raidStates_.emplace_back(next_, mask);
+    sendAll(raidState(next_, mask));
+}
+
 void CoopRelay::markAbsent(int seat) {
     Seat& s = seats_[seat];
     if (!s.absent) {
@@ -114,7 +122,7 @@ void CoopRelay::received(int conn, const uint8_t* data, size_t size, uint32_t no
         }
         case Msg::Start: {
             r.u8();
-            if (!r.done() || started_ || seat != 0) return drop(conn);
+            if (!r.done() || started_ || (seat != 0 && !raid_)) return drop(conn);  // 2.65: any seat of a raid
             startGame();
             break;
         }
@@ -130,7 +138,7 @@ void CoopRelay::received(int conn, const uint8_t* data, size_t size, uint32_t no
             if (!r.done() || !started_ || !s.absent) return drop(conn);
             // Back at a step none has reached yet (every game has sent at most `delay` ahead).
             const uint32_t at = next_ + static_cast<uint32_t>(delay_) + 1;
-            if (at - s.absentFrom > static_cast<uint32_t>(GameWorld::kStandbyLimitTicks)) {
+            if (!s.vacant && at - s.absentFrom > static_cast<uint32_t>(GameWorld::kStandbyLimitTicks)) {
                 send_(conn, end(EndReason::Refused));
                 return drop(conn);
             }
@@ -173,11 +181,15 @@ void CoopRelay::hello(int conn, Reader& r, uint32_t now) {
     if (name.empty()) name = "Joueur";
     int seat = -1;
     if (!started_) {
-        if (wanted < kSeats && seats_[wanted].conn < 0 && (wanted == 0 || seats_[wanted - 1].conn >= 0)) seat = wanted;
-        for (int k = 0; k < kSeats && seat < 0; ++k)
+        if (wanted < maxSeats() && seats_[wanted].conn < 0 && (wanted == 0 || seats_[wanted - 1].conn >= 0)) seat = wanted;
+        for (int k = 0; k < maxSeats() && seat < 0; ++k)
             if (seats_[k].conn < 0) seat = k;
     } else if (wanted < players_ && seats_[wanted].absent && seats_[wanted].conn < 0) {
         seat = wanted;  // coming back: its own seat, still in standby until it caught up
+    } else if (raid_) {
+        // 2.65 (raids): a late join takes a vacant seat (its frames stay vacant until its REJOIN).
+        for (int k = 0; k < players_ && seat < 0; ++k)
+            if (seats_[k].vacant && seats_[k].conn < 0) seat = k;
     }
     if (seat < 0) {
         send_(conn, end(EndReason::Refused));
@@ -194,6 +206,7 @@ void CoopRelay::hello(int conn, Reader& r, uint32_t now) {
         GoInfo g{seed_, static_cast<uint8_t>(players_), static_cast<uint8_t>(delay_), level_, hash_, attempt_};
         send_(conn, go(g));
         flush();
+        for (const auto& [t, m] : raidStates_) send_(conn, raidState(t, m));  // before the frames
         sendHistory(conn);
     } else {
         broadcastLobby();
@@ -244,20 +257,33 @@ void CoopRelay::startGame() {
             ++n;
             worst = std::max(worst, seats_[k].rttMs);
         }
-    if (n < 2 || level_.empty()) return;
-    for (int k = 0; k < n; ++k)
-        if (!seats_[k].ready && k != 0) return;  // everybody ready (the host starts)
+    if (n < (raid_ ? 1 : 2) || level_.empty()) return;
+    if (!raid_)
+        for (int k = 0; k < n; ++k)
+            if (!seats_[k].ready && k != 0) return;  // everybody ready (the host starts)
     started_ = true;
-    players_ = n;
+    // 2.65 (raids): always 8 seats; those nobody holds are vacant from the first step.
+    players_ = raid_ ? coopnet::kMaxPlayers : n;
+    for (int k = n; k < players_; ++k) {
+        seats_[k] = Seat{};
+        seats_[k].absent = true;
+        seats_[k].vacant = true;
+    }
     delay_ = inputDelayFor(worst);
     seed_ = levelSeed(level_);
     attempt_ = makeUuidV4();
     // The first `delay` steps are empty for everybody (no input can reach them in time).
     history_.assign(static_cast<size_t>(delay_ * players_), InputFrame{});
+    for (int t = 0; t < delay_; ++t)
+        for (int k = n; k < players_; ++k) history_[static_cast<size_t>(t * players_ + k)].flags = InputFrame::Vacant;
     next_ = static_cast<uint32_t>(delay_);
     flushed_ = 0;
     GoInfo g{seed_, static_cast<uint8_t>(players_), static_cast<uint8_t>(delay_), level_, hash_, attempt_};
     sendAll(go(g));
+    if (raid_) {
+        raidStates_.assign(1, {0u, raidMask_});
+        sendAll(raidState(0, raidMask_));
+    }
     flush();
 }
 
@@ -302,11 +328,18 @@ void CoopRelay::flush() {
         for (int k = 0; k < players_; ++k) {
             Seat& s = seats_[k];
             InputFrame f;
+            // 2.65 (raids): 60 s of absence free the seat (the simulation counts the same).
+            if (raid_ && s.absent && !s.vacant && s.rejoinAt == 0 && next_ - s.absentFrom > static_cast<uint32_t>(GameWorld::kStandbyLimitTicks)) {
+                s.vacant = true;
+                s.name.clear();
+                s.account.clear();
+            }
             if (s.absent && (s.rejoinAt == 0 || next_ < s.rejoinAt)) {
-                f.flags = InputFrame::Standby;
+                f.flags = s.vacant ? InputFrame::Vacant : InputFrame::Standby;
             } else {
                 if (s.absent) {  // its step of return: playing again
                     s.absent = false;
+                    s.vacant = false;
                     s.rejoinAt = 0;
                 }
                 f = s.pending.front();
@@ -331,6 +364,7 @@ std::string CoopRelay::lobbyJson() const {
     for (int k = 0; k < kSeats; ++k) {
         const Seat& s = seats_[k];
         if (s.conn < 0 && !started_) continue;
+        if (s.vacant && s.conn < 0) continue;
         seats.push_back({{"seat", k}, {"name", s.name}, {"account", s.account}, {"ready", s.ready || k == 0}, {"ping", s.rttMs},
                          {"connected", s.conn >= 0 && !s.absent}});
     }

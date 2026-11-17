@@ -464,7 +464,7 @@
   },
   "sounds/respawn.wav": {
    "game/gameplay/GameWorld.cpp": 3,
-   "game/gameplay/GameWorldTeam.cpp": 2,
+   "game/gameplay/GameWorldTeam.cpp": 3,
    "game/levels/Cinematic.cpp": 1
   },
   "sounds/root_burst.wav": {
