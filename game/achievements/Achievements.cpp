@@ -334,7 +334,7 @@ AchievementProgress AchievementBook::progress(const AchievementDef& def, const A
     } else if (t == "friends") {
         p.value = std::max<int64_t>(in.friends, st.maximum("friends"));
     } else if (t == "raid_reward") {
-        // 2.67: a badge of the clan raids, claimed from Cosmic Online (its reward's id in `key`).
+        // 2.68: a badge of the clan raids, claimed from Cosmic Online (its reward's id in `key`).
         p.target = 1;
         p.value = in.raidRewards.count(c.key) ? 1 : 0;
     } else {

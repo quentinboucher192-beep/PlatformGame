@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "game/enemies/Enemy.h"
 #include "game/gameplay/entities/Entities.h"
 
 namespace cosmic::raid {
@@ -67,12 +68,13 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     w->setQuiet(quiet_);
     w->setCameraFollow(follow_);
     world_ = std::move(w);
-    // 2.67: the players' contributions listen to this world; an event knows whose attack caused it.
+    // 2.68: the players' contributions listen to this world; an event knows whose attack caused it.
     contrib_.attach(*world_);
     world_->eventObserver = [this](const std::string& src, const std::string& trig) {
         events_.push_back({src, trig, world_ ? contrib_.ownerOf(world_->attackTag()) : -1});
     };
     rules_ = rules;
+    if (zid != zone_) lastCheckpoint_.clear();  // 2.68: kept when the same zone starts again
     zone_ = zid;
     from_ = from;
     zoneTicks_ = 0;
@@ -90,14 +92,15 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     }
     // The passages the players stand in now never take them (they must walk into one).
     insidePassage_.assign(rules->passages.size(), 0);
+    coopDone_.assign(rules->coops.size(), 0);
     for (size_t k = 0; k < rules->passages.size(); ++k)
         for (int i = 0; i < world_->teamSize(); ++i)
             if (rules->passages[k].rect.intersects(world_->playerAt(i).box)) insidePassage_[k] |= static_cast<uint8_t>(1u << i);
-    switchStates_.assign(rules->switches.size(), SwitchState{});
-    for (size_t k = 0; k < rules->switches.size(); ++k) switchStates_[k].on.assign(rules->switches[k].plates.size(), 0);
     applyMask(branchMask_, true);
+    for (const EffectInfo& e : branch_.effects)
+        if (Branch::on(mask(), e) && e.inZone(zid)) applyEffect(e);
     alert("Zone : " + (branch_.zone(zid) ? branch_.zone(zid)->name : std::string("?")), Alert::Kind::Group);
-    // 2.67: the gigaboss of the zone (gone when its objective is done: it already fell).
+    // 2.68: the gigaboss of the zone (gone when its objective is done: it already fell).
     const int fallen = rules->gigaboss.present ? branch_.objectiveIndex(rules->gigaboss.objective) : -1;
     gigaboss_.begin(*world_, rules->gigaboss, fallen >= 0 && Branch::done(mask(), fallen), contrib_);
     for (auto& [text, kind] : gigaboss_.takeAlerts())
@@ -114,8 +117,14 @@ void RaidRun::applyMask(uint32_t mask, bool initial) {
             if (!Branch::done(before, o.index) && Branch::done(now, o.index))
                 alert("BRANCHE · " + o.label.substr(0, o.label.find(" (")) + " : accompli par un autre groupe", Alert::Kind::Branch);
         if (branch_.generators(before) < branch_.generatorsNeeded && branch_.generators(now) >= branch_.generatorsNeeded)
-            alert("BRANCHE · Les deux générateurs tournent : le Poignet-verrou s'ouvre", Alert::Kind::Branch);
-        if (!branch_.shortcut(before) && branch_.shortcut(now)) alert("BRANCHE · Le raccourci Veine ⇄ Avant-bras est ouvert", Alert::Kind::Branch);
+            alert("BRANCHE · " + branch_.lockText("generators").message, Alert::Kind::Branch);
+        if (!branch_.shortcut(before) && branch_.shortcut(now)) alert("BRANCHE · " + branch_.lockText("shortcut").message, Alert::Kind::Branch);
+        // 2.68: what another branch did, at this step on every computer of the instance.
+        for (const EffectInfo& e : branch_.effects) {
+            if (Branch::on(before, e) || !Branch::on(now, e)) continue;
+            alert("TITAN · " + e.label, Alert::Kind::Branch);
+            if (world_ && e.inZone(zone_)) applyEffect(e);
+        }
     }
     // The doors of the passages follow their locks (the same step on every computer).
     if (!world_ || !rules_) return;
@@ -126,8 +135,95 @@ void RaidRun::applyMask(uint32_t mask, bool initial) {
     }
 }
 
+void RaidRun::applyEffect(const EffectInfo& e) {
+    if (e.kind == "disable") {
+        for (const std::string& id : e.objects)
+            if (LevelEntity* x = world_->entity(id)) x->handleAction(*world_, "disable", Json::object());
+    } else if (e.kind == "remove") {
+        // The enemies of these spawn objects (just loaded ones too: still waiting to join the world).
+        for (const std::string& id : e.objects)
+            if (auto* spawn = dynamic_cast<EnemySpawnEntity*>(world_->entity(id)))
+                if (Enemy* enemy = spawn->enemy(*world_); enemy && enemy->alive()) enemy->despawn();
+    } else if (e.kind == "hazard_off" && magmaOn_ && rules_ && rules_->magma.present) {
+        magmaOn_ = false;
+        if (LevelEntity* z = world_->entity(rules_->magma.zone)) z->handleAction(*world_, "disable", Json::object());
+    }
+    // "open": the passages locked "link:<id>" open with their doors (applyMask).
+}
+
+RaidRun::CoopView RaidRun::coop(size_t index) const {
+    CoopView v;
+    if (!world_ || !rules_ || index >= rules_->coops.size()) return v;
+    const CoopPlate& c = rules_->coops[index];
+    int playing = 0;
+    for (int i = 0; i < world_->teamSize(); ++i) {
+        if (world_->member(i).presence != GameWorld::Presence::Playing) continue;
+        ++playing;
+        const Player& pl = world_->playerAt(i);
+        if (pl.alive() && !pl.respawning() && c.rect.intersects(pl.box)) ++v.on;
+    }
+    v.need = std::clamp(c.players, 1, std::max(1, playing));
+    if (!c.group.empty()) {
+        // 2.68 (phase 3): plates held together (« group »): the players in play shared between
+        // them; a plate beyond the players in play is not needed (alone: the first one is enough).
+        int size = 0, rank = 0;
+        for (size_t j = 0; j < rules_->coops.size(); ++j) {
+            if (rules_->coops[j].group != c.group) continue;
+            if (j < index) ++rank;
+            ++size;
+        }
+        v.need = rank >= std::max(1, playing) ? 0 : std::clamp(c.players, 1, std::max(1, playing / size));
+    }
+    v.done = index < coopDone_.size() && coopDone_[index] != 0;
+    return v;
+}
+
+void RaidRun::updateCoops() {
+    for (size_t k = 0; k < rules_->coops.size(); ++k) {
+        if (coopDone_[k]) continue;
+        const CoopPlate& c = rules_->coops[k];
+        // 2.68 (phase 3): the plates of a group, held at the same step (coop(): how many on each).
+        std::vector<size_t> group{k};
+        if (!c.group.empty())
+            for (size_t j = 0; j < rules_->coops.size(); ++j)
+                if (j != k && rules_->coops[j].group == c.group) group.push_back(j);
+        bool held = true;
+        for (size_t g : group) {
+            const CoopView v = coop(g);
+            if (v.on < v.need) held = false;
+        }
+        if (!held) continue;
+        for (size_t g : group) {
+            coopDone_[g] = 1;
+            const CoopPlate& p = rules_->coops[g];
+            for (const std::string& t : p.targets)
+                if (LevelEntity* e = world_->entity(t)) e->handleAction(*world_, p.action, Json::object());
+            // A mechanism activated, by each player standing on it (the raid's contributions).
+            for (int i = 0; i < std::min(world_->teamSize(), kMaxInstancePlayers); ++i)
+                if (world_->member(i).presence == GameWorld::Presence::Playing && p.rect.intersects(world_->playerAt(i).box)) contrib_.vent(i);
+        }
+        alert("GROUPE · " + (c.message.empty() ? c.label : c.message), Alert::Kind::Group);
+    }
+}
+
+void RaidRun::reachedCheckpoint(const std::string& id) {
+    if (id == lastCheckpoint_ || std::find(rules_->checkpoints.begin(), rules_->checkpoints.end(), id) == rules_->checkpoints.end()) return;
+    lastCheckpoint_ = id;
+    alert("GROUPE · Point de contrôle : la zone reprendra ici", Alert::Kind::Group);
+    // The players down get up at the checkpoint (half their hearts), all at this step.
+    const auto it = rules_->spawns.find("cp:" + id);
+    if (it == rules_->spawns.end() || it->second.empty()) return;
+    bool up = false;
+    for (int i = 0; i < world_->teamSize(); ++i) {
+        if (world_->member(i).presence != GameWorld::Presence::Down) continue;
+        world_->restoreMember(i, world_->carryOf(i), it->second.front());
+        up = true;
+    }
+    if (up) alert("GROUPE · Les joueurs à terre se relèvent au point de contrôle", Alert::Kind::Group);
+}
+
 float RaidRun::magmaIn() const {
-    if (!rules_ || !rules_->magma.present) return -1.0f;
+    if (!rules_ || !rules_->magma.present || branch_.hazardOff(zone_, mask())) return -1.0f;
     const Magma& m = rules_->magma;
     const float t = static_cast<float>(zoneTicks_) / static_cast<float>(kSimHz);
     if (t < m.first) return m.first - t;
@@ -136,7 +232,7 @@ float RaidRun::magmaIn() const {
 }
 
 void RaidRun::updateMagma() {
-    if (!rules_->magma.present) return;
+    if (!rules_->magma.present || branch_.hazardOff(zone_, mask())) return;  // 2.68: stopped from another branch
     const Magma& m = rules_->magma;
     // Whole steps only (no float drift): on during `duration` from each `first + k × period`.
     const uint32_t first = static_cast<uint32_t>(std::lround(m.first * kSimHz));
@@ -145,7 +241,8 @@ void RaidRun::updateMagma() {
     const uint32_t warn = static_cast<uint32_t>(std::lround(m.warn * kSimHz));
     const bool on = zoneTicks_ >= first && (zoneTicks_ - first) % period < duration;
     const uint32_t next = zoneTicks_ < first ? first : first + ((zoneTicks_ - first) / period + 1) * period;
-    if (next - zoneTicks_ == warn) alert("DANGER · Coulée de magma dans " + std::to_string(static_cast<int>(std::lround(m.warn))) + " s : montez !", Alert::Kind::Danger);
+    if (next - zoneTicks_ == warn)
+        alert("DANGER · " + m.name + " dans " + std::to_string(static_cast<int>(std::lround(m.warn))) + " s : " + m.hint + " !", Alert::Kind::Danger);
     if (on == magmaOn_) return;
     magmaOn_ = on;
     if (LevelEntity* z = world_->entity(m.zone)) z->handleAction(*world_, on ? "enable" : "disable", Json::object());
@@ -163,7 +260,7 @@ void RaidRun::completed(const std::string& source, const std::string& trigger, i
         }
         local_ |= 1u << info->index;
         alert("GROUPE · Objectif accompli : " + info->label, Alert::Kind::Group);
-        // 2.67: an action of one player (a generator hit, a relic taken) is theirs; a fight won
+        // 2.68: an action of one player (a generator hit, a relic taken) is theirs; a fight won
         // (an arena cleared, a guardian or the gigaboss down) is everyone's in play.
         contrib_.objective(*world_, trigger == "activate" || trigger == "collected" ? who : -1);
         Report rep;
@@ -173,50 +270,6 @@ void RaidRun::completed(const std::string& source, const std::string& trigger, i
         rep.tick = tick_;
         reports_.push_back(std::move(rep));
         reportResult();
-    }
-}
-
-int RaidRun::switchNeed(const GroupSwitch& sw) const {
-    int seated = 0;
-    if (world_ && world_->coop())
-        for (int i = 0; i < world_->teamSize(); ++i) seated += world_->member(i).presence != GameWorld::Presence::Vacant ? 1 : 0;
-    // Each plate needs its players, and every plate together never more than the seats taken.
-    const int plates = std::max<int>(1, static_cast<int>(sw.plates.size()));
-    return std::clamp(std::min(sw.need, std::max(1, seated) / plates), 1, sw.need);
-}
-
-void RaidRun::stepSwitches() {
-    // 2.67: a door or a lift that needs the group: enough players on each plate at once, held.
-    for (size_t k = 0; k < rules_->switches.size() && k < switchStates_.size(); ++k) {
-        const GroupSwitch& sw = rules_->switches[k];
-        SwitchState& st = switchStates_[k];
-        if (st.done) continue;
-        const int need = switchNeed(sw);
-        int seats = 0;
-        for (int i = 0; i < world_->teamSize(); ++i) seats += world_->coop() && world_->member(i).presence != GameWorld::Presence::Vacant ? 1 : 0;
-        bool all = true;
-        uint8_t holders = 0;
-        for (size_t p = 0; p < sw.plates.size(); ++p) {
-            int n = 0;
-            for (int i = 0; i < std::min(world_->teamSize(), kMaxInstancePlayers); ++i) {
-                if (world_->member(i).presence != GameWorld::Presence::Playing) continue;
-                const Player& pl = world_->playerAt(i);
-                if (!pl.alive() || pl.respawning() || !sw.plates[p].intersects(pl.box)) continue;
-                ++n;
-                holders |= static_cast<uint8_t>(1u << i);
-            }
-            st.on[p] = n;
-            all = all && (n >= need || static_cast<int>(p) >= std::max(1, seats));  // alone: the first plate only
-        }
-        const int hold = std::max(1, static_cast<int>(std::lround(sw.hold * static_cast<float>(kSimHz))));
-        st.hold = all ? std::min(hold, st.hold + 1) : std::max(0, st.hold - 2);
-        if (st.hold < hold) continue;
-        st.done = true;
-        for (const std::string& t : sw.targets)
-            if (LevelEntity* e = world_->entity(t)) e->handleAction(*world_, sw.action, Json::object());
-        for (int i = 0; i < kMaxInstancePlayers; ++i)
-            if (holders & (1u << i)) contrib_.vent(i);  // a mechanism activated, by each player on it
-        alert("GROUPE · " + sw.label + " : c'est fait !", Alert::Kind::Group);
     }
 }
 
@@ -247,9 +300,9 @@ void RaidRun::checkPassages() {
         if (taker < 0) continue;
         if (!passageOpen(p)) {
             const ZoneInfo* to = branch_.zone(p.to);
-            world_->hint(std::string("Passage verrouillé vers ") + (to ? to->name : "?") +
-                             (p.lock == "generators" ? " : il faut les deux générateurs." : p.lock == "shortcut" ? " : le levier de l'avant-bras l'ouvre." : "."),
-                         3.0f);
+            const std::string hint = branch_.lockText(p.lock).hint;
+            const std::string name = to ? to->name : "?";
+            world_->hint(hint.empty() ? "Passage verrouillé vers " + name + "." : "Passage verrouillé vers " + name + " : " + hint + ".", 3.0f);
             continue;
         }
         std::vector<GameWorld::MemberCarry> carry;
@@ -263,11 +316,11 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
     if (!world_) return;
     if (branchMask != branchMask_) applyMask(branchMask, false);
     updateMagma();
-    gigaboss_.before(*world_);  // 2.67: its carapace, its weak point bare, its pressure
+    gigaboss_.before(*world_);  // 2.68: its carapace, its weak point bare, its pressure
     // The events since the last step (a world just loaded, this step): all of them, in order.
     stepTeam(*world_, frames, count, kSimDt);
     const size_t firstReport = reports_.size();
-    // 2.67: the players' contributions of the step, then the gigaboss's rules (vents, jets, weak
+    // 2.68: the players' contributions of the step, then the gigaboss's rules (vents, jets, weak
     // points, its fall) and what they tell the raid.
     contrib_.afterStep(*world_, tick_, gigaboss_.boss(*world_));
     gigaboss_.after(*world_, contrib_);
@@ -275,9 +328,12 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
         alert(std::move(text), kind == Gigaboss::AlertKind::Danger ? Alert::Kind::Danger : kind == Gigaboss::AlertKind::Branch ? Alert::Kind::Branch : Alert::Kind::Group);
     ++tick_;
     ++zoneTicks_;
-    for (const Event& e : events_) completed(e.source, e.trigger, e.who);
+    for (const Event& e : events_) {
+        if (e.trigger == "checkpoint") reachedCheckpoint(e.source);
+        completed(e.source, e.trigger, e.who);
+    }
     events_.clear();
-    stepSwitches();  // 2.67
+    updateCoops();
     if (gigaboss_.phaseReached() > bossReported_) {
         for (int p = bossReported_ + 1; p <= gigaboss_.phaseReached(); ++p) {
             Report rep;
@@ -302,27 +358,14 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
             c.health = world_->playerAt(i).maxHealth();
             carry.push_back(c);
         }
-        // 2.67: from the last checkpoint reached in the zone, when there is one.
-        const std::string cpId = world_->checkpointId();
-        const Vec2 cpAt = world_->respawnPoint();
-        alert(cpId.empty() ? "GROUPE · Tout le groupe est à terre : la zone reprend" : "GROUPE · Tout le groupe est à terre : reprise au point de contrôle",
-              Alert::Kind::Danger);
-        const std::string from = from_;
+        alert("GROUPE · Tout le groupe est à terre : la zone reprend", Alert::Kind::Danger);
+        // 2.68: at the last checkpoint reached in the zone, when there is one.
+        const std::string from = lastCheckpoint_.empty() ? from_ : "cp:" + lastCheckpoint_;
         loadZone(zone_, from, &carry);
-        if (!cpId.empty() && world_) {
-            for (int i = 0; i < world_->teamSize(); ++i)
-                if (world_->member(i).presence != GameWorld::Presence::Vacant) world_->playerAt(i).teleportTo(world_->freeSpot(cpAt, i));
-            world_->setCheckpoint(cpId, cpAt);
-            for (size_t k = 0; k < rules_->passages.size(); ++k) {
-                insidePassage_[k] = 0;
-                for (int i = 0; i < world_->teamSize(); ++i)
-                    if (rules_->passages[k].rect.intersects(world_->playerAt(i).box)) insidePassage_[k] |= static_cast<uint8_t>(1u << i);
-            }
-        }
         return;
     }
     checkPassages();
-    if (test_.on) reports_.clear();  // 2.67: an administrator's test never reports anything
+    if (test_.on) reports_.clear();  // 2.68: an administrator's test never reports anything
 }
 
 uint64_t RaidRun::hash() const {
@@ -332,16 +375,19 @@ uint64_t RaidRun::hash() const {
     h = mix(h, zoneTicks_);
     h = mix(h, tick_);
     h = mix(h, (static_cast<uint64_t>(branchMask_) << 32) | local_);
-    h = mix(h, contrib_.hash());   // 2.67
-    h = mix(h, gigaboss_.hash());  // 2.67
-    for (const SwitchState& st : switchStates_) h = mix(h, (static_cast<uint64_t>(st.hold) << 1) | (st.done ? 1u : 0u));
+    h = mix(h, contrib_.hash());   // 2.68 (phase 3)
+    h = mix(h, gigaboss_.hash());  // 2.68 (phase 3)
+    // 2.68: the expeditions' state (nothing for the zones without checkpoints or plates).
+    for (unsigned char c : lastCheckpoint_) h = mix(h, c);
+    for (size_t k = 0; k < coopDone_.size(); ++k)
+        if (coopDone_[k]) h = mix(h, 0x100u + k);
     return h;
 }
 
 std::vector<Report> RaidRun::takeReports() {
     std::vector<Report> out;
     out.swap(reports_);
-    if (test_.on) out.clear();  // 2.67: an administrator's test never reports anything
+    if (test_.on) out.clear();  // 2.68: an administrator's test never reports anything
     return out;
 }
 

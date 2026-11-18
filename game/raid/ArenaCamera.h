@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.67: the camera of a gigaboss's arena (docs/RAIDS.md §9), for every gigaboss of the raids
+// 2.68: the camera of a gigaboss's arena (docs/RAIDS.md §9), for every gigaboss of the raids
 // (Pyroclast first, the six others later). Display only: it never touches the simulation, the
 // world's own camera goes on as before and is used again outside the arena.
 //

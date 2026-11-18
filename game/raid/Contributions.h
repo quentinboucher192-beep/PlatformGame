@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.67: what each player of a raid instance did (docs/RAIDS.md §6), computed INSIDE the
+// 2.68: what each player of a raid instance did (docs/RAIDS.md §6), computed INSIDE the
 // simulation: every game of the instance steps the same frames, so every game counts the same
 // numbers and reports the same table to the server (its consensus decides, as for the
 // objectives). Nothing here reads the clock, the camera or the network.

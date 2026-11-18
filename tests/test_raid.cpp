@@ -199,10 +199,10 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
         CHECK(found == 1);
     }
     // The rules of the map: two paths, the secret grotto, the wrist locked by 2 generators,
-    // the shortcut; 2.67: the hand is the gigaboss's arena.
+    // the shortcut; 2.68: the hand is the gigaboss's arena.
     auto reach = b.reachable(0);
     CHECK(reach[2] && reach[3] && reach[4] && reach[5] && reach[6]);
-    CHECK(!reach[7] && !reach[8]);  // 2.67: the hand only once the wrist is broken (its long level)
+    CHECK(!reach[7] && !reach[8]);  // 2.68: the hand only once the wrist is broken (its long level)
     const uint32_t gens = (1u << b.objectiveIndex("veine_generateur")) | (1u << b.objectiveIndex("avantbras_generateur"));
     CHECK(b.generators(gens) == 2);
     CHECK(b.reachable(gens)[7]);
@@ -243,7 +243,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0x6f6da8ade4c3e9fcULL;  // reference (2.67: the Main de Pyroclast): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0x6f6da8ade4c3e9fcULL;  // reference (2.68: the Main de Pyroclast): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -456,7 +456,7 @@ TEST_CASE("raid objectives: the instance's completion counts at once, the pair n
     CHECK(run.takeReports().empty());
 }
 
-// ======================================================================= 2.67: PYROCLAST
+// ======================================================================= 2.68: PYROCLAST
 
 #ifdef _WIN32
 #define COSMIC_RAID_NULL "NUL"
@@ -731,7 +731,12 @@ TEST_CASE("raid gigaboss: a giant for 8, it strikes every player at once (one fi
     CHECK(def->scale >= 2.5f);
     CHECK(def->raid == "asterion");
     const raid::GigabossRules& g = branch().zoneRules(kHand)->gigaboss;
-    CHECK(g.arena.w >= 6.0f * Camera::kViewWidth);
+    // 2.68: its arena in metadata.raid.arena, the format of the seven branches' lairs.
+    const raid::ArenaInfo& arena = branch().zoneRules(kHand)->arena;
+    CHECK(arena.present);
+    CHECK(arena.rect.w >= 6.0f * Camera::kViewWidth);
+    CHECK(arena.floor > arena.rect.y && arena.floor <= arena.rect.bottom());
+    CHECK(arena.rect.contains({arena.entry.x, arena.entry.y - 1.0f}));
     CHECK(g.fistPeriods.size() == 3);
     for (int players : {2, 8}) {
         raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
@@ -794,86 +799,116 @@ TEST_CASE("raid long route: the Poignet-verrou takes a group of 8 about 15 minut
     const LevelData* level = b.level(7);
     CHECK(z != nullptr && level != nullptr);
     if (!z || !level) return;
-    CHECK(z->estimate.present);
-    // The level's own content: its giant ambushes (combat zones of several waves), their enemies'
-    // health, its group mechanisms, its checkpoints, its route.
+    // The level's own content: its giant ambushes (combat zones of several waves), its enemies'
+    // health, its co-op mechanisms, its checkpoints.
     int ambushes = 0, waves = 0, checkpoints = 0;
-    std::vector<double> waveHp;
+    double hp = 0.0;
     for (const LevelObject& o : level->objects) {
         if (o.type == "checkpoint") ++checkpoints;
+        if (o.type == "enemy" && !o.prop<bool>("boss", false))
+            if (const EnemyDefinition* def = s.content.enemy(o.propStr("enemy"))) hp += def->hp;
         if (o.type != "combat_zone") continue;
         const std::string list = o.propStr("waves");
         if (list.empty()) continue;
         ++ambushes;
-        size_t a = 0;
-        while (a <= list.size()) {
-            size_t e = list.find(';', a);
-            if (e == std::string::npos) e = list.size();
-            const std::string wave = list.substr(a, e - a);
-            double hp = 0.0;
-            size_t c = 0;
-            while (c <= wave.size()) {
-                size_t d = wave.find(',', c);
-                if (d == std::string::npos) d = wave.size();
-                if (const LevelObject* en = level->findObject(wave.substr(c, d - c)))
-                    if (const EnemyDefinition* def = s.content.enemy(en->propStr("enemy"))) hp += def->hp;
-                c = d + 1;
-            }
-            waveHp.push_back(hp);
-            ++waves;
-            a = e + 1;
-        }
+        waves += 1 + static_cast<int>(std::count(list.begin(), list.end(), ';'));
     }
     CHECK(ambushes >= 4);
     CHECK(waves >= 16);
     CHECK(checkpoints >= 4);
-    CHECK(z->switches.size() >= 3);
-    // The same model as tools/levelgen/raid_bras_droit.py (estimate): the group's pace, the climb,
-    // every wave (it appears, then its health at 8 players' damage), every group mechanism.
-    const double players = 8.0;
-    double secs = (z->estimate.routeX1 - z->estimate.routeX0) / 70.0 + z->estimate.climb * 3.0;
-    for (double hp : waveHp) secs += 12.0 + hp / (players * 0.6);
-    secs += static_cast<double>(z->switches.size()) * 45.0;
+    CHECK(z->checkpoints.size() == static_cast<size_t>(checkpoints));
+    for (const std::string& cp : z->checkpoints) CHECK(z->spawns.count("cp:" + cp) == 1);
+    CHECK(z->coops.size() >= 3);
+    // 2.68: the model of the seven branches (tools/levelgen/raid_asterion.py, estimate_minutes):
+    // the width at 2 tiles/s, the enemies' health at 4 a second for 8 players, 8 s a wave, 30 s
+    // a co-op mechanism (and its lift's ride, up and back down).
+    double secs = level->bounds.w / 16.0 / 2.0 + hp / 4.0 + waves * 8.0;
+    for (const raid::CoopPlate& c : z->coops) {
+        secs += 30.0;
+        for (const std::string& t : c.targets)
+            if (const LevelObject* o = level->findObject(t); o && o->type == "moving_platform")
+                secs += 2.0 * std::abs(o->prop<double>("dy", 0.0)) / std::max(1.0, o->prop<double>("speed", 1.0));
+    }
     const double minutes = secs / 60.0;
-    std::printf("  Poignet-verrou : %d embuscades, %d vagues, %zu mécanismes de groupe, %d points de contrôle : ~%.1f min à 8\n", ambushes, waves,
-                z->switches.size(), checkpoints, minutes);
+    std::printf("  Poignet-verrou : %d embuscades, %d vagues, %zu mécanismes à plusieurs, %d points de contrôle : ~%.1f min à 8\n", ambushes,
+                waves, z->coops.size(), checkpoints, minutes);
     CHECK(minutes >= 13.0 && minutes <= 17.0);
-    CHECK(std::abs(minutes - z->estimate.minutes) < 0.1);
+    // The catalog carries the generator's figure (the same model).
+    auto cat = FileUtil::loadJson(Paths::dataDir() / "raids" / "asterion" / "bras_droit" / "branch.json");
+    CHECK(cat.has_value());
+    if (cat) CHECK(std::abs(minutes - (*cat)["zones"][6].value("minutes", 0.0)) < 0.1);
     // The other zones stay short (a raid of 45 to 60 minutes in all).
     for (int other = 1; other <= 6; ++other) CHECK(b.level(other)->bounds.w < level->bounds.w / 3.0f);
 }
 
-TEST_CASE("raid long route: a door of the group opens with enough players on its plate; alone, the first plate is enough") {
+TEST_CASE("raid long route: a door of the group opens with enough players on its plate; twin plates are held together") {
     Services s;
+    const uint32_t gens = 1u << branch().objectiveIndex("veine_generateur") | 1u << branch().objectiveIndex("avantbras_generateur");
     for (int players : {8, 1}) {
         raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
-        CHECK(run.begin(1u << branch().objectiveIndex("veine_generateur") | 1u << branch().objectiveIndex("avantbras_generateur"), 7));
+        CHECK(run.begin(gens, 7));
         const auto f = still(players);
         run.step(f.data(), static_cast<int>(f.size()), 0);
-        const raid::GroupSwitch* valve = nullptr;
-        size_t k = 0;
-        for (size_t i = 0; i < run.rules().switches.size(); ++i)
-            if (run.rules().switches[i].id == "vanne_double") {
-                valve = &run.rules().switches[i];
-                k = i;
-            }
-        CHECK(valve != nullptr);
-        if (!valve) continue;
-        const int need = run.switchNeed(*valve);
+        size_t k = run.rules().coops.size();
+        for (size_t i = 0; i < run.rules().coops.size(); ++i)
+            if (run.rules().coops[i].id == "vanne_double") k = i;
+        CHECK(k < run.rules().coops.size());
+        if (k >= run.rules().coops.size()) continue;
+        const raid::CoopPlate& valve = run.rules().coops[k];
+        const int need = run.coop(k).need;
         CHECK(need == std::min(4, players));
-        auto* door = dynamic_cast<DoorEntity*>(run.world().entity(valve->targets.front()));
+        auto* door = dynamic_cast<DoorEntity*>(run.world().entity(valve.targets.front()));
         CHECK(door != nullptr && !door->isOpen());
+        auto stand = [&](const raid::CoopPlate& c, int from, int count) {
+            for (int i = 0; i < count; ++i)
+                run.world().playerAt(from + i).teleportTo({c.rect.x + 8.0f + 6.0f * static_cast<float>(i), c.rect.bottom()});
+        };
         // One player short of the need: nothing (with 8).
-        for (int t = 0; t < 400 && players > 1; ++t) {
-            for (int i = 0; i < need - 1; ++i) run.world().playerAt(i).teleportTo({valve->plates[0].center().x + 6.0f * static_cast<float>(i), valve->plates[0].bottom()});
+        for (int t = 0; t < 30 && players > 1; ++t) {
+            stand(valve, 0, need - 1);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
-        CHECK(!run.switches()[k].done);
-        for (int t = 0; t < 400 && !run.switches()[k].done; ++t) {
-            for (int i = 0; i < need; ++i) run.world().playerAt(i).teleportTo({valve->plates[0].center().x + 6.0f * static_cast<float>(i), valve->plates[0].bottom()});
+        CHECK(!run.coop(k).done);
+        for (int t = 0; t < 30 && !run.coop(k).done; ++t) {
+            stand(valve, 0, need);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
-        CHECK(run.switches()[k].done);
+        CHECK(run.coop(k).done);
         if (door) CHECK(door->isOpen());
+        // The twin plates (one group): both held at the same step; alone, the first is enough.
+        std::vector<size_t> twins;
+        for (size_t i = 0; i < run.rules().coops.size(); ++i)
+            if (run.rules().coops[i].group == "jumelles") twins.push_back(i);
+        CHECK(twins.size() == 2);
+        if (twins.size() != 2) continue;
+        const raid::CoopPlate& low = run.rules().coops[twins[0]];
+        const raid::CoopPlate& high = run.rules().coops[twins[1]];
+        if (players == 1) {
+            CHECK(run.coop(twins[1]).need == 0);
+            for (int t = 0; t < 30 && !run.coop(twins[0]).done; ++t) {
+                stand(low, 0, 1);
+                run.step(f.data(), static_cast<int>(f.size()), 0);
+            }
+            CHECK(run.coop(twins[0]).done);
+            continue;
+        }
+        CHECK(run.coop(twins[0]).need == 2);
+        CHECK(run.coop(twins[1]).need == 2);
+        for (int t = 0; t < 30; ++t) {  // the low plate alone: nothing
+            stand(low, 0, 2);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+        }
+        CHECK(!run.coop(twins[0]).done);
+        for (int t = 0; t < 30 && !run.coop(twins[0]).done; ++t) {
+            stand(low, 0, 2);
+            stand(high, 2, 2);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+        }
+        CHECK(run.coop(twins[0]).done);
+        CHECK(run.coop(twins[1]).done);
+        // Each player on a plate counts a mechanism (the contributions).
+        int mechanisms = 0;
+        for (const raid::Contribution& c : run.contributions().records()) mechanisms += c.vents;
+        CHECK(mechanisms >= need + 4);
     }
 }

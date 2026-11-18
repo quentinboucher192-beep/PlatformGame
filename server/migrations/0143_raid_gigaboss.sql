@@ -1,4 +1,4 @@
--- 2.67: clan raids « Asterion », phase 3 (raidZones.ts, raidRewards.ts, docs/RAIDS.md): the
+-- 2.68: clan raids « Asterion », phase 3 (raidZones.ts, raidRewards.ts, docs/RAIDS.md): the
 -- gigaboss PYROCLAST of the branch « BRAS DROIT », the players' contributions computed by the
 -- games of each instance (accepted by the consensus of the instance, as the objectives), the
 -- state of each instance's fight, and the rewards granted from validated results only (once per

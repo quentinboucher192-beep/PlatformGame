@@ -1,10 +1,11 @@
-# Raids de clan « ASTERION » — phases 2 et 3 : la branche « BRAS DROIT » et son gigaboss PYROCLAST (2.65 – 2.67)
+# Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6) ;
+# phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12)
 
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
 8 sous-zones, des instances de 8 joueurs au plus en verrouillage par entrées, et un état de la
 branche partagé par tous les groupes, que le serveur ne met à jour qu'avec le **consensus** des
-joueurs de chaque instance. La phase 3 (2.67) ouvre la Main : le gigaboss **Pyroclast** (§6 à §9).
+joueurs de chaque instance. La phase 3 (2.68) ouvre la Main : le gigaboss **Pyroclast** (§7 à §12).
 
 ## 1. La branche (maquette « Branche »)
 
@@ -16,10 +17,10 @@ joueurs de chaque instance. La phase 3 (2.67) ouvre la Main : le gigaboss **Pyro
 | 4 | Coude-forge | **deux soufflets, deux groupes** (un chacun) ; coulée toutes les 90 s ; l'Enclume vivante (facultatif) | 2, 3, 7🔒 |
 | 5 | Grotte des scories | **zone secrète** ; la relique (facultatif) | 3 |
 | 6 | Avant-bras | générateur est ; **levier du raccourci** vers la Veine (facultatif) | 2, 3⇄, 8 |
-| 7 | Poignet-verrou | ouvert par les **2 générateurs** ; 2.67 : **la longue route** (§10) dont la dernière embuscade ouvre la Main | 4, 8 |
+| 7 | Poignet-verrou | ouvert par les **2 générateurs** ; 2.68 : **la longue route** (§11) dont la dernière embuscade ouvre la Main | 4, 8 |
 | 8 | Main de Pyroclast | le gigaboss **Pyroclast** (§6) ; objectif `main_pyroclast` | 6, 7 |
 
-* Deux chemins vers le Coude-forge (Biceps / Veine), puis le Poignet-verrou et la Main ; 2.67 : la Main ne s'ouvre
+* Deux chemins vers le Coude-forge (Biceps / Veine), puis le Poignet-verrou et la Main ; 2.68 : la Main ne s'ouvre
   (aussi par l'Avant-bras) qu'une fois le verrou du Poignet brisé (`objective:poignet_verrou`).
 * **Une zone est contrôlée** quand tous ses objectifs non facultatifs sont faits. Les verrous :
   `generators` (les 2 générateurs), `shortcut` (le levier de l'Avant-bras), `objective:<id>`.
@@ -39,7 +40,7 @@ instances doivent avoir la même (le `GO` du relais la porte, `hash` = révision
 cette zone), `passages` (`to`, `rect` en pixels, `lock`, `door`), `objectives` (`id` du catalogue,
 `source` = objet du niveau, `trigger` = l'événement qui l'accomplit : `cleared`, `killed`,
 `activate`, `collected`), `magma` (`zone` de dégâts allumée `duration` s toutes les `period` s à
-partir de `first`, annoncée `warn` s avant), `gigaboss` (2.67, §6 : l'objet du boss, ses évents en pixels, les
+partir de `first`, annoncée `warn` s avant), `gigaboss` (2.68, §7 : l'objet du boss, ses évents en pixels, les
 phases de sa carapace, ses points faibles et les nombres de son combat). `revision` vaut 2 depuis la phase 3.
 
 L'**état de la branche** est l'ensemble des objectifs faits : le bit *i* = l'objectif *i* du
@@ -136,7 +137,7 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
 
 ## 5. Limites de la phase 2
 
-* (2.67 : la Main est ouverte, voir §6.)
+* (2.68 : la Main est ouverte, voir §7.)
 * Les replays d'une instance ne sont pas encore conservés côté serveur (le relais garde les trames
   en mémoire, comme la coopération).
 * Les soufflets demandent deux groupes, sans la contrainte « à 3 s près » de la maquette : deux
@@ -144,16 +145,134 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
 * Le chat de groupe (« GROUPE · Lyra : … » de la maquette) n'est pas dans cette phase : les
   alertes viennent du jeu et du serveur seulement.
 
-## 6. Phase 3 (2.67) : le gigaboss PYROCLAST
+## 6. Phase 4 (2.68) : le titan entier — sept branches, carte globale, liens, répartition
 
-`data/enemies/pyroclast.json` : une main de magma qui marche sur ses doigts (le cerveau du golem : poing roulant
-= `shell`, poing météore = `skyfall`, secousse = `quake`), trois phases et une dernière éruption :
+### Les sept branches (`tools/levelgen/raid_asterion.py`)
+
+Six branches de plus, écrites par `python3 tools/levelgen/raid_asterion.py` (sortie stable, jamais à
+la main ; `--en fichier.json` donne l'anglais de chaque texte pour `tools/i18n/extract.py --merge`) :
+`data/raids/asterion/<branche>/zone_1.json … zone_8.json` et `branch.json`, le catalogue du titan
+`data/raids/asterion/titan.json` et **sa copie serveur** `server/src/raidTitan.json` (titan + les six
+catalogues ; le Bras droit reste à `raid_bras_droit.py` et `raidBranches.json`, lus seulement).
+
+| Branche | Gigaboss | Monde | Traversée | Danger périodique | Deux groupes | Verrou de la zone 7 |
+|---|---|---|---|---|---|---|
+| Crâne | Skullmaw | Confins (os, obsidienne) | vertèbres flottantes, regards lasers | onde psychique | 2 nerfs optiques | les deux yeux |
+| Bras gauche | Dreadfang | Glacior | glace qui cède, tourelles | balayage des griffes | 2 lames | 2 cœurs de givre |
+| Torse | Heartbreaker | Noyau | côtes mouvantes, barrières d'énergie | pulsation du cœur | 2 × 2 plaques | les 4 plaques |
+| Abdomen | Voidworm | Sylvanox (racines, acide) | parois qui respirent | reflux d'acide | 2 valves | 2 glandes |
+| Jambe gauche | Graviton | Aethra (ruines flottantes) | puits d'apesanteur, îlots mouvants | puits de gravité | 2 rotules | 2 générateurs de gravité |
+| Jambe droite | Titanus | Pyralis (forge, lave) | pistons géants | onde sismique | 2 pistons | 2 réacteurs |
+
+Chaque branche : entrée à 3 points d'apparition et son arène, deux chemins, une **zone secrète** (5) et
+sa relique, un **raccourci** ouvert au levier, une **zone à deux groupes** (une paire d'objectifs), un
+verrou `generators` sur plusieurs zones (textes propres dans `lock_texts` du catalogue), l'arène de
+la zone 7 qui ouvre l'antre (8), dont la **porte reste scellée** (« <Gigaboss> — prochaine version » ;
+les six combats viennent ensuite). Les dangers réutilisent `metadata.raid.magma` avec `name`, `hint`,
+`message` (le Bras droit garde ses textes par défaut).
+
+### L'expédition avant l'antre (zone 7) et l'arène du gigaboss (zone 8)
+
+La zone 7 de chaque nouvelle branche est **une longue expédition pour 8 joueurs** (≈ 15 min même à 8) :
+trois étages (galeries basses avec les traversées et le danger de la branche, étage du milieu, étage
+haut ; des puits de corniches les relient à chaque secteur) pour que 8 joueurs ne s'entassent pas ;
+**deux écluses** (un mur sur les trois étages, une porte à chaque étage : elles s'ouvrent ensemble quand
+3 joueurs se tiennent sur la plaque) et **un monte-charge** (il démarre avec 4 joueurs dessus, puis fait
+la navette seul) — `metadata.raid.coop` (`rect`, `players`, `targets`, `action`), moins de joueurs
+demandés quand moins sont en jeu (jamais de blocage à 1 ou 2) ; **points de contrôle** à chaque étage
+(`metadata.raid.checkpoints`, arrivée `spawns["cp:<id>"]`) : le groupe entier à terre reprend au dernier
+atteint, et chaque nouveau point relève les joueurs à terre ; **quatre embuscades géantes** (une zone de
+combat sur les trois étages, quatre vagues, des ennemis à chaque étage : le système d'embuscade, état
+gardé à la chute, compteur, flèches hors écran) — la dernière, la garde de l'antre, est l'objectif qui
+ouvre la porte de la zone 8. Tout se joue dans `raid::RaidRun` (plaques, points de contrôle : au même
+pas sur tous les jeux, dans l'empreinte).
+
+**Durée estimée** (`estimate_minutes` du générateur, champ `minutes` de chaque zone du catalogue) : la
+largeur à 2 tuiles/s, les PV des ennemis à 4 PV/s pour 8 joueurs, 8 s par vague, 30 s par mécanisme à
+plusieurs (plus le trajet du monte-charge). Avec un joueur (1,5 PV/s), le modèle retrouve les temps de
+référence de la campagne à ±40 % (`calibrate()`). Le générateur exige 13 à 17 min pour l'expédition et
+18 à 35 min pour toute la branche hors gigaboss (un raid standard de 45 à 60 min avec le combat et les
+attentes des autres groupes) ; `tests/test_raid_titan.cpp` le revérifie.
+
+La zone 8 : une antichambre, la porte scellée, puis **l'arène du gigaboss**, immense pour 8 joueurs
+attaqués à la fois (200 tuiles de large, plus de deux écrans ; cinq étages de plateformes ; deux piliers),
+ses bornes déclarées dans `metadata.raid.arena` (`rect`, `floor`, `door`, `entry`, en pixels) pour les
+combats à venir.
+
+### Les liens entre branches (spec §7)
+
+`titan.json` → `links` : `from` (objectifs d'autres branches, tous requis), `to` (la branche cible),
+`bit` (24 et plus : un bit de **l'état de la branche cible**, sous lequel restent ses objectifs), `kind`,
+`zones`, `objects` :
+
+| `kind` | Effet dans la simulation (`raid::RaidRun::applyEffect`) |
+|---|---|
+| `open` | les passages verrouillés `link:<id>` s'ouvrent (portes comprises) |
+| `disable` | les objets des zones (lasers, tourelles, barrières) sont éteints |
+| `remove` | les ennemis des zones (leurs objets d'apparition) disparaissent |
+| `hazard_off` | le danger périodique des zones s'arrête |
+
+Onze liens : les yeux du Crâne → tourelles du Bras gauche ; ses nerfs → onde sismique de la Jambe
+droite ; les générateurs de la Jambe gauche → barrières du Torse ; le nid de l'Abdomen → parasites
+du Torse ; les plaques du Torse → passage Intestin ⇄ Gosier de l'Abdomen ; la cheville gauche →
+passage Crevasse ⇄ Poignet du Bras gauche ; les réacteurs de la Jambe droite → coulées du Bras droit ;
+le poignet du Bras droit → passage Tempe ⇄ Voûte du Crâne ; la cheville de Titanus → passage Tibia ⇄
+Cheville de la Jambe gauche ; les valves de l'Abdomen → puits de gravité de la Jambe gauche ; les lames
+de Dreadfang → spectres en renfort du Crâne.
+
+Le serveur calcule l'état d'une branche (`raidMap.stateMaskOf` : ses objectifs acceptés + les liens
+dont toutes les sources sont acceptées) ; `raidZones.branchMaskOf` (lu par le relais toutes les 3 s et
+à chaque objectif accepté, **toutes branches confondues**) le donne aux jeux par `RAID_STATE` : chaque
+jeu de l'instance applique le lien **au même pas** (et de nouveau à chaque chargement de zone), avec
+une alerte « TITAN · … ». Rien ne vient d'un jeu ni de l'interface. Le hash du `GO` devient
+`<révision de la branche>.<révision du titan>`.
+
+### Progression collective
+
+Le consensus de la phase 2 (`POST /raids/instances/{id}/reports`) vaut pour les sept branches : le
+catalogue de la branche de l'instance, sa joignabilité avec les liens, l'objectif compté une fois par
+événement, le menteur minoritaire journalisé, l'égalité refusée.
+
+### Répartition des joueurs (spec §8, migration **0144**)
+
+`raid_placements` (une place par joueur et événement : instance, branche, par qui, pourquoi) et
+`raid_placement_log` (chaque changement). **8 joueurs au plus par instance** : une seule instruction
+conditionnelle place un joueur (deux placements simultanés ne font jamais un neuvième) ; une instance
+s'ouvre seulement quand toutes celles du clan sur la branche sont pleines.
+
+| Route | Rôle |
+|---|---|
+| `GET /raids/events/{id}/titan` | la carte globale : branches (état, zones contrôlées, objectifs, groupes, joueurs), `body` (état de chaque partie pour la figure), liens, renforts demandés, clans par objectifs, alertes, ma place |
+| `GET /raids/events/{id}/branches/{partie}` | la carte d'une branche (comme `/branch`, pour les sept) avec ses liens reçus et donnés |
+| `POST /raids/events/{id}/branches/{partie}/join {instance_id?}` | ma place sur cette branche (groupe de ma liste d'abord, puis les groupes en combat qui ont de la place, puis une nouvelle instance) ; avec `instance_id` : aider ce groupe s'il a de la place |
+| `POST /raids/events/{id}/join` | ma place, ou là où le clan a besoin de moi (un groupe en combat qui n'est pas plein, sinon la branche où le clan a le moins de joueurs) |
+| `GET /raids/events/{id}/placements` | les joueurs de mon clan et leur place, les groupes, `can_manage` |
+| `POST /raids/events/{id}/placements {player_id, branch, instance_id?}` | le chef, un officier ou le chef de raid déplace un membre |
+| `POST /raids/events/{id}/placements/rebalance {branch}` | répartit les joueurs d'une branche sur le moins de groupes possible, à parts égales (ceux qui ne jouent pas bougent d'abord) |
+
+Un joueur en combat garde sa partie : sa nouvelle place compte à sa prochaine entrée.
+
+### Écrans
+
+* **Carte du titan** (fiche d'un raid en cours › « Carte du titan ») : le titan (`AsterionFigure`, une
+  partie = sa branche), les groupes par branche, la progression, les effets, les renforts, les alertes,
+  « Rejoindre » et « Répartition du clan ». Les sept branches sont aussi des arrêts du focus.
+* **Carte d'une branche** (`RaidBranchScene`, pour les sept) : les passages ouverts par une autre
+  branche (✦), la section « Liens avec le reste du titan ».
+* **Répartition du clan** (`RaidRosterScene`) : membres, groupes, « Déplacer vers », « Équilibrer ».
+* **Combat** : les verrous et dangers de chaque branche, les liens actifs de la zone (✦).
+
+## 7. Phase 3 (2.68) : le gigaboss PYROCLAST
+
+`data/enemies/pyroclast.json` : une main de magma qui marche sur ses doigts (le cerveau du golem : poing météore =
+`skyfall`, secousse = `quake`), trois phases et une dernière éruption ; les **Poings de magma** (un par joueur en
+jeu) s'y ajoutent à chaque phase :
 
 | Phase | Seuil | Attaques | L'arène (événements `bossPhase` de la zone) |
 |---|---|---|---|
-| 1 « Poing de magma » | 100 % | coup de poing, poing roulant, pluie de magma, éruption, bombes de lave | — |
-| 2 « Carapace de basalte » | 66 % | poing météore, secousse, pluie, poing roulant, éruption | la croûte du centre cède au magma, deux dalles mobiles, soins |
-| 3 « Cœur de magma » | 33 % | marée de magma, double poing météore, secousse, éruption folle… | rideaux de lave aux deux murs, soins |
+| 1 « Poing de magma » | 100 % | coup de poing, pluie de magma, éruption, bombes de lave, secousse | — |
+| 2 « Carapace de basalte » | 66 % | poing météore, secousse, pluie, éruption | la croûte des fosses sous les tours cède au magma, soins |
+| 3 « Cœur de magma » | 33 % | marée de magma, double poing météore, secousse, éruption folle, pluie, poing | rideaux de lave aux deux murs, soins |
 
 Le sprite (trois feuilles, une par phase : plaques nues, carapace et évents, cœur à nu), son point faible et ses
 évents sont générés par `tools/assetgen/characters/boss_k_pyroclast.py` (`--check` : mêmes octets, testé ;
@@ -184,7 +303,7 @@ ordinateur) :
 * **Sa chute** : tous les joueurs en jeu sont « présents à la chute ». Un groupe entier à terre : la zone reprend, le
   boss aussi. Une Main dont l'objectif est déjà validé (un autre groupe l'a vaincu) est éteinte.
 
-## 7. Contributions et consensus (`game/raid/Contributions`, `raidZones.ts`)
+## 8. Contributions et consensus (`game/raid/Contributions`, `raidZones.ts`)
 
 Calculées dans la simulation (l'écouteur du monde : les attaques de chaque joueur sont étiquetées), un
 enregistrement par joueur ayant tenu un siège (`seat`, `from` = le pas où il l'a pris) : dégâts (dixièmes de vie),
@@ -203,7 +322,7 @@ jamais acceptée) :
 
 La valeur comparée est le texte canonique du tableau, reconstruit par le serveur à partir des nombres.
 
-## 8. Corps d'Asterion, résultats et récompenses (`raidRewards.ts`)
+## 9. Corps d'Asterion, résultats et récompenses (`raidRewards.ts`)
 
 * **Corps** (`body` de chaque événement, état validé seulement) : bras droit « attaque » dès qu'il y a une progression
   validée, « affaibli » quand un combat a atteint sa phase 2, « detruit » quand `main_pyroclast` est accepté ;
@@ -222,7 +341,7 @@ La valeur comparée est le texte canonique du tableau, reconstruit par le serveu
 Migration **0143_raid_gigaboss.sql** : `raid_instance_members.seat_from`, `raid_contributions`,
 `raid_gigaboss_fights`, `raid_reward_grants`.
 
-## 9. Écrans (2.67) et test des administrateurs
+## 10. Écrans (2.68) et test des administrateurs
 
 * **Combat** : les évents dessinés sur l'arène (fermé, ouvert, annoncé, jet ; la tenue en anneau), la carapace,
   les objectifs du gigaboss (évents k / 3, cœur à nu et ses points faibles, allié à relever), mes contributions en
@@ -234,25 +353,27 @@ Migration **0143_raid_gigaboss.sql** : `raid_instance_members.seat_from`, `raid_
   défaut), « Invincible (admin) · non classé », 2 à 8 joueurs simulés, phase de départ ; seul et en local
   (`RaidRun::setTest`) : aucun rapport n'est jamais produit, et le serveur refuse tout rapport marqué `test`.
 
-## 10. La longue route du Poignet-verrou (2.67)
+## 11. La longue route du Poignet-verrou (2.68)
 
 La zone 7 est un vrai niveau d'environ **15 minutes pour 8 joueurs** : des galeries à deux voies (sol et grilles) pour
 que huit joueurs ne s'empilent pas, **quatre embuscades géantes sur plusieurs étages** (la Tour des tendons, la
 Galerie des forges, la Fosse des scories, la Garde du verrou : des vagues sur chaque étage, les portes fermées
 pendant le combat ; l'état, le compteur et les flèches violettes des embuscades du jeu), des **mécanismes de groupe**
-(`groupSwitches` : la vanne double, 4 joueurs sur sa plaque ; le monte-charge, 3 joueurs dessus ; les plaques
-jumelles, 2 joueurs sur chacune en même temps ; le besoin suit les sièges occupés, seul la première plaque suffit),
+(`metadata.raid.coop`, le format des six autres expéditions : la vanne double, 4 joueurs sur sa plaque ; le
+monte-charge, 3 joueurs dessus ; les plaques jumelles, deux plaques d'un même `group` tenues au même pas, les joueurs
+en jeu partagés entre elles, seul la première suffit ; chaque joueur sur une plaque compte un « mécanisme »),
 des **points de contrôle** (le groupe entier à terre reprend au dernier atteint) et des réanimations.
 
-L'estimation (`estimate` du générateur, recalculée par `tests/test_raid.cpp` depuis le niveau lui-même) :
-parcours à l'allure du groupe (70 px/s) + 3 s par tuile grimpée + pour chaque vague 12 s (elle apparaît, le groupe
-se répartit) + sa vie ÷ (8 × 0,6 de dégâts par seconde) + 45 s par mécanisme de groupe : **≈ 14,5 min** (13 à 17
-exigés). Les autres zones restent courtes (le raid standard dure 45 à 60 min).
+L'estimation est celle des sept branches (`estimate_minutes` de `tools/levelgen/raid_asterion.py`, appelée par
+`raid_bras_droit.py`, champ `minutes` du catalogue, recalculée par `tests/test_raid.cpp` depuis le niveau lui-même) :
+**≈ 15,4 min** à 8 (13 à 17 exigés ; quatre embuscades de 4, 4, 4 et 5 vagues). Les autres zones restent courtes
+(la branche entière ≈ 22 min sans le gigaboss : un raid standard de 45 à 60 min avec son combat et les attentes).
 
-## 11. La caméra des arènes de gigaboss (`game/raid/ArenaCamera`, affichage seulement)
+## 12. La caméra des arènes de gigaboss (`game/raid/ArenaCamera`, affichage seulement)
 
 En entrant dans l'arène : un plan de **l'arène entière** et du boss (4 s), puis une vue qui suit le joueur de cet
 ordinateur avec un zoom entre 300 et 620 px de monde en hauteur : assez large pour les marques qui le menacent, le
 boss quand il est proche et les alliés voisins, jamais au point de rendre l'action minuscule. Des flèches au bord de
 l'écran (hors du HUD mesuré) montrent le boss (ses points faibles quand il est à nu), les alliés (leurs couleurs) et
-les ennemis d'une embuscade. Elle sert à tous les gigaboss (`GigabossRules::arena`). La simulation ne la voit jamais.
+les ennemis d'une embuscade. Elle sert à toutes les arènes de gigaboss : elle lit `metadata.raid.arena` (`rect`,
+`floor`, `door`, `entry`), le format des sept antres (`raid::ZoneRules::arena`). La simulation ne la voit jamais.

@@ -143,7 +143,7 @@ void AdminRaids::draw(const Rect& in) {
     const float formW = std::min(ui.s(600), in.w * 0.44f);
     drawForm({in.x, in.y, formW, in.h});
     Rect right{in.x + formW + ui.s(18), in.y, in.w - formW - ui.s(18), in.h};
-    // 2.67: « Tester Asterion » at the bottom of the right column (administrators only).
+    // 2.68: « Tester Asterion » at the bottom of the right column (administrators only).
     if (g_.online.isAdmin() && !raid::Branch::all().empty()) {
         const float testH = ui.s(226);
         drawTest({right.x, right.bottom() - testH, right.w, testH});
@@ -156,7 +156,7 @@ void AdminRaids::draw(const Rect& in) {
 }
 
 void AdminRaids::drawTest(const Rect& r) {
-    // 2.67: a branch of the catalog (raid::Branch::all: a branch added later appears by itself), one
+    // 2.68: a branch of the catalog (raid::Branch::all: a branch added later appears by itself), one
     // of its zones, then « Lancer le test »: solo, local, never reported.
     UIContext& ui = g_.ui;
     ui.pushId("test");

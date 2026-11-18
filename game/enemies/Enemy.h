@@ -164,7 +164,7 @@ public:
     /// the column spared in a pattern « toutes sauf une » (-1: none).
     const std::vector<std::vector<int>>& pressRounds() const { return pressRounds_; }
 
-    /// 2.67, the gigaboss of a raid (game/raid/Gigaboss.h): rules set from outside, step by step,
+    /// 2.68, the gigaboss of a raid (game/raid/Gigaboss.h): rules set from outside, step by step,
     /// by the raid's run; neutral otherwise (a level plays exactly as before). `guard`: nothing
     /// hurts it (its carapace); `mult`: the damage it takes is multiplied (its weak point bare).
     void setRaidGuard(bool guard, float mult) {
@@ -173,17 +173,17 @@ public:
     }
     bool raidGuarded() const { return raidGuard_; }
     float raidMultiplier() const { return raidMult_; }
-    /// 2.67: its cooldowns are divided by `p` (more players in the raid, more pressure).
+    /// 2.68: its cooldowns are divided by `p` (more players in the raid, more pressure).
     void setPressure(float p) { pressure_ = p > 0.0f ? p : 1.0f; }
     float pressure() const { return pressure_; }
-    /// 2.67: its health, and what is left of it, times `factor` (the players of a raid).
+    /// 2.68: its health, and what is left of it, times `factor` (the players of a raid).
     void scaleHealth(float factor) {
         maxHp_ *= factor;
         hp_ *= factor;
     }
-    /// 2.67: health taken at once from outside its own rules (one of its weak points broken).
+    /// 2.68: health taken at once from outside its own rules (one of its weak points broken).
     void wound(GameWorld& w, float amount);
-    /// 2.67: the attack it is winding up or performing (nullptr between two).
+    /// 2.68: the attack it is winding up or performing (nullptr between two).
     const AttackDef* currentAttack() const { return attack_; }
 
     bool alive() const { return state_ != EnemyState::Dead; }
@@ -537,7 +537,7 @@ private:
     bool boilerBurst_ = false;
     std::vector<std::vector<int>> pressRounds_;
 
-    // 2.67: the gigaboss of a raid (setRaidGuard, setPressure).
+    // 2.68: the gigaboss of a raid (setRaidGuard, setPressure).
     bool raidGuard_ = false;
     float raidMult_ = 1.0f;
     float pressure_ = 1.0f;

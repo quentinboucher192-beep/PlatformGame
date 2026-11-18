@@ -19,7 +19,8 @@
    "event": "",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.4
   },
   {
    "id": 2,
@@ -32,7 +33,8 @@
    "event": "",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.2
   },
   {
    "id": 3,
@@ -45,7 +47,8 @@
    "event": "Coulée de magma toutes les 60 s (terrasses hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.2
   },
   {
    "id": 4,
@@ -58,7 +61,8 @@
    "event": "Coulée de magma toutes les 90 s (plateformes hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2
+   "groups_required": 2,
+   "minutes": 1.4
   },
   {
    "id": 5,
@@ -71,7 +75,8 @@
    "event": "",
    "secret": true,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 0.6
   },
   {
    "id": 6,
@@ -84,7 +89,8 @@
    "event": "",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.1
   },
   {
    "id": 7,
@@ -97,7 +103,8 @@
    "event": "Environ 15 min à 8 joueurs",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 15.4
   },
   {
    "id": 8,

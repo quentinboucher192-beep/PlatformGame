@@ -20,6 +20,7 @@ import * as clans from "./clans";
 import * as raids from "./raids";
 import * as raidZones from "./raidZones";
 import * as raidRewards from "./raidRewards";
+import * as raidMap from "./raidMap";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -279,9 +280,18 @@ route("GET", `${V}/raids/events/{eventId}/branch`, (ctx) => raidZones.branchView
 route("POST", `${V}/raids/events/{eventId}/instance`, (ctx) => raidZones.joinInstance(ctx));
 route("GET", `${V}/raids/instances/{instanceId}/socket`, (ctx) => raidZones.instanceSocket(ctx));
 route("POST", `${V}/raids/instances/{instanceId}/reports`, (ctx) => raidZones.report(ctx));
-// 2.67 (phase 3): the results of an event (validated tables only) and the rewards to claim.
+// 2.68 (phase 3): the results of an event (validated tables only) and the rewards to claim.
 route("GET", `${V}/raids/events/{eventId}/results`, (ctx) => raidZones.eventResults(ctx));
 route("POST", `${V}/raids/rewards/claim`, (ctx) => raidRewards.claim(ctx));
+// Phase 4 (raidMap.ts, 2.68): the whole titan (seven branches, the links between them), each branch's map,
+// the placement of the players (8 per instance, up to 50 per clan) and its tools for the raid leader.
+route("GET", `${V}/raids/events/{eventId}/titan`, (ctx) => raidMap.titanView(ctx));
+route("GET", `${V}/raids/events/{eventId}/branches/{part}`, (ctx) => raidMap.branchView(ctx));
+route("POST", `${V}/raids/events/{eventId}/branches/{part}/join`, (ctx) => raidMap.join(ctx));
+route("POST", `${V}/raids/events/{eventId}/join`, (ctx) => raidMap.join(ctx));
+route("GET", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.placements(ctx));
+route("POST", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.move(ctx));
+route("POST", `${V}/raids/events/{eventId}/placements/rebalance`, (ctx) => raidMap.rebalance(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
@@ -600,7 +610,7 @@ async function raidReminders(env: Bindings): Promise<void> {
         if (await backups.maintenanceActive(env)) return;
         const sent = await raids.raidTick(env.DB);
         if (sent > 0) log("info", "raid_reminders", { sent });
-        // 2.67: the top of the ranking of the events just ended (raidRewards.ts, once per event).
+        // 2.68: the top of the ranking of the events just ended (raidRewards.ts, once per event).
         const tops = await raidRewards.grantEndedTops(env.DB, new Date().toISOString());
         if (tops > 0) log("info", "raid_top_rewards", { granted: tops });
     } catch (e) {

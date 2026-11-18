@@ -2255,186 +2255,6 @@
   },
   {
    "id": "o137",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2759.0,
-    564.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o138",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2135.0,
-    484.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o139",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2729.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "ember_mite",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o140",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2105.0,
-    326.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "ember_mite",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o141",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2696.0,
-    552.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "forge_bulwark",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o142",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2067.0,
-    462.0,
-    26.0,
-    34.0
-   ],
-   "props": {
-    "enemy": "magma_golem",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o143",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2664.0,
-    402.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "forge_drone",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o144",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    3258.0,
-    324.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "fire_wisp",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o145",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    2631.0,
-    564.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o146",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    3225.0,
-    486.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "magma_gloop",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o147",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -2445,14 +2265,14 @@
    ],
    "props": {
     "doors": "o68,o69",
-    "waves": "o97,o98,o99,o100,o101,o102,o103,o104,o105,o106;o107,o108,o109,o110,o111,o112,o113,o114,o115,o116;o117,o118,o119,o120,o121,o122,o123,o124,o125,o126;o127,o128,o129,o130,o131,o132,o133,o134,o135,o136;o137,o138,o139,o140,o141,o142,o143,o144,o145,o146",
+    "waves": "o97,o98,o99,o100,o101,o102,o103,o104,o105,o106;o107,o108,o109,o110,o111,o112,o113,o114,o115,o116;o117,o118,o119,o120,o121,o122,o123,o124,o125,o126;o127,o128,o129,o130,o131,o132,o133,o134,o135,o136",
     "lockCamera": false,
     "music": "",
     "announce": true
    }
   },
   {
-   "id": "o148",
+   "id": "o138",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -2469,7 +2289,7 @@
    }
   },
   {
-   "id": "o149",
+   "id": "o139",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -2484,7 +2304,7 @@
    }
   },
   {
-   "id": "o150",
+   "id": "o140",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2498,7 +2318,7 @@
    }
   },
   {
-   "id": "o151",
+   "id": "o141",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -2512,7 +2332,7 @@
    }
   },
   {
-   "id": "o152",
+   "id": "o142",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -2526,7 +2346,7 @@
    }
   },
   {
-   "id": "o153",
+   "id": "o143",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2540,7 +2360,7 @@
    }
   },
   {
-   "id": "o154",
+   "id": "o144",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -2554,7 +2374,7 @@
    }
   },
   {
-   "id": "o155",
+   "id": "o145",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -2569,7 +2389,7 @@
    }
   },
   {
-   "id": "o156",
+   "id": "o146",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2587,7 +2407,7 @@
    }
   },
   {
-   "id": "o157",
+   "id": "o147",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2605,7 +2425,7 @@
    }
   },
   {
-   "id": "o158",
+   "id": "o148",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2623,7 +2443,7 @@
    }
   },
   {
-   "id": "o159",
+   "id": "o149",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2637,7 +2457,7 @@
    }
   },
   {
-   "id": "o160",
+   "id": "o150",
    "type": "moving_platform",
    "layer": "gameplay",
    "rect": [
@@ -2658,7 +2478,7 @@
    }
   },
   {
-   "id": "o161",
+   "id": "o151",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -2673,7 +2493,7 @@
    }
   },
   {
-   "id": "o162",
+   "id": "o152",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2687,7 +2507,7 @@
    }
   },
   {
-   "id": "o163",
+   "id": "o153",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -2701,7 +2521,7 @@
    }
   },
   {
-   "id": "o164",
+   "id": "o154",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -2717,7 +2537,7 @@
    }
   },
   {
-   "id": "o165",
+   "id": "o155",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2731,7 +2551,7 @@
    }
   },
   {
-   "id": "o166",
+   "id": "o156",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -2747,7 +2567,7 @@
    }
   },
   {
-   "id": "o167",
+   "id": "o157",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2761,7 +2581,7 @@
    }
   },
   {
-   "id": "o168",
+   "id": "o158",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -2777,7 +2597,7 @@
    }
   },
   {
-   "id": "o169",
+   "id": "o159",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2791,7 +2611,7 @@
    }
   },
   {
-   "id": "o170",
+   "id": "o160",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -2807,7 +2627,7 @@
    }
   },
   {
-   "id": "o171",
+   "id": "o161",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2821,7 +2641,7 @@
    }
   },
   {
-   "id": "o172",
+   "id": "o162",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -2837,7 +2657,7 @@
    }
   },
   {
-   "id": "o173",
+   "id": "o163",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2851,7 +2671,7 @@
    }
   },
   {
-   "id": "o174",
+   "id": "o164",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -2867,7 +2687,7 @@
    }
   },
   {
-   "id": "o175",
+   "id": "o165",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -2881,7 +2701,7 @@
    }
   },
   {
-   "id": "o176",
+   "id": "o166",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2899,7 +2719,7 @@
    }
   },
   {
-   "id": "o177",
+   "id": "o167",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -2917,7 +2737,7 @@
    }
   },
   {
-   "id": "o178",
+   "id": "o168",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2931,7 +2751,7 @@
    }
   },
   {
-   "id": "o179",
+   "id": "o169",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -2942,7 +2762,7 @@
    ]
   },
   {
-   "id": "o180",
+   "id": "o170",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2956,7 +2776,7 @@
    }
   },
   {
-   "id": "o181",
+   "id": "o171",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -2970,7 +2790,7 @@
    }
   },
   {
-   "id": "o182",
+   "id": "o172",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -2984,7 +2804,7 @@
    }
   },
   {
-   "id": "o183",
+   "id": "o173",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -2998,7 +2818,7 @@
    }
   },
   {
-   "id": "o184",
+   "id": "o174",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3012,7 +2832,7 @@
    }
   },
   {
-   "id": "o185",
+   "id": "o175",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3026,7 +2846,7 @@
    }
   },
   {
-   "id": "o186",
+   "id": "o176",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3040,7 +2860,7 @@
    }
   },
   {
-   "id": "o187",
+   "id": "o177",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3054,7 +2874,7 @@
    }
   },
   {
-   "id": "o188",
+   "id": "o178",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3068,7 +2888,7 @@
    }
   },
   {
-   "id": "o189",
+   "id": "o179",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3082,7 +2902,7 @@
    }
   },
   {
-   "id": "o190",
+   "id": "o180",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -3093,7 +2913,7 @@
    ]
   },
   {
-   "id": "o191",
+   "id": "o181",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -3104,7 +2924,7 @@
    ]
   },
   {
-   "id": "o192",
+   "id": "o182",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3118,7 +2938,7 @@
    }
   },
   {
-   "id": "o193",
+   "id": "o183",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3132,7 +2952,7 @@
    }
   },
   {
-   "id": "o194",
+   "id": "o184",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3146,7 +2966,7 @@
    }
   },
   {
-   "id": "o195",
+   "id": "o185",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3160,7 +2980,7 @@
    }
   },
   {
-   "id": "o196",
+   "id": "o186",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3174,7 +2994,7 @@
    }
   },
   {
-   "id": "o197",
+   "id": "o187",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3188,7 +3008,7 @@
    }
   },
   {
-   "id": "o198",
+   "id": "o188",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -3199,7 +3019,7 @@
    ]
   },
   {
-   "id": "o199",
+   "id": "o189",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -3210,7 +3030,7 @@
    ]
   },
   {
-   "id": "o200",
+   "id": "o190",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3228,7 +3048,7 @@
    }
   },
   {
-   "id": "o201",
+   "id": "o191",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3246,7 +3066,7 @@
    }
   },
   {
-   "id": "o202",
+   "id": "o192",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3264,7 +3084,7 @@
    }
   },
   {
-   "id": "o203",
+   "id": "o193",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3282,7 +3102,7 @@
    }
   },
   {
-   "id": "o204",
+   "id": "o194",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3300,7 +3120,7 @@
    }
   },
   {
-   "id": "o205",
+   "id": "o195",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3318,7 +3138,7 @@
    }
   },
   {
-   "id": "o206",
+   "id": "o196",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3336,7 +3156,7 @@
    }
   },
   {
-   "id": "o207",
+   "id": "o197",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3354,7 +3174,7 @@
    }
   },
   {
-   "id": "o208",
+   "id": "o198",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3372,7 +3192,7 @@
    }
   },
   {
-   "id": "o209",
+   "id": "o199",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3390,7 +3210,7 @@
    }
   },
   {
-   "id": "o210",
+   "id": "o200",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3408,7 +3228,7 @@
    }
   },
   {
-   "id": "o211",
+   "id": "o201",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3426,7 +3246,7 @@
    }
   },
   {
-   "id": "o212",
+   "id": "o202",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3444,7 +3264,7 @@
    }
   },
   {
-   "id": "o213",
+   "id": "o203",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3462,7 +3282,7 @@
    }
   },
   {
-   "id": "o214",
+   "id": "o204",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3480,7 +3300,7 @@
    }
   },
   {
-   "id": "o215",
+   "id": "o205",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3498,7 +3318,7 @@
    }
   },
   {
-   "id": "o216",
+   "id": "o206",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3516,7 +3336,7 @@
    }
   },
   {
-   "id": "o217",
+   "id": "o207",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3534,7 +3354,7 @@
    }
   },
   {
-   "id": "o218",
+   "id": "o208",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3552,7 +3372,7 @@
    }
   },
   {
-   "id": "o219",
+   "id": "o209",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3570,7 +3390,7 @@
    }
   },
   {
-   "id": "o220",
+   "id": "o210",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3588,7 +3408,7 @@
    }
   },
   {
-   "id": "o221",
+   "id": "o211",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3606,7 +3426,7 @@
    }
   },
   {
-   "id": "o222",
+   "id": "o212",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3624,7 +3444,7 @@
    }
   },
   {
-   "id": "o223",
+   "id": "o213",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3642,7 +3462,7 @@
    }
   },
   {
-   "id": "o224",
+   "id": "o214",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3660,7 +3480,7 @@
    }
   },
   {
-   "id": "o225",
+   "id": "o215",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3678,7 +3498,7 @@
    }
   },
   {
-   "id": "o226",
+   "id": "o216",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3696,7 +3516,7 @@
    }
   },
   {
-   "id": "o227",
+   "id": "o217",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3714,7 +3534,7 @@
    }
   },
   {
-   "id": "o228",
+   "id": "o218",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3732,7 +3552,7 @@
    }
   },
   {
-   "id": "o229",
+   "id": "o219",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3750,7 +3570,7 @@
    }
   },
   {
-   "id": "o230",
+   "id": "o220",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3768,7 +3588,7 @@
    }
   },
   {
-   "id": "o231",
+   "id": "o221",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3786,7 +3606,7 @@
    }
   },
   {
-   "id": "o232",
+   "id": "o222",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3804,7 +3624,7 @@
    }
   },
   {
-   "id": "o233",
+   "id": "o223",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3822,7 +3642,7 @@
    }
   },
   {
-   "id": "o234",
+   "id": "o224",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3840,7 +3660,7 @@
    }
   },
   {
-   "id": "o235",
+   "id": "o225",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3858,7 +3678,7 @@
    }
   },
   {
-   "id": "o236",
+   "id": "o226",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3876,7 +3696,7 @@
    }
   },
   {
-   "id": "o237",
+   "id": "o227",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3894,7 +3714,7 @@
    }
   },
   {
-   "id": "o238",
+   "id": "o228",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3912,7 +3732,7 @@
    }
   },
   {
-   "id": "o239",
+   "id": "o229",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3930,7 +3750,7 @@
    }
   },
   {
-   "id": "o240",
+   "id": "o230",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3948,7 +3768,7 @@
    }
   },
   {
-   "id": "o241",
+   "id": "o231",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3966,7 +3786,7 @@
    }
   },
   {
-   "id": "o242",
+   "id": "o232",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -3984,7 +3804,7 @@
    }
   },
   {
-   "id": "o243",
+   "id": "o233",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4002,205 +3822,7 @@
    }
   },
   {
-   "id": "o244",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7224.0,
-    360.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "forge_bulwark",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o245",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6696.0,
-    552.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "forge_bulwark",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o246",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7287.0,
-    468.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o247",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6759.0,
-    372.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o248",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7351.0,
-    560.0,
-    18.0,
-    16.0
-   ],
-   "props": {
-    "enemy": "lava_burrower",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o249",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6819.0,
-    446.0,
-    26.0,
-    34.0
-   ],
-   "props": {
-    "enemy": "magma_golem",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o250",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7415.0,
-    372.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "forge_bomber",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o251",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6888.0,
-    562.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "forge_drone",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o252",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6361.0,
-    470.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "ember_mite",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o253",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6953.0,
-    374.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "ash_wing",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o254",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6425.0,
-    566.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "magma_gloop",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o255",
+   "id": "o234",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -4210,15 +3832,15 @@
     288.0
    ],
    "props": {
-    "doors": "o182,o183",
-    "waves": "o200,o201,o202,o203,o204,o205,o206,o207,o208,o209,o210;o211,o212,o213,o214,o215,o216,o217,o218,o219,o220,o221;o222,o223,o224,o225,o226,o227,o228,o229,o230,o231,o232;o233,o234,o235,o236,o237,o238,o239,o240,o241,o242,o243;o244,o245,o246,o247,o248,o249,o250,o251,o252,o253,o254",
+    "doors": "o172,o173",
+    "waves": "o190,o191,o192,o193,o194,o195,o196,o197,o198,o199,o200;o201,o202,o203,o204,o205,o206,o207,o208,o209,o210,o211;o212,o213,o214,o215,o216,o217,o218,o219,o220,o221,o222;o223,o224,o225,o226,o227,o228,o229,o230,o231,o232,o233",
     "lockCamera": false,
     "music": "",
     "announce": true
    }
   },
   {
-   "id": "o256",
+   "id": "o235",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4235,7 +3857,7 @@
    }
   },
   {
-   "id": "o257",
+   "id": "o236",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -4250,7 +3872,7 @@
    }
   },
   {
-   "id": "o258",
+   "id": "o237",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4264,7 +3886,7 @@
    }
   },
   {
-   "id": "o259",
+   "id": "o238",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -4278,7 +3900,7 @@
    }
   },
   {
-   "id": "o260",
+   "id": "o239",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -4292,7 +3914,7 @@
    }
   },
   {
-   "id": "o261",
+   "id": "o240",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4306,7 +3928,7 @@
    }
   },
   {
-   "id": "o262",
+   "id": "o241",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4320,7 +3942,7 @@
    }
   },
   {
-   "id": "o263",
+   "id": "o242",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4334,7 +3956,7 @@
    }
   },
   {
-   "id": "o264",
+   "id": "o243",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -4348,7 +3970,7 @@
    }
   },
   {
-   "id": "o265",
+   "id": "o244",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -4363,7 +3985,7 @@
    }
   },
   {
-   "id": "o266",
+   "id": "o245",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4381,7 +4003,7 @@
    }
   },
   {
-   "id": "o267",
+   "id": "o246",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4399,7 +4021,7 @@
    }
   },
   {
-   "id": "o268",
+   "id": "o247",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4413,7 +4035,7 @@
    }
   },
   {
-   "id": "o269",
+   "id": "o248",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -4427,7 +4049,7 @@
    }
   },
   {
-   "id": "o270",
+   "id": "o249",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -4441,7 +4063,7 @@
    }
   },
   {
-   "id": "o271",
+   "id": "o250",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4455,7 +4077,7 @@
    }
   },
   {
-   "id": "o272",
+   "id": "o251",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4469,7 +4091,7 @@
    }
   },
   {
-   "id": "o273",
+   "id": "o252",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4483,7 +4105,7 @@
    }
   },
   {
-   "id": "o274",
+   "id": "o253",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4497,7 +4119,7 @@
    }
   },
   {
-   "id": "o275",
+   "id": "o254",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4511,7 +4133,7 @@
    }
   },
   {
-   "id": "o276",
+   "id": "o255",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4525,7 +4147,7 @@
    }
   },
   {
-   "id": "o277",
+   "id": "o256",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -4536,7 +4158,7 @@
    ]
   },
   {
-   "id": "o278",
+   "id": "o257",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -4547,7 +4169,7 @@
    ]
   },
   {
-   "id": "o279",
+   "id": "o258",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4561,7 +4183,7 @@
    }
   },
   {
-   "id": "o280",
+   "id": "o259",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4575,7 +4197,7 @@
    }
   },
   {
-   "id": "o281",
+   "id": "o260",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4589,7 +4211,7 @@
    }
   },
   {
-   "id": "o282",
+   "id": "o261",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4603,7 +4225,7 @@
    }
   },
   {
-   "id": "o283",
+   "id": "o262",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4617,7 +4239,7 @@
    }
   },
   {
-   "id": "o284",
+   "id": "o263",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4631,7 +4253,7 @@
    }
   },
   {
-   "id": "o285",
+   "id": "o264",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -4642,7 +4264,7 @@
    ]
   },
   {
-   "id": "o286",
+   "id": "o265",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -4653,7 +4275,7 @@
    ]
   },
   {
-   "id": "o287",
+   "id": "o266",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4671,7 +4293,7 @@
    }
   },
   {
-   "id": "o288",
+   "id": "o267",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4689,7 +4311,7 @@
    }
   },
   {
-   "id": "o289",
+   "id": "o268",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4707,7 +4329,7 @@
    }
   },
   {
-   "id": "o290",
+   "id": "o269",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4725,7 +4347,7 @@
    }
   },
   {
-   "id": "o291",
+   "id": "o270",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4743,7 +4365,7 @@
    }
   },
   {
-   "id": "o292",
+   "id": "o271",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4761,7 +4383,7 @@
    }
   },
   {
-   "id": "o293",
+   "id": "o272",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4779,7 +4401,7 @@
    }
   },
   {
-   "id": "o294",
+   "id": "o273",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4797,7 +4419,7 @@
    }
   },
   {
-   "id": "o295",
+   "id": "o274",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4815,7 +4437,7 @@
    }
   },
   {
-   "id": "o296",
+   "id": "o275",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4833,7 +4455,7 @@
    }
   },
   {
-   "id": "o297",
+   "id": "o276",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4851,7 +4473,7 @@
    }
   },
   {
-   "id": "o298",
+   "id": "o277",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4869,7 +4491,7 @@
    }
   },
   {
-   "id": "o299",
+   "id": "o278",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4887,7 +4509,7 @@
    }
   },
   {
-   "id": "o300",
+   "id": "o279",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4905,7 +4527,7 @@
    }
   },
   {
-   "id": "o301",
+   "id": "o280",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4923,7 +4545,7 @@
    }
   },
   {
-   "id": "o302",
+   "id": "o281",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4941,7 +4563,7 @@
    }
   },
   {
-   "id": "o303",
+   "id": "o282",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4959,7 +4581,7 @@
    }
   },
   {
-   "id": "o304",
+   "id": "o283",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4977,7 +4599,7 @@
    }
   },
   {
-   "id": "o305",
+   "id": "o284",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4995,7 +4617,7 @@
    }
   },
   {
-   "id": "o306",
+   "id": "o285",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5013,7 +4635,7 @@
    }
   },
   {
-   "id": "o307",
+   "id": "o286",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5031,7 +4653,7 @@
    }
   },
   {
-   "id": "o308",
+   "id": "o287",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5049,7 +4671,7 @@
    }
   },
   {
-   "id": "o309",
+   "id": "o288",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5067,7 +4689,7 @@
    }
   },
   {
-   "id": "o310",
+   "id": "o289",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5085,7 +4707,7 @@
    }
   },
   {
-   "id": "o311",
+   "id": "o290",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5103,7 +4725,7 @@
    }
   },
   {
-   "id": "o312",
+   "id": "o291",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5121,7 +4743,7 @@
    }
   },
   {
-   "id": "o313",
+   "id": "o292",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5139,7 +4761,7 @@
    }
   },
   {
-   "id": "o314",
+   "id": "o293",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5157,7 +4779,7 @@
    }
   },
   {
-   "id": "o315",
+   "id": "o294",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5175,7 +4797,7 @@
    }
   },
   {
-   "id": "o316",
+   "id": "o295",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5193,7 +4815,7 @@
    }
   },
   {
-   "id": "o317",
+   "id": "o296",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5211,7 +4833,7 @@
    }
   },
   {
-   "id": "o318",
+   "id": "o297",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5229,7 +4851,7 @@
    }
   },
   {
-   "id": "o319",
+   "id": "o298",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5247,7 +4869,7 @@
    }
   },
   {
-   "id": "o320",
+   "id": "o299",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5265,7 +4887,7 @@
    }
   },
   {
-   "id": "o321",
+   "id": "o300",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5283,7 +4905,7 @@
    }
   },
   {
-   "id": "o322",
+   "id": "o301",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5301,7 +4923,7 @@
    }
   },
   {
-   "id": "o323",
+   "id": "o302",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5319,7 +4941,7 @@
    }
   },
   {
-   "id": "o324",
+   "id": "o303",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5337,7 +4959,7 @@
    }
   },
   {
-   "id": "o325",
+   "id": "o304",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5355,7 +4977,7 @@
    }
   },
   {
-   "id": "o326",
+   "id": "o305",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5373,7 +4995,7 @@
    }
   },
   {
-   "id": "o327",
+   "id": "o306",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -5383,15 +5005,15 @@
     288.0
    ],
    "props": {
-    "doors": "o269,o270",
-    "waves": "o287,o288,o289,o290,o291,o292,o293,o294,o295,o296;o297,o298,o299,o300,o301,o302,o303,o304,o305,o306;o307,o308,o309,o310,o311,o312,o313,o314,o315,o316;o317,o318,o319,o320,o321,o322,o323,o324,o325,o326",
+    "doors": "o248,o249",
+    "waves": "o266,o267,o268,o269,o270,o271,o272,o273,o274,o275;o276,o277,o278,o279,o280,o281,o282,o283,o284,o285;o286,o287,o288,o289,o290,o291,o292,o293,o294,o295;o296,o297,o298,o299,o300,o301,o302,o303,o304,o305",
     "lockCamera": false,
     "music": "",
     "announce": true
    }
   },
   {
-   "id": "o328",
+   "id": "o307",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -5408,7 +5030,7 @@
    }
   },
   {
-   "id": "o329",
+   "id": "o308",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -5423,7 +5045,7 @@
    }
   },
   {
-   "id": "o330",
+   "id": "o309",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5437,7 +5059,7 @@
    }
   },
   {
-   "id": "o331",
+   "id": "o310",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
@@ -5451,7 +5073,7 @@
    }
   },
   {
-   "id": "o332",
+   "id": "o311",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -5465,7 +5087,7 @@
    }
   },
   {
-   "id": "o333",
+   "id": "o312",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -5479,7 +5101,7 @@
    }
   },
   {
-   "id": "o334",
+   "id": "o313",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -5493,7 +5115,7 @@
    }
   },
   {
-   "id": "o335",
+   "id": "o314",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -5507,7 +5129,7 @@
    }
   },
   {
-   "id": "o336",
+   "id": "o315",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5521,7 +5143,7 @@
    }
   },
   {
-   "id": "o337",
+   "id": "o316",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5535,7 +5157,7 @@
    }
   },
   {
-   "id": "o338",
+   "id": "o317",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5549,7 +5171,7 @@
    }
   },
   {
-   "id": "o339",
+   "id": "o318",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5563,7 +5185,7 @@
    }
   },
   {
-   "id": "o340",
+   "id": "o319",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5577,7 +5199,7 @@
    }
   },
   {
-   "id": "o341",
+   "id": "o320",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5591,7 +5213,7 @@
    }
   },
   {
-   "id": "o342",
+   "id": "o321",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5605,7 +5227,7 @@
    }
   },
   {
-   "id": "o343",
+   "id": "o322",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5619,7 +5241,7 @@
    }
   },
   {
-   "id": "o344",
+   "id": "o323",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -5630,7 +5252,7 @@
    ]
   },
   {
-   "id": "o345",
+   "id": "o324",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -5641,7 +5263,7 @@
    ]
   },
   {
-   "id": "o346",
+   "id": "o325",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5655,7 +5277,7 @@
    }
   },
   {
-   "id": "o347",
+   "id": "o326",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5669,7 +5291,7 @@
    }
   },
   {
-   "id": "o348",
+   "id": "o327",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5683,7 +5305,7 @@
    }
   },
   {
-   "id": "o349",
+   "id": "o328",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5697,7 +5319,7 @@
    }
   },
   {
-   "id": "o350",
+   "id": "o329",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5711,7 +5333,7 @@
    }
   },
   {
-   "id": "o351",
+   "id": "o330",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5725,7 +5347,7 @@
    }
   },
   {
-   "id": "o352",
+   "id": "o331",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5739,7 +5361,7 @@
    }
   },
   {
-   "id": "o353",
+   "id": "o332",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5753,7 +5375,7 @@
    }
   },
   {
-   "id": "o354",
+   "id": "o333",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -5764,7 +5386,7 @@
    ]
   },
   {
-   "id": "o355",
+   "id": "o334",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -5775,7 +5397,7 @@
    ]
   },
   {
-   "id": "o356",
+   "id": "o335",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5789,7 +5411,7 @@
    }
   },
   {
-   "id": "o357",
+   "id": "o336",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5803,7 +5425,7 @@
    }
   },
   {
-   "id": "o358",
+   "id": "o337",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5817,7 +5439,7 @@
    }
   },
   {
-   "id": "o359",
+   "id": "o338",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5831,7 +5453,7 @@
    }
   },
   {
-   "id": "o360",
+   "id": "o339",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5845,7 +5467,7 @@
    }
   },
   {
-   "id": "o361",
+   "id": "o340",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5859,7 +5481,7 @@
    }
   },
   {
-   "id": "o362",
+   "id": "o341",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5873,7 +5495,7 @@
    }
   },
   {
-   "id": "o363",
+   "id": "o342",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -5887,7 +5509,7 @@
    }
   },
   {
-   "id": "o364",
+   "id": "o343",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -5898,7 +5520,7 @@
    ]
   },
   {
-   "id": "o365",
+   "id": "o344",
    "type": "ladder",
    "layer": "gameplay",
    "rect": [
@@ -5909,7 +5531,7 @@
    ]
   },
   {
-   "id": "o366",
+   "id": "o345",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5927,7 +5549,7 @@
    }
   },
   {
-   "id": "o367",
+   "id": "o346",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5945,7 +5567,7 @@
    }
   },
   {
-   "id": "o368",
+   "id": "o347",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5963,7 +5585,7 @@
    }
   },
   {
-   "id": "o369",
+   "id": "o348",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5981,7 +5603,7 @@
    }
   },
   {
-   "id": "o370",
+   "id": "o349",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -5999,7 +5621,7 @@
    }
   },
   {
-   "id": "o371",
+   "id": "o350",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6017,7 +5639,7 @@
    }
   },
   {
-   "id": "o372",
+   "id": "o351",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6035,7 +5657,7 @@
    }
   },
   {
-   "id": "o373",
+   "id": "o352",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6053,7 +5675,7 @@
    }
   },
   {
-   "id": "o374",
+   "id": "o353",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6071,7 +5693,7 @@
    }
   },
   {
-   "id": "o375",
+   "id": "o354",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6089,7 +5711,7 @@
    }
   },
   {
-   "id": "o376",
+   "id": "o355",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6107,7 +5729,7 @@
    }
   },
   {
-   "id": "o377",
+   "id": "o356",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6125,7 +5747,7 @@
    }
   },
   {
-   "id": "o378",
+   "id": "o357",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6143,7 +5765,7 @@
    }
   },
   {
-   "id": "o379",
+   "id": "o358",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6161,7 +5783,7 @@
    }
   },
   {
-   "id": "o380",
+   "id": "o359",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6179,7 +5801,7 @@
    }
   },
   {
-   "id": "o381",
+   "id": "o360",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6197,7 +5819,7 @@
    }
   },
   {
-   "id": "o382",
+   "id": "o361",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6215,7 +5837,7 @@
    }
   },
   {
-   "id": "o383",
+   "id": "o362",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6233,7 +5855,7 @@
    }
   },
   {
-   "id": "o384",
+   "id": "o363",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6251,7 +5873,7 @@
    }
   },
   {
-   "id": "o385",
+   "id": "o364",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6269,7 +5891,7 @@
    }
   },
   {
-   "id": "o386",
+   "id": "o365",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6287,7 +5909,7 @@
    }
   },
   {
-   "id": "o387",
+   "id": "o366",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6305,7 +5927,7 @@
    }
   },
   {
-   "id": "o388",
+   "id": "o367",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6323,7 +5945,7 @@
    }
   },
   {
-   "id": "o389",
+   "id": "o368",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6341,7 +5963,7 @@
    }
   },
   {
-   "id": "o390",
+   "id": "o369",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6359,7 +5981,7 @@
    }
   },
   {
-   "id": "o391",
+   "id": "o370",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6377,7 +5999,7 @@
    }
   },
   {
-   "id": "o392",
+   "id": "o371",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6395,7 +6017,7 @@
    }
   },
   {
-   "id": "o393",
+   "id": "o372",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6413,7 +6035,7 @@
    }
   },
   {
-   "id": "o394",
+   "id": "o373",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6431,7 +6053,7 @@
    }
   },
   {
-   "id": "o395",
+   "id": "o374",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6449,7 +6071,7 @@
    }
   },
   {
-   "id": "o396",
+   "id": "o375",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6467,7 +6089,7 @@
    }
   },
   {
-   "id": "o397",
+   "id": "o376",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6485,7 +6107,7 @@
    }
   },
   {
-   "id": "o398",
+   "id": "o377",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6503,7 +6125,7 @@
    }
   },
   {
-   "id": "o399",
+   "id": "o378",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6521,7 +6143,7 @@
    }
   },
   {
-   "id": "o400",
+   "id": "o379",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6539,7 +6161,7 @@
    }
   },
   {
-   "id": "o401",
+   "id": "o380",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6557,7 +6179,7 @@
    }
   },
   {
-   "id": "o402",
+   "id": "o381",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6575,7 +6197,7 @@
    }
   },
   {
-   "id": "o403",
+   "id": "o382",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6593,7 +6215,7 @@
    }
   },
   {
-   "id": "o404",
+   "id": "o383",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6611,7 +6233,7 @@
    }
   },
   {
-   "id": "o405",
+   "id": "o384",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6629,7 +6251,7 @@
    }
   },
   {
-   "id": "o406",
+   "id": "o385",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6647,7 +6269,7 @@
    }
   },
   {
-   "id": "o407",
+   "id": "o386",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6665,7 +6287,7 @@
    }
   },
   {
-   "id": "o408",
+   "id": "o387",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6683,7 +6305,7 @@
    }
   },
   {
-   "id": "o409",
+   "id": "o388",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6701,7 +6323,7 @@
    }
   },
   {
-   "id": "o410",
+   "id": "o389",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6719,7 +6341,7 @@
    }
   },
   {
-   "id": "o411",
+   "id": "o390",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6737,7 +6359,7 @@
    }
   },
   {
-   "id": "o412",
+   "id": "o391",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6755,7 +6377,7 @@
    }
   },
   {
-   "id": "o413",
+   "id": "o392",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6773,7 +6395,7 @@
    }
   },
   {
-   "id": "o414",
+   "id": "o393",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6791,7 +6413,7 @@
    }
   },
   {
-   "id": "o415",
+   "id": "o394",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6809,7 +6431,7 @@
    }
   },
   {
-   "id": "o416",
+   "id": "o395",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6827,7 +6449,7 @@
    }
   },
   {
-   "id": "o417",
+   "id": "o396",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6845,7 +6467,7 @@
    }
   },
   {
-   "id": "o418",
+   "id": "o397",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6863,7 +6485,7 @@
    }
   },
   {
-   "id": "o419",
+   "id": "o398",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6881,7 +6503,7 @@
    }
   },
   {
-   "id": "o420",
+   "id": "o399",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -6899,205 +6521,7 @@
    }
   },
   {
-   "id": "o421",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11411.0,
-    302.0,
-    26.0,
-    34.0
-   ],
-   "props": {
-    "enemy": "magma_golem",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o422",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    10563.0,
-    542.0,
-    26.0,
-    34.0
-   ],
-   "props": {
-    "enemy": "magma_golem",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o423",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11160.0,
-    472.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "forge_bulwark",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o424",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    10312.0,
-    392.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "forge_bulwark",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o425",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    10903.0,
-    324.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o426",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11495.0,
-    564.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "lava_stalker",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o427",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    10648.0,
-    482.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "forge_drone",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o428",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11242.0,
-    404.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "fire_wisp",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o429",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    10393.0,
-    326.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "ember_mite",
-    "faceLeft": false,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o430",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    10985.0,
-    566.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "ember_mite",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o431",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11575.0,
-    484.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "forge_bomber",
-    "faceLeft": true,
-    "patrol": 64,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o432",
+   "id": "o400",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
@@ -7107,15 +6531,15 @@
     336.0
    ],
    "props": {
-    "doors": "o334,o335",
-    "waves": "o366,o367,o368,o369,o370,o371,o372,o373,o374,o375,o376;o377,o378,o379,o380,o381,o382,o383,o384,o385,o386,o387;o388,o389,o390,o391,o392,o393,o394,o395,o396,o397,o398;o399,o400,o401,o402,o403,o404,o405,o406,o407,o408,o409;o410,o411,o412,o413,o414,o415,o416,o417,o418,o419,o420;o421,o422,o423,o424,o425,o426,o427,o428,o429,o430,o431",
+    "doors": "o313,o314",
+    "waves": "o345,o346,o347,o348,o349,o350,o351,o352,o353,o354,o355;o356,o357,o358,o359,o360,o361,o362,o363,o364,o365,o366;o367,o368,o369,o370,o371,o372,o373,o374,o375,o376,o377;o378,o379,o380,o381,o382,o383,o384,o385,o386,o387,o388;o389,o390,o391,o392,o393,o394,o395,o396,o397,o398,o399",
     "lockCamera": false,
     "music": "",
     "announce": true
    }
   },
   {
-   "id": "o433",
+   "id": "o401",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7132,7 +6556,7 @@
    }
   },
   {
-   "id": "o434",
+   "id": "o402",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -7147,7 +6571,7 @@
    }
   },
   {
-   "id": "o435",
+   "id": "o403",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -7161,7 +6585,7 @@
    }
   },
   {
-   "id": "o436",
+   "id": "o404",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -7175,7 +6599,7 @@
    }
   },
   {
-   "id": "o437",
+   "id": "o405",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -7190,7 +6614,7 @@
    }
   },
   {
-   "id": "o438",
+   "id": "o406",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7207,7 +6631,7 @@
    }
   },
   {
-   "id": "o439",
+   "id": "o407",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7222,7 +6646,7 @@
    }
   },
   {
-   "id": "o440",
+   "id": "o408",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7239,7 +6663,7 @@
    }
   },
   {
-   "id": "o441",
+   "id": "o409",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7256,7 +6680,7 @@
    }
   },
   {
-   "id": "o442",
+   "id": "o410",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -7273,7 +6697,7 @@
    }
   },
   {
-   "id": "o443",
+   "id": "o411",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7292,7 +6716,7 @@
    }
   },
   {
-   "id": "o444",
+   "id": "o412",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7312,7 +6736,7 @@
    }
   },
   {
-   "id": "o445",
+   "id": "o413",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7331,7 +6755,7 @@
    }
   },
   {
-   "id": "o446",
+   "id": "o414",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7350,7 +6774,7 @@
    }
   },
   {
-   "id": "o447",
+   "id": "o415",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7369,7 +6793,7 @@
    }
   },
   {
-   "id": "o448",
+   "id": "o416",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7388,7 +6812,7 @@
    }
   },
   {
-   "id": "o449",
+   "id": "o417",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7407,7 +6831,7 @@
    }
   },
   {
-   "id": "o450",
+   "id": "o418",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -7430,13 +6854,13 @@
  "events": [
   {
    "id": "ev1",
-   "source": "o432",
+   "source": "o400",
    "trigger": "cleared",
    "once": true,
    "actions": [
     {
      "type": "open",
-     "target": "o436"
+     "target": "o404"
     },
     {
      "type": "hint",
@@ -7481,6 +6905,36 @@
       576
      ]
     ],
+    "cp:o66": [
+     [
+      1920,
+      576
+     ]
+    ],
+    "cp:o141": [
+     [
+      3424,
+      576
+     ]
+    ],
+    "cp:o153": [
+     [
+      5120,
+      224
+     ]
+    ],
+    "cp:o238": [
+     [
+      7648,
+      576
+     ]
+    ],
+    "cp:o310": [
+     [
+      10016,
+      576
+     ]
+    ],
     "8": [
      [
       11776,
@@ -7511,93 +6965,93 @@
       64
      ],
      "lock": "objective:poignet_verrou",
-     "door": "o436"
+     "door": "o404"
     }
    ],
    "objectives": [
     {
      "id": "poignet_verrou",
-     "source": "o432",
+     "source": "o400",
      "trigger": "cleared"
     }
    ],
    "magma": null,
    "sealed": null,
-   "groupSwitches": [
+   "checkpoints": [
+    "o66",
+    "o141",
+    "o153",
+    "o238",
+    "o310"
+   ],
+   "coop": [
     {
      "id": "vanne_double",
-     "plates": [
-      [
-       3968,
-       544,
-       192,
-       32
-      ]
+     "rect": [
+      3968,
+      512,
+      192,
+      64
      ],
-     "need": 4,
+     "players": 4,
      "targets": [
-      "o154"
+      "o144"
      ],
      "action": "open",
-     "label": "La vanne double : 4 joueurs sur la plaque",
-     "hold": 1.5
+     "label": "La vanne double",
+     "message": "La vanne double cède : la porte s'ouvre"
     },
     {
      "id": "monte_charge",
-     "plates": [
-      [
-       4800,
-       528,
-       128,
-       32
-      ]
+     "rect": [
+      4800,
+      496,
+      128,
+      64
      ],
-     "need": 3,
+     "players": 3,
      "targets": [
-      "o160"
+      "o150"
      ],
      "action": "activate",
-     "label": "Le monte-charge : 3 joueurs dessus",
-     "hold": 1.5
+     "label": "Le monte-charge",
+     "message": "Le monte-charge démarre : il fait ensuite la navette tout seul"
     },
     {
-     "id": "plaques_jumelles",
-     "plates": [
-      [
-       7872,
-       544,
-       128,
-       32
-      ],
-      [
-       8096,
-       416,
-       160,
-       32
-      ]
+     "id": "jumelle_basse",
+     "rect": [
+      7872,
+      512,
+      128,
+      64
      ],
-     "need": 2,
+     "players": 2,
      "targets": [
-      "o264"
+      "o243"
      ],
      "action": "open",
-     "label": "Les plaques jumelles : 2 joueurs sur chacune, ensemble",
-     "hold": 1.5
+     "label": "La plaque jumelle basse",
+     "message": "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
+     "group": "jumelles"
+    },
+    {
+     "id": "jumelle_haute",
+     "rect": [
+      8096,
+      384,
+      160,
+      64
+     ],
+     "players": 2,
+     "targets": [
+      "o243"
+     ],
+     "action": "open",
+     "label": "La plaque jumelle haute",
+     "message": "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
+     "group": "jumelles"
     }
-   ],
-   "route": {
-    "from": 144,
-    "to": 11920,
-    "climb": 22
-   },
-   "estimate": {
-    "players": 8,
-    "route_s": 234.2,
-    "ambush_s": 502.5,
-    "mechanisms_s": 135.0,
-    "waves": 20,
-    "minutes": 14.53
-   }
+   ]
   }
  },
  "killY": 752,

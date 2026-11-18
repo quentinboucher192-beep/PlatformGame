@@ -1,0 +1,840 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_cr_2",
+ "name": "Asterion · Crâne · Orbite gauche",
+ "description": "L'orbite gauche, où l'œil du titan fixe les intrus. Une onde psychique balaie le sol ; une fente cache un ossuaire.",
+ "planet": "confins",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyrrhax_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2048,
+  768
+ ],
+ "ambientLight": "#8a6a8e",
+ "backgroundColor": "#0c0610",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true,
+   "tint": "#9a7ab0"
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ],
+   "tint": "#7a5a8a"
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ],
+   "tint": "#6a4a70"
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#b04a6a",
+   "tint": "#c07a9a"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ],
+   "tint": "#584058"
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ff9ad0c0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Mâchoire",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    576.0,
+    192.0,
+    192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    361.0,
+    566.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o8",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    496.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    608.0,
+    528.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o11",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    816.0,
+    528.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    928.0,
+    576.0,
+    768.0,
+    192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "magma_flow",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    928.0,
+    544.0,
+    768.0,
+    32.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "active": false,
+    "bounce": true,
+    "style": "souls"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    976.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1088.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1312.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1536.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1242.0,
+    436.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "spectre",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o20",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1463.0,
+    564.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o21",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o22",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1524.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "L'œil gauche : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
+    "auto": true
+   }
+  },
+  {
+   "id": "o23",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    520.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o24",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1088.0,
+    416.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    992.0,
+    368.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o26",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    320.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o27",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    704.0,
+    192.0,
+    256.0,
+    160.0
+   ],
+   "props": {
+    "message": "Une fente dans l'os : l'Ossuaire oublié !"
+   }
+  },
+  {
+   "id": "o28",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    772.0,
+    296.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Ossuaire oublié",
+    "auto": true
+   }
+  },
+  {
+   "id": "o29",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    776.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o30",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    752.0,
+    256.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o31",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    528.0,
+    96.0,
+    240.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o32",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1792.0,
+    528.0,
+    256.0,
+    240.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o33",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1972.0,
+    504.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Nerfs optiques",
+    "auto": true
+   }
+  },
+  {
+   "id": "o34",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1976.0,
+    488.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o35",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1952.0,
+    464.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o36",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1272.0,
+    552.0,
+    48.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "bones_ancient",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o37",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o38",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    928.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_crane",
+   "zone": 2,
+   "spawns": {
+    "1": [
+     [
+      144,
+      576
+     ]
+    ],
+    "start": [
+     [
+      144,
+      576
+     ],
+     [
+      192,
+      576
+     ]
+    ],
+    "5": [
+     [
+      864,
+      320
+     ]
+    ],
+    "4": [
+     [
+      1840,
+      528
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p2_1",
+     "to": 1,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p2_5",
+     "to": 5,
+     "rect": [
+      752,
+      256,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p2_4",
+     "to": 4,
+     "rect": [
+      1952,
+      464,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [
+    {
+     "id": "crane_oeil_gauche",
+     "source": "o21",
+     "trigger": "activate"
+    }
+   ],
+   "magma": {
+    "zone": "magma_flow",
+    "period": 70.0,
+    "first": 35.0,
+    "warn": 3.0,
+    "duration": 6.0,
+    "name": "Onde psychique",
+    "hint": "montez sur les corniches",
+    "message": "Onde psychique ! Restez sur les corniches hautes"
+   },
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

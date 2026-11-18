@@ -1,4 +1,4 @@
-"""PYROCLAST, la main de magma (gigaboss of the clan raid « Asterion », 2.67, docs/RAIDS.md).
+"""PYROCLAST, la main de magma (gigaboss of the clan raid « Asterion », 2.68, docs/RAIDS.md).
 
 The magma hand of the titan's right arm: a colossal hand of basalt plates that walks on its four
 fingertips like a crab, palm down, knuckles up, its torn wrist trailing behind it (a stump of

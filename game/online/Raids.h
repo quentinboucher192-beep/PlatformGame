@@ -183,7 +183,7 @@ std::vector<Group> parseGroups(const Json& groups);
 /// The reminders chosen (GET /raids « prefs »): minutes before the start.
 std::vector<int> reminderPrefs(const Json& prefs);
 
-// ------------------------------------------------------------------ 2.67: results and rewards
+// ------------------------------------------------------------------ 2.68: results and rewards
 
 /// A reward of the raids, granted by the server from validated results only (GET /raids
 /// « rewards », the results of an event), claimed with POST /raids/rewards/claim.

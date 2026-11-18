@@ -48,7 +48,7 @@ TEST_CASE("boss places: every boss of the game can be fought in at least one of 
     int bosses = 0;
     for (const EnemyDefinition* d : content().enemies()) {
         // 2.64: the tutorial's boss is fought in the tutorial only (outside every level list).
-        if (!d->isBoss || !d->builtin || d->tutorial || !d->raid.empty()) continue;  // 2.67: a raid's gigaboss: its raid's arena
+        if (!d->isBoss || !d->builtin || d->tutorial || !d->raid.empty()) continue;  // 2.68: a raid's gigaboss: its raid's arena
         ++bosses;
         auto places = atlas().fightsOf(content(), d->id);
         if (places.empty()) std::printf("  sans lieu : %s\n", d->id.c_str());

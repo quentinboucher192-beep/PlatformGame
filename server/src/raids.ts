@@ -1,6 +1,6 @@
 // Clan raids « ASTERION, LE DÉVOREUR DE MONDES », phase 1 (migration 0141): the events and the
 // registrations, the reminders and the notifications. The combat is in raidZones.ts (decided by
-// the consensus of each instance's players); 2.67 (phase 3): the « rewards to claim » and the
+// the consensus of each instance's players); 2.68 (phase 3): the « rewards to claim » and the
 // state of Asterion's body (each event's « body ») come from its validated results (raidRewards.ts).
 //
 // Two kinds of events:
@@ -381,7 +381,7 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     ];
     const [world, mine, invites, history, unread, prefs] = await db.batch(stmts);
     const inv = invites!.results as (EventRow & { invited_at: string; by_name: string | null })[];
-    // 2.67: Asterion's body in each event (validated results only), my rewards to claim.
+    // 2.68: Asterion's body in each event (validated results only), my rewards to claim.
     const listed = [world, mine, history].flatMap((r) => (r!.results as EventRow[]).map((e) => e.id));
     const bodies = await bodiesOf(db, listed);
     const withBody = (e: EventRow) => ({ ...eventView(e, now), ...(bodies.get(e.id) ?? { body: {}, effects: [] }) });
@@ -393,7 +393,7 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
         world: (world!.results as EventRow[]).map(withBody),
         clan_events: (mine!.results as EventRow[]).map(withBody),
         invitations: inv.map((e) => ({ event: eventView(e, now), by: e.by_name, created_at: e.invited_at })),
-        // 2.67: granted by the server from validated results only, to claim (POST /raids/rewards/claim).
+        // 2.68: granted by the server from validated results only, to claim (POST /raids/rewards/claim).
         rewards: rewards.pending,
         rewards_claimed: rewards.claimed,
         history: (history!.results as EventRow[]).map(withBody),

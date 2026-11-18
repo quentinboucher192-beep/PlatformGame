@@ -9,18 +9,22 @@ The graph (maquette « Branche »): Épaule (1) → Biceps de basalte (2) and Ve
 paths that meet at the Coude-forge (4, two groups: one bellows each). The Veine hides the secret
 Grotte des scories (5) and the shortcut to the Avant-bras (6), opened by the lever of the
 Avant-bras. The Poignet-verrou (7) opens once the two generators (Veine and Avant-bras) are on;
-2.67: it is the long level before the gigaboss (about 15 minutes for 8 players: wide lanes, group
-plates and a group lift, checkpoints, four giant ambushes on several storeys; `estimate` below),
-whose last ambush opens the way to the Main de Pyroclast (8, from the Avant-bras too once it is
-broken): 2.67 (phase 3), the arena of the gigaboss
+2.68 (phase 3): it is the long level before the gigaboss (about 15 minutes for 8 players: wide
+lanes, co-op plates and a goods lift, checkpoints, four giant ambushes on several storeys; its
+time is raid_asterion.estimate_minutes, the model of the six other branches), whose last ambush
+opens the way to the Main de Pyroclast (8, from the Avant-bras too once it is broken): the arena
+of the gigaboss
 PYROCLAST (data/enemies/pyroclast.json, its fight run by game/raid/Gigaboss), its three vents to
 close together while its carapace protects it, its floor of basalt that gives way to the magma.
 
 Each zone's metadata.raid holds its spawn points (by the zone one comes from), its passages to its
 neighbours (rect in pixels, lock), its objectives (an id of the catalog, the object and the event
 that completes it), its magma flow (a damage zone switched on every period, announced before) and,
-for the Main, its gigaboss (the boss's object, its vents in pixels, its carapace's phases, its weak
-points and the numbers of its fight). Never edit the JSON by hand: run
+for the Main, its arena (metadata.raid.arena: rect, floor, door, entry; the format of the seven
+branches' lairs) and its gigaboss (the boss's object, its vents in pixels, its carapace's phases,
+its weak points and the numbers of its fight); for the Poignet-verrou, its co-op plates
+(metadata.raid.coop) and its checkpoints (metadata.raid.checkpoints, arrivals spawns["cp:<id>"]),
+in the format of raid_asterion.py. Never edit the JSON by hand: run
     python3 tools/levelgen/raid_bras_droit.py
 from the repository root (the output is stable: same bytes each run).
 """
@@ -29,11 +33,12 @@ import os
 
 from levelkit import Level, ROOT, T
 from pyralis_common import Pyra, FORGE_GLOW, LAVA_GLOW
+from raid_asterion import estimate_minutes
 
 BRANCH_ID = "asterion_bras_droit"
 # The revision of the branch: every game of an instance must have the same (the relay's GO
 # carries it). Raise it whenever a zone or the catalog changes how the branch plays.
-REVISION = 2  # 2.67: the Main de Pyroclast is the gigaboss's arena, the Poignet-verrou its long way
+REVISION = 2  # 2.68 (phase 3): the Main de Pyroclast is the gigaboss's arena, the Poignet-verrou its long way
 OUT = os.path.join(ROOT, "data", "raids", "asterion", "bras_droit")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidBranches.json")
 H, LAVA = 48, 44
@@ -77,7 +82,7 @@ OBJECTIVES = [
     ("avantbras_generateur", 6, "Activer le générateur de l'avant-bras (un pouvoir de tir)", False, "generator", ""),
     ("avantbras_raccourci", 6, "Facultatif : ouvrir le raccourci vers la Veine (levier)", True, "shortcut", ""),
     ("poignet_verrou", 7, "Briser le verrou du poignet : vaincre sa garde", False, "", ""),
-    # 2.67 (phase 3): the gigaboss of the branch; accepted once, it destroys the right arm.
+    # 2.68 (phase 3): the gigaboss of the branch; accepted once, it destroys the right arm.
     ("main_pyroclast", 8, "Vaincre le gigaboss Pyroclast", False, "gigaboss", ""),
 ]
 
@@ -85,7 +90,7 @@ EDGES = [
     # a, b, lock ("", "generators", "shortcut", "objective:<id>"), secret
     (1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True),
     (2, 6, "", False), (3, 6, "shortcut", False), (4, 7, "generators", False),
-    # 2.67: the Main only once the wrist is broken (its long level is the way to the gigaboss).
+    # 2.68: the Main only once the wrist is broken (its long level is the way to the gigaboss).
     (6, 8, "objective:poignet_verrou", False),
     (7, 8, "objective:poignet_verrou", False),
 ]
@@ -147,14 +152,25 @@ class Zone:
         self.raid["magma"] = {"zone": dz, "period": period, "first": first, "warn": warn, "duration": duration}
         return dz
 
-    def group_switch(self, sid, plates, need, targets, action, label, hold=1.5):
-        """2.67: plates (or a lift's deck), (x0, x1, y_floor) each, that need `need` players standing
-        on EACH at once for `hold` seconds (fewer when fewer seats are taken: game/raid/RaidRun); then
-        `action` goes to each of `targets` (« open » a door, « activate » a lift)."""
-        rects = [[x0 * T, (y - 2) * T, (x1 - x0) * T, 2 * T] for x0, x1, y in plates]
-        self.raid.setdefault("groupSwitches", []).append(
-            {"id": sid, "plates": rects, "need": need, "targets": targets, "action": action, "label": label, "hold": hold})
-        return sid
+    def coop(self, cid, x0, x1, y, players, targets, action, label, message, group=""):
+        """2.68 (phase 3): a co-op plate (metadata.raid.coop, the format of raid_asterion.py): from
+        x0 to x1 standing on y (tiles), `players` together on it (fewer when fewer are in play:
+        game/raid/RaidRun) send `action` to each of `targets` (« open » a door, « activate » a lift).
+        The plates of one `group` must be held at the same time (the players in play shared)."""
+        c = {"id": cid, "rect": [x0 * T, (y - 4) * T, (x1 - x0) * T, 4 * T], "players": players, "targets": targets,
+             "action": action, "label": label, "message": message}
+        if group:
+            c["group"] = group
+        self.raid.setdefault("coop", []).append(c)
+        return cid
+
+    def checkpoint(self, x, y, label):
+        """2.68: a checkpoint of the raid (the group starts again at the last one touched, the
+        players down get up there)."""
+        cp = self.L.checkpoint(x, y, label)
+        self.raid.setdefault("checkpoints", []).append(cp)
+        self.raid["spawns"]["cp:" + cp] = [[x * T, y * T]]
+        return cp
 
     def save(self):
         ids = [o["id"] for o in self.L.data["objects"]]
@@ -387,32 +403,15 @@ def zone_6():
 
 
 # ================================================================ 7 — Poignet-verrou
-# 2.67: the long level before the gigaboss (about 15 minutes for 8 players, `estimate`): lanes wide
-# enough for 8, group plates and a group lift, checkpoints, four giant ambushes on several storeys
-# (state kept when someone falls, counter and violet arrows: the game's ambushes).
-#
-# The estimate of the time it takes a group (data, tests/test_raid.cpp checks it against the
-# level itself): walking the route at the group's pace, climbing, every ambush wave (it appears,
-# the group spreads over the storeys, then the enemies' health at the group's damage), every group
-# mechanism (gather, hold under fire).
-PACE = 70.0        # px/s: 8 players wait for each other, fight on the way, jump
-CLIMB_S = 3.0      # s per tile climbed
-WAVE_S = 12.0      # s: a wave appears, the group spreads over the storeys
-DPS = 0.6          # health per second per player, moving between storeys
-SWITCH_S = 45.0    # s: a group mechanism
+# 2.68 (phase 3): the long level before the gigaboss (about 15 minutes for 8 players, estimated by
+# raid_asterion.estimate_minutes like the six other branches' expeditions): lanes wide enough for 8,
+# co-op plates and a goods lift, checkpoints, four giant ambushes on several storeys (state kept
+# when someone falls, counter and violet arrows: the game's ambushes).
 
 
 def enemy_hp(kind):
     with open(os.path.join(ROOT, "data", "enemies", kind + ".json"), encoding="utf-8") as f:
         return float(json.load(f)["hp"])
-
-
-def estimate(route_px, climb_tiles, waves_hp, switches, players=8):
-    route = route_px / PACE + climb_tiles * CLIMB_S
-    ambush = sum(WAVE_S + hp / (players * DPS) for hp in waves_hp)
-    mech = switches * SWITCH_S
-    return {"players": players, "route_s": round(route, 1), "ambush_s": round(ambush, 1), "mechanisms_s": round(mech, 1),
-            "waves": len(waves_hp), "minutes": round((route + ambush + mech) / 60.0, 2)}
 
 
 def tower(z, x0, x1, floors, waves, name):
@@ -464,7 +463,6 @@ def zone_7():
                      "assez larges pour huit, des plaques et un monte-charge qui demandent le groupe, quatre embuscades "
                      "géantes sur plusieurs étages, des points de contrôle.")
     L, P = z.L, z.P
-    route_start = 9
     # The entrance from the Coude-forge, wide: three lanes from the start.
     z.rock(0, 36, 40)
     z.passage(4, 1, 36)
@@ -485,19 +483,19 @@ def zone_7():
     L.enemy("fire_wisp", 80, 24, 4)
     L.enemy("forge_drone", 100, 22, 4, True)
     z.rock(116, 36, 124)
-    L.checkpoint(120, 36, "Les Gaines")
+    z.checkpoint(120, 36, "Les Gaines")
     # 124-210 · Ambush 1, « La Tour des tendons » (4 storeys, 4 waves).
     floors1 = [36, 31, 26, 21]
     waves1 = [wave_of(["lava_stalker", "lava_stalker", "ember_mite", "ember_mite", "forge_bulwark", "magma_golem", "forge_drone", "fire_wisp",
-                       "lava_stalker", "magma_gloop"], 124, 210, 4, s) for s in range(5)]
-    arena1, hp1 = tower(z, 124, 210, floors1, waves1, "La Tour des tendons")
+                       "lava_stalker", "magma_gloop"], 124, 210, 4, s) for s in range(4)]
+    arena1, _ = tower(z, 124, 210, floors1, waves1, "La Tour des tendons")
     z.rock(210, 36, 230)
-    L.checkpoint(214, 36, "Après la Tour des tendons")
+    z.checkpoint(214, 36, "Après la Tour des tendons")
     L.orb("health_orb", 218, 34)
     # 230-290 · La Vanne double: a door held shut until 4 players stand on its plate together.
     z.rock(230, 36, 290)
     door1 = L.door(278, 30, 6)
-    z.group_switch("vanne_double", [(248, 260, 36)], 4, [door1], "open", "La vanne double : 4 joueurs sur la plaque")
+    z.coop("vanne_double", 248, 260, 36, 4, [door1], "open", "La vanne double", "La vanne double cède : la porte s'ouvre")
     L.sign(244, 36, "La vanne double : 4 joueurs ensemble sur la plaque ouvrent la porte.")
     L.enemy("forge_drone", 254, 28, 4)
     L.enemy("forge_drone", 266, 27, 4, True)
@@ -505,10 +503,11 @@ def zone_7():
     # 290-330 · Le Monte-charge: a lift up to the high gallery, moving once 3 players stand on it.
     z.rock(290, 36, 330)
     lift = L.moving(300, 35, 8, 0, -20, speed=55, wait=1.6, active=False, oneway=False)
-    z.group_switch("monte_charge", [(300, 308, 35)], 3, [lift], "activate", "Le monte-charge : 3 joueurs dessus")
+    z.coop("monte_charge", 300, 308, 35, 3, [lift], "activate", "Le monte-charge",
+           "Le monte-charge démarre : il fait ensuite la navette tout seul")
     L.sign(296, 36, "Le monte-charge : il monte quand 3 joueurs sont dessus.")
     L.solid(312, 14, 330, 16, "basalt")
-    L.checkpoint(320, 14, "La galerie haute")
+    z.checkpoint(320, 14, "La galerie haute")
     # 330-390 · La Galerie haute: crumbling basalt over the void, wisps.
     for k, x0 in enumerate(range(330, 384, 9)):
         L.crumble(x0, 15 + (k % 2) * 2, 4, delay=0.5, respawn=3.0, style="basalt")
@@ -521,18 +520,20 @@ def zone_7():
     # 392-472 · Ambush 2, « La Galerie des forges » (3 storeys, 4 waves).
     floors2 = [36, 30, 24]
     waves2 = [wave_of(["forge_bulwark", "forge_bulwark", "lava_stalker", "lava_stalker", "lava_burrower", "magma_golem", "forge_bomber", "forge_drone",
-                       "ember_mite", "ash_wing", "magma_gloop"], 392, 472, 3, s + 1) for s in range(5)]
-    arena2, hp2 = tower(z, 392, 472, floors2, waves2, "La Galerie des forges")
+                       "ember_mite", "ash_wing", "magma_gloop"], 392, 472, 3, s + 1) for s in range(4)]
+    arena2, _ = tower(z, 392, 472, floors2, waves2, "La Galerie des forges")
     z.rock(472, 36, 490)
-    L.checkpoint(478, 36, "Après la Galerie des forges")
+    z.checkpoint(478, 36, "Après la Galerie des forges")
     L.orb("health_orb", 484, 34)
     # 490-540 · Les Plaques jumelles: two plates far apart, 2 players on each at once.
     z.rock(490, 36, 540)
     L.solid(500, 28, 506, 36, "basalt")
     L.oneway(506, 516, 28, "basalt_ledge")
     door2 = L.door(534, 30, 6)
-    z.group_switch("plaques_jumelles", [(492, 500, 36), (506, 516, 28)], 2, [door2], "open",
-                   "Les plaques jumelles : 2 joueurs sur chacune, ensemble")
+    for cid, x0, x1, y, label in (("jumelle_basse", 492, 500, 36, "La plaque jumelle basse"),
+                                  ("jumelle_haute", 506, 516, 28, "La plaque jumelle haute")):
+        z.coop(cid, x0, x1, y, 2, [door2], "open", label, "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
+               group="jumelles")
     L.sign(518, 36, "Les plaques jumelles : 2 joueurs sur chacune, en même temps.")
     L.enemy("lava_stalker", 522, 36, 4, True)
     L.enemy("forge_drone", 512, 22, 4)
@@ -540,15 +541,15 @@ def zone_7():
     floors4 = [36, 30, 24]
     waves4 = [wave_of(["lava_burrower", "lava_burrower", "magma_gloop", "magma_gloop", "forge_bulwark", "ash_wing", "ash_wing", "forge_drone",
                        "magma_golem", "ember_mite"], 540, 620, 3, s + 3) for s in range(4)]
-    arena4, hp4 = tower(z, 540, 620, floors4, waves4, "La Fosse des scories")
+    arena4, _ = tower(z, 540, 620, floors4, waves4, "La Fosse des scories")
     z.rock(620, 36, 632)
-    L.checkpoint(626, 36, "Avant la Garde du verrou")
+    z.checkpoint(626, 36, "Avant la Garde du verrou")
     L.orb("health_orb", 629, 34)
-    # 632-732 · Ambush 4, « La Garde du verrou » (4 storeys, 6 waves) — its end breaks the lock.
+    # 632-732 · Ambush 4, « La Garde du verrou » (4 storeys, 5 waves) — its end breaks the lock.
     floors3 = [36, 31, 26, 21]
     waves3 = [wave_of(["magma_golem", "magma_golem", "forge_bulwark", "forge_bulwark", "lava_stalker", "lava_stalker", "forge_drone", "fire_wisp",
-                       "ember_mite", "ember_mite", "forge_bomber"], 632, 732, 4, s + 2) for s in range(6)]
-    arena3, hp3 = tower(z, 632, 732, floors3, waves3, "La Garde du verrou")
+                       "ember_mite", "ember_mite", "forge_bomber"], 632, 732, 4, s + 2) for s in range(5)]
+    arena3, _ = tower(z, 632, 732, floors3, waves3, "La Garde du verrou")
     z.objective("poignet_verrou", arena3, "cleared")
     # The end: the door of the Main opens when the guard is beaten.
     z.rock(732, 36, 752)
@@ -562,15 +563,11 @@ def zone_7():
     L.light(300, 28, LAVA_GLOW, 140, flicker=0.2)
     L.light(520, 28, FORGE_GLOW, 120, flicker=0.2)
     P.scatter(2, 38, 36, 0.25, forge=True)
-    # The route: from the start to the door of the Main (px), the tiles climbed (the lift's 20
-    # aside: the switch), the group mechanisms (the double valve, the lift, the twin plates).
-    z.raid["route"] = {"from": route_start * T, "to": 745 * T, "climb": 22}
-    z.raid["estimate"] = estimate((745 - route_start) * T, 22, hp1 + hp2 + hp4 + hp3, 3)
     z.save()
 
 
 # ============================================================ 8 — Main de Pyroclast
-# The arena of the gigaboss (2.67), sized for 8 players and a giant: the west ledge (0-22, floor
+# The arena of the gigaboss (2.68), sized for 8 players and a giant: the west ledge (0-22, floor
 # 32) with the ways back, the arena (23-205, floor 36): towers of ledges on both sides over pits
 # whose crust gives way at the 2nd phase, two lifts up to a high platform over its head, its three
 # vents (left tower, high platform, right tower: the group must split), curtains of magma at the 3rd.
@@ -655,12 +652,13 @@ def zone_8():
         vents.append({"id": vid, "rect": [(vx - 1.5) * T, (vy - 1) * T, 3 * T, 1 * T]})
         L.light(vx, vy - 1, LAVA_GLOW, 70, flicker=0.25)
         L.emitter(vx - 1, vy - 2, vx + 1, vy, "embers_rising", 1.5)
+    # The arena (metadata.raid.arena, the format of the seven branches' lairs: the arena camera reads it).
+    z.raid["arena"] = {"rect": [23 * T, 0, 183 * T, (f + 2) * T], "floor": f * T, "door": "", "entry": [30 * T, f * T], "players": 8}
     z.raid["gigaboss"] = {
         "boss": boss, "name": "Pyroclast", "objective": "main_pyroclast", "vents": vents, "carapace": [2, 3],
         "hold": 3.0, "reopen": 15.0, "exposed": 10.0, "exposedMult": 2.0,
         "jet": {"period": 6.0, "warn": 1.2, "duration": 1.0, "height": 112.0, "damage": 1.0},
         "fists": {"periods": [9.0, 7.0, 5.5], "warn": 1.4, "width": 64.0, "damage": 1.0},
-        "arena": [23 * T, 0, 183 * T, (f + 2) * T],
         "weakEnemy": "pyroclast_noyau", "weakSpots": [[100.0, -262.0], [60.0, -300.0], [20.0, -310.0]], "weakShare": 0.04,
         "hpPerPlayer": 0.55, "weakHpPerPlayer": 0.25, "pressurePerPlayer": 0.06}
     P.scatter(53, 175, f, 0.25)
@@ -674,12 +672,14 @@ def zone_8():
     z.save()
 
 
-def catalog():
+def catalog(minutes):
     zones = []
     for n, name, sub, x, y, inside, event in ZONES:
         zones.append({"id": n, "name": name, "sub": sub, "x": x, "y": y, "level": "zone_%d.json" % n,
                       "inside": inside, "event": event, "secret": n == 5, "boss": n == 8,
                       "groups_required": 2 if n == 4 else 1})
+        if n in minutes:
+            zones[-1]["minutes"] = minutes[n]
     objectives = [{"id": oid, "index": i, "zone": zone, "label": label, "optional": opt, "role": role, "pair": pair}
                   for i, (oid, zone, label, opt, role, pair) in enumerate(OBJECTIVES)]
     edges = [{"a": a, "b": b, "lock": lock, "secret": secret} for a, b, lock, secret in EDGES]
@@ -690,7 +690,16 @@ def catalog():
 def main():
     for build in (zone_1, zone_2, zone_3, zone_4, zone_5, zone_6, zone_7, zone_8):
         build()
-    cat = catalog()
+    # 2.68 (phase 3): how long each zone takes a group of 8 (the model of raid_asterion.py; the
+    # gigaboss apart): the Poignet-verrou, the long way to the Main, about 15 minutes.
+    minutes = {}
+    for n in range(1, 8):
+        with open(os.path.join(OUT, "zone_%d.json" % n), encoding="utf-8") as f:
+            minutes[n] = round(estimate_minutes(json.load(f)), 1)
+    assert 13.0 <= minutes[7] <= 17.0, ("expedition", minutes[7])
+    print("bras_droit : %s min (8 joueurs ; Poignet-verrou : %.1f min ; branche : %.1f min sans le gigaboss)"
+          % (minutes, minutes[7], sum(minutes.values())))
+    cat = catalog(minutes)
     text = json.dumps(cat, ensure_ascii=False, indent=1) + "\n"
     for path in (os.path.join(OUT, "branch.json"), SERVER_COPY):
         with open(path, "w", encoding="utf-8") as f:

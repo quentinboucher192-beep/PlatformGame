@@ -578,7 +578,7 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
             CHECK(it.challenge.tier >= 1);
             CHECK(it.stars == 0);
         } else if (!it.raid.empty()) {
-            // 2.67: a reward of the clan raids (claimed from Cosmic Online), never a milestone of the stars.
+            // 2.68: a reward of the clan raids (claimed from Cosmic Online), never a milestone of the stars.
             CHECK(it.raid == "asterion");
             CHECK(it.stars == 0);
             CHECK(cosmeticThreshold(it, total) == -1);

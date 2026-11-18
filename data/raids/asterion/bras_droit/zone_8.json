@@ -1872,6 +1872,21 @@
    ],
    "magma": null,
    "sealed": null,
+   "arena": {
+    "rect": [
+     368,
+     0,
+     2928,
+     608
+    ],
+    "floor": 576,
+    "door": "",
+    "entry": [
+     480,
+     576
+    ],
+    "players": 8
+   },
    "gigaboss": {
     "boss": "o64",
     "name": "Pyroclast",
@@ -1930,12 +1945,6 @@
      "width": 64.0,
      "damage": 1.0
     },
-    "arena": [
-     368,
-     0,
-     2928,
-     608
-    ],
     "weakEnemy": "pyroclast_noyau",
     "weakSpots": [
      [

@@ -1,0 +1,281 @@
+{
+ "id": "asterion_jambe_gauche",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "jambe_gauche",
+ "name": "JAMBE GAUCHE",
+ "gigaboss": "Graviton",
+ "start_zone": 1,
+ "generators_needed": 2,
+ "lock_texts": {
+  "generators": {
+   "hint": "il faut couper les deux générateurs de gravité",
+   "message": "Les deux générateurs de gravité sont coupés : la Cheville s'ouvre",
+   "objective": "couper les deux générateurs de gravité (Cuisse, Tibia)"
+  },
+  "shortcut": {
+   "hint": "le levier du Tibia l'ouvre",
+   "message": "Le raccourci Genou ⇄ Tibia est ouvert",
+   "objective": "raccourci fermé (le levier est dans le Tibia)"
+  }
+ },
+ "zones": [
+  {
+   "id": 1,
+   "name": "Hanche",
+   "sub": "entrée · 3 points d'apparition",
+   "x": 110,
+   "y": 300,
+   "level": "zone_1.json",
+   "inside": "Ennemis : rôdeurs, mites lumineuses · arène de la garde",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.4
+  },
+  {
+   "id": 2,
+   "name": "Cuisse flottante",
+   "sub": "puits d'apesanteur · générateur ouest",
+   "x": 330,
+   "y": 180,
+   "level": "zone_2.json",
+   "inside": "Ennemis : dragonnets, ailes de nuit · générateur de gravité ouest",
+   "event": "Puits de gravité toutes les 70 s (îlots hauts sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.2
+  },
+  {
+   "id": 3,
+   "name": "Muscle suspendu",
+   "sub": "îlots mouvants · gardien",
+   "x": 330,
+   "y": 480,
+   "level": "zone_3.json",
+   "inside": "Ennemis : l'éclat de roche (gardien), rôdeurs · îlots mouvants",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.1
+  },
+  {
+   "id": 4,
+   "name": "Genou",
+   "sub": "2 rotules : 2 groupes",
+   "x": 560,
+   "y": 330,
+   "level": "zone_4.json",
+   "inside": "Ennemis : rempart, dragonnets · deux rotules, un groupe chacune",
+   "event": "Puits de gravité toutes les 60 s (îlots hauts sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2,
+   "minutes": 1.2
+  },
+  {
+   "id": 5,
+   "name": "Sanctuaire des poids",
+   "sub": "zone secrète ◆ relique",
+   "x": 560,
+   "y": 620,
+   "level": "zone_5.json",
+   "inside": "Ennemis : mites lumineuses · la relique du sanctuaire",
+   "event": "",
+   "secret": true,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 0.7
+  },
+  {
+   "id": 6,
+   "name": "Tibia",
+   "sub": "générateur est · levier ⇄",
+   "x": 790,
+   "y": 180,
+   "level": "zone_6.json",
+   "inside": "Ennemis : ailes de nuit, rôdeurs · générateur de gravité est",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.1
+  },
+  {
+   "id": 7,
+   "name": "Cheville",
+   "sub": "s'ouvre : 2 générateurs de gravité",
+   "x": 790,
+   "y": 480,
+   "level": "zone_7.json",
+   "inside": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la cheville (arène en trois vagues)",
+   "event": "Puits de gravité toutes les 75 s dans les galeries basses (étages sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 15.0
+  },
+  {
+   "id": 8,
+   "name": "Pied de Graviton",
+   "sub": "GIGABOSS · prochaine version",
+   "x": 1000,
+   "y": 330,
+   "level": "zone_8.json",
+   "inside": "Le gigaboss Graviton attend derrière sa porte scellée",
+   "event": "",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1,
+   "minutes": 0
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 5,
+   "lock": "",
+   "secret": true
+  },
+  {
+   "a": 2,
+   "b": 6,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 6,
+   "lock": "shortcut",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 6,
+   "b": 7,
+   "lock": "link:jd_cheville",
+   "secret": false
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "lock": "objective:jg_cheville",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "jg_hanche",
+   "index": 0,
+   "zone": 1,
+   "label": "Reprendre la hanche : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jg_generateur_ouest",
+   "index": 1,
+   "zone": 2,
+   "label": "Couper le générateur de gravité ouest (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "jg_gardien",
+   "index": 2,
+   "zone": 3,
+   "label": "Abattre l'éclat de roche du muscle suspendu",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jg_rotule_interieure",
+   "index": 3,
+   "zone": 4,
+   "label": "Briser la rotule intérieure (un groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "rotules"
+  },
+  {
+   "id": "jg_rotule_exterieure",
+   "index": 4,
+   "zone": 4,
+   "label": "Briser la rotule extérieure (un autre groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "rotules"
+  },
+  {
+   "id": "jg_relique",
+   "index": 5,
+   "zone": 5,
+   "label": "Facultatif : emporter la relique du sanctuaire",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jg_generateur_est",
+   "index": 6,
+   "zone": 6,
+   "label": "Couper le générateur de gravité est (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "jg_levier",
+   "index": 7,
+   "zone": 6,
+   "label": "Facultatif : ouvrir le raccourci vers le Genou (levier)",
+   "optional": true,
+   "role": "shortcut",
+   "pair": ""
+  },
+  {
+   "id": "jg_cheville",
+   "index": 8,
+   "zone": 7,
+   "label": "Briser la cheville : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  }
+ ]
+}

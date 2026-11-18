@@ -116,7 +116,7 @@ struct AchievementInputs {
     /// Collection (2.24): tracks of the jukebox already heard, creatures of the bestiary met.
     int tracksHeard = 0;
     int creaturesMet = 0;
-    /// 2.67: the rewards of the clan raids claimed (condition « raid_reward », its `key`).
+    /// 2.68: the rewards of the clan raids claimed (condition « raid_reward », its `key`).
     std::set<std::string> raidRewards;
 };
 

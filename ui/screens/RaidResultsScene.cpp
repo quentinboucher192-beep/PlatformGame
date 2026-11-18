@@ -1,4 +1,4 @@
-// 2.67: the results of a clan raid (docs/RAIDS.md §8, maquette « Résultats »), opened at the end
+// 2.68: the results of a clan raid (docs/RAIDS.md §8, maquette « Résultats »), opened at the end
 // of the fight against Pyroclast and from the sheet of an event. Everything shown comes from the
 // server (GET /raids/events/{id}/results), from tables its consensus accepted only: the clans
 // (their players' contribution points), the players in every category (contribution, damage,

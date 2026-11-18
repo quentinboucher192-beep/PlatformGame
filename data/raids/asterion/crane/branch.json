@@ -1,0 +1,281 @@
+{
+ "id": "asterion_crane",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "crane",
+ "name": "CRÂNE",
+ "gigaboss": "Skullmaw",
+ "start_zone": 1,
+ "generators_needed": 2,
+ "lock_texts": {
+  "generators": {
+   "hint": "il faut crever les deux yeux",
+   "message": "Les deux yeux sont crevés : la Voûte crânienne s'ouvre",
+   "objective": "crever les deux yeux (Orbites gauche et droite)"
+  },
+  "shortcut": {
+   "hint": "le levier de la Tempe l'ouvre",
+   "message": "Le passage Nerfs optiques ⇄ Tempe est ouvert",
+   "objective": "passage fermé (le levier est dans la Tempe)"
+  }
+ },
+ "zones": [
+  {
+   "id": 1,
+   "name": "Mâchoire",
+   "sub": "entrée · 3 points d'apparition",
+   "x": 110,
+   "y": 380,
+   "level": "zone_1.json",
+   "inside": "Ennemis : spectres, rôdeurs · arène de la garde",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.4
+  },
+  {
+   "id": 2,
+   "name": "Orbite gauche",
+   "sub": "l'œil gauche à crever",
+   "x": 330,
+   "y": 200,
+   "level": "zone_2.json",
+   "inside": "Ennemis : spectres, lucioles d'os · l'œil gauche (un pouvoir de tir)",
+   "event": "Onde psychique toutes les 70 s (corniches hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.1
+  },
+  {
+   "id": 3,
+   "name": "Orbite droite",
+   "sub": "l'œil droit · regard laser",
+   "x": 330,
+   "y": 560,
+   "level": "zone_3.json",
+   "inside": "Ennemis : rôdeurs, ailes de nuit · regards lasers · l'œil droit",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.2
+  },
+  {
+   "id": 4,
+   "name": "Nerfs optiques",
+   "sub": "2 nerfs à trancher : 2 groupes",
+   "x": 560,
+   "y": 380,
+   "level": "zone_4.json",
+   "inside": "Ennemis : spectres en renfort, rempart · deux nerfs, un par groupe",
+   "event": "Onde psychique toutes les 80 s (corniches hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2,
+   "minutes": 1.2
+  },
+  {
+   "id": 5,
+   "name": "Ossuaire oublié",
+   "sub": "zone secrète ◆ relique",
+   "x": 560,
+   "y": 180,
+   "level": "zone_5.json",
+   "inside": "Ennemis : lucioles d'os · la relique de l'ossuaire",
+   "event": "",
+   "secret": true,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 0.7
+  },
+  {
+   "id": 6,
+   "name": "Tempe",
+   "sub": "levier ⇄ vers les nerfs",
+   "x": 790,
+   "y": 560,
+   "level": "zone_6.json",
+   "inside": "Ennemis : le golem de la tempe (gardien), spectres en renfort",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.2
+  },
+  {
+   "id": 7,
+   "name": "Voûte crânienne",
+   "sub": "s'ouvre : les deux yeux crevés",
+   "x": 790,
+   "y": 250,
+   "level": "zone_7.json",
+   "inside": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la voûte (arène en trois vagues)",
+   "event": "Onde psychique toutes les 75 s dans les galeries basses (étages sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 15.0
+  },
+  {
+   "id": 8,
+   "name": "Antre de Skullmaw",
+   "sub": "GIGABOSS · prochaine version",
+   "x": 1000,
+   "y": 400,
+   "level": "zone_8.json",
+   "inside": "Le gigaboss Skullmaw attend derrière sa porte scellée",
+   "event": "",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1,
+   "minutes": 0
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 5,
+   "lock": "",
+   "secret": true
+  },
+  {
+   "a": 3,
+   "b": 6,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 6,
+   "lock": "shortcut",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 6,
+   "b": 7,
+   "lock": "link:bd_poignet",
+   "secret": false
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "lock": "objective:crane_voute",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "crane_machoire",
+   "index": 0,
+   "zone": 1,
+   "label": "Briser la garde de la mâchoire : vaincre l'arène",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "crane_oeil_gauche",
+   "index": 1,
+   "zone": 2,
+   "label": "Crever l'œil gauche (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "crane_oeil_droit",
+   "index": 2,
+   "zone": 3,
+   "label": "Crever l'œil droit (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "crane_nerf_gauche",
+   "index": 3,
+   "zone": 4,
+   "label": "Trancher le nerf gauche (un groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "nerfs"
+  },
+  {
+   "id": "crane_nerf_droit",
+   "index": 4,
+   "zone": 4,
+   "label": "Trancher le nerf droit (un autre groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "nerfs"
+  },
+  {
+   "id": "crane_ossuaire",
+   "index": 5,
+   "zone": 5,
+   "label": "Facultatif : emporter la relique de l'ossuaire",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "crane_tempe",
+   "index": 6,
+   "zone": 6,
+   "label": "Abattre le golem de la tempe",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "crane_levier",
+   "index": 7,
+   "zone": 6,
+   "label": "Facultatif : ouvrir le passage vers les nerfs (levier)",
+   "optional": true,
+   "role": "shortcut",
+   "pair": ""
+  },
+  {
+   "id": "crane_voute",
+   "index": 8,
+   "zone": 7,
+   "label": "Faire taire la voûte : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  }
+ ]
+}

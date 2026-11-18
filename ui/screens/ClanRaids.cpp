@@ -13,6 +13,11 @@
 
 namespace cosmic {
 
+namespace {
+/// 2.68: the seven branches of the titan (a click on one opens its map while the raid runs).
+const std::vector<std::string> kTitanParts = {"crane", "bras_gauche", "bras_droit", "torse", "abdomen", "jambe_gauche", "jambe_droite"};
+}  // namespace
+
 using namespace raidui;
 
 namespace {
@@ -72,7 +77,7 @@ void ClanRaids::load() {
 }
 
 void ClanRaids::rememberClaimed(const Json& list) {
-    // 2.67: the raid rewards this account claimed (the raid badges unlock from them; kept offline).
+    // 2.68: the raid rewards this account claimed (the raid badges unlock from them; kept offline).
     if (!list.is_array()) return;
     std::set<std::string> ids;
     for (const Json& v : list)
@@ -232,11 +237,11 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
         if (lay.hero)
             for (const Json& w : at(data_, "world"))
                 if (jstr(w, "id") == lay.heroId) heroJson = w;
-        // The world event running: a click on its playable branch opens the branch's map.
+        // The world event running: a click on a branch of the titan opens its map (2.68: all seven).
         const bool running = lay.hero && raids::stateAt(raids::parseEvent(heroJson), now) == raids::State::Running;
-        const std::vector<std::string> open = running ? std::vector<std::string>{"bras_droit"} : std::vector<std::string>{};
-        if (!titan_.draw(g_, "asterion", {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(32)}, asterion::statesOf(heroJson), open).empty())
-            g_.app.pushScene(makeRaidBranch(g_, lay.heroId));
+        const std::vector<std::string> open = running ? kTitanParts : std::vector<std::string>{};
+        const std::string part = titan_.draw(g_, "asterion", {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(32)}, asterion::statesOf(heroJson), open);
+        if (!part.empty()) g_.app.pushScene(makeRaidBranch(g_, lay.heroId, part));
     }
     const float x = r.x + pad, right = r.right() - (titan ? titanW + ui.s(28) : pad), room = right - x;
     const float by = r.bottom() - ui.s(22) - ui.s(48);  // the buttons' top
@@ -375,7 +380,7 @@ void ClanRaids::drawInvitations(const Rect& r, const raids::TabLayout& lay) {
     UIContext& ui = g_.ui;
     float y = section(ui, r, "INVITATIONS ET RÉCOMPENSES", kSky);
     const float x = r.x + ui.s(14), w = r.w - ui.s(28);
-    // 2.67: the rewards to claim, granted by the server from validated results (« Récupérer »).
+    // 2.68: the rewards to claim, granted by the server from validated results (« Récupérer »).
     const auto rewards = raids::parseRewards(at(data_, "rewards"));
     const Rect rc{x, r.bottom() - ui.s(14) - ui.s(84), w, ui.s(84)};
     ui.r().fillRoundedRect(rc, ui.s(10), Color{42, 36, 20, 245});

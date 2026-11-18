@@ -85,7 +85,7 @@ async function rejections(instance: string) {
 describe("raids phase 2: the branch's rules", () => {
     it("generators, shortcut and arena open the locked passages; zones reachable and controlled", () => {
         expect(BRANCH.zones.length).toBe(8);
-        expect(reachable(0).filter(Boolean).length).toBe(6); // 2.67: all but the wrist and the hand (behind the wrist's long level)
+        expect(reachable(0).filter(Boolean).length).toBe(6); // 2.68: all but the wrist and the hand (behind the wrist's long level)
         expect(reachable(0)[7]).toBe(false);
         expect(reachable(0)[8]).toBe(false);
         expect(reachable(maskOf(["poignet_verrou"]))[8]).toBe(true);
@@ -96,7 +96,7 @@ describe("raids phase 2: the branch's rules", () => {
         expect(lockOpen("shortcut", maskOf(["avantbras_raccourci"]))).toBe(true);
         expect(controlled(4, maskOf(["forge_soufflet_ouest"]))).toBe(false);
         expect(controlled(4, maskOf(["forge_soufflet_ouest", "forge_soufflet_est"]))).toBe(true); // the anvil is optional
-        expect(controlled(8, 0)).toBe(false); // 2.67: the hand is controlled once Pyroclast fell
+        expect(controlled(8, 0)).toBe(false); // 2.68: the hand is controlled once Pyroclast fell
         expect(controlled(8, maskOf(["main_pyroclast"]))).toBe(true);
     });
 

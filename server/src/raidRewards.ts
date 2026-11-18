@@ -1,4 +1,4 @@
-// Clan raids « Asterion », phase 3 (2.67, docs/RAIDS.md §6-8): the results of the raid and its
+// Clan raids « Asterion », phase 3 (2.68, docs/RAIDS.md §7-9): the results of the raid and its
 // rewards. Everything here comes from what the consensus of each instance accepted
 // (raidZones.ts): the players' contributions (raid_contributions), each instance's fight against
 // the gigaboss (raid_gigaboss_fights) and the branch's objectives. A table that is still waiting
@@ -323,6 +323,7 @@ export async function claim(ctx: Ctx): Promise<Response> {
 export const PART_EFFECTS: Record<string, string> = {
     bras_droit: "Plus de pluies de lave : le poing de magma d'Asterion est éteint.",
 };
+const BRAS_DROIT_ID = "asterion_bras_droit";
 export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }> = {
     main_pyroclast: { part: "bras_droit", boss: "Pyroclast" },
 };
@@ -344,18 +345,19 @@ export async function bodiesOf(db: D1Database, eventIds: string[]): Promise<Map<
     const marks = ids.map((_, i) => `?${i + 1}`).join(",");
     try {
         const [objR, fightR] = await db.batch([
-            db.prepare(`SELECT event_id, objective_id, accepted_at FROM raid_branch_objectives WHERE event_id IN (${marks})`).bind(...ids),
+            db.prepare(`SELECT event_id, branch, objective_id, accepted_at FROM raid_branch_objectives WHERE event_id IN (${marks})`).bind(...ids),
             db.prepare(`SELECT event_id, MAX(phase) AS phase FROM raid_gigaboss_fights WHERE event_id IN (${marks}) GROUP BY event_id`).bind(...ids),
         ]);
         const fights = new Map((fightR!.results as { event_id: string; phase: number }[]).map((r) => [r.event_id, r.phase]));
         for (const id of ids) out.set(id, { body: {}, effects: [] });
-        for (const r of objR!.results as { event_id: string; objective_id: string; accepted_at: string }[]) {
+        for (const r of objR!.results as { event_id: string; branch: string; objective_id: string; accepted_at: string }[]) {
             const s = out.get(r.event_id)!;
             const giga = GIGABOSS_OBJECTIVES[r.objective_id];
             if (giga) {
                 s.body[giga.part] = "detruit";
                 s.effects.push({ part: giga.part, text: PART_EFFECTS[giga.part] ?? "", since: r.accepted_at });
-            } else if (!s.body.bras_droit) {
+            } else if (r.branch === BRAS_DROIT_ID && !s.body.bras_droit) {
+                // 2.68: only the Right arm's own progress (the six other branches have their titan map).
                 s.body.bras_droit = "attaque";
             }
         }

@@ -5,7 +5,7 @@
 // capacity and difficulty, opens or closes its registrations, publishes it (every clan is
 // told) or cancels it. The live figures are the registrations only: instances and bosses come
 // with the combats. Each action goes to the Journal (« Raids »); the server checks the role on
-// every request. 2.67: « Tester Asterion » (administrators only): a branch of the raid's catalog
+// every request. 2.68: « Tester Asterion » (administrators only): a branch of the raid's catalog
 // and one of its zones (the fight of Pyroclast included) played solo and locally, invincible when
 // asked, the gigaboss scaled for 2 to 8 simulated players and started at a chosen phase; never
 // reported (no consensus, state, ranking, contribution nor reward).
@@ -45,7 +45,7 @@ private:
     void drawForm(const Rect& r);
     void drawList(const Rect& r);
     void drawDetail(const Rect& r);
-    void drawTest(const Rect& r);  // 2.67
+    void drawTest(const Rect& r);  // 2.68
 
     GameServices& g_;
     std::function<void(const std::string&, bool)> say_;
@@ -69,7 +69,7 @@ private:
     bool confirm_ = false;
     std::string reason_, confirmError_;
 
-    // 2.67: « Tester Asterion » (indices in the branch catalog, its zones, 2..8 players, phases).
+    // 2.68: « Tester Asterion » (indices in the branch catalog, its zones, 2..8 players, phases).
     int testBranch_ = 0, testZone_ = -1, testPlayers_ = 0, testPhase_ = 0;
 };
 

@@ -35,7 +35,7 @@ bool CosmeticCatalog::load(const fs::path& file, std::string* error) {
             item.achievement = jstr(e, "achievement");
             item.isDefault = jget<bool>(e, "default", false);
             item.souvenir = jstr(e, "souvenir");
-            item.raid = jstr(e, "raid");  // 2.67
+            item.raid = jstr(e, "raid");  // 2.68
             if (auto s = e.find("stars"); s != e.end()) {
                 if (s->is_string() && s->get<std::string>() == "all") item.allStars = true;
                 else if (s->is_number_integer()) item.stars = std::max(0, s->get<int>());
@@ -174,7 +174,7 @@ bool cosmeticUnlocked(const CosmeticItem& item, const CosmeticProgress& p) {
     if (p.won && p.won->has(item.id)) return true;
     if (item.serverMade()) return false;
     if (!item.souvenir.empty()) return item.souvenir == "tutorial" && p.tutorialFinished;  // 2.64
-    if (!item.raid.empty()) return false;  // 2.67: a raid's reward, only once claimed (won above)
+    if (!item.raid.empty()) return false;  // 2.68: a raid's reward, only once claimed (won above)
     if (!item.achievement.empty()) return p.book && p.book->unlocked(item.achievement);
     if (item.challengeReward()) {
         auto [have, need] = cosmeticChallengeProgress(item, p);
@@ -463,7 +463,7 @@ void CollectionBook::fromJson(const Json& j) {
     strings("announced", announced_);
     strings("heard", heard);
     strings("met", met);
-    strings("raid_rewards", raidRewards);  // 2.67
+    strings("raid_rewards", raidRewards);  // 2.68
     menuMusic = jstr(j, "menuMusic");
     exported = std::max(0, jget<int>(j, "exported", 0));
     badges.clear();

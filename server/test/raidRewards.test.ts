@@ -1,4 +1,4 @@
-// Clan raids « Asterion », phase 3 (2.67, raidZones.ts + raidRewards.ts, docs/RAIDS.md): the
+// Clan raids « Asterion », phase 3 (2.68, raidZones.ts + raidRewards.ts, docs/RAIDS.md): the
 // gigaboss PYROCLAST's fights (phases accepted by the consensus), the players' contributions
 // (tables computed by the games, accepted by the majority, mapped to the players by seat and
 // step; implausible numbers refused; ties never accepted), Asterion's body from the validated
@@ -245,6 +245,12 @@ describe("raids phase 3: Asterion's body, results and rewards", () => {
         expect(e.effects[0].text).toContain("pluies de lave");
         const overview = await api("GET", `${V}/raids`, { token: p.token });
         expect(overview.body.data.world.find((x: { id: string }) => x.id === ev).body.bras_droit).toBe("detruit");
+        // The titan's map (phase 4) agrees: Pyroclast fought and fallen, the six other lairs sealed.
+        const titan = (await api("GET", `${V}/raids/events/${ev}/titan`, { token: p.token })).body.data;
+        const bd = titan.branches.find((b: { part: string }) => b.part === "bras_droit");
+        expect(bd).toMatchObject({ sealed: false, gigaboss_down: true, state: "detruit" });
+        expect(titan.totals.gigaboss_defeated).toBe(1);
+        expect(titan.branches.filter((b: { sealed: boolean }) => b.sealed).length).toBe(6);
     });
 
     it("the results: clans, players in every category, my table waiting « en attente de validation »", async () => {

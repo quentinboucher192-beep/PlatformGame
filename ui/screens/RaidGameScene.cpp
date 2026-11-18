@@ -14,7 +14,7 @@
 // Every text is measured into the room left by what is placed before it (raidui::fit / wrap):
 // nothing overlaps. The pause never stops the group (lockstep): it only hides the game.
 //
-// 2.67 (phase 3): the gigaboss PYROCLAST in the Main: its vents drawn over the arena (closed,
+// 2.68 (phase 3): the gigaboss PYROCLAST in the Main: its vents drawn over the arena (closed,
 // open, announced, throwing magma, the hold of each), its carapace, its objectives (vents k / N,
 // the weak point bare, allies to revive), this player's contributions at the bottom right, the
 // reports of its phases and of the contributions' tables, and the card of its fall (« Résultats
@@ -76,7 +76,7 @@ std::string hex16(uint64_t v) {
 class RaidGameScene : public Scene {
 public:
     RaidGameScene(GameServices& g, RaidEntry entry) : g_(g), entry_(std::move(entry)) {}
-    /// 2.67: an administrator's test (solo, local, never reported).
+    /// 2.68: an administrator's test (solo, local, never reported).
     RaidGameScene(GameServices& g, RaidTestSetup t) : g_(g), test_(true), testSetup_(std::move(t)) {
         entry_.clanTag = "TEST";
         entry_.group = 1;
@@ -91,7 +91,7 @@ public:
     bool holdsNotifications() const override { return true; }
 
     void onEnter() override {
-        branch_ = raid::Branch::builtin();
+        branch_ = raid::Branch::builtin(entry_.branch);
         if (test_) {
             beginTest();
             return;
@@ -124,7 +124,7 @@ public:
 
     void begin() {
         const auto& go = *link_->go();
-        if (go.level != raid::kBranchLevel || go.hash != std::to_string(branch_->revision)) {
+        if (go.level != branch_->levelId() || go.hash != branch_->levelHash()) {
             fail_ = "Ce raid se joue avec une autre version de la branche : mettez le jeu à jour.";
             return;
         }
@@ -150,7 +150,7 @@ public:
         }
     }
 
-    /// 2.67: an administrator's test: the branch and zone chosen, solo (the 7 other seats vacant).
+    /// 2.68: an administrator's test: the branch and zone chosen, solo (the 7 other seats vacant).
     void beginTest() {
         branch_ = nullptr;
         for (const raid::Branch* b : raid::Branch::all())
@@ -184,7 +184,7 @@ public:
         zoneReady();
     }
 
-    /// 2.67: one step of a test: this computer's input on seat 0, the others vacant.
+    /// 2.68: one step of a test: this computer's input on seat 0, the others vacant.
     void stepTest() {
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
         if (paused_) f = InputFrame{};
@@ -227,7 +227,7 @@ public:
     void zoneReady() {
         GameWorld& w = run_->world();
         serial_ = run_->zoneSerial();
-        arenaCam_.reset();  // 2.67: the arena's intro plays again in a new world
+        arenaCam_.reset();  // 2.68: the arena's intro plays again in a new world
         renderer_.build(g_.app.renderer(), g_.app.resources(), w);
         std::vector<Color> colors;
         for (int i = 0; i < w.teamSize(); ++i) colors.push_back(seatColor(i, local_));
@@ -281,7 +281,7 @@ public:
     }
 
     void sendReports() {
-        if (test_) return;  // 2.67: an administrator's test never reports anything
+        if (test_) return;  // 2.68: an administrator's test never reports anything
         for (const raid::Report& r : run_->takeReports()) {
             if (link_->joinedLate() && tick_ < link_->rejoinAt()) continue;  // not in play yet
             const char* kind = r.kind == raid::Report::Kind::Objective ? "objective"
@@ -292,7 +292,7 @@ public:
             if (r.kind == raid::Report::Kind::Objective) body["objective"] = r.objective;
             if (r.kind == raid::Report::Kind::Boss) body["phase"] = r.phase;
             if (r.kind == raid::Report::Kind::Result) {
-                // 2.67: the players' contributions (the same table on every computer of the instance).
+                // 2.68: the players' contributions (the same table on every computer of the instance).
                 Json rows = Json::array();
                 for (const raid::Contribution& c : r.records)
                     rows.push_back(Json{{"seat", c.seat},
@@ -384,7 +384,7 @@ public:
             drawWaiting();
         } else {
             GameWorld& w = run_->world();
-            // 2.67: in a gigaboss's arena, its own camera (display only): the whole arena first, then a
+            // 2.68: in a gigaboss's arena, its own camera (display only): the whole arena first, then a
             // view sized for this player; elsewhere the world's camera.
             WorldView view = arenaCam_.active() ? arenaCam_.view(r.width(), r.height()) : w.camera().view(r.width(), r.height(), alpha);
             view_ = view;
@@ -392,8 +392,8 @@ public:
             opt.lighting = g_.settings.graphics.dynamicLighting;
             opt.debug = g_.app.debugOverlay;
             renderer_.render(r, g_.app.resources(), w, view, alpha, opt);
-            drawGigabossWorld(w, view);  // 2.67: its vents, its carapace (over the arena, under the HUD)
-            drawSwitches(w, view);      // 2.67: the group's plates
+            drawGigabossWorld(w, view);  // 2.68: its vents, its carapace (over the arena, under the HUD)
+            drawSwitches(w, view);      // 2.68: the group's plates
             {
                 // The vitals and powers of this computer's player (display only).
                 GameWorld::PlayerScope me(w, std::clamp(local_, 0, w.teamSize() - 1));
@@ -470,7 +470,7 @@ public:
             return;
         }
         if (link_) link_->close();
-        g_.app.switchScene(makeRaidBranch(g_, entry_.eventId), 0.3f);
+        g_.app.switchScene(makeRaidBranch(g_, entry_.eventId, entry_.branch), 0.3f);
     }
 
     /// A rounded panel of the HUD.
@@ -506,7 +506,7 @@ public:
         drawContribution();
     }
 
-    // ------------------------------------------------------------- 2.67: the gigaboss
+    // ------------------------------------------------------------- 2.68: the gigaboss
 
     /// The vents over the arena (the generated sheet: closed, open, announced, throwing magma),
     /// the hold of each (a ring), the carapace around the gigaboss while it protects it.
@@ -560,17 +560,19 @@ public:
             }
     }
 
-    /// 2.67: the camera of the gigaboss's arena (display only), fed with what threatens this player.
+    /// 2.68 (phase 3): the camera of a gigaboss's arena (display only; every arena declared in
+    /// metadata.raid.arena, the seven branches' lairs alike), fed with what threatens this player.
     void updateArenaCamera(GameWorld& w, float dt) {
         const raid::Gigaboss& gb = run_->gigaboss();
+        const raid::ArenaInfo& arena = run_->rules().arena;
         raid::ArenaCamera::Frame f;
-        if (gb.present() && gb.rules()->arena.w > 0.0f && local_ >= 0 && local_ < w.teamSize()) {
+        if (arena.present && arena.rect.w > 0.0f && local_ >= 0 && local_ < w.teamSize()) {
             const Player& me = w.playerAt(local_);
-            f.arena = gb.rules()->arena;
+            f.arena = arena.rect;
             f.level = w.level().bounds;
             f.me = me.center();
             f.meInArena = w.member(local_).presence != GameWorld::Presence::Vacant && f.arena.contains(f.me) &&
-                          gb.stage() != raid::Gigaboss::Stage::Absent;
+                          !(gb.present() && gb.stage() == raid::Gigaboss::Stage::Absent);
             if (const Enemy* b = gb.boss(w); b && b->alive()) f.boss = b->box;
             for (const auto& fist : gb.fists()) f.threats.push_back(fist.at);
             for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
@@ -581,7 +583,7 @@ public:
         arenaCam_.update(f, dt, g_.ui.r().width(), g_.ui.r().height());
     }
 
-    /// 2.67: the title of the arena while its whole is shown (the intro shot).
+    /// 2.68: the title of the arena while its whole is shown (the intro shot).
     void drawArenaIntro() {
         if (!arenaCam_.intro() || !run_->gigaboss().present()) return;
         UIContext& ui = g_.ui;
@@ -597,7 +599,7 @@ public:
             kText.withAlphaF(alpha), FontFace::Body, Align::Center);
     }
 
-    /// 2.67: arrows on the border toward what the view does not show: the boss (its weak points when
+    /// 2.68: arrows on the border toward what the view does not show: the boss (its weak points when
     /// bare), the allies (their colours), the enemies of the ambush (violet). Kept off the HUD.
     void drawArrows(GameWorld& w, const WorldView& view) {
         UIContext& ui = g_.ui;
@@ -655,27 +657,23 @@ public:
         }
     }
 
-    /// 2.67: the group's plates over the world (gold until done) and how many each needs.
+    /// 2.68 (phase 3): the zone's co-op plates over the world (gold until done) and the players each
+    /// needs (metadata.raid.coop, the same plates as the objectives).
     void drawSwitches(GameWorld& w, const WorldView& view) {
         (void)w;
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
-        for (size_t k = 0; k < run_->rules().switches.size() && k < run_->switches().size(); ++k) {
-            const raid::GroupSwitch& sw = run_->rules().switches[k];
-            const auto& st = run_->switches()[k];
-            const int need = run_->switchNeed(sw);
-            for (size_t p = 0; p < sw.plates.size(); ++p) {
-                const Rect sr = view.toScreen(sw.plates[p]);
-                const Rect plate{sr.x, sr.bottom() - std::max(ui.s(4), sr.h * 0.25f), sr.w, std::max(ui.s(4), sr.h * 0.25f)};
-                r.fillRect(plate, st.done ? Color{124, 240, 168, 160} : Color{255, 210, 122, 150});
-                if (st.done) continue;
-                const int on = p < st.on.size() ? st.on[p] : 0;
-                const std::string t = std::to_string(std::min(on, need)) + " / " + std::to_string(need);
-                const float pw = std::min(textW(ui, t, 13, FontFace::Bold) + ui.s(16), std::max(ui.s(40), sr.w));
-                const Rect pill{sr.center().x - pw * 0.5f, sr.y - ui.s(30), pw, ui.s(24)};
-                r.fillRoundedRect(pill, ui.s(10), Color{16, 22, 46, 220});
-                fit(ui, t, pill.center(), 13, pill.w - ui.s(10), on >= need ? kGreen : kGold, FontFace::Bold, Align::Center, true);
-            }
+        for (size_t k = 0; k < run_->rules().coops.size(); ++k) {
+            const raid::RaidRun::CoopView v = run_->coop(k);
+            const Rect sr = view.toScreen(run_->rules().coops[k].rect);
+            const float ph = std::max(ui.s(4), std::min(sr.h * 0.25f, ui.s(10)));
+            r.fillRect({sr.x, sr.bottom() - ph, sr.w, ph}, v.done ? Color{124, 240, 168, 160} : Color{255, 210, 122, 150});
+            if (v.done || v.need <= 0) continue;
+            const std::string t = std::to_string(std::min(v.on, v.need)) + " / " + std::to_string(v.need);
+            const float pw = std::min(textW(ui, t, 13, FontFace::Bold) + ui.s(16), std::max(ui.s(40), sr.w));
+            const Rect pill{sr.center().x - pw * 0.5f, sr.y - ui.s(30), pw, ui.s(24)};
+            r.fillRoundedRect(pill, ui.s(10), Color{16, 22, 46, 220});
+            fit(ui, t, pill.center(), 13, pill.w - ui.s(10), v.on >= v.need ? kGreen : kGold, FontFace::Bold, Align::Center, true);
         }
     }
 
@@ -831,12 +829,17 @@ public:
             rr.fillRect({a.x, a.y, std::max(ui.s(3), p.rect.w * k), std::max(ui.s(6), p.rect.h * k)}, run_->passageOpen(p) ? kSky : Color{120, 106, 120, 255});
         }
         if (run_->gigaboss().present()) {
-            // 2.67: the vents of the gigaboss (gold while open, green once closed).
+            // 2.68: the vents of the gigaboss (gold while open, green once closed).
             for (const auto& v : run_->gigaboss().vents()) {
                 const Vec2 c = at(v.area.center());
                 const float s = ui.s(4);
                 rr.fillRect({c.x - s, c.y - s, s * 2, s * 2}, v.closed ? kGreen : kGold);
             }
+        }
+        for (size_t ci = 0; ci < run_->rules().coops.size(); ++ci) {  // 2.68: the co-op plates
+            const Rect& pr = run_->rules().coops[ci].rect;
+            const Vec2 a = at({pr.x, pr.y});
+            rr.fillRect({a.x, a.y, std::max(ui.s(4), pr.w * k), std::max(ui.s(3), pr.h * k)}, run_->coop(ci).done ? kGreen : kGold);
         }
         if (!run_->rules().sealedDoor.empty())
             if (const LevelObject* d = w.level().findObject(run_->rules().sealedDoor)) {
@@ -893,29 +896,35 @@ public:
             if (run_->passageOpen(p) || p.lock.empty()) continue;
             const raid::ZoneInfo* to = branch_->zone(p.to);
             const std::string name = to ? to->name : "?";
+            const std::string why = branch_->lockText(p.lock).objective;  // 2.68: each branch's own words
             if (p.lock == "generators")
-                lines.push_back({std::to_string(branch_->generators(mask)) + " / " + std::to_string(branch_->generatorsNeeded),
-                                 name + " : allumer les deux générateurs (Veine, Avant-bras)", kGold, {}});
+                lines.push_back({std::to_string(branch_->generators(mask)) + " / " + std::to_string(branch_->generatorsNeeded), name + " : " + why, kGold, {}});
             else if (p.lock == "shortcut")
-                lines.push_back({"⇄", name + " : raccourci fermé (le levier est dans l'Avant-bras)", kSky, {}});
+                lines.push_back({"⇄", name + " : " + why, kSky, {}});
+            else if (p.lock.rfind("link:", 0) == 0)
+                lines.push_back({"✦", name + " : " + why, kViolet, {}});
             else
                 lines.push_back({"▮", name + " : passage verrouillé", kDim, {}});
         }
+        // 2.68: the zone's co-op mechanisms (locks, goods lift): the players on their plate.
+        for (size_t k = 0; k < run_->rules().coops.size(); ++k) {
+            const raid::RaidRun::CoopView v = run_->coop(k);
+            const std::string& label = run_->rules().coops[k].label;
+            if (v.done) lines.push_back({"✓", label + " : en marche", kGreen, {}});
+            else if (v.need > 0) lines.push_back({std::to_string(v.on) + " / " + std::to_string(v.need), label + " : joueurs ensemble sur la plaque", kGold, {}});
+        }
+        // 2.68: what the other branches of the titan did here (a link on in this zone).
+        for (const raid::EffectInfo& e : branch_->effects)
+            if (e.kind != "open" && e.inZone(run_->zone()) && raid::Branch::on(mask, e)) lines.push_back({"✦", e.label, kGreen, {}});
         if (!run_->rules().sealedLabel.empty()) lines.push_back({"▮", run_->rules().sealedLabel, kGold, {}});
         if (const CombatZoneEntity* amb = w.activeAmbush()) {
-            // 2.67: the ambush under way (its storeys, its waves, the enemies left: violet arrows too).
+            // 2.68: the ambush under way (its storeys, its waves, the enemies left: violet arrows too).
             lines.push_back({std::to_string(amb->currentWave() + 1 > amb->waveCount() ? amb->waveCount() : amb->currentWave() + 1) + " / " +
                                  std::to_string(amb->waveCount()),
                              "Embuscade : vague en cours, " + std::to_string(amb->enemiesLeft(w)) + " ennemis (flèches violettes)", kViolet, {}});
         }
-        for (size_t k = 0; k < run_->rules().switches.size() && k < run_->switches().size(); ++k) {
-            const raid::GroupSwitch& sw = run_->rules().switches[k];
-            const auto& st = run_->switches()[k];
-            if (st.done) continue;
-            lines.push_back({"◇ " + std::to_string(run_->switchNeed(sw)), sw.label, kSky, {}});
-        }
         {
-            // 2.67: the gigaboss of the zone (its stage, the vents, the weak points, the allies down).
+            // 2.68: the gigaboss of the zone (its stage, the vents, the weak points, the allies down).
             std::vector<std::string> marks, texts;
             std::vector<Color> colors;
             gigabossLines(w, marks, texts, colors);
@@ -972,8 +981,9 @@ public:
         const float in = run_->magmaIn();
         if (in < 0.0f) return;
         std::string t;
-        if (run_->magmaActive()) t = "Coulée de magma ! Restez sur les plateformes hautes";
-        else if (in <= run_->rules().magma.warn + 0.01f) t = "Coulée dans " + std::to_string(static_cast<int>(std::ceil(in))) + " s · montez !";
+        const raid::Magma& m = run_->rules().magma;  // 2.68: each branch's own danger
+        if (run_->magmaActive()) t = m.message;
+        else if (in <= m.warn + 0.01f) t = m.name + " dans " + std::to_string(static_cast<int>(std::ceil(in))) + " s · " + m.hint + " !";
         else return;
         const float W = ui.screenW();
         const float tw = std::min(textW(ui, t, 20, FontFace::Bold) + ui.s(40), W * 0.6f);
@@ -988,7 +998,7 @@ public:
         UIContext& ui = g_.ui;
         std::string t;
         if (test_) {
-            // 2.67: an administrator's test: never counted, said where the network's line is.
+            // 2.68: an administrator's test: never counted, said where the network's line is.
             t = "TEST ADMIN · non classé · " + std::to_string(testSetup_.players) + " joueurs simulés" + (testSetup_.invincible ? " · invincible" : "");
             const float w = std::min(textW(ui, t, 13, FontFace::Bold) + ui.s(24), ui.screenW() * 0.4f);
             const Rect r{ui.s(16), ui.screenH() - ui.s(16) - ui.s(34), w, ui.s(34)};
@@ -1076,13 +1086,13 @@ public:
     std::atomic<bool> stopWorker_{false}, workerDone_{false};
     std::atomic<uint32_t> progress_{0};
     bool catching_ = false, connecting_ = false, paused_ = false, ended_ = false;
-    bool test_ = false;         // 2.67: an administrator's test (solo, local, never reported)
+    bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
-    bool fallCard_ = false;     // 2.67: the gigaboss fell: « Résultats du raid »
-    raid::ArenaCamera arenaCam_;   // 2.67: the camera of a gigaboss's arena (display only)
-    std::vector<Rect> hudRects_;   // 2.67: what the HUD covers this frame (kept clear of the arrows)
+    bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
+    raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
+    std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)
     WorldView view_;
-    AnimationSetPtr vents_;     // 2.67: the sheet of its vents
+    AnimationSetPtr vents_;     // 2.68: the sheet of its vents
     float waiting_ = 0.0f, clock_ = 0.0f;
     std::string fail_, endReason_;
     struct Note {

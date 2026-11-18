@@ -102,7 +102,7 @@ float Enemy::phaseSpeed() const {
 
 float Enemy::phaseCooldown() const {
     if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()))
-        return def_.phases[phase_].cooldownMultiplier * (enraged_ ? 0.7f : 1.0f) / pressure_;  // 2.67: a raid's pressure (1 elsewhere)
+        return def_.phases[phase_].cooldownMultiplier * (enraged_ ? 0.7f : 1.0f) / pressure_;  // 2.68: a raid's pressure (1 elsewhere)
     return 1.0f / pressure_;
 }
 
@@ -777,7 +777,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         return false;
     }
     if (raidGuard_) {
-        // 2.67: a raid's gigaboss behind its carapace (game/raid/Gigaboss): its vents must be closed.
+        // 2.68: a raid's gigaboss behind its carapace (game/raid/Gigaboss): its vents must be closed.
         if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
         hurtFlash_ = 0.05f;
         return false;
@@ -820,10 +820,10 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     }
     // 2.58: the Titan venting its steam: its core is bare.
     if (hasTitan_ && coreExposed()) mult *= 1.8f;
-    mult *= raidMult_;  // 2.67: a raid's gigaboss, its weak point bare (1 elsewhere)
+    mult *= raidMult_;  // 2.68: a raid's gigaboss, its weak point bare (1 elsewhere)
     float amount = dmg.amount * mult;
     hp_ -= amount;
-    w.noteEnemyDamaged(*this, dmg, amount);  // 2.54: statistics only (which attack of Nova reached it); 2.67: and how much
+    w.noteEnemyDamaged(*this, dmg, amount);  // 2.54: statistics only (which attack of Nova reached it); 2.68: and how much
     hurtFlash_ = 0.14f;
     invuln_ = 0.12f;
     engaged_ = true;
@@ -851,7 +851,7 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
 }
 
 void Enemy::wound(GameWorld& w, float amount) {
-    // 2.67: one of a raid gigaboss's weak points broken: a blow that ignores its guard.
+    // 2.68: one of a raid gigaboss's weak points broken: a blow that ignores its guard.
     if (!alive() || dormant() || lastStand_ || amount <= 0.0f) return;
     hp_ -= amount;
     hurtFlash_ = 0.3f;

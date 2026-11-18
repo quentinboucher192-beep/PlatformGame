@@ -615,7 +615,7 @@ export class CoopRoom extends DurableObject<Bindings> {
     }
 
     /**
-     * 2.65: who plays in the instance (the consensus counts its active players). 2.67: `from`, the
+     * 2.65: who plays in the instance (the consensus counts its active players). 2.68: `from`, the
      * step from which the player holds the seat (when they take it): their contributions are theirs.
      */
     private async writeMember(seat: number, active: boolean, left: boolean, from?: number) {
@@ -700,7 +700,7 @@ export class CoopRoom extends DurableObject<Bindings> {
                     f = { ...emptyFrame(), flags: s.vacant ? FLAG_VACANT : FLAG_STANDBY };
                 } else {
                     if (s.absent) {
-                        // 2.67: a seat taken by a late join is held from this step (the raids' contributions).
+                        // 2.68: a seat taken by a late join is held from this step (the raids' contributions).
                         const taken = s.vacant;
                         s.absent = false;
                         s.vacant = false;

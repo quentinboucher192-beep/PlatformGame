@@ -564,7 +564,7 @@ void GameWorld::updateProjectiles(float frameDt) {
         } else if (Player* hitP = shotTarget(p)) {
             PlayerScope hitScope(*this, playerIndex(*hitP));  // 2.62: the player it touches (alone: the only one)
             if (hitP->shieldActive() && p.clip != "shockwave") {
-                noteBlocked(p.damage);  // 2.67: the raids' contributions (the shield's bearer is current)
+                noteBlocked(p.damage);  // 2.68: the raids' contributions (the shield's bearer is current)
                 // Reflect back at the enemies.
                 p.vel = -p.vel * 1.25f;
                 p.fromPlayer = true;

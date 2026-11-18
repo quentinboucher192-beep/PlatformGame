@@ -278,7 +278,7 @@ TEST_CASE("raids: groups of 8 and reminders") {
     CHECK(raids::reminderPrefs(Json{{"reminders", Json::array()}}).empty());
 }
 
-TEST_CASE("raids: the results of an event and the rewards to claim (2.67, validated tables only)") {
+TEST_CASE("raids: the results of an event and the rewards to claim (2.68, validated tables only)") {
     const Json j = Json::parse(R"({
         "event": {"id": "e", "state": "en_cours", "final": false},
         "gigaboss": {"boss": "Pyroclast", "defeated": true, "fights": [{"group": "[AUBE]·1", "phase": 4}, {"group": "[NEBU]·2", "phase": 2}]},

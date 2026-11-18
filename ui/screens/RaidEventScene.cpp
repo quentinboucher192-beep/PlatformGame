@@ -185,19 +185,21 @@ private:
         y += drawLines(ui, desc, {left.x, y}, 17, ui.s(25), Color{216, 219, 245, 255}) + ui.s(12);
         if (figW > 0.0f) {
             const float figH = std::max(y - ui.s(12) - figTop, ui.s(236));
-            // A click on the branch being played (raid running) opens its map, like the button below.
-            const std::vector<std::string> open = st == raids::State::Running ? std::vector<std::string>{"bras_droit"} : std::vector<std::string>{};
-            if (!titan_.draw(g_, "asterion", {left.right() - figW, figTop, figW, figH}, asterion::statesOf(at(data_, "event")), open).empty())
-                g_.app.pushScene(makeRaidBranch(g_, id_));
+            // A click on a branch (raid running) opens its map; the button below, the whole titan (2.68).
+            const std::vector<std::string> open = st == raids::State::Running
+                                                      ? std::vector<std::string>{"crane", "bras_gauche", "bras_droit", "torse", "abdomen", "jambe_gauche", "jambe_droite"}
+                                                      : std::vector<std::string>{};
+            const std::string part = titan_.draw(g_, "asterion", {left.right() - figW, figTop, figW, figH}, asterion::statesOf(at(data_, "event")), open);
+            if (!part.empty()) g_.app.pushScene(makeRaidBranch(g_, id_, part));
             y = std::max(y, figTop + figH + ui.s(12));
         }
         if (st == raids::State::Running || st == raids::State::Finished) {
-            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; its map opens the combat.
-            // 2.67 (phase 3): its gigaboss Pyroclast, and the results of the raid (validated).
+            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; 2.68: the seven, from the titan's map;
+            // phase 3: its gigaboss Pyroclast, and the results of the raid (validated).
             const bool running = st == raids::State::Running;
             const Rect band{left.x, y, left.w, ui.s(54)};
             ui.r().fillRoundedRect(band, ui.s(10), running ? Color{122, 26, 26, 235} : Color{36, 46, 96, 235});
-            const std::string label = "Carte du Bras droit", resultsLabel = running ? "Résultats" : "Résultats du raid";
+            const std::string label = "Carte du titan", resultsLabel = running ? "Résultats" : "Résultats du raid";
             const float rw = std::min(textW(ui, resultsLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.25f);
             const float bw = running ? std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.3f) : 0.0f;
             UIContext::ButtonStyle bs;
@@ -207,12 +209,12 @@ private:
             if (running) {
                 const Rect br{rr.x - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
                 if (ui.button("branch", br, label, bs)) {
-                    if (ui.featureSeen && ui.isNew("raids.branch_map")) ui.featureSeen("raids.branch_map");
-                    g_.app.pushScene(makeRaidBranch(g_, id_));
+                    if (ui.featureSeen && ui.isNew("raids.titan_map")) ui.featureSeen("raids.titan_map");
+                    g_.app.pushScene(makeRaidTitan(g_, id_));
                 }
-                ui.newBadge("branch", br, "raids.branch_map", true, true);  // « NOUVEAU »
+                ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
             }
-            const std::string text = running ? "Le raid est en cours : la branche « Bras droit » et son gigaboss Pyroclast sont ouverts aux groupes."
+            const std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit."
                                              : "Le raid est terminé : ses résultats validés et vos récompenses.";
             fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - bw - ui.s(48), kText, FontFace::Bold);
             y += ui.s(66);
@@ -272,7 +274,7 @@ private:
             if (ui.button("edit", {s1.x + ui.s(14), s1.bottom() - ui.s(14) - ui.s(44), tw, ui.s(44)}, "Modifier les consignes (chef, officiers)", bs)) openEdit();
         }
         ty = section(ui, s2, "RÉCOMPENSES", kSky);
-        // 2.67: the effects of the parts of Asterion destroyed (validated), before the rewards.
+        // 2.68: the effects of the parts of Asterion destroyed (validated), before the rewards.
         const Json& effects = at(at(data_, "event"), "effects");
         if (effects.is_array())
             for (const Json& fx : effects) {

@@ -503,11 +503,11 @@ public:
     };
     /// Enemy::takeDamage: health taken from an enemy (credited to the current attack tag).
     void noteEnemyDamaged(const Enemy& e, const DamageInfo& dmg, float amount);
-    /// 2.67: a blow stopped by the current player's shield (told to the listener).
+    /// 2.68: a blow stopped by the current player's shield (told to the listener).
     void noteBlocked(float amount) {
         if (listener) listener->blowBlocked(*this, amount);
     }
-    /// 2.67 (raids, game/raid/Gigaboss): the players in play inside `area` take a blow of `boss`
+    /// 2.68 (raids, game/raid/Gigaboss): the players in play inside `area` take a blow of `boss`
     /// (its jets of magma): for the statistics and the raid's contributions, a blow of the boss.
     bool hurtPlayersByBoss(const Rect& area, const DamageInfo& d, const Enemy* boss, const std::string* attack);
     /// Player::kill: Nova falls (told to the listener when no blow caused it).

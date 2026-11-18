@@ -493,7 +493,7 @@ std::vector<int> reminderPrefs(const Json& prefs) {
     return out;
 }
 
-// ------------------------------------------------------------------ 2.67: results and rewards
+// ------------------------------------------------------------------ 2.68: results and rewards
 
 std::vector<Reward> parseRewards(const Json& list) {
     std::vector<Reward> out;

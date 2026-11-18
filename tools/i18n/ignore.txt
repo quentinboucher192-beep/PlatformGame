@@ -269,3 +269,7 @@ jet
 main_pyroclast
 vents
 result
+torse
+abdomen
+part
+zones

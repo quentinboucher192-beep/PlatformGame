@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.67: the fight against a gigaboss of a raid (docs/RAIDS.md §6), phase 3: PYROCLAST, the magma
+// 2.68: the fight against a gigaboss of a raid (docs/RAIDS.md §6), phase 3: PYROCLAST, the magma
 // hand of Asterion's right arm, in the Main de Pyroclast (zone 8 of « BRAS DROIT »).
 //
 // The gigaboss itself is an enemy of the game (data/enemies/pyroclast.json: three phases, its
@@ -99,7 +99,7 @@ public:
 
     /// Health factor for `players` seated (1 to 8): 1 + hpPerPlayer × (players − 1).
     static float healthFactor(const GigabossRules& r, int players);
-    /// 2.67, an administrator's test (ADMINISTRATION › Raids, never counted): its health scaled
+    /// 2.68, an administrator's test (ADMINISTRATION › Raids, never counted): its health scaled
     /// for at least `players` seated, and the fight started at phase `startPhase` (1-based).
     void setTest(int players, int startPhase) {
         testPlayers_ = players;
@@ -129,7 +129,7 @@ private:
     std::vector<uint32_t> weak_;
     int weakTotal_ = 0;
     std::vector<std::pair<std::string, AlertKind>> alerts_;
-    int testPlayers_ = 0, testPhase_ = 1;  // 2.67: an administrator's test only
+    int testPlayers_ = 0, testPhase_ = 1;  // 2.68: an administrator's test only
     bool seen_ = false, fallen_ = false;   // the boss found in the world; it already fell (branch state)
     std::vector<Fist> fists_;
     int fistClock_ = 0;

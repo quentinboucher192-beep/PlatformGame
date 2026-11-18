@@ -198,7 +198,7 @@ std::string prizeConditionText(const ChallengePrize& p) {
 }
 
 std::string wonOriginText(const WonReward& w) {
-    if (w.challengeId.rfind("raid:", 0) == 0) return "Raid de clan Asterion";  // 2.67: a raid's reward claimed
+    if (w.challengeId.rfind("raid:", 0) == 0) return "Raid de clan Asterion";  // 2.68: a raid's reward claimed
     if (w.challengeKind == "weekly") return "Défi de la semaine " + std::to_string(w.period.size() > 6 ? std::atoi(w.period.c_str() + 6) : 0);
     if (w.challengeKind == "monthly") {
         static const char* const kMonths[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",
@@ -388,7 +388,7 @@ std::string exclusiveOriginText(const std::string& kind, const std::string& peri
 
 std::string exclusiveText(GameServices& g, const CosmeticItem& it) {
     const WonRewards& won = g.challenges.wonRewards();
-    // 2.67: a reward of the clan raids (granted from validated results, claimed in CLANS › RAIDS).
+    // 2.68: a reward of the clan raids (granted from validated results, claimed in CLANS › RAIDS).
     if (!it.raid.empty()) return won.has(it.id) ? "Exclusif aux raids : récupéré au raid Asterion" : "Exclusif aux raids de clan : Asterion (CLANS › RAIDS)";
     if (const WonReward* w = won.origin(it.id)) return exclusiveOriginText(w->challengeKind, w->period, w->date, w->condition, w->value);
     if (it.challengeReward()) return "Exclusif aux défis : " + challengeConditionText(it);

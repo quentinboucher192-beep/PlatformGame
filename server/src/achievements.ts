@@ -68,7 +68,7 @@ export async function putAchievements(ctx: Ctx): Promise<Response> {
             // a damaged row: the list declared now replaces it
         }
     }
-    // 2.67: a badge of the raids is never the game's word: only one whose reward the server granted
+    // 2.68: a badge of the raids is never the game's word: only one whose reward the server granted
     // and the player claimed (raidRewards.ts).
     if ([...known].some((id) => RAID_ACHIEVEMENTS[id] !== undefined)) {
         const allowed = await claimedAchievements(ctx.env.DB, me);

@@ -1,10 +1,13 @@
-// 2.65: the map of a branch of the raid (docs/RAIDS.md, maquette « Branche »): « BRAS DROIT » of
-// Asterion, its 8 sub-zones linked as on the titan's arm (two paths, the secret grotto, the wrist
-// locked by two generators, the shortcut, the forge that needs two groups, the hand where the
-// gigaboss Pyroclast waits: 2.67, phase 3). Everything shown comes from the server (GET /raids/events/{id}/branch): the zones
-// controlled, the objectives done and by which group, the passages open, the groups and where
-// they are. At the right, the zone selected: its objectives, what is inside, the groups present,
-// « Rejoindre » (my group's instance) and « Aider » (another group there, with a free place).
+// 2.65: the map of a branch of the raid (docs/RAIDS.md, maquette « Branche »): 2.68, any of the
+// seven branches of Asterion (« BRAS DROIT » first), its 8 sub-zones linked as on the titan's body
+// (two paths, the secret zone, the lock of several objectives, the shortcut, the zone that needs
+// two groups, the passages that another branch opens, the sealed lair of the gigaboss; 2.68,
+// phase 3: the hand of the BRAS DROIT is the arena of its gigaboss Pyroclast).
+// Everything shown comes from the server (GET /raids/events/{id}/branches/{part}): the zones
+// controlled, the objectives done and by which group, the passages open, the links of the titan
+// received and given, the groups and where they are. At the right, the zone selected: its
+// objectives, what is inside, the links, the groups present, « Rejoindre » (my place on this
+// branch, placed by the server) and « Aider » (another group there, with a free place).
 //
 // Keyboard, gamepad and mouse: the zones are focusable (arrows / stick, Entrée / A to select), the
 // buttons too; Échap / B goes back. Every text is measured into its room (raidui::fit, wrap).
@@ -29,6 +32,7 @@ using namespace raidui;
 
 const Color kViolet{201, 168, 255, 255};
 const Color kLock{106, 90, 106, 255};
+const Color kLink{255, 138, 184, 255};  // 2.68: a passage another branch of the titan opens
 
 struct NodeLook {
     Color fill, edge, tag;
@@ -55,11 +59,11 @@ void dashedRect(Renderer& r, const Rect& b, Color c, float t, float dash) {
 
 class RaidBranchScene : public Scene {
 public:
-    RaidBranchScene(GameServices& g, std::string eventId) : g_(g), eventId_(std::move(eventId)) {}
+    RaidBranchScene(GameServices& g, std::string eventId, std::string part) : g_(g), eventId_(std::move(eventId)), part_(std::move(part)) {}
 
     void onEnter() override {
         bg_.init(g_);
-        g_.ui.setFocus("branch/zone4");
+        g_.ui.setFocus("branch/zone" + std::to_string(selected_));
         load();
     }
     void onResume() override { load(); }
@@ -73,7 +77,7 @@ public:
     void load() {
         timer_ = 0.0f;
         const int gen = ++gen_;
-        g_.online.get("/api/v1/raids/events/" + eventId_ + "/branch", OnlineService::guard(life_, [this, gen](const ApiResult& r) {
+        g_.online.get("/api/v1/raids/events/" + eventId_ + "/branches/" + part_, OnlineService::guard(life_, [this, gen](const ApiResult& r) {
                           if (gen != gen_) return;
                           if (!r.ok) {
                               error_ = r.message;
@@ -88,8 +92,10 @@ public:
 
     const Json& zoneJson(int id) const {
         static const Json none;
-        for (const auto& z : data_.value("zones", Json::array()))
-            if (jget<int>(z, "id", 0) == id) return z;
+        const Json& zones = data_.contains("zones") ? data_["zones"] : none;
+        if (zones.is_array())
+            for (const auto& z : zones)
+                if (jget<int>(z, "id", 0) == id) return z;
         return none;
     }
 
@@ -115,14 +121,16 @@ public:
         const int groups = static_cast<int>(groupsIn(id).size());
         const int required = jget<int>(z, "groups_required", 1);
         if (jget<bool>(z, "boss", false)) {
-            // 2.67: the gigaboss's arena: fallen once its objective is accepted.
-            if (jget<bool>(z, "controlled", false)) return "Pyroclast vaincu";
+            // 2.68 (phase 3): the gigaboss's arena: fallen once its objective is accepted; the six
+            // others are sealed until their gigaboss comes.
+            if (part_ != "bras_droit") return "scellée · prochaine version";
+            if (jget<bool>(z, "controlled", false)) return jstr(data_.value("branch", Json::object()), "gigaboss") + " vaincu";
             if (!jget<bool>(z, "reachable", false)) return "gigaboss · verrouillée";
             return groups > 0 ? "gigaboss · " + std::to_string(groups) + (groups > 1 ? " groupes au combat" : " groupe au combat") : "gigaboss · à affronter";
         }
         if (jget<bool>(z, "controlled", false)) return "contrôlée";
         if (!jget<bool>(z, "reachable", false)) {
-            const Json& gens = data_.value("generators", Json::object());
+            const Json gens = data_.value("generators", Json::object());
             for (const auto& e : data_.value("edges", Json::array()))
                 if ((jget<int>(e, "a", 0) == id || jget<int>(e, "b", 0) == id) && jstr(e, "lock") == "generators")
                     return "verrouillé (" + std::to_string(jget<int>(gens, "done", 0)) + " / " + std::to_string(jget<int>(gens, "needed", 2)) + ")";
@@ -161,14 +169,15 @@ public:
             int controlled = 0, groups = 0;
             for (const auto& z : data_.value("zones", Json::array())) controlled += jget<bool>(z, "controlled", false) ? 1 : 0;
             for (const auto& i : data_.value("instances", Json::array())) groups += jget<int>(i, "players", 0) > 0 ? 1 : 0;
-            const std::string count = std::to_string(controlled) + " zones sur 8 contrôlées · " + std::to_string(groups) + (groups > 1 ? " groupes en jeu" : " groupe en jeu");
+            const std::string count = std::to_string(controlled) + " zones sur " + std::to_string(data_.value("zones", Json::array()).size()) + " contrôlées · " +
+                                      std::to_string(groups) + (groups > 1 ? " groupes en jeu" : " groupe en jeu");
             const float cw = std::min(textW(ui, count, 14), (left.right() - hx) * 0.4f);
             fit(ui, count, {left.right(), left.y + ui.s(22)}, 14, cw, Color{200, 176, 168, 255}, FontFace::Body, Align::Right);
-            const float tw = fit(ui, jstr(data_.value("branch", Json::object()), "name", "BRAS DROIT"), {hx, left.y + ui.s(22)}, 28,
-                                 (left.right() - cw - ui.s(16) - hx) * 0.5f, kText, FontFace::Title)
-                                 .x;
+            const Json branch = data_.value("branch", Json::object());
+            const float tw = fit(ui, jstr(branch, "name"), {hx, left.y + ui.s(22)}, 28, (left.right() - cw - ui.s(16) - hx) * 0.5f, kText, FontFace::Title).x;
             const float gx = hx + tw + ui.s(14);
-            fit(ui, "Gigaboss : " + jstr(data_.value("branch", Json::object()), "gigaboss", "Pyroclast") + (zoneJson(8).value("controlled", false) ? " · vaincu" : " · Main de Pyroclast"),
+            const bool fought = part_ == "bras_droit";  // 2.68 (phase 3): Pyroclast is fought; the six others later
+            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") + (!fought ? " · prochaine version" : zoneJson(8).value("controlled", false) ? " · vaincu" : " · dans la Main"),
                 {gx, left.y + ui.s(22)}, 15, left.right() - cw - ui.s(16) - gx, kPeach);
             drawMap({left.x, left.y + ui.s(58), left.w, left.h - ui.s(58) - ui.s(34)});
             drawLegend({left.x, left.bottom() - ui.s(24), left.w, ui.s(24)});
@@ -199,6 +208,7 @@ public:
             Color c = open ? Color{124, 240, 168, 170} : kLock;
             if (jget<bool>(e, "secret", false)) c = kViolet;
             else if (lock == "shortcut") c = kSky;
+            else if (lock.rfind("link:", 0) == 0) c = open ? kLink : kLink.withAlpha(150);
             else if (open && (!groupsIn(jget<int>(a, "id", 0)).empty() || !groupsIn(jget<int>(b, "id", 0)).empty())) c = kOrange;
             const Vec2 pa = pos(a), pb = pos(b);
             if (open) {
@@ -256,6 +266,7 @@ public:
                                                                   {"┅ verrouillé", Color{154, 138, 138, 255}},
                                                                   {"▢ zone secrète (pointillés)", kViolet},
                                                                   {"⇄ raccourci déblocable", kSky},
+                                                                  {"✦ ouvert par une autre branche", kLink},
                                                                   {"◆ objectif facultatif", kGold}};
         // One line: the size that fits them all, never below 75 %.
         float total = 0.0f;
@@ -282,6 +293,7 @@ public:
         const std::string myInstance = jstr(data_.value("my", Json::object()), "instance_id");
         int myFree = 8;
         int myZone = 0;
+        const Json my = data_.value("my", Json::object());
         Json help;
         for (const auto& i : data_.value("instances", Json::array())) {
             if (jstr(i, "id") == myInstance) {
@@ -291,7 +303,7 @@ public:
                 help = i;
             }
         }
-        const bool registered = jget<bool>(data_.value("my", Json::object()), "registered", false);
+        const bool registered = jget<bool>(my, "registered", false);
         const bool running = jstr(data_.value("event", Json::object()), "state") == "en_cours";
         const float bh = ui.s(50), by = r.bottom() - pad - bh, gap = ui.s(8);
         const bool canHelp = help.is_object() && registered && running;
@@ -299,7 +311,7 @@ public:
         UIContext::ButtonStyle js;
         js.primary = true;
         js.enabled = registered && running && !busy_;
-        std::string joinLabel = myInstance.empty() ? "Rejoindre mon groupe" : "Rejoindre · " + std::to_string(myFree) + (myFree > 1 ? " places" : " place");
+        std::string joinLabel = myInstance.empty() ? "Rejoindre cette branche" : "Rejoindre · " + std::to_string(myFree) + (myFree > 1 ? " places" : " place");
         if (ui.button("join", {x, by, jw, bh}, joinLabel, js)) join("");
         if (canHelp) {
             UIContext::ButtonStyle hs;
@@ -308,10 +320,13 @@ public:
             if (ui.button("help", {x + jw + gap, by, w - jw - gap, bh}, t, hs)) join(jstr(help, "id"));
         }
         float bottom = by - ui.s(10);
+        const std::string elsewhere = jstr(my, "placed_branch");
         std::string note = !running ? "Le raid n'est pas en cours : les combats se jouent pendant l'événement."
                            : !registered ? "Inscrivez-vous au raid (fiche de l'événement) pour combattre."
                            : !myInstance.empty() && myZone > 0 && branchZoneName(myZone).size() ? "Votre groupe est dans : " + branchZoneName(myZone) + "."
-                                                                                                 : "Votre groupe entre par l'Épaule ; il rejoint ensuite les zones ouvertes.";
+                           : !elsewhere.empty() && elsewhere != part_ ? "Votre place est sur une autre branche : rejoindre celle-ci vous y place."
+                                                                       : "Le serveur vous place dans un groupe de votre clan qui a de la place ; il entre par " +
+                                                                             branchZoneName(1) + ".";
         if (!status_.empty()) note = status_;
         const auto nl = wrap(ui, note, FontFace::Body, 13, w, 2, true);
         bottom -= static_cast<float>(nl.size()) * ui.s(18);
@@ -360,14 +375,37 @@ public:
             if (done && !jstr(o, "by").empty()) t += " — " + jstr(o, "by");
             goals.push_back({t, {done ? "✓" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
         }
-        if (jget<bool>(z, "boss", false))
-            goals.push_back({"Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.", {"◆", kGold}});
+        if (jget<bool>(z, "boss", false)) {
+            if (part_ == "bras_droit")  // 2.68 (phase 3): Pyroclast's arena
+                goals.push_back({"Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.", {"◆", kGold}});
+            else
+                goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
+        }
         if (goals.empty()) goals.push_back({"Aucun objectif dans cette zone.", {"·", kDim}});
         section("Objectifs", goals);
         std::vector<std::pair<std::string, std::pair<std::string, Color>>> inside;
         if (!jstr(z, "inside").empty()) inside.push_back({jstr(z, "inside"), {"", kText}});
         if (!jstr(z, "event").empty()) inside.push_back({"Événement : " + jstr(z, "event"), {"", kText}});
+        if (const float minutes = jget<float>(z, "minutes", 0.0f); minutes > 0.0f)  // 2.68: the generator's estimate
+            inside.push_back({"Durée estimée à 8 joueurs : ≈ " + std::to_string(std::max(1L, std::lround(minutes))) + " min", {"", kDim}});
         if (!inside.empty()) section("Dans la zone", inside);
+        // 2.68: the links of the titan: received here (another branch acts on this zone), given
+        // by this zone's objectives (they act on another branch).
+        std::vector<std::pair<std::string, std::pair<std::string, Color>>> links;
+        for (const auto& e : z.value("effects", Json::array()))
+            links.push_back({jstr(e, "label"), {jget<bool>(e, "on", false) ? "✓" : "✦", jget<bool>(e, "on", false) ? kGreen : kLink}});
+        for (const auto& l : data_.value("effects_out", Json::array())) {
+            bool fromHere = false;
+            for (const auto& src : l.value("sources", Json::array()))
+                for (const auto& o : z.value("objectives", Json::array()))
+                    fromHere = fromHere || (jstr(src, "branch") == part_ && jstr(src, "objective") == jstr(o, "id"));
+            if (!fromHere) continue;
+            const Json pr = l.value("progress", Json::object());
+            const bool on = jget<bool>(l, "on", false);
+            links.push_back({jstr(l, "label"),
+                             {on ? "✓" : std::to_string(jget<int>(pr, "done", 0)) + " / " + std::to_string(jget<int>(pr, "needed", 1)), on ? kGreen : kGold}});
+        }
+        if (!links.empty()) section("Liens avec le reste du titan", links);
         std::vector<std::pair<std::string, std::pair<std::string, Color>>> present;
         for (const auto& gi : groupsIn(selected_))
             present.push_back({"[" + jstr(gi, "clan_tag") + "]·" + std::to_string(jget<int>(gi, "group", 1)) + " · " + std::to_string(jget<int>(gi, "players", 0)) + " / 8" +
@@ -386,7 +424,7 @@ public:
         statusError_ = false;
         Json body = Json::object();
         if (!instanceId.empty()) body["instance_id"] = instanceId;
-        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/instance", body, OnlineService::guard(life_, [this](const ApiResult& r) {
+        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/branches/" + part_ + "/join", body, OnlineService::guard(life_, [this](const ApiResult& r) {
                            busy_ = false;
                            if (!r.ok) {
                                status_ = r.message;
@@ -399,25 +437,28 @@ public:
                            e.instanceId = jstr(i, "id");
                            e.clanTag = jstr(i, "clan_tag");
                            e.group = jget<int>(i, "group", 1);
+                           e.branch = jstr(i, "part", part_);
                            status_.clear();
                            g_.app.switchScene(makeRaidGame(g_, e), 0.35f);
                        }));
     }
 
     GameServices& g_;
-    std::string eventId_;
+    std::string eventId_, part_;
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     Json data_;
     bool loaded_ = false, busy_ = false, statusError_ = false;
     int gen_ = 0;
-    int selected_ = 4;
+    int selected_ = 1;
     float timer_ = 0.0f;
     std::string error_, status_;
 };
 
 }  // namespace
 
-std::unique_ptr<Scene> makeRaidBranch(GameServices& g, const std::string& eventId) { return std::make_unique<RaidBranchScene>(g, eventId); }
+std::unique_ptr<Scene> makeRaidBranch(GameServices& g, const std::string& eventId, const std::string& part) {
+    return std::make_unique<RaidBranchScene>(g, eventId, part);
+}
 
 }  // namespace cosmic

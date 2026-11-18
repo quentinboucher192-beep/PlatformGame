@@ -14,8 +14,15 @@
 // * the branch's state (objectives done by every group, accepted by the server after the
 //   consensus of each instance) comes with the relay's frames at a given step (RAID_STATE):
 //   it opens the locked passages (generators, shortcut) for everyone at that same step;
-// * the magma flow: a damage zone switched on every period, announced `warn` seconds before;
-// * the whole instance down: the zone starts again where it entered it (progress kept).
+// * the magma flow: a damage zone switched on every period, announced `warn` seconds before
+//   (2.68: each branch's own danger: psychic wave, claw sweep, heart pulse…);
+// * 2.68, the links of the titan (bits 24 and up of the state, given like the rest): what another
+//   branch did acts here at the same step for everyone (a passage opens, lasers go dark, the
+//   reinforcements are gone, the danger stops), and again each time a zone is loaded;
+// * the whole instance down: the zone starts again where it entered it (progress kept); 2.68: at
+//   the last checkpoint reached in it, when it has some (the players down get up at each new one);
+// * 2.68, co-op mechanisms: a plate where several players must stand together opens a lock's
+//   doors on every floor, or starts a goods lift (fewer players when fewer are in play);
 //
 // Nothing here reads the clock, the camera or the network: only the frames and the state given
 // with them. Each completion (objective, zone entered) is a report the game sends to the server
@@ -37,7 +44,7 @@
 namespace cosmic::raid {
 
 struct Report {
-    /// 2.67: Boss (the gigaboss's phase reached: 1 the fight begins, 2 and 3 its phases, 4 its fall)
+    /// 2.68: Boss (the gigaboss's phase reached: 1 the fight begins, 2 and 3 its phases, 4 its fall)
     /// and Result (the players' contributions, Contributions::canonical, at each milestone).
     enum class Kind { Objective, Zone, Boss, Result } kind = Kind::Objective;
     std::string objective;  // Kind::Objective
@@ -87,21 +94,12 @@ public:
     float magmaIn() const;
     /// Whether a passage is open now.
     bool passageOpen(const Passage& p) const { return branch_.lockOpen(p.lock, mask()); }
-    /// 2.67: the group switches of the zone: steps held, done (k = index in rules().switches).
-    struct SwitchState {
-        int hold = 0;
-        bool done = false;
-        std::vector<int> on;  // players standing on each plate this step
-    };
-    const std::vector<SwitchState>& switches() const { return switchStates_; }
-    /// The players a switch needs on each plate now (its `need`, never more than the seats taken).
-    int switchNeed(const GroupSwitch& sw) const;
-    /// 2.67: the gigaboss of the zone (its fight; nothing in a zone without one).
+    /// 2.68: the gigaboss of the zone (its fight; nothing in a zone without one).
     const Gigaboss& gigaboss() const { return gigaboss_; }
-    /// 2.67: what each player did since the instance started (the same on every computer).
+    /// 2.68: what each player did since the instance started (the same on every computer).
     const Contributions& contributions() const { return contrib_; }
 
-    /// 2.67: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): solo, local,
+    /// 2.68: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): solo, local,
     /// never counted: no report at all (takeReports stays empty), every world a training run
     /// (invincible when asked), the gigaboss scaled for `players` and started at `startPhase`.
     struct Test {
@@ -113,6 +111,15 @@ public:
     void setTest(const Test& t);
     bool test() const { return test_.on; }
     const Test& testSetup() const { return test_; }
+    /// 2.68: a co-op mechanism of the zone (index in rules().coops): the players on its plate now,
+    /// how many it needs (its count, fewer when fewer players are in play), done.
+    struct CoopView {
+        int on = 0, need = 1;
+        bool done = false;
+    };
+    CoopView coop(size_t index) const;
+    /// 2.68: the last checkpoint reached in this zone (the group starts again there), empty when none.
+    const std::string& lastCheckpoint() const { return lastCheckpoint_; }
 
     /// Display / catch-up settings, kept for every world of the run.
     void setQuiet(bool on);
@@ -121,11 +128,14 @@ public:
 private:
     void loadZone(int zone, const std::string& from, const std::vector<GameWorld::MemberCarry>* carry);
     void applyMask(uint32_t mask, bool initial);
+    /// 2.68: a link of the titan on, in the zone loaded (objects off, enemies gone, danger stopped).
+    void applyEffect(const EffectInfo& e);
+    void updateCoops();
+    void reachedCheckpoint(const std::string& id);
     void updateMagma();
     void checkPassages();
     void completed(const std::string& source, const std::string& trigger, int who);
     void reportResult();
-    void stepSwitches();
     void alert(std::string text, Alert::Kind kind);
 
     WorldServices services_;
@@ -144,15 +154,16 @@ private:
     std::vector<uint8_t> insidePassage_;  // per passage: bits of the players inside it
     struct Event {
         std::string source, trigger;
-        int who = -1;  // 2.67: the seat whose attack caused it (-1 unknown)
+        int who = -1;  // 2.68: the seat whose attack caused it (-1 unknown)
     };
     std::vector<Event> events_;  // of the step
-    Contributions contrib_;      // 2.67
-    Gigaboss gigaboss_;          // 2.67
-    int bossReported_ = 0;       // 2.67: the highest phase of the gigaboss already reported
-    uint32_t lastResult_ = UINT32_MAX;  // 2.67: the step of the last table reported
-    Test test_;                         // 2.67: an administrator's test (never reported)
-    std::vector<SwitchState> switchStates_;  // 2.67
+    Contributions contrib_;      // 2.68
+    Gigaboss gigaboss_;          // 2.68
+    int bossReported_ = 0;       // 2.68: the highest phase of the gigaboss already reported
+    uint32_t lastResult_ = UINT32_MAX;  // 2.68: the step of the last table reported
+    Test test_;                         // 2.68: an administrator's test (never reported)
+    std::vector<uint8_t> coopDone_;       // 2.68: per co-op mechanism of the zone
+    std::string lastCheckpoint_;          // 2.68: kept when the zone starts again
     std::vector<Report> reports_;
     std::vector<Alert> alerts_;
 };
