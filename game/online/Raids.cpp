@@ -335,8 +335,33 @@ Event parseEvent(const Json& j) {
         e.clanLeader = jstr(mine, "leader");
     }
     e.registered = jget<bool>(j, "registered", false);
+    // 2.69 (phase 5): suspended, the late arrivals, a catch-up session, the official result.
+    e.suspended = jget<bool>(j, "suspended", false);
+    e.suspendedReason = jstr(j, "suspended_reason");
+    {
+        const Json late = jfield(j, "late_minutes", Json());
+        e.lateMinutes = late.is_number_integer() ? std::clamp(late.get<int>(), 0, 1440) : -1;
+    }
+    e.catchup = jget<bool>(j, "catchup", false);
+    e.catchupOf = jstr(j, "catchup_of");
+    e.result = parseEventResult(jfield(j, "result", Json()));
     e.valid = !e.id.empty() && e.startsAt > 0 && e.lockAt > 0 && e.endsAt > 0;
     return e;
+}
+
+EventResult parseEventResult(const Json& j) {
+    EventResult r;
+    if (!j.is_object()) return r;
+    r.outcome = jstr(j, "outcome");
+    r.text = jstr(j, "text");
+    r.progress = std::clamp(jget<int>(j, "progress", 0), 0, 100);
+    r.gigabossDefeated = std::max(0, jget<int>(j, "gigaboss_defeated", 0));
+    r.gigaboss = std::max(1, jget<int>(j, "gigaboss", 7));
+    r.clans = std::max(0, jget<int>(j, "clans", 0));
+    r.players = std::max(0, jget<int>(j, "players", 0));
+    r.myClanRank = std::max(0, jget<int>(j, "my_clan_rank", 0));
+    r.valid = (r.outcome == "vaincu" || r.outcome == "survecu") && !r.text.empty();
+    return r;
 }
 
 State stateAt(const Event& e, int64_t now) {
@@ -392,9 +417,20 @@ Action primaryAction(const Event& e, int64_t now, bool loggedIn, const std::stri
     switch (s) {
         case State::Cancelled: return {"", "Raid annulé", false, "Ce raid a été annulé."};
         case State::Finished: return {"", "Terminé", false, ""};
-        case State::Running: return {"", "En cours", false, "Le combat arrive dans une prochaine version."};
         case State::Draft: return {"", "Brouillon", false, "Pas encore publié."};
         default: break;
+    }
+    // 2.69 (phase 5): suspended by the administrators: nothing to do until the resumption.
+    if (e.suspended && s == State::Running)
+        return {"", "Événement suspendu", false, "Les administrateurs ont suspendu l'événement : rien ne compte jusqu'à la reprise."};
+    if (s == State::Running) {
+        if (e.registered) return {"", "Inscrit · en jeu", false, "Rejoignez le combat depuis la carte du titan."};
+        // A catch-up session takes registrations until its end (a member's registration enters the clan).
+        if (!e.catchup || now >= e.lockAt) return {"", "En cours", false, "Les inscriptions sont closes : le raid a commencé."};
+        if (!loggedIn) return {"login", "Se connecter", true, "Un compte Cosmic Online et un clan sont nécessaires pour participer."};
+        if (clanId.empty()) return {"", "Je m'inscris", false, "Rejoignez un clan pour participer aux raids."};
+        if (e.clanCapacity > 0 && e.clanPlayers >= e.clanCapacity) return {"", "Complet", false, "Votre clan a atteint " + std::to_string(e.clanCapacity) + " inscrits."};
+        return {"register", "Je m'inscris", true, "Session de rattrapage : votre inscription inscrit aussi votre clan."};
     }
     if (!loggedIn) return {"login", "Se connecter", true, "Un compte Cosmic Online et un clan sont nécessaires pour participer."};
     if (e.registered) {
@@ -624,6 +660,196 @@ std::vector<ResultPlayer> rankedBy(const Results& r, const std::string& c) {
     });
     for (size_t i = 0; i < out.size(); ++i) out[i].rank = static_cast<int>(i) + 1;
     return out;
+}
+
+// ------------------------------------------------------------------ 2.69: the world events (phase 5)
+
+std::string ordinal(int rank) { return rank == 1 ? "1er" : std::to_string(std::max(0, rank)) + "ᵉ"; }
+
+std::string lateRuleText(const Event& e) {
+    if (e.lateMinutes < 0) return "Arrivée en retard : jusqu'à la fin";
+    if (e.lateMinutes == 0) return "Arrivée en retard : non";
+    return "Arrivée en retard : jusqu'à " + std::to_string(e.lateMinutes) + " min après le début";
+}
+
+std::string resultLine(const EventResult& r, const std::string& clanTag) {
+    if (!r.valid) return "";
+    std::string t = r.text + " · " + std::to_string(r.progress) + " %";
+    if (r.myClanRank > 0) t += " · " + (clanTag.empty() ? std::string("votre clan") : "[" + clanTag + "]") + " " + ordinal(r.myClanRank) + " / " + std::to_string(r.clans);
+    return t;
+}
+
+namespace {
+
+std::vector<ResultPlayer> parsePlayers(const Json& list) {
+    std::vector<ResultPlayer> out;
+    if (!list.is_array()) return out;
+    for (const Json& p : list) {
+        if (!p.is_object() || out.size() >= 200) continue;
+        ResultPlayer x;
+        x.rank = jget<int>(p, "rank", static_cast<int>(out.size()) + 1);
+        x.id = jstr(p, "id");
+        x.username = jstr(p, "username");
+        x.clanTag = jstr(p, "clan_tag");
+        x.score = jget<int>(p, "score", 0);
+        x.damage = jget<int>(p, "damage", 0);
+        x.bossDamage = jget<int>(p, "boss_damage", 0);
+        x.avoided = jget<int>(p, "avoided", 0);
+        x.support = jget<int>(p, "support", 0);
+        x.blocks = jget<int>(p, "blocks", 0);
+        x.rescues = jget<int>(p, "rescues", 0);
+        x.vents = jget<int>(p, "vents", 0);
+        x.weakPoints = jget<int>(p, "weak_points", 0);
+        x.objectives = jget<int>(p, "objectives", 0);
+        x.gigaboss = jget<int>(p, "gigaboss", 0);
+        x.seconds = jget<int>(p, "seconds", 0);
+        x.progress = jget<int>(p, "progress", 0);
+        x.me = jget<bool>(p, "me", false);
+        if (!x.id.empty()) out.push_back(std::move(x));
+    }
+    return out;
+}
+
+}  // namespace
+
+WorldRanking parseWorld(const Json& j) {
+    WorldRanking w;
+    if (!j.is_object()) return w;
+    const Json ev = jfield(j, "event", Json());
+    w.state = jstr(ev, "state");
+    w.final = jget<bool>(ev, "final", false);
+    w.closing = jget<bool>(ev, "closing", false);
+    w.suspended = jget<bool>(ev, "suspended", false);
+    w.catchup = jget<bool>(ev, "catchup", false);
+    w.frozenAt = jstr(ev, "frozen_at");
+    w.catchupOf = jstr(ev, "catchup_of");
+    const Json wd = jfield(j, "world", Json());
+    w.progress = std::clamp(jget<int>(wd, "progress", 0), 0, 100);
+    w.objectivesDone = jget<int>(wd, "objectives_done", 0);
+    w.objectives = jget<int>(wd, "objectives", 0);
+    w.zonesControlled = jget<int>(wd, "zones_controlled", 0);
+    w.zones = jget<int>(wd, "zones", 0);
+    w.gigabossDefeated = jget<int>(wd, "gigaboss_defeated", 0);
+    w.gigaboss = std::max(1, jget<int>(wd, "gigaboss", 7));
+    w.clansRegistered = jget<int>(wd, "clans", 0);
+    w.clansPlaying = jget<int>(wd, "clans_playing", 0);
+    w.participants = jget<int>(wd, "players", 0);
+    w.groupsPlaying = jget<int>(wd, "groups", 0);
+    const Json branches = jfield(wd, "branches", Json());
+    if (branches.is_array())
+        for (const Json& b : branches) {
+            if (!b.is_object() || w.branches.size() >= 16) continue;
+            w.branches.push_back({jstr(b, "part"), jstr(b, "name"), jstr(b, "gigaboss"), jget<int>(b, "objectives_done", 0), jget<int>(b, "objectives", 0),
+                                  jget<int>(b, "zones_controlled", 0), jget<int>(b, "zones", 0), jget<bool>(b, "gigaboss_down", false)});
+        }
+    const Json oc = jfield(j, "outcome", Json());
+    w.outcome = jstr(oc, "id", "en_cours");
+    w.outcomeText = jstr(oc, "text");
+    const Json clans = jfield(j, "clans", Json());
+    if (clans.is_array())
+        for (const Json& c : clans) {
+            if (!c.is_object() || w.clans.size() >= 200) continue;
+            WorldClan x;
+            x.rank = jget<int>(c, "rank", static_cast<int>(w.clans.size()) + 1);
+            x.id = jstr(c, "id");
+            x.tag = jstr(c, "tag");
+            x.name = jstr(c, "name");
+            x.points = jget<int>(c, "points", 0);
+            x.players = jget<int>(c, "players", 0);
+            x.registered = jget<int>(c, "registered", 0);
+            x.groups = jget<int>(c, "groups", 0);
+            x.objectives = jget<int>(c, "objectives", 0);
+            x.first = jget<int>(c, "first", 0);
+            x.gigaboss = jget<int>(c, "gigaboss", 0);
+            x.mine = jget<bool>(c, "mine", false);
+            if (!x.id.empty()) w.clans.push_back(std::move(x));
+        }
+    const Json groups = jfield(j, "groups", Json());
+    if (groups.is_array())
+        for (const Json& g : groups) {
+            if (!g.is_object() || w.groups.size() >= 200) continue;
+            WorldGroup x;
+            x.rank = jget<int>(g, "rank", static_cast<int>(w.groups.size()) + 1);
+            x.id = jstr(g, "id");
+            x.clanTag = jstr(g, "clan_tag");
+            x.branch = jstr(g, "branch");
+            x.branchName = jstr(g, "branch_name");
+            x.group = jget<int>(g, "group", 1);
+            x.points = jget<int>(g, "points", 0);
+            x.players = jget<int>(g, "players", 0);
+            x.objectives = jget<int>(g, "objectives", 0);
+            x.bossPhase = std::clamp(jget<int>(g, "boss_phase", 0), 0, 4);
+            x.mine = jget<bool>(g, "mine", false);
+            x.me = jget<bool>(g, "me", false);
+            if (!x.id.empty()) w.groups.push_back(std::move(x));
+        }
+    w.players = parsePlayers(jfield(j, "players", Json()));
+    const Json totals = jfield(j, "totals", Json());
+    w.totalClans = jget<int>(totals, "clans", static_cast<int>(w.clans.size()));
+    w.totalGroups = jget<int>(totals, "groups", static_cast<int>(w.groups.size()));
+    w.totalPlayers = jget<int>(totals, "players", static_cast<int>(w.players.size()));
+    const Json pending = jfield(j, "pending", Json());
+    w.pendingTables = std::max(0, jget<int>(pending, "tables", 0));
+    w.pendingObjectives = std::max(0, jget<int>(pending, "objectives", 0));
+    w.pendingInstances = std::max(0, jget<int>(pending, "instances", 0));
+    const Json my = jfield(j, "my", Json());
+    w.myClanTag = jstr(my, "clan_tag");
+    w.myClanRank = jget<int>(my, "clan_rank", 0);
+    w.myClanPoints = jget<int>(my, "clan_points", 0);
+    w.myGroupRank = jget<int>(my, "group_rank", 0);
+    w.myRank = jget<int>(my, "rank", 0);
+    w.myPending = jget<bool>(my, "pending", false);
+    w.myPendingReports = jget<int>(my, "pending_reports", 0);
+    const Json titles = jfield(my, "clan_titles", Json());
+    if (titles.is_array())
+        for (const Json& t : titles)
+            if (t.is_object() && !jstr(t, "title").empty() && w.myClanTitles.size() < 8)
+                w.myClanTitles.push_back("« " + jstr(t, "title") + " » · " + ordinal(jget<int>(t, "rank", 1)) + " mondial");
+    w.rewards = parseRewards(jfield(j, "rewards", Json()));
+    const Json off = jfield(j, "official", Json());
+    if (off.is_object()) {
+        w.officialFrozen = jget<bool>(off, "frozen", false);
+        w.officialText = jstr(off, "text");
+        w.officialProgress = std::clamp(jget<int>(off, "progress", 0), 0, 100);
+    }
+    w.valid = true;
+    return w;
+}
+
+std::string worldProgressLine(const WorldRanking& w) {
+    return "Progression mondiale " + std::to_string(w.progress) + " % · " + std::to_string(w.objectivesDone) + " / " + std::to_string(w.objectives) + " objectifs · " +
+           std::to_string(w.gigabossDefeated) + " / " + std::to_string(w.gigaboss) + " gigaboss";
+}
+
+std::string pendingText(const WorldRanking& w) {
+    if (w.pendingTables <= 0 && w.pendingObjectives <= 0) return "";
+    std::string what;
+    if (w.pendingTables > 0) what = std::to_string(w.pendingTables) + (w.pendingTables > 1 ? " tableaux de contributions" : " tableau de contributions");
+    if (w.pendingObjectives > 0)
+        what += (what.empty() ? "" : " et ") + std::to_string(w.pendingObjectives) + (w.pendingObjectives > 1 ? " objectifs" : " objectif");
+    const bool many = w.pendingTables + w.pendingObjectives > 1;
+    if (w.final)
+        return what + (many ? " jamais validés par la majorité de leur instance : ils ne comptent pas dans le résultat officiel."
+                            : " jamais validé par la majorité de son instance : il ne compte pas dans le résultat officiel.");
+    return what + (many ? " en attente de validation (majorité de leur instance) : ils ne comptent pas encore."
+                        : " en attente de validation (majorité de son instance) : il ne compte pas encore.");
+}
+
+std::string rankingStateText(const WorldRanking& w) {
+    if (w.catchup) return "Session de rattrapage · ce classement ne change pas le résultat officiel";
+    if (w.final) {
+        const auto t = parseUtc(w.frozenAt);
+        return t ? "Résultat officiel · figé le " + dateShort(toSystemLocal(*t)) + " " + hhmm(toSystemLocal(*t)) : std::string("Résultat officiel");
+    }
+    if (w.closing) return "Terminé · résultat officiel en préparation (derniers rapports)";
+    if (w.suspended) return "Événement suspendu · rien ne compte jusqu'à la reprise";
+    return "Classement en cours · résultats validés seulement";
+}
+
+std::vector<ResultPlayer> rankedPlayers(const std::vector<ResultPlayer>& players, const std::string& c) {
+    Results r;
+    r.players = players;
+    return rankedBy(r, c);
 }
 
 }  // namespace cosmic::raids

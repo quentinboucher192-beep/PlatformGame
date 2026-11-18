@@ -22,6 +22,22 @@ namespace {
 
 const char* const kFormats[] = {"court", "standard", "legendaire"};
 const int kLocks[] = {10, 15, 30, 45, 60};
+// 2.69: the late arrivals (minutes after the start a newcomer may still enter play; -1: until the end).
+const int kLate[] = {-1, 0, 15, 30, 60};
+// 2.69: the length of a catch-up session (days).
+const int kCatchupDays[] = {1, 3, 7, 14, 30};
+
+/// The first problem of a map's check (raidWorld.ts checkMap).
+std::string firstProblem(const Json& map) {
+    const Json p = map.is_object() ? map.value("problems", Json::array()) : Json::array();
+    return p.is_array() && !p.empty() && p[0].is_string() ? p[0].get<std::string>() : std::string("problème inconnu");
+}
+
+std::string lateLabel(int minutes) {
+    if (minutes < 0) return "jusqu'à la fin";
+    if (minutes == 0) return "non (dès le début seulement)";
+    return "jusqu'à " + std::to_string(minutes) + " min après le début";
+}
 
 const Json& at(const Json& j, const char* key) {
     static const Json null;
@@ -80,6 +96,7 @@ void AdminRaids::clearForm() {
     open_ = true;
     capacity_ = 0.0f;
     clanCapacity_ = 50.0f;
+    lateIdx_ = 0;
     rewards_.clear();
     // A week from now at 21:00 of this computer.
     const raids::Civil d = raids::toSystemLocal(nowUtc(skew_) + 7 * 86400);
@@ -100,6 +117,9 @@ void AdminRaids::select(const Json& j) {
     open_ = e.registrationOpen;
     capacity_ = static_cast<float>(e.capacity);
     clanCapacity_ = static_cast<float>(e.clanCapacity);
+    lateIdx_ = 0;
+    for (int i = 0; i < 5; ++i)
+        if (kLate[i] == e.lateMinutes) lateIdx_ = i;
     rewards_ = jstr(j, "rewards_text");
     const raids::Civil loc = raids::toSystemLocal(e.startsAt);
     date_ = raids::dateField(loc);
@@ -107,7 +127,10 @@ void AdminRaids::select(const Json& j) {
     saved_ = formJson(e.startsAt);
     // The stored lock time when the list does not offer it: kept as it is.
     if (kLocks[lockIdx_] != e.lockMinutes) saved_["lock_minutes"] = kLocks[lockIdx_];
+    if (kLate[lateIdx_] != e.lateMinutes) saved_["late_minutes"] = kLate[lateIdx_] < 0 ? Json() : Json(kLate[lateIdx_]);
     loadDetail();
+    live_ = Json();
+    liveAt_ = -1000.0f;
 }
 
 Json AdminRaids::formJson(int64_t utc) const {
@@ -118,6 +141,7 @@ Json AdminRaids::formJson(int64_t utc) const {
               {"clan_capacity", static_cast<int>(std::lround(clanCapacity_))},
               {"difficulty", difficultyIdx_ + 1},
               {"rewards_text", clans::cleanName(rewards_)}};
+    b["late_minutes"] = kLate[lateIdx_] < 0 ? Json() : Json(kLate[lateIdx_]);  // 2.69: null: until the end
     if (utc > 0) b["starts_at"] = raids::isoUtc(utc);
     return b;
 }
@@ -143,15 +167,267 @@ void AdminRaids::draw(const Rect& in) {
     const float formW = std::min(ui.s(600), in.w * 0.44f);
     drawForm({in.x, in.y, formW, in.h});
     Rect right{in.x + formW + ui.s(18), in.y, in.w - formW - ui.s(18), in.h};
-    // 2.68: « Tester Asterion » at the bottom of the right column (administrators only).
-    if (g_.online.isAdmin() && !raid::Branch::all().empty()) {
-        const float testH = ui.s(226);
-        drawTest({right.x, right.bottom() - testH, right.w, testH});
-        right.h -= testH + ui.s(14);
+    // 2.69: three tabs in the right column: the events, the live panel, « Tester Asterion » (2.68).
+    std::vector<std::string> tabs = {"Événements", "En direct"};
+    if (g_.online.isAdmin() && !raid::Branch::all().empty()) tabs.push_back("Tester Asterion");
+    sideTab_ = std::clamp(sideTab_, 0, static_cast<int>(tabs.size()) - 1);
+    std::vector<bool> on(tabs.size(), false);
+    on[static_cast<size_t>(sideTab_)] = true;
+    float bottom = right.y;
+    const int t = chips(ui, "side", right.x, right.y, right.right(), tabs, on, bottom);
+    if (t >= 0) {
+        sideTab_ = t;
+        if (t == 1) liveAt_ = -1000.0f;  // read now
     }
-    const float listH = std::max(ui.s(160), right.h * 0.46f);
-    drawList({right.x, right.y, right.w, listH});
-    drawDetail({right.x, right.y + listH + ui.s(14), right.w, right.h - listH - ui.s(14)});
+    right.h -= bottom + ui.s(12) - right.y;
+    right.y = bottom + ui.s(12);
+    if (sideTab_ == 1) drawLive(right);
+    else if (sideTab_ == 2) drawTest(right);
+    else {
+        const float listH = std::max(ui.s(160), right.h * 0.46f);
+        drawList({right.x, right.y, right.w, listH});
+        drawDetail({right.x, right.y + listH + ui.s(14), right.w, right.h - listH - ui.s(14)});
+    }
+    ui.popId();
+}
+
+void AdminRaids::loadLive() {
+    if (selected_.empty()) return;
+    liveAt_ = g_.ui.time();
+    const int gen = ++liveGen_;
+    const std::string id = selected_;
+    g_.online.get("/api/v1/admin/raids/" + id + "/live", OnlineService::guard(life_, [this, gen, id](const ApiResult& r) {
+                      if (gen != liveGen_) return;
+                      if (lostRole_(r)) return;
+                      if (!r.ok) return say_(r.message, true);
+                      live_ = r.data;
+                      liveFor_ = id;
+                      if (!r.fromCache) skew_ = skewOf(r.data);
+                  }),
+                  false);
+}
+
+void AdminRaids::action(const std::string& path, const Json& body, const std::string& done) {
+    if (selected_.empty() || busy_) return;
+    busy_ = true;
+    g_.online.send("POST", "/api/v1/admin/raids/" + selected_ + path, body, OnlineService::guard(life_, [this, done](const ApiResult& r) {
+                       busy_ = false;
+                       if (lostRole_(r)) return;
+                       if (!r.ok) {
+                           confirmError_ = r.message;
+                           return say_(r.message, true);
+                       }
+                       confirm_ = false;
+                       std::string text = done;
+                       if (const Json map = r.data.value("map", Json()); map.is_object())
+                           text = jget<bool>(map, "ok", false)
+                                      ? "Carte validée : " + std::to_string(jget<int>(map, "zones", 0)) + " zones, " + std::to_string(jget<int>(map, "bosses", 0)) +
+                                            " antres de gigaboss, " + std::to_string(jget<int>(map, "fights", 0)) + " combat(s) prêt(s) (inscrit au Journal)."
+                                      : "Carte refusée : " + firstProblem(map);
+                       say_(text, false);
+                       load();
+                       loadLive();
+                   }));
+}
+
+void AdminRaids::drawLive(const Rect& r) {
+    // 2.69 (maquette « Administration », EN DIRECT): real figures only, read again every 10 s.
+    UIContext& ui = g_.ui;
+    ui.pushId("live");
+    raids::Event e;
+    for (const Json& j : events_)
+        if (jstr(j, "id") == selected_) e = raids::parseEvent(j);
+    if (!selected_.empty() && g_.ui.time() - liveAt_ >= 10.0f) loadLive();
+    const bool fresh = liveFor_ == selected_ && live_.is_object();
+    const int64_t now = nowUtc(skew_);
+    const raids::State st = e.valid ? raids::stateAt(e, now) : raids::State::Draft;
+    const Json& ev = at(live_, "event");
+    const bool suspended = fresh && jget<bool>(ev, "suspended", false);
+    std::string title = e.valid ? "EN DIRECT · " + whenShort(e.startsAt) : "EN DIRECT";
+    const float top = section(ui, r, title, kSky);
+    const float x = r.x + ui.s(14), w = r.w - ui.s(28);
+    if (!e.valid) {
+        drawLines(ui, wrap(ui, "Choisissez un événement dans l'onglet « Événements » pour suivre son déroulement en direct.", FontFace::Body, 15, w, 3), {x, top}, 15,
+                  ui.s(22), kDim);
+        ui.popId();
+        return;
+    }
+    float y = top;
+    // The state, then the actions (each measured; they share the width when it is short).
+    {
+        std::string state = suspended ? "SUSPENDU" : raids::stateLabel(st);
+        if (st == raids::State::Running && !suspended) state += " · " + raids::countdownClock(std::max<int64_t>(0, now - e.startsAt));
+        if (e.catchup) state = "RATTRAPAGE · " + state;
+        const float pw = pill(ui, x, y + ui.s(20), state, suspended ? Color{122, 26, 26, 255} : stateFill(st), suspended ? kText : stateText(st), x + w);
+        struct Act {
+            std::string id, label;
+            bool danger, enabled;
+        };
+        std::vector<Act> acts;
+        const bool live = e.published && !e.cancelled && st != raids::State::Finished;
+        if (live && !suspended) acts.push_back({"suspend", "Suspendre l'événement…", true, !busy_});
+        if (live && suspended) acts.push_back({"resume", "Reprendre l'événement", false, !busy_});
+        acts.push_back({"map", "Valider la carte", false, !busy_ && !e.cancelled});
+        if (e.published && !e.cancelled && !e.catchup && st == raids::State::Finished) acts.push_back({"catchup", "Session de rattrapage…", false, !busy_});
+        const float gap = ui.s(8), room = w - pw - ui.s(12);
+        float need = 0.0f;
+        for (const Act& a : acts) need += textW(ui, a.label, 14, FontFace::Bold) + ui.s(28);
+        need += gap * static_cast<float>(acts.size() - 1);
+        const float scale = need > room ? room / need : 1.0f;
+        float bx = x + w;
+        for (auto it = acts.rbegin(); it != acts.rend(); ++it) {
+            const float bw = (textW(ui, it->label, 14, FontFace::Bold) + ui.s(28)) * scale;
+            bx -= bw;
+            UIContext::ButtonStyle bs;
+            bs.small = true;
+            bs.fontSize = 14;
+            bs.danger = it->danger;
+            bs.enabled = it->enabled;
+            if (ui.button(it->id, {bx, y, bw, ui.s(40)}, it->label, bs)) {
+                if (it->id == "suspend") {
+                    reason_.clear();
+                    confirmError_.clear();
+                    confirmKind_ = Confirm::Suspend;
+                    confirm_ = true;
+                } else if (it->id == "resume") {
+                    action("/resume", Json::object(), "Événement repris : le temps suspendu est rendu à l'événement (inscrit au Journal).");
+                } else if (it->id == "map") {
+                    action("/validate-map", Json::object(), "");
+                } else if (it->id == "catchup") {
+                    confirmError_.clear();
+                    confirmKind_ = Confirm::Catchup;
+                    confirm_ = true;
+                }
+            }
+            bx -= gap;
+        }
+        y += ui.s(52);
+    }
+    if (!fresh) {
+        fit(ui, "Lecture des chiffres en direct…", {x, y + ui.s(14)}, 15, w, kDim);
+        ui.popId();
+        return;
+    }
+    const Json& stats = at(live_, "stats");
+    // Five figures (maquette): players in play, instances, gigaboss down, reconnections, refused reports.
+    {
+        const float gap = ui.s(8), tw = (w - 4 * gap) / 5.0f, th = ui.s(64);
+        struct Fig {
+            std::string caption, value;
+            Color c;
+        };
+        const Fig figs[5] = {
+            {"Joueurs connectés", std::to_string(jget<int>(stats, "players", 0)), kText},
+            {"Instances", std::to_string(jget<int>(stats, "instances", 0)) + " / " + std::to_string(jget<int>(stats, "instances_total", 0)), kText},
+            {"Gigaboss vaincus", std::to_string(jget<int>(stats, "gigaboss_defeated", 0)) + " / " + std::to_string(jget<int>(stats, "gigaboss", 7)), kGold},
+            {"Reconnexions", std::to_string(jget<int>(stats, "reconnects", 0)), kText},
+            {"Rapports refusés", std::to_string(jget<int>(stats, "rejected", 0)), jget<int>(stats, "rejected", 0) > 0 ? Color{255, 138, 138, 255} : kText},
+        };
+        for (int i = 0; i < 5; ++i) {
+            const Rect t{x + static_cast<float>(i) * (tw + gap), y, tw, th};
+            ui.r().fillRoundedRect(t, ui.s(10), Color{13, 18, 38, 255});
+            fit(ui, figs[i].caption, {t.x + ui.s(10), t.y + ui.s(18)}, 12, t.w - ui.s(20), kDim);
+            fit(ui, figs[i].value, {t.x + ui.s(10), t.y + ui.s(44)}, 19, t.w - ui.s(20), figs[i].c, FontFace::Title);
+        }
+        y += th + ui.s(8);
+    }
+    // One line of context: registrations, the world's progress, what waits, the duplicates counted once.
+    {
+        std::string ctx = std::to_string(jget<int>(stats, "registered", 0)) + " inscrits · " + std::to_string(jget<int>(stats, "clans", 0)) + " clans · progression mondiale " +
+                          std::to_string(jget<int>(stats, "progress", 0)) + " % · en attente : " + std::to_string(jget<int>(stats, "pending_tables", 0)) + " tableaux, " +
+                          std::to_string(jget<int>(stats, "pending_objectives", 0)) + " objectifs · doublons comptés une fois : " +
+                          std::to_string(jget<int>(stats, "duplicates", 0));
+        if (const std::string outcome = jstr(ev, "outcome"); !outcome.empty()) ctx = "Résultat officiel figé : " + outcome + " · " + ctx;
+        y += drawLines(ui, wrap(ui, ctx, FontFace::Body, 13, w, 2), {x, y}, 13, ui.s(18), kDim) + ui.s(6);
+    }
+    // The map's check at the bottom (its lines first).
+    std::string mapText;
+    Color mapColor = kDim;
+    if (const Json& map = at(live_, "map"); map.is_object()) {
+        const bool ok = jget<bool>(map, "ok", false);
+        mapText = ok ? "Carte validée par " + jstr(map, "by", "?") + " : " + std::to_string(jget<int>(map, "zones", 0)) + " zones, " +
+                           std::to_string(jget<int>(map, "bosses", 0)) + " antres, " + std::to_string(jget<int>(map, "fights", 0)) + " combat(s) prêt(s)" +
+                           (jget<bool>(map, "current", false) ? "" : " · les catalogues ont changé depuis : validez de nouveau")
+                     : "Carte refusée : " + firstProblem(map);
+        mapColor = ok && jget<bool>(map, "current", false) ? kGreen : Color{255, 196, 92, 255};
+    } else {
+        mapText = "Carte jamais validée pour cet événement : la publication la vérifie d'office.";
+    }
+    const auto mapLines = wrap(ui, mapText, FontFace::Body, 13, w, 2);
+    const float mapH = static_cast<float>(mapLines.size()) * ui.s(18);
+    drawLines(ui, mapLines, {x, r.bottom() - ui.s(10) - mapH}, 13, ui.s(18), mapColor);
+    // Two columns: the instances, the journal.
+    const float colGap = ui.s(12), colW = (w - colGap) * 0.5f;
+    const Rect li{x, y, colW, r.bottom() - ui.s(16) - mapH - y};
+    const Rect lj{x + colW + colGap, y, colW, li.h};
+    if (li.h < ui.s(70)) {
+        ui.popId();
+        return;
+    }
+    ui.r().fillRoundedRect(li, ui.s(10), Color{13, 18, 38, 255});
+    ui.r().fillRoundedRect(lj, ui.s(10), Color{13, 18, 38, 255});
+    fit(ui, "INSTANCES", {li.x + ui.s(10), li.y + ui.s(16)}, 13, li.w - ui.s(20), kSky, FontFace::Bold);
+    fit(ui, "JOURNAL (ACTIONS ADMIN ET ANOMALIES)", {lj.x + ui.s(10), lj.y + ui.s(16)}, 13, lj.w - ui.s(20), kSky, FontFace::Bold);
+    {
+        const Json& list = at(live_, "instances");
+        const Rect area{li.x + ui.s(8), li.y + ui.s(30), li.w - ui.s(10), li.h - ui.s(36)};
+        if (!list.is_array() || list.empty()) {
+            drawLines(ui, wrap(ui, "Aucune instance : elles s'ouvrent quand les joueurs entrent en jeu.", FontFace::Body, 13, area.w - ui.s(8), 3), {area.x, area.y + ui.s(4)},
+                      13, ui.s(18), kDim);
+        } else {
+            const float rowH = ui.s(26);
+            ui.beginScroll("instances", area, static_cast<float>(list.size()) * rowH);
+            float ry = area.y - ui.scrollOffset();
+            const float idW = ui.s(44), nW = ui.s(48), msW = ui.s(64), aw = area.w - ui.s(14);
+            for (const Json& i : list) {
+                const float cy = ry + rowH * 0.5f;
+                ry += rowH;
+                if (cy < area.y || cy > area.bottom()) continue;
+                const int players = jget<int>(i, "players", 0);
+                const Json lat = i.value("latency_ms", Json());
+                const int ms = lat.is_number_integer() ? lat.get<int>() : -1;
+                fit(ui, "#" + std::to_string(jget<int>(i, "number", 0)), {area.x, cy}, 13, idW, kDim);
+                fit(ui, "[" + jstr(i, "clan_tag") + "]·" + std::to_string(jget<int>(i, "group", 1)) + " · " + jstr(i, "branch_name") + " · " + jstr(i, "zone_name"),
+                    {area.x + idW, cy}, 13, aw - idW - nW - msW - ui.s(12), players > 0 ? kText : kDim);
+                fit(ui, std::to_string(players) + " / 8", {area.x + aw - msW - ui.s(6), cy}, 13, nW, kText, FontFace::Body, Align::Right);
+                const Color mc = ms < 0 ? kDim : ms <= 100 ? kGreen : ms <= 180 ? kGold : Color{255, 138, 138, 255};
+                fit(ui, ms < 0 ? std::string("—") : std::to_string(ms) + " ms", {area.x + aw, cy}, 13, msW, mc, FontFace::Body, Align::Right);
+            }
+            ui.endScroll();
+        }
+    }
+    {
+        const Json& list = at(live_, "journal");
+        const Rect area{lj.x + ui.s(8), lj.y + ui.s(30), lj.w - ui.s(10), lj.h - ui.s(36)};
+        if (!list.is_array() || list.empty()) {
+            fit(ui, "Rien à signaler.", {area.x, area.y + ui.s(12)}, 13, area.w, kDim);
+        } else {
+            const float timeW = ui.s(48), lineH = ui.s(17), tw = area.w - timeW - ui.s(16);
+            std::vector<std::vector<std::string>> lines;
+            float total = 0.0f;
+            for (const Json& j : list) {
+                lines.push_back(wrap(ui, jstr(j, "text"), FontFace::Body, 13, tw, 3));
+                total += static_cast<float>(lines.back().size()) * lineH + ui.s(6);
+            }
+            ui.beginScroll("journal", area, total);
+            float ry = area.y - ui.scrollOffset();
+            size_t k = 0;
+            for (const Json& j : list) {
+                const auto& ls = lines[k++];
+                const float h = static_cast<float>(ls.size()) * lineH;
+                if (ry + h >= area.y && ry <= area.bottom()) {
+                    std::string when;
+                    if (auto t = raids::parseUtc(jstr(j, "at"))) when = raids::hhmm(raids::toSystemLocal(*t));
+                    const std::string kind = jstr(j, "kind");
+                    const Color c = kind == "anomaly" ? Color{255, 138, 138, 255} : kind == "admin" ? kSky : kText;
+                    fit(ui, when, {area.x, ry + lineH * 0.5f}, 13, timeW, kDim);
+                    drawLines(ui, ls, {area.x + timeW, ry}, 13, lineH, c);
+                }
+                ry += h + ui.s(6);
+            }
+            ui.endScroll();
+        }
+    }
     ui.popId();
 }
 
@@ -229,7 +505,7 @@ void AdminRaids::drawForm(const Rect& r) {
     const float rowH = ui.s(56);
     const float buttonsH = ui.s(116), previewH = ui.s(104);
     const Rect fields{x, top, w + ui.s(10), r.bottom() - ui.s(14) - buttonsH - previewH - top};
-    const float contentH = 9 * rowH;
+    const float contentH = 10 * rowH;
     const bool locked = editing && (st == raids::State::Running || st == raids::State::Finished || st == raids::State::Cancelled);
     ui.beginScroll("fields", fields, contentH);
     float y = fields.y - ui.scrollOffset();
@@ -274,6 +550,14 @@ void AdminRaids::drawForm(const Rect& r) {
     y += rowH;
     ui.cycle("difficulty", {x, y + ui.s(4), w, ui.s(48)}, "Difficulté", difficultyIdx_, {"1 / 5", "2 / 5", "3 / 5", "4 / 5", "5 / 5"});
     difficultyIdx_ = std::clamp(difficultyIdx_, 0, 4);
+    y += rowH;
+    // 2.69: the late arrivals: a newcomer may still enter play this long after the start.
+    {
+        std::vector<std::string> lates;
+        for (int m : kLate) lates.push_back(lateLabel(m));
+        ui.cycle("late", {x, y + ui.s(4), w, ui.s(48)}, "Arrivée en retard", lateIdx_, lates);
+        lateIdx_ = std::clamp(lateIdx_, 0, 4);
+    }
     y += rowH;
     label("Récompenses (texte)");
     ui.textField("rewards", {fx, y + ui.s(6), fw, ui.s(44)}, rewards_, "Vide : le texte d'Asterion", raids::kMaxRewardsText);
@@ -337,10 +621,13 @@ void AdminRaids::drawForm(const Rect& r) {
     if (ui.button("save", {x + half + ui.s(10), by1, half, ui.s(44)}, editing ? "Enregistrer les changements" : "Créer le brouillon", saveSt))
         save(editing ? changes : body);
     if (editing && !cur.published) {
+        // 2.69: « Valider la carte » (the server checks the titan's catalogs; publishing needs a valid map).
+        UIContext::ButtonStyle check = plain;
+        if (ui.button("validate", {x, by2, half, ui.s(44)}, "Valider la carte", check)) action("/validate-map", Json::object(), "");
         UIContext::ButtonStyle pub = plain;
         pub.primary = true;
         pub.enabled = !busy_ && changes.empty() && st == raids::State::Draft && now < cur.lockAt;
-        if (ui.button("publish", {x, by2, w, ui.s(44)}, changes.empty() ? "Publier et notifier tous les clans" : "Enregistrez avant de publier", pub)) {
+        if (ui.button("publish", {x + half + ui.s(10), by2, half, ui.s(44)}, changes.empty() ? "Publier et notifier tous les clans" : "Enregistrez avant de publier", pub)) {
             busy_ = true;
             g_.online.send("POST", "/api/v1/admin/raids/" + selected_ + "/publish", Json::object(), OnlineService::guard(life_, [this](const ApiResult& res) {
                                busy_ = false;
@@ -361,6 +648,7 @@ void AdminRaids::drawForm(const Rect& r) {
         if (ui.button("cancel", {x + half + ui.s(10), by2, half, ui.s(44)}, "Annuler l'événement…", cancel)) {
             reason_.clear();
             confirmError_.clear();
+            confirmKind_ = Confirm::Cancel;
             confirm_ = true;
         }
     } else if (editing && !cur.cancelled && st != raids::State::Finished) {
@@ -369,6 +657,7 @@ void AdminRaids::drawForm(const Rect& r) {
         if (ui.button("cancel", {x, by2, w, ui.s(44)}, "Annuler l'événement…", cancel)) {
             reason_.clear();
             confirmError_.clear();
+            confirmKind_ = Confirm::Cancel;
             confirm_ = true;
         }
     }
@@ -415,7 +704,7 @@ void AdminRaids::drawDetail(const Rect& r) {
     const std::string title = e.valid && e.id == selected_ ? "INSCRIPTIONS · " + whenShort(e.startsAt) : "INSCRIPTIONS";
     const float top = section(ui, r, title, kSky);
     const float x = r.x + ui.s(14), w = r.w - ui.s(28);
-    const auto note = wrap(ui, "Seules les inscriptions existent dans cette version : les instances, les boss et les rapports des joueurs arriveront avec les combats.",
+    const auto note = wrap(ui, "Les chiffres du combat (joueurs en jeu, instances, gigaboss, reconnexions, rapports refusés, journal) sont dans l'onglet « En direct ».",
                            FontFace::Body, 13, w, 3);
     const float noteH = static_cast<float>(note.size()) * ui.s(18);
     drawLines(ui, note, {x, r.bottom() - ui.s(12) - noteH}, 13, ui.s(18), kDim);
@@ -457,31 +746,51 @@ void AdminRaids::drawDetail(const Rect& r) {
 }
 
 void AdminRaids::drawModal() {
+    // The confirmation of an action on the selected event: cancel it, suspend it (2.69), or open a
+    // catch-up session after it (2.69). Each one goes to the Journal; the server checks the role.
     UIContext& ui = g_.ui;
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 175});
     const float w = std::min(ui.screenW() - ui.s(40), ui.s(680)), tw = w - ui.s(60);
-    const auto intro = wrap(ui, "Annuler cet événement mondial ? Les clans et les joueurs inscrits sont prévenus ; le Journal garde la trace.", FontFace::Body, 16, tw, 4);
+    const bool cancelKind = confirmKind_ == Confirm::Cancel, suspendKind = confirmKind_ == Confirm::Suspend;
+    const std::string title = cancelKind ? "Annuler l'événement" : suspendKind ? "Suspendre l'événement" : "Session de rattrapage";
+    const std::string text =
+        cancelKind ? "Annuler cet événement mondial ? Les clans et les joueurs inscrits sont prévenus ; le Journal garde la trace."
+        : suspendKind
+            ? "Suspendre cet événement ? Plus personne n'entre en jeu et aucun rapport n'est accepté jusqu'à la reprise ; le temps suspendu est rendu à "
+              "l'événement. Les inscrits sont prévenus ; le Journal garde la trace."
+            : "Ouvrir une session de rattrapage ? Les joueurs absents découvrent le raid avec ses propres instances et gagnent des versions argentées ; le "
+              "résultat officiel de l'événement ne change jamais. Tous les clans sont prévenus ; le Journal garde la trace.";
+    const auto intro = wrap(ui, text, FontFace::Body, 16, tw, 5);
     const float introH = static_cast<float>(intro.size()) * ui.s(22);
     const float h = ui.s(80) + introH + ui.s(16) + ui.s(76) + ui.s(34) + ui.s(76);
     const Rect box{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
     ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
-    ui.r().drawRoundedRect(box, ui.s(18), ui.theme().danger, ui.s(1.5f));
+    ui.r().drawRoundedRect(box, ui.s(18), confirmKind_ == Confirm::Catchup ? kSky : ui.theme().danger, ui.s(1.5f));
     ui.pushId("admin/raids/modal");
     const float x = box.x + ui.s(30);
-    fit(ui, "Annuler l'événement", {x, box.y + ui.s(40)}, 26, tw, kText, FontFace::Title);
+    fit(ui, title, {x, box.y + ui.s(40)}, 26, tw, kText, FontFace::Title);
     drawLines(ui, intro, {x, box.y + ui.s(70)}, 16, ui.s(22), ui.theme().textDim);
     float y = box.y + ui.s(80) + introH + ui.s(16);
-    fit(ui, "Motif (facultatif, gardé au Journal)", {x, y + ui.s(10)}, 15, tw, ui.theme().textDim);
-    ui.textField("reason", {x, y + ui.s(24), tw, ui.s(44)}, reason_, "Mise à jour du jeu, erreur d'horaire…", 200);
+    if (confirmKind_ == Confirm::Catchup) {
+        std::vector<std::string> days;
+        for (int d : kCatchupDays) days.push_back(std::to_string(d) + (d > 1 ? " jours" : " jour"));
+        ui.cycle("days", {x, y + ui.s(16), tw, ui.s(48)}, "Durée de la session", catchupIdx_, days);
+        catchupIdx_ = std::clamp(catchupIdx_, 0, 4);
+    } else {
+        fit(ui, "Motif (facultatif, gardé au Journal)", {x, y + ui.s(10)}, 15, tw, ui.theme().textDim);
+        ui.textField("reason", {x, y + ui.s(24), tw, ui.s(44)}, reason_, cancelKind ? "Mise à jour du jeu, erreur d'horaire…" : "Désynchronisation, triche signalée…",
+                     200);
+    }
     y += ui.s(76);
     fit(ui, confirmError_, {x, y + ui.s(12)}, 15, tw, ui.theme().danger);
     const float by = box.bottom() - ui.s(66);
     UIContext::ButtonStyle ok;
-    ok.danger = true;
+    ok.danger = confirmKind_ != Confirm::Catchup;
+    ok.primary = confirmKind_ == Confirm::Catchup;
     ok.enabled = !busy_;
-    const std::string okLabel = "Annuler l'événement";
-    const float okW = textW(ui, okLabel, 17, FontFace::Bold) + ui.s(44);
-    const float cW = textW(ui, "Garder", 17, FontFace::Bold) + ui.s(44);
+    const std::string okLabel = cancelKind ? "Annuler l'événement" : suspendKind ? "Suspendre" : "Ouvrir la session";
+    const float okW = std::min(textW(ui, okLabel, 17, FontFace::Bold) + ui.s(44), tw * 0.55f);
+    const float cW = std::min(textW(ui, "Garder", 17, FontFace::Bold) + ui.s(44), tw * 0.4f);
     const bool go = ui.button("ok", {box.right() - ui.s(30) - okW, by, okW, ui.s(48)}, okLabel, ok);
     const bool keep = ui.button("keep", {box.right() - ui.s(30) - okW - ui.s(12) - cW, by, cW, ui.s(48)}, "Garder") || (ui.backPressed() && !ui.editingText());
     ui.popId();
@@ -490,9 +799,14 @@ void AdminRaids::drawModal() {
         return;
     }
     if (!go || busy_) return;
-    busy_ = true;
     Json body = Json::object();
-    if (!clans::cleanName(reason_).empty()) body["reason"] = clans::cleanName(reason_);
+    if (confirmKind_ != Confirm::Catchup && !clans::cleanName(reason_).empty()) body["reason"] = clans::cleanName(reason_);
+    if (suspendKind) return action("/suspend", body, "Événement suspendu : les inscrits sont prévenus, rien ne compte jusqu'à la reprise (inscrit au Journal).");
+    if (confirmKind_ == Confirm::Catchup) {
+        body["days"] = kCatchupDays[catchupIdx_];
+        return action("/catchup", body, "Session de rattrapage ouverte : tous les clans sont prévenus (inscrit au Journal).");
+    }
+    busy_ = true;
     g_.online.send("DELETE", "/api/v1/admin/raids/" + selected_, body, OnlineService::guard(life_, [this](const ApiResult& r) {
                        busy_ = false;
                        if (lostRole_(r)) return;

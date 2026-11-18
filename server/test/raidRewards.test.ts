@@ -159,8 +159,9 @@ describe("raids phase 3: consensus of the gigaboss and of the tables", () => {
         expect(rows.map((r) => r.player_id)).toEqual([p1.id, p2.id]);
         expect(rows[0]!.score).toBeGreaterThanOrEqual(PERFORMANCE_SCORE);
         // p1: present at the fall, 16 min 40 s, a high mixed score; p2: present at the fall only (4 min 10 s).
+        // 2.69: a world event also gives its exclusive suit to the 5 minutes of validated combat (raidWorld.ts).
         const g = await grants(ev);
-        expect(g.filter((x) => x.player_id === p1.id).map((x) => x.reward)).toEqual(["asterion_participation", "pyroclast_badge", "pyroclast_performance"]);
+        expect(g.filter((x) => x.player_id === p1.id).map((x) => x.reward)).toEqual(["asterion_ecorce", "asterion_participation", "pyroclast_badge", "pyroclast_performance"]);
         expect(g.filter((x) => x.player_id === p2.id).map((x) => x.reward)).toEqual(["pyroclast_badge"]);
     });
 
@@ -278,12 +279,17 @@ describe("raids phase 3: Asterion's body, results and rewards", () => {
         const { ev, inst, p1, p2 } = await fallen("CLAIM");
         // Another acceptance of the same results grants nothing more.
         await send(p1, inst, { kind: "boss", phase: 4 });
-        expect((await grants(ev)).length).toBe(4);
+        expect((await grants(ev)).length).toBe(5); // 2.69: with the world event's suit (raidWorld.ts)
         const before = await api("GET", `${V}/raids`, { token: p1.token });
-        expect(before.body.data.rewards.map((g: { reward: string }) => g.reward).sort()).toEqual(["asterion_participation", "pyroclast_badge", "pyroclast_performance"]);
+        expect(before.body.data.rewards.map((g: { reward: string }) => g.reward).sort()).toEqual([
+            "asterion_ecorce",
+            "asterion_participation",
+            "pyroclast_badge",
+            "pyroclast_performance",
+        ]);
         const c1 = await api("POST", `${V}/raids/rewards/claim`, { token: p1.token, body: {} });
         expect(c1.status).toBe(200);
-        expect(c1.body.data.claimed).toBe(3);
+        expect(c1.body.data.claimed).toBe(4);
         expect(c1.body.data.rewards).toEqual([]);
         // The same request again (a retry after a lost answer): nothing more.
         const c2 = await api("POST", `${V}/raids/rewards/claim`, { token: p1.token, body: {} });
@@ -295,8 +301,13 @@ describe("raids phase 3: Asterion's body, results and rewards", () => {
         const c3 = await api("POST", `${V}/raids/rewards/claim`, { token, body: {} });
         expect(c3.body.data.claimed).toBe(0);
         const won = (await env.DB.prepare("SELECT reward_ref FROM player_won_rewards WHERE player_id = ?1 ORDER BY reward_ref").bind(p1.id).all<{ reward_ref: string }>()).results;
-        expect(won.map((w) => w.reward_ref)).toEqual(["title_assaillant_asterion", "title_briseur_magma"]);
-        expect((await api("GET", `${V}/raids`, { token: p1.token })).body.data.rewards_claimed.sort()).toEqual(["asterion_participation", "pyroclast_badge", "pyroclast_performance"]);
+        expect(won.map((w) => w.reward_ref)).toEqual(["suit_ecorce_asterion", "title_assaillant_asterion", "title_briseur_magma"]);
+        expect((await api("GET", `${V}/raids`, { token: p1.token })).body.data.rewards_claimed.sort()).toEqual([
+            "asterion_ecorce",
+            "asterion_participation",
+            "pyroclast_badge",
+            "pyroclast_performance",
+        ]);
         // Claiming one reward by its id; someone else's id is not found.
         const mine = (await api("GET", `${V}/raids`, { token: p2.token })).body.data.rewards[0];
         expect((await api("POST", `${V}/raids/rewards/claim`, { token: p1.token, body: { id: mine.id } })).status).toBe(404);

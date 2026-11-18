@@ -307,7 +307,7 @@ describe("raids: reminders and notifications", () => {
         expect(await raidTick(env.DB, t + 61 * 60000)).toBe(2);
         expect(await raidTick(env.DB, t + 62 * 60000)).toBe(0);
         expect((await reminders(pb)).map((n) => n.text).sort()).toEqual([
-            "C'est l'heure : Asterion (raid standard) commence (le combat arrive dans une prochaine version)",
+            "C'est l'heure : Asterion (raid standard) commence, rejoignez votre groupe",
             "Rappel : Asterion (raid standard) commence dans 10 min",
         ]);
         // Moved: the registered players are told, and reminded again at the new time.
