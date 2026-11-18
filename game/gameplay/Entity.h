@@ -60,14 +60,14 @@ public:
     /// The player respawned at a checkpoint.
     virtual void onPlayerRespawn(GameWorld& /*w*/) {}
     virtual std::string debugInfo() const { return {}; }
-    /// 2.71 (raids, docs/RAIDS.md §15): what of this object a raid zone keeps when the group leaves it
+    /// 2.72 (raids, docs/RAIDS.md §15): what of this object a raid zone keeps when the group leaves it
     /// and comes back, or starts it again (a door opened, a lever pulled, a generator on, an arena
     /// cleared, an enemy beaten, a relic taken): null when nothing. restoreKept() puts it back on a
     /// world just loaded, silently (no event, no sound). Only raid::RaidRun calls them: the other
     /// modes keep their rules and digests.
     virtual Json keepState(GameWorld& /*w*/) const { return nullptr; }
     virtual void restoreKept(GameWorld& /*w*/, const Json& /*state*/) {}
-    /// 2.71: drawn over the players and the enemies (the raids' rising magma: nothing shows through it).
+    /// 2.72: drawn over the players and the enemies (the raids' rising magma: nothing shows through it).
     virtual bool drawnOverActors() const { return false; }
 
     Rect box;

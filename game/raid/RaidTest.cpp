@@ -331,11 +331,13 @@ std::string TestSession::botName(int seat) { return "Joueur simulé " + std::to_
 
 uint64_t TestSession::hash() const { return mix(mix(run_.hash(), bots_.hash()), state_); }
 
-void TestSession::step(const InputFrame& admin) {
+void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int, InputFrame>>& scripted) {
     frames_.assign(static_cast<size_t>(kMaxInstancePlayers), InputFrame{});
     frames_[0] = admin;
     bots_.think(run_, frames_.data(), static_cast<int>(frames_.size()));
     for (int s = players_; s < kMaxInstancePlayers; ++s) frames_[static_cast<size_t>(s)].flags = InputFrame::Vacant;
+    for (const auto& [seat, f] : scripted)  // a capture's script plays its seat
+        if (seat > 0 && seat < kMaxInstancePlayers) frames_[static_cast<size_t>(seat)] = f;
     run_.step(frames_.data(), static_cast<int>(frames_.size()), state_);
     // What the group did is accepted at once, as the server would after the consensus of a real
     // instance: given back with the next step (RAID_STATE's structure, the objectives' bits).

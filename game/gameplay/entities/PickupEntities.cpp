@@ -90,7 +90,7 @@ void CollectibleEntity::fixedUpdate(GameWorld& w, float dt) {
     sprite_.anim.update(dt);
 }
 
-// 2.71 (raids): a relic or an orb taken is not there again when the group comes back.
+// 2.72 (raids): a relic or an orb taken is not there again when the group comes back.
 Json CollectibleEntity::keepState(GameWorld&) const { return removed && life_ < 0.0f ? Json{{"taken", true}} : Json(nullptr); }
 
 void CollectibleEntity::restoreKept(GameWorld&, const Json& state) {

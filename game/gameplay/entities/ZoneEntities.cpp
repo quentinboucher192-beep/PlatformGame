@@ -322,7 +322,7 @@ bool CombatZoneEntity::handleAction(GameWorld& w, const std::string& action, con
     return false;
 }
 
-// 2.71 (raids): an arena cleared stays cleared: its doors open, its enemies gone, never again.
+// 2.72 (raids): an arena cleared stays cleared: its doors open, its enemies gone, never again.
 Json CombatZoneEntity::keepState(GameWorld&) const { return cleared_ ? Json{{"cleared", true}} : Json(nullptr); }
 
 void CombatZoneEntity::restoreKept(GameWorld& w, const Json& state) {
@@ -454,7 +454,7 @@ bool EnemySpawnEntity::handleAction(GameWorld& w, const std::string& action, con
     return false;
 }
 
-// 2.71 (raids): an enemy beaten stays beaten when the group comes back (an arena not cleared
+// 2.72 (raids): an enemy beaten stays beaten when the group comes back (an arena not cleared
 // calls its waves again itself).
 Json EnemySpawnEntity::keepState(GameWorld& w) const {
     if (enemyUid_ == 0) return nullptr;

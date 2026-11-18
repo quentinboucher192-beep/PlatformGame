@@ -68,7 +68,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     w->setQuiet(quiet_);
     w->setCameraFollow(follow_);
     world_ = std::move(w);
-    restoreZone(zid);  // 2.71: as the group left it (before the players are placed: its doors)
+    restoreZone(zid);  // 2.72: as the group left it (before the players are placed: its doors)
     // 2.68: the players' contributions listen to this world; an event knows whose attack caused it.
     contrib_.attach(*world_);
     world_->eventObserver = [this](const std::string& src, const std::string& trig) {
@@ -76,7 +76,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     };
     rules_ = rules;
     if (zid != zone_) {
-        // 2.68: kept when the same zone starts again; 2.71: and when the group comes back to it.
+        // 2.68: kept when the same zone starts again; 2.72: and when the group comes back to it.
         const auto kept = memory_.find(zid);
         lastCheckpoint_ = kept != memory_.end() ? kept->second.checkpoint : std::string();
     }
@@ -99,7 +99,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     insidePassage_.assign(rules->passages.size(), 0);
     coopDone_.assign(rules->coops.size(), 0);
     if (const auto kept = memory_.find(zid); kept != memory_.end()) {
-        // 2.71: the plates done stay done, their doors open, their lifts running.
+        // 2.72: the plates done stay done, their doors open, their lifts running.
         for (size_t k = 0; k < coopDone_.size() && k < kept->second.coops.size(); ++k) {
             if (!kept->second.coops[k]) continue;
             coopDone_[k] = 1;
@@ -262,7 +262,7 @@ void RaidRun::updateMagma() {
     const uint32_t next = zoneTicks_ < first ? first : first + ((zoneTicks_ - first) / period + 1) * period;
     if (next - zoneTicks_ == warn) {
         alert("DANGER · " + m.name + " dans " + std::to_string(static_cast<int>(std::lround(m.warn))) + " s : " + m.hint + " !", Alert::Kind::Danger);
-        // 2.71: the rising magma shows its telegraph (nothing for the dangers without one).
+        // 2.72: the rising magma shows its telegraph (nothing for the dangers without one).
         if (LevelEntity* z = world_->entity(m.zone)) z->handleAction(*world_, "warn", Json{{"seconds", m.warn}});
     }
     if (on == magmaOn_) return;
@@ -329,7 +329,7 @@ void RaidRun::checkPassages() {
         }
         std::vector<GameWorld::MemberCarry> carry;
         for (int i = 0; i < world_->teamSize(); ++i) carry.push_back(world_->carryOf(i));
-        remember();  // 2.71: the zone left keeps what was done in it
+        remember();  // 2.72: the zone left keeps what was done in it
         loadZone(p.to, std::to_string(zone_), &carry);
         return;
     }
@@ -385,7 +385,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
         alert("GROUPE · Tout le groupe est à terre : la zone reprend", Alert::Kind::Danger);
         // 2.68: at the last checkpoint reached in the zone, when there is one.
         const std::string from = lastCheckpoint_.empty() ? from_ : "cp:" + lastCheckpoint_;
-        remember();  // 2.71: what the group did in it before falling stays done
+        remember();  // 2.72: what the group did in it before falling stays done
         loadZone(zone_, from, &carry);
         return;
     }
@@ -406,7 +406,7 @@ uint64_t RaidRun::hash() const {
     for (unsigned char c : lastCheckpoint_) h = mix(h, c);
     for (size_t k = 0; k < coopDone_.size(); ++k)
         if (coopDone_[k]) h = mix(h, 0x100u + k);
-    // 2.71: what the zones left keep.
+    // 2.72: what the zones left keep.
     for (const auto& [zid, m] : memory_) {
         h = mix(h, 0x200u + static_cast<uint64_t>(zid));
         for (const auto& [id, st] : m.objects) {

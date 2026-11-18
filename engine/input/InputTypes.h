@@ -45,7 +45,7 @@ enum class Action : int {
     Pause,
     GhostToggle,  // 2.18: show / hide the ghosts of Ghost Racing (display only, never recorded)
     FocusToggle,  // 2.18: « mode concentré », the reduced HUD (display only, never recorded)
-    RaidMap,      // 2.71: the raid's large map, opened and closed (display only, never recorded)
+    RaidMap,      // 2.72: the raid's large map, opened and closed (display only, never recorded)
     MenuUp,
     MenuDown,
     MenuLeft,

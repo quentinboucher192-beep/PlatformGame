@@ -1,4 +1,8 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Projets collaboratifs — guide
+
+<p align="center"><img src="../media/level_editor.png" width="720" alt="L'éditeur de niveaux, où les membres d'un projet construisent le niveau ensemble"></p>
 
 Un **projet** est un niveau construit à plusieurs dans Cosmic Online (En ligne → PROJETS). Ce
 guide décrit ce que voit le joueur, ce que garantit le serveur, et comment tout cela est testé.
@@ -119,3 +123,7 @@ Résultats sur le serveur local (Miniflare, une machine de développement) :
 Les refus de ces essais sont des conflits voulus : chaque membre modifie aussi un objet commun.
 Ces mesures valent pour le serveur local ; elles ne remplacent pas une mesure sur le réseau de
 Cloudflare.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

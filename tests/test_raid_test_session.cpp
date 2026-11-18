@@ -1,4 +1,4 @@
-// 2.71: the clan raids as the administrators test them and as the groups play them (docs/RAIDS.md
+// 2.72: the clan raids as the administrators test them and as the groups play them (docs/RAIDS.md
 // §15): the off-screen arrows of the solo levels in a raid world, the zones that keep what was done
 // in them (in a test, its branch's state kept as RAID_STATE gives it; in a real instance too), the
 // simulated players of a test (deterministic, 2 and 8 seats, never a report), the rising magma
@@ -83,7 +83,7 @@ InputFrame adminInput(uint32_t t, uint32_t& prev) {
 
 }  // namespace
 
-TEST_CASE("raid arrows (2.71): in a raid world, an enemy met then out of view has its arrow; the ambush's have theirs") {
+TEST_CASE("raid arrows (2.72): in a raid world, an enemy met then out of view has its arrow; the ambush's have theirs") {
     Svc s;
     auto frames = soloFrames();
     // The Biceps de basalte: its ember mites are awake from the start.
@@ -128,7 +128,7 @@ TEST_CASE("raid arrows (2.71): in a raid world, an enemy met then out of view ha
     CHECK(RaidHudLayout{}.arrows);
 }
 
-TEST_CASE("raid zones (2.71): a zone keeps what was done in it when the group comes back, in a test and in a real instance") {
+TEST_CASE("raid zones (2.72): a zone keeps what was done in it when the group comes back, in a test and in a real instance") {
     Svc s;
     for (const bool test : {true, false}) {
         raid::RaidRun::Test setup;
@@ -190,7 +190,7 @@ TEST_CASE("raid zones (2.71): a zone keeps what was done in it when the group co
     }
 }
 
-TEST_CASE("raid zones (2.71): what another group validated is done in the zone when it is loaded") {
+TEST_CASE("raid zones (2.72): what another group validated is done in the zone when it is loaded") {
     Svc s;
     raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
     const uint32_t golem = 1u << bras().objectiveIndex("biceps_gardien");
@@ -207,7 +207,7 @@ TEST_CASE("raid zones (2.71): what another group validated is done in the zone w
     CHECK(!alive);  // the guardian killed by another group is not there
 }
 
-TEST_CASE("raid test (2.71): the simulated players play on their seats, the same digest twice (2 and 8 seats), never a report") {
+TEST_CASE("raid test (2.72): the simulated players play on their seats, the same digest twice (2 and 8 seats), never a report") {
     Svc s;
     for (const int players : {2, 8}) {
         auto play = [&](std::vector<uint64_t>& digests, int& moved, bool& reported, int& inPlay) {
@@ -250,7 +250,7 @@ TEST_CASE("raid test (2.71): the simulated players play on their seats, the same
     }
 }
 
-TEST_CASE("raid test (2.71): the simulated players stand on a co-op plate with the administrator, and it works") {
+TEST_CASE("raid test (2.72): the simulated players stand on a co-op plate with the administrator, and it works") {
     Svc s;
     raid::RaidRun::Test setup;
     setup.on = true;
@@ -274,7 +274,7 @@ TEST_CASE("raid test (2.71): the simulated players stand on a co-op plate with t
     CHECK(done);
 }
 
-TEST_CASE("raid magma (2.71): drawn over the actors, it rises, hurts and burns the enemies caught in it; it comes more often") {
+TEST_CASE("raid magma (2.72): drawn over the actors, it rises, hurts and burns the enemies caught in it; it comes more often") {
     Svc s;
     raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
     CHECK(run.begin(0, 3));
@@ -320,7 +320,7 @@ TEST_CASE("raid magma (2.71): drawn over the actors, it rises, hurts and burns t
     }
 }
 
-TEST_CASE("raid visuals (2.71): the magma's and the minimap's sheets are the generator's output") {
+TEST_CASE("raid visuals (2.72): the magma's and the minimap's sheets are the generator's output") {
     // Needs Python with numpy and Pillow (the asset tools); skipped without them.
     if (std::system("python3 -c \"import numpy, PIL\" > " COSMIC_RV_NULL " 2>&1") != 0) {
         std::printf("  (python3 + numpy + Pillow absents : vérification du générateur des visuels de raid sautée)\n");
@@ -329,7 +329,7 @@ TEST_CASE("raid visuals (2.71): the magma's and the minimap's sheets are the gen
     CHECK(std::system("python3 tools/assetgen/environment/raid_visuals.py --check > " COSMIC_RV_NULL " 2>&1") == 0);
 }
 
-TEST_CASE("raid HUD (2.71): its layout is saved apart from the solo one; the large map has its own key") {
+TEST_CASE("raid HUD (2.72): its layout is saved apart from the solo one; the large map has its own key") {
     GameplaySettings g;
     g.raidHud[RaidHudElement::Minimap].custom = true;
     g.raidHud[RaidHudElement::Minimap].x = 0.25f;

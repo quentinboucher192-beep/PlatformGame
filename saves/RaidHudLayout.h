@@ -7,7 +7,7 @@
 
 namespace cosmic {
 
-/// 2.71: the HUD of the clan raids, placed by the player apart from the solo / co-op one
+/// 2.72: the HUD of the clan raids, placed by the player apart from the solo / co-op one
 /// (Paramètres › HUD › « Raids », docs/RAIDS.md §15). Vitals, Powers and Boss are the game's HUD
 /// elements (their places are given to Hud as a HudLayout would: an anchor); the others are the
 /// raid's own panels (ui/online/RaidHud): their custom place is their top-left corner, fractions of

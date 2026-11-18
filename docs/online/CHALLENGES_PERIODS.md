@@ -1,4 +1,8 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Défis de la semaine et du mois, calendrier, « Plus loin » (2.33), récompenses (2.35)
+
+<p align="center"><img src="../media/challenge_calendar.png" width="820" alt="Calendrier des défis : les défis du mois et les paliers atteints par les joueurs"></p>
 
 Suite de `DAILY_CHALLENGES.md` (défi du jour, 2.32), qui reste valable pour tout ce qui n'est
 pas changé ici. Mêmes principes : jouable sans compte et hors ligne, le serveur ne fait jamais
@@ -463,3 +467,7 @@ classement et la série en découlent). Un défi **terminé** ne change jamais.
   pour chaque défi commencé de la réponse : les joueurs (comptes actifs) à leur meilleur palier,
   parties et essais **vérifiés reçus à l'heure** seulement (comme les classements et les
   récompenses), 0 sans personne ; à part des objets défi (qui ne changent pas à chaque résultat).
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

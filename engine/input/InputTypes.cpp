@@ -65,7 +65,7 @@ void InputBindings::resetKeyboard() {
     set(Action::Pause, SDL_SCANCODE_ESCAPE, SDL_SCANCODE_P);
     set(Action::GhostToggle, SDL_SCANCODE_G);
     set(Action::FocusToggle, SDL_SCANCODE_T);
-    set(Action::RaidMap, SDL_SCANCODE_M);  // 2.71: the raid's large map
+    set(Action::RaidMap, SDL_SCANCODE_M);  // 2.72: the raid's large map
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
     set(Action::MenuLeft, SDL_SCANCODE_LEFT, SDL_SCANCODE_A);
@@ -93,7 +93,7 @@ void InputBindings::resetGamepad() {
     set(Action::GhostToggle, B::button(SDL_GAMEPAD_BUTTON_LEFT_STICK));
     // Share (Xbox Series) / capture (Switch) / microphone (PS5), or the PlayStation touchpad.
     set(Action::FocusToggle, B::button(SDL_GAMEPAD_BUTTON_MISC1), B::button(SDL_GAMEPAD_BUTTON_TOUCHPAD));
-    // 2.71: the raid's large map on View / Back / Select (− on Switch, Share on PlayStation).
+    // 2.72: the raid's large map on View / Back / Select (− on Switch, Share on PlayStation).
     set(Action::RaidMap, B::button(SDL_GAMEPAD_BUTTON_BACK));
     set(Action::MenuUp, B::button(SDL_GAMEPAD_BUTTON_DPAD_UP), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuDown, B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN), B::axisPos(SDL_GAMEPAD_AXIS_LEFTY));

@@ -129,7 +129,7 @@
   "animations/pyrrhax_p6.json": "2.48.0",
   "animations/pyrrhax_p7.json": "2.48.0",
   "animations/pyrrhax_p8.json": "2.48.0",
-  "animations/raid_magma.json": "2.71.0",
+  "animations/raid_magma.json": "2.72.0",
   "animations/receptor.json": "2.0.0",
   "animations/relic.json": "2.0.0",
   "animations/root_spike.json": "2.20.0",
@@ -736,7 +736,7 @@
   "sprites/objects/phase_wall.png": "2.0.0",
   "sprites/objects/plasma_flood.png": "2.34.0",
   "sprites/objects/power_unlock.png": "2.0.0",
-  "sprites/objects/raid_magma.png": "2.71.0",
+  "sprites/objects/raid_magma.png": "2.72.0",
   "sprites/objects/receptor.png": "2.0.0",
   "sprites/objects/relic.png": "2.0.0",
   "sprites/objects/shard.png": "2.0.0",
@@ -1057,7 +1057,7 @@
   "ui/planets/sylvanox_banner.png": "2.0.0",
   "ui/raids/asterion.json": "2.66.1",
   "ui/raids/asterion.png": "2.66.1",
-  "ui/raids/minimap.json": "2.71.0",
-  "ui/raids/minimap.png": "2.71.0"
+  "ui/raids/minimap.json": "2.72.0",
+  "ui/raids/minimap.png": "2.72.0"
  }
 }

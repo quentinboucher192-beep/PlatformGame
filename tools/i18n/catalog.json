@@ -28096,6 +28096,7 @@
    "fr": "Joueur {0}",
    "where": [
     "game/gameplay/HudTeam.cpp",
+    "ui/screens/CoopGameScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidGameScene.cpp",
@@ -30115,6 +30116,12 @@
    "fr": "La préparation du niveau a échoué.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La présentation du jeu (README) et sa documentation montrent maintenant les raids de clan et la coopération en mini-films tournés dans le jeu : trois joueurs ensemble sur un niveau EXTRÊME, les combats contre Pyroclast et Graviton, l'apparition d'Asterion et la carte du titan ; chaque page de la documentation a ses images et son lien « ← Retour ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

@@ -21,7 +21,7 @@
 // du raid »). An administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): the same
 // screen, solo and local (no relay), never reported, badge « TEST ADMIN · non classé ».
 //
-// 2.71 (docs/RAIDS.md §15): the HUD placed by the player (Paramètres › HUD › « Raids »:
+// 2.72 (docs/RAIDS.md §15): the HUD placed by the player (Paramètres › HUD › « Raids »:
 // RaidHudLayout, drawn by ui/online/RaidHud), the minimap in textures and its large map
 // (Action::RaidMap: M, View / Back; display only, the group keeps playing), the off-screen arrows
 // of the solo levels (enemies met, the ambush's), and the test played as a real instance
@@ -36,6 +36,7 @@
 #include <memory>
 #include <thread>
 
+#include "engine/input/InputScript.h"
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/coop/CoopTransport.h"
@@ -164,14 +165,15 @@ public:
         }
     }
 
-    /// 2.68: an administrator's test: the branch and zone chosen, alone on this computer; 2.71: as a
+    /// 2.68: an administrator's test: the branch and zone chosen, alone on this computer; 2.72: as a
     /// real instance (raid::TestSession): the simulated players on seats 1 .. players − 1 (the others
     /// vacant), the branch's state kept from zone to zone as RAID_STATE gives it, never reported.
     void beginTest() {
         branch_ = nullptr;
         for (const raid::Branch* b : raid::Branch::all())
-            if (b->id == testSetup_.branch) branch_ = b;
-        if (!g_.online.isAdmin()) {
+            if (b->id == testSetup_.branch || (testSetup_.capture && b->part == testSetup_.branch)) branch_ = b;  // 2.70: « bras_droit » too
+        // 2.70: a capture for the documentation (--raid-test, headless only) needs no account.
+        if (!g_.online.isAdmin() && !testSetup_.capture) {
             fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
             return;
         }
@@ -197,18 +199,34 @@ public:
             session_.reset();
             return;
         }
+        // 2.70, a capture: each seat's script, and where it appears.
+        scripts_.assign(raid::kMaxInstancePlayers, InputScript{});
+        for (size_t k = 0; k < testSetup_.scripts.size() && k < scripts_.size(); ++k) scripts_[k].parse(testSetup_.scripts[k]);
+        GameWorld& w = run_->world();
+        for (size_t k = 0; k < testSetup_.spawns.size() && static_cast<int>(k) < w.teamSize(); ++k)
+            if (testSetup_.spawns[k]) w.restoreMember(static_cast<int>(k), w.carryOf(static_cast<int>(k)), *testSetup_.spawns[k]);
         hud_.setRaidView(true);
         zoneReady();
     }
 
     /// 2.68: one step of a test: this computer's input on seat 0 (neutral while paused: the pause
-    /// never stops the world); 2.71: the simulated players on theirs (TestSession, playing on during
+    /// never stops the world); 2.72: the simulated players on theirs (TestSession, playing on during
     /// the pause and the large map), the free seats vacant.
     void stepTest() {
-        InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
+        const PlayerInput in = g_.app.input().consumePlayerInput();
+        InputFrame f = InputFrame::fromPlayerInput(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in);
         if (paused_) f = InputFrame{};
-        if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
-        session_->step(f);  // never reports anything
+        const auto& offer = run_->world().powerOffer();
+        if (offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
+        // 2.70, a capture: a seat with a script plays it (in place of its simulated player, 2.72).
+        std::vector<std::pair<int, InputFrame>> scripted;
+        for (size_t k = 1; k < scripts_.size(); ++k)
+            if (scripts_[k].active()) {
+                InputFrame sf = InputFrame::fromPlayerInput(scripts_[k].next());
+                if (offer && offer->player == static_cast<int>(k)) sf.choice = InputFrame::kChoiceLeave;
+                scripted.push_back({static_cast<int>(k), sf});
+            }
+        session_->step(f, scripted);  // never reports anything
         ++tick_;
         if (run_->zoneSerial() != serial_) zoneReady();
     }
@@ -243,8 +261,8 @@ public:
         GameWorld& w = run_->world();
         serial_ = run_->zoneSerial();
         arenaCam_.reset();  // 2.68: the arena's intro plays again in a new world
-        minimap_.invalidate();  // 2.71: its terrain baked again
-        metEnemies_.reset();    // 2.71: nobody met yet in this world (the off-screen arrows)
+        minimap_.invalidate();  // 2.72: its terrain baked again
+        metEnemies_.reset();    // 2.72: nobody met yet in this world (the off-screen arrows)
         mapPan_ = 0.0f;
         renderer_.build(g_.app.renderer(), g_.app.resources(), w);
         std::vector<Color> colors;
@@ -383,7 +401,7 @@ public:
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
         }
-        // 2.71: the large map (display only: the group, and this player, keep playing).
+        // 2.72: the large map (display only: the group, and this player, keep playing).
         if (!ended_ && !paused_ && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
@@ -393,7 +411,7 @@ public:
 
     std::string seatName(int seat) const {
         if (seat == local_) return g_.online.username().empty() ? "Vous" : g_.online.username();
-        // 2.71: a test's simulated players (the seats beyond them are free).
+        // 2.72: a test's simulated players (the seats beyond them are free).
         if (session_) return seat < session_->players() ? raid::TestSession::botName(seat) : "Place libre";
         if (link_ && link_->lobby().is_object())
             for (const auto& s : link_->lobby().value("seats", Json::array()))
@@ -405,8 +423,8 @@ public:
 
     void render(float alpha) override {
         UIContext& ui = g_.ui;
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);  // first: it gives ui.r() (2.70: also as the first screen)
         Renderer& r = ui.r();
-        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         ui.pushId("raidgame");
         if (!run_ || catching_) {
             r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{11, 10, 28, 255});
@@ -425,7 +443,7 @@ public:
             drawSwitches(w, view);      // 2.68: the group's plates
             {
                 // The vitals, powers and gigaboss bar of this computer's player, at the raid layout's
-                // places (2.71, Paramètres › HUD › « Raids »; display only).
+                // places (2.72, Paramètres › HUD › « Raids »; display only).
                 GameWorld::PlayerScope me(w, std::clamp(local_, 0, w.teamSize() - 1));
                 hudSettings_ = raidhud::hudSettings(g_.settings.gameplay);
                 hud_.render(ui, w, view, nullptr, hudSettings_);
@@ -506,7 +524,7 @@ public:
         g_.app.switchScene(makeRaidBranch(g_, entry_.eventId, entry_.branch), 0.3f);
     }
 
-    /// 2.71: the raid's HUD at the places of the player's raid layout (RaidHudLayout), each element
+    /// 2.72: the raid's HUD at the places of the player's raid layout (RaidHudLayout), each element
     /// drawn into its area (ui/online/RaidHud); what is drawn is kept clear of the arrows.
     void drawRaidHud(GameWorld& w) {
         UIContext& ui = g_.ui;
@@ -554,7 +572,7 @@ public:
             hudRects_.push_back(r);
         }
         if (shown(E::Timer)) {
-            // 2.71: the raid's chrono from the simulation's steps (the same on every computer; it
+            // 2.72: the raid's chrono from the simulation's steps (the same on every computer; it
             // runs on during a pause: the world never stops).
             const Rect r = at(E::Timer);
             raidhud::drawTimer(ui, r, k(E::Timer), static_cast<float>(run_->tick()) / static_cast<float>(kSimHz),
@@ -576,7 +594,7 @@ public:
         return k != SDL_SCANCODE_UNKNOWN ? keyName(k) : std::string();
     }
 
-    /// 2.71: the group panel's data (8 rows).
+    /// 2.72: the group panel's data (8 rows).
     raidhud::Group groupData(GameWorld& w) {
         using P = GameWorld::Presence;
         raidhud::Group g;
@@ -609,7 +627,7 @@ public:
         return g;
     }
 
-    /// 2.71: what the maps show: the zone's objects, the enemies, the group, this player.
+    /// 2.72: what the maps show: the zone's objects, the enemies, the group, this player.
     std::vector<raidhud::Mark> mapMarks(GameWorld& w) {
         using raidhud::Icon;
         std::vector<raidhud::Mark> out;
@@ -643,7 +661,7 @@ public:
         return out;
     }
 
-    /// 2.71: the areas the magma floods (and whether it is coming, or there).
+    /// 2.72: the areas the magma floods (and whether it is coming, or there).
     std::vector<raidhud::MagmaArea> magmaAreas(GameWorld& w) {
         std::vector<raidhud::MagmaArea> out;
         const raid::Magma& m = run_->rules().magma;
@@ -655,7 +673,7 @@ public:
         return out;
     }
 
-    /// 2.71: the large map over most of the screen (Action::RaidMap; the group keeps playing): the
+    /// 2.72: the large map over most of the screen (Action::RaidMap; the group keeps playing): the
     /// zone, the branch's zones, the whole legend. Dragged with the mouse (or its wheel) when the
     /// zone is wider than the view.
     void drawBigMap(GameWorld& w) {
@@ -883,7 +901,7 @@ public:
             for (int i = 0; i < w.teamSize(); ++i)
                 if (i != local_ && w.member(i).presence == GameWorld::Presence::Playing) f.allies.push_back(w.playerAt(i).center());
         }
-        arenaCam_.update(f, dt, g_.ui.r().width(), g_.ui.r().height());
+        arenaCam_.update(f, dt, g_.app.renderer().width(), g_.app.renderer().height());  // 2.70: also before any UI frame
     }
 
     /// 2.68: the title of the arena while its whole is shown (the intro shot).
@@ -903,7 +921,7 @@ public:
     }
 
     /// 2.68: arrows on the border toward what the view does not show: the boss (its weak points when
-    /// bare), the allies (their colours); 2.71: the enemies already met and the ambush's, exactly as
+    /// bare), the allies (their colours); 2.72: the enemies already met and the ambush's, exactly as
     /// the solo levels draw them (EnemyArrowsDraw). Kept off the HUD; the raid layout's toggle.
     void drawArrows(GameWorld& w, const WorldView& view) {
         UIContext& ui = g_.ui;
@@ -1064,7 +1082,7 @@ public:
         ui.popId();
     }
 
-    /// 2.71: the objectives' lines (the zone's, its locked passages, its mechanisms, the links of the
+    /// 2.72: the objectives' lines (the zone's, its locked passages, its mechanisms, the links of the
     /// titan, the ambush, the gigaboss).
     std::vector<raidhud::Line> objectiveLines(GameWorld& w) {
         std::vector<raidhud::Line> lines;
@@ -1128,7 +1146,7 @@ public:
         return lines;
     }
 
-    /// 2.71: the simulation's alerts of the last 8 s (group, branch, danger), then the server's answers.
+    /// 2.72: the simulation's alerts of the last 8 s (group, branch, danger), then the server's answers.
     std::vector<raidhud::Line> alertLines() {
         std::vector<raidhud::Line> show;
         for (const raid::Alert& a : run_->alerts())
@@ -1140,7 +1158,7 @@ public:
         return show;
     }
 
-    /// 2.71: the danger band's text now (the danger announced, then on), empty when none.
+    /// 2.72: the danger band's text now (the danger announced, then on), empty when none.
     std::string dangerText() {
         const float in = run_->magmaIn();
         if (in < 0.0f) return {};
@@ -1150,7 +1168,7 @@ public:
         return {};
     }
 
-    /// 2.71: the network line, or a test's badge (never counted: said where the network's line is).
+    /// 2.72: the network line, or a test's badge (never counted: said where the network's line is).
     std::string statusText(Color& c) {
         if (test_) {
             c = kGold;
@@ -1193,7 +1211,7 @@ public:
         if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
             leave();
         y += bh + ui.s(18);
-        // 2.71: the raid's keys (the large map), measured into the panel.
+        // 2.72: the raid's keys (the large map), measured into the panel.
         const std::string mapKey = actionKey(g_.app.input(), Action::RaidMap);
         const std::string keys = "Commandes du raid · carte agrandie : " + (mapKey.empty() ? std::string("aucune touche") : mapKey) +
                                  " (Vue / Retour à la manette) · à changer dans Paramètres › Commandes";
@@ -1225,16 +1243,16 @@ public:
     const raid::Branch* branch_ = nullptr;
     std::unique_ptr<NetCoopLink> link_;
     std::unique_ptr<raid::RaidRun> ownRun_;        // a real instance's run
-    std::unique_ptr<raid::TestSession> session_;   // 2.71: an administrator's test (its run, its simulated players)
+    std::unique_ptr<raid::TestSession> session_;   // 2.72: an administrator's test (its run, its simulated players)
     raid::RaidRun* run_ = nullptr;                 // the one played
     GameRenderer renderer_;
     Hud hud_;
     TexturePtr suit_;
-    raidhud::HudAreas hudAreas_;    // 2.71: the game's HUD at the raid layout's places (this frame)
-    GameplaySettings hudSettings_;  // 2.71: what the game's HUD is drawn with in the raid
-    raidhud::Minimap minimap_;      // 2.71: the zone's terrain baked, the maps
-    EnemyArrows::Tracker metEnemies_;  // 2.71: the enemies met in this world (the arrows of the solo levels)
-    bool bigMap_ = false;           // 2.71: the large map (Action::RaidMap)
+    raidhud::HudAreas hudAreas_;    // 2.72: the game's HUD at the raid layout's places (this frame)
+    GameplaySettings hudSettings_;  // 2.72: what the game's HUD is drawn with in the raid
+    raidhud::Minimap minimap_;      // 2.72: the zone's terrain baked, the maps
+    EnemyArrows::Tracker metEnemies_;  // 2.72: the enemies met in this world (the arrows of the solo levels)
+    bool bigMap_ = false;           // 2.72: the large map (Action::RaidMap)
     float mapPan_ = 0.0f;           // world pixels the large map was dragged by
     PowerKeyMap powerKeys_;
     int local_ = 0;
@@ -1250,6 +1268,7 @@ public:
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
+    std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
     raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)

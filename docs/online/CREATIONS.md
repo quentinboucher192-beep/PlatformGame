@@ -1,4 +1,8 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Créations d'un admin : combinaisons, traînées, cadres, effets de victoire (2.45, 2.59)
+
+<p align="center"><img src="../media/wardrobe.png" width="720" alt="Le Vestiaire, où les créations d'un admin rejoignent les combinaisons du jeu"></p>
 
 ADMINISTRATION › **Créations** : un compte admin crée des éléments du Vestiaire sans mise à jour
 du jeu. Quatre types, choisis au-dessus de la liste (« Combinaisons », « Traînées », « Cadres »,
@@ -196,3 +200,7 @@ image par création) :
   d'une traînée ou d'un effet, l'anneau d'un cadre). Tant qu'elle manque, l'apparence simple de
   la création (ses paramètres) est dessinée. Affichage seulement : `tests/test_determinism.cpp`
   inchangé.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

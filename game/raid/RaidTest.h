@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.71: the administrators' test of a raid (ADMINISTRATION › Raids › « Tester Asterion »,
+// 2.72: the administrators' test of a raid (ADMINISTRATION › Raids › « Tester Asterion »,
 // docs/RAIDS.md §15) played like a real instance, alone on one computer:
 //
 // * the branch's state is kept across the zones in the structure the server sends with RAID_STATE
@@ -20,6 +20,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "game/gameplay/InputFrame.h"
@@ -65,8 +66,9 @@ public:
 
     bool begin(int zone);
     /// One step: the administrator's frame on seat 0, the simulated players on theirs, the free
-    /// seats vacant; the branch's state given as RAID_STATE would give it.
-    void step(const InputFrame& admin);
+    /// seats vacant; the branch's state given as RAID_STATE would give it. `scripted` (2.70, the
+    /// captures: --raid-test): seats played by a script, in place of their simulated player.
+    void step(const InputFrame& admin, const std::vector<std::pair<int, InputFrame>>& scripted = {});
 
     RaidRun& run() { return run_; }
     const RaidRun& run() const { return run_; }

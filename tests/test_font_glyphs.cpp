@@ -1,4 +1,4 @@
-// 2.71: every character the game writes exists in its fonts (a missing one draws as an empty box):
+// 2.72: every character the game writes exists in its fonts (a missing one draws as an empty box):
 // the texts of the i18n catalogue (tools/i18n/catalog.json, French) and their English
 // (data/i18n/en.json), and every string literal of the raid screens and of the gigabosses'
 // routines (their marks: « OK », « + », « ◊ », « ■ », « ◀▶ » instead of ✓ ✚ ✦ ▮ ⇄). Checked against the
@@ -105,7 +105,7 @@ std::string hexOf(uint32_t cp) {
 
 }  // namespace
 
-TEST_CASE("fonts (2.71): every text of the i18n catalogue and its English has its glyphs in the game's fonts") {
+TEST_CASE("fonts (2.72): every text of the i18n catalogue and its English has its glyphs in the game's fonts") {
     Fonts fonts;
     CHECK(fonts.body.size() == 2);
     if (fonts.body.size() != 2) return;
@@ -129,7 +129,7 @@ TEST_CASE("fonts (2.71): every text of the i18n catalogue and its English has it
     CHECK(missing.empty());
 }
 
-TEST_CASE("fonts (2.71): the raid screens and the gigabosses' routines only write glyphs of the game's fonts") {
+TEST_CASE("fonts (2.72): the raid screens and the gigabosses' routines only write glyphs of the game's fonts") {
     Fonts fonts;
     if (fonts.body.size() != 2) return;
     const auto root = Paths::dataDir().parent_path();

@@ -174,7 +174,7 @@ bool DoorEntity::handleAction(GameWorld& w, const std::string& action, const Jso
     return true;
 }
 
-// 2.71 (raids): a door that progress opened stays open (never one an ambush closed for its fight).
+// 2.72 (raids): a door that progress opened stays open (never one an ambush closed for its fight).
 Json DoorEntity::keepState(GameWorld&) const { return open_ && !initialOpen_ ? Json{{"open", true}} : Json(nullptr); }
 
 void DoorEntity::restoreKept(GameWorld& w, const Json& state) {

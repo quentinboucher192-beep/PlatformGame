@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.71: the HUD of the clan raids (docs/RAIDS.md §15), shared by the combat (RaidGameScene) and the
+// 2.72: the HUD of the clan raids (docs/RAIDS.md §15), shared by the combat (RaidGameScene) and the
 // HUD editor's « Raids » layout (HudEditorScene, its example of 8 players): where each element goes
 // (RaidHudLayout: the default places around the game's own HUD, or the player's), and how each one
 // is drawn from plain data, every text measured into its box (fit, wrap, « … et N de plus »):

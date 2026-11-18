@@ -2,7 +2,7 @@
 // element of the in-game HUD on a live preview (a real level drawn by the game, with the
 // real HUD). Elements can never overlap each other nor leave the screen.
 //
-// 2.71: a third tab, « Raids » (docs/RAIDS.md §15): the HUD of the clan raids, its own layout
+// 2.72: a third tab, « Raids » (docs/RAIDS.md §15): the HUD of the clan raids, its own layout
 // (GameplaySettings::raidHud, used by RaidGameScene): this player's vitals, powers and the
 // gigaboss's bar, the minimap, the group panel, the objectives, the alerts, the danger band, the
 // contributions, the network line / « TEST ADMIN » badge, and the off-screen arrows' toggle.
@@ -227,7 +227,7 @@ private:
         r.setView(WorldView{});
         hud_.setFadeAllowed(false);  // 2.60: the blocks being placed never fade
         hud_.setEditorPreview(true);   // 2.62.2: the ambush's counter shown without a fight
-        hud_.setRaidView(mode_ == 2);  // 2.71: the raids' HUD (vitals, powers, the gigaboss's bar)
+        hud_.setRaidView(mode_ == 2);  // 2.72: the raids' HUD (vitals, powers, the gigaboss's bar)
         if (mode_ == 2) {
             hud_.render(g_.ui, *world_, view, nullptr, raidhud::hudSettings(work_));
             drawRaidExample();
@@ -404,7 +404,7 @@ private:
     std::string firstConflict() {
         auto c = conflicts();
         if (c.empty()) {
-            // 2.71: the raids' layout is saved with the other one: it must fit too.
+            // 2.72: the raids' layout is saved with the other one: it must fit too.
             const auto rc = raidConflicts();
             if (rc.empty()) return {};
             return std::string("Raids : « ") + RaidHudLayout::label(static_cast<RaidHudElement>(rc[0].first)) + " » et « " +
@@ -574,7 +574,7 @@ private:
         if (ui.button("reset", r, "Place et taille par défaut")) resetElement(e);
     }
 
-    // ------------------------------------------------------------ 2.71: the raids' layout
+    // ------------------------------------------------------------ 2.72: the raids' layout
 
     using RE = RaidHudElement;
 
@@ -877,7 +877,7 @@ private:
         if (shown(RE::Timer)) raidhud::drawTimer(ui, at(RE::Timer), k(RE::Timer), 754.36f, 201.07f);
     }
 
-    raidhud::Minimap minimap_;  // 2.71: the example's minimap (the preview level's terrain)
+    raidhud::Minimap minimap_;  // 2.72: the example's minimap (the preview level's terrain)
 
     GameServices& g_;
     GameplaySettings& target_;
@@ -892,7 +892,7 @@ private:
     Rect preview_;
     float previewScale_ = 0.6f;
     int selected_ = 0;
-    int mode_ = 0;  // 0 the full HUD, 1 the « mode concentré », 2 (2.71) the raids
+    int mode_ = 0;  // 0 the full HUD, 1 the « mode concentré », 2 (2.72) the raids
     bool savedFocus_ = false;
     bool dragging_ = false;
     bool bossShown_ = false;

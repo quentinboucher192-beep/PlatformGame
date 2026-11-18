@@ -23,7 +23,7 @@
 //   the last checkpoint reached in it, when it has some (the players down get up at each new one);
 // * 2.68, co-op mechanisms: a plate where several players must stand together opens a lock's
 //   doors on every floor, or starts a goods lift (fewer players when fewer are in play);
-// * 2.71, the zones keep what was done in them (docs/RAIDS.md §15): leaving a zone, or starting it
+// * 2.72, the zones keep what was done in them (docs/RAIDS.md §15): leaving a zone, or starting it
 //   again, notes its doors opened, levers pulled, generators on, arenas cleared, enemies beaten,
 //   relics taken, plates done and its last checkpoint; back in it, they are as the group left them.
 //   The objectives of the branch's state (every group's, RAID_STATE) are applied the same way: a
@@ -127,7 +127,7 @@ public:
     /// 2.68: the last checkpoint reached in this zone (the group starts again there), empty when none.
     const std::string& lastCheckpoint() const { return lastCheckpoint_; }
 
-    /// 2.71: what a zone keeps of what was done in it (noted when the group leaves it or starts it
+    /// 2.72: what a zone keeps of what was done in it (noted when the group leaves it or starts it
     /// again, given back when it is loaded): object id → its state (LevelEntity::keepState), the
     /// co-op plates done, its last checkpoint.
     struct ZoneMemory {
@@ -143,9 +143,9 @@ public:
 
 private:
     void loadZone(int zone, const std::string& from, const std::vector<GameWorld::MemberCarry>* carry);
-    /// 2.71: notes what the zone loaded keeps (before it is left or started again).
+    /// 2.72: notes what the zone loaded keeps (before it is left or started again).
     void remember();
-    /// 2.71: gives a zone just loaded what it kept and what the branch's state says is done there.
+    /// 2.72: gives a zone just loaded what it kept and what the branch's state says is done there.
     void restoreZone(int zone);
     void applyMask(uint32_t mask, bool initial);
     /// 2.68: a link of the titan on, in the zone loaded (objects off, enemies gone, danger stopped).
@@ -184,7 +184,7 @@ private:
     Test test_;                         // 2.68: an administrator's test (never reported)
     std::vector<uint8_t> coopDone_;       // 2.68: per co-op mechanism of the zone
     std::string lastCheckpoint_;          // 2.68: kept when the zone starts again
-    std::map<int, ZoneMemory> memory_;    // 2.71: what each zone left keeps
+    std::map<int, ZoneMemory> memory_;    // 2.72: what each zone left keeps
     std::vector<Report> reports_;
     std::vector<Alert> alerts_;
 };

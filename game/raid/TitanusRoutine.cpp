@@ -205,7 +205,7 @@ public:
             out.push_back({"→", "Vaincre Titanus · phase " + std::to_string(std::max(1, g.phase())) + " / 3 : sautez ses ondes, quittez votre marque.",
                            orange});
         }
-        out.push_back({"≋", "Ses ondes de choc courent au sol : sautez par-dessus (les plateformes protègent).", kForge});
+        out.push_back({"~", "Ses ondes de choc courent au sol : sautez par-dessus (les plateformes protègent).", kForge});
         if (!rockPeriods_.empty() && at(rockPeriods_, g.phase()) > 0.0f)
             out.push_back({"◆", "Des rochers tombent de la voûte : quittez les ombres au sol.", orange});
         out.push_back(linkDone(g, "west") && linkDone(g, "east")

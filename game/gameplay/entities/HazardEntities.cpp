@@ -151,7 +151,7 @@ void DamageZoneEntity::init(GameWorld&) {
     // 2.33: a zone may start off (switched on by an event: the plasma of Singularis's arena).
     active = obj_.prop<bool>("active", true);
     shown_ = active ? 1.0f : 0.0f;
-    // 2.71: the raids' rising magma (docs/RAIDS.md §15).
+    // 2.72: the raids' rising magma (docs/RAIDS.md §15).
     magma_ = obj_.propStr("style", "toxic") == "magma";
     level_ = magma_ && active ? 1.0f : 0.0f;
 }
@@ -171,7 +171,7 @@ Rect DamageZoneEntity::overlapBox() const {
 
 void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
     if (!active) return;
-    if (magma_ && level_ <= 0.02f) return;  // 2.71: nothing has risen yet
+    if (magma_ && level_ <= 0.02f) return;  // 2.72: nothing has risen yet
     Player& pl = w.player();
     if (obj_.prop<bool>("bounce", false) && pl.alive() && pl.vel.y > -200.0f) {
         // 2.33: it throws Nova back up (plasma: hurt, never stuck in it).
@@ -193,7 +193,7 @@ void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
 void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (!playerInside) tick_ = 0.0f;
     if (magma_) {
-        // 2.71: it rises while on, drains after « disable » (still hurting until it is gone).
+        // 2.72: it rises while on, drains after « disable » (still hurting until it is gone).
         const float rise = std::max(0.1f, obj_.prop<float>("rise", 1.4f)), fall = std::max(0.1f, obj_.prop<float>("fall", 1.2f));
         level_ = active && !draining_ ? std::min(1.0f, level_ + dt / rise) : std::max(0.0f, level_ - dt / fall);
         if (draining_ && level_ <= 0.0f) {
@@ -248,7 +248,7 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
 bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json& params) {
     const std::string style = obj_.propStr("style", "toxic");
     if (magma_) {
-        // 2.71: the raids' rising magma: announced, rising, draining.
+        // 2.72: the raids' rising magma: announced, rising, draining.
         if (action == "warn") {
             warnLeft_ = std::max(0.5f, jget<float>(params, "seconds", 3.0f));
             w.playSound("sounds/lava_rise.wav", box.center(), 0.45f, 0.7f);
@@ -315,7 +315,7 @@ void DamageZoneEntity::render(RenderContext& ctx) {
 }
 
 void DamageZoneEntity::renderMagma(RenderContext& ctx) const {
-    // 2.71 (raids): molten rock drawn from the generated sheet (tools/assetgen/environment/
+    // 2.72 (raids): molten rock drawn from the generated sheet (tools/assetgen/environment/
     // raid_visuals.py): a body that flows, dark crust drifting on it, bright waves at its surface,
     // bubbles popping, embers, its heat; the telegraph of a rise (the level it will reach, the
     // floor glowing). Drawn over the actors (GameRenderer): what it covers is hidden, a glow at
