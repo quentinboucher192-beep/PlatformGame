@@ -1,6 +1,6 @@
 {
  "id": "asterion_jambe_droite",
- "revision": 1,
+ "revision": 2,
  "raid": "asterion",
  "branch": "jambe_droite",
  "name": "JAMBE DROITE",
@@ -121,12 +121,12 @@
   {
    "id": 8,
    "name": "Talon de Titanus",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · Titanus, 3 phases",
    "x": 1000,
    "y": 360,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Titanus attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Titanus : sauter ses ondes de choc, briser ses deux entraves ensemble",
+   "event": "Ondes de choc au sol (les grilles sont sûres)",
    "secret": false,
    "boss": true,
    "groups_required": 1,
@@ -275,6 +275,15 @@
    "label": "Briser la cheville d'acier : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jd_titanus",
+   "index": 9,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Titanus",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

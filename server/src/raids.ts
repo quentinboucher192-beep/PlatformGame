@@ -45,7 +45,7 @@ export const RAIDS = {
         description:
             "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
         rewards_text:
-            "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute, titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, évents, objectifs, présence).",
+            "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute ; Voidworm, Graviton, Titanus (abdomen, jambes) : un badge chacun à leur chute ; titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, mécanismes, objectifs, présence).",
     },
 } as const;
 export type RaidId = keyof typeof RAIDS;

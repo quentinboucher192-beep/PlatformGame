@@ -1,0 +1,303 @@
+{
+  "format": "cosmic.enemy",
+  "id": "voidworm",
+  "name": "Voidworm",
+  "description": "Le ver du vide lové dans l'abdomen d'Asterion, gigaboss d'un raid de clan, assez grand pour huit joueurs : il surgit du gouffre, fouit sous chaque joueur, avale un allié que les autres doivent libérer, lâche ses parasites ; dans sa chitine, ses trois anneaux doivent être épinglés ensemble pour ouvrir sa gueule.",
+  "family": "miniboss",
+  "animation": "animations/voidworm.json",
+  "size": [
+    240,
+    340
+  ],
+  "scale": 2.5,
+  "hp": 640,
+  "contactDamage": 2,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 1000,
+  "attackRange": 1700,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "crachat",
+      "name": "Crachat d'acide",
+      "type": "spread",
+      "damage": 1,
+      "range": 900,
+      "telegraph": 0.7,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 2.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "acid_glob",
+      "projectileSpeed": 230,
+      "count": 5,
+      "spread": 16,
+      "gravity": 160,
+      "origin": [
+        70,
+        -300
+      ],
+      "lead": 0.7,
+      "hitEffect": "eruption_spore"
+    },
+    {
+      "id": "pluie",
+      "name": "Pluie d'acide",
+      "type": "rain",
+      "damage": 1,
+      "range": 1500,
+      "telegraph": 0.8,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 3.8,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "acid_glob",
+      "projectileSpeed": 200,
+      "count": 12,
+      "spread": 60,
+      "gravity": 260,
+      "rainHeight": 380,
+      "explosionRadius": 16,
+      "lead": 0.8,
+      "stagger": 0.08,
+      "hitEffect": "eruption_spore"
+    },
+    {
+      "id": "tentacule",
+      "name": "Tentacule fouisseur",
+      "type": "tracker",
+      "damage": 2,
+      "range": 1300,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.5,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "root_spike",
+      "projectileSpeed": 125,
+      "duration": 3.0,
+      "radius": 18,
+      "height": 56,
+      "hitEffect": "eruption_spore",
+      "knockback": 260
+    },
+    {
+      "id": "cage",
+      "name": "Cage de tentacules",
+      "type": "cage",
+      "damage": 1,
+      "range": 1100,
+      "telegraph": 1.0,
+      "active": 0.2,
+      "recover": 0.8,
+      "cooldown": 9.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "spore",
+      "projectileSpeed": 90,
+      "burstInterval": 0.45,
+      "duration": 4.0,
+      "radius": 150,
+      "height": 150,
+      "knockback": 200,
+      "look": "tentacle"
+    },
+    {
+      "id": "parasites",
+      "name": "Appel des parasites",
+      "type": "summon",
+      "damage": 0,
+      "range": 1400,
+      "telegraph": 0.9,
+      "active": 0.4,
+      "recover": 0.8,
+      "cooldown": 11.0,
+      "telegraphAnim": "summon",
+      "attackAnim": "summon",
+      "summonId": "gloop_small",
+      "summonCount": 2,
+      "maxSummoned": 4
+    },
+    {
+      "id": "aspiration",
+      "name": "Aspiration du gouffre",
+      "type": "vortex",
+      "damage": 2,
+      "range": 1400,
+      "telegraph": 1.0,
+      "active": 0.2,
+      "recover": 0.9,
+      "cooldown": 9.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "pull": 90,
+      "duration": 2.4,
+      "knockback": 300
+    },
+    {
+      "id": "dernier_reflux",
+      "name": "Dernier reflux",
+      "type": "rain",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.3,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "acid_glob",
+      "projectileSpeed": 240,
+      "count": 22,
+      "spread": 55,
+      "gravity": 300,
+      "rainHeight": 400,
+      "explosionRadius": 16,
+      "lead": 0.8,
+      "hitEffect": "eruption_spore"
+    },
+    {
+      "id": "derniere_morsure",
+      "name": "Dernière morsure",
+      "type": "spread",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.3,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "acid_glob",
+      "projectileSpeed": 260,
+      "count": 9,
+      "spread": 14,
+      "gravity": 160,
+      "origin": [
+        70,
+        -300
+      ],
+      "hitEffect": "eruption_spore"
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "ground_pound": 1.3,
+    "dash": 0.5
+  },
+  "rewards": {
+    "score": 30000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#9dff3a",
+    "radius": 240
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/supernova.wav",
+    "alert": "sounds/wyrm_roar.wav"
+  },
+  "boss": {
+    "title": "VOIDWORM, LE VER DU VIDE",
+    "phases": [
+      {
+        "name": "Le ventre affamé",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "crachat",
+          "pluie",
+          "tentacule",
+          "parasites"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Voidworm surgit du gouffre : le ventre d'Asterion a faim.",
+        "animation": "animations/voidworm.json",
+        "lightColor": "#9dff3a"
+      },
+      {
+        "name": "Les anneaux de chitine",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "crachat",
+          "tentacule",
+          "cage",
+          "pluie"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 0.95,
+        "combo": 2,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Voidworm se love dans sa chitine : épinglez ses anneaux !",
+        "animation": "animations/voidworm_p2.json",
+        "lightColor": "#c6ff6a",
+        "enterSound": "sounds/wyrm_roar.wav"
+      },
+      {
+        "name": "Le reflux",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "crachat",
+          "tentacule",
+          "cage",
+          "aspiration",
+          "pluie",
+          "parasites"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.85,
+        "combo": 3,
+        "telegraphMultiplier": 0.75,
+        "enrageTime": 80,
+        "enterText": "Le ventre se retourne : l'acide monte !",
+        "animation": "animations/voidworm_p3.json",
+        "lightColor": "#eaff9a",
+        "enterSound": "sounds/supernova.wav"
+      }
+    ],
+    "barIcon": "eye",
+    "barColor": "#9dff3a",
+    "finalAttacks": [
+      "dernier_reflux",
+      "derniere_morsure",
+      "dernier_reflux"
+    ],
+    "finalText": "Son dernier reflux : tenez bon !"
+  },
+  "raid": "asterion"
+}

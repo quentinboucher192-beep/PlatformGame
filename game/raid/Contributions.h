@@ -65,6 +65,11 @@ public:
     /// The uid of the gigaboss (its damage, its blows), and of its weak points.
     void setBoss(uint32_t uid) { boss_ = uid; }
     void setWeak(const std::vector<uint32_t>& uids) { weak_ = uids; }
+    /// 2.69 (phase 4B): other targets of a gigaboss's mechanisms whose breaker counts (Voidworm's
+    /// stomach, Titanus's restraints, Graviton's cores): brokeWeak() names who broke them.
+    void setWatched(const std::vector<uint32_t>& uids) { watched_ = uids; }
+    /// 2.69: an ally freed (Voidworm's stomach broken): a rescue for `seat`.
+    void rescue(int seat);
     /// The seat that broke weak point `uid` this step (-1 none).
     int brokeWeak(uint32_t uid) const;
     uint64_t hash() const;
@@ -85,6 +90,7 @@ private:
     std::map<uint32_t, int> tagOwner_;
     uint32_t boss_ = 0;
     std::vector<uint32_t> weak_;
+    std::vector<uint32_t> watched_;  // 2.69
     std::vector<std::pair<uint32_t, int>> broken_;  // weak points broken this step, and by whom
     // The gigaboss's attack being followed: its target and whether it was hit.
     const AttackDef* attack_ = nullptr;

@@ -1,0 +1,286 @@
+{
+  "format": "cosmic.enemy",
+  "id": "graviton",
+  "name": "Graviton",
+  "description": "La jambe gauche d'Asterion, prise dans ses générateurs de gravité, gigaboss d'un raid de clan, assez grand pour huit joueurs : elle flotte, plie l'espace par secteurs (la gravité s'inverse), ouvre un puits sous chacun, fait pleuvoir ses débris ; ses générateurs, dans des zones séparées, doivent être coupés tous en même temps pour la faire tomber.",
+  "family": "miniboss",
+  "animation": "animations/graviton.json",
+  "size": [
+    210,
+    350
+  ],
+  "scale": 2.5,
+  "hp": 620,
+  "contactDamage": 2,
+  "speed": 46,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 1000,
+  "attackRange": 1700,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "fly",
+  "reaction": "keepDistance",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 340,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "puits",
+      "name": "Puits gravitationnel",
+      "type": "well",
+      "damage": 2,
+      "range": 1300,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.7,
+      "cooldown": 8.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "pull": 85,
+      "radius": 26,
+      "duration": 4.0,
+      "knockback": 240
+    },
+    {
+      "id": "couronne",
+      "name": "Couronne de débris",
+      "type": "orbit",
+      "damage": 2,
+      "range": 900,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.45,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "rock",
+      "projectileRadius": 10,
+      "count": 7,
+      "radius": 190,
+      "spread": 110,
+      "duration": 2.8,
+      "knockback": 220
+    },
+    {
+      "id": "onde",
+      "name": "Onde gravitationnelle",
+      "type": "ring",
+      "damage": 2,
+      "range": 1300,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 175,
+      "radius": 900,
+      "spread": 52,
+      "knockback": 240
+    },
+    {
+      "id": "debris",
+      "name": "Pluie de débris",
+      "type": "rain",
+      "damage": 1,
+      "range": 1500,
+      "telegraph": 0.8,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 3.8,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "rock",
+      "projectileSpeed": 220,
+      "count": 11,
+      "spread": 64,
+      "gravity": 380,
+      "rainHeight": 400,
+      "explosionRadius": 18,
+      "lead": 0.8,
+      "stagger": 0.08
+    },
+    {
+      "id": "spirale",
+      "name": "Spirale du vide",
+      "type": "spiral",
+      "damage": 1,
+      "range": 900,
+      "telegraph": 0.7,
+      "active": 0.2,
+      "recover": 0.4,
+      "cooldown": 4.5,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "void_star",
+      "projectileSpeed": 135,
+      "arms": 3,
+      "spread": 13,
+      "burstInterval": 0.15,
+      "duration": 3.0
+    },
+    {
+      "id": "aspiration",
+      "name": "Effondrement",
+      "type": "vortex",
+      "damage": 2,
+      "range": 1300,
+      "telegraph": 1.0,
+      "active": 0.2,
+      "recover": 0.9,
+      "cooldown": 9.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "pull": 95,
+      "duration": 2.4,
+      "knockback": 300
+    },
+    {
+      "id": "dernier_effondrement",
+      "name": "Dernier effondrement",
+      "type": "ring",
+      "damage": 2,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.2,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 190,
+      "radius": 1200,
+      "spread": 40,
+      "knockback": 260
+    },
+    {
+      "id": "derniers_debris",
+      "name": "Derniers débris",
+      "type": "rain",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.3,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "rock",
+      "projectileSpeed": 240,
+      "count": 22,
+      "spread": 55,
+      "gravity": 380,
+      "rainHeight": 420,
+      "explosionRadius": 18,
+      "lead": 0.8
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "ground_pound": 1.3,
+    "dash": 0.5
+  },
+  "rewards": {
+    "score": 30000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 240
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/supernova.wav",
+    "alert": "sounds/gravity_well.wav"
+  },
+  "boss": {
+    "title": "GRAVITON, LA JAMBE QUI PLIE L'ESPACE",
+    "phases": [
+      {
+        "name": "Le champ de gravité",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "puits",
+          "couronne",
+          "debris",
+          "spirale"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Graviton se lève : l'espace se plie autour de la jambe.",
+        "animation": "animations/graviton.json",
+        "lightColor": "#7ff6ff"
+      },
+      {
+        "name": "Les générateurs",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "onde",
+          "couronne",
+          "debris",
+          "puits"
+        ],
+        "speedMultiplier": 1.05,
+        "cooldownMultiplier": 0.95,
+        "combo": 2,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Ses générateurs s'allument : coupez-les tous ensemble !",
+        "animation": "animations/graviton_p2.json",
+        "lightColor": "#a8f0ff",
+        "enterSound": "sounds/gravity_well.wav"
+      },
+      {
+        "name": "Le monde à l'envers",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "onde",
+          "aspiration",
+          "couronne",
+          "debris",
+          "spirale"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.85,
+        "combo": 3,
+        "telegraphMultiplier": 0.75,
+        "enrageTime": 80,
+        "enterText": "Le haut et le bas s'échangent : la moitié de l'arène tombe vers le ciel !",
+        "animation": "animations/graviton_p3.json",
+        "lightColor": "#e2fbff",
+        "enterSound": "sounds/supernova.wav"
+      }
+    ],
+    "barIcon": "star",
+    "barColor": "#7ff6ff",
+    "finalAttacks": [
+      "dernier_effondrement",
+      "derniers_debris",
+      "dernier_effondrement"
+    ],
+    "finalText": "Son dernier effondrement : tenez bon !"
+  },
+  "raid": "asterion"
+}

@@ -216,7 +216,7 @@ private:
                 }
                 ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
             }
-            const std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit."
+            const std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune."
                                              : "Le raid est terminé : ses résultats validés et vos récompenses.";
             fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - bw - ui.s(48), kText, FontFace::Bold);
             y += ui.s(66);
