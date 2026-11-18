@@ -244,13 +244,22 @@ std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversati
 std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
 /// The sheet of a clan raid event (CLANS › RAIDS, phase 1 of « Asterion »), pushed over the current screen.
 std::unique_ptr<Scene> makeRaidEvent(GameServices& g, const std::string& eventId);
-/// 2.65, raids phase 2 (docs/RAIDS.md): the map of the branch « BRAS DROIT » of an event running
-/// (zones and their state, the groups and where they are, « Rejoindre » / « Aider »), pushed.
-std::unique_ptr<Scene> makeRaidBranch(GameServices& g, const std::string& eventId);
-/// The instance a player enters (POST /raids/events/{id}/instance): its event, id, clan and group.
+/// 2.65, raids phase 2 (docs/RAIDS.md): the map of a branch of the titan (2.68: any of the seven,
+/// by its part: « crane », « bras_droit »…) of an event (zones and their state, the groups and where
+/// they are, the links of the titan, « Rejoindre » / « Aider »), pushed.
+std::unique_ptr<Scene> makeRaidBranch(GameServices& g, const std::string& eventId, const std::string& part = "bras_droit");
+/// 2.68, raids phase 4: the global map of the titan (its seven branches, their progress, the links
+/// between them, the groups, the alerts; a branch opens its map), pushed.
+std::unique_ptr<Scene> makeRaidTitan(GameServices& g, const std::string& eventId);
+/// 2.68: where the players of my clan are placed (branch, group), moved and rebalanced by the raid
+/// leader, the chief or an officer, pushed.
+std::unique_ptr<Scene> makeRaidRoster(GameServices& g, const std::string& eventId);
+/// The instance a player enters (POST /raids/events/{id}/branches/{part}/join): its event, id, clan,
+/// group and branch (its part).
 struct RaidEntry {
     std::string eventId, instanceId, clanTag;
     int group = 1;
+    std::string branch = "bras_droit";
 };
 /// The combat of a raid instance (up to 8 players in lockstep), in place of the current screen.
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry);

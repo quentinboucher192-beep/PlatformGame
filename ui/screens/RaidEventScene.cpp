@@ -185,27 +185,29 @@ private:
         y += drawLines(ui, desc, {left.x, y}, 17, ui.s(25), Color{216, 219, 245, 255}) + ui.s(12);
         if (figW > 0.0f) {
             const float figH = std::max(y - ui.s(12) - figTop, ui.s(236));
-            // A click on the branch being played (raid running) opens its map, like the button below.
-            const std::vector<std::string> open = st == raids::State::Running ? std::vector<std::string>{"bras_droit"} : std::vector<std::string>{};
-            if (!titan_.draw(g_, "asterion", {left.right() - figW, figTop, figW, figH}, asterion::statesOf(at(data_, "event")), open).empty())
-                g_.app.pushScene(makeRaidBranch(g_, id_));
+            // A click on a branch (raid running) opens its map; the button below, the whole titan (2.68).
+            const std::vector<std::string> open = st == raids::State::Running
+                                                      ? std::vector<std::string>{"crane", "bras_gauche", "bras_droit", "torse", "abdomen", "jambe_gauche", "jambe_droite"}
+                                                      : std::vector<std::string>{};
+            const std::string part = titan_.draw(g_, "asterion", {left.right() - figW, figTop, figW, figH}, asterion::statesOf(at(data_, "event")), open);
+            if (!part.empty()) g_.app.pushScene(makeRaidBranch(g_, id_, part));
             y = std::max(y, figTop + figH + ui.s(12));
         }
         if (st == raids::State::Running) {
-            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; its map opens the combat.
+            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; 2.68: the seven, from the titan's map.
             const Rect band{left.x, y, left.w, ui.s(54)};
             ui.r().fillRoundedRect(band, ui.s(10), Color{122, 26, 26, 235});
-            const std::string label = "Carte du Bras droit";
+            const std::string label = "Carte du titan";
             const float bw = std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.45f);
             UIContext::ButtonStyle bs;
             bs.primary = true;
             const Rect br{band.right() - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
             if (ui.button("branch", br, label, bs)) {
-                if (ui.featureSeen && ui.isNew("raids.branch_map")) ui.featureSeen("raids.branch_map");
-                g_.app.pushScene(makeRaidBranch(g_, id_));
+                if (ui.featureSeen && ui.isNew("raids.titan_map")) ui.featureSeen("raids.titan_map");
+                g_.app.pushScene(makeRaidTitan(g_, id_));
             }
-            ui.newBadge("branch", br, "raids.branch_map", true, true);  // « NOUVEAU »
-            fit(ui, "Le raid est en cours : la branche « Bras droit » est ouverte aux groupes (le gigaboss, dans une prochaine version).",
+            ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
+            fit(ui, "Le raid est en cours : les sept branches du titan sont ouvertes aux groupes (les gigaboss, dans une prochaine version).",
                 {band.x + ui.s(16), band.center().y}, 15, band.w - bw - ui.s(40), kText, FontFace::Bold);
             y += ui.s(66);
         }

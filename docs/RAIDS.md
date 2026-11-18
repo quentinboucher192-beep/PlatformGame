@@ -1,4 +1,4 @@
-# Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65)
+# Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6)
 
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
@@ -141,3 +141,120 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
   instances ne partagent pas d'horloge commune assez précise.
 * Le chat de groupe (« GROUPE · Lyra : … » de la maquette) n'est pas dans cette phase : les
   alertes viennent du jeu et du serveur seulement.
+
+## 6. Phase 4 (2.68) : le titan entier — sept branches, carte globale, liens, répartition
+
+### Les sept branches (`tools/levelgen/raid_asterion.py`)
+
+Six branches de plus, écrites par `python3 tools/levelgen/raid_asterion.py` (sortie stable, jamais à
+la main ; `--en fichier.json` donne l'anglais de chaque texte pour `tools/i18n/extract.py --merge`) :
+`data/raids/asterion/<branche>/zone_1.json … zone_8.json` et `branch.json`, le catalogue du titan
+`data/raids/asterion/titan.json` et **sa copie serveur** `server/src/raidTitan.json` (titan + les six
+catalogues ; le Bras droit reste à `raid_bras_droit.py` et `raidBranches.json`, lus seulement).
+
+| Branche | Gigaboss | Monde | Traversée | Danger périodique | Deux groupes | Verrou de la zone 7 |
+|---|---|---|---|---|---|---|
+| Crâne | Skullmaw | Confins (os, obsidienne) | vertèbres flottantes, regards lasers | onde psychique | 2 nerfs optiques | les deux yeux |
+| Bras gauche | Dreadfang | Glacior | glace qui cède, tourelles | balayage des griffes | 2 lames | 2 cœurs de givre |
+| Torse | Heartbreaker | Noyau | côtes mouvantes, barrières d'énergie | pulsation du cœur | 2 × 2 plaques | les 4 plaques |
+| Abdomen | Voidworm | Sylvanox (racines, acide) | parois qui respirent | reflux d'acide | 2 valves | 2 glandes |
+| Jambe gauche | Graviton | Aethra (ruines flottantes) | puits d'apesanteur, îlots mouvants | puits de gravité | 2 rotules | 2 générateurs de gravité |
+| Jambe droite | Titanus | Pyralis (forge, lave) | pistons géants | onde sismique | 2 pistons | 2 réacteurs |
+
+Chaque branche : entrée à 3 points d'apparition et son arène, deux chemins, une **zone secrète** (5) et
+sa relique, un **raccourci** ouvert au levier, une **zone à deux groupes** (une paire d'objectifs), un
+verrou `generators` sur plusieurs zones (textes propres dans `lock_texts` du catalogue), l'arène de
+la zone 7 qui ouvre l'antre (8), dont la **porte reste scellée** (« <Gigaboss> — prochaine version » ;
+les six combats viennent ensuite). Les dangers réutilisent `metadata.raid.magma` avec `name`, `hint`,
+`message` (le Bras droit garde ses textes par défaut).
+
+### L'expédition avant l'antre (zone 7) et l'arène du gigaboss (zone 8)
+
+La zone 7 de chaque nouvelle branche est **une longue expédition pour 8 joueurs** (≈ 15 min même à 8) :
+trois étages (galeries basses avec les traversées et le danger de la branche, étage du milieu, étage
+haut ; des puits de corniches les relient à chaque secteur) pour que 8 joueurs ne s'entassent pas ;
+**deux écluses** (un mur sur les trois étages, une porte à chaque étage : elles s'ouvrent ensemble quand
+3 joueurs se tiennent sur la plaque) et **un monte-charge** (il démarre avec 4 joueurs dessus, puis fait
+la navette seul) — `metadata.raid.coop` (`rect`, `players`, `targets`, `action`), moins de joueurs
+demandés quand moins sont en jeu (jamais de blocage à 1 ou 2) ; **points de contrôle** à chaque étage
+(`metadata.raid.checkpoints`, arrivée `spawns["cp:<id>"]`) : le groupe entier à terre reprend au dernier
+atteint, et chaque nouveau point relève les joueurs à terre ; **quatre embuscades géantes** (une zone de
+combat sur les trois étages, quatre vagues, des ennemis à chaque étage : le système d'embuscade, état
+gardé à la chute, compteur, flèches hors écran) — la dernière, la garde de l'antre, est l'objectif qui
+ouvre la porte de la zone 8. Tout se joue dans `raid::RaidRun` (plaques, points de contrôle : au même
+pas sur tous les jeux, dans l'empreinte).
+
+**Durée estimée** (`estimate_minutes` du générateur, champ `minutes` de chaque zone du catalogue) : la
+largeur à 2 tuiles/s, les PV des ennemis à 4 PV/s pour 8 joueurs, 8 s par vague, 30 s par mécanisme à
+plusieurs (plus le trajet du monte-charge). Avec un joueur (1,5 PV/s), le modèle retrouve les temps de
+référence de la campagne à ±40 % (`calibrate()`). Le générateur exige 13 à 17 min pour l'expédition et
+18 à 35 min pour toute la branche hors gigaboss (un raid standard de 45 à 60 min avec le combat et les
+attentes des autres groupes) ; `tests/test_raid_titan.cpp` le revérifie.
+
+La zone 8 : une antichambre, la porte scellée, puis **l'arène du gigaboss**, immense pour 8 joueurs
+attaqués à la fois (200 tuiles de large, plus de deux écrans ; cinq étages de plateformes ; deux piliers),
+ses bornes déclarées dans `metadata.raid.arena` (`rect`, `floor`, `door`, `entry`, en pixels) pour les
+combats à venir.
+
+### Les liens entre branches (spec §7)
+
+`titan.json` → `links` : `from` (objectifs d'autres branches, tous requis), `to` (la branche cible),
+`bit` (24 et plus : un bit de **l'état de la branche cible**, sous lequel restent ses objectifs), `kind`,
+`zones`, `objects` :
+
+| `kind` | Effet dans la simulation (`raid::RaidRun::applyEffect`) |
+|---|---|
+| `open` | les passages verrouillés `link:<id>` s'ouvrent (portes comprises) |
+| `disable` | les objets des zones (lasers, tourelles, barrières) sont éteints |
+| `remove` | les ennemis des zones (leurs objets d'apparition) disparaissent |
+| `hazard_off` | le danger périodique des zones s'arrête |
+
+Onze liens : les yeux du Crâne → tourelles du Bras gauche ; ses nerfs → onde sismique de la Jambe
+droite ; les générateurs de la Jambe gauche → barrières du Torse ; le nid de l'Abdomen → parasites
+du Torse ; les plaques du Torse → passage Intestin ⇄ Gosier de l'Abdomen ; la cheville gauche →
+passage Crevasse ⇄ Poignet du Bras gauche ; les réacteurs de la Jambe droite → coulées du Bras droit ;
+le poignet du Bras droit → passage Tempe ⇄ Voûte du Crâne ; la cheville de Titanus → passage Tibia ⇄
+Cheville de la Jambe gauche ; les valves de l'Abdomen → puits de gravité de la Jambe gauche ; les lames
+de Dreadfang → spectres en renfort du Crâne.
+
+Le serveur calcule l'état d'une branche (`raidMap.stateMaskOf` : ses objectifs acceptés + les liens
+dont toutes les sources sont acceptées) ; `raidZones.branchMaskOf` (lu par le relais toutes les 3 s et
+à chaque objectif accepté, **toutes branches confondues**) le donne aux jeux par `RAID_STATE` : chaque
+jeu de l'instance applique le lien **au même pas** (et de nouveau à chaque chargement de zone), avec
+une alerte « TITAN · … ». Rien ne vient d'un jeu ni de l'interface. Le hash du `GO` devient
+`<révision de la branche>.<révision du titan>`.
+
+### Progression collective
+
+Le consensus de la phase 2 (`POST /raids/instances/{id}/reports`) vaut pour les sept branches : le
+catalogue de la branche de l'instance, sa joignabilité avec les liens, l'objectif compté une fois par
+événement, le menteur minoritaire journalisé, l'égalité refusée.
+
+### Répartition des joueurs (spec §8, migration **0144**)
+
+`raid_placements` (une place par joueur et événement : instance, branche, par qui, pourquoi) et
+`raid_placement_log` (chaque changement). **8 joueurs au plus par instance** : une seule instruction
+conditionnelle place un joueur (deux placements simultanés ne font jamais un neuvième) ; une instance
+s'ouvre seulement quand toutes celles du clan sur la branche sont pleines.
+
+| Route | Rôle |
+|---|---|
+| `GET /raids/events/{id}/titan` | la carte globale : branches (état, zones contrôlées, objectifs, groupes, joueurs), `body` (état de chaque partie pour la figure), liens, renforts demandés, clans par objectifs, alertes, ma place |
+| `GET /raids/events/{id}/branches/{partie}` | la carte d'une branche (comme `/branch`, pour les sept) avec ses liens reçus et donnés |
+| `POST /raids/events/{id}/branches/{partie}/join {instance_id?}` | ma place sur cette branche (groupe de ma liste d'abord, puis les groupes en combat qui ont de la place, puis une nouvelle instance) ; avec `instance_id` : aider ce groupe s'il a de la place |
+| `POST /raids/events/{id}/join` | ma place, ou là où le clan a besoin de moi (un groupe en combat qui n'est pas plein, sinon la branche où le clan a le moins de joueurs) |
+| `GET /raids/events/{id}/placements` | les joueurs de mon clan et leur place, les groupes, `can_manage` |
+| `POST /raids/events/{id}/placements {player_id, branch, instance_id?}` | le chef, un officier ou le chef de raid déplace un membre |
+| `POST /raids/events/{id}/placements/rebalance {branch}` | répartit les joueurs d'une branche sur le moins de groupes possible, à parts égales (ceux qui ne jouent pas bougent d'abord) |
+
+Un joueur en combat garde sa partie : sa nouvelle place compte à sa prochaine entrée.
+
+### Écrans
+
+* **Carte du titan** (fiche d'un raid en cours › « Carte du titan ») : le titan (`AsterionFigure`, une
+  partie = sa branche), les groupes par branche, la progression, les effets, les renforts, les alertes,
+  « Rejoindre » et « Répartition du clan ». Les sept branches sont aussi des arrêts du focus.
+* **Carte d'une branche** (`RaidBranchScene`, pour les sept) : les passages ouverts par une autre
+  branche (✦), la section « Liens avec le reste du titan ».
+* **Répartition du clan** (`RaidRosterScene`) : membres, groupes, « Déplacer vers », « Équilibrer ».
+* **Combat** : les verrous et dangers de chaque branche, les liens actifs de la zone (✦).

@@ -1,0 +1,1062 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_ab_4",
+ "name": "Asterion · Abdomen · Intestin",
+ "description": "L'intestin du titan, long et mouvant. Deux valves : deux groupes, une chacun. L'acide y reflue souvent.",
+ "planet": "sylvanox",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/sylvanox_level.ogg",
+ "bossMusic": "music/sylvanox_boss.ogg",
+ "ambience": "music/sylvanox_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2528,
+  768
+ ],
+ "ambientLight": "#7480a8",
+ "backgroundColor": "#0b0f1e",
+ "background": [
+  {
+   "texture": "backgrounds/sylvanox/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/sylvanox/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/sylvanox/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/sylvanox/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#2f7a1a"
+  },
+  {
+   "texture": "backgrounds/sylvanox/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/sylvanox/fg_vines.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    512.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Nid des parasites",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    384.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o6",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    384.0,
+    528.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    400.0,
+    480.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    368.0,
+    432.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Estomac",
+    "auto": true
+   }
+  },
+  {
+   "id": "o10",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o11",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    320.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o12",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o13",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    560.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -48,
+    "speed": 26,
+    "wait": 1.0,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o14",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    688.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -48,
+    "speed": 26,
+    "wait": 1.0,
+    "phase": 0.5,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o15",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    800.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -48,
+    "speed": 26,
+    "wait": 1.0,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o16",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    928.0,
+    576.0,
+    1056.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "magma_flow",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    928.0,
+    544.0,
+    1056.0,
+    32.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "active": false,
+    "bounce": true
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    976.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1104.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1232.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1488.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1616.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1872.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    964.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Deux valves, deux groupes : chaque groupe en ferme une (un pouvoir de tir).",
+    "auto": true
+   }
+  },
+  {
+   "id": "o26",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1504.0,
+    400.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o27",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    368.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o28",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o29",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1240.0,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o30",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1240.0,
+    520.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o31",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1400.0,
+    564.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "weaver",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o32",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1783.0,
+    420.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "bomber",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o33",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1882.0,
+    490.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o34",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1908.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Vers le Gosier : la paroi ne cède que si le Torse perd ses plaques.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o35",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1984.0,
+    576.0,
+    544.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o36",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    2384.0,
+    512.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o37",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2452.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Gosier de Voidworm",
+    "auto": true
+   }
+  },
+  {
+   "id": "o38",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2456.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o39",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2432.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o40",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2176.0,
+    384.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o41",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2048.0,
+    528.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o42",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2032.0,
+    480.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o43",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2064.0,
+    432.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o44",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    2384.0,
+    320.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o45",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2452.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Foie noir",
+    "auto": true
+   }
+  },
+  {
+   "id": "o46",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2456.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o47",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2432.0,
+    320.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o48",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    720.0,
+    2528.0,
+    48.0
+   ],
+   "props": {
+    "kind": "acid"
+   }
+  },
+  {
+   "id": "o49",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o50",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o51",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    288.0,
+    352.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_abdomen",
+   "zone": 4,
+   "spawns": {
+    "3": [
+     [
+      144,
+      576
+     ]
+    ],
+    "2": [
+     [
+      144,
+      384
+     ]
+    ],
+    "start": [
+     [
+      144,
+      576
+     ],
+     [
+      192,
+      576
+     ]
+    ],
+    "7": [
+     [
+      2320,
+      576
+     ]
+    ],
+    "6": [
+     [
+      2304,
+      384
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p4_3",
+     "to": 3,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p4_2",
+     "to": 2,
+     "rect": [
+      16,
+      320,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p4_7",
+     "to": 7,
+     "rect": [
+      2432,
+      512,
+      64,
+      64
+     ],
+     "lock": "link:torse_plaques",
+     "door": "o36"
+    },
+    {
+     "id": "p4_6",
+     "to": 6,
+     "rect": [
+      2432,
+      320,
+      64,
+      64
+     ],
+     "lock": "shortcut",
+     "door": "o44"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "abd_valve_haute",
+     "source": "o27",
+     "trigger": "activate"
+    },
+    {
+     "id": "abd_valve_basse",
+     "source": "o29",
+     "trigger": "activate"
+    }
+   ],
+   "magma": {
+    "zone": "magma_flow",
+    "period": 50.0,
+    "first": 25.0,
+    "warn": 3.0,
+    "duration": 6.0,
+    "name": "Reflux d'acide",
+    "hint": "montez sur les branches",
+    "message": "Reflux d'acide ! Restez sur les branches hautes"
+   },
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

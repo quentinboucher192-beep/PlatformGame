@@ -1,0 +1,886 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_ab_3",
+ "name": "Asterion · Abdomen · Nid des parasites",
+ "description": "Le nid des parasites, qui nourrit tout le titan. Sa garde le défend en deux vagues ; un repli cache une poche oubliée.",
+ "planet": "sylvanox",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/sylvanox_level.ogg",
+ "bossMusic": "music/sylvanox_boss.ogg",
+ "ambience": "music/sylvanox_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  1600,
+  768
+ ],
+ "ambientLight": "#7480a8",
+ "backgroundColor": "#0b0f1e",
+ "background": [
+  {
+   "texture": "backgrounds/sylvanox/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/sylvanox/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/sylvanox/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/sylvanox/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#2f7a1a"
+  },
+  {
+   "texture": "backgrounds/sylvanox/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/sylvanox/fg_vines.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Diaphragme",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    576.0,
+    160.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    416.0,
+    608.0,
+    64.0,
+    160.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    608.0,
+    800.0,
+    160.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    635.5,
+    601.0,
+    9.0,
+    7.0
+   ],
+   "props": {
+    "enemy": "gloop_small",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o10",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    825.0,
+    598.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "gloop",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o11",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1019.5,
+    601.0,
+    9.0,
+    7.0
+   ],
+   "props": {
+    "enemy": "gloop_small",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o12",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    634.0,
+    484.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "wisp",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o13",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    952.0,
+    596.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "weaver",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o14",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1111.0,
+    452.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "bomber",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o15",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    528.0,
+    384.0,
+    704.0,
+    224.0
+   ],
+   "props": {
+    "doors": "",
+    "waves": "o9,o10,o11;o12,o13,o14",
+    "lockCamera": false,
+    "music": ""
+   }
+  },
+  {
+   "id": "o16",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    672.0,
+    528.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    960.0,
+    528.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    720.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    848.0,
+    400.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    816.0,
+    272.0,
+    256.0,
+    160.0
+   ],
+   "props": {
+    "message": "Un repli de chair : la Poche oubliée !"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    884.0,
+    376.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Poche oubliée",
+    "auto": true
+   }
+  },
+  {
+   "id": "o22",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    888.0,
+    360.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o23",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    864.0,
+    336.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o24",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    576.0,
+    64.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1344.0,
+    576.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o26",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1524.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Intestin",
+    "auto": true
+   }
+  },
+  {
+   "id": "o27",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1528.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o28",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1504.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o29",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    256.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "crystal_big",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o30",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    448.0,
+    560.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "mushroom_tall",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o31",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    504.0,
+    592.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "glow_flowers",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o32",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    928.0,
+    560.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "mushroom_tall",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o33",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1024.0,
+    560.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "mushroom_tall",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o34",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1080.0,
+    592.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "glow_flowers",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o35",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1120.0,
+    560.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "mushroom_tall",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o36",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1552.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "crystal_big",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o37",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    720.0,
+    1600.0,
+    48.0
+   ],
+   "props": {
+    "kind": "acid"
+   }
+  },
+  {
+   "id": "o38",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o39",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    480.0,
+    352.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [
+  {
+   "id": "ev1",
+   "source": "o15",
+   "trigger": "cleared",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Le nid des parasites est détruit !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "delay": 0.6
+  }
+ ],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_abdomen",
+   "zone": 3,
+   "spawns": {
+    "1": [
+     [
+      144,
+      576
+     ]
+    ],
+    "start": [
+     [
+      144,
+      576
+     ],
+     [
+      192,
+      576
+     ]
+    ],
+    "5": [
+     [
+      976,
+      400
+     ]
+    ],
+    "4": [
+     [
+      1392,
+      576
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p3_1",
+     "to": 1,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_5",
+     "to": 5,
+     "rect": [
+      864,
+      336,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_4",
+     "to": 4,
+     "rect": [
+      1504,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [
+    {
+     "id": "abd_nid",
+     "source": "o15",
+     "trigger": "cleared"
+    }
+   ],
+   "magma": null,
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

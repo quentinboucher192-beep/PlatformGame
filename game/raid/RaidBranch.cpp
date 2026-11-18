@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <memory>
 #include <mutex>
 
 #include "engine/core/FileUtil.h"
@@ -48,6 +49,10 @@ bool Branch::parseCatalog(const Json& j, std::string* error) {
     }
     for (const auto& e : j.value("edges", Json::array()))
         edges.push_back({jget<int>(e, "a", 0), jget<int>(e, "b", 0), jstr(e, "lock"), jget<bool>(e, "secret", false)});
+    lockTexts.clear();
+    const Json locks = j.value("lock_texts", Json::object());  // 2.68 (kept alive while iterating)
+    for (const auto& it : locks.items())
+        lockTexts[it.key()] = {jstr(it.value(), "hint"), jstr(it.value(), "message"), jstr(it.value(), "objective")};
     for (const auto& o : j.value("objectives", Json::array())) {
         ObjectiveInfo i;
         i.id = jstr(o, "id");
@@ -57,7 +62,7 @@ bool Branch::parseCatalog(const Json& j, std::string* error) {
         i.optional = jget<bool>(o, "optional", false);
         i.role = jstr(o, "role");
         i.pair = jstr(o, "pair");
-        if (i.index != static_cast<int>(objectives.size()) || i.index >= 32) return fail("objectifs de la branche dans le désordre");
+        if (i.index != static_cast<int>(objectives.size()) || i.index >= kLinkBit0) return fail("objectifs de la branche dans le désordre");
         objectives.push_back(i);
     }
     if (zones.empty() || id.empty()) return fail("branche vide");
@@ -86,12 +91,101 @@ bool Branch::load(const std::filesystem::path& dir, std::string* error) {
     return true;
 }
 
-const Branch* Branch::builtin() {
+const Branch* Branch::builtin(const std::string& part) {
+    // Each branch once (null when it cannot be read); the titan's links attached.
+    static std::mutex mutex;
+    static std::map<std::string, std::unique_ptr<Branch>> loaded;
+    std::lock_guard<std::mutex> lock(mutex);
+    auto it = loaded.find(part);
+    if (it == loaded.end()) {
+        auto b = std::make_unique<Branch>();
+        const bool safe = !part.empty() && part.find_first_not_of("abcdefghijklmnopqrstuvwxyz_") == std::string::npos;
+        if (!safe || !b->load(Paths::dataDir() / "raids" / "asterion" / part)) b.reset();
+        if (b) {
+            b->part = part;
+            if (auto titan = FileUtil::loadJson(Paths::dataDir() / "raids/asterion/titan.json")) b->attachTitan(*titan);
+        }
+        it = loaded.emplace(part, std::move(b)).first;
+    }
+    return it->second.get();
+}
+
+void Branch::attachTitan(const Json& titan) {
+    titanRevision = jget<int>(titan, "revision", 0);
+    effects.clear();
+    for (const auto& l : titan.value("links", Json::array())) {
+        if (jstr(l, "to") != id) continue;
+        EffectInfo e;
+        e.id = jstr(l, "id");
+        e.kind = jstr(l, "kind");
+        e.label = jstr(l, "label");
+        e.bit = jget<int>(l, "bit", -1);
+        if (e.bit < kLinkBit0 || e.bit >= 32) continue;
+        for (const auto& z : l.value("zones", Json::array()))
+            if (z.is_number_integer()) e.zones.push_back(z.get<int>());
+        for (const auto& o : l.value("objects", Json::array()))
+            if (o.is_string()) e.objects.push_back(o.get<std::string>());
+        for (const auto& f : l.value("from", Json::array())) e.from.emplace_back(jstr(f, "branch"), jstr(f, "objective_id"));
+        effects.push_back(std::move(e));
+    }
+}
+
+bool EffectInfo::inZone(int z) const { return std::find(zones.begin(), zones.end(), z) != zones.end(); }
+
+const EffectInfo* Branch::effect(const std::string& eid) const {
+    for (const auto& e : effects)
+        if (e.id == eid) return &e;
+    return nullptr;
+}
+
+bool Branch::hazardOff(int zid, uint32_t mask) const {
+    for (const auto& e : effects)
+        if (e.kind == "hazard_off" && on(mask, e) && e.inZone(zid)) return true;
+    return false;
+}
+
+LockText Branch::lockText(const std::string& lock) const {
+    if (auto it = lockTexts.find(lock); it != lockTexts.end()) return it->second;
+    // The BRAS DROIT (its catalog has no texts): its two generators, the forearm's lever.
+    if (lock == "generators")
+        return {"il faut les deux générateurs", "Les deux générateurs tournent : le Poignet-verrou s'ouvre",
+                "allumer les deux générateurs (Veine, Avant-bras)"};
+    if (lock == "shortcut")
+        return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine ⇄ Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
+    if (lock.rfind("link:", 0) == 0) {
+        const EffectInfo* e = effect(lock.substr(5));
+        return {"une autre branche du titan l'ouvre", e ? e->label : std::string(), "fermé : une autre branche du titan l'ouvre"};
+    }
+    return {};
+}
+
+const Titan* Titan::builtin() {
     static std::once_flag once;
-    static Branch branch;
+    static Titan titan;
     static bool ok = false;
-    std::call_once(once, [] { ok = branch.load(Paths::dataDir() / "raids" / "asterion" / "bras_droit"); });
-    return ok ? &branch : nullptr;
+    std::call_once(once, [] {
+        auto j = FileUtil::loadJson(Paths::dataDir() / "raids/asterion/titan.json");
+        ok = j && titan.parse(*j);
+    });
+    return ok ? &titan : nullptr;
+}
+
+bool Titan::parse(const Json& j, std::string* error) {
+    if (!j.is_object() || jstr(j, "format") != "cosmic.raid_titan") {
+        if (error) *error = "titan.json illisible";
+        return false;
+    }
+    revision = jget<int>(j, "revision", 0);
+    branches.clear();
+    for (const auto& b : j.value("branches", Json::array())) branches.push_back({jstr(b, "part"), jstr(b, "id"), jstr(b, "dir")});
+    links = j.value("links", Json::array());
+    return !branches.empty();
+}
+
+const TitanBranch* Titan::branch(const std::string& part) const {
+    for (const auto& b : branches)
+        if (b.part == part) return &b;
+    return nullptr;
 }
 
 const ZoneInfo* Branch::zone(int zid) const { return zid >= 1 && zid <= static_cast<int>(zones.size()) ? &zones[static_cast<size_t>(zid - 1)] : nullptr; }
@@ -129,6 +223,10 @@ bool Branch::lockOpen(const std::string& lock, uint32_t mask) const {
     if (lock == "generators") return generators(mask) >= generatorsNeeded;
     if (lock == "shortcut") return shortcut(mask);
     if (lock.rfind("objective:", 0) == 0) return done(mask, objectiveIndex(lock.substr(10)));
+    if (lock.rfind("link:", 0) == 0) {  // 2.68: opened from another branch of the titan
+        const EffectInfo* e = effect(lock.substr(5));
+        return e && e->kind == "open" && on(mask, *e);
+    }
     return false;  // "sealed" or unknown: closed
 }
 
@@ -200,7 +298,24 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         z.magma.first = jget<float>(magma, "first", 45.0f);
         z.magma.warn = jget<float>(magma, "warn", 3.0f);
         z.magma.duration = std::min(z.magma.period - 1.0f, jget<float>(magma, "duration", 8.0f));
+        if (!jstr(magma, "name").empty()) z.magma.name = jstr(magma, "name");
+        if (!jstr(magma, "hint").empty()) z.magma.hint = jstr(magma, "hint");
+        if (!jstr(magma, "message").empty()) z.magma.message = jstr(magma, "message");
     }
+    for (const auto& c : raid.value("coop", Json::array())) {  // 2.68
+        CoopPlate p;
+        p.id = jstr(c, "id");
+        p.label = jstr(c, "label");
+        p.message = jstr(c, "message");
+        p.action = jstr(c, "action", "open");
+        p.rect = rectOf(c.value("rect", Json()));
+        p.players = std::clamp(jget<int>(c, "players", 2), 1, kMaxInstancePlayers);
+        for (const auto& t : c.value("targets", Json::array()))
+            if (t.is_string()) p.targets.push_back(t.get<std::string>());
+        z.coops.push_back(std::move(p));
+    }
+    for (const auto& c : raid.value("checkpoints", Json::array()))
+        if (c.is_string()) z.checkpoints.push_back(c.get<std::string>());
     const Json sealed = raid.value("sealed", Json());
     if (sealed.is_object()) {
         z.sealedDoor = jstr(sealed, "door");

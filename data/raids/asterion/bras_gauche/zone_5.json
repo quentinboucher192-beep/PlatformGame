@@ -1,0 +1,756 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_bg_5",
+ "name": "Asterion · Bras gauche · Crevasse cachée",
+ "description": "Une crevasse cachée dans la glace du bras. Une relique y dort ; une paroi gelée donne sur le poignet.",
+ "planet": "glacior",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/glacior_level.ogg",
+ "bossMusic": "music/glacior_boss.ogg",
+ "ambience": "music/glacior_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  1536,
+  768
+ ],
+ "ambientLight": "#8ca4c8",
+ "backgroundColor": "#0a1428",
+ "background": [
+  {
+   "texture": "backgrounds/glacior/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/glacior/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/glacior/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/glacior/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#c2dbef"
+  },
+  {
+   "texture": "backgrounds/glacior/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/glacior/fg_icicles.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    0.0,
+    1600.0,
+    96.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    544.0,
+    256.0,
+    224.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o3",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    520.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Tendon glacé",
+    "auto": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    504.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o5",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    480.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o6",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    522.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    576.0,
+    128.0,
+    192.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    313.0,
+    566.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o9",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    432.0,
+    576.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.5,
+    "respawn": 3.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    512.0,
+    576.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.5,
+    "respawn": 3.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o11",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    608.0,
+    528.0,
+    192.0,
+    240.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    695.0,
+    516.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o13",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    832.0,
+    528.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.45,
+    "respawn": 3.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    912.0,
+    528.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.45,
+    "respawn": 3.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    992.0,
+    480.0,
+    224.0,
+    288.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "relic",
+   "layer": "gameplay",
+   "rect": [
+    1096.0,
+    424.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "value": 1000,
+    "name": "Relique de la crevasse"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1096.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 90,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o18",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1216.0,
+    480.0,
+    64.0,
+    288.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    480.0,
+    256.0,
+    288.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1392.0,
+    416.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o21",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1460.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Poignet de glace",
+    "auto": true
+   }
+  },
+  {
+   "id": "o22",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1464.0,
+    440.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o23",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1440.0,
+    416.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o24",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    48.0,
+    496.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_statue",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o25",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    148.0,
+    488.0,
+    24.0,
+    56.0
+   ],
+   "props": {
+    "sprite": "ice_spire",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o26",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    196.0,
+    496.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "frost_banner",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o27",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    288.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal_big",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o28",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    680.0,
+    516.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "snow_rock_small",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o29",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1256.0,
+    456.0,
+    16.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_crystal",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o30",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1304.0,
+    464.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "frost_flower",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o31",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1396.0,
+    424.0,
+    24.0,
+    56.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ice_spire",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o32",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "snowfall",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o33",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    416.0,
+    352.0
+   ],
+   "props": {
+    "effect": "snowfall",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_bras_gauche",
+   "zone": 5,
+   "spawns": {
+    "3": [
+     [
+      144,
+      544
+     ]
+    ],
+    "start": [
+     [
+      144,
+      544
+     ],
+     [
+      192,
+      544
+     ]
+    ],
+    "7": [
+     [
+      1328,
+      480
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p5_3",
+     "to": 3,
+     "rect": [
+      16,
+      480,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p5_7",
+     "to": 7,
+     "rect": [
+      1440,
+      416,
+      64,
+      64
+     ],
+     "lock": "link:jg_cheville",
+     "door": "o20"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "bg_relique",
+     "source": "o16",
+     "trigger": "collected"
+    }
+   ],
+   "magma": null,
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

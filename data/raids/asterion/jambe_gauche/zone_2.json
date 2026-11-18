@@ -1,0 +1,874 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_jg_2",
+ "name": "Asterion · Jambe gauche · Cuisse flottante",
+ "description": "La cuisse flotte dans la gravité tordue de Graviton. Des puits d'apesanteur portent les sauts ; un générateur de gravité tourne au bout.",
+ "planet": "aethra",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/aethra_level.ogg",
+ "bossMusic": "",
+ "ambience": "music/aethra_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2240,
+  768
+ ],
+ "ambientLight": "#a294c8",
+ "backgroundColor": "#0c0a1c",
+ "background": [
+  {
+   "texture": "backgrounds/aethra/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/aethra/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/aethra/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/aethra/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#2a1c4a"
+  },
+  {
+   "texture": "backgrounds/aethra/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/aethra/fg_petals.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Hanche",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    576.0,
+    160.0,
+    192.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    180.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Les puits d'apesanteur vous portent : laissez-vous soulever.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o8",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    560.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    608.0,
+    560.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    560.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o11",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    560.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    416.0,
+    448.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 240,
+    "vent": false
+   }
+  },
+  {
+   "id": "o13",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    544.0,
+    448.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 240,
+    "vent": false
+   }
+  },
+  {
+   "id": "o14",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    672.0,
+    448.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 240,
+    "vent": false
+   }
+  },
+  {
+   "id": "o15",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    800.0,
+    448.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 240,
+    "vent": false
+   }
+  },
+  {
+   "id": "o16",
+   "type": "updraft",
+   "layer": "gameplay",
+   "rect": [
+    928.0,
+    448.0,
+    64.0,
+    320.0
+   ],
+   "props": {
+    "strength": 240,
+    "vent": false
+   }
+  },
+  {
+   "id": "o17",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    992.0,
+    576.0,
+    704.0,
+    192.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "magma_flow",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    992.0,
+    544.0,
+    704.0,
+    32.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "active": false,
+    "bounce": true,
+    "style": "abyss"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1040.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1152.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1264.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1376.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1488.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1600.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1210.0,
+    436.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "dragonnet",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o25",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1401.0,
+    422.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "nightwing",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o26",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o27",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1524.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Générateur de gravité ouest : coupez-le avec un pouvoir de tir.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o28",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    520.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o29",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    576.0,
+    544.0,
+    192.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o30",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2164.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Genou",
+    "auto": true
+   }
+  },
+  {
+   "id": "o31",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o32",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2144.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o33",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1888.0,
+    384.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o34",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1760.0,
+    528.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o35",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    480.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o36",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    432.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o37",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2164.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Tibia",
+    "auto": true
+   }
+  },
+  {
+   "id": "o38",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o39",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2144.0,
+    320.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o40",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o41",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_jambe_gauche",
+   "zone": 2,
+   "spawns": {
+    "1": [
+     [
+      144,
+      576
+     ]
+    ],
+    "start": [
+     [
+      144,
+      576
+     ],
+     [
+      192,
+      576
+     ]
+    ],
+    "4": [
+     [
+      2032,
+      576
+     ]
+    ],
+    "6": [
+     [
+      2016,
+      384
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p2_1",
+     "to": 1,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p2_4",
+     "to": 4,
+     "rect": [
+      2144,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p2_6",
+     "to": 6,
+     "rect": [
+      2144,
+      320,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [
+    {
+     "id": "jg_generateur_ouest",
+     "source": "o26",
+     "trigger": "activate"
+    }
+   ],
+   "magma": {
+    "zone": "magma_flow",
+    "period": 70.0,
+    "first": 35.0,
+    "warn": 3.0,
+    "duration": 6.0,
+    "name": "Puits de gravité",
+    "hint": "restez sur les îlots hauts",
+    "message": "Puits de gravité ! Restez sur les îlots hauts"
+   },
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

@@ -1,0 +1,281 @@
+{
+ "id": "asterion_abdomen",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "abdomen",
+ "name": "ABDOMEN",
+ "gigaboss": "Voidworm",
+ "start_zone": 1,
+ "generators_needed": 2,
+ "lock_texts": {
+  "generators": {
+   "hint": "il faut crever les deux glandes",
+   "message": "Les deux glandes sont crevées : le Gosier de Voidworm s'ouvre",
+   "objective": "crever les deux glandes (Estomac, Foie noir)"
+  },
+  "shortcut": {
+   "hint": "le levier du Foie noir l'ouvre",
+   "message": "Le raccourci Intestin ⇄ Foie noir est ouvert",
+   "objective": "raccourci fermé (le levier est dans le Foie noir)"
+  }
+ },
+ "zones": [
+  {
+   "id": 1,
+   "name": "Diaphragme",
+   "sub": "entrée · 3 points d'apparition",
+   "x": 110,
+   "y": 360,
+   "level": "zone_1.json",
+   "inside": "Ennemis : gloops, tisseuses · arène de la garde",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.3
+  },
+  {
+   "id": 2,
+   "name": "Estomac",
+   "sub": "bassins d'acide · glande nord",
+   "x": 330,
+   "y": 200,
+   "level": "zone_2.json",
+   "inside": "Ennemis : gloops, feux follets · glande nord (un pouvoir de tir)",
+   "event": "Reflux d'acide toutes les 65 s (branches hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.3
+  },
+  {
+   "id": 3,
+   "name": "Nid des parasites",
+   "sub": "le nid à détruire",
+   "x": 330,
+   "y": 520,
+   "level": "zone_3.json",
+   "inside": "Ennemis : la garde du nid (arène en deux vagues)",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.2
+  },
+  {
+   "id": 4,
+   "name": "Intestin",
+   "sub": "2 valves : 2 groupes · reflux d'acide",
+   "x": 560,
+   "y": 380,
+   "level": "zone_4.json",
+   "inside": "Ennemis : tisseuses, bombardiers · deux valves, un groupe chacune",
+   "event": "Reflux d'acide toutes les 50 s (branches hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2,
+   "minutes": 1.3
+  },
+  {
+   "id": 5,
+   "name": "Poche oubliée",
+   "sub": "zone secrète ◆ relique",
+   "x": 560,
+   "y": 640,
+   "level": "zone_5.json",
+   "inside": "Ennemis : petits gloops · la relique de la poche",
+   "event": "",
+   "secret": true,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 0.7
+  },
+  {
+   "id": 6,
+   "name": "Foie noir",
+   "sub": "glande sud · levier ⇄",
+   "x": 790,
+   "y": 200,
+   "level": "zone_6.json",
+   "inside": "Ennemis : tisseuses, feux follets · glande sud (un pouvoir de tir)",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.0
+  },
+  {
+   "id": 7,
+   "name": "Gosier de Voidworm",
+   "sub": "s'ouvre : 2 glandes",
+   "x": 790,
+   "y": 520,
+   "level": "zone_7.json",
+   "inside": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde du gosier (arène en trois vagues)",
+   "event": "Reflux d'acide toutes les 75 s dans les galeries basses (étages sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 14.4
+  },
+  {
+   "id": 8,
+   "name": "Antre de Voidworm",
+   "sub": "GIGABOSS · prochaine version",
+   "x": 1000,
+   "y": 360,
+   "level": "zone_8.json",
+   "inside": "Le gigaboss Voidworm attend derrière sa porte scellée",
+   "event": "",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1,
+   "minutes": 0
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 5,
+   "lock": "",
+   "secret": true
+  },
+  {
+   "a": 2,
+   "b": 6,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 6,
+   "lock": "shortcut",
+   "secret": false
+  },
+  {
+   "a": 6,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 7,
+   "lock": "link:torse_plaques",
+   "secret": false
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "lock": "objective:abd_gosier",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "abd_diaphragme",
+   "index": 0,
+   "zone": 1,
+   "label": "Reprendre le diaphragme : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "abd_glande_nord",
+   "index": 1,
+   "zone": 2,
+   "label": "Crever la glande nord (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "abd_nid",
+   "index": 2,
+   "zone": 3,
+   "label": "Détruire le nid des parasites : vaincre ses gardes",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "abd_valve_haute",
+   "index": 3,
+   "zone": 4,
+   "label": "Fermer la valve haute (un groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "valves"
+  },
+  {
+   "id": "abd_valve_basse",
+   "index": 4,
+   "zone": 4,
+   "label": "Fermer la valve basse (un autre groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "valves"
+  },
+  {
+   "id": "abd_relique",
+   "index": 5,
+   "zone": 5,
+   "label": "Facultatif : emporter la relique de la poche",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "abd_glande_sud",
+   "index": 6,
+   "zone": 6,
+   "label": "Crever la glande sud (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "abd_levier",
+   "index": 7,
+   "zone": 6,
+   "label": "Facultatif : ouvrir le raccourci vers l'Intestin (levier)",
+   "optional": true,
+   "role": "shortcut",
+   "pair": ""
+  },
+  {
+   "id": "abd_gosier",
+   "index": 8,
+   "zone": 7,
+   "label": "Forcer le gosier : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  }
+ ]
+}

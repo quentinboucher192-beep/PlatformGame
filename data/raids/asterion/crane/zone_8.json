@@ -1,0 +1,1159 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_cr_8",
+ "name": "Asterion · Crâne · Antre de Skullmaw",
+ "description": "L'antre de Skullmaw, au cœur du crâne. Sa porte est scellée : le combat arrive dans la prochaine version.",
+ "planet": "confins",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyrrhax_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  3968,
+  1152
+ ],
+ "ambientLight": "#8a6a8e",
+ "backgroundColor": "#0c0610",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true,
+   "tint": "#9a7ab0"
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ],
+   "tint": "#7a5a8a"
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ],
+   "tint": "#6a4a70"
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#b04a6a",
+   "tint": "#c07a9a"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ],
+   "tint": "#584058"
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ff9ad0c0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    992.0,
+    256.0,
+    160.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    968.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Voûte crânienne",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    952.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    928.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    970.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    992.0,
+    448.0,
+    160.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    340.0,
+    968.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Skullmaw — prochaine version. La porte de l'antre restera scellée jusque-là.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o8",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    704.0,
+    800.0,
+    16.0,
+    192.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o9",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    96.0,
+    32.0,
+    704.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    992.0,
+    3264.0,
+    160.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o11",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    64.0,
+    3200.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    64.0,
+    32.0,
+    928.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2112.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2944.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3360.0,
+    896.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1056.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1472.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1888.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2304.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2720.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3136.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o26",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3552.0,
+    800.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o27",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o28",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o29",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o30",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2112.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o31",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o32",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2944.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o33",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3360.0,
+    704.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o34",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1056.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o35",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1472.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o36",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1888.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o37",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2304.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o38",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2720.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o39",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3136.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3552.0,
+    608.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o41",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o42",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o43",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o44",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2112.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o45",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2528.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o46",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2944.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o47",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3360.0,
+    512.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o48",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1792.0,
+    928.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o49",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2864.0,
+    928.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o50",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    888.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o51",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1368.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o52",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1848.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o53",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2328.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o54",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2808.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o55",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3288.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o56",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3768.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o57",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    276.0,
+    944.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o58",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    644.0,
+    944.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ruin_pillar_broken",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o59",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    664.0,
+    888.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 160,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o60",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    480.0,
+    736.0,
+    224.0,
+    256.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o61",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o62",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o63",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o64",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3360.0,
+    64.0,
+    608.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_crane",
+   "zone": 8,
+   "spawns": {
+    "7": [
+     [
+      144,
+      992
+     ]
+    ],
+    "start": [
+     [
+      144,
+      992
+     ],
+     [
+      192,
+      992
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p8_7",
+     "to": 7,
+     "rect": [
+      16,
+      928,
+      64,
+      64
+     ],
+     "lock": "objective:crane_voute",
+     "door": ""
+    }
+   ],
+   "objectives": [],
+   "magma": null,
+   "sealed": {
+    "door": "o8",
+    "label": "Skullmaw — prochaine version"
+   },
+   "arena": {
+    "rect": [
+     736,
+     96,
+     3200,
+     896
+    ],
+    "floor": 992,
+    "door": "o8",
+    "entry": [
+     832,
+     992
+    ],
+    "players": 8
+   }
+  }
+ },
+ "killY": 1136,
+ "maxPowers": 4
+}
