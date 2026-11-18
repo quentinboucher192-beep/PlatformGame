@@ -1,6 +1,6 @@
 #pragma once
 // The pieces of a boss's sheet shared by Statistiques des boss › Fiche (2.37, 2.60) and the raid
-// sheets (2.72, CLANS › RAIDS › Fiches, ui/screens/RaidSheetsScene):
+// sheets (2.73, CLANS › RAIDS › Fiches, ui/screens/RaidSheetsScene):
 //
 // * the difficulty bar: 1 to 10 stars, the number, where it comes from (when it fits);
 // * the list of the attacks, each folded or unfolded (a click, Entrée or A; « Tout déplier »,

@@ -75,7 +75,7 @@ public:
         const Rect left{m, ui.s(24), aside.x - ui.s(18) - m, H - ui.s(48) - ui.s(30)};
         const float bw = textW(ui, "Retour", 16, FontFace::Bold) + ui.s(40);
         if (ui.button("back", {left.x, left.y, bw, ui.s(44)}, "Retour")) back = true;
-        // 2.72: the sheets of Asterion and its gigaboss (the game's own data: offline too).
+        // 2.73: the sheets of Asterion and its gigaboss (the game's own data: offline too).
         const float sw = textW(ui, "Fiches", 16, FontFace::Bold) + ui.s(40);
         const Rect sheets{left.x + bw + ui.s(10), left.y, sw, ui.s(44)};
         if (ui.button("sheets", sheets, "Fiches")) g_.app.pushScene(makeRaidSheets(g_));

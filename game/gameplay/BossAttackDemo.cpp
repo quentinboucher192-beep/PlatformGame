@@ -19,7 +19,7 @@ namespace {
 
 constexpr float kDt = 1.0f / 120.0f;
 
-/// The size of the neutral arena for `d`: the enemy editor's test arena (960 × 400); 2.72, taller
+/// The size of the neutral arena for `d`: the enemy editor's test arena (960 × 400); 2.73, taller
 /// and wider for a giant (a gigaboss of the raids, up to 420 px high, shown on the raid sheets): its
 /// whole body above the floor, room around it for Nova.
 Vec2 neutralArenaSize(const EnemyDefinition& d) {

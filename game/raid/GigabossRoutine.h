@@ -137,7 +137,7 @@ protected:
     /// The seats in play, alive, not reappearing, in order (at most 8).
     static std::vector<int> playing(GameWorld& w);
     /// Fewer players, more time (two must still hurry, one can do it): × 2 alone, × 1.35 at two.
-    static float slack(int inPlay) { return tunables::slack(inPlay); }  // 2.72: GigabossTunables.h
+    static float slack(int inPlay) { return tunables::slack(inPlay); }  // 2.73: GigabossTunables.h
     /// A deterministic number in [0, 1) from a seed (no random generator of the world is used).
     static float noise(uint32_t seed);
     /// A blow of the gigaboss on the players in play inside `area` (its name for the statistics).

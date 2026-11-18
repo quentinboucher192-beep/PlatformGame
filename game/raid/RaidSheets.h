@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.72: the sheets of Asterion and of its seven gigaboss (CLANS › RAIDS › « Fiches », the sheet of an
+// 2.73: the sheets of Asterion and of its seven gigaboss (CLANS › RAIDS › « Fiches », the sheet of an
 // event, the lair of each branch map: ui/screens/RaidSheetsScene). Shown to every player, whether
 // they met them or not (nothing is hidden: no lock, no « ??? »).
 //

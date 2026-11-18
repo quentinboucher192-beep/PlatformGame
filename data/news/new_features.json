@@ -2570,63 +2570,63 @@
   },
   {
    "id": "raids.sheets",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "clans.tab.raids"
    ]
   },
   {
    "id": "raids.sheet.asterion",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.skullmaw",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.dreadfang",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.pyroclast",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.heartbreaker",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.voidworm",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.graviton",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]
   },
   {
    "id": "raids.sheet.titanus",
-   "version": "2.72.0",
+   "version": "2.73.0",
    "parents": [
     "raids.sheets"
    ]

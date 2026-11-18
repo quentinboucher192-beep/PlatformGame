@@ -35,7 +35,7 @@ public:
     /// titan's map places its badges from them. False when the part was not drawn.
     Rect bounds() const { return figure_; }
     bool anchorOf(const std::string& part, Vec2& out) const;
-    /// 2.72: what the tooltip of an openable part says activating it does (the raid sheets open the
+    /// 2.73: what the tooltip of an openable part says activating it does (the raid sheets open the
     /// sheet of its gigaboss; by default, the map of its branch).
     void setOpenHint(std::string hint) { openHint_ = std::move(hint); }
 

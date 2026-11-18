@@ -1,5 +1,5 @@
 #pragma once
-// 2.72: the animated example of a gigaboss's mechanism on its raid sheet (ui/screens/
+// 2.73: the animated example of a gigaboss's mechanism on its raid sheet (ui/screens/
 // RaidSheetsScene): its engine attacks are played by the game itself (ui/screens/BossAttackPreview);
 // what its routine does around them (marks under every player, gazes, waves, plates held together,
 // sectors turning over, the acid, the eye-light) is drawn here, with the gigaboss's own sprite and

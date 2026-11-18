@@ -1,4 +1,4 @@
-// 2.72: the sheets of Asterion and of its seven gigaboss (ui/screens/RaidSheetsScene.h).
+// 2.73: the sheets of Asterion and of its seven gigaboss (ui/screens/RaidSheetsScene.h).
 
 #include "ui/screens/RaidSheetsScene.h"
 
@@ -239,7 +239,7 @@ private:
             st.selected = static_cast<int>(i) == selected_;
             if (ui.button(rowId, row, "", st)) select(static_cast<int>(i));
             if (ui.focused(rowId) && static_cast<int>(i) != selected_) select(static_cast<int>(i));
-            ui.newBadge(rowId, row, "raids.sheet." + ids_[i], true, true);  // « NOUVEAU » (2.72)
+            ui.newBadge(rowId, row, "raids.sheet." + ids_[i], true, true);  // « NOUVEAU » (2.73)
             if (row.bottom() < L.list.y || row.y > L.list.bottom()) continue;
             // Its portrait: the gigaboss (its first look), the titan's heart for Asterion.
             const Rect p = moved(row0.portrait);

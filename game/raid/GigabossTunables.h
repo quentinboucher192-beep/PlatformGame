@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.72: the few numbers of the gigaboss routines that are not in their lair's data (zone 8,
+// 2.73: the few numbers of the gigaboss routines that are not in their lair's data (zone 8,
 // metadata.raid.gigaboss), named once so the routines (game/raid/*Routine.cpp) and the raid sheets
 // (game/raid/RaidSheets, « code: », « slack: », « plateslack: » values of
 // data/raids/asterion_sheets.json) read the same values. Changing one changes the fights: it is a

@@ -1,4 +1,4 @@
-// 2.72: the sheets of Asterion and of its seven gigaboss (game/raid/RaidSheets, ui/screens/
+// 2.73: the sheets of Asterion and of its seven gigaboss (game/raid/RaidSheets, ui/screens/
 // RaidSheetsScene): every gigaboss has its sheet, built from the game's real data (its definition,
 // its lair's rules — the numbers its routine reads —, its branch, its part of the titan, its badge),
 // with phases, attacks and mechanisms; the values of the sheets' words resolve in those rules; the
@@ -391,7 +391,7 @@ TEST_CASE("raid sheets: the fixed panels hold their texts at 1280 x 720 and 1920
 
 TEST_CASE("raid sheets: a gigaboss's attack examples, played by the engine with its whole body in view") {
     // Its sheet plays each attack of its definition (a neutral arena: the raids' lairs are not
-    // levels of the campaign), grown for a giant (2.72): the attack of its 2nd phase begins, the
+    // levels of the campaign), grown for a giant (2.73): the attack of its 2nd phase begins, the
     // gigaboss above the floor and under the arena's top.
     auto content = std::make_shared<ContentDatabase>();
     content->reload();

@@ -1,5 +1,5 @@
 #pragma once
-// 2.72: CLANS › RAIDS › « Fiches » (also from the sheet of an event and from the lair of each branch
+// 2.73: CLANS › RAIDS › « Fiches » (also from the sheet of an event and from the lair of each branch
 // map): the sheet of Asterion and of each of its seven gigaboss, shown to every player, whether they
 // met them or not (game/raid/RaidSheets). Pushed over the current screen; « ‹ Retour » / Échap / B
 // pops it. Keyboard, gamepad and mouse: the list of the sheets, the titan's parts, the tabs, the

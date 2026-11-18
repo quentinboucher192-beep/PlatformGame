@@ -54,7 +54,7 @@
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
 //                           unfolded with its example, or every attack unfolded)
 //   --raid-sheets [<sheet>[:<tab>][:attaque=<id>]]
-//                           2.72: the raid sheets (asterion, skullmaw…) over the main menu, on
+//                           2.73: the raid sheets (asterion, skullmaw…) over the main menu, on
 //                           that tab (0, 1, 2), that attack (or mechanism « m:<id> ») unfolded
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
 //                           open the settings of a boss training (and enter its arena);

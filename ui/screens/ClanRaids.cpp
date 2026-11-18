@@ -211,7 +211,7 @@ void ClanRaids::draw(const Rect& body) {
     if (!loaded_) {
         fit(ui, error_.empty() ? "Chargement des raids…" : error_, {left.x + ui.s(8), left.y + ui.s(24)}, 17, left.w - ui.s(16),
             error_.empty() ? ui.theme().textDim : ui.theme().danger);
-        // 2.72: the sheets of Asterion and its gigaboss are the game's own data: offline too.
+        // 2.73: the sheets of Asterion and its gigaboss are the game's own data: offline too.
         sheetsButton("sheets", {left.x + ui.s(8), left.y + ui.s(52), std::min(left.w - ui.s(16), sheetsButtonWidth()), ui.s(44)});
     } else {
         const float heroH = std::min(ui.s(330), std::max(ui.s(250), left.h * 0.48f));
@@ -241,7 +241,7 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     asterionfilm::replayButton(g_, "hero/film",
                                titan ? Rect{r.right() - ui.s(16) - (titanW + replayW) * 0.5f, r.bottom() - ui.s(16) - replayH, replayW, replayH}
                                      : Rect{r.right() - ui.s(26) - replayW, r.bottom() - ui.s(46) - replayH * 0.5f, replayW, replayH});
-    // 2.72: « Fiches d'Asterion » (the titan and its seven gigaboss) above the titan, else at the top right.
+    // 2.73: « Fiches d'Asterion » (the titan and its seven gigaboss) above the titan, else at the top right.
     const float sheetsH = ui.s(36), sheetsW = std::min(sheetsButtonWidth(), titan ? titanW : r.w * 0.3f);
     sheetsButton("hero/sheets", titan ? Rect{r.right() - ui.s(16) - (titanW + sheetsW) * 0.5f, r.y + ui.s(16), sheetsW, sheetsH}
                                       : Rect{r.right() - ui.s(26) - sheetsW, r.y + ui.s(22), sheetsW, sheetsH});
@@ -359,7 +359,7 @@ void ClanRaids::sheetsButton(const std::string& id, const Rect& r) {
     const std::string label = "Fiches d'Asterion";
     st.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 15, r.w - ui.s(16), 0.7f), 11.5f / ui.s(1.0f));
     if (ui.button(id, r, label, st)) g_.app.pushScene(makeRaidSheets(g_));
-    ui.newBadge(id, r, "raids.sheets", true, true);  // « NOUVEAU » (2.72)
+    ui.newBadge(id, r, "raids.sheets", true, true);  // « NOUVEAU » (2.73)
 }
 
 void ClanRaids::drawClanRaids(const Rect& r, const raids::TabLayout& lay) {

@@ -260,7 +260,7 @@ atteindre la lumière de son cœur, avant qu'il ne s'affole.
 <p align="center"><img src="docs/media/gigaboss_heartbreaker.gif" width="640" alt="Heartbreaker dans ses trois phases et l'onde de ses battements"></p>
 <p align="center"><sub>Les trois phases de chaque Gigaboss avec les sprites du jeu (générés par <code>tools/assetgen</code>).</sub></p>
 
-**Les fiches d'Asterion et de ses sept Gigaboss** (2.72) s'ouvrent pour tous, même sans les avoir jamais affrontés et
+**Les fiches d'Asterion et de ses sept Gigaboss** (2.73) s'ouvrent pour tous, même sans les avoir jamais affrontés et
 même hors ligne : CLANS › RAIDS › « Fiches d'Asterion », la fiche d'un événement › « Fiches », et l'antre de chaque
 carte de branche › « Fiche de … ». La fiche d'**Asterion** montre le titan partie par partie (une partie activée ouvre
 la fiche de son Gigaboss), son histoire, la structure du raid, ce que la destruction de chaque partie lui retire, son
@@ -270,7 +270,7 @@ par le moteur du jeu, comme les fiches des boss ; ses mécanismes dessinés avec
 l'éviter, ce que le groupe doit faire **ensemble** (combien de joueurs, combien de temps), ses points faibles, les
 contributions qui comptent, sa branche, son antre et son badge. Les nombres viennent des règles que lisent les combats
 eux-mêmes (`data/raids/asterion_sheets.json` ne contient que les mots) : détails dans
-[docs/RAIDS.md §15](docs/RAIDS.md#15-fiches-dasterion-et-de-ses-gigaboss-272).
+[docs/RAIDS.md §16](docs/RAIDS.md#16-fiches-dasterion-et-de-ses-gigaboss-273).
 ### Récompenses et événements mondiaux
 
 * **Contributions** calculées par la simulation pour chaque joueur — dégâts, dégâts évités, soutien,
@@ -286,7 +286,19 @@ eux-mêmes (`data/raids/asterion_sheets.json` ne contient que les mots) : détai
   À la clé : la combinaison « Écorce d'Asterion », le titre de clan « Dévoreurs dévorés » pour le top 10, et
   des sessions de rattrapage pour les absents.
 
-Tout le détail : [docs/RAIDS.md](docs/RAIDS.md).
+### Fiabilité, charge et anti-triche
+
+* **Une liaison qui tombe ne vous sort pas du raid** : le jeu se reconnecte tout seul pendant les 60 s où le relais
+  garde votre place (carte « LIAISON PERDUE », puis rattrapage hors du fil principal) ; une instance attend son groupe
+  60 s si tout le monde décroche, et survit au redémarrage de son relais (partie enregistrée chaque seconde).
+* **Testé sous charge** : quatre clans de 50 joueurs qui s'inscrivent, se placent, valident leurs objectifs et récupèrent
+  leurs récompenses au même instant, un événement mondial de 2 500 joueurs agrégé et clos ; rien n'est compté, accordé
+  ni annoncé deux fois, et chaque requête fait le même travail avec 2 ou 30 groupes.
+* **Contre la triche** : le joueur est celui de la session, seuls les joueurs en jeu votent, les faits impossibles sont
+  refusés et journalisés, rien n'entre après la clôture ; huit jeux simulés sous latence, gigue et pertes reçoivent les
+  mêmes trames, et un pas de simulation à 8 dans les zones les plus lourdes tient dans le budget de 120 Hz.
+
+Tout le détail : [docs/RAIDS.md](docs/RAIDS.md) (§15 « Fiabilité, charge et anti-triche »).
 
 ## Cosmic Online
 
@@ -551,7 +563,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
-* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux
+* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 Chaque page renvoie à celle d'où l'on vient (« ← Retour », en tête et en fin) ; `python3 tools/docs/check_links.py`
@@ -567,7 +579,16 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
-**Nouveau dans la version 2.72.0** :
+**Nouveau dans la version 2.73.0** :
+* **Raids de clan, phase 7 : fiabilité, charge et anti-triche** (docs/RAIDS.md §15, migration **0149**). Relais d'une
+  instance (`CoopRoom` en mode raid) : plus de trames de veille données à personne quand le dernier joueur part (l'objet
+  allait jusqu'à la limite de 2 h et épuisait sa mémoire), la partie attend ses joueurs 60 s, une seconde connexion du
+  même compte reprend sa place, la partie est stockée chaque seconde et revient après un redémarrage de l'objet. Jeu :
+  reconnexion automatique pendant 60 s (`raid::Reconnect`, carte « LIAISON PERDUE »). Consensus : seuls les joueurs en
+  jeu votent, un rapport minoritaire croisé avec l'acceptation est refusé et journalisé une fois, rien n'est accepté
+  après le gel ou pendant une suspension, le pas de zone le plus récent gagne ; résultat officiel protégé des `DELETE` et
+  `INSERT OR REPLACE`. Charge : réveil des relais après la réponse, index manquants ajoutés. Nouveaux tests :
+  `raidRelay`, `raidLoad`, `raidCheat` (serveur) et `test_raid_net` (réseau simulé à 8, performance).
 * **Raids de clan : les fiches d'Asterion et de ses sept Gigaboss** (`ui/screens/RaidSheetsScene`, modèle
   `game/raid/RaidSheets`, mots dans `data/raids/asterion_sheets.json`), visibles même sans les avoir rencontrés, depuis
   CLANS › RAIDS, la fiche d'un événement et l'antre de chaque carte de branche (pastilles « NOUVEAU ») : le titan partie
@@ -579,6 +600,8 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   dans les règles de son antre (celles des routines) ou dans `game/raid/GigabossTunables.h` (constantes des routines
   nommées une fois, sans changement de règle) ; la liste d'attaques dépliables est partagée avec Statistiques des boss ›
   Fiche (`ui/widgets/BossSheetWidgets`). Tests : `tests/test_raid_sheets.cpp`.
+
+**Nouveau dans la version 2.72.0** :
 * **Attaque dirigée** : Haut + Attaque frappe au-dessus de Nova (au sol ou en l'air), Bas + Attaque frappe en dessous, en
   l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe). Mêmes
   dégâts, recul et objets cassables que le coup vers l'avant ; un coup vers le bas en l'air rebondit toujours sur

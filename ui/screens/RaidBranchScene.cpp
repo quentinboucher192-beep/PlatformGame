@@ -326,7 +326,7 @@ public:
             if (ui.button("help", {x + jw + gap, by, w - jw - gap, bh}, t, hs)) join(jstr(help, "id"));
         }
         float bottom = by - ui.s(10);
-        // 2.72: the lair: the sheet of its gigaboss (visible whether it was met or not).
+        // 2.73: the lair: the sheet of its gigaboss (visible whether it was met or not).
         if (jget<bool>(z, "boss", false)) {
             const std::string boss = jstr(data_.value("branch", Json::object()), "gigaboss");
             if (const std::string sheet = gigabossSheet(); !sheet.empty()) {
@@ -439,7 +439,7 @@ public:
 
     std::string branchZoneName(int id) const { return jstr(zoneJson(id), "name"); }
 
-    /// 2.72: the sheet of this branch's gigaboss (game/raid/RaidSheets), "" when there is none.
+    /// 2.73: the sheet of this branch's gigaboss (game/raid/RaidSheets), "" when there is none.
     std::string gigabossSheet() {
         if (!sheetRead_) {
             sheetRead_ = true;
@@ -485,7 +485,7 @@ public:
     float timer_ = 0.0f;
     std::string error_, status_;
     bool sheetRead_ = false;
-    std::string sheet_;  // 2.72: its gigaboss's sheet
+    std::string sheet_;  // 2.73: its gigaboss's sheet
 };
 
 }  // namespace

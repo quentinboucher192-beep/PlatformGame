@@ -859,7 +859,7 @@ private:
     // the whole visit, and the one example played.
     std::string entriesOf_;
     std::vector<AttackListItem> items_;
-    AttackList attacks_;  // 2.72: ui/widgets/BossSheetWidgets (shared with the raid sheets)
+    AttackList attacks_;  // 2.73: ui/widgets/BossSheetWidgets (shared with the raid sheets)
 };
 
 }  // namespace

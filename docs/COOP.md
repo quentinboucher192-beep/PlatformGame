@@ -327,8 +327,11 @@ Le lecteur de replays rejoue l'équipe et suit **un joueur au choix ou toute l'�
   joueur), hors de cette étape.
 * Le cadre de la règle « hors de l'écran » est celui d'un écran 16:9 ; sur un écran plus étroit,
   un joueur peut sortir de l'image affichée un peu avant que la règle ne le compte hors du cadre.
-* Le relais en ligne garde la partie en mémoire : si Cloudflare déplace l'objet durable pendant
-  une partie (rare), la partie s'arrête pour toute l'équipe.
+* Le relais en ligne d'une équipe de 2 ou 3 garde la partie en mémoire : si Cloudflare déplace
+  l'objet durable pendant une partie (rare), la partie s'arrête pour toute l'équipe. (2.74 : celui
+  d'une instance de raid la stocke et la retrouve, voir § 10.) Depuis 2.74, quand plus personne n'est
+  en jeu, les pas s'arrêtent : le relais (en ligne comme en réseau local) ne donne plus de trames de
+  veille à personne jusqu'à la limite de 2 h.
 
 ## 9. Niveaux EXTRÊME de la communauté (2.63.5)
 
@@ -372,6 +375,12 @@ puis `REJOIN`), un siège absent depuis 60 s est libéré, et `RAID_STATE` (18) 
 branche à un pas. Le monde a un **mode raid** (`GameWorld::setRaidMode`) : sièges libres
 (`Presence::Vacant`), pas de cadre d'équipe (chacun sa caméra), et `carryOf` / `restoreMember` pour
 passer d'une zone à l'autre.
+
+2.74 (phase 7 des raids, docs/RAIDS.md §15) : en mode raid, le relais **stocke sa partie** chaque seconde
+(historique par parts de 4 s, sièges, états de la branche) et la retrouve après un redémarrage de l'objet
+durable ; il garde la partie 60 s quand tous les liens tombent (sièges libérés à l'horloge quand personne ne
+joue) ; une seconde connexion du même compte reprend sa place ; le jeu se reconnecte seul pendant ces 60 s
+(`NetCoopLink::connectionLost`, `raid::Reconnect`). La coopération à 2 ou 3 ne change pas.
 
 ---
 
