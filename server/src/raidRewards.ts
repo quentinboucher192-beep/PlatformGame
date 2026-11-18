@@ -16,6 +16,7 @@ import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { raidState } from "./raids";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
+import { WORLD_REWARDS } from "./raidWorldRewards";
 
 /** One player's contributions (the numbers the games computed, tenths of health for the damage). */
 export interface Contribution {
@@ -161,6 +162,8 @@ export const RAID_REWARDS: Record<string, RaidReward> = {
         why: "Présent à la chute de Heartbreaker (combat validé par votre instance)",
         rank: "gigaboss",
     },
+    // 2.69 (phase 5): the exclusive rewards of the world events and their catch-up sessions (raidWorld.ts).
+    ...(WORLD_REWARDS as Record<string, RaidReward>),
 };
 /** 2.69 (phase 4B): the badge of each gigaboss (raid_gigaboss_fights.boss), present at its fall. */
 export const GIGABOSS_BADGES: Record<string, string> = {

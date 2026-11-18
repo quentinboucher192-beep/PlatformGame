@@ -717,6 +717,12 @@
    ]
   },
   {
+   "fr": "[{0}] · pas encore classé",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "[{0}] · {1} joueur",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
@@ -738,6 +744,18 @@
    "fr": "[{0}] · {1} joueurs · gigaboss ✓",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} mondial · {2} pts",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} pour l'instant · {2} pts",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -889,6 +907,18 @@
    ]
   },
   {
+   "fr": "a ouvert une session de rattrapage de {0} ({1} jour)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a ouvert une session de rattrapage de {0} ({1} jours)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a publié la révision {0} de l'entité « {1} »",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -938,6 +968,18 @@
   },
   {
    "fr": "a remplacé les données de {0} par celles de {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a repris {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a repris {0} (fin repoussée de {1} min)",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -998,6 +1040,18 @@
   },
   {
    "fr": "a tenté de {0} : refusé, le rôle avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a validé la carte de {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a vérifié la carte de {0} : refusée",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1607,6 +1661,12 @@
   },
   {
    "fr": "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION › Raids : onglet « En direct » avec de vrais chiffres (joueurs connectés, instances avec leur zone, leurs joueurs et la latence mesurée par les jeux, gigaboss vaincus, reconnexions, rapports refusés) et le journal des actions et des anomalies ; « Suspendre » / « Reprendre » l'événement (le temps suspendu lui est rendu) ; « Valider la carte » (vérifiée par le serveur, exigée pour publier) ; « Session de rattrapage » ; réglage de l'arrivée en retard. Chaque action va au Journal.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -3255,6 +3315,42 @@
    ]
   },
   {
+   "fr": "Arrivée en retard",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : chaque événement mondial dit jusqu'à quand un joueur peut encore entrer en jeu après le début ; les joueurs déjà placés reviennent toujours (reconnexion).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : jusqu'à la fin",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : jusqu'à {0} min après le début",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : non",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard fermée {0} min après le début : seuls les joueurs déjà placés reviennent en jeu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "arrivée hors de la sortie du niveau",
    "where": [
     "server/src/replay.ts"
@@ -3409,6 +3505,13 @@
    ]
   },
   {
+   "fr": "Asterion a survécu",
+   "where": [
+    "server/src/notifications.ts",
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Asterion en vrai pixel art : dans CLANS › RAIDS et la fiche d'un événement, le titan est désormais un sprite détaillé, partie par partie (crâne Skullmaw, bras Dreadfang et Pyroclast, torse Heartbreaker, abdomen Voidworm, jambes Graviton et Titanus, cœur cosmique, aura) qui respire, dont le cœur bat et autour duquel dérivent des particules. Survolez une partie à la souris ou allez-y au clavier ou à la manette : elle s'éclaire et son infobulle donne son nom, son gigaboss, son état (sous attaque, affaiblie, détruite ou non découverte) et l'effet de sa destruction sur Asterion.",
    "where": [
     "data/news/changelog.json"
@@ -3418,6 +3521,19 @@
    "fr": "Asterion est aveuglé : ses attaques perdent en précision.",
    "where": [
     "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé",
+   "where": [
+    "server/src/notifications.ts",
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Asterion résiste encore",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -4479,6 +4595,12 @@
    ]
   },
   {
+   "fr": "Aucun clan inscrit à cet événement.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun clan ne correspond.",
    "where": [
     "ui/screens/AdminClans.cpp",
@@ -4654,6 +4776,12 @@
    ]
   },
   {
+   "fr": "Aucun groupe n'est encore entré en jeu.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun groupe pour l'instant : le premier joueur qui rejoint une branche en ouvre un.",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
@@ -4668,7 +4796,14 @@
   {
    "fr": "Aucun joueur classé : aucun tableau de contributions n'a encore été validé.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun joueur de votre clan n'a encore de résultat validé.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -5270,6 +5405,12 @@
    ]
   },
   {
+   "fr": "Aucune instance : elles s'ouvrent quand les joueurs entrent en jeu.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Aucune invitation",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -5410,7 +5551,8 @@
   {
    "fr": "Aucune récompense à récupérer pour cet événement.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -7183,7 +7325,8 @@
    "fr": "Branche",
    "where": [
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/AdminRaids.cpp"
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -7683,6 +7826,12 @@
    ]
   },
   {
+   "fr": "C'est déjà une session de rattrapage : ouvrez-la depuis l'événement officiel.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "C'est fait.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
@@ -7690,7 +7839,7 @@
    ]
   },
   {
-   "fr": "C'est l'heure : {0} commence (le combat arrive dans une prochaine version)",
+   "fr": "C'est l'heure : {0} commence, rejoignez votre groupe",
    "where": [
     "server/src/notifications.ts"
    ]
@@ -8291,6 +8440,48 @@
    "fr": "Carte globale du titan · cliquez une branche pour voir ses 8 zones",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carte jamais validée pour cet événement : la publication la vérifie d'office.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte refusée : {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte refusée · {0} problème(s) : {1}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Carte validée : {0} zones, {1} antres de gigaboss, {2} combat(s) prêt(s) (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte validée par {0} : {1} zones, {2} antres, {3} combat(s) prêt(s)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte validée par {0} : {1} zones, {2} antres, {3} combat(s) prêt(s) · les catalogues ont changé depuis : validez de nouveau",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte validée · {0}",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -9454,9 +9645,21 @@
    ]
   },
   {
+   "fr": "Cet événement est annulé.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Cet événement est déjà publié.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Cet événement est terminé.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -9989,6 +10192,12 @@
    ]
   },
   {
+   "fr": "Chaque événement mondial terminé garde son résultat officiel, figé par le serveur : ouvrez-le pour son classement.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Charge",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -10127,6 +10336,12 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement du classement mondial…",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -10629,6 +10844,12 @@
    ]
   },
   {
+   "fr": "Choisissez un événement dans l'onglet « Événements » pour suivre son déroulement en direct.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un événement pour voir ses inscriptions.",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -10962,7 +11183,8 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -11012,7 +11234,8 @@
    "fr": "Clans",
    "where": [
     "ui/screens/AdminScene.cpp",
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -11161,6 +11384,12 @@
    ]
   },
   {
+   "fr": "Classement en cours · résultats validés seulement",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Classement en ligne",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -11200,6 +11429,18 @@
    "fr": "Classement local",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement mondial",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement mondial · Asterion",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -11988,6 +12229,18 @@
    "fr": "Combinaison « {0} » restaurée : de nouveau proposée en récompense.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison « Écorce d'Asterion »",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
+   "fr": "Combinaison « Écorce d'Asterion » argentée",
+   "where": [
+    "server/src/raidWorldRewards.ts"
    ]
   },
   {
@@ -13115,7 +13368,8 @@
   {
    "fr": "Contrib.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -17463,6 +17717,12 @@
    ]
   },
   {
+   "fr": "Durée de la session",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Durée de la spirale (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -17668,6 +17928,12 @@
    "fr": "Début dans",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Début de l'événement · {0} clan(s) · {1} joueur(s) inscrit(s)",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -18691,7 +18957,8 @@
   {
    "fr": "Déjà récupérées.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -18966,6 +19233,12 @@
    ]
   },
   {
+   "fr": "Désynchronisation, triche signalée…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Désynchronisé",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -19059,6 +19332,13 @@
    "fr": "détruite",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dévoreurs dévorés",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "server/src/raidWorldRewards.ts"
    ]
   },
   {
@@ -19469,7 +19749,8 @@
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "ui/screens/RaidEventScene.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -19600,7 +19881,14 @@
   {
    "fr": "EN DIRECT",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "En direct",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -19619,6 +19907,12 @@
    "fr": "En direct · révision {0} · opération {1} · lecture seule (testeur)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "EN DIRECT · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -20944,6 +21238,18 @@
    ]
   },
   {
+   "fr": "et {0} objectif",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} objectifs",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveau ; records gardés : {2} niveau.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -21026,6 +21332,24 @@
    "fr": "Exclusif aux raids de clan : Asterion (CLANS › RAIDS)",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Exclusive à l'événement mondial : 5 minutes de combat validées pendant l'événement",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
+   "fr": "Exclusive à l'événement mondial Asterion : écorce de basalte du titan, visière de magma, écharpe d'aurore violette.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Exclusives et accordées une seule fois par le serveur, à partir des résultats validés. Les sessions de rattrapage donnent des versions argentées et ne changent pas le résultat officiel.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -22007,6 +22331,12 @@
    "fr": "FIN DE L'INSTANCE",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fin de l'événement · {0} · progression mondiale {1} % · {2} / {3} gigaboss · {4} clans classés · résultat officiel figé",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -23346,7 +23676,8 @@
   {
    "fr": "Gigaboss",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -23354,6 +23685,7 @@
    "where": [
     "game/online/Raids.cpp",
     "game/raid/RaidBranch.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
@@ -23392,7 +23724,9 @@
   {
    "fr": "Gigaboss vaincus",
    "where": [
-    "game/online/Raids.cpp"
+    "game/online/Raids.cpp",
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -24331,7 +24665,8 @@
    "fr": "Groupe",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
-    "editors/level_editor/LevelEditorPanels.cpp"
+    "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -24490,6 +24825,12 @@
    "fr": "Grouper (Ctrl+G)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -25018,7 +25359,7 @@
    ]
   },
   {
-   "fr": "HISTORIQUE DU CLAN",
+   "fr": "HISTORIQUE DES RAIDS",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -26475,6 +26816,12 @@
    ]
   },
   {
+   "fr": "Individuel",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Indonésie",
    "where": [
     "data/online/countries.json",
@@ -26597,6 +26944,12 @@
    ]
   },
   {
+   "fr": "Inscrit · en jeu",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Inscrivez-vous au raid (fiche de l'événement) pour combattre.",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
@@ -26669,6 +27022,18 @@
    "fr": "Instance introuvable.",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "INSTANCES",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Instances",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -27459,7 +27824,8 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -27561,7 +27927,14 @@
   {
    "fr": "Joueurs",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs connectés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -27641,6 +28014,12 @@
    "fr": "Journal",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "JOURNAL (ACTIONS ADMIN ET ANOMALIES)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -27734,6 +28113,12 @@
    ]
   },
   {
+   "fr": "jusqu'à la fin",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "jusqu'à la place",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -27743,6 +28128,12 @@
    "fr": "jusqu'à {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "jusqu'à {0} min après le début",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -28385,9 +28776,39 @@
    ]
   },
   {
+   "fr": "L'événement est déjà suspendu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "L'événement est suspendu par les administrateurs : aucune entrée en jeu avant la reprise.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "l'événement mondial {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'événement n'est pas suspendu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "L'événement n'est plus suspendu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "L'événement officiel n'est pas terminé : le rattrapage vient après lui.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -28540,6 +28961,12 @@
    "fr": "La canopée secrète !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "La carte d'Asterion n'est pas valide : {0}",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -30486,12 +30913,6 @@
    ]
   },
   {
-   "fr": "Le combat arrive dans une prochaine version.",
-   "where": [
-    "game/online/Raids.cpp"
-   ]
-  },
-  {
    "fr": "Le combat de l'exemple s'est arrêté avant l'attaque.",
    "where": [
     "game/gameplay/BossAttackDemo.cpp"
@@ -32048,6 +32469,12 @@
    ]
   },
   {
+   "fr": "Le raid est terminé : le résultat officiel est figé dix minutes après la fin (derniers rapports).",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Le raid est terminé : ses résultats validés et vos récompenses.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -32710,6 +33137,12 @@
    ]
   },
   {
+   "fr": "Lecture des chiffres en direct…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Lecture des niveaux…",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -32835,6 +33268,12 @@
    ]
   },
   {
+   "fr": "Les administrateurs ont suspendu l'événement : rien ne compte jusqu'à la reprise.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Les ailes du boss lancent une lame de plumes à travers l'arène : basse, sautez par-dessus ; haute, restez au sol.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -32935,6 +33374,12 @@
    "fr": "Les cheminées ardentes : planez dans les courants, attention aux lasers.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Les chiffres du combat (joueurs en jeu, instances, gigaboss, reconnexions, rapports refusés, journal) sont dans l'onglet « En direct ».",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -33490,6 +33935,12 @@
    ]
   },
   {
+   "fr": "Les inscriptions sont closes : le raid a commencé.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Les inscriptions sont fermées pour l'instant.",
    "where": [
     "game/online/Raids.cpp"
@@ -33808,12 +34259,6 @@
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
-   ]
-  },
-  {
-   "fr": "Les résultats des combats arriveront avec eux.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -34250,6 +34695,12 @@
    "fr": "Lien symbolique refusé : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "lien {0} : bit {1} hors de 24 à 31",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -36658,7 +37109,8 @@
   {
    "fr": "Mon clan",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -38529,6 +38981,12 @@
    ]
   },
   {
+   "fr": "non (dès le début seulement)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "non classé",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -39009,6 +39467,12 @@
   },
   {
    "fr": "Nouveau réglage dans les paramètres en ligne : « Mes amis peuvent me regarder jouer » (activé par défaut). Le décocher, masquer sa présence ou bloquer un joueur arrête aussitôt toute diffusion ; rien de la partie n'est conservé par le serveur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Nouveau « Classement mondial » (fiche d'un événement mondial) : la progression mondiale (objectifs, zones, gigaboss vaincus), le classement de tous les clans, des groupes et des joueurs dans chaque catégorie (contribution, dégâts, dégâts évités, soutien, objectifs, temps, sauvetages, progression), et la page de votre clan. Ce qui attend encore la majorité de son instance est affiché à part, « en attente de validation », et ne compte jamais comme final.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -39560,6 +40024,12 @@
    ]
   },
   {
+   "fr": "Objectif « {0} » validé par {1} puis par {2} à {3} d'écart : compté une fois",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "OBJECTIFS",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -39569,7 +40039,14 @@
    "fr": "Objectifs",
    "where": [
     "game/online/Raids.cpp",
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectifs (en premier)",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -40639,6 +41116,12 @@
    ]
   },
   {
+   "fr": "Ouvrir la session",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Ouvrir le dossier",
    "where": [
     "ui/screens/AdminAssets.cpp",
@@ -40673,6 +41156,12 @@
    "fr": "Ouvrir un niveau…",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir une session de rattrapage ? Les joueurs absents découvrent le raid avec ses propres instances et gagnent des versions argentées ; le résultat officiel de l'événement ne change jamais. Tous les clans sont prévenus ; le Journal garde la trace.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -40796,7 +41285,8 @@
    "fr": "Page {0} / {1}",
    "where": [
     "ui/screens/PowerGuideScene.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -41302,7 +41792,8 @@
   {
    "fr": "Participants validés",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -41449,6 +41940,12 @@
    "fr": "pas assez de parties il y a 30 jours",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas d'arrivée en retard pour cet événement : seuls les joueurs entrés au début reviennent en jeu.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -42912,7 +43409,8 @@
    "where": [
     "game/raid/DreadfangRoutine.cpp",
     "game/raid/HeartbreakerRoutine.cpp",
-    "game/raid/SkullmawRoutine.cpp"
+    "game/raid/SkullmawRoutine.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -44320,7 +44818,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/AdminClans.cpp"
+    "ui/screens/AdminClans.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -45304,6 +45803,12 @@
    ]
   },
   {
+   "fr": "problème inconnu",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "prochain palier : {0} étoiles (encore {1})",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -45485,6 +45990,18 @@
    "fr": "PROGRESSION MIGRÉE",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Progression mondiale",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Progression mondiale {0} % · {1} / {2} objectifs · {3} / {4} gigaboss",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -47056,6 +47573,12 @@
    ]
   },
   {
+   "fr": "Raids de clan, phase 5 : les ÉVÉNEMENTS MONDIAUX. Tous les clans inscrits affrontent le même Asterion au même moment (heure de référence UTC, affichée à votre heure) : chaque groupe de 8 joue dans son instance, mais tout ce qu'il valide compte pour un seul titan, et pour son clan.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "RAIDS DU CLAN",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -47191,6 +47714,24 @@
    ]
   },
   {
+   "fr": "Rapport refusé ({0}) : [{1}]·{2}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Rapport refusé ({0}) : [{1}]·{2}, {3}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Rapports refusés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Rassemblez votre clan.",
    "where": [
     "data/raids/asterion_film.json"
@@ -47200,6 +47741,18 @@
    "fr": "Rattrapage de la partie en accéléré : {0} %",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "RATTRAPAGE · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Rattrapage · {0}",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -47645,6 +48198,12 @@
    "fr": "Recommencer la tentative",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Reconnexions",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -48273,6 +48832,12 @@
    ]
   },
   {
+   "fr": "Rejoignez le combat depuis la carte du titan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Rejoignez un clan pour participer aux raids et en organiser.",
    "where": [
     "game/online/Raids.cpp"
@@ -48284,6 +48849,12 @@
     "game/online/Raids.cpp",
     "server/src/raids.ts",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoignez un clan pour voir son classement.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -49129,6 +49700,12 @@
    ]
   },
   {
+   "fr": "Reprendre l'événement",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Reprendre la clavicule : vaincre sa garde",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -49822,6 +50399,12 @@
    ]
   },
   {
+   "fr": "Rien à signaler.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Rival amical",
    "where": [
     "data/achievements/achievements.json"
@@ -50477,7 +51060,8 @@
    "fr": "Récompense récupérée : elle est dans votre profil et le vestiaire.",
    "where": [
     "ui/screens/ClanRaids.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -50549,6 +51133,12 @@
    ]
   },
   {
+   "fr": "Récompenses exclusives et limitées à l'événement mondial : la combinaison « Écorce d'Asterion » (5 minutes de combat validées pendant l'événement) et le titre de clan « Dévoreurs dévorés » pour les clans du top 10 officiel. Accordées une seule fois par le serveur, à récupérer dans CLANS › RAIDS.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "récompenses invalides",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -50564,7 +51154,8 @@
    "fr": "Récompenses non récupérées : {0}",
    "where": [
     "ui/screens/ClanRaids.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -50595,7 +51186,8 @@
    "fr": "Récupérer",
    "where": [
     "ui/screens/ClanRaids.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -50989,6 +51581,36 @@
    ]
   },
   {
+   "fr": "Résultat officiel",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "résultat officiel : {0} ({1} %)",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultat officiel : {0}.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultat officiel figé : {0} · {1}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Résultat officiel · figé le {0} {1}",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Résultats",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -51011,6 +51633,18 @@
    "fr": "Résultats du raid · Asterion",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultats officiels de {0} : {1} (progression mondiale {2} %){3}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "résultats officiels figés : l'événement est clos",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -52730,6 +53364,79 @@
    ]
   },
   {
+   "fr": "SESSION DE RATTRAPAGE",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage : 5 minutes de combat validées (version argentée, sans effet sur le résultat officiel)",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage : versions argentées des récompenses exclusives, sans effet sur le résultat officiel de l'événement mondial.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage : votre inscription inscrit aussi votre clan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage de l'événement mondial : versions argentées, résultat officiel inchangé",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage ouverte : tous les clans sont prévenus (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage ouverte : {0} pendant {1} jour(s), récompenses argentées",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage ouverte pour {0} jour(s) : le résultat officiel ne change pas",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage · Asterion",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage · ce classement ne change pas le résultat officiel",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Session expirée : reconnectez-vous.",
    "where": [
     "server/src/auth.ts"
@@ -52764,6 +53471,12 @@
    "fr": "Sessions de connexion : jamais sauvegardées. Après une restauration, chaque joueur se reconnecte avec son mot de passe.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Sessions de rattrapage : après l'événement officiel, les joueurs absents découvrent le raid avec leurs propres instances (un membre s'inscrit, son clan avec lui) et gagnent la combinaison « Écorce d'Asterion » argentée ; le résultat officiel ne change jamais.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -52883,6 +53596,12 @@
    ]
   },
   {
+   "fr": "Seul un événement mondial publié, non annulé, a des sessions de rattrapage.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Seulement ce que vous avez déjà exploré",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -52892,12 +53611,6 @@
    "fr": "Seulement visuelles : rien ne change dans la partie.",
    "where": [
     "ui/screens/RewardsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Seules les inscriptions existent dans cette version : les instances, les boss et les rapports des joueurs arriveront avec les combats.",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -54760,7 +55473,8 @@
   {
    "fr": "Suivants ›",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -55181,6 +55895,43 @@
    "fr": "Survolez un point, ou parcourez les pays avec les boutons à droite du globe, pour voir leur nombre de joueurs.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre cet événement ? Plus personne n'entre en jeu et aucun rapport n'est accepté jusqu'à la reprise ; le temps suspendu est rendu à l'événement. Les inscrits sont prévenus ; le Journal garde la trace.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre l'événement",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre l'événement…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "SUSPENDU",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendu",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -56752,6 +57503,12 @@
    ]
   },
   {
+   "fr": "Terminé · résultat officiel en préparation (derniers rapports)",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Terminé, encore sans médaille",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -56929,6 +57686,12 @@
    "fr": "Tester : {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tester Asterion",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -57311,6 +58074,18 @@
    ]
   },
   {
+   "fr": "Titre de clan : votre clan dans le top 10 du classement mondial officiel d'un événement Asterion.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Titre de clan « Dévoreurs dévorés »",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
    "fr": "titre inconnu du serveur",
    "where": [
     "server/src/adminChallenges.ts"
@@ -57344,6 +58119,12 @@
    "fr": "Titres",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Titres du clan :",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -57861,7 +58642,8 @@
   {
    "fr": "Tout récupérer",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -59059,6 +59841,12 @@
    ]
   },
   {
+   "fr": "Un brouillon ne se suspend pas : il n'est pas publié.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Un cadre d'avatar créé sur Cosmic Online, gagné à un défi.",
    "where": [
     "game/cosmetics/Collection.cpp"
@@ -59359,6 +60147,12 @@
    ]
   },
   {
+   "fr": "un groupe",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Un groupe ne réunit que vos amis.",
    "where": [
     "server/src/social.ts"
@@ -59477,6 +60271,12 @@
    "fr": "Un nouvel appui sur Saut replie les ailes (double saut), maintenez-le ensuite pour replaner.",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Un objectif détruit en même temps par deux groupes compte une seule fois pour le monde (et pour chacun des deux clans) ; un rapport répété, arrivé en retard ou plus ancien ne compte jamais deux fois. Le serveur additionne seulement les résultats validés par la majorité de chaque instance.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -60317,6 +61117,18 @@
    "fr": "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs reçoivent une notification.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Une session de rattrapage est déjà ouverte pour cet événement.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Une session de rattrapage ne se modifie pas : annulez-la et ouvrez-en une autre.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -61342,6 +62154,7 @@
    "fr": "vaincu",
    "where": [
     "ui/screens/RaidTitanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -61378,6 +62191,18 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "valider",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Valider la carte",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -61693,6 +62518,12 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Version argentée des sessions de rattrapage d'Asterion : écorce d'argent, visière cyan, écharpe de nacre.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -62706,6 +63537,12 @@
    ]
   },
   {
+   "fr": "VOS RÉCOMPENSES DE L'ÉVÉNEMENT",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Vos résultats n'ont pas encore été lus sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -62778,6 +63615,12 @@
    ]
   },
   {
+   "fr": "Votre clan dans le top 10 du classement mondial officiel de l'événement",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
    "fr": "Votre clan est complet ({0} membres).",
    "where": [
     "game/online/Clans.cpp"
@@ -62819,6 +63662,12 @@
     "game/online/Raids.cpp",
     "server/src/raids.ts",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "votre clan {0} / {1}",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -63030,7 +63879,8 @@
   {
    "fr": "Votre rang",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -64079,6 +64929,12 @@
    ]
   },
   {
+   "fr": "Zones contrôlées",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "zones contrôlées",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
@@ -64605,6 +65461,12 @@
    ]
   },
   {
+   "fr": "{0} : combat de {1} à venir (antre scellée)",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : comparaison…",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -64701,9 +65563,27 @@
    ]
   },
   {
+   "fr": "{0} : objectif {1} dans une zone inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : objectif {1} à l'index {2} invalide",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : passage verrouillé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : passage {1} – {2} vers une zone inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -64749,9 +65629,33 @@
    ]
   },
   {
+   "fr": "{0} : zone de départ {1} inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : zone {1} « {2} » inatteignable même tout accompli",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : {1} ajouté(s), {2} supprimé(s), {3} modifié(s), {4} réglage(s)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : {1} antres de gigaboss au lieu d'une",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : {1} générateur(s) pour {2} demandés",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -65156,6 +66060,12 @@
    ]
   },
   {
+   "fr": "{0} clans · {1} joueurs",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} Cliquez pour réessayer.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -65457,6 +66367,18 @@
    "fr": "{0} emplacements de pouvoirs.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en attente de validation (majorité de leur instance) : ils ne comptent pas encore.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en attente de validation (majorité de son instance) : il ne compte pas encore.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -65831,6 +66753,12 @@
    ]
   },
   {
+   "fr": "{0} inscrits · {1} clans · progression mondiale {2} % · en attente : {3} tableaux, {4} objectifs · doublons comptés une fois : {5}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} introuvable ou illisible",
    "where": [
     "game/content/BossStories.cpp"
@@ -65868,6 +66796,18 @@
   },
   {
    "fr": "{0} j {1} h {2} min",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jamais validé par la majorité de son instance : il ne compte pas dans le résultat officiel.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jamais validés par la majorité de leur instance : ils ne comptent pas dans le résultat officiel.",
    "where": [
     "game/online/Raids.cpp"
    ]
@@ -65992,6 +66932,7 @@
   {
    "fr": "{0} jour",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -66004,6 +66945,7 @@
   {
    "fr": "{0} jours",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -66231,6 +67173,7 @@
    "fr": "{0} ms",
    "where": [
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
@@ -66416,6 +67359,18 @@
    ]
   },
   {
+   "fr": "{0} objectif",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} objectifs",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} objet(s) copié(s)",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -66515,6 +67470,15 @@
    "fr": "{0} projectiles",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pts",
+   "where": [
+    "game/online/Clans.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -66688,7 +67652,8 @@
   {
    "fr": "{0} récompenses récupérées : elles sont dans votre profil et le vestiaire.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -66872,6 +67837,18 @@
    ]
   },
   {
+   "fr": "{0} tableau de contributions",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tableaux de contributions",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} tentative",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -67052,6 +68029,12 @@
    "fr": "{0} zones sur {1} contrôlées · {2} groupes en jeu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} zones, {1} antres de gigaboss, {2} combat(s) prêt(s), {3} liens",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -67968,6 +68951,12 @@
    ]
   },
   {
+   "fr": "« {0} » · {1} mondial",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "°/s",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -68086,6 +69075,12 @@
    "fr": "à la fin",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "À la fin d'un événement mondial, le serveur fige le résultat officiel une seule fois (dix minutes après la fin, pour les derniers rapports) : « Asterion est tombé » ou « Asterion a survécu », la progression mondiale et le rang de chaque clan. Les clans et les joueurs inscrits sont prévenus, et l'historique des raids de CLANS › RAIDS garde chaque résultat officiel.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -68957,6 +69952,18 @@
    ]
   },
   {
+   "fr": "Écorce d'Asterion",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Écorce d'Asterion argentée",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Écouter",
    "where": [
     "ui/widgets/AssetPreview.cpp"
@@ -69756,6 +70763,7 @@
    "fr": "Événement introuvable.",
    "where": [
     "server/src/raidMap.ts",
+    "server/src/raidWorld.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -69782,6 +70790,85 @@
    "fr": "Événement publié : {0} (inscrit au Journal).",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement repris",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement repris : le temps suspendu est rendu à l'événement (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement repris : {0}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Événement repris : {0}, fin repoussée de {1} min",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Événement repris · fin repoussée de {0} min",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu : les inscrits sont prévenus, rien ne compte jusqu'à la reprise (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement suspendu par les administrateurs ({0}) : rien ne compte jusqu'à la reprise.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "événement suspendu par les administrateurs : rien ne compte avant la reprise",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu par les administrateurs : rien ne compte jusqu'à la reprise.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Événement suspendu par les administrateurs : {0} (rien ne compte jusqu'à la reprise)",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu · motif : {0}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu · rien ne compte jusqu'à la reprise",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -69812,7 +70899,8 @@
    "fr": "Événements",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -70050,7 +71138,8 @@
   {
    "fr": "‹ Précédents",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -70059,7 +71148,8 @@
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
-    "ui/screens/RaidTitanScene.cpp"
+    "ui/screens/RaidTitanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {

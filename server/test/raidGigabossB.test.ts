@@ -9,6 +9,7 @@ import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { GIGABOSS_BADGES, RAID_ACHIEVEMENTS, RAID_REWARDS, grantFor, type Contribution } from "../src/raidRewards";
 import { catalogByPart } from "../src/raidMap";
+import { checkMap } from "../src/raidWorld";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 
 beforeEach(seedAll);
@@ -103,6 +104,13 @@ async function grants(eventId: string) {
 }
 
 describe("raids phase 4B: Voidworm, Graviton, Titanus, Skullmaw, Dreadfang and Heartbreaker", () => {
+    it("the seven lairs are open: every branch's fight is ready, no sealed lair left", () => {
+        const c = checkMap();
+        expect(c.ok).toBe(true);
+        expect(c.fights).toBe(7);
+        expect(c.warnings).toEqual([]);
+    });
+
     it("each its own badge, an achievement a claimer only may declare", () => {
         for (const b of BOSSES) {
             expect(GIGABOSS_BADGES[b.boss]).toBe(b.badge);

@@ -21,6 +21,7 @@ import * as raids from "./raids";
 import * as raidZones from "./raidZones";
 import * as raidRewards from "./raidRewards";
 import * as raidMap from "./raidMap";
+import * as raidWorld from "./raidWorld";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -292,6 +293,8 @@ route("POST", `${V}/raids/events/{eventId}/join`, (ctx) => raidMap.join(ctx));
 route("GET", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.placements(ctx));
 route("POST", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.move(ctx));
 route("POST", `${V}/raids/events/{eventId}/placements/rebalance`, (ctx) => raidMap.rebalance(ctx));
+// Phase 5 (raidWorld.ts, 2.69): the world events: rankings of every clan, group and player (validated results only).
+route("GET", `${V}/raids/events/{eventId}/world`, (ctx) => raidWorld.worldView(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
@@ -455,6 +458,12 @@ route("GET", `${V}/admin/raids/{eventId}`, (ctx) => raids.adminGet(ctx));
 route("PATCH", `${V}/admin/raids/{eventId}`, (ctx) => raids.adminUpdate(ctx));
 route("DELETE", `${V}/admin/raids/{eventId}`, (ctx) => raids.adminCancel(ctx));
 route("POST", `${V}/admin/raids/{eventId}/publish`, (ctx) => raids.adminPublish(ctx));
+// 2.69 (raidWorld.ts): the live panel, suspend / resume, the map's check, a catch-up session (each action journaled).
+route("GET", `${V}/admin/raids/{eventId}/live`, (ctx) => raidWorld.adminLive(ctx));
+route("POST", `${V}/admin/raids/{eventId}/suspend`, (ctx) => raidWorld.adminSuspend(ctx));
+route("POST", `${V}/admin/raids/{eventId}/resume`, (ctx) => raidWorld.adminResume(ctx));
+route("POST", `${V}/admin/raids/{eventId}/validate-map`, (ctx) => raidWorld.adminValidateMap(ctx));
+route("POST", `${V}/admin/raids/{eventId}/catchup`, (ctx) => raidWorld.adminCatchup(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));
@@ -613,6 +622,9 @@ async function raidReminders(env: Bindings): Promise<void> {
         // 2.68: the top of the ranking of the events just ended (raidRewards.ts, once per event).
         const tops = await raidRewards.grantEndedTops(env.DB, new Date().toISOString());
         if (tops > 0) log("info", "raid_top_rewards", { granted: tops });
+        // 2.69: the world events started (journaled) and those ended: their official result frozen, rewarded, told (once).
+        const closed = await raidWorld.worldTick(env.DB);
+        if (closed > 0) log("info", "raid_world_closed", { events: closed });
     } catch (e) {
         log("error", "raid_reminders_failed", { error: e instanceof Error ? e.message : String(e) });
     }
