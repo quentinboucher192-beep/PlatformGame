@@ -283,6 +283,10 @@ struct EnemyDefinition {
     /// 2.64: a creature of the tutorial only (« Le premier envol de Nova »): never in the
     /// bestiary, the boss statistics, the news nor the administration's list.
     bool tutorial = false;
+    /// 2.68: a gigaboss of a clan raid (« asterion »): fought only in its raid's arena (game/raid),
+    /// so never in the boss statistics, the training, the news, the boss places nor the
+    /// administration's list of the game's enemies (its fight is the raid's, the same for all).
+    std::string raid;
 
     // Runtime bookkeeping
     std::string sourcePath;

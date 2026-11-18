@@ -4,8 +4,8 @@
 // countdown, format, difficulty, clans and players registered, my clan's count, « Voir
 // l'événement » and the player's own button), the clan's raids (« Organiser un raid du clan… »
 // for the chief and the officers), the invitations to raids in common, the rewards to claim
-// (none before the combats: said as it is), the clan's history, and the panel of the raid
-// notifications (« Tout marquer lu », the player's reminders).
+// (2.68: granted by the server from validated results, « Récupérer »), the clan's history, and
+// the panel of the raid notifications (« Tout marquer lu », the player's reminders).
 //
 // Every rule is the server's (server/src/raids.ts); every read goes through OnlineService
 // (never blocking, kept in the cache for offline display). The times are shown in the
@@ -52,6 +52,9 @@ private:
     void openNote(const Json& n);
     void putPrefs(const Json& body);
     void openOrganize();
+    /// 2.68: POST /raids/rewards/claim (every reward waiting), then the claimed ones remembered.
+    void claimRewards();
+    void rememberClaimed(const Json& list);
 
     void drawHero(const Rect& r, const raids::TabLayout& lay);
     void drawClanRaids(const Rect& r, const raids::TabLayout& lay);
@@ -68,7 +71,7 @@ private:
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 
     Json data_;  // GET /raids
-    bool loaded_ = false, cache_ = false, acting_ = false;
+    bool loaded_ = false, cache_ = false, acting_ = false, claiming_ = false;
     int gen_ = 0, unread_ = 0;
     int64_t skew_ = 0;
     AsterionFigure titan_;  // the titan of the hero card, its tooltip drawn last

@@ -107,6 +107,9 @@
    "game/gameplay/GameRenderer.cpp": 2,
    "packaging/DependencyCollector.cpp": 1
   },
+  "animations/pyroclast_vents.json": {
+   "ui/screens/RaidGameScene.cpp": 1
+  },
   "animations/receptor.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1
@@ -478,13 +481,17 @@
    "game/enemies/GuardianAttacks.cpp": 1,
    "game/enemies/LicheAttacks.cpp": 1
   },
+  "sounds/shell_shatter.wav": {
+   "game/raid/Gigaboss.cpp": 1
+  },
   "sounds/shield_block.wav": {
    "game/enemies/Enemy.cpp": 2,
    "game/gameplay/GameWorld.cpp": 1,
    "game/gameplay/entities/PlatformEntities.cpp": 1,
    "game/player/PlayerActions.cpp": 1,
    "game/powers/PowersCharged.cpp": 2,
-   "game/powers/PowersSanctuary.cpp": 1
+   "game/powers/PowersSanctuary.cpp": 1,
+   "game/raid/Gigaboss.cpp": 1
   },
   "sounds/shield_down.wav": {
    "game/gameplay/GameWorld.cpp": 1

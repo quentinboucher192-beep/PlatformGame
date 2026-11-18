@@ -455,6 +455,30 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.68.0** :
+* **Raids de clan, phase 3 : le gigaboss PYROCLAST** dans la Main de Pyroclast (zone 8 du « BRAS DROIT », générée par
+  `tools/levelgen/raid_bras_droit.py`) : une main de magma en trois phases (« Poing de magma », « Carapace de basalte »,
+  « Cœur de magma ») aux attaques annoncées (coup de poing, poings de magma sur chaque joueur, pluie de magma, éruptions, poing
+  météore, secousses, marée de magma), le sol qui cède au magma sous les tours, des rideaux de lave, une dernière
+  éruption ; sprite et évents en pixel art générés par `tools/assetgen/characters/boss_k_pyroclast.py`.
+* **Un géant pour 8** (sprite × 2,5, arène de plus de six écrans, tours, fosses, monte-charges) dont les **Poings de
+  magma** visent chaque joueur à la fois ; **caméra des arènes de gigaboss** (`game/raid/ArenaCamera`, affichage
+  seulement : l'arène entière, puis une vue adaptée à chaque joueur, flèches vers le boss, ses points faibles et les alliés).
+* **Le Poignet-verrou, longue route d'environ 15 min à 8** (estimation vérifiée par les tests) : galeries à deux voies,
+  quatre embuscades géantes sur plusieurs étages, vanne double, monte-charge et plaques jumelles de groupe, points de contrôle.
+* **Mécanisme collectif** : sa carapace tient tant que ses 3 évents ne sont pas fermés ensemble (3 s debout sur chacun,
+  un évent fermé se rallume après 15 s), puis son cœur est à nu et ses points faibles se brisent ; sa vie et sa
+  cadence suivent les joueurs de l'instance (2 à 8), déterministe dans le verrouillage par entrées.
+* **Contributions calculées dans la simulation** (dégâts, dégâts évités, soutien, évents, points faibles, objectifs,
+  temps, sauvetages, présence à la chute), validées par le consensus de l'instance (valeurs impossibles refusées,
+  menteurs journalisés, égalités jamais acceptées), migration **0143** ; corps d'Asterion : bras droit « détruit » une
+  fois sa chute validée (plus de pluies de lave).
+* **Résultats du raid** (classement des clans, classement individuel par catégorie, « en attente de validation » tant
+  qu'un tableau attend sa majorité) et **récompenses à récupérer** (badge « Main de Pyroclast », titres « Assaillant
+  d'Asterion », « Briseur de magma », « Fléau de Pyroclast »), accordées une seule fois par le serveur.
+* **ADMINISTRATION › Raids › « Tester Asterion »** : une zone de n'importe quelle branche, seul et en local,
+  invincible, joueurs simulés et phase de départ au choix ; jamais rapporté ni classé.
+
 **Nouveau dans la version 2.67.1** :
 * **Le mini-film d'Asterion** : la première fois que le joueur va voir le titan (CLANS › RAIDS, la fiche d'un
   événement, tout écran qui le montre), une cinématique d'environ deux minutes en dix plans animés (le Cœur cosmique seul

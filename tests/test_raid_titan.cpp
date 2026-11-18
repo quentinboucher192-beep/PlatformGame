@@ -116,7 +116,9 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
         links += static_cast<int>(b.effects.size());
         CHECK(b.zones[7].boss);
         CHECK(b.zones[4].secret);
-        CHECK(!b.zoneRules(8)->sealedLabel.empty());
+        // 2.68 (phase 3): Pyroclast is fought in the Bras droit's Main; the six other lairs stay sealed.
+        if (tb.part == "bras_droit") CHECK(b.zoneRules(8)->sealedLabel.empty() && !b.zoneRules(8)->gigaboss.boss.empty());
+        else CHECK(!b.zoneRules(8)->sealedLabel.empty());
         CHECK(b.zoneRules(1)->spawns.at("start").size() == 3);
         for (const raid::ZoneRules& z : b.rules) {
             CHECK(z.spawns.count("start") == 1);

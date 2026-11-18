@@ -1,6 +1,7 @@
 #include "ui/screens/ClanRaids.h"
 
 #include <algorithm>
+#include <set>
 #include <cmath>
 
 #include "engine/core/I18n.h"
@@ -72,7 +73,40 @@ void ClanRaids::load() {
                       error_.clear();
                       if (!r.fromCache) skew_ = skewOf(r.data);
                       unread_ = jget<int>(r.data, "unread", 0);
+                      if (!r.fromCache && g_.online.loggedIn()) rememberClaimed(r.data.value("rewards_claimed", Json::array()));
                   }));
+}
+
+void ClanRaids::rememberClaimed(const Json& list) {
+    // 2.68: the raid rewards this account claimed (the raid badges unlock from them; kept offline).
+    if (!list.is_array()) return;
+    std::set<std::string> ids;
+    for (const Json& v : list)
+        if (v.is_string() && v.get<std::string>().size() <= 64) ids.insert(v.get<std::string>());
+    if (ids == g_.collection.raidRewards) return;
+    g_.collection.raidRewards = std::move(ids);
+    g_.collection.save();
+    g_.checkAchievements();
+}
+
+void ClanRaids::claimRewards() {
+    if (claiming_ || !g_.online.loggedIn()) return;
+    claiming_ = true;
+    g_.online.send("POST", "/api/v1/raids/rewards/claim", Json::object(), OnlineService::guard(life_, [this](const ApiResult& r) {
+                       claiming_ = false;
+                       if (!r.ok) {
+                           say_("Récompenses non récupérées : " + r.message, true);
+                           return;
+                       }
+                       const int n = jget<int>(r.data, "claimed", 0);
+                       say_(n > 1   ? std::to_string(n) + " récompenses récupérées : badge au profil, titres dans le vestiaire."
+                            : n == 1 ? "Récompense récupérée : elle est dans votre profil et le vestiaire."
+                                     : "Ces récompenses étaient déjà récupérées.",
+                            false);
+                       rememberClaimed(r.data.value("claimed_rewards", Json::array()));
+                       g_.challenges.refreshMine();  // the titles won (GET /players/me/rewards) follow
+                       load();
+                   }));
 }
 
 void ClanRaids::loadNotes() {
@@ -354,15 +388,33 @@ void ClanRaids::drawInvitations(const Rect& r, const raids::TabLayout& lay) {
     UIContext& ui = g_.ui;
     float y = section(ui, r, "INVITATIONS ET RÉCOMPENSES", kSky);
     const float x = r.x + ui.s(14), w = r.w - ui.s(28);
-    // The rewards to claim: none before the combats, said as it is.
+    // 2.68: the rewards to claim, granted by the server from validated results (« Récupérer »).
+    const auto rewards = raids::parseRewards(at(data_, "rewards"));
     const Rect rc{x, r.bottom() - ui.s(14) - ui.s(84), w, ui.s(84)};
     ui.r().fillRoundedRect(rc, ui.s(10), Color{42, 36, 20, 245});
     ui.r().drawRoundedRect(rc, ui.s(10), kGold.withAlphaF(0.6f), ui.s(1));
-    ui.r().fillCircle({rc.x + ui.s(30), rc.center().y}, ui.s(18), Color{120, 96, 44, 255});
-    const float tx = rc.x + ui.s(60), tw = rc.right() - ui.s(12) - tx;
-    fit(ui, "Aucune récompense à récupérer", {tx, rc.y + ui.s(22)}, 15, tw, kText, FontFace::Bold);
-    drawLines(ui, wrap(ui, "Les récompenses arriveront avec les combats d'Asterion.", FontFace::Body, 13, tw, 2), {tx, rc.y + ui.s(36)}, 13, ui.s(18),
-              Color{232, 220, 184, 255});
+    ui.r().fillCircle({rc.x + ui.s(30), rc.center().y}, ui.s(18), rewards.empty() ? Color{120, 96, 44, 255} : kGold);
+    const std::string claimLabel = "Récupérer";
+    const float cbw = rewards.empty() ? 0.0f : std::min(textW(ui, claimLabel, 15, FontFace::Bold) + ui.s(32), rc.w * 0.4f);
+    const float tx = rc.x + ui.s(60), tw = rc.right() - ui.s(12) - (cbw > 0.0f ? cbw + ui.s(10) : 0.0f) - tx;
+    if (rewards.empty()) {
+        fit(ui, "Aucune récompense à récupérer", {tx, rc.y + ui.s(22)}, 15, tw, kText, FontFace::Bold);
+        drawLines(ui, wrap(ui, "Elles viennent des résultats validés des raids : Pyroclast, sa chute, votre contribution.", FontFace::Body, 13, tw, 2),
+                  {tx, rc.y + ui.s(36)}, 13, ui.s(18), Color{232, 220, 184, 255});
+    } else {
+        const std::string title = rewards.size() == 1 ? rewards[0].name : std::to_string(rewards.size()) + " récompenses à récupérer";
+        fit(ui, title, {tx, rc.y + ui.s(22)}, 15, tw, kText, FontFace::Bold);
+        std::string sub;
+        if (rewards.size() == 1) sub = rewards[0].why;
+        else
+            for (const raids::Reward& rw : rewards) sub += (sub.empty() ? "" : " · ") + rw.name;
+        drawLines(ui, wrap(ui, sub, FontFace::Body, 13, tw, 2), {tx, rc.y + ui.s(36)}, 13, ui.s(18), Color{232, 220, 184, 255});
+        UIContext::ButtonStyle bs;
+        bs.primary = true;
+        bs.small = true;
+        bs.enabled = !claiming_;
+        if (ui.button("claim", {rc.right() - ui.s(10) - cbw, rc.center().y - ui.s(22), cbw, ui.s(44)}, claimLabel, bs)) claimRewards();
+    }
     const Rect list{x, y, w, rc.y - ui.s(10) - y};
     const Json& inv = at(data_, "invitations");
     if (!lay.clanBoxes) {

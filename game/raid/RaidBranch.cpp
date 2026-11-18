@@ -188,6 +188,21 @@ const TitanBranch* Titan::branch(const std::string& part) const {
     return nullptr;
 }
 
+const std::vector<const Branch*>& Branch::all() {
+    // The titan's catalog (titan.json) lists its branches in the order of its body: a branch added
+    // there (and to the game's data) appears in every list built from this one.
+    static std::once_flag once;
+    static std::vector<const Branch*> list;
+    std::call_once(once, [] {
+        if (const Titan* t = Titan::builtin())
+            for (const TitanBranch& tb : t->branches)
+                if (const Branch* b = builtin(tb.part)) list.push_back(b);
+        if (list.empty())
+            if (const Branch* b = builtin()) list.push_back(b);
+    });
+    return list;
+}
+
 const ZoneInfo* Branch::zone(int zid) const { return zid >= 1 && zid <= static_cast<int>(zones.size()) ? &zones[static_cast<size_t>(zid - 1)] : nullptr; }
 
 const ObjectiveInfo* Branch::objective(const std::string& oid) const {
@@ -312,6 +327,7 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         p.players = std::clamp(jget<int>(c, "players", 2), 1, kMaxInstancePlayers);
         for (const auto& t : c.value("targets", Json::array()))
             if (t.is_string()) p.targets.push_back(t.get<std::string>());
+        p.group = jstr(c, "group");  // 2.68 (phase 3): plates held together
         z.coops.push_back(std::move(p));
     }
     for (const auto& c : raid.value("checkpoints", Json::array()))
@@ -320,6 +336,61 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
     if (sealed.is_object()) {
         z.sealedDoor = jstr(sealed, "door");
         z.sealedLabel = jstr(sealed, "label");
+    }
+    // 2.68: the arena of a gigaboss (the seven branches write the same format).
+    const Json arena = raid.value("arena", Json());
+    if (arena.is_object()) {
+        z.arena.present = true;
+        z.arena.rect = rectOf(arena.value("rect", Json()));
+        z.arena.floor = jget<float>(arena, "floor", 0.0f);
+        z.arena.door = jstr(arena, "door");
+        const Json entry = arena.value("entry", Json());
+        if (entry.is_array() && entry.size() == 2) z.arena.entry = {entry[0].get<float>(), entry[1].get<float>()};
+    }
+    // 2.68: the gigaboss of the zone, its vents and its weak points.
+    const Json giga = raid.value("gigaboss", Json());
+    if (giga.is_object()) {
+        GigabossRules& g = z.gigaboss;
+        g.boss = jstr(giga, "boss");
+        g.name = jstr(giga, "name");
+        g.objective = jstr(giga, "objective");
+        g.present = !g.boss.empty();
+        for (const auto& v : giga.value("vents", Json::array())) {
+            g.ventIds.push_back(jstr(v, "id"));
+            g.vents.push_back(rectOf(v.value("rect", Json())));
+        }
+        const Json carapace = giga.value("carapace", Json::array());
+        if (carapace.is_array() && carapace.size() == 2) {
+            g.carapaceFrom = carapace[0].get<int>();
+            g.carapaceUntil = carapace[1].get<int>();
+        }
+        g.hold = std::clamp(jget<float>(giga, "hold", g.hold), 0.5f, 10.0f);
+        g.reopen = std::clamp(jget<float>(giga, "reopen", g.reopen), 3.0f, 60.0f);
+        g.exposed = std::clamp(jget<float>(giga, "exposed", g.exposed), 2.0f, 30.0f);
+        g.exposedMult = std::clamp(jget<float>(giga, "exposedMult", g.exposedMult), 1.0f, 4.0f);
+        const Json jet = giga.value("jet", Json());
+        if (jet.is_object()) {
+            g.jetPeriod = std::clamp(jget<float>(jet, "period", g.jetPeriod), 2.0f, 30.0f);
+            g.jetWarn = std::clamp(jget<float>(jet, "warn", g.jetWarn), 0.2f, g.jetPeriod * 0.5f);
+            g.jetTime = std::clamp(jget<float>(jet, "duration", g.jetTime), 0.1f, g.jetPeriod * 0.4f);
+            g.jetHeight = jget<float>(jet, "height", g.jetHeight);
+            g.jetDamage = jget<float>(jet, "damage", g.jetDamage);
+        }
+        const Json fists = giga.value("fists", Json());
+        if (fists.is_object()) {
+            for (const auto& v : fists.value("periods", Json::array()))
+                if (v.is_number()) g.fistPeriods.push_back(std::clamp(v.get<float>(), 2.0f, 60.0f));
+            g.fistWarn = std::clamp(jget<float>(fists, "warn", g.fistWarn), 0.5f, 4.0f);
+            g.fistWidth = std::clamp(jget<float>(fists, "width", g.fistWidth), 16.0f, 160.0f);
+            g.fistDamage = jget<float>(fists, "damage", g.fistDamage);
+        }
+        g.weakEnemy = jstr(giga, "weakEnemy");
+        for (const auto& p : giga.value("weakSpots", Json::array()))
+            if (p.is_array() && p.size() == 2) g.weakSpots.push_back({p[0].get<float>(), p[1].get<float>()});
+        g.weakShare = std::clamp(jget<float>(giga, "weakShare", g.weakShare), 0.0f, 0.2f);
+        g.hpPerPlayer = std::clamp(jget<float>(giga, "hpPerPlayer", g.hpPerPlayer), 0.0f, 2.0f);
+        g.weakHpPerPlayer = std::clamp(jget<float>(giga, "weakHpPerPlayer", g.weakHpPerPlayer), 0.0f, 2.0f);
+        g.pressurePerPlayer = std::clamp(jget<float>(giga, "pressurePerPlayer", g.pressurePerPlayer), 0.0f, 0.3f);
     }
     return z;
 }

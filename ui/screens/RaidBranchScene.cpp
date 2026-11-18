@@ -1,7 +1,8 @@
 // 2.65: the map of a branch of the raid (docs/RAIDS.md, maquette « Branche »): 2.68, any of the
 // seven branches of Asterion (« BRAS DROIT » first), its 8 sub-zones linked as on the titan's body
 // (two paths, the secret zone, the lock of several objectives, the shortcut, the zone that needs
-// two groups, the passages that another branch opens, the sealed lair of the gigaboss).
+// two groups, the passages that another branch opens, the sealed lair of the gigaboss; 2.68,
+// phase 3: the hand of the BRAS DROIT is the arena of its gigaboss Pyroclast).
 // Everything shown comes from the server (GET /raids/events/{id}/branches/{part}): the zones
 // controlled, the objectives done and by which group, the passages open, the links of the titan
 // received and given, the groups and where they are. At the right, the zone selected: its
@@ -119,7 +120,14 @@ public:
         const int id = jget<int>(z, "id", 0);
         const int groups = static_cast<int>(groupsIn(id).size());
         const int required = jget<int>(z, "groups_required", 1);
-        if (jget<bool>(z, "boss", false)) return "scellée · prochaine version";
+        if (jget<bool>(z, "boss", false)) {
+            // 2.68 (phase 3): the gigaboss's arena: fallen once its objective is accepted; the six
+            // others are sealed until their gigaboss comes.
+            if (part_ != "bras_droit") return "scellée · prochaine version";
+            if (jget<bool>(z, "controlled", false)) return jstr(data_.value("branch", Json::object()), "gigaboss") + " vaincu";
+            if (!jget<bool>(z, "reachable", false)) return "gigaboss · verrouillée";
+            return groups > 0 ? "gigaboss · " + std::to_string(groups) + (groups > 1 ? " groupes au combat" : " groupe au combat") : "gigaboss · à affronter";
+        }
         if (jget<bool>(z, "controlled", false)) return "contrôlée";
         if (!jget<bool>(z, "reachable", false)) {
             const Json gens = data_.value("generators", Json::object());
@@ -168,7 +176,9 @@ public:
             const Json branch = data_.value("branch", Json::object());
             const float tw = fit(ui, jstr(branch, "name"), {hx, left.y + ui.s(22)}, 28, (left.right() - cw - ui.s(16) - hx) * 0.5f, kText, FontFace::Title).x;
             const float gx = hx + tw + ui.s(14);
-            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") + " · prochaine version", {gx, left.y + ui.s(22)}, 15, left.right() - cw - ui.s(16) - gx, kPeach);
+            const bool fought = part_ == "bras_droit";  // 2.68 (phase 3): Pyroclast is fought; the six others later
+            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") + (!fought ? " · prochaine version" : zoneJson(8).value("controlled", false) ? " · vaincu" : " · dans la Main"),
+                {gx, left.y + ui.s(22)}, 15, left.right() - cw - ui.s(16) - gx, kPeach);
             drawMap({left.x, left.y + ui.s(58), left.w, left.h - ui.s(58) - ui.s(34)});
             drawLegend({left.x, left.bottom() - ui.s(24), left.w, ui.s(24)});
             drawAside(aside);
@@ -365,8 +375,12 @@ public:
             if (done && !jstr(o, "by").empty()) t += " — " + jstr(o, "by");
             goals.push_back({t, {done ? "✓" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
         }
-        if (jget<bool>(z, "boss", false))
-            goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
+        if (jget<bool>(z, "boss", false)) {
+            if (part_ == "bras_droit")  // 2.68 (phase 3): Pyroclast's arena
+                goals.push_back({"Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.", {"◆", kGold}});
+            else
+                goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
+        }
         if (goals.empty()) goals.push_back({"Aucun objectif dans cette zone.", {"·", kDim}});
         section("Objectifs", goals);
         std::vector<std::pair<std::string, std::pair<std::string, Color>>> inside;

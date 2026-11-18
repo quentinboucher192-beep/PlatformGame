@@ -103,7 +103,48 @@ struct CoopPlate {
     Rect rect;
     int players = 2;
     std::vector<std::string> targets;
+    /// 2.68 (phase 3): plates of one group must all be held at the same step (the twin plates of
+    /// the Poignet-verrou); "" = alone. Alone in the instance, the first plate of a group suffices.
+    std::string group;
 };
+
+/// 2.68: the arena of a gigaboss (metadata.raid.arena, the same format for the seven branches):
+/// its rectangle (the camera's global view, game/raid/ArenaCamera), its floor, its door, where the
+/// group enters.
+struct ArenaInfo {
+    bool present = false;
+    Rect rect;
+    float floor = 0.0f;
+    std::string door;
+    Vec2 entry;
+};
+/// 2.68: the gigaboss of a zone (metadata.raid.gigaboss), its fight run by raid::Gigaboss.
+struct GigabossRules {
+    bool present = false;
+    std::string boss;       // object id of the gigaboss in the level
+    std::string name;       // « Pyroclast »
+    std::string objective;  // the objective of the branch its fall accomplishes
+    std::vector<std::string> ventIds;
+    std::vector<Rect> vents;           // its vents: a player standing on one closes it
+    int carapaceFrom = 2, carapaceUntil = 3;  // its carapace protects it in phases [from, until) (1-based)
+    float hold = 3.0f;                 // seconds on a vent to close it
+    float reopen = 15.0f;              // a closed vent lights again after this (unless all are closed)
+    float exposed = 10.0f;             // its weak point bare this long once every vent is closed
+    float exposedMult = 2.0f;          // the damage it takes meanwhile
+    float jetPeriod = 6.0f, jetWarn = 1.2f, jetTime = 1.0f, jetHeight = 112.0f;  // an open vent's jet of magma
+    float jetDamage = 1.0f;
+    std::string weakEnemy;             // its weak points (enemies stuck to it while it is bare)
+    std::vector<Vec2> weakSpots;       // from its feet, x toward where it faces
+    float weakShare = 0.04f;           // share of its health a weak point takes from it when broken
+    float hpPerPlayer = 0.55f;         // health × (1 + hpPerPlayer × (players − 1)), players seated (2 to 8)
+    float weakHpPerPlayer = 0.25f;
+    float pressurePerPlayer = 0.06f;   // its cooldowns ÷ (1 + pressurePerPlayer × (players in play − 1))
+    /// « Poings de magma »: one fist per player in play every fistPeriods[phase − 1] seconds
+    /// (÷ its pressure), announced fistWarn seconds before on a mark under each one.
+    std::vector<float> fistPeriods;
+    float fistWarn = 1.4f, fistWidth = 64.0f, fistDamage = 1.0f;
+};
+
 struct ZoneRules {
     int zone = 0;
     std::map<std::string, std::vector<Vec2>> spawns;  // "start", the zone one comes from, "cp:<checkpoint>"
@@ -113,6 +154,8 @@ struct ZoneRules {
     std::string sealedDoor, sealedLabel;
     std::vector<CoopPlate> coops;             // 2.68
     std::vector<std::string> checkpoints;     // 2.68: the group starts again at the last one reached
+    ArenaInfo arena;                          // 2.68: a gigaboss's arena (metadata.raid.arena)
+    GigabossRules gigaboss;                   // 2.68 (phase 3): its gigaboss, when it is fought there
 };
 
 class Branch {
@@ -124,6 +167,10 @@ public:
     /// The branch `part` of the game (data/raids/asterion/<part>, with the titan's links), loaded
     /// once; null when it cannot be read. Without a part: the BRAS DROIT.
     static const Branch* builtin(const std::string& part = "bras_droit");
+    /// Every branch of the titan's catalog (data/raids/asterion/titan.json), in the order of its body,
+    /// loaded once: the administrators' tests list them all, so a branch added later appears there
+    /// without anything else to change.
+    static const std::vector<const Branch*>& all();
     /// 2.68: the links of the titan (titan.json) that act on this branch, and its revision.
     void attachTitan(const Json& titan);
 

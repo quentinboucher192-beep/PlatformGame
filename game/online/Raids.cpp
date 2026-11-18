@@ -493,4 +493,133 @@ std::vector<int> reminderPrefs(const Json& prefs) {
     return out;
 }
 
+// ------------------------------------------------------------------ 2.68: results and rewards
+
+std::vector<Reward> parseRewards(const Json& list) {
+    std::vector<Reward> out;
+    if (!list.is_array()) return out;
+    for (const Json& r : list) {
+        if (!r.is_object() || out.size() >= 100) continue;
+        Reward x;
+        x.id = jget<int>(r, "id", 0);
+        x.reward = jstr(r, "reward");
+        x.name = jstr(r, "name");
+        x.kind = jstr(r, "kind");
+        x.ref = jstr(r, "ref");
+        x.why = jstr(r, "why");
+        x.eventId = jstr(r, "event_id");
+        x.claimed = jget<bool>(r, "claimed", false);
+        if (x.id > 0 && !x.name.empty()) out.push_back(std::move(x));
+    }
+    return out;
+}
+
+Results parseResults(const Json& j) {
+    Results r;
+    if (!j.is_object()) return r;
+    const Json ev = jfield(j, "event", Json());
+    r.state = jstr(ev, "state");
+    r.final = jget<bool>(ev, "final", false);
+    const Json giga = jfield(j, "gigaboss", Json());
+    r.defeated = jget<bool>(giga, "defeated", false);
+    const Json fights = jfield(giga, "fights", Json());
+    if (fights.is_array())
+        for (const Json& f : fights) {
+            const int phase = jget<int>(f, "phase", 0);
+            r.fights.push_back(jstr(f, "group") + " · " + (phase >= 4 ? std::string("vaincu") : "phase " + std::to_string(std::clamp(phase, 1, 3)) + " / 3"));
+        }
+    const Json clans = jfield(j, "clans", Json());
+    if (clans.is_array())
+        for (const Json& c : clans) {
+            if (!c.is_object()) continue;
+            r.clans.push_back({jget<int>(c, "rank", static_cast<int>(r.clans.size()) + 1), jstr(c, "tag"), jget<int>(c, "points", 0), jget<int>(c, "players", 0),
+                               jget<int>(c, "gigaboss", 0) > 0});
+        }
+    const Json players = jfield(j, "players", Json());
+    if (players.is_array())
+        for (const Json& p : players) {
+            if (!p.is_object()) continue;
+            ResultPlayer x;
+            x.rank = jget<int>(p, "rank", static_cast<int>(r.players.size()) + 1);
+            x.id = jstr(p, "id");
+            x.username = jstr(p, "username");
+            x.clanTag = jstr(p, "clan_tag");
+            x.score = jget<int>(p, "score", 0);
+            x.damage = jget<int>(p, "damage", 0);
+            x.bossDamage = jget<int>(p, "boss_damage", 0);
+            x.avoided = jget<int>(p, "avoided", 0);
+            x.support = jget<int>(p, "support", 0);
+            x.blocks = jget<int>(p, "blocks", 0);
+            x.rescues = jget<int>(p, "rescues", 0);
+            x.vents = jget<int>(p, "vents", 0);
+            x.weakPoints = jget<int>(p, "weak_points", 0);
+            x.objectives = jget<int>(p, "objectives", 0);
+            x.gigaboss = jget<int>(p, "gigaboss", 0);
+            x.seconds = jget<int>(p, "seconds", 0);
+            x.progress = jget<int>(p, "progress", 0);
+            x.me = jget<bool>(p, "me", false);
+            if (!x.id.empty()) r.players.push_back(std::move(x));
+        }
+    const Json my = jfield(j, "my", Json());
+    r.myRank = jget<int>(my, "rank", 0);
+    r.pending = jget<bool>(my, "pending", false);
+    r.pendingReports = jget<int>(my, "pending_reports", 0);
+    r.validatedAt = jstr(my, "validated_at");
+    r.rewards = parseRewards(jfield(j, "rewards", Json()));
+    r.valid = true;
+    return r;
+}
+
+const std::vector<Category>& resultCategories() {
+    static const std::vector<Category> list = {
+        {"score", "Contribution"},     {"damage", "Dégâts"},       {"avoided", "Dégâts évités"}, {"support", "Soutien"},
+        {"objectives", "Objectifs"},    {"gigaboss", "Gigaboss vaincus"}, {"time", "Temps de participation"}, {"rescues", "Sauvetages"},
+        {"progress", "Progression"},
+    };
+    return list;
+}
+
+int categoryValue(const ResultPlayer& p, const std::string& c) {
+    if (c == "damage") return p.damage;
+    if (c == "avoided") return p.avoided;
+    if (c == "support") return p.support + p.vents;  // shield blocks, rescues and vents held for the group
+    if (c == "objectives") return p.objectives;
+    if (c == "gigaboss") return p.gigaboss;
+    if (c == "time") return p.seconds;
+    if (c == "rescues") return p.rescues;
+    if (c == "progress") return p.progress;
+    return p.score;
+}
+
+std::string groupDigits(int64_t v) {
+    const bool neg = v < 0;
+    std::string d = std::to_string(neg ? -v : v), out;
+    for (size_t i = 0; i < d.size(); ++i) {
+        if (i > 0 && (d.size() - i) % 3 == 0) out += " ";
+        out += d[i];
+    }
+    return neg ? "-" + out : out;
+}
+
+std::string categoryText(const ResultPlayer& p, const std::string& c) {
+    if (c == "gigaboss") return p.gigaboss > 0 ? "Pyroclast" : "—";
+    if (c == "time") return p.seconds >= 60 ? std::to_string(p.seconds / 60) + " min" : std::to_string(p.seconds) + " s";
+    if (c == "damage") return groupDigits(p.damage) + " (" + groupDigits(p.bossDamage) + " gigaboss)";
+    if (c == "support") return std::to_string(p.blocks) + " blocages · " + std::to_string(p.rescues) + " sauv. · " + std::to_string(p.vents) + " mécanismes";
+    if (c == "objectives") return std::to_string(p.objectives) + (p.weakPoints > 0 ? " · " + std::to_string(p.weakPoints) + " points faibles" : "");
+    return groupDigits(categoryValue(p, c));
+}
+
+std::vector<ResultPlayer> rankedBy(const Results& r, const std::string& c) {
+    std::vector<ResultPlayer> out = r.players;
+    std::stable_sort(out.begin(), out.end(), [&](const ResultPlayer& a, const ResultPlayer& b) {
+        const int va = categoryValue(a, c), vb = categoryValue(b, c);
+        if (va != vb) return va > vb;
+        if (a.score != b.score) return a.score > b.score;
+        return a.username < b.username;
+    });
+    for (size_t i = 0; i < out.size(); ++i) out[i].rank = static_cast<int>(i) + 1;
+    return out;
+}
+
 }  // namespace cosmic::raids

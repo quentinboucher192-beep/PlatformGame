@@ -3,7 +3,7 @@
  "formatVersion": 1,
  "id": "raid_bd_8",
  "name": "Asterion · Bras droit · Main de Pyroclast",
- "description": "La main du titan, où veille le gigaboss Pyroclast. Sa porte est scellée : le combat arrive dans la prochaine version.",
+ "description": "La main du titan, où veille le gigaboss Pyroclast, assez grand pour huit joueurs. Trois phases : son poing de magma, sa carapace de basalte (ses trois évents à fermer ensemble), son cœur à nu.",
  "planet": "pyralis",
  "author": "Cosmic Studio",
  "version": "1.0",
@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  1440,
+  3360,
   768
  ],
  "ambientLight": "#9a6a5a",
@@ -153,7 +153,7 @@
    "rect": [
     0.0,
     704.0,
-    1440.0,
+    3360.0,
     64.0
    ],
    "props": {
@@ -182,7 +182,7 @@
    "rect": [
     960.0,
     608.0,
-    480.0,
+    960.0,
     96.0
    ],
    "props": {
@@ -195,13 +195,13 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    0.0,
-    688.0,
-    1280.0,
-    32.0
+    1920.0,
+    608.0,
+    960.0,
+    96.0
    ],
    "props": {
-    "effect": "lava_bubbles",
+    "effect": "embers_rising",
     "rate": 3
    }
   },
@@ -210,13 +210,13 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    1280.0,
-    688.0,
-    160.0,
-    32.0
+    2880.0,
+    608.0,
+    480.0,
+    96.0
    ],
    "props": {
-    "effect": "lava_bubbles",
+    "effect": "embers_rising",
     "rate": 3
    }
   },
@@ -226,13 +226,13 @@
    "layer": "gameplay",
    "rect": [
     0.0,
-    64.0,
-    1120.0,
-    416.0
+    688.0,
+    1280.0,
+    32.0
    ],
    "props": {
-    "effect": "ash_fall",
-    "rate": 1.5
+    "effect": "lava_bubbles",
+    "rate": 3
    }
   },
   {
@@ -240,9 +240,39 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    1120.0,
+    1280.0,
+    688.0,
+    1280.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o8",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2560.0,
+    688.0,
+    800.0,
+    32.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o9",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
     64.0,
-    320.0,
+    1120.0,
     416.0
    ],
    "props": {
@@ -251,13 +281,43 @@
    }
   },
   {
-   "id": "o8",
+   "id": "o10",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o11",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    1120.0,
+    416.0
+   ],
+   "props": {
+    "effect": "ash_fall",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o12",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     0.0,
     512.0,
-    640.0,
+    368.0,
     240.0
    ],
    "props": {
@@ -265,7 +325,7 @@
    }
   },
   {
-   "id": "o9",
+   "id": "o13",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -280,7 +340,7 @@
    }
   },
   {
-   "id": "o10",
+   "id": "o14",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -297,7 +357,7 @@
    }
   },
   {
-   "id": "o11",
+   "id": "o15",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -312,37 +372,12 @@
    }
   },
   {
-   "id": "o12",
-   "type": "player_start",
-   "layer": "gameplay",
-   "rect": [
-    139.0,
-    490.0,
-    10.0,
-    22.0
-   ]
-  },
-  {
-   "id": "o13",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    640.0,
-    576.0,
-    800.0,
-    176.0
-   ],
-   "props": {
-    "material": "basalt"
-   }
-  },
-  {
-   "id": "o14",
+   "id": "o16",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    724.0,
-    552.0,
+    164.0,
+    488.0,
     24.0,
     24.0
    ],
@@ -352,12 +387,12 @@
    }
   },
   {
-   "id": "o15",
+   "id": "o17",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    728.0,
-    536.0,
+    168.0,
+    472.0,
     16.0,
     16.0
    ],
@@ -369,12 +404,12 @@
    }
   },
   {
-   "id": "o16",
+   "id": "o18",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    704.0,
-    512.0,
+    144.0,
+    448.0,
     64.0,
     64.0
    ],
@@ -384,40 +419,949 @@
    }
   },
   {
-   "id": "o17",
-   "type": "door",
+   "id": "o19",
+   "type": "player_start",
    "layer": "gameplay",
    "rect": [
-    1280.0,
-    384.0,
-    16.0,
-    192.0
-   ],
-   "props": {
-    "open": false
-   }
+    235.0,
+    490.0,
+    10.0,
+    22.0
+   ]
   },
   {
-   "id": "o18",
+   "id": "o20",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    1140.0,
-    552.0,
+    308.0,
+    488.0,
     24.0,
     24.0
    ],
    "props": {
-    "text": "Pyroclast — prochaine version. La porte de la Main restera scellée jusque-là.",
+    "text": "Pyroclast, la main de magma. Ses évents nourrissent sa carapace : fermez-les ensemble.",
     "auto": true
    }
   },
   {
-   "id": "o19",
+   "id": "o21",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1008.0,
+    68.0,
+    480.0,
+    24.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "forge_brazier",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o22",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    72.0,
+    472.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o23",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    368.0,
+    576.0,
+    112.0,
+    176.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    640.0,
+    352.0,
+    112.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    832.0,
+    576.0,
+    1984.0,
+    176.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o26",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2816.0,
+    640.0,
+    352.0,
+    112.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o27",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    576.0,
+    192.0,
+    176.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o28",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    480.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o29",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    544.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o30",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    608.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o31",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    672.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o32",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    736.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o33",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    800.0,
+    576.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o34",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    480.0,
+    608.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "shieldProtects": true,
+    "active": false,
+    "style": "embers",
+    "bounce": true
+   }
+  },
+  {
+   "id": "o35",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    2816.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o36",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    2880.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o37",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    2944.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o38",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    3008.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o39",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    3072.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o40",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    3136.0,
+    576.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.3,
+    "respawn": 0.0,
+    "style": "basalt",
+    "onEvent": true
+   }
+  },
+  {
+   "id": "o41",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    2816.0,
+    608.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "shieldProtects": true,
+    "active": false,
+    "style": "embers",
+    "bounce": true
+   }
+  },
+  {
+   "id": "o42",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    496.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o43",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    576.0,
+    416.0,
+    192.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o44",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    448.0,
+    336.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o45",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3008.0,
+    496.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o46",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2880.0,
+    416.0,
+    192.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o47",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3072.0,
+    336.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o48",
+   "type": "ladder",
+   "layer": "gameplay",
+   "rect": [
+    464.0,
+    416.0,
+    16.0,
+    160.0
+   ]
+  },
+  {
+   "id": "o49",
+   "type": "ladder",
+   "layer": "gameplay",
+   "rect": [
+    3184.0,
+    416.0,
+    16.0,
+    160.0
+   ]
+  },
+  {
+   "id": "o50",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1696.0,
+    224.0,
+    320.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o51",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1440.0,
+    560.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -336,
+    "speed": 60,
+    "wait": 1.2,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": true
+   }
+  },
+  {
+   "id": "o52",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2112.0,
+    560.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -336,
+    "speed": 60,
+    "wait": 1.2,
+    "phase": 0.5,
+    "active": true,
+    "triggered": false,
+    "oneway": true
+   }
+  },
+  {
+   "id": "o53",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1536.0,
+    288.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o54",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2048.0,
+    288.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o55",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    368.0,
+    32.0,
+    80.0,
+    544.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.5,
+    "visible": true,
+    "shieldProtects": true,
+    "active": false,
+    "style": "embers",
+    "bounce": false
+   }
+  },
+  {
+   "id": "o56",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    3200.0,
+    32.0,
+    80.0,
+    544.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.5,
+    "visible": true,
+    "shieldProtects": true,
+    "active": false,
+    "style": "embers",
+    "bounce": false
+   }
+  },
+  {
+   "id": "o57",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    666.0,
+    378.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o58",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2970.0,
+    378.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o59",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1850.0,
+    186.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o60",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    538.0,
+    298.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o61",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3130.0,
+    298.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o62",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1594.0,
+    250.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o63",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2106.0,
+    250.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o64",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2290.0,
+    276.0,
+    220.0,
+    300.0
+   ],
+   "props": {
+    "enemy": "pyroclast",
+    "faceLeft": true,
+    "patrol": 480,
+    "dormant": true,
+    "boss": true
+   }
+  },
+  {
+   "id": "o65",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    384.0,
+    32.0,
+    2896.0,
+    544.0
+   ],
+   "props": {
+    "doors": "",
+    "waves": "o64",
+    "lockCamera": false,
+    "music": "music/pyralis_boss.ogg",
+    "announce": false
+   }
+  },
+  {
+   "id": "o66",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    664.0,
+    392.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o67",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    656.0,
+    384.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o68",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1848.0,
+    200.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o69",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1840.0,
+    192.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o70",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2968.0,
+    392.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff6a2a",
+    "radius": 70,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o71",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2960.0,
+    384.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o72",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1086.9671645722362,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o73",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1246.688722716241,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o74",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1515.828750854024,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "ember_crystal",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o75",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1644.5005514112613,
+    564.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o76",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1694.5706818504386,
+    564.0,
+    16.0,
+    12.0
+   ],
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o77",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1797.582722846435,
     544.0,
     32.0,
     32.0
@@ -432,57 +1376,17 @@
    }
   },
   {
-   "id": "o20",
+   "id": "o78",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1204.0,
-    528.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "sprite": "obsidian_spire",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o21",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    1364.0,
-    528.0,
-    24.0,
-    48.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "obsidian_spire",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o22",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    690.1296519151467,
+    1872.4135744406267,
     552.0,
-    32.0,
+    16.0,
     24.0
    ],
-   "flipX": true,
    "props": {
-    "sprite": "ash_rock_big",
+    "sprite": "fire_plant",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -491,11 +1395,11 @@
    }
   },
   {
-   "id": "o23",
+   "id": "o79",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    782.1465434933191,
+    1987.2102324807288,
     552.0,
     16.0,
     24.0
@@ -511,17 +1415,17 @@
    }
   },
   {
-   "id": "o24",
+   "id": "o80",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    849.2618934116998,
-    528.0,
-    24.0,
-    48.0
+    2323.009148926456,
+    552.0,
+    16.0,
+    24.0
    ],
    "props": {
-    "sprite": "obsidian_spire",
+    "sprite": "ember_crystal",
     "alpha": 1.0,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -530,30 +1434,11 @@
    }
   },
   {
-   "id": "o25",
+   "id": "o81",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    929.8694297312106,
-    544.0,
-    32.0,
-    32.0
-   ],
-   "props": {
-    "sprite": "skull_rock",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o26",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    1026.4321129579864,
+    2362.791674207191,
     552.0,
     16.0,
     24.0
@@ -569,39 +1454,354 @@
    }
   },
   {
-   "id": "o27",
+   "id": "o82",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2465.816005731002,
+    536.0,
+    24.0,
+    40.0
+   ],
+   "props": {
+    "sprite": "basalt_column_broken",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o83",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2578.3804428203835,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o84",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2617.0475666861466,
+    552.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "fire_plant",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o85",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2749.2652139551,
+    564.0,
+    16.0,
+    12.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "ash_rock_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o86",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    944.0,
+    544.0,
+    32.0,
+    32.0
+   ],
+   "props": {
+    "sprite": "skull_rock",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o87",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2708.0,
+    528.0,
+    24.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o88",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3268.0,
+    528.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o89",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1272.0,
-    472.0,
+    664.0,
+    280.0,
     16.0,
     16.0
    ],
    "props": {
     "color": "#ffd27a",
-    "radius": 160,
+    "radius": 170,
     "flicker": 0.3,
     "bloom": true
    }
   },
   {
-   "id": "o28",
+   "id": "o90",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1272.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o91",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1848.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o92",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2424.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o93",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2968.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o94",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    1120.0,
-    320.0,
-    320.0,
-    256.0
+    960.0,
+    160.0,
+    1760.0,
+    416.0
    ],
    "props": {
     "effect": "embers_rising",
-    "rate": 2.5
+    "rate": 3.0
+   }
+  },
+  {
+   "id": "o95",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    314.0,
+    474.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
    }
   }
  ],
- "events": [],
+ "events": [
+  {
+   "id": "ev1",
+   "source": "o64",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "activate",
+     "target": "o28,o29,o30,o31,o32,o33,o35,o36,o37,o38,o39,o40"
+    },
+    {
+     "type": "enable",
+     "target": "o34,o41"
+    },
+    {
+     "type": "spawn",
+     "target": "o57,o58,o59"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.8
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "La main frappe le sol : le basalte cède au magma sous les tours !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 2
+   },
+   "name": "La main se referme"
+  },
+  {
+   "id": "ev2",
+   "source": "o64",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "enable",
+     "target": "o55,o56"
+    },
+    {
+     "type": "spawn",
+     "target": "o60,o61,o62,o63"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 1.0
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "Le magma se referme sur l'arène : restez au centre !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 3
+   },
+   "name": "Le cœur à nu"
+  },
+  {
+   "id": "ev3",
+   "source": "o64",
+   "trigger": "bossDefeated",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Pyroclast est vaincu : le bras droit d'Asterion s'éteint.",
+      "duration": 4
+     }
+    },
+    {
+     "type": "disable",
+     "target": "o34,o41,o55,o56"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.6
+     }
+    }
+   ],
+   "delay": 1.5,
+   "name": "Pyroclast vaincu"
+  }
+ ],
  "intro": {},
  "outro": {},
  "metadata": {
@@ -612,24 +1812,28 @@
    "spawns": {
     "6": [
      [
-      144,
-      512
-     ]
-    ],
-    "start": [
-     [
-      144,
-      512
-     ],
-     [
-      192,
+      240,
       512
      ]
     ],
     "7": [
      [
-      832,
-      576
+      288,
+      512
+     ]
+    ],
+    "start": [
+     [
+      240,
+      512
+     ],
+     [
+      288,
+      512
+     ],
+     [
+      208,
+      512
      ]
     ]
    },
@@ -643,15 +1847,15 @@
       64,
       64
      ],
-     "lock": "",
+     "lock": "objective:poignet_verrou",
      "door": ""
     },
     {
      "id": "p8_7",
      "to": 7,
      "rect": [
-      704,
-      512,
+      144,
+      448,
       64,
       64
      ],
@@ -659,11 +1863,107 @@
      "door": ""
     }
    ],
-   "objectives": [],
+   "objectives": [
+    {
+     "id": "main_pyroclast",
+     "source": "o64",
+     "trigger": "killed"
+    }
+   ],
    "magma": null,
-   "sealed": {
-    "door": "o17",
-    "label": "Pyroclast — prochaine version"
+   "sealed": null,
+   "arena": {
+    "rect": [
+     368,
+     0,
+     2928,
+     608
+    ],
+    "floor": 576,
+    "door": "",
+    "entry": [
+     480,
+     576
+    ],
+    "players": 8
+   },
+   "gigaboss": {
+    "boss": "o64",
+    "name": "Pyroclast",
+    "objective": "main_pyroclast",
+    "vents": [
+     {
+      "id": "event_ouest",
+      "rect": [
+       648.0,
+       400,
+       48,
+       16
+      ]
+     },
+     {
+      "id": "event_centre",
+      "rect": [
+       1832.0,
+       208,
+       48,
+       16
+      ]
+     },
+     {
+      "id": "event_est",
+      "rect": [
+       2952.0,
+       400,
+       48,
+       16
+      ]
+     }
+    ],
+    "carapace": [
+     2,
+     3
+    ],
+    "hold": 3.0,
+    "reopen": 15.0,
+    "exposed": 10.0,
+    "exposedMult": 2.0,
+    "jet": {
+     "period": 6.0,
+     "warn": 1.2,
+     "duration": 1.0,
+     "height": 112.0,
+     "damage": 1.0
+    },
+    "fists": {
+     "periods": [
+      9.0,
+      7.0,
+      5.5
+     ],
+     "warn": 1.4,
+     "width": 64.0,
+     "damage": 1.0
+    },
+    "weakEnemy": "pyroclast_noyau",
+    "weakSpots": [
+     [
+      100.0,
+      -262.0
+     ],
+     [
+      60.0,
+      -300.0
+     ],
+     [
+      20.0,
+      -310.0
+     ]
+    ],
+    "weakShare": 0.04,
+    "hpPerPlayer": 0.55,
+    "weakHpPerPlayer": 0.25,
+    "pressurePerPlayer": 0.06
    }
   }
  },

@@ -550,6 +550,27 @@
    }
   },
   {
+   "id": "title_assaillant_asterion",
+   "category": "title",
+   "look": "Assaillant d'Asterion",
+   "name": "Assaillant d'Asterion",
+   "raid": "asterion"
+  },
+  {
+   "id": "title_briseur_magma",
+   "category": "title",
+   "look": "Briseur de magma",
+   "name": "Briseur de magma",
+   "raid": "asterion"
+  },
+  {
+   "id": "title_fleau_pyroclast",
+   "category": "title",
+   "look": "Fléau de Pyroclast",
+   "name": "Fléau de Pyroclast",
+   "raid": "asterion"
+  },
+  {
    "id": "victory_classic",
    "category": "victory",
    "look": "classic",

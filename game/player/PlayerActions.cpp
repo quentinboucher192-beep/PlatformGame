@@ -237,6 +237,7 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
     if (w.invincible()) return false;  // 2.51: administrators' training runs
     if (invulnerable() && dmg.type != DamageType::Hazard) return false;
     if (shield_ && !dmg.ignoreShield) {
+        w.noteBlocked(dmg.amount);  // 2.68: the raids' contributions (statistics only)
         w.playSound("sounds/shield_block.wav", center(), 0.9f);
         w.particles().emit("shield_hit", center(), 1.0f);
         return false;

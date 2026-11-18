@@ -254,6 +254,9 @@ std::unique_ptr<Scene> makeRaidTitan(GameServices& g, const std::string& eventId
 /// 2.68: where the players of my clan are placed (branch, group), moved and rebalanced by the raid
 /// leader, the chief or an officer, pushed.
 std::unique_ptr<Scene> makeRaidRoster(GameServices& g, const std::string& eventId);
+/// 2.68, raids phase 3: the results of an event (validated tables only: clans, players in every
+/// category, the gigaboss's fights) and my rewards to claim, pushed.
+std::unique_ptr<Scene> makeRaidResults(GameServices& g, const std::string& eventId);
 /// The instance a player enters (POST /raids/events/{id}/branches/{part}/join): its event, id, clan,
 /// group and branch (its part).
 struct RaidEntry {
@@ -263,6 +266,18 @@ struct RaidEntry {
 };
 /// The combat of a raid instance (up to 8 players in lockstep), in place of the current screen.
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry);
+/// 2.68: an administrator's test of a raid (ADMINISTRATION › Raids › « Tester Asterion »): a
+/// branch of the catalog (raid::Branch::all) and one of its zones, solo and local, never reported
+/// (no consensus, branch state, ranking, contribution nor reward), invincible when asked, the
+/// gigaboss scaled for `players` and started at `startPhase`. Pushed over the administration.
+struct RaidTestSetup {
+    std::string branch;  // raid::Branch::id
+    int zone = 1;
+    int players = 2;
+    int startPhase = 1;
+    bool invincible = true;
+};
+std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
 /// The sheet of the clan whose tag is `tag` (2.63.6: a « [TAG] » clicked before a name in a
 /// ranking or in SOCIAL), pushed over the current screen; found by GET /clans?q=.
 std::unique_ptr<Scene> makeClanByTag(GameServices& g, const std::string& tag);

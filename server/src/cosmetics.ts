@@ -48,6 +48,8 @@ export interface CosmeticItem {
     challenge?: ResultsCondition;
     /** 2.35: periods in a row with a verified run received in time. */
     challengeStreak?: StreakCondition;
+    /** 2.68: a reward of the clan raids: only once granted and claimed (player_won_rewards). */
+    raid?: string;
 }
 
 const ITEMS: CosmeticItem[] = (catalog as unknown as { items: CosmeticItem[] }).items;
@@ -79,6 +81,7 @@ export function defaultItem(category: CosmeticCategory): CosmeticItem {
 export function unlocked(item: CosmeticItem, p: CosmeticProgress): boolean {
     if (item.default) return true;
     if (p.won?.items.has(item.id)) return true;
+    if (item.raid) return false; // 2.68: claimed raid rewards only (won above)
     if (item.achievement) return p.ids.has(item.achievement);
     if (item.challenge) return !!p.challenges && resultsMet(p.challenges, item.challenge);
     if (item.challengeStreak) return !!p.challenges && streakMet(p.challenges, item.challengeStreak);

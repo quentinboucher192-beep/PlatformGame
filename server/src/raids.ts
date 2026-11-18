@@ -1,7 +1,7 @@
 // Clan raids « ASTERION, LE DÉVOREUR DE MONDES », phase 1 (migration 0141): the events and the
-// registrations, the reminders and the notifications. The combat itself comes in later phases
-// (its results will be decided by the consensus of each instance's players): nothing here
-// pretends to have one, and the « rewards to claim » stay empty until then.
+// registrations, the reminders and the notifications. The combat is in raidZones.ts (decided by
+// the consensus of each instance's players); 2.68 (phase 3): the « rewards to claim » and the
+// state of Asterion's body (each event's « body ») come from its validated results (raidRewards.ts).
 //
 // Two kinds of events:
 //   - world events, scheduled by the game's administrators (ADMINISTRATION › Raids): a draft
@@ -23,6 +23,7 @@ import { audit, requireAuth, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
 import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { notify } from "./notifications";
+import { bodiesOf, rewardsOf } from "./raidRewards";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 
@@ -43,7 +44,8 @@ export const RAIDS = {
         display_title: "LE DÉVOREUR DE MONDES",
         description:
             "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
-        rewards_text: "Pas encore de récompense : elles arriveront avec les combats d'Asterion, dans une prochaine version.",
+        rewards_text:
+            "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute, titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, évents, objectifs, présence).",
     },
 } as const;
 export type RaidId = keyof typeof RAIDS;
@@ -379,16 +381,22 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     ];
     const [world, mine, invites, history, unread, prefs] = await db.batch(stmts);
     const inv = invites!.results as (EventRow & { invited_at: string; by_name: string | null })[];
+    // 2.68: Asterion's body in each event (validated results only), my rewards to claim.
+    const listed = [world, mine, history].flatMap((r) => (r!.results as EventRow[]).map((e) => e.id));
+    const bodies = await bodiesOf(db, listed);
+    const withBody = (e: EventRow) => ({ ...eventView(e, now), ...(bodies.get(e.id) ?? { body: {}, effects: [] }) });
+    const rewards = await rewardsOf(db, me);
     return json(ctx, {
         server_time: now,
         raids: Object.values(RAIDS).map((r) => ({ ...r, formats: RAID_FORMATS })),
         clan: clan ? { id: clan.id, tag: clan.tag, name: clan.name, role: clan.role } : null,
-        world: (world!.results as EventRow[]).map((e) => eventView(e, now)),
-        clan_events: (mine!.results as EventRow[]).map((e) => eventView(e, now)),
+        world: (world!.results as EventRow[]).map(withBody),
+        clan_events: (mine!.results as EventRow[]).map(withBody),
         invitations: inv.map((e) => ({ event: eventView(e, now), by: e.by_name, created_at: e.invited_at })),
-        // Phase 1: no combat yet, so nothing won (never a made-up reward).
-        rewards: [],
-        history: (history!.results as EventRow[]).map((e) => eventView(e, now)),
+        // 2.68: granted by the server from validated results only, to claim (POST /raids/rewards/claim).
+        rewards: rewards.pending,
+        rewards_claimed: rewards.claimed,
+        history: (history!.results as EventRow[]).map(withBody),
         unread: (unread!.results[0] as { n: number } | undefined)?.n ?? 0,
         prefs: prefsJson(prefs!.results[0] as PrefsRow | undefined),
     });
@@ -446,9 +454,10 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     const organizer = !!clan && e.clan_id === clan.id;
     const mineInv = clan ? invitations.find((i) => i.id === clan.id) : undefined;
     const def = definition(e.raid);
+    const body = (await bodiesOf(db, [e.id])).get(e.id) ?? { body: {}, effects: [] };
     return json(ctx, {
         server_time: now,
-        event: eventView(e, now),
+        event: { ...eventView(e, now), ...body },
         description: def.description,
         rewards_text: e.rewards_text || def.rewards_text,
         my: {

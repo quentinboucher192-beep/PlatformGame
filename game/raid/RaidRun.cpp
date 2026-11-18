@@ -22,10 +22,17 @@ uint64_t mix(uint64_t h, uint64_t v) {
 RaidRun::RaidRun(WorldServices services, const Branch& branch, int players)
     : services_(services), branch_(branch), players_(std::clamp(players, 1, kMaxInstancePlayers)) {}
 
-bool RaidRun::begin(uint32_t branchMask) {
+bool RaidRun::begin(uint32_t branchMask, int zone) {
     branchMask_ = branchMask;
-    loadZone(branch_.startZone, "start", nullptr);
+    loadZone(zone > 0 ? zone : branch_.startZone, "start", nullptr);
     return world_ != nullptr && rules_ != nullptr;
+}
+
+void RaidRun::setTest(const Test& t) {
+    test_ = t;
+    test_.players = std::clamp(t.players, 1, kMaxInstancePlayers);
+    test_.startPhase = std::max(1, t.startPhase);
+    gigaboss_.setTest(t.on ? test_.players : 0, t.on ? test_.startPhase : 1);
 }
 
 void RaidRun::setQuiet(bool on) {
@@ -53,10 +60,19 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     w->setKeysPerSlot(true);
     if (!w->load(*level)) return;
     w->seedGameplay(levelSeed(level->id));
+    if (test_.on) {
+        // An administrator's test: a training run (nothing it does counts), invincible when asked.
+        w->setTraining(true);
+        w->setInvincible(test_.invincible);
+    }
     w->setQuiet(quiet_);
     w->setCameraFollow(follow_);
-    w->eventObserver = [this](const std::string& src, const std::string& trig) { events_.emplace_back(src, trig); };
     world_ = std::move(w);
+    // 2.68: the players' contributions listen to this world; an event knows whose attack caused it.
+    contrib_.attach(*world_);
+    world_->eventObserver = [this](const std::string& src, const std::string& trig) {
+        events_.push_back({src, trig, world_ ? contrib_.ownerOf(world_->attackTag()) : -1});
+    };
     rules_ = rules;
     if (zid != zone_) lastCheckpoint_.clear();  // 2.68: kept when the same zone starts again
     zone_ = zid;
@@ -84,6 +100,11 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     for (const EffectInfo& e : branch_.effects)
         if (Branch::on(mask(), e) && e.inZone(zid)) applyEffect(e);
     alert("Zone : " + (branch_.zone(zid) ? branch_.zone(zid)->name : std::string("?")), Alert::Kind::Group);
+    // 2.68: the gigaboss of the zone (gone when its objective is done: it already fell).
+    const int fallen = rules->gigaboss.present ? branch_.objectiveIndex(rules->gigaboss.objective) : -1;
+    gigaboss_.begin(*world_, rules->gigaboss, fallen >= 0 && Branch::done(mask(), fallen), contrib_);
+    for (auto& [text, kind] : gigaboss_.takeAlerts())
+        alert(std::move(text), kind == Gigaboss::AlertKind::Danger ? Alert::Kind::Danger : kind == Gigaboss::AlertKind::Branch ? Alert::Kind::Branch : Alert::Kind::Group);
     reports_.push_back({Report::Kind::Zone, {}, zid, tick_, hash()});
 }
 
@@ -142,6 +163,17 @@ RaidRun::CoopView RaidRun::coop(size_t index) const {
         if (pl.alive() && !pl.respawning() && c.rect.intersects(pl.box)) ++v.on;
     }
     v.need = std::clamp(c.players, 1, std::max(1, playing));
+    if (!c.group.empty()) {
+        // 2.68 (phase 3): plates held together (« group »): the players in play shared between
+        // them; a plate beyond the players in play is not needed (alone: the first one is enough).
+        int size = 0, rank = 0;
+        for (size_t j = 0; j < rules_->coops.size(); ++j) {
+            if (rules_->coops[j].group != c.group) continue;
+            if (j < index) ++rank;
+            ++size;
+        }
+        v.need = rank >= std::max(1, playing) ? 0 : std::clamp(c.players, 1, std::max(1, playing / size));
+    }
     v.done = index < coopDone_.size() && coopDone_[index] != 0;
     return v;
 }
@@ -149,12 +181,27 @@ RaidRun::CoopView RaidRun::coop(size_t index) const {
 void RaidRun::updateCoops() {
     for (size_t k = 0; k < rules_->coops.size(); ++k) {
         if (coopDone_[k]) continue;
-        const CoopView v = coop(k);
-        if (v.on < v.need) continue;
-        coopDone_[k] = 1;
         const CoopPlate& c = rules_->coops[k];
-        for (const std::string& t : c.targets)
-            if (LevelEntity* e = world_->entity(t)) e->handleAction(*world_, c.action, Json::object());
+        // 2.68 (phase 3): the plates of a group, held at the same step (coop(): how many on each).
+        std::vector<size_t> group{k};
+        if (!c.group.empty())
+            for (size_t j = 0; j < rules_->coops.size(); ++j)
+                if (j != k && rules_->coops[j].group == c.group) group.push_back(j);
+        bool held = true;
+        for (size_t g : group) {
+            const CoopView v = coop(g);
+            if (v.on < v.need) held = false;
+        }
+        if (!held) continue;
+        for (size_t g : group) {
+            coopDone_[g] = 1;
+            const CoopPlate& p = rules_->coops[g];
+            for (const std::string& t : p.targets)
+                if (LevelEntity* e = world_->entity(t)) e->handleAction(*world_, p.action, Json::object());
+            // A mechanism activated, by each player standing on it (the raid's contributions).
+            for (int i = 0; i < std::min(world_->teamSize(), kMaxInstancePlayers); ++i)
+                if (world_->member(i).presence == GameWorld::Presence::Playing && p.rect.intersects(world_->playerAt(i).box)) contrib_.vent(i);
+        }
         alert("GROUPE · " + (c.message.empty() ? c.label : c.message), Alert::Kind::Group);
     }
 }
@@ -201,7 +248,7 @@ void RaidRun::updateMagma() {
     if (LevelEntity* z = world_->entity(m.zone)) z->handleAction(*world_, on ? "enable" : "disable", Json::object());
 }
 
-void RaidRun::completed(const std::string& source, const std::string& trigger) {
+void RaidRun::completed(const std::string& source, const std::string& trigger, int who) {
     for (const ZoneObjective& zo : rules_->objectives) {
         if (zo.source != source || zo.trigger != trigger) continue;
         const ObjectiveInfo* info = zo.index >= 0 && zo.index < static_cast<int>(branch_.objectives.size()) ? &branch_.objectives[static_cast<size_t>(zo.index)] : nullptr;
@@ -213,8 +260,28 @@ void RaidRun::completed(const std::string& source, const std::string& trigger) {
         }
         local_ |= 1u << info->index;
         alert("GROUPE · Objectif accompli : " + info->label, Alert::Kind::Group);
-        reports_.push_back({Report::Kind::Objective, info->id, zone_, tick_, 0});
+        // 2.68: an action of one player (a generator hit, a relic taken) is theirs; a fight won
+        // (an arena cleared, a guardian or the gigaboss down) is everyone's in play.
+        contrib_.objective(*world_, trigger == "activate" || trigger == "collected" ? who : -1);
+        Report rep;
+        rep.kind = Report::Kind::Objective;
+        rep.objective = info->id;
+        rep.zone = zone_;
+        rep.tick = tick_;
+        reports_.push_back(std::move(rep));
+        reportResult();
     }
+}
+
+void RaidRun::reportResult() {
+    if (lastResult_ == tick_) return;  // one table per step (an objective and a phase together)
+    lastResult_ = tick_;
+    Report rep;
+    rep.kind = Report::Kind::Result;
+    rep.zone = zone_;
+    rep.tick = tick_;
+    rep.records = contrib_.records();
+    reports_.push_back(std::move(rep));
 }
 
 void RaidRun::checkPassages() {
@@ -249,17 +316,36 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
     if (!world_) return;
     if (branchMask != branchMask_) applyMask(branchMask, false);
     updateMagma();
+    gigaboss_.before(*world_);  // 2.68: its carapace, its weak point bare, its pressure
     // The events since the last step (a world just loaded, this step): all of them, in order.
     stepTeam(*world_, frames, count, kSimDt);
+    const size_t firstReport = reports_.size();
+    // 2.68: the players' contributions of the step, then the gigaboss's rules (vents, jets, weak
+    // points, its fall) and what they tell the raid.
+    contrib_.afterStep(*world_, tick_, gigaboss_.boss(*world_));
+    gigaboss_.after(*world_, contrib_);
+    for (auto& [text, kind] : gigaboss_.takeAlerts())
+        alert(std::move(text), kind == Gigaboss::AlertKind::Danger ? Alert::Kind::Danger : kind == Gigaboss::AlertKind::Branch ? Alert::Kind::Branch : Alert::Kind::Group);
     ++tick_;
     ++zoneTicks_;
-    const size_t firstReport = reports_.size();
-    for (const auto& [src, trig] : events_) {
-        if (trig == "checkpoint") reachedCheckpoint(src);
-        completed(src, trig);
+    for (const Event& e : events_) {
+        if (e.trigger == "checkpoint") reachedCheckpoint(e.source);
+        completed(e.source, e.trigger, e.who);
     }
-    updateCoops();
     events_.clear();
+    updateCoops();
+    if (gigaboss_.phaseReached() > bossReported_) {
+        for (int p = bossReported_ + 1; p <= gigaboss_.phaseReached(); ++p) {
+            Report rep;
+            rep.kind = Report::Kind::Boss;
+            rep.zone = zone_;
+            rep.tick = tick_;
+            rep.phase = p;
+            reports_.push_back(std::move(rep));
+        }
+        bossReported_ = gigaboss_.phaseReached();
+        reportResult();
+    }
     const uint64_t h = hash();
     for (size_t i = firstReport; i < reports_.size(); ++i) reports_[i].hash = h;
     if (world_->state() == WorldState::Failed) {
@@ -279,6 +365,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
         return;
     }
     checkPassages();
+    if (test_.on) reports_.clear();  // 2.68: an administrator's test never reports anything
 }
 
 uint64_t RaidRun::hash() const {
@@ -288,6 +375,8 @@ uint64_t RaidRun::hash() const {
     h = mix(h, zoneTicks_);
     h = mix(h, tick_);
     h = mix(h, (static_cast<uint64_t>(branchMask_) << 32) | local_);
+    h = mix(h, contrib_.hash());   // 2.68 (phase 3)
+    h = mix(h, gigaboss_.hash());  // 2.68 (phase 3)
     // 2.68: the expeditions' state (nothing for the zones without checkpoints or plates).
     for (unsigned char c : lastCheckpoint_) h = mix(h, c);
     for (size_t k = 0; k < coopDone_.size(); ++k)
@@ -298,6 +387,7 @@ uint64_t RaidRun::hash() const {
 std::vector<Report> RaidRun::takeReports() {
     std::vector<Report> out;
     out.swap(reports_);
+    if (test_.on) out.clear();  // 2.68: an administrator's test never reports anything
     return out;
 }
 

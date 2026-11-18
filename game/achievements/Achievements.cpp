@@ -333,6 +333,10 @@ AchievementProgress AchievementBook::progress(const AchievementDef& def, const A
         p.value = in.onlineAccount || st.counter("online_login") > 0 ? 1 : 0;
     } else if (t == "friends") {
         p.value = std::max<int64_t>(in.friends, st.maximum("friends"));
+    } else if (t == "raid_reward") {
+        // 2.68: a badge of the clan raids, claimed from Cosmic Online (its reward's id in `key`).
+        p.target = 1;
+        p.value = in.raidRewards.count(c.key) ? 1 : 0;
     } else {
         p.value = 0;  // unknown condition (newer catalogue): never unlocked by mistake
         p.target = std::max<int64_t>(p.target, 1);

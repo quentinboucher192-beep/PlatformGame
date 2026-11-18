@@ -48,7 +48,7 @@ TEST_CASE("boss places: every boss of the game can be fought in at least one of 
     int bosses = 0;
     for (const EnemyDefinition* d : content().enemies()) {
         // 2.64: the tutorial's boss is fought in the tutorial only (outside every level list).
-        if (!d->isBoss || !d->builtin || d->tutorial) continue;
+        if (!d->isBoss || !d->builtin || d->tutorial || !d->raid.empty()) continue;  // 2.68: a raid's gigaboss: its raid's arena
         ++bosses;
         auto places = atlas().fightsOf(content(), d->id);
         if (places.empty()) std::printf("  sans lieu : %s\n", d->id.c_str());
@@ -67,7 +67,7 @@ TEST_CASE("boss places: each guardian in its campaign level, then its echo in L'
     for (const EnemyDefinition* d : content().enemies()) {
         // The Astrarque and the giga bosses (eight phases: Singularis 2.33, Pyrrhax 2.48) have no
         // echo in L'Arène des Échos.
-        if (!d->isBoss || !d->builtin || !d->variantOf.empty() || d->id == "astrarque" || d->phases.size() >= 8) continue;
+        if (!d->isBoss || !d->builtin || !d->variantOf.empty() || d->id == "astrarque" || d->phases.size() >= 8 || !d->raid.empty()) continue;
         ++guardians;
         auto places = atlas().fightsOf(content(), d->id);
         CHECK(places.size() >= 2);

@@ -564,6 +564,7 @@ void GameWorld::updateProjectiles(float frameDt) {
         } else if (Player* hitP = shotTarget(p)) {
             PlayerScope hitScope(*this, playerIndex(*hitP));  // 2.62: the player it touches (alone: the only one)
             if (hitP->shieldActive() && p.clip != "shockwave") {
+                noteBlocked(p.damage);  // 2.68: the raids' contributions (the shield's bearer is current)
                 // Reflect back at the enemies.
                 p.vel = -p.vel * 1.25f;
                 p.fromPlayer = true;
@@ -848,8 +849,14 @@ uint32_t GameWorld::newAttackTag(const std::string& power) {
     return attackSerial_;
 }
 
-void GameWorld::noteEnemyDamaged(const Enemy& e, const DamageInfo& dmg) {
+void GameWorld::noteEnemyDamaged(const Enemy& e, const DamageInfo& dmg, float amount) {
     if (listener && dmg.fromPlayer && attackTag_ != 0) listener->enemyHit(*this, e, attackTag_);
+    if (listener && dmg.fromPlayer) listener->enemyDamaged(*this, e, attackTag_, amount);
+}
+
+bool GameWorld::hurtPlayersByBoss(const Rect& area, const DamageInfo& d, const Enemy* boss, const std::string* attack) {
+    HurtScope blow(*this, HurtOrigin::BossAttack, boss, 0, attack);
+    return hurtPlayersIn(area, d);
 }
 
 void GameWorld::notePlayerKilled() {

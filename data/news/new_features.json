@@ -2470,6 +2470,37 @@
    "parents": [
     "clans.tab.raids"
    ]
+  },
+  {
+   "id": "ach.communaute_pyroclast",
+   "version": "2.68.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "cos.title_assaillant_asterion",
+   "version": "2.68.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_briseur_magma",
+   "version": "2.68.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_fleau_pyroclast",
+   "version": "2.68.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
   }
  ]
 }

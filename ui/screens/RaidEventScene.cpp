@@ -195,22 +195,30 @@ private:
             if (!part.empty()) g_.app.pushScene(makeRaidBranch(g_, id_, part));
             y = std::max(y, figTop + figH + ui.s(12));
         }
-        if (st == raids::State::Running) {
-            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; 2.68: the seven, from the titan's map.
+        if (st == raids::State::Running || st == raids::State::Finished) {
+            // 2.65 (phase 2): the branch « BRAS DROIT » is playable; 2.68: the seven, from the titan's map;
+            // phase 3: its gigaboss Pyroclast, and the results of the raid (validated).
+            const bool running = st == raids::State::Running;
             const Rect band{left.x, y, left.w, ui.s(54)};
-            ui.r().fillRoundedRect(band, ui.s(10), Color{122, 26, 26, 235});
-            const std::string label = "Carte du titan";
-            const float bw = std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.45f);
+            ui.r().fillRoundedRect(band, ui.s(10), running ? Color{122, 26, 26, 235} : Color{36, 46, 96, 235});
+            const std::string label = "Carte du titan", resultsLabel = running ? "Résultats" : "Résultats du raid";
+            const float rw = std::min(textW(ui, resultsLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.25f);
+            const float bw = running ? std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.3f) : 0.0f;
             UIContext::ButtonStyle bs;
             bs.primary = true;
-            const Rect br{band.right() - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
-            if (ui.button("branch", br, label, bs)) {
-                if (ui.featureSeen && ui.isNew("raids.titan_map")) ui.featureSeen("raids.titan_map");
-                g_.app.pushScene(makeRaidTitan(g_, id_));
+            const Rect rr{band.right() - ui.s(8) - rw, band.y + ui.s(6), rw, band.h - ui.s(12)};
+            if (ui.button("results", rr, resultsLabel, running ? UIContext::ButtonStyle{} : bs)) g_.app.pushScene(makeRaidResults(g_, id_));
+            if (running) {
+                const Rect br{rr.x - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
+                if (ui.button("branch", br, label, bs)) {
+                    if (ui.featureSeen && ui.isNew("raids.titan_map")) ui.featureSeen("raids.titan_map");
+                    g_.app.pushScene(makeRaidTitan(g_, id_));
+                }
+                ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
             }
-            ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
-            fit(ui, "Le raid est en cours : les sept branches du titan sont ouvertes aux groupes (les gigaboss, dans une prochaine version).",
-                {band.x + ui.s(16), band.center().y}, 15, band.w - bw - ui.s(40), kText, FontFace::Bold);
+            const std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit."
+                                             : "Le raid est terminé : ses résultats validés et vos récompenses.";
+            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - bw - ui.s(48), kText, FontFace::Bold);
             y += ui.s(66);
         }
         // Four figures.
@@ -268,6 +276,15 @@ private:
             if (ui.button("edit", {s1.x + ui.s(14), s1.bottom() - ui.s(14) - ui.s(44), tw, ui.s(44)}, "Modifier les consignes (chef, officiers)", bs)) openEdit();
         }
         ty = section(ui, s2, "RÉCOMPENSES", kSky);
+        // 2.68: the effects of the parts of Asterion destroyed (validated), before the rewards.
+        const Json& effects = at(at(data_, "event"), "effects");
+        if (effects.is_array())
+            for (const Json& fx : effects) {
+                const int el = std::max(0, std::min(2, static_cast<int>((s2.bottom() - ui.s(14) - ty) / ui.s(22))));
+                if (el == 0) break;
+                ty += drawLines(ui, wrap(ui, "Effet actif · " + jstr(fx, "text"), FontFace::Bold, 15, s2.w - ui.s(28), el), {s2.x + ui.s(14), ty}, 15, ui.s(22), kGreen) +
+                      ui.s(6);
+            }
         const int rl = std::max(0, static_cast<int>((s2.bottom() - ui.s(14) - ty) / ui.s(24)));
         drawLines(ui, wrap(ui, jstr(data_, "rewards_text"), FontFace::Body, 16, s2.w - ui.s(28), rl), {s2.x + ui.s(14), ty}, 16, ui.s(24), kText);
     }

@@ -129,7 +129,7 @@ void AdminEnemies::drawList(const Rect& r) {
     UIContext& ui = g_.ui;
     std::vector<const EnemyDefinition*> natives;
     for (const EnemyDefinition* d : g_.content.enemies())
-        if (d->builtin && !d->tutorial) natives.push_back(d);  // 2.64: the tutorial's creatures stay as they are
+        if (d->builtin && !d->tutorial && d->raid.empty()) natives.push_back(d);  // 2.64: the tutorial's creatures stay as they are; 2.68: a raid's too
     if (natives.empty()) {
         ui.label("Aucune entité native dans ce jeu.", {r.center().x, r.y + ui.s(40)}, 18, ui.theme().textDim, Align::Center, FontFace::Body, VAlign::Middle);
         return;

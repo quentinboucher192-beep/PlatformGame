@@ -8,9 +8,11 @@
 #include "engine/core/I18n.h"
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
+#include "game/raid/RaidBranch.h"
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
 #include "ui/online/RaidWidgets.h"
+#include "ui/screens/Navigation.h"
 
 namespace cosmic {
 
@@ -140,10 +142,75 @@ void AdminRaids::draw(const Rect& in) {
     ui.pushId("raids");
     const float formW = std::min(ui.s(600), in.w * 0.44f);
     drawForm({in.x, in.y, formW, in.h});
-    const Rect right{in.x + formW + ui.s(18), in.y, in.w - formW - ui.s(18), in.h};
-    const float listH = std::max(ui.s(200), right.h * 0.46f);
+    Rect right{in.x + formW + ui.s(18), in.y, in.w - formW - ui.s(18), in.h};
+    // 2.68: « Tester Asterion » at the bottom of the right column (administrators only).
+    if (g_.online.isAdmin() && !raid::Branch::all().empty()) {
+        const float testH = ui.s(226);
+        drawTest({right.x, right.bottom() - testH, right.w, testH});
+        right.h -= testH + ui.s(14);
+    }
+    const float listH = std::max(ui.s(160), right.h * 0.46f);
     drawList({right.x, right.y, right.w, listH});
     drawDetail({right.x, right.y + listH + ui.s(14), right.w, right.h - listH - ui.s(14)});
+    ui.popId();
+}
+
+void AdminRaids::drawTest(const Rect& r) {
+    // 2.68: a branch of the catalog (raid::Branch::all: a branch added later appears by itself), one
+    // of its zones, then « Lancer le test »: solo, local, never reported.
+    UIContext& ui = g_.ui;
+    ui.pushId("test");
+    const float top = section(ui, r, "TESTER ASTERION · ADMINISTRATEURS", kGold);
+    const auto& branches = raid::Branch::all();
+    testBranch_ = std::clamp(testBranch_, 0, static_cast<int>(branches.size()) - 1);
+    const raid::Branch& b = *branches[static_cast<size_t>(testBranch_)];
+    std::vector<std::string> branchNames;
+    for (const raid::Branch* x : branches) branchNames.push_back(x->name);
+    std::vector<std::string> zoneNames;
+    int bossZone = 0;
+    for (const raid::ZoneInfo& z : b.zones) {
+        zoneNames.push_back(std::to_string(z.id) + " · " + z.name + (z.boss ? " (" + b.gigaboss + ")" : ""));
+        if (z.boss && bossZone == 0) bossZone = static_cast<int>(zoneNames.size()) - 1;
+    }
+    if (testZone_ < 0 || testZone_ >= static_cast<int>(zoneNames.size())) testZone_ = bossZone;  // the gigaboss's fight by default
+    const raid::ZoneRules* rules = b.zoneRules(b.zones[static_cast<size_t>(testZone_)].id);
+    const bool giga = rules && rules->gigaboss.present;
+    const float x = r.x + ui.s(14), w = r.w - ui.s(28), gap = ui.s(10), rowH = ui.s(44);
+    const float half = (w - gap) * 0.5f;
+    float y = top;
+    const int prevBranch = testBranch_;
+    ui.cycle("branch", {x, y, half, rowH}, "Branche", testBranch_, branchNames);
+    if (testBranch_ != prevBranch) testZone_ = -1;
+    ui.cycle("zone", {x + half + gap, y, half, rowH}, "Zone", testZone_, zoneNames);
+    y += rowH + gap;
+    static const std::vector<std::string> kPlayers = {"2", "3", "4", "5", "6", "7", "8"};
+    static const std::vector<std::string> kPhases = {"1", "2", "3"};
+    ui.cycle("players", {x, y, half, rowH}, "Joueurs simulés", testPlayers_, kPlayers);
+    const bool ro = ui.readOnly;
+    ui.readOnly = !giga;
+    ui.cycle("phase", {x + half + gap, y, half, rowH}, giga ? "Phase de départ" : "Phase (sans gigaboss)", testPhase_, kPhases);
+    ui.readOnly = ro;
+    y += rowH + gap;
+    bool inv = g_.settings.gameplay.adminInvincible;
+    if (ui.toggle("invincible", {x, y, half, rowH}, "Invincible (admin) · non classé", inv)) {
+        g_.settings.gameplay.adminInvincible = inv;
+        g_.saveSettings();
+    }
+    UIContext::ButtonStyle bs;
+    bs.primary = true;
+    if (ui.button("launch", {x + half + gap, y, half, rowH}, "Lancer le test", bs)) {
+        RaidTestSetup t;
+        t.branch = b.id;
+        t.zone = b.zones[static_cast<size_t>(testZone_)].id;
+        t.players = testPlayers_ + 2;
+        t.startPhase = giga ? testPhase_ + 1 : 1;
+        t.invincible = g_.settings.gameplay.adminInvincible;
+        g_.app.pushScene(makeRaidTest(g_, t));
+    }
+    y += rowH + ui.s(6);
+    drawLines(ui, wrap(ui, "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense.", FontFace::Body, 13, w,
+                       std::max(1, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))),
+              {x, y}, 13, ui.s(18), kDim);
     ui.popId();
 }
 

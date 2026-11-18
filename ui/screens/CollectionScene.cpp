@@ -520,6 +520,7 @@ private:
         if (!it.souvenir.empty()) return "Souvenir du didacticiel";
         if (!it.achievement.empty()) return unlocked ? "Succès obtenu" : "« " + achievementName(it.achievement) + " »";
         if (it.challengeReward()) return unlocked ? "Défis : obtenu" : "Défis : " + challengeConditionShort(it);
+        if (!it.raid.empty()) return "Raid de clan Asterion";  // 2.68
         if (it.isDefault) return "Dès le départ";
         return starsText(cosmeticThreshold(it, progress_.totalStars));
     }
@@ -529,6 +530,7 @@ private:
         if (!it.achievement.empty()) return "Récompense du succès « " + achievementName(it.achievement) + " »";
         if (it.challengeReward())
             return cosmeticUnlocked(it, progress_) ? "Récompense des défis : obtenue" : challengeProgressText(it, progress_);
+        if (!it.raid.empty()) return "Récompense des raids de clan : à récupérer dans CLANS › RAIDS";  // 2.68
         if (it.isDefault) return "Disponible dès le départ";
         if (it.allStars) return "Palier : toutes les étoiles (" + std::to_string(progress_.totalStars) + ")";
         return "Palier : " + std::to_string(it.stars) + " étoiles";
@@ -537,6 +539,7 @@ private:
         if (!it.souvenir.empty()) return "Didacticiel requis";
         if (!it.achievement.empty()) return "Succès requis";
         if (it.challengeReward()) return "Défis requis";
+        if (!it.raid.empty()) return "Raid requis";  // 2.68
         int missing = std::max(0, cosmeticThreshold(it, progress_.totalStars) - progress_.stars);
         return "Encore " + std::to_string(missing) + (missing > 1 ? " étoiles" : " étoile");
     }
@@ -1396,7 +1399,7 @@ private:
             return out;
         }
         for (const EnemyDefinition* d : g_.content.enemies()) {
-            if (!d->builtin || d->tutorial || d->isBoss != (tab == 1)) continue;  // 2.64: not the tutorial's creatures
+            if (!d->builtin || d->tutorial || !d->raid.empty() || d->isBoss != (tab == 1)) continue;  // 2.64: not the tutorial's creatures; 2.68: nor a raid's
             auto pit = planetsOf_.find(d->id);
             if (pit == planetsOf_.end()) continue;  // not in the campaign
             GalItem it;

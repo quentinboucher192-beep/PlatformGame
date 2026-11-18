@@ -754,6 +754,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
     const placement = await placementOf(db, e.id, me);
     const body: Record<string, string> = {};
     let zonesControlled = 0;
+    let gigabossDefeated = 0;
     const needs: { branch: string; zone: number; name: string; groups: number; required: number }[] = [];
     const branches = CATALOGS.map((c) => {
         const mask = states.get(c.id) ?? 0;
@@ -765,7 +766,20 @@ export async function titanView(ctx: Ctx): Promise<Response> {
         const own = done.get(c.id)?.size ?? 0;
         // How the titan's part looks: unknown until a group goes there, attacked while groups fight
         // there, weakened once half of its zones are taken, else intact.
-        const state = here.length === 0 && own === 0 ? "inconnu" : fighting.length > 0 ? "attaque" : controlled >= 3 ? "affaibli" : "intact";
+        // 2.68 (phase 3): a branch whose gigaboss is fought (an objective of role « gigaboss »: the
+        // Bras droit's Pyroclast) is destroyed once its fall is accepted; the others stay sealed.
+        const giga = c.objectives.find((o) => o.role === "gigaboss");
+        const fallen = !!giga && isDone(mask, giga.index);
+        if (fallen) gigabossDefeated++;
+        const state = fallen
+            ? "detruit"
+            : here.length === 0 && own === 0
+              ? "inconnu"
+              : fighting.length > 0
+                ? "attaque"
+                : controlled >= 3
+                  ? "affaibli"
+                  : "intact";
         body[partOf(c.id)] = state;
         for (const z of c.zones) {
             if (z.groups_required < 2) continue;
@@ -778,7 +792,8 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             id: c.id,
             name: c.name,
             gigaboss: c.gigaboss,
-            sealed: true,
+            sealed: !giga,
+            gigaboss_down: fallen,
             state,
             zones: c.zones.length,
             zones_controlled: controlled,
@@ -825,7 +840,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             groups: fighting.length,
             players: fighting.reduce((n, i) => n + i.players, 0),
             clans: new Set(fighting.map((i) => i.clan_id)).size,
-            gigaboss_defeated: 0,
+            gigaboss_defeated: gigabossDefeated,
             gigaboss: CATALOGS.length,
             links_on: links.filter((l) => l.on).length,
             links: links.length,

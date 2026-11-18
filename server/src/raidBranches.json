@@ -1,6 +1,6 @@
 {
  "id": "asterion_bras_droit",
- "revision": 1,
+ "revision": 2,
  "raid": "asterion",
  "branch": "bras_droit",
  "name": "BRAS DROIT",
@@ -19,7 +19,8 @@
    "event": "",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.4
   },
   {
    "id": 2,
@@ -32,7 +33,8 @@
    "event": "",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.2
   },
   {
    "id": 3,
@@ -45,7 +47,8 @@
    "event": "Coulée de magma toutes les 60 s (terrasses hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.2
   },
   {
    "id": 4,
@@ -58,7 +61,8 @@
    "event": "Coulée de magma toutes les 90 s (plateformes hautes sûres)",
    "secret": false,
    "boss": false,
-   "groups_required": 2
+   "groups_required": 2,
+   "minutes": 1.4
   },
   {
    "id": 5,
@@ -71,7 +75,8 @@
    "event": "",
    "secret": true,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 0.6
   },
   {
    "id": 6,
@@ -84,30 +89,32 @@
    "event": "",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 1.1
   },
   {
    "id": 7,
    "name": "Poignet-verrou",
-   "sub": "s'ouvre : 2 générateurs",
+   "sub": "s'ouvre : 2 générateurs · la longue route",
    "x": 790,
    "y": 470,
    "level": "zone_7.json",
-   "inside": "Ennemis : la garde du verrou (arène en trois vagues)",
-   "event": "",
+   "inside": "Quatre embuscades géantes sur plusieurs étages, plaques et monte-charge de groupe, points de contrôle",
+   "event": "Environ 15 min à 8 joueurs",
    "secret": false,
    "boss": false,
-   "groups_required": 1
+   "groups_required": 1,
+   "minutes": 15.4
   },
   {
    "id": 8,
    "name": "Main de Pyroclast",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · Pyroclast",
    "x": 1000,
    "y": 320,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Pyroclast attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Pyroclast : trois phases, sa carapace, ses trois évents à fermer ensemble",
+   "event": "Carapace : ses 3 évents à tenir 3 s, ensemble",
    "secret": false,
    "boss": true,
    "groups_required": 1
@@ -165,7 +172,7 @@
   {
    "a": 6,
    "b": 8,
-   "lock": "",
+   "lock": "objective:poignet_verrou",
    "secret": false
   },
   {
@@ -264,6 +271,15 @@
    "label": "Briser le verrou du poignet : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "main_pyroclast",
+   "index": 10,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Pyroclast",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

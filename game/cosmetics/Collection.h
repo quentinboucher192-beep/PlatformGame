@@ -53,6 +53,10 @@ struct CosmeticItem {
     /// it once the tutorial is behind them); Cosmic Online cannot check it: online, the
     /// category's default is worn instead.
     std::string souvenir;
+    /// 2.68: a reward of the clan raids (« asterion »): Cosmic Online grants it from the validated
+    /// results of a raid and the player claims it (CLANS › RAIDS, « Récupérer »); it is then a
+    /// reward won (WonRewards), never unlocked otherwise.
+    std::string raid;
     /// 2.43: a title created on Cosmic Online by an administrator (id "srv:<n>", `look` its
     /// text): its colour, "gold", "silver", "cyan" or "violet"; "" for the catalogue's items.
     std::string color;
@@ -218,6 +222,9 @@ public:
     // (shownBadges() keeps those still unlocked, as many as the stars open). Kept here even
     // without an account: published once the player is connected.
     std::vector<std::string> badges;
+    /// 2.68: the rewards of the clan raids this account claimed (GET /raids « rewards_claimed »,
+    /// kept for offline play): the raid badges (achievements « raid_reward ») read them.
+    std::set<std::string> raidRewards;
     /// The player chose badges on this computer (even « none »): only then is the choice sent,
     /// so a computer where nothing was chosen never erases the badges chosen on another one.
     bool badgesChosen = false;

@@ -176,7 +176,7 @@ public:
         y += ui.s(16);
         const std::vector<std::pair<std::string, Color>> lines = {
             {"Gigaboss vaincus : " + std::to_string(jget<int>(t, "gigaboss_defeated", 0)) + " / " + std::to_string(jget<int>(t, "gigaboss", 7)) +
-                 " · portes scellées (prochaine version)",
+                 " · Pyroclast se combat, les six autres portes restent scellées (prochaine version)",
              kPeach},
             {"Objectifs accomplis : " + std::to_string(jget<int>(t, "objectives_done", 0)) + " / " + std::to_string(jget<int>(t, "objectives", 0)), kText},
             {"En combat : " + std::to_string(jget<int>(t, "groups", 0)) + " groupes · " + std::to_string(jget<int>(t, "players", 0)) + " joueurs · " +
@@ -297,7 +297,9 @@ public:
             fit(ui, r1, {row.right() - pad, row.y + ui.s(15)}, 12, rw, stateColor(st), FontFace::Bold, Align::Right);
             fit(ui, r2, {row.right() - pad, row.y + ui.s(32)}, 12, rw, kDim, FontFace::Body, Align::Right);
             fit(ui, jstr(b, "name"), {ix, row.y + ui.s(15)}, 15, iw - rw - ui.s(10), kText, FontFace::Bold);
-            fit(ui, "Gigaboss : " + jstr(b, "gigaboss") + " · scellé", {ix, row.y + ui.s(32)}, 12, iw - rw - ui.s(10), kPeach);
+            // 2.68 (phase 3): Pyroclast (the Bras droit) is fought; the six others stay sealed.
+            const std::string gstate = jget<bool>(b, "gigaboss_down", false) ? " · vaincu" : jget<bool>(b, "sealed", true) ? " · scellé" : " · dans son antre";
+            fit(ui, "Gigaboss : " + jstr(b, "gigaboss") + gstate, {ix, row.y + ui.s(32)}, 12, iw - rw - ui.s(10), kPeach);
             y += rowH;
         }
         float below = list.bottom() + ui.s(12);

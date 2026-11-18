@@ -499,6 +499,7 @@ AchievementInputs GameServices::achievementInputs() const {
         }
     in.onlineAccount = online.loggedIn();
     in.friends = online.friendCount();
+    in.raidRewards = collection.raidRewards;  // 2.68
     // Collection (2.24): the jukebox's tracks heard, the bestiary's creatures met (the game's
     // own creatures, guardians and the small slimes born from a split aside: the gallery's
     // Bestiaire).

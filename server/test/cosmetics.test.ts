@@ -1,3 +1,4 @@
+import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import achievementCatalog from "../src/achievementCatalog.json";
 import catalog from "../src/cosmeticCatalog.json";
@@ -84,6 +85,10 @@ describe("cosmetics worn online", () => {
         const a = await registerPlayer("Nova");
         await declare(a, ALL_IDS.slice(1));
         expect((await wear(a, { frame: "frame_constellation" })).body.data.cosmetics.frame.id).toBe("frame_simple");
+        // 2.68: the raid's badge (communaute_pyroclast) is declared only once its reward is claimed (raidRewards.ts).
+        await env.DB.prepare("INSERT INTO raid_reward_grants (player_id, reward, event_id, reason, granted_at, claimed_at) VALUES (?1, 'pyroclast_badge', 'ev', 'test', ?2, ?2)")
+            .bind(a.id, new Date().toISOString())
+            .run();
         await declare(a, ALL_IDS);
         const r = await wear(a, { frame: "frame_constellation", suit: "suit_echo", title: "title_nouveau_maitre" });
         expect(ids(r.body.data.cosmetics)).toMatchObject({ frame: "frame_constellation", suit: "suit_echo", title: "title_nouveau_maitre" });
@@ -172,6 +177,7 @@ describe("cosmetics worn online", () => {
             challenge?: unknown;
             challengeStreak?: unknown;
             souvenir?: string;
+            raid?: string;
         };
         // 2.64: the souvenirs (given on the player's computer) are not the server's.
         const items = (game as unknown as { items: GameItem[] }).items.filter((i) => !i.souvenir).map((i) => {
@@ -180,6 +186,7 @@ describe("cosmetics worn online", () => {
             else if (i.achievement) o.achievement = i.achievement;
             else if (i.challenge) o.challenge = i.challenge;
             else if (i.challengeStreak) o.challengeStreak = i.challengeStreak;
+            else if (i.raid) o.raid = i.raid; // 2.68: a raid's reward (player_won_rewards once claimed)
             else o.stars = i.stars;
             return o;
         });

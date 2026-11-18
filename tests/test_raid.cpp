@@ -9,6 +9,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <cstdio>
+#include <cstdlib>
 #include <map>
 #include <vector>
 
@@ -21,6 +22,10 @@
 #include "game/coop/CoopRelay.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/content/ContentDatabase.h"
+#include "game/enemies/Enemy.h"
+#include "game/gameplay/entities/Entities.h"
+#include "game/raid/ArenaCamera.h"
 #include "game/raid/RaidBranch.h"
 #include "game/raid/RaidRun.h"
 #include "tests/TestFramework.h"
@@ -194,16 +199,21 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
         CHECK(found == 1);
     }
     // The rules of the map: two paths, the secret grotto, the wrist locked by 2 generators,
-    // the shortcut, the hand sealed (phase 3).
+    // the shortcut; 2.68: the hand is the gigaboss's arena.
     auto reach = b.reachable(0);
     CHECK(reach[2] && reach[3] && reach[4] && reach[5] && reach[6]);
-    CHECK(!reach[7] && reach[8]);  // the hand by the forearm; the wrist waits for its generators
+    CHECK(!reach[7] && !reach[8]);  // 2.68: the hand only once the wrist is broken (its long level)
     const uint32_t gens = (1u << b.objectiveIndex("veine_generateur")) | (1u << b.objectiveIndex("avantbras_generateur"));
     CHECK(b.generators(gens) == 2);
     CHECK(b.reachable(gens)[7]);
+    CHECK(b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);  // then by the forearm too
     CHECK(!b.lockOpen("shortcut", 0));
     CHECK(b.lockOpen("shortcut", 1u << b.objectiveIndex("avantbras_raccourci")));
-    CHECK(b.zoneRules(8)->sealedLabel == "Pyroclast — prochaine version");
+    CHECK(b.zoneRules(8)->sealedLabel.empty());
+    CHECK(b.zoneRules(8)->gigaboss.present);
+    CHECK(b.zoneRules(8)->gigaboss.vents.size() == 3);
+    CHECK(b.objective("main_pyroclast") && b.objective("main_pyroclast")->zone == 8 && b.objective("main_pyroclast")->role == "gigaboss");
+    CHECK(b.level(8)->findObject(b.zoneRules(8)->gigaboss.boss) != nullptr);
     CHECK(b.zoneRules(4)->magma.present);
     CHECK(b.zoneRules(4)->magma.period == 90.0f);
     CHECK(b.pairDone(*b.objective("forge_soufflet_est"), 1u << b.objectiveIndex("forge_soufflet_ouest")) == "forge_soufflet_ouest");
@@ -233,7 +243,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xad44285c6942fc75ULL;  // reference: printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xe57624dc0e8b74a3ULL;  // reference (2.68: the Main de Pyroclast): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -444,4 +454,461 @@ TEST_CASE("raid objectives: the instance's completion counts at once, the pair n
     run.world().emit(arena.source, arena.trigger);
     run.step(frame.data(), static_cast<int>(frame.size()), 0);
     CHECK(run.takeReports().empty());
+}
+
+// ======================================================================= 2.68: PYROCLAST
+
+#ifdef _WIN32
+#define COSMIC_RAID_NULL "NUL"
+#else
+#define COSMIC_RAID_NULL "/dev/null"
+#endif
+
+namespace {
+
+constexpr int kHand = 8;  // the Main de Pyroclast
+
+/// Frames where seats >= `players` are vacant and the others hold still.
+std::vector<InputFrame> still(int players) {
+    std::vector<InputFrame> f(raid::kMaxInstancePlayers);
+    for (int k = players; k < raid::kMaxInstancePlayers; ++k) f[static_cast<size_t>(k)].flags = InputFrame::Vacant;
+    return f;
+}
+
+Enemy* bossOf(raid::RaidRun& run) {
+    for (auto& e : run.world().enemies())
+        if (e->objectId() == run.rules().gigaboss.boss) return e.get();
+    return nullptr;
+}
+
+/// The players in play put in the middle of the arena: the gigaboss wakes up.
+void intoArena(raid::RaidRun& run, int players) {
+    for (int i = 0; i < players; ++i) run.world().playerAt(i).teleportTo({70.0f * 16.0f + 24.0f * static_cast<float>(i), 36.0f * 16.0f});
+}
+
+/// Steps until the fight began (at most `limit` steps).
+bool engage(raid::RaidRun& run, int players, int limit = 600) {
+    const auto f = still(players);
+    for (int t = 0; t < limit && !run.gigaboss().engaged(); ++t) {
+        if (t % 30 == 0) intoArena(run, players);
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+    }
+    return run.gigaboss().engaged();
+}
+
+}  // namespace
+
+TEST_CASE("raid gigaboss: Pyroclast's sprite sheets are the generator's output") {
+    // Needs Python with numpy and Pillow (the asset tools); skipped without them.
+    if (std::system("python3 -c \"import numpy, PIL\" > " COSMIC_RAID_NULL " 2>&1") != 0) {
+        std::printf("  (python3 + numpy + Pillow absents : vérification du générateur de Pyroclast sautée)\n");
+        return;
+    }
+    CHECK(std::system("python3 tools/assetgen/characters/boss_k_pyroclast.py --check > " COSMIC_RAID_NULL " 2>&1") == 0);
+}
+
+TEST_CASE("raid gigaboss: Pyroclast's health follows the seats taken (2 to 8), its three phases") {
+    Services s;
+    const EnemyDefinition* def = s.content.enemy("pyroclast");
+    CHECK(def != nullptr);
+    if (!def) return;
+    CHECK(def->isBoss);
+    CHECK(def->phases.size() == 3);
+    CHECK(s.content.enemy("pyroclast_noyau") != nullptr);
+    for (int players : {2, 5, 8}) {
+        raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+        CHECK(run.begin(0, kHand));
+        CHECK(run.zone() == kHand);
+        CHECK(run.gigaboss().present());
+        CHECK(engage(run, players));
+        const Enemy* b = bossOf(run);
+        CHECK(b != nullptr);
+        if (!b) continue;
+        const float want = def->hp * raid::Gigaboss::healthFactor(run.rules().gigaboss, players);
+        CHECK(std::abs(b->maxHp() - want) < 0.5f);
+        CHECK(run.gigaboss().scaledFor() == players);
+        CHECK(b->pressure() >= 1.0f);
+    }
+}
+
+TEST_CASE("raid gigaboss: 2 and 8 players, the fight in lockstep gives the same digest on two computers and through the relay") {
+    Services s;
+    for (int players : {2, 8}) {
+        raid::RaidRun a(s.ws(), branch(), raid::kMaxInstancePlayers), b(s.ws(), branch(), raid::kMaxInstancePlayers);
+        CHECK(a.begin(0, kHand));
+        CHECK(b.begin(0, kHand));
+        Edges edges(raid::kMaxInstancePlayers);
+        std::vector<InputFrame> frame(raid::kMaxInstancePlayers);
+        bool same = true;
+        for (uint32_t t = 0; t < 2400; ++t) {
+            for (int k = 0; k < raid::kMaxInstancePlayers; ++k) {
+                InputFrame f;
+                if (k >= players) f.flags = InputFrame::Vacant;
+                else f = edges(k, scripted(k, t));
+                frame[static_cast<size_t>(k)] = f;
+            }
+            if (t == 30) {
+                intoArena(a, players);
+                intoArena(b, players);
+            }
+            a.step(frame.data(), static_cast<int>(frame.size()), 0);
+            b.step(frame.data(), static_cast<int>(frame.size()), 0);
+            if (t % 30 == 29 && a.hash() != b.hash()) same = false;
+        }
+        CHECK(same);
+        CHECK(a.gigaboss().engaged());
+        CHECK(a.contributions().canonical() == b.contributions().canonical());
+        // Through the relay in raid mode: two games fed with what each received play the same.
+        Wire w;
+        playThroughRelay(w, players, 1500);
+        auto play = [&](int conn) {
+            raid::RaidRun r(s.ws(), branch(), raid::kMaxInstancePlayers);
+            CHECK(r.begin(w.stateAt(conn, 0), kHand));
+            const auto fr = w.frames(conn, raid::kMaxInstancePlayers);
+            std::vector<uint64_t> digests;
+            for (uint32_t t = 0; t < fr.size(); ++t) {
+                if (t == 30) intoArena(r, players);
+                r.step(fr[t].data(), static_cast<int>(fr[t].size()), w.stateAt(conn, t));
+                if (t % 60 == 59) digests.push_back(r.hash());
+            }
+            return digests;
+        };
+        const auto d1 = play(1), d2 = play(players);
+        CHECK(!d1.empty());
+        CHECK(d1 == d2);
+    }
+}
+
+TEST_CASE("raid gigaboss: its carapace holds until every vent is closed together; its weak points then") {
+    Services s;
+    raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+    raid::RaidRun::Test t;  // invincible (the jets and its blows hurt nobody here), started at its 2nd phase
+    t.on = true;
+    t.invincible = true;
+    t.players = 3;
+    t.startPhase = 2;
+    run.setTest(t);
+    CHECK(run.begin(0, kHand));
+    CHECK(engage(run, 3));
+    const auto f = still(3);
+    const auto& vents = run.rules().gigaboss.vents;
+    CHECK(vents.size() == 3);
+    auto onVent = [&](int player, int vent) {
+        const Rect& v = vents[static_cast<size_t>(vent)];
+        run.world().playerAt(player).teleportTo({v.center().x, v.bottom()});
+    };
+    for (int k = 0; k < 20; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
+    CHECK(run.gigaboss().phase() == 2);
+    CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);
+    Enemy* b = bossOf(run);
+    CHECK(b != nullptr);
+    if (!b) return;
+    // One player alone on one vent: it closes, the carapace stays (nothing hurts the boss).
+    for (int k = 0; k < 400; ++k) {
+        onVent(0, 0);
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+    }
+    CHECK(run.gigaboss().ventsClosed() == 1);
+    CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);
+    CHECK(b->raidGuarded());
+    const float hp = b->hp();
+    DamageInfo hit;
+    hit.amount = 5.0f;
+    hit.fromPlayer = true;
+    hit.source = b->center();
+    CHECK(!b->takeDamage(run.world(), hit));
+    CHECK(b->hp() == hp);
+    // Three players, three vents, together: the carapace bursts, its weak point is bare.
+    for (int k = 0; k < 400 && run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace; ++k) {
+        onVent(0, 0);
+        onVent(1, 1);
+        onVent(2, 2);
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+    }
+    CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed);
+    run.step(f.data(), static_cast<int>(f.size()), 0);
+    CHECK(!b->raidGuarded());
+    CHECK(b->raidMultiplier() == run.rules().gigaboss.exposedMult);
+    CHECK(run.gigaboss().weakTotal() == 3);
+    // Each player who held a vent when it closed counts it (the mechanisms).
+    int closed = 0;
+    for (const raid::Contribution& c : run.contributions().records()) closed += c.vents;
+    CHECK(closed >= 3);
+    // A weak point broken takes its share of the boss's health.
+    Enemy* weak = nullptr;
+    for (auto& e : run.world().enemies())
+        if (e->alive() && e->def().id == "pyroclast_noyau") weak = e.get();
+    CHECK(weak != nullptr);
+    if (weak) {
+        const float before = b->hp();
+        weak->kill(run.world());
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+        CHECK(b->hp() < before - run.rules().gigaboss.weakShare * b->maxHp() * 0.9f);
+        CHECK(run.gigaboss().weakLeft() == 2);
+    }
+    // The exposure over: the vents light again, the carapace with them.
+    for (int k = 0; k < 1400 && run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
+    CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);
+    CHECK(run.gigaboss().ventsClosed() == 0);
+}
+
+TEST_CASE("raid gigaboss: its fall reports its phases, the objective and the contributions; an admin test never reports") {
+    Services s;
+    for (bool test : {false, true}) {
+        raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+        if (test) {
+            raid::RaidRun::Test t;
+            t.on = true;
+            t.invincible = true;
+            t.players = 8;
+            run.setTest(t);
+        }
+        CHECK(run.begin(0, kHand));
+        CHECK(engage(run, 2));
+        std::vector<raid::Report> reports;
+        for (auto& r : run.takeReports()) reports.push_back(r);
+        Enemy* b = bossOf(run);
+        CHECK(b != nullptr);
+        if (!b) continue;
+        const auto f = still(2);
+        b->wound(run.world(), b->maxHp() * 2.0f);  // its last stand, then its fall
+        for (int k = 0; k < 4000 && run.gigaboss().stage() != raid::Gigaboss::Stage::Fallen; ++k) {
+            if (k % 60 == 0)
+                for (int i = 0; i < 2; ++i) run.world().playerAt(i).heal(10);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+            for (auto& r : run.takeReports()) reports.push_back(r);
+        }
+        CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Fallen);
+        for (int k = 0; k < 10; ++k) {
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+            for (auto& r : run.takeReports()) reports.push_back(r);
+        }
+        // Everyone in play was there when it fell (counted in the simulation, the same everywhere).
+        int present = 0;
+        for (const raid::Contribution& c : run.contributions().records()) present += c.gigaboss ? 1 : 0;
+        CHECK(present == 2);
+        if (test) {
+            CHECK(reports.empty());  // never a report: no consensus, no state, no ranking, no reward
+            CHECK(run.gigaboss().scaledFor() == 8);
+            continue;
+        }
+        bool fell = false, objective = false, result = false, engaged = false;
+        for (const raid::Report& r : reports) {
+            engaged = engaged || (r.kind == raid::Report::Kind::Boss && r.phase == 1);
+            fell = fell || (r.kind == raid::Report::Kind::Boss && r.phase == 4 && r.zone == kHand);
+            objective = objective || (r.kind == raid::Report::Kind::Objective && r.objective == "main_pyroclast");
+            if (r.kind == raid::Report::Kind::Result)
+                for (const raid::Contribution& c : r.records) result = result || c.gigaboss;
+        }
+        CHECK(engaged);
+        CHECK(fell);
+        CHECK(objective);
+        CHECK(result);
+    }
+}
+
+TEST_CASE("raid contributions: the table's text is the server's canonical form") {
+    raid::Contributions empty;
+    CHECK(empty.canonical().empty());
+    // The server rebuilds the same text from the numbers (raidRewards.ts canonical): seat, step,
+    // damage, gigaboss damage, avoided, blocks, rescues, vents, weak points, objectives, steps, fall.
+    Services s;
+    raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+    CHECK(run.begin(0, kHand));
+    const auto f = still(2);
+    run.step(f.data(), static_cast<int>(f.size()), 0);
+    CHECK(run.contributions().records().size() == 2);
+    CHECK(run.contributions().canonical() == "0,0,0,0,0,0,0,0,0,0,1,0;1,0,0,0,0,0,0,0,0,0,1,0;");
+}
+
+TEST_CASE("raid gigaboss: a giant for 8, it strikes every player at once (one fist each)") {
+    Services s;
+    const EnemyDefinition* def = s.content.enemy("pyroclast");
+    CHECK(def != nullptr);
+    if (!def) return;
+    // Enormous: several times Nova's height, its arena several screens wide.
+    CHECK(def->size.y >= 280.0f);
+    CHECK(def->scale >= 2.5f);
+    CHECK(def->raid == "asterion");
+    const raid::GigabossRules& g = branch().zoneRules(kHand)->gigaboss;
+    // 2.68: its arena in metadata.raid.arena, the format of the seven branches' lairs.
+    const raid::ArenaInfo& arena = branch().zoneRules(kHand)->arena;
+    CHECK(arena.present);
+    CHECK(arena.rect.w >= 6.0f * Camera::kViewWidth);
+    CHECK(arena.floor > arena.rect.y && arena.floor <= arena.rect.bottom());
+    CHECK(arena.rect.contains({arena.entry.x, arena.entry.y - 1.0f}));
+    CHECK(g.fistPeriods.size() == 3);
+    for (int players : {2, 8}) {
+        raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+        raid::RaidRun::Test t;  // invincible: only the marks are counted here
+        t.on = true;
+        t.invincible = true;
+        t.players = players;
+        run.setTest(t);
+        CHECK(run.begin(0, kHand));
+        CHECK(engage(run, players));
+        const auto f = still(players);
+        size_t most = 0;
+        for (int k = 0; k < 1200; ++k) {
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+            most = std::max(most, run.gigaboss().fists().size());
+        }
+        CHECK(most == static_cast<size_t>(players));  // a mark under each player in play, the same step
+    }
+}
+
+TEST_CASE("raid arena camera: the whole arena first, then a view sized for this player (display only)") {
+    raid::ArenaCamera cam;
+    raid::ArenaCamera::Frame f;
+    f.arena = {368.0f, 0.0f, 2928.0f, 608.0f};
+    f.level = {0.0f, 0.0f, 3360.0f, 768.0f};
+    f.me = {1300.0f, 560.0f};
+    f.meInArena = true;
+    f.boss = {2300.0f, 276.0f, 220.0f, 300.0f};
+    f.allies = {{1400.0f, 560.0f}, {3000.0f, 400.0f}};
+    f.threats = {{1310.0f, 576.0f}};
+    cam.update(f, 1.0f / 60.0f, 1280, 720);
+    CHECK(cam.active());
+    CHECK(cam.intro());
+    // The intro shows the whole arena.
+    const Rect all = cam.shown(1280, 720);
+    CHECK(all.x <= f.arena.x + 1.0f && all.right() >= f.arena.right() - 1.0f);
+    for (int k = 0; k < 600; ++k) cam.update(f, 1.0f / 60.0f, 1280, 720);
+    CHECK(!cam.intro());
+    // Then a view between its bounds, with this player inside and the near ally.
+    CHECK(cam.height() >= cam.tuning().minView - 0.5f);
+    CHECK(cam.height() <= cam.tuning().maxView + 0.5f);
+    const Rect v = cam.shown(1280, 720);
+    CHECK(v.contains(f.me));
+    CHECK(v.contains(f.allies[0]));
+    CHECK(!v.contains(f.allies[1]));  // far away: an arrow shows it
+    // Out of the arena: the world's own camera again; a new zone plays the intro again.
+    f.meInArena = false;
+    cam.update(f, 1.0f / 60.0f, 1280, 720);
+    CHECK(!cam.active());
+    cam.reset();
+    f.meInArena = true;
+    cam.update(f, 1.0f / 60.0f, 1280, 720);
+    CHECK(cam.intro());
+}
+
+TEST_CASE("raid long route: the Poignet-verrou takes a group of 8 about 15 minutes (estimate from the level itself)") {
+    Services s;
+    const raid::Branch& b = branch();
+    const raid::ZoneRules* z = b.zoneRules(7);
+    const LevelData* level = b.level(7);
+    CHECK(z != nullptr && level != nullptr);
+    if (!z || !level) return;
+    // The level's own content: its giant ambushes (combat zones of several waves), its enemies'
+    // health, its co-op mechanisms, its checkpoints.
+    int ambushes = 0, waves = 0, checkpoints = 0;
+    double hp = 0.0;
+    for (const LevelObject& o : level->objects) {
+        if (o.type == "checkpoint") ++checkpoints;
+        if (o.type == "enemy" && !o.prop<bool>("boss", false))
+            if (const EnemyDefinition* def = s.content.enemy(o.propStr("enemy"))) hp += def->hp;
+        if (o.type != "combat_zone") continue;
+        const std::string list = o.propStr("waves");
+        if (list.empty()) continue;
+        ++ambushes;
+        waves += 1 + static_cast<int>(std::count(list.begin(), list.end(), ';'));
+    }
+    CHECK(ambushes >= 4);
+    CHECK(waves >= 16);
+    CHECK(checkpoints >= 4);
+    CHECK(z->checkpoints.size() == static_cast<size_t>(checkpoints));
+    for (const std::string& cp : z->checkpoints) CHECK(z->spawns.count("cp:" + cp) == 1);
+    CHECK(z->coops.size() >= 3);
+    // 2.68: the model of the seven branches (tools/levelgen/raid_asterion.py, estimate_minutes):
+    // the width at 2 tiles/s, the enemies' health at 4 a second for 8 players, 8 s a wave, 30 s
+    // a co-op mechanism (and its lift's ride, up and back down).
+    double secs = level->bounds.w / 16.0 / 2.0 + hp / 4.0 + waves * 8.0;
+    for (const raid::CoopPlate& c : z->coops) {
+        secs += 30.0;
+        for (const std::string& t : c.targets)
+            if (const LevelObject* o = level->findObject(t); o && o->type == "moving_platform")
+                secs += 2.0 * std::abs(o->prop<double>("dy", 0.0)) / std::max(1.0, o->prop<double>("speed", 1.0));
+    }
+    const double minutes = secs / 60.0;
+    std::printf("  Poignet-verrou : %d embuscades, %d vagues, %zu mécanismes à plusieurs, %d points de contrôle : ~%.1f min à 8\n", ambushes,
+                waves, z->coops.size(), checkpoints, minutes);
+    CHECK(minutes >= 13.0 && minutes <= 17.0);
+    // The catalog carries the generator's figure (the same model).
+    auto cat = FileUtil::loadJson(Paths::dataDir() / "raids" / "asterion" / "bras_droit" / "branch.json");
+    CHECK(cat.has_value());
+    if (cat) CHECK(std::abs(minutes - (*cat)["zones"][6].value("minutes", 0.0)) < 0.1);
+    // The other zones stay short (a raid of 45 to 60 minutes in all).
+    for (int other = 1; other <= 6; ++other) CHECK(b.level(other)->bounds.w < level->bounds.w / 3.0f);
+}
+
+TEST_CASE("raid long route: a door of the group opens with enough players on its plate; twin plates are held together") {
+    Services s;
+    const uint32_t gens = 1u << branch().objectiveIndex("veine_generateur") | 1u << branch().objectiveIndex("avantbras_generateur");
+    for (int players : {8, 1}) {
+        raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+        CHECK(run.begin(gens, 7));
+        const auto f = still(players);
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+        size_t k = run.rules().coops.size();
+        for (size_t i = 0; i < run.rules().coops.size(); ++i)
+            if (run.rules().coops[i].id == "vanne_double") k = i;
+        CHECK(k < run.rules().coops.size());
+        if (k >= run.rules().coops.size()) continue;
+        const raid::CoopPlate& valve = run.rules().coops[k];
+        const int need = run.coop(k).need;
+        CHECK(need == std::min(4, players));
+        auto* door = dynamic_cast<DoorEntity*>(run.world().entity(valve.targets.front()));
+        CHECK(door != nullptr && !door->isOpen());
+        auto stand = [&](const raid::CoopPlate& c, int from, int count) {
+            for (int i = 0; i < count; ++i)
+                run.world().playerAt(from + i).teleportTo({c.rect.x + 8.0f + 6.0f * static_cast<float>(i), c.rect.bottom()});
+        };
+        // One player short of the need: nothing (with 8).
+        for (int t = 0; t < 30 && players > 1; ++t) {
+            stand(valve, 0, need - 1);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+        }
+        CHECK(!run.coop(k).done);
+        for (int t = 0; t < 30 && !run.coop(k).done; ++t) {
+            stand(valve, 0, need);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+        }
+        CHECK(run.coop(k).done);
+        if (door) CHECK(door->isOpen());
+        // The twin plates (one group): both held at the same step; alone, the first is enough.
+        std::vector<size_t> twins;
+        for (size_t i = 0; i < run.rules().coops.size(); ++i)
+            if (run.rules().coops[i].group == "jumelles") twins.push_back(i);
+        CHECK(twins.size() == 2);
+        if (twins.size() != 2) continue;
+        const raid::CoopPlate& low = run.rules().coops[twins[0]];
+        const raid::CoopPlate& high = run.rules().coops[twins[1]];
+        if (players == 1) {
+            CHECK(run.coop(twins[1]).need == 0);
+            for (int t = 0; t < 30 && !run.coop(twins[0]).done; ++t) {
+                stand(low, 0, 1);
+                run.step(f.data(), static_cast<int>(f.size()), 0);
+            }
+            CHECK(run.coop(twins[0]).done);
+            continue;
+        }
+        CHECK(run.coop(twins[0]).need == 2);
+        CHECK(run.coop(twins[1]).need == 2);
+        for (int t = 0; t < 30; ++t) {  // the low plate alone: nothing
+            stand(low, 0, 2);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+        }
+        CHECK(!run.coop(twins[0]).done);
+        for (int t = 0; t < 30 && !run.coop(twins[0]).done; ++t) {
+            stand(low, 0, 2);
+            stand(high, 2, 2);
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+        }
+        CHECK(run.coop(twins[0]).done);
+        CHECK(run.coop(twins[1]).done);
+        // Each player on a plate counts a mechanism (the contributions).
+        int mechanisms = 0;
+        for (const raid::Contribution& c : run.contributions().records()) mechanisms += c.vents;
+        CHECK(mechanisms >= need + 4);
+    }
 }
