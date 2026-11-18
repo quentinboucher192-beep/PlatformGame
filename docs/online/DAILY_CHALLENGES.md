@@ -1,4 +1,8 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Défis du jour (2.32) — contrat entre le jeu et Cosmic Online
+
+<p align="center"><img src="../media/challenge_daily.png" width="820" alt="Défi du jour : niveau, règles, paliers, récompenses et classement du jour"></p>
 
 Étape 1 de la maquette « Défis et événements » : un défi chaque jour, tiré au sort par le
 serveur ou choisi par l'administrateur (niveau de la campagne **ou niveau ONLINE LEVELS**), un
@@ -159,3 +163,7 @@ partie de défi ; le serveur vérifie qu'elle est identique à la forme canoniqu
 - `kSimulationVersion` 11 : règles de défi (cœurs, emplacements, pouvoirs imposés, stations,
   points de passage). Une partie sans défi se joue exactement comme avant (mêmes empreintes) ;
   `kRankingGeneration` reste 8.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

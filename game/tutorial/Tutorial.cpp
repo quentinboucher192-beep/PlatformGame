@@ -32,7 +32,8 @@ const std::vector<Card>& cards() {
          Preview::Shards},
         {"attack", "Attaquer",
          "Chut… ces petites bêtes dorment et ne te feront aucun mal. Approche-toi et frappe-les : chaque coup les fait clignoter. "
-         "Quand les trois sont parties, la porte du jardin s'ouvre.",
+         "Quand les trois sont parties, la porte du jardin s'ouvre. Avec Haut, tu frappes au-dessus de toi ; en l'air, avec Bas, "
+         "en dessous.",
          {{"Attaquer", {Action::Attack}, {}}},
          Preview::Attack},
         {"power", "Ton premier pouvoir : la Ruée",
