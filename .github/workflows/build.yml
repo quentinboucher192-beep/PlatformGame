@@ -20,11 +20,6 @@ jobs:
         run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64
       - name: Build
         run: cmake --build build --config Release --parallel
-      - name: Tests
-        run: ctest --test-dir build -C Release --output-on-failure
-        env:
-          SDL_VIDEODRIVER: offscreen
-          SDL_AUDIODRIVER: dummy
       - name: Stage
         run: cmake --install build --config Release --prefix build/stage
       - name: Inno Setup
@@ -42,6 +37,11 @@ jobs:
         with:
           name: CosmicPlatformer-portable-windows
           path: build/stage
+      - name: Tests
+        run: ctest --test-dir build -C Release --output-on-failure
+        env:
+          SDL_VIDEODRIVER: offscreen
+          SDL_AUDIODRIVER: dummy
 
   linux:
     name: Linux (GCC) + tests

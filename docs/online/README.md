@@ -1,9 +1,14 @@
+[← Retour à l'accueil (README)](../../README.md)
+
 # Cosmic Online — classements mondiaux, records vérifiés et globe interactif
 
 Cosmic Online est la partie en ligne, **facultative**, de Cosmic Platformer : comptes,
 envoi et vérification des records, classements (niveau, pays, amis, semaine, planète,
 points cosmiques), globe terrestre interactif, profils publics, amis et replays.
 Le jeu reste entièrement jouable sans compte et sans Internet.
+
+<p align="center"><img src="../media/online_globe.png" width="820" alt="Cosmic Online : le globe terrestre et les classements"></p>
+<p align="center"><sub>CLASSEMENTS : le globe et les classements (capture d'un serveur lancé en local, comptes de démonstration).</sub></p>
 
 | Document | Contenu |
 |---|---|
@@ -16,6 +21,11 @@ Le jeu reste entièrement jouable sans compte et sans Internet.
 | [PRIVACY.md](PRIVACY.md) | Données personnelles, localisation, RGPD |
 | [BACKUP.md](BACKUP.md) | Sauvegarde complète et restauration (compte admin) : copies, fichier chiffré `.cpbk`, import, restauration manuelle |
 | [CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md) | Révisions de la campagne publiées par un admin (2.45) : éditeur, étapes de la campagne, choix « Réinitialiser » / « Garder les records » et report des classements, routes, téléchargement par le jeu |
+| [ENEMY_REVISIONS.md](ENEMY_REVISIONS.md) | Entités natives (ennemis, boss) modifiées et publiées par un admin (2.46) |
+| [CREATIONS.md](CREATIONS.md) | Créations d'un admin pour le Vestiaire : combinaisons, traînées, cadres, effets de victoire (2.45, 2.59) |
+| [DAILY_CHALLENGES.md](DAILY_CHALLENGES.md) | Défis du jour (2.32) : contrat entre le jeu et le serveur, règles, vérification, classement du jour |
+| [CHALLENGES_PERIODS.md](CHALLENGES_PERIODS.md) | Défis de la semaine et du mois, calendrier, « Plus loin » (2.33), récompenses (2.35) |
+| [DEVICES.md](DEVICES.md) | Un compte, un ordinateur (2.47) : liaison à l'ordinateur, « Migrer vers un nouveau compte », copies de la progression |
 | [COLLABORATION.md](COLLABORATION.md) | Projets collaboratifs : rôles, invitations, édition en direct, historique, versions, limites, tests de charge |
 | [BILAN_ONLINE_2_8.md](BILAN_ONLINE_2_8.md) | Bilan du cahier des charges ONLINE 2.8 : fonctions, tests, limites, migrations, reste à faire |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Dépannage |
@@ -125,3 +135,7 @@ Limites connues (non présentées comme faites) :
 * pas d'outil graphique de modération (routes `/api/v1/admin/*` uniquement) ;
 * les régions (ISO 3166-2) sont stockées et affichées sur le profil mais le globe utilise
   uniquement le centre du pays.
+
+---
+
+[← Retour à l'accueil (README)](../../README.md)

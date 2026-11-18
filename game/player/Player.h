@@ -38,6 +38,15 @@ enum class PlayerState {
 };
 const char* playerStateName(PlayerState s);
 
+/// 2.71 (simulation 15): the direction of the basic attack, chosen when it starts: Up (Up
+/// alone, on the ground or in the air), Down (Down alone, in the air only: on the ground Down
+/// stays the crouch) or Forward.
+enum class SlashDirection : uint8_t { Forward, Up, Down };
+/// The first simulation where the attack keeps the aim it started with (its direction, and the
+/// bounce of a strike downwards in the air: GameWorld::simulationVersion; a replay recorded
+/// before plays with the rules of its time: the aim read at the moment of the hit).
+constexpr int kAimedSlashSimulation = 15;
+
 /// The player character: state machine, precise platforming physics, melee combat,
 /// powers, health / energy and animation selection.
 class Player {
@@ -150,6 +159,13 @@ public:
     void launch(Vec2 velocity, bool resetJumps);
     MoveOptions moveOptions() const;
     Vec2 aimDirection() const { return aim_; }
+    /// 2.71: the attack under way (attacking()) and its direction (display, tests).
+    bool attacking() const { return attackTimer_ > 0.0f; }
+    SlashDirection slashDirection() const { return slashDir_; }
+    /// The direction an attack started now would take (Up alone, Down alone in the air).
+    SlashDirection slashDirectionFor(Vec2 aim, bool grounded) const;
+    /// The area an attack in `dir` strikes, from the player's box now.
+    Rect slashArea(SlashDirection dir) const;
 
     // ------------------------------------------------- environment (set by the world each step)
     bool onLadder = false;
@@ -228,6 +244,10 @@ private:
     bool attackHitDone_ = false;
     uint32_t meleeTag_ = 0;  // 2.54, statistics only: the tag of the last swing (GameWorld::newAttackTag)
     bool attackAir_ = false;
+    SlashDirection slashDir_ = SlashDirection::Forward;  // 2.71: chosen when the attack starts
+    Vec2 slashAim_{1, 0};                                 // 2.71: the aim held when it started
+    /// The clip of the attack under way: its direction when the sheet has it (2.71).
+    const char* attackClip() const;
     float castTimer_ = 0.0f;
     float interactTimer_ = 0.0f;
     float landTimer_ = 0.0f;

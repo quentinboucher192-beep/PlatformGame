@@ -1,4 +1,8 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Entités natives modifiées par un admin (2.46)
+
+<p align="center"><img src="../media/enemy_editor.png" width="720" alt="L'éditeur d'ennemis, où un admin modifie une entité native avant de la publier"></p>
 
 Les entités natives (ennemis et boss livrés avec le jeu, `data/enemies`) sont en lecture seule
 dans l'éditeur d'ennemis du joueur (EN LIGNE › ATELIER). Un compte admin les modifie dans
@@ -78,3 +82,7 @@ reportés).
 
 Une entité ajoutée au jeu doit être recopiée dans `enemyCatalog.json`
 (`node scripts/enemies-catalog.mjs`) avant de pouvoir être publiée.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

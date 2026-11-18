@@ -150,7 +150,10 @@ InputFrame toSlotKeys(const GameWorld& w, const InputFrame& f) {
 /// The same file in format 2 (what the game wrote until 2.23): actions on 16 bits, 12-byte
 /// runs, a reserved field instead of the input flags.
 std::vector<uint8_t> asFormat2(const ReplayData& d) {
-    std::vector<uint8_t> v3 = d.serialize();
+    // A file of that time never says the version of its simulation (2.71: event 20).
+    ReplayData old = d;
+    old.simVersion = 0;
+    std::vector<uint8_t> v3 = old.serialize();
     size_t at = 68;
     at += 1 + v3[at];  // level id
     at += 1 + v3[at];  // game version
@@ -401,10 +404,13 @@ TEST_CASE("power keys: the slot keys survive the frame and the replay file (form
     // A file without the flag: the old rules (a run of a world with one button per power).
     d.keysPerSlot = false;
     CHECK(!ReplayData::parse(d.serialize())->keysPerSlot);
-    // Unknown input flags are refused.
+    // Unknown input flags are refused (the events of the file: 2.71 adds the version of the
+    // simulation in front of them).
     auto raw = d.serialize();
+    const size_t events = raw[16] | (raw[17] << 8) | (raw[18] << 16) | (static_cast<size_t>(raw[19]) << 24);
+    CHECK(events == d.events.size() + 1);
     size_t at = 68 + 1 + raw[68];
-    at += 1 + raw[at] + d.frames.size() * 12 + d.events.size() * 8;
+    at += 1 + raw[at] + d.frames.size() * 12 + events * 8;
     raw[at + 10] = 0x04;
     CHECK(!ReplayData::parse(raw).has_value());
 }
@@ -418,6 +424,7 @@ TEST_CASE("power keys: an old replay (format 2, one button per power) loads and 
     if (!level) return;
     WorldServices s{live.res, live.audio, live.content, nullptr, 0.0f, 1.0f};
     GameWorld w(s, WorldMode::Play);
+    w.setSimulationVersion(0);  // 2.71: and the attack of its time (a file without its version)
     w.load(*level);  // old rules: the default of a world
     w.seedGameplay(levelSeed("sylvanox_01"));
     ReplayRecorder rec;

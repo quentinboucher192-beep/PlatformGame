@@ -1,4 +1,8 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Révisions de la campagne publiées par un admin (2.45)
+
+<p align="center"><img src="../media/level_editor.png" width="720" alt="L'éditeur de niveaux, où un admin modifie un niveau de la campagne avant de le publier"></p>
 
 ADMINISTRATION › **Campagne** : un compte admin ouvre un niveau de la campagne dans l'éditeur du
 jeu, le modifie et le publie comme **nouvelle révision** de ce niveau, sans mise à jour du jeu.
@@ -150,3 +154,7 @@ régénère la campagne doit utiliser un `metadata.revision` plus grand que la p
 du serveur, sinon la migration de ses niveaux ne la rend pas courante (`levels-migration.mjs`
 vérifie maintenant que ce numéro correspond bien à ce contenu). Pour intégrer une révision
 publiée en ligne dans les niveaux livrés, la reproduire dans `tools/levelgen`.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
