@@ -1,0 +1,296 @@
+{
+ "format": "cosmic.raid_titan",
+ "revision": 1,
+ "raid": "asterion",
+ "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them (an objective of one branch acts on another). Never edit by hand.",
+ "branches": [
+  {
+   "part": "crane",
+   "id": "asterion_crane",
+   "dir": "crane"
+  },
+  {
+   "part": "bras_gauche",
+   "id": "asterion_bras_gauche",
+   "dir": "bras_gauche"
+  },
+  {
+   "part": "bras_droit",
+   "id": "asterion_bras_droit",
+   "dir": "bras_droit"
+  },
+  {
+   "part": "torse",
+   "id": "asterion_torse",
+   "dir": "torse"
+  },
+  {
+   "part": "abdomen",
+   "id": "asterion_abdomen",
+   "dir": "abdomen"
+  },
+  {
+   "part": "jambe_gauche",
+   "id": "asterion_jambe_gauche",
+   "dir": "jambe_gauche"
+  },
+  {
+   "part": "jambe_droite",
+   "id": "asterion_jambe_droite",
+   "dir": "jambe_droite"
+  }
+ ],
+ "links": [
+  {
+   "id": "crane_yeux",
+   "label": "Les yeux du Crâne sont crevés : les tourelles-regards du Tendon glacé (Bras gauche) s'éteignent",
+   "from": [
+    {
+     "branch": "asterion_crane",
+     "objective_id": "crane_oeil_gauche"
+    },
+    {
+     "branch": "asterion_crane",
+     "objective_id": "crane_oeil_droit"
+    }
+   ],
+   "to": "asterion_bras_gauche",
+   "bit": 24,
+   "kind": "disable",
+   "zones": [
+    3
+   ],
+   "objects": [
+    "tourelle_1",
+    "tourelle_2"
+   ]
+  },
+  {
+   "id": "crane_nerfs",
+   "label": "Les nerfs optiques sont tranchés : Titanus ne frappe plus le sol, plus d'onde sismique dans la Jambe droite",
+   "from": [
+    {
+     "branch": "asterion_crane",
+     "objective_id": "crane_nerf_gauche"
+    },
+    {
+     "branch": "asterion_crane",
+     "objective_id": "crane_nerf_droit"
+    }
+   ],
+   "to": "asterion_jambe_droite",
+   "bit": 24,
+   "kind": "hazard_off",
+   "zones": [
+    3,
+    4
+   ],
+   "objects": []
+  },
+  {
+   "id": "jg_generateurs",
+   "label": "Les générateurs de gravité sont coupés : les barrières d'énergie du Torse tombent",
+   "from": [
+    {
+     "branch": "asterion_jambe_gauche",
+     "objective_id": "jg_generateur_ouest"
+    },
+    {
+     "branch": "asterion_jambe_gauche",
+     "objective_id": "jg_generateur_est"
+    }
+   ],
+   "to": "asterion_torse",
+   "bit": 24,
+   "kind": "disable",
+   "zones": [
+    2,
+    4
+   ],
+   "objects": [
+    "barriere_1",
+    "barriere_2",
+    "barriere_3"
+   ]
+  },
+  {
+   "id": "abd_nid",
+   "label": "Le nid de l'Abdomen est détruit : plus de parasites en renfort dans le Torse",
+   "from": [
+    {
+     "branch": "asterion_abdomen",
+     "objective_id": "abd_nid"
+    }
+   ],
+   "to": "asterion_torse",
+   "bit": 25,
+   "kind": "remove",
+   "zones": [
+    3,
+    6
+   ],
+   "objects": [
+    "parasite_1",
+    "parasite_2",
+    "parasite_3",
+    "parasite_4"
+   ]
+  },
+  {
+   "id": "torse_plaques",
+   "label": "Les plaques du Torse sont brisées : l'Intestin de l'Abdomen s'ouvre vers le Gosier",
+   "from": [
+    {
+     "branch": "asterion_torse",
+     "objective_id": "torse_plaque_nord"
+    },
+    {
+     "branch": "asterion_torse",
+     "objective_id": "torse_plaque_sud"
+    },
+    {
+     "branch": "asterion_torse",
+     "objective_id": "torse_plaque_est"
+    },
+    {
+     "branch": "asterion_torse",
+     "objective_id": "torse_plaque_ouest"
+    }
+   ],
+   "to": "asterion_abdomen",
+   "bit": 24,
+   "kind": "open",
+   "zones": [
+    4,
+    7
+   ],
+   "objects": []
+  },
+  {
+   "id": "jg_cheville",
+   "label": "La cheville gauche est brisée : le titan bascule, la Crevasse cachée du Bras gauche s'ouvre vers le Poignet",
+   "from": [
+    {
+     "branch": "asterion_jambe_gauche",
+     "objective_id": "jg_cheville"
+    }
+   ],
+   "to": "asterion_bras_gauche",
+   "bit": 25,
+   "kind": "open",
+   "zones": [
+    5,
+    7
+   ],
+   "objects": []
+  },
+  {
+   "id": "jd_reacteurs",
+   "label": "Les réacteurs de la Jambe droite sont coupés : plus de coulée de magma dans le Bras droit",
+   "from": [
+    {
+     "branch": "asterion_jambe_droite",
+     "objective_id": "jd_reacteur_ouest"
+    },
+    {
+     "branch": "asterion_jambe_droite",
+     "objective_id": "jd_reacteur_est"
+    }
+   ],
+   "to": "asterion_bras_droit",
+   "bit": 24,
+   "kind": "hazard_off",
+   "zones": [
+    3,
+    4
+   ],
+   "objects": []
+  },
+  {
+   "id": "bd_poignet",
+   "label": "Le poignet du Bras droit est brisé : la Tempe du Crâne s'ouvre vers la Voûte",
+   "from": [
+    {
+     "branch": "asterion_bras_droit",
+     "objective_id": "poignet_verrou"
+    }
+   ],
+   "to": "asterion_crane",
+   "bit": 24,
+   "kind": "open",
+   "zones": [
+    6,
+    7
+   ],
+   "objects": []
+  },
+  {
+   "id": "jd_cheville",
+   "label": "Titanus fléchit : le Tibia de la Jambe gauche s'ouvre vers la Cheville",
+   "from": [
+    {
+     "branch": "asterion_jambe_droite",
+     "objective_id": "jd_cheville"
+    }
+   ],
+   "to": "asterion_jambe_gauche",
+   "bit": 24,
+   "kind": "open",
+   "zones": [
+    6,
+    7
+   ],
+   "objects": []
+  },
+  {
+   "id": "abd_valves",
+   "label": "Les valves de l'Abdomen sont fermées : les puits de gravité de la Jambe gauche s'éteignent",
+   "from": [
+    {
+     "branch": "asterion_abdomen",
+     "objective_id": "abd_valve_haute"
+    },
+    {
+     "branch": "asterion_abdomen",
+     "objective_id": "abd_valve_basse"
+    }
+   ],
+   "to": "asterion_jambe_gauche",
+   "bit": 25,
+   "kind": "hazard_off",
+   "zones": [
+    2,
+    4
+   ],
+   "objects": []
+  },
+  {
+   "id": "bg_lames",
+   "label": "Les lames de Dreadfang sont brisées : les spectres en renfort du Crâne se dissipent",
+   "from": [
+    {
+     "branch": "asterion_bras_gauche",
+     "objective_id": "bg_lame_haute"
+    },
+    {
+     "branch": "asterion_bras_gauche",
+     "objective_id": "bg_lame_basse"
+    }
+   ],
+   "to": "asterion_crane",
+   "bit": 25,
+   "kind": "remove",
+   "zones": [
+    4,
+    6
+   ],
+   "objects": [
+    "renfort_1",
+    "renfort_2",
+    "renfort_3",
+    "renfort_4",
+    "renfort_5"
+   ]
+  }
+ ]
+}

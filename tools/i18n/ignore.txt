@@ -262,3 +262,7 @@ difficulty
 event
 box
 contour
+torse
+abdomen
+part
+zones

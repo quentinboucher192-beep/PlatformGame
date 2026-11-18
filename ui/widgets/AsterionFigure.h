@@ -30,8 +30,14 @@ public:
     void drawTooltip(GameServices& g);
     /// The part whose tooltip shows (empty when none).
     std::string shownPart() const { return tip_; }
+    /// 2.68: where the last draw() put the titan, and the point of a part (its focus stop): the
+    /// titan's map places its badges from them. False when the part was not drawn.
+    Rect bounds() const { return figure_; }
+    bool anchorOf(const std::string& part, Vec2& out) const;
 
 private:
+    Rect figure_;
+    std::map<std::string, Vec2> anchors_;
     std::string tip_;
     asterion::State tipState_ = asterion::State::Intact;
     bool tipOpens_ = false;

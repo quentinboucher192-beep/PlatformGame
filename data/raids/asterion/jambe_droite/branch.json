@@ -1,0 +1,281 @@
+{
+ "id": "asterion_jambe_droite",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "jambe_droite",
+ "name": "JAMBE DROITE",
+ "gigaboss": "Titanus",
+ "start_zone": 1,
+ "generators_needed": 2,
+ "lock_texts": {
+  "generators": {
+   "hint": "il faut couper les deux réacteurs",
+   "message": "Les deux réacteurs sont coupés : la Cheville d'acier s'ouvre",
+   "objective": "couper les deux réacteurs (Fémur, Mollet)"
+  },
+  "shortcut": {
+   "hint": "le levier du Mollet blindé l'ouvre",
+   "message": "Le raccourci Genou-forge ⇄ Mollet blindé est ouvert",
+   "objective": "raccourci fermé (le levier est dans le Mollet blindé)"
+  }
+ },
+ "zones": [
+  {
+   "id": 1,
+   "name": "Hanche de fer",
+   "sub": "entrée · 3 points d'apparition",
+   "x": 110,
+   "y": 380,
+   "level": "zone_1.json",
+   "inside": "Ennemis : acariens de braise, rôdeurs de lave · arène de la garde",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.4
+  },
+  {
+   "id": 2,
+   "name": "Cuisse-piston",
+   "sub": "pistons géants · gardien",
+   "x": 330,
+   "y": 200,
+   "level": "zone_2.json",
+   "inside": "Ennemis : golem de magma (gardien), drones de forge · pistons",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.1
+  },
+  {
+   "id": 3,
+   "name": "Fémur fendu",
+   "sub": "onde sismique · réacteur ouest",
+   "x": 330,
+   "y": 560,
+   "level": "zone_3.json",
+   "inside": "Ennemis : rôdeurs de lave, bombardiers · réacteur ouest (un pouvoir de tir)",
+   "event": "Onde sismique toutes les 60 s (grilles hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.2
+  },
+  {
+   "id": 4,
+   "name": "Genou-forge",
+   "sub": "2 pistons à bloquer : 2 groupes",
+   "x": 560,
+   "y": 250,
+   "level": "zone_4.json",
+   "inside": "Ennemis : rempart de forge, drones de forge · deux pistons, un groupe chacun",
+   "event": "Onde sismique toutes les 75 s (grilles hautes sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2,
+   "minutes": 1.2
+  },
+  {
+   "id": 5,
+   "name": "Forge oubliée",
+   "sub": "zone secrète ◆ relique",
+   "x": 560,
+   "y": 640,
+   "level": "zone_5.json",
+   "inside": "Ennemis : acariens de braise · la relique de la forge",
+   "event": "",
+   "secret": true,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 0.7
+  },
+  {
+   "id": 6,
+   "name": "Mollet blindé",
+   "sub": "réacteur est · levier ⇄",
+   "x": 560,
+   "y": 470,
+   "level": "zone_6.json",
+   "inside": "Ennemis : drones de forge, rôdeurs de lave · réacteur est (un pouvoir de tir)",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.1
+  },
+  {
+   "id": 7,
+   "name": "Cheville d'acier",
+   "sub": "s'ouvre : 2 réacteurs",
+   "x": 790,
+   "y": 360,
+   "level": "zone_7.json",
+   "inside": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la cheville (arène en trois vagues)",
+   "event": "Onde sismique toutes les 75 s dans les galeries basses (étages sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 15.5
+  },
+  {
+   "id": 8,
+   "name": "Talon de Titanus",
+   "sub": "GIGABOSS · prochaine version",
+   "x": 1000,
+   "y": 360,
+   "level": "zone_8.json",
+   "inside": "Le gigaboss Titanus attend derrière sa porte scellée",
+   "event": "",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1,
+   "minutes": 0
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 5,
+   "lock": "",
+   "secret": true
+  },
+  {
+   "a": 3,
+   "b": 6,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 6,
+   "lock": "shortcut",
+   "secret": false
+  },
+  {
+   "a": 4,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 6,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "lock": "objective:jd_cheville",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "jd_hanche",
+   "index": 0,
+   "zone": 1,
+   "label": "Reprendre la hanche de fer : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jd_golem",
+   "index": 1,
+   "zone": 2,
+   "label": "Abattre le golem de la cuisse-piston",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jd_reacteur_ouest",
+   "index": 2,
+   "zone": 3,
+   "label": "Couper le réacteur ouest (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "jd_piston_haut",
+   "index": 3,
+   "zone": 4,
+   "label": "Bloquer le piston haut (un groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "pistons"
+  },
+  {
+   "id": "jd_piston_bas",
+   "index": 4,
+   "zone": 4,
+   "label": "Bloquer le piston bas (un autre groupe)",
+   "optional": false,
+   "role": "",
+   "pair": "pistons"
+  },
+  {
+   "id": "jd_relique",
+   "index": 5,
+   "zone": 5,
+   "label": "Facultatif : emporter la relique de la forge",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jd_reacteur_est",
+   "index": 6,
+   "zone": 6,
+   "label": "Couper le réacteur est (un pouvoir de tir)",
+   "optional": false,
+   "role": "generator",
+   "pair": ""
+  },
+  {
+   "id": "jd_levier",
+   "index": 7,
+   "zone": 6,
+   "label": "Facultatif : ouvrir le raccourci vers le Genou-forge (levier)",
+   "optional": true,
+   "role": "shortcut",
+   "pair": ""
+  },
+  {
+   "id": "jd_cheville",
+   "index": 8,
+   "zone": 7,
+   "label": "Briser la cheville d'acier : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  }
+ ]
+}

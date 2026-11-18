@@ -75,7 +75,7 @@ public:
     bool holdsNotifications() const override { return true; }
 
     void onEnter() override {
-        branch_ = raid::Branch::builtin();
+        branch_ = raid::Branch::builtin(entry_.branch);
         if (!branch_) {
             fail_ = "Les zones du raid sont introuvables dans les données du jeu : réinstallez le jeu.";
             return;
@@ -104,7 +104,7 @@ public:
 
     void begin() {
         const auto& go = *link_->go();
-        if (go.level != raid::kBranchLevel || go.hash != std::to_string(branch_->revision)) {
+        if (go.level != branch_->levelId() || go.hash != branch_->levelHash()) {
             fail_ = "Ce raid se joue avec une autre version de la branche : mettez le jeu à jour.";
             return;
         }
@@ -350,7 +350,7 @@ public:
 
     void leave() {
         if (link_) link_->close();
-        g_.app.switchScene(makeRaidBranch(g_, entry_.eventId), 0.3f);
+        g_.app.switchScene(makeRaidBranch(g_, entry_.eventId, entry_.branch), 0.3f);
     }
 
     /// A rounded panel of the HUD.
@@ -448,6 +448,11 @@ public:
             const Vec2 a = at({p.rect.x, p.rect.y});
             rr.fillRect({a.x, a.y, std::max(ui.s(3), p.rect.w * k), std::max(ui.s(6), p.rect.h * k)}, run_->passageOpen(p) ? kSky : Color{120, 106, 120, 255});
         }
+        for (size_t ci = 0; ci < run_->rules().coops.size(); ++ci) {  // 2.68: the co-op plates
+            const Rect& pr = run_->rules().coops[ci].rect;
+            const Vec2 a = at({pr.x, pr.y});
+            rr.fillRect({a.x, a.y, std::max(ui.s(4), pr.w * k), std::max(ui.s(3), pr.h * k)}, run_->coop(ci).done ? kGreen : kGold);
+        }
         if (!run_->rules().sealedDoor.empty())
             if (const LevelObject* d = w.level().findObject(run_->rules().sealedDoor)) {
                 const Vec2 a = at({d->rect.x, d->rect.y});
@@ -504,14 +509,26 @@ public:
             if (run_->passageOpen(p) || p.lock.empty()) continue;
             const raid::ZoneInfo* to = branch_->zone(p.to);
             const std::string name = to ? to->name : "?";
+            const std::string why = branch_->lockText(p.lock).objective;  // 2.68: each branch's own words
             if (p.lock == "generators")
-                lines.push_back({std::to_string(branch_->generators(mask)) + " / " + std::to_string(branch_->generatorsNeeded),
-                                 name + " : allumer les deux générateurs (Veine, Avant-bras)", kGold, {}});
+                lines.push_back({std::to_string(branch_->generators(mask)) + " / " + std::to_string(branch_->generatorsNeeded), name + " : " + why, kGold, {}});
             else if (p.lock == "shortcut")
-                lines.push_back({"⇄", name + " : raccourci fermé (le levier est dans l'Avant-bras)", kSky, {}});
+                lines.push_back({"⇄", name + " : " + why, kSky, {}});
+            else if (p.lock.rfind("link:", 0) == 0)
+                lines.push_back({"✦", name + " : " + why, kViolet, {}});
             else
                 lines.push_back({"▮", name + " : passage verrouillé", kDim, {}});
         }
+        // 2.68: the zone's co-op mechanisms (locks, goods lift): the players on their plate.
+        for (size_t k = 0; k < run_->rules().coops.size(); ++k) {
+            const raid::RaidRun::CoopView v = run_->coop(k);
+            const std::string& label = run_->rules().coops[k].label;
+            if (v.done) lines.push_back({"✓", label + " : en marche", kGreen, {}});
+            else lines.push_back({std::to_string(v.on) + " / " + std::to_string(v.need), label + " : joueurs ensemble sur la plaque", kGold, {}});
+        }
+        // 2.68: what the other branches of the titan did here (a link on in this zone).
+        for (const raid::EffectInfo& e : branch_->effects)
+            if (e.kind != "open" && e.inZone(run_->zone()) && raid::Branch::on(mask, e)) lines.push_back({"✦", e.label, kGreen, {}});
         if (!run_->rules().sealedLabel.empty()) lines.push_back({"▮", run_->rules().sealedLabel, kGold, {}});
         if (lines.empty()) lines.push_back({"·", "Aucun objectif dans cette zone : avancez vers les passages.", kDim, {}});
         float h = pad * 2 + ui.s(22);
@@ -563,8 +580,9 @@ public:
         const float in = run_->magmaIn();
         if (in < 0.0f) return;
         std::string t;
-        if (run_->magmaActive()) t = "Coulée de magma ! Restez sur les plateformes hautes";
-        else if (in <= run_->rules().magma.warn + 0.01f) t = "Coulée dans " + std::to_string(static_cast<int>(std::ceil(in))) + " s · montez !";
+        const raid::Magma& m = run_->rules().magma;  // 2.68: each branch's own danger
+        if (run_->magmaActive()) t = m.message;
+        else if (in <= m.warn + 0.01f) t = m.name + " dans " + std::to_string(static_cast<int>(std::ceil(in))) + " s · " + m.hint + " !";
         else return;
         const float W = ui.screenW();
         const float tw = std::min(textW(ui, t, 20, FontFace::Bold) + ui.s(40), W * 0.6f);

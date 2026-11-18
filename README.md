@@ -455,6 +455,27 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.67.0** :
+* **Raids de clan, phase 4 : les sept branches d'Asterion** : six nouvelles branches de 8 zones générées par
+  `tools/levelgen/raid_asterion.py` (56 zones avec le Bras droit), chacune avec son monde, ses ennemis, ses traversées
+  et son danger périodique : Crâne (Skullmaw), Bras gauche (Dreadfang), Torse (Heartbreaker, quatre plaques à briser par
+  plusieurs groupes), Abdomen (Voidworm), Jambe gauche (Graviton), Jambe droite (Titanus) ; deux chemins, une zone
+  secrète, un raccourci au levier, une zone à deux groupes et un verrou à plusieurs objectifs par branche ; les portes
+  des gigaboss restent scellées (prochaine version).
+* **Une longue expédition avant chaque antre** (≈ 15 min même à 8, estimée et vérifiée par le générateur) : trois
+  étages, écluses et monte-charge qui demandent plusieurs joueurs, points de contrôle à chaque étage (la zone reprend
+  au dernier, les joueurs à terre s'y relèvent), quatre embuscades géantes sur les trois étages ; derrière la porte
+  scellée, une arène de gigaboss immense (plus de deux écrans, cinq étages de plateformes, bornes déclarées).
+* **Carte globale du titan** (premier niveau de carte) : Asterion entier, l'état de ses branches, les groupes, la
+  progression (zones contrôlées sur 56), les effets entre branches, les renforts demandés et les alertes ; une branche
+  ouvre sa carte (souris, clavier, manette). La carte d'une branche sert désormais aux sept branches.
+* **Branches liées** : un objectif accompli dans une branche ouvre un passage, éteint des tourelles ou des barrières,
+  supprime des renforts ou arrête le danger d'une autre ; l'état arrive dans la simulation au même pas pour tous les
+  joueurs de l'instance (bits 24 et plus de l'état de la branche, `RAID_STATE`), jamais depuis l'interface.
+* **Répartition des joueurs** : 8 par instance au plus, jusqu'à 50 par clan ; placement par le serveur (groupe du clan
+  qui a de la place, nouvelle instance quand tout est plein, retardataires là où le clan se bat), écran « Répartition du
+  clan » où le chef, les officiers et le chef de raid déplacent et équilibrent ; migration **0144** (docs/RAIDS.md).
+
 **Nouveau dans la version 2.66.1** :
 * **Asterion dessiné en pixel art, partie par partie** : dans CLANS › RAIDS et la fiche d'un événement, le titan
   est un vrai sprite en calques (crâne, bras, torse, abdomen, jambes, cœur cosmique, aura) qui respire, dont le cœur bat

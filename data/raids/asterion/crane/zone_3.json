@@ -1,0 +1,1000 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_cr_3",
+ "name": "Asterion · Crâne · Orbite droite",
+ "description": "L'orbite droite : son regard tire des rayons. L'œil droit attend au bout ; un passage descend vers la tempe.",
+ "planet": "confins",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyrrhax_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2336,
+  768
+ ],
+ "ambientLight": "#8a6a8e",
+ "backgroundColor": "#0c0610",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true,
+   "tint": "#9a7ab0"
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ],
+   "tint": "#7a5a8a"
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ],
+   "tint": "#6a4a70"
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#b04a6a",
+   "tint": "#c07a9a"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ],
+   "tint": "#584058"
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ff9ad0c0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Mâchoire",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    576.0,
+    192.0,
+    192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    448.0,
+    528.0,
+    160.0,
+    240.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    608.0,
+    480.0,
+    160.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    768.0,
+    480.0,
+    544.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    880.0,
+    320.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "regard_1",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    832.0,
+    392.0,
+    144.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.6,
+    "offTime": 1.6,
+    "warnTime": 0.6,
+    "phase": 0.0,
+    "active": true
+   }
+  },
+  {
+   "id": "o12",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1072.0,
+    320.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "regard_2",
+   "type": "laser",
+   "layer": "gameplay",
+   "rect": [
+    1024.0,
+    392.0,
+    144.0,
+    16.0
+   ],
+   "rotation": 90,
+   "props": {
+    "onTime": 1.6,
+    "offTime": 1.6,
+    "warnTime": 0.6,
+    "phase": 0.5,
+    "active": true
+   }
+  },
+  {
+   "id": "o14",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    804.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Le regard de l'orbite : passez entre deux rayons.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o15",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    983.0,
+    468.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o16",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1177.0,
+    358.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "nightwing",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o17",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1240.0,
+    448.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o18",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1172.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "L'œil droit : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
+    "auto": true
+   }
+  },
+  {
+   "id": "o19",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1240.0,
+    424.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o20",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    480.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1488.0,
+    432.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1600.0,
+    480.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1728.0,
+    480.0,
+    64.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1792.0,
+    480.0,
+    544.0,
+    288.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2260.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Tempe",
+    "auto": true
+   }
+  },
+  {
+   "id": "o26",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2264.0,
+    440.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o27",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    416.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o28",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1984.0,
+    288.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o29",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1856.0,
+    432.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o30",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1840.0,
+    384.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o31",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1872.0,
+    336.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o32",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2260.0,
+    264.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Nerfs optiques",
+    "auto": true
+   }
+  },
+  {
+   "id": "o33",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2264.0,
+    248.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o34",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    224.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o35",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    296.0,
+    552.0,
+    48.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "frozen_bones",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o36",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    440.0,
+    504.0,
+    48.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "frozen_bones",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o37",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    692.0,
+    432.0,
+    24.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "obsidian_spire",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o38",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    728.0,
+    456.0,
+    48.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "bones_ancient",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o39",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1976.0,
+    456.0,
+    48.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "bones_ancient",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o40",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    88.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 110,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o41",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    504.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 110,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o42",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    920.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 110,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o43",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1336.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 110,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o44",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1752.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 110,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o45",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    408.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 110,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o46",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o47",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o48",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    96.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_crane",
+   "zone": 3,
+   "spawns": {
+    "1": [
+     [
+      144,
+      576
+     ]
+    ],
+    "start": [
+     [
+      144,
+      576
+     ],
+     [
+      192,
+      576
+     ]
+    ],
+    "6": [
+     [
+      2128,
+      480
+     ]
+    ],
+    "4": [
+     [
+      2112,
+      288
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p3_1",
+     "to": 1,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_6",
+     "to": 6,
+     "rect": [
+      2240,
+      416,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_4",
+     "to": 4,
+     "rect": [
+      2240,
+      224,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [
+    {
+     "id": "crane_oeil_droit",
+     "source": "o17",
+     "trigger": "activate"
+    }
+   ],
+   "magma": null,
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}
