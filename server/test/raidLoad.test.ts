@@ -10,7 +10,7 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { CATALOGS, branchView as raidMapBranch, join, titanView, type Catalog } from "../src/raidMap";
-import { claim, grantEndedTops } from "../src/raidRewards";
+import { claim, grantEndedTops, scoreOf } from "../src/raidRewards";
 import { raidTick } from "../src/raids";
 import { adminLive, aggregate, finalizeEvent, worldTick, worldView } from "../src/raidWorld";
 import { branchView, report } from "../src/raidZones";
@@ -373,8 +373,121 @@ describe("raids phase 7: bounded work per request", () => {
             }
             expect(measure.aggregate![0]).toBe(1); // one batch
             expect(measure.report_accepted![0]).toBeLessThanOrEqual(20);
-            // Every hot statement uses an index (migration 0149 added the two that were missing).
+            // Every hot statement uses an index (migration 0149 added the ones that were missing).
             expect(await fullScans(recorded, RAID_TABLES)).toEqual([]);
+        },
+        240_000,
+    );
+
+    it(
+        "a world event at full scale (50 clans of 50, 350 instances, 2 500 validated tables): the aggregation, the world view and the close, timed",
+        async () => {
+            const now = new Date().toISOString();
+            const ev = crypto.randomUUID();
+            await env.DB.prepare(
+                `INSERT INTO raid_events (id, kind, raid, format, clan_id, starts_at, lock_minutes, lock_at, ends_at, registration_open, capacity, clan_capacity, difficulty, rewards_text, published_at, created_at, updated_at)
+                 VALUES (?1, 'world', 'asterion', 'standard', NULL, ?2, 30, ?3, ?4, 1, 0, 50, 3, '', ?5, ?5, ?5)`,
+            )
+                .bind(ev, iso(-30), iso(-60), iso(50), now)
+                .run();
+            const stmts: D1PreparedStatement[] = [];
+            const branches = CATALOGS.map((c) => c.id);
+            let me: TestPlayer | null = null;
+            for (let k = 0; k < 50; ++k) {
+                const clan = crypto.randomUUID();
+                const tag = `W${k}`;
+                const ids = Array.from({ length: 50 }, () => crypto.randomUUID());
+                for (const [i, p] of ids.entries())
+                    stmts.push(
+                        env.DB.prepare(
+                            "INSERT INTO players (id, username, username_normalized, tos_version, tos_accepted_at, created_at, last_seen_at) VALUES (?1, ?2, ?3, '2026-11', ?4, ?4, ?4)",
+                        ).bind(p, `${tag}J${i}`, `${tag.toLowerCase()}j${i}`, now),
+                    );
+                stmts.push(
+                    env.DB.prepare(
+                        "INSERT INTO clans (id, name, name_normalized, tag, tag_normalized, created_by, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?7)",
+                    ).bind(clan, `Clan ${tag}`, `clan ${tag.toLowerCase()}`, tag, tag, ids[0], now),
+                );
+                stmts.push(
+                    env.DB.prepare("INSERT INTO raid_clan_entries (event_id, clan_id, registered_by, leader_id, instructions, created_at, updated_at) VALUES (?1, ?2, ?3, ?3, '', ?4, ?4)").bind(
+                        ev,
+                        clan,
+                        ids[0],
+                        now,
+                    ),
+                );
+                for (const [i, p] of ids.entries()) {
+                    stmts.push(env.DB.prepare("INSERT INTO clan_members (player_id, clan_id, role, joined_at) VALUES (?1, ?2, ?3, ?4)").bind(p, clan, i === 0 ? "leader" : "member", now));
+                    stmts.push(env.DB.prepare("INSERT INTO raid_registrations (event_id, player_id, clan_id, created_at) VALUES (?1, ?2, ?3, ?4)").bind(ev, p, clan, now));
+                }
+                for (let g = 0; g < 7; ++g) {
+                    const inst = crypto.randomUUID();
+                    const branch = branches[(k + g) % branches.length]!;
+                    stmts.push(
+                        env.DB.prepare(
+                            "INSERT INTO raid_instances (id, event_id, clan_id, group_no, branch, zone, players, started_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, 1, 8, ?6, ?7, ?7)",
+                        ).bind(inst, ev, clan, g + 1, branch, iso(-25), now),
+                    );
+                    const objective = CATALOGS.find((c) => c.id === branch)!.objectives[0]!.id;
+                    stmts.push(env.DB.prepare("INSERT INTO raid_accepted (instance_id, report_key, value, accepted_at) VALUES (?1, ?2, '1:1:x', ?3)").bind(inst, `o:${objective}`, now));
+                    stmts.push(
+                        env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, ?4, ?5)").bind(ev, branch, objective, inst, now),
+                    );
+                    if (g === 0)
+                        stmts.push(
+                            env.DB.prepare(
+                                "INSERT INTO raid_gigaboss_fights (instance_id, event_id, branch, boss, phase, defeated_tick, defeated_at, updated_at) VALUES (?1, ?2, ?3, 'Pyroclast', ?4, NULL, NULL, ?5)",
+                            ).bind(inst, ev, branch, 1 + (k % 3), now),
+                        );
+                    for (const [seat, p] of ids.slice(g * 8, g * 8 + 8).entries()) {
+                        const c = { ...row(seat), damage: 3000 + ((k * 31 + g * 7 + seat * 13) % 2000), ticks: 40000 + ((k + seat) % 9) * 1000 };
+                        stmts.push(
+                            env.DB.prepare(
+                                `INSERT INTO raid_contributions (instance_id, event_id, seat, from_tick, player_id, damage, boss_damage, avoided, blocks, rescues, vents, weak_points, objectives, ticks, gigaboss, score, tick, accepted_at)
+                                 VALUES (?1, ?2, ?3, 0, ?4, ?5, 0, ?6, ?7, ?8, 0, 0, ?9, ?10, 0, ?11, ?12, ?13)`,
+                            ).bind(inst, ev, seat, p, c.damage, c.avoided, c.blocks, c.rescues, c.objectives, c.ticks, scoreOf(c).total, TICK, now),
+                        );
+                    }
+                }
+                if (k === 0) me = { id: ids[1]!, username: `${tag}J1`, password: "", token: "", refresh: "" };
+            }
+            for (let at = 0; at < stmts.length; at += 100) await env.DB.batch(stmts.slice(at, at + 100));
+            expect(await count("SELECT COUNT(*) AS n FROM raid_contributions WHERE event_id = ?1", ev)).toBe(2500);
+            expect(me).not.toBeNull();
+            const timings: Record<string, number> = {};
+            let t = Date.now();
+            const agg = await aggregate(env.DB, ev);
+            timings.aggregate_2500_ms = Date.now() - t;
+            expect(agg.players.length).toBe(2500);
+            expect(agg.clans.length).toBe(50);
+            expect(agg.groups.length).toBe(350);
+            expect(agg.clans.reduce((n, c) => n + c.points, 0)).toBe(agg.players.reduce((n, p) => n + p.score, 0));
+            // The world view of a member (a real session) and the close of the event (frozen, rewards, notifications).
+            const viewer = await registerPlayer("Spectateur");
+            await env.DB.prepare("INSERT INTO clan_members (player_id, clan_id, role, joined_at) SELECT ?1, clan_id, 'member', ?2 FROM raid_clan_entries WHERE event_id = ?3 LIMIT 1")
+                .bind(viewer.id, now, ev)
+                .run();
+            const view = countingDb(env.DB);
+            t = Date.now();
+            const res = await worldView(directCtx({ method: "GET", path: "/", params: { eventId: ev }, token: viewer.token, db: view.db }).ctx);
+            timings.world_view_2500_ms = Date.now() - t;
+            timings.world_view_round_trips = view.stats.calls;
+            expect(res.status).toBe(200);
+            const data = await bodyOf(res);
+            expect(data.world.players).toBe(2500);
+            await env.DB.prepare("UPDATE raid_events SET starts_at = ?2, lock_at = ?3, ends_at = ?4 WHERE id = ?1").bind(ev, iso(-100), iso(-130), iso(-15)).run();
+            const close = countingDb(env.DB);
+            t = Date.now();
+            expect(await finalizeEvent(close.db, ev)).toBe(true);
+            timings.close_2500_ms = Date.now() - t;
+            timings.close_round_trips = close.stats.calls;
+            expect(await count("SELECT COUNT(*) AS n FROM raid_event_results WHERE event_id = ?1", ev)).toBe(1);
+            expect(await count("SELECT COUNT(*) AS n FROM raid_reward_grants WHERE event_id = ?1 AND reward = 'asterion_ecorce'", ev)).toBe(2500);
+            expect(await count("SELECT COUNT(*) AS n FROM notifications WHERE group_key = ?1", `raid:results:${ev}`)).toBe(2500);
+            // A second close: nothing more.
+            expect(await finalizeEvent(env.DB, ev)).toBe(true);
+            expect(await count("SELECT COUNT(*) AS n FROM notifications WHERE group_key = ?1", `raid:results:${ev}`)).toBe(2500);
+            console.log(JSON.stringify({ raid_world_scale: timings }));
         },
         240_000,
     );

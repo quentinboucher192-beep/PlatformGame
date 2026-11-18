@@ -946,7 +946,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         }
         const entries: Record<string, unknown> = { game: this.savedGame(next) };
         const tail = next - full * HISTORY_CHUNK;
-        if (tail > 0) entries["h:" + full] = encodeHistory(this.history, full * HISTORY_CHUNK, tail, this.players);
+        if (tail > 0 && next !== this.storedSteps) entries["h:" + full] = encodeHistory(this.history, full * HISTORY_CHUNK, tail, this.players); // unchanged: not written again
         await this.ctx.storage.put(entries);
         this.storedSteps = next;
     }

@@ -43,10 +43,9 @@ float Reconnect::remaining(float now) const { return active_ ? std::max(0.0f, kW
 
 std::string Reconnect::message(float now) const {
     const int left = static_cast<int>(std::ceil(remaining(now)));
-    std::string m = "Liaison avec le relais perdue : reconnexion automatique";
-    if (attempts_ > 0) m += " (essai " + std::to_string(attempts_) + ")";
-    m += ". Votre place est gardée encore " + std::to_string(left) + " s.";
-    return m;
+    if (attempts_ == 0) return "Liaison avec le relais perdue : reconnexion automatique. Votre place est gardée encore " + std::to_string(left) + " s.";
+    return "Liaison avec le relais perdue : reconnexion automatique (essai " + std::to_string(attempts_) + "). Votre place est gardée encore " +
+           std::to_string(left) + " s.";
 }
 
 std::string Reconnect::gaveUp() {

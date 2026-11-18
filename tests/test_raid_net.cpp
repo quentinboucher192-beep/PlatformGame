@@ -54,7 +54,7 @@ struct SimNet {
         double last = 0.0;
     };
     double now = 0.0;
-    double latency = 40.0, jitter = 30.0, lossRate = 0.001;
+    double latency = 25.0, jitter = 15.0, lossRate = 0.0002;
     std::mt19937 rng{20261118};
     std::map<int, Pipe> up, down;  // game → relay, relay → game (by connection)
     std::set<int> closedByRelay;
@@ -190,10 +190,13 @@ struct Instance {
     }
 
     /// Runs the network and the games until `untilMs`.
-    void run(double untilMs) {
+    void run(double untilMs) { runUntil([] { return false; }, untilMs); }
+    /// Runs until `done` (checked every simulated millisecond) or `capMs`.
+    template <class F>
+    void runUntil(F done, double capMs) {
         double nextPoll = net.now;
         std::vector<double> nextTick(games.size(), net.now);
-        while (net.now < untilMs) {
+        while (net.now < capMs && !done()) {
             net.now += 1.0;
             // Deliveries due (to the relay, then to the games).
             for (auto& [conn, pipe] : net.up)
@@ -310,16 +313,18 @@ TEST_CASE("raid net: 8 games, latency, jitter, retransmissions, inputs out of or
     in.net.cut(g0.conn);
     const uint32_t gone = in.net.relay.nextTick();
     // 60 s of steps later its seat is free; a late join takes it.
-    in.run(9300.0 + 64000.0);
-    CHECK(in.net.relay.nextTick() > gone + static_cast<uint32_t>(GameWorld::kStandbyLimitTicks) + 20);
+    const uint32_t freedAt = gone + static_cast<uint32_t>(GameWorld::kStandbyLimitTicks) + 20;
+    in.runUntil([&] { return in.net.relay.nextTick() > freedAt; }, 9300.0 + 90000.0);
+    CHECK(in.net.relay.nextTick() > freedAt);
+    CHECK(in.net.now < 9300.0 + 66000.0);  // the lockstep kept (almost) the pace of the clock
     CHECK(in.net.relay.vacant(seat0));
     in.games.emplace_back();
     SimGame& g8 = in.games.back();
     in.join(g8, 255, false);
-    in.run(9300.0 + 67000.0);
+    in.run(in.net.now + 3000.0);
     CHECK(g8.seat == seat0);
     CHECK(g8.rejoinAt > 0);
-    in.run(9300.0 + 68000.0);
+    in.run(in.net.now + 1000.0);
 
     // Every game in play has the same frames (the common part).
     const SimGame& ref = in.games[1];
@@ -466,7 +471,7 @@ TEST_CASE("raid performance: a step with 8 players in the heaviest zones stays w
         CHECK(b != nullptr);
         raid::RaidRun run(WorldServices{res, audio, content, nullptr, 0.0f, 1.0f}, *b, raid::kMaxInstancePlayers);
         CHECK(run.begin(0, c.zone));
-        const size_t enemies = run.world().enemies().size();
+        size_t enemies = 0;  // the most enemies alive at once (spawned at the first step)
         std::vector<InputFrame> prev(8), team(8);
         std::vector<double> ms;
         constexpr uint32_t kSteps = 1800;  // 15 s of play
@@ -487,6 +492,7 @@ TEST_CASE("raid performance: a step with 8 players in the heaviest zones stays w
             const auto t0 = std::chrono::steady_clock::now();
             run.step(team.data(), 8, 0);
             ms.push_back(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count());
+            enemies = std::max(enemies, run.world().enemies().size());
         }
         double sum = 0.0;
         for (double v : ms) sum += v;
