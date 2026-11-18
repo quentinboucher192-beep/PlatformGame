@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Format des packages `.cplanet`
 
 Un fichier `.cplanet` est une archive ZIP autonome contenant un niveau et **tout ce dont il
@@ -89,3 +91,7 @@ Ensuite :
 
 Les packages installés se gèrent dans l'onglet *Packages installés* : *Jouer*, *Éditer*
 (copie modifiable dans l'éditeur) et *Supprimer* (avec confirmation).
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Cosmic Platformer — Asset Specification
 
 This document is the contract between the asset generators (`tools/assetgen/`) and the
@@ -480,3 +482,7 @@ Generators: `tools/assetgen/characters/boss_d_singularis.py` (entry `bosses_d.py
 
 `star_roar` (its voice), `shell_shatter` (phase 5), `supernova` (phase 8, its death) and the
 loop `singularis_boss` (72.7 s, -13 LUFS). The music budget of the validator is 26 MB.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

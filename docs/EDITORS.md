@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Guide des éditeurs
 
 Les deux éditeurs sont dans l'**ATELIER** (menu *En ligne*), ou directement :
@@ -27,6 +29,8 @@ sont ceux de la campagne. Ils sont utilisables dans tous vos niveaux mais jamais
 La campagne et les records restent ainsi identiques pour tous les joueurs.
 
 ## Éditeur de niveaux
+
+<p align="center"><img src="media/level_editor.png" width="820" alt="Éditeur de niveaux : Les Ruines Suspendues, la bibliothèque d'objets et les calques"></p>
 
 ### Interface
 
@@ -144,6 +148,8 @@ exactement à l'état précédent. Une sauvegarde automatique est écrite régul
 
 ## Éditeur d'ennemis
 
+<p align="center"><img src="media/enemy_editor.png" width="820" alt="Éditeur d'ennemis : Pyrrhax, ses animations et ses statistiques"></p>
+
 * **Liste** des ennemis (officiels, utilisateur, importés) avec Nouveau, Dupliquer,
   Supprimer (créations utilisateur uniquement, avec confirmation).
 * **Aperçu animé** : choix de l'animation, lecture / pause, rejouer ; option
@@ -220,3 +226,7 @@ l'aperçu dit ce qui gêne. Une disposition qui se chevauche déjà (fichier mod
 conflit n'est pas réglé. La disposition est enregistrée dans `saves/settings.json`
 (`gameplay.hud` : pour chaque élément `scale`, `visible`, et `x`, `y` en fraction de l'écran
 quand il a été déplacé ; `progressBar` vaut 3 quand la barre a été placée dans l'éditeur).
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Format des replays (CPRP v3 et v4 / CPRZ)
 
 Depuis la version 2.1.2, un replay permet de **rejouer exactement** la partie : il contient la
@@ -233,3 +235,7 @@ les versions et vérifie en plus, en versions 2 et 3, la cohérence de la sectio
 doit accepter la version 3 **avant** que les joueurs aient le jeu 2.24 (sinon leurs replays
 seraient refusés). Il conserve les entrées pour une future re-simulation côté
 serveur (pas encore faite : un replay v2 n'est donc pas encore « prouvé » par le serveur).
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

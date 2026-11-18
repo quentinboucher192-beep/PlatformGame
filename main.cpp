@@ -436,6 +436,28 @@ int main(int argc, char** argv) {
             if (args[i] == f && args[i + 1].rfind("--", 0) != 0) return args[i + 1];
         return {};
     };
+    // 2.70, captures for the documentation (--raid-test, --coop-test): the script of each seat
+    // (--input for seat 1, --input2 … --input8) and where each appears (--spawns "x,y;x,y;;x,y",
+    // an empty place keeping the level's).
+    auto captureScripts = [&](int seats) {
+        std::vector<std::string> s(static_cast<size_t>(seats));
+        s[0] = value("--input");
+        for (int k = 2; k <= seats; ++k) s[static_cast<size_t>(k - 1)] = value(("--input" + std::to_string(k)).c_str());
+        return s;
+    };
+    auto captureSpawns = [&] {
+        std::vector<std::optional<Vec2>> out;
+        const std::string sp = value("--spawns");
+        for (size_t a = 0, b; a < sp.size(); a = b + 1) {
+            b = sp.find(';', a);
+            if (b == std::string::npos) b = sp.size();
+            const std::string one = sp.substr(a, b - a);
+            const size_t c = one.find(',');
+            if (c == std::string::npos) out.emplace_back(std::nullopt);
+            else out.emplace_back(Vec2{static_cast<float>(std::atof(one.substr(0, c).c_str())), static_cast<float>(std::atof(one.substr(c + 1).c_str()))});
+        }
+        return out;
+    };
 
     Paths::init(value("--user-dir"));
     Log::init(Paths::toUtf8(Paths::logFile()));
@@ -804,6 +826,53 @@ int main(int argc, char** argv) {
         if (auto film = asterionfilm::make(game, true, at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())))))
             app.pushScene(std::move(film));
         else Log::error("Film d'Asterion illisible");
+    } else if (std::string rt = value("--raid-test"); !rt.empty() && cfg.headless) {
+        // 2.70, captures for the documentation (headless only, docs/BUILDING.md):
+        // --raid-test <branch>:<zone>[:<players>[:<phase>[:<invincible 0|1>]]] — the administrators'
+        // raid test (solo, local, never reported), seat k played by --input / --input<k+1>,
+        // appearing where --spawns says.
+        RaidTestSetup t;
+        std::vector<std::string> f;
+        for (size_t a = 0, b; a <= rt.size(); a = b + 1) {
+            b = rt.find(':', a);
+            if (b == std::string::npos) b = rt.size();
+            f.push_back(rt.substr(a, b - a));
+        }
+        t.branch = f[0];
+        t.zone = f.size() > 1 ? std::max(1, std::atoi(f[1].c_str())) : 8;
+        t.players = f.size() > 2 ? std::clamp(std::atoi(f[2].c_str()), 2, 8) : 2;
+        t.startPhase = f.size() > 3 ? std::clamp(std::atoi(f[3].c_str()), 1, 3) : 1;
+        t.invincible = f.size() <= 4 || f[4] != "0";
+        t.capture = true;
+        t.scripts = captureScripts(8);
+        t.spawns = captureSpawns();
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeRaidTest(game, t));
+    } else if (std::string rs = value("--raid-screen"); !rs.empty()) {
+        // 2.70: --raid-screen <event|titan|branch|results|world>:<event id>[:<branch>] (captures): that
+        // screen of a raid event over CLANS, as opened from CLANS › RAIDS (the account's own data).
+        const size_t c1 = rs.find(':');
+        const std::string what = rs.substr(0, c1), rest = c1 == std::string::npos ? std::string{} : rs.substr(c1 + 1);
+        const size_t c2 = rest.find(':');
+        const std::string id = rest.substr(0, c2), part = c2 == std::string::npos ? std::string{"bras_droit"} : rest.substr(c2 + 1);
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeClans(game));
+        if (what == "titan") app.pushScene(makeRaidTitan(game, id));
+        else if (what == "branch") app.pushScene(makeRaidBranch(game, id, part));
+        else if (what == "results") app.pushScene(makeRaidResults(game, id));
+        else if (what == "world") app.pushScene(makeRaidWorld(game, id));
+        else app.pushScene(makeRaidEvent(game, id));
+    } else if (std::string ct = value("--coop-test"); !ct.empty() && cfg.headless) {
+        // 2.70, captures for the documentation (headless only): --coop-test <level>[:<players>] — a
+        // team on one PC, seat k played by --input / --input<k+1>, appearing where --spawns says.
+        CoopCapture c;
+        const size_t colon = ct.find(':');
+        c.levelId = ct.substr(0, colon);
+        c.players = colon == std::string::npos ? 3 : std::clamp(std::atoi(ct.c_str() + colon + 1), 2, 3);
+        c.scripts = captureScripts(3);
+        c.spawns = captureSpawns();
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeCoopCapture(game, c));
     } else if (has("--boss-stats")) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;

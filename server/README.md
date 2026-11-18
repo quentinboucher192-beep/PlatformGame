@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Cosmic Online — serveur (Cloudflare Workers + D1 + R2)
 
 API REST de Cosmic Online, indépendante du jeu C++ : TypeScript, aucune dépendance
@@ -24,3 +26,7 @@ npm test                          # 55 tests (D1 / R2 locaux via Miniflare)
 
 Documentation : [../docs/online/](../docs/online/README.md) — installation, déploiement,
 secrets, API, règles, dépannage.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)
