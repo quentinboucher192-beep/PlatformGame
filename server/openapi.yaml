@@ -3563,7 +3563,7 @@ paths:
       operationId: getClan
       summary: 'A clan''s page'
       security: []
-      description: 'Members and roles (presence only for the clan''s members, as each player shares it), the best team per EXTRÊME level (`mode`, `team_size`: Solo today), the clan''s rank, the pending requests (chief and officers only), the discussion''s conversation id (members only).'
+      description: 'Members and roles (presence only for the clan''s members, as each player shares it: online, away or offline, a hidden presence reads offline; `members_online`, members only: how many are online now), the best team per EXTRÊME level (`mode`, `team_size`: Solo today), the clan''s rank, the pending requests (chief and officers only), the discussion''s conversation id (members only).'
       parameters:
       - {name: clanId, in: path, required: true, schema: {type: string, format: uuid}}
       responses:

@@ -128,7 +128,7 @@ void Branch::attachTitan(const Json& titan) {
         for (const auto& f : l.value("from", Json::array())) e.from.emplace_back(jstr(f, "branch"), jstr(f, "objective_id"));
         effects.push_back(std::move(e));
     }
-    // 2.72 (phase 6): the gigaboss of each zone knows the links acting on its branch (the Cœur
+    // 2.74 (phase 6): the gigaboss of each zone knows the links acting on its branch (the Cœur
     // d'Asterion reads its « modifier » links: the parts of the titan fallen).
     for (ZoneRules& z : rules) {
         z.gigaboss.titanLinks.clear();
@@ -157,7 +157,7 @@ LockText Branch::lockText(const std::string& lock) const {
         return {"il faut les deux générateurs", "Les deux générateurs tournent : le Poignet-verrou s'ouvre",
                 "allumer les deux générateurs (Veine, Avant-bras)"};
     if (lock == "shortcut")
-        return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine ⇄ Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
+        return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine – Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
     if (lock.rfind("link:", 0) == 0) {
         const EffectInfo* e = effect(lock.substr(5));
         return {"une autre branche du titan l'ouvre", e ? e->label : std::string(), "fermé : une autre branche du titan l'ouvre"};
@@ -185,7 +185,7 @@ bool Titan::parse(const Json& j, std::string* error) {
     branches.clear();
     for (const auto& b : j.value("branches", Json::array())) branches.push_back({jstr(b, "part"), jstr(b, "id"), jstr(b, "dir")});
     links = j.value("links", Json::array());
-    // 2.72 (phase 6): its heart (the final fight), apart from the seven branches.
+    // 2.74 (phase 6): its heart (the final fight), apart from the seven branches.
     const Json hj = j.value("heart", Json::object());
     heart = {};
     if (hj.is_object()) heart = TitanBranch{jstr(hj, "part"), jstr(hj, "id"), jstr(hj, "dir")};
@@ -207,7 +207,7 @@ const std::vector<const Branch*>& Branch::all() {
         if (const Titan* t = Titan::builtin()) {
             for (const TitanBranch& tb : t->branches)
                 if (const Branch* b = builtin(tb.part)) list.push_back(b);
-            // 2.72 (phase 6): its heart last (the administrators' tests list it after the seven branches).
+            // 2.74 (phase 6): its heart last (the administrators' tests list it after the seven branches).
             if (!t->heart.part.empty())
                 if (const Branch* b = builtin(t->heart.part)) list.push_back(b);
         }

@@ -41,7 +41,7 @@ public:
     /// 2.65 (raids): the branch's state (objectives done). Once started, it applies from the
     /// first step not given yet, for everyone (RAID_STATE), and is kept for the catch-ups.
     void setRaidState(uint32_t mask);
-    /// 2.72 (phase 6): the shared state of the Cœur d'Asterion (raid::HeartShared packed): from then on
+    /// 2.74 (phase 6): the shared state of the Cœur d'Asterion (raid::HeartShared packed): from then on
     /// every RAID_STATE carries it, applied from the first step not given yet, kept for the catch-ups.
     void setRaidHeart(uint32_t heart);
     void connected(int conn, uint32_t nowMs);

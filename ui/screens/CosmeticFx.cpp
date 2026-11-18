@@ -332,7 +332,7 @@ void drawCustomVictory(const Canvas& cv, const CreationLook& L, Vec2 at, float t
 
 std::function<std::shared_ptr<Texture>(const std::string&)> g_cosmeticTextures;  // 2.72
 
-/// 2.72 (phase 6): a frame of a generated sheet laid in one row (`frame` of `count`), its centre at `p`,
+/// 2.74 (phase 6): a frame of a generated sheet laid in one row (`frame` of `count`), its centre at `p`,
 /// `size` pixels on screen (or in the world), its alpha.
 void drawSheetFrame(Renderer& r, const char* path, int frame, int count, Vec2 p, float size, bool world, uint8_t alpha) {
     if (!g_cosmeticTextures) return;
@@ -665,7 +665,7 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
         for (int i = 0; i < 3; ++i) r.fillCircle(pt(-7.0f + 7.0f * static_cast<float>(i), (bandTop + bandBottom) * 0.5f), 1.7f * scale, gems[i]);
         for (int i = 0; i < 5; ++i) r.fillCircle(pt(px[i], bandTop - ph[i]), 1.3f * scale, Color{255, 252, 240, 255});
     } else if (look == "asterion_heart") {
-        // 2.72 (phase 6), « Cœur d'Asterion » (the profile decor of the top contributors of its fall): a ring
+        // 2.74 (phase 6), « Cœur d'Asterion » (the profile decor of the top contributors of its fall): a ring
         // of the titan's violet flesh veined with gold, its three ventricles lit in turn, the captive star on
         // top (the first frame of the generated sheet of its supernova), within kAvatarFrameMargin.
         r.drawGlow(center, radius + 16 * scale, Color{255, 210, 122, 90});
@@ -950,7 +950,7 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
     if (made) {
         drawCustomVictory(cv, *made, at, t, fade);
     } else if (look == "asterion_supernova") {
-        // 2.72 (phase 6), « Supernova d'Asterion » (a reward of the Cœur's fall): the titan's heart beats
+        // 2.74 (phase 6), « Supernova d'Asterion » (a reward of the Cœur's fall): the titan's heart beats
         // over the portal, collapses to a point, then bursts into golden and violet rings (its generated
         // sheet, 12 frames), the light beyond it drawn here.
         static const float kDur[12] = {0.16f, 0.12f, 0.16f, 0.12f, 0.2f, 0.08f, 0.1f, 0.12f, 0.14f, 0.16f, 0.2f, 0.3f};

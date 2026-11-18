@@ -85,7 +85,7 @@ export async function eventRow(db: D1Database, id: string): Promise<WorldEventRo
 
 export interface MapCheck {
     ok: boolean;
-    /** 2.72 (phase 6): the Cœur d'Asterion's catalog checked (its arena, its fall, a « modifier » link from each part). */
+    /** 2.74 (phase 6): the Cœur d'Asterion's catalog checked (its arena, its fall, a « modifier » link from each part). */
     heart: boolean;
     revision: string;
     branches: number;
@@ -110,6 +110,7 @@ export function checkMap(): MapCheck {
     if (TITAN.branches.length !== 7) problems.push(`${TITAN.branches.length} branches au lieu de 7`);
     const all = new Map<string, Set<string>>();
     for (const c of CATALOGS) if (c) all.set(c.id, new Set(c.objectives.map((o) => o.id)));
+    if (HEART) all.set(HEART.id, new Set(HEART.objectives.map((o) => o.id)));  // 2.74: its aorta crossed too
     const states = statesOf(all);
     let zones = 0;
     let bosses = 0;
@@ -159,7 +160,7 @@ export function checkMap(): MapCheck {
             if (!catalogById(f.branch)?.objectives.some((o) => o.id === f.objective_id)) problems.push(`lien ${l.id} : source ${f.branch} / ${f.objective_id} inconnue`);
         for (const z of l.zones) if (!to.zones.some((x) => x.id === z)) problems.push(`lien ${l.id} : zone ${z} inconnue dans ${to.name}`);
     }
-    // 2.72 (phase 6): the heart: its arena (a lair), its fall (role « gigaboss »), reachable once its aorta is
+    // 2.74 (phase 6): the heart: its arena (a lair), its fall (role « gigaboss »), reachable once its aorta is
     // crossed, and the fall of each of the seven parts acting on it (a link « modifier »).
     if (!HEART) problems.push("Cœur d'Asterion manquant");
     else {
@@ -249,7 +250,7 @@ export interface WorldBranch {
 }
 export interface WorldProgress {
     progress: number;
-    /** 2.72 (phase 6): the Cœur d'Asterion fell (validated: its shared health gone). */
+    /** 2.74 (phase 6): the Cœur d'Asterion fell (validated: its shared health gone). */
     heart_down: boolean;
     objectives_done: number;
     objectives: number;
@@ -495,7 +496,7 @@ export async function aggregate(db: D1Database, eventId: string): Promise<WorldA
             players: players.length,
             groups: groups.filter((g) => g.players > 0).length,
         },
-        // 2.72 (phase 6): the seven gigaboss AND the Cœur d'Asterion (its shared fall, validated).
+        // 2.74 (phase 6): the seven gigaboss AND the Cœur d'Asterion (its shared fall, validated).
         outcome: w.gigaboss_defeated >= w.gigaboss && w.gigaboss > 0 && w.heart_down ? "vaincu" : "survecu",
         clans,
         groups,

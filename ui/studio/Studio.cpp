@@ -1356,7 +1356,7 @@ void Studio::drawTabs(const Rect& r) {
         const Color cc = ui_.mouseOver(cross) ? kText : kDim;
         rr.drawLine({c.x - s, c.y - s}, {c.x + s, c.y + s}, cc, std::max(1.2f, ui_.s(1.6f)));
         rr.drawLine({c.x - s, c.y + s}, {c.x + s, c.y - s}, cc, std::max(1.2f, ui_.s(1.6f)));
-        tip(id, tab, d.doc.name, std::string(kindName(d.doc.kind)) + (d.dirty ? " · non enregistrée (●)" : "") + " · Ctrl+W ferme l'onglet");
+        tip(id, tab, d.doc.name, std::string(kindName(d.doc.kind)) + (d.dirty ? " · non enregistrée (•)" : "") + " · Ctrl+W ferme l'onglet");
     }
     rr.popClip();
     const Rect plus{r.x + room + gap, r.bottom() - r.h + ui_.s(4), plusW, r.h - ui_.s(4)};

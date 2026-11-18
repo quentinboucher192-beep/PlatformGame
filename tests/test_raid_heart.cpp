@@ -1,4 +1,4 @@
-// 2.72 (phase 6): LE CŒUR D'ASTERION, the final fight of the clan raid (docs/RAIDS.md §16). Its generated
+// 2.74 (phase 6): LE CŒUR D'ASTERION, the final fight of the clan raid (docs/RAIDS.md §16). Its generated
 // sheets and film, its catalog apart from the seven branches (an aorta and a gigantic arena), its enemy of
 // four phases, its health for 2 to 8 seats, the shared health given with the branch's state (applied at
 // the same step on every computer, through the relay too: the same digest), the parts of the titan fallen

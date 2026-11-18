@@ -113,7 +113,7 @@ public:
     /// Pyroclast; the state of the branch at this step (the objectives its routine reads).
     const GigabossRoutine* routine() const { return routine_.get(); }
     void setBranchMask(uint32_t mask) { mask_ = mask; }
-    /// 2.72 (phase 6): the shared state of the Cœur d'Asterion at this step (RAID_STATE; zero elsewhere).
+    /// 2.74 (phase 6): the shared state of the Cœur d'Asterion at this step (RAID_STATE; zero elsewhere).
     void setShared(const HeartShared& s) { shared_ = s; }
     const HeartShared& shared() const { return shared_; }
     /// 2.72: the phase to report (raid::Report::Kind::Boss): 1 to 3 while it fights (a gigaboss of four
@@ -150,7 +150,7 @@ private:
     int fistClock_ = 0;
     std::unique_ptr<GigabossRoutine> routine_;  // 2.69 (phase 4B)
     uint32_t mask_ = 0;
-    HeartShared shared_;  // 2.72 (phase 6): given each step, not part of its own state
+    HeartShared shared_;  // 2.74 (phase 6): given each step, not part of its own state
 };
 
 }  // namespace cosmic::raid

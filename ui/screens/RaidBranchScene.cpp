@@ -266,12 +266,12 @@ public:
 
     void drawLegend(const Rect& r) {
         UIContext& ui = g_.ui;
-        const std::vector<std::pair<std::string, Color>> items = {{"━ chemin ouvert", Color{216, 200, 192, 255}},
-                                                                  {"━ combat en cours", kOrange},
-                                                                  {"┅ verrouillé", Color{154, 138, 138, 255}},
-                                                                  {"▢ zone secrète (pointillés)", kViolet},
-                                                                  {"⇄ raccourci déblocable", kSky},
-                                                                  {"✦ ouvert par une autre branche", kLink},
+        const std::vector<std::pair<std::string, Color>> items = {{"— chemin ouvert", Color{216, 200, 192, 255}},
+                                                                  {"— combat en cours", kOrange},
+                                                                  {"- - - verrouillé", Color{154, 138, 138, 255}},
+                                                                  {"■ zone secrète (pointillés)", kViolet},
+                                                                  {"◀▶ raccourci déblocable", kSky},
+                                                                  {"◊ ouvert par une autre branche", kLink},
                                                                   {"◆ objectif facultatif", kGold}};
         // One line: the size that fits them all, never below 75 %.
         float total = 0.0f;
@@ -378,14 +378,14 @@ public:
             const bool done = jget<bool>(o, "done", false), opt = jget<bool>(o, "optional", false);
             std::string t = jstr(o, "label");
             if (done && !jstr(o, "by").empty()) t += " — " + jstr(o, "by");
-            goals.push_back({t, {done ? "✓" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
+            goals.push_back({t, {done ? "OK" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
         }
         if (jget<bool>(z, "boss", false)) {
             const raid::Branch* local = raid::Branch::builtin(part_);
             if (const raid::ZoneRules* lair = local ? local->zoneRules(8) : nullptr; lair && lair->gigaboss.present)  // 2.68, 2.69: its arena
                 goals.push_back({lair->gigaboss.summary, {"◆", kGold}});
             else
-                goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
+                goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"■", kGold}});
         }
         if (goals.empty()) goals.push_back({"Aucun objectif dans cette zone.", {"·", kDim}});
         section("Objectifs", goals);
@@ -399,7 +399,7 @@ public:
         // by this zone's objectives (they act on another branch).
         std::vector<std::pair<std::string, std::pair<std::string, Color>>> links;
         for (const auto& e : z.value("effects", Json::array()))
-            links.push_back({jstr(e, "label"), {jget<bool>(e, "on", false) ? "✓" : "✦", jget<bool>(e, "on", false) ? kGreen : kLink}});
+            links.push_back({jstr(e, "label"), {jget<bool>(e, "on", false) ? "OK" : "◊", jget<bool>(e, "on", false) ? kGreen : kLink}});
         for (const auto& l : data_.value("effects_out", Json::array())) {
             bool fromHere = false;
             for (const auto& src : l.value("sources", Json::array()))
@@ -409,7 +409,7 @@ public:
             const Json pr = l.value("progress", Json::object());
             const bool on = jget<bool>(l, "on", false);
             links.push_back({jstr(l, "label"),
-                             {on ? "✓" : std::to_string(jget<int>(pr, "done", 0)) + " / " + std::to_string(jget<int>(pr, "needed", 1)), on ? kGreen : kGold}});
+                             {on ? "OK" : std::to_string(jget<int>(pr, "done", 0)) + " / " + std::to_string(jget<int>(pr, "needed", 1)), on ? kGreen : kGold}});
         }
         if (!links.empty()) section("Liens avec le reste du titan", links);
         std::vector<std::pair<std::string, std::pair<std::string, Color>>> present;

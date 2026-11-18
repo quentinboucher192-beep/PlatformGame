@@ -78,7 +78,7 @@ interface TitanFile {
     branches: { part: string; id: string; dir: string }[];
     links: TitanLink[];
     catalogs: Catalog[];
-    /** 2.72 (phase 6): its heart, the final fight (raidHeart.ts), apart from the seven branches. */
+    /** 2.74 (phase 6): its heart, the final fight (raidHeart.ts), apart from the seven branches. */
     heart?: { part: string; id: string; dir: string };
     heart_catalog?: Catalog;
 }
@@ -88,7 +88,7 @@ const BRAS_DROIT = brasDroitJson as unknown as Catalog;
 /** The seven branches in the order of the titan's body. */
 export const CATALOGS: Catalog[] = TITAN.branches.map((b) => (b.id === BRAS_DROIT.id ? BRAS_DROIT : TITAN.catalogs.find((c) => c.id === b.id)!));
 export const PARTS = TITAN.branches.map((b) => b.part);
-/** 2.72 (phase 6): the Cœur d'Asterion's catalog (two zones: its aorta, its arena), joined like a branch once open. */
+/** 2.74 (phase 6): the Cœur d'Asterion's catalog (two zones: its aorta, its arena), joined like a branch once open. */
 export const HEART: Catalog | undefined = TITAN.heart_catalog;
 /** The seven branches and the heart: what an instance may play. */
 const PLAYABLE: Catalog[] = HEART ? [...CATALOGS, HEART] : CATALOGS;
@@ -100,7 +100,7 @@ const PLAYER_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
 export const catalogById = (id: string) => PLAYABLE.find((c) => c.id === id);
 export const catalogByPart = (part: string) => {
-    if (HEART && TITAN.heart && part === TITAN.heart.part) return HEART; // 2.72 (phase 6)
+    if (HEART && TITAN.heart && part === TITAN.heart.part) return HEART; // 2.74 (phase 6)
     const b = TITAN.branches.find((x) => x.part === part);
     return b ? catalogById(b.id) : undefined;
 };
@@ -404,7 +404,7 @@ export async function placeOnBranch(db: D1Database, eventId: string, clanId: str
  * fewest players placed (the titan's order on a tie).
  */
 async function neededBranch(db: D1Database, eventId: string, clanId: string): Promise<Catalog> {
-    // 2.72 (phase 6): once the seven gigaboss fell, every group is needed at the heart (until it falls).
+    // 2.74 (phase 6): once the seven gigaboss fell, every group is needed at the heart (until it falls).
     if (HEART) {
         const done = await doneOf(db, eventId);
         if (heartOpenIn(done) && !done.get(HEART.id)?.has(HEART_OBJECTIVE)) return HEART;
@@ -478,7 +478,7 @@ export async function join(ctx: Ctx): Promise<Response> {
         c = catalogByPart(part);
         if (!c) throw Errors.notFound("BRANCH_NOT_FOUND", "Cette branche du titan n'existe pas.");
     }
-    // 2.72 (phase 6): the Cœur d'Asterion opens once the seven gigaboss fell (validated).
+    // 2.74 (phase 6): the Cœur d'Asterion opens once the seven gigaboss fell (validated).
     const sealedHeart = async (branch: string) => {
         if (!HEART || branch !== HEART.id) return;
         const done = await doneOf(db, e.id);
@@ -853,7 +853,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
         .slice(0, 12);
     const fighting = instances.filter((i) => i.players > 0);
     const myInst = placement ? instances.find((i) => i.id === placement.instance_id) : undefined;
-    // 2.72 (phase 6): the Cœur d'Asterion: sealed, open, fought (its shared health), fallen.
+    // 2.74 (phase 6): the Cœur d'Asterion: sealed, open, fought (its shared health), fallen.
     const heart = await heartView(db, e.id, done, states, instances, reg?.clan_id ?? null);
     if (heart) body[heart.part] = heartBodyState(heart);
     return json(ctx, {

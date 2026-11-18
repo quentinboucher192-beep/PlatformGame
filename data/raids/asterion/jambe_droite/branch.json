@@ -15,7 +15,7 @@
   },
   "shortcut": {
    "hint": "le levier du Mollet blindé l'ouvre",
-   "message": "Le raccourci Genou-forge ⇄ Mollet blindé est ouvert",
+   "message": "Le raccourci Genou-forge – Mollet blindé est ouvert",
    "objective": "raccourci fermé (le levier est dans le Mollet blindé)"
   }
  },
@@ -93,7 +93,7 @@
   {
    "id": 6,
    "name": "Mollet blindé",
-   "sub": "réacteur est · levier ⇄",
+   "sub": "réacteur est · levier du raccourci",
    "x": 560,
    "y": 470,
    "level": "zone_6.json",

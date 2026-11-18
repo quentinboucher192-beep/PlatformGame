@@ -116,7 +116,7 @@ public:
         std::string state = !loaded_ ? "" : res_.final ? "Classement final" : "Classement en cours · résultats validés par le serveur";
         const float sw = std::min(textW(ui, state, 14), (page.right() - hx) * 0.45f);
         if (!state.empty()) fit(ui, state, {page.right(), page.y + ui.s(22)}, 14, sw, res_.final ? kGreen : kGold, FontFace::Bold, Align::Right);
-        fit(ui, "Résultats du raid · Asterion", {hx, page.y + ui.s(22)}, 26, page.right() - hx - sw - ui.s(16), kText, FontFace::Title);
+        fit(ui, "Résultats du raid — Asterion", {hx, page.y + ui.s(22)}, 26, page.right() - hx - sw - ui.s(16), kText, FontFace::Title);
         if (!loaded_) {
             fit(ui, error_.empty() ? "Chargement des résultats…" : error_, {page.x, page.y + ui.s(80)}, 17, page.w, error_.empty() ? kDim : ui.theme().danger);
         } else {
@@ -191,7 +191,7 @@ public:
             const float pw = std::min(textW(ui, pts, 15, FontFace::Bold), w * 0.4f);
             fit(ui, std::to_string(c.rank), {row.x + ui.s(12), row.center().y}, 16, ui.s(30), kGold, FontFace::Title);
             fit(ui, pts, {row.right() - ui.s(12), row.center().y}, 15, pw, kText, FontFace::Bold, Align::Right);
-            fit(ui, "[" + c.tag + "] · " + std::to_string(c.players) + (c.players > 1 ? " joueurs" : " joueur") + (c.gigaboss ? " · gigaboss ✓" : ""),
+            fit(ui, "[" + c.tag + "] · " + std::to_string(c.players) + (c.players > 1 ? " joueurs" : " joueur") + (c.gigaboss ? " · gigaboss vaincu" : ""),
                 {row.x + ui.s(46), row.center().y}, 15, row.w - ui.s(46) - pw - ui.s(24), kText, FontFace::Bold, Align::Left, false);
             y += rowH + gap;
         }

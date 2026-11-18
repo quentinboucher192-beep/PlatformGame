@@ -165,7 +165,7 @@ std::vector<uint8_t> rejoin(uint8_t seat, uint32_t tick);
 std::vector<uint8_t> end(EndReason r);
 /// 2.65 (raids): the branch's state (objectives done, bit i = objective i) from step `tick` on.
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask);
-/// 2.72 (phase 6): the same with the shared state of the Cœur d'Asterion (raid::HeartShared::pack):
+/// 2.74 (phase 6): the same with the shared state of the Cœur d'Asterion (raid::HeartShared::pack):
 /// only the relays of the heart's instances send it (an older game, which cannot play the heart, never gets one).
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart);
 

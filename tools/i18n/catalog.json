@@ -301,6 +301,12 @@
    ]
   },
   {
+   "fr": "- - - verrouillé",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "- Compte, records et replays : tant que le compte existe.",
    "where": [
     "data/online/terms_fr.txt"
@@ -693,6 +699,12 @@
    ]
   },
   {
+   "fr": "[EXEMPLE]·1 · 8 / 8",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "[{0}] est déjà invité.",
    "where": [
     "server/src/raids.ts"
@@ -729,7 +741,7 @@
    ]
   },
   {
-   "fr": "[{0}] · {1} joueur · gigaboss ✓",
+   "fr": "[{0}] · {1} joueur · gigaboss vaincu",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -741,7 +753,7 @@
    ]
   },
   {
-   "fr": "[{0}] · {1} joueurs · gigaboss ✓",
+   "fr": "[{0}] · {1} joueurs · gigaboss vaincu",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -1140,7 +1152,8 @@
   {
    "fr": "Abdomen tombé : plus d'engeances en renfort",
    "where": [
-    "game/raid/AsterionHeartRoutine.cpp"
+    "game/raid/AsterionHeartRoutine.cpp",
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -1673,7 +1686,7 @@
    ]
   },
   {
-   "fr": "Administration › Créations › Studio : un vrai éditeur pour dessiner les images des créations. À gauche l'explorateur (combinaisons, traînées, cadres, effets de victoire du serveur et brouillons de ce PC, recherche, nouveau, dupliquer, renommer, archiver, bibliothèque) ; en haut les onglets des créations ouvertes (● non enregistrée, fermeture confirmée) ; au centre la toile, avec zoom, grille, pelure d'oignon et coordonnées, et ses outils : crayon, gomme, pot de peinture, pipette, ligne, rectangle, ellipse, sélection, déplacer, miroirs et symétrie, annuler / rétablir (Ctrl+Z / Ctrl+Y) ; à droite la palette (celle de la création, de Nova, des planètes), le sélecteur TSV, le code #rrggbb et l'aperçu en direct.",
+   "fr": "Administration › Créations › Studio : un vrai éditeur pour dessiner les images des créations. À gauche l'explorateur (combinaisons, traînées, cadres, effets de victoire du serveur et brouillons de ce PC, recherche, nouveau, dupliquer, renommer, archiver, bibliothèque) ; en haut les onglets des créations ouvertes (• non enregistrée, fermeture confirmée) ; au centre la toile, avec zoom, grille, pelure d'oignon et coordonnées, et ses outils : crayon, gomme, pot de peinture, pipette, ligne, rectangle, ellipse, sélection, déplacer, miroirs et symétrie, annuler / rétablir (Ctrl+Z / Ctrl+Y) ; à droite la palette (celle de la création, de Nova, des planètes), le sélecteur TSV, le code #rrggbb et l'aperçu en direct.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -1709,7 +1722,7 @@
    ]
   },
   {
-   "fr": "ADMINISTRATION › Raids › « Tester Asterion » : le Cœur d'Asterion est testable, avec sa phase de départ (1 à 4), les parties du titan à simuler comme tombées (pour voir leurs effets) et les reliques ; un test ne rapporte jamais rien.",
+   "fr": "ADMINISTRATION › Raids › « Tester Asterion » : le Cœur d'Asterion est testable, avec sa phase de départ (1 à 4), les parties du titan à simuler comme tombées (pour voir leurs effets) et les reliques ; un test ne rapporte jamais rien. Il se joue comme une vraie instance, avec les joueurs simulés.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -2091,6 +2104,12 @@
    "fr": "Alertes de sécurité",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Alertes du groupe",
+   "where": [
+    "saves/RaidHudLayout.cpp"
    ]
   },
   {
@@ -3677,12 +3696,6 @@
    ]
   },
   {
-   "fr": "ASTERION · BRAS DROIT",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Asterion · Bras droit · Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/zone_6.json"
@@ -3983,7 +3996,13 @@
    ]
   },
   {
-   "fr": "ASTERION · {0}",
+   "fr": "ASTERION — BRAS DROIT",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ASTERION — {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -6424,6 +6443,12 @@
    ]
   },
   {
+   "fr": "Bandeau de danger",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
    "fr": "Bandes",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -6483,6 +6508,12 @@
    "fr": "Barre de progression sans encadré.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Barre du gigaboss",
+   "where": [
+    "saves/RaidHudLayout.cpp"
    ]
   },
   {
@@ -7122,6 +7153,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/content/AssetCatalog.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -7144,6 +7176,8 @@
     "game/raid/RaidBranch.cpp",
     "game/tutorial/Tutorial.cpp",
     "saves/HudLayout.cpp",
+    "saves/RaidHudLayout.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp"
@@ -7465,6 +7499,12 @@
    ]
   },
   {
+   "fr": "BRANCHE · Le raccourci est ouvert",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "BRANCHE · {0}",
    "where": [
     "game/raid/RaidRun.cpp"
@@ -7531,6 +7571,12 @@
    "where": [
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bras droit : le magma monte plus souvent (toutes les 34 s dans la Veine de magma, 42 s dans le Coude-forge, et désormais 38 s dans l'Avant-bras, avec des corniches pour s'abriter), annoncé 4 s avant. Les fosses et rideaux de lave de Pyroclast utilisent aussi ce nouveau magma.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8611,6 +8657,12 @@
    ]
   },
   {
+   "fr": "Carte du raid (agrandir)",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
    "fr": "Carte du titan",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -8662,6 +8714,18 @@
    "fr": "Carte validée · {0}",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "CARTE · {0} · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "CARTE · {0} · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -10685,7 +10749,8 @@
     "game/gameplay/entities/InteractiveEntities.cpp",
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
-    "packaging/DependencyCollector.cpp"
+    "packaging/DependencyCollector.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -10756,6 +10821,12 @@
    "fr": "Chemin invalide (barre oblique inverse) : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "chemin ouvert",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -11181,6 +11252,18 @@
    "fr": "chronomètre",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chronomètre du raid",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Chronomètre en raid (vrais raids et test admin) : le même chrono que dans les niveaux, calculé sur les pas de la simulation (identique pour tout le groupe), avec le temps depuis le début de l'instance et, en dessous, le temps passé dans la zone. Il continue pendant la pause d'un joueur (le monde ne s'arrête jamais) ; c'est un élément de la disposition « Raids » de l'éditeur de HUD (déplaçable, redimensionnable, masquable).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -12268,6 +12351,7 @@
   {
    "fr": "combat en cours",
    "where": [
+    "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -12462,6 +12546,18 @@
    "fr": "Commandes de J{0}…",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : aucune touche (Vue / Retour à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : {0} (Vue / Retour à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -13579,6 +13675,12 @@
    ]
   },
   {
+   "fr": "Contributions",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
    "fr": "Contributions calculées dans la simulation, les mêmes sur chaque ordinateur de l'instance : dégâts (et au gigaboss), dégâts évités (ses coups esquivés, les coups bloqués par le bouclier), soutien, évents fermés, points faibles brisés, objectifs, temps de participation, présence à sa chute. Le serveur ne retient un tableau que si la majorité de l'instance a envoyé le même, refuse les valeurs impossibles et journalise les menteurs ; tant qu'il attend, le résultat est « en attente de validation ».",
    "where": [
     "data/news/changelog.json"
@@ -13599,7 +13701,8 @@
   {
    "fr": "contrôlée",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -13639,7 +13742,7 @@
    ]
   },
   {
-   "fr": "Coopération sur un même PC : un périphérique par joueur. Le clavier et la souris vont ensemble à un seul joueur, chaque manette à un seul joueur ; Start ou Ⓐ sur une manette libre prend une place, Ⓑ la quitte, « Changer de périphérique » passe au suivant libre, et la manette qui reçoit une place vibre une fois. Chaque carte du salon montre le périphérique de son joueur (« Manette Xbox (n° 1) », numéro gardé quand on la rebranche) et allume les boutons qu'il appuie ; la liste des périphériques branchés se met à jour en direct (une manette débranchée y reste quelques secondes). Glyphes Xbox, PlayStation, Switch (B en bas, A à droite, ZL / ZR, + / −) ou génériques.",
+   "fr": "Coopération sur un même PC : un périphérique par joueur. Le clavier et la souris vont ensemble à un seul joueur, chaque manette à un seul joueur ; Start ou A sur une manette libre prend une place, B la quitte, « Changer de périphérique » passe au suivant libre, et la manette qui reçoit une place vibre une fois. Chaque carte du salon montre le périphérique de son joueur (« Manette Xbox (n° 1) », numéro gardé quand on la rebranche) et allume les boutons qu'il appuie ; la liste des périphériques branchés se met à jour en direct (une manette débranchée y reste quelques secondes). Glyphes Xbox, PlayStation, Switch (B en bas, A à droite, ZL / ZR, + / −) ou génériques.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -13800,6 +13903,12 @@
    "fr": "Corps à corps",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Correctif : des symboles s'affichaient comme des carrés vides dans le HUD des raids, la légende de la carte d'une branche et la carte du titan (coches, croix, flèches doubles, losanges). Ils sont remplacés par des signes que les polices du jeu contiennent (« OK », « + », « ◊ », « ■ », « ◀▶ », « – ») ; un test vérifie désormais que chaque texte du jeu, en français et en anglais, n'utilise que des caractères présents dans ses polices.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -14961,7 +15070,8 @@
   {
    "fr": "Crâne tombé : ses lances stellaires perdent leur précision",
    "where": [
-    "game/raid/AsterionHeartRoutine.cpp"
+    "game/raid/AsterionHeartRoutine.cpp",
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -15449,6 +15559,12 @@
    "fr": "Cœur d'Asterion manquant",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "CŒUR D'ASTERION · 63,2 % · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -17357,6 +17473,12 @@
    ]
   },
   {
+   "fr": "Disposition des raids par défaut rétablie.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Disposition par défaut rétablie.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -19188,6 +19310,12 @@
    ]
   },
   {
+   "fr": "Dégâts 120 · Mécanismes 2 · Sauvetages 1 · Dégâts évités 30",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts au contact",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -19865,6 +19993,18 @@
    ]
   },
   {
+   "fr": "Effets des branches sur le Cœur",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "EFFETS DES BRANCHES SUR LE CŒUR · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Effets des récompenses",
    "where": [
     "game/content/AssetCatalog.cpp"
@@ -20333,6 +20473,7 @@
    "fr": "en jeu",
    "where": [
     "game/gameplay/HudTeam.cpp",
+    "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRosterScene.cpp"
    ]
@@ -20393,6 +20534,12 @@
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "En ligne - {0}ms",
+   "where": [
+    "game/online/OnlineTypes.cpp"
    ]
   },
   {
@@ -20731,6 +20878,7 @@
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/content/AssetCatalog.cpp",
     "game/levels/ObjectTypes.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -21767,6 +21915,12 @@
    ]
   },
   {
+   "fr": "EXEMPLE · raid à 8 joueurs",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Exige une ligne de vue",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -21935,6 +22089,12 @@
    ]
   },
   {
+   "fr": "Facultatif",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "Facultatif : affiché dans les classements selon votre choix",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -22064,6 +22224,12 @@
    "fr": "Faire une copie maintenant",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Fait",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -22403,6 +22569,12 @@
    "where": [
     "ui/screens/AdminAssets.cpp",
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche d'un raid : les inscrits de votre clan portent aussi leur pastille de présence dans leur groupe, et « INSCRITS DU CLAN » annonce combien sont en ligne. Une présence masquée (« Montrer ma présence à mes amis » décoché) apparaît hors ligne ; seuls les membres du clan la voient.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -23039,6 +23211,12 @@
    "fr": "Flèche haut",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Flèches hors écran (ennemis, embuscade, boss, alliés)",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -24829,6 +25007,12 @@
    ]
   },
   {
+   "fr": "Grande carte du raid : appuyez sur M (ou Vue / Retour à la manette, touche modifiable dans Paramètres › Commandes, bouton de souris possible) pour agrandir la carte sur presque tout l'écran : la zone entière (ou une fenêtre qui vous suit avec un aperçu de toute la zone), les zones de la branche et leur état, toute la légende. Elle ne met jamais le jeu en pause : le groupe continue à jouer. La touche est rappelée dans la pause du raid.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Grande marée",
    "where": [
     "data/enemies/echo_pyrogyre.json",
@@ -25128,6 +25312,7 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -25219,6 +25404,12 @@
    "fr": "GROUPE · Les joueurs à terre se relèvent au point de contrôle",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Objectif accompli : générateur ouest",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -25489,6 +25680,12 @@
    "fr": "Générateur de gravité ouest : coupez-le avec un pouvoir de tir.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Générateur du verrou : frappez-le avec un pouvoir de tir",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -25818,7 +26015,7 @@
    ]
   },
   {
-   "fr": "Histoires des giga-boss : « Passer » (Espace, Entrée, Ⓐ ou un clic) ne passe plus que le plan en cours, avec un fondu rapide vers le suivant (au dernier plan, l'histoire se termine) ; « Quitter » (Échap, Ⓑ ou un clic sur son indication) quitte toute l'histoire.",
+   "fr": "Histoires des giga-boss : « Passer » (Espace, Entrée, A ou un clic) ne passe plus que le plan en cours, avec un fondu rapide vers le suivant (au dernier plan, l'histoire se termine) ; « Quitter » (Échap, B ou un clic sur son indication) quitte toute l'histoire.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -27430,6 +27627,12 @@
    ]
   },
   {
+   "fr": "INSCRITS DU CLAN",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Inscrivez-vous au raid (fiche de l'événement) pour combattre.",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
@@ -28416,6 +28619,12 @@
    ]
   },
   {
+   "fr": "Joueur simulé {0}",
+   "where": [
+    "game/raid/RaidTest.cpp"
+   ]
+  },
+  {
    "fr": "Joueur supprimé",
    "where": [
     "server/src/social.ts"
@@ -28433,6 +28642,7 @@
     "game/gameplay/HudTeam.cpp",
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
@@ -29496,6 +29706,12 @@
    ]
   },
   {
+   "fr": "La carte agrandie de la zone et de la branche, pendant un raid (le groupe continue à jouer).",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "La carte d'Asterion n'est pas valide : {0}",
    "where": [
     "server/src/raidWorld.ts"
@@ -30423,6 +30639,12 @@
    ]
   },
   {
+   "fr": "La pastille en haut à droite des écrans de COSMIC ONLINE affiche maintenant la latence réelle vers le serveur : « En ligne - 25ms », mesurée sur les échanges légers du jeu (signal de présence, vérification de connexion), lissée sur les derniers ; « En ligne » seul tant qu'aucune mesure n'existe.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "La phrase secrète doit contenir de 12 à 200 caractères.",
    "where": [
     "server/src/backups.ts"
@@ -30759,6 +30981,12 @@
    "fr": "La tentative s'arrête, comme en solo ; elle compte dans la course à la vérification.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "La touche de la carte (ou Vue à la manette) : fermer la carte · le groupe continue à jouer · glisser à la souris : déplacer",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -32576,6 +32804,12 @@
    ]
   },
   {
+   "fr": "Le magma monte dans l'avant-bras : à l'alerte, sautez sur les corniches.",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
    "fr": "Le magma referme l'arène !",
    "where": [
     "data/levels/confins_02.json"
@@ -32890,7 +33124,7 @@
    ]
   },
   {
-   "fr": "Le passage Nerfs optiques ⇄ Tempe est ouvert",
+   "fr": "Le passage Nerfs optiques – Tempe est ouvert",
    "where": [
     "data/raids/asterion/crane/branch.json"
    ]
@@ -33139,37 +33373,37 @@
    ]
   },
   {
-   "fr": "Le raccourci Genou ⇄ Tibia est ouvert",
+   "fr": "Le raccourci Genou – Tibia est ouvert",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {
-   "fr": "Le raccourci Genou-forge ⇄ Mollet blindé est ouvert",
+   "fr": "Le raccourci Genou-forge – Mollet blindé est ouvert",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
-   "fr": "Le raccourci Intestin ⇄ Foie noir est ouvert",
+   "fr": "Le raccourci Intestin – Foie noir est ouvert",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
-   "fr": "Le raccourci Poumon gauche ⇄ Sternum est ouvert",
+   "fr": "Le raccourci Poumon gauche – Sternum est ouvert",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
-   "fr": "Le raccourci Tendon ⇄ Avant-bras de givre est ouvert",
+   "fr": "Le raccourci Tendon – Avant-bras de givre est ouvert",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
-   "fr": "Le raccourci Veine ⇄ Avant-bras est ouvert",
+   "fr": "Le raccourci Veine – Avant-bras est ouvert",
    "where": [
     "game/raid/RaidBranch.cpp"
    ]
@@ -36079,9 +36313,21 @@
    ]
   },
   {
+   "fr": "Magma",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "Magma des fissures",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Magma des raids : les montées de magma sont maintenant réalistes. Le magma monte depuis le fond et redescend, dessiné par-dessus les joueurs et les monstres : on ne voit plus rien à travers, seulement une lueur à la surface au-dessus de ce qu'il cache. Les ennemis pris dans le magma brûlent comme un joueur (les boss exceptés). Nouvelle lave animée : corps en fusion qui coule, croûte sombre qui dérive, vagues lumineuses, bulles qui éclatent, braises, chaleur, et une alerte avant chaque montée (le niveau qu'il va atteindre, le sol qui se fissure).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -36332,7 +36578,7 @@
    ]
   },
   {
-   "fr": "Manette débranchée en pleine partie (en solo comme en coopération sur un même PC) : la partie et le chrono se mettent en pause et « MANETTE DÉBRANCHÉE » dit à qui elle était ; la rebrancher relance la partie après 3, 2, 1. Ⓐ sur une autre manette libre prend la place du joueur avec ses touches, Entrée lui donne le clavier s'il est libre ; en coopération, « Continuer sans… » laisse l'équipe repartir sans lui (60 s pour revenir, comme en ligne). En ligne, la règle des 60 s de reconnexion ne change pas. Pile faible d'une manette : une ligne dans le panneau d'équipe, sans pause.",
+   "fr": "Manette débranchée en pleine partie (en solo comme en coopération sur un même PC) : la partie et le chrono se mettent en pause et « MANETTE DÉBRANCHÉE » dit à qui elle était ; la rebrancher relance la partie après 3, 2, 1. A sur une autre manette libre prend la place du joueur avec ses touches, Entrée lui donne le clavier s'il est libre ; en coopération, « Continuer sans… » laisse l'équipe repartir sans lui (60 s pour revenir, comme en ligne). En ligne, la règle des 60 s de reconnexion ne change pas. Pile faible d'une manette : une ligne dans le panneau d'équipe, sans pause.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -37415,13 +37661,43 @@
    ]
   },
   {
+   "fr": "Minimap",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Minimap des raids refaite en textures : roche et corniches lisibles, lave, zone que le magma inonde, passages ouverts ou verrouillés, portes, objectifs (à faire, faits, facultatifs), points de contrôle, plaques de groupe, évents, ennemis, boss, alliés à leur couleur et vous en or, avec une petite légende mesurée.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "MINIMAP · ?",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
+   "fr": "MINIMAP · ? · {0} : agrandir",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "MINIMAP · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "MINIMAP · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "MINIMAP · {0} · {1} : agrandir",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -38144,6 +38420,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Montée de magma dans 3 s · montez !",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -40791,6 +41073,7 @@
   {
    "fr": "Objectif",
    "where": [
+    "ui/online/RaidHud.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
@@ -40867,6 +41150,18 @@
    "fr": "Objectifs de médaille",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectifs et branche",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "OBJECTIFS · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -41231,6 +41526,12 @@
   {
    "fr": "OK",
    "where": [
+    "game/raid/GravitonRoutine.cpp",
+    "game/raid/TitanusRoutine.cpp",
+    "game/raid/VoidwormRoutine.cpp",
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidTitanScene.cpp",
     "ui/studio/Studio.cpp"
    ]
   },
@@ -41845,6 +42146,12 @@
    ]
   },
   {
+   "fr": "ouverte",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouverte au départ",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -42228,6 +42535,12 @@
    "fr": "Panneau des segments façon LiveSplit : un élément « Fantômes » de l'éditeur du HUD (place, taille, affichage).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Panneau du groupe",
+   "where": [
+    "saves/RaidHudLayout.cpp"
    ]
   },
   {
@@ -43213,6 +43526,12 @@
    ]
   },
   {
+   "fr": "Passage",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "passage fermé (le levier est dans la Tempe)",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -44195,6 +44514,12 @@
    ]
   },
   {
+   "fr": "phase 2 / 4",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Phase 3",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json",
@@ -44611,7 +44936,8 @@
   {
    "fr": "Place libre",
    "where": [
-    "ui/screens/CoopLobbyScene.cpp"
+    "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -44898,6 +45224,18 @@
    "fr": "Plaque d'armure de Heartbreaker",
    "where": [
     "data/enemies/heartbreaker_plaque.json"
+   ]
+  },
+  {
+   "fr": "Plaque de groupe",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Plaque faite",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -45546,6 +45884,12 @@
    ]
   },
   {
+   "fr": "Poignet-verrou : les deux générateurs",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Poignet-verrou : quatre embuscades, des plaques et un monte-charge de groupe. Restez ensemble.",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
@@ -45594,6 +45938,12 @@
    ]
   },
   {
+   "fr": "Point atteint",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "Point d'ancrage",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -45609,6 +45959,12 @@
    "fr": "Point d'ancrage : sous les pieds, au centre",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Point de contrôle",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -45863,6 +46219,12 @@
    "fr": "Portail de sortie",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Porte",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -46412,6 +46774,7 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/content/AssetCatalog.cpp",
     "saves/HudLayout.cpp",
+    "saves/RaidHudLayout.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -47277,7 +47640,7 @@
    ]
   },
   {
-   "fr": "Présence : seulement pour les membres du clan, et si le joueur la partage.",
+   "fr": "Présence : visible des seuls membres du clan. « En ligne » compte les joueurs actifs ; une présence masquée apparaît hors ligne.",
    "where": [
     "ui/screens/ClanScene.cpp"
    ]
@@ -48023,6 +48386,12 @@
    ]
   },
   {
+   "fr": "Qui est en ligne dans votre clan : dans CLANS › Membres, chaque membre porte la pastille de présence de SOCIAL (en ligne, absent, hors ligne), les membres en ligne passent en tête, et l'en-tête de la liste annonce « X/Y en ligne ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Quitter",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -48451,7 +48820,21 @@
    "fr": "Raids",
    "where": [
     "ui/screens/AdminScene.cpp",
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/HudEditorScene.cpp",
+    "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raids : la disposition des combats de raid, à part du HUD des niveaux. L'aperçu est un exemple de raid à 8 joueurs (noms et objectifs d'exemple, jamais en jeu). La carte s'agrandit en raid avec la touche {0}. Deux éléments ne peuvent jamais se chevaucher.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raids : « {0} » et « {1} » se chevauchent : déplacez ou réduisez l'un des deux pour enregistrer.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -48462,6 +48845,12 @@
   },
   {
    "fr": "Raids de clan : consensus renforcé contre la triche. Seuls les joueurs réellement en jeu votent, un rapport mensonger arrivé au même moment que la validation est refusé et journalisé, rien n'est plus accepté après la clôture d'un événement mondial, et un groupe ne recule plus sur la carte quand deux rapports arrivent dans le désordre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan : les flèches vers les monstres hors de l'écran sont de retour en raid, exactement comme dans les niveaux : flèches orange vers les ennemis déjà vus, flèches violettes vers ceux de l'embuscade en cours, avec leur nombre, en plus des flèches vers le gigaboss et vers vos alliés.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -48480,6 +48869,12 @@
   },
   {
    "fr": "Raids de clan : une instance ne s'arrête plus quand tout le groupe perd sa connexion en même temps ; elle attend ses joueurs 60 secondes. Elle survit aussi au redémarrage du serveur qui la relaie : la partie est enregistrée chaque seconde et chacun la retrouve à son retour.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan : une zone garde ce que le groupe y a fait. En revenant dans une zone (ou quand tout le groupe tombe et que la zone reprend), les portes et passages ouverts, les leviers, les générateurs, les arènes et embuscades nettoyées, les gardiens et ennemis vaincus, les reliques prises, les plaques de groupe et le dernier point de contrôle restent comme vous les avez laissés. Ce qu'un autre groupe a validé est aussi appliqué (un gardien qu'il a vaincu n'est plus là).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -49983,6 +50378,12 @@
    "fr": "Relique de la forge",
    "where": [
     "data/raids/asterion/jambe_droite/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Relique de la grotte (facultatif)",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -51921,6 +52322,12 @@
    ]
   },
   {
+   "fr": "Réanimations de la zone : 1 / 2",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Réanimations de la zone : {0} / {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -52488,6 +52895,12 @@
    ]
   },
   {
+   "fr": "Réseau · badge TEST ADMIN",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
    "fr": "RÉSEAU · Liaison rétablie : retour dans l'instance",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -52646,7 +53059,7 @@
    ]
   },
   {
-   "fr": "Résultats du raid · Asterion",
+   "fr": "Résultats du raid — Asterion",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -58783,19 +59196,31 @@
    ]
   },
   {
+   "fr": "Test admin « Tester Asterion » : il se joue comme une vraie instance. L'état de la branche suit d'une zone à l'autre (comme le serveur l'envoie en raid), et les joueurs simulés sont de vrais compagnons visibles, nommés « Joueur simulé 2 », « Joueur simulé 3 »… avec leur couleur dans le panneau du groupe : ils vous suivent, sautent les trous, frappent les ennemis proches, montent sur les plaques, les monte-charges et les évents avec vous, relèvent les joueurs à terre et fuient le magma. Les mécanismes à plusieurs fonctionnent donc seul. Un test n'envoie toujours rien au serveur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "TEST ADMIN · Départ en phase {0}",
    "where": [
     "game/raid/Gigaboss.cpp"
    ]
   },
   {
-   "fr": "TEST ADMIN · non classé · {0} joueurs simulés",
+   "fr": "TEST ADMIN · non classé · 8 joueurs (7 simulés)",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · {0} joueurs ({1} simulés)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
-   "fr": "TEST ADMIN · non classé · {0} joueurs simulés · invincible",
+   "fr": "TEST ADMIN · non classé · {0} joueurs ({1} simulés) · invincible",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -59405,6 +59830,12 @@
    ]
   },
   {
+   "fr": "Torse debout : une cage d'os le garde dès sa 1re phase",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Torse tombé : sa cage est brisée, la voie de ses ventricules s'ouvre",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
@@ -59571,6 +60002,12 @@
    "fr": "Touché",
    "where": [
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "Toujours affiché : le groupe doit le voir.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -63507,7 +63944,8 @@
    "fr": "vent",
    "where": [
     "game/gameplay/entities/AbilityEntities.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -63599,6 +64037,7 @@
    "fr": "Verrouillé",
    "where": [
     "game/content/CreaturePlaces.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/AchievementsScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
@@ -63656,6 +64095,12 @@
    "fr": "Verrouillée",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "verrouillée",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -64115,7 +64560,14 @@
   {
    "fr": "Vie et énergie",
    "where": [
-    "saves/HudLayout.cpp"
+    "saves/HudLayout.cpp",
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Vie partagée du Cœur",
+   "where": [
+    "saves/RaidHudLayout.cpp"
    ]
   },
   {
@@ -64261,7 +64713,8 @@
     "game/levels/DifficultyRating.cpp",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp",
-    "saves/HudLayout.cpp"
+    "saves/HudLayout.cpp",
+    "saves/RaidHudLayout.cpp"
    ]
   },
   {
@@ -65019,6 +65472,12 @@
    ]
   },
   {
+   "fr": "votre groupe 8,1 % · les autres groupes 28,7 % · parties du titan tombées 5 / 7",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre groupe est dans : {0}.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -65242,7 +65701,9 @@
    "fr": "Vous",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/ChallengesScene.cpp",
+    "ui/screens/HudEditorScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -65696,6 +66157,12 @@
    ]
   },
   {
+   "fr": "vous êtes ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous êtes inscrit",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -66117,7 +66584,8 @@
   {
    "fr": "Zone : {0}",
    "where": [
-    "game/raid/RaidRun.cpp"
+    "game/raid/RaidRun.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -66159,7 +66627,8 @@
   {
    "fr": "Zone secrète",
    "where": [
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -66537,6 +67006,12 @@
    "fr": "{0} (opérations {1} à {2})",
    "where": [
     "server/src/live.ts"
+   ]
+  },
+  {
+   "fr": "{0} (ou Vue à la manette) : fermer la carte · le groupe continue à jouer · glisser à la souris : déplacer",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -67491,6 +67966,12 @@
    "fr": "{0} de vos tentatives sont en cours de vérification.",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} debout : {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -69404,7 +69885,7 @@
    ]
   },
   {
-   "fr": "{0} · non enregistrée (●) · Ctrl+W ferme l'onglet",
+   "fr": "{0} · non enregistrée (•) · Ctrl+W ferme l'onglet",
    "where": [
     "ui/studio/Studio.cpp"
    ]
@@ -69864,6 +70345,12 @@
    "fr": "{0}. {1} · {2} % de vie (renaissance)",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}/{1} en ligne",
+   "where": [
+    "ui/online/PresenceList.cpp"
    ]
   },
   {
@@ -70423,6 +70910,7 @@
    "fr": "à terre",
    "where": [
     "game/gameplay/HudTeam.cpp",
+    "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -71419,6 +71907,18 @@
    ]
   },
   {
+   "fr": "Éditeur de HUD : nouvel onglet « Raids », une disposition à part de celle des niveaux. Placez, redimensionnez, affichez ou masquez la minimap, le panneau du groupe (8 joueurs), les objectifs et la progression de la branche, la barre du gigaboss, les alertes, les contributions, le badge « TEST ADMIN », votre vie et vos pouvoirs, et activez ou non les flèches hors écran. L'aperçu montre un exemple de raid à 8 joueurs (signalé comme exemple, jamais en jeu) ; deux éléments ne se chevauchent jamais.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Éditeur de HUD › « Raids » : deux nouveaux éléments, « Vie partagée du Cœur » (ce qui reste pour tous les groupes, votre part, celle des autres, sa phase) et « Effets des branches sur le Cœur » (montré à la porte de son arène), placés, redimensionnés ou masqués comme les autres. La liste des éléments passe sur deux colonnes quand une seule ne tient pas à l'écran.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Éditeur de niveaux",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -71537,6 +72037,12 @@
   },
   {
    "fr": "Éléments",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Éléments du HUD des raids",
    "where": [
     "ui/screens/HudEditorScene.cpp"
    ]
@@ -71975,6 +72481,18 @@
     "data/enemies/mycelia.json",
     "data/enemies/singularis.json",
     "data/enemies/thornwarden.json"
+   ]
+  },
+  {
+   "fr": "Évent",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Évent fermé",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -72420,6 +72938,18 @@
    ]
   },
   {
+   "fr": "… et {0} ligne de plus",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "… et {0} lignes de plus",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "‹ Image",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -72467,12 +72997,6 @@
    ]
   },
   {
-   "fr": "⇄ raccourci déblocable",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
    "fr": "−1 s",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -72497,31 +73021,13 @@
    ]
   },
   {
-   "fr": "━ chemin ouvert",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
-   "fr": "━ combat en cours",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
-   "fr": "┅ verrouillé",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
    "fr": "■ groupes (votre clan en or)",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
-   "fr": "▢ zone secrète (pointillés)",
+   "fr": "■ zone secrète (pointillés)",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -72569,49 +73075,19 @@
    ]
   },
   {
+   "fr": "◀▶ raccourci déblocable",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "◆ objectif facultatif",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
-   "fr": "● affaiblie",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "● combat en cours",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "● découverte",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "● pas encore découverte",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "● vous  ● groupe  ● ennemis  ◆ objectif  ▮ passage",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "✗ {0} debout : {1}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "✦ ouvert par une autre branche",
+   "fr": "◊ ouvert par une autre branche",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]

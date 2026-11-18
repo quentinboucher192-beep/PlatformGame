@@ -154,7 +154,7 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             // 2.65 (raids): the branch's state from a step on (never one already given).
             const uint32_t tick = r.u32();
             const uint32_t mask = r.u32();
-            // 2.72 (phase 6): the relay of a heart's instance adds the heart's shared state.
+            // 2.74 (phase 6): the relay of a heart's instance adds the heart's shared state.
             const uint32_t heart = r.ok && r.p != r.end ? r.u32() : 0u;
             if (!r.done() || !go_) return;
             std::lock_guard<std::mutex> lock(framesMutex_);

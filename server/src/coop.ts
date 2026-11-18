@@ -313,7 +313,7 @@ export class CoopRoom extends DurableObject<Bindings> {
     // 2.65 (raids): the branch's state given so far ((step, mask) in order) and its last poll.
     private raidStates: [number, number, number | null][] = [];
     private raidMask = 0;
-    // 2.72 (phase 6): a heart instance: the Cœur d'Asterion's shared state (raidHeart.ts), given with the mask.
+    // 2.74 (phase 6): a heart instance: the Cœur d'Asterion's shared state (raidHeart.ts), given with the mask.
     private raidHeart: number | null = null;
     private raidPolled = 0;
     // 2.74 (raids): the parts of the history already stored, the restarts survived, the member
@@ -709,7 +709,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         let heart: number | null = null;
         try {
             mask = await branchMaskOf(this.env.DB, raid.event_id, raid.branch);
-            if (isHeart(raid.branch)) heart = await heartPackFor(this.env.DB, raid.event_id, raid.instance_id); // 2.72 (phase 6)
+            if (isHeart(raid.branch)) heart = await heartPackFor(this.env.DB, raid.event_id, raid.instance_id); // 2.74 (phase 6)
         } catch {
             return; /* before migration 0142 */
         }
@@ -936,7 +936,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             seats: this.seats.map((s) => ({ playerId: s.playerId, name: s.name, vacant: s.vacant, absent: s.absent, absentFrom: s.absentFrom, absentAt: s.absentAt })),
             raidStates: this.raidStates,
             raidMask: this.raidMask,
-            raidHeart: this.raidHeart, // 2.72 (phase 6)
+            raidHeart: this.raidHeart, // 2.74 (phase 6)
         };
     }
 
@@ -1005,7 +1005,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.storedSteps = game.next;
             this.raidStates = game.raidStates.map(([t, m, h]) => [t, m, h ?? null] as [number, number, number | null]);
             this.raidMask = game.raidMask;
-            this.raidHeart = game.raidHeart ?? null; // 2.72 (phase 6): the heart's shared state given so far
+            this.raidHeart = game.raidHeart ?? null; // 2.74 (phase 6): the heart's shared state given so far
             this.seats = game.seats.map((s) => ({
                 playerId: s.vacant ? "" : s.playerId,
                 name: s.name,

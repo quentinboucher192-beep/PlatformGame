@@ -273,6 +273,11 @@ torse
 abdomen
 part
 zones
+contributions
+crust
+danger
+magma
+minimap
 branches
 instances
 journal
@@ -299,3 +304,4 @@ coeur_asterion
 lance
 max
 heart
+ok

@@ -15,7 +15,7 @@
   },
   "shortcut": {
    "hint": "le levier du Tibia l'ouvre",
-   "message": "Le raccourci Genou ⇄ Tibia est ouvert",
+   "message": "Le raccourci Genou – Tibia est ouvert",
    "objective": "raccourci fermé (le levier est dans le Tibia)"
   }
  },
@@ -93,7 +93,7 @@
   {
    "id": 6,
    "name": "Tibia",
-   "sub": "générateur est · levier ⇄",
+   "sub": "générateur est · levier du raccourci",
    "x": 790,
    "y": 180,
    "level": "zone_6.json",

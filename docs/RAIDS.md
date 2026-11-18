@@ -5,6 +5,8 @@
 # phase 5 : les événements mondiaux (2.69, §14) ; phase 7 : fiabilité, charge et anti-triche (2.74, §15) ;
 # phase 6 : le Cœur d'Asterion, combat final (2.74, §16)
 
+# phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §15)
+
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
 8 sous-zones, des instances de 8 joueurs au plus en verrouillage par entrées, et un état de la
@@ -20,10 +22,10 @@ joueurs de chaque instance. La phase 3 (2.68) ouvre la Main : le gigaboss **Pyro
 |---|---|---|---|
 | 1 | Épaule | entrée, **3 points d'apparition** ; reprendre l'arène (2 vagues) | 2, 3 |
 | 2 | Biceps de basalte | plateformes qui « respirent » ; abattre le golem gardien | 1, 4, 6 |
-| 3 | Veine de magma | terrasses à remonter, **coulée de magma** toutes les 60 s ; générateur ouest ; passage caché vers 5 ; raccourci (porte) vers 6 | 1, 4, 5, 6⇄ |
-| 4 | Coude-forge | **deux soufflets, deux groupes** (un chacun) ; coulée toutes les 90 s ; l'Enclume vivante (facultatif) | 2, 3, 7🔒 |
+| 3 | Veine de magma | terrasses à remonter, **montée de magma** toutes les 34 s (2.72, avant : 60 s) ; générateur ouest ; passage caché vers 5 ; raccourci (porte) vers 6 | 1, 4, 5, 6⇄ |
+| 4 | Coude-forge | **deux soufflets, deux groupes** (un chacun) ; montée toutes les 42 s (2.72, avant : 90 s) ; l'Enclume vivante (facultatif) | 2, 3, 7🔒 |
 | 5 | Grotte des scories | **zone secrète** ; la relique (facultatif) | 3 |
-| 6 | Avant-bras | générateur est ; **levier du raccourci** vers la Veine (facultatif) | 2, 3⇄, 8 |
+| 6 | Avant-bras | générateur est ; montée de magma toutes les 38 s (2.72) ; **levier du raccourci** vers la Veine (facultatif) | 2, 3⇄, 8 |
 | 7 | Poignet-verrou | ouvert par les **2 générateurs** ; 2.68 : **la longue route** (§11) dont la dernière embuscade ouvre la Main | 4, 8 |
 | 8 | Main de Pyroclast | le gigaboss **Pyroclast** (§6) ; objectif `main_pyroclast` | 6, 7 |
 
@@ -133,6 +135,12 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
 <p align="center"><sub>La carte d'une branche au début d'un raid de clan (serveur lancé en local, comptes de démonstration).</sub></p>
 
 * **Fiche de l'événement** (en cours) : « Carte du Bras droit ».
+* **Fiche de l'événement › inscrits** (2.72, `ui/online/PresenceList`) : chaque inscrit de mon clan porte la
+  pastille de présence de SOCIAL (en ligne, absent, hors ligne) dans sa case de groupe, et « INSCRITS DU CLAN »
+  annonce « X/Y en ligne » (X : inscrits « en ligne », compté par le serveur ; Y : inscrits de mon clan). Le serveur
+  ne l'envoie qu'aux membres du clan qui voient ces inscrits, depuis le signal de présence du jeu (jamais ce que dit un
+  client) ; une présence masquée se lit « hors ligne ». Sans compte, hors ligne (fiche du cache) ou d'un autre clan :
+  ni pastille ni compteur. Rafraîchie avec la fiche (30 s, fil réseau).
 * **Carte de la branche** (maquette « Branche ») : les 8 zones reliées (ouvert, combat en cours,
   verrouillé en pointillés, zone secrète, raccourci), leur état et les groupes présents (le mien en
   or) ; à droite la zone choisie : objectifs (✓, ◆ facultatif, et par quel groupe), ce qu'il y a
@@ -143,7 +151,8 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
   réanimations de la zone), objectifs de la zone avec leur progression (générateurs 1 / 2,
   soufflets 1 / 2), alertes du groupe, de la branche et du serveur (objectif validé ou refusé),
   bandeau de danger (« Coulée dans 3 s · montez ! »), état du réseau. La pause ne s'arrête pas : le
-  groupe continue.
+  groupe continue. 2.72 (§15) : chaque élément se place dans l'onglet « Raids » de l'éditeur de HUD, la minimap
+  est en textures et s'agrandit (M / Vue), un chronomètre s'ajoute, les flèches hors écran des niveaux aussi.
 * **Mini-film d'Asterion** (2.68, `ui/screens/AsterionFilm`) : avant le premier affichage du titan
   (CLANS › RAIDS, fiche d'un événement, tout `AsterionFigure` : un seul appel `asterionfilm::hold`),
   dix plans d'environ deux minutes joués par le moteur des histoires (`makeFilm`). Le script — légende,
@@ -378,6 +387,9 @@ Migration **0143_raid_gigaboss.sql** : `raid_instance_members.seat_from`, `raid_
   (`raid::Branch::all`, les branches ajoutées plus tard y apparaissent seules), une zone (le combat de Pyroclast par
   défaut), « Invincible (admin) · non classé », 2 à 8 joueurs simulés, phase de départ ; seul et en local
   (`RaidRun::setTest`) : aucun rapport n'est jamais produit, et le serveur refuse tout rapport marqué `test`.
+  2.72 (§15) : il se joue comme une vraie instance (`raid::TestSession`) : l'état de la branche suit d'une zone à
+  l'autre, et les joueurs simulés sont visibles et jouent vraiment (IA déterministe). 2.68.2 : la pause ne fige
+  jamais le monde, test compris (seul le joueur cesse d'agir).
 
 ## 11. La longue route du Poignet-verrou (2.68)
 
@@ -712,6 +724,106 @@ Migration **0149_raid_reliability.sql** : `raid_instances.zone_tick`, déclenche
 Le serveur est à déployer avec la migration (le jeu reste compatible avec un serveur qui ne l'a pas encore : il ne dépend
 d'aucune nouvelle route ; sans le serveur 2.74, il retrouve seulement les anciennes limites du relais).
 
+## 15. Les raids tels qu'on les teste et qu'on les joue (2.72)
+
+<p align="center"><img src="media/raid_visuals.png" width="820" alt="Planche du générateur (raid_visuals.py --review) : la lave animée du magma montant et les tuiles et icônes de la minimap"></p>
+
+### Flèches hors écran
+
+En raid, les flèches des niveaux reviennent pour la vue du joueur de cet ordinateur, dessinées par le même code
+(`game/gameplay/EnemyArrowsDraw`, partagé avec `GameScene`) : les ennemis **déjà vus** hors de l'écran (orange, une
+flèche par groupe avec « ×N »), ceux de l'**embuscade en cours** (violet, vus ou non), plus les flèches du raid vers
+le gigaboss (ses points faibles à nu) et les alliés (leurs couleurs). Elles évitent le HUD mesuré ; l'éditeur de HUD
+› « Raids » les coupe (`RaidHudLayout::arrows`). Affichage seulement.
+
+### Une zone garde ce qui y a été fait (`raid::RaidRun`, dans la simulation)
+
+Quand le groupe quitte une zone, ou quand il tombe en entier et qu'elle reprend, la zone note ce qu'elle garde
+(`RaidRun::ZoneMemory`) : pour chaque objet, `LevelEntity::keepState` (porte ouverte par la progression — jamais celle
+qu'une embuscade a fermée —, levier actionné, générateur allumé, arène nettoyée, ennemi vaincu, déclencheur passé, relique
+ou orbe pris), les plaques de groupe faites (leurs portes ouvertes, leurs monte-charges en marche) et son dernier point de
+contrôle. Rechargée, elle les retrouve tels quels (`restoreKept`, sans événement ni son). Les **objectifs de l'état de la
+branche** (ceux de tous les groupes, `RAID_STATE`) sont appliqués de la même façon à chaque chargement : un gardien
+qu'un autre groupe a vaincu n'est plus là, un générateur validé est allumé (l'objectif d'un gigaboss reste celui de son
+combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas sur tous les jeux de l'instance.
+
+### Le test des administrateurs (`game/raid/RaidTest`)
+
+« Tester Asterion » se joue comme une vraie instance, seul sur l'ordinateur (`raid::TestSession`) :
+
+* **l'état de la branche** est gardé d'une zone à l'autre dans la structure de `RAID_STATE` (les objectifs faits, un
+  bit chacun) : ce que le groupe fait est « accepté » aussitôt et redonné au pas suivant, comme le relais le ferait après
+  le consensus ;
+* **les joueurs simulés** (sièges 1 à n − 1, les autres libres) sont de vrais joueurs de l'instance, visibles, nommés
+  « Joueur simulé N » avec leur couleur dans le panneau du groupe : une IA simple lit le monde (jamais l'horloge ni
+  l'écran) et répond à chaque pas par une `InputFrame`, comme le jeu d'un joueur. Elle suit l'administrateur (chacun à
+  sa distance), saute les trous et les murs (double saut), descend des corniches, prend les échelles, frappe les ennemis
+  proches, se place sur les plaques, monte-charges et évents quand l'administrateur en tient un (le nombre demandé), et sur
+  les autres plaques d'un mécanisme de gigaboss (`GigabossRoutine::marks`, crochets, miroirs, chaînes…) quand il en tient
+  une, relève les joueurs à terre (le plus proche de chaque âme), sort de la zone du magma dès l'alerte et des coups
+  annoncés (poings de magma, jets des évents, marques et zones d'un gigaboss ; sauf sur un mécanisme qu'il tient).
+  Déterministe : mêmes trames,
+  même empreinte (testé à 2 et 8 sièges) ;
+* deux règles du test seulement : un joueur simulé resté loin derrière pendant 5 s revient près de l'administrateur, et
+  celui qu'un mécanisme attend sans pouvoir l'atteindre en 6 s y est placé — pour que les mécanismes à plusieurs marchent
+  dans un test seul ;
+* un test ne produit **aucun rapport** (`RaidRun::Test`) et le serveur refuse tout rapport marqué `test`.
+
+### Le magma montant (style « magma » de `damage_zone`)
+
+* **Rendu** : dessiné **après les joueurs et les ennemis** (`LevelEntity::drawnOverActors`, `GameRenderer`) : son corps est
+  opaque, rien ne se voit au travers ; une lueur à sa surface au-dessus de chaque corps qu'il cache. Planche animée
+  `animations/raid_magma.json` (`sprites/objects/raid_magma.png`) générée par `tools/assetgen/environment/raid_visuals.py` :
+  corps en fusion qui coule, croûte sombre qui dérive (fissures lumineuses), vagues de surface, bulles qui éclatent,
+  braises, lueur, et l'**alerte** avant chaque montée (son futur niveau en pointillés, la zone qui rougeoie, le sol qui se
+  fissure, la chaleur) ; `--check` (mêmes octets, testé), `--review` (planche contact en français).
+* **Règles** (dans la simulation) : allumé, il **monte** depuis le bas de sa boîte en `rise` s, éteint il **redescend**
+  en `fall` s ; seule la partie sous sa surface touche. **Choix** : il blesse les joueurs comme avant (2 cœurs toutes les
+  0,6 s, il les relance vers le haut) et **brûle de la même façon tout ennemi pris dedans** (ni les boss, ni ceux qui
+  dorment encore, ni les créatures d'un boss) : une montée nettoie aussi le bas. `RaidRun` lui envoie « warn » au moment
+  de l'alerte.
+* **Fréquence** (`tools/levelgen/raid_bras_droit.py`, révision 3) : toutes les **34 s** dans la Veine de magma (au lieu
+  de 60), **42 s** dans le Coude-forge (au lieu de 90), et **38 s** dans l'Avant-bras (nouveau, avec ses corniches),
+  annoncé **4 s** avant ; les fosses et les rideaux de lave de la Main de Pyroclast sont du même magma.
+
+### Le HUD des raids (`ui/online/RaidHud`, `saves/RaidHudLayout`)
+
+* **Disposition à part** (`GameplaySettings::raidHud`, Paramètres › HUD › onglet « Raids ») : vie et énergie, pouvoirs,
+  minimap, panneau du groupe (8), objectifs et progression de la branche, alertes, barre du gigaboss, bandeau de danger,
+  contributions, ligne du réseau / badge « TEST ADMIN », **chronomètre du raid** ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
+  danger et le réseau). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
+  deux éléments ne peuvent jamais se chevaucher (l'enregistrement est refusé sinon). Chaque élément est dessiné dans sa
+  boîte : textes mesurés, coupés, « … et N lignes de plus ».
+* **Chronomètre** (vrais raids et test) : le style du chrono des niveaux (horloge, police des titres, halo), le temps depuis
+  le début de l'instance (`RaidRun::tick`) et, dessous, celui de la zone (`zoneTicks`) : des pas de la simulation, donc le
+  même sur tous les jeux de l'instance (affichage seulement). Il continue pendant la pause d'un joueur (le monde ne
+  s'arrête jamais, test compris).
+* **Minimap en textures** : le terrain de la zone cuit une fois dans une texture à partir des tuiles générées (roche et son
+  bord éclairé, corniches, lave), la zone que le magma inonde (hachurée, pulsant à l'alerte, vive quand il monte), les
+  plateformes mobiles en direct, et des icônes (`ui/raids/minimap.png` + `.json`, même générateur) : vous (or), le groupe
+  (sa couleur), ennemis, boss, objectifs (à faire, faits, facultatifs), passages ouverts ou verrouillés, portes, points de
+  contrôle, plaques, évents ; une légende mesurée dans la place qui reste à côté du titre.
+* **Grande carte** (`Action::RaidMap` : **M** au clavier, **Vue / Retour** à la manette, modifiable dans Paramètres ›
+  Commandes, bouton de souris possible) : presque tout l'écran, la zone entière (ou une fenêtre qui suit le joueur, à faire
+  glisser à la souris, avec l'aperçu de toute la zone), les zones de la branche et leur état, toute la légende, le danger
+  en cours dans son en-tête. Affichage seulement : elle ne met **jamais** le jeu en pause, le groupe continue ; la pause
+  du raid rappelle sa touche. La touche n'est pas une commande « de base » des pouvoirs : les pouvoirs des autres niveaux
+  gardent leurs touches (M pour le leurre).
+
+### Des symboles que les polices ont
+
+Les marques des panneaux (objectif fait, verrou, lien d'une autre branche, raccourci, allié à relever) et les légendes des
+cartes n'utilisent que des caractères des polices du jeu (« OK », « ■ », « ◊ », « ◀▶ », « + », « – », « • ») : ✓, ✚, ✦, ▮, ⇄, ━,
+┅, ▢ et ● s'y dessinaient en carrés vides. `tests/test_font_glyphs.cpp` lit les polices avec SDL_ttf (`TTF_FontHasGlyph`) et
+vérifie chaque texte du catalogue i18n, son anglais et toutes les chaînes des écrans de raid et des routines des gigaboss.
+
+### Versions
+
+Les règles changées ne touchent que les raids : `kSimulationVersion`, `kCoopSimulationVersion` et
+`kRankingGeneration` ne changent pas (empreintes solo et coopération inchangées) ; la révision du Bras droit passe à 3
+(le `GO` du relais la porte : toutes les instances jouent les mêmes zones) et l'empreinte des zones générées change
+(`tests/test_raid.cpp`).
+
 ## 16. Phase 6 (2.74) : LE CŒUR D'ASTERION
 
 Le combat final du raid (spec §9). Le cœur n'est pas une huitième branche du corps : c'est le `heart` de `titan.json`
@@ -813,7 +925,18 @@ L'issue mondiale « Asterion est tombé » (`raidWorld.ts`, §14) exige désorma
 
 ADMINISTRATION › Raids › « Tester Asterion » liste le cœur après les sept branches : sa phase de départ (1 à 4), les
 parties du titan simulées comme tombées (leurs liens `modifier` allumés dans l'état de la branche du test), les reliques ;
-seul, en local, invincible si demandé, **jamais aucun rapport** ; sa chute y est sa victoire (le film se lance).
+seul, en local, invincible si demandé, **jamais aucun rapport** ; sa chute y est sa victoire (le film se lance). Le test
+se joue comme une vraie instance (`raid::TestSession`, §15) : les liens choisis et les reliques sont donnés à chaque pas
+(`TestSession::setHeart`), comme `RAID_STATE` les donnerait, et les joueurs simulés combattent avec l'administrateur.
+
+### HUD
+
+Deux éléments du HUD des raids (`RaidHudLayout`, `ui/online/RaidHud`), réglables dans Paramètres › HUD › « Raids » comme
+les autres : **« Vie partagée du Cœur »** (`heart` : ce qui reste pour tous les groupes, la part de ce groupe, celle des
+autres, les marques des phases partagées à 75, 50 et 25 %, la phase et les parties tombées), par défaut sous la minimap ;
+**« Effets des branches sur le Cœur »** (`heart_effects` : l'effet de chaque partie tombée ou debout, chaque ligne mesurée,
+le reste compté), par défaut dans la colonne de gauche sous le chronomètre, montré à la porte de l'arène (avant son réveil,
+20 premières secondes). Ils n'apparaissent que dans l'arène du cœur ; l'éditeur les montre sur son exemple.
 
 ### Sprites et tests
 
@@ -824,6 +947,7 @@ vie de 2 à 8, part des autres appliquée au pas donné, rapports et phases, eff
 joueurs et par le relais avec l'état partagé, supernova contenue, test jamais rapporté, film), `server/test/raidHeart.test.ts`
 (scellé puis ouvert, part par majorité gardée au maximum, part des autres donnée au relais, chute une seule fois à deux
 groupes, issue mondiale, récompenses une seule fois).
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)

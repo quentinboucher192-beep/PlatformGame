@@ -18,7 +18,7 @@ std::unique_ptr<GigabossRoutine> makeTitanusRoutine();
 std::unique_ptr<GigabossRoutine> makeSkullmawRoutine();      // 2.69: the Skull
 std::unique_ptr<GigabossRoutine> makeDreadfangRoutine();     // 2.69: the Left arm
 std::unique_ptr<GigabossRoutine> makeHeartbreakerRoutine();  // 2.69: the Torso
-std::unique_ptr<GigabossRoutine> makeAsterionHeartRoutine();  // 2.72 (phase 6): the Cœur d'Asterion
+std::unique_ptr<GigabossRoutine> makeAsterionHeartRoutine();  // 2.74 (phase 6): the Cœur d'Asterion
 
 std::unique_ptr<GigabossRoutine> GigabossRoutine::make(const std::string& name) {
     if (name == "voidworm") return makeVoidwormRoutine();

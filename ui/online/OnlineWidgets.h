@@ -34,7 +34,19 @@ public:
     int avatarCount() const { return 16; }
     std::string avatarName(int i) const;
     void drawStatusChip(RecordStatus s, Vec2 pos, float height) const;
-    void drawConnection(Vec2 pos) const;
+    /// The connection's dot (centred on `pos`) and its status (2.72: « En ligne - 25ms », the
+    /// round trip measured on the network thread), the text measured into `room` pixels from
+    /// `pos.x` (0: the 240-pixel slot the screens keep at the right of their header): smaller,
+    /// then shortened, never past it.
+    void drawConnection(Vec2 pos, float room = 0.0f) const;
+    struct ConnectionText {
+        std::string text;    // as drawn (shortened when needed)
+        float size = 17.0f;  // unscaled, as ui.label
+    };
+    /// The status fitted into `textRoom` pixels (the text alone, the dot not counted).
+    static ConnectionText fitConnectionText(UIContext& ui, const std::string& label, float textRoom);
+    /// The room drawConnection gives its text by default (the dot and its gap left out).
+    static float defaultConnectionTextRoom(UIContext& ui);
     /// Pseudonym as shown to this player (hidden in streaming mode).
     std::string displayName(const std::string& name, int rank, bool me) const;
     /// The same for a player object of the server ({username, clan_tag?}): « [TAG] name » (2.66,

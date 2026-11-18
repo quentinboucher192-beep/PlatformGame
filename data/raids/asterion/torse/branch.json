@@ -15,7 +15,7 @@
   },
   "shortcut": {
    "hint": "le levier du Poumon gauche l'ouvre",
-   "message": "Le raccourci Poumon gauche ⇄ Sternum est ouvert",
+   "message": "Le raccourci Poumon gauche – Sternum est ouvert",
    "objective": "raccourci fermé (le levier est dans le Poumon gauche)"
   }
  },
@@ -51,7 +51,7 @@
   {
    "id": 3,
    "name": "Poumon gauche",
-   "sub": "le poumon à crever · levier ⇄",
+   "sub": "le poumon à crever · levier du raccourci",
    "x": 330,
    "y": 560,
    "level": "zone_3.json",

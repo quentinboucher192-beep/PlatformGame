@@ -166,7 +166,7 @@ export const RAID_REWARDS: Record<string, RaidReward> = {
     },
     // 2.69 (phase 5): the exclusive rewards of the world events and their catch-up sessions (raidWorld.ts).
     ...(WORLD_REWARDS as Record<string, RaidReward>),
-    // 2.72 (phase 6): the rewards of the Cœur d'Asterion's fall (raidHeart.ts).
+    // 2.74 (phase 6): the rewards of the Cœur d'Asterion's fall (raidHeart.ts).
     ...(HEART_REWARDS as Record<string, RaidReward>),
 };
 /** 2.69 (phase 4B): the badge of each gigaboss (raid_gigaboss_fights.boss), present at its fall. */
@@ -178,7 +178,7 @@ export const GIGABOSS_BADGES: Record<string, string> = {
     Skullmaw: "skullmaw_badge",
     Dreadfang: "dreadfang_badge",
     Heartbreaker: "heartbreaker_badge",
-    "Cœur d'Asterion": "coeur_badge", // 2.72 (phase 6): present at its (shared) fall
+    "Cœur d'Asterion": "coeur_badge", // 2.74 (phase 6): present at its (shared) fall
 };
 export const PARTICIPATION_TICKS = 5 * 60 * 120;
 export const PERFORMANCE_SCORE = 1500;
@@ -192,7 +192,7 @@ export const RAID_ACHIEVEMENTS: Record<string, string> = {
     communaute_skullmaw: "skullmaw_badge",
     communaute_dreadfang: "dreadfang_badge",
     communaute_heartbreaker: "heartbreaker_badge",
-    communaute_coeur: "coeur_badge", // 2.72 (phase 6)
+    communaute_coeur: "coeur_badge", // 2.74 (phase 6)
 };
 
 /** The prefix of the challenge_id of a raid's items in player_won_rewards. */
@@ -274,7 +274,7 @@ export async function grantTop(db: D1Database, eventId: string): Promise<number>
         .map((t) => ({ id: t.player_id, score: scoreOf(t).total }))
         .sort((a, b) => b.score - a.score || (a.id < b.id ? -1 : 1))
         .slice(0, TOP_PLAYERS);
-    const heart = await grantHeartTop(db, eventId); // 2.72 (phase 6): the decor of the heart's top 10, once
+    const heart = await grantHeartTop(db, eventId); // 2.74 (phase 6): the decor of the heart's top 10, once
     if (!top.length) return heart;
     const now = nowIso();
     const res = await db.batch(
@@ -305,7 +305,7 @@ export async function grantEndedTops(db: D1Database, now: string): Promise<numbe
     } catch {
         /* before migration 0143 */
     }
-    return n + (await grantEndedHeartTops(db, now)); // 2.72 (phase 6)
+    return n + (await grantEndedHeartTops(db, now)); // 2.74 (phase 6)
 }
 
 interface GrantRow {
@@ -415,7 +415,7 @@ export const PART_EFFECTS: Record<string, string> = {
     crane: "Asterion est aveuglé : ses attaques perdent en précision.",
     bras_gauche: "Plus de balayages : les griffes d'Asterion sont arrachées.",
     torse: "La cage thoracique est brisée : la voie du cœur s'ouvre.",
-    coeur: "Asterion est tombé : son cœur a cédé sous les coups de tous les clans.", // 2.72 (phase 6)
+    coeur: "Asterion est tombé : son cœur a cédé sous les coups de tous les clans.", // 2.74 (phase 6)
 };
 const BRAS_DROIT_ID = "asterion_bras_droit";
 export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }> = {
@@ -426,7 +426,7 @@ export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }>
     crane_skullmaw: { part: "crane", boss: "Skullmaw" },
     bg_dreadfang: { part: "bras_gauche", boss: "Dreadfang" },
     torse_heartbreaker: { part: "torse", boss: "Heartbreaker" },
-    coeur_asterion: { part: "coeur", boss: "Cœur d'Asterion" }, // 2.72 (phase 6): its shared fall, written once
+    coeur_asterion: { part: "coeur", boss: "Cœur d'Asterion" }, // 2.74 (phase 6): its shared fall, written once
 };
 /** 2.69: the part of the titan a fight's branch is (raid_gigaboss_fights.branch), when its gigaboss is fought. */
 const FOUGHT_PARTS = new Set(Object.values(GIGABOSS_OBJECTIVES).map((g) => g.part));

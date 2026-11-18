@@ -172,7 +172,7 @@ CRANE = Spec(
      (4, "Nerfs optiques", "Optic nerves", "2 nerfs à trancher : 2 groupes", 560, 380,
       "Ennemis : spectres en renfort, rempart · deux nerfs, un par groupe", "Onde psychique toutes les 80 s (corniches hautes sûres)"),
      (5, "Ossuaire oublié", "Forgotten ossuary", SECRET_SUB, 560, 180, "Ennemis : lucioles d'os · la relique de l'ossuaire", ""),
-     (6, "Tempe", "Temple", "levier ⇄ vers les nerfs", 790, 560,
+     (6, "Tempe", "Temple", "levier du raccourci vers les nerfs", 790, 560,
       "Ennemis : le golem de la tempe (gardien), spectres en renfort", ""),
      (7, "Voûte crânienne", "Cranial vault", "s'ouvre : les deux yeux crevés", 790, 250,
       "Ennemis : la garde de la voûte (arène en trois vagues)", ""),
@@ -198,7 +198,7 @@ CRANE = Spec(
                     "Les deux yeux sont crevés : la Voûte crânienne s'ouvre", "Both eyes are out: the Cranial vault opens",
                     "crever les deux yeux (Orbites gauche et droite)", "put out both eyes (left and right Orbits)"),
      "shortcut": ("le levier de la Tempe l'ouvre", "the Temple's lever opens it",
-                  "Le passage Nerfs optiques ⇄ Tempe est ouvert", "The Optic nerves ⇄ Temple way is open",
+                  "Le passage Nerfs optiques – Tempe est ouvert", "The Optic nerves – Temple way is open",
                   "passage fermé (le levier est dans la Tempe)", "way closed (the lever is in the Temple)")})
 
 BRAS_GAUCHE = Spec(
@@ -213,7 +213,7 @@ BRAS_GAUCHE = Spec(
       "Ennemis : rempart de givre, ailes de givre · deux lames, un groupe chacune",
       "Balayage des griffes toutes les 75 s (corniches hautes sûres)"),
      (5, "Crevasse cachée", "Hidden crevasse", SECRET_SUB, 560, 620, "Ennemis : mites de givre · la relique de la crevasse", ""),
-     (6, "Avant-bras de givre", "Frost forearm", "cœur de givre est · levier ⇄", 790, 160,
+     (6, "Avant-bras de givre", "Frost forearm", "cœur de givre est · levier du raccourci", 790, 160,
       "Ennemis : drones cryo, rôdeurs des neiges · cœur de givre est", ""),
      (7, "Poignet de glace", "Ice wrist", "s'ouvre : 2 cœurs de givre", 790, 470,
       "Ennemis : la garde du poignet (arène en trois vagues)", ""),
@@ -241,7 +241,7 @@ BRAS_GAUCHE = Spec(
                     "Les deux cœurs de givre sont brisés : le Poignet de glace s'ouvre", "Both frost hearts are broken: the Ice wrist opens",
                     "briser les deux cœurs de givre (Tendon, Avant-bras)", "break both frost hearts (Tendon, Forearm)"),
      "shortcut": ("le levier de l'Avant-bras de givre l'ouvre", "the Frost forearm's lever opens it",
-                  "Le raccourci Tendon ⇄ Avant-bras de givre est ouvert", "The Tendon ⇄ Frost forearm shortcut is open",
+                  "Le raccourci Tendon – Avant-bras de givre est ouvert", "The Tendon – Frost forearm shortcut is open",
                   "raccourci fermé (le levier est dans l'Avant-bras de givre)", "shortcut closed (the lever is in the Frost forearm)")})
 
 TORSE = Spec(
@@ -249,7 +249,7 @@ TORSE = Spec(
     [(1, "Clavicule", "Collarbone", ENTRY_SUB, 110, 380, "Ennemis : rôdeurs, mites lumineuses · arène de la garde", ""),
      (2, "Côtes hautes", "Upper ribs", "côtes mouvantes · barrière d'énergie", 330, 200,
       "Ennemis : l'éclat de roche (gardien), sentinelles · barrière d'énergie", ""),
-     (3, "Poumon gauche", "Left lung", "le poumon à crever · levier ⇄", 330, 560,
+     (3, "Poumon gauche", "Left lung", "le poumon à crever · levier du raccourci", 330, 560,
       "Ennemis : parasites en renfort, étincelles · le poumon (un pouvoir de tir)", ""),
      (4, "Sternum", "Sternum", "2 plaques : 2 groupes", 560, 250,
       "Ennemis : rempart, sentinelles · barrières d'énergie · deux plaques, un groupe chacune",
@@ -283,7 +283,7 @@ TORSE = Spec(
                     "Les quatre plaques sont brisées : la Cage du cœur s'ouvre", "The four plates are broken: the Heart cage opens",
                     "briser les quatre plaques (Sternum, Côtes basses)", "break the four plates (Sternum, Lower ribs)"),
      "shortcut": ("le levier du Poumon gauche l'ouvre", "the Left lung's lever opens it",
-                  "Le raccourci Poumon gauche ⇄ Sternum est ouvert", "The Left lung ⇄ Sternum shortcut is open",
+                  "Le raccourci Poumon gauche – Sternum est ouvert", "The Left lung – Sternum shortcut is open",
                   "raccourci fermé (le levier est dans le Poumon gauche)", "shortcut closed (the lever is in the Left lung)")})
 
 ABDOMEN = Spec(
@@ -295,7 +295,7 @@ ABDOMEN = Spec(
      (4, "Intestin", "Intestine", "2 valves : 2 groupes · reflux d'acide", 560, 380,
       "Ennemis : tisseuses, bombardiers · deux valves, un groupe chacune", "Reflux d'acide toutes les 50 s (branches hautes sûres)"),
      (5, "Poche oubliée", "Forgotten pouch", SECRET_SUB, 560, 640, "Ennemis : petits gloops · la relique de la poche", ""),
-     (6, "Foie noir", "Black liver", "glande sud · levier ⇄", 790, 200,
+     (6, "Foie noir", "Black liver", "glande sud · levier du raccourci", 790, 200,
       "Ennemis : tisseuses, feux follets · glande sud (un pouvoir de tir)", ""),
      (7, "Gosier de Voidworm", "Voidworm's gullet", "s'ouvre : 2 glandes", 790, 520,
       "Ennemis : la garde du gosier (arène en trois vagues)", ""),
@@ -319,7 +319,7 @@ ABDOMEN = Spec(
                     "Les deux glandes sont crevées : le Gosier de Voidworm s'ouvre", "Both glands are burst: Voidworm's gullet opens",
                     "crever les deux glandes (Estomac, Foie noir)", "burst both glands (Stomach, Black liver)"),
      "shortcut": ("le levier du Foie noir l'ouvre", "the Black liver's lever opens it",
-                  "Le raccourci Intestin ⇄ Foie noir est ouvert", "The Intestine ⇄ Black liver shortcut is open",
+                  "Le raccourci Intestin – Foie noir est ouvert", "The Intestine – Black liver shortcut is open",
                   "raccourci fermé (le levier est dans le Foie noir)", "shortcut closed (the lever is in the Black liver)")})
 
 JAMBE_GAUCHE = Spec(
@@ -332,7 +332,7 @@ JAMBE_GAUCHE = Spec(
      (4, "Genou", "Knee", "2 rotules : 2 groupes", 560, 330,
       "Ennemis : rempart, dragonnets · deux rotules, un groupe chacune", "Puits de gravité toutes les 60 s (îlots hauts sûrs)"),
      (5, "Sanctuaire des poids", "Sanctuary of weights", SECRET_SUB, 560, 620, "Ennemis : mites lumineuses · la relique du sanctuaire", ""),
-     (6, "Tibia", "Shin", "générateur est · levier ⇄", 790, 180,
+     (6, "Tibia", "Shin", "générateur est · levier du raccourci", 790, 180,
       "Ennemis : ailes de nuit, rôdeurs · générateur de gravité est", ""),
      (7, "Cheville", "Ankle", "s'ouvre : 2 générateurs de gravité", 790, 480,
       "Ennemis : la garde de la cheville (arène en trois vagues)", ""),
@@ -360,7 +360,7 @@ JAMBE_GAUCHE = Spec(
                     "Les deux générateurs de gravité sont coupés : la Cheville s'ouvre", "Both gravity generators are cut: the Ankle opens",
                     "couper les deux générateurs de gravité (Cuisse, Tibia)", "cut both gravity generators (Thigh, Shin)"),
      "shortcut": ("le levier du Tibia l'ouvre", "the Shin's lever opens it",
-                  "Le raccourci Genou ⇄ Tibia est ouvert", "The Knee ⇄ Shin shortcut is open",
+                  "Le raccourci Genou – Tibia est ouvert", "The Knee – Shin shortcut is open",
                   "raccourci fermé (le levier est dans le Tibia)", "shortcut closed (the lever is in the Shin)")})
 
 JAMBE_DROITE = Spec(
@@ -375,7 +375,7 @@ JAMBE_DROITE = Spec(
       "Ennemis : rempart de forge, drones de forge · deux pistons, un groupe chacun",
       "Onde sismique toutes les 75 s (grilles hautes sûres)"),
      (5, "Forge oubliée", "Forgotten forge", SECRET_SUB, 560, 640, "Ennemis : acariens de braise · la relique de la forge", ""),
-     (6, "Mollet blindé", "Armoured calf", "réacteur est · levier ⇄", 560, 470,
+     (6, "Mollet blindé", "Armoured calf", "réacteur est · levier du raccourci", 560, 470,
       "Ennemis : drones de forge, rôdeurs de lave · réacteur est (un pouvoir de tir)", ""),
      (7, "Cheville d'acier", "Steel ankle", "s'ouvre : 2 réacteurs", 790, 360,
       "Ennemis : la garde de la cheville (arène en trois vagues)", ""),
@@ -399,7 +399,7 @@ JAMBE_DROITE = Spec(
                     "Les deux réacteurs sont coupés : la Cheville d'acier s'ouvre", "Both reactors are cut: the Steel ankle opens",
                     "couper les deux réacteurs (Fémur, Mollet)", "cut both reactors (Femur, Calf)"),
      "shortcut": ("le levier du Mollet blindé l'ouvre", "the Armoured calf's lever opens it",
-                  "Le raccourci Genou-forge ⇄ Mollet blindé est ouvert", "The Forge knee ⇄ Armoured calf shortcut is open",
+                  "Le raccourci Genou-forge – Mollet blindé est ouvert", "The Forge knee – Armoured calf shortcut is open",
                   "raccourci fermé (le levier est dans le Mollet blindé)", "shortcut closed (the lever is in the Armoured calf)")})
 
 SPECS = [CRANE, BRAS_GAUCHE, TORSE, ABDOMEN, JAMBE_GAUCHE, JAMBE_DROITE]

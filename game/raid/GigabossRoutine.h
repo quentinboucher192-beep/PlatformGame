@@ -40,7 +40,7 @@ namespace cosmic::raid {
 class Gigaboss;
 class Contributions;
 struct GigabossRules;
-struct HeartShared;  // 2.72 (phase 6): game/raid/RaidBranch.h
+struct HeartShared;  // 2.74 (phase 6): game/raid/RaidBranch.h
 
 /// Something the combat screen draws over the arena for a gigaboss's routine (display only).
 struct BossMark {
@@ -122,7 +122,7 @@ protected:
     static bool exposedStep(Gigaboss& g, GameWorld& w, Contributions& c, Enemy& b);
     /// Whether an objective named in its rules (`links`) is done in the branch's state now.
     static bool linkDone(const Gigaboss& g, const std::string& name);
-    /// 2.72 (phase 6): whether a link of the titan acting on its branch (its id in titan.json) is on in
+    /// 2.74 (phase 6): whether a link of the titan acting on its branch (its id in titan.json) is on in
     /// the branch's state now (the Cœur d'Asterion: a part of the titan fallen).
     static bool titanLinkOn(const Gigaboss& g, const std::string& id);
     /// 2.72: the shared state of the Cœur d'Asterion given at this step (zero elsewhere).

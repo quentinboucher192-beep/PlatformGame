@@ -81,7 +81,7 @@ int trailerPasses(const Scene* s);
 /// hint says otherwise; only closing the game's window stops it. Else « Passer » and « Quitter »,
 /// as a story. `onEnd`: called once when it plays to its end (never when it is left or
 /// interrupted). `atSeconds` (automated screenshots): that moment of it. nullptr without a film.
-/// 2.72 (phase 6): `keepBelow`: the screen below keeps running under it (the raid's victory film over its
+/// 2.74 (phase 6): `keepBelow`: the screen below keeps running under it (the raid's victory film over its
 /// combat: the instance's lockstep never stops; the screen below sends neutral inputs meanwhile).
 std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd = {},
                                 float atSeconds = -1.0f, bool keepBelow = false);

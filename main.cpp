@@ -551,7 +551,7 @@ int main(int argc, char** argv) {
     }
     GameServices game(app);
     game.loadAll();
-    // 2.72 (phase 6): the generated sheets some cosmetics draw (« Supernova d'Asterion », « Cœur d'Asterion »).
+    // 2.74 (phase 6): the generated sheets some cosmetics draw (« Supernova d'Asterion », « Cœur d'Asterion »).
     setCosmeticTextures([&app](const std::string& path) { return app.resources().texture(path); });
     if (!cfg.headless) {
         // The window as it really is (--fullscreen / --windowed, or the saved setting): the

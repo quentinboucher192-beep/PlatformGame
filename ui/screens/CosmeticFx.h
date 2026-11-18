@@ -74,7 +74,7 @@ constexpr float kVictoryFxTime = 2.6f;
 /// ("srvvictory:<n>", or the `custom` look given): « fireworks », « starfall », « supernova »,
 /// « vortex », « borealis » or « corona » in its two colours.
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale = 1.0f, const CreationLook* custom = nullptr);
-/// 2.72 (phase 6): the generated sheets some cosmetics draw (« asterion_supernova »: the heart of Asterion
+/// 2.74 (phase 6): the generated sheets some cosmetics draw (« asterion_supernova »: the heart of Asterion
 /// bursting, sprites/fx/asterion_supernova.png by tools/assetgen/characters/boss_n_coeur.py), found by the
 /// game's resources (main.cpp sets it; without it those cosmetics draw their light only).
 void setCosmeticTextures(std::function<std::shared_ptr<Texture>(const std::string&)> find);

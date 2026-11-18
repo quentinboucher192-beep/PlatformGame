@@ -43,7 +43,7 @@ std::unique_ptr<Scene> make(GameServices& g, bool firstViewing, float atSeconds 
 float replayButtonWidth(UIContext& ui);
 bool replayButton(GameServices& g, const std::string& id, const Rect& r);
 
-/// 2.72 (phase 6): the film of Asterion's fall (« LA CHUTE D'ASTERION »: data/raids/asterion_victoire.json,
+/// 2.74 (phase 6): the film of Asterion's fall (« LA CHUTE D'ASTERION »: data/raids/asterion_victoire.json,
 /// its scenes written by tools/assetgen/environment/story_asterion_victoire.py): the titan collapsing, its
 /// heart going supernova, the clans' banners. Played for everyone of an instance at the step the server
 /// validates the shared victory (over the raid's combat, which keeps running: `overRaid`), then from the

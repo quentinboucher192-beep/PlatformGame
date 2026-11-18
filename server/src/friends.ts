@@ -150,6 +150,23 @@ export function presenceOf(p: Pick<PlayerRow, "presence_state" | "presence_at" |
     return p.presence_state === "idle" ? "away" : "online";
 }
 
+/**
+ * 2.72: a player's presence in the lists of a clan (CLANS › Membres, the registrants of a raid
+ * of the clan), shown to that clan's members only: « online », « away » or « offline ». A hidden
+ * presence (« Montrer ma présence » unticked) reads « offline » there, and counts so: the list
+ * never tells that the player hides it.
+ */
+export type ListPresence = Exclude<Presence, "hidden">;
+export function listPresenceOf(p: Pick<PlayerRow, "presence_state" | "presence_at" | "presence_visible">, now = Date.now()): ListPresence {
+    const s = presenceOf(p, now);
+    return s === "hidden" ? "offline" : s;
+}
+
+/** The « X » of « X/Y en ligne »: the players of a list « online » now (« away » and « offline » are not). */
+export function countOnline(list: readonly (Presence | null | undefined)[]): number {
+    return list.reduce((n, p) => n + (p === "online" ? 1 : 0), 0);
+}
+
 /** POST /presence {state: active|idle|offline}: the game's heartbeat (every minute while it runs). */
 export async function postPresence(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);

@@ -236,7 +236,7 @@ std::optional<BossStory> loadFilm(const std::filesystem::path& script, std::stri
 /// Asterion's film (data/raids/asterion_film.json), from `dataDir` (default: the game's).
 std::optional<BossStory> loadAsterionFilm(std::string* error = nullptr);
 std::optional<BossStory> loadAsterionFilm(const std::filesystem::path& dataDir, std::string* error);
-/// 2.72 (phase 6): the film of Asterion's fall (data/raids/asterion_victoire.json, its scenes written by
+/// 2.74 (phase 6): the film of Asterion's fall (data/raids/asterion_victoire.json, its scenes written by
 /// tools/assetgen/environment/story_asterion_victoire.py), from `dataDir` (default: the game's).
 std::optional<BossStory> loadAsterionVictory(std::string* error = nullptr);
 std::optional<BossStory> loadAsterionVictory(const std::filesystem::path& dataDir, std::string* error);

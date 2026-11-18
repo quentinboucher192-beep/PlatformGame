@@ -460,7 +460,7 @@ void AdminRaids::drawTest(const Rect& r) {
     ui.cycle("zone", {x + half + gap, y, half, rowH}, "Zone", testZone_, zoneNames);
     y += rowH + gap;
     static const std::vector<std::string> kPlayers = {"2", "3", "4", "5", "6", "7", "8"};
-    // 2.72 (phase 6): the Cœur d'Asterion has four phases; the seven gigaboss three.
+    // 2.74 (phase 6): the Cœur d'Asterion has four phases; the seven gigaboss three.
     const bool heart = b.part == raid::kHeartPart;
     static const std::vector<std::string> kPhases = {"1", "2", "3"};
     static const std::vector<std::string> kHeartPhases = {"1", "2", "3", "4"};
@@ -503,7 +503,7 @@ void AdminRaids::drawTest(const Rect& r) {
         t.players = testPlayers_ + 2;
         t.startPhase = giga ? testPhase_ + 1 : 1;
         t.invincible = g_.settings.gameplay.adminInvincible;
-        t.parts = testParts_;  // 2.72 (phase 6): the heart's test only
+        t.parts = testParts_;  // 2.74 (phase 6): the heart's test only
         t.relics = testRelics_;
         g_.app.pushScene(makeRaidTest(g_, t));
     }

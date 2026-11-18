@@ -162,7 +162,7 @@ struct GigabossRules {
     std::string goneText = "La Main est éteinte";
     std::string fx = "animations/pyroclast_vents.json";
     std::string summary = "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.";
-    /// 2.72 (phase 6): the titan's links acting on its branch (id → bit of the branch's state), set
+    /// 2.74 (phase 6): the titan's links acting on its branch (id → bit of the branch's state), set
     /// when the titan is attached: the Cœur d'Asterion reads its « modifier » links (a part fallen).
     std::map<std::string, int> titanLinks;
 };
@@ -253,12 +253,12 @@ public:
     int revision = 0;
     std::vector<TitanBranch> branches;
     Json links = Json::array();
-    /// 2.72 (phase 6): its heart, the final fight (titan.json « heart »: part « coeur »), apart from
+    /// 2.74 (phase 6): its heart, the final fight (titan.json « heart »: part « coeur »), apart from
     /// the seven branches of its body; empty part when the titan has none.
     TitanBranch heart;
 };
 
-/// 2.72 (phase 6): the shared state of the Cœur d'Asterion given to an instance with the branch's
+/// 2.74 (phase 6): the shared state of the Cœur d'Asterion given to an instance with the branch's
 /// state (RAID_STATE, relay → game, at a step): the health the OTHER instances of the event took
 /// from it (ten-thousandths, validated by their consensus), the shared phase (1 to 4, 5: fallen,
 /// validated), the relics of the seven branches validated (each one weakens it). Every game of the

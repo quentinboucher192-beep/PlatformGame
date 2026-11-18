@@ -350,6 +350,14 @@ curl -s $API/health
 `Retry-After: 30`) si `SELECT 1` échoue. Cette route n'est pas soumise à la limite `reads`
 (stockée dans D1) : elle reste utilisable pendant une panne de la base.
 
+**Latence affichée par le jeu (2.72)** : « En ligne - 25ms » en haut à droite des écrans de
+COSMIC ONLINE. Le jeu chronomètre sur son fil réseau ses requêtes légères déjà envoyées —
+`GET /health` et `POST /presence` (rien de plus n'est envoyé pour la mesurer) — de l'envoi de la
+requête au premier octet de la réponse (libcurl : sans la résolution, la connexion ni la poignée
+de main TLS ; WinHTTP : connexions gardées ouvertes par la session), et affiche la médiane des
+5 dernières mesures (`game/online/LatencyMeter`). « En ligne » seul tant qu'aucune mesure n'existe ;
+les mesures sont oubliées dès que le serveur ne répond plus (« Hors ligne »).
+
 #### `GET /meta` — métadonnées · cache
 Auth : aucune. Version d'API, environnement, version des CGU à accepter, version minimale du
 jeu, catégories, modes et tous les niveaux enregistrés (révision courante).
@@ -977,7 +985,7 @@ l'acteur dans sa propre clause `WHERE`.
 | `GET /clans/me` | mon clan (`clan` + `role`, ou `null`), les `invitations` reçues (`clan`, `by`) et mes `applications` (`clan`, `message`) |
 | `GET /clans?q=&limit=&offset=` | les clans, meilleurs points d'abord ; `q` : un tag (exact, en tête) ou une partie du nom (accents et casse ignorés) ; `has_more` |
 | `GET /clans/ranking?limit=&offset=` | classement des clans ayant des points : `rank`, `clan` ; `total` ; `me` (mon clan et son rang) |
-| `GET /clans/{id}` | page d'un clan : `clan` (+ `rank`), `members[]` (`player` avec `clan_tag`, `role`, `joined_at`, `best`, et `presence` **seulement pour les membres du clan**, `hidden` quand le joueur ne la partage pas), `levels[]` (chaque niveau EXTRÊME officiel : `best` et `teams[]` avec `mode` `solo`/`duo`/`trio`, `team_size`, `score`, `finished`, `players`, `rank` sur sa course), `me` (`role`, `request`), `requests[]` (**chef et officiers seulement**), `conversation_id` (membres seulement) |
+| `GET /clans/{id}` | page d'un clan : `clan` (+ `rank`), `members[]` (`player` avec `clan_tag`, `role`, `joined_at`, `best`, et `presence` **seulement pour les membres du clan** : `online`, `away` ou `offline` — 2.72 : une présence masquée se lit `offline`), `members_online` (2.72, **membres seulement** : combien de membres sont `online`, le « X » de « X/Y en ligne »), `levels[]` (chaque niveau EXTRÊME officiel : `best` et `teams[]` avec `mode` `solo`/`duo`/`trio`, `team_size`, `score`, `finished`, `players`, `rank` sur sa course), `me` (`role`, `request`), `requests[]` (**chef et officiers seulement**), `conversation_id` (membres seulement) |
 | `POST /clans` `{name, tag, motto?, emblem, join_policy}` | crée le clan (`201`) ; le créateur en est le chef ; sa discussion est créée avec lui — `409 ALREADY_IN_CLAN` / `409 TAG_TAKEN` |
 | `PATCH /clans/{id}` `{name?, tag?, motto?, emblem?, join_policy?}` | modifier le clan (chef) — `403 NOT_CLAN_LEADER`, `409 TAG_TAKEN` |
 | `DELETE /clans/{id}` `{confirm: true}` | dissoudre (chef) : membres, demandes, discussion et points disparaissent ; les membres sont prévenus |
@@ -1035,7 +1043,7 @@ registered }`.
 | Méthode | Route | Rôle / corps / réponse |
 |---|---|---|
 | GET | `/raids` | session facultative : `{ server_time, raids, clan, world (5 prochains événements mondiaux publiés), clan_events (raids de mon clan et ceux où il participe), invitations [{event, by, created_at}], rewards: [] (rien avant les combats), history (10 derniers terminés ou annulés), unread (notifications « raid » non lues), prefs }` |
-| GET | `/raids/events/{id}` | session facultative : `{ server_time, event, description, rewards_text, my: {clan, entry: {leader, instructions, registered_by}, registered, can_manage, can_call, is_organizer}, roster, groups [{number, leader, members}] (groupes de 8 : le chef de raid mène le groupe 1), participants, invitations (organisateur), invitation (clan invité) }` ; un raid de clan n'existe (`404 RAID_NOT_FOUND`) que pour son clan, les clans qui y participent et ceux invités |
+| GET | `/raids/events/{id}` | session facultative : `{ server_time, event, description, rewards_text, my: {clan, entry: {leader, instructions, registered_by}, registered, can_manage, can_call, is_organizer}, roster (les inscrits de mon clan ; 2.72 : `presence` `online`/`away`/`offline` de chacun encore membre du clan, une présence masquée se lit `offline`), roster_online (2.72 : combien d'inscrits sont `online`, seulement avec le `roster` de mon clan), groups [{number, leader, members}] (groupes de 8 : le chef de raid mène le groupe 1), participants, invitations (organisateur), invitation (clan invité) }` ; un raid de clan n'existe (`404 RAID_NOT_FOUND`) que pour son clan, les clans qui y participent et ceux invités |
 | POST | `/raids/events` | chef ou officier : `{ format, starts_at, capacity (2-50), lock_minutes? (0-120), instructions?, leader_id? }` → `201 {event}` ; 15 min à 90 jours d'avance ; `403 NOT_CLAN_OFFICER`, `409 TOO_MANY_RAIDS` (10 à venir) |
 | DELETE | `/raids/events/{id}` | chef ou officier du clan organisateur : annule (inscrits et clans invités prévenus) ; `403 NOT_ORGANIZER` |
 | POST | `/raids/events/{id}/clan` | chef ou officier : inscrit son clan à un événement mondial → `201`, `200 {already}` ; deux officiers en même temps : une seule inscription ; `409 NOT_WORLD_EVENT` / `REGISTRATION_CLOSED` / `RAID_LOCKED` |

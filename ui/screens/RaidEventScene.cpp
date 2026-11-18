@@ -5,6 +5,8 @@
 // clan by its chief or an officer), « Inviter des membres… », the groups of 8 with their leader,
 // the clans taking part, the invitations of a raid in common, and the player's reminders.
 // 2.65: « en cours », the map of the branch « Bras droit » opens the combat (phase 2).
+// 2.72: the registrants of my clan with the pill of their presence (en ligne, absent, hors ligne)
+// and « X/Y en ligne » over the groups (ui/online/PresenceList: the server's answer only).
 //
 // Every rule is the server's (server/src/raids.ts): the screen offers what the player's role
 // allows and shows what the server answers. Placement: each text is measured into the room left
@@ -13,6 +15,7 @@
 #include <algorithm>
 #include <cmath>
 #include <functional>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -21,6 +24,8 @@
 #include "game/GameServices.h"
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
+#include "ui/online/OnlineWidgets.h"
+#include "ui/online/PresenceList.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -113,6 +118,7 @@ private:
                               return;
                           }
                           data_ = r.data;
+                          fromCache_ = r.fromCache;  // 2.72: the presence of the cache is no longer true
                           loaded_ = true;
                           error_.clear();
                           if (!r.fromCache) skew_ = skewOf(r.data);
@@ -227,7 +233,7 @@ private:
                 }
                 ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
             }
-            // 2.72 (phase 6): the Cœur d'Asterion fell (validated): its film again.
+            // 2.74 (phase 6): the Cœur d'Asterion fell (validated): its film again.
             const bool heartDown = jstr(at(at(data_, "event"), "body"), "coeur") == "detruit";
             const float vw = heartDown && asterionfilm::victory() ? std::min(asterionfilm::victoryButtonWidth(ui), band.w * 0.24f) : 0.0f;
             if (vw > 0.0f) {
@@ -425,6 +431,23 @@ private:
             if (visible(y, static_cast<float>(lines.size()) * ui.s(22))) drawLines(ui, lines, {x, y}, 15, ui.s(22), kDim);
             y += static_cast<float>(lines.size()) * ui.s(22) + ui.s(10);
         }
+        // 2.72: the registrants' presence (my clan's members only, a fresh answer) and, over the
+        // groups, « X/Y en ligne » (X counted by the server).
+        std::map<std::string, std::string> presence;
+        const Json& roster = at(data_, "roster");
+        if (roster.is_array())
+            for (const Json& p : roster)
+                if (std::string pr = presencelist::shown(p, fromCache_); !pr.empty()) presence[jstr(p, "id")] = std::move(pr);
+        if (!groups.empty()) {
+            const int total = roster.is_array() ? static_cast<int>(roster.size()) : 0;
+            const int online = presencelist::onlineCount(data_, "roster_online", total, fromCache_);
+            if (visible(y, ui.s(28))) {
+                const presencelist::HeaderLayout L = presencelist::layoutHeader(ui, x, x + w, y + ui.s(12), "INSCRITS DU CLAN", 14, FontFace::Title,
+                                                                                presencelist::counterText(online, total), 14, FontFace::Bold);
+                presencelist::drawHeader(ui, L, FontFace::Title, kSky, FontFace::Bold, presencelist::counterColor(online, kDim));
+            }
+            y += ui.s(30);
+        }
         const float cellH = ui.s(34), cellGap = ui.s(6);
         for (const raids::Group& g : groups) {
             const float h = ui.s(44) + 2 * (cellH + cellGap) + ui.s(6);
@@ -440,7 +463,14 @@ private:
                     const bool filled = i < static_cast<int>(g.members.size());
                     const bool lead = filled && g.members[static_cast<size_t>(i)].id == g.leader.id;
                     ui.r().fillRoundedRect(c, ui.s(8), lead ? Color{58, 42, 106, 255} : filled ? Color{35, 48, 94, 255} : Color{21, 27, 58, 255});
-                    fit(ui, filled ? g.members[static_cast<size_t>(i)].username : std::string("place libre"), c.center(), 13, c.w - ui.s(8),
+                    // The pill at the left of the cell, the name centred in the room it leaves.
+                    auto pr = filled ? presence.find(g.members[static_cast<size_t>(i)].id) : presence.end();
+                    Rect room{c.x + ui.s(4), c.y, c.w - ui.s(8), c.h};
+                    if (pr != presence.end()) {
+                        drawPresenceDot(ui, {c.x + ui.s(9), c.center().y}, ui.s(4), pr->second, ui.s(1.5f));
+                        room = {c.x + ui.s(16), c.y, c.right() - ui.s(4) - (c.x + ui.s(16)), c.h};
+                    }
+                    fit(ui, filled ? g.members[static_cast<size_t>(i)].username : std::string("place libre"), room.center(), 13, room.w,
                         filled ? kText : Color{110, 118, 160, 255}, FontFace::Body, Align::Center, filled);
                 }
             }
@@ -671,7 +701,7 @@ private:
     AsterionFigure titan_;  // beside the title and the story, its tooltip drawn last
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     Json data_, prefs_;
-    bool loaded_ = false, busy_ = false;
+    bool loaded_ = false, busy_ = false, fromCache_ = false;
     int gen_ = 0;
     int64_t skew_ = 0;
     float timer_ = 0.0f;

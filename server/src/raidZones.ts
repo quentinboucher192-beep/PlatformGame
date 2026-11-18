@@ -376,7 +376,7 @@ export async function report(ctx: Ctx): Promise<Response> {
     const hash = v.str("hash", { min: 16, max: 16, pattern: HASH16_RE })!;
     // 2.68: the gigaboss's phase reached (1 to 4: its fall), the table of the contributions.
     const phase = v.int("phase", { min: 1, max: 4, optional: kind !== "boss" });
-    // 2.72 (phase 6): the part of the Cœur d'Asterion's shared health this instance took (ten-thousandths).
+    // 2.74 (phase 6): the part of the Cœur d'Asterion's shared health this instance took (ten-thousandths).
     const damage = v.int("damage", { min: 0, max: HEART_UNITS, optional: kind !== "heart" });
     if (kind !== "heart" && body.damage !== undefined) v.fail("damage", "réservé aux rapports « heart »");
     const records = kind === "result" ? readRecords(body.records, (m) => { v.fail("records", m); return v.done() as never; }) : [];
@@ -423,7 +423,7 @@ export async function report(ctx: Ctx): Promise<Response> {
         if (why) return reject(why);
     }
     if (kind === "heart") {
-        // 2.72 (phase 6): only the heart's arena, once open (the seven gigaboss fallen), at a pace a group can
+        // 2.74 (phase 6): only the heart's arena, once open (the seven gigaboss fallen), at a pace a group can
         // keep (never the whole heart in less than a minute of the instance).
         const bossZone = cat.zones.find((z) => (z as { boss?: boolean }).boss)?.id ?? 0;
         if (!isHeart(inst.branch) || zone !== bossZone) return reject("le Cœur d'Asterion n'est pas dans cette zone");
@@ -505,7 +505,7 @@ export async function report(ctx: Ctx): Promise<Response> {
     if (won.meta.changes) {
         for (const r of reports) if (r.value !== winner) await journal(db, id, r.player_id, key, r.value, "minoritaire : l'instance a validé une autre valeur");
         if (obj && isHeart(inst.branch) && obj.id === HEART_OBJECTIVE) {
-            // 2.72 (phase 6): the heart falls for the world only when the parts validated of every instance
+            // 2.74 (phase 6): the heart falls for the world only when the parts validated of every instance
             // add up to its whole health (checkHeartFall writes its objective once), never on one group's word.
             if (await checkHeartFall(db, e, id, now)) await wakeHeartRelays(ctx.env as never, e.id);
         } else if (obj) {
@@ -527,7 +527,7 @@ export async function report(ctx: Ctx): Promise<Response> {
                 .run();
             // 2.69: already counted by another group (or at the same moment): journaled for the administrators.
             if (!counted.meta.changes) await journalDuplicate(db, e.id, id, inst.branch, obj.id, obj.label, now);
-            // 2.72 (phase 6): the seventh gigaboss down opens the Cœur d'Asterion (told once).
+            // 2.74 (phase 6): the seventh gigaboss down opens the Cœur d'Asterion (told once).
             if (obj.role === "gigaboss") await checkHeartOpen(db, e, now);
             // Every relay of the event gives the new state to its games (a few seconds anyway);
             // 2.68: those of the other branches too (the titan's links).
@@ -548,7 +548,7 @@ export async function report(ctx: Ctx): Promise<Response> {
                 .run();
             if (phase === 4) await grantForInstance(db, e.id, id);
         } else if (kind === "heart") {
-            // 2.72 (phase 6): this instance's part (the highest accepted), the others told at a step; the fall
+            // 2.74 (phase 6): this instance's part (the highest accepted), the others told at a step; the fall
             // when the parts of every instance reach its whole health.
             await storeHeartDamage(db, e.id, id, damage!, tick, now);
             await checkHeartFall(db, e, id, now);

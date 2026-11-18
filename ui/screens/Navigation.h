@@ -280,7 +280,7 @@ struct RaidTestSetup {
     int players = 2;
     int startPhase = 1;
     bool invincible = true;
-    /// 2.72 (phase 6), the Cœur d'Asterion: the parts of the titan simulated as fallen (bit p = the part p
+    /// 2.74 (phase 6), the Cœur d'Asterion: the parts of the titan simulated as fallen (bit p = the part p
     /// of raid::AsterionHeartRoutine::Part: their « modifier » links on in the test's branch state) and the
     /// relics validated; ignored by the seven branches.
     uint32_t parts = 0x7Fu;
