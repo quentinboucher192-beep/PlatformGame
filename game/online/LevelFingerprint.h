@@ -61,9 +61,9 @@ constexpr int kSimulationVersion = 15;  // 6: energy 150, time slow, magnet, air
                                        //    is brought back into it. The rankings are kept: a run
                                        //    without a fall in an ambush plays as before.
                                        // 15: (2.71) the attack strikes upwards (Up alone) or,
-                                       //    in the air, downwards (Down alone), in the direction
-                                       //    it started with, and a strike downwards no longer
-                                       //    bounces. A replay recorded before (no version in the
+                                       //    in the air, downwards (Down alone), with the aim
+                                       //    held when it started (the bounce of a strike downwards
+                                       //    too). A replay recorded before (no version in the
                                        //    file) plays with its rules (GameWorld::
                                        //    simulationVersion): same digests. The rankings are kept.
 /// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one

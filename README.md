@@ -461,7 +461,8 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 **Nouveau dans la version 2.71.0** :
 * **Attaque dirigée** : Haut + Attaque frappe au-dessus de Nova (au sol ou en l'air), Bas + Attaque frappe en dessous, en
   l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe). Mêmes
-  dégâts, recul et objets cassables que le coup vers l'avant, sans rebond sur les ennemis (aucun nouveau passage) ;
+  dégâts, recul et objets cassables que le coup vers l'avant ; un coup vers le bas en l'air rebondit toujours sur
+  l'ennemi touché et rend les sauts en l'air, comme avant ; la direction est celle choisie au début du coup ;
   animations et arcs de lame générés par `tools/assetgen/characters/nova.py` (lignes 27 à 29 de la planche de Nova).
   `kSimulationVersion` passe à 15, `kRankingGeneration` reste à 8 : **records et classements conservés** ; un replay
   enregistré avant se rejoue avec les règles de son époque (la version de la simulation est notée dans les nouveaux replays).

@@ -85,9 +85,9 @@ Un lecteur ignore les types qu'il ne connaît pas (le serveur ignore les types 1
 **Version de la simulation (2.71, simulation 15).** Un replay se rejoue avec les règles de la
 version qui l'a enregistré (`ReplaySimulator` → `GameWorld::setSimulationVersion`) : un replay
 exact sans événement 20 (enregistré avant la 2.71, simulation 14 ou avant) garde l'attaque
-d'alors (direction lue au moment du coup, rebond d'un coup vers le bas en l'air) et se rejoue
-donc à l'identique ; depuis la 2.71, l'attaque garde la direction choisie au début du coup et
-ne fait plus rebondir. Ni le format ni `input_flags` ne changent : le serveur et les jeux plus
+d'alors (direction, et rebond d'un coup vers le bas en l'air, lus au moment du coup) et se
+rejoue donc à l'identique ; depuis la 2.71, l'attaque garde la visée tenue au début du coup (sa
+direction, et le même rebond sur l'ennemi touché). Ni le format ni `input_flags` ne changent : le serveur et les jeux plus
 anciens lisent ces replays comme avant.
 
 Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au record.

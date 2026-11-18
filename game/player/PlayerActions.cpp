@@ -207,10 +207,11 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
         attackTimer_ -= dt;
         if (!attackHitDone_ && elapsed >= cfg_.attackDuration * 0.25f) {
             attackHitDone_ = true;
-            // 2.71 (simulation 15): the strike goes where the attack started (its animation), and
-            // a strike downwards never bounces (no new way through a level). A replay recorded
-            // before plays with the rules of its time: the direction read now, and the bounce.
+            // 2.71 (simulation 15): the strike goes where the attack started (its animation): the
+            // aim is the one held when it started. A replay recorded before plays with the rules of
+            // its time: the aim read now.
             const bool aimed = w.simulationVersion() >= kAimedSlashSimulation;
+            const Vec2 aim = aimed ? slashAim_ : aim_;
             const Rect hit = slashArea(aimed ? slashDir_ : slashDirectionFor(aim_, grounded_));
             DamageInfo d;
             d.amount = cfg_.attackDamage;
@@ -228,8 +229,9 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
                 w.hitStop(0.045f);
                 w.shake(0.12f);
                 w.rumble(0.3f, 0.5f, 90);
-                // Before 2.71 only: a strike with Down held in the air bounced off the enemies (pogo).
-                if (!aimed && aim_.y > 0.5f && !grounded_) launch({vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
+                // A strike aimed downwards in the air bounces off the enemies it hits (pogo), as
+                // always (2.71: with the aim the attack started with).
+                if (aim.y > 0.5f && !grounded_) launch({vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
             }
             w.powerHit("melee", hit);
         }
@@ -243,6 +245,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
     meleeTag_ = w.newAttackTag("attack");  // 2.54: statistics only
     attackAir_ = !grounded_;
     // 2.71: Up alone strikes above (on the ground or in the air), Down alone below (in the air).
+    slashAim_ = aim_;
     slashDir_ = slashDirectionFor(aim_, grounded_);
     anim.play(attackClip(), true);
     w.playSound("sounds/slash.wav", center(), 0.8f, w.fxRng().range(0.93f, 1.08f));

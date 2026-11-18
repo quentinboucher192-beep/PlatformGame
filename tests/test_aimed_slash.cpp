@@ -1,8 +1,9 @@
 // The attack upwards and downwards (2.71, simulation 15): Up alone + Attack strikes above Nova
 // (on the ground or in the air), Down alone + Attack strikes below her, in the air only (on the
-// ground Down stays the crouch). The direction is the one the attack started with, and a strike
-// downwards never bounces. A replay recorded before (no version of the simulation in the file)
-// plays with the rules of its time: the direction read at the moment of the hit, the bounce.
+// ground Down stays the crouch). The aim is the one held when the attack started: its direction,
+// and the bounce of a strike downwards off the enemies it hits (the pogo, as before). A replay
+// recorded before (no version of the simulation in the file) plays with the rules of its time:
+// the aim read at the moment of the hit.
 
 #include <cstdio>
 #include <memory>
@@ -140,8 +141,8 @@ TEST_CASE("aimed slash: Up + Attack strikes above Nova in the air too") {
     CHECK(struck);
 }
 
-TEST_CASE("aimed slash: Down + Attack strikes below in the air, without the old bounce") {
-    // Rules 15 (2.71): no bounce. Rules of a replay recorded before (0, 14): the bounce (pogo).
+TEST_CASE("aimed slash: Down + Attack strikes below in the air and bounces off the enemy, as before") {
+    // The bounce (pogo) with today's rules (15) and with those of a replay recorded before (0, 14).
     for (int rules : {kSimulationVersion, 0, 14}) {
         Slash s(rules);
         s.idle(150);
@@ -170,8 +171,8 @@ TEST_CASE("aimed slash: Down + Attack strikes below in the air, without the old 
             }
         }
         CHECK(struck);
-        if (rules >= kAimedSlashSimulation) CHECK(vyAtHit > 0.0f);  // still falling
-        else CHECK(vyAtHit < -100.0f);                               // bounced off the enemy
+        CHECK(vyAtHit < -100.0f);                      // bounced off the enemy
+        CHECK(p.airJumpsLeft() == p.airJumpCount());  // its air jumps given back
     }
 }
 
@@ -233,23 +234,25 @@ struct PogoScene {
     }
 };
 
-/// The input of the step after `tick` steps: two steps of falling, then Down, and Attack.
-InputFrame pogoInput(uint32_t tick) {
-    if (tick >= 152 && tick < 200) return held(0, 1, tick < 156);
+/// The input of the step after `tick` steps: two steps of falling, then Down and Attack, Down
+/// held until after the hit (`holdDown`) or released as soon as the attack has started.
+InputFrame pogoInput(uint32_t tick, bool holdDown) {
+    if (tick >= 152 && tick < 156) return held(0, 1, true);
+    if (holdDown && tick >= 156 && tick < 200) return held(0, 1);
     return {};
 }
 
-/// Plays the scene live with the given rules and records it.
-ReplayData recordPogo(int rules, uint64_t& finalHash, float& vyAfterHit) {
+/// Plays the scene live with the given rules and records it; `struck`: the enemy below was hit.
+ReplayData recordPogo(int rules, bool holdDown, uint64_t& finalHash, float& vyAfterHit, bool& struck) {
     Slash live(rules);
     ReplayRecorder rec;
     rec.begin("test_slash", std::string(64, 'a'), makeUuidV4(), live.w->gameplaySeed());
     PogoScene scene;
     vyAfterHit = 0.0f;
     float hp = 0.0f;
-    bool struck = false;
+    struck = false;
     for (uint32_t t = 1; t <= 330; ++t) {
-        const InputFrame f = live.edges(pogoInput(t - 1));
+        const InputFrame f = live.edges(pogoInput(t - 1, holdDown));
         rec.recordInput(f);
         stepWorld(*live.w, f, kSimDt);
         rec.tick(*live.w);
@@ -260,7 +263,6 @@ ReplayData recordPogo(int rules, uint64_t& finalHash, float& vyAfterHit) {
         scene.after(*live.w, t);
         if (scene.e) hp = scene.e->hp();
     }
-    CHECK(struck);
     rec.finish(*live.w, live.w->timer().elapsed());
     finalHash = simulationStateHash(*live.w);
     return rec.take();
@@ -281,10 +283,13 @@ bool replayPogo(const ReplayData& replay, uint64_t finalHash, int* desyncTick = 
 }  // namespace
 
 TEST_CASE("aimed slash: a new replay plays back exactly and says its simulation") {
+    // Down only while the attack starts: the strike stays aimed downwards, and bounces.
     uint64_t finalHash = 0;
     float vy = 0.0f;
-    ReplayData data = recordPogo(kSimulationVersion, finalHash, vy);
-    CHECK(vy > 0.0f);  // struck below, no bounce
+    bool struck = false;
+    ReplayData data = recordPogo(kSimulationVersion, false, finalHash, vy, struck);
+    CHECK(struck);
+    CHECK(vy < -100.0f);
     CHECK(data.simVersion == kSimulationVersion);
     auto back = ReplayData::decode(data.encode());
     REQUIRE(back.has_value());
@@ -301,7 +306,9 @@ TEST_CASE("aimed slash: a replay recorded before 2.71 still reproduces its run")
     // A run of 2.68 or before: the old rules, and no version in the file (simVersion 0).
     uint64_t finalHash = 0;
     float vy = 0.0f;
-    ReplayData old = recordPogo(0, finalHash, vy);
+    bool struck = false;
+    ReplayData old = recordPogo(0, true, finalHash, vy, struck);
+    CHECK(struck);
     CHECK(vy < -100.0f);  // the old bounce happened
     CHECK(old.simVersion == 0);
     const auto raw = old.serialize();
@@ -313,11 +320,20 @@ TEST_CASE("aimed slash: a replay recorded before 2.71 still reproduces its run")
     CHECK(back->simVersion == 0);
     CHECK(back->events.size() == old.events.size());
     CHECK(replayPogo(*back, finalHash));  // the rules of its time: exactly the same run
-    // Played with today's rules it would not be the same run: the gate is needed.
-    ReplayData today = *back;
+    // Down released before the hit: the old rules read the aim at the hit (forwards, the enemy
+    // below untouched), today's keep the aim of the start (downwards, a hit and a bounce). Played
+    // with today's rules, such an old replay would not be the same run: the gate is needed.
+    uint64_t releasedHash = 0;
+    ReplayData released = recordPogo(0, false, releasedHash, vy, struck);
+    CHECK(!struck);
+    auto back2 = ReplayData::parse(released.serialize());
+    REQUIRE(back2.has_value());
+    CHECK(back2->simVersion == 0);
+    CHECK(replayPogo(*back2, releasedHash));
+    ReplayData today = *back2;
     today.simVersion = static_cast<uint16_t>(kSimulationVersion);
     int desync = 0;
-    CHECK(!replayPogo(today, finalHash, &desync));
+    CHECK(!replayPogo(today, releasedHash, &desync));
     CHECK(desync > 150);
 }
 

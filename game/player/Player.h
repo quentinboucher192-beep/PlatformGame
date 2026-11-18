@@ -42,9 +42,9 @@ const char* playerStateName(PlayerState s);
 /// alone, on the ground or in the air), Down (Down alone, in the air only: on the ground Down
 /// stays the crouch) or Forward.
 enum class SlashDirection : uint8_t { Forward, Up, Down };
-/// The first simulation where the attack keeps the direction it started with and a strike
-/// downwards never bounces (GameWorld::simulationVersion: a replay recorded before plays with
-/// the rules of its time: the direction read at the moment of the hit, the bounce).
+/// The first simulation where the attack keeps the aim it started with (its direction, and the
+/// bounce of a strike downwards in the air: GameWorld::simulationVersion; a replay recorded
+/// before plays with the rules of its time: the aim read at the moment of the hit).
 constexpr int kAimedSlashSimulation = 15;
 
 /// The player character: state machine, precise platforming physics, melee combat,
@@ -245,6 +245,7 @@ private:
     uint32_t meleeTag_ = 0;  // 2.54, statistics only: the tag of the last swing (GameWorld::newAttackTag)
     bool attackAir_ = false;
     SlashDirection slashDir_ = SlashDirection::Forward;  // 2.71: chosen when the attack starts
+    Vec2 slashAim_{1, 0};                                 // 2.71: the aim held when it started
     /// The clip of the attack under way: its direction when the sheet has it (2.71).
     const char* attackClip() const;
     float castTimer_ = 0.0f;
