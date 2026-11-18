@@ -606,6 +606,9 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.74.2** :
+* **Correctif** : la fiche d'Asterion compte de nouveau sept branches (56 zones, 7 antres), le Cœur à part.
+
 **Nouveau dans la version 2.74.1** :
 * **Raids de clan : les fiches d'Asterion et de ses sept Gigaboss** (`ui/screens/RaidSheetsScene`, modèle
   `game/raid/RaidSheets`, mots dans `data/raids/asterion_sheets.json`), visibles même sans les avoir rencontrés, depuis

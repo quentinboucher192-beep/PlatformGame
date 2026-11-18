@@ -14227,6 +14227,12 @@
    ]
   },
   {
+   "fr": "Correctif : la fiche d'Asterion comptait le Cœur comme une huitième branche (8 branches, 57 zones) ; elle affiche de nouveau les sept branches, leurs 56 zones et leurs 7 antres, le Cœur restant présenté à part.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correctif : le chrono démarre quand Nova peut bouger, que l'intro soit regardée ou passée (regarder l'intro faisait gagner environ 1 s), en jeu, en entraînement, en EXTRÊME et en ligne.",
    "where": [
     "data/news/changelog.json"

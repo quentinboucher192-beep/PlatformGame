@@ -492,6 +492,7 @@ RaidSheets buildRaidSheets(const Json& data, const ContentDatabase& content, con
     a.players = kMaxInstancePlayers;
     bool first = true;
     for (const raid::Branch* b : Branch::all()) {
+        if (b->part == kHeartPart) continue;  // the heart is its own section, not one of the seven branches
         ++a.branches;
         a.zones += static_cast<int>(b->zones.size());
         float total = 0.0f;

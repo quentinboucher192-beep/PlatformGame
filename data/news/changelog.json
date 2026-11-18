@@ -1,4 +1,7 @@
 {
+  "2.74.2": [
+    "Correctif : la fiche d'Asterion comptait le Cœur comme une huitième branche (8 branches, 57 zones) ; elle affiche de nouveau les sept branches, leurs 56 zones et leurs 7 antres, le Cœur restant présenté à part."
+  ],
   "2.74.1": [
     "Raids de clan : les FICHES d'Asterion et de ses sept Gigaboss, visibles par tous, même sans les avoir jamais affrontés. Elles s'ouvrent depuis CLANS › RAIDS (« Fiches d'Asterion »), depuis la fiche d'un événement (« Fiches ») et depuis l'antre de chaque carte de branche (« Fiche de … »), même hors ligne.",
     "La fiche d'Asterion : le titan partie par partie (une partie survolée ou sélectionnée montre son Gigaboss ; Entrée, A ou un clic ouvre sa fiche), son histoire, la structure du raid (sept branches de huit zones, des instances de huit joueurs), ce que la destruction de chaque partie lui retire, son cœur cosmique — le dernier combat, une fois ses branches tombées — et toutes les récompenses du raid.",
