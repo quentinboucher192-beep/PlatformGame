@@ -139,6 +139,9 @@ struct StoryStage {
     std::vector<StoryFlash> flashes;
     std::vector<StoryElement> elements;
     std::vector<StorySfx> sounds;  // 2.63: its sound effects (none: a silent scene, as before)
+    /// 2.68 (a film's scenes): the seconds its keys were written for; a shot of another length
+    /// stretches it (0: the shot's own length, as before).
+    float length = 0.0f;
 
     static std::optional<StoryStage> fromJson(const Json& j, std::string* error = nullptr);
     /// The camera at `t`: its point and its zoom (before it is kept inside the stage).
@@ -151,6 +154,19 @@ struct StoryStage {
     float flashAt(float t, Color* color = nullptr) const;
     /// The last time its keys, shakes and flashes name (seconds of the shot as written).
     float lastTime() const;
+};
+
+/// 2.68 (a film): a title drawn large in the picture from `t` to `to` (seconds of the shot as
+/// written: stretched with its scene), its subtitle under it; centred on `pos` (fractions of the
+/// picture), fitted to `width` of it, at most `size` pixels (at the reference scale), its glow of
+/// `color`. One title at a time: the latest begun of those showing.
+struct StoryTitle {
+    float t = 0.0f, to = 0.0f;
+    std::string text, subtitle;
+    Vec2 pos{0.5f, 0.5f};
+    float width = 0.86f;
+    float size = 70.0f;
+    Color color = Color::white();
 };
 
 /// One shot: its painting (a texture under assets/), its line of narration (French: translated
@@ -169,6 +185,7 @@ struct StoryShot {
     /// and a smaller line under its title (a trailer's line is a title, drawn large).
     float duration = 0.0f;
     std::string subtitle;
+    std::vector<StoryTitle> titles;  // 2.68 (a film): its titles in the picture
 };
 
 /// The story of a giga boss.
@@ -186,6 +203,10 @@ struct BossStory {
     std::string music;
     float titleCard = 3.0f;
     bool isTrailer() const { return kind == "trailer"; }
+    /// 2.68: « film »: a mini-film (data/raids/asterion_film.json): its shots have their own lengths,
+    /// their captions at the bottom (none when empty) and their titles in the picture, its music
+    /// its own, no title card (it ends on its last shot).
+    bool isFilm() const { return kind == "film"; }
     std::vector<StoryShot> shots;
 
     static std::optional<BossStory> fromJson(const Json& j, std::string* error = nullptr);
@@ -208,6 +229,13 @@ float shotDuration(std::string_view text);
 float shotLength(const StoryShot& shot);
 /// 2.63: the game's trailer (data/trailer/trailer.json); nullopt when it cannot be read.
 std::optional<BossStory> loadTrailer(std::string* error = nullptr);
+/// 2.68: a mini-film: its script (data/<file>: kind « film », each shot's caption, titles and
+/// length, written by hand) with the scenes it names (the file of its « scenes », written by a
+/// generator); nullopt when either cannot be read.
+std::optional<BossStory> loadFilm(const std::filesystem::path& script, std::string* error = nullptr);
+/// Asterion's film (data/raids/asterion_film.json), from `dataDir` (default: the game's).
+std::optional<BossStory> loadAsterionFilm(std::string* error = nullptr);
+std::optional<BossStory> loadAsterionFilm(const std::filesystem::path& dataDir, std::string* error);
 /// The whole story with its title card (texts as given: the French ones).
 float duration(const BossStory& s);
 constexpr int kVersion = 2;  // the newest format read (1: paintings, 2: animated scenes)

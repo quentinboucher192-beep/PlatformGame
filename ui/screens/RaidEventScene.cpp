@@ -24,6 +24,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/AsterionFilm.h"
 #include "ui/widgets/AsterionFigure.h"
 
 namespace cosmic {
@@ -50,6 +51,7 @@ public:
         g_.ui.setFocus("raid/back");
         load();
         loadPrefs();
+        asterionfilm::hold(g_);  // 2.68: Asterion's film first (its first viewing), over the sheet from its first frame
     }
     void onResume() override { load(); }
 

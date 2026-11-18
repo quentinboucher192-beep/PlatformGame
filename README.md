@@ -455,6 +455,19 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.68.0** :
+* **Le mini-film d'Asterion** : la première fois que le joueur va voir le titan (CLANS › RAIDS, la fiche d'un
+  événement, tout écran qui le montre), une cinématique d'environ deux minutes en dix plans animés (le Cœur cosmique seul
+  dans le vide, le corps forgé de mondes brisés, une planète dévorée, les sept parties et leurs Gigaboss révélés un par
+  un, notre galaxie visée, Nova balayée par Dreadfang, les balises des clans, l'hologramme des branches, le rugissement
+  et le titre « ASTERION — LE DÉVOREUR DE MONDES », l'appel aux clans), jouée par le moteur des histoires avec le **vrai
+  sprite en calques** du titan (chaque branche bouge, brille et respire), sa musique et ses bruitages générés
+  (`tools/assetgen`). Le texte et la durée de chaque plan se modifient à la main dans `data/raids/asterion_film.json` ;
+  les scènes sont écrites par `tools/assetgen/environment/story_asterion.py`. Cette **première projection ne se passe
+  pas** (aucune touche, aucun bouton, aucun clic ; fermer la fenêtre ferme le jeu) et n'est notée « vue » dans la
+  progression qu'à sa fin (gardée par les copies de progression et la migration de compte) ; « Revoir la cinématique »
+  sur la carte de l'événement la rejoue, et celle-là se quitte.
+
 **Nouveau dans la version 2.66.1** :
 * **Asterion dessiné en pixel art, partie par partie** : dans CLANS › RAIDS et la fiche d'un événement, le titan
   est un vrai sprite en calques (crâne, bras, torse, abdomen, jambes, cœur cosmique, aura) qui respire, dont le cœur bat

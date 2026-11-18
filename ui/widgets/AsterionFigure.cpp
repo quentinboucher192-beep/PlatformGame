@@ -9,6 +9,7 @@
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "ui/online/RaidWidgets.h"
+#include "ui/screens/AsterionFilm.h"
 
 namespace cosmic {
 
@@ -56,6 +57,7 @@ void pillColors(asterion::State s, Color& fill, Color& text) {
 std::string AsterionFigure::draw(GameServices& g, const std::string& id, const Rect& r, const std::map<std::string, asterion::State>& states,
                                  const std::vector<std::string>& openable) {
     tip_.clear();
+    if (asterionfilm::hold(g)) return {};  // 2.68: never shown before its film (its first viewing)
     const Data& d = data(g);
     UIContext& ui = g.ui;
     if (!d.sprite.valid || r.w <= 0.0f || r.h <= 0.0f) return {};

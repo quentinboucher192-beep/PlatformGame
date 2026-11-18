@@ -131,6 +131,15 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
   soufflets 1 / 2), alertes du groupe, de la branche et du serveur (objectif validé ou refusé),
   bandeau de danger (« Coulée dans 3 s · montez ! »), état du réseau. La pause ne s'arrête pas : le
   groupe continue.
+* **Mini-film d'Asterion** (2.68, `ui/screens/AsterionFilm`) : avant le premier affichage du titan
+  (CLANS › RAIDS, fiche d'un événement, tout `AsterionFigure` : un seul appel `asterionfilm::hold`),
+  dix plans d'environ deux minutes joués par le moteur des histoires (`makeFilm`). Le script — légende,
+  titres et durée de chaque plan — se modifie à la main dans `data/raids/asterion_film.json` (une durée
+  changée étire la scène) ; les scènes (`asterion_film_scenes.json`), les planches du titan en calques et
+  les décors sont écrits par `tools/assetgen/environment/story_asterion.py` (`--check`, `--storyboard`),
+  la musique par `tools/assetgen/audio` (`asterion_film`). Première projection impossible à passer ;
+  « vu » (`asterionFilmSeen` de la progression, uni par `ProgressMerge`) écrit seulement à la fin ;
+  « Revoir la cinématique » sur la carte de l'événement (celle-là se quitte). Contenu local, hors ligne.
 
 ## 5. Limites de cette phase
 

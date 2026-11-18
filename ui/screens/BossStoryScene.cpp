@@ -122,6 +122,11 @@ public:
     BossStoryScene(GameServices& g, const BossStory& story, int startAt, float atSeconds, bool attract = false)
         : g_(g), story_(story), startAt_(atSeconds >= 0.0f ? -1 : startAt), atSeconds_(atSeconds), trailer_(story.isTrailer()),
           attract_(attract) {}
+    /// 2.68: a film, owned by the scene (`locked`: its first viewing, nothing skips it).
+    BossStoryScene(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd, float atSeconds)
+        : keep_(std::move(film)), g_(g), story_(*keep_), atSeconds_(atSeconds), film_(true), locked_(locked), onEnd_(std::move(onEnd)) {}
+
+    bool locked() const { return locked_; }
 
     /// 2.63: the shot playing (the number of shots: the title card).
     int shotIndex() const { return t_ >= titleStart_ ? static_cast<int>(shots_.size()) : currentShot(); }
@@ -130,7 +135,7 @@ public:
     bool attract() const { return attract_; }
 
     void onEnter() override {
-        def_ = trailer_ ? nullptr : g_.content.enemy(story_.bossId);
+        def_ = trailer_ || film_ ? nullptr : g_.content.enemy(story_.bossId);
         // The timeline, from the lines as they are shown (a shot lasts long enough to read its
         // line in the language in use).
         // Every texture of the story is loaded here, at its start (never while it plays): the
@@ -147,7 +152,8 @@ public:
             shot.stageScale = story::shotDuration(s.text) / std::max(0.01f, shot.dur);
             if (s.duration > 0.0f) {  // 2.63 (the trailer): its own length, in every language
                 shot.dur = s.duration;
-                shot.stageScale = 1.0f;
+                // 2.68 (a film): a scene written for another length is stretched to the shot's.
+                shot.stageScale = s.stage && s.stage->length > 0.0f ? s.stage->length / s.duration : 1.0f;
             }
             if (s.stage) shot.stageReady = loadStage(shot, *s.stage);
             if (!shot.stageReady) shot.tex = s.image.empty() ? nullptr : g_.app.resources().texture(s.image, false);
@@ -172,6 +178,12 @@ public:
             g_.playMusic(story_.music);  // the trailer's own music
             baseDuck_ = 1.0f;
         }
+        if (film_) {  // 2.68: a film's own music, once; the one playing before comes back after it
+            prevMusic_ = g_.app.audio().currentMusic();
+            if (const std::string p = g_.app.resources().soundPath(story_.music); !story_.music.empty() && !p.empty())
+                g_.app.audio().playMusic(p, 600, false);
+            baseDuck_ = 1.0f;
+        }
         setDuck(baseDuck_);
         // 2.63: its sounds are decoded here too (never while it plays).
         ResourceManager& res = g_.app.resources();
@@ -181,7 +193,13 @@ public:
                     if (const std::string p = res.soundPath(fx.sound); !p.empty()) g_.app.audio().load(p, true);
     }
 
-    void onExit() override { g_.app.audio().setMusicDuck(1.0f); }
+    void onExit() override {
+        g_.app.audio().setMusicDuck(1.0f);
+        if (film_) {  // 2.68: the music of the screen below again
+            if (!prevMusic_.empty()) g_.app.audio().playMusic(prevMusic_, 1200);
+            else g_.app.audio().stopMusic(800);
+        }
+    }
 
     bool isOverlay() const override { return true; }
     bool holdsNotifications() const override { return true; }
@@ -190,7 +208,7 @@ public:
         sinceEnter_ += dt;
         if (closing_) {
             closeT_ += dt;
-            if (closeT_ >= (quickClose_ ? kQuickFade : story::kFade)) finish();
+            if (closeT_ >= fadeOut()) finish();
             return;
         }
         // 2.63, attract mode: any input (a key, a button, a click, the mouse or a stick moving)
@@ -220,8 +238,14 @@ public:
         }
         if (t_ >= total_) {
             closing_ = true;
+            if (film_ && !ended_) {  // 2.68: played to its end (its first viewing is now seen)
+                ended_ = true;
+                if (onEnd_) onEnd_();
+            }
             return;
         }
+        // 2.68: a film's first viewing: nothing skips it or leaves it (no key, button or click).
+        if (locked_) return;
         // 2.63: « Passer » (Space, Enter, Ⓐ, a click) skips the shot playing — a quick cross-fade
         // to the next one; on the last shot or the title card, the story ends. « Quitter »
         // (Échap, Ⓑ, a click on its hint) leaves the whole story. Never by a press of the
@@ -245,7 +269,7 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         Renderer& r = ui.r();
         const float in = startAt_ >= 0 || atSeconds_ >= 0.0f ? 1.0f : clamp01(sinceEnter_ / story::kFade);
-        const float out = closing_ ? 1.0f - clamp01(closeT_ / (quickClose_ ? kQuickFade : story::kFade)) : 1.0f;
+        const float out = closing_ ? 1.0f - clamp01(closeT_ / fadeOut()) : 1.0f;
         const float alpha = std::min(in, out);
         // Faded in and out over the screen below: drawn on a target, then shown with its alpha.
         bool onTarget = false;
@@ -262,6 +286,8 @@ public:
         drawStory();
         if (onTarget) {
             r.setTarget(nullptr);
+            // 2.68: a film rises from black (the screen below shows only as it fades out at its end).
+            if (film_ && !closing_) r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{0, 0, 0, 255});
             r.drawTexture(*target_, nullptr, {0, 0, ui.screenW(), ui.screenH()}, Color::white().withAlphaF(alpha));
         }
     }
@@ -311,6 +337,9 @@ private:
         return true;
     }
 
+    /// The fade at its end: quick when left by an input in attract mode, slow at a film's end.
+    float fadeOut() const { return quickClose_ ? kQuickFade : film_ && ended_ ? kFilmFade : story::kFade; }
+
     void finish() {
         if (done_) return;
         done_ = true;
@@ -332,7 +361,7 @@ private:
         const float band = std::round(H * 0.13f);
         const Rect img{0, band, W, H - 2.0f * band};
         r.pushClip(img);
-        const bool title = t_ >= titleStart_;
+        const bool title = !film_ && t_ >= titleStart_;  // a film has no title card: its last shot stays
         if (!title) {
             const int cur = currentShot();
             const float a = cur > 0 ? smooth((t_ - shots_[static_cast<size_t>(cur)].start) / crossFade()) : 1.0f;
@@ -345,6 +374,7 @@ private:
             else drawTitle(img, a);
         }
         if (trailer_ && !title) drawTrailerTitle(currentShot(), img);
+        if (film_) drawFilmTitle(currentShot(), img);
         if (attract_) {  // between two passes: through black
             const float through = std::min(clamp01(t_ / story::kFade), clamp01((total_ - t_) / story::kFade));
             if (passes_ > 0 || t_ > story::kFade) r.fillRect(img, Color{0, 0, 0, 255}.withAlphaF(1.0f - through));
@@ -364,10 +394,10 @@ private:
         // The bottom band: progress bar on its top, the line of narration, « Passer » at the right
         // (the line keeps to the room left of the measured hint: layoutStoryNarration).
         const int cur = currentShot();
-        const StoryNarrationLayout lay = layoutStoryNarration(ui, title ? std::string() : shots_[static_cast<size_t>(cur)].shown);
+        const StoryNarrationLayout lay = layoutStoryNarration(ui, title ? std::string() : shots_[static_cast<size_t>(cur)].shown, !locked_);
         drawProgress(lay.bar);
         if (!title) drawNarration(cur, lay, img);
-        drawSkipHint({lay.hint.right(), lay.hint.center().y});
+        if (!locked_) drawSkipHint({lay.hint.right(), lay.hint.center().y});  // a first viewing: no hint at all
     }
 
     /// The painting of shot `i` covering `img`, zooming slowly towards its focus, its particles over it.
@@ -703,6 +733,56 @@ private:
         ui.text().draw(sub, {cx, y + titlePx + gap}, ss);
     }
 
+    /// 2.68, a film: the title of shot `i` showing now (the latest begun of those whose time it is,
+    /// its times stretched with the scene), large in the picture where it says, fitted to its width,
+    /// its subtitle under it; it pops in and fades out. One at a time: two never overlap.
+    void drawFilmTitle(int i, const Rect& img) {
+        if (i < 0 || i >= static_cast<int>(shots_.size())) return;
+        const Shot& s = shots_[static_cast<size_t>(i)];
+        const float tau = (t_ - s.start) * s.stageScale;  // seconds of the shot as written
+        const StoryTitle* ti = nullptr;
+        for (const StoryTitle& x : s.data->titles)
+            if (tau >= x.t && tau <= x.to && (!ti || x.t >= ti->t)) ti = &x;
+        if (!ti) return;
+        UIContext& ui = g_.ui;
+        const float in = smooth((tau - ti->t) / 0.35f);
+        const float a = in * clamp01((ti->to - tau) / 0.35f) * clamp01((s.start + s.dur - t_) / 0.2f);
+        if (a <= 0.003f) return;
+        const std::string text = i18n::tr(ti->text);
+        const std::string sub = ti->subtitle.empty() ? std::string() : i18n::tr(ti->subtitle);
+        i18n::Verbatim asShown;  // both already translated
+        const float maxW = img.w * ti->width;
+        const float pop = 1.0f + 0.1f * (1.0f - in);
+        const float titlePx = ui.s(ui.fitFont(text, FontFace::Title, ti->size, maxW / pop, 0.2f)) * pop;
+        const float subPx = sub.empty() ? 0.0f : ui.s(ui.fitFont(sub, FontFace::Body, std::max(18.0f, ti->size * 0.4f), maxW, 0.35f));
+        const float gap = sub.empty() ? 0.0f : ui.s(12);
+        const float blockH = titlePx + gap + subPx * 1.2f;
+        float y = img.y + img.h * ti->pos.y - blockH * 0.5f;
+        y = std::clamp(y, img.y + ui.s(10), std::max(img.y + ui.s(10), img.bottom() - blockH - ui.s(10)));
+        float cx = img.x + img.w * ti->pos.x;  // kept inside the picture, its whole width
+        cx = std::clamp(cx, img.x + maxW * 0.5f, std::max(img.x + maxW * 0.5f, img.right() - maxW * 0.5f));
+        TextStyle st;
+        st.face = FontFace::Title;
+        st.size = titlePx;
+        st.color = Color::white().withAlphaF(a);
+        st.align = Align::Center;
+        st.shadow = true;
+        st.shadowOffset = ui.s(3);
+        st.shadowColor = Color{0, 0, 0, static_cast<uint8_t>(210.0f * a)};
+        st.glow = ui.s(20);
+        st.glowColor = ti->color.withAlphaF(0.6f * a);
+        ui.text().draw(text, {cx, y}, st);
+        if (sub.empty()) return;
+        TextStyle ss;
+        ss.face = FontFace::Body;
+        ss.size = subPx;
+        ss.color = Color::lerp(ti->color, Color::white(), 0.6f).withAlphaF(a * smooth((tau - ti->t - 0.25f) / 0.35f));
+        ss.align = Align::Center;
+        ss.shadow = true;
+        ss.shadowColor = Color{0, 0, 0, static_cast<uint8_t>(200.0f * a)};
+        ui.text().draw(sub, {cx, y + titlePx + gap}, ss);
+    }
+
     /// 2.63, the trailer's last card: the game's name, its line under it, stars and embers.
     void drawTrailerCard(const Rect& img, float alpha) {
         UIContext& ui = g_.ui;
@@ -861,7 +941,8 @@ private:
     /// The story's progress: one segment per shot, one for the title card.
     void drawProgress(const Rect& bar) {
         Renderer& r = g_.ui.r();
-        const int n = static_cast<int>(shots_.size()) + 1;
+        const int n = static_cast<int>(shots_.size()) + (film_ ? 0 : 1);  // a film has no title card
+        if (n <= 0) return;
         const float gap = std::max(3.0f, g_.ui.s(6));
         const float w = (bar.w - gap * static_cast<float>(n - 1)) / static_cast<float>(n);
         for (int k = 0; k < n; ++k) {
@@ -905,6 +986,7 @@ private:
         group(SDL_SCANCODE_ESCAPE, SDL_GAMEPAD_BUTTON_EAST, m.quitKeyW, "Quitter", hover ? Color{255, 255, 255, 255} : Color{200, 208, 224, 255});
     }
 
+    std::shared_ptr<const BossStory> keep_;  // 2.68: a film's story, owned by its scene
     GameServices& g_;
     const BossStory& story_;
     const EnemyDefinition* def_ = nullptr;
@@ -927,6 +1009,12 @@ private:
     bool trailer_ = false;      // 2.63: the game's trailer (its titles, its last card)
     bool attract_ = false;      // 2.63: the main menu's attract mode (loops, any input leaves)
     bool quickClose_ = false;   // left by an input in attract mode
+    bool film_ = false;         // 2.68: a mini-film (its titles, no title card, its music, from black)
+    bool locked_ = false;       // 2.68: a film's first viewing: nothing skips it
+    bool ended_ = false;        // 2.68: played to its end
+    std::function<void()> onEnd_;
+    std::string prevMusic_;     // 2.68: the music before the film (played again after it)
+    static constexpr float kFilmFade = 0.9f;  // 2.68: a film's end fades slowly to the screen below
     int passes_ = 0;
     uint64_t activity_ = 0;
     static constexpr float kQuickFade = 0.2f;
@@ -972,7 +1060,7 @@ Rect storySpriteFrame(const AnimationSet& set, const AnimationClip* clip, float 
     return c ? set.frameRect(*c, c->frameCount() - 1) : Rect{};
 }
 
-StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& shown) {
+StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& shown, bool skipHint) {
     StoryNarrationLayout lay;
     const float W = ui.screenW(), H = ui.screenH();
     const float band = std::round(H * 0.13f);
@@ -980,9 +1068,10 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
     const float bandTop = H - band;
     lay.bar = {margin, bandTop + std::max(6.0f, ui.s(14)), W - 2.0f * margin, std::max(2.0f, ui.s(4))};
     const float below = lay.bar.bottom();
-    const float hintW = skipHintMetrics(ui).total;
+    const float hintW = skipHint ? skipHintMetrics(ui).total : 0.0f;
     lay.hint = {W - margin - hintW, below, hintW, H - below};
-    lay.area = {margin, below + std::max(4.0f, ui.s(8)), lay.hint.x - std::max(16.0f, ui.s(36)) - margin, H - below - std::max(8.0f, ui.s(16))};
+    const float room = skipHint ? lay.hint.x - std::max(16.0f, ui.s(36)) : W - margin;  // without a hint: the band's whole width
+    lay.area = {margin, below + std::max(4.0f, ui.s(8)), room - margin, H - below - std::max(8.0f, ui.s(16))};
     if (shown.empty() || lay.area.w <= 0.0f) return lay;
     i18n::Verbatim asShown;  // `shown` is the line as displayed (already translated)
     TextRenderer& tr = ui.text();
@@ -1011,6 +1100,16 @@ StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& show
 std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSeconds) {
     if (!g.trailer || g.trailer->shots.empty()) return nullptr;
     return std::make_unique<BossStoryScene>(g, *g.trailer, -1, std::isfinite(atSeconds) ? atSeconds : -1.0f, attract);
+}
+
+std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd, float atSeconds) {
+    if (!film || film->shots.empty()) return nullptr;
+    return std::make_unique<BossStoryScene>(g, std::move(film), locked, std::move(onEnd), std::isfinite(atSeconds) ? atSeconds : -1.0f);
+}
+
+bool filmLocked(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t && t->locked();
 }
 
 int storyShot(const Scene* s) {
