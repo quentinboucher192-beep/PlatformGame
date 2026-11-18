@@ -8,6 +8,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/core/Math.h"
@@ -34,6 +35,9 @@ public:
     /// titan's map places its badges from them. False when the part was not drawn.
     Rect bounds() const { return figure_; }
     bool anchorOf(const std::string& part, Vec2& out) const;
+    /// 2.72: what the tooltip of an openable part says activating it does (the raid sheets open the
+    /// sheet of its gigaboss; by default, the map of its branch).
+    void setOpenHint(std::string hint) { openHint_ = std::move(hint); }
 
 private:
     Rect figure_;
@@ -43,6 +47,7 @@ private:
     bool tipOpens_ = false;
     Rect tipFigure_;
     Vec2 tipAnchor_;
+    std::string openHint_ = "Clic ou validation : carte de la branche";
 };
 
 }  // namespace cosmic

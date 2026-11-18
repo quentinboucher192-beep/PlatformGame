@@ -370,7 +370,7 @@ private:
             const Rect snap{q.at.x - gulpW_ * 0.5f, q.at.y - gulpH_, gulpW_, gulpH_ + 8.0f};
             w.particles().emit("acid_burst", {q.at.x, q.at.y - 20.0f}, 1.6f);
             w.shake(0.3f);
-            const size_t most = play.size() >= 6 ? 3 : 2;
+            const size_t most = static_cast<int>(play.size()) >= tunables::kGulpTwoFrom ? tunables::kGulpMany + 1 : tunables::kGulpMany;
             for (int seat : playing(w)) {
                 if (isHeld(seat) || !snap.intersects(w.playerAt(seat).box) || held_.size() >= most) continue;
                 // Never the last players outside: at least one stays to burst its stomach.
@@ -391,7 +391,7 @@ private:
         for (int s : play)
             if (!isHeld(s)) free.push_back(s);
         if (free.size() < 2) return;  // never the last one outside
-        const int n = std::min<int>(play.size() >= 6 ? 2 : 1, static_cast<int>(free.size()) - 1);
+        const int n = std::min<int>(static_cast<int>(play.size()) >= tunables::kGulpTwoFrom ? tunables::kGulpMany : 1, static_cast<int>(free.size()) - 1);
         for (int k = 0; k < n; ++k) {
             const int seat = free[static_cast<size_t>(rot_ + k) % free.size()];
             gulps_.push_back({seat, w.playerAt(seat).feet(), steps(gulpTrack_), steps(gulpLock_)});

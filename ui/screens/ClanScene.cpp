@@ -159,6 +159,10 @@ public:
         } else if (!wantedTag_.empty()) {
             resolveTag();
         }
+        if (g_.onlineOpen == "raids") {  // 2.72, automated screenshots (--clans --online-open raids): the RAIDS tab
+            tab_ = kTabRaids;
+            g_.onlineOpen.clear();
+        }
         reloadAll();
     }
 

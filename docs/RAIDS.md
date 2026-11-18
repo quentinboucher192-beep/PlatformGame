@@ -1,6 +1,6 @@
 # Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6) ;
 # phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12) ; phase 4B : VOIDWORM, GRAVITON, TITANUS (2.69, §13) ;
-# phase 5 : les événements mondiaux (2.69, §14)
+# phase 5 : les événements mondiaux (2.69, §14) ; les fiches d'Asterion et des Gigaboss (2.72, §15)
 
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
@@ -549,3 +549,40 @@ publication exige une carte valide. Chaque action va au Journal (`admin_raid_sus
 Migration **0147_raid_world.sql** : `raid_events.suspended_at / suspended_reason / late_minutes / catchup_of / map_check`,
 `raid_instances.reconnects` (+ déclencheur), `raid_world_journal`, `raid_event_results` (+ déclencheur de gel),
 `raid_clan_titles`.
+
+## 15. Fiches d'Asterion et de ses Gigaboss (2.72)
+
+`ui/screens/RaidSheetsScene` (modèle pur `game/raid/RaidSheets`, testé par `tests/test_raid_sheets.cpp`) : la fiche
+d'Asterion et celle de chacun des sept Gigaboss, **visibles par tous**, même sans les avoir jamais rencontrés (aucun
+verrou, aucun « ??? »), et hors ligne : ce sont les données du jeu.
+
+* **Accès** : CLANS › RAIDS › « Fiches d'Asterion » (au-dessus du titan de la carte de l'événement, et sous le message
+  quand l'onglet n'est pas chargé), la fiche d'un événement › « Fiches », l'antre de chaque carte de branche › « Fiche
+  de … ». Pastilles « NOUVEAU » : `raids.sheets` et `raids.sheet.<id>` (`data/news/new_features.json`). Clavier,
+  manette et souris (liste des fiches, parties du titan, onglets, attaques, boutons).
+* **Asterion** : le titan en calques (`AsterionFigure` ; une partie survolée ou sélectionnée montre son infobulle,
+  activée ouvre la fiche de son Gigaboss), son histoire, la structure du raid (branches, zones, antres, joueurs par
+  instance, durée estimée d'une branche : catalogues des branches), son **cœur** (ce qui en est connu :
+  `asterion.heart`), les sept parties (Gigaboss, effet de leur destruction de `data/raids/asterion.json`, liens du
+  titan de `titan.json`) et les récompenses (badges : succès « raid_reward » ; titres et combinaisons : cosmétiques
+  « raid »: "asterion").
+* **Chaque Gigaboss**, en trois onglets : « Combat » (sa description, ses phases avec leurs attaques et leurs
+  mécanismes, son dernier souffle, puis la liste dépliable : chaque mécanisme de sa routine avec un schéma animé aux
+  sprites du combat — `ui/screens/RaidSheetSketch`, planche d'effets `fx` de ses règles —, chaque attaque de sa
+  définition avec son exemple joué par le moteur — `BossAttackPreview`, la même liste que Statistiques des boss ›
+  Fiche, `ui/widgets/BossSheetWidgets` — et « Comment l'éviter »), « Mécanismes » (ce que le groupe fait ensemble :
+  combien de joueurs, combien de temps, la table par nombre de joueurs en jeu quand les règles en ont une ; points
+  faibles ; sa force selon le groupe ; ce qui compte dans les contributions), « Lieu et récompenses » (branche,
+  expédition, antre, objectif, sa chute et ce qu'elle fait à Asterion, liens du titan, badge).
+* **Pas de nombre inventé** : `data/raids/asterion_sheets.json` ne contient que les mots ; chaque nombre est un
+  emplacement (`{0}`…) rempli depuis les règles de l'antre (`metadata.raid.gigaboss` de la zone 8, celles que lisent
+  les routines), ou depuis les constantes des routines nommées dans `game/raid/GigabossTunables.h` (`slack`,
+  `plateSlack`, griffe clouante, gueule de Voidworm : mêmes valeurs, aucune règle changée). Les phases d'un mécanisme
+  se lisent aussi dans les règles (`range:carapace`, `from:pin.from`, `nonzero:swallow.periods`…). Le test vérifie
+  que tout se résout, que chaque phase a ses attaques et mécanismes, que chaque type d'attaque dit comment l'éviter et
+  que les panneaux fixes tiennent leurs textes à 1280 × 720 et 1920 × 1080, en français et en anglais.
+* **Ajouter une fiche par les données** (le cœur, phase 6) : une entrée de `gigaboss` avec sa partie (`"part":
+  "coeur"`), son ennemi (`enemy`) et son antre (`lair`: `{"part": <dossier de branche>, "zone": <zone>}`) ; la fiche
+  d'Asterion propose alors « Sa fiche » sur le cœur, et sa partie s'ouvre depuis le titan.
+* **Capture sur demande** : `CosmicPlatformer --headless --raid-sheets <fiche>[:<onglet 0-2>][:attaque=<id>|:attaque=m:<mécanisme>]`
+  (au-dessus du menu, l'attaque dépliée avec son exemple) ; `--clans --online-open raids` ouvre l'onglet RAIDS.

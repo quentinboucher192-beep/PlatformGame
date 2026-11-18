@@ -75,11 +75,17 @@ public:
         const Rect left{m, ui.s(24), aside.x - ui.s(18) - m, H - ui.s(48) - ui.s(30)};
         const float bw = textW(ui, "Retour", 16, FontFace::Bold) + ui.s(40);
         if (ui.button("back", {left.x, left.y, bw, ui.s(44)}, "Retour")) back = true;
+        // 2.72: the sheets of Asterion and its gigaboss (the game's own data: offline too).
+        const float sw = textW(ui, "Fiches", 16, FontFace::Bold) + ui.s(40);
+        const Rect sheets{left.x + bw + ui.s(10), left.y, sw, ui.s(44)};
+        if (ui.button("sheets", sheets, "Fiches")) g_.app.pushScene(makeRaidSheets(g_));
+        ui.newBadge("sheets", sheets, "raids.sheets", true, true);  // « NOUVEAU »
+        const float head = sheets.right() - left.x;
         if (!loaded_) {
-            fit(ui, error_.empty() ? "Chargement de l'événement…" : error_, {left.x + bw + ui.s(20), left.y + ui.s(22)}, 17, left.right() - left.x - bw - ui.s(20),
+            fit(ui, error_.empty() ? "Chargement de l'événement…" : error_, {left.x + head + ui.s(20), left.y + ui.s(22)}, 17, left.right() - left.x - head - ui.s(20),
                 error_.empty() ? ui.theme().textDim : ui.theme().danger);
         } else {
-            drawLeft(left, left.x + bw + ui.s(14));
+            drawLeft(left, left.x + head + ui.s(14));
             drawAside(aside);
         }
         drawStatus();

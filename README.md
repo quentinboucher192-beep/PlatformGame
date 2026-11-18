@@ -206,6 +206,18 @@ atteindre la lumière de son cœur, avant qu'il ne s'affole.
 <p align="center"><img src="docs/media/gigaboss_heartbreaker.gif" width="640" alt="Heartbreaker dans ses trois phases et l'onde de ses battements"></p>
 <p align="center"><sub>Les trois phases de chaque Gigaboss avec les sprites du jeu (générés par <code>tools/assetgen</code>).</sub></p>
 
+**Les fiches d'Asterion et de ses sept Gigaboss** (2.72) s'ouvrent pour tous, même sans les avoir jamais affrontés et
+même hors ligne : CLANS › RAIDS › « Fiches d'Asterion », la fiche d'un événement › « Fiches », et l'antre de chaque
+carte de branche › « Fiche de … ». La fiche d'**Asterion** montre le titan partie par partie (une partie activée ouvre
+la fiche de son Gigaboss), son histoire, la structure du raid, ce que la destruction de chaque partie lui retire, son
+**cœur cosmique** et toutes les récompenses. La fiche de chaque **Gigaboss** : son sprite dans ses trois phases, sa
+difficulté, ses phases, chaque attaque et chaque mécanisme **dépliable avec un exemple animé** (ses attaques jouées
+par le moteur du jeu, comme les fiches des boss ; ses mécanismes dessinés avec les sprites du combat) et la façon de
+l'éviter, ce que le groupe doit faire **ensemble** (combien de joueurs, combien de temps), ses points faibles, les
+contributions qui comptent, sa branche, son antre et son badge. Les nombres viennent des règles que lisent les combats
+eux-mêmes (`data/raids/asterion_sheets.json` ne contient que les mots) : détails dans
+[docs/RAIDS.md §15](docs/RAIDS.md#15-fiches-dasterion-et-de-ses-gigaboss-272).
+
 ## Cosmic Online
 
 Facultatif, et jamais nécessaire pour jouer : un **globe 3D** interactif (rotation à la souris ou au
@@ -480,6 +492,19 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.72.0** :
+* **Raids de clan : les fiches d'Asterion et de ses sept Gigaboss** (`ui/screens/RaidSheetsScene`, modèle
+  `game/raid/RaidSheets`, mots dans `data/raids/asterion_sheets.json`), visibles même sans les avoir rencontrés, depuis
+  CLANS › RAIDS, la fiche d'un événement et l'antre de chaque carte de branche (pastilles « NOUVEAU ») : le titan partie
+  par partie (`AsterionFigure`, une partie ouvre la fiche de son Gigaboss), son cœur (ce qui en est connu, une fiche
+  ajoutée par les données quand son combat existera), les sept parties et leurs effets, la structure du raid, les
+  récompenses ; pour chaque Gigaboss, son sprite par phase, sa difficulté, ses phases, ses attaques et mécanismes
+  dépliables avec un exemple animé (moteur du jeu ou schéma aux sprites du combat, `RaidSheetSketch`) et « Comment
+  l'éviter », ses mécanismes collectifs, points faibles, contributions, branche, antre et badge. Chaque nombre est lu
+  dans les règles de son antre (celles des routines) ou dans `game/raid/GigabossTunables.h` (constantes des routines
+  nommées une fois, sans changement de règle) ; la liste d'attaques dépliables est partagée avec Statistiques des boss ›
+  Fiche (`ui/widgets/BossSheetWidgets`). Tests : `tests/test_raid_sheets.cpp`.
 
 **Nouveau dans la version 2.71.0** :
 * **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans

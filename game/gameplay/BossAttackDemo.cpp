@@ -19,15 +19,24 @@ namespace {
 
 constexpr float kDt = 1.0f / 120.0f;
 
+/// The size of the neutral arena for `d`: the enemy editor's test arena (960 × 400); 2.72, taller
+/// and wider for a giant (a gigaboss of the raids, up to 420 px high, shown on the raid sheets): its
+/// whole body above the floor, room around it for Nova.
+Vec2 neutralArenaSize(const EnemyDefinition& d) {
+    if (d.size.y <= 200.0f) return {960.0f, 400.0f};
+    return {std::ceil(std::max(960.0f, d.size.x * 5.0f) / 32.0f) * 32.0f, std::ceil((d.size.y + 300.0f) / 32.0f) * 32.0f};
+}
+
 /// A neutral arena (a boss of the enemy editor or of a package, in no level of the game): the
-/// test arena of the enemy editor.
-LevelData neutralArena() {
+/// test arena of the enemy editor, `size` wide and high (its floor 80 px thick).
+LevelData neutralArena(Vec2 size) {
     LevelData l = LevelData::makeEmpty("boss_attack_demo", "Arène neutre", "sylvanox");
     l.objects.clear();
     l.intro.steps.clear();
     l.outro.steps.clear();
     l.events.clear();
-    l.bounds = {0, 0, 960, 400};
+    l.bounds = {0, 0, size.x, size.y};
+    const float floor = size.y - 80.0f;
     l.timerMode = TimerMode::Unlimited;
     auto add = [&](const char* type, Rect r, Json props) {
         LevelObject o;
@@ -38,13 +47,13 @@ LevelData neutralArena() {
         o.props = std::move(props);
         l.objects.push_back(o);
     };
-    add("solid", {0, 320, 960, 80}, {{"material", "ruin_stone"}});
-    add("solid", {0, 0, 32, 320}, {{"material", "ancient_metal"}});
-    add("solid", {928, 0, 32, 320}, {{"material", "ancient_metal"}});
-    add("oneway", {240, 256, 96, 16}, {{"style", "tech_ledge"}});
-    add("oneway", {620, 256, 96, 16}, {{"style", "tech_ledge"}});
-    add("player_start", {155, 298, 10, 22}, Json::object());
-    add("light", {472, 200, 16, 16}, {{"color", "#39f0d8"}, {"radius", 260}});
+    add("solid", {0, floor, size.x, 80}, {{"material", "ruin_stone"}});
+    add("solid", {0, 0, 32, floor}, {{"material", "ancient_metal"}});
+    add("solid", {size.x - 32, 0, 32, floor}, {{"material", "ancient_metal"}});
+    add("oneway", {240, floor - 64, 96, 16}, {{"style", "tech_ledge"}});
+    add("oneway", {size.x - 340, floor - 64, 96, 16}, {{"style", "tech_ledge"}});
+    add("player_start", {155, floor - 22, 10, 22}, Json::object());
+    add("light", {size.x * 0.5f - 8, floor - 120, 16, 16}, {{"color", "#39f0d8"}, {"radius", 260}});
     l.ambientLight = {215, 220, 235, 255};
     return l;
 }
@@ -176,7 +185,7 @@ bool BossAttackDemo::setup(std::shared_ptr<ContentDatabase> content, ResourceMan
         w.seedGameplay(levelSeed(l.id));
     } else {
         neutralDef_ = std::make_unique<EnemyDefinition>(restricted);
-        if (!w.load(neutralArena())) return fail("L'arène neutre ne peut pas être chargée.");
+        if (!w.load(neutralArena(neutralArenaSize(restricted)))) return fail("L'arène neutre ne peut pas être chargée.");
         w.seedGameplay(levelSeed("boss_attack_demo"));
     }
     return true;
@@ -229,9 +238,9 @@ bool BossAttackDemo::arrange() {
     } else {
         w.setTraining(true);
         w.setInvincible(true);
-        const float floorY = 320.0f;
-        const float bx = 640.0f;
-        Enemy* b = w.spawnEnemy(*neutralDef_, {bx, neutralDef_->flying ? 250.0f : floorY}, true, "", 120.0f);
+        const float floorY = w.level().bounds.h - 80.0f;  // 320 in the editor's arena
+        const float bx = std::round(w.level().bounds.w * 2.0f / 3.0f);  // 640 there
+        Enemy* b = w.spawnEnemy(*neutralDef_, {bx, neutralDef_->flying ? floorY - 70.0f : floorY}, true, "", 120.0f);
         if (!b) return fail("Le boss ne peut pas être placé dans l'arène.");
         bossUid_ = b->uid();
         arena_ = w.level().bounds;

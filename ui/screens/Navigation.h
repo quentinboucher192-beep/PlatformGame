@@ -261,6 +261,10 @@ std::unique_ptr<Scene> makeRaidResults(GameServices& g, const std::string& event
 /// every clan, the groups, the players in every category, my clan; validated results only, what
 /// waits for its majority apart; the official result once frozen) and my rewards of it, pushed.
 std::unique_ptr<Scene> makeRaidWorld(GameServices& g, const std::string& eventId);
+/// 2.72: the sheets of Asterion and of its seven gigaboss (CLANS › RAIDS › « Fiches », the sheet of an
+/// event, a lair of a branch map), visible whether they were met or not, pushed. `sheet`: "asterion"
+/// or a gigaboss's (« skullmaw »…); `tab`: the tab shown first.
+std::unique_ptr<Scene> makeRaidSheets(GameServices& g, const std::string& sheet = "asterion", int tab = 0);
 /// The instance a player enters (POST /raids/events/{id}/branches/{part}/join): its event, id, clan,
 /// group and branch (its part).
 struct RaidEntry {
