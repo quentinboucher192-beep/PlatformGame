@@ -112,14 +112,51 @@ export const RAID_REWARDS: Record<string, RaidReward> = {
         why: "Parmi les 3 meilleurs scores de contribution de l'événement, Pyroclast vaincu",
         rank: "performance",
     },
+    // 2.69 (phase 4B): the badge of each gigaboss of the abdomen and the legs (present at its fall).
+    voidworm_badge: {
+        id: "voidworm_badge",
+        name: "Badge « Ventre de Voidworm »",
+        kind: "badge",
+        ref: "communaute_voidworm",
+        why: "Présent à la chute de Voidworm (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
+    graviton_badge: {
+        id: "graviton_badge",
+        name: "Badge « Pied de Graviton »",
+        kind: "badge",
+        ref: "communaute_graviton",
+        why: "Présent à la chute de Graviton (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
+    titanus_badge: {
+        id: "titanus_badge",
+        name: "Badge « Talon de Titanus »",
+        kind: "badge",
+        ref: "communaute_titanus",
+        why: "Présent à la chute de Titanus (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
     // 2.69 (phase 5): the exclusive rewards of the world events and their catch-up sessions (raidWorld.ts).
     ...(WORLD_REWARDS as Record<string, RaidReward>),
+};
+/** 2.69 (phase 4B): the badge of each gigaboss (raid_gigaboss_fights.boss), present at its fall. */
+export const GIGABOSS_BADGES: Record<string, string> = {
+    Pyroclast: "pyroclast_badge",
+    Voidworm: "voidworm_badge",
+    Graviton: "graviton_badge",
+    Titanus: "titanus_badge",
 };
 export const PARTICIPATION_TICKS = 5 * 60 * 120;
 export const PERFORMANCE_SCORE = 1500;
 export const TOP_PLAYERS = 3;
 /** The achievement each badge reward lets the player declare (achievements.ts). */
-export const RAID_ACHIEVEMENTS: Record<string, string> = { communaute_pyroclast: "pyroclast_badge" };
+export const RAID_ACHIEVEMENTS: Record<string, string> = {
+    communaute_pyroclast: "pyroclast_badge",
+    communaute_voidworm: "voidworm_badge",
+    communaute_graviton: "graviton_badge",
+    communaute_titanus: "titanus_badge",
+};
 
 /** The prefix of the challenge_id of a raid's items in player_won_rewards. */
 export const raidSource = (eventId: string) => `raid:${eventId}`;
@@ -152,12 +189,19 @@ export async function grantFor(db: D1Database, eventId: string, players?: string
     const totals = await totalsOf(db, eventId, players);
     const fallen = await db
         .prepare(
-            `SELECT DISTINCT c.player_id, c.instance_id FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id
-             WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4 AND c.player_id IS NOT NULL`,
+            `SELECT DISTINCT c.player_id, c.instance_id, f.boss FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id
+             WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4 AND c.player_id IS NOT NULL ORDER BY c.instance_id`,
         )
         .bind(eventId)
-        .all<{ player_id: string; instance_id: string }>();
-    const atFall = new Map(fallen.results.map((r) => [r.player_id, r.instance_id]));
+        .all<{ player_id: string; instance_id: string; boss: string }>();
+    // 2.69 (phase 4B): the badge of the gigaboss whose fall each player saw (its first instance).
+    const atFall = new Map<string, Map<string, string>>();
+    for (const r of fallen.results) {
+        const badge = GIGABOSS_BADGES[r.boss] ?? "pyroclast_badge";
+        const mine = atFall.get(r.player_id) ?? new Map<string, string>();
+        if (!mine.has(badge)) mine.set(badge, r.instance_id);
+        atFall.set(r.player_id, mine);
+    }
     const stmts: D1PreparedStatement[] = [];
     const grant = (player: string, reward: string, instance: string | null) =>
         stmts.push(
@@ -167,7 +211,7 @@ export async function grantFor(db: D1Database, eventId: string, players?: string
         );
     for (const t of totals) {
         if (t.ticks >= PARTICIPATION_TICKS) grant(t.player_id, "asterion_participation", null);
-        if (atFall.has(t.player_id)) grant(t.player_id, "pyroclast_badge", atFall.get(t.player_id)!);
+        for (const [badge, instance] of atFall.get(t.player_id) ?? []) grant(t.player_id, badge, instance);
         if (scoreOf(t).total >= PERFORMANCE_SCORE) grant(t.player_id, "pyroclast_performance", null);
     }
     if (!stmts.length) return 0;
@@ -182,7 +226,7 @@ export async function grantTop(db: D1Database, eventId: string): Promise<number>
         (
             await db
                 .prepare(
-                    "SELECT DISTINCT c.player_id FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4",
+                    "SELECT DISTINCT c.player_id FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4 AND f.boss = 'Pyroclast'",
                 )
                 .bind(eventId)
                 .all<{ player_id: string }>()
@@ -211,7 +255,7 @@ export async function grantEndedTops(db: D1Database, now: string): Promise<numbe
     try {
         const ended = await db
             .prepare(
-                `SELECT DISTINCT e.id FROM raid_events e JOIN raid_gigaboss_fights f ON f.event_id = e.id AND f.phase = 4
+                `SELECT DISTINCT e.id FROM raid_events e JOIN raid_gigaboss_fights f ON f.event_id = e.id AND f.phase = 4 AND f.boss = 'Pyroclast'
                  WHERE e.ends_at <= ?1 AND e.ends_at > ?2
                    AND NOT EXISTS (SELECT 1 FROM raid_reward_grants g WHERE g.event_id = e.id AND g.reward = 'pyroclast_top')`,
             )
@@ -322,14 +366,23 @@ export async function claim(ctx: Ctx): Promise<Response> {
 
 // ------------------------------------------------------------------ Asterion's body
 
-/** What destroying each part does (data/raids/asterion.json, phase 3: only the right arm). */
+/** What destroying each part does (data/raids/asterion.json; 2.69: the abdomen and the legs too). */
 export const PART_EFFECTS: Record<string, string> = {
     bras_droit: "Plus de pluies de lave : le poing de magma d'Asterion est éteint.",
+    abdomen: "Plus de renforts : les parasites d'Asterion sont chassés.",
+    jambe_gauche: "Plus de pièges de gravité : ses générateurs sont coupés.",
+    jambe_droite: "Ses charges ralentissent : Asterion chancelle.",
 };
 const BRAS_DROIT_ID = "asterion_bras_droit";
 export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }> = {
     main_pyroclast: { part: "bras_droit", boss: "Pyroclast" },
+    abd_voidworm: { part: "abdomen", boss: "Voidworm" }, // 2.69 (phase 4B)
+    jg_graviton: { part: "jambe_gauche", boss: "Graviton" },
+    jd_titanus: { part: "jambe_droite", boss: "Titanus" },
 };
+/** 2.69: the part of the titan a fight's branch is (raid_gigaboss_fights.branch), when its gigaboss is fought. */
+const FOUGHT_PARTS = new Set(Object.values(GIGABOSS_OBJECTIVES).map((g) => g.part));
+const partOfBranch = (branch: string) => (branch.startsWith("asterion_") ? branch.slice("asterion_".length) : branch);
 
 export interface BodyState {
     body: Record<string, string>;
@@ -349,9 +402,9 @@ export async function bodiesOf(db: D1Database, eventIds: string[]): Promise<Map<
     try {
         const [objR, fightR] = await db.batch([
             db.prepare(`SELECT event_id, branch, objective_id, accepted_at FROM raid_branch_objectives WHERE event_id IN (${marks})`).bind(...ids),
-            db.prepare(`SELECT event_id, MAX(phase) AS phase FROM raid_gigaboss_fights WHERE event_id IN (${marks}) GROUP BY event_id`).bind(...ids),
+            db.prepare(`SELECT event_id, branch, MAX(phase) AS phase FROM raid_gigaboss_fights WHERE event_id IN (${marks}) GROUP BY event_id, branch`).bind(...ids),
         ]);
-        const fights = new Map((fightR!.results as { event_id: string; phase: number }[]).map((r) => [r.event_id, r.phase]));
+        const fights = fightR!.results as { event_id: string; branch: string; phase: number }[];
         for (const id of ids) out.set(id, { body: {}, effects: [] });
         for (const r of objR!.results as { event_id: string; branch: string; objective_id: string; accepted_at: string }[]) {
             const s = out.get(r.event_id)!;
@@ -364,10 +417,12 @@ export async function bodiesOf(db: D1Database, eventIds: string[]): Promise<Map<
                 s.body.bras_droit = "attaque";
             }
         }
-        for (const [id, phase] of fights) {
-            const s = out.get(id)!;
-            if (s.body.bras_droit === "detruit") continue;
-            s.body.bras_droit = phase >= 2 ? "affaibli" : "attaque";
+        // 2.69 (phase 4B): each fought part, by its own fights (the Bras droit, the Abdomen, the legs).
+        for (const f of fights) {
+            const s = out.get(f.event_id)!;
+            const part = partOfBranch(f.branch);
+            if (!FOUGHT_PARTS.has(part) || s.body[part] === "detruit") continue;
+            s.body[part] = f.phase >= 2 ? "affaibli" : "attaque";
         }
     } catch {
         /* before migration 0142 / 0143 */
@@ -464,9 +519,11 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
         server_time: now,
         event: { id: eventRow.id, state, final: state === "termine" },
         gigaboss: {
-            boss: "Pyroclast",
+            boss: fights.find((f) => f.phase === 4)?.boss ?? "Pyroclast",
             defeated: fights.some((f) => f.phase === 4),
-            fights: fights.map((f) => ({ group: `[${f.tag}]·${f.group_no}`, phase: f.phase, defeated_at: f.defeated_at })),
+            // 2.69 (phase 4B): several gigaboss: each fight names its own, the fallen ones listed once.
+            defeated_bosses: [...new Set(fights.filter((f) => f.phase === 4).map((f) => f.boss))],
+            fights: fights.map((f) => ({ boss: f.boss, group: `[${f.tag}]·${f.group_no}`, phase: f.phase, defeated_at: f.defeated_at })),
         },
         clans: [...clans.entries()]
             .map(([id, c]) => ({ id, ...c }))

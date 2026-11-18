@@ -117,7 +117,7 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
         const r = await join(a.players[0]!, ev, "crane");
         expect(r.status, JSON.stringify(r.body)).toBe(200);
         expect(r.body.data.instance.level).toBe("raid:asterion_crane");
-        expect(r.body.data.instance.hash).toBe(`1.${TITAN.revision}`);
+        expect(r.body.data.instance.hash).toBe(`${catalogByPart("crane")!.revision}.${TITAN.revision}`);
         const inst = r.body.data.instance.id as string;
         for (const p of a.players.slice(1)) expect((await join(p, ev, "crane")).body.data.instance.id).toBe(inst);
         await playing(inst, a.players);

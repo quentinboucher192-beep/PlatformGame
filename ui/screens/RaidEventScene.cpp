@@ -227,7 +227,7 @@ private:
                 }
                 ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
             }
-            std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit."
+            std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune."
                                        : "Le raid est terminé : ses résultats validés et vos récompenses.";
             if (running && e.suspended)
                 text = "Événement suspendu par les administrateurs" + (e.suspendedReason.empty() ? std::string() : " (" + e.suspendedReason + ")") +
