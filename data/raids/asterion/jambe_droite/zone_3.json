@@ -1,0 +1,969 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_jd_3",
+ "name": "Asterion · Jambe droite · Fémur fendu",
+ "description": "Le fémur fendu : la lave affleure dans ses fissures et l'onde sismique de Titanus y frappe. Un réacteur tourne au fond.",
+ "planet": "pyralis",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyralis_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2304,
+  768
+ ],
+ "ambientLight": "#9a6a5a",
+ "backgroundColor": "#14090b",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#ff8a3d"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    576.0,
+    256.0,
+    192.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Hanche de fer",
+    "auto": true
+   }
+  },
+  {
+   "id": "o3",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o5",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    554.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o6",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    576.0,
+    736.0,
+    192.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "magma_flow",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    256.0,
+    544.0,
+    736.0,
+    32.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "active": false,
+    "bounce": true,
+    "style": "embers"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    304.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    416.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o9",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    528.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o11",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    752.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    503.0,
+    564.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o14",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    727.0,
+    420.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "bomber",
+    "faceLeft": false,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    800.0,
+    416.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    896.0,
+    368.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "secret_area",
+   "layer": "gameplay",
+   "rect": [
+    864.0,
+    240.0,
+    256.0,
+    160.0
+   ],
+   "props": {
+    "message": "Une forge cachée dans l'os : la Forge oubliée !"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    932.0,
+    344.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Forge oubliée",
+    "auto": true
+   }
+  },
+  {
+   "id": "o19",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    936.0,
+    328.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o20",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    912.0,
+    304.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o21",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1040.0,
+    608.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -80,
+    "speed": 34,
+    "wait": 0.8,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o22",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1152.0,
+    608.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -80,
+    "speed": 34,
+    "wait": 0.8,
+    "phase": 0.3333333333333333,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o23",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    576.0,
+    480.0,
+    192.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o25",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1524.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Réacteur ouest : coupez-le avec un pouvoir de tir.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o26",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1592.0,
+    520.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff8a3d",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o27",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    1431.0,
+    564.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "lava_stalker",
+    "faceLeft": true,
+    "patrol": 96,
+    "dormant": false,
+    "boss": false
+   }
+  },
+  {
+   "id": "o28",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1760.0,
+    576.0,
+    544.0,
+    192.0
+   ],
+   "props": {
+    "material": "forge_metal"
+   }
+  },
+  {
+   "id": "o29",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2228.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Mollet blindé",
+    "auto": true
+   }
+  },
+  {
+   "id": "o30",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2232.0,
+    536.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o31",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2208.0,
+    512.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o32",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1952.0,
+    384.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o33",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1824.0,
+    528.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o34",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1808.0,
+    480.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o35",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1840.0,
+    432.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o36",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2228.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Genou-forge",
+    "auto": true
+   }
+  },
+  {
+   "id": "o37",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2232.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o38",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2208.0,
+    320.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o39",
+   "type": "liquid",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    720.0,
+    2304.0,
+    48.0
+   ],
+   "props": {
+    "kind": "lava"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    672.0,
+    1120.0,
+    48.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 2
+   }
+  },
+  {
+   "id": "o41",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    672.0,
+    1120.0,
+    48.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 2
+   }
+  },
+  {
+   "id": "o42",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    672.0,
+    64.0,
+    48.0
+   ],
+   "props": {
+    "effect": "lava_bubbles",
+    "rate": 2
+   }
+  },
+  {
+   "id": "o43",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o44",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o45",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    64.0,
+    352.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_jambe_droite",
+   "zone": 3,
+   "spawns": {
+    "1": [
+     [
+      144,
+      576
+     ]
+    ],
+    "start": [
+     [
+      144,
+      576
+     ],
+     [
+      192,
+      576
+     ]
+    ],
+    "5": [
+     [
+      1024,
+      368
+     ]
+    ],
+    "6": [
+     [
+      2096,
+      576
+     ]
+    ],
+    "4": [
+     [
+      2080,
+      384
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p3_1",
+     "to": 1,
+     "rect": [
+      16,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_5",
+     "to": 5,
+     "rect": [
+      912,
+      304,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_6",
+     "to": 6,
+     "rect": [
+      2208,
+      512,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    },
+    {
+     "id": "p3_4",
+     "to": 4,
+     "rect": [
+      2208,
+      320,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [
+    {
+     "id": "jd_reacteur_ouest",
+     "source": "o24",
+     "trigger": "activate"
+    }
+   ],
+   "magma": {
+    "zone": "magma_flow",
+    "period": 60.0,
+    "first": 30.0,
+    "warn": 3.0,
+    "duration": 6.0,
+    "name": "Onde sismique",
+    "hint": "sautez sur les grilles",
+    "message": "Onde sismique ! Restez sur les grilles hautes"
+   },
+   "sealed": null
+  }
+ },
+ "killY": 752,
+ "maxPowers": 4
+}

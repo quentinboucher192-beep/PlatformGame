@@ -19,6 +19,7 @@
 import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
+import { catalogById, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
@@ -140,10 +141,12 @@ export function decide(values: string[], active: number): string | null {
 
 // ------------------------------------------------------------------ D1
 
-/** The branch's state of an event: the objectives accepted so far (bits of the catalog). */
+/**
+ * The branch's state of an event: the objectives accepted so far (bits of the catalog) and, 2.68,
+ * the links of the titan on (bits 24 and up: raidMap.ts), for any of the seven branches.
+ */
 export async function branchMaskOf(db: D1Database, eventId: string, branch: string): Promise<number> {
-    const rows = await db.prepare("SELECT objective_id FROM raid_branch_objectives WHERE event_id = ?1 AND branch = ?2").bind(eventId, branch).all<{ objective_id: string }>();
-    return maskOf(rows.results.map((r) => r.objective_id));
+    return stateMaskOf(db, eventId, branch);
 }
 
 interface EventRow {
@@ -254,7 +257,7 @@ export async function joinInstance(ctx: Ctx): Promise<Response> {
     await ask(ctx.env, inst.id, "/create", {
         id: inst.id,
         host: me,
-        level: { source: "raid", id: BRANCH_LEVEL, hash: String(BRANCH.revision), title: "Asterion · " + BRANCH.name },
+        level: { source: "raid", id: BRANCH_LEVEL, hash: levelHashOf(BRANCH as unknown as Catalog), title: "Asterion · " + BRANCH.name },
         raid: { instance_id: inst.id, event_id: e.id, branch: BRANCH.id, revision: BRANCH.revision },
     });
     const tag = await db.prepare("SELECT tag FROM clans WHERE id = ?1").bind(inst.clan_id).first<{ tag: string }>();
@@ -326,19 +329,22 @@ export async function report(ctx: Ctx): Promise<Response> {
         return reject("le raid n'est pas en cours");
     const started = inst.started_at ? Date.parse(inst.started_at) : NaN;
     if (!Number.isFinite(started) || tick > Math.ceil(((Date.parse(now) - started) / 1000) * 120) + TICK_SLACK) return reject("pas impossible depuis le début de l'instance");
+    // 2.68: the instance's branch (any of the seven) and its state with the titan's links.
+    const cat = catalogById(inst.branch) ?? (BRANCH as unknown as Catalog);
+    if (zone > cat.zones.length) return reject("zone inconnue");
     const mask = await branchMaskOf(db, e.id, inst.branch);
     let obj: BranchObjective | undefined;
     if (kind === "objective") {
-        obj = objectiveOf(objective!);
+        obj = objectiveIn(cat, objective!);
         if (!obj) return reject("objectif inconnu");
         if (obj.zone !== zone) return reject("objectif d'une autre zone");
     }
-    if (!reachable(mask)[zone]) {
+    if (!reachableIn(cat, mask)[zone]) {
         // An objective of a zone that opened with this instance's own completions: its locks
         // count what the instance itself accepted too (the generators it switched on itself).
         const own = await db.prepare("SELECT report_key FROM raid_accepted WHERE instance_id = ?1 AND report_key LIKE 'o:%'").bind(id).all<{ report_key: string }>();
-        const mine = maskOf(own.results.map((r) => r.report_key.slice(2)));
-        if (!reachable((mask | mine) >>> 0)[zone]) return reject("zone verrouillée pour la branche");
+        const mine = maskOfIds(cat, own.results.map((r) => r.report_key.slice(2)));
+        if (!reachableIn(cat, (mask | mine) >>> 0)[zone]) return reject("zone verrouillée pour la branche");
     }
 
     // The player's report (one per key: a second, different one is refused).
@@ -382,7 +388,7 @@ export async function report(ctx: Ctx): Promise<Response> {
                       .bind(e.id, inst.branch, id)
                       .all<{ objective_id: string }>()
                 : null;
-            if (pairOwn && pairOwn.results.some((r) => r.objective_id !== obj!.id && objectiveOf(r.objective_id)?.pair === obj!.pair)) {
+            if (pairOwn && pairOwn.results.some((r) => r.objective_id !== obj!.id && objectiveIn(cat, r.objective_id)?.pair === obj!.pair)) {
                 for (const r of reports) await journal(db, id, r.player_id, key, r.value, "un autre groupe doit accomplir l'autre objectif de la paire");
                 return json(ctx, { status: "rejected", reason: "un autre groupe doit accomplir l'autre objectif de la paire" });
             }
@@ -391,8 +397,9 @@ export async function report(ctx: Ctx): Promise<Response> {
                 .prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, ?4, ?5)")
                 .bind(e.id, inst.branch, obj.id, id, now)
                 .run();
-            // Every relay of the event gives the new state to its games (a few seconds anyway).
-            const rooms = await db.prepare("SELECT id FROM raid_instances WHERE event_id = ?1 AND branch = ?2 AND players > 0").bind(e.id, inst.branch).all<{ id: string }>();
+            // Every relay of the event gives the new state to its games (a few seconds anyway);
+            // 2.68: those of the other branches too (the titan's links).
+            const rooms = await db.prepare("SELECT id FROM raid_instances WHERE event_id = ?1 AND players > 0").bind(e.id).all<{ id: string }>();
             for (const r of rooms.results) {
                 try {
                     await ask(ctx.env, r.id, "/raid-state");

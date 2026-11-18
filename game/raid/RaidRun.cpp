@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "game/enemies/Enemy.h"
 #include "game/gameplay/entities/Entities.h"
 
 namespace cosmic::raid {
@@ -57,6 +58,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     w->eventObserver = [this](const std::string& src, const std::string& trig) { events_.emplace_back(src, trig); };
     world_ = std::move(w);
     rules_ = rules;
+    if (zid != zone_) lastCheckpoint_.clear();  // 2.68: kept when the same zone starts again
     zone_ = zid;
     from_ = from;
     zoneTicks_ = 0;
@@ -74,10 +76,13 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     }
     // The passages the players stand in now never take them (they must walk into one).
     insidePassage_.assign(rules->passages.size(), 0);
+    coopDone_.assign(rules->coops.size(), 0);
     for (size_t k = 0; k < rules->passages.size(); ++k)
         for (int i = 0; i < world_->teamSize(); ++i)
             if (rules->passages[k].rect.intersects(world_->playerAt(i).box)) insidePassage_[k] |= static_cast<uint8_t>(1u << i);
     applyMask(branchMask_, true);
+    for (const EffectInfo& e : branch_.effects)
+        if (Branch::on(mask(), e) && e.inZone(zid)) applyEffect(e);
     alert("Zone : " + (branch_.zone(zid) ? branch_.zone(zid)->name : std::string("?")), Alert::Kind::Group);
     reports_.push_back({Report::Kind::Zone, {}, zid, tick_, hash()});
 }
@@ -91,8 +96,14 @@ void RaidRun::applyMask(uint32_t mask, bool initial) {
             if (!Branch::done(before, o.index) && Branch::done(now, o.index))
                 alert("BRANCHE · " + o.label.substr(0, o.label.find(" (")) + " : accompli par un autre groupe", Alert::Kind::Branch);
         if (branch_.generators(before) < branch_.generatorsNeeded && branch_.generators(now) >= branch_.generatorsNeeded)
-            alert("BRANCHE · Les deux générateurs tournent : le Poignet-verrou s'ouvre", Alert::Kind::Branch);
-        if (!branch_.shortcut(before) && branch_.shortcut(now)) alert("BRANCHE · Le raccourci Veine ⇄ Avant-bras est ouvert", Alert::Kind::Branch);
+            alert("BRANCHE · " + branch_.lockText("generators").message, Alert::Kind::Branch);
+        if (!branch_.shortcut(before) && branch_.shortcut(now)) alert("BRANCHE · " + branch_.lockText("shortcut").message, Alert::Kind::Branch);
+        // 2.68: what another branch did, at this step on every computer of the instance.
+        for (const EffectInfo& e : branch_.effects) {
+            if (Branch::on(before, e) || !Branch::on(now, e)) continue;
+            alert("TITAN · " + e.label, Alert::Kind::Branch);
+            if (world_ && e.inZone(zone_)) applyEffect(e);
+        }
     }
     // The doors of the passages follow their locks (the same step on every computer).
     if (!world_ || !rules_) return;
@@ -103,8 +114,69 @@ void RaidRun::applyMask(uint32_t mask, bool initial) {
     }
 }
 
+void RaidRun::applyEffect(const EffectInfo& e) {
+    if (e.kind == "disable") {
+        for (const std::string& id : e.objects)
+            if (LevelEntity* x = world_->entity(id)) x->handleAction(*world_, "disable", Json::object());
+    } else if (e.kind == "remove") {
+        // The enemies of these spawn objects (just loaded ones too: still waiting to join the world).
+        for (const std::string& id : e.objects)
+            if (auto* spawn = dynamic_cast<EnemySpawnEntity*>(world_->entity(id)))
+                if (Enemy* enemy = spawn->enemy(*world_); enemy && enemy->alive()) enemy->despawn();
+    } else if (e.kind == "hazard_off" && magmaOn_ && rules_ && rules_->magma.present) {
+        magmaOn_ = false;
+        if (LevelEntity* z = world_->entity(rules_->magma.zone)) z->handleAction(*world_, "disable", Json::object());
+    }
+    // "open": the passages locked "link:<id>" open with their doors (applyMask).
+}
+
+RaidRun::CoopView RaidRun::coop(size_t index) const {
+    CoopView v;
+    if (!world_ || !rules_ || index >= rules_->coops.size()) return v;
+    const CoopPlate& c = rules_->coops[index];
+    int playing = 0;
+    for (int i = 0; i < world_->teamSize(); ++i) {
+        if (world_->member(i).presence != GameWorld::Presence::Playing) continue;
+        ++playing;
+        const Player& pl = world_->playerAt(i);
+        if (pl.alive() && !pl.respawning() && c.rect.intersects(pl.box)) ++v.on;
+    }
+    v.need = std::clamp(c.players, 1, std::max(1, playing));
+    v.done = index < coopDone_.size() && coopDone_[index] != 0;
+    return v;
+}
+
+void RaidRun::updateCoops() {
+    for (size_t k = 0; k < rules_->coops.size(); ++k) {
+        if (coopDone_[k]) continue;
+        const CoopView v = coop(k);
+        if (v.on < v.need) continue;
+        coopDone_[k] = 1;
+        const CoopPlate& c = rules_->coops[k];
+        for (const std::string& t : c.targets)
+            if (LevelEntity* e = world_->entity(t)) e->handleAction(*world_, c.action, Json::object());
+        alert("GROUPE · " + (c.message.empty() ? c.label : c.message), Alert::Kind::Group);
+    }
+}
+
+void RaidRun::reachedCheckpoint(const std::string& id) {
+    if (id == lastCheckpoint_ || std::find(rules_->checkpoints.begin(), rules_->checkpoints.end(), id) == rules_->checkpoints.end()) return;
+    lastCheckpoint_ = id;
+    alert("GROUPE · Point de contrôle : la zone reprendra ici", Alert::Kind::Group);
+    // The players down get up at the checkpoint (half their hearts), all at this step.
+    const auto it = rules_->spawns.find("cp:" + id);
+    if (it == rules_->spawns.end() || it->second.empty()) return;
+    bool up = false;
+    for (int i = 0; i < world_->teamSize(); ++i) {
+        if (world_->member(i).presence != GameWorld::Presence::Down) continue;
+        world_->restoreMember(i, world_->carryOf(i), it->second.front());
+        up = true;
+    }
+    if (up) alert("GROUPE · Les joueurs à terre se relèvent au point de contrôle", Alert::Kind::Group);
+}
+
 float RaidRun::magmaIn() const {
-    if (!rules_ || !rules_->magma.present) return -1.0f;
+    if (!rules_ || !rules_->magma.present || branch_.hazardOff(zone_, mask())) return -1.0f;
     const Magma& m = rules_->magma;
     const float t = static_cast<float>(zoneTicks_) / static_cast<float>(kSimHz);
     if (t < m.first) return m.first - t;
@@ -113,7 +185,7 @@ float RaidRun::magmaIn() const {
 }
 
 void RaidRun::updateMagma() {
-    if (!rules_->magma.present) return;
+    if (!rules_->magma.present || branch_.hazardOff(zone_, mask())) return;  // 2.68: stopped from another branch
     const Magma& m = rules_->magma;
     // Whole steps only (no float drift): on during `duration` from each `first + k × period`.
     const uint32_t first = static_cast<uint32_t>(std::lround(m.first * kSimHz));
@@ -122,7 +194,8 @@ void RaidRun::updateMagma() {
     const uint32_t warn = static_cast<uint32_t>(std::lround(m.warn * kSimHz));
     const bool on = zoneTicks_ >= first && (zoneTicks_ - first) % period < duration;
     const uint32_t next = zoneTicks_ < first ? first : first + ((zoneTicks_ - first) / period + 1) * period;
-    if (next - zoneTicks_ == warn) alert("DANGER · Coulée de magma dans " + std::to_string(static_cast<int>(std::lround(m.warn))) + " s : montez !", Alert::Kind::Danger);
+    if (next - zoneTicks_ == warn)
+        alert("DANGER · " + m.name + " dans " + std::to_string(static_cast<int>(std::lround(m.warn))) + " s : " + m.hint + " !", Alert::Kind::Danger);
     if (on == magmaOn_) return;
     magmaOn_ = on;
     if (LevelEntity* z = world_->entity(m.zone)) z->handleAction(*world_, on ? "enable" : "disable", Json::object());
@@ -160,9 +233,9 @@ void RaidRun::checkPassages() {
         if (taker < 0) continue;
         if (!passageOpen(p)) {
             const ZoneInfo* to = branch_.zone(p.to);
-            world_->hint(std::string("Passage verrouillé vers ") + (to ? to->name : "?") +
-                             (p.lock == "generators" ? " : il faut les deux générateurs." : p.lock == "shortcut" ? " : le levier de l'avant-bras l'ouvre." : "."),
-                         3.0f);
+            const std::string hint = branch_.lockText(p.lock).hint;
+            const std::string name = to ? to->name : "?";
+            world_->hint(hint.empty() ? "Passage verrouillé vers " + name + "." : "Passage verrouillé vers " + name + " : " + hint + ".", 3.0f);
             continue;
         }
         std::vector<GameWorld::MemberCarry> carry;
@@ -181,7 +254,11 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
     ++tick_;
     ++zoneTicks_;
     const size_t firstReport = reports_.size();
-    for (const auto& [src, trig] : events_) completed(src, trig);
+    for (const auto& [src, trig] : events_) {
+        if (trig == "checkpoint") reachedCheckpoint(src);
+        completed(src, trig);
+    }
+    updateCoops();
     events_.clear();
     const uint64_t h = hash();
     for (size_t i = firstReport; i < reports_.size(); ++i) reports_[i].hash = h;
@@ -196,7 +273,8 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
             carry.push_back(c);
         }
         alert("GROUPE · Tout le groupe est à terre : la zone reprend", Alert::Kind::Danger);
-        const std::string from = from_;
+        // 2.68: at the last checkpoint reached in the zone, when there is one.
+        const std::string from = lastCheckpoint_.empty() ? from_ : "cp:" + lastCheckpoint_;
         loadZone(zone_, from, &carry);
         return;
     }
@@ -210,6 +288,10 @@ uint64_t RaidRun::hash() const {
     h = mix(h, zoneTicks_);
     h = mix(h, tick_);
     h = mix(h, (static_cast<uint64_t>(branchMask_) << 32) | local_);
+    // 2.68: the expeditions' state (nothing for the zones without checkpoints or plates).
+    for (unsigned char c : lastCheckpoint_) h = mix(h, c);
+    for (size_t k = 0; k < coopDone_.size(); ++k)
+        if (coopDone_[k]) h = mix(h, 0x100u + k);
     return h;
 }
 

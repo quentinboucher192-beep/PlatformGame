@@ -260,7 +260,7 @@ class Titan:
         if breathe and len(self.place) == 1 and pid in LIFT:
             up = S.PIX * s
             k, t = 0, 1.3
-            while t < D + 1.3:
+            while t <= D:
                 tr.to(t, "inout", pos=(p[0] + offset[0], p[1] + offset[1] - (up if k % 2 == 0 else 0.0)))
                 k += 1
                 t += 1.3
@@ -775,7 +775,7 @@ def scene_festin(D, script):
     for i, pid in enumerate(["torse", "abdomen", "crane", "bras_droit", "bras_gauche", "jambe_droite", "jambe_gauche"]):
         t = t_eat + 0.7 + 0.22 * i
         rim = T.track(pid, D, "contour", alpha=0.0)
-        rim.to(t, alpha=0.0).to(t + 0.2, alpha=1.0, ease="out").to(t + 1.4, alpha=0.25).to(D, alpha=0.0)
+        rim.to(t, alpha=0.0).to(t + 0.2, alpha=1.0, ease="out").to(min(t + 1.4, D - 0.3), alpha=0.25).to(D, alpha=0.0)
         els.append(sprite(pid + "_festin", pid, rim, tint=GLOW[pid], add=True))
     els.append(particles("eclats", "sparks", GOLD, (500, 120, 300, 360), [K(0, alpha=0.0), K(t_eat, alpha=0.0), K(t_eat + 0.6, alpha=0.9)]))
     cam = camera((0, (330, 260), 1.35, "linear"), (t_pull, (420, 260), 1.25, "inout"), (t_eat, (maw[0] - 40, maw[1] + 40), 1.45, "inout"),
@@ -1030,7 +1030,7 @@ def scene_rugissement(D, script):
     els.append(particles("braises", "embers", EMBER, (160, 120, 640, 420), [K(0, alpha=0.5)]))
     mz = T.point(MAW)
     cam = camera((0, (480, 300), 1.0, "linear"), (t_roar, (mz[0], mz[1] + 60), 1.25, "inout"), (t_roar + 2.6, (480, 290), 1.08, "out"),
-                 (D, (480, 300), 1.0, "inout"))
+                 (D, (480, 294), 1.05, "inout"))
     return dict(backdrop="#030308", camera=cam, elements=els, shake=[shake(t_roar, t_roar + 2.4, 14.0)],
                 flash=[flash(t_roar + 0.25, "#ff9a5a", 0.55, 0.15, 0.9)], still=4.6)
 

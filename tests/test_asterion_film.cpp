@@ -7,6 +7,8 @@
 #include <SDL3/SDL.h>
 
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <memory>
@@ -29,6 +31,12 @@
 #include "ui/screens/Navigation.h"
 
 using namespace cosmic;
+
+#ifdef _WIN32
+#define COSMIC_NULL_DEVICE "NUL"
+#else
+#define COSMIC_NULL_DEVICE "/dev/null"
+#endif
 
 namespace {
 

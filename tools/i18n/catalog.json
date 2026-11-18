@@ -235,6 +235,30 @@
    ]
   },
   {
+   "fr": "+ {0} autre groupe",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "+ {0} autre lien (cartes des branches)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "+ {0} autres groupes",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "+ {0} autres liens (cartes des branches)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "+ {0} autres · réserve du jeu",
    "where": [
     "ui/studio/Studio.cpp"
@@ -687,6 +711,12 @@
    ]
   },
   {
+   "fr": "[{0}] · 8 joueurs au plus par groupe",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "[{0}]·{1} · {2} / 8 · votre clan",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -974,6 +1004,36 @@
    ]
   },
   {
+   "fr": "Abattre l'éclat de roche des côtes hautes",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Abattre l'éclat de roche du muscle suspendu",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Abattre le golem de glace du biceps",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Abattre le golem de la cuisse-piston",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Abattre le golem de la tempe",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Abattre le golem gardien du biceps",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
@@ -982,7 +1042,8 @@
   {
    "fr": "ABDOMEN",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -1197,6 +1258,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/Cinematic.cpp",
     "game/online/Spectate.cpp",
+    "game/raid/RaidBranch.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -1596,6 +1658,12 @@
    ]
   },
   {
+   "fr": "affaiblie",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Affichage",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -1899,6 +1967,12 @@
    ]
   },
   {
+   "fr": "ALERTES DU TITAN",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Algorithme : pour chaque tranche, difficulté = (morts + 1) ÷ (passages + 2), un lissage qui évite qu'une seule mort rende une tranche « impossible ». Les parties récentes pèsent plus (demi-vie de 14 jours) pour suivre vos progrès. Les tranches voisines au-dessus de 2 × la médiane du niveau sont fusionnées en un passage, retenu seulement avec au moins 5 passages ; sa difficulté = 1 − le produit des (1 − difficulté de chaque tranche). Phase de boss : défaites dans la phase ÷ tentatives arrivées à la phase (au moins 5). Le classement mélange tous les niveaux et les phases de boss. « S'entraîner sur ce segment » ouvre l'entraînement par segment depuis le point de passage précédent ; « S'entraîner sur cette phase », l'entraînement contre le boss sur cette phase.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -1971,6 +2045,12 @@
    "where": [
     "data/enemies/echo_forge_core.json",
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "allumer les deux générateurs (Veine, Avant-bras)",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -2482,6 +2562,24 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Antre de Heartbreaker",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Antre de Skullmaw",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Antre de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -3219,7 +3317,8 @@
     "data/raids/asterion_film.json",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -3235,6 +3334,54 @@
    "fr": "Asterion en vrai pixel art : dans CLANS › RAIDS et la fiche d'un événement, le titan est désormais un sprite détaillé, partie par partie (crâne Skullmaw, bras Dreadfang et Pyroclast, torse Heartbreaker, abdomen Voidworm, jambes Graviton et Titanus, cœur cosmique, aura) qui respire, dont le cœur bat et autour duquel dérivent des particules. Survolez une partie à la souris ou allez-y au clavier ou à la manette : elle s'éclaire et son infobulle donne son nom, son gigaboss, son état (sous attaque, affaiblie, détruite ou non découverte) et l'effet de sa destruction sur Asterion.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Antre de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Diaphragme",
+   "where": [
+    "data/raids/asterion/abdomen/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Estomac",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Foie noir",
+   "where": [
+    "data/raids/asterion/abdomen/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Intestin",
+   "where": [
+    "data/raids/asterion/abdomen/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Nid des parasites",
+   "where": [
+    "data/raids/asterion/abdomen/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Abdomen · Poche oubliée",
+   "where": [
+    "data/raids/asterion/abdomen/zone_5.json"
    ]
   },
   {
@@ -3292,9 +3439,255 @@
    ]
   },
   {
+   "fr": "Asterion · Bras gauche · Avant-bras de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Biceps de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Coude des lames",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Crevasse cachée",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Griffes de Dreadfang",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Tendon glacé",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras gauche · Épaule gelée",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Antre de Skullmaw",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Mâchoire",
+   "where": [
+    "data/raids/asterion/crane/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Nerfs optiques",
+   "where": [
+    "data/raids/asterion/crane/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Orbite droite",
+   "where": [
+    "data/raids/asterion/crane/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Orbite gauche",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Ossuaire oublié",
+   "where": [
+    "data/raids/asterion/crane/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Tempe",
+   "where": [
+    "data/raids/asterion/crane/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Crâne · Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Cuisse-piston",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Forge oubliée",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Fémur fendu",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Genou-forge",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Hanche de fer",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Mollet blindé",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe droite · Talon de Titanus",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Cuisse flottante",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Genou",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Hanche",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Muscle suspendu",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Pied de Graviton",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Sanctuaire des poids",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Jambe gauche · Tibia",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Antre de Heartbreaker",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Clavicule",
+   "where": [
+    "data/raids/asterion/torse/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Côtes basses",
+   "where": [
+    "data/raids/asterion/torse/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Côtes hautes",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Poumon gauche",
+   "where": [
+    "data/raids/asterion/torse/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Reliquaire du cœur",
+   "where": [
+    "data/raids/asterion/torse/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Sternum",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json"
+   ]
+  },
+  {
    "fr": "ASTERION · {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion, abdomen. Les deux glandes crevées ouvrent le gosier ; le nid des parasites nourrit tout le titan.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_1.json"
    ]
   },
   {
@@ -3304,9 +3697,39 @@
    ]
   },
   {
+   "fr": "Asterion, bras gauche. Les deux cœurs de givre ouvrent le poignet ; la carte de la branche montre où sont les groupes.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion, crâne. Les deux yeux crevés ouvrent la voûte ; la carte de la branche montre où sont les groupes.",
+   "where": [
+    "data/raids/asterion/crane/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion, jambe droite. Titanus frappe le sol : quand l'onde arrive, montez sur les grilles.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion, jambe gauche. Graviton tord la pesanteur : les puits d'apesanteur portent, les puits de gravité écrasent.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_1.json"
+   ]
+  },
+  {
    "fr": "Asterion, le Dévoreur de mondes",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion, torse. Ses quatre plaques brisées ouvrent la cage du cœur ; il faut plusieurs groupes.",
+   "where": [
+    "data/raids/asterion/torse/zone_1.json"
    ]
   },
   {
@@ -4135,6 +4558,12 @@
    ]
   },
   {
+   "fr": "Aucun groupe pour l'instant : le premier joueur qui rejoint une branche en ouvre un.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur bloqué",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -4314,6 +4743,12 @@
    "fr": "Aucun niveau.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun objectif accompli pour l'instant.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -5219,6 +5654,12 @@
    ]
   },
   {
+   "fr": "Avant chaque antre, une longue expédition pour 8 joueurs (environ 15 minutes, même à 8) : trois étages pour ne pas se marcher dessus, des écluses dont les portes s'ouvrent à tous les étages quand plusieurs joueurs se tiennent ensemble sur la plaque, un monte-charge qui démarre à plusieurs, des points de contrôle à chaque étage (la zone reprend au dernier atteint et les joueurs à terre s'y relèvent) et quatre embuscades géantes sur les trois étages à la fois. Derrière la porte scellée, l'arène de chaque gigaboss est immense (plus de deux écrans de large, cinq étages de plateformes), prête pour les combats de la prochaine version.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Avant la première étoile, il y avait une faim.",
    "where": [
     "data/raids/asterion_film.json"
@@ -5270,6 +5711,12 @@
    "fr": "Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Avant-bras de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -5534,6 +5981,14 @@
    ]
   },
   {
+   "fr": "Balayage des griffes",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
    "fr": "Balise de rappel",
    "where": [
     "data/powers/recall.json",
@@ -5630,6 +6085,12 @@
    "fr": "Barrière d'énergie (Onde)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Barrière d'énergie : passez quand elle faiblit.",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json"
    ]
   },
   {
@@ -5863,6 +6324,12 @@
    ]
   },
   {
+   "fr": "Beaucoup de joueurs arrivent en même temps : réessayez.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "Belgique",
    "where": [
     "data/online/countries.json",
@@ -5944,6 +6411,12 @@
    "fr": "Biceps de basalte",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Biceps de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -6080,6 +6553,18 @@
    "fr": "Bloquer la caméra sur l'arène",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Bloquer le piston bas (un autre groupe)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Bloquer le piston haut (un groupe)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -6548,13 +7033,7 @@
    ]
   },
   {
-   "fr": "BRANCHE · Le raccourci Veine ⇄ Avant-bras est ouvert",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
-   "fr": "BRANCHE · Les deux générateurs tournent : le Poignet-verrou s'ouvre",
+   "fr": "BRANCHE · {0}",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -6612,14 +7091,14 @@
    "where": [
     "data/raids/asterion.json",
     "data/raids/asterion/bras_droit/branch.json",
-    "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
    "fr": "BRAS GAUCHE",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -6641,9 +7120,105 @@
    ]
   },
   {
+   "fr": "Briser la cheville : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la cheville d'acier : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la garde de la mâchoire : vaincre l'arène",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la lame basse (un autre groupe)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la lame haute (un groupe)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la plaque est (un groupe)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la plaque nord (un groupe)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la plaque ouest (un autre groupe)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la plaque sud (un autre groupe)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la rotule extérieure (un autre groupe)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la rotule intérieure (un groupe)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser le cœur de givre est (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser le cœur de givre ouest (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser le poignet de glace : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Briser le verrou du poignet : vaincre sa garde",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "briser les deux cœurs de givre (Tendon, Avant-bras)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "briser les quatre plaques (Sternum, Côtes basses)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -7138,6 +7713,12 @@
    ]
   },
   {
+   "fr": "Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Cage stellaire",
    "where": [
     "data/enemies/singularis.json"
@@ -7475,9 +8056,15 @@
    ]
   },
   {
-   "fr": "Carte du Bras droit",
+   "fr": "Carte du titan",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carte globale du titan · cliquez une branche pour voir ses 8 zones",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -7779,12 +8366,14 @@
   {
    "fr": "Ce groupe a déjà 8 joueurs.",
    "where": [
+    "server/src/raidMap.ts",
     "server/src/raidZones.ts"
    ]
   },
   {
    "fr": "Ce groupe n'est plus en jeu.",
    "where": [
+    "server/src/raidMap.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -7884,6 +8473,12 @@
    "fr": "Ce joueur n'est pas dans le groupe.",
    "where": [
     "server/src/social.ts"
+   ]
+  },
+  {
+   "fr": "Ce joueur n'est pas inscrit au raid avec votre clan.",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -8658,6 +9253,12 @@
    ]
   },
   {
+   "fr": "Cette branche du titan n'existe pas.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "Cette conversation n'est pas un groupe.",
    "where": [
     "server/src/social.ts"
@@ -8715,6 +9316,18 @@
    "fr": "Cette image ne se lit pas.",
    "where": [
     "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Cette instance a déjà 8 joueurs.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Cette instance n'existe pas sur cette branche.",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -9210,6 +9823,12 @@
    ]
   },
   {
+   "fr": "Chargement de la répartition…",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "Chargement de la zone…",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -9281,6 +9900,12 @@
    "fr": "Chargement du record…",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement du titan…",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -9521,6 +10146,18 @@
    ]
   },
   {
+   "fr": "Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
    "fr": "Chili",
    "where": [
     "data/online/countries.json",
@@ -9692,6 +10329,12 @@
    ]
   },
   {
+   "fr": "Choisissez un joueur dans la liste.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un jour, une semaine ou le mois dans le calendrier (clic, Entrée ou bouton A). Un défi à venir, ou en cours tant que personne n'y a de résultat, se choisit ici : niveau, règles, objectif et paliers. Les autres se consultent seulement.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -9731,6 +10374,12 @@
    "fr": "Choisissez un événement pour voir ses inscriptions.",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une branche sur le titan, ou laissez le serveur vous placer là où le clan a besoin de vous.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -10329,6 +10978,12 @@
    ]
   },
   {
+   "fr": "Clavicule",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Clavier + souris",
    "where": [
     "ui/screens/CoopLobbyScene.cpp",
@@ -10879,6 +11534,12 @@
    "fr": "Combat de boss commencé",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "combat en cours",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -12581,6 +13242,12 @@
    ]
   },
   {
+   "fr": "Coude des lames",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Coude-forge",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
@@ -12774,12 +13441,6 @@
    ]
   },
   {
-   "fr": "Coulée dans {0} s · montez !",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Coulée de lave",
    "where": [
     "data/enemies/astrarque.json",
@@ -12788,9 +13449,15 @@
    ]
   },
   {
+   "fr": "Coulée de magma",
+   "where": [
+    "game/raid/RaidBranch.h"
+   ]
+  },
+  {
    "fr": "Coulée de magma ! Restez sur les plateformes hautes",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -12813,6 +13480,42 @@
    "fr": "Coupe caméra",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Couper le générateur de gravité est (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Couper le générateur de gravité ouest (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Couper le réacteur est (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Couper le réacteur ouest (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "couper les deux générateurs de gravité (Cuisse, Tibia)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "couper les deux réacteurs (Fémur, Mollet)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -13173,12 +13876,60 @@
    ]
   },
   {
+   "fr": "Crevasse cachée",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Crevasse en ligne",
    "where": [
     "data/enemies/cryowyrm.json",
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_howling_wyrm.json",
     "data/enemies/howling_wyrm.json"
+   ]
+  },
+  {
+   "fr": "Crever l'œil droit (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Crever l'œil gauche (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Crever la glande nord (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Crever la glande sud (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Crever le poumon gauche (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "crever les deux glandes (Estomac, Foie noir)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "crever les deux yeux (Orbites gauche et droite)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -13320,7 +14071,8 @@
   {
    "fr": "CRÂNE",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -13682,6 +14434,18 @@
    ]
   },
   {
+   "fr": "Cuisse flottante",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Cuisse-piston",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
    "fr": "Curaçao",
    "where": [
     "data/online/countries.json",
@@ -13702,6 +14466,18 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Côtes basses",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Côtes hautes",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -13750,6 +14526,18 @@
    "fr": "Cœur de forge vivant enchaîné dans des anneaux de fer. Il fond la roche et façonne des machines.",
    "where": [
     "data/enemies/forge_core.json"
+   ]
+  },
+  {
+   "fr": "Cœur de givre est : frappez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Cœur de givre ouest : frappez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json"
    ]
   },
   {
@@ -13849,7 +14637,7 @@
    ]
   },
   {
-   "fr": "DANGER · Coulée de magma dans {0} s : montez !",
+   "fr": "DANGER · {0} dans {1} s : {2} !",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -14741,6 +15529,12 @@
    ]
   },
   {
+   "fr": "Des ruines suspendues : le Sanctuaire des poids !",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_3.json"
+   ]
+  },
+  {
    "fr": "Des runes tracées sur le sol où vous vous tenez : armées, elles éclatent quand vous marchez dessus, toutes éclatent à la fin.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -14901,6 +15695,12 @@
    ]
   },
   {
+   "fr": "Deux lames, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_4.json"
+   ]
+  },
+  {
    "fr": "Deux lunes tournent autour de l'avatar.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -14913,9 +15713,28 @@
    ]
   },
   {
+   "fr": "Deux nerfs, deux groupes : chaque groupe en tranche un (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/crane/zone_4.json"
+   ]
+  },
+  {
    "fr": "deux niveaux ont la même empreinte",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "Deux pistons, deux groupes : chaque groupe en bloque un (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_6.json"
    ]
   },
   {
@@ -14931,9 +15750,32 @@
    ]
   },
   {
+   "fr": "Deux rotules, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Deux valves, deux groupes : chaque groupe en ferme une (un pouvoir de tir).",
+   "where": [
+    "data/raids/asterion/abdomen/zone_4.json"
+   ]
+  },
+  {
    "fr": "Deux voies : les ancrages au-dessus de l'acide, ou la trappe vers les coursives de phase.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Deuxième embuscade repoussée !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -14965,6 +15807,12 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Diaphragme",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -15621,6 +16469,18 @@
    ]
   },
   {
+   "fr": "Dreadfang — prochaine version",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Dreadfang — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Droite",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
@@ -15965,6 +16825,12 @@
    ]
   },
   {
+   "fr": "Durée estimée à 8 joueurs : ≈ {0} min",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Durée et trajectoire incohérentes.",
    "where": [
     "game/ghost/Ghost.cpp"
@@ -16289,6 +17155,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/zone_1.json",
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_3.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_5.json",
+    "data/raids/asterion/abdomen/zone_6.json",
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -16297,6 +17171,46 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/zone_1.json",
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_5.json",
+    "data/raids/asterion/bras_gauche/zone_6.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_1.json",
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_3.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_5.json",
+    "data/raids/asterion/crane/zone_6.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/zone_1.json",
+    "data/raids/asterion/jambe_droite/zone_2.json",
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_5.json",
+    "data/raids/asterion/jambe_droite/zone_6.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/zone_1.json",
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_3.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_5.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/zone_1.json",
+    "data/raids/asterion/torse/zone_2.json",
+    "data/raids/asterion/torse/zone_3.json",
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_5.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json",
+    "data/raids/asterion/torse/zone_8.json",
     "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp"
    ]
@@ -16329,6 +17243,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/zone_1.json",
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_3.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_5.json",
+    "data/raids/asterion/abdomen/zone_6.json",
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -16337,6 +17259,46 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/zone_1.json",
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_5.json",
+    "data/raids/asterion/bras_gauche/zone_6.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_1.json",
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_3.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_5.json",
+    "data/raids/asterion/crane/zone_6.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/zone_1.json",
+    "data/raids/asterion/jambe_droite/zone_2.json",
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_5.json",
+    "data/raids/asterion/jambe_droite/zone_6.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/zone_1.json",
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_3.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_5.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/zone_1.json",
+    "data/raids/asterion/torse/zone_2.json",
+    "data/raids/asterion/torse/zone_3.json",
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_5.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json",
+    "data/raids/asterion/torse/zone_8.json",
     "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp"
    ]
@@ -16364,6 +17326,12 @@
    "fr": "Découper et importer",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "découverte",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -17188,6 +18156,12 @@
    ]
   },
   {
+   "fr": "Déplacement…",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "Déplacer",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp",
@@ -17199,6 +18173,12 @@
    "fr": "Déplacer {0}",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Déplacer {0} vers :",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -17298,6 +18278,12 @@
    ]
   },
   {
+   "fr": "Détruire le nid des parasites : vaincre ses gardes",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Détruire le soufflet est (un autre groupe)",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
@@ -17319,6 +18305,12 @@
    "fr": "Détruit · gigaboss vaincu",
    "where": [
     "game/online/AsterionBody.cpp"
+   ]
+  },
+  {
+   "fr": "détruite",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -17464,6 +18456,12 @@
    "fr": "Effets sonores",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "EFFETS SUR ASTERION",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -17770,6 +18768,12 @@
    ]
   },
   {
+   "fr": "En combat : {0} groupes · {1} joueurs · {2} clans",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "En commun : {0} meilleurs temps ({1} meilleurs côté source), {2} succès nouveaux pour la cible.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -17871,7 +18875,8 @@
    "fr": "en jeu",
    "where": [
     "game/gameplay/HudTeam.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -19106,6 +20111,12 @@
    ]
   },
   {
+   "fr": "Estomac",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Estonie",
    "where": [
     "data/online/countries.json",
@@ -19311,6 +20322,50 @@
    ]
   },
   {
+   "fr": "Expédition, étape 1",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Expédition, étape 2",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Expédition, étape 3",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Expédition, étape 4",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
    "fr": "EXTRÊME",
    "where": [
     "ui/screens/ChallengeUi.cpp",
@@ -19356,15 +20411,87 @@
    ]
   },
   {
+   "fr": "Facultatif : emporter la relique de l'ossuaire",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : emporter la relique de la crevasse",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : emporter la relique de la forge",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : emporter la relique de la poche",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Facultatif : emporter la relique des scories",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
+   "fr": "Facultatif : emporter la relique du reliquaire",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : emporter la relique du sanctuaire",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le passage vers les nerfs (levier)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le raccourci vers l'Intestin (levier)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Facultatif : ouvrir le raccourci vers la Veine (levier)",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le raccourci vers le Genou (levier)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le raccourci vers le Genou-forge (levier)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le raccourci vers le Sternum (levier)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Facultatif : ouvrir le raccourci vers le Tendon (levier)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -19395,6 +20522,12 @@
    "fr": "Faire défiler : glisser, molette, ← → ou LB / RB",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Faire taire la voûte : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -19632,6 +20765,18 @@
    ]
   },
   {
+   "fr": "Fermer la valve basse (un autre groupe)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Fermer la valve haute (un groupe)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Fermer le compte source ensuite (connexion impossible, pseudonyme libéré dans 30 jours)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -19659,6 +20804,12 @@
    "fr": "Fermer « {0} » ?",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "fermé : une autre branche du titan l'ouvre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -20373,6 +21524,12 @@
    ]
   },
   {
+   "fr": "Foie noir",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "fois",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -20453,9 +21610,21 @@
    ]
   },
   {
+   "fr": "Forcer le gosier : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Forge du Marteau",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Forge oubliée",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -20522,6 +21691,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewBadges.cpp",
     "game/progression/NewsCenter.cpp",
+    "game/raid/RaidBranch.cpp",
     "main.cpp",
     "packaging/PackageExporter.cpp",
     "packaging/PackageImporter.cpp",
@@ -20812,6 +21982,12 @@
    ]
   },
   {
+   "fr": "Fémur fendu",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
    "fr": "févr.",
    "where": [
     "game/online/Raids.cpp",
@@ -20979,6 +22155,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/zone_1.json",
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_3.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_5.json",
+    "data/raids/asterion/abdomen/zone_6.json",
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -20987,6 +22171,46 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/zone_1.json",
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_5.json",
+    "data/raids/asterion/bras_gauche/zone_6.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_1.json",
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_3.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_5.json",
+    "data/raids/asterion/crane/zone_6.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/zone_1.json",
+    "data/raids/asterion/jambe_droite/zone_2.json",
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_5.json",
+    "data/raids/asterion/jambe_droite/zone_6.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/zone_1.json",
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_3.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_5.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/zone_1.json",
+    "data/raids/asterion/torse/zone_2.json",
+    "data/raids/asterion/torse/zone_3.json",
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_5.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json",
+    "data/raids/asterion/torse/zone_8.json",
     "data/tutorial/premier_envol.json",
     "game/levels/LevelData.cpp",
     "game/levels/ObjectTypes.cpp"
@@ -21191,6 +22415,18 @@
    ]
   },
   {
+   "fr": "Genou",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Genou-forge",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
    "fr": "Gerbe de magma",
    "where": [
     "data/enemies/crucible_heart.json",
@@ -21275,7 +22511,8 @@
    "fr": "gigaboss",
    "where": [
     "game/raid/RaidBranch.cpp",
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -21288,6 +22525,18 @@
    "fr": "Gigaboss : {0} · prochaine version",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss : {0} · scellé",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · portes scellées (prochaine version)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -21580,6 +22829,12 @@
    ]
   },
   {
+   "fr": "Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Gouffre ! Sautez, double sautez, puis Dash en plein vol.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -21690,6 +22945,18 @@
    ]
   },
   {
+   "fr": "Graviton — prochaine version",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Graviton — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Gravité",
    "where": [
     "data/enemies/singularis.json",
@@ -21720,6 +22987,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Griffes de Dreadfang",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -21758,6 +23031,14 @@
    "fr": "Grimpez aux lianes (Haut) ou rebondissez entre les murs avec le saut mural.",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "grimpez sur les passerelles",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -21829,13 +23110,31 @@
    ]
   },
   {
+   "fr": "GROUPE · Les joueurs à terre se relèvent au point de contrôle",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Objectif accompli : {0}",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
   },
   {
+   "fr": "GROUPE · Point de contrôle : la zone reprendra ici",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · {0}",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -21863,6 +23162,12 @@
    "fr": "groupes de 8 joueurs",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPES DU CLAN",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -22008,6 +23313,18 @@
    ]
   },
   {
+   "fr": "Générateur de gravité est : coupez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Générateur de gravité ouest : coupez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json"
+   ]
+  },
+  {
    "fr": "Générateur du verrou : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -22074,6 +23391,18 @@
    "fr": "Halo visible",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Hanche",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Hanche de fer",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -22221,6 +23550,18 @@
    "fr": "HEARTBREAKER",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Heartbreaker — prochaine version",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Heartbreaker — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -22408,6 +23749,12 @@
    "fr": "Hors classement : une partie sur un même PC n'est pas classée (chacun joue avec son compte sur son PC).",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "hors combat",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -22800,6 +24147,8 @@
     "ui/screens/RaceScene.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidRosterScene.cpp",
+    "ui/screens/RaidTitanScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
@@ -23009,9 +24358,51 @@
    ]
   },
   {
+   "fr": "il faut briser les deux cœurs de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "il faut briser les quatre plaques du torse",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "il faut couper les deux générateurs de gravité",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "il faut couper les deux réacteurs",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "il faut crever les deux glandes",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "il faut crever les deux yeux",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "il faut exactement un départ du joueur",
    "where": [
     "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "il faut les deux générateurs",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -23813,7 +25204,14 @@
   {
    "fr": "Inscrivez-vous au raid (fiche de l'événement) pour combattre.",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inscrivez-vous au raid pour voir la répartition de votre clan.",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -23973,6 +25371,12 @@
    "fr": "Intervalle entre salves (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Intestin",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -24400,13 +25804,15 @@
   {
    "fr": "JAMBE DROITE",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
    "fr": "JAMBE GAUCHE",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {
@@ -24699,6 +26105,12 @@
    ]
   },
   {
+   "fr": "Joueur placé.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "Joueur supprimé",
    "where": [
     "server/src/social.ts"
@@ -24729,6 +26141,12 @@
    "fr": "Joueurs de Cosmic Online",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "JOUEURS INSCRITS",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -25040,6 +26458,24 @@
    ]
   },
   {
+   "fr": "L'antre de Heartbreaker, contre le cœur du titan. La porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "L'antre de Skullmaw, au cœur du crâne. Sa porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
+   "fr": "L'antre de Voidworm, au fond de l'abdomen. La porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
    "fr": "L'aqueduc de lave : réveillez le radeau d'un Tir chargé sur le récepteur, tout au bout.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -25131,6 +26567,12 @@
    ]
   },
   {
+   "fr": "L'avant-bras de givre. Son cœur de givre alimente le verrou du poignet ; son levier ouvre le raccourci vers le tendon.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
    "fr": "L'avant-bras, couvert de câbles de forge. Son générateur alimente le verrou du poignet ; son levier ouvre le raccourci vers la Veine. Au bout : la Main.",
    "where": [
     "data/raids/asterion/bras_droit/zone_6.json"
@@ -25203,6 +26645,12 @@
    ]
   },
   {
+   "fr": "L'estomac du titan : des bassins d'acide, des parois qui respirent et une glande à crever. L'acide reflue sans prévenir.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json"
+   ]
+  },
+  {
    "fr": "L'exemple ne peut pas être préparé.",
    "where": [
     "ui/screens/BossAttackPreview.cpp"
@@ -25212,6 +26660,17 @@
    "fr": "L'exemple se prépare sans figer l'écran (un message le dit pendant ce temps), se met en pause d'un clic, et ne compte jamais : ni records, ni statistiques, ni succès. Tous les boss en profitent : boss des planètes, gardiens d'Aethra, giga-boss des Confins et Singularis.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'expédition vers l'antre : trois étages, restez répartis. Les points de contrôle relèvent les joueurs à terre.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -25348,6 +26807,12 @@
    ]
   },
   {
+   "fr": "L'intestin du titan, long et mouvant. Deux valves : deux groupes, une chacun. L'acide y reflue souvent.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_4.json"
+   ]
+  },
+  {
    "fr": "l'objet {0}",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -25357,6 +26822,29 @@
    "fr": "l'Onde",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "L'orbite droite : son regard tire des rayons. L'œil droit attend au bout ; un passage descend vers la tempe.",
+   "where": [
+    "data/raids/asterion/crane/zone_3.json"
+   ]
+  },
+  {
+   "fr": "L'orbite gauche, où l'œil du titan fixe les intrus. Une onde psychique balaie le sol ; une fente cache un ossuaire.",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json"
+   ]
+  },
+  {
+   "fr": "L'écluse s'ouvre : ses portes cèdent à tous les étages",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -25381,6 +26869,18 @@
    "fr": "L'épaule est à nous ! Biceps en haut, Veine en bas.",
    "where": [
     "data/raids/asterion/bras_droit/zone_1.json"
+   ]
+  },
+  {
+   "fr": "L'épaule gelée du titan, porte du bras gauche. Trois points d'apparition, une garde de givre, puis deux chemins.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_1.json"
+   ]
+  },
+  {
+   "fr": "L'épaule gelée est à nous ! Biceps en haut, Tendon en bas.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_1.json"
    ]
   },
   {
@@ -25446,6 +26946,18 @@
    ]
   },
   {
+   "fr": "L'œil droit : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
+   "where": [
+    "data/raids/asterion/crane/zone_3.json"
+   ]
+  },
+  {
+   "fr": "L'œil gauche : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json"
+   ]
+  },
+  {
    "fr": "L1",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -25495,9 +27007,21 @@
    ]
   },
   {
+   "fr": "La cage du cœur, fermée par quatre plaques. Sa garde défend l'antre de Heartbreaker. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
    "fr": "La cage qui garde le cœur",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "La cage s'ouvre ! L'antre de Heartbreaker est ouvert.",
+   "where": [
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -25562,6 +27086,12 @@
    ]
   },
   {
+   "fr": "La carte globale du titan : la fiche d'un raid en cours ouvre « Carte du titan », le premier des trois niveaux de carte. Asterion entier avec l'état de ses sept branches (pas encore découverte, combat en cours, affaiblie), les groupes qui s'y battent (votre clan en or), la progression (zones contrôlées sur 56, objectifs, gigaboss), les effets entre branches, les renforts demandés et les alertes de tout le titan. Une branche (au clic sur le titan ou dans la liste, au clavier ou à la manette) ouvre sa carte de huit zones.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "La cave du rempart : un cœur de cristal !",
    "where": [
     "data/levels/glacior_03.json"
@@ -25601,6 +27131,48 @@
    "fr": "La chaîne de coulée avance et recule d'un seul bloc : sautez d'un plateau à l'autre entre deux tirs.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "La cheville cède ! Le pied de Graviton est ouvert.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "La cheville d'acier cède ! Le talon de Titanus est ouvert.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "La cheville d'acier, verrouillée par deux réacteurs. Sa garde défend le talon de Titanus. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "La cheville gauche est brisée : le titan bascule, la Crevasse cachée du Bras gauche s'ouvre vers le Poignet",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "La cheville gauche, verrouillée par deux générateurs de gravité. Sa garde défend le pied de Graviton. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "La clavicule du titan, porte du torse. Trois points d'apparition, une garde à disperser, puis deux chemins.",
+   "where": [
+    "data/raids/asterion/torse/zone_1.json"
+   ]
+  },
+  {
+   "fr": "La clavicule est à nous ! Côtes hautes en haut, poumon en bas.",
+   "where": [
+    "data/raids/asterion/torse/zone_1.json"
    ]
   },
   {
@@ -25721,6 +27293,18 @@
    "fr": "La Crypte des Noms : la Liche seule, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La cuisse flotte dans la gravité tordue de Graviton. Des puits d'apesanteur portent les sauts ; un générateur de gravité tourne au bout.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json"
+   ]
+  },
+  {
+   "fr": "La cuisse-piston : des pistons géants montent et descendent au-dessus de la lave. Un golem de magma garde le muscle.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_2.json"
    ]
   },
   {
@@ -25890,9 +27474,27 @@
    ]
   },
   {
+   "fr": "La glace du biceps cède sous les pas : ne vous arrêtez pas.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_2.json"
+   ]
+  },
+  {
    "fr": "La glace ne retient personne : le vent décide.",
    "where": [
     "data/levels/glacior_04.json"
+   ]
+  },
+  {
+   "fr": "La glande nord : crevez-la avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json"
+   ]
+  },
+  {
+   "fr": "La glande sud : crevez-la avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_6.json"
    ]
   },
   {
@@ -25917,6 +27519,30 @@
    "fr": "La Gueule du Dragon : Pyrrhax seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/confins_01.json"
+   ]
+  },
+  {
+   "fr": "La hanche de fer du titan, porte de la jambe droite. Trois points d'apparition, une garde de forge, puis deux chemins.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_1.json"
+   ]
+  },
+  {
+   "fr": "La hanche de fer est à nous ! Cuisse-piston en haut, fémur en bas.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_1.json"
+   ]
+  },
+  {
+   "fr": "La hanche est à nous ! Cuisse flottante en haut, muscle suspendu en bas.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_1.json"
+   ]
+  },
+  {
+   "fr": "La hanche gauche du titan, porte de la jambe. Trois points d'apparition, une garde à disperser, puis deux chemins.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_1.json"
    ]
   },
   {
@@ -26084,6 +27710,18 @@
    ]
   },
   {
+   "fr": "La mâchoire du titan, porte du crâne. Trois points d'apparition, une garde d'os à disperser, puis deux orbites.",
+   "where": [
+    "data/raids/asterion/crane/zone_1.json"
+   ]
+  },
+  {
+   "fr": "La mâchoire est à nous ! Orbite gauche en haut, orbite droite en bas.",
+   "where": [
+    "data/raids/asterion/crane/zone_1.json"
+   ]
+  },
+  {
    "fr": "La Mère-Racine",
    "where": [
     "data/music/tracks.json"
@@ -26154,6 +27792,18 @@
    "fr": "La page d'un clan : ses membres et leur rôle (leur présence seulement pour les membres du clan, et si le joueur la partage), sa meilleure équipe sur chaque niveau EXTRÊME (Solo pour l'instant, la coopération Duo et Trio arrive bientôt), les candidatures (chef et officiers) et la discussion du clan, aussi dans SOCIAL.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "La paroi vers la Cheville ne s'ouvre que si une autre branche du titan cède.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "La paroi vers la Voûte ne s'ouvre que si une autre branche du titan cède.",
+   "where": [
+    "data/raids/asterion/crane/zone_6.json"
    ]
   },
   {
@@ -26527,6 +28177,12 @@
    ]
   },
   {
+   "fr": "La tempe du titan. Un golem la garde ; son levier ouvre le passage vers les nerfs. Une paroi mène à la voûte.",
+   "where": [
+    "data/raids/asterion/crane/zone_6.json"
+   ]
+  },
+  {
    "fr": "La tentative s'arrête, comme en solo ; elle compte dans la course à la vérification.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -26569,9 +28225,21 @@
    ]
   },
   {
+   "fr": "La voûte crânienne, verrouillée par les deux yeux. Sa garde défend l'antre de Skullmaw. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
    "fr": "La voûte s'effondre sur vous !",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "La voûte se tait ! L'antre de Skullmaw est ouvert.",
+   "where": [
+    "data/raids/asterion/crane/zone_7.json"
    ]
   },
   {
@@ -26899,6 +28567,12 @@
    "fr": "Le Bastion Gelé... Le dernier gardien des Anciens y veille sur le relais. Courage, Nova.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Le biceps de givre : sa glace se brise sous les pas. Un golem de glace garde le muscle.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_2.json"
    ]
   },
   {
@@ -27267,6 +28941,12 @@
    ]
   },
   {
+   "fr": "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames : il faut deux groupes, un par lame. Les griffes balaient le sol.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_4.json"
+   ]
+  },
+  {
    "fr": "Le courant de la cheminée remonte jusqu'à la surface.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -27434,6 +29114,14 @@
    ]
   },
   {
+   "fr": "Le cœur pulse ! Restez sur les passerelles",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
    "fr": "Le cœur s'ouvre",
    "where": [
     "data/achievements/achievements.json"
@@ -27474,6 +29162,18 @@
    "fr": "Le dernier relais... Après lui, toute la galaxie sera reliée. On y va.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "Le diaphragme du titan, porte de l'abdomen. Trois points d'apparition, une garde gluante, puis deux chemins.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Le diaphragme est à nous ! Estomac en haut, nid des parasites en bas.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_1.json"
    ]
   },
   {
@@ -27645,6 +29345,12 @@
    ]
   },
   {
+   "fr": "Le foie noir du titan. Sa glande alimente le verrou du gosier ; son levier ouvre le raccourci vers l'intestin.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_6.json"
+   ]
+  },
+  {
    "fr": "Le fond de l'arène est inondé jusqu'aux plateformes un moment, puis l'inondation redescend : montez.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -27670,6 +29376,12 @@
    ]
   },
   {
+   "fr": "Le fémur fendu : la lave affleure dans ses fissures et l'onde sismique de Titanus y frappe. Un réacteur tourne au fond.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json"
+   ]
+  },
+  {
    "fr": "Le Gardien des noms",
    "where": [
     "data/stories/liche.json",
@@ -27692,7 +29404,19 @@
    ]
   },
   {
-   "fr": "Le gigaboss Pyroclast attend derrière sa porte scellée : prochaine version.",
+   "fr": "Le genou du titan, tenu par deux rotules. Deux groupes, une rotule chacun ; des puits de gravité y écrasent tout.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Le genou-forge, actionné par deux pistons. Deux groupes, un piston chacun ; l'onde sismique y revient souvent.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Le gigaboss {0} attend derrière sa porte scellée : prochaine version.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -27741,6 +29465,18 @@
    "fr": "LE GOLEM S'EFFONDRE",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le gosier de Voidworm, fermé par deux glandes. Sa garde défend l'antre. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Le gosier s'ouvre ! L'antre de Voidworm est ouvert.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json"
    ]
   },
   {
@@ -27941,6 +29677,48 @@
    ]
   },
   {
+   "fr": "le levier de l'Avant-bras de givre l'ouvre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "le levier de l'avant-bras l'ouvre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "le levier de la Tempe l'ouvre",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "le levier du Foie noir l'ouvre",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "le levier du Mollet blindé l'ouvre",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "le levier du Poumon gauche l'ouvre",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "le levier du Tibia l'ouvre",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Le lieu d'apparition choisi n'existe plus dans l'arène : retour au point habituel.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -28007,6 +29785,12 @@
    ]
   },
   {
+   "fr": "Le mollet blindé. Son réacteur alimente le verrou de la cheville ; son levier ouvre le raccourci vers le genou-forge.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_6.json"
+   ]
+  },
+  {
    "fr": "Le monde-jardin des Anciens",
    "where": [
     "data/planets/sylvanox.json"
@@ -28055,6 +29839,17 @@
    ]
   },
   {
+   "fr": "Le monte-charge démarre : il fait ensuite la navette tout seul",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
    "fr": "Le mot de passe doit contenir au moins 8 caractères.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -28070,6 +29865,12 @@
    "fr": "le mot de passe ne doit pas contenir le pseudonyme",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "Le muscle suspendu : des îlots mouvants au-dessus du vide. Un éclat de roche le garde ; un sanctuaire se cache en hauteur.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_3.json"
    ]
   },
   {
@@ -28100,6 +29901,24 @@
    "fr": "Le Nid de Cendres : le Phénix seul, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/confins_04.json"
+   ]
+  },
+  {
+   "fr": "Le nid de l'Abdomen est détruit : plus de parasites en renfort dans le Torse",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "Le nid des parasites est détruit !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Le nid des parasites, qui nourrit tout le titan. Sa garde le défend en deux vagues ; un repli cache une poche oubliée.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_3.json"
    ]
   },
   {
@@ -28211,6 +30030,12 @@
    ]
   },
   {
+   "fr": "Le passage Nerfs optiques ⇄ Tempe est ouvert",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Le passage vers le relais est ouvert.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -28284,6 +30109,12 @@
    ]
   },
   {
+   "fr": "Le pied de Graviton, au bout de la jambe gauche. La porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Le plafond s'effondre !",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
@@ -28306,6 +30137,24 @@
    "fr": "Le platine sur les 25 niveaux.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Le poignet cède ! Les griffes de Dreadfang sont ouvertes.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Le poignet de glace, verrouillé par deux cœurs de givre. Sa garde défend les griffes de Dreadfang. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Le poignet du Bras droit est brisé : la Tempe du Crâne s'ouvre vers la Voûte",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -28349,6 +30198,18 @@
    "where": [
     "data/stories/phenix.json",
     "data/trailer/trailer.json"
+   ]
+  },
+  {
+   "fr": "Le poumon gauche : crevez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/torse/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Le poumon gauche se gonfle et siffle. Il faut le crever ; des parasites y affluent. Son levier ouvre le raccourci vers le sternum.",
+   "where": [
+    "data/raids/asterion/torse/zone_3.json"
    ]
   },
   {
@@ -28412,6 +30273,42 @@
    ]
   },
   {
+   "fr": "Le raccourci Genou ⇄ Tibia est ouvert",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Le raccourci Genou-forge ⇄ Mollet blindé est ouvert",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Le raccourci Intestin ⇄ Foie noir est ouvert",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Le raccourci Poumon gauche ⇄ Sternum est ouvert",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Le raccourci Tendon ⇄ Avant-bras de givre est ouvert",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Le raccourci Veine ⇄ Avant-bras est ouvert",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "Le radeau part quand vous montez : choisissez le bon moment.",
    "where": [
     "data/levels/aethra_03.json",
@@ -28420,9 +30317,15 @@
    ]
   },
   {
-   "fr": "Le raid est en cours : la branche « Bras droit » est ouverte aux groupes (le gigaboss, dans une prochaine version).",
+   "fr": "Le raid est en cours : les sept branches du titan sont ouvertes aux groupes (les gigaboss, dans une prochaine version).",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le raid est terminé.",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -28434,14 +30337,22 @@
   {
    "fr": "Le raid n'est pas en cours : les combats se jouent pendant l'événement.",
    "where": [
+    "server/src/raidMap.ts",
     "server/src/raidZones.ts",
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
    "fr": "le Ralenti",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "Le regard de l'orbite : passez entre deux rayons.",
+   "where": [
+    "data/raids/asterion/crane/zone_3.json"
    ]
   },
   {
@@ -28553,6 +30464,12 @@
    ]
   },
   {
+   "fr": "Le sanctuaire des poids, suspendu dans la jambe. Une relique y défie la gravité.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_5.json"
+   ]
+  },
+  {
    "fr": "Le sas du cœur : bouclier, grappin, téléportation.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -28634,6 +30551,12 @@
    "fr": "Le serveur refuse la connexion au salon.",
    "where": [
     "game/coop/CoopTransport.cpp"
+   ]
+  },
+  {
+   "fr": "Le serveur vous place dans un groupe de votre clan qui a de la place ; il entre par {0}.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -28760,6 +30683,18 @@
    ]
   },
   {
+   "fr": "Le sternum, cuirassé de deux plaques. Deux groupes, une plaque chacun ; le cœur pulse sous le métal et des barrières le défendent.",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Le talon de Titanus, au bout de la jambe droite. La porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
    "fr": "le temps de l'Or doit être inférieur ou égal à celui de l'Argent",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -28775,6 +30710,18 @@
    "fr": "le temps est reçu, son replay pas encore contrôlé.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le tendon glacé grimpe vers le coude. Des tourelles le surveillent, les griffes balaient le bas ; un cœur de givre bat en haut.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Le tibia du titan. Son générateur de gravité alimente le verrou de la cheville ; son levier ouvre le raccourci vers le genou.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_6.json"
    ]
   },
   {
@@ -29162,6 +31109,12 @@
    ]
   },
   {
+   "fr": "Les branches sont liées : un objectif accompli dans l'une agit sur une autre, au même instant pour tous les joueurs d'une instance. Les yeux du Crâne crevés éteignent les tourelles du Bras gauche, ses nerfs tranchés arrêtent l'onde sismique de la Jambe droite, les générateurs de la Jambe gauche coupés font tomber les barrières du Torse, le nid de l'Abdomen détruit supprime ses parasites en renfort, les réacteurs de la Jambe droite coupés arrêtent les coulées de magma du Bras droit, et plusieurs passages ne s'ouvrent que quand une autre branche cède. Le serveur ne compte que les objectifs validés par le consensus de chaque instance.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les bulles porteuses",
    "where": [
     "game/tutorial/Tutorial.cpp"
@@ -29361,6 +31314,18 @@
    ]
   },
   {
+   "fr": "Les côtes basses, cuirassées de deux plaques. Deux groupes, une plaque chacun ; des parasites rampent entre les os.",
+   "where": [
+    "data/raids/asterion/torse/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Les côtes hautes bougent avec le souffle du titan. Une barrière d'énergie les traverse ; un éclat de roche les garde.",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json"
+   ]
+  },
+  {
    "fr": "Les demandes ne sont possibles que si l'accès du projet est « Public, sur demande ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -29379,6 +31344,30 @@
    ]
   },
   {
+   "fr": "Les deux cœurs de givre sont brisés : le Poignet de glace s'ouvre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Les deux glandes sont crevées : le Gosier de Voidworm s'ouvre",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Les deux générateurs de gravité sont coupés : la Cheville s'ouvre",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Les deux générateurs tournent : le Poignet-verrou s'ouvre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "Les deux mots de passe sont différents.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -29388,6 +31377,18 @@
    "fr": "Les deux phrases sont différentes.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Les deux réacteurs sont coupés : la Cheville d'acier s'ouvre",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Les deux yeux sont crevés : la Voûte crânienne s'ouvre",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -29535,6 +31536,20 @@
    ]
   },
   {
+   "fr": "Les griffes balaient le sol ! Restez en hauteur",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Les griffes de Dreadfang, au bout du bras gauche. La porte est scellée : le combat arrive dans la prochaine version.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Les griffes qui déchirent",
    "where": [
     "data/raids/asterion_film.json"
@@ -29550,6 +31565,18 @@
    "fr": "Les grottes de cristal... Le signal du relais résonne sous la glace.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Les groupes sont déjà équilibrés.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les générateurs de gravité sont coupés : les barrières d'énergie du Torse tombent",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -29644,6 +31671,18 @@
    ]
   },
   {
+   "fr": "Les joueurs en combat gardent leur partie : leur nouvelle place compte à leur prochaine entrée.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les lames de Dreadfang sont brisées : les spectres en renfort du Crâne se dissipent",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "Les lasers battent la mesure : un saut par temps, sans s'arrêter.",
    "where": [
     "data/levels/aethra_04.json",
@@ -29679,6 +31718,18 @@
    "fr": "Les miens",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les nerfs optiques relient les yeux au cerveau. Deux nerfs, deux groupes ; l'onde psychique y revient sans cesse.",
+   "where": [
+    "data/raids/asterion/crane/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Les nerfs optiques sont tranchés : Titanus ne frappe plus le sol, plus d'onde sismique dans la Jambe droite",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -29724,6 +31775,12 @@
    ]
   },
   {
+   "fr": "Les pistons montent et descendent : sautez au sommet de leur course.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_2.json"
+   ]
+  },
+  {
    "fr": "Les plaines de cristal gelé",
    "where": [
     "data/planets/glacior.json"
@@ -29733,6 +31790,12 @@
    "fr": "Les Plaines de Givre",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Les plaques du Torse sont brisées : l'Intestin de l'Abdomen s'ouvre vers le Gosier",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -29796,6 +31859,12 @@
    ]
   },
   {
+   "fr": "Les puits d'apesanteur vous portent : laissez-vous soulever.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json"
+   ]
+  },
+  {
    "fr": "Les quatre niveaux d'Aethra",
    "where": [
     "data/music/tracks.json"
@@ -29811,6 +31880,12 @@
    "fr": "Les quatre niveaux de Pyralis",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Les quatre plaques sont brisées : la Cage du cœur s'ouvre",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -29875,6 +31950,12 @@
    ]
   },
   {
+   "fr": "Les réacteurs de la Jambe droite sont coupés : plus de coulée de magma dans le Bras droit",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "Les récompenses arriveront avec les combats d'Asterion.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -29914,6 +31995,12 @@
    "fr": "Les seize échos se sont tus.",
    "where": [
     "data/levels/noyau_01.json"
+   ]
+  },
+  {
+   "fr": "LES SEPT BRANCHES",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -29996,6 +32083,12 @@
    ]
   },
   {
+   "fr": "Les tourelles-regards du tendon : passez entre deux tirs.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
    "fr": "Les trois couleurs d'une combinaison",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -30005,6 +32098,18 @@
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Les valves de l'Abdomen sont fermées : les puits de gravité de la Jambe gauche s'éteignent",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "Les yeux du Crâne sont crevés : les tourelles-regards du Tendon glacé (Bras gauche) s'éteignent",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -30131,6 +32236,42 @@
    ]
   },
   {
+   "fr": "Levier : il ouvre le passage vers les Nerfs optiques à tous les groupes.",
+   "where": [
+    "data/raids/asterion/crane/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Levier : il ouvre le raccourci vers l'Intestin à tous les groupes.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Levier : il ouvre le raccourci vers le Genou à tous les groupes.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Levier : il ouvre le raccourci vers le Genou-forge à tous les groupes.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Levier : il ouvre le raccourci vers le Sternum à tous les groupes.",
+   "where": [
+    "data/raids/asterion/torse/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Levier : il ouvre le raccourci vers le Tendon glacé à tous les groupes.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
    "fr": "Leviers",
    "where": [
     "data/levels/aethra_04.json"
@@ -30253,6 +32394,18 @@
    "fr": "Liens",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Liens avec le reste du titan",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Liens du titan actifs : {0} / {1}",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -31909,6 +34062,7 @@
     "game/online/Clans.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
+    "game/raid/RaidBranch.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -32173,7 +34327,8 @@
    "fr": "minutes",
    "where": [
     "game/GameServices.cpp",
-    "ui/screens/OnlineComputer.cpp"
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -32613,6 +34768,12 @@
    ]
   },
   {
+   "fr": "Mollet blindé",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
    "fr": "Mon clan",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -32775,9 +34936,53 @@
    ]
   },
   {
+   "fr": "Monte-charge",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Monte-charge : il démarre quand 4 joueurs sont dessus, puis fait la navette tout seul.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "montez",
+   "where": [
+    "game/raid/RaidBranch.h"
+   ]
+  },
+  {
    "fr": "Montez sur le radeau : il vous fera traverser.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "montez sur les branches",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
+   "fr": "montez sur les corniches",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_7.json"
    ]
   },
   {
@@ -33038,6 +35243,12 @@
    ]
   },
   {
+   "fr": "Muscle suspendu",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Musique",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -33151,6 +35362,12 @@
    "fr": "MYCÉLIA, LA MÈRE-RACINE",
    "where": [
     "data/enemies/mycelia.json"
+   ]
+  },
+  {
+   "fr": "Mâchoire",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -33389,6 +35606,12 @@
    ]
   },
   {
+   "fr": "Nerfs optiques",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Nettoyage",
    "where": [
     "data/achievements/achievements.json"
@@ -33412,6 +35635,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Nid des parasites",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -35449,6 +37678,12 @@
    ]
   },
   {
+   "fr": "Objectifs accomplis : {0} / {1}",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "objectifs de la branche dans le désordre",
    "where": [
     "game/raid/RaidBranch.cpp"
@@ -35907,6 +38142,38 @@
    ]
   },
   {
+   "fr": "Onde psychique",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Onde psychique ! Restez sur les corniches hautes",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Onde sismique",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Onde sismique ! Restez sur les grilles hautes",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
    "fr": "Onde sonar",
    "where": [
     "data/enemies/kraken.json"
@@ -36200,6 +38467,18 @@
    ]
   },
   {
+   "fr": "Orbite droite",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Orbite gauche",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Ordinateur",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -36288,6 +38567,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Ossuaire oublié",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -36424,6 +38709,12 @@
    "fr": "Ouvrir l'éditeur d'ennemis",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir la cage du cœur : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -37484,6 +39775,12 @@
    ]
   },
   {
+   "fr": "pas encore découverte",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Pas encore enregistré sur ce PC",
    "where": [
     "ui/studio/Studio.cpp"
@@ -37493,6 +39790,12 @@
    "fr": "pas encore envoyé au serveur",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "pas encore placé",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -37641,6 +39944,12 @@
    ]
   },
   {
+   "fr": "passage fermé (le levier est dans la Tempe)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Passage secret",
    "where": [
     "data/achievements/achievements.json"
@@ -37653,31 +39962,7 @@
    ]
   },
   {
-   "fr": "Passage verrouillé vers ? : il faut les deux générateurs.",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
-   "fr": "Passage verrouillé vers ? : le levier de l'avant-bras l'ouvre.",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
-   "fr": "Passage verrouillé vers ?.",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
-   "fr": "Passage verrouillé vers {0} : il faut les deux générateurs.",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
-   "fr": "Passage verrouillé vers {0} : le levier de l'avant-bras l'ouvre.",
+   "fr": "Passage verrouillé vers {0} : {1}.",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -37689,11 +39974,36 @@
    ]
   },
   {
+   "fr": "Passage vers : Antre de Heartbreaker",
+   "where": [
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Antre de Skullmaw",
+   "where": [
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Antre de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
    "fr": "Passage vers : Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
     "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Avant-bras de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json"
    ]
   },
   {
@@ -37705,6 +40015,53 @@
    ]
   },
   {
+   "fr": "Passage vers : Biceps de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_1.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_6.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Clavicule",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json",
+    "data/raids/asterion/torse/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Coude des lames",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
    "fr": "Passage vers : Coude-forge",
    "where": [
     "data/raids/asterion/bras_droit/zone_2.json",
@@ -37713,9 +40070,139 @@
    ]
   },
   {
+   "fr": "Passage vers : Crevasse cachée",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Cuisse flottante",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_1.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Cuisse-piston",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_1.json",
+    "data/raids/asterion/jambe_droite/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Côtes basses",
+   "where": [
+    "data/raids/asterion/torse/zone_3.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Côtes hautes",
+   "where": [
+    "data/raids/asterion/torse/zone_1.json",
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Diaphragme",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Estomac",
+   "where": [
+    "data/raids/asterion/abdomen/zone_1.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Foie noir",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Forge oubliée",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Fémur fendu",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_1.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_5.json",
+    "data/raids/asterion/jambe_droite/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Genou",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_3.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Genou-forge",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_2.json",
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_6.json",
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_6.json",
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Griffes de Dreadfang",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
    "fr": "Passage vers : Grotte des scories",
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Hanche",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Hanche de fer",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_2.json",
+    "data/raids/asterion/jambe_droite/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Intestin",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_3.json",
+    "data/raids/asterion/abdomen/zone_6.json",
+    "data/raids/asterion/abdomen/zone_7.json"
    ]
   },
   {
@@ -37726,10 +40213,151 @@
    ]
   },
   {
+   "fr": "Passage vers : Mollet blindé",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Muscle suspendu",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_1.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Mâchoire",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Nerfs optiques",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_3.json",
+    "data/raids/asterion/crane/zone_6.json",
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Nid des parasites",
+   "where": [
+    "data/raids/asterion/abdomen/zone_1.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Orbite droite",
+   "where": [
+    "data/raids/asterion/crane/zone_1.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Orbite gauche",
+   "where": [
+    "data/raids/asterion/crane/zone_1.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Ossuaire oublié",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Pied de Graviton",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Poche oubliée",
+   "where": [
+    "data/raids/asterion/abdomen/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_5.json",
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Passage vers : Poignet-verrou",
    "where": [
     "data/raids/asterion/bras_droit/zone_4.json",
     "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Poumon gauche",
+   "where": [
+    "data/raids/asterion/torse/zone_1.json",
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Reliquaire du cœur",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Sanctuaire des poids",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Sternum",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json",
+    "data/raids/asterion/torse/zone_3.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Talon de Titanus",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Tempe",
+   "where": [
+    "data/raids/asterion/crane/zone_3.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Tendon glacé",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_1.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_5.json",
+    "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Tibia",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json"
    ]
   },
   {
@@ -37742,10 +40370,25 @@
    ]
   },
   {
+   "fr": "Passage vers : Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_6.json",
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
    "fr": "Passage vers : Épaule",
    "where": [
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Épaule gelée",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json"
    ]
   },
   {
@@ -38464,6 +41107,12 @@
    ]
   },
   {
+   "fr": "Pied de Graviton",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Pied de la cataracte",
    "where": [
     "data/levels/pyralis_02.json"
@@ -38622,6 +41271,12 @@
    "fr": "Place libre — « Modifier » pour suivre un succès",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Placement dans un groupe…",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -39412,9 +42067,27 @@
    ]
   },
   {
+   "fr": "Poche oubliée",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Poids (probabilité)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Poignet de glace : il s'ouvre quand les deux cœurs de givre (Tendon, Avant-bras) sont brisés.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_4.json"
    ]
   },
   {
@@ -39964,6 +42637,12 @@
    ]
   },
   {
+   "fr": "Poumon gauche",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Pour avoir apaisé la Liche des Catacombes.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -40393,6 +43072,17 @@
    ]
   },
   {
+   "fr": "Première embuscade repoussée !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
    "fr": "Première médaille",
    "where": [
     "data/achievements/achievements.json"
@@ -40676,6 +43366,12 @@
    "fr": "Progression de l'équipe : {0} % · temps {1}",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "PROGRESSION DU TITAN",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -41416,6 +44112,22 @@
    ]
   },
   {
+   "fr": "Puits de gravité",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Puits de gravité ! Restez sur les îlots hauts",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
    "fr": "Puits des cuves",
    "where": [
     "data/levels/pyralis_01.json"
@@ -41439,6 +44151,14 @@
    "fr": "Puits laser : planez et glissez entre les faisceaux.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Pulsation du cœur",
+   "where": [
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -41515,12 +44235,6 @@
    "fr": "PYROCLAST",
    "where": [
     "data/raids/asterion_film.json"
-   ]
-  },
-  {
-   "fr": "Pyroclast",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -41822,6 +44536,42 @@
    ]
   },
   {
+   "fr": "raccourci fermé (le levier est dans l'Avant-bras de givre)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "raccourci fermé (le levier est dans l'Avant-bras)",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "raccourci fermé (le levier est dans le Foie noir)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "raccourci fermé (le levier est dans le Mollet blindé)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "raccourci fermé (le levier est dans le Poumon gauche)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "raccourci fermé (le levier est dans le Tibia)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Raccourci vers la Veine : actionnez le levier pour l'ouvrir à tous les groupes.",
    "where": [
     "data/raids/asterion/bras_droit/zone_6.json"
@@ -42082,6 +44832,12 @@
   },
   {
    "fr": "Raids de clan, phase 2 : la branche « BRAS DROIT » d'Asterion se joue. Pendant un raid en cours, la fiche de l'événement ouvre la carte de la branche : huit zones reliées sur le bras du titan (l'Épaule et ses trois points d'apparition, le Biceps de basalte aux plateformes qui respirent, la Veine de magma et sa coulée, le Coude-forge et ses deux soufflets à détruire par deux groupes, la Grotte des scories secrète, l'Avant-bras et son raccourci, le Poignet-verrou ouvert par deux générateurs, la Main de Pyroclast scellée jusqu'à la prochaine version), leur état, les objectifs faits et par quel groupe, les groupes et où ils sont, « Rejoindre » ou « Aider » un autre groupe.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 4 : tout le corps d'Asterion se joue. Aux côtés du Bras droit, six nouvelles branches de huit zones chacune (56 zones en tout), chacune avec son monde, ses ennemis, ses traversées et son danger : le CRÂNE de Skullmaw (vertèbres flottantes, regards lasers, onde psychique), le BRAS GAUCHE de Dreadfang (glace qui cède, tourelles, balayage des griffes), le TORSE de Heartbreaker (côtes mouvantes, barrières d'énergie, pulsation du cœur, quatre plaques à briser par plusieurs groupes), l'ABDOMEN de Voidworm (bassins d'acide, nid des parasites, reflux d'acide), la JAMBE GAUCHE de Graviton (puits d'apesanteur, îlots mouvants, puits de gravité) et la JAMBE DROITE de Titanus (pistons géants, lave, onde sismique). Chaque branche a deux chemins, une zone secrète et sa relique, un raccourci à ouvrir au levier, une zone qui demande deux groupes et un verrou à plusieurs objectifs ; la porte de chaque gigaboss reste scellée jusqu'à la prochaine version.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -43084,6 +45840,22 @@
    ]
   },
   {
+   "fr": "Reflux d'acide",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Reflux d'acide ! Restez sur les branches hautes",
+   "where": [
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
    "fr": "Refus",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -43249,15 +46021,27 @@
    ]
   },
   {
+   "fr": "Rejoindre cette branche",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Rejoindre le projet",
    "where": [
     "ui/screens/ProjectsScene.cpp"
    ]
   },
   {
-   "fr": "Rejoindre mon groupe",
+   "fr": "Rejoindre là où le clan a besoin de moi",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoindre ma place · {0}",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -43340,6 +46124,12 @@
    ]
   },
   {
+   "fr": "Reliquaire du cœur",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "relique",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -43353,9 +46143,45 @@
    ]
   },
   {
+   "fr": "Relique de l'ossuaire",
+   "where": [
+    "data/raids/asterion/crane/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Relique de la crevasse",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Relique de la forge",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Relique de la poche",
+   "where": [
+    "data/raids/asterion/abdomen/zone_5.json"
+   ]
+  },
+  {
    "fr": "Relique des scories",
    "where": [
     "data/raids/asterion/bras_droit/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Relique du reliquaire",
+   "where": [
+    "data/raids/asterion/torse/zone_5.json"
+   ]
+  },
+  {
+   "fr": "Relique du sanctuaire",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_5.json"
    ]
   },
   {
@@ -43574,6 +46400,12 @@
    "fr": "Renforts",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "RENFORTS DEMANDÉS",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -44005,6 +46837,36 @@
    ]
   },
   {
+   "fr": "Reprendre l'épaule gelée : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Reprendre la clavicule : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Reprendre la hanche : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Reprendre la hanche de fer : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Reprendre le diaphragme : vaincre sa garde",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "requête impossible",
    "where": [
     "game/online/HttpTransportWinHttp.cpp"
@@ -44157,6 +47019,14 @@
    "fr": "Reste en bas (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "restez sur les îlots hauts",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json"
    ]
   },
   {
@@ -45087,6 +47957,18 @@
    ]
   },
   {
+   "fr": "Réacteur est : coupez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Réacteur ouest : coupez-le avec un pouvoir de tir.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json"
+   ]
+  },
+  {
    "fr": "Réacteur vivant",
    "where": [
     "data/achievements/achievements.json"
@@ -45480,6 +48362,24 @@
    "fr": "Répartir verticalement",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Répartition des joueurs : 8 joueurs au plus par instance, jusqu'à 50 par clan. Choisissez une branche (ou « Rejoindre là où le clan a besoin de moi ») : le serveur vous place dans un groupe de votre clan qui a de la place, en ouvre un nouveau quand tous sont pleins et envoie les retardataires là où le clan se bat. L'écran « Répartition du clan » montre la place de chacun ; le chef, les officiers et le chef de raid y déplacent un joueur ou équilibrent les groupes d'une branche.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "RÉPARTITION DU CLAN",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Répartition du clan",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -46240,6 +49140,12 @@
    ]
   },
   {
+   "fr": "Sanctuaire des poids",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Sanctuaires sans chute",
    "where": [
     "data/achievements/achievements.json"
@@ -46520,6 +49426,22 @@
    "fr": "Sautez puis appuyez à nouveau sur Saut en l'air : double saut !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "sautez sur les corniches",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "sautez sur les grilles",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_7.json"
    ]
   },
   {
@@ -47509,6 +50431,18 @@
    ]
   },
   {
+   "fr": "Seuls le chef, les officiers et le chef de raid du clan déplacent les joueurs ; chacun choisit sa branche sur la carte du titan.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seuls le chef, les officiers et le chef de raid du clan répartissent les joueurs.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "seuls le nom et le tag se modifient ici",
    "where": [
     "server/src/clans.ts"
@@ -47720,6 +50654,18 @@
    "fr": "SKULLMAW",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Skullmaw — prochaine version",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Skullmaw — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
    ]
   },
   {
@@ -48940,6 +51886,12 @@
    "fr": "Statistiques réinitialisées.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sternum",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -50252,6 +53204,12 @@
    ]
   },
   {
+   "fr": "Talon de Titanus",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
    "fr": "Tanzanie",
    "where": [
     "data/online/countries.json",
@@ -50363,6 +53321,12 @@
    "fr": "TeleportOut",
    "where": [
     "game/enemies/Enemy.cpp"
+   ]
+  },
+  {
+   "fr": "Tempe",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -50672,6 +53636,12 @@
    "where": [
     "data/enemies/echo_spore_queen.json",
     "data/enemies/spore_queen.json"
+   ]
+  },
+  {
+   "fr": "Tendon glacé",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -51208,6 +54178,14 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/zone_1.json",
+    "data/raids/asterion/abdomen/zone_2.json",
+    "data/raids/asterion/abdomen/zone_3.json",
+    "data/raids/asterion/abdomen/zone_4.json",
+    "data/raids/asterion/abdomen/zone_5.json",
+    "data/raids/asterion/abdomen/zone_6.json",
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -51216,6 +54194,46 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/zone_1.json",
+    "data/raids/asterion/bras_gauche/zone_2.json",
+    "data/raids/asterion/bras_gauche/zone_3.json",
+    "data/raids/asterion/bras_gauche/zone_4.json",
+    "data/raids/asterion/bras_gauche/zone_5.json",
+    "data/raids/asterion/bras_gauche/zone_6.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_1.json",
+    "data/raids/asterion/crane/zone_2.json",
+    "data/raids/asterion/crane/zone_3.json",
+    "data/raids/asterion/crane/zone_4.json",
+    "data/raids/asterion/crane/zone_5.json",
+    "data/raids/asterion/crane/zone_6.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/zone_1.json",
+    "data/raids/asterion/jambe_droite/zone_2.json",
+    "data/raids/asterion/jambe_droite/zone_3.json",
+    "data/raids/asterion/jambe_droite/zone_4.json",
+    "data/raids/asterion/jambe_droite/zone_5.json",
+    "data/raids/asterion/jambe_droite/zone_6.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/zone_1.json",
+    "data/raids/asterion/jambe_gauche/zone_2.json",
+    "data/raids/asterion/jambe_gauche/zone_3.json",
+    "data/raids/asterion/jambe_gauche/zone_4.json",
+    "data/raids/asterion/jambe_gauche/zone_5.json",
+    "data/raids/asterion/jambe_gauche/zone_6.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/zone_1.json",
+    "data/raids/asterion/torse/zone_2.json",
+    "data/raids/asterion/torse/zone_3.json",
+    "data/raids/asterion/torse/zone_4.json",
+    "data/raids/asterion/torse/zone_5.json",
+    "data/raids/asterion/torse/zone_6.json",
+    "data/raids/asterion/torse/zone_7.json",
+    "data/raids/asterion/torse/zone_8.json",
     "data/tutorial/premier_envol.json",
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/LevelData.cpp",
@@ -51386,6 +54404,12 @@
    ]
   },
   {
+   "fr": "Tibia",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Timor-Leste",
    "where": [
     "data/online/countries.json",
@@ -51530,9 +54554,40 @@
    ]
   },
   {
+   "fr": "TITAN · {0}",
+   "where": [
+    "game/raid/RaidRun.cpp",
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "titan.json illisible",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "TITANUS",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Titanus fléchit : le Tibia de la Jambe gauche s'ouvre vers la Cheville",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "Titanus — prochaine version",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Titanus — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -51692,7 +54747,8 @@
   {
    "fr": "TORSE",
    "where": [
-    "data/raids/asterion.json"
+    "data/raids/asterion.json",
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -52350,6 +55406,18 @@
    ]
   },
   {
+   "fr": "Trancher le nerf droit (un autre groupe)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Trancher le nerf gauche (un groupe)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Transférer",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -52611,6 +55679,17 @@
    "fr": "Trois têtes... et toutes affamées. Restons mobiles !",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Troisième embuscade repoussée : la garde de l'antre approche !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
@@ -53679,6 +56758,12 @@
    ]
   },
   {
+   "fr": "Un ossuaire oublié dans l'épaisseur du crâne. Une relique y repose.",
+   "where": [
+    "data/raids/asterion/crane/zone_5.json"
+   ]
+  },
+  {
    "fr": "Un passage dans la roche : la Grotte des scories !",
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json"
@@ -53763,6 +56848,12 @@
    ]
   },
   {
+   "fr": "Un reliquaire caché entre les côtes, tout près du cœur. Une relique y brille.",
+   "where": [
+    "data/raids/asterion/torse/zone_5.json"
+   ]
+  },
+  {
    "fr": "Un Rempart de forge pare de face : sautez par-dessus et frappez son dos d'une Frappe sismique.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -53784,6 +56875,12 @@
    "fr": "Un replay est déjà associé à cette tentative.",
    "where": [
     "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "Un repli de chair : la Poche oubliée !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_3.json"
    ]
   },
   {
@@ -53913,6 +57010,12 @@
    "fr": "Une articulation de basalte où le titan fond le métal des mondes avalés. Deux soufflets attisent la forge : il faut deux groupes, un par soufflet. La coulée de magma revient sans cesse.",
    "where": [
     "data/raids/asterion/bras_droit/zone_4.json"
+   ]
+  },
+  {
+   "fr": "une autre branche du titan l'ouvre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -54061,6 +57164,12 @@
    ]
   },
   {
+   "fr": "Une crevasse cachée dans la glace du bras. Une relique y dort ; une paroi gelée donne sur le poignet.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_5.json"
+   ]
+  },
+  {
    "fr": "Une crevasse sans fond fend le glacier : pentes de glace vive, ponts qui cèdent au premier pas, lac gelé à traverser par-dessous, couloir des vents. La Wyrm hurle au fond.",
    "where": [
     "data/levels/glacior_04.json"
@@ -54088,6 +57197,36 @@
    "fr": "Une créature y entre dès que vous la rencontrez.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Une faille dans la glace : la Crevasse cachée !",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Une fente dans l'os : l'Ossuaire oublié !",
+   "where": [
+    "data/raids/asterion/crane/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Une fissure entre deux côtes : le Reliquaire du cœur !",
+   "where": [
+    "data/raids/asterion/torse/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Une forge cachée dans l'os : la Forge oubliée !",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Une forge oubliée dans la jambe du titan. Une relique y refroidit.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_5.json"
    ]
   },
   {
@@ -54305,6 +57444,12 @@
    "fr": "Une poche de cristal dans le puits !",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Une poche oubliée dans les replis de l'abdomen. Une relique y flotte.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_5.json"
    ]
   },
   {
@@ -55551,6 +58696,12 @@
    ]
   },
   {
+   "fr": "Vers le Gosier : la paroi ne cède que si le Torse perd ses plaques.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_4.json"
+   ]
+  },
+  {
    "fr": "Vers lui",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -56333,6 +59484,18 @@
    ]
   },
   {
+   "fr": "Voidworm — prochaine version",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Voidworm — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
    "fr": "Voir",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -56626,6 +59789,12 @@
    ]
   },
   {
+   "fr": "Votre clan a déjà toutes ses instances pleines sur cette branche.",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "Votre clan a déjà {0} inscrits : c'est complet.",
    "where": [
     "server/src/raids.ts"
@@ -56766,12 +59935,6 @@
    ]
   },
   {
-   "fr": "Votre groupe entre par l'Épaule ; il rejoint ensuite les zones ouvertes.",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
    "fr": "Votre groupe est dans : {0}.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -56866,6 +60029,18 @@
    "fr": "votre pays",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre place : {0} · {1}. Chaque groupe compte 8 joueurs au plus.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre place est sur une autre branche : rejoindre celle-ci vous y place.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -57509,6 +60684,12 @@
    ]
   },
   {
+   "fr": "Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Vue",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -57909,6 +61090,12 @@
    ]
   },
   {
+   "fr": "zones contrôlées",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Zones de l'image",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -58266,6 +61453,12 @@
    ]
   },
   {
+   "fr": "{0} / 8 placés · {1} en jeu · zone : {2}",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -58344,6 +61537,18 @@
    ]
   },
   {
+   "fr": "{0} / {1} zones · {2} groupe",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} zones · {2} groupes",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} étoiles",
    "where": [
     "ui/screens/AchievementsScene.cpp",
@@ -58366,12 +61571,6 @@
    "fr": "{0} : 1re équipe {1} · {2} %",
    "where": [
     "ui/screens/CoopGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} : allumer les deux générateurs (Veine, Avant-bras)",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -58429,6 +61628,12 @@
    ]
   },
   {
+   "fr": "{0} : en marche",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : ennemi « {1} » introuvable",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -58462,6 +61667,12 @@
    "fr": "{0} : introuvable",
    "where": [
     "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : joueurs ensemble sur la plaque",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -58510,12 +61721,6 @@
    "fr": "{0} : plateforme mobile immobile (déplacement nul)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
-   ]
-  },
-  {
-   "fr": "{0} : raccourci fermé (le levier est dans l'Avant-bras)",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -59060,6 +62265,12 @@
    ]
   },
   {
+   "fr": "{0} dans {1} s · {2} !",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} de large, {1} de haut",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -59473,13 +62684,15 @@
   {
    "fr": "{0} groupe",
    "where": [
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
    "fr": "{0} groupes",
    "where": [
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -59666,6 +62879,12 @@
    ]
   },
   {
+   "fr": "{0} joueur déplacé.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueur inscrit",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -59707,6 +62926,12 @@
    "fr": "{0} joueurs classés · records vérifiés uniquement",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs déplacés.",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -60237,6 +63462,12 @@
    ]
   },
   {
+   "fr": "{0} placés sur {1} inscrits",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} possible",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -60760,13 +63991,13 @@
    ]
   },
   {
-   "fr": "{0} zones sur 8 contrôlées · {1} groupe en jeu",
+   "fr": "{0} zones sur {1} contrôlées · {2} groupe en jeu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
-   "fr": "{0} zones sur 8 contrôlées · {1} groupes en jeu",
+   "fr": "{0} zones sur {1} contrôlées · {2} groupes en jeu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -61003,6 +64234,12 @@
    "fr": "{0} · {1} / {2} inscrits",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} : {2} groupe sur {3}, un renfort est attendu",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -62607,6 +65844,28 @@
    ]
   },
   {
+   "fr": "Écluse",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_7.json",
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/crane/zone_7.json",
+    "data/raids/asterion/jambe_droite/zone_7.json",
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
    "fr": "Économie",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -62984,6 +66243,12 @@
    ]
   },
   {
+   "fr": "Épaule gelée",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Épines chercheuses",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -63017,6 +66282,24 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Équilibrage…",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Équilibrer les groupes : {0}",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Équilibrer une branche (choisissez un joueur placé)",
+   "where": [
+    "ui/screens/RaidRosterScene.cpp"
    ]
   },
   {
@@ -63323,6 +66606,12 @@
    ]
   },
   {
+   "fr": "Événement en cours",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Événement enregistré (inscrit au Journal).",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -63343,6 +66632,7 @@
   {
    "fr": "Événement introuvable.",
    "where": [
+    "server/src/raidMap.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -63372,6 +66662,12 @@
    ]
   },
   {
+   "fr": "Événement terminé",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Événement « {0} » : cible « {1} » introuvable",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -63381,6 +66677,12 @@
    "fr": "Événement « {0} » : source « {1} » introuvable",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "Événement à venir",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -63577,7 +66879,9 @@
   {
    "fr": "‹ Retour",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidRosterScene.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -63647,6 +66951,12 @@
    ]
   },
   {
+   "fr": "■ groupes (votre clan en or)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "▢ zone secrète (pointillés)",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -63701,9 +67011,39 @@
    ]
   },
   {
+   "fr": "● affaiblie",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "● combat en cours",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "● découverte",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "● pas encore découverte",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "● vous  ● groupe  ● ennemis  ◆ objectif  ▮ passage",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "✦ ouvert par une autre branche",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   }
  ]

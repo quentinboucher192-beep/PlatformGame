@@ -1,0 +1,284 @@
+{
+ "id": "asterion_torse",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "torse",
+ "name": "TORSE",
+ "gigaboss": "Heartbreaker",
+ "start_zone": 1,
+ "generators_needed": 4,
+ "lock_texts": {
+  "generators": {
+   "hint": "il faut briser les quatre plaques du torse",
+   "message": "Les quatre plaques sont brisées : la Cage du cœur s'ouvre",
+   "objective": "briser les quatre plaques (Sternum, Côtes basses)"
+  },
+  "shortcut": {
+   "hint": "le levier du Poumon gauche l'ouvre",
+   "message": "Le raccourci Poumon gauche ⇄ Sternum est ouvert",
+   "objective": "raccourci fermé (le levier est dans le Poumon gauche)"
+  }
+ },
+ "zones": [
+  {
+   "id": 1,
+   "name": "Clavicule",
+   "sub": "entrée · 3 points d'apparition",
+   "x": 110,
+   "y": 380,
+   "level": "zone_1.json",
+   "inside": "Ennemis : rôdeurs, mites lumineuses · arène de la garde",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.4
+  },
+  {
+   "id": 2,
+   "name": "Côtes hautes",
+   "sub": "côtes mouvantes · barrière d'énergie",
+   "x": 330,
+   "y": 200,
+   "level": "zone_2.json",
+   "inside": "Ennemis : l'éclat de roche (gardien), sentinelles · barrière d'énergie",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.1
+  },
+  {
+   "id": 3,
+   "name": "Poumon gauche",
+   "sub": "le poumon à crever · levier ⇄",
+   "x": 330,
+   "y": 560,
+   "level": "zone_3.json",
+   "inside": "Ennemis : parasites en renfort, étincelles · le poumon (un pouvoir de tir)",
+   "event": "",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 1.2
+  },
+  {
+   "id": 4,
+   "name": "Sternum",
+   "sub": "2 plaques : 2 groupes",
+   "x": 560,
+   "y": 250,
+   "level": "zone_4.json",
+   "inside": "Ennemis : rempart, sentinelles · barrières d'énergie · deux plaques, un groupe chacune",
+   "event": "Pulsation du cœur toutes les 45 s (passerelles sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2,
+   "minutes": 1.0
+  },
+  {
+   "id": 5,
+   "name": "Reliquaire du cœur",
+   "sub": "zone secrète ◆ relique",
+   "x": 330,
+   "y": 380,
+   "level": "zone_5.json",
+   "inside": "Ennemis : mites lumineuses · la relique du reliquaire",
+   "event": "",
+   "secret": true,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 0.7
+  },
+  {
+   "id": 6,
+   "name": "Côtes basses",
+   "sub": "2 plaques : 2 groupes",
+   "x": 560,
+   "y": 560,
+   "level": "zone_6.json",
+   "inside": "Ennemis : parasites en renfort, rôdeurs · deux plaques, un groupe chacune",
+   "event": "Pulsation du cœur toutes les 50 s (passerelles sûres)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 2,
+   "minutes": 1.1
+  },
+  {
+   "id": 7,
+   "name": "Cage du cœur",
+   "sub": "s'ouvre : les 4 plaques brisées",
+   "x": 790,
+   "y": 400,
+   "level": "zone_7.json",
+   "inside": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la cage (arène en trois vagues)",
+   "event": "Pulsation du cœur toutes les 75 s dans les galeries basses (étages sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 15.0
+  },
+  {
+   "id": 8,
+   "name": "Antre de Heartbreaker",
+   "sub": "GIGABOSS · prochaine version",
+   "x": 1000,
+   "y": 400,
+   "level": "zone_8.json",
+   "inside": "Le gigaboss Heartbreaker attend derrière sa porte scellée",
+   "event": "",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1,
+   "minutes": 0
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 1,
+   "b": 3,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 4,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 4,
+   "lock": "shortcut",
+   "secret": false
+  },
+  {
+   "a": 3,
+   "b": 6,
+   "lock": "",
+   "secret": false
+  },
+  {
+   "a": 2,
+   "b": 5,
+   "lock": "",
+   "secret": true
+  },
+  {
+   "a": 4,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 6,
+   "b": 7,
+   "lock": "generators",
+   "secret": false
+  },
+  {
+   "a": 7,
+   "b": 8,
+   "lock": "objective:torse_cage",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "torse_clavicule",
+   "index": 0,
+   "zone": 1,
+   "label": "Reprendre la clavicule : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "torse_cotes",
+   "index": 1,
+   "zone": 2,
+   "label": "Abattre l'éclat de roche des côtes hautes",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "torse_poumon",
+   "index": 2,
+   "zone": 3,
+   "label": "Crever le poumon gauche (un pouvoir de tir)",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "torse_levier",
+   "index": 3,
+   "zone": 3,
+   "label": "Facultatif : ouvrir le raccourci vers le Sternum (levier)",
+   "optional": true,
+   "role": "shortcut",
+   "pair": ""
+  },
+  {
+   "id": "torse_plaque_nord",
+   "index": 4,
+   "zone": 4,
+   "label": "Briser la plaque nord (un groupe)",
+   "optional": false,
+   "role": "generator",
+   "pair": "plaques_sternum"
+  },
+  {
+   "id": "torse_plaque_sud",
+   "index": 5,
+   "zone": 4,
+   "label": "Briser la plaque sud (un autre groupe)",
+   "optional": false,
+   "role": "generator",
+   "pair": "plaques_sternum"
+  },
+  {
+   "id": "torse_reliquaire",
+   "index": 6,
+   "zone": 5,
+   "label": "Facultatif : emporter la relique du reliquaire",
+   "optional": true,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "torse_plaque_est",
+   "index": 7,
+   "zone": 6,
+   "label": "Briser la plaque est (un groupe)",
+   "optional": false,
+   "role": "generator",
+   "pair": "plaques_cotes"
+  },
+  {
+   "id": "torse_plaque_ouest",
+   "index": 8,
+   "zone": 6,
+   "label": "Briser la plaque ouest (un autre groupe)",
+   "optional": false,
+   "role": "generator",
+   "pair": "plaques_cotes"
+  },
+  {
+   "id": "torse_cage",
+   "index": 9,
+   "zone": 7,
+   "label": "Ouvrir la cage du cœur : vaincre sa garde",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  }
+ ]
+}

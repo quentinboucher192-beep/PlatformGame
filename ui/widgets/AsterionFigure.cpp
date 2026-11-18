@@ -77,6 +77,8 @@ std::string AsterionFigure::draw(GameServices& g, const std::string& id, const R
     int hover = -1, focused = -1;
     std::string activated;
     const Rect fig{ox, oy, cw * k, ch * k};
+    figure_ = fig;
+    anchors_.clear();
     if (ui.acceptsInput() && ui.mouseOver(fig)) {
         const Vec2 m = ui.input().mousePos();
         hover = asterion::hitTest(d.sprite, static_cast<int>(std::floor((m.x - ox) / k)), static_cast<int>(std::floor((m.y - oy) / k)), lifts);
@@ -88,6 +90,7 @@ std::string AsterionFigure::draw(GameServices& g, const std::string& id, const R
         if (!l.hasMask() || !partOf(d, l.id)) continue;
         const Vec2 c{ox + (static_cast<float>(l.anchorX) + 0.5f) * k, oy + (static_cast<float>(l.anchorY - lifts[i]) + 0.5f) * k};
         const std::string name = id + "/" + l.id;
+        anchors_[l.id] = c;
         if (ui.hotspot(name, Rect::fromCenter(c, {stop, stop}))) activated = l.id;
         if (ui.focused(name)) focused = static_cast<int>(i);
     }
@@ -132,6 +135,13 @@ std::string AsterionFigure::draw(GameServices& g, const std::string& id, const R
     }
     if (std::find(openable.begin(), openable.end(), activated) == openable.end()) activated.clear();  // the others: nothing yet
     return activated;
+}
+
+bool AsterionFigure::anchorOf(const std::string& part, Vec2& out) const {
+    auto it = anchors_.find(part);
+    if (it == anchors_.end()) return false;
+    out = it->second;
+    return true;
 }
 
 void AsterionFigure::drawTooltip(GameServices& g) {

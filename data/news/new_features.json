@@ -2463,6 +2463,13 @@
    "parents": [
     "clans.tab.raids"
    ]
+  },
+  {
+   "id": "raids.titan_map",
+   "version": "2.67.0",
+   "parents": [
+    "clans.tab.raids"
+   ]
   }
  ]
 }

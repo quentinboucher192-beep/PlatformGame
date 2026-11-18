@@ -19,6 +19,7 @@ import * as campaign from "./campaign";
 import * as clans from "./clans";
 import * as raids from "./raids";
 import * as raidZones from "./raidZones";
+import * as raidMap from "./raidMap";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -278,6 +279,15 @@ route("GET", `${V}/raids/events/{eventId}/branch`, (ctx) => raidZones.branchView
 route("POST", `${V}/raids/events/{eventId}/instance`, (ctx) => raidZones.joinInstance(ctx));
 route("GET", `${V}/raids/instances/{instanceId}/socket`, (ctx) => raidZones.instanceSocket(ctx));
 route("POST", `${V}/raids/instances/{instanceId}/reports`, (ctx) => raidZones.report(ctx));
+// Phase 4 (raidMap.ts, 2.68): the whole titan (seven branches, the links between them), each branch's map,
+// the placement of the players (8 per instance, up to 50 per clan) and its tools for the raid leader.
+route("GET", `${V}/raids/events/{eventId}/titan`, (ctx) => raidMap.titanView(ctx));
+route("GET", `${V}/raids/events/{eventId}/branches/{part}`, (ctx) => raidMap.branchView(ctx));
+route("POST", `${V}/raids/events/{eventId}/branches/{part}/join`, (ctx) => raidMap.join(ctx));
+route("POST", `${V}/raids/events/{eventId}/join`, (ctx) => raidMap.join(ctx));
+route("GET", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.placements(ctx));
+route("POST", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.move(ctx));
+route("POST", `${V}/raids/events/{eventId}/placements/rebalance`, (ctx) => raidMap.rebalance(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
