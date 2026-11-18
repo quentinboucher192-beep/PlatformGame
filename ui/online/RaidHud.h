@@ -78,6 +78,16 @@ void drawTimer(UIContext& ui, const Rect& r, float k, float instanceSeconds, flo
 /// A line in a rounded box (the network, the contributions); `test`: the « TEST ADMIN » badge's look.
 void drawLineBox(UIContext& ui, const Rect& r, float k, const std::string& text, Color textColor, bool test);
 
+/// 2.74 (phase 6): the Cœur d'Asterion's shared health (docs/RAIDS.md §16): what is left for every
+/// group (gold), this group's part (green) and the other groups' (violet) at its right, the shared
+/// phases' marks (75 / 50 / 25 %), a title and its phase on the top row, a line under the bar.
+struct HeartBar {
+    float left = 1.0f, own = 0.0f, others = 0.0f;  // fractions of its health
+    std::string title, phase, sub;
+    bool fallen = false;
+};
+void drawHeartBar(UIContext& ui, const Rect& r, float k, const HeartBar& h);
+
 /// A box of the HUD (its rounded panel).
 void hudBox(UIContext& ui, const Rect& r);
 

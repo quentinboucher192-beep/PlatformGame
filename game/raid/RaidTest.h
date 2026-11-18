@@ -64,6 +64,13 @@ class TestSession {
 public:
     TestSession(WorldServices services, const Branch& branch, const RaidRun::Test& setup);
 
+    /// 2.74 (phase 6): the Cœur d'Asterion's test (before begin): the links of the parts of the titan
+    /// chosen as fallen (their bits in the branch's state, as RAID_STATE gives them) and its shared
+    /// state (the relics), given with every step.
+    void setHeart(uint32_t links, const HeartShared& heart) {
+        state_ |= links;
+        heart_ = heart;
+    }
     bool begin(int zone);
     /// One step: the administrator's frame on seat 0, the simulated players on theirs, the free
     /// seats vacant; the branch's state given as RAID_STATE would give it. `scripted` (2.70, the
@@ -92,6 +99,7 @@ private:
     TestBots bots_;
     int players_ = 1;
     uint32_t state_ = 0;
+    HeartShared heart_;  // 2.74: the heart's test (its relics)
     std::vector<InputFrame> frames_;
     std::vector<int> far_;  // per seat: steps far from the administrator
 };

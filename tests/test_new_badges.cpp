@@ -220,12 +220,12 @@ TEST_CASE("new badges: the shipped catalogue leads every novelty to a menu") {
             ++rewards;
         }
     }
-    CHECK(achievements == 72 + 3 + 12 + 2 + 6 + 6 + 6 + 6 + 1 + 3 + 3);  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the
+    CHECK(achievements == 72 + 3 + 12 + 2 + 6 + 6 + 6 + 6 + 1 + 3 + 3 + 1);  // + the Cœur d'Asterion's badge (2.72)  // 2.29, Singularis's three of 2.34, Les Confins' twelve (2.48-2.49), the
                                                                      // Boomerang chargé's two (2.51), the Kraken's six (2.53), the Phénix's six (2.56),
                                                                      // the Liche's six (2.57), the Titan's six (2.58), Pyroclast's badge (2.68),
                                                                      // the badges of Voidworm, Graviton and Titanus, of Skullmaw, Dreadfang and
                                                                      // Heartbreaker (2.69)
-    CHECK(rewards == 22 + 1 + 5 + 10 + 5 + 5 + 5 + 5 + 3 + 3);  // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les
+    CHECK(rewards == 22 + 1 + 5 + 10 + 5 + 5 + 5 + 5 + 3 + 3 + 3);  // + its effect, frame and clan title (2.72)  // 2.29, « Briseur d'étoiles » of 2.34, the five of the challenges of 2.35, Les
                                                                 // Confins' ten, the Kraken's five (2.53), the Phénix's five (2.56), the Liche's five
                                                                 // (2.57), the Titan's five (2.58), the raid's three titles (2.68), the world
                                                                 // event's two suits and its clan title (2.69)

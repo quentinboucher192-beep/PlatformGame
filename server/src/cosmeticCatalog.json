@@ -381,6 +381,13 @@
    "achievement": "maitrise_phenix_nohit"
   },
   {
+   "id": "frame_coeur_asterion",
+   "category": "frame",
+   "look": "asterion_heart",
+   "name": "Cœur d'Asterion",
+   "raid": "asterion"
+  },
+  {
    "id": "frame_couronne",
    "category": "frame",
    "look": "crown",
@@ -585,6 +592,13 @@
    "raid": "asterion"
   },
   {
+   "id": "title_briseurs_etoile",
+   "category": "title",
+   "look": "Briseurs d'étoile",
+   "name": "Briseurs d'étoile",
+   "raid": "asterion"
+  },
+  {
    "id": "title_devoreurs_devores",
    "category": "title",
    "look": "Dévoreurs dévorés",
@@ -674,6 +688,13 @@
    "look": "candles",
    "name": "Veillée des âmes",
    "stars": 700
+  },
+  {
+   "id": "victory_supernova_asterion",
+   "category": "victory",
+   "look": "asterion_supernova",
+   "name": "Supernova d'Asterion",
+   "raid": "asterion"
   },
   {
    "id": "victory_coulee",

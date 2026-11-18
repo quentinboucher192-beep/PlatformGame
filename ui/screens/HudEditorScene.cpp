@@ -767,9 +767,18 @@ private:
         y += ui.s(38);
         const float gap = ui.s(6);
         const float below = ui.s(48) + gap + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);
-        const float rowH = std::clamp((c.bottom() - y - below) / static_cast<float>(kRaidHudElements) - gap, ui.s(40), ui.s(52));
+        // 2.74: in two columns when one does not leave rows of 40 px at least (13 elements since the
+        // Cœur d'Asterion's two), so that the settings under them stay on the screen.
+        const float room = c.bottom() - y - below;
+        const int cols = room / static_cast<float>(kRaidHudElements) - gap >= ui.s(40) ? 1 : 2;
+        const int perCol = (kRaidHudElements + cols - 1) / cols;
+        const float colW = (c.w - gap * static_cast<float>(cols - 1)) / static_cast<float>(cols);
+        const float rowH = std::clamp(room / static_cast<float>(perCol) - gap, ui.s(40), ui.s(52));
+        const float listY = y;
         selected_ = std::clamp(selected_, 0, kRaidHudElements - 1);
         for (int i = 0; i < kRaidHudElements; ++i) {
+            const int col = i / perCol;
+            y = listY + static_cast<float>(i % perCol) * (rowH + gap);
             const auto e = static_cast<RE>(i);
             const bool vis = work_.raidHud[e].visible || !RaidHudLayout::canHide(e);
             char sub[96];
@@ -778,9 +787,11 @@ private:
                               work_.raidHud[e].custom ? " · déplacé" : "");
             else
                 std::snprintf(sub, sizeof sub, "Masqué");
-            if (ui.listItem("rel" + std::to_string(i), {c.x, y, c.w, rowH}, RaidHudLayout::label(e), i == selected_, sub)) selected_ = i;
-            y += rowH + gap;
+            if (ui.listItem("rel" + std::to_string(i), {c.x + static_cast<float>(col) * (colW + gap), y, colW, rowH}, RaidHudLayout::label(e),
+                            i == selected_, sub))
+                selected_ = i;
         }
+        y = listY + static_cast<float>(perCol) * (rowH + gap);
         ui.toggle("raidarrows", {c.x, y, c.w, ui.s(48)}, "Flèches hors écran (ennemis, embuscade, boss, alliés)", work_.raidHud.arrows);
         y += ui.s(48) + gap + ui.s(14);
         const auto e = static_cast<RE>(selected_);
@@ -875,6 +886,22 @@ private:
                                  false);
         raidhud::drawLineBox(ui, at(RE::Status), k(RE::Status), "TEST ADMIN · non classé · 8 joueurs (7 simulés)", kGold, true);
         if (shown(RE::Timer)) raidhud::drawTimer(ui, at(RE::Timer), k(RE::Timer), 754.36f, 201.07f);
+        // 2.74 (phase 6): the Cœur d'Asterion's elements (shown in its arena only).
+        if (shown(RE::Heart)) {
+            raidhud::HeartBar h;
+            h.left = 0.632f;
+            h.own = 0.081f;
+            h.others = 0.287f;
+            h.title = "CŒUR D'ASTERION · 63,2 % · Exemple";
+            h.phase = "phase 2 / 4";
+            h.sub = "votre groupe 8,1 % · les autres groupes 28,7 % · parties du titan tombées 5 / 7";
+            raidhud::drawHeartBar(ui, at(RE::Heart), k(RE::Heart), h);
+        }
+        if (shown(RE::HeartEffects))
+            raidhud::drawObjectives(ui, at(RE::HeartEffects), k(RE::HeartEffects), "EFFETS DES BRANCHES SUR LE CŒUR · Exemple",
+                                    {{"◆", "Crâne tombé : ses lances stellaires perdent leur précision", kGreen},
+                                     {"!", "Torse debout : une cage d'os le garde dès sa 1re phase", Color{255, 176, 74, 255}},
+                                     {"◆", "Abdomen tombé : plus d'engeances en renfort", kGreen}});
     }
 
     raidhud::Minimap minimap_;  // 2.72: the example's minimap (the preview level's terrain)

@@ -559,9 +559,9 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
         {"trail", {"none", "stardust", "comet", "aurora", "eclipse", "flame", "prism", "runes", "month_comet", "ashes", "debris", "bubbles", "feathers",
                    "souls", "gears"}},
         {"frame", {"simple", "bronze", "silver", "gold", "platinum", "constellation", "emerald", "orbit", "nebula", "laurels", "crown", "scales", "runic",
-                   "tentacles", "plumage", "ossuary", "cogs"}},
+                   "tentacles", "plumage", "ossuary", "cogs", "asterion_heart"}},
         {"victory", {"classic", "fireworks", "starfall", "supernova", "vortex", "borealis", "corona", "fire_streak", "dragon_breath", "quake", "tidal_wave",
-                     "rebirth", "candles", "foundry"}}};
+                     "rebirth", "candles", "foundry", "asterion_supernova"}}};
     std::map<std::string, int> perCategory, defaults;
     std::set<int> thresholds;
     for (const CosmeticItem& it : c.items()) {

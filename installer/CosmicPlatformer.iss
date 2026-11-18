@@ -6,7 +6,7 @@
 ; The executable is linked against the static MSVC runtime: no redistributable needed.
 
 #define MyAppName "Cosmic Platformer"
-#define MyAppVersion "2.73.2"
+#define MyAppVersion "2.74.0"
 #define MyAppPublisher "Cosmic Studio"
 #define MyAppExeName "CosmicPlatformer.exe"
 #ifndef StageDir

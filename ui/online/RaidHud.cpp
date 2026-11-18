@@ -115,6 +115,29 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
             if (mm.x <= m + 0.5f && mm.y > ui.s(20)) y = std::max(y, mm.bottom() + ui.s(10));
             return Rect{m, y, w, ui.s(86) * k};
         }
+        case RaidHudElement::Heart: {
+            // 2.74: under the minimap when it is at the top; else in the left column, under the chrono.
+            const Rect mm = defaultArea(ui, l, RaidHudElement::Minimap, hud);
+            const float h = ui.s(58) * k;
+            if (mm.w > 0.0f && mm.y < ui.s(20)) {
+                const float w = std::min(mm.w, ui.s(640) * k);
+                return Rect{mm.x + (mm.w - w) * 0.5f, mm.bottom() + ui.s(8), w, h};
+            }
+            const Rect t = defaultArea(ui, l, RaidHudElement::Timer, hud);
+            return Rect{m, t.bottom() + ui.s(10), std::min(ui.s(420) * k, W * 0.3f), h};
+        }
+        case RaidHudElement::HeartEffects: {
+            // 2.74: in the left column under the chrono (and the heart's bar when it is there too),
+            // above the network line; never as wide as the gigaboss's bar's place (bottom centre).
+            float y = defaultArea(ui, l, RaidHudElement::Timer, hud).bottom() + ui.s(10);
+            const Rect hb = defaultArea(ui, l, RaidHudElement::Heart, hud);
+            if (hb.x <= m + 0.5f) y = std::max(y, hb.bottom() + ui.s(10));
+            const float bottom = defaultArea(ui, l, RaidHudElement::Status, hud).y - ui.s(10);
+            // Never under the danger band (centred), on the small screens too.
+            const float w =
+                std::max(ui.s(120), std::min({ui.s(500) * k, W * 0.28f, defaultArea(ui, l, RaidHudElement::Danger, hud).x - ui.s(10) - m}));
+            return Rect{m, y, w, std::max(ui.s(80), std::min(ui.s(320) * k, bottom - y))};
+        }
         default: return {};
     }
 }
@@ -259,6 +282,33 @@ void drawLineBox(UIContext& ui, const Rect& r, float k, const std::string& text,
     ui.r().fillRoundedRect(box, ui.s(10) * k, test ? Color{120, 20, 40, 230} : kHudFill);
     if (test) ui.r().drawRoundedRect(box, ui.s(10) * k, kGold, ui.s(1.5f) * k);
     fit(ui, text, {box.x + ui.s(12) * k, box.center().y}, 13 * k, box.w - ui.s(24) * k, textColor, test ? FontFace::Bold : FontFace::Body);
+}
+
+void drawHeartBar(UIContext& ui, const Rect& r, float k, const HeartBar& h) {
+    Renderer& rr = ui.r();
+    hudBox(ui, r);
+    const float pad = ui.s(10) * k, x = r.x + pad, w = r.w - pad * 2;
+    // The top row: its phase at the right (measured first), the title in what is left.
+    const float rw = std::min(textW(ui, h.phase, 13 * k, FontFace::Bold), w * 0.3f);
+    const float top = r.y + pad + ui.s(5) * k;
+    fit(ui, h.phase, {r.right() - pad, top}, 13 * k, rw, h.fallen ? kGreen : kGold, FontFace::Bold, Align::Right);
+    fit(ui, h.title, {x, top}, 13 * k, std::max(0.0f, w - rw - ui.s(10) * k), kText, FontFace::Bold);
+    // The bar: what is left (gold), this group's part (green) and the others' (violet) at its right.
+    const Rect bar{x, r.y + pad + ui.s(14) * k, w, ui.s(9) * k};
+    const float rad = bar.h * 0.5f;
+    rr.fillRoundedRect(bar, rad, Color{50, 36, 60, 255});
+    const float left = std::clamp(h.left, 0.0f, 1.0f);
+    if (left > 0.0f) rr.fillRoundedRect({bar.x, bar.y, bar.w * left, bar.h}, rad, kGold);
+    const float ox = bar.x + bar.w * left;
+    const float ow = std::clamp(bar.w * h.own, 0.0f, std::max(0.0f, bar.right() - ox));
+    if (ow > 0.0f) rr.fillRect({ox, bar.y, ow, bar.h}, Color{124, 240, 168, 200});
+    const float vw = std::clamp(bar.w * h.others, 0.0f, std::max(0.0f, bar.right() - ox - ow));
+    if (vw > 0.0f) rr.fillRect({ox + ow, bar.y, vw, bar.h}, Color{180, 108, 255, 170});
+    for (float t : {0.25f, 0.5f, 0.75f})
+        rr.fillRect({bar.x + bar.w * t - ui.s(1) * k, bar.y - ui.s(2) * k, ui.s(2) * k, bar.h + ui.s(4) * k}, Color{255, 255, 255, 90});
+    // The line under it, in the room left at the bottom of the box.
+    const float lineY = (bar.bottom() + r.bottom()) * 0.5f;
+    fit(ui, h.sub, {x, lineY}, 12 * k, w, kDim);
 }
 
 // -------------------------------------------------------------------------------------- maps

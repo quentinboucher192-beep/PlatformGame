@@ -280,6 +280,11 @@ struct RaidTestSetup {
     int players = 2;
     int startPhase = 1;
     bool invincible = true;
+    /// 2.74 (phase 6), the Cœur d'Asterion: the parts of the titan simulated as fallen (bit p = the part p
+    /// of raid::AsterionHeartRoutine::Part: their « modifier » links on in the test's branch state) and the
+    /// relics validated; ignored by the seven branches.
+    uint32_t parts = 0x7Fu;
+    int relics = 0;
     /// 2.70, captures for the documentation only (`--raid-test`, never without --headless:
     /// docs/BUILDING.md): no account needed (the test stays solo, local and never reported),
     /// each seat played by its script (`scripts[i]`, InputScript's format; "" leaves seat 0 to

@@ -260,6 +260,21 @@ atteindre la lumière de son cœur, avant qu'il ne s'affole.
 <p align="center"><img src="docs/media/gigaboss_heartbreaker.gif" width="640" alt="Heartbreaker dans ses trois phases et l'onde de ses battements"></p>
 <p align="center"><sub>Les trois phases de chaque Gigaboss avec les sprites du jeu (générés par <code>tools/assetgen</code>).</sub></p>
 
+### Le combat final : le Cœur d'Asterion
+
+Quand les **sept Gigaboss** sont tombés (validés par le serveur), le **Cœur d'Asterion** s'ouvre sur la carte du titan :
+une longue **Aorte cosmique** à huit, puis une arène gigantesque (neuf écrans de large, navettes et bacs mobiles) où
+flotte une étoile captive plus grande qu'un écran. **Tous les groupes de tous les clans** le combattent en même temps :
+chaque instance joue sa propre partie, mais sa **vie est partagée** — la part que chaque groupe lui arrache, validée par
+le consensus de ses joueurs, s'additionne sur le serveur et revient à tous les autres au même pas. Quatre phases
+(« Le cœur qui bat », « Les artères », « La couronne d'étoiles », puis une **Supernova** à contenir sur les ancres), des
+lances sur les huit joueurs à la fois, une marée de plasma. **Ce que les branches ont détruit l'affaiblit vraiment** :
+le Crâne tombé, ses lances perdent leur précision ; le Bras gauche, plus de balayages ; le Bras droit, plus de pluie de
+magma ; le Torse, plus de cage ; l'Abdomen, plus d'engeances ; la Jambe gauche, plus de pièges de gravité ; la Jambe
+droite, ses charges ralentissent. Sa chute validée lance le film **« La chute d'Asterion »** pour tout le groupe et
+accorde, une seule fois, le badge « Cœur d'Asterion », l'effet de victoire « Supernova d'Asterion », le cadre de profil
+des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §16](docs/RAIDS.md#16-phase-6-274--le-cœur-dasterion).
+
 ### Récompenses et événements mondiaux
 
 * **Contributions** calculées par la simulation pour chaque joueur — dégâts, dégâts évités, soutien,
@@ -590,6 +605,27 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.74.0** :
+* **Raids de clan, phase 6 : LE CŒUR D'ASTERION, le combat final** (`tools/levelgen/raid_coeur.py` : l'Aorte cosmique,
+  longue expédition à huit, et une arène gigantesque à plateformes mobiles ; `game/raid/AsterionHeartRoutine`, sur le cadre
+  `GigabossRoutine` et la caméra d'arène). Il s'ouvre quand les sept gigaboss sont tombés ; tous les groupes le combattent
+  en même temps et sa **vie est partagée** : la part de chaque instance, validée par son consensus, est additionnée par le
+  serveur (`server/src/raidHeart.ts`, une ligne par instance, jamais comptée deux fois) et revient aux autres par
+  `RAID_STATE` au même pas (le verrouillage reste exact). Quatre phases, une dernière **Supernova** à contenir sur les
+  ancres, marée de plasma, lances sur chaque joueur ; les sept parties détruites agissent vraiment sur le combat (précision,
+  balayages, pluie de magma, cage, engeances, pièges de gravité, charges ralenties), les reliques l'affaiblissent.
+* **Film « La chute d'Asterion »** (`data/raids/asterion_victoire.json`, scènes générées par
+  `tools/assetgen/environment/story_asterion_victoire.py`) joué pour toute l'instance quand la chute est validée, puis
+  « Revoir la victoire » sur la fiche de l'événement ; sprites du cœur (quatre phases), de ses ventricules et de son arène
+  générés par `tools/assetgen/characters/boss_n_coeur.py`.
+* **Récompenses** accordées une seule fois : badge « Cœur d'Asterion », effet de victoire « Supernova d'Asterion », cadre
+  de profil « Cœur d'Asterion » (10 meilleurs scores mixtes), titre de clan collectif « Briseurs d'étoile » ; « Asterion
+  est tombé » (événement mondial) exige maintenant le cœur ; notifications à son ouverture et à sa chute ; migration
+  **0148**. « Tester Asterion » : le cœur, sa phase de départ (1 à 4), les parties simulées comme tombées, les reliques.
+* **HUD des raids** : la **vie partagée du Cœur** (part de votre groupe, part des autres, phase) et les **effets des
+  branches** sur lui sont deux éléments de l'éditeur de HUD › « Raids » (`ui/online/RaidHud`), placés, redimensionnés ou
+  masqués comme les autres ; la liste de l'onglet passe sur deux colonnes quand une seule ne tient pas.
 
 **Nouveau dans la version 2.73.2** :
 * **Raids, flèches hors écran** : les flèches des niveaux reviennent en raid (ennemis déjà vus en orange, embuscade en

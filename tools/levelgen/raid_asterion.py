@@ -42,7 +42,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 1
+TITAN_REVISION = 2  # 2.72 (phase 6): the heart (titan.json « heart ») and the seven links « modifier » to it
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
@@ -1682,7 +1682,8 @@ def links(catalogs, levels):
     """The links of the titan, their bits in the target's state, checked against the zones."""
     by_part = {c["branch"]: c for c in catalogs}
     out, bits = [], {}
-    for lid, label, label_en, sources, to, kind, zones, objects in LINKS:
+    import raid_coeur  # 2.72 (phase 6): the seven parts' falls act on the heart's fight (kind « modifier »)
+    for lid, label, label_en, sources, to, kind, zones, objects in LINKS + raid_coeur.links(sys.modules[__name__]):
         tr(label, label_en)
         target = by_part[to]
         bit = LINK_BIT0 + bits.get(to, 0)
@@ -1692,6 +1693,8 @@ def links(catalogs, levels):
             assert any(o["id"] == oid for o in by_part[part]["objectives"]), (lid, oid)
         if kind == "open":
             assert any(e["lock"] == "link:" + lid for e in target["edges"]), lid
+        if kind == "modifier":  # read by the heart's routine (game/raid/AsterionHeartRoutine): no object, no passage
+            assert not objects and all(levels[to][z]["metadata"]["raid"].get("gigaboss") for z in zones), lid
         for z in zones:
             lv = levels[to][z]
             ids = {o["id"] for o in lv["objects"]}
@@ -1741,17 +1744,22 @@ def main():
     # The BRAS DROIT (raid_bras_droit.py): read only.
     bd = load_json(os.path.join(RAID_DIR, "bras_droit", "branch.json"))
     levels["bras_droit"] = {n: load_json(os.path.join(RAID_DIR, "bras_droit", "zone_%d.json" % n)) for n in range(1, 9)}
+    # 2.72 (phase 6): the heart (raid_coeur.py), opened once the seven gigaboss fell.
+    import raid_coeur
+    heart, levels["coeur"] = raid_coeur.build(sys.modules[__name__])
     all_cats = catalogs + [bd]
-    lks = links(all_cats, levels)
+    lks = links(all_cats + [heart], levels)
     by_part = {c["branch"]: c for c in all_cats}
     branches = [{"part": p, "id": by_part[p]["id"], "dir": p} for p in ORDER]
     titan = {"format": "cosmic.raid_titan", "revision": TITAN_REVISION, "raid": "asterion",
              "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them "
-                        "(an objective of one branch acts on another). Never edit by hand.",
-             "branches": branches, "links": lks}
+                        "(an objective of one branch acts on another), its heart (the final fight, 2.72: raid_coeur.py) and the "
+                        "links of kind « modifier » that the parts' falls give it. Never edit by hand.",
+             "branches": branches, "heart": {"part": "coeur", "id": heart["id"], "dir": "coeur"}, "links": lks}
     write_json(os.path.join(RAID_DIR, "titan.json"), titan)
     server = dict(titan)
     server["catalogs"] = catalogs
+    server["heart_catalog"] = heart
     write_json(SERVER_COPY, server)
     if "--en" in sys.argv and sys.argv.index("--en") + 1 < len(sys.argv):
         write_english(sys.argv[sys.argv.index("--en") + 1])

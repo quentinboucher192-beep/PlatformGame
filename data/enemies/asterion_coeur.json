@@ -1,0 +1,301 @@
+{
+  "format": "cosmic.enemy",
+  "id": "asterion_coeur",
+  "name": "Cœur d'Asterion",
+  "description": "Le cœur cosmique d'Asterion, le Dévoreur de mondes : une étoile captive dans une cage de chair et de cristal, aussi grande qu'un écran, qui flotte au milieu de son arène et frappe tous les joueurs à la fois. Le dernier combat du raid : tous les groupes le combattent en même temps et sa vie est partagée par toutes les instances. Ce que les sept branches ont détruit l'affaiblit.",
+  "family": "miniboss",
+  "animation": "animations/asterion_coeur.json",
+  "size": [
+    400,
+    400
+  ],
+  "scale": 3.0,
+  "hp": 900,
+  "contactDamage": 2,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 1300,
+  "attackRange": 2200,
+  "loseRange": 5000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 400,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "onde",
+      "name": "Onde stellaire",
+      "type": "ring",
+      "damage": 2,
+      "range": 1400,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 170,
+      "radius": 1100,
+      "spread": 44,
+      "knockback": 240
+    },
+    {
+      "id": "spirale",
+      "name": "Spirale d'étoiles",
+      "type": "spiral",
+      "damage": 1,
+      "range": 1600,
+      "telegraph": 0.7,
+      "active": 0.2,
+      "recover": 0.4,
+      "cooldown": 4.4,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "boss_orb",
+      "projectileSpeed": 130,
+      "arms": 5,
+      "spread": 12,
+      "burstInterval": 0.18,
+      "duration": 2.8,
+      "origin": [
+        0,
+        -200
+      ]
+    },
+    {
+      "id": "couronne",
+      "name": "Couronne solaire",
+      "type": "orbit",
+      "damage": 2,
+      "range": 1300,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.45,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "solar_flame",
+      "projectileRadius": 9,
+      "count": 10,
+      "radius": 320,
+      "spread": 120,
+      "duration": 3.0,
+      "knockback": 220
+    },
+    {
+      "id": "rayon",
+      "name": "Rayon du cœur",
+      "type": "laser",
+      "damage": 2,
+      "range": 1600,
+      "telegraph": 1.0,
+      "active": 1.4,
+      "recover": 0.6,
+      "cooldown": 6.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "laserLength": 1900,
+      "sweepDegrees": 90,
+      "color": "#ffd27a",
+      "beamTexture": "plasma",
+      "beamWidth": 22,
+      "origin": [
+        0,
+        -200
+      ],
+      "knockback": 220
+    },
+    {
+      "id": "prisme",
+      "name": "Prisme stellaire",
+      "type": "prism",
+      "damage": 2,
+      "range": 1600,
+      "telegraph": 1.0,
+      "active": 0.9,
+      "recover": 0.6,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "bounces": 3,
+      "laserLength": 2000,
+      "color": "#b46cff",
+      "beamTexture": "prism",
+      "beamWidth": 14,
+      "knockback": 220,
+      "origin": [
+        0,
+        -200
+      ]
+    },
+    {
+      "id": "derniere_onde",
+      "name": "Dernier battement",
+      "type": "ring",
+      "damage": 2,
+      "range": 4000,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 210,
+      "radius": 1300,
+      "spread": 36,
+      "knockback": 240
+    },
+    {
+      "id": "derniere_spirale",
+      "name": "Dernière spirale d'étoiles",
+      "type": "spiral",
+      "damage": 1,
+      "range": 4000,
+      "telegraph": 0.5,
+      "active": 0.2,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "boss_orb",
+      "projectileSpeed": 145,
+      "arms": 7,
+      "spread": 10,
+      "burstInterval": 0.14,
+      "duration": 3.0,
+      "origin": [
+        0,
+        -200
+      ]
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "ground_pound": 1.2,
+    "dash": 0.5
+  },
+  "rewards": {
+    "score": 60000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ffd27a",
+    "radius": 340
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/supernova.wav",
+    "alert": "sounds/story_heartbeat.wav"
+  },
+  "boss": {
+    "title": "LE CŒUR D'ASTERION, L'ÉTOILE CAPTIVE",
+    "phases": [
+      {
+        "name": "Le cœur qui bat",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "onde",
+          "spirale",
+          "couronne"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 2,
+        "telegraphMultiplier": 0.95,
+        "enterText": "Le Cœur d'Asterion s'éveille : une étoile captive bat au milieu de l'arène.",
+        "animation": "animations/asterion_coeur.json",
+        "lightColor": "#ffd27a"
+      },
+      {
+        "name": "Les artères",
+        "hpThreshold": 0.75,
+        "attacks": [
+          "onde",
+          "rayon",
+          "spirale",
+          "couronne"
+        ],
+        "speedMultiplier": 1.05,
+        "cooldownMultiplier": 0.95,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Ses artères se gonflent de lumière : tenez les quatre artères ensemble pour mettre ses ventricules à nu !",
+        "animation": "animations/asterion_coeur_p2.json",
+        "lightColor": "#ff9a5a",
+        "enterSound": "sounds/story_heartbeat.wav"
+      },
+      {
+        "name": "La couronne d'étoiles",
+        "hpThreshold": 0.5,
+        "attacks": [
+          "prisme",
+          "onde",
+          "rayon",
+          "couronne",
+          "spirale"
+        ],
+        "speedMultiplier": 1.1,
+        "cooldownMultiplier": 0.9,
+        "combo": 3,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Une couronne d'étoiles se lève : la marée de plasma monte, restez sur les plateformes !",
+        "animation": "animations/asterion_coeur_p3.json",
+        "lightColor": "#b46cff",
+        "enterSound": "sounds/story_titan_roar.wav"
+      },
+      {
+        "name": "Supernova",
+        "hpThreshold": 0.25,
+        "attacks": [
+          "prisme",
+          "onde",
+          "rayon",
+          "spirale",
+          "couronne"
+        ],
+        "speedMultiplier": 1.2,
+        "cooldownMultiplier": 0.8,
+        "combo": 3,
+        "telegraphMultiplier": 0.75,
+        "enterText": "Le cœur s'effondre sur lui-même : contenez la supernova sur les ancres, ou toute l'arène brûlera !",
+        "animation": "animations/asterion_coeur_p4.json",
+        "lightColor": "#ffffff",
+        "enterSound": "sounds/supernova.wav",
+        "enrageTime": 120
+      }
+    ],
+    "barIcon": "portrait",
+    "barColor": "#ffd27a",
+    "finalAttacks": [
+      "derniere_onde",
+      "derniere_spirale",
+      "derniere_onde"
+    ],
+    "finalText": "Son dernier battement : tenez bon !"
+  },
+  "raid": "asterion"
+}

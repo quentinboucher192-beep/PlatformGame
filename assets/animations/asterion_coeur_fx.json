@@ -1,0 +1,19 @@
+{
+  "texture": "sprites/enemies/asterion_coeur_fx.png",
+  "frameWidth": 48,
+  "frameHeight": 144,
+  "pivot": [24, 144],
+  "clips": {
+    "closed": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "open": {"row": 0, "count": 4, "start": 1, "fps": 8, "loop": true},
+    "warn": {"row": 0, "count": 4, "start": 5, "fps": 10, "loop": true},
+    "jet": {"row": 1, "count": 4, "fps": 12, "loop": true},
+    "anchor": {"row": 1, "count": 4, "start": 4, "fps": 8, "loop": true},
+    "lance": {"row": 1, "count": 4, "start": 8, "fps": 12, "loop": true},
+    "blade": {"row": 2, "count": 4, "fps": 12, "loop": true},
+    "comet": {"row": 2, "count": 4, "start": 4, "fps": 12, "loop": true},
+    "rain": {"row": 2, "count": 4, "start": 8, "fps": 12, "loop": true},
+    "well": {"row": 3, "count": 4, "fps": 10, "loop": true},
+    "tide": {"row": 3, "count": 4, "start": 4, "fps": 8, "loop": true}
+  }
+}

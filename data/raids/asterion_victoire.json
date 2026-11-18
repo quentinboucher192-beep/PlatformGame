@@ -1,0 +1,55 @@
+{
+ "format": "cosmic.film",
+ "version": 1,
+ "comment": "The film of Asterion's fall (2.72, docs/RAIDS.md §16), played for everyone of an instance at the step the server validates the shared victory over its heart, then from the sheet of the event (its replay button). Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`: `t` and `to` in seconds of the shot as written, `pos` its middle in fractions of the picture, `width` the share of the picture it may take, `size` its largest size, `color` its glow). The animated scene of each shot (`scene`) is in asterion_victoire_scenes.json, written by tools/assetgen/environment/story_asterion_victoire.py: a length changed here stretches the scene and its titles, nothing to regenerate. The English is in data/i18n/en.json.",
+ "boss": "asterion",
+ "kind": "film",
+ "title": "LA CHUTE D'ASTERION",
+ "color": "#ffd27a",
+ "accent": "#b46cff",
+ "music": "music/asterion_film.ogg",
+ "scenes": "raids/asterion_victoire_scenes.json",
+ "shots": [
+  {
+   "scene": "assaut",
+   "duration": 12.0,
+   "text": "Huit par huit, tous les clans frappèrent le cœur d'Asterion, au même instant."
+  },
+  {
+   "scene": "carcasse",
+   "duration": 11.0,
+   "text": "Ses sept gardiens tombés, le Dévoreur de mondes n'avait plus que son cœur."
+  },
+  {
+   "scene": "effondrement",
+   "duration": 12.0,
+   "text": "Alors le titan chancela. Ses branches se détachèrent une à une et tombèrent dans le vide."
+  },
+  {
+   "scene": "supernova",
+   "duration": 12.0,
+   "text": "",
+   "titles": [
+    {"t": 6.4, "to": 10.6, "text": "SUPERNOVA", "subtitle": "Le cœur d'Asterion s'embrase", "pos": [0.5, 0.42], "width": 0.6, "size": 76, "color": "#fff2c0"}
+   ]
+  },
+  {
+   "scene": "onde",
+   "duration": 11.0,
+   "text": "L'onde traversa la galaxie. Les mondes promis au festin brillèrent de nouveau."
+  },
+  {
+   "scene": "bannieres",
+   "duration": 13.0,
+   "text": "Sur les débris du titan, les clans levèrent leurs bannières."
+  },
+  {
+   "scene": "victoire",
+   "duration": 10.0,
+   "text": "",
+   "titles": [
+    {"t": 1.0, "to": 9.2, "text": "ASTERION EST TOMBÉ", "subtitle": "Victoire de tous les clans", "pos": [0.5, 0.4], "width": 0.8, "size": 72, "color": "#ffd27a"}
+   ]
+  }
+ ]
+}

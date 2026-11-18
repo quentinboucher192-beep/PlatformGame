@@ -734,6 +734,8 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
         if (under("textures/tiles/")) return {{"scenery", "Décors et tuiles", 4}, {"scenery/tiles", "Tuiles et matériaux", 2000}};
         if (under("textures/fx/")) return {{"effects", "Effets et particules", 6}, {"effects/particles", "Particules", 0}};
         if (under("sprites/projectiles/")) return {{"effects", "Effets et particules", 6}, {"effects/attacks", "Projectiles et attaques", 1}};
+        // 2.72: the generated sheets of the cosmetic effects (« Supernova d'Asterion »).
+        if (under("sprites/fx/")) return {{"effects", "Effets et particules", 6}, {"effects/rewards", "Effets des récompenses", 2}};
         if (under("ui/planets/")) return {{"interface", "Interface et icônes", 5}, {"interface/planets", "Planètes", 1}};
         if (under("ui/glyphs/")) return {{"interface", "Interface et icônes", 5}, {"interface/glyphs", "Boutons des manettes", 2}};
         if (under("ui/")) return {{"interface", "Interface et icônes", 5}, {"interface/icons", "Icônes et images", 0}};

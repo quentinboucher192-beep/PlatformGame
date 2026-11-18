@@ -1,0 +1,2660 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_co_2",
+ "name": "Asterion · Cœur · Le Cœur d'Asterion",
+ "description": "Le Cœur d'Asterion, une étoile captive au milieu d'une arène immense : tous les groupes le combattent en même temps.",
+ "planet": "noyau",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 4,
+ "music": "music/sylvanox_depths.ogg",
+ "bossMusic": "music/singularis_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  4960,
+  1344
+ ],
+ "ambientLight": "#a890c8",
+ "backgroundColor": "#0a0716",
+ "background": [
+  {
+   "texture": "backgrounds/noyau/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true
+  },
+  {
+   "texture": "backgrounds/noyau/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ]
+  },
+  {
+   "texture": "backgrounds/noyau/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ]
+  },
+  {
+   "texture": "backgrounds/noyau/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#ffd98a"
+  },
+  {
+   "texture": "backgrounds/noyau/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ]
+  },
+  {
+   "texture": "backgrounds/noyau/fg_motes.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ffffffc0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    1216.0,
+    256.0,
+    128.0
+   ],
+   "props": {
+    "material": "ancient_metal"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    112.0,
+    1152.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o3",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    36.0,
+    1192.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Aorte cosmique",
+    "auto": true
+   }
+  },
+  {
+   "id": "o4",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o5",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    16.0,
+    1152.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o6",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    139.0,
+    1194.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    256.0,
+    1216.0,
+    480.0,
+    128.0
+   ],
+   "props": {
+    "material": "ancient_metal"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    324.0,
+    1192.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Le Cœur d'Asterion. Sa vie est partagée par toutes les instances : chaque coup compte pour tous les clans.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o9",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    472.0,
+    1112.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 160,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o10",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    272.0,
+    1168.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "crystal_big",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o11",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    660.0,
+    1192.0,
+    24.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "tech_panel",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o12",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    416.0,
+    960.0,
+    288.0,
+    256.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 2.5
+   }
+  },
+  {
+   "id": "o13",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    96.0,
+    32.0,
+    896.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    1216.0,
+    4224.0,
+    128.0
+   ],
+   "props": {
+    "material": "ancient_metal"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    768.0,
+    64.0,
+    4160.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4928.0,
+    64.0,
+    32.0,
+    1152.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1248.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1632.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2016.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2400.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2784.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3552.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o26",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o27",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    1120.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o28",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1040.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o29",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o30",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1808.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o31",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o32",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3344.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o33",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3728.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o34",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4112.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o35",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4496.0,
+    1024.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o36",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o37",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1248.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o38",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1632.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o39",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2016.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2400.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o41",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o42",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3552.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o43",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o44",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o45",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    928.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o46",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1040.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o47",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o48",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1808.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o49",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o50",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3344.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o51",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3728.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o52",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4112.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o53",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4496.0,
+    832.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o54",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o55",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1248.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o56",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1632.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o57",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2016.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o58",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2400.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o59",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o60",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3552.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o61",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o62",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o63",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    736.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o64",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1040.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o65",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o66",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1808.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o67",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o68",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3344.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o69",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3728.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o70",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4112.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o71",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4496.0,
+    640.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o72",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o73",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1248.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o74",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1632.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o75",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2016.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o76",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2400.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o77",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2784.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o78",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3168.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o79",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3552.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o80",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o81",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4320.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o82",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4704.0,
+    448.0,
+    160.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o83",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1664.0,
+    736.0,
+    288.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o84",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3744.0,
+    736.0,
+    288.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o85",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1408.0,
+    1184.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -576,
+    "speed": 70,
+    "wait": 1.2,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o86",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1448.0,
+    1144.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 70,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o87",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2208.0,
+    1184.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -576,
+    "speed": 70,
+    "wait": 1.2,
+    "phase": 0.25,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o88",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2248.0,
+    1144.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 70,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o89",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    3392.0,
+    1184.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -576,
+    "speed": 70,
+    "wait": 1.2,
+    "phase": 0.5,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o90",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3432.0,
+    1144.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 70,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o91",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    4192.0,
+    1184.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -576,
+    "speed": 70,
+    "wait": 1.2,
+    "phase": 0.75,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o92",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4232.0,
+    1144.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 70,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o93",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2304.0,
+    384.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "dx": 416,
+    "dy": 0,
+    "speed": 60,
+    "wait": 1.0,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o94",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2976.0,
+    384.0,
+    128.0,
+    16.0
+   ],
+   "props": {
+    "dx": 416,
+    "dy": 0,
+    "speed": 60,
+    "wait": 1.0,
+    "phase": 0.5,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o95",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    2496.0,
+    1168.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -288,
+    "speed": 55,
+    "wait": 1.4,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o96",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    3120.0,
+    1168.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -288,
+    "speed": 55,
+    "wait": 1.4,
+    "phase": 0.5,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o97",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    952.0,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff9a5a",
+    "radius": 90,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o98",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    928.0,
+    1152.0,
+    64.0,
+    48.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o99",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1800.0,
+    696.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff9a5a",
+    "radius": 90,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o100",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1776.0,
+    672.0,
+    64.0,
+    48.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o101",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3880.0,
+    696.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff9a5a",
+    "radius": 90,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o102",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3856.0,
+    672.0,
+    64.0,
+    48.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o103",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4728.0,
+    1176.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff9a5a",
+    "radius": 90,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o104",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4704.0,
+    1152.0,
+    64.0,
+    48.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o105",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1802.0,
+    698.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o106",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3882.0,
+    698.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o107",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2202.0,
+    1082.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o108",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3482.0,
+    1082.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o109",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1082.0,
+    1082.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o110",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    4602.0,
+    1082.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o111",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2842.0,
+    346.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o112",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2362.0,
+    794.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o113",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3322.0,
+    794.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o114",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1242.0,
+    602.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o115",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    4442.0,
+    602.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o116",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1882.0,
+    890.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o117",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3802.0,
+    890.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o118",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2842.0,
+    346.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o119",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    2648.0,
+    592.0,
+    400.0,
+    400.0
+   ],
+   "props": {
+    "enemy": "asterion_coeur",
+    "faceLeft": true,
+    "patrol": 0,
+    "dormant": true,
+    "boss": true
+   }
+  },
+  {
+   "id": "o120",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    768.0,
+    96.0,
+    4160.0,
+    1120.0
+   ],
+   "props": {
+    "doors": "",
+    "waves": "o119",
+    "lockCamera": false,
+    "music": "music/singularis_boss.ogg",
+    "announce": false
+   }
+  },
+  {
+   "id": "o121",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    920.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#b46cff",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o122",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1336.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o123",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1752.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#b46cff",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o124",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o125",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2584.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#b46cff",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o126",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3000.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o127",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3416.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#b46cff",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o128",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3832.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o129",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4248.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#b46cff",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o130",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    4664.0,
+    856.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 170,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o131",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2840.0,
+    776.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffffff",
+    "radius": 320,
+    "flicker": 0.35,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o132",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1088.0,
+    160.0,
+    3520.0,
+    1056.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 3.0
+   }
+  },
+  {
+   "id": "o133",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2368.0,
+    416.0,
+    960.0,
+    704.0
+   ],
+   "props": {
+    "effect": "embers_rising",
+    "rate": 3.0
+   }
+  },
+  {
+   "id": "o134",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    0.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o135",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1120.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o136",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o137",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3360.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o138",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    4480.0,
+    64.0,
+    480.0,
+    352.0
+   ],
+   "props": {
+    "effect": "aurora_motes",
+    "rate": 1.2
+   }
+  }
+ ],
+ "events": [
+  {
+   "id": "ev1",
+   "source": "o119",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "spawn",
+     "target": "o105,o106,o107,o108"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.6
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "Les artères du cœur se gonflent : tenez les quatre artères ensemble !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 2
+   },
+   "name": "Phase 2"
+  },
+  {
+   "id": "ev2",
+   "source": "o119",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "spawn",
+     "target": "o109,o110,o111,o112,o113"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.85
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "Une couronne d'étoiles se lève : la marée de plasma va monter, restez sur les plateformes !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 3
+   },
+   "name": "Phase 3"
+  },
+  {
+   "id": "ev3",
+   "source": "o119",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "spawn",
+     "target": "o114,o115,o116,o117,o118"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 1.1
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "SUPERNOVA : le cœur s'effondre ! Contenez-la sur les ancres, tous ensemble !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 4
+   },
+   "name": "Phase 4"
+  },
+  {
+   "id": "ev4",
+   "source": "o119",
+   "trigger": "bossDefeated",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Le Cœur d'Asterion cède : le titan s'effondre !",
+      "duration": 4
+     }
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 1.0
+     }
+    }
+   ],
+   "delay": 1.5,
+   "name": "Cœur vaincu"
+  }
+ ],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_asterion.py",
+  "raid": {
+   "branch": "asterion_coeur",
+   "zone": 2,
+   "spawns": {
+    "1": [
+     [
+      144,
+      1216
+     ]
+    ],
+    "start": [
+     [
+      144,
+      1216
+     ],
+     [
+      192,
+      1216
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p2_1",
+     "to": 1,
+     "rect": [
+      16,
+      1152,
+      64,
+      64
+     ],
+     "lock": "objective:coeur_aorte",
+     "door": "o2"
+    }
+   ],
+   "objectives": [
+    {
+     "id": "coeur_asterion",
+     "source": "o119",
+     "trigger": "killed"
+    }
+   ],
+   "magma": null,
+   "sealed": null,
+   "arena": {
+    "rect": [
+     768,
+     96,
+     4160,
+     1120
+    ],
+    "floor": 1216,
+    "door": "",
+    "entry": [
+     864,
+     1216
+    ],
+    "players": 8
+   },
+   "gigaboss": {
+    "hpPerPlayer": 0.55,
+    "weakHpPerPlayer": 0.25,
+    "pressurePerPlayer": 0.06,
+    "boss": "o119",
+    "name": "Cœur d'Asterion",
+    "objective": "coeur_asterion",
+    "routine": "coeur",
+    "heart": {
+     "relicShare": 0.03,
+     "reportEvery": 15.0
+    },
+    "carapace": [
+     2,
+     4
+    ],
+    "vents": [
+     {
+      "id": "artere_ouest",
+      "rect": [
+       928.0,
+       1200,
+       64,
+       16
+      ]
+     },
+     {
+      "id": "artere_haute_ouest",
+      "rect": [
+       1776.0,
+       720,
+       64,
+       16
+      ]
+     },
+     {
+      "id": "artere_haute_est",
+      "rect": [
+       3856.0,
+       720,
+       64,
+       16
+      ]
+     },
+     {
+      "id": "artere_est",
+      "rect": [
+       4704.0,
+       1200,
+       64,
+       16
+      ]
+     }
+    ],
+    "hold": 2.5,
+    "reopen": 14.0,
+    "exposed": 10.0,
+    "exposedMult": 2.0,
+    "jet": {
+     "name": "Jet d'artère",
+     "period": 9.0,
+     "warn": 1.2,
+     "duration": 0.8,
+     "height": 120.0,
+     "damage": 1.0
+    },
+    "cage": {
+     "hold": 3.5,
+     "exposed": 0.6
+    },
+    "weakEnemy": "asterion_ventricule",
+    "weakSpots": [
+     [
+      -150.0,
+      -96.0
+     ],
+     [
+      150.0,
+      -96.0
+     ],
+     [
+      0.0,
+      -372.0
+     ]
+    ],
+    "weakShare": 0.05,
+    "lances": {
+     "name": "Lances stellaires",
+     "periods": [
+      8.0,
+      7.0,
+      6.0,
+      5.0
+     ],
+     "track": 1.2,
+     "warn": 1.3,
+     "width": 56.0,
+     "damage": 1.0,
+     "miss": [
+      48.0,
+      120.0
+     ]
+    },
+    "sweeps": {
+     "name": "Balayage des artères",
+     "periods": [
+      0.0,
+      11.0,
+      9.0,
+      7.0
+     ],
+     "warn": 1.4,
+     "speed": 760.0,
+     "height": 52.0,
+     "damage": 1.0,
+     "rows": [
+      1216,
+      1024,
+      832
+     ]
+    },
+    "rain": {
+     "name": "Pluie de magma",
+     "periods": [
+      10.0,
+      9.0,
+      8.0,
+      7.0
+     ],
+     "count": [
+      6,
+      7,
+      8,
+      10
+     ],
+     "warn": 1.2,
+     "width": 64.0,
+     "damage": 1.0
+    },
+    "wells": {
+     "name": "Piège de gravité",
+     "periods": [
+      0.0,
+      12.0,
+      10.0,
+      9.0
+     ],
+     "warn": 1.2,
+     "time": 3.0,
+     "speed": 95.0,
+     "range": 220.0,
+     "core": 30.0,
+     "damage": 1.0
+    },
+    "charges": {
+     "name": "Charge stellaire",
+     "periods": [
+      0.0,
+      13.0,
+      11.0,
+      9.0
+     ],
+     "warn": 1.5,
+     "speed": 900.0,
+     "height": 64.0,
+     "damage": 2.0,
+     "slow": 0.55,
+     "rows": [
+      1216,
+      928,
+      736
+     ]
+    },
+    "spawns": {
+     "periods": [
+      0.0,
+      22.0,
+      20.0,
+      18.0
+     ],
+     "kinds": [
+      "etincelle",
+      "glowmite",
+      "sentinel"
+     ],
+     "max": 8
+    },
+    "tide": {
+     "name": "Marée de plasma",
+     "periods": [
+      0.0,
+      0.0,
+      24.0,
+      18.0
+     ],
+     "warn": 3.0,
+     "duration": 6.0,
+     "height": 48,
+     "damage": 1.0
+    },
+    "supernova": {
+     "name": "Supernova",
+     "period": 26.0,
+     "charge": 6.0,
+     "need": [
+      1,
+      2,
+      2,
+      2,
+      3,
+      3,
+      4,
+      4
+     ],
+     "damage": 3.0
+    },
+    "span": [
+     768,
+     4928
+    ],
+    "floor": 1216,
+    "modifiers": {
+     "crane": "coeur_crane",
+     "bras_gauche": "coeur_bras_gauche",
+     "bras_droit": "coeur_bras_droit",
+     "torse": "coeur_torse",
+     "abdomen": "coeur_abdomen",
+     "jambe_gauche": "coeur_jambe_gauche",
+     "jambe_droite": "coeur_jambe_droite"
+    },
+    "fx": "animations/asterion_coeur_fx.json",
+    "fallText": "Le Cœur d'Asterion s'est éteint : le titan s'effondre.",
+    "goneText": "Le Cœur est éteint",
+    "summary": "Vie partagée par toutes les instances. Tenez les 4 artères ensemble pour mettre ses ventricules à nu ; en phase 4, contenez la supernova sur les ancres."
+   }
+  }
+ },
+ "killY": 1328,
+ "maxPowers": 4
+}

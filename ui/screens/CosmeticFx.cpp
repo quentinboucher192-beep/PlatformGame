@@ -329,6 +329,21 @@ void drawCustomVictory(const Canvas& cv, const CreationLook& L, Vec2 at, float t
     }
 }
 
+
+std::function<std::shared_ptr<Texture>(const std::string&)> g_cosmeticTextures;  // 2.72
+
+/// 2.74 (phase 6): a frame of a generated sheet laid in one row (`frame` of `count`), its centre at `p`,
+/// `size` pixels on screen (or in the world), its alpha.
+void drawSheetFrame(Renderer& r, const char* path, int frame, int count, Vec2 p, float size, bool world, uint8_t alpha) {
+    if (!g_cosmeticTextures) return;
+    const std::shared_ptr<Texture> tex = g_cosmeticTextures(path);
+    if (!tex || count <= 0) return;
+    const float fw = static_cast<float>(tex->width()) / static_cast<float>(count), fh = static_cast<float>(tex->height());
+    const Rect src{fw * static_cast<float>(std::clamp(frame, 0, count - 1)), 0.0f, fw, fh};
+    const Rect dst{p.x - size * 0.5f, p.y - size * 0.5f, size, size};
+    if (world) r.drawWorldTexture(*tex, &src, dst, Color{255, 255, 255, alpha});
+    else r.drawTexture(*tex, &src, dst, Color{255, 255, 255, alpha});
+}
 }  // namespace
 
 void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& look, float scale, float time, const CreationLook* custom) {
@@ -649,6 +664,33 @@ void drawAvatarFrame(Renderer& r, Vec2 center, float radius, const std::string& 
         const Color gems[3] = {{230, 60, 90, 255}, {90, 175, 255, 255}, {80, 220, 140, 255}};
         for (int i = 0; i < 3; ++i) r.fillCircle(pt(-7.0f + 7.0f * static_cast<float>(i), (bandTop + bandBottom) * 0.5f), 1.7f * scale, gems[i]);
         for (int i = 0; i < 5; ++i) r.fillCircle(pt(px[i], bandTop - ph[i]), 1.3f * scale, Color{255, 252, 240, 255});
+    } else if (look == "asterion_heart") {
+        // 2.74 (phase 6), « Cœur d'Asterion » (the profile decor of the top contributors of its fall): a ring
+        // of the titan's violet flesh veined with gold, its three ventricles lit in turn, the captive star on
+        // top (the first frame of the generated sheet of its supernova), within kAvatarFrameMargin.
+        r.drawGlow(center, radius + 16 * scale, Color{255, 210, 122, 90});
+        ring(main + 1.5f * scale, 7, Color{38, 19, 75, 255});
+        ring(main + 1.5f * scale, 5, Color{122, 72, 184, 255});
+        shine(main + 1.5f * scale, Color{214, 180, 255, 220});
+        for (int i = 0; i < 12; ++i) {  // golden veins across the ring
+            const float a = kFxPi * 2.0f * static_cast<float>(i) / 12.0f + time * 0.15f;
+            const Vec2 p0{center.x + std::cos(a) * (main - 1.5f * scale), center.y + std::sin(a) * (main - 1.5f * scale)};
+            const Vec2 p1{center.x + std::cos(a + 0.12f) * (main + 4.0f * scale), center.y + std::sin(a + 0.12f) * (main + 4.0f * scale)};
+            r.drawLine(p0, p1, Color{255, 196, 110, 220}, 1.4f * scale, BlendMode::Additive);
+        }
+        for (int i = 0; i < 3; ++i) {  // the ventricles, lit in turn
+            const float a = kFxPi * (0.5f + (static_cast<float>(i) - 1.0f) * 0.55f);
+            const Vec2 p{center.x + std::cos(a) * (main + 1.5f * scale), center.y + std::sin(a) * (main + 1.5f * scale)};
+            const float lit = 0.5f + 0.5f * std::sin(time * 3.0f - static_cast<float>(i) * 2.1f);
+            r.fillCircle(p, 3.4f * scale, Color{61, 32, 112, 255});
+            r.fillCircle(p, 2.2f * scale, Color{255, 210, 122, static_cast<uint8_t>(120 + 135 * lit)});
+            r.drawGlow(p, 7.0f * scale, Color{255, 196, 110, static_cast<uint8_t>(90 * lit)});
+        }
+        const Vec2 star{center.x, center.y - main - 5.0f * scale};
+        const float beat = 1.0f + 0.08f * std::max(0.0f, std::sin(time * 6.0f));
+        r.drawGlow(star, 10.0f * scale * beat, Color{255, 210, 122, 160});
+        if (g_cosmeticTextures) drawSheetFrame(r, "sprites/fx/asterion_supernova.png", 1, 12, star, 22.0f * scale * beat, false, 255);
+        else r.fillCircle(star, 4.0f * scale * beat, Color{255, 236, 190, 255});
     } else {
         ring(radius + 1.5f * scale, 3, Color{57, 240, 216, 255});
     }
@@ -888,6 +930,9 @@ void drawTrailSample(Renderer& r, const std::string& look, const Rect& box, floa
     }
 }
 
+
+void setCosmeticTextures(std::function<std::shared_ptr<Texture>(const std::string&)> find) { g_cosmeticTextures = std::move(find); }
+
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale, const CreationLook* custom) {
     if (t < 0.0f || t > kVictoryFxTime) return;
     // 2.61: an effect drawn in the Studio de Créations: its particle thrown by its emitter.
@@ -904,6 +949,29 @@ void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool 
     float fade = std::clamp((kVictoryFxTime - t) / 0.6f, 0.0f, 1.0f);
     if (made) {
         drawCustomVictory(cv, *made, at, t, fade);
+    } else if (look == "asterion_supernova") {
+        // 2.74 (phase 6), « Supernova d'Asterion » (a reward of the Cœur's fall): the titan's heart beats
+        // over the portal, collapses to a point, then bursts into golden and violet rings (its generated
+        // sheet, 12 frames), the light beyond it drawn here.
+        static const float kDur[12] = {0.16f, 0.12f, 0.16f, 0.12f, 0.2f, 0.08f, 0.1f, 0.12f, 0.14f, 0.16f, 0.2f, 0.3f};
+        int frame = 0;
+        float acc = 0.0f;
+        while (frame < 11 && t >= acc + kDur[frame]) acc += kDur[frame++];
+        const Vec2 c = cv.off(at, {0, -40});
+        const float burst = std::clamp((t - 0.76f) / 1.6f, 0.0f, 1.0f);
+        if (t < 0.9f) cv.glow(c, 40.0f + 20.0f * std::sin(t * 18.0f), Color{255, 210, 122, static_cast<uint8_t>(150 * fade)});
+        if (burst > 0.0f) {
+            cv.glow(c, 60.0f + 200.0f * burst, Color{255, 236, 190, static_cast<uint8_t>(200 * (1.0f - burst) * fade)});
+            cv.ring(c, 30.0f + 240.0f * (1.0f - std::exp(-2.4f * burst)), 6.0f, Color{255, 210, 122, static_cast<uint8_t>(230 * (1.0f - burst) * fade)});
+            cv.ring(c, 18.0f + 170.0f * (1.0f - std::exp(-2.0f * burst)), 3.0f, Color{180, 108, 255, static_cast<uint8_t>(220 * (1.0f - burst) * fade)});
+            for (int i = 0; i < 12; ++i) {
+                const float a = kFxPi * 2.0f * static_cast<float>(i) / 12.0f + 0.2f;
+                const float d = 20.0f + 190.0f * burst;
+                cv.dot(cv.off(c, {std::cos(a) * d, std::sin(a) * d}), 2.6f * (1.0f - burst) + 0.6f, Color{255, 246, 220, static_cast<uint8_t>(230 * fade)},
+                       BlendMode::Additive);
+            }
+        }
+        drawSheetFrame(r, "sprites/fx/asterion_supernova.png", frame, 12, c, cv.len(150.0f), world, static_cast<uint8_t>(255 * fade));
     } else if (look == "fireworks") {
         const Vec2 offs[3] = {{-46, -72}, {38, -96}, {4, -54}};
         const Color cols[3] = {{255, 118, 150, 255}, {255, 214, 90, 255}, {110, 214, 255, 255}};

@@ -275,8 +275,9 @@ public:
         Renderer& rr = ui.r();
         std::string open;
         const Json branches = data_.value("branches", Json::array());
+        const Json heart = data_.value("heart", Json());  // 2.74 (phase 6): the Cœur d'Asterion, its own row
         const float rowH = ui.s(50), pad = ui.s(12);
-        const float listH = std::min(r.h, ui.s(46) + rowH * static_cast<float>(branches.size()) + ui.s(10));
+        const float listH = std::min(r.h, ui.s(46) + rowH * static_cast<float>(branches.size() + (heart.is_object() ? 1 : 0)) + ui.s(10));
         const Rect list{r.x, r.y, r.w, listH};
         float y = section(ui, list, "LES SEPT BRANCHES", kGold);
         int i = 0;
@@ -306,6 +307,7 @@ public:
             fit(ui, "Gigaboss : " + jstr(b, "gigaboss") + gstate, {ix, row.y + ui.s(32)}, 12, iw - rw - ui.s(10), kPeach);
             y += rowH;
         }
+        if (heart.is_object() && y + rowH <= list.bottom() + ui.s(1)) drawHeartRow(heart, {r.x + ui.s(8), y, r.w - ui.s(16), rowH - ui.s(4)});
         float below = list.bottom() + ui.s(12);
         // The zones where a group waits for another one (two groups required).
         const Json needs = data_.value("needs", Json::array());
@@ -349,6 +351,72 @@ public:
             fy += lh + ui.s(6);
         }
         return open;
+    }
+
+    /// 2.74 (phase 6): the Cœur d'Asterion's row: sealed until the seven gigaboss fell (k / 7), then its
+    /// shared health (every group's damage, validated) and its phase; Entrée / A / a click joins it.
+    void drawHeartRow(const Json& h, const Rect& row) {
+        UIContext& ui = g_.ui;
+        Renderer& rr = ui.r();
+        bool hovered = false;
+        const std::string state = jstr(h, "state");
+        const bool open = state == "ouvert" || state == "combat";
+        if (ui.hotspot("heart", row, &hovered) && open) joinHeart();
+        const bool focus = ui.focused("heart");
+        rr.fillRoundedRect(row, ui.s(10), focus || hovered ? Color{74, 52, 30, 255} : Color{44, 32, 26, 255});
+        rr.drawRoundedRect(row, ui.s(10), focus ? kGold : Color{255, 210, 122, 120}, ui.s(focus ? 2.0f : 1.0f));
+        const float pad = ui.s(12), ix = row.x + ui.s(18), iw = row.w - ui.s(18) - pad;
+        const Color sc = state == "tombe" ? kGreen : open ? kOrange : kFog;
+        rr.fillRoundedRect({row.x + ui.s(6), row.y + ui.s(8), ui.s(5), row.h - ui.s(16)}, ui.s(2), sc);
+        const int left = std::clamp(jget<int>(h, "health", 10000), 0, 10000), done = jget<int>(h, "gigaboss_defeated", 0);
+        const std::string r1 = state == "tombe" ? "tombé" : open ? std::to_string(left / 100) + "," + std::to_string((left % 100) / 10) + " %" : "scellé";
+        const std::string r2 = open ? "phase " + std::to_string(std::clamp(jget<int>(h, "phase", 1), 1, 4)) + " / 4 · " + std::to_string(jget<int>(h, "groups", 0)) +
+                                          (jget<int>(h, "groups", 0) > 1 ? " groupes" : " groupe")
+                                    : std::to_string(done) + " / 7 gigaboss";
+        const float rw = std::min(std::max(textW(ui, r1, 12, FontFace::Bold), textW(ui, r2, 12)), iw * 0.5f);
+        fit(ui, r1, {row.right() - pad, row.y + ui.s(15)}, 12, rw, sc, FontFace::Bold, Align::Right);
+        fit(ui, r2, {row.right() - pad, row.y + ui.s(32)}, 12, rw, kDim, FontFace::Body, Align::Right);
+        fit(ui, "CŒUR D'ASTERION", {ix, row.y + ui.s(15)}, 15, iw - rw - ui.s(10), kGold, FontFace::Bold);
+        const std::string sub = state == "tombe" ? "Asterion est tombé : victoire de tous les clans"
+                                : open           ? "Combat final : vie partagée par tous les groupes"
+                                                 : "S'ouvre quand les sept gigaboss sont tombés";
+        fit(ui, sub, {ix, row.y + ui.s(32)}, 12, iw - rw - ui.s(10), kPeach);
+        if (open) {  // its shared health, under the row's texts
+            const Rect bar{ix, row.bottom() - ui.s(7), iw, ui.s(4)};
+            rr.fillRect(bar, Color{60, 44, 40, 255});
+            rr.fillRect({bar.x, bar.y, bar.w * static_cast<float>(left) / 10000.0f, bar.h}, kGold);
+        }
+    }
+
+    void joinHeart() {
+        if (busy_) return;
+        const Json my = data_.value("my", Json::object());
+        if (!jget<bool>(my, "registered", false) || jstr(data_.value("event", Json::object()), "state") != "en_cours") {
+            status_ = "Le combat final se joue pendant l'événement, pour les inscrits.";
+            statusError_ = true;
+            return;
+        }
+        busy_ = true;
+        status_ = "Placement dans un groupe du Cœur d'Asterion…";
+        statusError_ = false;
+        g_.online.send("POST", "/api/v1/raids/events/" + eventId_ + "/branches/coeur/join", Json::object(),
+                       OnlineService::guard(life_, [this](const ApiResult& r) {
+                           busy_ = false;
+                           if (!r.ok) {
+                               status_ = r.message;
+                               statusError_ = true;
+                               return;
+                           }
+                           const Json i = r.data.value("instance", Json::object());
+                           RaidEntry e;
+                           e.eventId = eventId_;
+                           e.instanceId = jstr(i, "id");
+                           e.clanTag = jstr(i, "clan_tag");
+                           e.group = jget<int>(i, "group", 1);
+                           e.branch = jstr(i, "part", "coeur");
+                           status_.clear();
+                           g_.app.switchScene(makeRaidGame(g_, e), 0.35f);
+                       }));
     }
 
     /// « Rejoindre » (my place, or where the clan needs me), « Répartition du clan », the note.

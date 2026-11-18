@@ -119,6 +119,7 @@
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/AsterionFilm.h"
+#include "ui/screens/CosmeticFx.h"
 #include "ui/screens/BossStoryScene.h"
 
 using namespace cosmic;
@@ -550,6 +551,8 @@ int main(int argc, char** argv) {
     }
     GameServices game(app);
     game.loadAll();
+    // 2.74 (phase 6): the generated sheets some cosmetics draw (« Supernova d'Asterion », « Cœur d'Asterion »).
+    setCosmeticTextures([&app](const std::string& path) { return app.resources().texture(path); });
     if (!cfg.headless) {
         // The window as it really is (--fullscreen / --windowed, or the saved setting): the
         // settings follow it, and a toggle by F11 / Alt+Entrée is saved too.

@@ -460,13 +460,35 @@ void AdminRaids::drawTest(const Rect& r) {
     ui.cycle("zone", {x + half + gap, y, half, rowH}, "Zone", testZone_, zoneNames);
     y += rowH + gap;
     static const std::vector<std::string> kPlayers = {"2", "3", "4", "5", "6", "7", "8"};
+    // 2.74 (phase 6): the Cœur d'Asterion has four phases; the seven gigaboss three.
+    const bool heart = b.part == raid::kHeartPart;
     static const std::vector<std::string> kPhases = {"1", "2", "3"};
+    static const std::vector<std::string> kHeartPhases = {"1", "2", "3", "4"};
+    if (!heart) testPhase_ = std::min(testPhase_, 2);
     ui.cycle("players", {x, y, half, rowH}, "Joueurs simulés", testPlayers_, kPlayers);
     const bool ro = ui.readOnly;
     ui.readOnly = !giga;
-    ui.cycle("phase", {x + half + gap, y, half, rowH}, giga ? "Phase de départ" : "Phase (sans gigaboss)", testPhase_, kPhases);
+    ui.cycle("phase", {x + half + gap, y, half, rowH}, giga ? "Phase de départ" : "Phase (sans gigaboss)", testPhase_, heart ? kHeartPhases : kPhases);
     ui.readOnly = ro;
     y += rowH + gap;
+    if (heart) {
+        // The parts of the titan simulated as fallen (their effects on the heart), and the relics.
+        static const char* kParts[] = {"Crâne", "Bras gauche", "Bras droit", "Torse", "Abdomen", "Jambe gauche", "Jambe droite"};
+        const float th = ui.s(34), tgap = ui.s(6);
+        const int perRow = 2;  // the label of a toggle needs its room beside the switch
+        const float tw = (w - tgap * static_cast<float>(perRow - 1)) / static_cast<float>(perRow);
+        fit(ui, "Parties du titan simulées comme tombées (leurs effets sur le Cœur) :", {x, y + ui.s(10)}, 13, w, kDim);
+        y += ui.s(22);
+        for (int p = 0; p < 7; ++p) {
+            bool on = (testParts_ >> p) & 1u;
+            const float px = x + static_cast<float>(p % perRow) * (tw + tgap), py = y + static_cast<float>(p / perRow) * (th + tgap);
+            if (ui.toggle("part" + std::to_string(p), {px, py, tw, th}, kParts[p], on)) testParts_ = on ? (testParts_ | (1u << p)) : (testParts_ & ~(1u << p));
+        }
+        y += static_cast<float>((7 + perRow - 1) / perRow) * (th + tgap) + gap - tgap;
+        static const std::vector<std::string> kRelics = {"0", "1", "2", "3", "4", "5", "6", "7"};
+        ui.cycle("relics", {x, y, half, rowH}, "Reliques validées", testRelics_, kRelics);
+        y += rowH + gap;
+    }
     bool inv = g_.settings.gameplay.adminInvincible;
     if (ui.toggle("invincible", {x, y, half, rowH}, "Invincible (admin) · non classé", inv)) {
         g_.settings.gameplay.adminInvincible = inv;
@@ -481,6 +503,8 @@ void AdminRaids::drawTest(const Rect& r) {
         t.players = testPlayers_ + 2;
         t.startPhase = giga ? testPhase_ + 1 : 1;
         t.invincible = g_.settings.gameplay.adminInvincible;
+        t.parts = testParts_;  // 2.74 (phase 6): the heart's test only
+        t.relics = testRelics_;
         g_.app.pushScene(makeRaidTest(g_, t));
     }
     y += rowH + ui.s(6);

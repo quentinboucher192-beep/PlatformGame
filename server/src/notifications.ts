@@ -228,6 +228,11 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
             return `Horaire modifié : ${raid}`;
         case "withdrawn":
             return `${tag} s'est retiré de ${raid} : votre inscription est annulée`;
+        // 2.72 (raidHeart.ts): the Cœur d'Asterion opens (the seven gigaboss fell), then falls (validated).
+        case "heart_open":
+            return `Le Cœur d'Asterion s'ouvre : les sept gigaboss sont tombés, rejoignez le combat final de ${raid}`;
+        case "heart_fallen":
+            return `Asterion est tombé ! Le Cœur a cédé sous les coups de tous les clans (${raid}) : vos récompenses vous attendent`;
         // 2.69 (raidWorld.ts): the official result of a world event, a suspension, a catch-up session.
         case "results": {
             const outcome = d.outcome === "vaincu" ? "Asterion est tombé" : "Asterion a survécu";

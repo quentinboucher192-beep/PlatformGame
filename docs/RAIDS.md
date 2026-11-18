@@ -2,7 +2,8 @@
 
 # Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6) ;
 # phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12) ; phase 4B : VOIDWORM, GRAVITON, TITANUS (2.69, §13) ;
-# phase 5 : les événements mondiaux (2.69, §14) ; phase 7 : fiabilité, charge et anti-triche (2.74, §15)
+# phase 5 : les événements mondiaux (2.69, §14) ; phase 7 : fiabilité, charge et anti-triche (2.74, §15) ;
+# phase 6 : le Cœur d'Asterion, combat final (2.74, §16)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §15)
 
@@ -822,6 +823,130 @@ Les règles changées ne touchent que les raids : `kSimulationVersion`, `kCoopSi
 `kRankingGeneration` ne changent pas (empreintes solo et coopération inchangées) ; la révision du Bras droit passe à 3
 (le `GO` du relais la porte : toutes les instances jouent les mêmes zones) et l'empreinte des zones générées change
 (`tests/test_raid.cpp`).
+
+## 16. Phase 6 (2.74) : LE CŒUR D'ASTERION
+
+Le combat final du raid (spec §9). Le cœur n'est pas une huitième branche du corps : c'est le `heart` de `titan.json`
+(partie `coeur`), son propre petit catalogue (`data/raids/asterion/coeur/branch.json`, copie serveur `heart_catalog` de
+`raidTitan.json`), écrit par `tools/levelgen/raid_coeur.py` (appelé par `raid_asterion.py`, révision du titan 2 : tous les
+jeux d'une instance doivent avoir la même).
+
+| Zone | Nom | Ce qu'on y fait |
+|---|---|---|
+| 1 | Aorte cosmique | entrée (3 points d'apparition) ; la longue expédition à huit des antres (≈ 15 min à 8 : trois étages, quatre embuscades géantes, deux écluses, un monte-charge, points de contrôle) ; sa dernière embuscade, la garde du cœur (`coeur_aorte`), ouvre la porte |
+| 2 | Le Cœur d'Asterion | une antichambre puis l'arène : 260 tuiles (plus de neuf écrans de large, 3,5 de haut), sept étages de corniches, quatre navettes verticales du sol aux balcons, deux bacs au-dessus du cœur, deux plateaux qui montent le long de ses flancs ; le cœur flotte au milieu (`coeur_asterion`, rôle `gigaboss`) |
+
+### Ouverture et répartition
+
+`raidHeart.ts` : le cœur s'ouvre quand les objectifs des sept gigaboss sont acceptés (`heartOpenIn`). Avant, rejoindre la
+branche `coeur` répond `409 HEART_SEALED` (« … (k / 7) »). À l'ouverture (le septième gigaboss accepté par le consensus),
+les inscrits sont prévenus une fois (`raid_heart_events.notified_open`, notification `heart_open`) et le journal de
+l'événement le note. Ensuite, « Rejoindre là où le clan a besoin de moi » place au cœur ; la carte du titan lui donne sa
+ligne (scellé k / 7, ouvert, combat : sa vie partagée, sa phase, les groupes ; tombé), `GET …/titan` → `heart`.
+
+### La vie partagée (plusieurs instances, une seule vie)
+
+Chaque instance de 8 simule le cœur seule (mêmes trames, même empreinte), mais **sa vie est commune à tout l'événement** :
+
+1. **La part de l'instance.** Le jeu calcule, dans la simulation, ce que son instance a pris au cœur (dix-millièmes de sa
+   vie, `AsterionHeartRoutine::own`, ses points faibles compris, jamais la part des autres) et le rapporte
+   (`{kind: "heart", damage}`, toutes les 15 s quand elle change et à sa chute). Le consensus habituel l'accepte (clé
+   `h:<pas>`, valeur `zone:pas:empreinte:part`) ; vraisemblance : l'arène du cœur ouvert, au plus une vie entière par
+   minute d'instance.
+2. **L'agrégat.** `raid_heart_damage` (migration **0148**) garde **une ligne par instance**, la plus grande part acceptée
+   (`MAX` : un rapport tardif, répété ou simultané ne la baisse ni ne la compte deux fois). La vie partagée vaut
+   10 000 − la somme (plafonnée) ; la phase partagée la suit (75 %, 50 %, 25 %).
+3. **Le retour aux instances.** Le relais d'une instance du cœur (`CoopRoom`, toutes les 3 s et à chaque rapport accepté)
+   ajoute à `RAID_STATE` un `u32` (`raid::HeartShared`) : la part des **autres** instances, la phase partagée (5 : tombé) et
+   les reliques des branches validées. Chaque jeu de l'instance l'applique **au même pas** : la part nouvelle des autres
+   est retirée à son cœur (jamais comptée comme la sienne), sa phase ne reste pas au-dessus de la phase partagée. Les
+   anciens jeux ne reçoivent jamais ce champ (seules les instances du cœur l'envoient).
+4. **La chute.** Quand la somme atteint 10 000, `checkHeartFall` écrit l'objectif du cœur **une fois**
+   (`INSERT OR IGNORE` : deux groupes qui portent le dernier coup ensemble le comptent une fois), le journal le note, les
+   inscrits sont prévenus une fois (`heart_fallen` : « Asterion est tombé ! »), les récompenses sont accordées et chaque
+   relais donne l'état à ses jeux. Partout, le cœur dont la vie partagée est éteinte entre dans son dernier battement
+   puis tombe ; le bit de son objectif dans l'état de la branche, au même pas pour toute l'instance, est la **victoire
+   validée** (`RaidRun::heartWonNow`) : le film se lance là. Le rapport d'objectif d'un groupe ne suffit jamais seul.
+
+### Le combat (`game/raid/AsterionHeartRoutine`, sur `GigabossRoutine`)
+
+`data/enemies/asterion_coeur.json` : 400 × 400 px (échelle 3), quatre phases (« Le cœur qui bat », « Les artères »,
+« La couronne d'étoiles », « Supernova »), ses ondes, spirales, couronnes, rayons et prismes sur toute l'arène, un dernier
+battement à survivre. Vie × (1 + 0,55 × (sièges − 1)), points faibles × (1 + 0,25 × (sièges − 1)), temps ÷ la pression ;
+chaque relique validée lui ôte 3 % de vie au réveil (pour toutes les instances, jamais la part de personne).
+
+| Mécanisme | Phases | Effet de la partie détruite |
+|---|---|---|
+| **Lances stellaires** : une marque sous **chaque** joueur en jeu qui le suit 1,2 s, se fige, puis une lance de lumière tombe | toutes | **Crâne** tombé : aveuglé, la marque ne suit plus et tombe à 48–120 px à côté |
+| **Charges stellaires** : une comète traverse un étage d'un mur à l'autre (annoncée) | 2 à 4 | **Jambe droite** tombée : 0,55 × la vitesse, annonce × 1,6 |
+| **Balayages des artères** : des lames du cœur vers les murs sur un, deux puis trois étages | 2 à 4 | **Bras gauche** tombé : aucun |
+| **Pluie de magma** : 6 à 10 colonnes aux points annoncés | 1 à 4 | **Bras droit** tombé : aucune |
+| **Pièges de gravité** : un puits sous chaque joueur | 2 à 4 | **Jambe gauche** tombée : aucun |
+| **Engeances** : 1 + joueurs / 2 renforts (8 au plus) | 2 à 4 | **Abdomen** tombé : aucune |
+| **Les artères** (son armure) : ses 4 plaques, deux au sol aux murs, deux sur les balcons hauts, tenues ensemble → ses 3 ventricules à nu 10 s (dégâts × 2) | 2 et 3 | **Torse** debout : une cage d'os le garde dès sa 1re phase et ses expositions durent 0,6 × autant ; tombé : la voie de ses ventricules s'ouvre |
+| **Marée de plasma** : le sol brûle 6 s (annoncée 3 s), plateformes sûres | 3 et 4 | — (l'environnement) |
+| **Supernova** : il se charge 6 s ; assez de joueurs sur les ancres (les artères : 1, 2, 2, 2, 3, 3, 4, 4 selon les joueurs en jeu) la contiennent (ventricules à nu), sinon toute l'arène brûle | 4 | — (la dernière phase, très difficile) |
+
+Dans un vrai raid, les sept parties sont détruites (c'est la condition d'ouverture) : le cœur n'a plus que ses propres
+attaques, ses lances imprécises, ses charges lentes, ses artères, sa marée et sa supernova ; les effets « debout » se
+voient dans le test des administrateurs. Contributions : chaque joueur sur une artère tenue ou une ancre de supernova
+contenue compte un mécanisme, chaque lance esquivée des dégâts évités, les ventricules des points faibles. Phases
+rapportées au serveur : 1 à 3 pendant le combat (sa 4e phase est rapportée comme la 3e), 4 à sa chute.
+
+**Écran de combat** : sous la minimap, la barre de sa vie partagée (le reste pour tous, la part de votre groupe, celle des
+autres, la phase) ; à l'entrée de l'arène, « EFFETS DES BRANCHES SUR LE CŒUR » (chaque partie tombée ou debout et ce
+qu'elle fait) ; ses lignes d'objectifs (artères, ventricules, supernova et ses ancres, parties tombées et reliques) ; ses
+marques tirées de `asterion_coeur_fx` ; à sa chute, « LE CŒUR D'ASTERION CÈDE » tant que la victoire n'est pas validée.
+
+### Le film de la victoire
+
+`data/raids/asterion_victoire.json` (sept plans, ≈ 80 s, légendes et titres à la main ; anglais dans `en.json`) et ses
+scènes `asterion_victoire_scenes.json`, écrites par `tools/assetgen/environment/story_asterion_victoire.py` (`--check`,
+`--storyboard`) à partir des planches du premier film (le titan en calques, ses parties « détruites », les bannières, les
+balises) et de deux images à lui (`nova.png`, `onde.png`) : l'assaut des clans, la carcasse, l'effondrement, la
+supernova, l'onde à travers la galaxie, les bannières, « ASTERION EST TOMBÉ ». Il se lance au pas de la victoire validée
+pour toute l'instance (par-dessus le combat, qui continue : le joueur envoie des entrées neutres pendant le film), se
+quitte, et se revoit depuis la fiche de l'événement (« Revoir la victoire »).
+
+### Récompenses (`raidHeartRewards.ts`, système du §9, chacune une fois)
+
+| Récompense | Objet | Condition |
+|---|---|---|
+| Badge « Cœur d'Asterion » | succès `communaute_coeur` | présent à la chute (`GIGABOSS_BADGES`) |
+| Effet de victoire « Supernova d'Asterion » | `victory_supernova_asterion` | 1 min de combat validée dans une instance du cœur, le cœur tombé |
+| Cadre de profil « Cœur d'Asterion » | `frame_coeur_asterion` | 10 meilleurs **scores mixtes** de l'événement parmi ses combattants (jamais les seuls dégâts), accordé une fois à la fin |
+| Titre de clan collectif « Briseurs d'étoile » | `title_briseurs_etoile` + `raid_clan_titles` | chaque clan avec un joueur présent à la chute ; l'objet à ses joueurs validés |
+
+L'effet et le cadre sont dessinés par `ui/screens/CosmeticFx` avec la planche générée `sprites/fx/asterion_supernova.png`.
+L'issue mondiale « Asterion est tombé » (`raidWorld.ts`, §14) exige désormais les sept gigaboss **et** le cœur
+(`world.heart_down`) ; « Valider la carte » vérifie aussi le catalogue du cœur et ses sept liens `modifier`.
+
+### Test des administrateurs
+
+ADMINISTRATION › Raids › « Tester Asterion » liste le cœur après les sept branches : sa phase de départ (1 à 4), les
+parties du titan simulées comme tombées (leurs liens `modifier` allumés dans l'état de la branche du test), les reliques ;
+seul, en local, invincible si demandé, **jamais aucun rapport** ; sa chute y est sa victoire (le film se lance). Le test
+se joue comme une vraie instance (`raid::TestSession`, §15) : les liens choisis et les reliques sont donnés à chaque pas
+(`TestSession::setHeart`), comme `RAID_STATE` les donnerait, et les joueurs simulés combattent avec l'administrateur.
+
+### HUD
+
+Deux éléments du HUD des raids (`RaidHudLayout`, `ui/online/RaidHud`), réglables dans Paramètres › HUD › « Raids » comme
+les autres : **« Vie partagée du Cœur »** (`heart` : ce qui reste pour tous les groupes, la part de ce groupe, celle des
+autres, les marques des phases partagées à 75, 50 et 25 %, la phase et les parties tombées), par défaut sous la minimap ;
+**« Effets des branches sur le Cœur »** (`heart_effects` : l'effet de chaque partie tombée ou debout, chaque ligne mesurée,
+le reste compté), par défaut dans la colonne de gauche sous le chronomètre, montré à la porte de l'arène (avant son réveil,
+20 premières secondes). Ils n'apparaissent que dans l'arène du cœur ; l'éditeur les montre sur son exemple.
+
+### Sprites et tests
+
+`tools/assetgen/characters/boss_n_coeur.py` (`--check`, `--review`) : le cœur en quatre feuilles (une par phase), son
+ventricule, `asterion_coeur_fx` (artères, ancre, lance, lame, comète, colonne de magma, puits, crête de la marée) et
+l'effet « Supernova d'Asterion ». Tests : `tests/test_raid_heart.cpp` (générateurs, catalogue et arène, quatre phases,
+vie de 2 à 8, part des autres appliquée au pas donné, rapports et phases, effets des sept parties, même empreinte à 2 et 8
+joueurs et par le relais avec l'état partagé, supernova contenue, test jamais rapporté, film), `server/test/raidHeart.test.ts`
+(scellé puis ouvert, part par majorité gardée au maximum, part des autres donnée au relais, chute une seule fois à deux
+groupes, issue mondiale, récompenses une seule fois).
 
 ---
 

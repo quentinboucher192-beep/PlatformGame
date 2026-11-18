@@ -183,6 +183,8 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
         CHECK(b.controlled(8, all) == fought);
     }
     CHECK(zones == 56);
+    // 2.74 (phase 6): the heart receives a « modifier » link from each of the seven parts.
+    if (const raid::Branch* heart = raid::Branch::builtin(titan->heart.part)) links += static_cast<int>(heart->effects.size());
     CHECK(links == static_cast<int>(titan->links.size()));
     // A link opens a passage of another branch: the Skull's Temple opens onto the Vault once the
     // wrist of the Right arm is broken (and only then).

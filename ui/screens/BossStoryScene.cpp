@@ -202,6 +202,8 @@ public:
     }
 
     bool isOverlay() const override { return true; }
+    bool updatesSceneBelow() const override { return keepBelow_; }  // 2.72: the raid's victory film
+    void setKeepBelow(bool on) { keepBelow_ = on; }
     bool holdsNotifications() const override { return true; }
 
     void update(float dt) override {
@@ -1011,6 +1013,7 @@ private:
     bool quickClose_ = false;   // left by an input in attract mode
     bool film_ = false;         // 2.68: a mini-film (its titles, no title card, its music, from black)
     bool locked_ = false;       // 2.68: a film's first viewing: nothing skips it
+    bool keepBelow_ = false;    // 2.72: the screen below keeps running (a raid's combat)
     bool ended_ = false;        // 2.68: played to its end
     std::function<void()> onEnd_;
     std::string prevMusic_;     // 2.68: the music before the film (played again after it)
@@ -1102,9 +1105,12 @@ std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSecond
     return std::make_unique<BossStoryScene>(g, *g.trailer, -1, std::isfinite(atSeconds) ? atSeconds : -1.0f, attract);
 }
 
-std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd, float atSeconds) {
+std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd, float atSeconds,
+                                bool keepBelow) {
     if (!film || film->shots.empty()) return nullptr;
-    return std::make_unique<BossStoryScene>(g, std::move(film), locked, std::move(onEnd), std::isfinite(atSeconds) ? atSeconds : -1.0f);
+    auto s = std::make_unique<BossStoryScene>(g, std::move(film), locked, std::move(onEnd), std::isfinite(atSeconds) ? atSeconds : -1.0f);
+    s->setKeepBelow(keepBelow);
+    return s;
 }
 
 bool filmLocked(const Scene* s) {

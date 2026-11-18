@@ -3785,6 +3785,20 @@
    ]
   },
   {
+   "id": "communaute_coeur",
+   "category": "communaute",
+   "name": "Cœur d'Asterion",
+   "description": "Être présent à la chute du Cœur d'Asterion, le combat final d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "stars": 5,
+   "condition": {
+    "type": "raid_reward",
+    "key": "coeur_badge"
+   },
+   "requires": [
+    "communaute_account"
+   ]
+  },
+  {
    "id": "collection_equip",
    "category": "collection",
    "name": "Essayage",

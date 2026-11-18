@@ -338,7 +338,7 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     for (int s = players_; s < kMaxInstancePlayers; ++s) frames_[static_cast<size_t>(s)].flags = InputFrame::Vacant;
     for (const auto& [seat, f] : scripted)  // a capture's script plays its seat
         if (seat > 0 && seat < kMaxInstancePlayers) frames_[static_cast<size_t>(seat)] = f;
-    run_.step(frames_.data(), static_cast<int>(frames_.size()), state_);
+    run_.step(frames_.data(), static_cast<int>(frames_.size()), state_, heart_);
     // What the group did is accepted at once, as the server would after the consensus of a real
     // instance: given back with the next step (RAID_STATE's structure, the objectives' bits).
     state_ |= run_.localDone();

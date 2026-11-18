@@ -26,9 +26,10 @@ import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
-import { catalogById, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, type Catalog } from "./raidMap";
+import { catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
+import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartFallenIn, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
 import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
 import { Validator } from "./validate";
@@ -367,14 +368,17 @@ export async function report(ctx: Ctx): Promise<Response> {
     // 2.68: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion ») never reports:
     // a report flagged as a test is refused whoever sends it (an administrator or not), before anything.
     if (body.test !== undefined) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
-    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records"]);
-    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result"] as const)!;
+    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage"]);
+    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });
     const zone = v.int("zone", { min: 1, max: BRANCH.zones.length })!;
     const tick = v.int("tick", { min: 0, max: MAX_TICKS })!;
     const hash = v.str("hash", { min: 16, max: 16, pattern: HASH16_RE })!;
     // 2.68: the gigaboss's phase reached (1 to 4: its fall), the table of the contributions.
     const phase = v.int("phase", { min: 1, max: 4, optional: kind !== "boss" });
+    // 2.74 (phase 6): the part of the Cœur d'Asterion's shared health this instance took (ten-thousandths).
+    const damage = v.int("damage", { min: 0, max: HEART_UNITS, optional: kind !== "heart" });
+    if (kind !== "heart" && body.damage !== undefined) v.fail("damage", "réservé aux rapports « heart »");
     const records = kind === "result" ? readRecords(body.records, (m) => { v.fail("records", m); return v.done() as never; }) : [];
     if (kind !== "result" && body.records !== undefined) v.fail("records", "réservé aux rapports « result »");
     v.done();
@@ -387,9 +391,10 @@ export async function report(ctx: Ctx): Promise<Response> {
         .first<{ active: number }>();
     if (!member) throw Errors.forbidden("NOT_IN_INSTANCE", "Vous ne jouez pas dans cette instance.");
     const e = await eventOf(db, inst.event_id);
-    const key = kind === "objective" ? "o:" + objective : kind === "boss" ? `b:${phase}` : kind === "result" ? `r:${tick}` : `z:${zone}@${tick}`;
+    const key =
+        kind === "objective" ? "o:" + objective : kind === "boss" ? `b:${phase}` : kind === "result" ? `r:${tick}` : kind === "heart" ? `h:${tick}` : `z:${zone}@${tick}`;
     // A table's value is its canonical text, rebuilt here from the numbers (never the game's text).
-    const value = kind === "result" ? `${zone}:${tick}:${hash}:${canonical(records)}` : `${zone}:${tick}:${hash}`;
+    const value = kind === "result" ? `${zone}:${tick}:${hash}:${canonical(records)}` : kind === "heart" ? `${zone}:${tick}:${hash}:${damage}` : `${zone}:${tick}:${hash}`;
     const reject = async (reason: string) => {
         await journal(db, id, me, key, value, reason);
         return json(ctx, { status: "rejected", reason });
@@ -416,6 +421,18 @@ export async function report(ctx: Ctx): Promise<Response> {
     if (kind === "result") {
         const why = implausible(records, tick, cat.objectives.length);
         if (why) return reject(why);
+    }
+    if (kind === "heart") {
+        // 2.74 (phase 6): only the heart's arena, once open (the seven gigaboss fallen), at a pace a group can
+        // keep (never the whole heart in less than a minute of the instance).
+        const bossZone = cat.zones.find((z) => (z as { boss?: boolean }).boss)?.id ?? 0;
+        if (!isHeart(inst.branch) || zone !== bossZone) return reject("le Cœur d'Asterion n'est pas dans cette zone");
+        const done = await doneOf(db, e.id);
+        if (!heartOpenIn(done)) return reject("le Cœur d'Asterion est encore scellé");
+        if (damage! > Math.ceil((tick * HEART_UNITS) / (120 * 60)) + 100) return reject("dégâts au Cœur impossibles");
+        // 2.74 (with phase 7): its shared health is frozen once its fall is validated (the last parts every
+        // instance sends as its own heart falls change nothing, and are no anomaly: never journaled).
+        if (heartFallenIn(done)) return json(ctx, { status: "frozen", reason: "le Cœur d'Asterion est tombé : sa vie partagée est figée" });
     }
     const mask = await branchMaskOf(db, e.id, inst.branch);
     let obj: BranchObjective | undefined;
@@ -487,7 +504,11 @@ export async function report(ctx: Ctx): Promise<Response> {
     }
     if (won.meta.changes) {
         for (const r of reports) if (r.value !== winner) await journal(db, id, r.player_id, key, r.value, "minoritaire : l'instance a validé une autre valeur");
-        if (obj) {
+        if (obj && isHeart(inst.branch) && obj.id === HEART_OBJECTIVE) {
+            // 2.74 (phase 6): the heart falls for the world only when the parts validated of every instance
+            // add up to its whole health (checkHeartFall writes its objective once), never on one group's word.
+            if (await checkHeartFall(db, e, id, now)) await wakeHeartRelays(ctx.env as never, e.id);
+        } else if (obj) {
             // The bellows: one per instance; the other one must come from another group.
             const pairOwn = obj.pair
                 ? await db
@@ -506,6 +527,8 @@ export async function report(ctx: Ctx): Promise<Response> {
                 .run();
             // 2.69: already counted by another group (or at the same moment): journaled for the administrators.
             if (!counted.meta.changes) await journalDuplicate(db, e.id, id, inst.branch, obj.id, obj.label, now);
+            // 2.74 (phase 6): the seventh gigaboss down opens the Cœur d'Asterion (told once).
+            if (obj.role === "gigaboss") await checkHeartOpen(db, e, now);
             // Every relay of the event gives the new state to its games (a few seconds anyway);
             // 2.68: those of the other branches too (the titan's links).
             // 2.74: all at once and after the answer (dozens of instances in a world event: before, one
@@ -524,8 +547,15 @@ export async function report(ctx: Ctx): Promise<Response> {
                 .bind(id, e.id, inst.branch, cat.gigaboss ?? BRANCH.gigaboss, phase!, phase === 4 ? tick : null, phase === 4 ? now : null, now)
                 .run();
             if (phase === 4) await grantForInstance(db, e.id, id);
+        } else if (kind === "heart") {
+            // 2.74 (phase 6): this instance's part (the highest accepted), the others told at a step; the fall
+            // when the parts of every instance reach its whole health.
+            await storeHeartDamage(db, e.id, id, damage!, tick, now);
+            await checkHeartFall(db, e, id, now);
+            await wakeHeartRelays(ctx.env as never, e.id);
         } else if (kind === "result") {
             await storeResult(db, e.id, id, tick, records, now);
+            if (isHeart(inst.branch)) await grantHeart(db, e.id, now); // 2.72: its rewards follow the tables after its fall
         } else {
             // 2.74: the newest step wins (two zone reports accepted in the other order — their requests
             // crossed on the network — never move the group back on the map).
