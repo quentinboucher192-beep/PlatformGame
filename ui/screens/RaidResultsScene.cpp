@@ -146,13 +146,11 @@ public:
             Color c;
         };
         const Fig figs[4] = {
-            // 2.69: several gigaboss in an event (Pyroclast, Skullmaw, Dreadfang, Heartbreaker…).
             {"Gigaboss",
-             res_.defeatedBosses.size() == 1 ? res_.defeatedBosses.front() + " vaincu"
-             : res_.defeatedBosses.size() > 1 ? std::to_string(res_.defeatedBosses.size()) + " gigaboss vaincus"
-             : res_.defeated                  ? "Gigaboss vaincu"
-             : res_.fights.empty()            ? "Gigaboss intacts"
-                                              : "Gigaboss au combat",
+             res_.defeatedBosses.size() > 1 ? std::to_string(res_.defeatedBosses.size()) + " vaincus"
+             : res_.defeated                ? (res_.defeatedBosses.empty() ? std::string("Pyroclast") : res_.defeatedBosses.front()) + " vaincu"
+             : res_.fights.empty()          ? std::string("Aucun combat")
+                                            : std::string("Au combat"),
              res_.defeated ? kGreen : kOrange},
             {"Clans classés", std::to_string(res_.clans.size()), kText},
             {"Participants validés", std::to_string(res_.players.size()), kText},

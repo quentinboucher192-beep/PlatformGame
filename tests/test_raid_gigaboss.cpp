@@ -1,6 +1,7 @@
 // 2.69: clan raids « Asterion », phase 4B (docs/RAIDS.md §13): the gigaboss SKULLMAW (Crâne), DREADFANG
 // (Bras gauche) and HEARTBREAKER (Torse) in their lairs (zone 8 of their branch, tools/levelgen/
-// raid_asterion.py), their own rules (game/raid/SkullmawFight, DreadfangFight, HeartbreakerFight):
+// raid_skullmaw.py, raid_dreadfang.py, raid_heartbreaker.py), their routines (game/raid/SkullmawRoutine,
+// DreadfangRoutine, HeartbreakerRoutine, on raid::GigabossRoutine):
 // enormous, a blow on every player at once, their health for 2 to 8 seats, the same digest in
 // lockstep at 2 and 8 players (also through the relay), their collective mechanisms (mirrors held at
 // the flash, three chains held together, four plates broken together, two ribs pried open at once),
@@ -23,11 +24,11 @@
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
-#include "game/raid/DreadfangFight.h"
-#include "game/raid/HeartbreakerFight.h"
+#include "game/raid/DreadfangRoutine.h"
+#include "game/raid/HeartbreakerRoutine.h"
 #include "game/raid/RaidBranch.h"
 #include "game/raid/RaidRun.h"
-#include "game/raid/SkullmawFight.h"
+#include "game/raid/SkullmawRoutine.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -177,7 +178,7 @@ void playThroughRelay(Wire& w, const raid::Branch& b, int players, uint32_t tick
 
 }  // namespace
 
-TEST_CASE("raid gigaboss 4B: the sprites of Skullmaw, Dreadfang and Heartbreaker are their generators' output") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): the sprites of Skullmaw, Dreadfang and Heartbreaker are their generators' output") {
     if (std::system("python3 -c \"import numpy, PIL\" > " COSMIC_G4B_NULL " 2>&1") != 0) {
         std::printf("  (python3 + numpy + Pillow absents : vérification des générateurs des gigaboss sautée)\n");
         return;
@@ -188,7 +189,7 @@ TEST_CASE("raid gigaboss 4B: the sprites of Skullmaw, Dreadfang and Heartbreaker
     }
 }
 
-TEST_CASE("raid gigaboss 4B: three enormous gigaboss in their lairs, three phases, their own rules, their health for 2 to 8 seats") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): three enormous gigaboss in their lairs, three phases, their own rules, their health for 2 to 8 seats") {
     Services s;
     for (const Boss& g : kBosses) {
         const raid::Branch* b = branchOf(g.part);
@@ -204,7 +205,7 @@ TEST_CASE("raid gigaboss 4B: three enormous gigaboss in their lairs, three phase
         CHECK(z != nullptr);
         if (!z) continue;
         CHECK(z->gigaboss.present);
-        CHECK(z->gigaboss.kind == g.id);
+        CHECK(z->gigaboss.routine == g.id);
         CHECK(z->gigaboss.objective == g.objective);
         CHECK(z->arena.present);
         CHECK(z->arena.rect.w >= 6.0f * Camera::kViewWidth);
@@ -213,7 +214,7 @@ TEST_CASE("raid gigaboss 4B: three enormous gigaboss in their lairs, three phase
             raid::RaidRun run(s.ws(), *b, raid::kMaxInstancePlayers);
             CHECK(run.begin(0, kLair));
             CHECK(run.gigaboss().present());
-            CHECK(run.gigaboss().mechanic() != nullptr);
+            CHECK(run.gigaboss().routine() != nullptr);
             CHECK(engage(run, players));
             const Enemy* boss = bossOf(run);
             CHECK(boss != nullptr);
@@ -225,7 +226,7 @@ TEST_CASE("raid gigaboss 4B: three enormous gigaboss in their lairs, three phase
     }
 }
 
-TEST_CASE("raid gigaboss 4B: 2 and 8 players, each fight gives the same digest on two computers and through the relay") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): 2 and 8 players, each fight gives the same digest on two computers and through the relay") {
     Services s;
     for (const Boss& g : kBosses) {
         const raid::Branch* b = branchOf(g.part);
@@ -276,7 +277,7 @@ TEST_CASE("raid gigaboss 4B: 2 and 8 players, each fight gives the same digest o
     }
 }
 
-TEST_CASE("raid gigaboss 4B: each strikes every player at once (a gaze, ground claws, a rib trap each)") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): each strikes every player at once (a gaze, ground claws, a rib trap each)") {
     Services s;
     for (const Boss& g : kBosses) {
         const raid::Branch* b = branchOf(g.part);
@@ -290,17 +291,16 @@ TEST_CASE("raid gigaboss 4B: each strikes every player at once (a gaze, ground c
             size_t most = 0;
             for (int k = 0; k < 1400; ++k) {
                 run.step(f.data(), static_cast<int>(f.size()), 0);
-                const raid::BossMechanic* m = run.gigaboss().mechanic();
-                if (const auto* sk = dynamic_cast<const raid::SkullmawFight*>(m)) most = std::max(most, sk->gazes().size());
-                if (const auto* df = dynamic_cast<const raid::DreadfangFight*>(m)) most = std::max(most, df->stabs().marks.size());
-                if (const auto* hb = dynamic_cast<const raid::HeartbreakerFight*>(m)) most = std::max(most, hb->traps().marks.size());
+                // Skullmaw: its gazes; Dreadfang and Heartbreaker: the marks of the rules' fists (ground claws, rib traps).
+                if (const auto* sk = dynamic_cast<const raid::SkullmawRoutine*>(run.gigaboss().routine())) most = std::max(most, sk->gazes().size());
+                else most = std::max(most, run.gigaboss().fists().size());
             }
             CHECK(most == static_cast<size_t>(players));  // one for each player in play, the same step
         }
     }
 }
 
-TEST_CASE("raid gigaboss 4B: Skullmaw's veil holds until enough mirrors are held at its flash; then it is blind") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): Skullmaw's veil holds until enough mirrors are held at its flash; then it is blind") {
     Services s;
     const raid::Branch* b = branchOf("crane");
     if (!b) return;
@@ -311,31 +311,31 @@ TEST_CASE("raid gigaboss 4B: Skullmaw's veil holds until enough mirrors are held
         CHECK(engage(run, 3));
         const auto f = still(3);
         for (int k = 0; k < 20; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
-        const auto* sk = dynamic_cast<const raid::SkullmawFight*>(run.gigaboss().mechanic());
+        const auto* sk = dynamic_cast<const raid::SkullmawRoutine*>(run.gigaboss().routine());
         Enemy* boss = bossOf(run);
         CHECK(sk != nullptr && boss != nullptr);
         if (!sk || !boss) return;
         CHECK(run.gigaboss().phase() == 2);
         CHECK(sk->veil());
         CHECK(sk->mirrorsNeeded() == 2);
-        CHECK(sk->mirrors().places.size() == 4);
+        CHECK(sk->mirrors().size() == 4);
         CHECK(boss->raidGuarded());  // its veil: nothing hurts it
         for (int k = 0; k < 2400 && sk->lastFlash() == 0; ++k) {
-            for (int p = 0; p < held; ++p) stand(run, p, sk->mirrors().places[static_cast<size_t>(p)].area);
+            for (int p = 0; p < held; ++p) stand(run, p, sk->mirrors()[static_cast<size_t>(p)].area);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
         CHECK(sk->lastFlash() > 0);
         CHECK(sk->lastHeld() == held);
         if (held < 2) {
-            CHECK(!sk->blind());  // too few mirrors: its veil holds
+            CHECK(run.gigaboss().stage() != raid::Gigaboss::Stage::Exposed);  // too few mirrors: its veil holds
             CHECK(boss->raidGuarded());
             continue;
         }
-        CHECK(sk->blind());
+        CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed);  // blind
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(!boss->raidGuarded());
         CHECK(boss->raidMultiplier() == 2.0f);
-        CHECK(sk->weak().total == 3);  // two eyes and its crystal
+        CHECK(run.gigaboss().weakTotal() == 3);  // two eyes and its crystal
         CHECK(sk->gazes().empty());    // blind, it sees nobody
         int mirrors = 0;
         for (const raid::Contribution& c : run.contributions().records()) mirrors += c.vents;
@@ -348,18 +348,18 @@ TEST_CASE("raid gigaboss 4B: Skullmaw's veil holds until enough mirrors are held
             const float before = boss->hp();
             eye->kill(run.world());
             run.step(f.data(), static_cast<int>(f.size()), 0);
-            CHECK(boss->hp() < before - 0.05f * boss->maxHp());
-            CHECK(sk->weak().left() == 2);
+            CHECK(boss->hp() < before - 0.045f * boss->maxHp());  // its share (the rules' weakShare)
+            CHECK(run.gigaboss().weakLeft() == 2);
         }
-        for (int k = 0; k < 1400 && sk->blind(); ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
-        CHECK(!sk->blind());
-        CHECK(sk->weak().left() == 0);
+        for (int k = 0; k < 1400 && run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
+        CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);  // its veil again
+        CHECK(run.gigaboss().weakLeft() == 0);
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(boss->raidGuarded());  // its veil again
     }
 }
 
-TEST_CASE("raid gigaboss 4B: Dreadfang is chained when its three chains are held together; a nailed player is freed") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): Dreadfang is chained when its three chains are held together; a nailed player is freed") {
     Services s;
     const raid::Branch* b = branchOf("bras_gauche");
     if (!b) return;
@@ -370,31 +370,31 @@ TEST_CASE("raid gigaboss 4B: Dreadfang is chained when its three chains are held
         CHECK(engage(run, 3));
         const auto f = still(3);
         for (int k = 0; k < 20; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
-        const auto* df = dynamic_cast<const raid::DreadfangFight*>(run.gigaboss().mechanic());
+        const auto* df = dynamic_cast<const raid::DreadfangRoutine*>(run.gigaboss().routine());
         Enemy* boss = bossOf(run);
         CHECK(df != nullptr && boss != nullptr);
         if (!df || !boss) return;
-        CHECK(df->guardUp());
+        CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);  // its frost armour
         CHECK(boss->raidGuarded());
-        CHECK(df->anchors().places.size() == 3);
+        CHECK(run.gigaboss().vents().size() == 3);  // its anchors
         // One chain alone: locked, but the armour holds.
         for (int k = 0; k < 400; ++k) {
-            stand(run, 0, df->anchors().places[0].area);
+            stand(run, 0, run.gigaboss().vents()[0].area);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
-        CHECK(df->anchors().places[0].locked);
+        CHECK(run.gigaboss().vents()[0].closed);
         CHECK(!df->chained());
         CHECK(boss->raidGuarded());
         // The three together: pinned to the floor, its knuckles bare.
         for (int k = 0; k < 600 && !df->chained(); ++k) {
-            for (int p = 0; p < 3; ++p) stand(run, p, df->anchors().places[static_cast<size_t>(p)].area);
+            for (int p = 0; p < 3; ++p) stand(run, p, run.gigaboss().vents()[static_cast<size_t>(p)].area);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
         CHECK(df->chained());
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(!boss->raidGuarded());
         CHECK(boss->raidMultiplier() == 2.0f);
-        CHECK(df->weak().total == 3);
+        CHECK(run.gigaboss().weakTotal() == 3);
         CHECK(std::abs(boss->box.bottom() - df->storeys().front()) < 1.0f);  // on the floor
     }
     {
@@ -403,7 +403,7 @@ TEST_CASE("raid gigaboss 4B: Dreadfang is chained when its three chains are held
         CHECK(run.begin(0, kLair));
         CHECK(engage(run, 2));
         const auto f = still(2);
-        const auto* df = dynamic_cast<const raid::DreadfangFight*>(run.gigaboss().mechanic());
+        const auto* df = dynamic_cast<const raid::DreadfangRoutine*>(run.gigaboss().routine());
         CHECK(df != nullptr);
         if (!df) return;
         bool nailed = false;
@@ -438,7 +438,7 @@ TEST_CASE("raid gigaboss 4B: Dreadfang is chained when its three chains are held
     }
 }
 
-TEST_CASE("raid gigaboss 4B: Heartbreaker's four plates fall together or grow back; its ribs pried open from both sides") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): Heartbreaker's four plates fall together or grow back; its ribs pried open from both sides") {
     Services s;
     const raid::Branch* b = branchOf("torse");
     if (!b) return;
@@ -449,12 +449,12 @@ TEST_CASE("raid gigaboss 4B: Heartbreaker's four plates fall together or grow ba
         CHECK(engage(run, 4));
         const auto f = still(4);
         for (int k = 0; k < 10; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
-        const auto* hb = dynamic_cast<const raid::HeartbreakerFight*>(run.gigaboss().mechanic());
+        const auto* hb = dynamic_cast<const raid::HeartbreakerRoutine*>(run.gigaboss().routine());
         Enemy* boss = bossOf(run);
         CHECK(hb != nullptr && boss != nullptr);
         if (!hb || !boss) return;
-        CHECK(hb->armoured());
-        CHECK(hb->plates().left() == 4);
+        CHECK(hb->plated());
+        CHECK(hb->platesLeft() == 4);
         CHECK(boss->raidGuarded());
         auto plates = [&]() {
             std::vector<Enemy*> out;
@@ -465,17 +465,17 @@ TEST_CASE("raid gigaboss 4B: Heartbreaker's four plates fall together or grow ba
         // One plate alone: the others wait, the broken one grows back.
         plates().front()->kill(run.world());
         run.step(f.data(), static_cast<int>(f.size()), 0);
-        CHECK(hb->plates().left() == 3);
+        CHECK(hb->platesLeft() == 3);
         CHECK(hb->windowLeft() > 0.0f);
-        for (int k = 0; k < 6000 && hb->plates().left() < 4; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
-        CHECK(hb->plates().left() == 4);
+        for (int k = 0; k < 6000 && hb->platesLeft() < 4; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
+        CHECK(hb->platesLeft() == 4);
         run.step(f.data(), static_cast<int>(f.size()), 0);  // the plates grown back are in the world
         CHECK(boss->raidGuarded());
         CHECK(plates().size() == 4);
         // All four together: the armour is gone for good.
         for (Enemy* e : plates()) e->kill(run.world());
         run.step(f.data(), static_cast<int>(f.size()), 0);
-        CHECK(!hb->armoured());
+        CHECK(!hb->plated());
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(!boss->raidGuarded());
     }
@@ -486,37 +486,37 @@ TEST_CASE("raid gigaboss 4B: Heartbreaker's four plates fall together or grow ba
         CHECK(engage(run, 2));
         const auto f = still(2);
         for (int k = 0; k < 10; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
-        const auto* hb = dynamic_cast<const raid::HeartbreakerFight*>(run.gigaboss().mechanic());
+        const auto* hb = dynamic_cast<const raid::HeartbreakerRoutine*>(run.gigaboss().routine());
         Enemy* boss = bossOf(run);
         CHECK(hb != nullptr && boss != nullptr);
         if (!hb || !boss) return;
-        CHECK(hb->cage());
+        CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);  // its ribs shut
         CHECK(boss->raidGuarded());
-        CHECK(hb->ribs().places.size() == 2);
+        CHECK(run.gigaboss().vents().size() == 2);  // its two ribs
         // One side only: the ribs stay shut.
         for (int k = 0; k < 600; ++k) {
-            stand(run, 0, hb->ribs().places[0].area);
+            stand(run, 0, run.gigaboss().vents()[0].area);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
-        CHECK(!hb->exposed());
+        CHECK(run.gigaboss().stage() != raid::Gigaboss::Stage::Exposed);
         // Both sides at once: the heart is bare.
-        for (int k = 0; k < 600 && !hb->exposed(); ++k) {
-            stand(run, 0, hb->ribs().places[0].area);
-            stand(run, 1, hb->ribs().places[1].area);
+        for (int k = 0; k < 600 && run.gigaboss().stage() != raid::Gigaboss::Stage::Exposed; ++k) {
+            stand(run, 0, run.gigaboss().vents()[0].area);
+            stand(run, 1, run.gigaboss().vents()[1].area);
             run.step(f.data(), static_cast<int>(f.size()), 0);
         }
-        CHECK(hb->exposed());
+        CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed);
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(!boss->raidGuarded());
         CHECK(boss->raidMultiplier() == 2.5f);
-        CHECK(hb->heart().left() == 1);
+        CHECK(run.gigaboss().weakLeft() == 1);
         int ribs = 0;
         for (const raid::Contribution& c : run.contributions().records()) ribs += c.vents;
         CHECK(ribs >= 2);
     }
 }
 
-TEST_CASE("raid gigaboss 4B: each fall reports its phases, its objective and the contributions; an admin test never reports") {
+TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): each fall reports its phases, its objective and the contributions; an admin test never reports") {
     Services s;
     for (const Boss& g : kBosses) {
         const raid::Branch* b = branchOf(g.part);

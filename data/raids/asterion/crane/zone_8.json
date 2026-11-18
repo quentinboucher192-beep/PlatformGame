@@ -239,181 +239,38 @@
   },
   {
    "id": "o7",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "sign",
+   "layer": "gameplay",
    "rect": [
-    704.0,
-    96.0,
-    32.0,
-    704.0
+    340.0,
+    968.0,
+    24.0,
+    24.0
    ],
    "props": {
-    "material": "obsidian"
+    "text": "Skullmaw, le crâne qui voit tout. Quand son regard se charge : tenez les miroirs, ou cachez-vous derrière une colonne.",
+    "auto": true
    }
   },
   {
    "id": "o8",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "light",
+   "layer": "gameplay",
    "rect": [
-    704.0,
-    992.0,
-    3264.0,
-    160.0
+    472.0,
+    888.0,
+    16.0,
+    16.0
    ],
    "props": {
-    "material": "sanctum_stone"
+    "color": "#ffd27a",
+    "radius": 140,
+    "flicker": 0.3,
+    "bloom": true
    }
   },
   {
    "id": "o9",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    736.0,
-    64.0,
-    3200.0,
-    32.0
-   ],
-   "props": {
-    "material": "obsidian"
-   }
-  },
-  {
-   "id": "o10",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    3936.0,
-    64.0,
-    32.0,
-    928.0
-   ],
-   "props": {
-    "material": "obsidian"
-   }
-  },
-  {
-   "id": "o11",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    888.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o12",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    1368.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o13",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    1848.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o14",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    2328.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o15",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    2808.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o16",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    3288.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o17",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    3768.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o18",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -432,44 +289,7 @@
    }
   },
   {
-   "id": "o19",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    644.0,
-    944.0,
-    24.0,
-    48.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "ruin_pillar_broken",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o20",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    664.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ffd27a",
-    "radius": 160,
-    "flicker": 0.3,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o21",
+   "id": "o10",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -481,6 +301,181 @@
    "props": {
     "effect": "fireflies",
     "rate": 2.5
+   }
+  },
+  {
+   "id": "o11",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    96.0,
+    32.0,
+    704.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    992.0,
+    3264.0,
+    160.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    64.0,
+    3200.0,
+    32.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    64.0,
+    32.0,
+    928.0
+   ],
+   "props": {
+    "material": "obsidian"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    888.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o16",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1368.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o17",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1848.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o18",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2328.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o19",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2808.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o20",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3288.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o21",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3768.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
    }
   },
   {
@@ -1259,14 +1254,14 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    0.0,
-    64.0,
-    1120.0,
-    352.0
+    1056.0,
+    160.0,
+    2560.0,
+    832.0
    ],
    "props": {
     "effect": "abyss_motes",
-    "rate": 1.2
+    "rate": 2.0
    }
   },
   {
@@ -1274,7 +1269,7 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    1120.0,
+    0.0,
     64.0,
     1120.0,
     352.0
@@ -1289,7 +1284,7 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2240.0,
+    1120.0,
     64.0,
     1120.0,
     352.0
@@ -1301,6 +1296,21 @@
   },
   {
    "id": "o77",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o78",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1395,7 +1405,7 @@
     }
    ],
    "delay": 1.5,
-   "name": "Gigaboss vaincu"
+   "name": "Skullmaw vaincu"
   }
  ],
  "intro": {},
@@ -1467,8 +1477,8 @@
     "pressurePerPlayer": 0.06,
     "boss": "o72",
     "name": "Skullmaw",
-    "kind": "skullmaw",
     "objective": "crane_skullmaw",
+    "routine": "skullmaw",
     "eyes": [
      [
       -55.0,
@@ -1552,8 +1562,9 @@
      4,
      4
     ],
-    "blind": 10.0,
-    "blindMult": 2.0,
+    "exposed": 10.0,
+    "exposedMult": 2.0,
+    "weakEnemy": "skullmaw_oeil",
     "weakSpots": [
      [
       -55.0,
@@ -1571,15 +1582,15 @@
       "skullmaw_cristal"
      ]
     ],
-    "weakShares": [
-     0.04,
-     0.04,
-     0.06
-    ],
+    "weakShare": 0.05,
     "searchlight": {
      "period": 7.0,
      "spread": 0.32
-    }
+    },
+    "fx": "animations/skullmaw_fx.json",
+    "fallText": "Le crâne d'Asterion s'éteint : le titan est aveuglé.",
+    "goneText": "L'antre est silencieux",
+    "summary": "Son voile : à son flash, tenez des miroirs ensemble (jusqu'à 4) pour l'aveugler ; les autres se cachent derrière les colonnes."
    }
   }
  },

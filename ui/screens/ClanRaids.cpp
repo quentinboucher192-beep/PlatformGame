@@ -399,7 +399,7 @@ void ClanRaids::drawInvitations(const Rect& r, const raids::TabLayout& lay) {
     const float tx = rc.x + ui.s(60), tw = rc.right() - ui.s(12) - (cbw > 0.0f ? cbw + ui.s(10) : 0.0f) - tx;
     if (rewards.empty()) {
         fit(ui, "Aucune récompense à récupérer", {tx, rc.y + ui.s(22)}, 15, tw, kText, FontFace::Bold);
-        drawLines(ui, wrap(ui, "Elles viennent des résultats validés des raids : les chutes des gigaboss, votre contribution.", FontFace::Body, 13, tw, 2),
+        drawLines(ui, wrap(ui, "Elles viennent des résultats validés des raids : la chute de ses gigaboss, votre contribution.", FontFace::Body, 13, tw, 2),
                   {tx, rc.y + ui.s(36)}, 13, ui.s(18), Color{232, 220, 184, 255});
     } else {
         const std::string title = rewards.size() == 1 ? rewards[0].name : std::to_string(rewards.size()) + " récompenses à récupérer";

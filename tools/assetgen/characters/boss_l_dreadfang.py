@@ -16,8 +16,8 @@ roar 6, death 10.
 
 Also its weak points (a knuckle joint: dreadfang_jointure, 32x32; the nailing claw:
 dreadfang_griffe, 48x48: idle 6, hurt 2, death 6) and the sheet of its own rules (dreadfang_fx,
-64x160: anchor 1, anchor_held 4, anchor_locked 2, claws 4 = the claws out of the ground, blade 4 = its
-sweeping talons), drawn by the raid's combat screen.
+48x144 like the kit's: closed 1 / open 4 / warn 4 / jet 4 = its anchors, fist 4 = the claws out of the
+ground, blade 4 = its sweeping talons), drawn by the raid's combat screen.
 
     python3 tools/assetgen/characters/boss_l_dreadfang.py [--check | --review out.png]
 """
@@ -33,7 +33,7 @@ if __name__ == "__main__":
 import numpy as np  # noqa: E402
 
 from boss_a_common import C, mat  # noqa: E402
-from boss_l_gigaboss import GY, Pose, T, _blob, boss_outputs, flash, halo, main, pack, review, sparks, trim, wave  # noqa: E402
+from boss_l_gigaboss import FX_H, FX_W, GY, Pose, T, _blob, boss_outputs, flash, halo, main, pack, review, sparks, trim, wave  # noqa: E402
 from raster import TCanvas  # noqa: E402
 
 W = H = 224
@@ -268,72 +268,93 @@ def weak_frames(kind):
 
 
 # ----------------------------------------------------------------------------- its rules
-FW, FH = 64, 160
+FW, FH = FX_W, FX_H  # the kit's effects frames (48x144, bottom-centre pivot)
 
 
 def fx_frames():
-    """Its anchors (a winch of bone and iron, its chain coiled: free, held (glowing), locked (the
-    chain drawn up taut)), the claws of ice out of the ground (growing), its sweeping talons."""
+    """Its anchors (the rules' vents: a winch of bone and iron, its chain coiled at rest (closed), loose
+    and glowing to be held (open), frost gathering (warn), a column of frost shards (jet)), the claws of
+    ice out of the ground under each player (fist), its sweeping talons (blade)."""
     lit = mat("df_anchor_lit", ["#ffffff", "#bff8ff", "#7ff6ff", "#3fb8d8"], emissive=True, outline=None)
+    cx = FW // 2
 
-    def anchor(glow, taut=False, seed=0):
+    def anchor(glow, loose=False, seed=0):
         cv = TCanvas(FW, FH)
         cv.part()
-        cv.tpoly([(10, FH - 1), (16, FH - 12), (48, FH - 12), (54, FH - 1)], ARMOR, bevel=1.5, base=0.6)
+        cv.tpoly([(cx - 20, FH - 1), (cx - 15, FH - 10), (cx + 15, FH - 10), (cx + 20, FH - 1)], ARMOR, bevel=1.5, base=0.6)
         cv.part()
-        cv.tcapsule((32, FH - 12), (32, FH - 46), 7.0, 6.0, BONE)
+        cv.tcapsule((cx, FH - 10), (cx, FH - 42), 6.0, 5.0, BONE)
         cv.part()
-        cv.tellipse((32, FH - 34), 14.0, 8.0, CHAIN)
+        cv.tellipse((cx, FH - 30), 12.0, 7.0, CHAIN)
         for k in range(3):
-            cv.tline((20, FH - 38 + 4 * k), (44, FH - 38 + 4 * k), CHAIN, inten=0.25, decal=True)
+            cv.tline((cx - 10, FH - 34 + 4 * k), (cx + 10, FH - 34 + 4 * k), CHAIN, inten=0.25, decal=True)
         if glow > 0:
             cv.part(line=False)
-            cv.tellipse((32, FH - 34), 9.0, 4.0, lit, bias=0.2 * glow, decal=True)
-        links = 9 if taut else 3
-        for i in range(links):
+            cv.tellipse((cx, FH - 30), 8.0, 3.5, lit, bias=0.2 * glow, decal=True)
+        for i in range(4 if loose else 2):
             cv.part(line=1)
-            y = FH - 50 - 11 * i
-            cv.tellipse((32 + (0 if taut else 6 * math.sin(i)), y), 3.4, 5.0, lit if (taut and glow > 0) else CHAIN, ang=0.3 * (i % 2))
+            cv.tellipse((cx + (5 * math.sin(i * 1.3) if loose else 0), FH - 48 - 10 * i), 3.0, 4.4, lit if glow > 0 else CHAIN, ang=0.3 * (i % 2))
         img = cv.render(outline=True)
         if glow > 0:
             img = halo(img, C("#7ff6ff"), 0.3 * glow, SEED + 800 + seed)
         return img
 
+    def frost(k, seed):
+        img = anchor(0.3, False, seed)
+        rng = np.random.RandomState(SEED + 810 + seed)
+        top = int(FH - 52 - 80 * k)
+        for _ in range(int(10 + 30 * k)):
+            _blob(img, int(rng.uniform(cx - 10, cx + 10)), int(rng.uniform(top, FH - 44)), 1, C("#bff8ff") if rng.uniform() < 0.6 else C("#ffffff"))
+        return img
+
+    def shards(i):
+        img = anchor(0.6, False, 30 + i)
+        cv = TCanvas(FW, FH)
+        for j, (bx, lean) in enumerate(((cx - 9, -0.15), (cx, 0.05), (cx + 9, 0.2))):
+            hgt = 80 + 18 * ((i + j) % 3)
+            cv.part()
+            cv.tpoly([(bx - 4, FH - 44), (bx + 4, FH - 44), (bx + lean * 30, FH - 44 - hgt)], ICE, bevel=1.2, base=0.6)
+        top = cv.render(outline=True)
+        a = top[:, :, 3] > 0
+        img[a] = top[a]
+        return img
+
     def ground_claws(k, seed):
         cv = TCanvas(FW, FH)
-        h = 30 + 120 * k
-        for j, (bx, lean) in enumerate(((20, -0.25), (32, 0.0), (44, 0.25))):
+        h = 30 + 110 * k
+        for j, (bx, lean) in enumerate(((cx - 12, -0.25), (cx, 0.0), (cx + 12, 0.25))):
             hh = h * (0.75 if j != 1 else 1.0)
             cv.part()
-            cv.tpoly([(bx - 6, FH - 2), (bx + 6, FH - 2), (bx + lean * hh * 0.3 + 1, FH - 2 - hh)], ICE, bevel=1.4, base=0.6)
+            cv.tpoly([(bx - 5, FH - 2), (bx + 5, FH - 2), (bx + lean * hh * 0.3 + 1, FH - 2 - hh)], ICE, bevel=1.4, base=0.6)
             cv.tline((bx, FH - 4), (bx + lean * hh * 0.3, FH - 2 - hh * 0.9), FROST, inten=0.9, decal=True)
         img = cv.render(outline=True)
-        sparks(img, (32, FH - 6), 14 + 10 * k, 10, [C("#ffffff"), C("#bff8ff")], SEED + 820 + seed, squash=0.3)
+        sparks(img, (cx, FH - 6), 12 + 8 * k, 10, [C("#ffffff"), C("#bff8ff")], SEED + 820 + seed, squash=0.3)
         return img
 
     def blade(i):
         cv = TCanvas(FW, FH)
-        for j, x0 in enumerate((14, 30, 46)):
-            sway = 3 * math.sin(i * 1.4 + j)
+        for j, x0 in enumerate((cx - 12, cx, cx + 12)):
+            sway = 2.5 * math.sin(i * 1.4 + j)
             cv.part()
-            cv.tchain([(x0 - 8, 4), (x0 + 2 + sway, FH * 0.55), (x0 + 10 + sway, FH - 6)], [6.0, 4.0, 0.8], BONE)
-            cv.tline((x0 + 3 + sway, FH * 0.55), (x0 + 10 + sway, FH - 8), FROST, inten=0.9, decal=True)
+            cv.tchain([(x0 - 6, 4), (x0 + 2 + sway, FH * 0.55), (x0 + 8 + sway, FH - 6)], [5.0, 3.4, 0.8], BONE)
+            cv.tline((x0 + 3 + sway, FH * 0.55), (x0 + 8 + sway, FH - 8), FROST, inten=0.9, decal=True)
         img = cv.render(outline=True)
         rng = np.random.RandomState(SEED + 840 + i)
         for _ in range(16):
             y = int(rng.uniform(FH * 0.5, FH - 4))
-            x = int(rng.uniform(2, 20))
-            for xx in range(x, x + int(rng.uniform(4, 12))):
+            x = int(rng.uniform(1, 14))
+            for xx in range(x, x + int(rng.uniform(4, 10))):
                 if 0 <= xx < FW:
                     img[y, xx] = C("#bff8ff")
         return img
 
-    clips = [("anchor", [anchor(0.0)], dict(fps=1, loop=True)),
-             ("anchor_held", [anchor(0.5 + 0.5 * abs(wave(i / 4)), seed=i) for i in range(4)], dict(fps=8, loop=True)),
-             ("anchor_locked", [anchor(1.0, True, 10), anchor(0.7, True, 11)], dict(fps=6, loop=True)),
-             ("claws", [ground_claws(k, i) for i, k in enumerate((0.15, 0.45, 0.8, 1.0))], dict(fps=10, loop=False)),
+    clips = [("closed", [anchor(0.0)], dict(fps=1, loop=True)),
+             ("open", [anchor(0.5 + 0.5 * abs(wave(i / 4)), True, i) for i in range(4)], dict(fps=8, loop=True)),
+             ("warn", [frost(0.3 + 0.2 * i, 10 + i) for i in range(4)], dict(fps=10, loop=True)),
+             ("jet", [shards(i) for i in range(4)], dict(fps=12, loop=True)),
+             ("fist", [ground_claws(k, i) for i, k in enumerate((0.35, 0.7, 1.0, 0.9))], dict(fps=10, loop=True)),
              ("blade", [blade(i) for i in range(4)], dict(fps=16, loop=True))]
-    return pack(clips, FW, FH, columns=8)
+    return pack(clips, FW, FH, columns=12)
 
 
 # ----------------------------------------------------------------------------- output
@@ -351,7 +372,7 @@ def do_review(path):
     griffe, _ = weak_frames("griffe")
     fx, _ = fx_frames()
     extras = [("Point faible : jointure (repos, touchée, brisée) x3", joint, 3), ("Griffe clouante (repos, touchée, brisée) x2", griffe, 2),
-              ("Ancres des chaînes (libre, tenue, verrouillée), griffes du sol, lames du balayage", fx, 1)]
+              ("Ancres des chaînes (au repos, à tenir, givre qui monte, éclats), griffes du sol, lames du balayage", fx, 2)]
     return review(path, "DREADFANG — les griffes qui déchirent (phases : les griffes, le bras enchaîné, griffes déchaînées)", PHASES, picks, draw, extras)
 
 

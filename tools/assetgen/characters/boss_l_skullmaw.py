@@ -15,7 +15,7 @@ Clips: idle 6, move 6, telegraph 5, attack 5, telegraph_special 5, special 4, su
 roar 6, death 10.
 
 Also its weak points (an eye: skullmaw_oeil, the crystal: skullmaw_cristal, 32x32: idle 6, hurt 2,
-death 6) and the sheet of its mirrors (skullmaw_fx, 64x96: mirror 4, mirror_lit 4, mirror_flash 2),
+death 6) and the sheet of its mirrors (skullmaw_fx, 48x144 like the kit's: mirror 4, mirror_lit 4, mirror_flash 2),
 drawn by the raid's combat screen.
 
     python3 tools/assetgen/characters/boss_l_skullmaw.py [--check | --review out.png]
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 import numpy as np  # noqa: E402
 
 from boss_a_common import C, mat  # noqa: E402
-from boss_l_gigaboss import GY, Pose, T, _blob, boss_outputs, flash, halo, main, pack, review, sparks, trim, wave  # noqa: E402
+from boss_l_gigaboss import FX_H, FX_W, GY, Pose, T, _blob, boss_outputs, flash, halo, main, pack, review, sparks, trim, wave  # noqa: E402
 from raster import TCanvas  # noqa: E402
 
 W = H = 224
@@ -286,7 +286,7 @@ def weak_frames(kind):
 
 
 # ----------------------------------------------------------------------------- its mirrors
-FW, FH = 64, 96
+FW, FH = FX_W, FX_H  # the kit's effects frames (48x144, bottom-centre pivot)
 OBSIDIAN = mat("sk_obsidian", ["#5a4a78", "#3a2c58", "#241a3c", "#140e24"])
 
 
@@ -294,35 +294,36 @@ def fx_frames():
     """Its mirrors standing on the ground: dark obsidian on a bone pedestal (mirror), lit pink while a
     player holds it (mirror_lit), and the burst of its gaze thrown back (mirror_flash)."""
     lit = mat("sk_mirror_lit", ["#ffffff", "#ffe0fa", "#ff9ae6", "#ff6ad5"], emissive=True, outline=None)
+    cx = FW // 2
 
     def mirror(glow, burst=0.0, seed=0):
         cv = TCanvas(FW, FH)
         cv.part()
-        cv.tpoly([(12, FH - 1), (18, FH - 10), (46, FH - 10), (52, FH - 1)], BONE_DK, bevel=1.5, base=0.6)
+        cv.tpoly([(cx - 18, FH - 1), (cx - 13, FH - 9), (cx + 13, FH - 9), (cx + 18, FH - 1)], BONE_DK, bevel=1.5, base=0.6)
         cv.part()
-        cv.tellipse((32, FH - 46), 18.0, 34.0, ARMOR)
+        cv.tellipse((cx, FH - 42), 14.0, 30.0, ARMOR)
         cv.part(line=False)
-        cv.tellipse((32, FH - 46), 14.0, 30.0, lit if glow > 0 else OBSIDIAN, bias=-0.1 + 0.4 * glow)
+        cv.tellipse((cx, FH - 42), 11.0, 27.0, lit if glow > 0 else OBSIDIAN, bias=-0.1 + 0.4 * glow)
         for k in range(3):
-            cv.tline((24 + 4 * k, FH - 70 + 6 * k), (30 + 4 * k, FH - 58 + 6 * k), lit, inten=0.6 + 0.3 * glow, decal=True)
+            cv.tline((cx - 6 + 3 * k, FH - 62 + 6 * k), (cx - 2 + 3 * k, FH - 52 + 6 * k), lit, inten=0.6 + 0.3 * glow, decal=True)
         for a in (-1, 1):
             cv.part()
-            cv.tchain([(32 + 16 * a, FH - 74), (32 + 22 * a, FH - 84), (32 + 18 * a, FH - 92)], [3.0, 2.0, 1.0], HORN)
+            cv.tchain([(cx + 12 * a, FH - 66), (cx + 17 * a, FH - 76), (cx + 14 * a, FH - 84)], [2.6, 1.8, 1.0], HORN)
         img = cv.render(outline=True)
         rng = np.random.RandomState(SEED + 700 + seed)
         if glow > 0:
             img = halo(img, C("#ff6ad5"), 0.35 * glow, SEED + 710 + seed)
             for _ in range(int(6 * glow)):
-                _blob(img, int(rng.uniform(12, 52)), int(rng.uniform(4, FH - 20)), 1, C("#ffd0f2"))
+                _blob(img, int(rng.uniform(6, FW - 6)), int(rng.uniform(FH - 96, FH - 16)), 1, C("#ffd0f2"))
         if burst > 0:
-            sparks(img, (32, FH - 46), 20 + 8 * burst, 14, [C("#ffffff"), C("#ff9ae6"), C("#ff6ad5")], SEED + 720 + seed, squash=1.4)
+            sparks(img, (cx, FH - 42), 16 + 6 * burst, 14, [C("#ffffff"), C("#ff9ae6"), C("#ff6ad5")], SEED + 720 + seed, squash=1.6)
             img = flash(img, 0.4 * burst)
         return img
 
     clips = [("mirror", [mirror(0.0, seed=i) for i in range(4)], dict(fps=4, loop=True)),
              ("mirror_lit", [mirror(0.6 + 0.4 * abs(wave(i / 4)), seed=10 + i) for i in range(4)], dict(fps=8, loop=True)),
              ("mirror_flash", [mirror(1.0, 1.0, 20), mirror(1.0, 0.5, 21)], dict(fps=10, loop=True))]
-    return pack(clips, FW, FH, columns=6)
+    return pack(clips, FW, FH, columns=10)
 
 
 # ----------------------------------------------------------------------------- output

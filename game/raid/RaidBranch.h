@@ -135,6 +135,9 @@ struct GigabossRules {
     float jetDamage = 1.0f;
     std::string weakEnemy;             // its weak points (enemies stuck to it while it is bare)
     std::vector<Vec2> weakSpots;       // from its feet, x toward where it faces
+    /// 2.69 (phase 4B): the enemy of each spot when it names its own ("" = weakEnemy).
+    std::vector<std::string> weakEnemies;
+    const std::string& weakEnemyAt(size_t k) const { return k < weakEnemies.size() && !weakEnemies[k].empty() ? weakEnemies[k] : weakEnemy; }
     float weakShare = 0.04f;           // share of its health a weak point takes from it when broken
     float hpPerPlayer = 0.55f;         // health × (1 + hpPerPlayer × (players − 1)), players seated (2 to 8)
     float weakHpPerPlayer = 0.25f;
@@ -143,11 +146,21 @@ struct GigabossRules {
     /// (÷ its pressure), announced fistWarn seconds before on a mark under each one.
     std::vector<float> fistPeriods;
     float fistWarn = 1.4f, fistWidth = 64.0f, fistDamage = 1.0f;
-    /// 2.69 (phase 4B): the rules of its own fight (raid::BossMechanic: "skullmaw", "dreadfang",
-    /// "heartbreaker"…; "" = Pyroclast's vents and fists above), and the whole of metadata.raid.gigaboss
-    /// they read their numbers from.
-    std::string kind;
-    Json params = Json::object();
+    /// 2.69 (phase 4B): what the other gigaboss of Asterion say and do beyond these rules. Their
+    /// routine (game/raid/GigabossRoutine: "voidworm", "graviton", "titanus"; "" = Pyroclast's
+    /// own rules above), read from `extra` (the whole metadata.raid.gigaboss); the objectives of
+    /// the branch it reads (`links`: name -> bit of the branch's state, -1 unknown); the names of
+    /// its blows and the texts of its fall (Pyroclast's by default); the sheet of its vents and
+    /// marks (drawn by the combat screen); one line for the maps of the branch.
+    std::string routine;
+    Json extra;
+    std::map<std::string, int> links;
+    std::string fistName = "Poings de magma", jetName = "Jet de magma";
+    bool fistRise = false;  // 2.69: its blows on the marks come out of the ground (drawn rising, not falling)
+    std::string fallText = "Le bras droit d'Asterion s'éteint.";
+    std::string goneText = "La Main est éteinte";
+    std::string fx = "animations/pyroclast_vents.json";
+    std::string summary = "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.";
 };
 
 struct ZoneRules {

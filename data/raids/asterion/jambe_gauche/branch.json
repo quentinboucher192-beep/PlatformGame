@@ -1,6 +1,6 @@
 {
  "id": "asterion_jambe_gauche",
- "revision": 2,
+ "revision": 3,
  "raid": "asterion",
  "branch": "jambe_gauche",
  "name": "JAMBE GAUCHE",
@@ -121,12 +121,12 @@
   {
    "id": 8,
    "name": "Pied de Graviton",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · Graviton, 3 phases",
    "x": 1000,
    "y": 330,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Graviton attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Graviton : couper ses générateurs ensemble, s'abriter quand la gravité s'inverse",
+   "event": "Gravité inversée par secteurs (les dalles hautes abritent)",
    "secret": false,
    "boss": true,
    "groups_required": 1,
@@ -275,6 +275,15 @@
    "label": "Briser la cheville : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "jg_graviton",
+   "index": 9,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Graviton",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

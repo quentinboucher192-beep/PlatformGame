@@ -1,17 +1,16 @@
-"""The shared harness of the gigaboss sprites of phase 4B (2.69, docs/RAIDS.md §13): SKULLMAW
-(boss_l_skullmaw.py), DREADFANG (boss_l_dreadfang.py) and HEARTBREAKER (boss_l_heartbreaker.py).
+"""Drawing helpers of the gigaboss sprites SKULLMAW (boss_l_skullmaw.py), DREADFANG
+(boss_l_dreadfang.py) and HEARTBREAKER (boss_l_heartbreaker.py), 2.69 (phase 4B, docs/RAIDS.md §13),
+over the shared kit of the gigaboss of phase 4B (gigaboss_kit.py: packing, PNG, writing, `--check`).
 
 Each generator gives: its boss in three phase sheets (one per phase of data/enemies/<id>.json, its
-look changing with its health: intact, damaged, broken), its weak points, and the sheet of its own
-rules drawn by the raid's combat screen over the arena (<id>_fx: mirrors, anchors, ribs, claws,
-blades, traps, waves).  The packing of the clips, the PNG encoding and the droplets come from
-Pyroclast's generator (boss_k_pyroclast.py), reused as they are.
+look changing with its health: intact, damaged, broken), its weak points, and its effects sheet
+(<id>_fx, 48x144 frames like the kit's: the plates of its mechanism, the marks of its blows, its
+blades and waves) drawn by the raid's combat screen over the arena.
 
 `--check` renders everything twice and compares with the files on disk (tests/test_raid_gigaboss.cpp);
 `--review out.png` writes the labelled contact sheet (French captions): one picture per clip of each
-phase, the weak points and the sheet of its rules.
+phase, the weak points and the effects sheet.
 """
-import io
 import json
 import math
 import os
@@ -20,9 +19,12 @@ import sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
-from boss_k_pyroclast import _blob, _png, pack  # noqa: F401  (reused by the three generators)
-from sheet import ASSETS, dumps
+import gigaboss_kit as kit
+from gigaboss_kit import pack, png as _png  # noqa: F401  (re-exported for the three generators)
+from sheet import ASSETS
 
+_blob = kit.blob
+FX_W, FX_H = kit.FX_W, kit.FX_H
 W, H = 224, 224
 GY = 212
 PIVOT = [W // 2, GY]
@@ -108,57 +110,16 @@ def trim(img):
     return img
 
 
-def anim_json(tex, fw, fh, pivot, meta):
-    return (dumps({"texture": tex, "frameWidth": fw, "frameHeight": fh, "pivot": pivot, "clips": meta}) + "\n").encode()
-
-
 def boss_outputs(name, draw, clips, extras):
     """The three phase sheets of `name` (draw(pose, phase) -> frame), then `extras` ((stem, (img,
     meta), fw, fh, pivot)…): (relative path, bytes) of every file, in a fixed order."""
     out = []
     for phase in range(3):
         img, meta = pack([(clip, [draw(p, phase) for p in fn()], kw) for clip, fn, kw in clips], W, H, COLUMNS)
-        stem = name if phase == 0 else "%s_p%d" % (name, phase + 1)
-        tex = "sprites/enemies/%s.png" % stem
-        out.append((tex, _png(img)))
-        out.append(("animations/%s.json" % stem, anim_json(tex, W, H, PIVOT, meta)))
+        out += kit.sheet_entry(name if phase == 0 else "%s_p%d" % (name, phase + 1), img, meta, W, H, PIVOT)
     for stem, (img, meta), fw, fh, pivot in extras:
-        tex = "sprites/enemies/%s.png" % stem
-        out.append((tex, _png(img)))
-        out.append(("animations/%s.json" % stem, anim_json(tex, fw, fh, pivot, meta)))
+        out += kit.sheet_entry(stem, img, meta, fw, fh, pivot)
     return out
-
-
-def build(outputs):
-    for rel, data in outputs():
-        path = os.path.join(ASSETS, rel)
-        os.makedirs(os.path.dirname(path), exist_ok=True)
-        with open(path, "wb") as f:
-            f.write(data)
-        print(rel, len(data))
-
-
-def check(name, outputs):
-    """Two renders give the same bytes, and the files on disk are the generator's output."""
-    errs = []
-    a, b = outputs(), outputs()
-    if a != b:
-        errs.append("%s: two renders differ (not deterministic)" % name)
-    for rel, data in a:
-        path = os.path.join(ASSETS, rel)
-        if not os.path.exists(path):
-            errs.append("%s: missing (regenerate)" % rel)
-            continue
-        if rel.endswith(".json"):
-            with open(path, "rb") as f:
-                if f.read().replace(b"\r", b"") != data:
-                    errs.append("%s: not the generator's output (regenerate)" % rel)
-        else:
-            disk = np.array(Image.open(path).convert("RGBA"))
-            fresh = np.array(Image.open(io.BytesIO(data)).convert("RGBA"))
-            if disk.shape != fresh.shape or (disk != fresh).any():
-                errs.append("%s: not the generator's output (regenerate)" % rel)
-    return errs
 
 
 def fitted(d, text, font, width):
@@ -204,15 +165,8 @@ def review(path, title, phases, picks, draw, extras, bg=(20, 16, 30, 255)):
 
 
 def main(name, outputs, do_review):
-    if len(sys.argv) > 1 and sys.argv[1] == "--check":
-        e = check(name, outputs)
-        print("\n".join(e) or "OK")
-        sys.exit(1 if e else 0)
-    elif len(sys.argv) > 2 and sys.argv[1] == "--review":
-        print(do_review(sys.argv[2]))
-    else:
-        build(outputs)
+    kit.main(sys.argv, outputs, do_review, name, "boss_l_%s.py" % name)
 
 
-__all__ = ["W", "H", "GY", "PIVOT", "Pose", "T", "wave", "flash", "halo", "sparks", "trim", "pack", "_png", "_blob", "boss_outputs", "check",
-           "review", "main", "json", "math", "np"]
+__all__ = ["W", "H", "GY", "PIVOT", "FX_W", "FX_H", "Pose", "T", "wave", "flash", "halo", "sparks", "trim", "pack", "_png", "_blob",
+           "boss_outputs", "review", "main", "json", "math", "np"]

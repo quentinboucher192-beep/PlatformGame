@@ -29,9 +29,6 @@
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1
   },
-  "animations/dreadfang_fx.json": {
-   "ui/screens/RaidGigabossOverlay.cpp": 1
-  },
   "animations/energy_orb.json": {
    "game/levels/ObjectTypes.cpp": 1
   },
@@ -57,9 +54,6 @@
   },
   "animations/heart_container.json": {
    "game/levels/ObjectTypes.cpp": 1
-  },
-  "animations/heartbreaker_fx.json": {
-   "ui/screens/RaidGigabossOverlay.cpp": 1
   },
   "animations/laser_emitter.json": {
    "game/gameplay/entities/HazardEntities.cpp": 1,
@@ -114,7 +108,7 @@
    "packaging/DependencyCollector.cpp": 1
   },
   "animations/pyroclast_vents.json": {
-   "ui/screens/RaidGameScene.cpp": 1
+   "game/raid/RaidBranch.h": 1
   },
   "animations/receptor.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
@@ -136,9 +130,6 @@
   "animations/sign.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1
-  },
-  "animations/skullmaw_fx.json": {
-   "ui/screens/RaidGigabossOverlay.cpp": 1
   },
   "animations/star_wall.json": {
    "game/enemies/BossHazards.cpp": 1,
@@ -265,14 +256,15 @@
    "game/enemies/PhoenixAttacks.cpp": 1
   },
   "sounds/boss_roar_ice.wav": {
-   "game/raid/DreadfangFight.cpp": 1
+   "game/raid/DreadfangRoutine.cpp": 1
   },
   "sounds/bounce.wav": {
    "game/gameplay/entities/PlatformEntities.cpp": 2
   },
   "sounds/burrow.wav": {
    "game/enemies/Enemy.cpp": 1,
-   "game/enemies/GuardianAttacks.cpp": 1
+   "game/enemies/GuardianAttacks.cpp": 1,
+   "game/raid/VoidwormRoutine.cpp": 1
   },
   "sounds/charge_loop.wav": {
    "game/powers/PowersCharged.cpp": 1,
@@ -371,14 +363,16 @@
    "game/enemies/Enemy.cpp": 2,
    "game/enemies/EnemyAttacks.cpp": 3,
    "game/enemies/GolemAttacks.cpp": 4,
-   "game/enemies/TitanAttacks.cpp": 1
+   "game/enemies/TitanAttacks.cpp": 1,
+   "game/raid/TitanusRoutine.cpp": 2
   },
   "sounds/grapple_hit.wav": {
    "game/powers/PowersExtra.cpp": 1
   },
   "sounds/gravity_well.wav": {
    "game/enemies/GuardianAttacks.cpp": 1,
-   "game/enemies/LicheAttacks.cpp": 1
+   "game/enemies/LicheAttacks.cpp": 1,
+   "game/raid/GravitonRoutine.cpp": 2
   },
   "sounds/heart_pickup.wav": {
    "game/gameplay/entities/PickupEntities.cpp": 1
@@ -388,7 +382,7 @@
   },
   "sounds/ice_shatter.wav": {
    "game/enemies/LicheAttacks.cpp": 1,
-   "game/raid/DreadfangFight.cpp": 1
+   "game/raid/DreadfangRoutine.cpp": 1
   },
   "sounds/inhale.wav": {
    "game/enemies/DragonAttacks.cpp": 1,
@@ -410,13 +404,13 @@
    "game/enemies/PhoenixAttacks.cpp": 1,
    "game/enemies/TitanAttacks.cpp": 1,
    "game/gameplay/entities/HazardEntities.cpp": 1,
-   "game/raid/SkullmawFight.cpp": 1
+   "game/raid/SkullmawRoutine.cpp": 1
   },
   "sounds/laser_fire.wav": {
    "game/enemies/BossHazards.cpp": 1,
    "game/enemies/EnemyAttacks.cpp": 1,
    "game/gameplay/entities/HazardEntities.cpp": 1,
-   "game/raid/SkullmawFight.cpp": 1
+   "game/raid/SkullmawRoutine.cpp": 1
   },
   "sounds/lava_bubble.wav": {
    "game/enemies/PhoenixAttacks.cpp": 1,
@@ -498,8 +492,8 @@
   },
   "sounds/shell_shatter.wav": {
    "game/raid/Gigaboss.cpp": 1,
-   "game/raid/HeartbreakerFight.cpp": 1,
-   "game/raid/SkullmawFight.cpp": 1
+   "game/raid/GigabossRoutine.cpp": 1,
+   "game/raid/HeartbreakerRoutine.cpp": 1
   },
   "sounds/shield_block.wav": {
    "game/enemies/Enemy.cpp": 2,
@@ -508,15 +502,15 @@
    "game/player/PlayerActions.cpp": 1,
    "game/powers/PowersCharged.cpp": 2,
    "game/powers/PowersSanctuary.cpp": 1,
-   "game/raid/DreadfangFight.cpp": 1,
-   "game/raid/Gigaboss.cpp": 1
+   "game/raid/Gigaboss.cpp": 1,
+   "game/raid/GigabossRoutine.cpp": 1
   },
   "sounds/shield_down.wav": {
    "game/gameplay/GameWorld.cpp": 1
   },
   "sounds/slash.wav": {
    "game/player/PlayerActions.cpp": 1,
-   "game/raid/DreadfangFight.cpp": 1
+   "game/raid/DreadfangRoutine.cpp": 1
   },
   "sounds/slash_hit.wav": {
    "game/player/PlayerActions.cpp": 1
@@ -532,10 +526,10 @@
   },
   "sounds/star_roar.wav": {
    "game/enemies/PhoenixAttacks.cpp": 1,
-   "game/raid/SkullmawFight.cpp": 1
+   "game/raid/SkullmawRoutine.cpp": 1
   },
   "sounds/story_heartbeat.wav": {
-   "game/raid/HeartbreakerFight.cpp": 2
+   "game/raid/HeartbreakerRoutine.cpp": 1
   },
   "sounds/summon.wav": {
    "game/enemies/Enemy.cpp": 1,
@@ -625,6 +619,9 @@
   "sounds/wisp_teleport.wav": {
    "game/enemies/Enemy.cpp": 1,
    "game/enemies/LicheAttacks.cpp": 1
+  },
+  "sounds/wyrm_roar.wav": {
+   "game/raid/VoidwormRoutine.cpp": 1
   },
   "sprites/decor/glacior_decor.json": {
    "game/levels/DecorAtlas.cpp": 1

@@ -16,8 +16,9 @@ hurt 2, roar 6, death 10.
 
 Also its weak points (an armour plate: heartbreaker_plaque, the light of its heart:
 heartbreaker_coeur, 48x48: idle 6, hurt 2, death 6) and the sheet of its own rules (heartbreaker_fx,
-64x128: rib 1, rib_held 4, rib_open 2 = its ribs pried from the flank towers, trap 4 = a rib rising
-around a player, wave 4 = the wave of a strong beat), drawn by the raid's combat screen.
+48x144 like the kit's: closed 1 / open 4 / warn 4 / jet 4 = its ribs pried from the flank towers,
+fist 4 = a rib trap rising around a player, wave 4 = the wave of a strong beat), drawn by the
+raid's combat screen.
 
     python3 tools/assetgen/characters/boss_l_heartbreaker.py [--check | --review out.png]
 """
@@ -33,7 +34,7 @@ if __name__ == "__main__":
 import numpy as np  # noqa: E402
 
 from boss_a_common import C, mat  # noqa: E402
-from boss_l_gigaboss import GY, Pose, T, _blob, boss_outputs, flash, halo, main, pack, review, sparks, trim, wave  # noqa: E402
+from boss_l_gigaboss import FX_H, FX_W, GY, Pose, T, _blob, boss_outputs, flash, halo, main, pack, review, sparks, trim, wave  # noqa: E402
 from raster import TCanvas  # noqa: E402
 
 W = H = 224
@@ -262,61 +263,84 @@ def weak_frames(kind):
 
 
 # ----------------------------------------------------------------------------- its rules
-FW, FH = 64, 128
+FW, FH = FX_W, FX_H  # the kit's effects frames (48x144, bottom-centre pivot)
 
 
 def fx_frames():
-    """Its ribs to pry open (a rib of bone with a grip, shut / held (glowing) / open), a rib trap
-    rising out of the ground (growing, then shut), the wave of a strong beat running on the floor."""
+    """Its ribs to pry open (the rules' vents, a rib of bone with a grip: at rest (closed), glowing to
+    be held (open), plasma gathering (warn), a jet of plasma (jet)), a rib trap rising around a player
+    (fist), the wave of a strong beat running on the floor (wave)."""
     lit = mat("hb_rib_lit", ["#ffffff", "#ffe8a8", "#ffc060", "#ff7a2e"], emissive=True, outline=None)
+    plasma = [C("#ffffff"), C("#ffd0e0"), C("#ff8aa8"), C("#ff5d8f")]
+    cx = FW // 2
 
-    def rib(glow, open_=0.0, seed=0):
+    def rib(glow, seed=0):
         cv = TCanvas(FW, FH)
         cv.part()
-        cv.tpoly([(12, FH - 1), (18, FH - 10), (46, FH - 10), (52, FH - 1)], ARMOR, bevel=1.5, base=0.6)
-        top = (34 - 18 * open_, 8 + 10 * open_)
+        cv.tpoly([(cx - 18, FH - 1), (cx - 13, FH - 9), (cx + 13, FH - 9), (cx + 18, FH - 1)], ARMOR, bevel=1.5, base=0.6)
         cv.part()
-        cv.tchain([(30, FH - 10), (40, FH - 60), top], [6.0, 5.0, 3.0], BONE)
+        cv.tchain([(cx - 2, FH - 9), (cx + 6, FH - 56), (cx + 2, FH - 96)], [5.0, 4.2, 2.6], BONE)
         cv.part()
-        cv.tcapsule((24, FH - 44), (44, FH - 48), 3.0, 3.0, ARMOR)
+        cv.tcapsule((cx - 8, FH - 42), (cx + 10, FH - 46), 2.8, 2.8, ARMOR)
         if glow > 0:
-            cv.tcapsule((26, FH - 45), (42, FH - 48), 1.6, 1.6, lit, flat=0.5 + 0.4 * glow, decal=True)
+            cv.tcapsule((cx - 6, FH - 43), (cx + 8, FH - 46), 1.5, 1.5, lit, flat=0.5 + 0.4 * glow, decal=True)
         img = cv.render(outline=True)
         if glow > 0:
             img = halo(img, C("#ffc060"), 0.3 * glow, SEED + 900 + seed)
+        return img
+
+    def gather(k, seed):
+        img = rib(0.3, seed)
+        rng = np.random.RandomState(SEED + 905 + seed)
+        for _ in range(int(8 + 24 * k)):
+            _blob(img, int(rng.uniform(cx - 10, cx + 10)), int(rng.uniform(FH - 40 - 60 * k, FH - 12)), 1, plasma[int(rng.uniform(0, 4))])
+        return img
+
+    def jet(i):
+        img = rib(0.6, 30 + i)
+        top = 30 + 8 * (i % 2)
+        for y in range(top, FH - 10):
+            t = (y - top) / (FH - 10 - top)
+            half = 3 + 6 * t + 1.5 * math.sin(y * 0.4 + i)
+            for x in range(int(cx - half), int(cx + half) + 1):
+                if 0 <= x < FW:
+                    d = abs(x - cx) / max(1.0, half)
+                    img[y, x] = plasma[0] if d < 0.3 else plasma[1] if d < 0.6 else plasma[2]
         return img
 
     def trap(k, seed):
         cv = TCanvas(FW, FH)
         h = 20 + 80 * min(1.0, k)
         bend = 0.0 if k <= 1.0 else 1.0
-        tip = (30 + 26 * bend, FH - 4 - h + 14 * bend)
-        cv.part()
-        cv.tchain([(26, FH - 2), (30 + 6 * bend, FH - 4 - h * 0.6), tip], [6.0, 4.5, 1.2], BONE)
+        for side in (-1, 1):
+            base = cx + 16 * side
+            tip = (base - side * 18 * bend, FH - 4 - h + 12 * bend)
+            cv.part()
+            cv.tchain([(base, FH - 2), (base - side * 4 * bend, FH - 4 - h * 0.6), tip], [4.6, 3.4, 1.0], BONE)
         img = cv.render(outline=True)
-        sparks(img, (26, FH - 4), 8 + 6 * k, 6, [C("#8a7c9c"), C("#b8aec6")], SEED + 920 + seed, squash=0.3)
+        sparks(img, (cx, FH - 4), 10 + 6 * k, 8, [C("#8a7c9c"), C("#b8aec6")], SEED + 920 + seed, squash=0.3)
         return img
 
     def wave_frame(i):
         img = np.zeros((FH, FW, 4), np.uint8)
-        ramp = [C("#ffffff"), C("#ffe8a8"), C("#ff5d8f"), C("#c8401a")]
         rng = np.random.RandomState(SEED + 940 + i)
         for x in range(FW):
             t = x / (FW - 1)
-            hgt = int(6 + 34 * math.sin(t * math.pi) ** 1.5 * (0.85 + 0.15 * math.sin(i * 1.7 + t * 6)))
+            hgt = int(6 + 30 * math.sin(t * math.pi) ** 1.5 * (0.85 + 0.15 * math.sin(i * 1.7 + t * 6)))
             for y in range(FH - hgt, FH - 1):
                 d = (FH - 1 - y) / max(1, hgt)
-                img[y, x] = ramp[0] if d > 0.8 else ramp[1] if d > 0.55 else ramp[2] if d > 0.25 else ramp[3]
-        for _ in range(10):
-            _blob(img, int(rng.uniform(8, 56)), int(FH - 44 - rng.uniform(0, 14)), 1, ramp[int(rng.uniform(0, 3))])
+                img[y, x] = plasma[0] if d > 0.8 else plasma[1] if d > 0.55 else plasma[3] if d > 0.25 else C("#c8401a")
+        for _ in range(8):
+            _blob(img, int(rng.uniform(6, FW - 6)), int(FH - 38 - rng.uniform(0, 12)), 1, plasma[int(rng.uniform(0, 3))])
         return img
 
-    clips = [("rib", [rib(0.0)], dict(fps=1, loop=True)),
-             ("rib_held", [rib(0.5 + 0.5 * abs(wave(i / 4)), 0.2, i) for i in range(4)], dict(fps=8, loop=True)),
-             ("rib_open", [rib(1.0, 1.0, 10), rib(0.8, 0.9, 11)], dict(fps=6, loop=True)),
-             ("trap", [trap(k, i) for i, k in enumerate((0.2, 0.55, 1.0, 1.5))], dict(fps=8, loop=False)),
+    clips = [("closed", [rib(0.0)], dict(fps=1, loop=True)),
+             ("open", [rib(0.5 + 0.5 * abs(wave(i / 4)), i) for i in range(4)], dict(fps=8, loop=True)),
+             ("warn", [gather(0.3 + 0.2 * i, 10 + i) for i in range(4)], dict(fps=10, loop=True)),
+             ("jet", [jet(i) for i in range(4)], dict(fps=12, loop=True)),
+             ("fist", [trap(k, i) for i, k in enumerate((0.3, 0.7, 1.0, 1.5))], dict(fps=8, loop=True)),
              ("wave", [wave_frame(i) for i in range(4)], dict(fps=12, loop=True))]
-    return pack(clips, FW, FH, columns=8)
+    return pack(clips, FW, FH, columns=12)
 
 
 # ----------------------------------------------------------------------------- output
@@ -334,7 +358,7 @@ def do_review(path):
     coeur, _ = weak_frames("coeur")
     fx, _ = fx_frames()
     extras = [("Plaque d'armure (repos, touchée, brisée) x2", plaque, 2), ("Lumière du cœur (repos, touchée, éteinte) x2", coeur, 2),
-              ("Côtes à écarter (fermée, tenue, ouverte), côte-piège qui se dresse, onde d'un battement fort", fx, 2)]
+              ("Côtes à écarter (au repos, à tenir, plasma qui monte, jet), côte-piège qui se dresse, onde d'un battement fort", fx, 2)]
     return review(path, "HEARTBREAKER — la cage qui garde le cœur (phases : la cuirasse, la cage thoracique, le cœur affolé)",
                   [ph[0] for ph in PHASES], picks, draw, extras)
 

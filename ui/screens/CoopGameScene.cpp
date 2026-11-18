@@ -738,7 +738,7 @@ public:
         Rect box = centred(ui.s(560), ui.s(network ? 330 : 400));
         ui.panel(box, true, 16);
         ui.label("PAUSE", {box.center().x, box.y + ui.s(44)}, 40, ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
-        const std::string note = network ? "La partie continue pour l'équipe pendant la pause." : "Toute l'équipe est en pause.";
+        const std::string note = network ? "La partie continue pendant la pause : vous pouvez encore être touché." : "Toute l'équipe est en pause.";
         ui.label(note, {box.center().x, box.y + ui.s(88)}, ui.fitFont(note, FontFace::Body, 18, box.w - ui.s(48)), ui.theme().textDim,
                  Align::Center, FontFace::Body, VAlign::Middle);
         ui.pushId("coop/pause");

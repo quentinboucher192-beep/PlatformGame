@@ -1,0 +1,303 @@
+{
+  "format": "cosmic.enemy",
+  "id": "titanus",
+  "name": "Titanus",
+  "description": "La jambe droite d'Asterion, un colosse de forge, gigaboss d'un raid de clan, assez grand pour huit joueurs : il piétine (des ondes de choc à sauter), écrase chaque joueur sous son talon, charge à travers l'arène, fait tomber la voûte ; ses deux entraves de cheville, brisées en même temps, le font tomber à genou.",
+  "family": "miniboss",
+  "animation": "animations/titanus.json",
+  "size": [
+    250,
+    420
+  ],
+  "scale": 2.8,
+  "hp": 660,
+  "contactDamage": 2,
+  "speed": 52,
+  "chaseSpeedMultiplier": 1.3,
+  "flying": false,
+  "knockbackResist": 1,
+  "detectionRange": 1000,
+  "attackRange": 1700,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 260,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "pietinement",
+      "name": "Piétinement",
+      "type": "slam",
+      "damage": 2,
+      "range": 520,
+      "telegraph": 0.8,
+      "active": 0.35,
+      "recover": 0.8,
+      "cooldown": 2.6,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectileSpeed": 320,
+      "knockback": 320
+    },
+    {
+      "id": "charge",
+      "name": "Charge du colosse",
+      "type": "charge",
+      "damage": 2,
+      "range": 1300,
+      "minRange": 120,
+      "telegraph": 0.9,
+      "active": 2.6,
+      "recover": 0.9,
+      "cooldown": 6.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "walk",
+      "lungeSpeed": 360,
+      "knockback": 340
+    },
+    {
+      "id": "seisme",
+      "name": "Séisme du talon",
+      "type": "quake",
+      "damage": 2,
+      "range": 1700,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 8.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "quake",
+      "duration": 3.4,
+      "burstInterval": 0.85,
+      "projectile": "rock",
+      "count": 3,
+      "spread": 160,
+      "radius": 24,
+      "height": 50,
+      "stagger": 0.75,
+      "arms": 3,
+      "projectileRadius": 13,
+      "gravity": 900,
+      "projectileSpeed": 0,
+      "knockback": 260
+    },
+    {
+      "id": "bond",
+      "name": "Bond du colosse",
+      "type": "skyfall",
+      "damage": 2,
+      "range": 1800,
+      "telegraph": 0.65,
+      "active": 0.6,
+      "recover": 0.6,
+      "cooldown": 7.0,
+      "telegraphAnim": "crouch",
+      "attackAnim": "leap",
+      "count": 1,
+      "duration": 0.95,
+      "radius": 130,
+      "projectileSpeed": 300,
+      "projectileRadius": 10,
+      "burstInterval": 0.4,
+      "knockback": 320
+    },
+    {
+      "id": "bond_double",
+      "name": "Double bond",
+      "type": "skyfall",
+      "damage": 2,
+      "range": 1800,
+      "telegraph": 0.6,
+      "active": 0.7,
+      "recover": 0.6,
+      "cooldown": 7.0,
+      "telegraphAnim": "crouch",
+      "attackAnim": "leap",
+      "count": 2,
+      "duration": 0.85,
+      "radius": 130,
+      "projectileSpeed": 300,
+      "projectileRadius": 10,
+      "burstInterval": 0.4,
+      "knockback": 320
+    },
+    {
+      "id": "rochers",
+      "name": "Chute de rochers",
+      "type": "rain",
+      "damage": 1,
+      "range": 1600,
+      "telegraph": 0.8,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "quake",
+      "projectile": "rock",
+      "projectileSpeed": 220,
+      "count": 10,
+      "spread": 64,
+      "gravity": 400,
+      "rainHeight": 420,
+      "explosionRadius": 18,
+      "lead": 0.8,
+      "stagger": 0.1
+    },
+    {
+      "id": "dernier_seisme",
+      "name": "Dernier séisme",
+      "type": "quake",
+      "damage": 2,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.2,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "quake",
+      "duration": 3.0,
+      "burstInterval": 0.6,
+      "projectile": "rock",
+      "count": 4,
+      "spread": 150,
+      "radius": 24,
+      "height": 50,
+      "stagger": 0.5,
+      "arms": 4,
+      "projectileRadius": 13,
+      "gravity": 900,
+      "projectileSpeed": 0,
+      "knockback": 260
+    },
+    {
+      "id": "derniers_rochers",
+      "name": "Derniers rochers",
+      "type": "rain",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.3,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "quake",
+      "projectile": "rock",
+      "projectileSpeed": 240,
+      "count": 22,
+      "spread": 55,
+      "gravity": 400,
+      "rainHeight": 420,
+      "explosionRadius": 18,
+      "lead": 0.8
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "ground_pound": 1.4,
+    "dash": 0.5
+  },
+  "rewards": {
+    "score": 30000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#ffb050",
+    "radius": 240
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/supernova.wav",
+    "alert": "sounds/boss_roar.wav"
+  },
+  "boss": {
+    "title": "TITANUS, LA JAMBE QUI ÉCRASE TOUT",
+    "phases": [
+      {
+        "name": "Le pas du colosse",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "pietinement",
+          "charge",
+          "seisme",
+          "rochers"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Titanus pose le talon : l'arène tremble.",
+        "animation": "animations/titanus.json",
+        "lightColor": "#ffb050"
+      },
+      {
+        "name": "Les entraves",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "bond",
+          "pietinement",
+          "charge",
+          "seisme"
+        ],
+        "speedMultiplier": 1.05,
+        "cooldownMultiplier": 0.95,
+        "combo": 2,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Ses plaques se verrouillent : brisez ses deux entraves en même temps !",
+        "animation": "animations/titanus_p2.json",
+        "lightColor": "#ffd27a",
+        "enterSound": "sounds/boss_roar.wav"
+      },
+      {
+        "name": "La forge à nu",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "bond_double",
+          "charge",
+          "seisme",
+          "pietinement",
+          "rochers"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.85,
+        "combo": 3,
+        "telegraphMultiplier": 0.75,
+        "enrageTime": 80,
+        "enterText": "Son blindage se fend : la forge de la jambe est à nu !",
+        "animation": "animations/titanus_p3.json",
+        "lightColor": "#fff0c8",
+        "enterSound": "sounds/supernova.wav"
+      }
+    ],
+    "barIcon": "skull",
+    "barColor": "#ffb050",
+    "finalAttacks": [
+      "dernier_seisme",
+      "derniers_rochers",
+      "dernier_seisme"
+    ],
+    "finalText": "Son dernier séisme : tenez bon !"
+  },
+  "raid": "asterion"
+}

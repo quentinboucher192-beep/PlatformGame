@@ -526,12 +526,12 @@ Results parseResults(const Json& j) {
     if (fights.is_array())
         for (const Json& f : fights) {
             const int phase = jget<int>(f, "phase", 0);
-            const std::string boss = jstr(f, "boss");  // 2.69: several gigaboss in one event
-            r.fights.push_back(jstr(f, "group") + (boss.empty() ? "" : " · " + boss) + " · " +
+            const std::string boss = jstr(f, "boss");  // 2.69 (phase 4B): several gigaboss
+            r.fights.push_back((boss.empty() ? std::string() : boss + " · ") + jstr(f, "group") + " · " +
                                (phase >= 4 ? std::string("vaincu") : "phase " + std::to_string(std::clamp(phase, 1, 3)) + " / 3"));
         }
     for (const Json& b : jfield(giga, "defeated_bosses", Json::array()))
-        if (b.is_string() && !b.get<std::string>().empty()) r.defeatedBosses.push_back(b.get<std::string>());
+        if (b.is_string()) r.defeatedBosses.push_back(b.get<std::string>());
     const Json clans = jfield(j, "clans", Json());
     if (clans.is_array())
         for (const Json& c : clans) {

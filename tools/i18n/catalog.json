@@ -2387,6 +2387,12 @@
    ]
   },
   {
+   "fr": "Anneau lumineux de Voidworm",
+   "where": [
+    "data/enemies/voidworm_anneau.json"
+   ]
+  },
+  {
    "fr": "Anneau poli",
    "where": [
     "game/cosmetics/CreationLooks.cpp"
@@ -2778,6 +2784,12 @@
    ]
   },
   {
+   "fr": "Appel des parasites",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Appel du vide",
    "where": [
     "data/enemies/echo_nyxara.json",
@@ -3149,7 +3161,7 @@
   {
    "fr": "Armure de givre ({0}) : tenez les {1} chaînes ensemble (une ancre chacun) : une chaîne tenue cède au bout de quelques secondes.",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -3357,6 +3369,12 @@
    "where": [
     "game/enemies/BossAttackSheet.cpp",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Aspiration du gouffre",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -4149,6 +4167,12 @@
    ]
   },
   {
+   "fr": "Au combat",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Au cœur d'une île de basalte, une caldeira bouillonne de magma venu de Pyralis. Au-dessus d'elle tourne l'Anneau solaire, et la lave monte quand il le veut.",
    "where": [
     "data/levels/aethra_03.json"
@@ -4507,6 +4531,12 @@
    "fr": "Aucun clip.",
    "where": [
     "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun combat",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -5726,6 +5756,12 @@
    ]
   },
   {
+   "fr": "AVALÉ · {0} s",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "avance",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -6076,13 +6112,19 @@
     "data/raids/asterion/bras_gauche/zone_3.json",
     "data/raids/asterion/bras_gauche/zone_4.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
    "fr": "Balayage sur {0} : sautez la lame ou changez d'étage.",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "BALAYAGE →",
+   "where": [
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -6267,7 +6309,7 @@
   {
    "fr": "Battements : une onde court au sol à chaque battement fort (un sur {0}) : sautez-la.",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -6733,6 +6775,12 @@
     "data/enemies/snow_stalker.json",
     "data/enemies/stalker.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Bond du colosse",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -7334,6 +7382,12 @@
    ]
   },
   {
+   "fr": "Briser ses deux entraves EN MÊME TEMPS (moins de {0} d'écart) : il tombera à genou.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Briseur d'étoiles",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -7379,7 +7433,7 @@
   {
    "fr": "Brisez ses 4 plaques ensemble (plusieurs groupes), puis écartez ses côtes des deux côtés à la fois pour frapper son cœur.",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -7392,6 +7446,12 @@
    "fr": "Brisé : les abysses s'ouvrent",
    "where": [
     "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "BRISÉE",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -7849,6 +7909,12 @@
    ]
   },
   {
+   "fr": "Cage de tentacules",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Cage du cœur",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -7863,7 +7929,7 @@
   {
    "fr": "Cage thoracique ({0}) : un joueur sur chaque côte, des deux côtés à la fois · côtes tenues {1} / {2}",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -9711,6 +9777,12 @@
    ]
   },
   {
+   "fr": "Chacun compte pour les contributions (mécanismes tenus, entraves brisées, points faibles, alliés libérés de Voidworm), les résultats validés par la majorité de l'instance, la carte du titan (sa partie détruite à sa chute) et l'outil « Tester Asterion » (phase de départ, invincible, jamais envoyé). Trois nouveaux badges, accordés une seule fois par le serveur : « Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chacun de ses pas fait trembler les Confins !",
    "where": [
     "data/enemies/monolithe.json"
@@ -9934,7 +10006,7 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowersExtra.cpp",
-    "game/raid/SkullmawFight.cpp",
+    "game/raid/SkullmawRoutine.cpp",
     "ui/screens/CreatureArt.cpp",
     "ui/studio/StudioDoc.cpp"
    ]
@@ -9956,7 +10028,8 @@
   {
    "fr": "Charge du colosse",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -10733,9 +10806,21 @@
    ]
   },
   {
+   "fr": "Chute de débris",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Chute de la voûte",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Chute de rochers",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -13288,6 +13373,12 @@
    ]
   },
   {
+   "fr": "Correctifs des Gigaboss : un joueur avalé par Voidworm ne reçoit plus de marque de « Fouissement » et n'est plus frappé dans son estomac ; à la fin de leur exposition, Voidworm, Graviton et Titanus reforment bien leur carapace au lieu de rester vulnérables jusqu'à la fin du combat.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correction : un profil ouvert depuis un classement ne se recharge plus quand on clique sur ses onglets.",
    "where": [
     "data/news/changelog.json"
@@ -13783,6 +13874,18 @@
    ]
   },
   {
+   "fr": "Couper les 2 générateurs de la jambe (Cuisse, Tibia) en retirerait un ici.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Couper les 2 réacteurs de la jambe (Fémur, Mollet) ralentirait ses entraves.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "couper les deux générateurs de gravité (Cuisse, Tibia)",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -13792,6 +13895,18 @@
    "fr": "couper les deux réacteurs (Fémur, Mollet)",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Couper ses générateurs : un joueur sur chacun, tous en même temps ({0} ensemble)",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Coupez ses générateurs tous en même temps (un joueur sur chacun) ; abritez-vous sous une dalle quand la gravité s'inverse.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
   },
   {
@@ -13859,6 +13974,12 @@
    "fr": "Couronne ardente",
    "where": [
     "data/enemies/astrarque.json"
+   ]
+  },
+  {
+   "fr": "Couronne de débris",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -14118,6 +14239,12 @@
    ]
   },
   {
+   "fr": "Crachat d'acide",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Crachat de braise",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -14197,6 +14324,12 @@
    ]
   },
   {
+   "fr": "Crever la poche de Voidworm : le joueur {0} est avalé ({1} s)",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Crever le poumon gauche (un pouvoir de tir)",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -14212,6 +14345,12 @@
    "fr": "crever les deux yeux (Orbites gauche et droite)",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "CREVEZ LA POCHE",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -14724,7 +14863,7 @@
   {
    "fr": "Cuirasse ({0}) : brisez ses {1} plaques ensemble (les hautes depuis les tours) : elles repoussent si la dernière tarde.",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -14777,7 +14916,7 @@
   {
    "fr": "Côtes-pièges",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -14838,6 +14977,12 @@
    "fr": "Cœur de givre ouest : frappez-le avec un pouvoir de tir.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Cœur de gravité de Graviton",
+   "where": [
+    "data/enemies/graviton_coeur.json"
    ]
   },
   {
@@ -14945,43 +15090,103 @@
   {
    "fr": "DANGER · Balayage des griffes depuis l'est sur {0} : sautez par-dessus la lame ou changez d'étage !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
    "fr": "DANGER · Balayage des griffes depuis l'ouest sur {0} : sautez par-dessus la lame ou changez d'étage !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
-   "fr": "DANGER · Côtes-pièges : les côtes se dressent autour de vous, sortez-en !",
+   "fr": "DANGER · Graviton plie l'espace : la gravité va s'inverser dans les secteurs marqués !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Graviton retourne la moitié de l'arène : le haut et le bas vont s'échanger !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
    "fr": "DANGER · Griffe clouante : Dreadfang vise un joueur, écartez-vous de votre marque !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
-   "fr": "DANGER · Griffes du sol : quittez votre marque !",
+   "fr": "DANGER · L'acide monte dans {0} s : grimpez sur les racines hautes !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
-   "fr": "DANGER · Poings de magma : quittez votre marque !",
+   "fr": "DANGER · La gravité s'inverse : abritez-vous sous une dalle !",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La gueule de Voidworm vise deux joueurs : sortez de l'anneau vert !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La gueule de Voidworm vise un joueur : sortez de l'anneau vert !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La voûte s'effrite : des rochers tombent, quittez les ombres !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Le reflux d'acide submerge l'arène !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Quelques parasites sortent du ventre (le nid est détruit)",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
    "fr": "DANGER · Son regard se charge : {0} miroirs tenus le renvoient, les autres derrière une colonne !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Titanus lève le talon : sautez par-dessus l'onde de choc !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Un puits de gravité s'ouvre sous chacun : éloignez-vous !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Une vague de parasites sort des anneaux de Voidworm !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} : quittez votre marque !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
    ]
   },
   {
@@ -15468,13 +15673,13 @@
   {
    "fr": "depuis l'est",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
    "fr": "depuis l'ouest",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -15532,6 +15737,12 @@
    ]
   },
   {
+   "fr": "Dernier effondrement",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
    "fr": "Dernier envol",
    "where": [
     "data/enemies/phenix.json"
@@ -15574,6 +15785,12 @@
    ]
   },
   {
+   "fr": "Dernier reflux",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Dernier regard",
    "where": [
     "data/enemies/skullmaw.json"
@@ -15597,7 +15814,8 @@
   {
    "fr": "Dernier séisme",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -15610,6 +15828,18 @@
    "fr": "Dernier éventail",
    "where": [
     "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Derniers débris",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Derniers rochers",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -15664,6 +15894,12 @@
    "fr": "Dernière lumière",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Dernière morsure",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -15943,6 +16179,12 @@
    ]
   },
   {
+   "fr": "Des rochers tombent de la voûte : quittez les ombres au sol.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Des ruines suspendues : le Sanctuaire des poids !",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_3.json"
@@ -16106,6 +16348,12 @@
    "fr": "Deux chemins : la galerie haute, ou le sol fissuré vers le canal englouti.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "deux joueurs",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -16834,6 +17082,12 @@
    ]
   },
   {
+   "fr": "Double bond",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Double bond titanesque",
    "where": [
     "data/enemies/monolithe.json"
@@ -16910,7 +17164,7 @@
   {
    "fr": "Dreadfang est enchaîné ({0}) : brisez ses jointures · {1} / {2}",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -16920,9 +17174,21 @@
    ]
   },
   {
+   "fr": "Dreadfang vaincu",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "DREADFANG, LES GRIFFES QUI DÉCHIRENT",
    "where": [
     "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Dreadfang, les griffes qui déchirent. Sautez ses lames, libérez qui est cloué, tenez ses trois chaînes ensemble.",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
    ]
   },
   {
@@ -18955,6 +19221,7 @@
   {
    "fr": "Effondrement",
    "where": [
+    "data/enemies/graviton.json",
     "data/enemies/singularis.json"
    ]
   },
@@ -19038,7 +19305,7 @@
    ]
   },
   {
-   "fr": "Elles viennent des résultats validés des raids : les chutes des gigaboss, votre contribution.",
+   "fr": "Elles viennent des résultats validés des raids : la chute de ses gigaboss, votre contribution.",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -20008,6 +20275,18 @@
    ]
   },
   {
+   "fr": "ENTRAVE",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Entrave de Titanus",
+   "where": [
+    "data/enemies/titanus_entrave.json"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -20647,7 +20926,7 @@
    "fr": "et",
    "where": [
     "game/enemies/BossAttackSheet.cpp",
-    "game/raid/DreadfangFight.cpp",
+    "game/raid/DreadfangRoutine.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -20660,7 +20939,7 @@
   {
    "fr": "et {0}",
    "where": [
-    "game/raid/DreadfangFight.cpp",
+    "game/raid/DreadfangRoutine.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -22316,6 +22595,12 @@
    ]
   },
   {
+   "fr": "Fouissement",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
    "fr": "Fouisseur",
    "where": [
     "data/enemies/burrower.json"
@@ -23004,6 +23289,12 @@
    ]
   },
   {
+   "fr": "Geyser d'acide",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
    "fr": "Geysers de magma",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -23075,6 +23366,12 @@
    ]
   },
   {
+   "fr": "Gigaboss : {0} · dans la Main",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Gigaboss : {0} · dans son antre",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -23093,64 +23390,31 @@
    ]
   },
   {
-   "fr": "Gigaboss au combat",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Gigaboss intacts",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Gigaboss vaincu",
-   "where": [
-    "data/raids/asterion/bras_gauche/zone_8.json",
-    "data/raids/asterion/crane/zone_8.json",
-    "data/raids/asterion/torse/zone_8.json",
-    "ui/screens/RaidResultsScene.cpp"
-   ]
-  },
-  {
    "fr": "Gigaboss vaincus",
    "where": [
     "game/online/Raids.cpp"
    ]
   },
   {
-   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combat",
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} antre ouverte",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
-   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combat, {3} porte scellée (prochaine version)",
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} antre ouverte, les autres portes restent scellées (prochaine version)",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
-   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combat, {3} portes scellées (prochaine version)",
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} antres ouvertes",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
-   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combattent",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combattent, {3} porte scellée (prochaine version)",
-   "where": [
-    "ui/screens/RaidTitanScene.cpp"
-   ]
-  },
-  {
-   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combattent, {3} portes scellées (prochaine version)",
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} antres ouvertes, les autres portes restent scellées (prochaine version)",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
    ]
@@ -23158,19 +23422,31 @@
   {
    "fr": "GIGABOSS · Armure de givre : tenez ses {0} chaînes ensemble ({1} s sur chacune) pour l'enchaîner !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Dreadfang brise ses chaînes : tenez-les de nouveau ensemble !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
-   "fr": "GIGABOSS · L'antre est silencieux : {0} est déjà tombé.",
+   "fr": "GIGABOSS · Graviton s'effondre : ses cœurs de gravité sont à nu ({0} s) !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Graviton s'entoure de son champ : coupez ses {0} générateurs EN MÊME TEMPS (un joueur sur chacun) !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Graviton se relève : ses générateurs se rallument !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -23180,21 +23456,21 @@
    ]
   },
   {
-   "fr": "GIGABOSS · La cage est ouverte : {0} est déjà tombé.",
+   "fr": "GIGABOSS · L'entrave se reforge : brisez les deux ensemble (moins de {0} d'écart) !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · La cage se brise : le cœur bat à découvert !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · La cage thoracique se referme : un joueur sur chaque côte, tenez-les ouvertes ensemble ({0} s) !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -23212,55 +23488,49 @@
   {
    "fr": "GIGABOSS · La cuirasse tombe : Heartbreaker est vulnérable, frappez-le !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
-   ]
-  },
-  {
-   "fr": "GIGABOSS · La Main est éteinte : {0} est déjà tombé.",
-   "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Les chaînes tiennent : Dreadfang est plaqué au sol ! Brisez ses jointures ({0} s) !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Les côtes s'écartent : la lumière du cœur est à nu ({0} s) ! Frappez-la !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Les côtes se referment sur le cœur : écartez-les de nouveau, des deux côtés !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
-   "fr": "GIGABOSS · Les griffes sont froides : {0} est déjà tombé.",
+   "fr": "GIGABOSS · Les deux entraves cèdent : Titanus tombe à genou, sa rotule est à nu ({0} s) !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Les miroirs lui renvoient son regard : Skullmaw est aveuglé ! Crevez ses yeux et son cristal ({0} s) !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Les plaques repoussent : brisez les quatre en moins de {0} s, plusieurs groupes à la fois !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Miroirs tenus {0} / {1} : son voile tient !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -23278,7 +23548,7 @@
   {
    "fr": "GIGABOSS · Quatre plaques d'armure gardent le cœur : brisez-les ensemble, elles repoussent {0} s après la première !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -23288,21 +23558,57 @@
    ]
   },
   {
+   "fr": "GIGABOSS · Sa chitine se fend pour de bon : frappez le ver !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Skullmaw rouvre les yeux : son voile se reforme !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Skullmaw se voile : quand son regard se charge, tenez {0} miroirs (sur {1}) ; les autres, derrière une colonne !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
    "fr": "GIGABOSS · Son armure de givre vole en éclats : ses griffes se déchaînent !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Son blindage se fend pour de bon : frappez le colosse !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Son champ de gravité se dissipe pour de bon !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Titanus se relève : ses entraves se reforgent !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Titanus verrouille ses plaques : brisez ses deux entraves EN MÊME TEMPS !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Un anneau s'arrache à son crochet : épinglez-le de nouveau !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -23320,7 +23626,13 @@
   {
    "fr": "GIGABOSS · Une chaîne se détend : retenez-la !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Une côte se referme : écartez-la de nouveau !",
+   "where": [
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -23330,27 +23642,45 @@
    ]
   },
   {
-   "fr": "GIGABOSS · {0} est vaincu ! La cage du torse s'ouvre : la voie du cœur d'Asterion est libre.",
+   "fr": "GIGABOSS · Voidworm avale le joueur {0} : crevez sa poche pour le libérer ({1} s) !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
-   "fr": "GIGABOSS · {0} est vaincu ! Le bras droit d'Asterion s'éteint.",
+   "fr": "GIGABOSS · Voidworm est épinglé : sa gueule s'ouvre, brisez ses anneaux lumineux ({0} s) !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm recrache le joueur {0}, à moitié digéré !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm s'arrache à ses crochets : épinglez de nouveau ses anneaux !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm se love dans sa chitine : tenez ses {0} crochets ensemble ({1} s chacun) pour l'épingler !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} : {1} est déjà tombé.",
    "where": [
     "game/raid/Gigaboss.cpp"
    ]
   },
   {
-   "fr": "GIGABOSS · {0} est vaincu ! Le bras gauche d'Asterion retombe, ses griffes arrachées.",
+   "fr": "GIGABOSS · {0} est vaincu ! {1}",
    "where": [
-    "game/raid/DreadfangFight.cpp"
-   ]
-  },
-  {
-   "fr": "GIGABOSS · {0} est vaincu ! Le crâne d'Asterion s'éteint : le titan est aveuglé.",
-   "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/Gigaboss.cpp"
    ]
   },
   {
@@ -23789,13 +24119,50 @@
    ]
   },
   {
-   "fr": "Graviton — prochaine version",
+   "fr": "Graviton",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Graviton est vaincu : la jambe gauche d'Asterion retombe.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
   },
   {
-   "fr": "Graviton — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "Graviton flotte dans ses générateurs de gravité et plie l'espace par secteurs : la gravité s'inverse, on tombe vers la voûte dont le champ blesse, sauf sous une dalle qui sert d'abri ; à sa 3e phase, c'est la moitié de l'arène qui se retourne. Des débris tombent sur chaque joueur, un puits de gravité s'ouvre sous chacun. Ses quatre générateurs, dans des secteurs séparés (deux en hauteur), se coupent seulement tous EN MÊME TEMPS : un joueur sur chacun, et la jambe s'effondre, ses cœurs de gravité à nu (un générateur de moins si ceux de la jambe sont coupés).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Graviton s'est effondré : brisez ses cœurs de gravité ({0} / {1})",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Graviton se lève : l'espace se plie autour de la jambe.",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Graviton vaincu",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "GRAVITON, LA JAMBE QUI PLIE L'ESPACE",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Graviton, la jambe qui plie l'espace. Ses quatre générateurs se coupent ensemble : un joueur sur chacun, au même moment.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
@@ -23827,6 +24194,18 @@
    ]
   },
   {
+   "fr": "GRAVITÉ INVERSÉE",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Gravité inversée : abritez-vous sous une dalle, la voûte blesse.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Grenade",
    "where": [
     "data/online/countries.json",
@@ -23834,10 +24213,16 @@
    ]
   },
   {
+   "fr": "GRIFFE",
+   "where": [
+    "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Griffe clouante",
    "where": [
     "data/enemies/dreadfang_griffe.json",
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -23850,7 +24235,7 @@
   {
    "fr": "Griffes du sol",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "data/raids/asterion/bras_gauche/zone_8.json"
    ]
   },
   {
@@ -23980,33 +24365,51 @@
    ]
   },
   {
-   "fr": "GROUPE · Chaîne tenue ({0} / {1})",
+   "fr": "GROUPE · Anneau épinglé",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
-   "fr": "GROUPE · Jointure brisée ({0} / {1})",
+   "fr": "GROUPE · Chaîne tenue",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Côte écartée",
+   "where": [
+    "game/raid/HeartbreakerRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · La gravité revient : attention à la chute !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
    "fr": "GROUPE · La griffe est brisée : le joueur est libéré !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
    "fr": "GROUPE · La griffe se retire.",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
-   "fr": "GROUPE · La lumière du cœur vacille : coup au but !",
+   "fr": "GROUPE · La poche crève : les avalés sont libérés !",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Les générateurs s'éteignent ensemble !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -24024,7 +24427,7 @@
   {
    "fr": "GROUPE · Plaque brisée ({0} / {1})",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -24036,13 +24439,14 @@
   {
    "fr": "GROUPE · Point faible brisé ({0} / {1})",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/Gigaboss.cpp",
+    "game/raid/GigabossRoutine.cpp"
    ]
   },
   {
-   "fr": "GROUPE · Point faible crevé ({0} / {1})",
+   "fr": "GROUPE · Tous les générateurs sont tenus : restez dessus !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -24054,7 +24458,13 @@
   {
    "fr": "GROUPE · Un joueur est cloué au sol : brisez la griffe pour le libérer !",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Une entrave cède : brisez l'autre, vite !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -24171,6 +24581,12 @@
    ]
   },
   {
+   "fr": "GUEULE",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GUIDE DES POUVOIRS",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
@@ -24265,6 +24681,12 @@
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json",
     "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Générateurs de la jambe coupés : un générateur de moins à tenir ici.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -24514,9 +24936,21 @@
    ]
   },
   {
+   "fr": "Heartbreaker vaincu",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
    "fr": "HEARTBREAKER, LA CAGE QUI GARDE LE CŒUR",
    "where": [
     "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "Heartbreaker, la cage qui garde le cœur. Brisez ses plaques ensemble, sautez ses ondes, écartez ses côtes des deux côtés.",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -25072,7 +25506,6 @@
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
-    "game/raid/BossMechanic.cpp",
     "game/raid/RaidBranch.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
@@ -26403,6 +26836,12 @@
    ]
   },
   {
+   "fr": "INVERSION",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Invincible (admin) : activé · non classé",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -26832,7 +27271,13 @@
   {
    "fr": "Jet de magma",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/RaidBranch.h"
+   ]
+  },
+  {
+   "fr": "Jet de plasma",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -27404,6 +27849,12 @@
    ]
   },
   {
+   "fr": "L'ACIDE MONTE",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "L'action est inscrite au journal avec votre pseudo.",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -27458,7 +27909,7 @@
    ]
   },
   {
-   "fr": "L'antre de Voidworm, au fond de l'abdomen. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "L'antre de Voidworm, au fond de l'abdomen : le ver du vide surgit de son gouffre. Trois phases : il fouit sous chacun, avale ceux qu'il vise, puis l'acide monte ; dans sa chitine, ses trois crochets doivent être tenus ensemble.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
    ]
@@ -27882,7 +28333,7 @@
   {
    "fr": "l'étage {0}",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -28004,12 +28455,6 @@
    "fr": "La cage du cœur, fermée par quatre plaques. Sa garde défend l'antre de Heartbreaker. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
    "where": [
     "data/raids/asterion/torse/zone_7.json"
-   ]
-  },
-  {
-   "fr": "La cage du torse s'ouvre : la voie du cœur d'Asterion est libre. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
-   "where": [
-    "game/raid/HeartbreakerFight.cpp"
    ]
   },
   {
@@ -28441,6 +28886,13 @@
    ]
   },
   {
+   "fr": "La forge à nu",
+   "where": [
+    "data/enemies/titanus.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
    "fr": "La forêt répond à son appel !",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -28600,6 +29052,18 @@
    ]
   },
   {
+   "fr": "La jambe droite d'Asterion, un colosse de forge, gigaboss d'un raid de clan, assez grand pour huit joueurs : il piétine (des ondes de choc à sauter), écrase chaque joueur sous son talon, charge à travers l'arène, fait tomber la voûte ; ses deux entraves de cheville, brisées en même temps, le font tomber à genou.",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "La jambe gauche d'Asterion, prise dans ses générateurs de gravité, gigaboss d'un raid de clan, assez grand pour huit joueurs : elle flotte, plie l'espace par secteurs (la gravité s'inverse), ouvre un puits sous chacun, fait pleuvoir ses débris ; ses générateurs, dans des zones séparées, doivent être coupés tous en même temps pour la faire tomber.",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
    "fr": "La jambe qui plie l'espace",
    "where": [
     "data/raids/asterion_film.json"
@@ -28731,6 +29195,12 @@
    "fr": "La main du titan, où veille le gigaboss Pyroclast, assez grand pour huit joueurs. Trois phases : son poing de magma, sa carapace de basalte (ses trois évents à fermer ensemble), son cœur à nu.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "La Main est éteinte",
+   "where": [
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -28903,7 +29373,7 @@
    ]
   },
   {
-   "fr": "La partie continue pour l'équipe pendant la pause.",
+   "fr": "La partie continue pendant la pause : vous pouvez encore être touché.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
    ]
@@ -29001,6 +29471,12 @@
    ]
   },
   {
+   "fr": "La poche gonflée où Voidworm digère un allié avalé : la crever le libère (un sauvetage pour qui la brise).",
+   "where": [
+    "data/enemies/voidworm_poche.json"
+   ]
+  },
+  {
    "fr": "La presse",
    "where": [
     "data/levels/pyralis_03.json"
@@ -29065,6 +29541,12 @@
    "fr": "La Reine Sporale s'effondre... Le chemin de la couronne est libre.",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "La rotule et les coutures de cheville de Titanus, à nu quand il tombe à genou. Chacune brisée lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/titanus_genou.json"
    ]
   },
   {
@@ -29822,9 +30304,9 @@
    ]
   },
   {
-   "fr": "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "fr": "Le bras droit d'Asterion s'éteint.",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -29837,12 +30319,6 @@
    "fr": "Le bras gauche colossal d'Asterion et ses griffes-lames, gigaboss d'un raid de clan : ses griffes balaient des étages entiers de l'arène, jaillissent du sol sous chaque joueur et en clouent un au sol que les autres doivent libérer ; cuirassé de givre, il faut tenir ses trois chaînes ensemble pour l'enchaîner et frapper ses jointures.",
    "where": [
     "data/enemies/dreadfang.json"
-   ]
-  },
-  {
-   "fr": "Le bras gauche d'Asterion retombe, ses griffes arrachées. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
-   "where": [
-    "game/raid/DreadfangFight.cpp"
    ]
   },
   {
@@ -29861,6 +30337,12 @@
    "fr": "Le catalogue des succès est introuvable (data/achievements).",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le champ de gravité",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -30133,12 +30615,6 @@
    ]
   },
   {
-   "fr": "Le crâne d'Asterion s'éteint : le titan est aveuglé. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
-   "where": [
-    "game/raid/SkullmawFight.cpp"
-   ]
-  },
-  {
    "fr": "Le crâne qui voit tout",
    "where": [
     "data/raids/asterion_film.json"
@@ -30284,7 +30760,7 @@
   {
    "fr": "Le cœur est à nu ({0}) : frappez sa lumière entre les côtes.",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -30703,9 +31179,27 @@
    ]
   },
   {
+   "fr": "Le groupe continue à jouer : vous pouvez encore être touché.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le groupe joue déjà : rattrapage de la partie ({0} %)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le haut et le bas s'échangent : la moitié de l'arène tombe vers le ciel !",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Le haut et le bas s'échangent : la moitié de l'arène va tomber vers la voûte !",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
   },
   {
@@ -30990,6 +31484,13 @@
    ]
   },
   {
+   "fr": "Le monde à l'envers",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Le monde-jardin des Anciens",
    "where": [
     "data/planets/sylvanox.json"
@@ -31242,6 +31743,12 @@
    ]
   },
   {
+   "fr": "Le pas du colosse",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Le passage Nerfs optiques ⇄ Tempe est ouvert",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -31321,7 +31828,7 @@
    ]
   },
   {
-   "fr": "Le pied de Graviton, au bout de la jambe gauche. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "Le pied de Graviton, au bout de la jambe gauche : la jambe flotte dans ses générateurs de gravité. Trois phases : elle plie l'espace par secteurs, ouvre un puits sous chacun, puis retourne la moitié de l'arène ; ses générateurs se coupent tous ensemble.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
@@ -31535,7 +32042,7 @@
    ]
   },
   {
-   "fr": "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent dans leurs antres.",
+   "fr": "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -31571,6 +32078,13 @@
    "fr": "le Ralenti",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "Le reflux",
+   "where": [
+    "data/enemies/voidworm.json",
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -31876,7 +32390,7 @@
   {
    "fr": "le sol",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -31925,7 +32439,7 @@
    ]
   },
   {
-   "fr": "Le talon de Titanus, au bout de la jambe droite. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "Le talon de Titanus, au bout de la jambe droite : un colosse de forge qui écrase tout. Trois phases : ses ondes de choc, son talon sur chacun, puis la forge à nu ; ses deux entraves se brisent ensemble pour le mettre à genou.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
    ]
@@ -31955,7 +32469,7 @@
    ]
   },
   {
-   "fr": "Le test est en pause.",
+   "fr": "Le test continue pendant la pause : vous pouvez encore être touché.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -32070,9 +32584,33 @@
    ]
   },
   {
+   "fr": "Le ventre affamé",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Le ventre où grouillent les parasites",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Le ventre se retourne : l'acide monte !",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Le ventre se retourne : l'acide va monter, grimpez sur les racines !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Le ver du vide lové dans l'abdomen d'Asterion, gigaboss d'un raid de clan, assez grand pour huit joueurs : il surgit du gouffre, fouit sous chaque joueur, avale un allié que les autres doivent libérer, lâche ses parasites ; dans sa chitine, ses trois anneaux doivent être épinglés ensemble pour ouvrir sa gueule.",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -32324,6 +32862,13 @@
    "fr": "Les anciens veillent.",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Les anneaux de chitine",
+   "where": [
+    "data/enemies/voidworm.json",
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -32754,6 +33299,13 @@
    ]
   },
   {
+   "fr": "Les entraves",
+   "where": [
+    "data/enemies/titanus.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
    "fr": "Les fantômes laissent maintenant la traînée de leur joueur (la vôtre derrière vos propres fantômes), aussi translucide qu'eux.",
    "where": [
     "data/news/changelog.json"
@@ -32849,6 +33401,13 @@
    "fr": "Les groupes sont déjà équilibrés.",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les générateurs",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
   },
   {
@@ -33640,6 +34199,12 @@
    "fr": "Libérer la caméra",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "LIBÉREZ-LE",
+   "where": [
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -35643,6 +36208,12 @@
    ]
   },
   {
+   "fr": "MIROIR",
+   "where": [
+    "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Miroir",
    "where": [
     "data/levels/aethra_02.json"
@@ -36375,6 +36946,12 @@
    ]
   },
   {
+   "fr": "Morsure du ver",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Morsure gelée",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -36952,6 +37529,12 @@
    "fr": "Nid des parasites",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Nid des parasites détruit : Voidworm n'a plus que de maigres renforts.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -39430,9 +40013,16 @@
    ]
   },
   {
+   "fr": "ONDE DE CHOC",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Onde de choc",
    "where": [
-    "data/enemies/pyrrhax.json"
+    "data/enemies/pyrrhax.json",
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -39450,7 +40040,7 @@
   {
    "fr": "Onde du battement",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -39463,6 +40053,12 @@
    "fr": "Onde en anneau",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Onde gravitationnelle",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -41923,6 +42519,12 @@
    ]
   },
   {
+   "fr": "Pause en ligne et en test : la pause n'arrête jamais le jeu, même dans le test admin d'Asterion. Seul le joueur qui la demande cesse d'agir ; les ennemis et le boss continuent et peuvent encore le toucher (le menu de pause le rappelle).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pause · P",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -42308,9 +42910,9 @@
   {
    "fr": "phase {0} / 3",
    "where": [
-    "game/raid/DreadfangFight.cpp",
-    "game/raid/HeartbreakerFight.cpp",
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/DreadfangRoutine.cpp",
+    "game/raid/HeartbreakerRoutine.cpp",
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -42484,6 +43086,7 @@
   {
    "fr": "Pied de Graviton",
    "where": [
+    "data/achievements/achievements.json",
     "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
@@ -42608,6 +43211,12 @@
    "fr": "Pièges et dangers",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Piétinement",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -42903,6 +43512,12 @@
    ]
   },
   {
+   "fr": "PLAQUES · {0}",
+   "where": [
+    "game/raid/HeartbreakerRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Plasma",
    "where": [
     "data/enemies/titan.json",
@@ -43087,6 +43702,12 @@
    ]
   },
   {
+   "fr": "Pluie d'acide",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Pluie d'obsidienne",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -43161,6 +43782,7 @@
    "where": [
     "data/enemies/astrarque.json",
     "data/enemies/echo_prime_sentinel.json",
+    "data/enemies/graviton.json",
     "data/enemies/prime_sentinel.json"
    ]
   },
@@ -43306,6 +43928,12 @@
    ]
   },
   {
+   "fr": "Plus de pièges de gravité : ses générateurs sont coupés.",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Plus de pluies de lave : le poing de magma d'Asterion est éteint.",
    "where": [
     "server/src/raidRewards.ts"
@@ -43321,6 +43949,12 @@
    "fr": "plus de pouvoirs que d'emplacements",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "Plus de renforts : les parasites d'Asterion sont chassés.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -43472,6 +44106,12 @@
    ]
   },
   {
+   "fr": "Poche de Voidworm",
+   "where": [
+    "data/enemies/voidworm_poche.json"
+   ]
+  },
+  {
    "fr": "Poche oubliée",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
@@ -43540,7 +44180,7 @@
   {
    "fr": "Poings de magma",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -45256,6 +45896,12 @@
    ]
   },
   {
+   "fr": "Présent à la chute de Graviton (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Présent à la chute de Heartbreaker (combat validé par votre instance)",
    "where": [
     "server/src/raidRewards.ts"
@@ -45269,6 +45915,18 @@
   },
   {
    "fr": "Présent à la chute de Skullmaw (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Présent à la chute de Titanus (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Présent à la chute de Voidworm (combat validé par votre instance)",
    "where": [
     "server/src/raidRewards.ts"
    ]
@@ -45628,6 +46286,7 @@
    "fr": "Puits gravitationnel",
    "where": [
     "data/enemies/echo_nyxara.json",
+    "data/enemies/graviton.json",
     "data/enemies/nyxara.json",
     "game/enemies/EnemyDefinition.cpp"
    ]
@@ -45730,6 +46389,12 @@
    ]
   },
   {
+   "fr": "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute ; Skullmaw, Dreadfang, Heartbreaker, Voidworm, Graviton, Titanus (crâne, bras gauche, torse, abdomen, jambes) : un badge chacun à leur chute ; titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, mécanismes, objectifs, présence).",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Pyroclast est vaincu : le bras droit d'Asterion s'éteint.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
@@ -45744,7 +46409,8 @@
   {
    "fr": "Pyroclast vaincu",
    "where": [
-    "data/raids/asterion/bras_droit/zone_8.json"
+    "data/raids/asterion/bras_droit/zone_8.json",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -46378,6 +47044,12 @@
    ]
   },
   {
+   "fr": "Raids de clan, phase 4B : trois antres d'Asterion s'ouvrent. VOIDWORM, le ver du vide, attend au fond de l'ABDOMEN ; GRAVITON, la jambe qui plie l'espace, au bout de la JAMBE GAUCHE ; TITANUS, la jambe qui écrase tout, au bout de la JAMBE DROITE. Trois vrais combats de raid en trois phases annoncées, une dernière attaque à survivre, une apparence qui change à chaque phase, des géants pour huit joueurs dans des arènes de plus de six écrans de large.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids de clan, phase 4B : trois nouveaux gigaboss d'Asterion se combattent dans leurs antres, au bout de leurs branches. SKULLMAW, le crâne qui voit tout (Crâne), DREADFANG, les griffes qui déchirent (Bras gauche) et HEARTBREAKER, la cage qui garde le cœur (Torse) : chacun énorme, en trois phases annoncées, avec ses attaques, ses zones de danger, ses points faibles et une apparence qui change avec sa santé.",
    "where": [
     "data/news/changelog.json"
@@ -46478,7 +47150,8 @@
    "fr": "range",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -47421,6 +48094,12 @@
    ]
   },
   {
+   "fr": "Reflux d'acide toutes les {0} s : restez sur les racines hautes.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Refus",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -47501,9 +48180,15 @@
    ]
   },
   {
+   "fr": "REGARD DE MORT",
+   "where": [
+    "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Regard de mort",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -47533,7 +48218,7 @@
   {
    "fr": "Regard traqueur",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -49283,6 +49968,12 @@
    ]
   },
   {
+   "fr": "Rotule de Titanus",
+   "where": [
+    "data/enemies/titanus_genou.json"
+   ]
+  },
+  {
    "fr": "Rouage primordial",
    "where": [
     "data/levels/pyralis_03.json"
@@ -49579,6 +50270,12 @@
    "fr": "Réacteur vivant",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Réacteurs de la jambe coupés : ses entraves se reforgent plus lentement.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -50598,7 +51295,7 @@
   {
    "fr": "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -50635,6 +51332,18 @@
    "fr": "Sa flamme vire au bleu !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Sa gueule est ouverte : brisez ses anneaux lumineux ({0} / {1})",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Sa gueule vise un joueur : sortez de l'anneau vert avant qu'il se ferme.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -51139,6 +51848,12 @@
    "fr": "Sautez puis appuyez à nouveau sur Saut en l'air : double saut !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Sautez ses ondes de choc, brisez ses 2 entraves en même temps (moins de 1,5 s d'écart) pour le mettre à genou.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -51907,6 +52622,18 @@
    ]
   },
   {
+   "fr": "Ses générateurs s'allument : coupez-les tous ensemble !",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Ses générateurs s'allument : un joueur sur chacun, tous en même temps !",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Ses lueurs se détachent et tournoient !",
    "where": [
     "data/enemies/kraken.json"
@@ -51919,6 +52646,18 @@
    ]
   },
   {
+   "fr": "Ses ondes de choc courent au sol : sautez par-dessus (les plateformes protègent).",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Ses parasites en renfort : détruire le nid (zone 3) les réduirait de moitié.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
@@ -51928,6 +52667,12 @@
    "fr": "Ses photophores crépitent d'éclairs !",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Ses plaques se verrouillent : brisez ses deux entraves en même temps !",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -52416,7 +53161,7 @@
   {
    "fr": "Skullmaw est aveuglé ({0}) : crevez ses yeux et son cristal · points faibles {1} / {2}",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -52432,9 +53177,21 @@
    ]
   },
   {
+   "fr": "Skullmaw vaincu",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
    "fr": "SKULLMAW, LE CRÂNE QUI VOIT TOUT",
    "where": [
     "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Skullmaw, le crâne qui voit tout. Quand son regard se charge : tenez les miroirs, ou cachez-vous derrière une colonne.",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
    ]
   },
   {
@@ -52682,13 +53439,25 @@
   {
    "fr": "Son armure de givre : tenez ses 3 chaînes ensemble pour le plaquer au sol, brisez ses jointures, libérez les joueurs cloués.",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "data/raids/asterion/bras_gauche/zone_8.json"
    ]
   },
   {
    "fr": "Son arène est introuvable dans son niveau.",
    "where": [
     "game/gameplay/BossAttackDemo.cpp"
+   ]
+  },
+  {
+   "fr": "Son blindage se fend : la forge de la jambe est à nu !",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Son blindage se fend : ses ondes de choc vont par deux !",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -52791,7 +53560,13 @@
   {
    "fr": "Son regard se charge : miroirs tenus {0} / {1} · les autres, cachez-vous derrière une colonne !",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Son talon fend le sol : la forge s'ouvre sous l'arène, ses entraves se verrouillent !",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -52803,7 +53578,7 @@
   {
    "fr": "Son voile : à son flash, tenez des miroirs ensemble (jusqu'à 4) pour l'aveugler ; les autres se cachent derrière les colonnes.",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "data/raids/asterion/crane/zone_8.json"
    ]
   },
   {
@@ -53260,6 +54035,12 @@
    "fr": "Spirale de tirs",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Spirale du vide",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -53924,6 +54705,12 @@
    "fr": "Succès › Suggestions : 5 succès proposés d'après votre progression (les plus proches du but, faisables maintenant, de catégories variées), avec ce qu'il reste à faire (« Plus que 70 sauts »).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Sucs du ventre",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -54632,6 +55419,12 @@
    ]
   },
   {
+   "fr": "Séisme du talon",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Séisme runique",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -55013,6 +55806,7 @@
   {
    "fr": "Talon de Titanus",
    "where": [
+    "data/achievements/achievements.json",
     "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
@@ -55455,6 +56249,12 @@
    "fr": "Tendon glacé",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Tentacule fouisseur",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -56391,6 +57191,24 @@
    ]
   },
   {
+   "fr": "TITAN · Le nid des parasites est détruit : Voidworm n'a plus que de maigres renforts.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "TITAN · Les générateurs de la jambe sont coupés : un générateur de moins à tenir.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "TITAN · Les réacteurs de la jambe sont coupés : ses entraves se reforgent plus lentement.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "TITAN · {0}",
    "where": [
     "game/raid/RaidRun.cpp",
@@ -56410,19 +57228,56 @@
    ]
   },
   {
+   "fr": "Titanus",
+   "where": [
+    "data/enemies/titanus.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Titanus est vaincu : la jambe droite d'Asterion chancelle.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Titanus est à genou : brisez sa rotule et ses coutures ({0} / {1})",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Titanus fléchit : le Tibia de la Jambe gauche s'ouvre vers la Cheville",
    "where": [
     "data/raids/asterion/titan.json"
    ]
   },
   {
-   "fr": "Titanus — prochaine version",
+   "fr": "Titanus piétine : ses ondes de choc courent au sol et se sautent (les grilles protègent), son talon tombe sur chaque joueur, il charge, bondit, fait tomber des rochers de la voûte, et à sa 2e phase son talon fend le sol de l'arène au-dessus de la forge. Ses deux entraves de cheville doivent être brisées à moins d'une seconde et demie d'écart : seule, une entrave se reforge ; ensemble, elles le mettent à genou, sa rotule à nu (plus de temps si les deux réacteurs de la jambe sont coupés).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Titanus pose le talon : l'arène tremble.",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Titanus vaincu",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
-   "fr": "Titanus — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "TITANUS, LA JAMBE QUI ÉCRASE TOUT",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Titanus, la jambe qui écrase tout. Sautez ses ondes de choc ; brisez ses deux entraves en même temps pour le mettre à genou.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
    ]
@@ -58054,7 +58909,7 @@
   {
    "fr": "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -58098,7 +58953,7 @@
   {
    "fr": "Un allié est cloué au sol : brisez la griffe qui le tient ({0}).",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -58123,6 +58978,12 @@
    "fr": "Un anneau de magma en orbite autour d'un œil solaire. Il fait tourner le feu autour de lui comme une étoile qui naît.",
    "where": [
     "data/enemies/pyrogyre.json"
+   ]
+  },
+  {
+   "fr": "Un anneau du ver qui luit quand sa gueule est ouverte (ses trois crochets tenus ensemble). Chacun brisé lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/voidworm_anneau.json"
    ]
   },
   {
@@ -58183,12 +59044,6 @@
    "fr": "Un badge est un succès que vous avez obtenu, affiché à côté de votre nom et de votre titre sur votre profil Cosmic Online.",
    "where": [
     "ui/screens/CollectionScene.cpp"
-   ]
-  },
-  {
-   "fr": "Un badge par gigaboss à sa chute (Pyroclast, Skullmaw, Dreadfang, Heartbreaker), titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, mécanismes, objectifs, présence).",
-   "where": [
-    "server/src/raids.ts"
    ]
   },
   {
@@ -58372,6 +59227,12 @@
    ]
   },
   {
+   "fr": "Un cœur de gravité à nu quand ses générateurs sont coupés ensemble et qu'elle s'effondre. Chacun brisé lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/graviton_coeur.json"
+   ]
+  },
+  {
    "fr": "Un Dash de plus avant de toucher le sol (passif, avec le Dash).",
    "where": [
     "data/powers/air_dash.json"
@@ -58520,6 +59381,12 @@
    "fr": "un import était en cours",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "un joueur",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -58703,6 +59570,12 @@
    ]
   },
   {
+   "fr": "Un puits s'ouvre sous chacun : éloignez-vous de son cœur.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Un périphérique par joueur",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -58793,6 +59666,12 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Un secteur va s'inverser : quittez-le ou visez un abri.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -59119,6 +59998,12 @@
    "fr": "Une des quatre plaques d'armure du torse : tant qu'il en reste une, rien ne blesse Heartbreaker. Elles repoussent si elles ne tombent pas ensemble.",
    "where": [
     "data/enemies/heartbreaker_plaque.json"
+   ]
+  },
+  {
+   "fr": "Une entrave de cheville rivée sur Titanus : les deux, brisées en même temps, le font tomber à genou ; seule, elle se reforge.",
+   "where": [
+    "data/enemies/titanus_entrave.json"
    ]
   },
   {
@@ -60120,7 +61005,7 @@
   {
    "fr": "Vaincre Dreadfang · {0} : sautez ses lames de balayage, quittez les marques des griffes du sol.",
    "where": [
-    "game/raid/DreadfangFight.cpp"
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {
@@ -60136,9 +61021,15 @@
    ]
   },
   {
+   "fr": "Vaincre Graviton · phase {0} / 3 : quittez votre marque, des débris tombent.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre Heartbreaker · {0} : frappez la cage, quittez les côtes-pièges.",
    "where": [
-    "game/raid/HeartbreakerFight.cpp"
+    "game/raid/HeartbreakerRoutine.cpp"
    ]
   },
   {
@@ -60178,6 +61069,12 @@
    ]
   },
   {
+   "fr": "Vaincre le gigaboss Graviton",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Vaincre le gigaboss Heartbreaker",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -60193,6 +61090,18 @@
    "fr": "Vaincre le gigaboss Skullmaw",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le gigaboss Titanus",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le gigaboss Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -60360,13 +61269,19 @@
   {
    "fr": "Vaincre Skullmaw · {0} : chaque regard laser vous suit puis se fige : quittez sa ligne à cet instant.",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
    "fr": "Vaincre Thornwarden.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Titanus · phase {0} / 3 : sautez ses ondes, quittez votre marque.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -60397,6 +61312,12 @@
    "fr": "Vaincre un écho de gardien.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Voidworm · phase {0} / 3 : quittez votre marque, il fouit sous chacun.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -60546,6 +61467,12 @@
    "fr": "Vent des aurores",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Ventre de Voidworm",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -61467,13 +62394,56 @@
    ]
   },
   {
-   "fr": "Voidworm — prochaine version",
+   "fr": "Voidworm",
+   "where": [
+    "data/enemies/voidworm.json",
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Voidworm est vaincu : le ventre d'Asterion se tait.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
-   "fr": "Voidworm — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "Voidworm se love dans sa chitine : tenez ses trois crochets ensemble !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Voidworm se love dans sa chitine : épinglez ses anneaux !",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Voidworm surgit d'un gouffre au milieu de son antre et coupe le groupe en deux : il fouit sous chaque joueur (une marque, puis une gueule qui jaillit du sol), vise des joueurs d'un anneau vert et avale ceux qui y restent — les autres doivent crever sa poche pour les libérer avant qu'il les digère. Ses parasites sortent par vagues (deux fois moins si le nid de l'Abdomen est détruit) et, à sa 3e phase, l'acide monte sur toute l'arène : seules les racines hautes restent sèches (plus bas encore si les deux valves de l'Intestin sont fermées). Dans sa chitine, ses trois crochets doivent être tenus ensemble pour l'épingler et ouvrir sa gueule.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Voidworm surgit du gouffre : le ventre d'Asterion a faim.",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Voidworm vaincu",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "VOIDWORM, LE VER DU VIDE",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Voidworm, le ver du vide. Tenez ses trois crochets ensemble pour l'épingler ; crevez sa poche pour libérer un avalé.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
    ]
@@ -61481,7 +62451,7 @@
   {
    "fr": "Voile psychique ({0}) : rien ne le blesse. À son flash, {1} miroirs tenus lui renvoient son regard et l'aveuglent.",
    "where": [
-    "game/raid/SkullmawFight.cpp"
+    "game/raid/SkullmawRoutine.cpp"
    ]
   },
   {
@@ -62539,12 +63509,6 @@
    ]
   },
   {
-   "fr": "Vous seul êtes en pause : le groupe continue à jouer.",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "vous suit",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -62700,6 +63664,12 @@
    "fr": "Voûte crânienne",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Voûte de gravité",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -64551,27 +65521,9 @@
    ]
   },
   {
-   "fr": "{0} est déjà tombé : la cage du torse est ouverte.",
-   "where": [
-    "game/raid/HeartbreakerFight.cpp"
-   ]
-  },
-  {
-   "fr": "{0} est déjà tombé : la Main est éteinte.",
+   "fr": "{0} est déjà tombé : {1}.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} est déjà tombé : le bras gauche ne griffe plus.",
-   "where": [
-    "game/raid/DreadfangFight.cpp"
-   ]
-  },
-  {
-   "fr": "{0} est déjà tombé : le crâne est éteint.",
-   "where": [
-    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -64740,12 +65692,6 @@
    "fr": "{0} FPS",
    "where": [
     "ui/screens/GameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} gigaboss vaincus",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -65092,6 +66038,12 @@
    "fr": "{0} lames, basse et haute",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -65995,6 +66947,12 @@
    ]
   },
   {
+   "fr": "{0} vaincus",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} veut devenir votre ami (En ligne → SOCIAL → Amis).",
    "where": [
     "game/online/OnlineService.cpp"
@@ -66602,6 +67560,8 @@
   {
    "fr": "{0},{1} s",
    "where": [
+    "game/raid/GravitonRoutine.cpp",
+    "game/raid/TitanusRoutine.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -67914,7 +68874,8 @@
     "data/enemies/cryowyrm.json",
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_howling_wyrm.json",
-    "data/enemies/howling_wyrm.json"
+    "data/enemies/howling_wyrm.json",
+    "data/raids/asterion/bras_gauche/zone_8.json"
    ]
   },
   {
@@ -68005,7 +68966,8 @@
    "fr": "Écrasement",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
-    "data/enemies/prime_sentinel.json"
+    "data/enemies/prime_sentinel.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -68385,6 +69347,18 @@
    "fr": "Épingler",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Épingler ses anneaux : un joueur sur chaque crochet, tenus ensemble ({0} s chacun, ils se libèrent au bout de {1} s)",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Épinglez ses 3 anneaux (ses crochets tenus ensemble), crevez sa poche pour libérer les avalés, fuyez l'acide sur les racines hautes.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -68884,6 +69858,12 @@
    ]
   },
   {
+   "fr": "Être présent à la chute de Graviton, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Être présent à la chute de Heartbreaker, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
    "where": [
     "data/achievements/achievements.json"
@@ -68897,6 +69877,18 @@
   },
   {
    "fr": "Être présent à la chute de Skullmaw, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Titanus, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Voidworm, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -69074,6 +70066,12 @@
    "fr": "›  {0} objets sélectionnés",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "← BALAYAGE",
+   "where": [
+    "game/raid/DreadfangRoutine.cpp"
    ]
   },
   {

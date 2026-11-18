@@ -180,6 +180,32 @@ vérifiés par le serveur sur les niveaux EXTRÊME officiels.
 
 <p align="center"><img src="docs/media/clan_page.png" width="820" alt="Page d'un clan : membres et rôles, meilleures équipes par niveau EXTRÊME, candidatures et discussion"></p>
 
+## Raids de clan : les Gigaboss d'Asterion
+
+Jusqu'à **huit joueurs** par instance attaquent **Asterion, le Dévoreur de mondes**, branche par branche ; au bout
+de chaque branche, l'antre d'un **Gigaboss** énorme, en trois phases, qui vise chaque joueur à la fois et ne tombe que
+si l'équipe agit **ensemble**. Fonctionnement complet : [docs/RAIDS.md](docs/RAIDS.md).
+
+**Skullmaw, le crâne qui voit tout** (le Crâne) : un regard laser traque chaque joueur ; sous son voile psychique,
+son Regard de mort frappe tous ceux qu'il voit, sauf si assez de joueurs tiennent un **miroir** à cet instant : son
+regard renvoyé l'aveugle et met à nu ses yeux et son cristal ; dans ses ténèbres, seule la lumière de son œil révèle
+les plateformes.
+
+<p align="center"><img src="docs/media/gigaboss_skullmaw.gif" width="640" alt="Skullmaw dans ses trois phases (regard qui traque, voile psychique, ténèbres) et un miroir qui s'allume"></p>
+
+**Dreadfang, les griffes qui déchirent** (le Bras gauche) : des griffes jaillissent du sol sous chaque joueur, sa
+lame balaie un, deux puis trois étages ; une griffe **cloue** un joueur jusqu'à ce qu'un autre la brise, et seules
+ses **trois chaînes** tenues ensemble le plaquent au sol, jointures offertes.
+
+<p align="center"><img src="docs/media/gigaboss_dreadfang.gif" width="640" alt="Dreadfang dans ses trois phases et une griffe de givre qui jaillit du sol"></p>
+
+**Heartbreaker, la cage qui garde le cœur** (le Torse) : ses **quatre plaques** se brisent dans la même fenêtre ou
+repoussent, ses battements lancent des ondes au sol ; il faut ensuite **écarter ses deux côtes** en même temps pour
+atteindre la lumière de son cœur, avant qu'il ne s'affole.
+
+<p align="center"><img src="docs/media/gigaboss_heartbreaker.gif" width="640" alt="Heartbreaker dans ses trois phases et l'onde de ses battements"></p>
+<p align="center"><sub>Les trois phases de chaque Gigaboss avec les sprites du jeu (générés par <code>tools/assetgen</code>).</sub></p>
+
 ## Cosmic Online
 
 Facultatif, et jamais nécessaire pour jouer : un **globe 3D** interactif (rotation à la souris ou au
@@ -457,10 +483,12 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 **Nouveau dans la version 2.69.0** :
 * **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans
-  leurs antres (zone 8 de leur branche, `tools/levelgen/raid_asterion.py`) : énormes, trois phases annoncées chacun, des
-  attaques sur les 8 joueurs à la fois et des mécanismes collectifs (`game/raid/SkullmawFight`, `DreadfangFight`,
-  `HeartbreakerFight`, sur le cadre commun `game/raid/BossMechanic`) ; sprites, points faibles et éléments d'arène en
-  pixel art générés par `tools/assetgen/characters/boss_l_*.py`.
+  leurs antres (zone 8 de leur branche, `tools/levelgen/raid_skullmaw.py`, `raid_dreadfang.py`, `raid_heartbreaker.py`) :
+  énormes, trois phases annoncées chacun, des attaques sur les 8 joueurs à la fois et des mécanismes collectifs
+  (`game/raid/SkullmawRoutine`, `DreadfangRoutine`, `HeartbreakerRoutine`, routines du cadre commun `GigabossRoutine`) ;
+  sprites, points faibles et éléments d'arène en pixel art générés par `tools/assetgen/characters/boss_l_*.py` (sur
+  `gigaboss_kit.py`). Correctifs : un joueur avalé par Voidworm ne reçoit plus de marque de « Fouissement » ;
+  à la fin d'une exposition, un gigaboss reforme sa carapace (`exposedStep` rend l'étape « combat »).
 * **Skullmaw** : regards lasers traqueurs (un par joueur), « Regard de mort » qui aveugle ceux qu'aucune colonne ne cache,
   miroirs à tenir ensemble pour l'aveugler (yeux et cristal à briser), ténèbres où seule la lumière de son œil révèle les
   plateformes. **Dreadfang** : griffes du sol sous chaque joueur, balayages d'étages entiers, joueur cloué à libérer,
@@ -468,6 +496,22 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   ensemble (sinon elles repoussent), battements en rythme et leurs ondes, côtes-pièges, côtes à écarter des deux côtés.
 * Badge par gigaboss accordé une seule fois par le serveur (présence à une chute validée de sa branche), partie du titan
   détruite, sauvetages et coups esquivés dans les contributions ; résultats et carte du titan pour plusieurs gigaboss.
+* **Raids de clan, phase 4B : VOIDWORM, GRAVITON et TITANUS** dans les antres descellées de l'ABDOMEN, de la JAMBE GAUCHE
+  et de la JAMBE DROITE (zones 8 générées par `tools/levelgen/raid_voidworm.py`, `raid_graviton.py`, `raid_titanus.py`,
+  appelés par `raid_asterion.py`) : trois combats en trois phases, chacun sa routine (`game/raid/GigabossRoutine` et
+  `VoidwormRoutine`, `GravitonRoutine`, `TitanusRoutine`) autour des règles de Pyroclast (vie selon les sièges, marques sous
+  chaque joueur, points faibles, chute, rapports) ; sprites et planches en pixel art générés par
+  `tools/assetgen/characters/boss_m_voidworm.py`, `boss_m_graviton.py`, `boss_m_titanus.py`.
+* **Mécanismes collectifs** : les trois crochets de Voidworm tenus ensemble, les quatre générateurs de Graviton coupés au
+  même instant dans des secteurs séparés, les deux entraves de Titanus brisées à moins de 1,5 s d'écart ; Voidworm avale des
+  joueurs que les autres libèrent (sauvetages), Graviton inverse la gravité par secteurs (abris sous les dalles), Titanus
+  envoie des ondes de choc à sauter ; liens avec la phase 4A (nid, valves, générateurs, réacteurs de la branche).
+* **Serveur** : un badge par gigaboss (« Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus »), accordé une seule
+  fois à qui était présent à sa chute validée ; la partie du titan détruite ; les résultats nomment chaque gigaboss tombé.
+
+**Nouveau dans la version 2.68.2** :
+* **La pause ne fige jamais le jeu en ligne ni dans le test admin** : seul le joueur cesse d'agir, les ennemis et le
+  boss continuent et peuvent encore le toucher.
 
 **Nouveau dans la version 2.68.1** :
 * **Correctif de la pause en ligne** : Échap ne referme plus aussitôt la pause en raid et en coopération ; en ligne,

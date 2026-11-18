@@ -273,6 +273,14 @@ torse
 abdomen
 part
 zones
+abd_voidworm
+jd_titanus
+jg_graviton
+left
+love
+poche
+double
+valves
 crane_skullmaw
 bg_dreadfang
 torse_heartbreaker

@@ -296,7 +296,7 @@
  "catalogs": [
   {
    "id": "asterion_crane",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "crane",
    "name": "CRÂNE",
@@ -586,7 +586,7 @@
   },
   {
    "id": "asterion_bras_gauche",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "bras_gauche",
    "name": "BRAS GAUCHE",
@@ -876,7 +876,7 @@
   },
   {
    "id": "asterion_torse",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "torse",
    "name": "TORSE",
@@ -1169,7 +1169,7 @@
   },
   {
    "id": "asterion_abdomen",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "abdomen",
    "name": "ABDOMEN",
@@ -1290,12 +1290,12 @@
     {
      "id": 8,
      "name": "Antre de Voidworm",
-     "sub": "GIGABOSS · prochaine version",
+     "sub": "GIGABOSS · Voidworm, 3 phases",
      "x": 1000,
      "y": 360,
      "level": "zone_8.json",
-     "inside": "Le gigaboss Voidworm attend derrière sa porte scellée",
-     "event": "",
+     "inside": "Le gigaboss Voidworm : épingler ses anneaux, libérer les avalés, fuir l'acide",
+     "event": "Reflux d'acide à sa 3e phase (racines hautes sûres)",
      "secret": false,
      "boss": true,
      "groups_required": 1,
@@ -1445,12 +1445,21 @@
      "optional": false,
      "role": "",
      "pair": ""
+    },
+    {
+     "id": "abd_voidworm",
+     "index": 9,
+     "zone": 8,
+     "label": "Vaincre le gigaboss Voidworm",
+     "optional": false,
+     "role": "gigaboss",
+     "pair": ""
     }
    ]
   },
   {
    "id": "asterion_jambe_gauche",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "jambe_gauche",
    "name": "JAMBE GAUCHE",
@@ -1571,12 +1580,12 @@
     {
      "id": 8,
      "name": "Pied de Graviton",
-     "sub": "GIGABOSS · prochaine version",
+     "sub": "GIGABOSS · Graviton, 3 phases",
      "x": 1000,
      "y": 330,
      "level": "zone_8.json",
-     "inside": "Le gigaboss Graviton attend derrière sa porte scellée",
-     "event": "",
+     "inside": "Le gigaboss Graviton : couper ses générateurs ensemble, s'abriter quand la gravité s'inverse",
+     "event": "Gravité inversée par secteurs (les dalles hautes abritent)",
      "secret": false,
      "boss": true,
      "groups_required": 1,
@@ -1726,12 +1735,21 @@
      "optional": false,
      "role": "",
      "pair": ""
+    },
+    {
+     "id": "jg_graviton",
+     "index": 9,
+     "zone": 8,
+     "label": "Vaincre le gigaboss Graviton",
+     "optional": false,
+     "role": "gigaboss",
+     "pair": ""
     }
    ]
   },
   {
    "id": "asterion_jambe_droite",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "jambe_droite",
    "name": "JAMBE DROITE",
@@ -1852,12 +1870,12 @@
     {
      "id": 8,
      "name": "Talon de Titanus",
-     "sub": "GIGABOSS · prochaine version",
+     "sub": "GIGABOSS · Titanus, 3 phases",
      "x": 1000,
      "y": 360,
      "level": "zone_8.json",
-     "inside": "Le gigaboss Titanus attend derrière sa porte scellée",
-     "event": "",
+     "inside": "Le gigaboss Titanus : sauter ses ondes de choc, briser ses deux entraves ensemble",
+     "event": "Ondes de choc au sol (les grilles sont sûres)",
      "secret": false,
      "boss": true,
      "groups_required": 1,
@@ -2006,6 +2024,15 @@
      "label": "Briser la cheville d'acier : vaincre sa garde",
      "optional": false,
      "role": "",
+     "pair": ""
+    },
+    {
+     "id": "jd_titanus",
+     "index": 9,
+     "zone": 8,
+     "label": "Vaincre le gigaboss Titanus",
+     "optional": false,
+     "role": "gigaboss",
      "pair": ""
     }
    ]

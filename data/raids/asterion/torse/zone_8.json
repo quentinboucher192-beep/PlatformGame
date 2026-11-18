@@ -234,181 +234,38 @@
   },
   {
    "id": "o7",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "sign",
+   "layer": "gameplay",
    "rect": [
-    704.0,
-    96.0,
-    32.0,
-    704.0
+    340.0,
+    968.0,
+    24.0,
+    24.0
    ],
    "props": {
-    "material": "crystal"
+    "text": "Heartbreaker, la cage qui garde le cœur. Brisez ses plaques ensemble, sautez ses ondes, écartez ses côtes des deux côtés.",
+    "auto": true
    }
   },
   {
    "id": "o8",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "light",
+   "layer": "gameplay",
    "rect": [
-    704.0,
-    992.0,
-    3264.0,
-    160.0
+    472.0,
+    888.0,
+    16.0,
+    16.0
    ],
    "props": {
-    "material": "ancient_metal"
+    "color": "#ffd27a",
+    "radius": 140,
+    "flicker": 0.3,
+    "bloom": true
    }
   },
   {
    "id": "o9",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    736.0,
-    64.0,
-    3200.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o10",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    3936.0,
-    64.0,
-    32.0,
-    928.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o11",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    888.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o12",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    1368.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o13",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    1848.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o14",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    2328.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o15",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    2808.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o16",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    3288.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o17",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    3768.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ff5d8f",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o18",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -427,44 +284,7 @@
    }
   },
   {
-   "id": "o19",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    644.0,
-    928.0,
-    24.0,
-    64.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "ruin_pillar",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o20",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    664.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#ffd27a",
-    "radius": 160,
-    "flicker": 0.3,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o21",
+   "id": "o10",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -476,6 +296,181 @@
    "props": {
     "effect": "fireflies",
     "rate": 2.5
+   }
+  },
+  {
+   "id": "o11",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    96.0,
+    32.0,
+    704.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    992.0,
+    3264.0,
+    160.0
+   ],
+   "props": {
+    "material": "ancient_metal"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    736.0,
+    64.0,
+    3200.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    64.0,
+    32.0,
+    928.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    888.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o16",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1368.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o17",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1848.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o18",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2328.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o19",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2808.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o20",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3288.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o21",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3768.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ff5d8f",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
    }
   },
   {
@@ -1092,14 +1087,14 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    0.0,
-    64.0,
-    1120.0,
-    352.0
+    1056.0,
+    160.0,
+    2560.0,
+    832.0
    ],
    "props": {
     "effect": "fireflies",
-    "rate": 1.2
+    "rate": 2.0
    }
   },
   {
@@ -1107,7 +1102,7 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    1120.0,
+    0.0,
     64.0,
     1120.0,
     352.0
@@ -1122,7 +1117,7 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2240.0,
+    1120.0,
     64.0,
     1120.0,
     352.0
@@ -1134,6 +1129,21 @@
   },
   {
    "id": "o67",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o68",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1228,7 +1238,7 @@
     }
    ],
    "delay": 1.5,
-   "name": "Gigaboss vaincu"
+   "name": "Heartbreaker vaincu"
   }
  ],
  "intro": {},
@@ -1300,8 +1310,20 @@
     "pressurePerPlayer": 0.06,
     "boss": "o62",
     "name": "Heartbreaker",
-    "kind": "heartbreaker",
     "objective": "torse_heartbreaker",
+    "routine": "heartbreaker",
+    "fists": {
+     "name": "Côtes-pièges",
+     "periods": [
+      9.0,
+      7.5,
+      6.0
+     ],
+     "warn": 1.3,
+     "width": 112.0,
+     "damage": 1.0,
+     "rise": true
+    },
     "plates": {
      "enemy": "heartbreaker_plaque",
      "spots": [
@@ -1321,12 +1343,6 @@
        160.0,
        -78.0
       ]
-     ],
-     "names": [
-      "nord-ouest",
-      "nord-est",
-      "sud-ouest",
-      "sud-est"
      ],
      "window": 20.0,
      "share": 0.02
@@ -1355,22 +1371,11 @@
       3936
      ]
     },
-    "traps": {
-     "periods": [
-      9.0,
-      7.5,
-      6.0
-     ],
-     "warn": 1.3,
-     "width": 112.0,
-     "height": 96.0,
-     "damage": 1.0
-    },
-    "guard": [
+    "carapace": [
      2,
      3
     ],
-    "ribs": [
+    "vents": [
      {
       "id": "cote_ouest",
       "rect": [
@@ -1391,18 +1396,29 @@
      }
     ],
     "hold": 2.5,
+    "reopen": 4.0,
     "exposed": 8.0,
     "exposedMult": 2.5,
+    "jet": {
+     "name": "Jet de plasma",
+     "period": 8.0,
+     "warn": 1.2,
+     "duration": 0.8,
+     "height": 96.0,
+     "damage": 1.0
+    },
+    "weakEnemy": "heartbreaker_coeur",
     "weakSpots": [
      [
       0.0,
-      -148.0,
-      "heartbreaker_coeur"
+      -148.0
      ]
     ],
-    "weakShares": [
-     0.08
-    ]
+    "weakShare": 0.08,
+    "fx": "animations/heartbreaker_fx.json",
+    "fallText": "La cage du torse s'ouvre : la voie du cœur d'Asterion est libre.",
+    "goneText": "La cage est ouverte",
+    "summary": "Brisez ses 4 plaques ensemble (plusieurs groupes), puis écartez ses côtes des deux côtés à la fois pour frapper son cœur."
    }
   }
  },

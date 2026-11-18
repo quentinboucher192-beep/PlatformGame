@@ -27,7 +27,7 @@
 #include <utility>
 #include <vector>
 
-#include "game/raid/BossMechanic.h"
+#include "game/raid/GigabossRoutine.h"
 #include "game/raid/RaidBranch.h"
 
 namespace cosmic {
@@ -82,6 +82,8 @@ public:
     float exposedLeft() const;
     int weakLeft() const;
     int weakTotal() const { return weakTotal_; }
+    /// 2.69: its weak points bare now (0: broken), in the order of its rules' spots.
+    const std::vector<uint32_t>& weakUids() const { return weak_; }
     /// The seats its health was scaled for, and the players in play this step.
     int scaledFor() const { return scaledFor_; }
     int inPlay() const { return inPlay_; }
@@ -107,17 +109,13 @@ public:
         testPlayers_ = players;
         testPhase_ = startPhase;
     }
-
-    /// 2.69 (phase 4B): the rules of its own fight (Skullmaw's gazes and mirrors, Dreadfang's claws
-    /// and chains, Heartbreaker's plates and beats: game/raid/BossMechanic.h); nullptr for Pyroclast,
-    /// whose vents and fists are the code above. Read by the combat screen (display only).
-    const BossMechanic* mechanic() const { return mech_.get(); }
-    /// Steps since the fight began (its own rules count from it).
-    uint32_t fightTicks() const { return fightTicks_; }
-    /// A line of the raid's alerts, from its own rules.
-    void say(std::string text, AlertKind kind) { alert(std::move(text), kind); }
+    /// 2.69 (phase 4B): the routine of the gigaboss (Voidworm, Graviton, Titanus), null for
+    /// Pyroclast; the state of the branch at this step (the objectives its routine reads).
+    const GigabossRoutine* routine() const { return routine_.get(); }
+    void setBranchMask(uint32_t mask) { mask_ = mask; }
 
 private:
+    friend class GigabossRoutine;  // 2.69: the routines run these rules their own way
     Enemy* find(GameWorld& w);
     void alert(std::string text, AlertKind kind) { alerts_.emplace_back(std::move(text), kind); }
     void stepVents(GameWorld& w, Contributions& c, Enemy& b);
@@ -144,7 +142,8 @@ private:
     bool seen_ = false, fallen_ = false;   // the boss found in the world; it already fell (branch state)
     std::vector<Fist> fists_;
     int fistClock_ = 0;
-    std::unique_ptr<BossMechanic> mech_;  // 2.69 (phase 4B)
+    std::unique_ptr<GigabossRoutine> routine_;  // 2.69 (phase 4B)
+    uint32_t mask_ = 0;
 };
 
 }  // namespace cosmic::raid

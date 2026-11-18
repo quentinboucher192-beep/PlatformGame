@@ -90,16 +90,6 @@ public:
                       false);
     }
 
-    /// 2.68-2.69: the gigaboss of this branch is fought (its lair has its fight in the game's own catalog).
-    bool foughtHere() const {
-        const raid::Branch* b = raid::Branch::builtin(part_);
-        if (!b) return false;
-        for (const raid::ZoneInfo& z : b->zones)
-            if (z.boss)
-                if (const raid::ZoneRules* r = b->zoneRules(z.id); r && r->gigaboss.present) return true;
-        return false;
-    }
-
     const Json& zoneJson(int id) const {
         static const Json none;
         const Json& zones = data_.contains("zones") ? data_["zones"] : none;
@@ -131,9 +121,10 @@ public:
         const int groups = static_cast<int>(groupsIn(id).size());
         const int required = jget<int>(z, "groups_required", 1);
         if (jget<bool>(z, "boss", false)) {
-            // 2.68 (phase 3): the gigaboss's arena: fallen once its objective is accepted; the six
-            // others are sealed until their gigaboss comes.
-            if (part_ != "bras_droit") return "scellée · prochaine version";
+            // 2.68 (phase 3): the gigaboss's arena: fallen once its objective is accepted; 2.69: sealed only
+            // while its gigaboss is not fought (the lair's zone has none in the game's catalog).
+            const raid::Branch* local = raid::Branch::builtin(part_);
+            if (!(local && local->zoneRules(id) && local->zoneRules(id)->gigaboss.present)) return "scellée · prochaine version";
             if (jget<bool>(z, "controlled", false)) return jstr(data_.value("branch", Json::object()), "gigaboss") + " vaincu";
             if (!jget<bool>(z, "reachable", false)) return "gigaboss · verrouillée";
             return groups > 0 ? "gigaboss · " + std::to_string(groups) + (groups > 1 ? " groupes au combat" : " groupe au combat") : "gigaboss · à affronter";
@@ -186,9 +177,12 @@ public:
             const Json branch = data_.value("branch", Json::object());
             const float tw = fit(ui, jstr(branch, "name"), {hx, left.y + ui.s(22)}, 28, (left.right() - cw - ui.s(16) - hx) * 0.5f, kText, FontFace::Title).x;
             const float gx = hx + tw + ui.s(14);
-            // 2.68 (phase 3): a gigaboss is fought when its lair has its fight (2.69: the branch's own catalog says so).
-            const bool fought = foughtHere();
-            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") + (!fought ? " · prochaine version" : zoneJson(8).value("controlled", false) ? " · vaincu" : " · dans son antre"),
+            // 2.68 (phase 3): Pyroclast is fought; 2.69 (phase 4B): Voidworm, Graviton, Titanus too (a lair
+            // whose zone has its gigaboss in the game's catalog); the others later.
+            const raid::Branch* local = raid::Branch::builtin(part_);
+            const bool fought = local && local->zoneRules(8) && local->zoneRules(8)->gigaboss.present;
+            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") +
+                        (!fought ? " · prochaine version" : zoneJson(8).value("controlled", false) ? " · vaincu" : part_ == "bras_droit" ? " · dans la Main" : " · dans son antre"),
                 {gx, left.y + ui.s(22)}, 15, left.right() - cw - ui.s(16) - gx, kPeach);
             drawMap({left.x, left.y + ui.s(58), left.w, left.h - ui.s(58) - ui.s(34)});
             drawLegend({left.x, left.bottom() - ui.s(24), left.w, ui.s(24)});
@@ -387,14 +381,9 @@ public:
             goals.push_back({t, {done ? "✓" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
         }
         if (jget<bool>(z, "boss", false)) {
-            if (part_ == "bras_droit")  // 2.68 (phase 3): Pyroclast's arena
-                goals.push_back({"Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.", {"◆", kGold}});
-            else if (part_ == "crane" && foughtHere())  // 2.69 (phase 4B)
-                goals.push_back({"Son voile : à son flash, tenez des miroirs ensemble (jusqu'à 4) pour l'aveugler ; les autres se cachent derrière les colonnes.", {"◆", kGold}});
-            else if (part_ == "bras_gauche" && foughtHere())
-                goals.push_back({"Son armure de givre : tenez ses 3 chaînes ensemble pour le plaquer au sol, brisez ses jointures, libérez les joueurs cloués.", {"◆", kGold}});
-            else if (part_ == "torse" && foughtHere())
-                goals.push_back({"Brisez ses 4 plaques ensemble (plusieurs groupes), puis écartez ses côtes des deux côtés à la fois pour frapper son cœur.", {"◆", kGold}});
+            const raid::Branch* local = raid::Branch::builtin(part_);
+            if (const raid::ZoneRules* lair = local ? local->zoneRules(8) : nullptr; lair && lair->gigaboss.present)  // 2.68, 2.69: its arena
+                goals.push_back({lair->gigaboss.summary, {"◆", kGold}});
             else
                 goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
         }
