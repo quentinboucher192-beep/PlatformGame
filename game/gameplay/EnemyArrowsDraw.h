@@ -1,7 +1,7 @@
 #pragma once
 
-// 2.69: the off-screen arrows of a view as the solo levels draw them (GameScene), shared with the
-// raids (RaidGameScene, docs/RAIDS.md §13): the enemies already met that are out of view (amber, the
+// 2.71: the off-screen arrows of a view as the solo levels draw them (GameScene), shared with the
+// raids (RaidGameScene, docs/RAIDS.md §15): the enemies already met that are out of view (amber, the
 // boss left out: it has its own arrow) and those of the ambush being fought (violet, met or not),
 // one arrow per pack with its « ×N », kept off the HUD. Display only.
 

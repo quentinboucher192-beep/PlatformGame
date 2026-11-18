@@ -33,7 +33,7 @@ struct GameplaySettings {
     int progressBar = 1;
     /// Place and size of each HUD element (HUD editor).
     HudLayout hud;
-    /// 2.69: the HUD of the clan raids (HUD editor › « Raids »), apart from the solo / co-op one.
+    /// 2.71: the HUD of the clan raids (HUD editor › « Raids »), apart from the solo / co-op one.
     RaidHudLayout raidHud;
     /// « Mode concentré »: only the elements chosen for it (HUD editor) are shown; toggled in
     /// game (T / Partage, pause menu). Display only.

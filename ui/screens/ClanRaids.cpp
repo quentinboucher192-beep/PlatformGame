@@ -255,12 +255,14 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     const float by = r.bottom() - ui.s(22) - ui.s(48);  // the buttons' top
     float y = r.y + ui.s(22);
     auto fits = [&](float h, float limit) { return y + h <= limit; };
-    pill(ui, x, y + ui.s(14), "ÉVÉNEMENT MONDIAL", kOrange, kInk, right);
-    y += ui.s(44);
     raids::Event e;
     if (lay.hero)
         for (const Json& w : at(data_, "world"))
             if (jstr(w, "id") == lay.heroId) e = raids::parseEvent(w);
+    // 2.69: a catch-up session (« session de rattrapage ») of an official world event, a suspended one.
+    const std::string kind = e.valid && e.catchup ? "SESSION DE RATTRAPAGE" : "ÉVÉNEMENT MONDIAL";
+    const float kindW = pill(ui, x, y + ui.s(14), kind, kOrange, kInk, right);
+    y += ui.s(44);
     if (!e.valid) {
         if (fits(ui.s(44), r.bottom() - ui.s(20))) {
             fit(ui, "ASTERION", {x, y + ui.s(20)}, 40, room, kText, FontFace::Title);
@@ -281,8 +283,9 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     }
     const raids::State st = raids::stateAt(e, now);
     {
-        float px = x + textW(ui, "ÉVÉNEMENT MONDIAL", 14, FontFace::Bold) + ui.s(30);
-        const float w = pill(ui, px, r.y + ui.s(36), raids::stateLabel(st), stateFill(st), stateText(st), right);
+        float px = x + kindW + ui.s(8);
+        const std::string sl = e.suspended && st == raids::State::Running ? "Suspendu" : raids::stateLabel(st);
+        const float w = pill(ui, px, r.y + ui.s(36), sl, stateFill(st), stateText(st), right);
         if (w > 0.0f) px += w + ui.s(8);
         pill(ui, px, r.y + ui.s(36), raids::formatLine(e), Color{42, 47, 90, 255}, kText, right);
     }
@@ -399,7 +402,7 @@ void ClanRaids::drawInvitations(const Rect& r, const raids::TabLayout& lay) {
     const float tx = rc.x + ui.s(60), tw = rc.right() - ui.s(12) - (cbw > 0.0f ? cbw + ui.s(10) : 0.0f) - tx;
     if (rewards.empty()) {
         fit(ui, "Aucune récompense à récupérer", {tx, rc.y + ui.s(22)}, 15, tw, kText, FontFace::Bold);
-        drawLines(ui, wrap(ui, "Elles viennent des résultats validés des raids : Pyroclast, sa chute, votre contribution.", FontFace::Body, 13, tw, 2),
+        drawLines(ui, wrap(ui, "Elles viennent des résultats validés des raids : la chute de ses gigaboss, votre contribution.", FontFace::Body, 13, tw, 2),
                   {tx, rc.y + ui.s(36)}, 13, ui.s(18), Color{232, 220, 184, 255});
     } else {
         const std::string title = rewards.size() == 1 ? rewards[0].name : std::to_string(rewards.size()) + " récompenses à récupérer";
@@ -458,7 +461,7 @@ void ClanRaids::drawInvitations(const Rect& r, const raids::TabLayout& lay) {
 
 void ClanRaids::drawHistory(const Rect& r, const raids::TabLayout& lay) {
     UIContext& ui = g_.ui;
-    float y = section(ui, r, "HISTORIQUE DU CLAN", kSky);
+    float y = section(ui, r, "HISTORIQUE DES RAIDS", kSky);
     const float x = r.x + ui.s(14), w = r.w - ui.s(28);
     const float footH = ui.s(44);
     const Rect list{x, y, w, r.bottom() - ui.s(10) - footH - y};
@@ -470,25 +473,34 @@ void ClanRaids::drawHistory(const Rect& r, const raids::TabLayout& lay) {
     if (!hist.is_array() || hist.empty()) {
         drawLines(ui, wrap(ui, "Aucun raid terminé pour l'instant.", FontFace::Body, 15, w, 2), {x, y}, 15, ui.s(22), kDim);
     } else {
+        // 2.69: each event opens its sheet (its results, its world ranking); a world event closed shows
+        // its official result (frozen by the server) and my clan's rank in it.
         const float rowH = ui.s(34);
         ui.beginScroll("history", list, static_cast<float>(hist.size()) * rowH);
         float ry = list.y - ui.scrollOffset();
         for (const Json& j : hist) {
             const raids::Event e = raids::parseEvent(j);
+            const Rect row{x, ry + ui.s(2), w - ui.s(6), rowH - ui.s(4)};
             const float cy = ry + rowH * 0.5f;
             ry += rowH;
             if (!e.valid || cy < list.y || cy > list.bottom()) continue;
-            const std::string result = e.cancelled ? "Annulé" : plural(e.clanPlayers, "inscrit", "inscrits");
-            const float resW = std::min(textW(ui, result, 14, FontFace::Bold), w * 0.4f);
+            bool hover = false;
+            if (ui.hotspot("hist/" + e.id, row, &hover)) openEvent(e.id);
+            if (hover) ui.r().fillRoundedRect(row, ui.s(7), Color{34, 44, 92, 200});
+            const std::string result = e.cancelled ? "Annulé"
+                                       : e.result.valid ? raids::resultLine(e.result, e.clanRegistered ? clanTag() : std::string())
+                                                        : plural(e.clanPlayers, "inscrit", "inscrits");
+            const float resW = std::min(textW(ui, result, 14, FontFace::Bold), w * 0.55f);
             fit(ui, result, {x + w - ui.s(12), cy}, 14, resW, e.cancelled ? Color{255, 138, 138, 255} : kGold, FontFace::Bold, Align::Right);
             const float dw = ui.s(56);
-            fit(ui, raids::dayMonth(raids::toSystemLocal(e.startsAt)), {x, cy}, 14, dw, kDim);
-            fit(ui, raids::eventName(e), {x + dw + ui.s(6), cy}, 14, w - ui.s(12) - resW - dw - ui.s(18), kText);
+            fit(ui, raids::dayMonth(raids::toSystemLocal(e.startsAt)), {x + ui.s(4), cy}, 14, dw, kDim);
+            fit(ui, raids::eventName(e), {x + dw + ui.s(10), cy}, 14, w - ui.s(12) - resW - dw - ui.s(22), kText);
         }
         ui.endScroll();
     }
-    drawLines(ui, wrap(ui, "Les résultats des combats arriveront avec eux.", FontFace::Body, 13, w, 2), {x, r.bottom() - ui.s(10) - footH + ui.s(4)}, 13,
-              ui.s(18), kDim);
+    drawLines(ui,
+              wrap(ui, "Chaque événement mondial terminé garde son résultat officiel, figé par le serveur : ouvrez-le pour son classement.", FontFace::Body, 13, w, 2),
+              {x, r.bottom() - ui.s(10) - footH + ui.s(4)}, 13, ui.s(18), kDim);
 }
 
 void ClanRaids::drawNotes(const Rect& r) {

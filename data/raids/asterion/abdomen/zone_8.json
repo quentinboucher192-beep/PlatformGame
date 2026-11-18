@@ -3,18 +3,18 @@
  "formatVersion": 1,
  "id": "raid_ab_8",
  "name": "Asterion · Abdomen · Antre de Voidworm",
- "description": "L'antre de Voidworm, au fond de l'abdomen. La porte est scellée : le combat arrive dans la prochaine version.",
+ "description": "L'antre de Voidworm, au fond de l'abdomen : le ver du vide surgit de son gouffre. Trois phases : il fouit sous chacun, avale ceux qu'il vise, puis l'acide monte ; dans sa chitine, ses trois crochets doivent être tenus ensemble.",
  "planet": "sylvanox",
  "author": "Cosmic Studio",
  "version": "1.0",
  "difficulty": 4,
  "music": "music/sylvanox_level.ogg",
- "bossMusic": "music/sylvanox_boss.ogg",
+ "bossMusic": "music/mycelia_boss.ogg",
  "ambience": "music/sylvanox_ambience.ogg",
  "bounds": [
   0,
   0,
-  3968,
+  3808,
   1152
  ],
  "ambientLight": "#7480a8",
@@ -225,7 +225,7 @@
    "rect": [
     256.0,
     992.0,
-    448.0,
+    320.0,
     160.0
    ],
    "props": {
@@ -237,28 +237,31 @@
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    340.0,
+    308.0,
     968.0,
     24.0,
     24.0
    ],
    "props": {
-    "text": "Voidworm — prochaine version. La porte de l'antre restera scellée jusque-là.",
+    "text": "Voidworm, le ver du vide. Tenez ses trois crochets ensemble pour l'épingler ; crevez sa poche pour libérer un avalé.",
     "auto": true
    }
   },
   {
    "id": "o8",
-   "type": "door",
+   "type": "light",
    "layer": "gameplay",
    "rect": [
-    704.0,
-    800.0,
+    408.0,
+    888.0,
     16.0,
-    192.0
+    16.0
    ],
    "props": {
-    "open": false
+    "color": "#ffd27a",
+    "radius": 140,
+    "flicker": 0.3,
+    "bloom": true
    }
   },
   {
@@ -266,10 +269,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    704.0,
-    96.0,
-    32.0,
-    704.0
+    576.0,
+    992.0,
+    928.0,
+    160.0
    ],
    "props": {
     "material": "root"
@@ -280,10 +283,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    704.0,
+    1504.0,
     992.0,
-    3264.0,
-    160.0
+    256.0,
+    32.0
    ],
    "props": {
     "material": "root"
@@ -294,10 +297,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    736.0,
-    64.0,
-    3200.0,
-    32.0
+    1504.0,
+    1104.0,
+    256.0,
+    48.0
    ],
    "props": {
     "material": "root"
@@ -308,7 +311,67 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    3936.0,
+    1760.0,
+    992.0,
+    2048.0,
+    160.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1504.0,
+    1040.0,
+    256.0,
+    64.0
+   ],
+   "props": {
+    "effect": "acid_bubbles",
+    "rate": 3.0
+   }
+  },
+  {
+   "id": "o14",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1624.0,
+    1064.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 90,
+    "flicker": 0.3,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o15",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    576.0,
+    64.0,
+    3200.0,
+    32.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3776.0,
     64.0,
     32.0,
     928.0
@@ -318,73 +381,17 @@
    }
   },
   {
-   "id": "o13",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    864.0,
-    896.0,
-    160.0,
-    16.0
-   ],
-   "props": {
-    "style": "root_branch"
-   }
-  },
-  {
-   "id": "o14",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    1280.0,
-    896.0,
-    160.0,
-    16.0
-   ],
-   "props": {
-    "style": "root_branch"
-   }
-  },
-  {
-   "id": "o15",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    1696.0,
-    896.0,
-    160.0,
-    16.0
-   ],
-   "props": {
-    "style": "root_branch"
-   }
-  },
-  {
-   "id": "o16",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    2112.0,
-    896.0,
-    160.0,
-    16.0
-   ],
-   "props": {
-    "style": "root_branch"
-   }
-  },
-  {
    "id": "o17",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2528.0,
-    896.0,
-    160.0,
-    16.0
+    544.0,
+    64.0,
+    32.0,
+    736.0
    ],
    "props": {
-    "style": "root_branch"
+    "material": "root"
    }
   },
   {
@@ -392,7 +399,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2944.0,
+    704.0,
     896.0,
     160.0,
     16.0
@@ -406,7 +413,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3360.0,
+    1120.0,
     896.0,
     160.0,
     16.0
@@ -420,8 +427,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1056.0,
-    800.0,
+    1536.0,
+    896.0,
     160.0,
     16.0
    ],
@@ -434,8 +441,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1472.0,
-    800.0,
+    1952.0,
+    896.0,
     160.0,
     16.0
    ],
@@ -448,8 +455,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1888.0,
-    800.0,
+    2368.0,
+    896.0,
     160.0,
     16.0
    ],
@@ -462,8 +469,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2304.0,
-    800.0,
+    2784.0,
+    896.0,
     160.0,
     16.0
    ],
@@ -476,8 +483,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2720.0,
-    800.0,
+    3200.0,
+    896.0,
     160.0,
     16.0
    ],
@@ -490,7 +497,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3136.0,
+    896.0,
     800.0,
     160.0,
     16.0
@@ -504,7 +511,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3552.0,
+    1312.0,
     800.0,
     160.0,
     16.0
@@ -518,8 +525,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    864.0,
-    704.0,
+    1728.0,
+    800.0,
     160.0,
     16.0
    ],
@@ -532,8 +539,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1280.0,
-    704.0,
+    2560.0,
+    800.0,
     160.0,
     16.0
    ],
@@ -546,8 +553,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1696.0,
-    704.0,
+    2976.0,
+    800.0,
     160.0,
     16.0
    ],
@@ -560,8 +567,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2112.0,
-    704.0,
+    3392.0,
+    800.0,
     160.0,
     16.0
    ],
@@ -574,7 +581,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2528.0,
+    704.0,
     704.0,
     160.0,
     16.0
@@ -588,7 +595,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2944.0,
+    1120.0,
     704.0,
     160.0,
     16.0
@@ -602,7 +609,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3360.0,
+    1536.0,
     704.0,
     160.0,
     16.0
@@ -616,8 +623,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1056.0,
-    608.0,
+    1952.0,
+    704.0,
     160.0,
     16.0
    ],
@@ -630,8 +637,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1472.0,
-    608.0,
+    2368.0,
+    704.0,
     160.0,
     16.0
    ],
@@ -644,8 +651,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1888.0,
-    608.0,
+    2784.0,
+    704.0,
     160.0,
     16.0
    ],
@@ -658,8 +665,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2304.0,
-    608.0,
+    3200.0,
+    704.0,
     160.0,
     16.0
    ],
@@ -672,7 +679,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2720.0,
+    896.0,
     608.0,
     160.0,
     16.0
@@ -686,7 +693,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3136.0,
+    1312.0,
     608.0,
     160.0,
     16.0
@@ -700,7 +707,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3552.0,
+    1728.0,
     608.0,
     160.0,
     16.0
@@ -714,8 +721,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    864.0,
-    512.0,
+    2144.0,
+    608.0,
     160.0,
     16.0
    ],
@@ -728,8 +735,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1280.0,
-    512.0,
+    2560.0,
+    608.0,
     160.0,
     16.0
    ],
@@ -742,8 +749,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1696.0,
-    512.0,
+    2976.0,
+    608.0,
     160.0,
     16.0
    ],
@@ -756,8 +763,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2112.0,
-    512.0,
+    3392.0,
+    608.0,
     160.0,
     16.0
    ],
@@ -770,7 +777,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2528.0,
+    704.0,
     512.0,
     160.0,
     16.0
@@ -784,7 +791,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2944.0,
+    1120.0,
     512.0,
     160.0,
     16.0
@@ -798,7 +805,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    3360.0,
+    1536.0,
     512.0,
     160.0,
     16.0
@@ -809,140 +816,436 @@
   },
   {
    "id": "o48",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1792.0,
-    928.0,
-    64.0,
-    64.0
+    1952.0,
+    512.0,
+    160.0,
+    16.0
    ],
    "props": {
-    "material": "root"
+    "style": "root_branch"
    }
   },
   {
    "id": "o49",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2864.0,
-    928.0,
-    64.0,
-    64.0
+    2368.0,
+    512.0,
+    160.0,
+    16.0
    ],
    "props": {
-    "material": "root"
+    "style": "root_branch"
    }
   },
   {
    "id": "o50",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    888.0,
-    664.0,
-    16.0,
+    2784.0,
+    512.0,
+    160.0,
     16.0
    ],
    "props": {
-    "color": "#9dff3a",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "root_branch"
    }
   },
   {
    "id": "o51",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    1368.0,
-    664.0,
-    16.0,
+    3200.0,
+    512.0,
+    160.0,
     16.0
    ],
    "props": {
-    "color": "#9dff3a",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "root_branch"
    }
   },
   {
    "id": "o52",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    1848.0,
-    664.0,
-    16.0,
+    2016.0,
+    416.0,
+    320.0,
     16.0
    ],
    "props": {
-    "color": "#9dff3a",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "root_branch"
    }
   },
   {
    "id": "o53",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2328.0,
-    664.0,
-    16.0,
+    1824.0,
+    464.0,
+    160.0,
     16.0
    ],
    "props": {
-    "color": "#9dff3a",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "root_branch"
    }
   },
   {
    "id": "o54",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2808.0,
-    664.0,
-    16.0,
+    2368.0,
+    464.0,
+    160.0,
     16.0
    ],
    "props": {
-    "color": "#9dff3a",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "root_branch"
    }
   },
   {
    "id": "o55",
-   "type": "light",
+   "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3288.0,
-    664.0,
-    16.0,
-    16.0
+    2056.0,
+    652.0,
+    240.0,
+    340.0
    ],
    "props": {
-    "color": "#9dff3a",
-    "radius": 160,
-    "flicker": 0.2,
-    "bloom": true
+    "enemy": "voidworm",
+    "faceLeft": true,
+    "patrol": 0,
+    "dormant": true,
+    "boss": true
    }
   },
   {
    "id": "o56",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    592.0,
+    96.0,
+    3184.0,
+    896.0
+   ],
+   "props": {
+    "doors": "",
+    "waves": "o55",
+    "lockCamera": false,
+    "music": "music/mycelia_boss.ogg",
+    "announce": false
+   }
+  },
+  {
+   "id": "o57",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3768.0,
+    1048.0,
+    952.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 80,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o58",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    376.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 80,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o59",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3288.0,
+    952.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 80,
+    "flicker": 0.25,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o60",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    800.0,
+    960.0,
+    64.0,
+    32.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o61",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    1344.0,
+    960.0,
+    64.0,
+    32.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o62",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2944.0,
+    960.0,
+    64.0,
+    32.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o63",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3520.0,
+    960.0,
+    64.0,
+    32.0
+   ],
+   "props": {
+    "effect": "spores",
+    "rate": 1.5
+   }
+  },
+  {
+   "id": "o64",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1050.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o65",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3290.0,
+    858.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o66",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2170.0,
+    378.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o67",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    890.0,
+    570.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o68",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    3450.0,
+    570.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o69",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    1914.0,
+    426.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o70",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    2426.0,
+    426.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 4,
+    "hidden": true
+   }
+  },
+  {
+   "id": "o71",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    864.0,
+    968.0,
+    32.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "mushroom_cluster",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o72",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1412.0,
+    968.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "glow_fern",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o73",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3016.0,
+    976.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "glow_flowers",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o74",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3592.0,
+    976.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "mushroom_small",
+    "alpha": 1.0,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o75",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    728.0,
     664.0,
     16.0,
     16.0
@@ -955,7 +1258,124 @@
    }
   },
   {
-   "id": "o57",
+   "id": "o76",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1208.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o77",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1688.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o78",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2168.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o79",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    2648.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o80",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3128.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o81",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3608.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9dff3a",
+    "radius": 160,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o82",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    896.0,
+    160.0,
+    2560.0,
+    832.0
+   ],
+   "props": {
+    "effect": "toxic_mist",
+    "rate": 2.0
+   }
+  },
+  {
+   "id": "o83",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -974,65 +1394,27 @@
    }
   },
   {
-   "id": "o58",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    640.0,
-    944.0,
-    32.0,
-    48.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "crystal_big",
-    "alpha": 1.0,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o59",
-   "type": "light",
+   "id": "o84",
+   "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    664.0,
-    888.0,
-    16.0,
-    16.0
+    474.0,
+    954.0,
+    12.0,
+    12.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 160,
-    "flicker": 0.3,
-    "bloom": true
+    "amount": 2
    }
   },
   {
-   "id": "o60",
-   "type": "emitter",
-   "layer": "gameplay",
-   "rect": [
-    480.0,
-    736.0,
-    224.0,
-    256.0
-   ],
-   "props": {
-    "effect": "fireflies",
-    "rate": 2.5
-   }
-  },
-  {
-   "id": "o61",
+   "id": "o85",
    "type": "liquid",
    "layer": "gameplay",
    "rect": [
     0.0,
     1104.0,
-    3968.0,
+    3808.0,
     48.0
    ],
    "props": {
@@ -1040,7 +1422,7 @@
    }
   },
   {
-   "id": "o62",
+   "id": "o86",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1055,7 +1437,7 @@
    }
   },
   {
-   "id": "o63",
+   "id": "o87",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1070,7 +1452,7 @@
    }
   },
   {
-   "id": "o64",
+   "id": "o88",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1085,13 +1467,13 @@
    }
   },
   {
-   "id": "o65",
+   "id": "o89",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     3360.0,
     64.0,
-    608.0,
+    448.0,
     352.0
    ],
    "props": {
@@ -1100,7 +1482,89 @@
    }
   }
  ],
- "events": [],
+ "events": [
+  {
+   "id": "ev1",
+   "source": "o55",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "spawn",
+     "target": "o64,o65,o66"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.8
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "Voidworm se love dans sa chitine : tenez ses trois crochets ensemble !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 2
+   },
+   "name": "Les anneaux de chitine"
+  },
+  {
+   "id": "ev2",
+   "source": "o55",
+   "trigger": "bossPhase",
+   "once": true,
+   "actions": [
+    {
+     "type": "spawn",
+     "target": "o67,o68,o69,o70"
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 1.0
+     }
+    },
+    {
+     "type": "hint",
+     "params": {
+      "text": "Le ventre se retourne : l'acide va monter, grimpez sur les racines !",
+      "duration": 3.5
+     }
+    }
+   ],
+   "params": {
+    "phase": 3
+   },
+   "name": "Le reflux"
+  },
+  {
+   "id": "ev3",
+   "source": "o55",
+   "trigger": "bossDefeated",
+   "once": true,
+   "actions": [
+    {
+     "type": "hint",
+     "params": {
+      "text": "Voidworm est vaincu : le ventre d'Asterion se tait.",
+      "duration": 4
+     }
+    },
+    {
+     "type": "shake",
+     "params": {
+      "amount": 0.6
+     }
+    }
+   ],
+   "delay": 1.5,
+   "name": "Voidworm vaincu"
+  }
+ ],
  "intro": {},
  "outro": {},
  "metadata": {
@@ -1140,26 +1604,198 @@
      "door": ""
     }
    ],
-   "objectives": [],
+   "objectives": [
+    {
+     "id": "abd_voidworm",
+     "source": "o55",
+     "trigger": "killed"
+    }
+   ],
    "magma": null,
-   "sealed": {
-    "door": "o8",
-    "label": "Voidworm — prochaine version"
-   },
+   "sealed": null,
    "arena": {
     "rect": [
-     736,
+     576,
      96,
      3200,
      896
     ],
     "floor": 992,
-    "door": "o8",
+    "door": "",
     "entry": [
-     832,
+     672,
      992
     ],
     "players": 8
+   },
+   "gigaboss": {
+    "boss": "o55",
+    "name": "Voidworm",
+    "objective": "abd_voidworm",
+    "routine": "voidworm",
+    "vents": [
+     {
+      "id": "crochet_ouest",
+      "rect": [
+       1032.0,
+       976,
+       48,
+       16
+      ]
+     },
+     {
+      "id": "crochet_couronne",
+      "rect": [
+       2152.0,
+       400,
+       48,
+       16
+      ]
+     },
+     {
+      "id": "crochet_est",
+      "rect": [
+       3272.0,
+       976,
+       48,
+       16
+      ]
+     }
+    ],
+    "carapace": [
+     2,
+     3
+    ],
+    "hold": 3.0,
+    "reopen": 14.0,
+    "exposed": 10.0,
+    "exposedMult": 2.0,
+    "jet": {
+     "name": "Geyser d'acide",
+     "period": 6.0,
+     "warn": 1.2,
+     "duration": 1.0,
+     "height": 128.0,
+     "damage": 1.0
+    },
+    "fists": {
+     "name": "Fouissement",
+     "periods": [
+      9.5,
+      8.0,
+      6.5
+     ],
+     "warn": 1.5,
+     "width": 72.0,
+     "damage": 1.0
+    },
+    "weakEnemy": "voidworm_anneau",
+    "weakSpots": [
+     [
+      -40.0,
+      -120.0
+     ],
+     [
+      60.0,
+      -210.0
+     ],
+     [
+      0.0,
+      -300.0
+     ]
+    ],
+    "weakShare": 0.04,
+    "hpPerPlayer": 0.55,
+    "weakHpPerPlayer": 0.25,
+    "pressurePerPlayer": 0.06,
+    "swallow": {
+     "periods": [
+      0.0,
+      20.0,
+      15.0
+     ],
+     "track": 1.0,
+     "lock": 0.8,
+     "width": 96.0,
+     "height": 150.0,
+     "digest": 12.0,
+     "tick": 3.0,
+     "stomach": [
+      1504,
+      1024,
+      256,
+      80
+     ],
+     "exits": [
+      [
+       1920,
+       992
+      ],
+      [
+       2432,
+       992
+      ]
+     ],
+     "poche": "voidworm_poche",
+     "pocheSpot": [
+      -70.0,
+      -150.0
+     ]
+    },
+    "parasites": {
+     "periods": [
+      24.0,
+      22.0,
+      18.0
+     ],
+     "first": 14.0,
+     "kinds": [
+      "gloop_small",
+      "wisp"
+     ],
+     "spawns": [
+      [
+       832,
+       992
+      ],
+      [
+       1376,
+       992
+      ],
+      [
+       2976,
+       992
+      ],
+      [
+       3552,
+       992
+      ]
+     ]
+    },
+    "acid": {
+     "from": 3,
+     "period": 22.0,
+     "first": 5.0,
+     "warn": 3.0,
+     "rise": 2.5,
+     "hold": 6.0,
+     "fall": 2.0,
+     "height": 150.0,
+     "damage": 2.0,
+     "valves": 0.6,
+     "left": 576,
+     "right": 3776,
+     "floor": 992
+    },
+    "links": {
+     "nest": "abd_nid",
+     "valve_high": "abd_valve_haute",
+     "valve_low": "abd_valve_basse"
+    },
+    "fx": "animations/voidworm_fx.json",
+    "fallText": "Le ventre d'Asterion se tait : plus de parasites en renfort.",
+    "goneText": "Le gouffre est vide",
+    "summary": "Épinglez ses 3 anneaux (ses crochets tenus ensemble), crevez sa poche pour libérer les avalés, fuyez l'acide sur les racines hautes."
    }
   }
  },

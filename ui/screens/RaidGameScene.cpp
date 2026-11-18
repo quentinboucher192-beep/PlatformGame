@@ -21,7 +21,7 @@
 // du raid »). An administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): the same
 // screen, solo and local (no relay), never reported, badge « TEST ADMIN · non classé ».
 //
-// 2.69 (docs/RAIDS.md §13): the HUD placed by the player (Paramètres › HUD › « Raids »:
+// 2.71 (docs/RAIDS.md §15): the HUD placed by the player (Paramètres › HUD › « Raids »:
 // RaidHudLayout, drawn by ui/online/RaidHud), the minimap in textures and its large map
 // (Action::RaidMap: M, View / Back; display only, the group keeps playing), the off-screen arrows
 // of the solo levels (enemies met, the ambush's), and the test played as a real instance
@@ -164,7 +164,7 @@ public:
         }
     }
 
-    /// 2.68: an administrator's test: the branch and zone chosen, alone on this computer; 2.69: as a
+    /// 2.68: an administrator's test: the branch and zone chosen, alone on this computer; 2.71: as a
     /// real instance (raid::TestSession): the simulated players on seats 1 .. players − 1 (the others
     /// vacant), the branch's state kept from zone to zone as RAID_STATE gives it, never reported.
     void beginTest() {
@@ -202,7 +202,7 @@ public:
     }
 
     /// 2.68: one step of a test: this computer's input on seat 0 (neutral while paused: the pause
-    /// never stops the world); 2.69: the simulated players on theirs (TestSession, playing on during
+    /// never stops the world); 2.71: the simulated players on theirs (TestSession, playing on during
     /// the pause and the large map), the free seats vacant.
     void stepTest() {
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
@@ -243,8 +243,8 @@ public:
         GameWorld& w = run_->world();
         serial_ = run_->zoneSerial();
         arenaCam_.reset();  // 2.68: the arena's intro plays again in a new world
-        minimap_.invalidate();  // 2.69: its terrain baked again
-        metEnemies_.reset();    // 2.69: nobody met yet in this world (the off-screen arrows)
+        minimap_.invalidate();  // 2.71: its terrain baked again
+        metEnemies_.reset();    // 2.71: nobody met yet in this world (the off-screen arrows)
         mapPan_ = 0.0f;
         renderer_.build(g_.app.renderer(), g_.app.resources(), w);
         std::vector<Color> colors;
@@ -383,7 +383,7 @@ public:
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
         }
-        // 2.69: the large map (display only: the group, and this player, keep playing).
+        // 2.71: the large map (display only: the group, and this player, keep playing).
         if (!ended_ && !paused_ && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
@@ -393,7 +393,7 @@ public:
 
     std::string seatName(int seat) const {
         if (seat == local_) return g_.online.username().empty() ? "Vous" : g_.online.username();
-        // 2.69: a test's simulated players (the seats beyond them are free).
+        // 2.71: a test's simulated players (the seats beyond them are free).
         if (session_) return seat < session_->players() ? raid::TestSession::botName(seat) : "Place libre";
         if (link_ && link_->lobby().is_object())
             for (const auto& s : link_->lobby().value("seats", Json::array()))
@@ -425,7 +425,7 @@ public:
             drawSwitches(w, view);      // 2.68: the group's plates
             {
                 // The vitals, powers and gigaboss bar of this computer's player, at the raid layout's
-                // places (2.69, Paramètres › HUD › « Raids »; display only).
+                // places (2.71, Paramètres › HUD › « Raids »; display only).
                 GameWorld::PlayerScope me(w, std::clamp(local_, 0, w.teamSize() - 1));
                 hudSettings_ = raidhud::hudSettings(g_.settings.gameplay);
                 hud_.render(ui, w, view, nullptr, hudSettings_);
@@ -506,7 +506,7 @@ public:
         g_.app.switchScene(makeRaidBranch(g_, entry_.eventId, entry_.branch), 0.3f);
     }
 
-    /// 2.69: the raid's HUD at the places of the player's raid layout (RaidHudLayout), each element
+    /// 2.71: the raid's HUD at the places of the player's raid layout (RaidHudLayout), each element
     /// drawn into its area (ui/online/RaidHud); what is drawn is kept clear of the arrows.
     void drawRaidHud(GameWorld& w) {
         UIContext& ui = g_.ui;
@@ -554,7 +554,7 @@ public:
             hudRects_.push_back(r);
         }
         if (shown(E::Timer)) {
-            // 2.69: the raid's chrono from the simulation's steps (the same on every computer; it
+            // 2.71: the raid's chrono from the simulation's steps (the same on every computer; it
             // runs on during a pause: the world never stops).
             const Rect r = at(E::Timer);
             raidhud::drawTimer(ui, r, k(E::Timer), static_cast<float>(run_->tick()) / static_cast<float>(kSimHz),
@@ -576,7 +576,7 @@ public:
         return k != SDL_SCANCODE_UNKNOWN ? keyName(k) : std::string();
     }
 
-    /// 2.69: the group panel's data (8 rows).
+    /// 2.71: the group panel's data (8 rows).
     raidhud::Group groupData(GameWorld& w) {
         using P = GameWorld::Presence;
         raidhud::Group g;
@@ -609,7 +609,7 @@ public:
         return g;
     }
 
-    /// 2.69: what the maps show: the zone's objects, the enemies, the group, this player.
+    /// 2.71: what the maps show: the zone's objects, the enemies, the group, this player.
     std::vector<raidhud::Mark> mapMarks(GameWorld& w) {
         using raidhud::Icon;
         std::vector<raidhud::Mark> out;
@@ -643,7 +643,7 @@ public:
         return out;
     }
 
-    /// 2.69: the areas the magma floods (and whether it is coming, or there).
+    /// 2.71: the areas the magma floods (and whether it is coming, or there).
     std::vector<raidhud::MagmaArea> magmaAreas(GameWorld& w) {
         std::vector<raidhud::MagmaArea> out;
         const raid::Magma& m = run_->rules().magma;
@@ -655,7 +655,7 @@ public:
         return out;
     }
 
-    /// 2.69: the large map over most of the screen (Action::RaidMap; the group keeps playing): the
+    /// 2.71: the large map over most of the screen (Action::RaidMap; the group keeps playing): the
     /// zone, the branch's zones, the whole legend. Dragged with the mouse (or its wheel) when the
     /// zone is wider than the view.
     void drawBigMap(GameWorld& w) {
@@ -696,7 +696,10 @@ public:
         const raid::Gigaboss& gb = run_->gigaboss();
         if (!gb.present()) return;
         Renderer& r = g_.ui.r();
-        if (!vents_) vents_ = g_.app.resources().animation("animations/pyroclast_vents.json");
+        if (!vents_ || ventsPath_ != gb.rules()->fx) {  // 2.69: each gigaboss its own sheet (rules().fx)
+            ventsPath_ = gb.rules()->fx;
+            vents_ = g_.app.resources().animation(ventsPath_);
+        }
         const bool fighting = gb.stage() == raid::Gigaboss::Stage::Carapace || gb.stage() == raid::Gigaboss::Stage::Exposed;
         for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k) {
             const raid::Gigaboss::Vent& v = gb.vents()[static_cast<size_t>(k)];
@@ -740,6 +743,80 @@ public:
                 const float pulse = 0.5f + 0.5f * std::sin(clock_ * 4.0f);
                 r.drawRing(sb.center(), std::max(sb.w, sb.h) * 0.62f, 3.0f * view.scale, Color{255, 210, 122, static_cast<uint8_t>(110 + 80 * pulse)});
             }
+        drawRoutineMarks(w, view);
+    }
+
+    /// 2.69 (phase 4B): what the routine of Voidworm, Graviton or Titanus shows over the arena: its
+    /// zones (a sector turning over, the acid coming, the stomach), its plates (a clip of its sheet and
+    /// the ring of their hold), the marks of its blows, its shockwaves; their short labels measured.
+    void drawRoutineMarks(GameWorld& w, const WorldView& view) {
+        const raid::Gigaboss& gb = run_->gigaboss();
+        const raid::GigabossRoutine* rt = gb.routine();
+        if (!rt) return;
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        std::vector<raid::BossMark> marks;
+        rt->marks(w, gb, marks);
+        const float pulse = 0.5f + 0.5f * std::sin(clock_ * 6.0f);
+        auto clipAt = [&](const std::string& name, const Rect& worldRect, float fps) {
+            if (name.empty() || !vents_ || !vents_->texture) return;
+            const AnimationClip* c = vents_->clip(name);
+            if (!c) return;
+            const Rect src = vents_->frameRect(*c, static_cast<int>(clock_ * fps) % std::max(1, c->frameCount()));
+            r.drawTexture(*vents_->texture, &src, view.toScreen(worldRect));
+        };
+        for (const raid::BossMark& m : marks) {
+            const Rect sr = view.toScreen(m.area);
+            const Color c = m.color;
+            using K = raid::BossMark::Kind;
+            switch (m.kind) {
+                case K::Zone: {
+                    const uint8_t a = static_cast<uint8_t>(m.strong ? 60 + 40 * pulse : 25 + 50 * m.progress);
+                    r.fillRect(sr, Color{c.r, c.g, c.b, a});
+                    r.drawRect(sr, Color{c.r, c.g, c.b, static_cast<uint8_t>(m.strong ? 230 : 150)}, std::max(1.0f, 2.0f * view.scale));
+                    if (!m.strong && m.progress > 0.0f)  // the warning fills up from the floor
+                        r.fillRect({sr.x, sr.bottom() - sr.h * m.progress, sr.w, std::max(1.0f, ui.s(3))}, Color{c.r, c.g, c.b, 220});
+                    break;
+                }
+                case K::Plate: {
+                    clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 8.0f);
+                    if (m.progress > 0.0f) {
+                        const Vec2 cc = view.toScreen({m.area.center().x, m.area.y - 34.0f});
+                        const float rad = 14.0f * view.scale;
+                        r.drawRing(cc, rad, 3.0f * view.scale, Color{40, 30, 30, 200});
+                        r.drawArc(cc, rad, 3.0f * view.scale, -1.5708f, -1.5708f + 6.2832f * std::clamp(m.progress, 0.0f, 1.0f), c);
+                    }
+                    break;
+                }
+                case K::Target: {
+                    const Vec2 cc = sr.center();
+                    const float rad = std::max(sr.w, sr.h) * 0.5f;
+                    r.drawRing(cc, rad, 2.0f * view.scale, Color{c.r, c.g, c.b, static_cast<uint8_t>(m.strong ? 160 + 90 * pulse : 140)});
+                    r.drawArc(cc, rad * 0.72f, 3.0f * view.scale, -1.5708f, -1.5708f + 6.2832f * std::clamp(m.progress, 0.0f, 1.0f), c);
+                    if (!m.clip.empty()) clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 8.0f);
+                    break;
+                }
+                case K::Wave:
+                    clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 12.0f);
+                    break;
+                case K::Arrow: {
+                    const float aw = sr.w, ah = sr.h;
+                    const float lift = (m.strong ? std::fmod(clock_ * 1.6f, 1.0f) : pulse * 0.3f) * ah * 0.4f;
+                    const Color ac{c.r, c.g, c.b, static_cast<uint8_t>(m.strong ? 230 : 150)};
+                    r.fillTriangle({sr.x, sr.y + aw * 0.7f - lift}, {sr.right(), sr.y + aw * 0.7f - lift}, {sr.center().x, sr.y - lift}, ac);
+                    r.fillRect({sr.center().x - aw * 0.18f, sr.y + aw * 0.7f - lift, aw * 0.36f, ah * 0.5f}, ac);
+                    break;
+                }
+            }
+            if (!m.label.empty()) {
+                // Its label over it, measured (never wider than the mark, nor the screen).
+                const float room = std::clamp(std::max(sr.w, ui.s(90)), ui.s(60), ui.screenW() * 0.4f);
+                const float lw = std::min(textW(ui, m.label, 12, FontFace::Bold) + ui.s(14), room);
+                const Rect pill{sr.center().x - lw * 0.5f, sr.y - ui.s(26), lw, ui.s(22)};
+                r.fillRoundedRect(pill, ui.s(9), Color{16, 12, 30, 210});
+                fit(ui, m.label, pill.center(), 12, pill.w - ui.s(10), c, FontFace::Bold, Align::Center);
+            }
+        }
     }
 
     /// 2.68 (phase 3): the camera of a gigaboss's arena (display only; every arena declared in
@@ -757,6 +834,7 @@ public:
                           !(gb.present() && gb.stage() == raid::Gigaboss::Stage::Absent);
             if (const Enemy* b = gb.boss(w); b && b->alive()) f.boss = b->box;
             for (const auto& fist : gb.fists()) f.threats.push_back(fist.at);
+            if (gb.routine()) gb.routine()->threats(gb, f.threats);  // 2.69 (phase 4B)
             for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
                 if (gb.jetWarning(k) || gb.jetting(k)) f.threats.push_back(gb.vents()[static_cast<size_t>(k)].area.center());
             for (int i = 0; i < w.teamSize(); ++i)
@@ -782,7 +860,7 @@ public:
     }
 
     /// 2.68: arrows on the border toward what the view does not show: the boss (its weak points when
-    /// bare), the allies (their colours); 2.69: the enemies already met and the ambush's, exactly as
+    /// bare), the allies (their colours); 2.71: the enemies already met and the ambush's, exactly as
     /// the solo levels draw them (EnemyArrowsDraw). Kept off the HUD; the raid layout's toggle.
     void drawArrows(GameWorld& w, const WorldView& view) {
         UIContext& ui = g_.ui;
@@ -875,8 +953,16 @@ public:
             texts.push_back(std::move(t));
             colors.push_back(c);
         };
+        if (const raid::GigabossRoutine* rt = gb.routine();
+            rt && (gb.stage() == S::Fight || gb.stage() == S::Carapace || gb.stage() == S::Exposed)) {
+            // 2.69 (phase 4B): Voidworm, Graviton, Titanus: their routine's own lines.
+            std::vector<raid::BossLine> own;
+            rt->lines(w, gb, own);
+            if (own.size() > 4) own.resize(4);  // the most pressing first: the panel stays short (the alerts below it)
+            for (raid::BossLine& l : own) add(std::move(l.mark), std::move(l.text), l.color);
+        } else
         switch (gb.stage()) {
-            case S::Absent: add("✓", name + " est déjà tombé : la Main est éteinte.", kGreen); break;
+            case S::Absent: add("✓", name + " est déjà tombé : " + gb.rules()->goneText + ".", kGreen); break;
             case S::Waiting: add("→", "Entrez dans l'arène : " + name + " se réveille.", Color{255, 176, 74, 255}); break;
             case S::Fight:
                 add("→", "Vaincre " + name + " · phase " + std::to_string(std::max(1, gb.phase())) + " / 3 : esquivez ses coups annoncés.", Color{255, 176, 74, 255});
@@ -912,8 +998,9 @@ public:
         ui.panel(box, true, 16);
         const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
         fit(ui, name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30, box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
-        const auto lines = wrap(ui, "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
-                                FontFace::Body, 16, box.w - ui.s(56), 3);
+        const std::string fell = run_->gigaboss().rules() ? run_->gigaboss().rules()->fallText : std::string();
+        const auto lines = wrap(ui, fell + " Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.", FontFace::Body, 16,
+                                box.w - ui.s(56), 3);
         drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(70)}, 16, ui.s(22), kDim);
         ui.pushId("fall");
         const float gap = ui.s(12), bw = (box.w - ui.s(56) - gap) * 0.5f, by = box.bottom() - ui.s(24) - ui.s(52);
@@ -927,7 +1014,7 @@ public:
         ui.popId();
     }
 
-    /// 2.69: the objectives' lines (the zone's, its locked passages, its mechanisms, the links of the
+    /// 2.71: the objectives' lines (the zone's, its locked passages, its mechanisms, the links of the
     /// titan, the ambush, the gigaboss).
     std::vector<raidhud::Line> objectiveLines(GameWorld& w) {
         std::vector<raidhud::Line> lines;
@@ -991,7 +1078,7 @@ public:
         return lines;
     }
 
-    /// 2.69: the simulation's alerts of the last 8 s (group, branch, danger), then the server's answers.
+    /// 2.71: the simulation's alerts of the last 8 s (group, branch, danger), then the server's answers.
     std::vector<raidhud::Line> alertLines() {
         std::vector<raidhud::Line> show;
         for (const raid::Alert& a : run_->alerts())
@@ -1003,7 +1090,7 @@ public:
         return show;
     }
 
-    /// 2.69: the danger band's text now (the danger announced, then on), empty when none.
+    /// 2.71: the danger band's text now (the danger announced, then on), empty when none.
     std::string dangerText() {
         const float in = run_->magmaIn();
         if (in < 0.0f) return {};
@@ -1013,7 +1100,7 @@ public:
         return {};
     }
 
-    /// 2.69: the network line, or a test's badge (never counted: said where the network's line is).
+    /// 2.71: the network line, or a test's badge (never counted: said where the network's line is).
     std::string statusText(Color& c) {
         if (test_) {
             c = kGold;
@@ -1056,7 +1143,7 @@ public:
         if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
             leave();
         y += bh + ui.s(18);
-        // 2.69: the raid's keys (the large map), measured into the panel.
+        // 2.71: the raid's keys (the large map), measured into the panel.
         const std::string mapKey = actionKey(g_.app.input(), Action::RaidMap);
         const std::string keys = "Commandes du raid · carte agrandie : " + (mapKey.empty() ? std::string("aucune touche") : mapKey) +
                                  " (Vue / Retour à la manette) · à changer dans Paramètres › Commandes";
@@ -1088,16 +1175,16 @@ public:
     const raid::Branch* branch_ = nullptr;
     std::unique_ptr<NetCoopLink> link_;
     std::unique_ptr<raid::RaidRun> ownRun_;        // a real instance's run
-    std::unique_ptr<raid::TestSession> session_;   // 2.69: an administrator's test (its run, its simulated players)
+    std::unique_ptr<raid::TestSession> session_;   // 2.71: an administrator's test (its run, its simulated players)
     raid::RaidRun* run_ = nullptr;                 // the one played
     GameRenderer renderer_;
     Hud hud_;
     TexturePtr suit_;
-    raidhud::HudAreas hudAreas_;    // 2.69: the game's HUD at the raid layout's places (this frame)
-    GameplaySettings hudSettings_;  // 2.69: what the game's HUD is drawn with in the raid
-    raidhud::Minimap minimap_;      // 2.69: the zone's terrain baked, the maps
-    EnemyArrows::Tracker metEnemies_;  // 2.69: the enemies met in this world (the arrows of the solo levels)
-    bool bigMap_ = false;           // 2.69: the large map (Action::RaidMap)
+    raidhud::HudAreas hudAreas_;    // 2.71: the game's HUD at the raid layout's places (this frame)
+    GameplaySettings hudSettings_;  // 2.71: what the game's HUD is drawn with in the raid
+    raidhud::Minimap minimap_;      // 2.71: the zone's terrain baked, the maps
+    EnemyArrows::Tracker metEnemies_;  // 2.71: the enemies met in this world (the arrows of the solo levels)
+    bool bigMap_ = false;           // 2.71: the large map (Action::RaidMap)
     float mapPan_ = 0.0f;           // world pixels the large map was dragged by
     PowerKeyMap powerKeys_;
     int local_ = 0;
@@ -1118,6 +1205,7 @@ public:
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)
     WorldView view_;
     AnimationSetPtr vents_;     // 2.68: the sheet of its vents
+    std::string ventsPath_;     // 2.69: whose (each gigaboss its own: rules().fx)
     float waiting_ = 0.0f, clock_ = 0.0f;
     std::string fail_, endReason_;
     struct Note {

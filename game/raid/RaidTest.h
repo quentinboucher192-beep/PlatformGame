@@ -1,7 +1,7 @@
 #pragma once
 
-// 2.69: the administrators' test of a raid (ADMINISTRATION › Raids › « Tester Asterion »,
-// docs/RAIDS.md §13) played like a real instance, alone on one computer:
+// 2.71: the administrators' test of a raid (ADMINISTRATION › Raids › « Tester Asterion »,
+// docs/RAIDS.md §15) played like a real instance, alone on one computer:
 //
 // * the branch's state is kept across the zones in the structure the server sends with RAID_STATE
 //   (the objectives done, a bit each): what the group does is « accepted » at once and given back
@@ -55,7 +55,8 @@ public:
 private:
     InputFrame drive(const GameWorld& w, int seat, Bot& b);
     int players_ = 1;
-    std::vector<Bot> bots_;  // by seat (0 unused)
+    std::vector<Bot> bots_;   // by seat (0 unused)
+    std::vector<Rect> dangers_;  // of the step: what is announced to strike (fists, jets, a gigaboss's marks)
 };
 
 class TestSession {

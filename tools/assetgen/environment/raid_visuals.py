@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""2.69: the clan raids' rising magma and the textures of their minimap (docs/RAIDS.md §13).
+"""2.71: the clan raids' rising magma and the textures of their minimap (docs/RAIDS.md §15).
 
 Two sheets, both deterministic (fixed seeds, numpy only for the pixels; the shapes of the icons are
 drawn four times larger with Pillow's ImageDraw, then averaged down by numpy):

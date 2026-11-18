@@ -207,7 +207,7 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
         case "reminder":
             return `Rappel : ${raid} commence dans ${raidDelay(Number(d.minutes))}`;
         case "start":
-            return `C'est l'heure : ${raid} commence (le combat arrive dans une prochaine version)`;
+            return `C'est l'heure : ${raid} commence, rejoignez votre groupe`;
         case "member_in":
             return count > 1 ? `${count} membres se sont inscrits à ${raid}` : `${who} s'est inscrit à ${raid}`;
         case "member_out":
@@ -228,6 +228,18 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
             return `Horaire modifié : ${raid}`;
         case "withdrawn":
             return `${tag} s'est retiré de ${raid} : votre inscription est annulée`;
+        // 2.69 (raidWorld.ts): the official result of a world event, a suspension, a catch-up session.
+        case "results": {
+            const outcome = d.outcome === "vaincu" ? "Asterion est tombé" : "Asterion a survécu";
+            const rank = Number(d.rank) > 0 ? ` · ${tag} ${Number(d.rank) === 1 ? "1er" : `${Number(d.rank)}ᵉ`} sur ${Number(d.clans) || 0} clans` : "";
+            return `Résultats officiels de ${raid} : ${outcome} (progression mondiale ${Number(d.progress) || 0} %)${rank}`;
+        }
+        case "suspended":
+            return `Événement suspendu par les administrateurs : ${raid} (rien ne compte jusqu'à la reprise)`;
+        case "resumed":
+            return Number(d.minutes) > 0 ? `Événement repris : ${raid}, fin repoussée de ${Number(d.minutes)} min` : `Événement repris : ${raid}`;
+        case "catchup":
+            return `Session de rattrapage ouverte : ${raid} pendant ${Number(d.days) || 7} jour(s), récompenses argentées`;
         default:
             return `Du nouveau sur un raid : ${raid}`;
     }

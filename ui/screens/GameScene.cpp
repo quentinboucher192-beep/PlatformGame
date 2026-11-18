@@ -901,7 +901,7 @@ void GameScene::drawEnemyArrows(const WorldView& view) {
     UIContext& ui = g_.ui;
     const float W = ui.screenW(), H = ui.screenH();
     const Rect screen{0.0f, 0.0f, W, H};
-    // 2.69: who is out of view, and how the arrows look, shared with the raids (EnemyArrowsDraw).
+    // 2.71: who is out of view, and how the arrows look, shared with the raids (EnemyArrowsDraw).
     const EnemyArrows::Targets away = EnemyArrows::targets(*world_, view, screen, metEnemies_);
     if (!g_.settings.gameplay.enemyArrows || (away.usual.empty() && away.ambush.empty())) return;
     EnemyArrows::Layout l = EnemyArrows::standardLayout(ui, screen, std::max(away.usual.size(), away.ambush.size()));

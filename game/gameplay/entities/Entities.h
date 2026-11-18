@@ -241,7 +241,7 @@ public:
     bool wantsPlayerOverlap() const override { return true; }
     void onPlayerStay(GameWorld& w, float dt) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
-    /// 2.69, style « magma » (the raids' rising magma, docs/RAIDS.md §13): it rises from the bottom
+    /// 2.71, style « magma » (the raids' rising magma, docs/RAIDS.md §15): it rises from the bottom
     /// of its box when switched on (`rise` seconds) and drains when switched off (`fall`); only the
     /// part under its surface hurts, the players as before and every enemy caught in it alike
     /// (not the bosses). Drawn over the players and the enemies: nothing shows through it, a
@@ -264,7 +264,7 @@ private:
     float tick_ = 0.0f;
     float fxTimer_ = 0.0f;
     float shown_ = 0.0f;  // display: fades in when enabled (2.33)
-    // 2.69, style « magma »: its level (simulation), draining after « disable », the telegraph,
+    // 2.71, style « magma »: its level (simulation), draining after « disable », the telegraph,
     // the enemies' burn, and what it hides (display: the x of each body under its surface).
     bool magma_ = false;
     bool draining_ = false;

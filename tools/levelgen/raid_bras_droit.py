@@ -19,7 +19,7 @@ close together while its carapace protects it, its floor of basalt that gives wa
 
 Each zone's metadata.raid holds its spawn points (by the zone one comes from), its passages to its
 neighbours (rect in pixels, lock), its objectives (an id of the catalog, the object and the event
-that completes it), its magma flow (a damage zone switched on every period, announced before; 2.69:
+that completes it), its magma flow (a damage zone switched on every period, announced before; 2.71:
 style « magma », the rising magma drawn over the players and the enemies from the generated sheet of
 tools/assetgen/environment/raid_visuals.py, rising from the bottom of its box and burning every enemy
 caught in it like the players; three zones rise, more often) and,
@@ -41,7 +41,7 @@ from raid_asterion import estimate_minutes
 BRANCH_ID = "asterion_bras_droit"
 # The revision of the branch: every game of an instance must have the same (the relay's GO
 # carries it). Raise it whenever a zone or the catalog changes how the branch plays.
-REVISION = 3  # 2.69: the rising magma (style « magma »), more often, in the Avant-bras too
+REVISION = 3  # 2.71: the rising magma (style « magma »), more often, in the Avant-bras too
 # 2 (2.68, phase 3): the Main de Pyroclast is the gigaboss's arena, the Poignet-verrou its long way
 OUT = os.path.join(ROOT, "data", "raids", "asterion", "bras_droit")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidBranches.json")
@@ -150,7 +150,7 @@ class Zone:
         self.raid["objectives"].append({"id": oid, "source": source, "trigger": trigger})
 
     def magma(self, x0, x1, y0, y1, period, first, warn=4.0, duration=8.0):
-        """2.69: the rising magma (style « magma »: it rises from the bottom of its box in `rise` s,
+        """2.71: the rising magma (style « magma »: it rises from the bottom of its box in `rise` s,
         drains in `fall` s, hurts the players and burns the enemies caught in it, drawn over them),
         announced `warn` s before each rise."""
         dz = self.L.obj("damage_zone", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], "gameplay",
@@ -401,7 +401,7 @@ def zone_6():
     L.enemy("lava_stalker", 76, 30, 5, True)
     L.enemy("ash_wing", 84, 22, 4)
     P.scatter(41, 89, 30, 0.3, forge=True)
-    # 2.69: the magma rises along the forearm too (its ledges stay above it).
+    # 2.71: the magma rises along the forearm too (its ledges stay above it).
     z.magma(42, 88, 27, 30, period=38.0, first=18.0, duration=6.0)
     for x0 in (44, 54, 70, 80):
         L.oneway(x0, x0 + 6, 25, "basalt_ledge")

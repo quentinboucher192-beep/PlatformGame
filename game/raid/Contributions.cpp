@@ -29,6 +29,7 @@ void Contributions::attach(GameWorld& w) {
     targetHit_ = false;
     attackDamage_ = 0;
     weak_.clear();
+    watched_.clear();
     boss_ = 0;
     for (int i = 0; i < 8; ++i) {
         hurtThisStep_[i] = false;
@@ -115,6 +116,10 @@ void Contributions::vent(int seat) {
     if (Contribution* c = current(seat)) ++c->vents;
 }
 
+void Contributions::rescue(int seat) {
+    if (Contribution* c = current(seat)) ++c->rescues;
+}
+
 void Contributions::weakPoint(int seat) {
     if (Contribution* c = current(seat)) ++c->weakPoints;
 }
@@ -143,6 +148,9 @@ void Contributions::enemyDamaged(const GameWorld&, const Enemy& e, uint32_t tag,
     const bool weak = std::find(weak_.begin(), weak_.end(), e.uid()) != weak_.end();
     if (boss_ != 0 && (e.uid() == boss_ || weak)) c->bossDamage += t;
     if (weak && e.hp() <= 0.0f && brokeWeak(e.uid()) < 0) broken_.emplace_back(e.uid(), seat);
+    // 2.69 (phase 4B): a target of a mechanism (a stomach, a restraint, a core) broken by this seat.
+    if (!weak && e.hp() <= 0.0f && brokeWeak(e.uid()) < 0 && std::find(watched_.begin(), watched_.end(), e.uid()) != watched_.end())
+        broken_.emplace_back(e.uid(), seat);
 }
 
 void Contributions::blowBlocked(const GameWorld& w, float amount) {

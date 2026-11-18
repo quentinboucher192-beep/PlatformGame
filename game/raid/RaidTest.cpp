@@ -6,6 +6,7 @@
 #include "engine/physics/PhysicsWorld.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/raid/GigabossRoutine.h"
 
 namespace cosmic::raid {
 
@@ -103,6 +104,24 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count) {
             break;
         }
         const Gigaboss& gb = run.gigaboss();
+        // A gigaboss's own mechanism (the plates of its routine: hooks, generators…): the others.
+        if (places.empty() && gb.present())
+            if (const GigabossRoutine* rt = gb.routine()) {
+                std::vector<BossMark> marks;
+                rt->marks(w, gb, marks);
+                std::vector<Rect> plates;
+                for (const BossMark& m : marks)
+                    if (m.kind == BossMark::Kind::Plate) plates.push_back(m.area);
+                for (size_t k = 0; k < plates.size(); ++k)
+                    if (plates[k].expanded(4.0f).intersects(admin)) {
+                        for (size_t o = 0; o < plates.size(); ++o)
+                            if (o != k) {
+                                places.push_back(plates[o]);
+                                need.push_back(1);
+                            }
+                        break;
+                    }
+            }
         if (places.empty() && gb.present() && gb.stage() == Gigaboss::Stage::Carapace)
             for (size_t k = 0; k < gb.vents().size(); ++k)
                 if (gb.vents()[k].area.expanded(4.0f).intersects(admin) && !gb.vents()[k].closed) {
@@ -135,6 +154,27 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count) {
         if (b.task != Task::Mechanism) b.mechanismSteps = 0;
         else if (playing(w, s) && b.mechanism.intersects(w.playerAt(s).box)) b.mechanismSteps = 0;
         else ++b.mechanismSteps;
+    }
+    // What is announced to strike this step (a simulated player keeps out of it): the fists marked
+    // under the players, the vents about to throw their jet, a gigaboss's blows and dangers announced.
+    dangers_.clear();
+    const Gigaboss& gb = run.gigaboss();
+    if (gb.present()) {
+        for (const auto& f : gb.fists())
+            if (f.left > 0) dangers_.push_back(gb.fistColumn(f));
+        for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
+            if (gb.jetWarning(k) || gb.jetting(k)) {
+                const Rect v = gb.vents()[static_cast<size_t>(k)].area;
+                const float h = gb.rules() ? gb.rules()->jetHeight : 112.0f;
+                dangers_.push_back({v.x, v.y - h, v.w, h + v.h});
+            }
+        if (const GigabossRoutine* rt = gb.routine()) {
+            std::vector<BossMark> marks;
+            rt->marks(w, gb, marks);
+            for (const BossMark& m : marks)
+                if (m.kind == BossMark::Kind::Target || (m.kind == BossMark::Kind::Zone && (m.strong || m.progress > 0.0f)))
+                    dangers_.push_back(m.area);
+        }
     }
     for (int s = 1; s < n; ++s) frames[s] = drive(w, s, bots_[static_cast<size_t>(s)]);
 }
@@ -192,6 +232,16 @@ InputFrame TestBots::drive(const GameWorld& w, int seat, Bot& b) {
                 b.goal = {exitX, adminSafe ? admin.feet().y : zone.y};
             }
         }
+    // A blow announced on it (a fist, a jet, a gigaboss's mark): out of it by the nearest side (the
+    // players holding a mechanism stay: it is the administrator's call).
+    if (b.task != Task::Revive && b.task != Task::Mechanism)
+        for (const Rect& d : dangers_)
+            if (d.expanded(6.0f).intersects(me.box)) {
+                const float left = me.center().x - d.x, right = d.right() - me.center().x;
+                b.goal = {left < right ? d.x - 22.0f : d.right() + 22.0f, feet.y};
+                dodge = b.goal.x - feet.x;
+                break;
+            }
     if (dodge != 0.0f && b.task != Task::Revive) {
         b.task = Task::Dodge;
         stop = 6.0f;
