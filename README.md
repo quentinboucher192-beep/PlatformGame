@@ -471,6 +471,10 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   vaincus, reconnexions (comptées par la base), rapports refusés, journal des actions et anomalies ; « Suspendre » /
   « Reprendre », « Valider la carte » (exigée pour publier), « Session de rattrapage » ; chaque action au Journal.
 
+**Nouveau dans la version 2.68.1** :
+* **Correctif de la pause en ligne** : Échap ne referme plus aussitôt la pause en raid et en coopération ; en ligne,
+  seul le joueur qui la demande est en pause, et le test admin d'Asterion s'arrête entièrement.
+
 **Nouveau dans la version 2.68.0** :
 * **Raids de clan, phase 3 : le gigaboss PYROCLAST** dans la Main de Pyroclast (zone 8 du « BRAS DROIT », générée par
   `tools/levelgen/raid_bras_droit.py`) : une main de magma en trois phases (« Poing de magma », « Carapace de basalte »,

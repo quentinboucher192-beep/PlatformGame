@@ -460,6 +460,7 @@ public:
                 if (p && p->startPressed()) toggle = true;
             if (toggle) {
                 paused_ = !paused_;
+                pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
                 g_.ui.setFocus("coop/pause/resume");
             }
         }
@@ -755,7 +756,8 @@ public:
         danger.danger = true;
         if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, network ? "Quitter la partie" : "Retour au salon", danger)) backToLobby();
         ui.popId();
-        if (ui.backPressed()) paused_ = false;
+        if (!pauseOpenedNow_ && ui.backPressed()) paused_ = false;
+        pauseOpenedNow_ = false;
     }
 
     void drawChoice() {
@@ -959,6 +961,7 @@ public:
     bool mounted_ = false, loadFailed_ = false;
     std::string loadError_;
     bool paused_ = false;
+    bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool choosing_ = false;
     int choiceIndex_ = 0;
     uint8_t pendingChoice_ = 0;
