@@ -143,6 +143,20 @@ struct GigabossRules {
     /// (÷ its pressure), announced fistWarn seconds before on a mark under each one.
     std::vector<float> fistPeriods;
     float fistWarn = 1.4f, fistWidth = 64.0f, fistDamage = 1.0f;
+    /// 2.69 (phase 4B): what the other gigaboss of Asterion say and do beyond these rules. Their
+    /// routine (game/raid/GigabossRoutine: "voidworm", "graviton", "titanus"; "" = Pyroclast's
+    /// own rules above), read from `extra` (the whole metadata.raid.gigaboss); the objectives of
+    /// the branch it reads (`links`: name -> bit of the branch's state, -1 unknown); the names of
+    /// its blows and the texts of its fall (Pyroclast's by default); the sheet of its vents and
+    /// marks (drawn by the combat screen); one line for the maps of the branch.
+    std::string routine;
+    Json extra;
+    std::map<std::string, int> links;
+    std::string fistName = "Poings de magma", jetName = "Jet de magma";
+    std::string fallText = "Le bras droit d'Asterion s'éteint.";
+    std::string goneText = "La Main est éteinte";
+    std::string fx = "animations/pyroclast_vents.json";
+    std::string summary = "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.";
 };
 
 struct ZoneRules {

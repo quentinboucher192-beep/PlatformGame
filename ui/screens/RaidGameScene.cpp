@@ -519,7 +519,10 @@ public:
         const raid::Gigaboss& gb = run_->gigaboss();
         if (!gb.present()) return;
         Renderer& r = g_.ui.r();
-        if (!vents_) vents_ = g_.app.resources().animation("animations/pyroclast_vents.json");
+        if (!vents_ || ventsPath_ != gb.rules()->fx) {  // 2.69: each gigaboss its own sheet (rules().fx)
+            ventsPath_ = gb.rules()->fx;
+            vents_ = g_.app.resources().animation(ventsPath_);
+        }
         const bool fighting = gb.stage() == raid::Gigaboss::Stage::Carapace || gb.stage() == raid::Gigaboss::Stage::Exposed;
         for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k) {
             const raid::Gigaboss::Vent& v = gb.vents()[static_cast<size_t>(k)];
@@ -563,6 +566,80 @@ public:
                 const float pulse = 0.5f + 0.5f * std::sin(clock_ * 4.0f);
                 r.drawRing(sb.center(), std::max(sb.w, sb.h) * 0.62f, 3.0f * view.scale, Color{255, 210, 122, static_cast<uint8_t>(110 + 80 * pulse)});
             }
+        drawRoutineMarks(w, view);
+    }
+
+    /// 2.69 (phase 4B): what the routine of Voidworm, Graviton or Titanus shows over the arena: its
+    /// zones (a sector turning over, the acid coming, the stomach), its plates (a clip of its sheet and
+    /// the ring of their hold), the marks of its blows, its shockwaves; their short labels measured.
+    void drawRoutineMarks(GameWorld& w, const WorldView& view) {
+        const raid::Gigaboss& gb = run_->gigaboss();
+        const raid::GigabossRoutine* rt = gb.routine();
+        if (!rt) return;
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        std::vector<raid::BossMark> marks;
+        rt->marks(w, gb, marks);
+        const float pulse = 0.5f + 0.5f * std::sin(clock_ * 6.0f);
+        auto clipAt = [&](const std::string& name, const Rect& worldRect, float fps) {
+            if (name.empty() || !vents_ || !vents_->texture) return;
+            const AnimationClip* c = vents_->clip(name);
+            if (!c) return;
+            const Rect src = vents_->frameRect(*c, static_cast<int>(clock_ * fps) % std::max(1, c->frameCount()));
+            r.drawTexture(*vents_->texture, &src, view.toScreen(worldRect));
+        };
+        for (const raid::BossMark& m : marks) {
+            const Rect sr = view.toScreen(m.area);
+            const Color c = m.color;
+            using K = raid::BossMark::Kind;
+            switch (m.kind) {
+                case K::Zone: {
+                    const uint8_t a = static_cast<uint8_t>(m.strong ? 60 + 40 * pulse : 25 + 50 * m.progress);
+                    r.fillRect(sr, Color{c.r, c.g, c.b, a});
+                    r.drawRect(sr, Color{c.r, c.g, c.b, static_cast<uint8_t>(m.strong ? 230 : 150)}, std::max(1.0f, 2.0f * view.scale));
+                    if (!m.strong && m.progress > 0.0f)  // the warning fills up from the floor
+                        r.fillRect({sr.x, sr.bottom() - sr.h * m.progress, sr.w, std::max(1.0f, ui.s(3))}, Color{c.r, c.g, c.b, 220});
+                    break;
+                }
+                case K::Plate: {
+                    clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 8.0f);
+                    if (m.progress > 0.0f) {
+                        const Vec2 cc = view.toScreen({m.area.center().x, m.area.y - 34.0f});
+                        const float rad = 14.0f * view.scale;
+                        r.drawRing(cc, rad, 3.0f * view.scale, Color{40, 30, 30, 200});
+                        r.drawArc(cc, rad, 3.0f * view.scale, -1.5708f, -1.5708f + 6.2832f * std::clamp(m.progress, 0.0f, 1.0f), c);
+                    }
+                    break;
+                }
+                case K::Target: {
+                    const Vec2 cc = sr.center();
+                    const float rad = std::max(sr.w, sr.h) * 0.5f;
+                    r.drawRing(cc, rad, 2.0f * view.scale, Color{c.r, c.g, c.b, static_cast<uint8_t>(m.strong ? 160 + 90 * pulse : 140)});
+                    r.drawArc(cc, rad * 0.72f, 3.0f * view.scale, -1.5708f, -1.5708f + 6.2832f * std::clamp(m.progress, 0.0f, 1.0f), c);
+                    if (!m.clip.empty()) clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 8.0f);
+                    break;
+                }
+                case K::Wave:
+                    clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 12.0f);
+                    break;
+                case K::Arrow: {
+                    const float aw = sr.w, ah = sr.h;
+                    const float lift = (m.strong ? std::fmod(clock_ * 1.6f, 1.0f) : pulse * 0.3f) * ah * 0.4f;
+                    const Color ac{c.r, c.g, c.b, static_cast<uint8_t>(m.strong ? 230 : 150)};
+                    r.fillTriangle({sr.x, sr.y + aw * 0.7f - lift}, {sr.right(), sr.y + aw * 0.7f - lift}, {sr.center().x, sr.y - lift}, ac);
+                    r.fillRect({sr.center().x - aw * 0.18f, sr.y + aw * 0.7f - lift, aw * 0.36f, ah * 0.5f}, ac);
+                    break;
+                }
+            }
+            if (!m.label.empty()) {
+                // Its label over it, measured (never wider than the mark, nor the screen).
+                const float room = std::clamp(std::max(sr.w, ui.s(90)), ui.s(60), ui.screenW() * 0.4f);
+                const float lw = std::min(textW(ui, m.label, 12, FontFace::Bold) + ui.s(14), room);
+                const Rect pill{sr.center().x - lw * 0.5f, sr.y - ui.s(26), lw, ui.s(22)};
+                r.fillRoundedRect(pill, ui.s(9), Color{16, 12, 30, 210});
+                fit(ui, m.label, pill.center(), 12, pill.w - ui.s(10), c, FontFace::Bold, Align::Center);
+            }
+        }
     }
 
     /// 2.68 (phase 3): the camera of a gigaboss's arena (display only; every arena declared in
@@ -580,6 +657,7 @@ public:
                           !(gb.present() && gb.stage() == raid::Gigaboss::Stage::Absent);
             if (const Enemy* b = gb.boss(w); b && b->alive()) f.boss = b->box;
             for (const auto& fist : gb.fists()) f.threats.push_back(fist.at);
+            if (gb.routine()) gb.routine()->threats(gb, f.threats);  // 2.69 (phase 4B)
             for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
                 if (gb.jetWarning(k) || gb.jetting(k)) f.threats.push_back(gb.vents()[static_cast<size_t>(k)].area.center());
             for (int i = 0; i < w.teamSize(); ++i)
@@ -711,8 +789,16 @@ public:
             texts.push_back(std::move(t));
             colors.push_back(c);
         };
+        if (const raid::GigabossRoutine* rt = gb.routine();
+            rt && (gb.stage() == S::Fight || gb.stage() == S::Carapace || gb.stage() == S::Exposed)) {
+            // 2.69 (phase 4B): Voidworm, Graviton, Titanus: their routine's own lines.
+            std::vector<raid::BossLine> own;
+            rt->lines(w, gb, own);
+            if (own.size() > 4) own.resize(4);  // the most pressing first: the panel stays short (the alerts below it)
+            for (raid::BossLine& l : own) add(std::move(l.mark), std::move(l.text), l.color);
+        } else
         switch (gb.stage()) {
-            case S::Absent: add("✓", name + " est déjà tombé : la Main est éteinte.", kGreen); break;
+            case S::Absent: add("✓", name + " est déjà tombé : " + gb.rules()->goneText + ".", kGreen); break;
             case S::Waiting: add("→", "Entrez dans l'arène : " + name + " se réveille.", Color{255, 176, 74, 255}); break;
             case S::Fight:
                 add("→", "Vaincre " + name + " · phase " + std::to_string(std::max(1, gb.phase())) + " / 3 : esquivez ses coups annoncés.", Color{255, 176, 74, 255});
@@ -748,8 +834,9 @@ public:
         ui.panel(box, true, 16);
         const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
         fit(ui, name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30, box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
-        const auto lines = wrap(ui, "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
-                                FontFace::Body, 16, box.w - ui.s(56), 3);
+        const std::string fell = run_->gigaboss().rules() ? run_->gigaboss().rules()->fallText : std::string();
+        const auto lines = wrap(ui, fell + " Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.", FontFace::Body, 16,
+                                box.w - ui.s(56), 3);
         drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(70)}, 16, ui.s(22), kDim);
         ui.pushId("fall");
         const float gap = ui.s(12), bw = (box.w - ui.s(56) - gap) * 0.5f, by = box.bottom() - ui.s(24) - ui.s(52);
@@ -1101,6 +1188,7 @@ public:
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)
     WorldView view_;
     AnimationSetPtr vents_;     // 2.68: the sheet of its vents
+    std::string ventsPath_;     // 2.69: whose (each gigaboss its own: rules().fx)
     float waiting_ = 0.0f, clock_ = 0.0f;
     std::string fail_, endReason_;
     struct Note {

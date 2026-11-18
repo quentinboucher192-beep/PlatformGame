@@ -103,6 +103,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     // 2.68: the gigaboss of the zone (gone when its objective is done: it already fell).
     const int fallen = rules->gigaboss.present ? branch_.objectiveIndex(rules->gigaboss.objective) : -1;
     gigaboss_.begin(*world_, rules->gigaboss, fallen >= 0 && Branch::done(mask(), fallen), contrib_);
+    gigaboss_.setBranchMask(mask());  // 2.69 (phase 4B): the objectives its routine reads
     for (auto& [text, kind] : gigaboss_.takeAlerts())
         alert(std::move(text), kind == Gigaboss::AlertKind::Danger ? Alert::Kind::Danger : kind == Gigaboss::AlertKind::Branch ? Alert::Kind::Branch : Alert::Kind::Group);
     reports_.push_back({Report::Kind::Zone, {}, zid, tick_, hash()});
@@ -316,6 +317,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
     if (!world_) return;
     if (branchMask != branchMask_) applyMask(branchMask, false);
     updateMagma();
+    gigaboss_.setBranchMask(mask());  // 2.69 (phase 4B)
     gigaboss_.before(*world_);  // 2.68: its carapace, its weak point bare, its pressure
     // The events since the last step (a world just loaded, this step): all of them, in order.
     stepTeam(*world_, frames, count, kSimDt);

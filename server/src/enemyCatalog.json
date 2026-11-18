@@ -213,6 +213,14 @@
    "name": "Golem des ruines"
   },
   {
+   "id": "graviton",
+   "name": "Graviton"
+  },
+  {
+   "id": "graviton_coeur",
+   "name": "Cœur de gravité de Graviton"
+  },
+  {
    "id": "howling_wyrm",
    "name": "Wyrm Hurlante"
   },
@@ -357,8 +365,32 @@
    "name": "Titan Mécanique"
   },
   {
+   "id": "titanus",
+   "name": "Titanus"
+  },
+  {
+   "id": "titanus_entrave",
+   "name": "Entrave de Titanus"
+  },
+  {
+   "id": "titanus_genou",
+   "name": "Rotule de Titanus"
+  },
+  {
    "id": "vanne",
    "name": "Vanne de pression"
+  },
+  {
+   "id": "voidworm",
+   "name": "Voidworm"
+  },
+  {
+   "id": "voidworm_anneau",
+   "name": "Anneau lumineux de Voidworm"
+  },
+  {
+   "id": "voidworm_poche",
+   "name": "Poche de Voidworm"
   },
   {
    "id": "weaver",

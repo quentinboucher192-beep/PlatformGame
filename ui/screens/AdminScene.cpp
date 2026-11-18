@@ -969,6 +969,19 @@ private:
                 return {"Raid", ui.theme().success, "a publié " + what + " : " + std::to_string(n) + (n > 1 ? " joueurs prévenus" : " joueur prévenu")};
             }
             if (action == "admin_raid_cancelled") return {"Raid", ui.theme().danger, "a annulé " + what + why};
+            // 2.69 (phase 5): suspended, resumed, its map checked, a catch-up session opened.
+            if (action == "admin_raid_suspended") return {"Raid", ui.theme().danger, "a suspendu " + what + why};
+            if (action == "admin_raid_resumed") {
+                const int m = jget<int>(raid, "extended_minutes", 0);
+                return {"Raid", ui.theme().success, "a repris " + what + (m > 0 ? " (fin repoussée de " + std::to_string(m) + " min)" : std::string())};
+            }
+            if (action == "admin_raid_map_validated")
+                return jget<bool>(raid, "ok", false) ? LogLine{"Raid", ui.theme().success, "a validé la carte de " + what + " : " + jstr(raid, "summary")}
+                                                     : LogLine{"Raid", ui.theme().danger, "a vérifié la carte de " + what + " : refusée"};
+            if (action == "admin_raid_catchup") {
+                const int d = jget<int>(raid, "days", 0);
+                return {"Raid", ui.theme().warm, "a ouvert une session de rattrapage de " + what + " (" + std::to_string(d) + (d > 1 ? " jours)" : " jour)")};
+            }
         }
         if (action == "admin_role_granted")
             return {"Rôle", ui.theme().warm, jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target};

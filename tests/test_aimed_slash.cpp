@@ -1,4 +1,4 @@
-// The attack upwards and downwards (2.69, simulation 15): Up alone + Attack strikes above Nova
+// The attack upwards and downwards (2.70, simulation 15): Up alone + Attack strikes above Nova
 // (on the ground or in the air), Down alone + Attack strikes below her, in the air only (on the
 // ground Down stays the crouch). The direction is the one the attack started with, and a strike
 // downwards never bounces. A replay recorded before (no version of the simulation in the file)
@@ -141,7 +141,7 @@ TEST_CASE("aimed slash: Up + Attack strikes above Nova in the air too") {
 }
 
 TEST_CASE("aimed slash: Down + Attack strikes below in the air, without the old bounce") {
-    // Rules 15 (2.69): no bounce. Rules of a replay recorded before (0, 14): the bounce (pogo).
+    // Rules 15 (2.70): no bounce. Rules of a replay recorded before (0, 14): the bounce (pogo).
     for (int rules : {kSimulationVersion, 0, 14}) {
         Slash s(rules);
         s.idle(150);
@@ -211,7 +211,7 @@ TEST_CASE("aimed slash: the strike keeps the direction it started with (rules 15
             s.step(i == 0 ? held(0, -1, true) : InputFrame{});
         }
         if (rules >= kAimedSlashSimulation) CHECK(e->hp() < hp);  // upwards, as it started
-        else CHECK(e->hp() == hp);                                 // before 2.69: read at the hit (forwards)
+        else CHECK(e->hp() == hp);                                 // before 2.70: read at the hit (forwards)
     }
 }
 
@@ -294,7 +294,7 @@ TEST_CASE("aimed slash: a new replay plays back exactly and says its simulation"
     CHECK(replayPogo(*back, finalHash));
 }
 
-TEST_CASE("aimed slash: a replay recorded before 2.69 still reproduces its run") {
+TEST_CASE("aimed slash: a replay recorded before 2.70 still reproduces its run") {
     CHECK(kSimulationVersion == 15 && kAimedSlashSimulation == 15);
     CHECK(kRankingGeneration == 8);      // the records are kept (the player asked for it)
     CHECK(kCoopSimulationVersion == 1);  // the rules of a team are the same

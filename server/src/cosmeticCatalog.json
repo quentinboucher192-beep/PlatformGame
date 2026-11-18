@@ -146,6 +146,20 @@
    }
   },
   {
+   "id": "suit_ecorce_asterion",
+   "category": "suit",
+   "look": "ecorce",
+   "name": "Écorce d'Asterion",
+   "raid": "asterion"
+  },
+  {
+   "id": "suit_ecorce_argent",
+   "category": "suit",
+   "look": "ecorce_argent",
+   "name": "Écorce d'Asterion argentée",
+   "raid": "asterion"
+  },
+  {
    "id": "trail_none",
    "category": "trail",
    "look": "none",
@@ -568,6 +582,13 @@
    "category": "title",
    "look": "Fléau de Pyroclast",
    "name": "Fléau de Pyroclast",
+   "raid": "asterion"
+  },
+  {
+   "id": "title_devoreurs_devores",
+   "category": "title",
+   "look": "Dévoreurs dévorés",
+   "name": "Dévoreurs dévorés",
    "raid": "asterion"
   },
   {

@@ -3,12 +3,17 @@
 // world events of « Asterion ». An administrator schedules one in their own local time (the
 // game sends UTC, with a preview of the start in several zones), sets its format, lock time,
 // capacity and difficulty, opens or closes its registrations, publishes it (every clan is
-// told) or cancels it. The live figures are the registrations only: instances and bosses come
-// with the combats. Each action goes to the Journal (« Raids »); the server checks the role on
+// told) or cancels it. Each action goes to the Journal (« Raids »); the server checks the role on
 // every request. 2.68: « Tester Asterion » (administrators only): a branch of the raid's catalog
 // and one of its zones (the fight of Pyroclast included) played solo and locally, invincible when
 // asked, the gigaboss scaled for 2 to 8 simulated players and started at a chosen phase; never
-// reported (no consensus, state, ranking, contribution nor reward).
+// reported (no consensus, state, ranking, contribution nor reward). 2.69 (phase 5, maquette
+// « Administration »): the late arrivals of an event; « Valider la carte » (the server checks the
+// titan's catalogs; publishing needs a valid map); the live panel « En direct » with real figures
+// only (players in play, instances with their zone, players and the latency the games measured,
+// gigaboss down, reconnections, refused reports, the journal of the admin actions and anomalies);
+// « Suspendre » / « Reprendre »; a catch-up session after the event. The right column has three tabs:
+// « Événements », « En direct », « Tester Asterion ».
 
 #include <cstdint>
 #include <functional>
@@ -46,6 +51,10 @@ private:
     void drawList(const Rect& r);
     void drawDetail(const Rect& r);
     void drawTest(const Rect& r);  // 2.68
+    // 2.69: the live panel of the selected event and the administrators' actions on it.
+    void loadLive();
+    void drawLive(const Rect& r);
+    void action(const std::string& path, const Json& body, const std::string& done);
 
     GameServices& g_;
     std::function<void(const std::string&, bool)> say_;
@@ -68,6 +77,17 @@ private:
 
     bool confirm_ = false;
     std::string reason_, confirmError_;
+    // 2.69: what the modal confirms (cancel, suspend, a catch-up session and its length).
+    enum class Confirm { Cancel, Suspend, Catchup };
+    Confirm confirmKind_ = Confirm::Cancel;
+    int catchupIdx_ = 2;
+    // 2.69: the late arrivals (an index in the form's list), the right column's tab, the live panel.
+    int lateIdx_ = 0;
+    int sideTab_ = 0;
+    Json live_;
+    std::string liveFor_;
+    int liveGen_ = 0;
+    float liveAt_ = -1000.0f;
 
     // 2.68: « Tester Asterion » (indices in the branch catalog, its zones, 2..8 players, phases).
     int testBranch_ = 0, testZone_ = -1, testPlayers_ = 0, testPhase_ = 0;

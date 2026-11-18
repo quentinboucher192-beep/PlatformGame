@@ -47,7 +47,7 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
   Hurt, Dead, Respawn, Victory, Hidden, Crouch ; double saut, atterrissage, attaque et
   interaction sont des actions superposées à ces états ; l'attaque frappe devant, vers le haut
   — Haut seul — ou, en l'air, vers le bas — Bas seul —, dans la direction choisie au début du
-  coup : `SlashDirection`, simulation 15, 2.69) entièrement paramétrée par `data/player.json`
+  coup : `SlashDirection`, simulation 15, 2.70) entièrement paramétrée par `data/player.json`
   (vitesses, accélérations, décélérations, gravité, temps de coyote, tampon de saut,
   hauteur variable, glissade, saut mural…).
 * `powers/` – `PowerRegistry` : chaque pouvoir (Dash, Onde, Bouclier, Impulsion,

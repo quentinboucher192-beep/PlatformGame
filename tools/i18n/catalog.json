@@ -717,13 +717,19 @@
    ]
   },
   {
+   "fr": "[{0}] · pas encore classé",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "[{0}] · {1} joueur",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
-   "fr": "[{0}] · {1} joueur · Pyroclast ✓",
+   "fr": "[{0}] · {1} joueur · gigaboss ✓",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -735,9 +741,21 @@
    ]
   },
   {
-   "fr": "[{0}] · {1} joueurs · Pyroclast ✓",
+   "fr": "[{0}] · {1} joueurs · gigaboss ✓",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} mondial · {2} pts",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} pour l'instant · {2} pts",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -889,6 +907,18 @@
    ]
   },
   {
+   "fr": "a ouvert une session de rattrapage de {0} ({1} jour)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a ouvert une session de rattrapage de {0} ({1} jours)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a publié la révision {0} de l'entité « {1} »",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -938,6 +968,18 @@
   },
   {
    "fr": "a remplacé les données de {0} par celles de {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a repris {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a repris {0} (fin repoussée de {1} min)",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -998,6 +1040,18 @@
   },
   {
    "fr": "a tenté de {0} : refusé, le rôle avait changé entre-temps",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a validé la carte de {0} : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a vérifié la carte de {0} : refusée",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1607,6 +1661,12 @@
   },
   {
    "fr": "Administration › Joueurs : nouvelle colonne « Version du jeu » (la version installée chez chaque joueur, « à jour » ou « ancienne ») ; le détail est dans la fenêtre « Ordinateur ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION › Raids : onglet « En direct » avec de vrais chiffres (joueurs connectés, instances avec leur zone, leurs joueurs et la latence mesurée par les jeux, gigaboss vaincus, reconnexions, rapports refusés) et le journal des actions et des anomalies ; « Suspendre » / « Reprendre » l'événement (le temps suspendu lui est rendu) ; « Valider la carte » (vérifiée par le serveur, exigée pour publier) ; « Session de rattrapage » ; réglage de l'arrivée en retard. Chaque action va au Journal.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -2387,6 +2447,12 @@
    ]
   },
   {
+   "fr": "Anneau lumineux de Voidworm",
+   "where": [
+    "data/enemies/voidworm_anneau.json"
+   ]
+  },
+  {
    "fr": "Anneau poli",
    "where": [
     "game/cosmetics/CreationLooks.cpp"
@@ -2775,6 +2841,12 @@
    "fr": "Appel de renforts (alerte)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Appel des parasites",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -3237,6 +3309,42 @@
    ]
   },
   {
+   "fr": "Arrivée en retard",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : chaque événement mondial dit jusqu'à quand un joueur peut encore entrer en jeu après le début ; les joueurs déjà placés reviennent toujours (reconnexion).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : jusqu'à la fin",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : jusqu'à {0} min après le début",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard : non",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Arrivée en retard fermée {0} min après le début : seuls les joueurs déjà placés reviennent en jeu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "arrivée hors de la sortie du niveau",
    "where": [
     "server/src/replay.ts"
@@ -3354,6 +3462,12 @@
    ]
   },
   {
+   "fr": "Aspiration du gouffre",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Assaillant d'Asterion",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -3385,9 +3499,29 @@
    ]
   },
   {
+   "fr": "Asterion a survécu",
+   "where": [
+    "server/src/notifications.ts",
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Asterion en vrai pixel art : dans CLANS › RAIDS et la fiche d'un événement, le titan est désormais un sprite détaillé, partie par partie (crâne Skullmaw, bras Dreadfang et Pyroclast, torse Heartbreaker, abdomen Voidworm, jambes Graviton et Titanus, cœur cosmique, aura) qui respire, dont le cœur bat et autour duquel dérivent des particules. Survolez une partie à la souris ou allez-y au clavier ou à la manette : elle s'éclaire et son infobulle donne son nom, son gigaboss, son état (sous attaque, affaiblie, détruite ou non découverte) et l'effet de sa destruction sur Asterion.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé",
+   "where": [
+    "server/src/notifications.ts",
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Asterion résiste encore",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -4149,6 +4283,12 @@
    ]
   },
   {
+   "fr": "Au combat",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Au cœur d'une île de basalte, une caldeira bouillonne de magma venu de Pyralis. Au-dessus d'elle tourne l'Anneau solaire, et la lave monte quand il le veut.",
    "where": [
     "data/levels/aethra_03.json"
@@ -4455,6 +4595,12 @@
    ]
   },
   {
+   "fr": "Aucun clan inscrit à cet événement.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun clan ne correspond.",
    "where": [
     "ui/screens/AdminClans.cpp",
@@ -4507,6 +4653,12 @@
    "fr": "Aucun clip.",
    "where": [
     "ui/widgets/AssetPreview.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun combat",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -4624,6 +4776,12 @@
    ]
   },
   {
+   "fr": "Aucun groupe n'est encore entré en jeu.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun groupe pour l'instant : le premier joueur qui rejoint une branche en ouvre un.",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
@@ -4638,7 +4796,14 @@
   {
    "fr": "Aucun joueur classé : aucun tableau de contributions n'a encore été validé.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun joueur de votre clan n'a encore de résultat validé.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -5240,6 +5405,12 @@
    ]
   },
   {
+   "fr": "Aucune instance : elles s'ouvrent quand les joueurs entrent en jeu.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Aucune invitation",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -5380,7 +5551,8 @@
   {
    "fr": "Aucune récompense à récupérer pour cet événement.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -5723,6 +5895,12 @@
    "fr": "Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets.",
    "where": [
     "data/stories/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "AVALÉ · {0} s",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -6723,6 +6901,12 @@
    ]
   },
   {
+   "fr": "Bond du colosse",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Bond du gardien",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -6806,6 +6990,7 @@
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/AsterionBody.cpp",
+    "game/online/Raids.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "game/raid/RaidBranch.cpp",
@@ -7121,7 +7306,8 @@
    "fr": "Branche",
    "where": [
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/AdminRaids.cpp"
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -7320,6 +7506,12 @@
    ]
   },
   {
+   "fr": "Briser ses deux entraves EN MÊME TEMPS (moins de {0} d'écart) : il tombera à genou.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Briseur d'étoiles",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -7372,6 +7564,12 @@
    "fr": "Brisé : les abysses s'ouvrent",
    "where": [
     "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "BRISÉE",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -7603,6 +7801,12 @@
    ]
   },
   {
+   "fr": "C'est déjà une session de rattrapage : ouvrez-la depuis l'événement officiel.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "C'est fait.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
@@ -7610,7 +7814,7 @@
    ]
   },
   {
-   "fr": "C'est l'heure : {0} commence (le combat arrive dans une prochaine version)",
+   "fr": "C'est l'heure : {0} commence, rejoignez votre groupe",
    "where": [
     "server/src/notifications.ts"
    ]
@@ -7814,6 +8018,12 @@
     "data/enemies/echo_mycelia.json",
     "data/enemies/mycelia.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Cage de tentacules",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -8181,6 +8391,48 @@
    "fr": "Carte globale du titan · cliquez une branche pour voir ses 8 zones",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carte jamais validée pour cet événement : la publication la vérifie d'office.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte refusée : {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte refusée · {0} problème(s) : {1}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Carte validée : {0} zones, {1} antres de gigaboss, {2} combat(s) prêt(s) (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte validée par {0} : {1} zones, {2} antres, {3} combat(s) prêt(s)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte validée par {0} : {1} zones, {2} antres, {3} combat(s) prêt(s) · les catalogues ont changé depuis : validez de nouveau",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Carte validée · {0}",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -9344,9 +9596,21 @@
    ]
   },
   {
+   "fr": "Cet événement est annulé.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Cet événement est déjà publié.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Cet événement est terminé.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -9667,6 +9931,12 @@
    ]
   },
   {
+   "fr": "Chacun compte pour les contributions (mécanismes tenus, entraves brisées, points faibles, alliés libérés de Voidworm), les résultats validés par la majorité de l'instance, la carte du titan (sa partie détruite à sa chute) et l'outil « Tester Asterion » (phase de départ, invincible, jamais envoyé). Trois nouveaux badges, accordés une seule fois par le serveur : « Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chacun de ses pas fait trembler les Confins !",
    "where": [
     "data/enemies/monolithe.json"
@@ -9867,6 +10137,12 @@
    ]
   },
   {
+   "fr": "Chaque événement mondial terminé garde son résultat officiel, figé par le serveur : ouvrez-le pour son classement.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Charge",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -9905,7 +10181,8 @@
   {
    "fr": "Charge du colosse",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -10003,6 +10280,12 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement du classement mondial…",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -10505,6 +10788,12 @@
    ]
   },
   {
+   "fr": "Choisissez un événement dans l'onglet « Événements » pour suivre son déroulement en direct.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un événement pour voir ses inscriptions.",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -10682,9 +10971,21 @@
    ]
   },
   {
+   "fr": "Chute de débris",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Chute de la voûte",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Chute de rochers",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -10826,7 +11127,8 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
-    "ui/screens/PlayerProfileScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -10876,7 +11178,8 @@
    "fr": "Clans",
    "where": [
     "ui/screens/AdminScene.cpp",
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -11025,6 +11328,12 @@
    ]
   },
   {
+   "fr": "Classement en cours · résultats validés seulement",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Classement en ligne",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -11064,6 +11373,18 @@
    "fr": "Classement local",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement mondial",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement mondial · Asterion",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -11852,6 +12173,18 @@
    "fr": "Combinaison « {0} » restaurée : de nouveau proposée en récompense.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Combinaison « Écorce d'Asterion »",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
+   "fr": "Combinaison « Écorce d'Asterion » argentée",
+   "where": [
+    "server/src/raidWorldRewards.ts"
    ]
   },
   {
@@ -12979,7 +13312,8 @@
   {
    "fr": "Contrib.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -13732,6 +14066,18 @@
    ]
   },
   {
+   "fr": "Couper les 2 générateurs de la jambe (Cuisse, Tibia) en retirerait un ici.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Couper les 2 réacteurs de la jambe (Fémur, Mollet) ralentirait ses entraves.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "couper les deux générateurs de gravité (Cuisse, Tibia)",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -13741,6 +14087,18 @@
    "fr": "couper les deux réacteurs (Fémur, Mollet)",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Couper ses générateurs : un joueur sur chacun, tous en même temps ({0} ensemble)",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Coupez ses générateurs tous en même temps (un joueur sur chacun) ; abritez-vous sous une dalle quand la gravité s'inverse.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
   },
   {
@@ -13808,6 +14166,12 @@
    "fr": "Couronne ardente",
    "where": [
     "data/enemies/astrarque.json"
+   ]
+  },
+  {
+   "fr": "Couronne de débris",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -14061,6 +14425,12 @@
    ]
   },
   {
+   "fr": "Crachat d'acide",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Crachat de braise",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -14140,6 +14510,12 @@
    ]
   },
   {
+   "fr": "Crever la poche de Voidworm : le joueur {0} est avalé ({1} s)",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Crever le poumon gauche (un pouvoir de tir)",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -14155,6 +14531,12 @@
    "fr": "crever les deux yeux (Orbites gauche et droite)",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "CREVEZ LA POCHE",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -14766,6 +15148,12 @@
    ]
   },
   {
+   "fr": "Cœur de gravité de Graviton",
+   "where": [
+    "data/enemies/graviton_coeur.json"
+   ]
+  },
+  {
    "fr": "Cœur de la machine",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -14868,7 +15256,79 @@
    ]
   },
   {
-   "fr": "DANGER · Poings de magma : quittez votre marque !",
+   "fr": "DANGER · Graviton plie l'espace : la gravité va s'inverser dans les secteurs marqués !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Graviton retourne la moitié de l'arène : le haut et le bas vont s'échanger !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · L'acide monte dans {0} s : grimpez sur les racines hautes !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La gravité s'inverse : abritez-vous sous une dalle !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La gueule de Voidworm vise deux joueurs : sortez de l'anneau vert !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La gueule de Voidworm vise un joueur : sortez de l'anneau vert !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · La voûte s'effrite : des rochers tombent, quittez les ombres !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Le reflux d'acide submerge l'arène !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Quelques parasites sortent du ventre (le nid est détruit)",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Titanus lève le talon : sautez par-dessus l'onde de choc !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Un puits de gravité s'ouvre sous chacun : éloignez-vous !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Une vague de parasites sort des anneaux de Voidworm !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} : quittez votre marque !",
    "where": [
     "game/raid/Gigaboss.cpp"
    ]
@@ -15409,6 +15869,12 @@
    ]
   },
   {
+   "fr": "Dernier effondrement",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
    "fr": "Dernier envol",
    "where": [
     "data/enemies/phenix.json"
@@ -15451,6 +15917,12 @@
    ]
   },
   {
+   "fr": "Dernier reflux",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Dernier souffle",
    "where": [
     "data/enemies/pyrrhax.json",
@@ -15468,13 +15940,26 @@
   {
    "fr": "Dernier séisme",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "data/enemies/titanus.json"
    ]
   },
   {
    "fr": "Dernier zénith",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Derniers débris",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Derniers rochers",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -15523,6 +16008,12 @@
    "fr": "Dernière lumière",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Dernière morsure",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -15784,6 +16275,12 @@
    ]
   },
   {
+   "fr": "Des rochers tombent de la voûte : quittez les ombres au sol.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Des ruines suspendues : le Sanctuaire des poids !",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_3.json"
@@ -15947,6 +16444,12 @@
    "fr": "Deux chemins : la galerie haute, ou le sol fissuré vers le canal englouti.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "deux joueurs",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -16675,6 +17178,12 @@
    ]
   },
   {
+   "fr": "Double bond",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Double bond titanesque",
    "where": [
     "data/enemies/monolithe.json"
@@ -17013,6 +17522,12 @@
    ]
   },
   {
+   "fr": "Durée de la session",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Durée de la spirale (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -17218,6 +17733,12 @@
    "fr": "Début dans",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Début de l'événement · {0} clan(s) · {1} joueur(s) inscrit(s)",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -18241,7 +18762,8 @@
   {
    "fr": "Déjà récupérées.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -18516,6 +19038,12 @@
    ]
   },
   {
+   "fr": "Désynchronisation, triche signalée…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Désynchronisé",
    "where": [
     "ui/screens/SobMontageScene.cpp"
@@ -18609,6 +19137,13 @@
    "fr": "détruite",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dévoreurs dévorés",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "server/src/raidWorldRewards.ts"
    ]
   },
   {
@@ -18771,6 +19306,7 @@
   {
    "fr": "Effondrement",
    "where": [
+    "data/enemies/graviton.json",
     "data/enemies/singularis.json"
    ]
   },
@@ -18854,7 +19390,7 @@
    ]
   },
   {
-   "fr": "Elles viennent des résultats validés des raids : Pyroclast, sa chute, votre contribution.",
+   "fr": "Elles viennent des résultats validés des raids : la chute de ses gigaboss, votre contribution.",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -19018,7 +19554,8 @@
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
     "ui/screens/RaidEventScene.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -19149,7 +19686,14 @@
   {
    "fr": "EN DIRECT",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "En direct",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -19168,6 +19712,12 @@
    "fr": "En direct · révision {0} · opération {1} · lecture seule (testeur)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "EN DIRECT · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -19821,6 +20371,18 @@
    "fr": "Entités {0}  colliders {1}  chunks {2}",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ENTRAVE",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Entrave de Titanus",
+   "where": [
+    "data/enemies/titanus_entrave.json"
    ]
   },
   {
@@ -20479,6 +21041,18 @@
    ]
   },
   {
+   "fr": "et {0} objectif",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} objectifs",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveau ; records gardés : {2} niveau.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -20561,6 +21135,24 @@
    "fr": "Exclusif aux raids de clan : Asterion (CLANS › RAIDS)",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Exclusive à l'événement mondial : 5 minutes de combat validées pendant l'événement",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
+   "fr": "Exclusive à l'événement mondial Asterion : écorce de basalte du titan, visière de magma, écharpe d'aurore violette.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Exclusives et accordées une seule fois par le serveur, à partir des résultats validés. Les sessions de rattrapage donnent des versions argentées et ne changent pas le résultat officiel.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -21545,6 +22137,12 @@
    ]
   },
   {
+   "fr": "Fin de l'événement · {0} · progression mondiale {1} % · {2} / {3} gigaboss · {4} clans classés · résultat officiel figé",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Fin de niveau",
    "where": [
     "data/music/tracks.json"
@@ -22127,6 +22725,12 @@
    "fr": "Fouineur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Fouissement",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -22818,6 +23422,12 @@
    ]
   },
   {
+   "fr": "Geyser d'acide",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
    "fr": "Geysers de magma",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -22869,7 +23479,8 @@
   {
    "fr": "Gigaboss",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -22877,6 +23488,7 @@
    "where": [
     "game/online/Raids.cpp",
     "game/raid/RaidBranch.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
@@ -22890,6 +23502,12 @@
   },
   {
    "fr": "Gigaboss : {0} · dans la Main",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss : {0} · dans son antre",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -22909,19 +23527,51 @@
   {
    "fr": "Gigaboss vaincus",
    "where": [
-    "game/online/Raids.cpp"
+    "game/online/Raids.cpp",
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
-   "fr": "Gigaboss vaincus : {0} / {1} · Pyroclast se combat, les six autres portes restent scellées (prochaine version)",
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} antre ouverte, les autres portes restent scellées (prochaine version)",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} antres ouvertes, les autres portes restent scellées (prochaine version)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Graviton s'effondre : ses cœurs de gravité sont à nu ({0} s) !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Graviton s'entoure de son champ : coupez ses {0} générateurs EN MÊME TEMPS (un joueur sur chacun) !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Graviton se relève : ses générateurs se rallument !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
    "fr": "Gigaboss · l'arène entière, puis votre vue de combat",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · L'entrave se reforge : brisez les deux ensemble (moins de {0} d'écart) !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -22937,9 +23587,9 @@
    ]
   },
   {
-   "fr": "GIGABOSS · La Main est éteinte : {0} est déjà tombé.",
+   "fr": "GIGABOSS · Les deux entraves cèdent : Titanus tombe à genou, sa rotule est à nu ({0} s) !",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -22961,6 +23611,42 @@
    ]
   },
   {
+   "fr": "GIGABOSS · Sa chitine se fend pour de bon : frappez le ver !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Son blindage se fend pour de bon : frappez le colosse !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Son champ de gravité se dissipe pour de bon !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Titanus se relève : ses entraves se reforgent !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Titanus verrouille ses plaques : brisez ses deux entraves EN MÊME TEMPS !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Un anneau s'arrache à son crochet : épinglez-le de nouveau !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Un joueur arrive : {0} se renforce.",
    "where": [
     "game/raid/Gigaboss.cpp"
@@ -22979,7 +23665,43 @@
    ]
   },
   {
-   "fr": "GIGABOSS · {0} est vaincu ! Le bras droit d'Asterion s'éteint.",
+   "fr": "GIGABOSS · Voidworm avale le joueur {0} : crevez sa poche pour le libérer ({1} s) !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm est épinglé : sa gueule s'ouvre, brisez ses anneaux lumineux ({0} s) !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm recrache le joueur {0}, à moitié digéré !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm s'arrache à ses crochets : épinglez de nouveau ses anneaux !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm se love dans sa chitine : tenez ses {0} crochets ensemble ({1} s chacun) pour l'épingler !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} : {1} est déjà tombé.",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} est vaincu ! {1}",
    "where": [
     "game/raid/Gigaboss.cpp"
    ]
@@ -23420,13 +24142,50 @@
    ]
   },
   {
-   "fr": "Graviton — prochaine version",
+   "fr": "Graviton",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Graviton est vaincu : la jambe gauche d'Asterion retombe.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
   },
   {
-   "fr": "Graviton — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "Graviton flotte dans ses générateurs de gravité et plie l'espace par secteurs : la gravité s'inverse, on tombe vers la voûte dont le champ blesse, sauf sous une dalle qui sert d'abri ; à sa 3e phase, c'est la moitié de l'arène qui se retourne. Des débris tombent sur chaque joueur, un puits de gravité s'ouvre sous chacun. Ses quatre générateurs, dans des secteurs séparés (deux en hauteur), se coupent seulement tous EN MÊME TEMPS : un joueur sur chacun, et la jambe s'effondre, ses cœurs de gravité à nu (un générateur de moins si ceux de la jambe sont coupés).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Graviton s'est effondré : brisez ses cœurs de gravité ({0} / {1})",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Graviton se lève : l'espace se plie autour de la jambe.",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Graviton vaincu",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "GRAVITON, LA JAMBE QUI PLIE L'ESPACE",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Graviton, la jambe qui plie l'espace. Ses quatre générateurs se coupent ensemble : un joueur sur chacun, au même moment.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
@@ -23455,6 +24214,18 @@
    "fr": "Gravité du noyau",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "GRAVITÉ INVERSÉE",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Gravité inversée : abritez-vous sous une dalle, la voûte blesse.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -23551,7 +24322,8 @@
    "fr": "Groupe",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
-    "editors/level_editor/LevelEditorPanels.cpp"
+    "editors/level_editor/LevelEditorPanels.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -23585,6 +24357,30 @@
    ]
   },
   {
+   "fr": "GROUPE · Anneau épinglé",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · La gravité revient : attention à la chute !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · La poche crève : les avalés sont libérés !",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Les générateurs s'éteignent ensemble !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Les joueurs à terre se relèvent au point de contrôle",
    "where": [
     "game/raid/RaidRun.cpp"
@@ -23605,13 +24401,26 @@
   {
    "fr": "GROUPE · Point faible brisé ({0} / {1})",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/Gigaboss.cpp",
+    "game/raid/GigabossRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Tous les générateurs sont tenus : restez dessus !",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
    "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Une entrave cède : brisez l'autre, vite !",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -23637,6 +24446,12 @@
    "fr": "Grouper (Ctrl+G)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -23719,6 +24534,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "GUEULE",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -23816,6 +24637,12 @@
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json",
     "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Générateurs de la jambe coupés : un générateur de moins à tenir ici.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -24116,7 +24943,7 @@
    ]
   },
   {
-   "fr": "HISTORIQUE DU CLAN",
+   "fr": "HISTORIQUE DES RAIDS",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -25573,6 +26400,12 @@
    ]
   },
   {
+   "fr": "Individuel",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Indonésie",
    "where": [
     "data/online/countries.json",
@@ -25695,6 +26528,12 @@
    ]
   },
   {
+   "fr": "Inscrit · en jeu",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Inscrivez-vous au raid (fiche de l'événement) pour combattre.",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
@@ -25767,6 +26606,18 @@
    "fr": "Instance introuvable.",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "INSTANCES",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Instances",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -25931,6 +26782,12 @@
    "fr": "Inverser les joysticks",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "INVERSION",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -26363,7 +27220,7 @@
   {
    "fr": "Jet de magma",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -26539,7 +27396,8 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -26641,7 +27499,14 @@
   {
    "fr": "Joueurs",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs connectés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -26721,6 +27586,12 @@
    "fr": "Journal",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "JOURNAL (ACTIONS ADMIN ET ANOMALIES)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -26814,6 +27685,12 @@
    ]
   },
   {
+   "fr": "jusqu'à la fin",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "jusqu'à la place",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -26823,6 +27700,12 @@
    "fr": "jusqu'à {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "jusqu'à {0} min après le début",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -26929,6 +27812,12 @@
    ]
   },
   {
+   "fr": "L'ACIDE MONTE",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "L'action est inscrite au journal avec votre pseudo.",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -26983,7 +27872,7 @@
    ]
   },
   {
-   "fr": "L'antre de Voidworm, au fond de l'abdomen. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "L'antre de Voidworm, au fond de l'abdomen : le ver du vide surgit de son gouffre. Trois phases : il fouit sous chacun, avale ceux qu'il vise, puis l'acide monte ; dans sa chitine, ses trois crochets doivent être tenus ensemble.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
    ]
@@ -27453,9 +28342,39 @@
    ]
   },
   {
+   "fr": "L'événement est déjà suspendu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "L'événement est suspendu par les administrateurs : aucune entrée en jeu avant la reprise.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "l'événement mondial {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'événement n'est pas suspendu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "L'événement n'est plus suspendu.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "L'événement officiel n'est pas terminé : le rattrapage vient après lui.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -27590,6 +28509,12 @@
    "fr": "La canopée secrète !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "La carte d'Asterion n'est pas valide : {0}",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -27930,6 +28855,13 @@
    ]
   },
   {
+   "fr": "La forge à nu",
+   "where": [
+    "data/enemies/titanus.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
    "fr": "La forêt répond à son appel !",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -28089,6 +29021,18 @@
    ]
   },
   {
+   "fr": "La jambe droite d'Asterion, un colosse de forge, gigaboss d'un raid de clan, assez grand pour huit joueurs : il piétine (des ondes de choc à sauter), écrase chaque joueur sous son talon, charge à travers l'arène, fait tomber la voûte ; ses deux entraves de cheville, brisées en même temps, le font tomber à genou.",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "La jambe gauche d'Asterion, prise dans ses générateurs de gravité, gigaboss d'un raid de clan, assez grand pour huit joueurs : elle flotte, plie l'espace par secteurs (la gravité s'inverse), ouvre un puits sous chacun, fait pleuvoir ses débris ; ses générateurs, dans des zones séparées, doivent être coupés tous en même temps pour la faire tomber.",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
    "fr": "La jambe qui plie l'espace",
    "where": [
     "data/raids/asterion_film.json"
@@ -28214,6 +29158,12 @@
    "fr": "La main du titan, où veille le gigaboss Pyroclast, assez grand pour huit joueurs. Trois phases : son poing de magma, sa carapace de basalte (ses trois évents à fermer ensemble), son cœur à nu.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "La Main est éteinte",
+   "where": [
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -28484,6 +29434,12 @@
    ]
   },
   {
+   "fr": "La poche gonflée où Voidworm digère un allié avalé : la crever le libère (un sauvetage pour qui la brise).",
+   "where": [
+    "data/enemies/voidworm_poche.json"
+   ]
+  },
+  {
    "fr": "La presse",
    "where": [
     "data/levels/pyralis_03.json"
@@ -28548,6 +29504,12 @@
    "fr": "La Reine Sporale s'effondre... Le chemin de la couronne est libre.",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "La rotule et les coutures de cheville de Titanus, à nu quand il tombe à genou. Chacune brisée lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/titanus_genou.json"
    ]
   },
   {
@@ -29305,9 +30267,9 @@
    ]
   },
   {
-   "fr": "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "fr": "Le bras droit d'Asterion s'éteint.",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -29326,6 +30288,12 @@
    "fr": "Le catalogue des succès est introuvable (data/achievements).",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le champ de gravité",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -29466,12 +30434,6 @@
    "fr": "Le coffre de phase !",
    "where": [
     "data/levels/sylvanox_01.json"
-   ]
-  },
-  {
-   "fr": "Le combat arrive dans une prochaine version.",
-   "where": [
-    "game/online/Raids.cpp"
    ]
   },
   {
@@ -30143,6 +31105,18 @@
    ]
   },
   {
+   "fr": "Le haut et le bas s'échangent : la moitié de l'arène tombe vers le ciel !",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Le haut et le bas s'échangent : la moitié de l'arène va tomber vers la voûte !",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Le HUD s'efface quand il cache l'action : un bloc du HUD (chronomètre, barre de progression, vie et énergie, pouvoirs, éclats et reliques, ennemis vaincus, pastilles d'état, panneau des fantômes) placé au-dessus du boss, de Nova ou d'une attaque du boss (projectiles, télégraphes, réticules, zones dangereuses) devient presque transparent en un instant, puis revient dès que plus rien n'est dessous. Les giga-boss qui volent sous le chronomètre ou la barre de progression (Phénix, Singularis, Pyrrhax, la Liche…) restent visibles, avec leurs attaques.",
    "where": [
     "data/news/changelog.json"
@@ -30424,6 +31398,13 @@
    ]
   },
   {
+   "fr": "Le monde à l'envers",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Le monde-jardin des Anciens",
    "where": [
     "data/planets/sylvanox.json"
@@ -30676,6 +31657,12 @@
    ]
   },
   {
+   "fr": "Le pas du colosse",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Le passage Nerfs optiques ⇄ Tempe est ouvert",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -30755,7 +31742,7 @@
    ]
   },
   {
-   "fr": "Le pied de Graviton, au bout de la jambe gauche. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "Le pied de Graviton, au bout de la jambe gauche : la jambe flotte dans ses générateurs de gravité. Trois phases : elle plie l'espace par secteurs, ouvre un puits sous chacun, puis retourne la moitié de l'arène ; ses générateurs se coupent tous ensemble.",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
    ]
@@ -30969,7 +31956,13 @@
    ]
   },
   {
-   "fr": "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit.",
+   "fr": "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le raid est terminé : le résultat officiel est figé dix minutes après la fin (derniers rapports).",
    "where": [
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -31005,6 +31998,13 @@
    "fr": "le Ralenti",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "Le reflux",
+   "where": [
+    "data/enemies/voidworm.json",
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -31347,7 +32347,7 @@
    ]
   },
   {
-   "fr": "Le talon de Titanus, au bout de la jambe droite. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "Le talon de Titanus, au bout de la jambe droite : un colosse de forge qui écrase tout. Trois phases : ses ondes de choc, son talon sur chacun, puis la forge à nu ; ses deux entraves se brisent ensemble pour le mettre à genou.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
    ]
@@ -31492,9 +32492,33 @@
    ]
   },
   {
+   "fr": "Le ventre affamé",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Le ventre où grouillent les parasites",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Le ventre se retourne : l'acide monte !",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Le ventre se retourne : l'acide va monter, grimpez sur les racines !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Le ver du vide lové dans l'abdomen d'Asterion, gigaboss d'un raid de clan, assez grand pour huit joueurs : il surgit du gouffre, fouit sous chaque joueur, avale un allié que les autres doivent libérer, lâche ses parasites ; dans sa chitine, ses trois anneaux doivent être épinglés ensemble pour ouvrir sa gueule.",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -31585,6 +32609,12 @@
    "fr": "Lecture des assets installés…",
    "where": [
     "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Lecture des chiffres en direct…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -31713,6 +32743,12 @@
    ]
   },
   {
+   "fr": "Les administrateurs ont suspendu l'événement : rien ne compte jusqu'à la reprise.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Les ailes du boss lancent une lame de plumes à travers l'arène : basse, sautez par-dessus ; haute, restez au sol.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -31740,6 +32776,13 @@
    "fr": "Les anciens veillent.",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Les anneaux de chitine",
+   "where": [
+    "data/enemies/voidworm.json",
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -31800,6 +32843,12 @@
    "fr": "Les cheminées ardentes : planez dans les courants, attention aux lasers.",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Les chiffres du combat (joueurs en jeu, instances, gigaboss, reconnexions, rapports refusés, journal) sont dans l'onglet « En direct ».",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -32152,6 +33201,13 @@
    ]
   },
   {
+   "fr": "Les entraves",
+   "where": [
+    "data/enemies/titanus.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
    "fr": "Les fantômes laissent maintenant la traînée de leur joueur (la vôtre derrière vos propres fantômes), aussi translucide qu'eux.",
    "where": [
     "data/news/changelog.json"
@@ -32244,6 +33300,13 @@
    ]
   },
   {
+   "fr": "Les générateurs",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Les générateurs de gravité sont coupés : les barrières d'énergie du Torse tombent",
    "where": [
     "data/raids/asterion/titan.json"
@@ -32320,6 +33383,12 @@
    "fr": "Les inscriptions de cet événement sont fermées.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Les inscriptions sont closes : le raid a commencé.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -32641,12 +33710,6 @@
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
-   ]
-  },
-  {
-   "fr": "Les résultats des combats arriveront avec eux.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -33064,6 +34127,12 @@
    "fr": "Lien symbolique refusé : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "lien {0} : bit {1} hors de 24 à 31",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -35459,7 +36528,8 @@
   {
    "fr": "Mon clan",
    "where": [
-    "ui/screens/ClanScene.cpp"
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -35744,6 +36814,12 @@
    "where": [
     "data/enemies/echo_spore_queen.json",
     "data/enemies/spore_queen.json"
+   ]
+  },
+  {
+   "fr": "Morsure du ver",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -36324,6 +37400,12 @@
    "fr": "Nid des parasites",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Nid des parasites détruit : Voidworm n'a plus que de maigres renforts.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -37318,6 +38400,12 @@
    ]
   },
   {
+   "fr": "non (dès le début seulement)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "non classé",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -37798,6 +38886,12 @@
   },
   {
    "fr": "Nouveau réglage dans les paramètres en ligne : « Mes amis peuvent me regarder jouer » (activé par défaut). Le décocher, masquer sa présence ou bloquer un joueur arrête aussitôt toute diffusion ; rien de la partie n'est conservé par le serveur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Nouveau « Classement mondial » (fiche d'un événement mondial) : la progression mondiale (objectifs, zones, gigaboss vaincus), le classement de tous les clans, des groupes et des joueurs dans chaque catégorie (contribution, dégâts, dégâts évités, soutien, objectifs, temps, sauvetages, progression), et la page de votre clan. Ce qui attend encore la majorité de son instance est affiché à part, « en attente de validation », et ne compte jamais comme final.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -38349,6 +39443,12 @@
    ]
   },
   {
+   "fr": "Objectif « {0} » validé par {1} puis par {2} à {3} d'écart : compté une fois",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "OBJECTIFS",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -38358,7 +39458,14 @@
    "fr": "Objectifs",
    "where": [
     "game/online/Raids.cpp",
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectifs (en premier)",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -38802,9 +39909,16 @@
    ]
   },
   {
+   "fr": "ONDE DE CHOC",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Onde de choc",
    "where": [
-    "data/enemies/pyrrhax.json"
+    "data/enemies/pyrrhax.json",
+    "game/raid/TitanusRoutine.cpp"
    ]
   },
   {
@@ -38823,6 +39937,12 @@
    "fr": "Onde en anneau",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Onde gravitationnelle",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -39402,6 +40522,12 @@
    ]
   },
   {
+   "fr": "Ouvrir la session",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Ouvrir le dossier",
    "where": [
     "ui/screens/AdminAssets.cpp",
@@ -39436,6 +40562,12 @@
    "fr": "Ouvrir un niveau…",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir une session de rattrapage ? Les joueurs absents découvrent le raid avec ses propres instances et gagnent des versions argentées ; le résultat officiel de l'événement ne change jamais. Tous les clans sont prévenus ; le Journal garde la trace.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -39559,7 +40691,8 @@
    "fr": "Page {0} / {1}",
    "where": [
     "ui/screens/PowerGuideScene.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -40065,7 +41198,8 @@
   {
    "fr": "Participants validés",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -40212,6 +41346,12 @@
    "fr": "pas assez de parties il y a 30 jours",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas d'arrivée en retard pour cet événement : seuls les joueurs entrés au début reviennent en jeu.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -41655,6 +42795,12 @@
    ]
   },
   {
+   "fr": "phase {0} / 3",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Phase {0} : sans nom",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -41825,6 +42971,7 @@
   {
    "fr": "Pied de Graviton",
    "where": [
+    "data/achievements/achievements.json",
     "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
@@ -41949,6 +43096,12 @@
    "fr": "Pièges et dangers",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Piétinement",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -42422,6 +43575,12 @@
    ]
   },
   {
+   "fr": "Pluie d'acide",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Pluie d'obsidienne",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -42490,6 +43649,7 @@
    "where": [
     "data/enemies/astrarque.json",
     "data/enemies/echo_prime_sentinel.json",
+    "data/enemies/graviton.json",
     "data/enemies/prime_sentinel.json"
    ]
   },
@@ -42629,6 +43789,12 @@
    ]
   },
   {
+   "fr": "Plus de pièges de gravité : ses générateurs sont coupés.",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Plus de pluies de lave : le poing de magma d'Asterion est éteint.",
    "where": [
     "server/src/raidRewards.ts"
@@ -42644,6 +43810,12 @@
    "fr": "plus de pouvoirs que d'emplacements",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "Plus de renforts : les parasites d'Asterion sont chassés.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -42795,6 +43967,12 @@
    ]
   },
   {
+   "fr": "Poche de Voidworm",
+   "where": [
+    "data/enemies/voidworm_poche.json"
+   ]
+  },
+  {
    "fr": "Poche oubliée",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
@@ -42857,7 +44035,7 @@
   {
    "fr": "Poings de magma",
    "where": [
-    "game/raid/Gigaboss.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -42997,7 +44175,8 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/AdminClans.cpp"
+    "ui/screens/AdminClans.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -43981,6 +45160,12 @@
    ]
   },
   {
+   "fr": "problème inconnu",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "prochain palier : {0} étoiles (encore {1})",
    "where": [
     "ui/screens/RewardsScene.cpp"
@@ -44162,6 +45347,18 @@
    "fr": "PROGRESSION MIGRÉE",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Progression mondiale",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Progression mondiale {0} % · {1} / {2} objectifs · {3} / {4} gigaboss",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -44567,9 +45764,33 @@
    ]
   },
   {
+   "fr": "Présent à la chute de Graviton (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Présent à la chute de Pyroclast (combat validé par votre instance)",
    "where": [
     "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Présent à la chute de Titanus (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Présent à la chute de Voidworm (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "présent à une chute",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -44921,6 +46142,7 @@
    "fr": "Puits gravitationnel",
    "where": [
     "data/enemies/echo_nyxara.json",
+    "data/enemies/graviton.json",
     "data/enemies/nyxara.json",
     "game/enemies/EnemyDefinition.cpp"
    ]
@@ -45019,32 +46241,19 @@
    "fr": "Pyroclast",
    "where": [
     "data/enemies/pyroclast.json",
-    "data/raids/asterion/bras_droit/zone_8.json",
-    "game/online/Raids.cpp"
+    "data/raids/asterion/bras_droit/zone_8.json"
    ]
   },
   {
-   "fr": "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute, titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, évents, objectifs, présence).",
+   "fr": "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute ; Voidworm, Graviton, Titanus (abdomen, jambes) : un badge chacun à leur chute ; titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, mécanismes, objectifs, présence).",
    "where": [
     "server/src/raids.ts"
-   ]
-  },
-  {
-   "fr": "Pyroclast au combat",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
    "fr": "Pyroclast est vaincu : le bras droit d'Asterion s'éteint.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
-   ]
-  },
-  {
-   "fr": "Pyroclast intact",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -45691,6 +46900,18 @@
    ]
   },
   {
+   "fr": "Raids de clan, phase 4B : trois antres d'Asterion s'ouvrent. VOIDWORM, le ver du vide, attend au fond de l'ABDOMEN ; GRAVITON, la jambe qui plie l'espace, au bout de la JAMBE GAUCHE ; TITANUS, la jambe qui écrase tout, au bout de la JAMBE DROITE. Trois vrais combats de raid en trois phases annoncées, une dernière attaque à survivre, une apparence qui change à chaque phase, des géants pour huit joueurs dans des arènes de plus de six écrans de large.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 5 : les ÉVÉNEMENTS MONDIAUX. Tous les clans inscrits affrontent le même Asterion au même moment (heure de référence UTC, affichée à votre heure) : chaque groupe de 8 joue dans son instance, mais tout ce qu'il valide compte pour un seul titan, et pour son clan.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "RAIDS DU CLAN",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -45785,7 +47006,8 @@
    "fr": "range",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -45825,6 +47047,24 @@
    ]
   },
   {
+   "fr": "Rapport refusé ({0}) : [{1}]·{2}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Rapport refusé ({0}) : [{1}]·{2}, {3}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Rapports refusés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Rassemblez votre clan.",
    "where": [
     "data/raids/asterion_film.json"
@@ -45834,6 +47074,18 @@
    "fr": "Rattrapage de la partie en accéléré : {0} %",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "RATTRAPAGE · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Rattrapage · {0}",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -46279,6 +47531,12 @@
    "fr": "Recommencer la tentative",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Reconnexions",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -46734,6 +47992,12 @@
    ]
   },
   {
+   "fr": "Reflux d'acide toutes les {0} s : restez sur les racines hautes.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Refus",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -46871,6 +48135,12 @@
    ]
   },
   {
+   "fr": "Rejoignez le combat depuis la carte du titan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Rejoignez un clan pour participer aux raids et en organiser.",
    "where": [
     "game/online/Raids.cpp"
@@ -46882,6 +48152,12 @@
     "game/online/Raids.cpp",
     "server/src/raids.ts",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoignez un clan pour voir son classement.",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -47727,6 +49003,12 @@
    ]
   },
   {
+   "fr": "Reprendre l'événement",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Reprendre la clavicule : vaincre sa garde",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -48420,6 +49702,12 @@
    ]
   },
   {
+   "fr": "Rien à signaler.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Rival amical",
    "where": [
     "data/achievements/achievements.json"
@@ -48563,6 +49851,12 @@
    "fr": "Rotation par salve (°)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rotule de Titanus",
+   "where": [
+    "data/enemies/titanus_genou.json"
    ]
   },
   {
@@ -48859,6 +50153,12 @@
    ]
   },
   {
+   "fr": "Réacteurs de la jambe coupés : ses entraves se reforgent plus lentement.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Réaction",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -49057,7 +50357,8 @@
    "fr": "Récompense récupérée : elle est dans votre profil et le vestiaire.",
    "where": [
     "ui/screens/ClanRaids.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -49129,6 +50430,12 @@
    ]
   },
   {
+   "fr": "Récompenses exclusives et limitées à l'événement mondial : la combinaison « Écorce d'Asterion » (5 minutes de combat validées pendant l'événement) et le titre de clan « Dévoreurs dévorés » pour les clans du top 10 officiel. Accordées une seule fois par le serveur, à récupérer dans CLANS › RAIDS.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "récompenses invalides",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -49144,7 +50451,8 @@
    "fr": "Récompenses non récupérées : {0}",
    "where": [
     "ui/screens/ClanRaids.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -49175,7 +50483,8 @@
    "fr": "Récupérer",
    "where": [
     "ui/screens/ClanRaids.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -49569,6 +50878,36 @@
    ]
   },
   {
+   "fr": "Résultat officiel",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "résultat officiel : {0} ({1} %)",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultat officiel : {0}.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultat officiel figé : {0} · {1}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Résultat officiel · figé le {0} {1}",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Résultats",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -49591,6 +50930,18 @@
    "fr": "Résultats du raid · Asterion",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultats officiels de {0} : {1} (progression mondiale {2} %){3}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "résultats officiels figés : l'événement est clos",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -49875,7 +51226,7 @@
   {
    "fr": "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "game/raid/RaidBranch.h"
    ]
   },
   {
@@ -49912,6 +51263,18 @@
    "fr": "Sa flamme vire au bleu !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Sa gueule est ouverte : brisez ses anneaux lumineux ({0} / {1})",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Sa gueule vise un joueur : sortez de l'anneau vert avant qu'il se ferme.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -50416,6 +51779,12 @@
    "fr": "Sautez puis appuyez à nouveau sur Saut en l'air : double saut !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Sautez ses ondes de choc, brisez ses 2 entraves en même temps (moins de 1,5 s d'écart) pour le mettre à genou.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -51178,6 +52547,18 @@
    ]
   },
   {
+   "fr": "Ses générateurs s'allument : coupez-les tous ensemble !",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Ses générateurs s'allument : un joueur sur chacun, tous en même temps !",
+   "where": [
+    "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Ses lueurs se détachent et tournoient !",
    "where": [
     "data/enemies/kraken.json"
@@ -51190,6 +52571,18 @@
    ]
   },
   {
+   "fr": "Ses ondes de choc courent au sol : sautez par-dessus (les plateformes protègent).",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Ses parasites en renfort : détruire le nid (zone 3) les réduirait de moitié.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
@@ -51199,6 +52592,12 @@
    "fr": "Ses photophores crépitent d'éclairs !",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Ses plaques se verrouillent : brisez ses deux entraves en même temps !",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -51256,6 +52655,79 @@
    ]
   },
   {
+   "fr": "SESSION DE RATTRAPAGE",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage : 5 minutes de combat validées (version argentée, sans effet sur le résultat officiel)",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage : versions argentées des récompenses exclusives, sans effet sur le résultat officiel de l'événement mondial.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage : votre inscription inscrit aussi votre clan.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage de l'événement mondial : versions argentées, résultat officiel inchangé",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage ouverte : tous les clans sont prévenus (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage ouverte : {0} pendant {1} jour(s), récompenses argentées",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage ouverte pour {0} jour(s) : le résultat officiel ne change pas",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage · Asterion",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage · ce classement ne change pas le résultat officiel",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Session expirée : reconnectez-vous.",
    "where": [
     "server/src/auth.ts"
@@ -51290,6 +52762,12 @@
    "fr": "Sessions de connexion : jamais sauvegardées. Après une restauration, chaque joueur se reconnecte avec son mot de passe.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Sessions de rattrapage : après l'événement officiel, les joueurs absents découvrent le raid avec leurs propres instances (un membre s'inscrit, son clan avec lui) et gagnent la combinaison « Écorce d'Asterion » argentée ; le résultat officiel ne change jamais.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -51409,6 +52887,12 @@
    ]
   },
   {
+   "fr": "Seul un événement mondial publié, non annulé, a des sessions de rattrapage.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Seulement ce que vous avez déjà exploré",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -51418,12 +52902,6 @@
    "fr": "Seulement visuelles : rien ne change dans la partie.",
    "where": [
     "ui/screens/RewardsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Seules les inscriptions existent dans cette version : les instances, les boss et les rapports des joueurs arriveront avec les combats.",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -51931,6 +53409,18 @@
    ]
   },
   {
+   "fr": "Son blindage se fend : la forge de la jambe est à nu !",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Son blindage se fend : ses ondes de choc vont par deux !",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
    "fr": "Son canon chauffe au rouge : gare au laser !",
    "where": [
     "data/enemies/titan.json"
@@ -52025,6 +53515,12 @@
    "fr": "Son phylactère est brisé : la Liche hurle de rage !",
    "where": [
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Son talon fend le sol : la forge s'ouvre sous l'arène, ses entraves se verrouillent !",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -52480,6 +53976,12 @@
    "fr": "Spirale de tirs",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Spirale du vide",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -53147,6 +54649,12 @@
    ]
   },
   {
+   "fr": "Sucs du ventre",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Suggestions",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -53193,7 +54701,8 @@
   {
    "fr": "Suivants ›",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -53617,6 +55126,43 @@
    ]
   },
   {
+   "fr": "Suspendre",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre cet événement ? Plus personne n'entre en jeu et aucun rapport n'est accepté jusqu'à la reprise ; le temps suspendu est rendu à l'événement. Les inscrits sont prévenus ; le Journal garde la trace.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre l'événement",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendre l'événement…",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "SUSPENDU",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suspendu",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Suspension",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -53849,6 +55395,12 @@
    "fr": "Séisme : les blocs en orbite",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Séisme du talon",
+   "where": [
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -54233,6 +55785,7 @@
   {
    "fr": "Talon de Titanus",
    "where": [
+    "data/achievements/achievements.json",
     "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
@@ -54675,6 +56228,12 @@
    "fr": "Tendon glacé",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Tentacule fouisseur",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -55172,6 +56731,12 @@
    ]
   },
   {
+   "fr": "Terminé · résultat officiel en préparation (derniers rapports)",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Terminé, encore sans médaille",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -55349,6 +56914,12 @@
    "fr": "Tester : {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tester Asterion",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -55611,6 +57182,24 @@
    ]
   },
   {
+   "fr": "TITAN · Le nid des parasites est détruit : Voidworm n'a plus que de maigres renforts.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "TITAN · Les générateurs de la jambe sont coupés : un générateur de moins à tenir.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "TITAN · Les réacteurs de la jambe sont coupés : ses entraves se reforgent plus lentement.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "TITAN · {0}",
    "where": [
     "game/raid/RaidRun.cpp",
@@ -55630,19 +57219,56 @@
    ]
   },
   {
+   "fr": "Titanus",
+   "where": [
+    "data/enemies/titanus.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Titanus est vaincu : la jambe droite d'Asterion chancelle.",
+   "where": [
+    "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Titanus est à genou : brisez sa rotule et ses coutures ({0} / {1})",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Titanus fléchit : le Tibia de la Jambe gauche s'ouvre vers la Cheville",
    "where": [
     "data/raids/asterion/titan.json"
    ]
   },
   {
-   "fr": "Titanus — prochaine version",
+   "fr": "Titanus piétine : ses ondes de choc courent au sol et se sautent (les grilles protègent), son talon tombe sur chaque joueur, il charge, bondit, fait tomber des rochers de la voûte, et à sa 2e phase son talon fend le sol de l'arène au-dessus de la forge. Ses deux entraves de cheville doivent être brisées à moins d'une seconde et demie d'écart : seule, une entrave se reforge ; ensemble, elles le mettent à genou, sa rotule à nu (plus de temps si les deux réacteurs de la jambe sont coupés).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Titanus pose le talon : l'arène tremble.",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Titanus vaincu",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
-   "fr": "Titanus — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "TITANUS, LA JAMBE QUI ÉCRASE TOUT",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Titanus, la jambe qui écrase tout. Sautez ses ondes de choc ; brisez ses deux entraves en même temps pour le mettre à genou.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
    ]
@@ -55673,6 +57299,18 @@
    "fr": "Titre créé et ajouté : « Enregistrer » pour garder les récompenses.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Titre de clan : votre clan dans le top 10 du classement mondial officiel d'un événement Asterion.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Titre de clan « Dévoreurs dévorés »",
+   "where": [
+    "server/src/raidWorldRewards.ts"
    ]
   },
   {
@@ -55709,6 +57347,12 @@
    "fr": "Titres",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Titres du clan :",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -56226,7 +57870,8 @@
   {
    "fr": "Tout récupérer",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -57334,6 +58979,12 @@
    ]
   },
   {
+   "fr": "Un anneau du ver qui luit quand sa gueule est ouverte (ses trois crochets tenus ensemble). Chacun brisé lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/voidworm_anneau.json"
+   ]
+  },
+  {
    "fr": "Un anneau s'étend depuis le boss avec une seule ouverture : passez par l'ouverture.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -57403,6 +59054,12 @@
    "fr": "Un bouton « Par défaut » sur chaque ligne remet cette commande seule à sa touche d'origine ; « Réinitialiser » remet toutes les touches.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Un brouillon ne se suspend pas : il n'est pas publié.",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -57574,6 +59231,12 @@
    ]
   },
   {
+   "fr": "Un cœur de gravité à nu quand ses générateurs sont coupés ensemble et qu'elle s'effondre. Chacun brisé lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/graviton_coeur.json"
+   ]
+  },
+  {
    "fr": "Un Dash de plus avant de toucher le sol (passif, avec le Dash).",
    "where": [
     "data/powers/air_dash.json"
@@ -57700,6 +59363,12 @@
    ]
   },
   {
+   "fr": "un groupe",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Un groupe ne réunit que vos amis.",
    "where": [
     "server/src/social.ts"
@@ -57722,6 +59391,12 @@
    "fr": "un import était en cours",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "un joueur",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
    ]
   },
   {
@@ -57815,6 +59490,12 @@
    ]
   },
   {
+   "fr": "Un objectif détruit en même temps par deux groupes compte une seule fois pour le monde (et pour chacun des deux clans) ; un rapport répété, arrivé en retard ou plus ancien ne compte jamais deux fois. Le serveur additionne seulement les résultats validés par la majorité de chaque instance.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Un objet JSON est attendu.",
    "where": [
     "server/src/http.ts"
@@ -57902,6 +59583,12 @@
    "fr": "Un puits plonge vers la galerie. Planez pour adoucir la chute.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Un puits s'ouvre sous chacun : éloignez-vous de son cœur.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -57995,6 +59682,12 @@
     "data/levels/aethra_02.json",
     "data/levels/aethra_03.json",
     "data/levels/aethra_04.json"
+   ]
+  },
+  {
+   "fr": "Un secteur va s'inverser : quittez-le ou visez un abri.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
    ]
   },
   {
@@ -58290,6 +59983,12 @@
    "fr": "Une créature y entre dès que vous la rencontrez.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Une entrave de cheville rivée sur Titanus : les deux, brisées en même temps, le font tomber à genou ; seule, elle se reforge.",
+   "where": [
+    "data/enemies/titanus_entrave.json"
    ]
   },
   {
@@ -58591,6 +60290,18 @@
    "fr": "Une sauvegarde complète du serveur est faite juste avant. Chaque migration est inscrite au Journal et les deux joueurs reçoivent une notification.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Une session de rattrapage est déjà ouverte pour cet événement.",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Une session de rattrapage ne se modifie pas : annulez-la et ouvrez-en une autre.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -59289,6 +61000,12 @@
    ]
   },
   {
+   "fr": "Vaincre Graviton · phase {0} / 3 : quittez votre marque, des débris tombent.",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre Hydre de Givre.",
    "where": [
     "data/achievements/achievements.json"
@@ -59319,9 +61036,27 @@
    ]
   },
   {
+   "fr": "Vaincre le gigaboss Graviton",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Vaincre le gigaboss Pyroclast",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le gigaboss Titanus",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le gigaboss Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -59493,6 +61228,12 @@
    ]
   },
   {
+   "fr": "Vaincre Titanus · phase {0} / 3 : sautez ses ondes, quittez votre marque.",
+   "where": [
+    "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre tous les ennemis des 25 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
@@ -59523,6 +61264,12 @@
    ]
   },
   {
+   "fr": "Vaincre Voidworm · phase {0} / 3 : quittez votre marque, il fouit sous chacun.",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre Wyrm Hurlante.",
    "where": [
     "data/achievements/achievements.json"
@@ -59544,6 +61291,7 @@
    "fr": "vaincu",
    "where": [
     "ui/screens/RaidTitanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -59580,6 +61328,18 @@
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "valider",
+   "where": [
+    "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Valider la carte",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -59669,6 +61429,12 @@
    "fr": "Vent des aurores",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "Ventre de Voidworm",
+   "where": [
+    "data/achievements/achievements.json"
    ]
   },
   {
@@ -59889,6 +61655,12 @@
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Version argentée des sessions de rattrapage d'Asterion : écorce d'argent, visière cyan, écharpe de nacre.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
    ]
   },
   {
@@ -60590,13 +62362,56 @@
    ]
   },
   {
-   "fr": "Voidworm — prochaine version",
+   "fr": "Voidworm",
+   "where": [
+    "data/enemies/voidworm.json",
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Voidworm est vaincu : le ventre d'Asterion se tait.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
-   "fr": "Voidworm — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "Voidworm se love dans sa chitine : tenez ses trois crochets ensemble !",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Voidworm se love dans sa chitine : épinglez ses anneaux !",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Voidworm surgit d'un gouffre au milieu de son antre et coupe le groupe en deux : il fouit sous chaque joueur (une marque, puis une gueule qui jaillit du sol), vise des joueurs d'un anneau vert et avale ceux qui y restent — les autres doivent crever sa poche pour les libérer avant qu'il les digère. Ses parasites sortent par vagues (deux fois moins si le nid de l'Abdomen est détruit) et, à sa 3e phase, l'acide monte sur toute l'arène : seules les racines hautes restent sèches (plus bas encore si les deux valves de l'Intestin sont fermées). Dans sa chitine, ses trois crochets doivent être tenus ensemble pour l'épingler et ouvrir sa gueule.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Voidworm surgit du gouffre : le ventre d'Asterion a faim.",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Voidworm vaincu",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "VOIDWORM, LE VER DU VIDE",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Voidworm, le ver du vide. Tenez ses trois crochets ensemble pour l'épingler ; crevez sa poche pour libérer un avalé.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
    ]
@@ -60853,6 +62668,12 @@
    ]
   },
   {
+   "fr": "VOS RÉCOMPENSES DE L'ÉVÉNEMENT",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "Vos résultats n'ont pas encore été lus sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -60925,6 +62746,12 @@
    ]
   },
   {
+   "fr": "Votre clan dans le top 10 du classement mondial officiel de l'événement",
+   "where": [
+    "server/src/raidWorldRewards.ts"
+   ]
+  },
+  {
    "fr": "Votre clan est complet ({0} membres).",
    "where": [
     "game/online/Clans.cpp"
@@ -60966,6 +62793,12 @@
     "game/online/Raids.cpp",
     "server/src/raids.ts",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "votre clan {0} / {1}",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -61177,7 +63010,8 @@
   {
    "fr": "Votre rang",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -61814,6 +63648,12 @@
    ]
   },
   {
+   "fr": "Voûte de gravité",
+   "where": [
+    "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vue",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -62217,6 +64057,12 @@
    "fr": "Zones & événements",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Zones contrôlées",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -62746,6 +64592,12 @@
    ]
   },
   {
+   "fr": "{0} : combat de {1} à venir (antre scellée)",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : comparaison…",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -62842,9 +64694,27 @@
    ]
   },
   {
+   "fr": "{0} : objectif {1} dans une zone inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : objectif {1} à l'index {2} invalide",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : passage verrouillé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : passage {1} – {2} vers une zone inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -62890,9 +64760,33 @@
    ]
   },
   {
+   "fr": "{0} : zone de départ {1} inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : zone {1} « {2} » inatteignable même tout accompli",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : {1} ajouté(s), {2} supprimé(s), {3} modifié(s), {4} réglage(s)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : {1} antres de gigaboss au lieu d'une",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : {1} générateur(s) pour {2} demandés",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -63297,6 +65191,12 @@
    ]
   },
   {
+   "fr": "{0} clans · {1} joueurs",
+   "where": [
+    "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} Cliquez pour réessayer.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -63601,6 +65501,18 @@
    ]
   },
   {
+   "fr": "{0} en attente de validation (majorité de leur instance) : ils ne comptent pas encore.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en attente de validation (majorité de son instance) : il ne compte pas encore.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} en ligne",
    "where": [
     "game/enemies/BossAttackSheet.cpp",
@@ -63662,7 +65574,7 @@
    ]
   },
   {
-   "fr": "{0} est déjà tombé : la Main est éteinte.",
+   "fr": "{0} est déjà tombé : {1}.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -63972,6 +65884,12 @@
    ]
   },
   {
+   "fr": "{0} inscrits · {1} clans · progression mondiale {2} % · en attente : {3} tableaux, {4} objectifs · doublons comptés une fois : {5}",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} introuvable ou illisible",
    "where": [
     "game/content/BossStories.cpp"
@@ -64009,6 +65927,18 @@
   },
   {
    "fr": "{0} j {1} h {2} min",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jamais validé par la majorité de son instance : il ne compte pas dans le résultat officiel.",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} jamais validés par la majorité de leur instance : ils ne comptent pas dans le résultat officiel.",
    "where": [
     "game/online/Raids.cpp"
    ]
@@ -64133,6 +66063,7 @@
   {
    "fr": "{0} jour",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -64145,6 +66076,7 @@
   {
    "fr": "{0} jours",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -64179,6 +66111,12 @@
    "fr": "{0} lames, basse et haute",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -64366,6 +66304,7 @@
    "fr": "{0} ms",
    "where": [
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
@@ -64551,6 +66490,18 @@
    ]
   },
   {
+   "fr": "{0} objectif",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} objectifs",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} objet(s) copié(s)",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -64650,6 +66601,15 @@
    "fr": "{0} projectiles",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pts",
+   "where": [
+    "game/online/Clans.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -64823,7 +66783,8 @@
   {
    "fr": "{0} récompenses récupérées : elles sont dans votre profil et le vestiaire.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -65007,6 +66968,18 @@
    ]
   },
   {
+   "fr": "{0} tableau de contributions",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} tableaux de contributions",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} tentative",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -65070,6 +67043,7 @@
    "fr": "{0} vaincu",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidResultsScene.cpp",
     "ui/screens/ResultsScene.cpp"
    ]
   },
@@ -65078,6 +67052,12 @@
    "where": [
     "ui/screens/GameScene.cpp",
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} vaincus",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -65180,6 +67160,12 @@
    "fr": "{0} zones sur {1} contrôlées · {2} groupes en jeu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} zones, {1} antres de gigaboss, {2} combat(s) prêt(s), {3} liens",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -65447,9 +67433,21 @@
    ]
   },
   {
+   "fr": "{0} · {1} · phase {2} / 3",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} · planète {2}",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} · vaincu",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -65676,6 +67674,8 @@
   {
    "fr": "{0},{1} s",
    "where": [
+    "game/raid/GravitonRoutine.cpp",
+    "game/raid/TitanusRoutine.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -66082,6 +68082,12 @@
    ]
   },
   {
+   "fr": "« {0} » · {1} mondial",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "°/s",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -66200,6 +68206,12 @@
    "fr": "à la fin",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "À la fin d'un événement mondial, le serveur fige le résultat officiel une seule fois (dix minutes après la fin, pour les derniers rapports) : « Asterion est tombé » ou « Asterion a survécu », la progression mondiale et le rang de chaque clan. Les clans et les joueurs inscrits sont prévenus, et l'historique des raids de CLANS › RAIDS garde chaque résultat officiel.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -67070,6 +69082,18 @@
    ]
   },
   {
+   "fr": "Écorce d'Asterion",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Écorce d'Asterion argentée",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Écouter",
    "where": [
     "ui/widgets/AssetPreview.cpp"
@@ -67079,7 +69103,8 @@
    "fr": "Écrasement",
    "where": [
     "data/enemies/echo_prime_sentinel.json",
-    "data/enemies/prime_sentinel.json"
+    "data/enemies/prime_sentinel.json",
+    "data/raids/asterion/jambe_droite/zone_8.json"
    ]
   },
   {
@@ -67459,6 +69484,18 @@
    "fr": "Épingler",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Épingler ses anneaux : un joueur sur chaque crochet, tenus ensemble ({0} s chacun, ils se libèrent au bout de {1} s)",
+   "where": [
+    "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Épinglez ses 3 anneaux (ses crochets tenus ensemble), crevez sa poche pour libérer les avalés, fuyez l'acide sur les racines hautes.",
+   "where": [
+    "data/raids/asterion/abdomen/zone_8.json"
    ]
   },
   {
@@ -67844,6 +69881,7 @@
    "fr": "Événement introuvable.",
    "where": [
     "server/src/raidMap.ts",
+    "server/src/raidWorld.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -67870,6 +69908,85 @@
    "fr": "Événement publié : {0} (inscrit au Journal).",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement repris",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement repris : le temps suspendu est rendu à l'événement (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement repris : {0}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Événement repris : {0}, fin repoussée de {1} min",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Événement repris · fin repoussée de {0} min",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu",
+   "where": [
+    "game/online/Raids.cpp",
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu : les inscrits sont prévenus, rien ne compte jusqu'à la reprise (inscrit au Journal).",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Événement suspendu par les administrateurs ({0}) : rien ne compte jusqu'à la reprise.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "événement suspendu par les administrateurs : rien ne compte avant la reprise",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu par les administrateurs : rien ne compte jusqu'à la reprise.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Événement suspendu par les administrateurs : {0} (rien ne compte jusqu'à la reprise)",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu · motif : {0}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Événement suspendu · rien ne compte jusqu'à la reprise",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -67900,7 +70017,8 @@
    "fr": "Événements",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -67940,7 +70058,25 @@
    ]
   },
   {
+   "fr": "Être présent à la chute de Graviton, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Être présent à la chute de Pyroclast, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Titanus, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Voidworm, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -68096,7 +70232,8 @@
   {
    "fr": "‹ Précédents",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/screens/RaidResultsScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {
@@ -68105,7 +70242,8 @@
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
-    "ui/screens/RaidTitanScene.cpp"
+    "ui/screens/RaidTitanScene.cpp",
+    "ui/screens/RaidWorldScene.cpp"
    ]
   },
   {

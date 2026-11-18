@@ -252,7 +252,7 @@ TEST_CASE("studio: documents, frames of a strip and drafts on disk") {
     const auto anims = suitAnims(*nova);
     CHECK(anims.size() == 27 && anims[0].id == "idle" && anims[0].name == "Attente" && anims[2].name == "Course" && anims[2].count == 8);
     CHECK(static_cast<int>(anims[2].durations.size()) == 8);
-    // A suit's image is Nova's sheet without the rows added in 2.69 (the strikes upwards and
+    // A suit's image is Nova's sheet without the rows added in 2.70 (the strikes upwards and
     // downwards, rows 27-29: a suit created online plays the forward strike instead).
     std::vector<uint8_t> px;
     int w = 0, h = 0;

@@ -60,7 +60,7 @@ constexpr int kSimulationVersion = 15;  // 6: energy 150, time slow, magnet, air
                                        //    enemy of an ambush being fought that leaves its arena
                                        //    is brought back into it. The rankings are kept: a run
                                        //    without a fall in an ambush plays as before.
-                                       // 15: (2.69) the attack strikes upwards (Up alone) or,
+                                       // 15: (2.70) the attack strikes upwards (Up alone) or,
                                        //    in the air, downwards (Down alone), in the direction
                                        //    it started with, and a strike downwards no longer
                                        //    bounces. A replay recorded before (no version in the
@@ -83,7 +83,7 @@ constexpr int kCoopSimulationVersion = 1;
 ///        challenge run; every other run plays as before, the records stay) and 12 (2.33:
 ///        only additions for the giga boss's level; every earlier run plays as before),
 ///        13 (2.47.1), 14 (2.62.2: ambushes kept after a fall; the records stay, as the
-///        player asked) and 15 (2.69: the attack upwards and downwards; the records stay, as
+///        player asked) and 15 (2.70: the attack upwards and downwards; the records stay, as
 ///        the player asked, and the replays recorded before play with their own rules).
 constexpr int kRankingGeneration = 8;
 

@@ -228,7 +228,14 @@ TEST_CASE("raids: the button of an event and the layout of the tab") {
     CHECK(!raids::primaryAction(e, start - 600, true, "c1", "member").enabled);
     e.registered = false;
     CHECK(raids::primaryAction(e, start - 600, true, "c1", "member").label == "Inscriptions verrouillées");
-    CHECK(raids::primaryAction(e, start + 60, true, "c1", "member").note == "Le combat arrive dans une prochaine version.");
+    CHECK(raids::primaryAction(e, start + 60, true, "c1", "member").note == "Les inscriptions sont closes : le raid a commencé.");
+    // 2.69: registered, the combat is on the titan's map; suspended, nothing to do until the resumption.
+    e.registered = true;
+    CHECK(raids::primaryAction(e, start + 60, true, "c1", "member").label == "Inscrit · en jeu");
+    e.suspended = true;
+    CHECK(raids::primaryAction(e, start + 60, true, "c1", "member").label == "Événement suspendu");
+    e.suspended = false;
+    e.registered = false;
     e.clanRegistered = false;
     CHECK(raids::primaryAction(e, early, true, "c1", "officer").id == "register_clan");
     CHECK(raids::primaryAction(e, early, true, "c1", "member").note == "Le chef ou un officier inscrit d'abord le clan.");
@@ -313,4 +320,107 @@ TEST_CASE("raids: the results of an event and the rewards to claim (2.68, valida
     CHECK(raids::groupDigits(48210) == "48 210");
     CHECK(raids::resultCategories().size() >= 8);
     CHECK(raids::parseRewards(Json::array()).empty());
+}
+
+// 2.69 (phase 5): the world events: the catch-up sessions, the late arrivals, the official result,
+// the world rankings (validated results only; what waits for its majority apart, never final).
+TEST_CASE("raids: a world event's catch-up session, its late arrivals and its official result") {
+    const int64_t start = raids::daysFromCivil(2026, 11, 28) * 86400 + 20 * 3600;
+    Json j = eventJson(start);
+    j["lock_at"] = raids::isoUtc(start + 3 * 86400);  // a catch-up session: registrations open until its end
+    j["ends_at"] = raids::isoUtc(start + 3 * 86400);
+    j["catchup"] = true;
+    j["catchup_of"] = "e0";
+    j["late_minutes"] = nullptr;
+    j["my_clan"] = Json{{"registered", false}, {"players", 0}};
+    raids::Event e = raids::parseEvent(j);
+    CHECK(e.valid);
+    CHECK(e.catchup);
+    CHECK(e.catchupOf == "e0");
+    CHECK(e.lateMinutes == -1);
+    CHECK(raids::lateRuleText(e) == "Arrivée en retard : jusqu'à la fin");
+    // Running: any member registers (their clan with them), no chief needed.
+    const raids::Action a = raids::primaryAction(e, start + 3600, true, "c1", "member");
+    CHECK(a.id == "register");
+    CHECK(raids::primaryAction(e, start + 3600, true, "", "").id.empty());
+    CHECK(raids::primaryAction(e, start + 3600, false, "", "").id == "login");
+    j["late_minutes"] = 30;
+    j["catchup"] = false;
+    j["result"] = Json{{"outcome", "survecu"}, {"text", "Asterion a survécu"}, {"progress", 42}, {"clans", 23}, {"my_clan_rank", 2}, {"gigaboss_defeated", 1}};
+    e = raids::parseEvent(j);
+    CHECK(raids::lateRuleText(e) == "Arrivée en retard : jusqu'à 30 min après le début");
+    CHECK(e.result.valid);
+    CHECK(raids::resultLine(e.result, "AUBE") == "Asterion a survécu · 42 % · [AUBE] 2ᵉ / 23");
+    CHECK(raids::ordinal(1) == "1er");
+    CHECK(raids::ordinal(10) == "10ᵉ");
+    j["result"] = Json{{"outcome", "?"}, {"text", "x"}};
+    CHECK(!raids::parseEvent(j).result.valid);  // never a result the server did not freeze
+}
+
+TEST_CASE("raids: the world rankings, pending apart from validated, the official result") {
+    const Json j = Json::parse(R"({
+        "event": {"state": "en_cours", "final": false, "closing": false, "suspended": false, "catchup": false},
+        "world": {"progress": 42, "objectives_done": 18, "objectives": 43, "zones_controlled": 12, "zones": 56, "gigaboss_defeated": 1, "gigaboss": 7,
+                  "clans": 3, "clans_playing": 2, "players": 10, "groups": 2,
+                  "branches": [{"part": "bras_droit", "name": "Bras droit", "gigaboss": "Pyroclast", "objectives_done": 11, "objectives": 11, "zones_controlled": 8,
+                                "zones": 8, "gigaboss_down": true}]},
+        "outcome": {"id": "en_cours", "text": "Asterion résiste encore"},
+        "clans": [{"rank": 1, "id": "c2", "tag": "NEBU", "name": "Nébuleuse", "points": 48210, "players": 8, "registered": 8, "groups": 1, "objectives": 5, "first": 4, "gigaboss": 1},
+                  {"rank": 2, "id": "c1", "tag": "AUBE", "name": "Veilleurs de l'Aube", "points": 45870, "players": 2, "registered": 11, "groups": 1, "objectives": 5,
+                   "first": 1, "gigaboss": 0, "mine": true},
+                  {"rank": 3, "tag": "SANS", "points": 0}],
+        "groups": [{"rank": 1, "id": "i1", "clan_tag": "NEBU", "group": 1, "branch": "bras_droit", "branch_name": "Bras droit", "points": 48210, "players": 8,
+                    "objectives": 5, "boss_phase": 4},
+                   {"rank": 2, "id": "i2", "clan_tag": "AUBE", "group": 1, "branch": "torse", "branch_name": "Torse", "points": 45870, "players": 2, "objectives": 5,
+                    "boss_phase": 9, "me": true}],
+        "players": [{"rank": 1, "id": "a", "username": "Mira", "clan_tag": "NEBU", "score": 2410, "damage": 300, "objectives": 14, "rescues": 6, "seconds": 3000},
+                    {"rank": 2, "id": "b", "username": "Talos", "clan_tag": "AUBE", "score": 1980, "damage": 5000, "objectives": 3, "me": true, "seconds": 3400}],
+        "totals": {"clans": 3, "groups": 2, "players": 2},
+        "pending": {"tables": 2, "objectives": 1, "instances": 2},
+        "my": {"clan_tag": "AUBE", "clan_rank": 2, "clan_points": 45870, "group_rank": 2, "rank": 2, "pending": true, "pending_reports": 1,
+               "clan_titles": [{"title": "Dévoreurs dévorés", "rank": 2}]},
+        "rewards": [{"id": 9, "reward": "asterion_ecorce", "name": "Combinaison « Écorce d'Asterion »", "kind": "item", "event_id": "e1"}]
+    })");
+    raids::WorldRanking w = raids::parseWorld(j);
+    CHECK(w.valid);
+    CHECK(!w.final);
+    CHECK(w.progress == 42);
+    CHECK(w.gigabossDefeated == 1);
+    CHECK(w.branches.size() == 1);
+    CHECK(w.branches[0].down);
+    CHECK(w.clans.size() == 2);  // a clan without an id is never shown
+    CHECK(w.clans[1].mine);
+    CHECK(w.groups[1].bossPhase == 4);  // clamped
+    CHECK(w.groups[1].me);
+    CHECK(w.players.size() == 2);
+    CHECK(w.myClanRank == 2);
+    CHECK(w.myClanTitles.size() == 1);
+    CHECK(w.myClanTitles[0] == "« Dévoreurs dévorés » · 2ᵉ mondial");
+    CHECK(w.rewards.size() == 1);
+    CHECK(raids::worldProgressLine(w) == "Progression mondiale 42 % · 18 / 43 objectifs · 1 / 7 gigaboss");
+    // What waits for its majority is said apart, never as final.
+    CHECK(raids::pendingText(w) == "2 tableaux de contributions et 1 objectif en attente de validation (majorité de leur instance) : ils ne comptent pas encore.");
+    CHECK(raids::rankingStateText(w) == "Classement en cours · résultats validés seulement");
+    // The ranking is never only the damage: Talos has the most damage, Mira the most contribution.
+    CHECK(raids::rankedPlayers(w.players, "score")[0].username == "Mira");
+    CHECK(raids::rankedPlayers(w.players, "damage")[0].username == "Talos");
+    // Frozen: the official result; what never got its majority does not count.
+    Json f = j;
+    f["event"]["final"] = true;
+    f["event"]["frozen_at"] = "2026-11-21T21:10:00Z";
+    f["pending"] = Json{{"tables", 1}, {"objectives", 0}};
+    w = raids::parseWorld(f);
+    CHECK(w.final);
+    CHECK(raids::rankingStateText(w).rfind("Résultat officiel · figé le ", 0) == 0);
+    CHECK(raids::pendingText(w) == "1 tableau de contributions jamais validé par la majorité de son instance : il ne compte pas dans le résultat officiel.");
+    f["pending"] = Json{{"tables", 0}, {"objectives", 0}};
+    CHECK(raids::pendingText(raids::parseWorld(f)).empty());
+    // A catch-up session: its own ranking, never the official one.
+    f["event"]["catchup"] = true;
+    f["official"] = Json{{"frozen", true}, {"text", "Asterion a survécu"}, {"progress", 42}};
+    w = raids::parseWorld(f);
+    CHECK(w.catchup);
+    CHECK(w.officialFrozen);
+    CHECK(raids::rankingStateText(w) == "Session de rattrapage · ce classement ne change pas le résultat officiel");
+    CHECK(!raids::parseWorld(Json()).valid);
 }

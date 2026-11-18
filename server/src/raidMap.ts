@@ -24,6 +24,7 @@ import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import brasDroitJson from "./raidBranches.json";
 import titanJson from "./raidTitan.json";
 import { raidState } from "./raids";
+import { requireEntry } from "./raidWorld";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 
@@ -456,6 +457,7 @@ export async function join(ctx: Ctx): Promise<Response> {
     v.done();
     const reg = await registrationOf(db, e.id, me);
     if (!reg) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour y combattre.");
+    await requireEntry(db, e, me); // 2.69: not while suspended; the late arrivals' rule
     const part = ctx.params.part;
     let c: Catalog | undefined;
     if (part !== undefined) {

@@ -1,0 +1,14 @@
+{
+  "texture": "sprites/enemies/voidworm_fx.png",
+  "frameWidth": 48,
+  "frameHeight": 144,
+  "pivot": [24, 144],
+  "clips": {
+    "closed": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "open": {"row": 0, "count": 4, "start": 1, "fps": 6, "loop": true},
+    "warn": {"row": 1, "count": 4, "fps": 10, "loop": true},
+    "jet": {"row": 1, "count": 4, "start": 4, "fps": 12, "loop": true},
+    "fist": {"row": 2, "count": 2, "fps": 10, "loop": true},
+    "gulp": {"row": 2, "count": 4, "start": 2, "fps": 8, "loop": true}
+  }
+}

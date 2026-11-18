@@ -150,7 +150,7 @@ std::vector<uint8_t> ReplayData::serialize() const {
     putU16(o, sampleHz);
     putU32(o, static_cast<uint32_t>(frames.size()));
     putU32(o, durationMs);
-    // 2.69: an exact replay says the version of the simulation that played it (first event).
+    // 2.70: an exact replay says the version of the simulation that played it (first event).
     const bool simMark = !inputs.empty() && simVersion > 0;
     putU32(o, static_cast<uint32_t>(events.size() + (simMark ? 1 : 0)));
     std::array<uint8_t, 32> hash{};
@@ -274,7 +274,7 @@ std::optional<ReplayData> ReplayData::parse(const std::vector<uint8_t>& raw, std
         e.value = getU16(p + at + 6);
         at += 8;
     }
-    // 2.69: the version of the simulation that recorded it, if it says it (0: before 2.69).
+    // 2.70: the version of the simulation that recorded it, if it says it (0: before 2.70).
     d.simVersion = 0;
     if (d.formatVersion >= 2 && !d.events.empty() && d.events.front().type == ReplayEventType::Simulation && d.events.front().frame == 0) {
         d.simVersion = d.events.front().value;
@@ -645,7 +645,7 @@ void ReplayRecorder::check(const GameWorld& w) {
 void ReplayRecorder::tick(const GameWorld& w) {
     if (!active_) return;
     data_.keysPerSlot = w.keysPerSlot();
-    data_.simVersion = static_cast<uint16_t>(std::clamp(w.simulationVersion(), 0, 0xFFFF));  // 2.69
+    data_.simVersion = static_cast<uint16_t>(std::clamp(w.simulationVersion(), 0, 0xFFFF));  // 2.70
     if (data_.challengeRules.empty())
         if (const ChallengeRules* c = w.challenge()) data_.challengeRules = c->canonical();
     if (!data_.inputs.empty() && data_.inputs.size() % ReplayData::kCheckTicks == 0) check(w);
@@ -763,7 +763,7 @@ void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
 
 ReplaySimulator::ReplaySimulator(const ReplayData& replay, GameWorld& world) : replay_(replay), world_(world) {
     world_.setKeysPerSlot(replay_.keysPerSlot);
-    world_.setSimulationVersion(replay_.simVersion);  // 2.69: the rules of its time
+    world_.setSimulationVersion(replay_.simVersion);  // 2.70: the rules of its time
     world_.seedGameplay(replay_.seed);
     // A challenge run (version 4): its rules, as the run was set up (after the level's load).
     if (!replay_.challengeRules.empty())

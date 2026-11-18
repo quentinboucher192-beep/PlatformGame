@@ -28,6 +28,7 @@ import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
 import { catalogById, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
+import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
 import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
 import { Validator } from "./validate";
@@ -288,6 +289,7 @@ export async function joinInstance(ctx: Ctx): Promise<Response> {
     v.done();
     const reg = await registrationOf(db, e.id, me);
     if (!reg) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour y combattre.");
+    await requireEntry(db, e, me); // 2.69: not while suspended; the late arrivals' rule
     let inst: InstanceRow | null;
     if (wanted) {
         inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2").bind(wanted, e.id).first<InstanceRow>();
@@ -334,6 +336,7 @@ export async function instanceSocket(ctx: Ctx): Promise<Response> {
     const e = await eventOf(db, inst.event_id);
     requireRunning(e, nowIso());
     if (!(await registrationOf(db, e.id, auth.player.id))) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour y combattre.");
+    await requireEntry(db, e, auth.player.id); // 2.69: not while suspended; the late arrivals' rule
     const headers = new Headers(ctx.request.headers);
     headers.set("x-player-id", auth.player.id);
     headers.set("x-player-name", auth.player.username);
@@ -387,6 +390,9 @@ export async function report(ctx: Ctx): Promise<Response> {
         return json(ctx, { status: "rejected", reason });
     };
 
+    // 2.69 (phase 5): nothing counts while the event is suspended, nor once its official result is frozen.
+    const halt = await reportHalt(db, e);
+    if (halt) return reject(halt);
     // Plausibility first: nothing impossible reaches the consensus.
     const state = raidState(e, now);
     if (state !== "en_cours" && !(state === "termine" && Date.parse(now) - Date.parse(e.ends_at) < 10 * 60000))
@@ -467,10 +473,12 @@ export async function report(ctx: Ctx): Promise<Response> {
                 return json(ctx, { status: "rejected", reason: "un autre groupe doit accomplir l'autre objectif de la paire" });
             }
             // Idempotent by objective id: two instances (or two acceptances) count it once.
-            await db
+            const counted = await db
                 .prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, ?4, ?5)")
                 .bind(e.id, inst.branch, obj.id, id, now)
                 .run();
+            // 2.69: already counted by another group (or at the same moment): journaled for the administrators.
+            if (!counted.meta.changes) await journalDuplicate(db, e.id, id, inst.branch, obj.id, obj.label, now);
             // Every relay of the event gives the new state to its games (a few seconds anyway);
             // 2.68: those of the other branches too (the titan's links).
             const rooms = await db.prepare("SELECT id FROM raid_instances WHERE event_id = ?1 AND players > 0").bind(e.id).all<{ id: string }>();
@@ -567,6 +575,7 @@ async function grantForInstance(db: D1Database, eventId: string, instanceId: str
         (r) => r.player_id,
     );
     if (ids.length) await grantFor(db, eventId, ids);
+    if (ids.length) await grantWorldFor(db, eventId, ids); // 2.69: the world event's exclusive suit (or its silver version)
 }
 
 /**

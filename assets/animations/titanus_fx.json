@@ -1,0 +1,14 @@
+{
+  "texture": "sprites/enemies/titanus_fx.png",
+  "frameWidth": 48,
+  "frameHeight": 144,
+  "pivot": [24, 144],
+  "clips": {
+    "fist": {"row": 0, "count": 2, "fps": 10, "loop": true},
+    "wave": {"row": 0, "count": 4, "start": 2, "fps": 12, "loop": true},
+    "closed": {"row": 0, "count": 1, "start": 6, "fps": 1, "loop": true},
+    "open": {"row": 1, "count": 4, "fps": 6, "loop": true},
+    "warn": {"row": 1, "count": 4, "start": 4, "fps": 10, "loop": true},
+    "jet": {"row": 2, "count": 4, "fps": 12, "loop": true}
+  }
+}

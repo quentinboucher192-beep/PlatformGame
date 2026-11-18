@@ -1,6 +1,6 @@
 {
  "id": "asterion_abdomen",
- "revision": 1,
+ "revision": 2,
  "raid": "asterion",
  "branch": "abdomen",
  "name": "ABDOMEN",
@@ -121,12 +121,12 @@
   {
    "id": 8,
    "name": "Antre de Voidworm",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · Voidworm, 3 phases",
    "x": 1000,
    "y": 360,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Voidworm attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Voidworm : épingler ses anneaux, libérer les avalés, fuir l'acide",
+   "event": "Reflux d'acide à sa 3e phase (racines hautes sûres)",
    "secret": false,
    "boss": true,
    "groups_required": 1,
@@ -275,6 +275,15 @@
    "label": "Forcer le gosier : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "abd_voidworm",
+   "index": 9,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Voidworm",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

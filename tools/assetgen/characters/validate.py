@@ -101,7 +101,7 @@ _LATER_POWERS = [n for n in power_symbols.POWERS if n not in {c for c, _ in ANIM
 ANIMS["power_unlock"][3].extend((n, 8) for n in _LATER_POWERS)
 LOOPING["power_unlock"] |= set(_LATER_POWERS)
 ANIMS["nova"][3].append(("crouch", 3))  # row 26 (2.17)
-ANIMS["nova"][3].extend([("attack_up", 5), ("air_attack_up", 4), ("air_attack_down", 4)])  # rows 27-29 (2.69)
+ANIMS["nova"][3].extend([("attack_up", 5), ("air_attack_up", 4), ("air_attack_down", 4)])  # rows 27-29 (2.70)
 ANIMS.update({
     "grapple_point": (24, 24, [12, 12], [("idle", 6), ("active", 4)], {}, {}),
     "cracked_floor": (32, 16, [16, 16], [("intact", 1), ("cracked", 1)], {}, {}),
