@@ -179,7 +179,8 @@ public:
         for (const auto& b : data_.value("branches", Json::array())) open += jget<bool>(b, "sealed", true) ? 0 : 1;
         const std::vector<std::pair<std::string, Color>> lines = {
             {"Gigaboss vaincus : " + std::to_string(jget<int>(t, "gigaboss_defeated", 0)) + " / " + std::to_string(jget<int>(t, "gigaboss", 7)) + " · " +
-                 std::to_string(open) + (open > 1 ? " antres ouvertes" : " antre ouverte") + ", les autres portes restent scellées (prochaine version)",
+                 std::to_string(open) + (open > 1 ? " antres ouvertes" : " antre ouverte") +
+                 (open < jget<int>(t, "gigaboss", 7) ? ", les autres portes restent scellées (prochaine version)" : ""),
              kPeach},
             {"Objectifs accomplis : " + std::to_string(jget<int>(t, "objectives_done", 0)) + " / " + std::to_string(jget<int>(t, "objectives", 0)), kText},
             {"En combat : " + std::to_string(jget<int>(t, "groups", 0)) + " groupes · " + std::to_string(jget<int>(t, "players", 0)) + " joueurs · " +
@@ -206,7 +207,7 @@ public:
             const float h = static_cast<float>(ls.size()) * ui.s(18) + ui.s(8);
             if (y + h > fx.bottom() - ui.s(26)) break;
             const Json pr = l.value("progress", Json::object());
-            const std::string mark = on ? "✓" : std::to_string(jget<int>(pr, "done", 0)) + " / " + std::to_string(jget<int>(pr, "needed", 1));
+            const std::string mark = on ? "OK" : std::to_string(jget<int>(pr, "done", 0)) + " / " + std::to_string(jget<int>(pr, "needed", 1));
             fit(ui, mark, {x, y + ui.s(9)}, 13, markW - ui.s(6), on ? kGreen : kGold, FontFace::Bold);
             drawLines(ui, ls, {x + markW, y}, 13, ui.s(18), on ? kText : kDim);
             y += h;
@@ -250,10 +251,10 @@ public:
             fit(ui, t, box.center(), 12, box.w - ui.s(8), kInk, FontFace::Bold, Align::Center);
         }
         // The legend under the titan: one line, the size that fits it (the items that do not fit wait).
-        const std::vector<std::pair<std::string, Color>> items = {{"● combat en cours", kOrange},
-                                                                  {"● affaiblie", kGreen},
-                                                                  {"● découverte", kPeach},
-                                                                  {"● pas encore découverte", kFog},
+        const std::vector<std::pair<std::string, Color>> items = {{"• combat en cours", kOrange},
+                                                                  {"• affaiblie", kGreen},
+                                                                  {"• découverte", kPeach},
+                                                                  {"• pas encore découverte", kFog},
                                                                   {"■ groupes (votre clan en or)", kGold}};
         float total = 0.0f;
         for (const auto& [t, c] : items) total += textW(ui, t, 13) + ui.s(14);

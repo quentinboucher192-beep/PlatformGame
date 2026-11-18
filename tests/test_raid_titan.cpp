@@ -122,7 +122,7 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
         const bool fought = b.zoneRules(8)->gigaboss.present;
         if (fought) CHECK(b.zoneRules(8)->sealedLabel.empty() && !b.zoneRules(8)->gigaboss.boss.empty());
         else CHECK(!b.zoneRules(8)->sealedLabel.empty());
-        if (tb.part == "bras_droit" || tb.part == "abdomen" || tb.part == "jambe_gauche" || tb.part == "jambe_droite") CHECK(fought);
+        CHECK(fought);  // 2.69: the seven lairs (Skullmaw, Dreadfang and Heartbreaker too)
         if (fought) {
             const raid::ObjectiveInfo* giga = b.objective(b.zoneRules(8)->gigaboss.objective);
             CHECK(giga != nullptr && giga->zone == 8 && giga->role == "gigaboss");
@@ -230,7 +230,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x842de116c3ef5860ULL;  // reference: printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0x3ef206fe38e2bf27ULL;  // reference (2.69: the seven lairs opened): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

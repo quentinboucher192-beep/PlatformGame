@@ -82,6 +82,8 @@ public:
     float exposedLeft() const;
     int weakLeft() const;
     int weakTotal() const { return weakTotal_; }
+    /// 2.69: its weak points bare now (0: broken), in the order of its rules' spots.
+    const std::vector<uint32_t>& weakUids() const { return weak_; }
     /// The seats its health was scaled for, and the players in play this step.
     int scaledFor() const { return scaledFor_; }
     int inPlay() const { return inPlay_; }

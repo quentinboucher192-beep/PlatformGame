@@ -1,5 +1,6 @@
 #include "game/progression/NewBadges.h"
 
+#include <algorithm>
 #include <regex>
 
 #include "engine/core/FileUtil.h"
@@ -11,6 +12,11 @@ namespace {
 
 const std::regex kIdRe("^[a-z0-9_.:/-]{1,96}$");
 const std::regex kVersionRe("^\\d{1,3}\\.\\d{1,3}\\.\\d{1,4}$");
+// A path under assets/ (fonts have capitals): « asset:<path>@<version> » stays under the 120
+// characters a seen entry may have.
+const std::regex kAssetPathRe("^[A-Za-z0-9_.+-]+(/[A-Za-z0-9_.+-]+)*$");
+constexpr size_t kAssetPathMax = 96;
+constexpr size_t kSeenMax = 20000;  // what the player has seen (assets included)
 
 }  // namespace
 
@@ -47,6 +53,50 @@ void NewBadges::setCatalog(const std::vector<Feature>& features) {
         for (const auto& p : f.parents) children_[p].push_back(id);
 }
 
+int NewBadges::loadAssetVersions(const fs::path& file, const std::string& parent) {
+    std::map<std::string, std::string> versions;
+    std::string from;
+    if (auto j = FileUtil::loadJson(file); j && j->is_object() && j->contains("versions") && (*j)["versions"].is_object()) {
+        if (j->contains("pillsFrom") && (*j)["pillsFrom"].is_string()) from = (*j)["pillsFrom"].get<std::string>();
+        for (auto it = (*j)["versions"].begin(); it != (*j)["versions"].end(); ++it)
+            if (it->is_string()) versions[it.key()] = it->get<std::string>();
+    }
+    return addAssetVersions(versions, from, parent);
+}
+
+int NewBadges::addAssetVersions(const std::map<std::string, std::string>& versions, const std::string& pillsFrom, const std::string& parent) {
+    const bool floor = std::regex_match(pillsFrom, kVersionRe);
+    int added = 0;
+    for (const auto& [path, version] : versions) {
+        if (path.size() > kAssetPathMax || path.find("..") != std::string::npos || !std::regex_match(path, kAssetPathRe)) continue;
+        if (!std::regex_match(version, kVersionRe)) continue;
+        // Older than the asset pills' first version: never announced, never « new ».
+        if (floor && versionNewer(pillsFrom, version)) continue;
+        const std::string id = assetFeature(path);
+        if (features_.count(id)) continue;  // already listed by hand: that entry wins
+        Feature f{id, version, {}};
+        if (std::regex_match(parent, kIdRe)) {
+            f.parents.push_back(parent);
+            children_[parent].push_back(id);
+        }
+        features_[id] = std::move(f);
+        ++added;
+    }
+    cache_.clear();
+    return added;
+}
+
+void NewBadges::link(const std::string& id, const std::vector<std::string>& parents) {
+    Feature& f = features_[id];
+    if (f.id.empty()) f.id = id;  // a new step of the trail
+    for (const auto& p : parents) {
+        if (p.empty() || p == id || std::find(f.parents.begin(), f.parents.end(), p) != f.parents.end()) continue;
+        f.parents.push_back(p);
+        children_[p].push_back(id);
+    }
+    cache_.clear();
+}
+
 void NewBadges::init(const fs::path& saveFile, const std::string& previousVersion, const std::string& currentVersion) {
     file_ = saveFile;
     seen_.clear();
@@ -57,7 +107,7 @@ void NewBadges::init(const fs::path& saveFile, const std::string& previousVersio
             baseline_ = (*j)["baseline"].get<std::string>();
         if (j->contains("seen") && (*j)["seen"].is_array())
             for (const auto& s : (*j)["seen"])
-                if (s.is_string() && s.get<std::string>().size() <= 120 && seen_.size() < 4000) seen_.insert(s.get<std::string>());
+                if (s.is_string() && s.get<std::string>().size() <= 120 && seen_.size() < kSeenMax) seen_.insert(s.get<std::string>());
     }
     if (baseline_.empty()) {
         // First run with the pills: what came after the version the player had is new; on a

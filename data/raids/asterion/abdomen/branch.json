@@ -1,6 +1,6 @@
 {
  "id": "asterion_abdomen",
- "revision": 2,
+ "revision": 3,
  "raid": "asterion",
  "branch": "abdomen",
  "name": "ABDOMEN",
@@ -15,7 +15,7 @@
   },
   "shortcut": {
    "hint": "le levier du Foie noir l'ouvre",
-   "message": "Le raccourci Intestin ⇄ Foie noir est ouvert",
+   "message": "Le raccourci Intestin – Foie noir est ouvert",
    "objective": "raccourci fermé (le levier est dans le Foie noir)"
   }
  },
@@ -93,7 +93,7 @@
   {
    "id": 6,
    "name": "Foie noir",
-   "sub": "glande sud · levier ⇄",
+   "sub": "glande sud · levier du raccourci",
    "x": 790,
    "y": 200,
    "level": "zone_6.json",

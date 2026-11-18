@@ -1,0 +1,292 @@
+{
+  "format": "cosmic.enemy",
+  "id": "dreadfang",
+  "name": "Dreadfang",
+  "description": "Le bras gauche colossal d'Asterion et ses griffes-lames, gigaboss d'un raid de clan : ses griffes balaient des étages entiers de l'arène, jaillissent du sol sous chaque joueur et en clouent un au sol que les autres doivent libérer ; cuirassé de givre, il faut tenir ses trois chaînes ensemble pour l'enchaîner et frapper ses jointures.",
+  "family": "miniboss",
+  "animation": "animations/dreadfang.json",
+  "size": [
+    320,
+    240
+  ],
+  "scale": 2.5,
+  "hp": 600,
+  "contactDamage": 2,
+  "speed": 70,
+  "chaseSpeedMultiplier": 1.25,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 1000,
+  "attackRange": 1600,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 320,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "ruee",
+      "name": "Ruée des griffes",
+      "type": "lunge",
+      "damage": 2,
+      "range": 760,
+      "minRange": 60,
+      "telegraph": 0.75,
+      "active": 0.6,
+      "recover": 0.7,
+      "cooldown": 4.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "lungeSpeed": 520,
+      "knockback": 300
+    },
+    {
+      "id": "griffes_glace",
+      "name": "Griffes sous la glace",
+      "type": "tracker",
+      "damage": 2,
+      "range": 1200,
+      "telegraph": 0.8,
+      "active": 0.2,
+      "recover": 0.5,
+      "cooldown": 3.6,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectile": "ice_shard",
+      "projectileSpeed": 150,
+      "duration": 2.4,
+      "radius": 18,
+      "height": 60,
+      "knockback": 260
+    },
+    {
+      "id": "eventail",
+      "name": "Éventail de lames",
+      "type": "spread",
+      "damage": 1,
+      "range": 1000,
+      "telegraph": 0.6,
+      "active": 0.25,
+      "recover": 0.4,
+      "cooldown": 2.8,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "ice_shard",
+      "projectileSpeed": 270,
+      "count": 5,
+      "spread": 14,
+      "origin": [
+        0,
+        -120
+      ],
+      "lead": 0.7
+    },
+    {
+      "id": "grele",
+      "name": "Grêle de givre",
+      "type": "rain",
+      "damage": 1,
+      "range": 1400,
+      "telegraph": 0.8,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 3.8,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "frost_orb",
+      "projectileSpeed": 220,
+      "count": 12,
+      "spread": 55,
+      "gravity": 300,
+      "rainHeight": 380,
+      "lead": 0.8,
+      "stagger": 0.1,
+      "slow": 0.6,
+      "slowDuration": 1.0
+    },
+    {
+      "id": "poigne",
+      "name": "Poigne du titan",
+      "type": "vortex",
+      "damage": 2,
+      "range": 900,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.9,
+      "cooldown": 8.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "pull": 90,
+      "duration": 2.0,
+      "knockback": 280
+    },
+    {
+      "id": "sol_gele",
+      "name": "Sol gelé",
+      "type": "frost_floor",
+      "damage": 0,
+      "range": 1600,
+      "telegraph": 1.0,
+      "active": 0.4,
+      "recover": 0.6,
+      "cooldown": 12.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "duration": 5.0,
+      "grip": 0.2
+    },
+    {
+      "id": "derniere_grele",
+      "name": "Dernière grêle",
+      "type": "rain",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.3,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "frost_orb",
+      "projectileSpeed": 260,
+      "count": 20,
+      "spread": 55,
+      "gravity": 300,
+      "rainHeight": 380,
+      "lead": 0.8
+    },
+    {
+      "id": "dernier_eventail",
+      "name": "Dernier éventail",
+      "type": "spread",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.5,
+      "active": 0.25,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "ice_shard",
+      "projectileSpeed": 300,
+      "count": 9,
+      "spread": 12,
+      "origin": [
+        0,
+        -120
+      ],
+      "bursts": 3,
+      "burstInterval": 0.3
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "ground_pound": 1.2,
+    "dash": 0.5
+  },
+  "rewards": {
+    "score": 30000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 260
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/ice_shatter.wav",
+    "alert": "sounds/boss_roar_ice.wav"
+  },
+  "boss": {
+    "title": "DREADFANG, LES GRIFFES QUI DÉCHIRENT",
+    "phases": [
+      {
+        "name": "Les griffes",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "ruee",
+          "griffes_glace",
+          "eventail",
+          "grele"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Dreadfang déploie ses griffes : elles balaient l'arène étage par étage.",
+        "animation": "animations/dreadfang.json",
+        "lightColor": "#7ff6ff"
+      },
+      {
+        "name": "Le bras enchaîné",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "griffes_glace",
+          "eventail",
+          "grele",
+          "poigne"
+        ],
+        "speedMultiplier": 1.05,
+        "cooldownMultiplier": 0.95,
+        "combo": 2,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Une armure de givre le couvre : tenez ses trois chaînes ensemble pour l'enchaîner !",
+        "animation": "animations/dreadfang_p2.json",
+        "lightColor": "#bff8ff",
+        "enterSound": "sounds/boss_roar_ice.wav"
+      },
+      {
+        "name": "Griffes déchaînées",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "ruee",
+          "griffes_glace",
+          "sol_gele",
+          "eventail",
+          "poigne",
+          "grele"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.85,
+        "combo": 3,
+        "telegraphMultiplier": 0.75,
+        "enterText": "Les chaînes cèdent : ses griffes déchaînées tranchent les plateformes !",
+        "animation": "animations/dreadfang_p3.json",
+        "lightColor": "#ffffff",
+        "enterSound": "sounds/ice_shatter.wav",
+        "enrageTime": 75
+      }
+    ],
+    "barIcon": "snowflake",
+    "barColor": "#7ff6ff",
+    "finalAttacks": [
+      "derniere_grele",
+      "dernier_eventail",
+      "derniere_grele"
+    ],
+    "finalText": "Ses dernières griffes : survivez !"
+  },
+  "raid": "asterion"
+}

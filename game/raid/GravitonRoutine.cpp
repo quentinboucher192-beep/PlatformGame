@@ -219,7 +219,7 @@ public:
         if (!wellPeriods_.empty() && at(wellPeriods_, g.phase()) > 0.0f)
             out.push_back({"◎", "Un puits s'ouvre sous chacun : éloignez-vous de son cœur.", Color{190, 150, 255, 255}});
         out.push_back(linkDone(g, "west") && linkDone(g, "east")
-                          ? BossLine{"✓", "Générateurs de la jambe coupés : un générateur de moins à tenir ici.", green}
+                          ? BossLine{"OK", "Générateurs de la jambe coupés : un générateur de moins à tenir ici.", green}
                           : BossLine{"◆", "Couper les 2 générateurs de la jambe (Cuisse, Tibia) en retirerait un ici.", Color{196, 140, 255, 255}});
     }
 

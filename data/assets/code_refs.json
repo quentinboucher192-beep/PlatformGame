@@ -258,6 +258,9 @@
    "game/enemies/DragonAttacks.cpp": 2,
    "game/enemies/PhoenixAttacks.cpp": 1
   },
+  "sounds/boss_roar_ice.wav": {
+   "game/raid/DreadfangRoutine.cpp": 1
+  },
   "sounds/bounce.wav": {
    "game/gameplay/entities/PlatformEntities.cpp": 2
   },
@@ -381,7 +384,8 @@
    "game/enemies/GuardianAttacks.cpp": 1
   },
   "sounds/ice_shatter.wav": {
-   "game/enemies/LicheAttacks.cpp": 1
+   "game/enemies/LicheAttacks.cpp": 1,
+   "game/raid/DreadfangRoutine.cpp": 1
   },
   "sounds/inhale.wav": {
    "game/enemies/DragonAttacks.cpp": 1,
@@ -402,12 +406,14 @@
    "game/enemies/GolemAttacks.cpp": 1,
    "game/enemies/PhoenixAttacks.cpp": 1,
    "game/enemies/TitanAttacks.cpp": 1,
-   "game/gameplay/entities/HazardEntities.cpp": 1
+   "game/gameplay/entities/HazardEntities.cpp": 1,
+   "game/raid/SkullmawRoutine.cpp": 1
   },
   "sounds/laser_fire.wav": {
    "game/enemies/BossHazards.cpp": 1,
    "game/enemies/EnemyAttacks.cpp": 1,
-   "game/gameplay/entities/HazardEntities.cpp": 1
+   "game/gameplay/entities/HazardEntities.cpp": 1,
+   "game/raid/SkullmawRoutine.cpp": 1
   },
   "sounds/lava_bubble.wav": {
    "game/enemies/PhoenixAttacks.cpp": 1,
@@ -489,7 +495,8 @@
   },
   "sounds/shell_shatter.wav": {
    "game/raid/Gigaboss.cpp": 1,
-   "game/raid/GigabossRoutine.cpp": 1
+   "game/raid/GigabossRoutine.cpp": 1,
+   "game/raid/HeartbreakerRoutine.cpp": 1
   },
   "sounds/shield_block.wav": {
    "game/enemies/Enemy.cpp": 2,
@@ -505,7 +512,8 @@
    "game/gameplay/GameWorld.cpp": 1
   },
   "sounds/slash.wav": {
-   "game/player/PlayerActions.cpp": 1
+   "game/player/PlayerActions.cpp": 1,
+   "game/raid/DreadfangRoutine.cpp": 1
   },
   "sounds/slash_hit.wav": {
    "game/player/PlayerActions.cpp": 1
@@ -520,7 +528,11 @@
    "game/enemies/GuardianAttacks.cpp": 1
   },
   "sounds/star_roar.wav": {
-   "game/enemies/PhoenixAttacks.cpp": 1
+   "game/enemies/PhoenixAttacks.cpp": 1,
+   "game/raid/SkullmawRoutine.cpp": 1
+  },
+  "sounds/story_heartbeat.wav": {
+   "game/raid/HeartbreakerRoutine.cpp": 1
   },
   "sounds/summon.wav": {
    "game/enemies/Enemy.cpp": 1,

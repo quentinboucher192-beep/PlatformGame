@@ -180,7 +180,7 @@ vérifiés par le serveur sur les niveaux EXTRÊME officiels.
 
 <p align="center"><img src="docs/media/clan_page.png" width="820" alt="Page d'un clan : membres et rôles, meilleures équipes par niveau EXTRÊME, candidatures et discussion"></p>
 
-## Raids de clan « Asterion »
+## Raids de clan : zones, carte, HUD et magma
 
 Des instances de **8 joueurs** contre le titan **Asterion**, branche par branche (Bras droit et son gigaboss
 **Pyroclast**, et six autres branches) : des zones reliées par des passages, des objectifs validés par le
@@ -201,6 +201,32 @@ une zone seuls avec des **joueurs simulés** visibles (« Joueur simulé 2 »…
 les plaques et relèvent les joueurs à terre. Détails : [docs/RAIDS.md](docs/RAIDS.md).
 
 <p align="center"><img src="docs/media/raid_visuals.png" width="820" alt="Planche du générateur : la lave animée du magma montant (corps, croûte, vagues, bulles, braises, alerte) et les tuiles et icônes de la minimap des raids"></p>
+
+## Raids de clan : les Gigaboss d'Asterion
+
+Jusqu'à **huit joueurs** par instance attaquent **Asterion, le Dévoreur de mondes**, branche par branche ; au bout
+de chaque branche, l'antre d'un **Gigaboss** énorme, en trois phases, qui vise chaque joueur à la fois et ne tombe que
+si l'équipe agit **ensemble**. Fonctionnement complet : [docs/RAIDS.md](docs/RAIDS.md).
+
+**Skullmaw, le crâne qui voit tout** (le Crâne) : un regard laser traque chaque joueur ; sous son voile psychique,
+son Regard de mort frappe tous ceux qu'il voit, sauf si assez de joueurs tiennent un **miroir** à cet instant : son
+regard renvoyé l'aveugle et met à nu ses yeux et son cristal ; dans ses ténèbres, seule la lumière de son œil révèle
+les plateformes.
+
+<p align="center"><img src="docs/media/gigaboss_skullmaw.gif" width="640" alt="Skullmaw dans ses trois phases (regard qui traque, voile psychique, ténèbres) et un miroir qui s'allume"></p>
+
+**Dreadfang, les griffes qui déchirent** (le Bras gauche) : des griffes jaillissent du sol sous chaque joueur, sa
+lame balaie un, deux puis trois étages ; une griffe **cloue** un joueur jusqu'à ce qu'un autre la brise, et seules
+ses **trois chaînes** tenues ensemble le plaquent au sol, jointures offertes.
+
+<p align="center"><img src="docs/media/gigaboss_dreadfang.gif" width="640" alt="Dreadfang dans ses trois phases et une griffe de givre qui jaillit du sol"></p>
+
+**Heartbreaker, la cage qui garde le cœur** (le Torse) : ses **quatre plaques** se brisent dans la même fenêtre ou
+repoussent, ses battements lancent des ondes au sol ; il faut ensuite **écarter ses deux côtes** en même temps pour
+atteindre la lumière de son cœur, avant qu'il ne s'affole.
+
+<p align="center"><img src="docs/media/gigaboss_heartbreaker.gif" width="640" alt="Heartbreaker dans ses trois phases et l'onde de ses battements"></p>
+<p align="center"><sub>Les trois phases de chaque Gigaboss avec les sprites du jeu (générés par <code>tools/assetgen</code>).</sub></p>
 
 ## Cosmic Online
 
@@ -479,6 +505,31 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.71.0** :
+* **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans
+  leurs antres (zone 8 de leur branche, `tools/levelgen/raid_skullmaw.py`, `raid_dreadfang.py`, `raid_heartbreaker.py`) :
+  énormes, trois phases annoncées chacun, des attaques sur les 8 joueurs à la fois et des mécanismes collectifs
+  (`game/raid/SkullmawRoutine`, `DreadfangRoutine`, `HeartbreakerRoutine`, routines du cadre commun `GigabossRoutine`) ;
+  sprites, points faibles et éléments d'arène en pixel art générés par `tools/assetgen/characters/boss_l_*.py` (sur
+  `gigaboss_kit.py`). Correctifs : un joueur avalé par Voidworm ne reçoit plus de marque de « Fouissement » ;
+  à la fin d'une exposition, un gigaboss reforme sa carapace (`exposedStep` rend l'étape « combat »).
+* **Skullmaw** : regards lasers traqueurs (un par joueur), « Regard de mort » qui aveugle ceux qu'aucune colonne ne cache,
+  miroirs à tenir ensemble pour l'aveugler (yeux et cristal à briser), ténèbres où seule la lumière de son œil révèle les
+  plateformes. **Dreadfang** : griffes du sol sous chaque joueur, balayages d'étages entiers, joueur cloué à libérer,
+  trois chaînes à tenir ensemble pour le plaquer au sol, plateformes tranchées. **Heartbreaker** : quatre plaques à briser
+  ensemble (sinon elles repoussent), battements en rythme et leurs ondes, côtes-pièges, côtes à écarter des deux côtés.
+* Badge par gigaboss accordé une seule fois par le serveur (présence à une chute validée de sa branche), partie du titan
+  détruite, sauvetages et coups esquivés dans les contributions ; résultats et carte du titan pour plusieurs gigaboss.
+* **ADMINISTRATION › Assets : pastille « NOUVEAU » sur chaque nouvel asset** (vignette de la grille ou ligne de la
+  liste) ; elle part dès que l'asset reçoit le focus (clavier, manette, souris) ou un clic, et reste sur ses dossiers
+  du rangement, sur l'onglet Assets et sur l'entrée ADMINISTRATION tant qu'un asset en dessous est nouveau. Même
+  règle que les autres nouveautés (`game/progression/NewBadges.h`) : un asset arrivé dans une version plus récente
+  que celle que le joueur avait, sans une ligne par asset dans `data/news/new_features.json`.
+* **Version d'apparition de chaque asset** : `data/assets/asset_versions.json`, écrit par
+  `tools/assets/asset_versions.py` (amorcé une fois depuis l'historique git : la version qui a livré le commit
+  ajoutant le fichier ; ensuite, un asset qui apparaît reçoit la version en préparation). `tools/assets/code_refs.py`
+  le met à jour dans le même lancement (et `--check` le vérifie) : après une fusion qui apporte des assets, le
+  lancement habituel leur donne leur pastille. Seuls les assets depuis la 2.65.0 (les raids : Asterion en calques,
+  son mini-film, Pyroclast, Voidworm, Graviton, Titanus…) peuvent la porter.
 * **Raids, flèches hors écran** : les flèches des niveaux reviennent en raid (ennemis déjà vus en orange, embuscade en
   violet, avec leur nombre), en plus du gigaboss et des alliés (`game/gameplay/EnemyArrowsDraw`, partagé avec les niveaux).
 * **Les zones d'un raid gardent leur état** (`raid::RaidRun`, `LevelEntity::keepState`) : portes et passages ouverts, leviers,
@@ -491,6 +542,9 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   passages, portes, objectifs, points de contrôle, plaques, évents, ennemis, alliés, légende (`ui/online/RaidHud`).
 * **Éditeur de HUD › « Raids »** : une disposition à part pour la minimap, le groupe, les objectifs, la barre du gigaboss,
   les alertes, les contributions, le badge TEST ADMIN, le chronomètre et les flèches, aperçue sur un exemple de raid à 8 joueurs.
+* **Symboles lisibles partout** : les coches, croix, flèches doubles et losanges que les polices n'ont pas (des carrés vides
+  dans le HUD des raids et la légende des cartes) sont remplacés par des signes qu'elles ont ; `tests/test_font_glyphs.cpp`
+  vérifie chaque texte du catalogue (français et anglais) et les chaînes des écrans de raid avec `TTF_FontHasGlyph`.
 * **Chronomètre en raid** (vrais raids et test admin) : le chrono des niveaux, compté sur les pas de la simulation (le même
   pour tout le groupe) : le temps de l'instance et celui de la zone ; il continue pendant la pause.
 * **Magma réaliste** : montée et descente, dessiné devant les personnages (une lueur seulement au-dessus de ce qu'il cache),

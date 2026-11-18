@@ -296,7 +296,7 @@
  "catalogs": [
   {
    "id": "asterion_crane",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "crane",
    "name": "CRÂNE",
@@ -311,7 +311,7 @@
     },
     "shortcut": {
      "hint": "le levier de la Tempe l'ouvre",
-     "message": "Le passage Nerfs optiques ⇄ Tempe est ouvert",
+     "message": "Le passage Nerfs optiques – Tempe est ouvert",
      "objective": "passage fermé (le levier est dans la Tempe)"
     }
    },
@@ -389,7 +389,7 @@
     {
      "id": 6,
      "name": "Tempe",
-     "sub": "levier ⇄ vers les nerfs",
+     "sub": "levier du raccourci vers les nerfs",
      "x": 790,
      "y": 560,
      "level": "zone_6.json",
@@ -417,12 +417,12 @@
     {
      "id": 8,
      "name": "Antre de Skullmaw",
-     "sub": "GIGABOSS · prochaine version",
+     "sub": "GIGABOSS · miroirs à tenir ensemble",
      "x": 1000,
      "y": 400,
      "level": "zone_8.json",
-     "inside": "Le gigaboss Skullmaw attend derrière sa porte scellée",
-     "event": "",
+     "inside": "Le gigaboss Skullmaw : regards traqueurs, flash aveuglant (cachez-vous derrière les colonnes), miroirs à tenir ensemble, ténèbres",
+     "event": "Regards lasers sur chaque joueur, flash toutes les 13 à 16 s en phases 2 et 3",
      "secret": false,
      "boss": true,
      "groups_required": 1,
@@ -572,12 +572,21 @@
      "optional": false,
      "role": "",
      "pair": ""
+    },
+    {
+     "id": "crane_skullmaw",
+     "index": 9,
+     "zone": 8,
+     "label": "Vaincre le gigaboss Skullmaw",
+     "optional": false,
+     "role": "gigaboss",
+     "pair": ""
     }
    ]
   },
   {
    "id": "asterion_bras_gauche",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "bras_gauche",
    "name": "BRAS GAUCHE",
@@ -592,7 +601,7 @@
     },
     "shortcut": {
      "hint": "le levier de l'Avant-bras de givre l'ouvre",
-     "message": "Le raccourci Tendon ⇄ Avant-bras de givre est ouvert",
+     "message": "Le raccourci Tendon – Avant-bras de givre est ouvert",
      "objective": "raccourci fermé (le levier est dans l'Avant-bras de givre)"
     }
    },
@@ -670,7 +679,7 @@
     {
      "id": 6,
      "name": "Avant-bras de givre",
-     "sub": "cœur de givre est · levier ⇄",
+     "sub": "cœur de givre est · levier du raccourci",
      "x": 790,
      "y": 160,
      "level": "zone_6.json",
@@ -698,12 +707,12 @@
     {
      "id": 8,
      "name": "Griffes de Dreadfang",
-     "sub": "GIGABOSS · prochaine version",
+     "sub": "GIGABOSS · trois chaînes à tenir",
      "x": 1000,
      "y": 320,
      "level": "zone_8.json",
-     "inside": "Le gigaboss Dreadfang attend derrière sa porte scellée",
-     "event": "",
+     "inside": "Le gigaboss Dreadfang : balayages d'étages entiers, griffes du sol, un joueur cloué à libérer, trois chaînes à tenir ensemble",
+     "event": "Balayage des griffes toutes les 7 à 11 s (sautez par-dessus ou changez d'étage)",
      "secret": false,
      "boss": true,
      "groups_required": 1,
@@ -853,12 +862,21 @@
      "optional": false,
      "role": "",
      "pair": ""
+    },
+    {
+     "id": "bg_dreadfang",
+     "index": 9,
+     "zone": 8,
+     "label": "Vaincre le gigaboss Dreadfang",
+     "optional": false,
+     "role": "gigaboss",
+     "pair": ""
     }
    ]
   },
   {
    "id": "asterion_torse",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "torse",
    "name": "TORSE",
@@ -873,7 +891,7 @@
     },
     "shortcut": {
      "hint": "le levier du Poumon gauche l'ouvre",
-     "message": "Le raccourci Poumon gauche ⇄ Sternum est ouvert",
+     "message": "Le raccourci Poumon gauche – Sternum est ouvert",
      "objective": "raccourci fermé (le levier est dans le Poumon gauche)"
     }
    },
@@ -909,7 +927,7 @@
     {
      "id": 3,
      "name": "Poumon gauche",
-     "sub": "le poumon à crever · levier ⇄",
+     "sub": "le poumon à crever · levier du raccourci",
      "x": 330,
      "y": 560,
      "level": "zone_3.json",
@@ -979,12 +997,12 @@
     {
      "id": 8,
      "name": "Antre de Heartbreaker",
-     "sub": "GIGABOSS · prochaine version",
+     "sub": "GIGABOSS · 4 plaques, côtes à écarter",
      "x": 1000,
      "y": 400,
      "level": "zone_8.json",
-     "inside": "Le gigaboss Heartbreaker attend derrière sa porte scellée",
-     "event": "",
+     "inside": "Le gigaboss Heartbreaker : quatre plaques à briser ensemble, battements en rythme, côtes-pièges, côtes à écarter des deux côtés",
+     "event": "Ondes du cœur au sol à chaque battement fort (sautez-les)",
      "secret": false,
      "boss": true,
      "groups_required": 1,
@@ -1137,12 +1155,21 @@
      "optional": false,
      "role": "",
      "pair": ""
+    },
+    {
+     "id": "torse_heartbreaker",
+     "index": 10,
+     "zone": 8,
+     "label": "Vaincre le gigaboss Heartbreaker",
+     "optional": false,
+     "role": "gigaboss",
+     "pair": ""
     }
    ]
   },
   {
    "id": "asterion_abdomen",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "abdomen",
    "name": "ABDOMEN",
@@ -1157,7 +1184,7 @@
     },
     "shortcut": {
      "hint": "le levier du Foie noir l'ouvre",
-     "message": "Le raccourci Intestin ⇄ Foie noir est ouvert",
+     "message": "Le raccourci Intestin – Foie noir est ouvert",
      "objective": "raccourci fermé (le levier est dans le Foie noir)"
     }
    },
@@ -1235,7 +1262,7 @@
     {
      "id": 6,
      "name": "Foie noir",
-     "sub": "glande sud · levier ⇄",
+     "sub": "glande sud · levier du raccourci",
      "x": 790,
      "y": 200,
      "level": "zone_6.json",
@@ -1432,7 +1459,7 @@
   },
   {
    "id": "asterion_jambe_gauche",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "jambe_gauche",
    "name": "JAMBE GAUCHE",
@@ -1447,7 +1474,7 @@
     },
     "shortcut": {
      "hint": "le levier du Tibia l'ouvre",
-     "message": "Le raccourci Genou ⇄ Tibia est ouvert",
+     "message": "Le raccourci Genou – Tibia est ouvert",
      "objective": "raccourci fermé (le levier est dans le Tibia)"
     }
    },
@@ -1525,7 +1552,7 @@
     {
      "id": 6,
      "name": "Tibia",
-     "sub": "générateur est · levier ⇄",
+     "sub": "générateur est · levier du raccourci",
      "x": 790,
      "y": 180,
      "level": "zone_6.json",
@@ -1722,7 +1749,7 @@
   },
   {
    "id": "asterion_jambe_droite",
-   "revision": 2,
+   "revision": 3,
    "raid": "asterion",
    "branch": "jambe_droite",
    "name": "JAMBE DROITE",
@@ -1737,7 +1764,7 @@
     },
     "shortcut": {
      "hint": "le levier du Mollet blindé l'ouvre",
-     "message": "Le raccourci Genou-forge ⇄ Mollet blindé est ouvert",
+     "message": "Le raccourci Genou-forge – Mollet blindé est ouvert",
      "objective": "raccourci fermé (le levier est dans le Mollet blindé)"
     }
    },
@@ -1815,7 +1842,7 @@
     {
      "id": 6,
      "name": "Mollet blindé",
-     "sub": "réacteur est · levier ⇄",
+     "sub": "réacteur est · levier du raccourci",
      "x": 560,
      "y": 470,
      "level": "zone_6.json",

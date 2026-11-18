@@ -61,7 +61,7 @@ ZONES = [
      "Montée de magma toutes les 42 s (grilles hautes sûres)"),
     (5, "Grotte des scories", "zone secrète ◆ relique", 560, 620,
      "Ennemis : gloops de magma, acariens de braise", ""),
-    (6, "Avant-bras", "raccourci ⇄ depuis la Veine", 790, 160,
+    (6, "Avant-bras", "raccourci depuis la Veine", 790, 160,
      "Ennemis : drones de forge, ailes de cendre · générateur est", "Montée de magma toutes les 38 s (corniches sûres)"),
     (7, "Poignet-verrou", "s'ouvre : 2 générateurs · la longue route", 790, 470,
      "Quatre embuscades géantes sur plusieurs étages, plaques et monte-charge de groupe, points de contrôle",

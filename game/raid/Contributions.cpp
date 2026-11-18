@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstddef>
 #include <cstdlib>
 
 #include "game/enemies/Enemy.h"
@@ -24,6 +25,7 @@ void Contributions::attach(GameWorld& w) {
     w.listener = this;
     tagOwner_.clear();
     broken_.clear();
+    brokenSeen_ = 0;
     attack_ = nullptr;
     target_ = -1;
     targetHit_ = false;
@@ -56,7 +58,10 @@ int Contributions::brokeWeak(uint32_t uid) const {
 
 void Contributions::afterStep(const GameWorld& w, uint32_t tick, const Enemy* boss) {
     using P = GameWorld::Presence;
-    broken_.clear();
+    // 2.69: the weak points broken during this step stay for the gigaboss's rules (they run after
+    // this); those of the step before go.
+    broken_.erase(broken_.begin(), broken_.begin() + static_cast<std::ptrdiff_t>(std::min(brokenSeen_, broken_.size())));
+    brokenSeen_ = broken_.size();
     if (!w.coop()) return;
     const int n = std::min(w.teamSize(), 8);
     for (int i = 0; i < n; ++i) {
@@ -122,6 +127,10 @@ void Contributions::rescue(int seat) {
 
 void Contributions::weakPoint(int seat) {
     if (Contribution* c = current(seat)) ++c->weakPoints;
+}
+
+void Contributions::dodged(int seat, float amount) {
+    if (Contribution* c = current(seat)) c->avoided += tenths(amount);
 }
 
 void Contributions::gigabossDown(const GameWorld& w) {

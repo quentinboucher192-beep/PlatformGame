@@ -1,0 +1,11 @@
+{
+  "texture": "sprites/enemies/skullmaw_fx.png",
+  "frameWidth": 48,
+  "frameHeight": 144,
+  "pivot": [24, 144],
+  "clips": {
+    "mirror": {"row": 0, "count": 4, "fps": 4, "loop": true},
+    "mirror_lit": {"row": 0, "count": 4, "start": 4, "fps": 8, "loop": true},
+    "mirror_flash": {"row": 0, "count": 2, "start": 8, "fps": 10, "loop": true}
+  }
+}

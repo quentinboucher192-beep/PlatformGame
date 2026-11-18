@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "dreadfang_griffe",
+  "name": "Griffe clouante",
+  "description": "Une griffe de Dreadfang qui cloue un joueur au sol : brisez-la pour le libérer avant qu'elle ne le broie.",
+  "family": "turret",
+  "animation": "animations/dreadfang_griffe.json",
+  "size": [
+    48,
+    48
+  ],
+  "scale": 2.0,
+  "hp": 6,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 600,
+    "drops": []
+  },
+  "light": {
+    "color": "#bff8ff",
+    "radius": 60
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/ice_shatter.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

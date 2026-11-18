@@ -137,6 +137,31 @@ export const RAID_REWARDS: Record<string, RaidReward> = {
         why: "Présent à la chute de Titanus (combat validé par votre instance)",
         rank: "gigaboss",
     },
+    // 2.69 (phase 4B): the skull, the left arm and the torso.
+    skullmaw_badge: {
+        id: "skullmaw_badge",
+        name: "Badge « Regard de Skullmaw »",
+        kind: "badge",
+        ref: "communaute_skullmaw",
+        why: "Présent à la chute de Skullmaw (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
+    dreadfang_badge: {
+        id: "dreadfang_badge",
+        name: "Badge « Griffes de Dreadfang »",
+        kind: "badge",
+        ref: "communaute_dreadfang",
+        why: "Présent à la chute de Dreadfang (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
+    heartbreaker_badge: {
+        id: "heartbreaker_badge",
+        name: "Badge « Cage de Heartbreaker »",
+        kind: "badge",
+        ref: "communaute_heartbreaker",
+        why: "Présent à la chute de Heartbreaker (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
     // 2.69 (phase 5): the exclusive rewards of the world events and their catch-up sessions (raidWorld.ts).
     ...(WORLD_REWARDS as Record<string, RaidReward>),
 };
@@ -146,6 +171,9 @@ export const GIGABOSS_BADGES: Record<string, string> = {
     Voidworm: "voidworm_badge",
     Graviton: "graviton_badge",
     Titanus: "titanus_badge",
+    Skullmaw: "skullmaw_badge",
+    Dreadfang: "dreadfang_badge",
+    Heartbreaker: "heartbreaker_badge",
 };
 export const PARTICIPATION_TICKS = 5 * 60 * 120;
 export const PERFORMANCE_SCORE = 1500;
@@ -156,6 +184,9 @@ export const RAID_ACHIEVEMENTS: Record<string, string> = {
     communaute_voidworm: "voidworm_badge",
     communaute_graviton: "graviton_badge",
     communaute_titanus: "titanus_badge",
+    communaute_skullmaw: "skullmaw_badge",
+    communaute_dreadfang: "dreadfang_badge",
+    communaute_heartbreaker: "heartbreaker_badge",
 };
 
 /** The prefix of the challenge_id of a raid's items in player_won_rewards. */
@@ -372,6 +403,9 @@ export const PART_EFFECTS: Record<string, string> = {
     abdomen: "Plus de renforts : les parasites d'Asterion sont chassés.",
     jambe_gauche: "Plus de pièges de gravité : ses générateurs sont coupés.",
     jambe_droite: "Ses charges ralentissent : Asterion chancelle.",
+    crane: "Asterion est aveuglé : ses attaques perdent en précision.",
+    bras_gauche: "Plus de balayages : les griffes d'Asterion sont arrachées.",
+    torse: "La cage thoracique est brisée : la voie du cœur s'ouvre.",
 };
 const BRAS_DROIT_ID = "asterion_bras_droit";
 export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }> = {
@@ -379,6 +413,9 @@ export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }>
     abd_voidworm: { part: "abdomen", boss: "Voidworm" }, // 2.69 (phase 4B)
     jg_graviton: { part: "jambe_gauche", boss: "Graviton" },
     jd_titanus: { part: "jambe_droite", boss: "Titanus" },
+    crane_skullmaw: { part: "crane", boss: "Skullmaw" },
+    bg_dreadfang: { part: "bras_gauche", boss: "Dreadfang" },
+    torse_heartbreaker: { part: "torse", boss: "Heartbreaker" },
 };
 /** 2.69: the part of the titan a fight's branch is (raid_gigaboss_fights.branch), when its gigaboss is fought. */
 const FOUGHT_PARTS = new Set(Object.values(GIGABOSS_OBJECTIVES).map((g) => g.part));

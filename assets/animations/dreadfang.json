@@ -1,0 +1,18 @@
+{
+  "texture": "sprites/enemies/dreadfang.png",
+  "frameWidth": 224,
+  "frameHeight": 224,
+  "pivot": [112, 212],
+  "clips": {
+    "idle": {"row": 0, "count": 6, "fps": 6, "loop": true},
+    "move": {"row": 0, "count": 6, "start": 6, "fps": 8, "loop": true},
+    "telegraph": {"row": 1, "count": 5, "durations": [0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "attack": {"row": 1, "count": 5, "start": 5, "durations": [0.06, 0.08, 0.16, 0.14, 0.16], "loop": false, "events": [{"frame": 2, "name": "impact"}]},
+    "telegraph_special": {"row": 2, "count": 5, "durations": [0.1, 0.1, 0.12, 0.14, 0.2], "loop": false},
+    "special": {"row": 2, "count": 4, "start": 5, "fps": 10, "loop": true},
+    "summon": {"row": 2, "count": 5, "start": 9, "durations": [0.12, 0.12, 0.14, 0.16, 0.16], "loop": false},
+    "hurt": {"row": 3, "count": 2, "durations": [0.08, 0.14], "loop": false},
+    "roar": {"row": 3, "count": 6, "start": 2, "durations": [0.12, 0.12, 0.12, 0.14, 0.16, 0.2], "loop": false},
+    "death": {"row": 4, "count": 10, "durations": [0.1, 0.12, 0.12, 0.14, 0.14, 0.16, 0.16, 0.18, 0.2, 0.4], "loop": false}
+  }
+}

@@ -1,5 +1,6 @@
 // Clan raids « Asterion », phase 4B (2.69, docs/RAIDS.md §13): the gigaboss of the abdomen and the
-// legs (VOIDWORM, GRAVITON, TITANUS). Their fights reported by the consensus of their branch's
+// legs (VOIDWORM, GRAVITON, TITANUS), of the skull, the left arm and the torso (SKULLMAW, DREADFANG,
+// HEARTBREAKER). Their fights reported by the consensus of their branch's
 // instance (zone 8 of the Abdomen, the Left leg, the Right leg), each its own badge granted once to
 // those present at its fall (never Pyroclast's, never twice), the titan's part destroyed once its
 // fall is accepted, the results naming each gigaboss fallen.
@@ -8,6 +9,7 @@ import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
 import { GIGABOSS_BADGES, RAID_ACHIEVEMENTS, RAID_REWARDS, grantFor, type Contribution } from "../src/raidRewards";
 import { catalogByPart } from "../src/raidMap";
+import { checkMap } from "../src/raidWorld";
 import { api, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 
 beforeEach(seedAll);
@@ -22,6 +24,15 @@ const BOSSES = [
     { part: "abdomen", boss: "Voidworm", objective: "abd_voidworm", before: ["abd_glande_nord", "abd_glande_sud", "abd_gosier"], badge: "voidworm_badge" },
     { part: "jambe_gauche", boss: "Graviton", objective: "jg_graviton", before: ["jg_generateur_ouest", "jg_generateur_est", "jg_cheville"], badge: "graviton_badge" },
     { part: "jambe_droite", boss: "Titanus", objective: "jd_titanus", before: ["jd_reacteur_ouest", "jd_reacteur_est", "jd_cheville"], badge: "titanus_badge" },
+    { part: "crane", boss: "Skullmaw", objective: "crane_skullmaw", before: ["crane_oeil_gauche", "crane_oeil_droit", "crane_voute"], badge: "skullmaw_badge" },
+    { part: "bras_gauche", boss: "Dreadfang", objective: "bg_dreadfang", before: ["bg_coeur_ouest", "bg_coeur_est", "bg_poignet"], badge: "dreadfang_badge" },
+    {
+        part: "torse",
+        boss: "Heartbreaker",
+        objective: "torse_heartbreaker",
+        before: ["torse_plaque_nord", "torse_plaque_sud", "torse_plaque_est", "torse_plaque_ouest", "torse_cage"],
+        badge: "heartbreaker_badge",
+    },
 ] as const;
 
 async function clan(tag: string, n: number) {
@@ -92,7 +103,14 @@ async function grants(eventId: string) {
     }>()).results;
 }
 
-describe("raids phase 4B: Voidworm, Graviton and Titanus", () => {
+describe("raids phase 4B: Voidworm, Graviton, Titanus, Skullmaw, Dreadfang and Heartbreaker", () => {
+    it("the seven lairs are open: every branch's fight is ready, no sealed lair left", () => {
+        const c = checkMap();
+        expect(c.ok).toBe(true);
+        expect(c.fights).toBe(7);
+        expect(c.warnings).toEqual([]);
+    });
+
     it("each its own badge, an achievement a claimer only may declare", () => {
         for (const b of BOSSES) {
             expect(GIGABOSS_BADGES[b.boss]).toBe(b.badge);

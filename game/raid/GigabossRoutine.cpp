@@ -15,11 +15,17 @@ namespace cosmic::raid {
 std::unique_ptr<GigabossRoutine> makeVoidwormRoutine();
 std::unique_ptr<GigabossRoutine> makeGravitonRoutine();
 std::unique_ptr<GigabossRoutine> makeTitanusRoutine();
+std::unique_ptr<GigabossRoutine> makeSkullmawRoutine();      // 2.69: the Skull
+std::unique_ptr<GigabossRoutine> makeDreadfangRoutine();     // 2.69: the Left arm
+std::unique_ptr<GigabossRoutine> makeHeartbreakerRoutine();  // 2.69: the Torso
 
 std::unique_ptr<GigabossRoutine> GigabossRoutine::make(const std::string& name) {
     if (name == "voidworm") return makeVoidwormRoutine();
     if (name == "graviton") return makeGravitonRoutine();
     if (name == "titanus") return makeTitanusRoutine();
+    if (name == "skullmaw") return makeSkullmawRoutine();
+    if (name == "dreadfang") return makeDreadfangRoutine();
+    if (name == "heartbreaker") return makeHeartbreakerRoutine();
     return nullptr;
 }
 
@@ -89,9 +95,10 @@ void GigabossRoutine::expose(Gigaboss& g, GameWorld& w, Contributions& c, Enemy&
     g.exposedTicks_ = steps(r.exposed);
     g.weak_.clear();
     const float factor = 1.0f + r.weakHpPerPlayer * static_cast<float>(std::max(0, g.scaledFor_ - 1));
-    for (const Vec2& s : r.weakSpots) {
+    for (size_t k = 0; k < r.weakSpots.size(); ++k) {
+        const Vec2 s = r.weakSpots[k];
         const Vec2 at{b.box.center().x + s.x * b.facing, b.box.bottom() + s.y};
-        if (Enemy* e = w.spawnEnemy(r.weakEnemy, at, b.facing < 0.0f)) {
+        if (Enemy* e = w.spawnEnemy(r.weakEnemyAt(k), at, b.facing < 0.0f)) {
             e->summonedBy = b.uid();
             e->countsForStats = false;
             e->scaleHealth(factor);
@@ -127,6 +134,9 @@ bool GigabossRoutine::exposedStep(Gigaboss& g, GameWorld& w, Contributions& c, E
     g.gluWeak(w, b);
     if (--g.exposedTicks_ > 0) return true;
     g.endExposure(w, c);
+    // 2.69: back to the fight, so the routine's setArmour(g, true) can close its guard again (it only
+    // switches Fight and Carapace: left Exposed, the gigaboss stayed bare for good).
+    g.stage_ = Gigaboss::Stage::Fight;
     return false;
 }
 

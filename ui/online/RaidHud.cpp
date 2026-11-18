@@ -156,7 +156,7 @@ void drawGroup(UIContext& ui, const Rect& r, float k, const Group& g) {
     Renderer& rr = ui.r();
     hudBox(ui, r);
     const float pad = ui.s(10) * k, iw = r.w - pad * 2, x = r.x + pad;
-    fit(ui, g.title, {x, r.y + pad + ui.s(9) * k}, 14 * k, iw, kText, FontFace::Title, Align::Left, true);
+    fit(ui, g.title, {x, r.y + pad + ui.s(9) * k}, 14 * k, iw, kText, FontFace::Bold, Align::Left, true);
     const float rowsTop = r.y + pad + ui.s(24) * k, footerH = ui.s(22) * k;
     const float rowH = std::max(1.0f, (r.bottom() - pad - footerH - rowsTop) / static_cast<float>(std::max<size_t>(1, g.rows.size())));
     const float nameW = iw * 0.36f, stateW = iw * 0.3f, barX = x + nameW + ui.s(6) * k, barW = std::max(0.0f, iw - nameW - stateW - ui.s(12) * k);
@@ -180,7 +180,7 @@ void drawObjectives(UIContext& ui, const Rect& r, float k, const std::string& ti
     hudBox(ui, r);
     const float pad = ui.s(10) * k, iw = r.w - pad * 2, markW = ui.s(44) * k;
     const float fs = 13.0f * k, lineH = ui.s(18) * k;
-    fit(ui, title, {r.x + pad, r.y + pad + ui.s(8) * k}, fs, iw, kText, FontFace::Title);
+    fit(ui, title, {r.x + pad, r.y + pad + ui.s(8) * k}, fs, iw, kText, FontFace::Bold);
     float y = r.y + pad + ui.s(22) * k;
     const float bottom = r.bottom() - pad;
     for (size_t i = 0; i < lines.size(); ++i) {
@@ -494,7 +494,7 @@ void Minimap::drawLarge(UIContext& ui, ResourceManager& res, const GameWorld& w,
     const float pad = ui.s(24), x = r.x + pad, iw = r.w - pad * 2;
     // Title at the left, the danger now at the right (each in its measured share of the row).
     const float headerW = header.empty() ? 0.0f : std::min(textW(ui, header, 18, FontFace::Bold), iw * 0.45f);
-    fit(ui, title, {x, r.y + ui.s(30)}, 24, iw - (headerW > 0.0f ? headerW + ui.s(20) : 0.0f), kText, FontFace::Title);
+    fit(ui, title, {x, r.y + ui.s(30)}, 24, iw - (headerW > 0.0f ? headerW + ui.s(20) : 0.0f), kText, FontFace::Bold);
     if (!header.empty()) fit(ui, header, {r.right() - pad, r.y + ui.s(30)}, 18, headerW, headerColor, FontFace::Bold, Align::Right);
     // From the bottom up: how to close it, the legend, the branch's zones; the map takes the rest.
     float bottom = r.bottom() - pad;

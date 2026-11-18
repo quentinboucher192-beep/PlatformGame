@@ -224,7 +224,7 @@ public:
                            orange});
         }
         for (const Held& h : held_)
-            out.push_back({"✚", "Crever la poche de Voidworm : le joueur " + std::to_string(h.seat + 1) + " est avalé (" +
+            out.push_back({"+", "Crever la poche de Voidworm : le joueur " + std::to_string(h.seat + 1) + " est avalé (" +
                                     std::to_string(static_cast<int>(std::ceil(static_cast<float>(h.left) / static_cast<float>(kSimHz)))) + " s)",
                            red});
         if (g.phase() >= 2 && held_.empty()) out.push_back({"◆", "Sa gueule vise un joueur : sortez de l'anneau vert avant qu'il se ferme.", orange});
@@ -232,7 +232,7 @@ public:
             out.push_back({"≈", "Reflux d'acide toutes les " + std::to_string(static_cast<int>(std::lround(acidPeriod_))) + " s : restez sur les racines hautes.",
                            kAcid});
         if (!parasitePeriods_.empty())
-            out.push_back(linkDone(g, "nest") ? BossLine{"✓", "Nid des parasites détruit : Voidworm n'a plus que de maigres renforts.", green}
+            out.push_back(linkDone(g, "nest") ? BossLine{"OK", "Nid des parasites détruit : Voidworm n'a plus que de maigres renforts.", green}
                                               : BossLine{"◆", "Ses parasites en renfort : détruire le nid (zone 3) les réduirait de moitié.",
                                                          Color{196, 140, 255, 255}});
     }
@@ -240,6 +240,16 @@ public:
     void threats(const Gigaboss& g, std::vector<Vec2>& out) const override {
         (void)g;
         for (const Gulp& q : gulps_) out.push_back(q.at);
+    }
+
+    void targets(std::vector<uint32_t>& out) const override {
+        if (poche_) out.push_back(poche_);
+    }
+
+    /// 2.69: a player in its stomach gets no mark of its « Fouissement » (they cannot leave it: it
+    /// would hit them inside); its other blows never aim at them either.
+    bool spared(int seat) const override {
+        return std::any_of(held_.begin(), held_.end(), [&](const Held& h) { return h.seat == seat; });
     }
 
 private:
