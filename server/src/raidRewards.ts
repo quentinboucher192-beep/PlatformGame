@@ -286,8 +286,10 @@ export async function grantEndedTops(db: D1Database, now: string): Promise<numbe
     try {
         const ended = await db
             .prepare(
-                `SELECT DISTINCT e.id FROM raid_events e JOIN raid_gigaboss_fights f ON f.event_id = e.id AND f.phase = 4 AND f.boss = 'Pyroclast'
+                // 2.74: from the events that just ended (index on ends_at, migration 0149), never every fight ever fought.
+                `SELECT e.id FROM raid_events e
                  WHERE e.ends_at <= ?1 AND e.ends_at > ?2
+                   AND EXISTS (SELECT 1 FROM raid_gigaboss_fights f WHERE f.event_id = e.id AND f.phase = 4 AND f.boss = 'Pyroclast')
                    AND NOT EXISTS (SELECT 1 FROM raid_reward_grants g WHERE g.event_id = e.id AND g.reward = 'pyroclast_top')`,
             )
             .bind(now, new Date(Date.parse(now) - 7 * 86400000).toISOString())

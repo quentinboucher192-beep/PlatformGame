@@ -144,6 +144,7 @@ void CoopRelay::received(int conn, const uint8_t* data, size_t size, uint32_t no
             }
             s.rejoinAt = at;
             sendAll(rejoin(static_cast<uint8_t>(seat), at));
+            flush();  // 2.74: with nobody else in play, the steps up to its return are given now
             break;
         }
         case Msg::PackageAsk: {
@@ -318,6 +319,11 @@ void CoopRelay::flush() {
             started_ = false;
             return;
         }
+        // 2.74: nobody in play (every seat absent, none coming back): the steps stand still. Before,
+        // the relay gave standby frames to nobody as fast as it could, up to the 2 h limit.
+        bool anyInPlay = false;
+        for (int k = 0; k < players_ && !anyInPlay; ++k) anyInPlay = !seats_[k].absent || seats_[k].rejoinAt != 0;
+        if (!anyInPlay) break;
         bool complete = true;
         for (int k = 0; k < players_ && complete; ++k) {
             Seat& s = seats_[k];

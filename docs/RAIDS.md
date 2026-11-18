@@ -2,7 +2,7 @@
 
 # Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6) ;
 # phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12) ; phase 4B : VOIDWORM, GRAVITON, TITANUS (2.69, §13) ;
-# phase 5 : les événements mondiaux (2.69, §14)
+# phase 5 : les événements mondiaux (2.69, §14) ; phase 7 : fiabilité, charge et anti-triche (2.74, §15)
 
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
@@ -157,7 +157,8 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
 
 * (2.68 : la Main est ouverte, voir §7.)
 * Les replays d'une instance ne sont pas encore conservés côté serveur (le relais garde les trames
-  en mémoire, comme la coopération).
+  en mémoire, comme la coopération ; 2.74 : et dans le stockage de son objet durable tant que dure la
+  partie, pour la retrouver après un redémarrage, §15).
 * Les soufflets demandent deux groupes, sans la contrainte « à 3 s près » de la maquette : deux
   instances ne partagent pas d'horloge commune assez précise.
 * Le chat de groupe (« GROUPE · Lyra : … » de la maquette) n'est pas dans cette phase : les
@@ -568,6 +569,147 @@ publication exige une carte valide. Chaque action va au Journal (`admin_raid_sus
 Migration **0147_raid_world.sql** : `raid_events.suspended_at / suspended_reason / late_minutes / catchup_of / map_check`,
 `raid_instances.reconnects` (+ déclencheur), `raid_world_journal`, `raid_event_results` (+ déclencheur de gel),
 `raid_clan_titles`.
+
+## 15. Phase 7 (2.74) : fiabilité, charge et anti-triche
+
+La phase 7 met tout le raid sous charge, sur un réseau dégradé et face aux tricheurs, avec des tests automatisés qui
+tournent à chaque compilation (serveur : vitest dans Miniflare, avec le vrai Worker, D1 et le `CoopRoom` ; jeu :
+`cosmic_tests`). Chaque problème trouvé a été corrigé, et le test qui l'a montré échoue avec l'ancien code.
+
+### Ce que les tests ont trouvé
+
+| Problème trouvé | Effet | Correction |
+|---|---|---|
+| Le dernier joueur d'une instance part (un joueur seul qui ferme son jeu, un groupe dont la connexion tombe) | le relais donnait des trames de veille **à personne**, aussi vite que possible, jusqu'à la limite de 2 h (864 000 pas × 8 sièges en mémoire : l'objet durable épuisait sa mémoire et son temps de calcul), puis oubliait la partie | **personne en jeu : les pas s'arrêtent** (`CoopRoom` et `CoopRelay` du réseau local) |
+| Tous les liens d'une instance se ferment | la partie était oubliée à l'instant : aucun retour possible dans les 60 s | en mode raid, la partie **attend ses joueurs 60 s** (sièges libérés à l'horloge quand personne ne joue), puis se termine |
+| Un jeu se reconnecte avant que le relais n'ait vu la coupure (lien mort sans fermeture : 3 s de silence) | refusé (« plus de 60 s d'absence ») | une **seconde connexion du même compte** (celui de la session) reprend sa place ; l'ancienne est fermée |
+| L'objet durable redémarre (déploiement, éviction, panne) | toute l'instance perdue | la partie est **stockée chaque seconde** et revient au démarrage de l'objet (ci-dessous) |
+| Un siège libéré pendant l'écriture D1 du relais | le joueur arrivé entre-temps perdait son identité (rapports refusés, contributions sans joueur) | le siège oublie son joueur tout de suite ; les écritures du relais en D1 partent dans l'ordre |
+| Consensus : des membres **absents** envoient un rapport | leurs votes comptaient contre une majorité calculée sur les seuls joueurs actifs : trois complices absents l'emportaient sur deux joueurs en jeu | **seuls les votes des joueurs en jeu comptent** ; les autres attendent, puis sont journalisés s'ils sont minoritaires |
+| Un rapport minoritaire croise l'acceptation | le menteur recevait « accepted » et n'était pas toujours journalisé | refusé et **journalisé une fois** |
+| La clôture croise une acceptation | un rapport pouvait être accepté juste après le gel du résultat officiel | l'acceptation est une seule instruction conditionnelle : **figé ou suspendu, refusé** |
+| Deux rapports de zone acceptés dans l'autre ordre (requêtes croisées sur le réseau) | le groupe revenait en arrière sur la carte | `raid_instances.zone_tick` : **le pas le plus récent gagne** |
+| Résultat officiel figé : `DELETE` ou `INSERT OR REPLACE` | contournaient le déclencheur de gel (qui ne voyait que les `UPDATE`) | déclencheurs `raid_event_results_kept` et `raid_event_results_once` |
+| Un objectif accepté dans un événement mondial | réveillait les relais de **toutes** les instances l'un après l'autre, dans la requête | tous ensemble, **après la réponse** (`waitUntil`) : la requête fait le même travail avec 2 ou 30 instances |
+| La récompense de fin d'événement (cron, chaque minute) | lisait tous les combats de gigaboss jamais livrés | part des événements qui viennent de finir (index `raid_events_end`) |
+| Le jeu perd sa liaison avec le relais | l'instance s'arrêtait (« Retour à la carte ») | **reconnexion automatique** pendant 60 s (ci-dessous) |
+
+### Persistance : le relais d'une instance survit à son objet
+
+* Le `CoopRoom` d'une instance stocke sa partie (stockage de l'objet durable) **chaque seconde** : l'historique des
+  trames par parts de 4 s (480 pas, écrites une fois chacune, la dernière réécrite tant qu'elle se remplit ; trames
+  compactes : un octet par joueur quand rien ne change), les sièges, les états de la branche donnés. Une écriture est
+  atomique : les pas stockés correspondent toujours à l'état stocké.
+* Au démarrage de l'objet (`blockConcurrencyWhile`), la partie revient : plus personne n'est connecté, chaque joueur est
+  **absent à partir du dernier pas stocké**, écrit ainsi en D1 (le consensus ne compte plus ses votes), et revient comme
+  tout retour (historique, rattrapage hors du fil principal, `REJOIN`) ; les reconnexions sont comptées par la base
+  (déclencheur 0 → 1 de la migration 0147). Au pire, la dernière seconde jouée est perdue : le groupe la rejoue.
+* Une partie dont tous les sièges sont libres et personne connecté est effacée (le salon reste : le prochain joueur
+  lance une nouvelle partie de l'instance).
+* D1 reste la vérité de la branche et du monde : objectifs par leur clé, tableaux par `(instance, siège, pas)` remplacés
+  seulement par un plus récent, combats par instance (`MAX(phase)`), zone par le pas le plus récent. Les crons
+  (`worldTick`, `grantEndedTops`) et la première lecture du classement peuvent clore un événement en même temps :
+  résultat figé une fois, récompenses une fois, notifications une fois (testé avec trois crons et deux lectures à la
+  fois). Le résultat officiel ne change plus : ni `UPDATE`, ni `DELETE`, ni `INSERT OR REPLACE` (seule la suppression
+  de l'événement lui-même l'emporte).
+
+### Réseau : le verrouillage à 8 sous latence
+
+* **Relais** (`server/test/raidRelay.test.ts`, vraies WebSockets) : 8 jeux, gigue de 0 à 25 ms par message, un lot
+  d'entrées sur trois envoyé avant le précédent : les 8 jeux reçoivent les mêmes trames, chaque entrée à son pas ; le
+  dernier joueur part et revient dans les 60 s ; 60 s de pas libèrent le siège (trames `Vacant`) qu'un membre arrivé en
+  retard prend (son `seat_from` = son pas de retour) ; celui qui a lancé l'instance part, les autres continuent ; une
+  seconde connexion du même compte reprend sa place ; un neuvième joueur est refusé ; l'objet redémarre au milieu
+  (3 parts stockées) et les deux joueurs retrouvent exactement l'historique.
+* **Jeu** (`tests/test_raid_net.cpp`, réseau simulé, 73 s de jeu) : 8 jeux à 120 Hz derrière des liaisons de 25 ms
+  (+ 0 à 15 ms de gigue) dans chaque sens, où un message sur 5 000 n'arrive que 200 ms plus tard en retenant toute sa
+  liaison (une retransmission TCP), des entrées envoyées dans le désordre, une liaison coupée (ce qui était en route est
+  perdu) puis rétablie 2 s plus tard, le lanceur qui part pour de bon, son siège libéré au bout de 60 s de pas et repris
+  par un retardataire. Résultat : tous les jeux en jeu reçoivent exactement les mêmes trames (≈ 8 650 pas), chaque
+  entrée tombe sur son pas et son siège, l'absence est en veille puis libre (`Vacant`) au bout de 7 200 pas ; le relais
+  choisit un délai d'entrée de 12 images (100 ms), un jeu attend sa trame sur ≈ 5,5 % de ses images (les
+  retransmissions) et le verrouillage suit l'horloge à plus de 90 %. Au-delà du délai maximal (15 images, 125 ms :
+  liaisons de 40 + 30 ms), rien ne se désynchronise mais le jeu ralentit (≈ 72 % de l'horloge, mesuré pendant la mise au
+  point) : c'est la limite du verrouillage par entrées.
+* **Reconnexion automatique** (`game/raid/Reconnect`, `RaidGameScene`) : une liaison qui meurt sans `END` du relais
+  (`NetCoopLink::connectionLost`, distinct d'un refus du relais) déclenche des essais tout de suite, puis 1, 2, 4 et 8 s
+  après, puis toutes les 8 s, pendant les 60 s où le relais garde la place. Le monde reste affiché, figé, sous la carte
+  « LIAISON PERDUE » (message mesuré, compte à rebours, « Retour à la carte de la branche » au clavier, à la manette et à
+  la souris) ; chaque essai est un retour (nouveau monde, historique rejoué hors du fil principal, « Liaison rétablie :
+  rattrapage de la partie (n %) ») ; après 60 s : « La liaison avec le relais n'a pas pu être rétablie en 60 s : votre
+  place a été libérée… ». Un refus du relais (place reprise, instance pleine) est dit tel quel.
+
+### Charge (Miniflare, `server/test/raidLoad.test.ts`)
+
+Quatre clans de 50 joueurs (200 comptes) :
+
+| Opération, toutes en même temps | Résultat | Durée mesurée |
+|---|---|---|
+| 200 inscriptions pour 180 places (50 par clan au plus) | exactement 180, aucune en double, aucun clan au-delà de 50 | ≈ 4,2 s |
+| 180 placements sur le titan | jamais un neuvième dans une instance ; 27 instances | ≈ 8,0 s (avec les nouveaux essais « réessayez ») |
+| 180 rapports d'objectif (chaque instance son premier objectif) | un objectif par branche pour le monde, un par instance pour son consensus, chaque doublon journalisé, aucun refus | ≈ 4,1 s (≈ 23 ms par rapport, 60 à la fois) |
+| 180 rapports de tableau, pendant deux agrégations | 180 lignes de contributions, agrégat identique après avoir tout renvoyé dans un autre ordre | ≈ 3,9 s |
+| 360 demandes de récompenses (deux par joueur) | chaque récompense réclamée une fois, aucun objet en double | ≈ 4,5 s |
+| clôture : trois crons et deux lectures du classement | résultat figé une fois, notifications une fois, titres des 4 clans | ≈ 0,4 s |
+
+Travail par requête (allers-retours D1, **identiques avec 2 et 30 instances**) : rapport en attente 10,
+rapport accepté 16, rapport répété 9, agrégation 1 (un seul lot), classement mondial 10,
+récupération 4, carte du titan 6, place 14, « En direct » 6, cron du monde
+4, clôture 16. Le plan de chaque instruction de ces chemins est vérifié (`EXPLAIN QUERY PLAN`) :
+aucune ne lit une table de raid entière.
+
+À l'échelle d'un événement mondial (50 clans de 50 joueurs, 350 instances, 2 500 tableaux validés) : agrégation
+≈ 60 ms (un seul lot), classement mondial ≈ 55 ms (11 allers-retours), clôture (gel, 2 500 combinaisons, 2 500 notifications) ≈ 0,4 s (44 allers-retours). Les
+durées sont celles de Miniflare sur la machine de test (les objets durables y partagent le fil des requêtes) : des
+ordres de grandeur, pas des garanties.
+
+### Anti-triche (`server/test/raidCheat.test.ts`)
+
+* **Identité** : le serveur ne connaît le joueur que par sa session : le relais reçoit l'identifiant du Worker (un en-tête
+  `x-player-id` envoyé par le jeu est écrasé, le compte et le siège dits dans `HELLO` sont ignorés) ; un rapport qui dit
+  un joueur ou un siège est refusé (400) ; un non-membre de l'instance, ou un membre dont le siège a été libéré : 403.
+* **Consensus** : majorité stricte des joueurs en jeu, égalité jamais acceptée, un joueur une valeur par clé, menteurs
+  minoritaires journalisés (une fois), complices absents sans voix, rapports rejoués ou dupliqués sans effet (20 fois
+  le même à la fois : un rapport, un objectif).
+* **Vraisemblance** avant toute majorité : objectif inconnu, d'une autre zone ou d'une zone verrouillée, gigaboss hors de
+  son antre, pas plus loin que l'horloge depuis le début de l'instance, tableaux impossibles (dégâts, évents…) : refusés
+  et journalisés pour chaque joueur.
+* **Temps** : rien n'est accepté pendant une suspension ni après le gel, même au milieu d'une requête.
+* **Débit** : 600 rapports par joueur et par 10 min (429 avec `retry-after`), 200 messages par seconde et par
+  connexion au relais (au-delà, la connexion est fermée).
+* **Limite connue** : une instance dont **plus de la moitié** des joueurs en jeu mentent ensemble peut faire accepter des
+  faits *vraisemblables* (le serveur ne simule pas la partie) ; ils restent bornés par les règles ci-dessus, ne valent
+  que pour son instance (un objectif compte une fois pour le monde) et chaque refus est journalisé pour les
+  administrateurs (« En direct »).
+
+### Performance (`tests/test_raid_net.cpp`, sans affichage)
+
+Un pas de simulation de l'instance (8 joueurs, `RaidRun::step`), 1 800 pas (15 s de jeu, les joueurs avancent depuis
+l'entrée de la zone ; chaque ennemi est simulé à chaque pas, sans tri par distance), dans les zones les plus lourdes,
+build Release (GCC 13, Linux, 4 cœurs) :
+
+| Zone | Ennemis | Moyenne | 1 % le plus lent | Pire pas |
+|---|---|---|---|---|
+| Bras droit, zone 7 (Poignet-verrou) | 192 | 0,10 ms | 0,37 ms | 4,1 ms (le premier : les ennemis apparaissent) |
+| Torse, zone 7 (magma) | 143 | 0,09 ms | 0,15 ms | 4,2 ms (le premier) |
+| Jambe gauche, zone 7 (magma) | 143 | 0,10 ms | 0,16 ms | 4,2 ms (le premier) |
+
+Seuil enregistré dans le test : en moyenne **moins de la moitié** du budget d'un pas à 120 Hz (8,33 ms : l'autre moitié
+reste pour l'affichage), et le 1 % le plus lent **sous le budget entier**.
+
+### Les tests
+
+| Fichier | Ce qu'il vérifie |
+|---|---|
+| `server/test/raidRelay.test.ts` | le relais d'une instance : 8 jeux sous gigue, départ et retour, siège libéré et repris, sans hôte, seconde connexion, identité, débit, redémarrage de l'objet |
+| `server/test/raidLoad.test.ts` | 4 clans de 50 en même temps, travail borné par requête, plans des requêtes, échelle mondiale chronométrée |
+| `server/test/raidCheat.test.ts` | consensus face aux tricheurs, courses rendues exactes (rapport minoritaire, clôture), ordre, rejeux, identité, débit, gel |
+| `tests/test_raid_net.cpp` | réseau simulé à 8, relais sans personne en jeu, liaison perdue ou refusée, calendrier de reconnexion, performance |
+
+Migration **0149_raid_reliability.sql** : `raid_instances.zone_tick`, déclencheurs `raid_event_results_kept` /
+`raid_event_results_once`, index `raid_report_rejections_key`, `raid_reward_grants_event`, `raid_events_end`.
+Le serveur est à déployer avec la migration (le jeu reste compatible avec un serveur qui ne l'a pas encore : il ne dépend
+d'aucune nouvelle route ; sans le serveur 2.74, il retrouve seulement les anciennes limites du relais).
 
 ---
 

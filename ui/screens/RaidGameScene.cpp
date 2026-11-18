@@ -20,6 +20,12 @@
 // reports of its phases and of the contributions' tables, and the card of its fall (« Résultats
 // du raid »). An administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): the same
 // screen, solo and local (no relay), never reported, badge « TEST ADMIN · non classé ».
+//
+// 2.74 (phase 7): a link to the relay that dies while the group plays (no END: a network cut, the
+// relay restarted) is connected again by the screen itself during the 60 s the relay keeps the seat
+// (raid::Reconnect: at once, then 1, 2, 4, 8 s apart); each attempt is a return (the history
+// replayed off the main thread, then REJOIN). The world stays shown under a « Liaison perdue »
+// card meanwhile; after 60 s the seat is free and the screen says so.
 
 #include <algorithm>
 #include <atomic>
@@ -41,6 +47,7 @@
 #include "game/powers/PowerKeys.h"
 #include "game/raid/RaidRun.h"
 #include "game/raid/ArenaCamera.h"
+#include "game/raid/Reconnect.h"
 #include "game/gameplay/EnemyArrows.h"
 #include "game/gameplay/entities/Entities.h"
 #include "engine/resources/ResourceManager.h"
@@ -91,7 +98,7 @@ public:
 
     bool holdsNotifications() const override { return true; }
     // 2.68 (phase 3): the pointer comes back with the card of the gigaboss's fall (« Résultats du raid »).
-    bool hidesCursor() const override { return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_; }
+    bool hidesCursor() const override { return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !reconnect_.active(); }
 
     void onEnter() override {
         branch_ = raid::Branch::builtin(entry_.branch);
@@ -104,18 +111,76 @@ public:
             return;
         }
         g_.ui.setFocus("raidgame/start");
+        connect();
+    }
+
+    /// A link to the instance's relay (a fresh access token each time). 2.74: also each attempt of
+    /// an automatic reconnection (the catch-up of the previous link stopped first: it reads that link).
+    void connect() {
         connecting_ = true;
         g_.online.freshAccess([this, life = std::weak_ptr<int>(life_)](const std::string& token, const std::string& url) {
             if (life.expired()) return;
             connecting_ = false;
             if (token.empty() || url.empty()) {
-                fail_ = "Connectez-vous à Cosmic Online pour combattre dans le raid.";
+                if (reconnect_.active()) reconnect_.failed(clock_);  // offline for now: the next attempt
+                else fail_ = "Connectez-vous à Cosmic Online pour combattre dans le raid.";
                 return;
             }
+            stopCatchUp();
+            if (link_) link_->close();
             link_ = std::make_unique<NetCoopLink>(makeWebSocketTransport(url + "/api/v1/raids/instances/" + entry_.instanceId + "/socket", token),
                                                   g_.online.username(), 255, g_.online.playerId());
             link_->start();
+            fresh_ = reconnect_.active();
         });
+    }
+
+    /// 2.74: stops a catch-up under way (its thread reads the link and the world).
+    void stopCatchUp() {
+        if (worker_.joinable()) {
+            stopWorker_ = true;
+            worker_.join();
+        }
+        stopWorker_ = false;
+        workerDone_ = false;
+        if (catching_) {
+            // An unfinished catch-up: its world was never shown; the next GO makes a new one.
+            catching_ = false;
+            run_.reset();
+        }
+    }
+
+    /// 2.74: the link died while the group plays (no END): connect again by itself while the relay
+    /// keeps the seat (60 s), each attempt a return (catch-up, REJOIN); after that, say it is over.
+    void updateReconnect() {
+        if (reconnect_.expired(clock_)) {
+            reconnect_.back();
+            stopCatchUp();
+            ended_ = true;
+            endReason_ = raid::Reconnect::gaveUp();
+            g_.ui.setFocus("raidgame/end/map");
+            return;
+        }
+        if (fresh_ && link_) {
+            if (link_->go()) {
+                begin();  // back in the instance: the history, then its return
+                return;
+            }
+            if (!link_->endReason().empty() && !link_->connectionLost()) {
+                // The relay refused this return (its seat was freed, the instance is full or over).
+                reconnect_.back();
+                fresh_ = false;
+                ended_ = true;
+                endReason_ = link_->endReason();
+                g_.ui.setFocus("raidgame/end/map");
+                return;
+            }
+            if (!link_->error().empty() || link_->connectionLost()) {
+                reconnect_.failed(clock_);
+                fresh_ = false;
+            }
+        }
+        if (!connecting_ && !fresh_ && reconnect_.due(clock_)) connect();
     }
 
     void onExit() override {
@@ -130,6 +195,20 @@ public:
         if (go.level != branch_->levelId() || go.hash != branch_->levelHash()) {
             fail_ = "Ce raid se joue avec une autre version de la branche : mettez le jeu à jour.";
             return;
+        }
+        if (reconnect_.active()) {
+            // 2.74: back after a lost link: a new world, the whole history replayed (never the old one).
+            reconnect_.back();
+            fresh_ = false;
+            rejoining_ = true;
+            stopCatchUp();
+            tick_ = 0;
+            sentUpTo_ = UINT32_MAX;
+            serial_ = -1;
+            waiting_ = 0.0f;
+            progress_ = 0;
+            fallCard_ = false;
+            note("RÉSEAU · Liaison rétablie : retour dans l'instance", kGreen);
         }
         local_ = link_->seat();
         ResourceManager& res = g_.app.resources();
@@ -236,6 +315,7 @@ public:
     void finishCatchUp() {
         if (worker_.joinable()) worker_.join();
         catching_ = false;
+        rejoining_ = false;
         run_->setQuiet(false);
         g_.app.resources().finishDeferred();
         run_->takeReports();  // what happened before this game came: the others reported it
@@ -271,6 +351,7 @@ public:
             if (catching_ && workerDone_) finishCatchUp();
             return;
         }
+        if (reconnect_.active()) return;  // 2.74: no relay for now: the world waits under its card
         int steps = 1;
         if (link_->available() > tick_ + static_cast<uint32_t>(link_->inputDelay() + 6)) steps = 4;
         for (int k = 0; k < steps && !ended_; ++k) {
@@ -356,9 +437,15 @@ public:
             return;
         }
         if (link_) link_->update(dt);
-        if (link_ && !run_ && fail_.empty() && link_->go()) begin();
-        if (link_ && !link_->error().empty() && fail_.empty() && !run_) fail_ = link_->error();
-        if (link_ && !link_->endReason().empty() && !ended_ && run_) {
+        if (!reconnect_.active() && link_ && !ended_ && link_->connectionLost() && run_) {
+            reconnect_.lost(clock_);
+            g_.ui.setFocus("raidgame/reconnect/map");
+        }
+        if (reconnect_.active()) updateReconnect();
+        if (link_ && !run_ && fail_.empty() && !reconnect_.active() && link_->go()) begin();
+        if (link_ && !link_->error().empty() && fail_.empty() && !run_ && !reconnect_.active()) fail_ = link_->error();
+        if (link_ && link_->connectionLost() && fail_.empty() && !run_ && !reconnect_.active()) fail_ = link_->endReason();  // lost in the lobby
+        if (link_ && !link_->endReason().empty() && !ended_ && run_ && !reconnect_.active()) {
             ended_ = true;
             endReason_ = link_->endReason();
             g_.ui.setFocus("raidgame/end/map");
@@ -433,6 +520,7 @@ public:
             drawArrows(w, view);
             drawArenaIntro();
             if (fallCard_ && !paused_ && !ended_) drawFall();
+            if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
         }
@@ -453,9 +541,13 @@ public:
         bool lobby = false;
         if (!fail_.empty()) {
             line = fail_;
+        } else if (reconnect_.active()) {
+            line = reconnect_.message(clock_);  // 2.74: a catch-up interrupted by a lost link
+            sub = "Le groupe continue sans vous ; vous le rejoignez dès que la liaison revient.";
         } else if (catching_) {
             const uint32_t total = std::max<uint32_t>(1, link_->available());
-            line = "Le groupe joue déjà : rattrapage de la partie (" + std::to_string(std::min<uint32_t>(100, progress_ * 100 / total)) + " %)";
+            const std::string pct = std::to_string(std::min<uint32_t>(100, progress_ * 100 / total));
+            line = rejoining_ ? "Liaison rétablie : rattrapage de la partie (" + pct + " %)" : "Le groupe joue déjà : rattrapage de la partie (" + pct + " %)";
             sub = "Vous rejoignez " + group + " près de vos alliés dès que votre jeu est à jour.";
         } else if (connecting_ || !link_ || link_->connecting()) {
             line = "Connexion à l'instance de " + group + "…";
@@ -1212,6 +1304,24 @@ public:
         pauseOpenedNow_ = false;
     }
 
+    /// 2.74: the link to the relay is lost: the world stays shown (frozen) under this card while the
+    /// screen connects again by itself; the player may go back to the map at any time.
+    void drawReconnect() {
+        UIContext& ui = g_.ui;
+        Rect box = centred(ui.s(620), ui.s(250));
+        ui.panel(box, true, 16);
+        fit(ui, "LIAISON PERDUE", {box.center().x, box.y + ui.s(40)}, 30, box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
+        const auto lines = wrap(ui, reconnect_.message(clock_), FontFace::Body, 16, box.w - ui.s(56), 3);
+        drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(74)}, 16, ui.s(22), kText);
+        const float p = reconnect_.remaining(clock_) / raid::Reconnect::kWindow;
+        const Rect bar{box.x + ui.s(28), box.bottom() - ui.s(98), box.w - ui.s(56), ui.s(8)};
+        ui.r().fillRoundedRect(bar, ui.s(4), Color{40, 30, 50, 255});
+        ui.r().fillRoundedRect({bar.x, bar.y, bar.w * std::clamp(p, 0.0f, 1.0f), bar.h}, ui.s(4), kOrange);
+        ui.pushId("reconnect");
+        if (ui.button("map", {box.x + ui.s(40), box.bottom() - ui.s(74), box.w - ui.s(80), ui.s(54)}, "Retour à la carte de la branche") || ui.backPressed()) leave();
+        ui.popId();
+    }
+
     void drawEnd() {
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 190});
@@ -1248,6 +1358,9 @@ public:
     std::atomic<bool> stopWorker_{false}, workerDone_{false};
     std::atomic<uint32_t> progress_{0};
     bool catching_ = false, connecting_ = false, paused_ = false, ended_ = false;
+    raid::Reconnect reconnect_;  // 2.74: the automatic reconnection after a lost link
+    bool fresh_ = false;         // 2.74: link_ is an attempt of the reconnection (its GO not come yet)
+    bool rejoining_ = false;     // 2.74: the catch-up of a reconnection (its text)
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
