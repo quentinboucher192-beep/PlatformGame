@@ -1,7 +1,7 @@
 {
  "format": "cosmic.film",
  "version": 1,
- "comment": "The film of Asterion's fall (2.72, docs/RAIDS.md §15), played for everyone of an instance at the step the server validates the shared victory over its heart, then from the sheet of the event (its replay button). Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`: `t` and `to` in seconds of the shot as written, `pos` its middle in fractions of the picture, `width` the share of the picture it may take, `size` its largest size, `color` its glow). The animated scene of each shot (`scene`) is in asterion_victoire_scenes.json, written by tools/assetgen/environment/story_asterion_victoire.py: a length changed here stretches the scene and its titles, nothing to regenerate. The English is in data/i18n/en.json.",
+ "comment": "The film of Asterion's fall (2.72, docs/RAIDS.md §16), played for everyone of an instance at the step the server validates the shared victory over its heart, then from the sheet of the event (its replay button). Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`: `t` and `to` in seconds of the shot as written, `pos` its middle in fractions of the picture, `width` the share of the picture it may take, `size` its largest size, `color` its glow). The animated scene of each shot (`scene`) is in asterion_victoire_scenes.json, written by tools/assetgen/environment/story_asterion_victoire.py: a length changed here stretches the scene and its titles, nothing to regenerate. The English is in data/i18n/en.json.",
  "boss": "asterion",
  "kind": "film",
  "title": "LA CHUTE D'ASTERION",

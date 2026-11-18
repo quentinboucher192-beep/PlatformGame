@@ -1,4 +1,4 @@
--- 2.72 (phase 6, docs/RAIDS.md §15): the Cœur d'Asterion, the final fight of the clan raid.
+-- 2.72 (phase 6, docs/RAIDS.md §16): the Cœur d'Asterion, the final fight of the clan raid.
 --
 -- Every group of every clan fights the heart at the same time, each instance in its own simulation;
 -- its health is SHARED: each instance's consensus validates the part of it that instance took
@@ -30,3 +30,20 @@ CREATE TABLE raid_heart_events (
     notified_open   TEXT,
     notified_fall   TEXT
 );
+
+-- Frozen after the victory (the phase-7 rule of the frozen results, docs/RAIDS.md §15): once the heart's
+-- fall is written, or the event's official result frozen, no part of its shared health changes any more,
+-- whatever statement is tried (an UPSERT included: the insert trigger fires first).
+CREATE TRIGGER raid_heart_damage_frozen_insert BEFORE INSERT ON raid_heart_damage
+WHEN EXISTS (SELECT 1 FROM raid_branch_objectives WHERE event_id = NEW.event_id AND branch = 'asterion_coeur' AND objective_id = 'coeur_asterion')
+  OR EXISTS (SELECT 1 FROM raid_event_results WHERE event_id = NEW.event_id)
+BEGIN
+    SELECT RAISE(IGNORE);
+END;
+
+CREATE TRIGGER raid_heart_damage_frozen_update BEFORE UPDATE ON raid_heart_damage
+WHEN EXISTS (SELECT 1 FROM raid_branch_objectives WHERE event_id = OLD.event_id AND branch = 'asterion_coeur' AND objective_id = 'coeur_asterion')
+  OR EXISTS (SELECT 1 FROM raid_event_results WHERE event_id = OLD.event_id)
+BEGIN
+    SELECT RAISE(IGNORE);
+END;

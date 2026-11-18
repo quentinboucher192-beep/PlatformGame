@@ -1,4 +1,4 @@
-// Clan raids « Asterion », phase 6 (2.72, docs/RAIDS.md §15): LE CŒUR D'ASTERION, the final fight.
+// Clan raids « Asterion », phase 6 (2.72, docs/RAIDS.md §16): LE CŒUR D'ASTERION, the final fight.
 //
 // * It OPENS once the seven gigaboss of the titan fell (their objectives accepted for the event): the
 //   heart's catalog (raidTitan.json `heart_catalog`, written by tools/levelgen/raid_coeur.py) is then a

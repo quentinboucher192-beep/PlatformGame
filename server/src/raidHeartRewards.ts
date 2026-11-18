@@ -1,4 +1,4 @@
-// Clan raids « Asterion », phase 6 (2.72, raidHeart.ts, docs/RAIDS.md §15): the rewards of the Cœur
+// Clan raids « Asterion », phase 6 (2.72, raidHeart.ts, docs/RAIDS.md §16): the rewards of the Cœur
 // d'Asterion's fall, beside those of phase 3 (raidRewards.ts lists them all). Each one is granted by the
 // server only, from validated results (the shared fall written once, the contributions each instance's
 // consensus accepted), once per player, reward and event (raid_reward_grants). No import here:

@@ -30096,6 +30096,12 @@
    ]
   },
   {
+   "fr": "La liaison avec le relais n'a pas pu être rétablie en 60 s : votre place a été libérée. Revenez par la carte de la branche pour reprendre une place.",
+   "where": [
+    "game/raid/Reconnect.cpp"
+   ]
+  },
+  {
    "fr": "La Liche : elle se téléporte entre les quatre autels de sa crypte (l'autel suivant s'illumine avant qu'elle n'y apparaisse), trace des runes funestes sur le sol où vous vous tenez (armées, elles éclatent sous vos pieds : sautez-les ou passez entre deux), lance son Maléfice (un cercle de runes se referme autour de vous : restez dedans et vos sauts s'alourdissent quelques secondes), dresse des murs d'os, appelle ses spectres, et son dernier sort doit être survécu. Rester sous elle ou à côté ne protège pas.",
    "where": [
     "data/news/changelog.json"
@@ -31701,6 +31707,12 @@
    ]
   },
   {
+   "fr": "le Cœur d'Asterion est tombé : sa vie partagée est figée",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "le Cœur d'Asterion n'est pas dans cette zone",
    "where": [
     "server/src/raidZones.ts"
@@ -32298,6 +32310,12 @@
    "fr": "Le Grappin rend vos sauts aériens : enchaînez traction, saut et Planeur.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Le groupe continue sans vous ; vous le rejoignez dès que la liaison revient.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -35326,6 +35344,30 @@
    "fr": "liaison : mesure…",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Liaison avec le relais perdue : reconnexion automatique (essai {0}). Votre place est gardée encore {1} s.",
+   "where": [
+    "game/raid/Reconnect.cpp"
+   ]
+  },
+  {
+   "fr": "Liaison avec le relais perdue : reconnexion automatique. Votre place est gardée encore {0} s.",
+   "where": [
+    "game/raid/Reconnect.cpp"
+   ]
+  },
+  {
+   "fr": "LIAISON PERDUE",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Liaison rétablie : rattrapage de la partie ({0} %)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -48419,6 +48461,30 @@
    ]
   },
   {
+   "fr": "Raids de clan : consensus renforcé contre la triche. Seuls les joueurs réellement en jeu votent, un rapport mensonger arrivé au même moment que la validation est refusé et journalisé, rien n'est plus accepté après la clôture d'un événement mondial, et un groupe ne recule plus sur la carte quand deux rapports arrivent dans le désordre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan : relancer le jeu ou changer de réseau au milieu d'un combat ne vous refuse plus l'entrée ; votre nouvelle connexion reprend votre place.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan : testés à grande échelle (quatre clans de 50 joueurs en même temps, un événement mondial de 2 500 joueurs) : aucune inscription, place, récompense ni notification en double, et le serveur fait le même travail par requête avec 2 ou 30 groupes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan : une instance ne s'arrête plus quand tout le groupe perd sa connexion en même temps ; elle attend ses joueurs 60 secondes. Elle survit aussi au redémarrage du serveur qui la relaie : la partie est enregistrée chaque seconde et chacun la retrouve à son retour.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids de clan, phase 1 : « ASTERION, LE DÉVOREUR DE MONDES » arrive dans CLANS › RAIDS. La carte de l'événement mondial à venir (heure locale et UTC, compte à rebours, format court, standard ou légendaire, difficulté, clans et joueurs inscrits, inscrits de votre clan), les raids du clan programmés par le chef ou un officier (places, verrouillage des inscriptions avant le début), les invitations entre clans pour un raid commun, l'historique du clan et le panneau des notifications de raid (« Tout marquer lu », rappels 24 h, 1 h et 10 min au choix, inscriptions des membres regroupées). La fiche d'un événement : inscription et désinscription, inscription du clan, « Inviter des membres… », groupes de 8 avec leur chef, chef de raid et consignes. Le combat arrive dans une prochaine version : rien à gagner pour l'instant.",
    "where": [
     "data/news/changelog.json"
@@ -48462,6 +48528,12 @@
   },
   {
    "fr": "Raids de clan, phase 6 : LE CŒUR D'ASTERION, le combat final. Quand les sept gigaboss sont tombés (validés par le serveur), le cœur du titan s'ouvre sur la carte du titan et tous les groupes de tous les clans peuvent le combattre en même temps : une longue Aorte cosmique à huit (embuscades géantes sur trois étages, écluses, monte-charge, points de contrôle), puis une arène gigantesque de neuf écrans de large, ses navettes et ses bacs qui tournent autour d'une étoile captive plus grande qu'un écran.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 7 : fiabilité. Si votre liaison avec le relais de l'instance tombe, le jeu se reconnecte tout seul pendant les 60 secondes où votre place vous attend : le monde reste affiché sous la carte « LIAISON PERDUE », puis vous rejoignez votre groupe après un rattrapage, sans repasser par la carte de la branche.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -52416,6 +52488,12 @@
    ]
   },
   {
+   "fr": "RÉSEAU · Liaison rétablie : retour dans l'instance",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Réserve (jamais donné)",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -52582,7 +52660,8 @@
   {
    "fr": "résultats officiels figés : l'événement est clos",
    "where": [
-    "server/src/raidWorld.ts"
+    "server/src/raidWorld.ts",
+    "server/src/raidZones.ts"
    ]
   },
   {

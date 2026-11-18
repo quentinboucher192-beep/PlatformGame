@@ -61,6 +61,8 @@ public:
     int pingMs(int seat) const override;
     void update(float dt) override;
     std::string endReason() const override { return endReason_; }
+    /// 2.74: the link died while connected (no END from the relay): a raid instance connects again.
+    bool connectionLost() const { return lost_; }
     uint32_t available() const override;
     /// After the catch-up: plays again from the step the relay will give (REJOIN).
     void catchupDone(uint32_t tick) override;
@@ -97,6 +99,7 @@ private:
     std::optional<coopnet::GoInfo> go_;
     bool joinedLate_ = false;
     bool sawLobby_ = false;
+    bool lost_ = false;  // 2.74: the link died while connected (not an END)
     coopnet::PackageReceiver package_;
     bool askingPackage_ = false;
     uint32_t rejoinAt_ = 0;

@@ -1,4 +1,4 @@
-"""LE CŒUR D'ASTERION, l'étoile captive (the final fight of the clan raid « Asterion », 2.72, docs/RAIDS.md §15).
+"""LE CŒUR D'ASTERION, l'étoile captive (the final fight of the clan raid « Asterion », 2.72, docs/RAIDS.md §16).
 
 The cosmic heart of the titan, as drawn on Asterion (environment/raid_asterion.py, part « coeur »: the
 golden light in its chest): a star held captive in a heart of violet flesh, crystal arteries and a cage of

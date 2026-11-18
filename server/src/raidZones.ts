@@ -29,7 +29,7 @@ import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contri
 import { catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
-import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
+import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartFallenIn, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
 import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
 import { Validator } from "./validate";
@@ -263,10 +263,15 @@ async function myGroup(db: D1Database, eventId: string, clanId: string, playerId
     return at < 0 ? 0 : Math.floor(at / INSTANCE_SIZE) + 1;
 }
 
-async function journal(db: D1Database, instanceId: string, playerId: string, key: string, value: string, reason: string) {
+async function journal(db: D1Database, instanceId: string, playerId: string, key: string, value: string, reason: string, once = false) {
+    // 2.74: `once`: not again when this player's report of this key is already journaled (a minority
+    // report that raced with the acceptance: the winning request may have journaled it already).
     await db
-        .prepare("INSERT INTO raid_report_rejections (instance_id, player_id, report_key, value, reason, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
-        .bind(instanceId, playerId, key, value, reason, nowIso())
+        .prepare(
+            `INSERT INTO raid_report_rejections (instance_id, player_id, report_key, value, reason, created_at) SELECT ?1, ?2, ?3, ?4, ?5, ?6
+             WHERE ?7 = 0 OR NOT EXISTS (SELECT 1 FROM raid_report_rejections WHERE instance_id = ?1 AND report_key = ?3 AND player_id = ?2)`,
+        )
+        .bind(instanceId, playerId, key, value, reason, nowIso(), once ? 1 : 0)
         .run();
 }
 
@@ -422,8 +427,12 @@ export async function report(ctx: Ctx): Promise<Response> {
         // keep (never the whole heart in less than a minute of the instance).
         const bossZone = cat.zones.find((z) => (z as { boss?: boolean }).boss)?.id ?? 0;
         if (!isHeart(inst.branch) || zone !== bossZone) return reject("le Cœur d'Asterion n'est pas dans cette zone");
-        if (!heartOpenIn(await doneOf(db, e.id))) return reject("le Cœur d'Asterion est encore scellé");
+        const done = await doneOf(db, e.id);
+        if (!heartOpenIn(done)) return reject("le Cœur d'Asterion est encore scellé");
         if (damage! > Math.ceil((tick * HEART_UNITS) / (120 * 60)) + 100) return reject("dégâts au Cœur impossibles");
+        // 2.74 (with phase 7): its shared health is frozen once its fall is validated (the last parts every
+        // instance sends as its own heart falls change nothing, and are no anomaly: never journaled).
+        if (heartFallenIn(done)) return json(ctx, { status: "frozen", reason: "le Cœur d'Asterion est tombé : sa vie partagée est figée" });
     }
     const mask = await branchMaskOf(db, e.id, inst.branch);
     let obj: BranchObjective | undefined;
@@ -454,23 +463,45 @@ export async function report(ctx: Ctx): Promise<Response> {
         if (accepted.value === value) return json(ctx, { status: "accepted" });
         return reject("minoritaire : l'instance a validé une autre valeur");
     }
+    // 2.74 (phase 7): only the votes of the players in play count (the majority is of the active
+    // players): a report of a member who left the game, or is absent, waits and never tips the count.
+    // Before, absent members' reports counted against a majority computed on the active ones only
+    // (three absent accomplices outvoted two players in play).
     const [all, act] = await db.batch([
-        db.prepare("SELECT player_id, value FROM raid_reports WHERE instance_id = ?1 AND report_key = ?2").bind(id, key),
+        db
+            .prepare(
+                `SELECT r.player_id, r.value, COALESCE(m.active, 0) AS active FROM raid_reports r
+                 LEFT JOIN raid_instance_members m ON m.instance_id = r.instance_id AND m.player_id = r.player_id AND m.left_at IS NULL
+                 WHERE r.instance_id = ?1 AND r.report_key = ?2`,
+            )
+            .bind(id, key),
         db.prepare("SELECT COUNT(*) AS n FROM raid_instance_members WHERE instance_id = ?1 AND active = 1 AND left_at IS NULL").bind(id),
     ]);
-    const reports = all!.results as { player_id: string; value: string }[];
+    const reports = all!.results as { player_id: string; value: string; active: number }[];
+    const votes = reports.filter((r) => r.active === 1);
     const active = Math.max(1, (act!.results[0] as { n: number }).n);
     const winner = decide(
-        reports.map((r) => r.value),
+        votes.map((r) => r.value),
         active,
     );
-    if (!winner) return json(ctx, { status: "pending", reports: reports.length, needed: majority(active) });
+    if (!winner) return json(ctx, { status: "pending", reports: votes.length, needed: majority(active) });
 
-    // The majority agrees: accepted once (concurrent acceptances: the first insert wins).
+    // The majority agrees: accepted once (concurrent acceptances: the first insert wins). 2.74: never
+    // once the official result is frozen or while the event is suspended (the same statement: a
+    // close that runs at this very moment is either before it or after it, never half).
     const won = await db
-        .prepare("INSERT OR IGNORE INTO raid_accepted (instance_id, report_key, value, accepted_at) VALUES (?1, ?2, ?3, ?4)")
-        .bind(id, key, winner, now)
+        .prepare(
+            `INSERT OR IGNORE INTO raid_accepted (instance_id, report_key, value, accepted_at) SELECT ?1, ?2, ?3, ?4
+             WHERE NOT EXISTS (SELECT 1 FROM raid_event_results WHERE event_id = ?5)
+               AND NOT EXISTS (SELECT 1 FROM raid_events WHERE id = ?5 AND suspended_at IS NOT NULL)`,
+        )
+        .bind(id, key, winner, now, e.id)
         .run();
+    if (!won.meta.changes && !(await db.prepare("SELECT 1 AS x FROM raid_accepted WHERE instance_id = ?1 AND report_key = ?2").bind(id, key).first())) {
+        // Not accepted, and nobody else did: the event was frozen or suspended meanwhile.
+        const fresh = await db.prepare("SELECT * FROM raid_events WHERE id = ?1").bind(e.id).first<EventRow>();
+        return reject((await reportHalt(db, fresh ?? e)) || "résultats officiels figés : l'événement est clos");
+    }
     if (won.meta.changes) {
         for (const r of reports) if (r.value !== winner) await journal(db, id, r.player_id, key, r.value, "minoritaire : l'instance a validé une autre valeur");
         if (obj && isHeart(inst.branch) && obj.id === HEART_OBJECTIVE) {
@@ -500,14 +531,10 @@ export async function report(ctx: Ctx): Promise<Response> {
             if (obj.role === "gigaboss") await checkHeartOpen(db, e, now);
             // Every relay of the event gives the new state to its games (a few seconds anyway);
             // 2.68: those of the other branches too (the titan's links).
+            // 2.74: all at once and after the answer (dozens of instances in a world event: before, one
+            // after the other, inside the request); a room that does not answer reads it within 3 s anyway.
             const rooms = await db.prepare("SELECT id FROM raid_instances WHERE event_id = ?1 AND players > 0").bind(e.id).all<{ id: string }>();
-            for (const r of rooms.results) {
-                try {
-                    await ask(ctx.env, r.id, "/raid-state");
-                } catch {
-                    /* the room's alarm reads it within seconds */
-                }
-            }
+            ctx.exec.waitUntil(Promise.allSettled(rooms.results.map((r) => ask(ctx.env, r.id, "/raid-state"))));
         } else if (kind === "boss") {
             // 2.68: the fight of this instance reached a phase (4: the gigaboss fell).
             await db
@@ -530,8 +557,19 @@ export async function report(ctx: Ctx): Promise<Response> {
             await storeResult(db, e.id, id, tick, records, now);
             if (isHeart(inst.branch)) await grantHeart(db, e.id, now); // 2.72: its rewards follow the tables after its fall
         } else {
-            await db.prepare("UPDATE raid_instances SET zone = ?2, updated_at = ?3 WHERE id = ?1").bind(id, zone, now).run();
+            // 2.74: the newest step wins (two zone reports accepted in the other order — their requests
+            // crossed on the network — never move the group back on the map).
+            await db
+                .prepare("UPDATE raid_instances SET zone = ?2, zone_tick = ?4, updated_at = ?3 WHERE id = ?1 AND (zone_tick IS NULL OR zone_tick <= ?4)")
+                .bind(id, zone, now, tick)
+                .run();
         }
+    }
+    // 2.74: a minority report that crossed the acceptance (it was not there when the majority was
+    // counted): rejected and journaled once, never told « accepted ».
+    if (value !== winner) {
+        if (!won.meta.changes) await journal(db, id, me, key, value, "minoritaire : l'instance a validé une autre valeur", true);
+        return json(ctx, { status: "rejected", reason: "minoritaire : l'instance a validé une autre valeur" });
     }
     return json(ctx, { status: "accepted" });
 }

@@ -1,4 +1,4 @@
-"""2.72 (phase 6): LE CŒUR D'ASTERION, the final fight of the clan raid (docs/RAIDS.md §15).
+"""2.72 (phase 6): LE CŒUR D'ASTERION, the final fight of the clan raid (docs/RAIDS.md §16).
 
 Called by raid_asterion.py (main()) with that module itself (`A`: its Zone, Expedition, tr, T…), never
 run alone. The heart is not one of the seven branches of the titan's body: it is the « heart » of

@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.72 (phase 6): LE CŒUR D'ASTERION, the final fight of the clan raid (docs/RAIDS.md §15). A star held
+// 2.72 (phase 6): LE CŒUR D'ASTERION, the final fight of the clan raid (docs/RAIDS.md §16). A star held
 // captive in a heart of flesh and crystal, floating in the middle of a gigantic arena (zone 2 of the
 // heart, tools/levelgen/raid_coeur.py; data/enemies/asterion_coeur.json: four phases, its last beat), around
 // the rules of raid::Gigaboss (health and pressure for the seats, phases, weak points, fall):

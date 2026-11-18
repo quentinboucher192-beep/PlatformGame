@@ -69,15 +69,23 @@ void NetCoopLink::run() {
 
 void NetCoopLink::update(float /*dt*/) {
     std::deque<std::vector<uint8_t>> msgs;
+    std::string threadError;
     {
         std::lock_guard<std::mutex> lock(queueMutex_);
         msgs.swap(inbox_);
-        if (!threadError_.empty() && error_.empty()) {
-            if (connected_ && endReason_.empty()) endReason_ = threadError_;
-            else if (!connected_) error_ = threadError_;
-        }
+        threadError = threadError_;
     }
     for (const auto& m : msgs) handle(m);
+    // 2.74: after what came (an END that came just before the socket closed is the reason, not
+    // the closed link); a link lost while connected is told apart (the raids connect again).
+    if (!threadError.empty() && error_.empty()) {
+        if (connected_ && endReason_.empty()) {
+            endReason_ = threadError;
+            lost_ = true;
+        } else if (!connected_) {
+            error_ = threadError;
+        }
+    }
     // About twice a second: the link (round trip), and the lobby keeps the seat alive.
     const uint32_t now = static_cast<uint32_t>(SDL_GetTicks());
     if (connected_ && now - lastPing_ > 500) {

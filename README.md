@@ -273,7 +273,7 @@ le Crâne tombé, ses lances perdent leur précision ; le Bras gauche, plus de b
 magma ; le Torse, plus de cage ; l'Abdomen, plus d'engeances ; la Jambe gauche, plus de pièges de gravité ; la Jambe
 droite, ses charges ralentissent. Sa chute validée lance le film **« La chute d'Asterion »** pour tout le groupe et
 accorde, une seule fois, le badge « Cœur d'Asterion », l'effet de victoire « Supernova d'Asterion », le cadre de profil
-des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §15](docs/RAIDS.md#15-phase-6-272--le-cœur-dasterion).
+des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §16](docs/RAIDS.md#16-phase-6-274--le-cœur-dasterion).
 
 ### Récompenses et événements mondiaux
 
@@ -290,7 +290,19 @@ des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». D�
   À la clé : la combinaison « Écorce d'Asterion », le titre de clan « Dévoreurs dévorés » pour le top 10, et
   des sessions de rattrapage pour les absents.
 
-Tout le détail : [docs/RAIDS.md](docs/RAIDS.md).
+### Fiabilité, charge et anti-triche
+
+* **Une liaison qui tombe ne vous sort pas du raid** : le jeu se reconnecte tout seul pendant les 60 s où le relais
+  garde votre place (carte « LIAISON PERDUE », puis rattrapage hors du fil principal) ; une instance attend son groupe
+  60 s si tout le monde décroche, et survit au redémarrage de son relais (partie enregistrée chaque seconde).
+* **Testé sous charge** : quatre clans de 50 joueurs qui s'inscrivent, se placent, valident leurs objectifs et récupèrent
+  leurs récompenses au même instant, un événement mondial de 2 500 joueurs agrégé et clos ; rien n'est compté, accordé
+  ni annoncé deux fois, et chaque requête fait le même travail avec 2 ou 30 groupes.
+* **Contre la triche** : le joueur est celui de la session, seuls les joueurs en jeu votent, les faits impossibles sont
+  refusés et journalisés, rien n'entre après la clôture ; huit jeux simulés sous latence, gigue et pertes reçoivent les
+  mêmes trames, et un pas de simulation à 8 dans les zones les plus lourdes tient dans le budget de 120 Hz.
+
+Tout le détail : [docs/RAIDS.md](docs/RAIDS.md) (§15 « Fiabilité, charge et anti-triche »).
 
 ## Cosmic Online
 
@@ -555,7 +567,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
-* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux
+* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 Chaque page renvoie à celle d'où l'on vient (« ← Retour », en tête et en fin) ; `python3 tools/docs/check_links.py`
@@ -571,20 +583,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
-**Nouveau dans la version 2.72.0** :
-* **Attaque dirigée** : Haut + Attaque frappe au-dessus de Nova (au sol ou en l'air), Bas + Attaque frappe en dessous, en
-  l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe). Mêmes
-  dégâts, recul et objets cassables que le coup vers l'avant ; un coup vers le bas en l'air rebondit toujours sur
-  l'ennemi touché et rend les sauts en l'air, comme avant ; la direction est celle choisie au début du coup ;
-  animations et arcs de lame générés par `tools/assetgen/characters/nova.py` (lignes 27 à 29 de la planche de Nova).
-  `kSimulationVersion` passe à 15, `kRankingGeneration` reste à 8 : **records et classements conservés** ; un replay
-  enregistré avant se rejoue avec les règles de son époque (la version de la simulation est notée dans les nouveaux replays).
-* **Documentation illustrée** : nouvelles sections « Raids de clan contre Asterion » et coopération avec des mini-films tournés
-  dans le jeu (`docs/media/` : trois joueurs sur un niveau EXTRÊME, Pyroclast, Graviton, le film
-  d'Asterion, cartes du titan et d'une branche) ; images dans les pages de `docs/`, lien « ← Retour » en
-  tête et en fin de chaque page atteinte depuis le README, vérifiés par `tools/docs/check_links.py` ; options de capture
-  `--raid-test`, `--coop-test`, `--input2` … `--input8`, `--spawns` (seulement avec `--headless`) et `--raid-screen`
-  (docs/BUILDING.md).
+**Nouveau dans la version 2.74.0** :
 * **Raids de clan, phase 6 : LE CŒUR D'ASTERION, le combat final** (`tools/levelgen/raid_coeur.py` : l'Aorte cosmique,
   longue expédition à huit, et une arène gigantesque à plateformes mobiles ; `game/raid/AsterionHeartRoutine`, sur le cadre
   `GigabossRoutine` et la caméra d'arène). Il s'ouvre quand les sept gigaboss sont tombés ; tous les groupes le combattent
@@ -601,6 +600,32 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   de profil « Cœur d'Asterion » (10 meilleurs scores mixtes), titre de clan collectif « Briseurs d'étoile » ; « Asterion
   est tombé » (événement mondial) exige maintenant le cœur ; notifications à son ouverture et à sa chute ; migration
   **0148**. « Tester Asterion » : le cœur, sa phase de départ (1 à 4), les parties simulées comme tombées, les reliques.
+
+**Nouveau dans la version 2.73.0** :
+* **Raids de clan, phase 7 : fiabilité, charge et anti-triche** (docs/RAIDS.md §15, migration **0149**). Relais d'une
+  instance (`CoopRoom` en mode raid) : plus de trames de veille données à personne quand le dernier joueur part (l'objet
+  allait jusqu'à la limite de 2 h et épuisait sa mémoire), la partie attend ses joueurs 60 s, une seconde connexion du
+  même compte reprend sa place, la partie est stockée chaque seconde et revient après un redémarrage de l'objet. Jeu :
+  reconnexion automatique pendant 60 s (`raid::Reconnect`, carte « LIAISON PERDUE »). Consensus : seuls les joueurs en
+  jeu votent, un rapport minoritaire croisé avec l'acceptation est refusé et journalisé une fois, rien n'est accepté
+  après le gel ou pendant une suspension, le pas de zone le plus récent gagne ; résultat officiel protégé des `DELETE` et
+  `INSERT OR REPLACE`. Charge : réveil des relais après la réponse, index manquants ajoutés. Nouveaux tests :
+  `raidRelay`, `raidLoad`, `raidCheat` (serveur) et `test_raid_net` (réseau simulé à 8, performance).
+
+**Nouveau dans la version 2.72.0** :
+* **Attaque dirigée** : Haut + Attaque frappe au-dessus de Nova (au sol ou en l'air), Bas + Attaque frappe en dessous, en
+  l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe). Mêmes
+  dégâts, recul et objets cassables que le coup vers l'avant ; un coup vers le bas en l'air rebondit toujours sur
+  l'ennemi touché et rend les sauts en l'air, comme avant ; la direction est celle choisie au début du coup ;
+  animations et arcs de lame générés par `tools/assetgen/characters/nova.py` (lignes 27 à 29 de la planche de Nova).
+  `kSimulationVersion` passe à 15, `kRankingGeneration` reste à 8 : **records et classements conservés** ; un replay
+  enregistré avant se rejoue avec les règles de son époque (la version de la simulation est notée dans les nouveaux replays).
+* **Documentation illustrée** : nouvelles sections « Raids de clan contre Asterion » et coopération avec des mini-films tournés
+  dans le jeu (`docs/media/` : trois joueurs sur un niveau EXTRÊME, Pyroclast, Graviton, le film
+  d'Asterion, cartes du titan et d'une branche) ; images dans les pages de `docs/`, lien « ← Retour » en
+  tête et en fin de chaque page atteinte depuis le README, vérifiés par `tools/docs/check_links.py` ; options de capture
+  `--raid-test`, `--coop-test`, `--input2` … `--input8`, `--spawns` (seulement avec `--headless`) et `--raid-screen`
+  (docs/BUILDING.md).
 
 **Nouveau dans la version 2.71.0** :
 * **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans

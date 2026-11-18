@@ -1,4 +1,4 @@
-// Clan raids « Asterion », phase 6 (2.72, docs/RAIDS.md §15): LE CŒUR D'ASTERION. Sealed until the seven
+// Clan raids « Asterion », phase 6 (2.72, docs/RAIDS.md §16): LE CŒUR D'ASTERION. Sealed until the seven
 // gigaboss fell (validated), then joined by every group at once; its health SHARED: each instance's
 // consensus validates its own part, kept as the highest value per instance, summed by the server and given
 // back to every heart relay (the others' part, the shared phase, the relics); its fall written once when
@@ -171,6 +171,14 @@ describe("raids phase 6: the Cœur d'Asterion", () => {
             .first<{ n: number }>();
         expect(rows!.n).toBe(1);
         expect(await checkHeartFall(env.DB, { id: ev }, null)).toBe(true);
+        // Frozen after the victory: a later part is no anomaly but changes nothing, whatever the statement.
+        const kept = await damageOf(y.inst);
+        const late = await y.send(b.players[0]!, { kind: "heart", damage: 9000, tick: TICK + 2400 });
+        expect(late.body.data.status).toBe("frozen");
+        await env.DB.prepare("INSERT OR REPLACE INTO raid_heart_damage (event_id, instance_id, damage, tick, accepted_at) VALUES (?1, ?2, 9999, 1, ?3)")
+            .bind(ev, y.inst, new Date().toISOString())
+            .run();
+        expect(await damageOf(y.inst)).toBe(kept);
         const journal = await env.DB.prepare("SELECT COUNT(*) AS n FROM raid_world_journal WHERE event_id = ?1 AND code = 'heart_fallen'").bind(ev).first<{ n: number }>();
         expect(journal!.n).toBe(1);
         const told = await env.DB.prepare("SELECT COUNT(*) AS n FROM notifications WHERE group_key = ?1").bind(`raid:heart_fallen:${ev}`).first<{ n: number }>();
