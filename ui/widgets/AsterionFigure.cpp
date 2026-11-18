@@ -187,7 +187,7 @@ void AsterionFigure::drawTooltip(GameServices& g) {
     ty += effectH;
     if (tipOpens_) {
         rr.fillRect({tx, ty + ui.s(8), inner, std::max(1.0f, ui.s(1))}, Color{60, 76, 110, 160});
-        fit(ui, "Clic ou validation : carte de la branche", {tx, ty + ui.s(22)}, 14, inner, kSky, FontFace::Bold);
+        fit(ui, openHint_, {tx, ty + ui.s(22)}, 14, inner, kSky, FontFace::Bold);
     }
 }
 

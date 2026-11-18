@@ -394,6 +394,7 @@
   {
    "fr": "1 joueur",
    "where": [
+    "game/raid/RaidSheets.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -1097,6 +1098,18 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Abattez vite les renforts, sans quitter des yeux les marques du gigaboss.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Abattez-les près des trous avant qu'ils ne s'éparpillent.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -1804,6 +1817,12 @@
    ]
   },
   {
+   "fr": "Affaiblissez les deux entraves, puis donnez le dernier coup ensemble.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Affichage",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -2449,6 +2468,12 @@
    ]
   },
   {
+   "fr": "Animation du combat, planche d'effets du gigaboss",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
    "fr": "Animation du joueur",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -2547,6 +2572,7 @@
   {
    "fr": "Annonce",
    "where": [
+    "data/raids/asterion_sheets.json",
     "game/enemies/BossAttackSheet.cpp"
    ]
   },
@@ -2566,6 +2592,12 @@
    "fr": "Annoncer le combat (titres)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Annoncez le départ : tous les tenants montent sur leur générateur au même moment.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -2720,6 +2752,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Antre : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -3563,8 +3601,10 @@
    "fr": "ASTERION",
    "where": [
     "data/raids/asterion_film.json",
+    "data/raids/asterion_sheets.json",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
+    "game/raid/RaidSheets.cpp",
     "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
@@ -4173,7 +4213,14 @@
    "fr": "Attaques",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/widgets/BossSheetWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Attaques : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -4554,6 +4601,12 @@
    "fr": "Au plus {0} replays et {1} Mo sur ce PC ; un replay n'est jamais supprimé sans vous.",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Au sol, sautez chaque onde ; les plateformes sont sûres.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -5166,6 +5219,12 @@
    ]
   },
   {
+   "fr": "aucun point faible",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Aucun pouvoir au départ",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -5418,9 +5477,21 @@
    ]
   },
   {
+   "fr": "aucune attaque",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Aucune attaque lancée sur la période.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "aucune branche du titan",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -5639,6 +5710,12 @@
    "fr": "Aucune phase",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "aucune phase",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -6033,6 +6110,12 @@
    ]
   },
   {
+   "fr": "Avalé",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "AVALÉ · {0} s",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
@@ -6042,6 +6125,12 @@
    "fr": "avance",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "Avancez quand le faisceau éclaire votre chemin, et ne sautez jamais dans le noir.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -6066,6 +6155,12 @@
    "fr": "Avant la première étoile, il y avait une faim.",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Avant la première étoile, il y avait une faim. Elle s'est forgé un corps de mondes brisés et s'est donné un nom : Asterion, le Dévoreur de mondes.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -6219,6 +6314,12 @@
    ]
   },
   {
+   "fr": "Aveuglé",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Avis et commentaires",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
@@ -6316,6 +6417,18 @@
    ]
   },
   {
+   "fr": "Badge : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "badge introuvable : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Badge {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -6334,9 +6447,21 @@
    ]
   },
   {
+   "fr": "Badge « {0} »",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Badges : {0} / {1} emplacements utilisés",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badges des gigaboss (présent à sa chute)",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -6402,6 +6527,7 @@
     "data/raids/asterion/bras_gauche/zone_3.json",
     "data/raids/asterion/bras_gauche/zone_4.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion_sheets.json",
     "game/raid/DreadfangRoutine.cpp"
    ]
   },
@@ -6606,6 +6732,12 @@
    "fr": "Battement d'ailes",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Battements",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -7489,7 +7621,14 @@
    "where": [
     "game/levels/ObjectTypes.cpp",
     "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "branche introuvable : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -7639,6 +7778,12 @@
    "fr": "Briser la garde de la mâchoire : vaincre l'arène",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Briser la griffe qui cloue un allié compte un sauvetage ; une griffe évitée compte en dégâts évités.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -8340,7 +8485,7 @@
   {
    "fr": "calculée d'après ses PV, ses phases et ses attaques",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.h"
    ]
   },
   {
@@ -8610,6 +8755,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carapace brisée",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -9401,6 +9552,18 @@
    "fr": "Ce qui change dans ce défi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qui compte dans les contributions",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qui compte dans vos contributions",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -10224,6 +10387,12 @@
    ]
   },
   {
+   "fr": "Chacun brisé lui ôte {0} % de sa vie, et compte pour qui le brise.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Chacun compte pour les contributions (mécanismes tenus, entraves brisées, points faibles, alliés libérés de Voidworm), les résultats validés par la majorité de l'instance, la carte du titan (sa partie détruite à sa chute) et l'outil « Tester Asterion » (phase de départ, invincible, jamais envoyé). Trois nouveaux badges, accordés une seule fois par le serveur : « Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus ».",
    "where": [
     "data/news/changelog.json"
@@ -10333,9 +10502,27 @@
    ]
   },
   {
+   "fr": "Changez de place pendant l'annonce : les tirs retombent là où vous étiez.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Changez de place quand la bosse arrive sous vous : le pic jaillit là où elle s'arrête.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Chaque action est inscrite au Journal et le joueur reçoit une notification « Sécurité ».",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque ancre libre lance à son tour des éclats de givre toutes les {0} s, annoncés {1} s avant : une colonne de {2} px de haut pendant {3} s.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -10348,6 +10535,18 @@
    "fr": "Chaque badge est l'emblème du succès (couleur de sa catégorie, ses étoiles) ; au survol ou au focus, une bulle donne son nom.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Chaque crochet libre crache à son tour un geyser d'acide toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut pendant {3} s.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque côte libre crache à son tour un jet de plasma toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut pendant {3} s.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -10372,6 +10571,48 @@
    "fr": "Chaque génération ajouta la sienne. Rune après rune, le caillou grandit… et se leva.",
    "where": [
     "data/stories/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur debout sur un miroir à l'éclair de son regard compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur debout sur un évent quand il se ferme compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur qui brise une entrave quand elles cèdent ensemble compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur sur un crochet quand il est épinglé compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur sur un générateur quand ils se coupent compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur sur une ancre quand ses chaînes le plaquent compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur sur une côte quand elles s'écartent compte un mécanisme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -10406,6 +10647,12 @@
    ]
   },
   {
+   "fr": "Chaque partie détruite retire au titan ce que sa ligne décrit : plus elles sont nombreuses à tomber, plus le dernier combat est à votre portée.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Chaque partie, et la médiane des 5 dernières",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -10415,6 +10662,12 @@
    "fr": "Chaque personnage joue ses animations image par image (éclosion, souffle de flammes, nuage de fumée, toux, braises avalées, transformation, rugissement), et le décor vit aussi : étoiles qui scintillent, nuages et brume qui dérivent, magma qui respire au pied des pics, braises qui crépitent au sol, cendres soulevées par le vent, lueurs et ombres qui suivent le feu. Les couches défilent à leur propre vitesse, la caméra suit l'action, l'écran tremble et s'illumine au rythme du texte, qui reste aussi long à lire qu'avant.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Chaque plaque d'armure brisée compte un point faible pour qui la brise.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -10433,6 +10686,18 @@
    "fr": "CHAQUE RANGÉE VA DANS…",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque évent ouvert crache un jet de magma à son tour",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque évent ouvert crache à son tour un jet de magma toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut qui brûle {3} s.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -10484,6 +10749,12 @@
    "where": [
     "data/enemies/monolithe.json",
     "data/enemies/titanus.json"
+   ]
+  },
+  {
+   "fr": "Charge du regard",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -11300,7 +11571,8 @@
   {
    "fr": "Chute de débris",
    "where": [
-    "data/raids/asterion/jambe_gauche/zone_8.json"
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -11946,7 +12218,13 @@
   {
    "fr": "Clic ou validation : carte de la branche",
    "where": [
-    "ui/widgets/AsterionFigure.cpp"
+    "ui/widgets/AsterionFigure.h"
+   ]
+  },
+  {
+   "fr": "Clic ou validation : la fiche de son gigaboss",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -11965,6 +12243,12 @@
    "fr": "Clic, A ou Entrée sur une zone : la retirer ou la reprendre. À la main : glisser, ou A sur deux coins opposés ; flèches : le curseur.",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Clic, Entrée ou A sur une partie : la fiche de son gigaboss",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -12261,6 +12545,7 @@
    "fr": "Combat",
    "where": [
     "data/achievements/achievements.json",
+    "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -12537,6 +12822,12 @@
    ]
   },
   {
+   "fr": "Combinaisons des événements mondiaux",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "combo",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -12594,6 +12885,18 @@
    "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Comment l'éviter",
+   "where": [
+    "ui/widgets/BossSheetWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Comment s'y prendre : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -12945,6 +13248,12 @@
    "fr": "Compteurs temporaires de limitation des requêtes.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Comptez les battements et sautez l'onde quand elle passe ; les plateformes sont sûres.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -14503,6 +14812,24 @@
    ]
   },
   {
+   "fr": "Courez contre l'attraction et restez loin de son cœur.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Courez dans l'autre sens : l'aspiration est limitée.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Courez hors de sa portée pendant l'annonce, et ne restez jamais sur son cœur.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Courir contre le fantôme d'un record mondial.",
    "where": [
     "data/achievements/achievements.json"
@@ -14879,6 +15206,12 @@
    "fr": "Crever la glande sud (un pouvoir de tir)",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Crever la poche d'un allié avalé compte un sauvetage.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -15439,6 +15772,12 @@
    ]
   },
   {
+   "fr": "Cuirassé de givre, rien ne le blesse. Un joueur {0} s sur une des {1} ancres verrouille sa chaîne ; une chaîne verrouillée se détend au bout de {2} s. Les {1} chaînes tenues ensemble, il est plaqué au sol {3} s, prend × {4} dégâts et ses jointures sont à nu.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Cuisse flottante",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -15488,7 +15827,8 @@
   {
    "fr": "Côtes-pièges",
    "where": [
-    "data/raids/asterion/torse/zone_8.json"
+    "data/raids/asterion/torse/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -15691,6 +16031,12 @@
    ]
   },
   {
+   "fr": "Cœur à nu",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Cœurs",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -15714,6 +16060,12 @@
    "fr": "D",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "d'après sa définition, pour un joueur : il grandit avec le groupe",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -15980,6 +16332,12 @@
    "fr": "Dans mon record {0}",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dans sa chitine, rien ne le blesse. Ses {0} crochets tenus ensemble, {1} s chacun, l'épinglent ; un crochet tenu se libère au bout de {2} s. Épinglé, sa gueule s'ouvre {3} s : il prend × {4} dégâts et ses anneaux lumineux peuvent être brisés.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -16534,7 +16892,8 @@
     "data/enemies/pyrrhax.json",
     "game/enemies/BossAttackSheet.cpp",
     "ui/screens/BossAttackPreview.cpp",
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -16809,6 +17168,12 @@
    ]
   },
   {
+   "fr": "Des débris tombent sur chaque joueur · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Des engrenages tournent autour du portail, puis une coulée d'acier en fusion jaillit en gerbe d'étincelles dans un panache de vapeur.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -16830,6 +17195,12 @@
    "fr": "Des gerbes de couleurs à l'arrivée.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Des instances de {0} joueurs au plus : chaque groupe joue la sienne, et tout ce qu'il valide compte pour le même titan.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -16881,6 +17252,12 @@
    ]
   },
   {
+   "fr": "Des parasites sortent de ses trous · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "des parties de la table {0} manquent",
    "where": [
     "server/src/backups.ts"
@@ -16920,6 +17297,12 @@
    "fr": "Des rochers tombent de la voûte : quittez les ombres au sol.",
    "where": [
     "game/raid/TitanusRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Des rochers tombent sur toute l'arène",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -17089,6 +17472,18 @@
    ]
   },
   {
+   "fr": "Deux crochets au sol, un sur la couronne au-dessus de lui : un joueur sur chacun, au même moment. Avec peu de joueurs, un crochet tient plus longtemps : × {0} à deux, × {1} seul.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Deux générateurs au sol aux deux bouts, deux sur des îlots en hauteur. Moins de joueurs, moins de générateurs à tenir (un par joueur) ; les deux générateurs de la Jambe gauche coupés pendant l'expédition, un de moins.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "deux joueurs",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
@@ -17122,6 +17517,12 @@
    "fr": "deux niveaux ont la même empreinte",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "Deux ondes filent au sol vers les murs · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -17165,6 +17566,12 @@
    "fr": "Deux voies : les ancrages au-dessus de l'acide, ou la trappe vers les coursives de phase.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Deux équipes, une par entrave, qui frappent au même signal. Avec peu de joueurs, la fenêtre s'allonge (× {0} à deux, × {1} seul), et encore × {2} une fois les deux réacteurs de la Jambe droite coupés pendant l'expédition.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -17261,8 +17668,8 @@
    "fr": "Difficulté",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/BossStatsScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -18189,6 +18596,12 @@
    ]
   },
   {
+   "fr": "Durée de la branche",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Durée de la cage (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -18348,6 +18761,7 @@
   {
    "fr": "dès le début",
    "where": [
+    "game/raid/RaidSheets.cpp",
     "ui/screens/BossStatsScene.cpp"
    ]
   },
@@ -18355,6 +18769,12 @@
    "fr": "Dès le départ",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dès que son regard se charge, les porteurs de miroirs montent sur les leurs ; tous les autres se cachent derrière une colonne.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -19296,6 +19716,7 @@
   {
    "fr": "Dégâts",
    "where": [
+    "data/raids/asterion_sheets.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
     "game/levels/ObjectTypes.cpp",
@@ -19313,6 +19734,12 @@
    "fr": "Dégâts 120 · Mécanismes 2 · Sauvetages 1 · Dégâts évités 30",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts : à tous les ennemis, et au gigaboss avec ses points faibles.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -19428,6 +19855,12 @@
    "fr": "Dégâts évités",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts évités : ses coups qui vous visaient et que vous avez esquivés, et ceux que votre bouclier a arrêtés.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -20048,6 +20481,12 @@
    ]
   },
   {
+   "fr": "Effondrée",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "El Salvador",
    "where": [
     "data/online/countries.json",
@@ -20199,6 +20638,12 @@
    ]
   },
   {
+   "fr": "emplacement sans valeur : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Emplacements",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -20338,6 +20783,12 @@
    "fr": "En boucle",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "En bref : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -20840,6 +21291,12 @@
    "fr": "Ennemi inconnu : {0}",
    "where": [
     "packaging/DependencyCollector.cpp"
+   ]
+  },
+  {
+   "fr": "ennemi introuvable : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -21394,6 +21851,12 @@
    ]
   },
   {
+   "fr": "environ {0} min à huit joueurs, hors gigaboss",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Envoi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -21899,7 +22362,7 @@
   {
    "fr": "Exemple en attente",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -21911,7 +22374,13 @@
   {
    "fr": "Exemple indisponible : {0}",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Exemple indisponible.",
+   "where": [
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -22429,6 +22898,12 @@
    ]
   },
   {
+   "fr": "Fenêtre",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Fenêtre de retour",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -22503,9 +22978,21 @@
    ]
   },
   {
+   "fr": "Fermer un évent",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Fermer « {0} » ?",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Fermez l'évent : un évent fermé ne crache plus. Sinon, écartez-vous de sa colonne quand elle s'illumine.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -22572,15 +23059,46 @@
    ]
   },
   {
+   "fr": "Fiche d'Asterion",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Fiche d'un raid : les inscrits de votre clan portent aussi leur pastille de présence dans leur groupe, et « INSCRITS DU CLAN » annonce combien sont en ligne. Une présence masquée (« Montrer ma présence à mes amis » décoché) apparaît hors ligne ; seuls les membres du clan la voient.",
    "where": [
     "data/news/changelog.json"
    ]
   },
   {
+   "fr": "Fiche de {0}",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Fiche du clan indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiches",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "FICHES D'ASTERION",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiches d'Asterion",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -23505,7 +24023,8 @@
   {
    "fr": "Fouissement",
    "where": [
-    "data/raids/asterion/abdomen/zone_8.json"
+    "data/raids/asterion/abdomen/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -23645,6 +24164,12 @@
    "fr": "Frapper le point faible : la carapace est brisée · points faibles {0} / {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Freinez tôt et restez loin des bords : vous glissez bien plus longtemps.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -24211,6 +24736,12 @@
    ]
   },
   {
+   "fr": "Geysers d'acide",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Geysers de magma",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -24280,6 +24811,7 @@
   {
    "fr": "Gigaboss : {0}",
    "where": [
+    "ui/screens/RaidSheetsScene.cpp",
     "ui/widgets/AsterionFigure.cpp"
    ]
   },
@@ -24866,6 +25398,12 @@
    ]
   },
   {
+   "fr": "Glissez-vous entre deux bras de la spirale, en tournant avec elle.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "GLOBAL",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -25202,6 +25740,7 @@
    "fr": "Griffe clouante",
    "where": [
     "data/enemies/dreadfang_griffe.json",
+    "data/raids/asterion_sheets.json",
     "game/raid/DreadfangRoutine.cpp"
    ]
   },
@@ -25215,7 +25754,8 @@
   {
    "fr": "Griffes du sol",
    "where": [
-    "data/raids/asterion/bras_gauche/zone_8.json"
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -25593,6 +26133,12 @@
    ]
   },
   {
+   "fr": "Gueule ouverte",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "GUIDE DES POUVOIRS",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
@@ -25840,6 +26386,12 @@
    "fr": "Hauteur de l'éruption",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Hauteur de la lame",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -26525,6 +27077,7 @@
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidSheets.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -26732,6 +27285,12 @@
    "fr": "il avait changé entre-temps",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Il bat toutes les {0} s (phases 1 / 2 / 3) ; un battement sur {1} est fort : une onde de {2} px de haut court au sol de ses deux côtés jusqu'aux murs, à {3} px/s.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -27720,6 +28279,12 @@
    ]
   },
   {
+   "fr": "Instances de {0} joueurs",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Insulte ou harcèlement",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -28385,6 +28950,18 @@
    ]
   },
   {
+   "fr": "Jets de magma",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Jets de plasma",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Jeu",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -28975,6 +29552,12 @@
    ]
   },
   {
+   "fr": "L'acide monte sur toute l'arène · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "L'action est inscrite au journal avec votre pseudo.",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -29114,6 +29697,12 @@
    ]
   },
   {
+   "fr": "L'arène plonge dans le noir ; la lumière de son œil révèle les plateformes",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "L'arène tremble : des fissures s'ouvrent sous vous puis éclatent, des rochers tombent du plafond sur des marques.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -29225,6 +29814,12 @@
    "fr": "L'exemple se prépare sans figer l'écran (un message le dit pendant ce temps), se met en pause d'un clic, et ne compte jamais : ni records, ni statistiques, ni succès. Tous les boss en profitent : boss des planètes, gardiens d'Aethra, giga-boss des Confins et Singularis.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "L'expédition",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -29375,6 +29970,12 @@
    "fr": "L'intestin du titan, long et mouvant. Deux valves : deux groupes, une chacun. L'acide y reflue souvent.",
    "where": [
     "data/raids/asterion/abdomen/zone_4.json"
+   ]
+  },
+  {
+   "fr": "L'inversion de gravité",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -29635,7 +30236,8 @@
   {
    "fr": "La cage thoracique",
    "where": [
-    "data/enemies/heartbreaker.json"
+    "data/enemies/heartbreaker.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -29948,7 +30550,8 @@
   {
    "fr": "La cuirasse",
    "where": [
-    "data/enemies/heartbreaker.json"
+    "data/enemies/heartbreaker.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -30021,6 +30624,18 @@
    "fr": "La fenêtre des fichiers du système : un PNG n'importe où sur ce PC.",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "La fiche d'Asterion : le titan partie par partie (une partie survolée ou sélectionnée montre son Gigaboss ; Entrée, A ou un clic ouvre sa fiche), son histoire, la structure du raid (sept branches de huit zones, des instances de huit joueurs), ce que la destruction de chaque partie lui retire, son cœur cosmique — le dernier combat, une fois ses branches tombées — et toutes les récompenses du raid.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "La fiche de chaque Gigaboss : son sprite dans chacune de ses trois phases, sa difficulté de 1 à 10 étoiles, ses phases avec leurs attaques et leurs mécanismes, et chaque attaque ou mécanisme qui se déplie avec un exemple animé (ses attaques jouées par le moteur du jeu, ses mécanismes dessinés avec les sprites du combat) et la façon de l'éviter.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -30188,6 +30803,12 @@
    "fr": "La glande sud : crevez-la avec un pouvoir de tir.",
    "where": [
     "data/raids/asterion/abdomen/zone_6.json"
+   ]
+  },
+  {
+   "fr": "La gravité d'un secteur s'inverse · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -30451,6 +31072,12 @@
    ]
   },
   {
+   "fr": "La marée d'acide",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "La marée monte dans l'arène !",
    "where": [
     "data/enemies/kraken.json"
@@ -30605,6 +31232,12 @@
    "fr": "La partie de {0} s'est arrêtée sur un échec.",
    "where": [
     "ui/screens/SpectateScene.cpp"
+   ]
+  },
+  {
+   "fr": "La partie est détruite pour tout l'événement dès que le serveur valide sa chute.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -31302,6 +31935,7 @@
   {
    "fr": "Largeur",
    "where": [
+    "data/raids/asterion_sheets.json",
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/screens/AdminCreations.cpp"
    ]
@@ -31560,7 +32194,8 @@
   {
    "fr": "Le bras enchaîné",
    "where": [
-    "data/enemies/dreadfang.json"
+    "data/enemies/dreadfang.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -31896,6 +32531,18 @@
    "fr": "Le cœur affolé",
    "where": [
     "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "Le cœur cosmique",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le cœur cosmique d'Asterion bat au fond de sa poitrine : c'est le dernier combat, une fois ses branches tombées.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -32273,10 +32920,17 @@
    "fr": "LE DÉVOREUR DE MONDES",
    "where": [
     "data/raids/asterion_film.json",
+    "data/raids/asterion_sheets.json",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
     "server/src/raids.ts",
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Le Dévoreur de mondes",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -33417,6 +34071,12 @@
    ]
   },
   {
+   "fr": "Le raid",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -33874,6 +34534,12 @@
    ]
   },
   {
+   "fr": "Le titan",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Le Titan : ses presses hydrauliques s'abattent de la voûte (une sur deux, toutes sauf une — la colonne épargnée s'éclaire en vert —, ou en marche, l'une après l'autre ; des bandes jaunes et noires les annoncent), ses missiles à verrouillage (les réticules vous suivent puis se verrouillent : bougez), ses tapis roulants vous emportent vers lui ou loin de lui (toujours moins vite que vous ne courez ; un saut vous libère), son poing-piston, son canon rotatif, son laser, ses drones, et sa dernière salve à survivre.",
    "where": [
     "data/news/changelog.json"
@@ -33938,6 +34604,12 @@
    "fr": "Le Titan s'est arrêté. Dans la fonderie, les feux s'éteignent enfin.",
    "where": [
     "data/levels/confins_06.json"
+   ]
+  },
+  {
+   "fr": "Le titan · {0} parties et son cœur",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -34016,6 +34688,12 @@
    "fr": "Le vestiaire, le juke-box et la galerie de la Collection.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Le voile et les miroirs",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -34264,10 +34942,17 @@
    ]
   },
   {
+   "fr": "Les ancres libres crachent du givre à tour de rôle",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Les anneaux de chitine",
    "where": [
     "data/enemies/voidworm.json",
-    "data/raids/asterion/abdomen/zone_8.json"
+    "data/raids/asterion/abdomen/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -34524,6 +35209,12 @@
    ]
   },
   {
+   "fr": "Les crochets libres crachent de l'acide à tour de rôle",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Les cryptes s'ouvrent !",
    "where": [
     "data/enemies/liche.json"
@@ -34539,6 +35230,12 @@
    "fr": "Les côtes hautes bougent avec le souffle du titan. Une barrière d'énergie les traverse ; un éclat de roche les garde.",
    "where": [
     "data/raids/asterion/torse/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Les côtes libres crachent du plasma à tour de rôle",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -34611,6 +35308,12 @@
    "fr": "Les deux réacteurs sont coupés : la Cheville d'acier s'ouvre",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Les deux tenants partent ensemble ; les autres frappent la lumière du cœur dès qu'elle s'allume.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -34719,7 +35422,8 @@
    "fr": "Les entraves",
    "where": [
     "data/enemies/titanus.json",
-    "data/raids/asterion/jambe_droite/zone_8.json"
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -34824,7 +35528,8 @@
    "fr": "Les générateurs",
    "where": [
     "data/enemies/graviton.json",
-    "data/raids/asterion/jambe_gauche/zone_8.json"
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -34981,6 +35686,18 @@
    ]
   },
   {
+   "fr": "Les miroirs sont au sol aux deux bouts de l'arène et sur deux corniches hautes : le groupe se sépare. Le nombre de miroirs à tenir suit les joueurs en jeu.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "les mots des fiches sont illisibles",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Les nerfs optiques relient les yeux au cerveau. Deux nerfs, deux groupes ; l'onde psychique y revient sans cesse.",
    "where": [
     "data/raids/asterion/crane/zone_4.json"
@@ -35035,6 +35752,18 @@
    ]
   },
   {
+   "fr": "les parties du titan sont illisibles",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
+   "fr": "Les parties détruites et leurs effets viennent des résultats validés par le serveur, pour tous les groupes.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Les pistons montent et descendent : sautez au sommet de leur course.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_2.json"
@@ -35056,6 +35785,12 @@
    "fr": "Les plaques du Torse sont brisées : l'Intestin de l'Abdomen s'ouvre vers le Gosier",
    "where": [
     "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "Les plaques hautes se tirent depuis les tours des flancs : plusieurs équipes, ensemble. Avec peu de joueurs, plus de temps : × {0} à trois ou quatre, × {1} à deux, × {2} seul.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -35228,6 +35963,18 @@
    ]
   },
   {
+   "fr": "Les récompenses communes à tout le raid sont sur la fiche d'Asterion.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les récompenses sont accordées par le serveur, d'après les résultats validés ; elles se récupèrent dans CLANS › RAIDS.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -35279,6 +36026,12 @@
    "fr": "Les sept gigaboss sont tombés : le Cœur d'Asterion s'ouvre, tous les groupes peuvent le combattre",
    "where": [
     "server/src/raidHeart.ts"
+   ]
+  },
+  {
+   "fr": "Les sept parties",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -35379,9 +36132,16 @@
    ]
   },
   {
+   "fr": "Les trois évents",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Les ténèbres",
    "where": [
-    "data/enemies/skullmaw.json"
+    "data/enemies/skullmaw.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -35461,6 +36221,12 @@
    "fr": "Les étoiles viennent des succès (menu principal → Succès). Certaines récompenses demandent un succès précis.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les évents sont sur les deux tours et sur la plateforme au-dessus de sa tête : le groupe se sépare. Avec peu de joueurs, un évent fermé tient plus longtemps : × {0} à deux, × {1} seul.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -35726,7 +36492,8 @@
   {
    "fr": "Liens avec le reste du titan",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -35769,6 +36536,12 @@
    "fr": "Lieu d'apparition déplacé : l'arène n'est plus la même à cette phase.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lieu et récompenses",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -37712,6 +38485,7 @@
    "fr": "minutes",
    "where": [
     "game/GameServices.cpp",
+    "game/raid/RaidSheets.cpp",
     "ui/screens/OnlineComputer.cpp",
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -37757,6 +38531,12 @@
    "fr": "Miroirs",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Miroirs à tenir",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -38370,6 +39150,12 @@
    ]
   },
   {
+   "fr": "Montez au crochet de la couronne avant les autres : c'est le plus long à atteindre.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Montez sur le radeau : il vous fera traverser.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -38395,6 +39181,18 @@
    "fr": "montez sur les passerelles",
    "where": [
     "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Montez sur les plateformes avant que le fond de l'arène ne soit inondé.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Montez sur les racines hautes pendant l'annonce.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -38808,10 +39606,28 @@
    ]
   },
   {
+   "fr": "mécanisme sans nom ou sans texte : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Mécanisme ultime",
    "where": [
     "data/enemies/archon_catacombs.json",
     "data/enemies/echo_archon_catacombs.json"
+   ]
+  },
+  {
+   "fr": "Mécanismes",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mécanismes : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -41075,7 +41891,8 @@
    "where": [
     "ui/online/RaidHud.cpp",
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -41716,6 +42533,7 @@
   {
    "fr": "Ondes de choc",
    "where": [
+    "data/raids/asterion_sheets.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp"
    ]
@@ -41730,6 +42548,12 @@
    "fr": "Onglet suivant",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Onglet « Mécanismes » : ce que le groupe doit faire ensemble (combien de joueurs, combien de temps, selon le nombre de joueurs en jeu), ses points faibles, sa force selon la taille du groupe et ce qui compte dans les contributions. Onglet « Lieu et récompenses » : sa branche, l'expédition avant son antre, ce que sa chute fait à Asterion et son badge.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -42296,6 +43120,12 @@
    "fr": "OÙ ET QUAND",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Où il vit",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -42974,6 +43804,12 @@
    ]
   },
   {
+   "fr": "Partie : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "partie d'équipe : elle ne compte que pour les classements Duo et Trio",
    "where": [
     "server/src/replay.ts"
@@ -42989,6 +43825,12 @@
    "fr": "partie de défi : elle ne compte que pour son défi",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "partie inconnue du titan : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -43115,6 +43957,12 @@
    "fr": "pas d'essai",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas d'exemple animé pour ce mécanisme : sa description dit tout.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -44163,7 +45011,7 @@
   {
    "fr": "Pause : clic, Entrée / A",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -44297,9 +45145,21 @@
    ]
   },
   {
+   "fr": "Pendant des éons, il a avalé les planètes, et chaque monde dévoré a nourri les sept gardiens de son corps. Aujourd'hui, il approche de notre galaxie.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Pendant des éons, il dévora les mondes. Chaque planète avalée nourrissait ses sept gardiens.",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "Pendant l'annonce, glissez-vous sous une dalle de votre secteur, ou quittez-le.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -44312,6 +45172,12 @@
    "fr": "Pendant le défi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pendant le raid : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -44576,6 +45442,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
+    "game/raid/RaidSheets.cpp",
     "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GameScene.cpp",
@@ -44614,6 +45481,12 @@
    "fr": "phase {0} / 4 · {1} groupes",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Phase {0} / {1}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -44668,6 +45541,12 @@
    "fr": "Phases {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Phases {0} et {1}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -45003,6 +45882,12 @@
    ]
   },
   {
+   "fr": "Placez-vous entre deux tirs de l'éventail, ou sautez par-dessus.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Placée dans l'éditeur du HUD",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -45242,6 +46127,12 @@
    "fr": "PLAQUES · {0}",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Plaqué au sol",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -45916,6 +46807,7 @@
   {
    "fr": "Poings de magma",
    "where": [
+    "data/raids/asterion_sheets.json",
     "game/raid/RaidBranch.h"
    ]
   },
@@ -46030,6 +46922,12 @@
    ]
   },
   {
+   "fr": "point faible introuvable : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Point habituel",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -46124,6 +47022,12 @@
    "fr": "Points du clan : la meilleure équipe du clan sur chaque niveau EXTRÊME, vérifiée par le serveur. Solo pour l'instant : la coopération Duo et Trio arrive bientôt.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Points faibles",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -46330,6 +47234,7 @@
   {
    "fr": "Portée",
    "where": [
+    "data/raids/asterion_sheets.json",
     "game/enemies/BossAttackSheet.cpp",
     "game/powers/PowerStats.cpp"
    ]
@@ -47208,6 +48113,12 @@
    ]
   },
   {
+   "fr": "Progression : les mécanismes tenus, les points faibles brisés et les objectifs de la branche.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Progression : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -47640,6 +48551,12 @@
    ]
   },
   {
+   "fr": "Présence : le temps passé en jeu, et être en jeu à la chute du gigaboss.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Présence : visible des seuls membres du clan. « En ligne » compte les joueurs actifs ; une présence masquée apparaît hors ligne.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -48051,7 +48968,8 @@
    "where": [
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_4.json",
-    "data/raids/asterion/jambe_gauche/zone_7.json"
+    "data/raids/asterion/jambe_gauche/zone_7.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -48374,6 +49292,12 @@
    ]
   },
   {
+   "fr": "Quand le rayon se fige, sortez de sa ligne : sautez ou changez d'étage. Esquivé, il compte en dégâts évités.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Quatre phases : « Le cœur qui bat », « Les artères » (tenez ses quatre artères ensemble, deux au sol aux murs et deux sur des balcons hauts, pour mettre ses trois ventricules à nu), « La couronne d'étoiles » (une marée de plasma brûle le sol : restez sur les plateformes) et une dernière phase très difficile, « Supernova » : à chaque charge, assez de joueurs doivent tenir les ancres en même temps pour la contenir, sinon toute l'arène brûle.",
    "where": [
     "data/news/changelog.json"
@@ -48485,6 +49409,54 @@
    "fr": "Quitter « {0} » ? Il faudra une nouvelle invitation pour revenir. Votre copie locale reste dans vos niveaux.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quittez les fissures qui s'ouvrent sous vous et les marques des rochers.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez les marques au sol avant l'impact et restez en mouvement.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez les marques avant que le sol ne jaillisse.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez votre marque avant qu'elle se referme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez votre marque dès qu'elle s'allume : son talon est large.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez votre marque dès qu'elle s'allume, sans la poser sur un allié : chacun la sienne.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez votre marque dès qu'elle s'allume, sans la poser sur un allié.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Quittez votre marque dès qu'elle s'allume.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -48845,6 +49817,12 @@
   },
   {
    "fr": "Raids de clan : consensus renforcé contre la triche. Seuls les joueurs réellement en jeu votent, un rapport mensonger arrivé au même moment que la validation est refusé et journalisé, rien n'est plus accepté après la clôture d'un événement mondial, et un groupe ne recule plus sur la carte quand deux rapports arrivent dans le désordre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan : les FICHES d'Asterion et de ses sept Gigaboss, visibles par tous, même sans les avoir jamais affrontés. Elles s'ouvrent depuis CLANS › RAIDS (« Fiches d'Asterion »), depuis la fiche d'un événement (« Fiches ») et depuis l'antre de chaque carte de branche (« Fiche de … »), même hors ligne.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -50170,6 +51148,18 @@
    ]
   },
   {
+   "fr": "Regardez le sol : quittez les marques pendant l'annonce.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Regards traqueurs",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "regroupées",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -51059,7 +52049,7 @@
   {
    "fr": "Reprendre : clic, Entrée / A",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -51102,6 +52092,12 @@
    "fr": "Reprendre le diaphragme : vaincre sa garde",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Repérez l'ouverture de l'anneau et passez par elle.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -51257,6 +52253,12 @@
    "fr": "Reste en bas (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Restez hors du cercle de tirs, ou passez entre deux tirs quand il se resserre.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -51574,6 +52576,12 @@
    ]
   },
   {
+   "fr": "Retrait de la griffe",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Retrait des NIVEAUX EN LIGNE impossible ({0}) : rien n'a été supprimé.",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -51744,6 +52752,18 @@
    ]
   },
   {
+   "fr": "Rien ne la blesse tant que ses générateurs tournent. Ses {0} générateurs sont dans des secteurs séparés : un joueur sur chacun, au même instant, {1} s ensemble, les coupe tous. Elle s'effondre alors {2} s, prend × {3} dégâts et ses cœurs de gravité sont à nu.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Rien ne le blesse tant que ses {0} entraves de cheville tiennent. Brisées à moins de {1} s d'écart, elles le font tomber à genou {2} s : il prend × {3} dégâts et sa rotule et ses coutures de cheville sont à nu. Une entrave brisée seule se reforge.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Rien ne se perd",
    "where": [
     "data/achievements/achievements.json"
@@ -51838,6 +52858,12 @@
    "fr": "Rocher fissuré (Impulsion)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Rochers de la voûte",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -52192,6 +53218,12 @@
    ]
   },
   {
+   "fr": "règles du combat introuvables (antre {0})",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Règles du défi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -52456,6 +53488,12 @@
    ]
   },
   {
+   "fr": "récompense introuvable",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Récompense introuvable.",
    "where": [
     "server/src/raidRewards.ts"
@@ -52479,7 +53517,8 @@
    "fr": "Récompenses",
    "where": [
     "ui/screens/AdminCalendar.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -52726,6 +53765,18 @@
    "fr": "Répartir verticalement",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Répartissez-vous avant sa deuxième phase : au moins un joueur par évent, les autres le protègent puis frappent ses points faibles.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Répartissez-vous avant sa deuxième phase : un joueur par ancre, les autres frappent ses jointures dès qu'il tombe.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -53369,9 +54420,21 @@
    ]
   },
   {
+   "fr": "Sa carapace de basalte le rend intouchable tant qu'un de ses {0} évents est ouvert. Un joueur debout {1} s sur un évent le ferme ; un évent fermé se rallume au bout de {2} s. Les {0} évents fermés ensemble, la carapace éclate {3} s : il prend × {4} dégâts et ses points faibles peuvent être brisés.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Sa carapace vole en éclats : le cœur de magma est à nu !",
    "where": [
     "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "Sa chute et Asterion",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -53399,9 +54462,27 @@
    ]
   },
   {
+   "fr": "Sa fiche",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Sa flamme vire au bleu !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Sa force selon le groupe",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa gueule avale un joueur, que les autres libèrent",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -53462,6 +54543,18 @@
    "fr": "Sa vie est partagée : chaque instance joue sa propre partie, mais ce qu'elle arrache au Cœur (validé par le consensus de ses joueurs) s'additionne sur le serveur à celui de toutes les autres, et chaque groupe voit la part des autres lui être retirée au même instant sur tous ses écrans. Il tombe pour tous quand sa vie partagée est éteinte : la victoire est validée par le serveur, une seule fois, même si deux groupes portent le dernier coup ensemble.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Sa vie grandit avec les sièges occupés : × (1 + {0} × (joueurs − 1)), soit × {1} à huit joueurs.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Sa voie s'ouvre avec le torse : Heartbreaker vaincu, la cage thoracique est brisée.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -53927,6 +55020,18 @@
    ]
   },
   {
+   "fr": "Sautez par-dessus les deux ondes qui filent au ras du sol.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Sautez par-dessus, ou montez sur une plateforme.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Sautez puis appuyez à nouveau sur Saut en l'air : double saut !",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -54114,6 +55219,60 @@
    "fr": "scellée · prochaine version",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · annonce {0} s, montez",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · annonce {0} s, puis {1} s à l'envers",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · annonce {0} s, quittez la marque",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · le faisceau balaie l'arène en {0} s",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · sautez au passage",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · suit {0} s, se fige {1} s, tire",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · {0} cibles à briser en {1} s",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · {0} trous, ses renforts en sortent",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
+   ]
+  },
+  {
+   "fr": "Schéma animé · {0} à tenir ensemble, {1} s",
+   "where": [
+    "ui/screens/RaidSheetSketch.cpp"
    ]
   },
   {
@@ -54710,6 +55869,12 @@
    ]
   },
   {
+   "fr": "Ses côtes se referment sur le cœur. Un joueur sur chacune des {0} côtes, ensemble pendant {1} s : elles s'écartent ; une côte lâchée se referme en {2} s. Écartées, la lumière du cœur est à nu {3} s et il prend × {4} dégâts.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "ses engeances viennent en renfort",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -54770,6 +55935,12 @@
    ]
   },
   {
+   "fr": "Ses parasites",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Ses parasites en renfort : détruire le nid (zone 3) les réduirait de moitié.",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
@@ -54803,6 +55974,12 @@
    "fr": "Ses plumes s'embrasent : les cendres pleuvent !",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Ses points faibles et les cibles de ses mécanismes aussi : × (1 + {0} × (joueurs − 1)).",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -54842,6 +56019,12 @@
    ]
   },
   {
+   "fr": "Ses temps de recharge raccourcissent avec les joueurs en jeu : ÷ (1 + {0} × (joueurs − 1)).",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Ses tentacules arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_03.json"
@@ -54851,6 +56034,48 @@
    "fr": "Ses tirs vous suivent un moment.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Ses {0} chaînes tenues ensemble le plaquent au sol",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses {0} crochets tenus ensemble ouvrent sa gueule",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses {0} côtes écartées ensemble mettent le cœur à nu",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses {0} entraves brisées ensemble le mettent à genou",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses {0} générateurs coupés au même instant la font tomber",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses {0} plaques à briser dans les {1} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses {0} évents fermés ensemble font éclater sa carapace",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -55646,6 +56871,12 @@
    ]
   },
   {
+   "fr": "Son antre",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Son armure de givre : tenez ses 3 chaînes ensemble pour le plaquer au sol, brisez ses jointures, libérez les joueurs cloués.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json"
@@ -55679,6 +56910,12 @@
    "fr": "Son chef ou un de ses officiers accepte ou refuse ; s'il accepte, ses membres peuvent s'inscrire à ce raid commun.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Son combat n'est pas encore ouvert : ses phases et ses attaques s'afficheront ici dès qu'il le sera.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -55767,6 +57004,12 @@
    ]
   },
   {
+   "fr": "Son regard de mort se charge {0} s : des miroirs tenus le lui renvoient",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Son regard se charge : miroirs tenus {0} / {1} · les autres, cachez-vous derrière une colonne !",
    "where": [
     "game/raid/SkullmawRoutine.cpp"
@@ -55776,6 +57019,12 @@
    "fr": "Son talon fend le sol : la forge s'ouvre sous l'arène, ses entraves se verrouillent !",
    "where": [
     "data/raids/asterion/jambe_droite/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Son talon tombe sur chaque joueur · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -55819,6 +57068,24 @@
    "fr": "sorte de défi inconnue (jour, semaine ou mois attendu)",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "Sortez d'entre les murs dès qu'ils s'élèvent, ou esquivez ce qui tombe entre eux.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Sortez de l'anneau vert avant qu'il se fige. Un allié avalé : crevez la poche sur son cou, c'est un sauvetage.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Sortez de la ligne du rayon pendant l'annonce.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -56102,6 +57369,12 @@
    ]
   },
   {
+   "fr": "Sous son voile psychique, rien ne le blesse. Toutes les {0} s (phases 2 / 3), son Regard de mort se charge {1} s, puis frappe tous les joueurs qu'il voit ({2} dégâts) : une colonne ou un mur entre ses yeux et vous vous cache. Les joueurs debout sur un des {3} miroirs lui renvoient son regard : assez de miroirs tenus à l'éclair, il est aveuglé {4} s, prend × {5} dégâts, et ses yeux et le cristal de son front sont à nu.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Sous vos pieds, le canal englouti : Dash à travers les murs de cristal immergés.",
    "where": [
     "data/levels/glacior_02.json"
@@ -56135,6 +57408,12 @@
    "fr": "Soutien",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "Soutien : les coups bloqués au bouclier et les alliés relevés (un sauvetage).",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -56986,6 +58265,12 @@
    ]
   },
   {
+   "fr": "Suivez le trajet montré pendant l'annonce et restez hors de ses rebonds.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "SUIVI",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -56996,6 +58281,12 @@
    "fr": "Suivi",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivi, puis figé",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -57210,6 +58501,12 @@
    ]
   },
   {
+   "fr": "Sur Asterion : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Sur candidature",
    "where": [
     "game/online/Clans.cpp"
@@ -57311,6 +58608,12 @@
    "fr": "Sur les débris du titan, les clans levèrent leurs bannières.",
    "where": [
     "data/raids/asterion_victoire.json"
+   ]
+  },
+  {
+   "fr": "Sur un étage balayé, sautez la lame au moment où elle passe, ou changez d'étage pendant l'annonce.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -58103,6 +59406,12 @@
    ]
   },
   {
+   "fr": "Tant qu'une de ses {0} plaques d'armure tient (deux hautes, deux basses), rien ne le blesse. Elles repoussent si les {0} ne tombent pas dans les {1} s qui suivent la première ; chaque plaque brisée lui ôte {2} % de sa vie.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Tanzanie",
    "where": [
     "data/online/countries.json",
@@ -58541,6 +59850,42 @@
    "fr": "Tendon glacé",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Tenez la côte, ou écartez-vous de sa colonne quand elle s'illumine.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Tenez le crochet, ou écartez-vous de sa colonne quand elle s'illumine.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Tenir ensemble",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Tenir un crochet",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Tenir une ancre",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Tenir une côte",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -59698,7 +61043,8 @@
   {
    "fr": "Titres",
    "where": [
-    "data/cosmetics/cosmetics.json"
+    "data/cosmetics/cosmetics.json",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -60131,6 +61477,12 @@
    ]
   },
   {
+   "fr": "Tous les nombres des fiches viennent des règles que lisent les combats eux-mêmes : une fiche suit son Gigaboss quand ses données changent. Statistiques des boss › Fiche et les fiches des raids partagent la même liste d'attaques dépliables.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "tous les objets ne sont pas récupérés",
    "where": [
     "server/src/records.ts"
@@ -60187,7 +61539,7 @@
   {
    "fr": "Tout déplier",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -60253,7 +61605,7 @@
   {
    "fr": "Tout replier",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -60322,6 +61674,7 @@
   {
    "fr": "Toutes les phases",
    "where": [
+    "game/raid/RaidSheets.cpp",
     "ui/screens/BossTrainingScene.cpp"
    ]
   },
@@ -60353,6 +61706,96 @@
    "fr": "Toutes les touches de ce niveau reprennent celles du niveau pour J{0}.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), des parasites sortent de ses {1} trous, plus nombreux avec plus de joueurs en jeu. Le nid de l'Abdomen détruit pendant l'expédition, il n'en lâche que deux fois moins.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), son pied frappe le sol, annoncé {1} s avant (son talon levé) : deux ondes de {2} px de haut filent de ses pieds vers les deux murs, à {3} px/s. À partir de sa phase {4}, une deuxième paire les suit.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), un des {1} secteurs de l'arène s'illumine {2} s, puis sa gravité s'inverse {3} s : les joueurs qui y sont tombent vers la voûte, dont le champ blesse, sauf sous une dalle du secteur. Un secteur, puis deux à la fois, puis la moitié de l'arène à sa dernière phase.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), un rayon part d'un de ses yeux vers chaque joueur en jeu, au même instant : il vous suit {1} s, se fige {2} s en brillant plus fort, puis tire {3} s le long de cette ligne jusqu'au premier mur.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une lame traverse l'arène d'un mur à l'autre à {1} px/s, annoncée {2} s avant ; elle balaie {3} étages à la fois selon la phase.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, des débris tombent dessus.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, son talon s'y abat.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, une côte en jaillit et se referme comme un piège.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, une gueule en sort.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu, au même instant : huit joueurs, huit marques. {1} s plus tard, un poing de magma tombe sur chacune.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu, au même instant ; {1} s plus tard, une griffe en jaillit.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s en phase 2 et {1} s en phase 3, sa gueule vise un joueur ({2} à partir de {3} joueurs en jeu) : un anneau vert le suit {4} s, se fige {5} s, puis la gueule se referme. Qui y reste est avalé : gardé dans sa poche, blessé toutes les {6} s, jusqu'à ce qu'un allié crève la poche qui pousse sur son cou, ou recraché à moitié digéré au bout de {7} s. Jamais le dernier joueur dehors.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s en phase 2 et {1} s en phase 3, un puits s'ouvre sous chaque joueur en jeu, annoncé {2} s avant : pendant {3} s, il attire ce qui est à moins de {4} px vers son cœur, qui blesse.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s en phase 2 et {1} s en phase 3, {2} puis {3} rochers tombent de la voûte sur des marques de toute l'arène (et sous les joueurs), annoncés {4} s avant.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Toutes les {0} s, dès {1} joueurs en jeu, il vise un joueur ({2} à partir de {3} joueurs) et plante une griffe sur sa marque {4} s plus tard. Pris, le joueur est cloué : blessé toutes les {5} s, jusqu'à ce qu'un allié brise la griffe ou qu'elle se retire au bout de {6} s.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -61452,6 +62895,12 @@
    ]
   },
   {
+   "fr": "Un battement fort sur {0} lance une onde au sol",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Un bloc détaché du corps du Monolithe, animé par ses runes. Il frappe le sol en s'approchant.",
    "where": [
     "data/enemies/eclat_de_roche.json"
@@ -61788,6 +63237,12 @@
    ]
   },
   {
+   "fr": "Un héros seul ne suffit pas contre un titan : les clans l'affrontent ensemble, groupe de huit par groupe de huit, branche par branche, sur son propre corps, jusqu'à son cœur.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Un import est en train de remplacer les données : attendez la fin.",
    "where": [
     "server/src/accountMigration.ts",
@@ -61810,6 +63265,24 @@
    "fr": "Un joueur bloqué ne peut plus vous écrire ni vous envoyer de demande d'ami, et ses messages vous sont masqués dans les groupes. Il n'est pas prévenu.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un joueur cloué au sol, que les autres libèrent",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Un joueur de chaque côté, sur les deux tours des flancs, au même moment.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Un joueur par ancre, au même moment : deux au sol, une en hauteur. Avec peu de joueurs, une chaîne tient plus longtemps : × {0} à deux, × {1} seul.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -61957,6 +63430,12 @@
    ]
   },
   {
+   "fr": "Un poing de magma sur chaque joueur · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Un point à chaque date où l'un des deux a changé",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -61999,6 +63478,12 @@
    ]
   },
   {
+   "fr": "Un puits s'ouvre sous chaque joueur",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Un périphérique par joueur",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -62011,6 +63496,12 @@
    ]
   },
   {
+   "fr": "Un rayon par joueur, qui suit, se fige puis tire · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Un rayon qui rebondit sur les murs et le plafond ; son trajet est montré pendant l'annonce.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -62020,6 +63511,12 @@
    "fr": "Un rayon tiré vers vous, qui peut balayer l'arène : sortez de sa ligne pendant l'annonce.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Un regard traqueur ou un éclair esquivés comptent en dégâts évités.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -62106,7 +63603,7 @@
   {
    "fr": "Un seul exemple à la fois : cliquez ici, ou sélectionnez cette attaque, pour voir le sien.",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/widgets/BossSheetWidgets.cpp"
    ]
   },
   {
@@ -62264,6 +63761,12 @@
    "fr": "Une bosse court sous le sol jusqu'à vous, puis un pic jaillit à l'endroit atteint : changez de place.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Une branche sans son gigaboss : environ {0} à {1} min à huit joueurs (l'estimation de ses zones).",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -62442,6 +63945,12 @@
    ]
   },
   {
+   "fr": "Une côte se referme sous chaque joueur · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Une des quatre plaques d'armure du torse : tant qu'il en reste une, rien ne blesse Heartbreaker. Elles repoussent si elles ne tombent pas ensemble.",
    "where": [
     "data/enemies/heartbreaker_plaque.json"
@@ -62496,6 +64005,12 @@
    ]
   },
   {
+   "fr": "Une griffe jaillit sous chaque joueur · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Une grotte secrète sous la Veine, pleine de scories. Une relique y attend qui ose la chercher.",
    "where": [
     "data/raids/asterion/bras_droit/zone_5.json"
@@ -62505,6 +64020,12 @@
    "fr": "Une grotte sous la neige !",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Une gueule sort du sol sous chaque joueur · toutes les {0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -62529,6 +64050,12 @@
    "fr": "Une jointure des phalanges de Dreadfang, à nu quand ses trois chaînes le tiennent. Chacune brisée lui arrache une part de sa vie.",
    "where": [
     "data/enemies/dreadfang_jointure.json"
+   ]
+  },
+  {
+   "fr": "Une lame traverse l'arène sur {0} étages à la fois",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -63005,6 +64532,12 @@
    "fr": "Une équipe = ses joueurs exacts. Progression = le joueur le plus avancé ; à égalité, le moins de réanimations, puis le plus tôt. Une équipe incomplète (un joueur parti) passe derrière une équipe complète au même score. Chaque joueur confirme la tentative avec son compte.",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Une équipe par plaque, et frappez ensemble : la première brisée lance le compte.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -63836,6 +65369,12 @@
    ]
   },
   {
+   "fr": "valeur introuvable : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "valeur invalide dans {0}",
    "where": [
     "server/src/backups.ts"
@@ -64031,6 +65570,12 @@
    "fr": "Verrouiller la caméra sur une zone",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Verrouillez l'ancre, ou écartez-vous de sa colonne quand elle s'illumine.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -64733,6 +66278,12 @@
    "fr": "Visiteur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Visé, écartez-vous de votre marque. Un allié cloué : brisez la griffe, c'est un sauvetage pour vous.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -66541,6 +68092,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/EventSystem.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/RaidSheets.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -66659,6 +68211,12 @@
    "fr": "Zone {0} sur 8 · sélectionnée",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "zone {0}, « {1} »",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -67254,6 +68812,12 @@
    ]
   },
   {
+   "fr": "{0} : ennemis de l'exemple introuvables ({1})",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "{0} : entier de {1} à {2} attendu",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -67350,6 +68914,12 @@
    ]
   },
   {
+   "fr": "{0} : phases illisibles",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "{0} : plateforme mobile immobile (déplacement nul)",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -67380,9 +68950,21 @@
    ]
   },
   {
+   "fr": "{0} : valeur de l'exemple introuvable ({1})",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "{0} : valeur invalide",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : valeurs par joueur introuvables ({1})",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -67744,6 +69326,18 @@
    "fr": "{0} boss vaincus",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} branches",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} branches de {1} zones : une antre de gigaboss au bout de chacune, puis le cœur.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -68633,6 +70227,7 @@
   {
    "fr": "{0} joueurs",
    "where": [
+    "game/raid/RaidSheets.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -69241,6 +70836,7 @@
   {
    "fr": "{0} px",
    "where": [
+    "data/raids/asterion_sheets.json",
     "game/enemies/BossAttackSheet.cpp"
    ]
   },
@@ -69444,6 +71040,12 @@
    ]
   },
   {
+   "fr": "{0} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "{0} s (phase {1})",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -69465,6 +71067,18 @@
    "fr": "{0} s'est retiré de {1} : votre inscription est annulée",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} s, dégâts × {1}",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "{0} s, puis {1} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -69630,6 +71244,12 @@
    ]
   },
   {
+   "fr": "{0} toutes les {1} s",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "{0} travaille sur {1} : votre modification n'a pas été appliquée.",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -69777,6 +71397,12 @@
    ]
   },
   {
+   "fr": "{0} zones",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} zones sur {1} contrôlées · {2} groupe en jeu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -69840,6 +71466,12 @@
    "fr": "{0} · Ctrl+W ferme l'onglet",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · difficulté {1} / 10",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -70059,6 +71691,12 @@
    ]
   },
   {
+   "fr": "{0} · {1} zones",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} · ancres {2} / {3}",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
@@ -70147,6 +71785,12 @@
    "fr": "{0} à {1} caractères",
    "where": [
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "{0} à {1} joueurs",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -70726,6 +72370,12 @@
    ]
   },
   {
+   "fr": "« {0} », environ {1} min à huit joueurs",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "°/s",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -70746,7 +72396,8 @@
   {
    "fr": "à 0 PV, invincible",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -70789,6 +72440,12 @@
    "fr": "À gauche : explorateur (par calque ou par type, filtre), historique (cliquez pour revenir à une étape), vérifier",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "À genou",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -70883,9 +72540,21 @@
    ]
   },
   {
+   "fr": "À nu {0} s · dégâts × {1}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "à obtenir",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "À partir de sa phase {0}, toutes les {1} s, l'acide monte sur toute l'arène, annoncé {2} s avant : il monte en {3} s, reste {4} s et redescend en {5} s ({6} dégâts). Les deux valves de l'Intestin fermées pendant l'expédition, il monte moins haut.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -70898,6 +72567,12 @@
    "fr": "À rencontrer d'abord dans son niveau",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "À sa dernière phase, l'arène plonge dans les ténèbres : seule la lumière de son œil, qui balaie l'arène en {0} s, révèle les plateformes qu'elle touche.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -70924,6 +72599,12 @@
    "fr": "À vérifier : {0}",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "à {0} % de sa vie",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -71099,6 +72780,12 @@
    ]
   },
   {
+   "fr": "Écart permis",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Écart seg.",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -71108,6 +72795,24 @@
    "fr": "ÉCART TYPE (20 DERNIÈRES)",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Écartez-vous de l'endroit où il retombe, puis sautez les ondes de l'atterrissage.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Écartez-vous de l'ombre qui vous suit, puis sautez l'onde de choc à l'impact.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Écartez-vous ou sautez au moment où il s'élance.",
+   "where": [
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -71640,7 +73345,8 @@
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_howling_wyrm.json",
     "data/enemies/howling_wyrm.json",
-    "data/raids/asterion/bras_gauche/zone_8.json"
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -71746,7 +73452,8 @@
    "where": [
     "data/enemies/echo_prime_sentinel.json",
     "data/enemies/prime_sentinel.json",
-    "data/raids/asterion/jambe_droite/zone_8.json"
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion_sheets.json"
    ]
   },
   {
@@ -72968,6 +74675,7 @@
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/RaidTitanScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]

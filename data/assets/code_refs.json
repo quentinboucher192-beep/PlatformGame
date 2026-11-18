@@ -846,6 +846,7 @@
    "ui/screens/PlanetMapScene.cpp": 1
   },
   "ui/raids/asterion.json": {
+   "game/raid/RaidSheets.cpp": 1,
    "ui/widgets/AsterionFigure.cpp": 2
   },
   "ui/raids/asterion.png": {

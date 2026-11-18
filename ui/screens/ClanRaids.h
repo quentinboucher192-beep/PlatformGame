@@ -61,6 +61,9 @@ private:
     void drawInvitations(const Rect& r, const raids::TabLayout& lay);
     void drawHistory(const Rect& r, const raids::TabLayout& lay);
     void drawNotes(const Rect& r);
+    /// 2.73: « Fiches d'Asterion » (ui/screens/RaidSheetsScene), its measured width.
+    void sheetsButton(const std::string& id, const Rect& r);
+    float sheetsButtonWidth();
 
     std::string clanId() const;
     std::string clanRole() const;

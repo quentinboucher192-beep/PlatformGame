@@ -211,6 +211,8 @@ void ClanRaids::draw(const Rect& body) {
     if (!loaded_) {
         fit(ui, error_.empty() ? "Chargement des raids…" : error_, {left.x + ui.s(8), left.y + ui.s(24)}, 17, left.w - ui.s(16),
             error_.empty() ? ui.theme().textDim : ui.theme().danger);
+        // 2.73: the sheets of Asterion and its gigaboss are the game's own data: offline too.
+        sheetsButton("sheets", {left.x + ui.s(8), left.y + ui.s(52), std::min(left.w - ui.s(16), sheetsButtonWidth()), ui.s(44)});
     } else {
         const float heroH = std::min(ui.s(330), std::max(ui.s(250), left.h * 0.48f));
         drawHero({left.x, left.y, left.w, heroH}, lay);
@@ -239,6 +241,10 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     asterionfilm::replayButton(g_, "hero/film",
                                titan ? Rect{r.right() - ui.s(16) - (titanW + replayW) * 0.5f, r.bottom() - ui.s(16) - replayH, replayW, replayH}
                                      : Rect{r.right() - ui.s(26) - replayW, r.bottom() - ui.s(46) - replayH * 0.5f, replayW, replayH});
+    // 2.73: « Fiches d'Asterion » (the titan and its seven gigaboss) above the titan, else at the top right.
+    const float sheetsH = ui.s(36), sheetsW = std::min(sheetsButtonWidth(), titan ? titanW : r.w * 0.3f);
+    sheetsButton("hero/sheets", titan ? Rect{r.right() - ui.s(16) - (titanW + sheetsW) * 0.5f, r.y + ui.s(16), sheetsW, sheetsH}
+                                      : Rect{r.right() - ui.s(26) - sheetsW, r.y + ui.s(22), sheetsW, sheetsH});
     if (titan) {
         Json heroJson;
         if (lay.hero)
@@ -247,11 +253,12 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
         // The world event running: a click on a branch of the titan opens its map (2.68: all seven).
         const bool running = lay.hero && raids::stateAt(raids::parseEvent(heroJson), now) == raids::State::Running;
         const std::vector<std::string> open = running ? kTitanParts : std::vector<std::string>{};
-        const std::string part = titan_.draw(g_, "asterion", {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(40) - replayH},
+        const std::string part = titan_.draw(g_, "asterion",
+                                             {r.right() - titanW - ui.s(16), r.y + ui.s(16) + sheetsH + ui.s(8), titanW, r.h - ui.s(48) - replayH - sheetsH},
                                              asterion::statesOf(heroJson), open);
         if (!part.empty()) g_.app.pushScene(makeRaidBranch(g_, lay.heroId, part));
     }
-    const float x = r.x + pad, right = r.right() - (titan ? titanW + ui.s(28) : pad + replayW + ui.s(12)), room = right - x;
+    const float x = r.x + pad, right = r.right() - (titan ? titanW + ui.s(28) : pad + std::max(replayW, sheetsW) + ui.s(12)), room = right - x;
     const float by = r.bottom() - ui.s(22) - ui.s(48);  // the buttons' top
     float y = r.y + ui.s(22);
     auto fits = [&](float h, float limit) { return y + h <= limit; };
@@ -339,6 +346,20 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
         const auto note = wrap(ui, a.note, FontFace::Body, 14, right - nx, lines);
         drawLines(ui, note, {nx, by + ui.s(24) - static_cast<float>(note.size()) * ui.s(9.5f)}, 14, ui.s(19), kDim);
     }
+}
+
+float ClanRaids::sheetsButtonWidth() {
+    return textW(g_.ui, "Fiches d'Asterion", 15, FontFace::Bold) + g_.ui.s(36);
+}
+
+void ClanRaids::sheetsButton(const std::string& id, const Rect& r) {
+    UIContext& ui = g_.ui;
+    UIContext::ButtonStyle st;
+    st.small = true;
+    const std::string label = "Fiches d'Asterion";
+    st.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 15, r.w - ui.s(16), 0.7f), 11.5f / ui.s(1.0f));
+    if (ui.button(id, r, label, st)) g_.app.pushScene(makeRaidSheets(g_));
+    ui.newBadge(id, r, "raids.sheets", true, true);  // « NOUVEAU » (2.73)
 }
 
 void ClanRaids::drawClanRaids(const Rect& r, const raids::TabLayout& lay) {

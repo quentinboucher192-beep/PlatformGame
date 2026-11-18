@@ -56,7 +56,7 @@ private:
     void stepPlates(GameWorld& w, Contributions& c, Gigaboss& g, Enemy& b);
     void spawnPlates(GameWorld& w, Contributions& c, Gigaboss& g, Enemy& b);
     void stepBeats(GameWorld& w, Enemy& b, int phase);
-    float slack4(int n) const { return n <= 1 ? 2.0f : n == 2 ? 1.5f : n <= 4 ? 1.2f : 1.0f; }
+    float slack4(int n) const { return tunables::plateSlack(n); }  // 2.73: GigabossTunables.h
 
     std::vector<Vec2> plateSpots_;
     std::string plateEnemy_ = "heartbreaker_plaque";

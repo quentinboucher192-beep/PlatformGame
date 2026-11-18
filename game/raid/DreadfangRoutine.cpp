@@ -187,10 +187,10 @@ void DreadfangRoutine::stepPins(GameWorld& w, Contributions& c, Gigaboss& g, Ene
     const std::vector<int> play = playing(w);
     bool changed = false;
     // Aim: one player (two from five in play) on a mark that does not follow them.
-    if (phase >= pinFrom_ && !b.lastStand() && play.size() >= 2) {
+    if (phase >= pinFrom_ && !b.lastStand() && static_cast<int>(play.size()) >= tunables::kPinMinPlayers) {
         if (--pinClock_ <= 0) {
             pinClock_ = std::max(steps(pinWarn_ + pinHold_) + 1, steps(pinPeriod_ / std::max(1.0f, b.pressure())));
-            const int want = play.size() >= 5 ? 2 : 1;
+            const int want = static_cast<int>(play.size()) >= tunables::kPinTwoFrom ? tunables::kPinMany : 1;
             int aimed = 0;
             for (int k = 0; k < 8 && aimed < want; ++k) {
                 const int seat = (pinVolley_ * 3 + k) % 8;

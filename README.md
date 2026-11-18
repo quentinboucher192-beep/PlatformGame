@@ -273,7 +273,7 @@ le Crâne tombé, ses lances perdent leur précision ; le Bras gauche, plus de b
 magma ; le Torse, plus de cage ; l'Abdomen, plus d'engeances ; la Jambe gauche, plus de pièges de gravité ; la Jambe
 droite, ses charges ralentissent. Sa chute validée lance le film **« La chute d'Asterion »** pour tout le groupe et
 accorde, une seule fois, le badge « Cœur d'Asterion », l'effet de victoire « Supernova d'Asterion », le cadre de profil
-des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §16](docs/RAIDS.md#16-phase-6-274--le-cœur-dasterion).
+des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §16](docs/RAIDS.md#17-phase-6-274--le-cœur-dasterion).
 
 ### Récompenses et événements mondiaux
 
@@ -605,6 +605,19 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.74.1** :
+* **Raids de clan : les fiches d'Asterion et de ses sept Gigaboss** (`ui/screens/RaidSheetsScene`, modèle
+  `game/raid/RaidSheets`, mots dans `data/raids/asterion_sheets.json`), visibles même sans les avoir rencontrés, depuis
+  CLANS › RAIDS, la fiche d'un événement et l'antre de chaque carte de branche (pastilles « NOUVEAU ») : le titan partie
+  par partie (`AsterionFigure`, une partie ouvre la fiche de son Gigaboss), son cœur (ce qui en est connu, une fiche
+  ajoutée par les données quand son combat existera), les sept parties et leurs effets, la structure du raid, les
+  récompenses ; pour chaque Gigaboss, son sprite par phase, sa difficulté, ses phases, ses attaques et mécanismes
+  dépliables avec un exemple animé (moteur du jeu ou schéma aux sprites du combat, `RaidSheetSketch`) et « Comment
+  l'éviter », ses mécanismes collectifs, points faibles, contributions, branche, antre et badge. Chaque nombre est lu
+  dans les règles de son antre (celles des routines) ou dans `game/raid/GigabossTunables.h` (constantes des routines
+  nommées une fois, sans changement de règle) ; la liste d'attaques dépliables est partagée avec Statistiques des boss ›
+  Fiche (`ui/widgets/BossSheetWidgets`). Tests : `tests/test_raid_sheets.cpp`.
 
 **Nouveau dans la version 2.74.0** :
 * **Raids de clan, phase 6 : LE CŒUR D'ASTERION, le combat final** (`tools/levelgen/raid_coeur.py` : l'Aorte cosmique,

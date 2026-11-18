@@ -1,0 +1,534 @@
+{
+  "format": "cosmic.raid_sheets",
+  "version": 1,
+  "raid": "asterion",
+  "comment": "The sheets of Asterion and of its gigaboss (CLANS › RAIDS › Fiches, game/raid/RaidSheets, 2.73). Only words live here: every number of a text is a slot ({0}, {1}…) filled from `values`, read in the lair's rules (metadata.raid.gigaboss of zone 8 of the branch of `part`, the same numbers the routines read), so a sheet follows its gigaboss when its data changes. A value is a path in those rules (a list of numbers shows « a / b / c »), or `count:<path>` (size of a list), `gaps:<path>` (size − 1), `pct:<path>` (× 100), `at<N>:<path>` (the value of phase N of a list), `hpmul:<players>` (its health factor), `slack:<players>` / `plateslack:<players>` / `code:<name>` (the numbers of the routines themselves, game/raid/GigabossTunables.h). `phases`: a list, « all », `range:<path>` ([from, until) of the rules), `from:<path>` or `nonzero:<path>` (the phases whose value is above 0). `players`: a list of the rules with one value per number of players in play (its label says what it counts). `example`: the animated drawing of a mechanism (mark, beam, wave, plates, zone, rise, cone, summon, clip) with the clips of the gigaboss's effects sheet (summon: the sprites of the enemies its rules name). The heart's sheet is added here once its fight exists: an entry of `gigaboss` with \"part\": \"coeur\", its `enemy` and its `lair` ({\"part\": <branch folder>, \"zone\": <zone>}); until then Asterion's sheet shows what `asterion.heart` says.",
+  "asterion": {
+    "title": "ASTERION",
+    "subtitle": "LE DÉVOREUR DE MONDES",
+    "lore": [
+      {"text": "Avant la première étoile, il y avait une faim. Elle s'est forgé un corps de mondes brisés et s'est donné un nom : Asterion, le Dévoreur de mondes."},
+      {"text": "Pendant des éons, il a avalé les planètes, et chaque monde dévoré a nourri les sept gardiens de son corps. Aujourd'hui, il approche de notre galaxie."},
+      {"text": "Un héros seul ne suffit pas contre un titan : les clans l'affrontent ensemble, groupe de huit par groupe de huit, branche par branche, sur son propre corps, jusqu'à son cœur."}
+    ],
+    "heart": [
+      {"text": "Le cœur cosmique d'Asterion bat au fond de sa poitrine : c'est le dernier combat, une fois ses branches tombées."},
+      {"text": "Sa voie s'ouvre avec le torse : Heartbreaker vaincu, la cage thoracique est brisée."},
+      {"text": "Chaque partie détruite retire au titan ce que sa ligne décrit : plus elles sont nombreuses à tomber, plus le dernier combat est à votre portée."},
+      {"text": "Son combat n'est pas encore ouvert : ses phases et ses attaques s'afficheront ici dès qu'il le sera."}
+    ],
+    "contributions": [
+      {"text": "Dégâts : à tous les ennemis, et au gigaboss avec ses points faibles."},
+      {"text": "Dégâts évités : ses coups qui vous visaient et que vous avez esquivés, et ceux que votre bouclier a arrêtés."},
+      {"text": "Soutien : les coups bloqués au bouclier et les alliés relevés (un sauvetage)."},
+      {"text": "Progression : les mécanismes tenus, les points faibles brisés et les objectifs de la branche."},
+      {"text": "Présence : le temps passé en jeu, et être en jeu à la chute du gigaboss."}
+    ],
+    "scaling": [
+      {"text": "Sa vie grandit avec les sièges occupés : × (1 + {0} × (joueurs − 1)), soit × {1} à huit joueurs.", "values": ["hpPerPlayer", "hpmul:8"]},
+      {"text": "Ses points faibles et les cibles de ses mécanismes aussi : × (1 + {0} × (joueurs − 1)).", "values": ["weakHpPerPlayer"]},
+      {"text": "Ses temps de recharge raccourcissent avec les joueurs en jeu : ÷ (1 + {0} × (joueurs − 1)).", "values": ["pressurePerPlayer"]}
+    ]
+  },
+  "avoid": {
+    "rain": {"text": "Quittez les marques au sol avant l'impact et restez en mouvement."},
+    "ring": {"text": "Repérez l'ouverture de l'anneau et passez par elle."},
+    "spiral": {"text": "Glissez-vous entre deux bras de la spirale, en tournant avec elle."},
+    "eruption": {"text": "Quittez les marques avant que le sol ne jaillisse."},
+    "skyfall": {"text": "Écartez-vous de l'ombre qui vous suit, puis sautez l'onde de choc à l'impact."},
+    "spread": {"text": "Placez-vous entre deux tirs de l'éventail, ou sautez par-dessus."},
+    "quake": {"text": "Quittez les fissures qui s'ouvrent sous vous et les marques des rochers."},
+    "vortex": {"text": "Courez dans l'autre sens : l'aspiration est limitée."},
+    "slam": {"text": "Sautez par-dessus les deux ondes qui filent au ras du sol."},
+    "arc": {"text": "Changez de place pendant l'annonce : les tirs retombent là où vous étiez."},
+    "flood": {"text": "Montez sur les plateformes avant que le fond de l'arène ne soit inondé."},
+    "cage": {"text": "Sortez d'entre les murs dès qu'ils s'élèvent, ou esquivez ce qui tombe entre eux."},
+    "tracker": {"text": "Changez de place quand la bosse arrive sous vous : le pic jaillit là où elle s'arrête."},
+    "orbit": {"text": "Restez hors du cercle de tirs, ou passez entre deux tirs quand il se resserre."},
+    "laser": {"text": "Sortez de la ligne du rayon pendant l'annonce."},
+    "prism": {"text": "Suivez le trajet montré pendant l'annonce et restez hors de ses rebonds."},
+    "lunge": {"text": "Écartez-vous ou sautez au moment où il s'élance."},
+    "frost_floor": {"text": "Freinez tôt et restez loin des bords : vous glissez bien plus longtemps."},
+    "summon": {"text": "Abattez vite les renforts, sans quitter des yeux les marques du gigaboss."},
+    "well": {"text": "Courez contre l'attraction et restez loin de son cœur."},
+    "charge": {"text": "Sautez par-dessus, ou montez sur une plateforme."},
+    "leap": {"text": "Écartez-vous de l'endroit où il retombe, puis sautez les ondes de l'atterrissage."}
+  },
+  "gigaboss": [
+    {
+      "id": "skullmaw",
+      "part": "crane",
+      "enemy": "skullmaw",
+      "badge": "communaute_skullmaw",
+      "mechanics": [
+        {
+          "id": "regards",
+          "kind": "each",
+          "name": "Regards traqueurs",
+          "phases": "all",
+          "summary": {"text": "Un rayon par joueur, qui suit, se fige puis tire · toutes les {0} s", "values": ["gaze.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), un rayon part d'un de ses yeux vers chaque joueur en jeu, au même instant : il vous suit {1} s, se fige {2} s en brillant plus fort, puis tire {3} s le long de cette ligne jusqu'au premier mur.", "values": ["gaze.periods", "gaze.track", "gaze.lock", "gaze.fire"]},
+          "hint": {"text": "Quand le rayon se fige, sortez de sa ligne : sautez ou changez d'étage. Esquivé, il compte en dégâts évités."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["gaze.damage"]}},
+            {"label": "Suivi, puis figé", "detail": {"text": "{0} s, puis {1} s", "values": ["gaze.track", "gaze.lock"]}},
+            {"label": "Portée", "detail": {"text": "{0} px", "values": ["gaze.reach"]}}
+          ],
+          "example": {"kind": "beam", "track": "gaze.track", "lock": "gaze.lock", "fire": "gaze.fire"}
+        },
+        {
+          "id": "voile",
+          "kind": "collective",
+          "name": "Le voile et les miroirs",
+          "phases": "range:veil",
+          "summary": {"text": "Son regard de mort se charge {0} s : des miroirs tenus le lui renvoient", "values": ["flash.charge"]},
+          "text": {"text": "Sous son voile psychique, rien ne le blesse. Toutes les {0} s (phases 2 / 3), son Regard de mort se charge {1} s, puis frappe tous les joueurs qu'il voit ({2} dégâts) : une colonne ou un mur entre ses yeux et vous vous cache. Les joueurs debout sur un des {3} miroirs lui renvoient son regard : assez de miroirs tenus à l'éclair, il est aveuglé {4} s, prend × {5} dégâts, et ses yeux et le cristal de son front sont à nu.", "values": ["flash.periods", "flash.charge", "flash.damage", "count:mirrors", "exposed", "exposedMult"]},
+          "message": {"text": "Les miroirs sont au sol aux deux bouts de l'arène et sur deux corniches hautes : le groupe se sépare. Le nombre de miroirs à tenir suit les joueurs en jeu."},
+          "hint": {"text": "Dès que son regard se charge, les porteurs de miroirs montent sur les leurs ; tous les autres se cachent derrière une colonne."},
+          "players": {"label": "Miroirs à tenir", "path": "need"},
+          "facts": [
+            {"label": "Charge du regard", "detail": {"text": "{0} s", "values": ["flash.charge"]}},
+            {"label": "Aveuglé", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:mirrors", "hold": "flash.charge", "clip": "mirror", "clipHeld": "mirror_lit", "clipDone": "mirror_flash"}
+        },
+        {
+          "id": "tenebres",
+          "kind": "arena",
+          "name": "Les ténèbres",
+          "phases": [3],
+          "summary": {"text": "L'arène plonge dans le noir ; la lumière de son œil révèle les plateformes"},
+          "text": {"text": "À sa dernière phase, l'arène plonge dans les ténèbres : seule la lumière de son œil, qui balaie l'arène en {0} s, révèle les plateformes qu'elle touche.", "values": ["searchlight.period"]},
+          "hint": {"text": "Avancez quand le faisceau éclaire votre chemin, et ne sautez jamais dans le noir."},
+          "example": {"kind": "cone", "period": "searchlight.period"}
+        }
+      ],
+      "contributions": [
+        {"text": "Chaque joueur debout sur un miroir à l'éclair de son regard compte un mécanisme."},
+        {"text": "Un regard traqueur ou un éclair esquivés comptent en dégâts évités."}
+      ]
+    },
+    {
+      "id": "dreadfang",
+      "part": "bras_gauche",
+      "enemy": "dreadfang",
+      "badge": "communaute_dreadfang",
+      "mechanics": [
+        {
+          "id": "griffes_sol",
+          "kind": "each",
+          "name": "Griffes du sol",
+          "phases": "all",
+          "summary": {"text": "Une griffe jaillit sous chaque joueur · toutes les {0} s", "values": ["fists.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu, au même instant ; {1} s plus tard, une griffe en jaillit.", "values": ["fists.periods", "fists.warn"]},
+          "hint": {"text": "Quittez votre marque dès qu'elle s'allume, sans la poser sur un allié."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["fists.damage"]}},
+            {"label": "Annonce", "detail": {"text": "{0} s", "values": ["fists.warn"]}},
+            {"label": "Largeur", "detail": {"text": "{0} px", "values": ["fists.width"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "rise": true, "warn": "fists.warn"}
+        },
+        {
+          "id": "balayage",
+          "kind": "arena",
+          "name": "Balayage des griffes",
+          "phases": "all",
+          "summary": {"text": "Une lame traverse l'arène sur {0} étages à la fois", "values": ["sweep.count"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une lame traverse l'arène d'un mur à l'autre à {1} px/s, annoncée {2} s avant ; elle balaie {3} étages à la fois selon la phase.", "values": ["sweep.periods", "sweep.speed", "sweep.warn", "sweep.count"]},
+          "hint": {"text": "Sur un étage balayé, sautez la lame au moment où elle passe, ou changez d'étage pendant l'annonce."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["sweep.damage"]}},
+            {"label": "Hauteur de la lame", "detail": {"text": "{0} px", "values": ["sweep.height"]}}
+          ],
+          "example": {"kind": "wave", "clip": "blade", "wall": true, "storeys": "at3:sweep.count"}
+        },
+        {
+          "id": "griffe_clouante",
+          "kind": "each",
+          "name": "Griffe clouante",
+          "phases": "from:pin.from",
+          "summary": {"text": "Un joueur cloué au sol, que les autres libèrent"},
+          "text": {"text": "Toutes les {0} s, dès {1} joueurs en jeu, il vise un joueur ({2} à partir de {3} joueurs) et plante une griffe sur sa marque {4} s plus tard. Pris, le joueur est cloué : blessé toutes les {5} s, jusqu'à ce qu'un allié brise la griffe ou qu'elle se retire au bout de {6} s.", "values": ["pin.period", "code:pinMinPlayers", "code:pinMany", "code:pinTwoFrom", "pin.warn", "pin.every", "pin.hold"]},
+          "hint": {"text": "Visé, écartez-vous de votre marque. Un allié cloué : brisez la griffe, c'est un sauvetage pour vous."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0} toutes les {1} s", "values": ["pin.damage", "pin.every"]}},
+            {"label": "Retrait de la griffe", "detail": {"text": "{0} s", "values": ["pin.hold"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "rise": true, "warn": "pin.warn", "count": "code:pinMany"}
+        },
+        {
+          "id": "chaines",
+          "kind": "collective",
+          "name": "Le bras enchaîné",
+          "phases": "range:carapace",
+          "summary": {"text": "Ses {0} chaînes tenues ensemble le plaquent au sol", "values": ["count:vents"]},
+          "text": {"text": "Cuirassé de givre, rien ne le blesse. Un joueur {0} s sur une des {1} ancres verrouille sa chaîne ; une chaîne verrouillée se détend au bout de {2} s. Les {1} chaînes tenues ensemble, il est plaqué au sol {3} s, prend × {4} dégâts et ses jointures sont à nu.", "values": ["hold", "count:vents", "reopen", "exposed", "exposedMult"]},
+          "message": {"text": "Un joueur par ancre, au même moment : deux au sol, une en hauteur. Avec peu de joueurs, une chaîne tient plus longtemps : × {0} à deux, × {1} seul.", "values": ["slack:2", "slack:1"]},
+          "hint": {"text": "Répartissez-vous avant sa deuxième phase : un joueur par ancre, les autres frappent ses jointures dès qu'il tombe."},
+          "facts": [
+            {"label": "Tenir une ancre", "detail": {"text": "{0} s", "values": ["hold"]}},
+            {"label": "Plaqué au sol", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:vents", "hold": "hold", "clip": "closed", "clipHeld": "open"}
+        },
+        {
+          "id": "eclats",
+          "kind": "arena",
+          "name": "Éclats de givre",
+          "phases": "range:carapace",
+          "summary": {"text": "Les ancres libres crachent du givre à tour de rôle"},
+          "text": {"text": "Chaque ancre libre lance à son tour des éclats de givre toutes les {0} s, annoncés {1} s avant : une colonne de {2} px de haut pendant {3} s.", "values": ["jet.period", "jet.warn", "jet.height", "jet.duration"]},
+          "hint": {"text": "Verrouillez l'ancre, ou écartez-vous de sa colonne quand elle s'illumine."},
+          "example": {"kind": "clip", "clip": "warn", "clipHeld": "jet"}
+        }
+      ],
+      "contributions": [
+        {"text": "Chaque joueur sur une ancre quand ses chaînes le plaquent compte un mécanisme."},
+        {"text": "Briser la griffe qui cloue un allié compte un sauvetage ; une griffe évitée compte en dégâts évités."}
+      ]
+    },
+    {
+      "id": "pyroclast",
+      "part": "bras_droit",
+      "enemy": "pyroclast",
+      "badge": "communaute_pyroclast",
+      "rewards": ["title_briseur_magma", "title_fleau_pyroclast"],
+      "mechanics": [
+        {
+          "id": "poings",
+          "kind": "each",
+          "name": "Poings de magma",
+          "phases": "all",
+          "summary": {"text": "Un poing de magma sur chaque joueur · toutes les {0} s", "values": ["fists.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu, au même instant : huit joueurs, huit marques. {1} s plus tard, un poing de magma tombe sur chacune.", "values": ["fists.periods", "fists.warn"]},
+          "hint": {"text": "Quittez votre marque dès qu'elle s'allume, sans la poser sur un allié : chacun la sienne."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["fists.damage"]}},
+            {"label": "Annonce", "detail": {"text": "{0} s", "values": ["fists.warn"]}},
+            {"label": "Largeur", "detail": {"text": "{0} px", "values": ["fists.width"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "warn": "fists.warn"}
+        },
+        {
+          "id": "events",
+          "kind": "collective",
+          "name": "Les trois évents",
+          "phases": "range:carapace",
+          "summary": {"text": "Ses {0} évents fermés ensemble font éclater sa carapace", "values": ["count:vents"]},
+          "text": {"text": "Sa carapace de basalte le rend intouchable tant qu'un de ses {0} évents est ouvert. Un joueur debout {1} s sur un évent le ferme ; un évent fermé se rallume au bout de {2} s. Les {0} évents fermés ensemble, la carapace éclate {3} s : il prend × {4} dégâts et ses points faibles peuvent être brisés.", "values": ["count:vents", "hold", "reopen", "exposed", "exposedMult"]},
+          "message": {"text": "Les évents sont sur les deux tours et sur la plateforme au-dessus de sa tête : le groupe se sépare. Avec peu de joueurs, un évent fermé tient plus longtemps : × {0} à deux, × {1} seul.", "values": ["slack:2", "slack:1"]},
+          "hint": {"text": "Répartissez-vous avant sa deuxième phase : au moins un joueur par évent, les autres le protègent puis frappent ses points faibles."},
+          "facts": [
+            {"label": "Fermer un évent", "detail": {"text": "{0} s", "values": ["hold"]}},
+            {"label": "Carapace brisée", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:vents", "hold": "hold", "clip": "open", "clipHeld": "closed"}
+        },
+        {
+          "id": "jets",
+          "kind": "arena",
+          "name": "Jets de magma",
+          "phases": "range:carapace",
+          "summary": {"text": "Chaque évent ouvert crache un jet de magma à son tour"},
+          "text": {"text": "Chaque évent ouvert crache à son tour un jet de magma toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut qui brûle {3} s.", "values": ["jet.period", "jet.warn", "jet.height", "jet.duration"]},
+          "hint": {"text": "Fermez l'évent : un évent fermé ne crache plus. Sinon, écartez-vous de sa colonne quand elle s'illumine."},
+          "example": {"kind": "clip", "clip": "warn", "clipHeld": "jet"}
+        }
+      ],
+      "contributions": [
+        {"text": "Chaque joueur debout sur un évent quand il se ferme compte un mécanisme."}
+      ]
+    },
+    {
+      "id": "heartbreaker",
+      "part": "torse",
+      "enemy": "heartbreaker",
+      "badge": "communaute_heartbreaker",
+      "mechanics": [
+        {
+          "id": "cotes_pieges",
+          "kind": "each",
+          "name": "Côtes-pièges",
+          "phases": "all",
+          "summary": {"text": "Une côte se referme sous chaque joueur · toutes les {0} s", "values": ["fists.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, une côte en jaillit et se referme comme un piège.", "values": ["fists.periods", "fists.warn"]},
+          "hint": {"text": "Quittez votre marque avant qu'elle se referme."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["fists.damage"]}},
+            {"label": "Annonce", "detail": {"text": "{0} s", "values": ["fists.warn"]}},
+            {"label": "Largeur", "detail": {"text": "{0} px", "values": ["fists.width"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "rise": true, "warn": "fists.warn"}
+        },
+        {
+          "id": "battements",
+          "kind": "arena",
+          "name": "Battements",
+          "phases": "all",
+          "summary": {"text": "Un battement fort sur {0} lance une onde au sol", "values": ["beats.strong"]},
+          "text": {"text": "Il bat toutes les {0} s (phases 1 / 2 / 3) ; un battement sur {1} est fort : une onde de {2} px de haut court au sol de ses deux côtés jusqu'aux murs, à {3} px/s.", "values": ["beats.periods", "beats.strong", "beats.height", "beats.speed"]},
+          "hint": {"text": "Comptez les battements et sautez l'onde quand elle passe ; les plateformes sont sûres."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["beats.damage"]}}
+          ],
+          "example": {"kind": "wave", "clip": "wave"}
+        },
+        {
+          "id": "plaques",
+          "kind": "collective",
+          "name": "La cuirasse",
+          "phases": [1],
+          "summary": {"text": "Ses {0} plaques à briser dans les {1} s", "values": ["count:plates.spots", "plates.window"]},
+          "text": {"text": "Tant qu'une de ses {0} plaques d'armure tient (deux hautes, deux basses), rien ne le blesse. Elles repoussent si les {0} ne tombent pas dans les {1} s qui suivent la première ; chaque plaque brisée lui ôte {2} % de sa vie.", "values": ["count:plates.spots", "plates.window", "pct:plates.share"]},
+          "message": {"text": "Les plaques hautes se tirent depuis les tours des flancs : plusieurs équipes, ensemble. Avec peu de joueurs, plus de temps : × {0} à trois ou quatre, × {1} à deux, × {2} seul.", "values": ["plateslack:3", "plateslack:2", "plateslack:1"]},
+          "hint": {"text": "Une équipe par plaque, et frappez ensemble : la première brisée lance le compte."},
+          "facts": [
+            {"label": "Fenêtre", "detail": {"text": "{0} s", "values": ["plates.window"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:plates.spots", "hold": "plates.window", "break": true}
+        },
+        {
+          "id": "cotes",
+          "kind": "collective",
+          "name": "La cage thoracique",
+          "phases": "range:carapace",
+          "summary": {"text": "Ses {0} côtes écartées ensemble mettent le cœur à nu", "values": ["count:vents"]},
+          "text": {"text": "Ses côtes se referment sur le cœur. Un joueur sur chacune des {0} côtes, ensemble pendant {1} s : elles s'écartent ; une côte lâchée se referme en {2} s. Écartées, la lumière du cœur est à nu {3} s et il prend × {4} dégâts.", "values": ["count:vents", "hold", "reopen", "exposed", "exposedMult"]},
+          "message": {"text": "Un joueur de chaque côté, sur les deux tours des flancs, au même moment."},
+          "hint": {"text": "Les deux tenants partent ensemble ; les autres frappent la lumière du cœur dès qu'elle s'allume."},
+          "facts": [
+            {"label": "Tenir une côte", "detail": {"text": "{0} s", "values": ["hold"]}},
+            {"label": "Cœur à nu", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:vents", "hold": "hold", "clip": "closed", "clipHeld": "open"}
+        },
+        {
+          "id": "plasma",
+          "kind": "arena",
+          "name": "Jets de plasma",
+          "phases": "range:carapace",
+          "summary": {"text": "Les côtes libres crachent du plasma à tour de rôle"},
+          "text": {"text": "Chaque côte libre crache à son tour un jet de plasma toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut pendant {3} s.", "values": ["jet.period", "jet.warn", "jet.height", "jet.duration"]},
+          "hint": {"text": "Tenez la côte, ou écartez-vous de sa colonne quand elle s'illumine."},
+          "example": {"kind": "clip", "clip": "warn", "clipHeld": "jet"}
+        }
+      ],
+      "contributions": [
+        {"text": "Chaque plaque d'armure brisée compte un point faible pour qui la brise."},
+        {"text": "Chaque joueur sur une côte quand elles s'écartent compte un mécanisme."}
+      ]
+    },
+    {
+      "id": "voidworm",
+      "part": "abdomen",
+      "enemy": "voidworm",
+      "badge": "communaute_voidworm",
+      "mechanics": [
+        {
+          "id": "fouissement",
+          "kind": "each",
+          "name": "Fouissement",
+          "phases": "all",
+          "summary": {"text": "Une gueule sort du sol sous chaque joueur · toutes les {0} s", "values": ["fists.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, une gueule en sort.", "values": ["fists.periods", "fists.warn"]},
+          "hint": {"text": "Quittez votre marque dès qu'elle s'allume."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["fists.damage"]}},
+            {"label": "Annonce", "detail": {"text": "{0} s", "values": ["fists.warn"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "rise": true, "warn": "fists.warn"}
+        },
+        {
+          "id": "gueule",
+          "kind": "each",
+          "name": "Avalé",
+          "phases": "nonzero:swallow.periods",
+          "summary": {"text": "Sa gueule avale un joueur, que les autres libèrent"},
+          "text": {"text": "Toutes les {0} s en phase 2 et {1} s en phase 3, sa gueule vise un joueur ({2} à partir de {3} joueurs en jeu) : un anneau vert le suit {4} s, se fige {5} s, puis la gueule se referme. Qui y reste est avalé : gardé dans sa poche, blessé toutes les {6} s, jusqu'à ce qu'un allié crève la poche qui pousse sur son cou, ou recraché à moitié digéré au bout de {7} s. Jamais le dernier joueur dehors.", "values": ["at2:swallow.periods", "at3:swallow.periods", "code:gulpMany", "code:gulpTwoFrom", "swallow.track", "swallow.lock", "swallow.tick", "swallow.digest"]},
+          "hint": {"text": "Sortez de l'anneau vert avant qu'il se fige. Un allié avalé : crevez la poche sur son cou, c'est un sauvetage."},
+          "example": {"kind": "clip", "clip": "gulp"}
+        },
+        {
+          "id": "parasites",
+          "kind": "arena",
+          "name": "Ses parasites",
+          "phases": "all",
+          "summary": {"text": "Des parasites sortent de ses trous · toutes les {0} s", "values": ["parasites.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), des parasites sortent de ses {1} trous, plus nombreux avec plus de joueurs en jeu. Le nid de l'Abdomen détruit pendant l'expédition, il n'en lâche que deux fois moins.", "values": ["parasites.periods", "count:parasites.spawns"]},
+          "hint": {"text": "Abattez-les près des trous avant qu'ils ne s'éparpillent."},
+          "example": {"kind": "summon", "enemies": "parasites.kinds", "count": "count:parasites.spawns"}
+        },
+        {
+          "id": "acide",
+          "kind": "arena",
+          "name": "La marée d'acide",
+          "phases": "from:acid.from",
+          "summary": {"text": "L'acide monte sur toute l'arène · toutes les {0} s", "values": ["acid.period"]},
+          "text": {"text": "À partir de sa phase {0}, toutes les {1} s, l'acide monte sur toute l'arène, annoncé {2} s avant : il monte en {3} s, reste {4} s et redescend en {5} s ({6} dégâts). Les deux valves de l'Intestin fermées pendant l'expédition, il monte moins haut.", "values": ["acid.from", "acid.period", "acid.warn", "acid.rise", "acid.hold", "acid.fall", "acid.damage"]},
+          "hint": {"text": "Montez sur les racines hautes pendant l'annonce."},
+          "example": {"kind": "rise", "warn": "acid.warn", "time": "acid.hold"}
+        },
+        {
+          "id": "crochets",
+          "kind": "collective",
+          "name": "Les anneaux de chitine",
+          "phases": "range:carapace",
+          "summary": {"text": "Ses {0} crochets tenus ensemble ouvrent sa gueule", "values": ["count:vents"]},
+          "text": {"text": "Dans sa chitine, rien ne le blesse. Ses {0} crochets tenus ensemble, {1} s chacun, l'épinglent ; un crochet tenu se libère au bout de {2} s. Épinglé, sa gueule s'ouvre {3} s : il prend × {4} dégâts et ses anneaux lumineux peuvent être brisés.", "values": ["count:vents", "hold", "reopen", "exposed", "exposedMult"]},
+          "message": {"text": "Deux crochets au sol, un sur la couronne au-dessus de lui : un joueur sur chacun, au même moment. Avec peu de joueurs, un crochet tient plus longtemps : × {0} à deux, × {1} seul.", "values": ["slack:2", "slack:1"]},
+          "hint": {"text": "Montez au crochet de la couronne avant les autres : c'est le plus long à atteindre."},
+          "facts": [
+            {"label": "Tenir un crochet", "detail": {"text": "{0} s", "values": ["hold"]}},
+            {"label": "Gueule ouverte", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:vents", "hold": "hold", "clip": "closed", "clipHeld": "open"}
+        },
+        {
+          "id": "geysers",
+          "kind": "arena",
+          "name": "Geysers d'acide",
+          "phases": "range:carapace",
+          "summary": {"text": "Les crochets libres crachent de l'acide à tour de rôle"},
+          "text": {"text": "Chaque crochet libre crache à son tour un geyser d'acide toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut pendant {3} s.", "values": ["jet.period", "jet.warn", "jet.height", "jet.duration"]},
+          "hint": {"text": "Tenez le crochet, ou écartez-vous de sa colonne quand elle s'illumine."},
+          "example": {"kind": "clip", "clip": "warn", "clipHeld": "jet"}
+        }
+      ],
+      "contributions": [
+        {"text": "Crever la poche d'un allié avalé compte un sauvetage."},
+        {"text": "Chaque joueur sur un crochet quand il est épinglé compte un mécanisme."}
+      ]
+    },
+    {
+      "id": "graviton",
+      "part": "jambe_gauche",
+      "enemy": "graviton",
+      "badge": "communaute_graviton",
+      "mechanics": [
+        {
+          "id": "debris",
+          "kind": "each",
+          "name": "Chute de débris",
+          "phases": "all",
+          "summary": {"text": "Des débris tombent sur chaque joueur · toutes les {0} s", "values": ["fists.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, des débris tombent dessus.", "values": ["fists.periods", "fists.warn"]},
+          "hint": {"text": "Quittez votre marque dès qu'elle s'allume."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["fists.damage"]}},
+            {"label": "Annonce", "detail": {"text": "{0} s", "values": ["fists.warn"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "warn": "fists.warn"}
+        },
+        {
+          "id": "inversion",
+          "kind": "arena",
+          "name": "L'inversion de gravité",
+          "phases": "all",
+          "summary": {"text": "La gravité d'un secteur s'inverse · toutes les {0} s", "values": ["sectors.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), un des {1} secteurs de l'arène s'illumine {2} s, puis sa gravité s'inverse {3} s : les joueurs qui y sont tombent vers la voûte, dont le champ blesse, sauf sous une dalle du secteur. Un secteur, puis deux à la fois, puis la moitié de l'arène à sa dernière phase.", "values": ["sectors.periods", "gaps:sectors.edges", "sectors.warn", "sectors.time"]},
+          "hint": {"text": "Pendant l'annonce, glissez-vous sous une dalle de votre secteur, ou quittez-le."},
+          "example": {"kind": "zone", "count": "gaps:sectors.edges", "warn": "sectors.warn", "time": "at1:sectors.time"}
+        },
+        {
+          "id": "puits",
+          "kind": "each",
+          "name": "Puits de gravité",
+          "phases": "nonzero:wells.periods",
+          "summary": {"text": "Un puits s'ouvre sous chaque joueur"},
+          "text": {"text": "Toutes les {0} s en phase 2 et {1} s en phase 3, un puits s'ouvre sous chaque joueur en jeu, annoncé {2} s avant : pendant {3} s, il attire ce qui est à moins de {4} px vers son cœur, qui blesse.", "values": ["at2:wells.periods", "at3:wells.periods", "wells.warn", "wells.time", "wells.range"]},
+          "hint": {"text": "Courez hors de sa portée pendant l'annonce, et ne restez jamais sur son cœur."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["wells.damage"]}}
+          ],
+          "example": {"kind": "clip", "clip": "well"}
+        },
+        {
+          "id": "generateurs",
+          "kind": "collective",
+          "name": "Les générateurs",
+          "phases": "range:carapace",
+          "summary": {"text": "Ses {0} générateurs coupés au même instant la font tomber", "values": ["count:generators"]},
+          "text": {"text": "Rien ne la blesse tant que ses générateurs tournent. Ses {0} générateurs sont dans des secteurs séparés : un joueur sur chacun, au même instant, {1} s ensemble, les coupe tous. Elle s'effondre alors {2} s, prend × {3} dégâts et ses cœurs de gravité sont à nu.", "values": ["count:generators", "hold", "exposed", "exposedMult"]},
+          "message": {"text": "Deux générateurs au sol aux deux bouts, deux sur des îlots en hauteur. Moins de joueurs, moins de générateurs à tenir (un par joueur) ; les deux générateurs de la Jambe gauche coupés pendant l'expédition, un de moins."},
+          "hint": {"text": "Annoncez le départ : tous les tenants montent sur leur générateur au même moment."},
+          "facts": [
+            {"label": "Tenir ensemble", "detail": {"text": "{0} s", "values": ["hold"]}},
+            {"label": "Effondrée", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:generators", "hold": "hold", "clip": "gen_on", "clipHeld": "gen_held", "clipDone": "gen_off"}
+        }
+      ],
+      "contributions": [
+        {"text": "Chaque joueur sur un générateur quand ils se coupent compte un mécanisme."}
+      ]
+    },
+    {
+      "id": "titanus",
+      "part": "jambe_droite",
+      "enemy": "titanus",
+      "badge": "communaute_titanus",
+      "mechanics": [
+        {
+          "id": "ecrasement",
+          "kind": "each",
+          "name": "Écrasement",
+          "phases": "all",
+          "summary": {"text": "Son talon tombe sur chaque joueur · toutes les {0} s", "values": ["fists.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), une marque s'allume sous chaque joueur en jeu ; {1} s plus tard, son talon s'y abat.", "values": ["fists.periods", "fists.warn"]},
+          "hint": {"text": "Quittez votre marque dès qu'elle s'allume : son talon est large."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["fists.damage"]}},
+            {"label": "Annonce", "detail": {"text": "{0} s", "values": ["fists.warn"]}},
+            {"label": "Largeur", "detail": {"text": "{0} px", "values": ["fists.width"]}}
+          ],
+          "example": {"kind": "mark", "clip": "fist", "warn": "fists.warn"}
+        },
+        {
+          "id": "ondes",
+          "kind": "arena",
+          "name": "Ondes de choc",
+          "phases": "all",
+          "summary": {"text": "Deux ondes filent au sol vers les murs · toutes les {0} s", "values": ["waves.periods"]},
+          "text": {"text": "Toutes les {0} s (phases 1 / 2 / 3), son pied frappe le sol, annoncé {1} s avant (son talon levé) : deux ondes de {2} px de haut filent de ses pieds vers les deux murs, à {3} px/s. À partir de sa phase {4}, une deuxième paire les suit.", "values": ["waves.periods", "waves.warn", "waves.height", "waves.speed", "waves.double"]},
+          "hint": {"text": "Au sol, sautez chaque onde ; les plateformes sont sûres."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["waves.damage"]}}
+          ],
+          "example": {"kind": "wave", "clip": "wave"}
+        },
+        {
+          "id": "rochers",
+          "kind": "arena",
+          "name": "Rochers de la voûte",
+          "phases": "nonzero:boulders.periods",
+          "summary": {"text": "Des rochers tombent sur toute l'arène"},
+          "text": {"text": "Toutes les {0} s en phase 2 et {1} s en phase 3, {2} puis {3} rochers tombent de la voûte sur des marques de toute l'arène (et sous les joueurs), annoncés {4} s avant.", "values": ["at2:boulders.periods", "at3:boulders.periods", "at2:boulders.count", "at3:boulders.count", "boulders.warn"]},
+          "hint": {"text": "Regardez le sol : quittez les marques pendant l'annonce."},
+          "facts": [
+            {"label": "Dégâts", "detail": {"text": "{0}", "values": ["boulders.damage"]}}
+          ],
+          "example": {"kind": "mark", "warn": "boulders.warn", "count": "at2:boulders.count"}
+        },
+        {
+          "id": "entraves",
+          "kind": "collective",
+          "name": "Les entraves",
+          "phases": "range:carapace",
+          "summary": {"text": "Ses {0} entraves brisées ensemble le mettent à genou", "values": ["count:restraints.spots"]},
+          "text": {"text": "Rien ne le blesse tant que ses {0} entraves de cheville tiennent. Brisées à moins de {1} s d'écart, elles le font tomber à genou {2} s : il prend × {3} dégâts et sa rotule et ses coutures de cheville sont à nu. Une entrave brisée seule se reforge.", "values": ["count:restraints.spots", "restraints.window", "exposed", "exposedMult"]},
+          "message": {"text": "Deux équipes, une par entrave, qui frappent au même signal. Avec peu de joueurs, la fenêtre s'allonge (× {0} à deux, × {1} seul), et encore × {2} une fois les deux réacteurs de la Jambe droite coupés pendant l'expédition.", "values": ["slack:2", "slack:1", "restraints.reactors"]},
+          "hint": {"text": "Affaiblissez les deux entraves, puis donnez le dernier coup ensemble."},
+          "facts": [
+            {"label": "Écart permis", "detail": {"text": "{0} s", "values": ["restraints.window"]}},
+            {"label": "À genou", "detail": {"text": "{0} s, dégâts × {1}", "values": ["exposed", "exposedMult"]}}
+          ],
+          "example": {"kind": "plates", "count": "count:restraints.spots", "hold": "restraints.window", "break": true}
+        }
+      ],
+      "contributions": [
+        {"text": "Chaque joueur qui brise une entrave quand elles cèdent ensemble compte un mécanisme."}
+      ]
+    }
+  ]
+}

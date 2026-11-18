@@ -20,6 +20,7 @@
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/raid/RaidBranch.h"
+#include "game/raid/RaidSheets.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -325,6 +326,20 @@ public:
             if (ui.button("help", {x + jw + gap, by, w - jw - gap, bh}, t, hs)) join(jstr(help, "id"));
         }
         float bottom = by - ui.s(10);
+        // 2.73: the lair: the sheet of its gigaboss (visible whether it was met or not).
+        if (jget<bool>(z, "boss", false)) {
+            const std::string boss = jstr(data_.value("branch", Json::object()), "gigaboss");
+            if (const std::string sheet = gigabossSheet(); !sheet.empty()) {
+                const std::string label = "Fiche de " + boss;
+                UIContext::ButtonStyle ss;
+                ss.small = true;
+                ss.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 16, w - ui.s(20), 0.7f), 11.5f / ui.s(1.0f));
+                const Rect sr{x, by - ui.s(10) - ui.s(44), w, ui.s(44)};
+                if (ui.button("sheet", sr, label, ss)) g_.app.pushScene(makeRaidSheets(g_, sheet));
+                ui.newBadge("sheet", sr, "raids.sheets", true, true);  // « NOUVEAU »
+                bottom = sr.y - ui.s(10);
+            }
+        }
         const std::string elsewhere = jstr(my, "placed_branch");
         std::string note = !running ? "Le raid n'est pas en cours : les combats se jouent pendant l'événement."
                            : !registered ? "Inscrivez-vous au raid (fiche de l'événement) pour combattre."
@@ -424,6 +439,16 @@ public:
 
     std::string branchZoneName(int id) const { return jstr(zoneJson(id), "name"); }
 
+    /// 2.73: the sheet of this branch's gigaboss (game/raid/RaidSheets), "" when there is none.
+    std::string gigabossSheet() {
+        if (!sheetRead_) {
+            sheetRead_ = true;
+            const raid::RaidSheets sheets = raid::loadRaidSheets(g_.content, g_.achievementCatalog, g_.cosmetics);
+            if (const raid::GigabossSheet* s = sheets.ofPart(part_)) sheet_ = s->id;
+        }
+        return sheet_;
+    }
+
     void join(const std::string& instanceId) {
         busy_ = true;
         status_ = "Connexion à l'instance…";
@@ -459,6 +484,8 @@ public:
     int selected_ = 1;
     float timer_ = 0.0f;
     std::string error_, status_;
+    bool sheetRead_ = false;
+    std::string sheet_;  // 2.73: its gigaboss's sheet
 };
 
 }  // namespace

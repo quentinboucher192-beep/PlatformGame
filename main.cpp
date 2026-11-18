@@ -53,6 +53,9 @@
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
 //                           unfolded with its example, or every attack unfolded)
+//   --raid-sheets [<sheet>[:<tab>][:attaque=<id>]]
+//                           2.73: the raid sheets (asterion, skullmaw…) over the main menu, on
+//                           that tab (0, 1, 2), that attack (or mechanism « m:<id> ») unfolded
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
 //                           open the settings of a boss training (and enter its arena);
 //                           <where>: usual | suggested | <x>,<y> (« Lieu d'apparition »),
@@ -829,6 +832,27 @@ int main(int argc, char** argv) {
         if (auto film = asterionfilm::make(game, true, at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())))))
             app.pushScene(std::move(film));
         else Log::error("Film d'Asterion illisible");
+    } else if (has("--raid-sheets")) {
+        // --raid-sheets [<sheet>[:<tab>][:attaque=<id>]] (screenshots): the raid sheets over the menu.
+        const std::string v = value("--raid-sheets");
+        std::vector<std::string> parts;
+        for (size_t from = 0;;) {
+            const size_t c = v.find(':', from);
+            parts.push_back(v.substr(from, c == std::string::npos ? std::string::npos : c - from));
+            if (c == std::string::npos) break;
+            from = c + 1;
+        }
+        int tab = 0;
+        for (size_t i = 1; i < parts.size(); ++i) {
+            if (parts[i].rfind("attaque=", 0) == 0) {
+                // The rest of the value (a mechanism « m:<id> » holds a colon).
+                game.onlineOpen = "sheet-unfold:" + v.substr(v.find("attaque=") + 8);
+                break;
+            }
+            if (!parts[i].empty() && parts[i][0] >= '0' && parts[i][0] <= '2') tab = parts[i][0] - '0';
+        }
+        app.pushScene(makeMainMenu(game));
+        app.pushScene(makeRaidSheets(game, parts.front().empty() ? std::string("asterion") : parts.front(), tab));
     } else if (std::string rt = value("--raid-test"); !rt.empty() && cfg.headless) {
         // 2.70, captures for the documentation (headless only, docs/BUILDING.md):
         // --raid-test <branch>:<zone>[:<players>[:<phase>[:<invincible 0|1>]]] — the administrators'
