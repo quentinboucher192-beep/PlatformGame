@@ -241,8 +241,22 @@ public:
     bool wantsPlayerOverlap() const override { return true; }
     void onPlayerStay(GameWorld& w, float dt) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
+    /// 2.69, style « magma » (the raids' rising magma, docs/RAIDS.md §13): it rises from the bottom
+    /// of its box when switched on (`rise` seconds) and drains when switched off (`fall`); only the
+    /// part under its surface hurts, the players as before and every enemy caught in it alike
+    /// (not the bosses). Drawn over the players and the enemies: nothing shows through it, a
+    /// glow at its surface above what it hides. « warn » (sent `warn` s before a rise) shows its
+    /// telegraph: the level it will reach, glowing cracks, heat.
+    Rect overlapBox() const override;
+    bool drawnOverActors() const override { return magma_; }
+    bool magma() const { return magma_; }
+    /// Share of the box under the magma now (0: drained, 1: full); the part that hurts.
+    float magmaLevel() const { return level_; }
+    Rect magmaBody() const;
+    bool warning() const { return warnLeft_ > 0.0f; }
 
 private:
+    void renderMagma(RenderContext& ctx) const;
     void renderPlasma(RenderContext& ctx) const;
     void renderAbyss(RenderContext& ctx) const;  // 2.53: the dark water of the Kraken's arena
     void renderEmbers(RenderContext& ctx) const;  // 2.56: the embers under the ash of the Phénix's nest
@@ -250,6 +264,14 @@ private:
     float tick_ = 0.0f;
     float fxTimer_ = 0.0f;
     float shown_ = 0.0f;  // display: fades in when enabled (2.33)
+    // 2.69, style « magma »: its level (simulation), draining after « disable », the telegraph,
+    // the enemies' burn, and what it hides (display: the x of each body under its surface).
+    bool magma_ = false;
+    bool draining_ = false;
+    float level_ = 0.0f;
+    float warnLeft_ = 0.0f;
+    float enemyTick_ = 0.0f;
+    std::vector<float> hidden_;
 };
 
 class SlowZoneEntity : public LevelEntity {
@@ -300,6 +322,8 @@ public:
     /// 2.33: a pickup hidden until an event ("spawn", "activate", "enable") shows it.
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     void makeDrop(float vx, float vy);
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
     /// Brought back by the boomerang blade (2.19): moved with it, picked up on reaching Nova.
     bool carriable() const { return type() == "shard" || type() == "energy_orb" || type() == "health_orb"; }
     void carryTo(Vec2 center) {
@@ -358,6 +382,8 @@ public:
     void onPlayerEnter(GameWorld& w) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     bool activated() const { return activated_; }
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
 
 private:
     void activate(GameWorld& w, bool silent);
@@ -391,6 +417,8 @@ public:
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     bool isOpen() const { return open_; }
     void setOpen(GameWorld& w, bool open, bool silent = false);
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
 
 private:
     uint32_t collider_ = 0;
@@ -408,6 +436,8 @@ public:
     bool interactable() const override { return !(used_ && oneShot_); }
     void interact(GameWorld& w) override;
     const char* interactPrompt() const override { return "Actionner"; }
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
 
 private:
     AnimatedSprite sprite_;
@@ -424,6 +454,8 @@ public:
     void update(GameWorld& w, float dt) override;
     void render(RenderContext& ctx) override;
     bool onPowerHit(GameWorld& w, const std::string& power, const Rect& area) override;
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
 
 private:
     AnimatedSprite sprite_;
@@ -458,6 +490,8 @@ public:
     void onPlayerEnter(GameWorld& w) override;
     void onPlayerExit(GameWorld& w) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
 
 private:
     bool fired_ = false;
@@ -475,6 +509,8 @@ public:
     void onPlayerRespawn(GameWorld& w) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     std::string debugInfo() const override;
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
     bool started() const { return started_; }
     bool cleared() const { return cleared_; }
     size_t waveCount() const { return waves_.size(); }
@@ -567,6 +603,8 @@ public:
     bool defeated() const { return defeated_; }
     /// Where its enemy appears (the feet).
     Vec2 spawnFeet() const { return obj_.rect.bottomCenter(); }
+    Json keepState(GameWorld& w) const override;
+    void restoreKept(GameWorld& w, const Json& state) override;
 
 private:
     uint32_t enemyUid_ = 0;

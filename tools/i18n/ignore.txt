@@ -273,3 +273,8 @@ torse
 abdomen
 part
 zones
+contributions
+crust
+danger
+magma
+minimap

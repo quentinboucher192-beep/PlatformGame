@@ -68,13 +68,18 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     w->setQuiet(quiet_);
     w->setCameraFollow(follow_);
     world_ = std::move(w);
+    restoreZone(zid);  // 2.69: as the group left it (before the players are placed: its doors)
     // 2.68: the players' contributions listen to this world; an event knows whose attack caused it.
     contrib_.attach(*world_);
     world_->eventObserver = [this](const std::string& src, const std::string& trig) {
         events_.push_back({src, trig, world_ ? contrib_.ownerOf(world_->attackTag()) : -1});
     };
     rules_ = rules;
-    if (zid != zone_) lastCheckpoint_.clear();  // 2.68: kept when the same zone starts again
+    if (zid != zone_) {
+        // 2.68: kept when the same zone starts again; 2.69: and when the group comes back to it.
+        const auto kept = memory_.find(zid);
+        lastCheckpoint_ = kept != memory_.end() ? kept->second.checkpoint : std::string();
+    }
     zone_ = zid;
     from_ = from;
     zoneTicks_ = 0;
@@ -93,6 +98,19 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     // The passages the players stand in now never take them (they must walk into one).
     insidePassage_.assign(rules->passages.size(), 0);
     coopDone_.assign(rules->coops.size(), 0);
+    if (const auto kept = memory_.find(zid); kept != memory_.end()) {
+        // 2.69: the plates done stay done, their doors open, their lifts running.
+        for (size_t k = 0; k < coopDone_.size() && k < kept->second.coops.size(); ++k) {
+            if (!kept->second.coops[k]) continue;
+            coopDone_[k] = 1;
+            const CoopPlate& p = rules->coops[k];
+            for (const std::string& t : p.targets)
+                if (LevelEntity* e = world_->entity(t)) {
+                    if (auto* door = dynamic_cast<DoorEntity*>(e); door && p.action == "open") door->setOpen(*world_, true, true);
+                    else e->handleAction(*world_, p.action, Json::object());
+                }
+        }
+    }
     for (size_t k = 0; k < rules->passages.size(); ++k)
         for (int i = 0; i < world_->teamSize(); ++i)
             if (rules->passages[k].rect.intersects(world_->playerAt(i).box)) insidePassage_[k] |= static_cast<uint8_t>(1u << i);
@@ -241,8 +259,11 @@ void RaidRun::updateMagma() {
     const uint32_t warn = static_cast<uint32_t>(std::lround(m.warn * kSimHz));
     const bool on = zoneTicks_ >= first && (zoneTicks_ - first) % period < duration;
     const uint32_t next = zoneTicks_ < first ? first : first + ((zoneTicks_ - first) / period + 1) * period;
-    if (next - zoneTicks_ == warn)
+    if (next - zoneTicks_ == warn) {
         alert("DANGER · " + m.name + " dans " + std::to_string(static_cast<int>(std::lround(m.warn))) + " s : " + m.hint + " !", Alert::Kind::Danger);
+        // 2.69: the rising magma shows its telegraph (nothing for the dangers without one).
+        if (LevelEntity* z = world_->entity(m.zone)) z->handleAction(*world_, "warn", Json{{"seconds", m.warn}});
+    }
     if (on == magmaOn_) return;
     magmaOn_ = on;
     if (LevelEntity* z = world_->entity(m.zone)) z->handleAction(*world_, on ? "enable" : "disable", Json::object());
@@ -307,6 +328,7 @@ void RaidRun::checkPassages() {
         }
         std::vector<GameWorld::MemberCarry> carry;
         for (int i = 0; i < world_->teamSize(); ++i) carry.push_back(world_->carryOf(i));
+        remember();  // 2.69: the zone left keeps what was done in it
         loadZone(p.to, std::to_string(zone_), &carry);
         return;
     }
@@ -361,6 +383,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
         alert("GROUPE · Tout le groupe est à terre : la zone reprend", Alert::Kind::Danger);
         // 2.68: at the last checkpoint reached in the zone, when there is one.
         const std::string from = lastCheckpoint_.empty() ? from_ : "cp:" + lastCheckpoint_;
+        remember();  // 2.69: what the group did in it before falling stays done
         loadZone(zone_, from, &carry);
         return;
     }
@@ -381,7 +404,55 @@ uint64_t RaidRun::hash() const {
     for (unsigned char c : lastCheckpoint_) h = mix(h, c);
     for (size_t k = 0; k < coopDone_.size(); ++k)
         if (coopDone_[k]) h = mix(h, 0x100u + k);
+    // 2.69: what the zones left keep.
+    for (const auto& [zid, m] : memory_) {
+        h = mix(h, 0x200u + static_cast<uint64_t>(zid));
+        for (const auto& [id, st] : m.objects) {
+            for (unsigned char c : id) h = mix(h, c);
+            for (unsigned char c : st.dump()) h = mix(h, c);
+        }
+        for (uint8_t c : m.coops) h = mix(h, c);
+        for (unsigned char c : m.checkpoint) h = mix(h, c);
+    }
     return h;
+}
+
+void RaidRun::remember() {
+    if (!world_ || !rules_ || zone_ <= 0) return;
+    ZoneMemory& m = memory_[zone_];
+    for (const auto& e : world_->entities()) {
+        if (e->id().empty()) continue;
+        Json st = e->keepState(*world_);
+        if (!st.is_null()) m.objects[e->id()] = std::move(st);
+    }
+    // The pickups taken are no longer in the world: what the level had and the world has not.
+    for (const LevelObject& o : world_->level().objects)
+        if ((o.type == "relic" || o.type == "health_orb" || o.type == "energy_orb" || o.type == "shard") && !world_->entity(o.id))
+            m.objects[o.id] = Json{{"taken", true}};
+    m.coops.resize(std::max(m.coops.size(), coopDone_.size()), 0);
+    for (size_t k = 0; k < coopDone_.size(); ++k) m.coops[k] = static_cast<uint8_t>(m.coops[k] | coopDone_[k]);
+    m.checkpoint = lastCheckpoint_;
+}
+
+void RaidRun::restoreZone(int zid) {
+    if (!world_) return;
+    const ZoneRules* rules = branch_.zoneRules(zid);
+    // The objectives of the branch's state done in this zone (by this group or another): their
+    // objects as their completion left them (the gigaboss's own is its fight's: Gigaboss).
+    if (rules)
+        for (const ZoneObjective& zo : rules->objectives) {
+            if (!Branch::done(mask(), zo.index) || (rules->gigaboss.present && zo.source == rules->gigaboss.boss)) continue;
+            LevelEntity* e = world_->entity(zo.source);
+            if (!e) continue;
+            if (zo.trigger == "cleared") e->restoreKept(*world_, Json{{"cleared", true}});
+            else if (zo.trigger == "killed") e->restoreKept(*world_, Json{{"gone", true}});
+            else if (zo.trigger == "activate") e->restoreKept(*world_, Json{{"on", true}});
+            else if (zo.trigger == "collected") e->restoreKept(*world_, Json{{"taken", true}});
+        }
+    const auto kept = memory_.find(zid);
+    if (kept == memory_.end()) return;
+    for (const auto& [id, st] : kept->second.objects)
+        if (LevelEntity* e = world_->entity(id)) e->restoreKept(*world_, st);
 }
 
 std::vector<Report> RaidRun::takeReports() {

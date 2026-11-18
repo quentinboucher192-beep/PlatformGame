@@ -63,6 +63,14 @@ bool CheckpointEntity::handleAction(GameWorld& w, const std::string& action, con
     return false;
 }
 
+Json CheckpointEntity::keepState(GameWorld&) const { return activated_ ? Json{{"on", true}} : Json(nullptr); }
+
+void CheckpointEntity::restoreKept(GameWorld&, const Json& state) {
+    if (!jget<bool>(state, "on", false) || activated_) return;
+    activated_ = true;  // lit, without the event (the raid keeps the group's checkpoint itself)
+    sprite_.anim.play("active", true);
+}
+
 void CheckpointEntity::render(RenderContext& ctx) {
     sprite_.draw(ctx, box.bottomCenter());
     Vec2 crystal = box.bottomCenter() + Vec2{0, -38};
@@ -166,6 +174,13 @@ bool DoorEntity::handleAction(GameWorld& w, const std::string& action, const Jso
     return true;
 }
 
+// 2.69 (raids): a door that progress opened stays open (never one an ambush closed for its fight).
+Json DoorEntity::keepState(GameWorld&) const { return open_ && !initialOpen_ ? Json{{"open", true}} : Json(nullptr); }
+
+void DoorEntity::restoreKept(GameWorld& w, const Json& state) {
+    if (jget<bool>(state, "open", false)) setOpen(w, true, true);
+}
+
 void DoorEntity::render(RenderContext& ctx) {
     if (!sprite_.set || !sprite_.set->texture) return;
     bool horizontal = std::abs(std::fmod(obj_.rotation, 180.0f)) > 45.0f;
@@ -198,6 +213,15 @@ void LeverEntity::interact(GameWorld& w) {
     w.playSound("sounds/lever.wav", box.center(), 0.9f);
     actOnTargets(w, obj_.propStr("targets"), "toggle");
     w.emit(id(), "activate", {{"on", on_}});
+}
+
+Json LeverEntity::keepState(GameWorld&) const { return used_ ? Json{{"on", on_}} : Json(nullptr); }
+
+void LeverEntity::restoreKept(GameWorld&, const Json& state) {
+    if (!state.is_object()) return;
+    used_ = true;  // its targets keep their own state (a door opened is kept by the door)
+    on_ = jget<bool>(state, "on", true);
+    sprite_.anim.play(on_ ? "on" : "off", true);
 }
 
 void LeverEntity::render(RenderContext& ctx) {
@@ -237,6 +261,16 @@ void ReceptorEntity::fixedUpdate(GameWorld& w, float dt) {
         actOnTargets(w, obj_.propStr("targets"), "close");
         w.emit(id(), "deactivate");
     }
+}
+
+Json ReceptorEntity::keepState(GameWorld&) const {
+    return on_ && obj_.prop<float>("duration", 0.0f) <= 0.0f ? Json{{"on", true}} : Json(nullptr);
+}
+
+void ReceptorEntity::restoreKept(GameWorld&, const Json& state) {
+    if (!jget<bool>(state, "on", false) || on_) return;
+    on_ = true;  // a generator hit stays on (no event: its objective is already counted)
+    sprite_.anim.play("on", true);
 }
 
 void ReceptorEntity::render(RenderContext& ctx) {

@@ -13,10 +13,10 @@ joueurs de chaque instance. La phase 3 (2.68) ouvre la Main : le gigaboss **Pyro
 |---|---|---|---|
 | 1 | Épaule | entrée, **3 points d'apparition** ; reprendre l'arène (2 vagues) | 2, 3 |
 | 2 | Biceps de basalte | plateformes qui « respirent » ; abattre le golem gardien | 1, 4, 6 |
-| 3 | Veine de magma | terrasses à remonter, **coulée de magma** toutes les 60 s ; générateur ouest ; passage caché vers 5 ; raccourci (porte) vers 6 | 1, 4, 5, 6⇄ |
-| 4 | Coude-forge | **deux soufflets, deux groupes** (un chacun) ; coulée toutes les 90 s ; l'Enclume vivante (facultatif) | 2, 3, 7🔒 |
+| 3 | Veine de magma | terrasses à remonter, **montée de magma** toutes les 34 s (2.69, avant : 60 s) ; générateur ouest ; passage caché vers 5 ; raccourci (porte) vers 6 | 1, 4, 5, 6⇄ |
+| 4 | Coude-forge | **deux soufflets, deux groupes** (un chacun) ; montée toutes les 42 s (2.69, avant : 90 s) ; l'Enclume vivante (facultatif) | 2, 3, 7🔒 |
 | 5 | Grotte des scories | **zone secrète** ; la relique (facultatif) | 3 |
-| 6 | Avant-bras | générateur est ; **levier du raccourci** vers la Veine (facultatif) | 2, 3⇄, 8 |
+| 6 | Avant-bras | générateur est ; montée de magma toutes les 38 s (2.69) ; **levier du raccourci** vers la Veine (facultatif) | 2, 3⇄, 8 |
 | 7 | Poignet-verrou | ouvert par les **2 générateurs** ; 2.68 : **la longue route** (§11) dont la dernière embuscade ouvre la Main | 4, 8 |
 | 8 | Main de Pyroclast | le gigaboss **Pyroclast** (§6) ; objectif `main_pyroclast` | 6, 7 |
 
@@ -386,3 +386,87 @@ boss quand il est proche et les alliés voisins, jamais au point de rendre l'act
 l'écran (hors du HUD mesuré) montrent le boss (ses points faibles quand il est à nu), les alliés (leurs couleurs) et
 les ennemis d'une embuscade. Elle sert à toutes les arènes de gigaboss : elle lit `metadata.raid.arena` (`rect`,
 `floor`, `door`, `entry`), le format des sept antres (`raid::ZoneRules::arena`). La simulation ne la voit jamais.
+
+## 13. Les raids tels qu'on les teste et qu'on les joue (2.69)
+
+### Flèches hors écran
+
+En raid, les flèches des niveaux reviennent pour la vue du joueur de cet ordinateur, dessinées par le même code
+(`game/gameplay/EnemyArrowsDraw`, partagé avec `GameScene`) : les ennemis **déjà vus** hors de l'écran (orange, une
+flèche par groupe avec « ×N »), ceux de l'**embuscade en cours** (violet, vus ou non), plus les flèches du raid vers
+le gigaboss (ses points faibles à nu) et les alliés (leurs couleurs). Elles évitent le HUD mesuré ; l'éditeur de HUD
+› « Raids » les coupe (`RaidHudLayout::arrows`). Affichage seulement.
+
+### Une zone garde ce qui y a été fait (`raid::RaidRun`, dans la simulation)
+
+Quand le groupe quitte une zone, ou quand il tombe en entier et qu'elle reprend, la zone note ce qu'elle garde
+(`RaidRun::ZoneMemory`) : pour chaque objet, `LevelEntity::keepState` (porte ouverte par la progression — jamais celle
+qu'une embuscade a fermée —, levier actionné, générateur allumé, arène nettoyée, ennemi vaincu, déclencheur passé, relique
+ou orbe pris), les plaques de groupe faites (leurs portes ouvertes, leurs monte-charges en marche) et son dernier point de
+contrôle. Rechargée, elle les retrouve tels quels (`restoreKept`, sans événement ni son). Les **objectifs de l'état de la
+branche** (ceux de tous les groupes, `RAID_STATE`) sont appliqués de la même façon à chaque chargement : un gardien
+qu'un autre groupe a vaincu n'est plus là, un générateur validé est allumé (l'objectif d'un gigaboss reste celui de son
+combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas sur tous les jeux de l'instance.
+
+### Le test des administrateurs (`game/raid/RaidTest`)
+
+« Tester Asterion » se joue comme une vraie instance, seul sur l'ordinateur (`raid::TestSession`) :
+
+* **l'état de la branche** est gardé d'une zone à l'autre dans la structure de `RAID_STATE` (les objectifs faits, un
+  bit chacun) : ce que le groupe fait est « accepté » aussitôt et redonné au pas suivant, comme le relais le ferait après
+  le consensus ;
+* **les joueurs simulés** (sièges 1 à n − 1, les autres libres) sont de vrais joueurs de l'instance, visibles, nommés
+  « Joueur simulé N » avec leur couleur dans le panneau du groupe : une IA simple lit le monde (jamais l'horloge ni
+  l'écran) et répond à chaque pas par une `InputFrame`, comme le jeu d'un joueur. Elle suit l'administrateur (chacun à
+  sa distance), saute les trous et les murs (double saut), descend des corniches, prend les échelles, frappe les ennemis
+  proches, se place sur les plaques, monte-charges et évents quand l'administrateur en tient un (le nombre demandé), relève
+  les joueurs à terre (le plus proche de chaque âme) et sort de la zone du magma dès l'alerte. Déterministe : mêmes trames,
+  même empreinte (testé à 2 et 8 sièges) ;
+* deux règles du test seulement : un joueur simulé resté loin derrière pendant 5 s revient près de l'administrateur, et
+  celui qu'un mécanisme attend sans pouvoir l'atteindre en 6 s y est placé — pour que les mécanismes à plusieurs marchent
+  dans un test seul ;
+* un test ne produit **aucun rapport** (`RaidRun::Test`) et le serveur refuse tout rapport marqué `test`.
+
+### Le magma montant (style « magma » de `damage_zone`)
+
+* **Rendu** : dessiné **après les joueurs et les ennemis** (`LevelEntity::drawnOverActors`, `GameRenderer`) : son corps est
+  opaque, rien ne se voit au travers ; une lueur à sa surface au-dessus de chaque corps qu'il cache. Planche animée
+  `animations/raid_magma.json` (`sprites/objects/raid_magma.png`) générée par `tools/assetgen/environment/raid_visuals.py` :
+  corps en fusion qui coule, croûte sombre qui dérive (fissures lumineuses), vagues de surface, bulles qui éclatent,
+  braises, lueur, et l'**alerte** avant chaque montée (son futur niveau en pointillés, la zone qui rougeoie, le sol qui se
+  fissure, la chaleur) ; `--check` (mêmes octets, testé), `--review` (planche contact en français).
+* **Règles** (dans la simulation) : allumé, il **monte** depuis le bas de sa boîte en `rise` s, éteint il **redescend**
+  en `fall` s ; seule la partie sous sa surface touche. **Choix** : il blesse les joueurs comme avant (2 cœurs toutes les
+  0,6 s, il les relance vers le haut) et **brûle de la même façon tout ennemi pris dedans** (ni les boss, ni ceux qui
+  dorment encore, ni les créatures d'un boss) : une montée nettoie aussi le bas. `RaidRun` lui envoie « warn » au moment
+  de l'alerte.
+* **Fréquence** (`tools/levelgen/raid_bras_droit.py`, révision 3) : toutes les **34 s** dans la Veine de magma (au lieu
+  de 60), **42 s** dans le Coude-forge (au lieu de 90), et **38 s** dans l'Avant-bras (nouveau, avec ses corniches),
+  annoncé **4 s** avant ; les fosses et les rideaux de lave de la Main de Pyroclast sont du même magma.
+
+### Le HUD des raids (`ui/online/RaidHud`, `saves/RaidHudLayout`)
+
+* **Disposition à part** (`GameplaySettings::raidHud`, Paramètres › HUD › onglet « Raids ») : vie et énergie, pouvoirs,
+  minimap, panneau du groupe (8), objectifs et progression de la branche, alertes, barre du gigaboss, bandeau de danger,
+  contributions, ligne du réseau / badge « TEST ADMIN » ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
+  danger et le réseau). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
+  deux éléments ne peuvent jamais se chevaucher (l'enregistrement est refusé sinon). Chaque élément est dessiné dans sa
+  boîte : textes mesurés, coupés, « … et N lignes de plus ».
+* **Minimap en textures** : le terrain de la zone cuit une fois dans une texture à partir des tuiles générées (roche et son
+  bord éclairé, corniches, lave), la zone que le magma inonde (hachurée, pulsant à l'alerte, vive quand il monte), les
+  plateformes mobiles en direct, et des icônes (`ui/raids/minimap.png` + `.json`, même générateur) : vous (or), le groupe
+  (sa couleur), ennemis, boss, objectifs (à faire, faits, facultatifs), passages ouverts ou verrouillés, portes, points de
+  contrôle, plaques, évents ; une légende mesurée dans la place qui reste à côté du titre.
+* **Grande carte** (`Action::RaidMap` : **M** au clavier, **Vue / Retour** à la manette, modifiable dans Paramètres ›
+  Commandes, bouton de souris possible) : presque tout l'écran, la zone entière (ou une fenêtre qui suit le joueur, à faire
+  glisser à la souris, avec l'aperçu de toute la zone), les zones de la branche et leur état, toute la légende, le danger
+  en cours dans son en-tête. Affichage seulement : elle ne met **jamais** le jeu en pause, le groupe continue ; la pause
+  du raid rappelle sa touche. La touche n'est pas une commande « de base » des pouvoirs : les pouvoirs des autres niveaux
+  gardent leurs touches (M pour le leurre).
+
+### Versions
+
+Les règles changées ne touchent que les raids : `kSimulationVersion` (14), `kCoopSimulationVersion` et
+`kRankingGeneration` ne changent pas (empreintes solo et coopération inchangées) ; la révision du Bras droit passe à 3
+(le `GO` du relais la porte : toutes les instances jouent les mêmes zones) et l'empreinte des zones générées change
+(`tests/test_raid.cpp`).

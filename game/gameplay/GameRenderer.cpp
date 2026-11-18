@@ -58,6 +58,7 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
         for (const auto& e : world.entities()) {
             if (e->removed || !e->visible) continue;
             if (e->object().layer != layer.id) continue;
+            if (e->drawnOverActors() && !opt.editor) continue;  // 2.69: after the actors (drawActors)
             if (!e->box.expanded(64).intersects(vis) && e->type() != "moving_platform" && e->type() != "laser") continue;
             if (layer.foreground && !secrets.empty()) {
                 if (auto* d = dynamic_cast<DecorEntity*>(e.get())) {
@@ -88,6 +89,10 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
             world.player().render(ctx);
         drawProjectiles(r, world, alpha, lights_, opt.threats);
         world.particles().render(r, true, view.visibleWorld());
+        // 2.69: what covers the actors (the raids' rising magma): nothing shows through it.
+        if (!opt.editor)
+            for (const auto& e : world.entities())
+                if (e->drawnOverActors() && !e->removed && e->visible && e->box.expanded(64).intersects(vis)) e->render(ctx);
     };
 
     for (const auto& layer : lvl.layers) {

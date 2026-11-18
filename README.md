@@ -455,6 +455,23 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.69.0** :
+* **Raids, flèches hors écran** : les flèches des niveaux reviennent en raid (ennemis déjà vus en orange, embuscade en
+  violet, avec leur nombre), en plus du gigaboss et des alliés (`game/gameplay/EnemyArrowsDraw`, partagé avec les niveaux).
+* **Les zones d'un raid gardent leur état** (`raid::RaidRun`, `LevelEntity::keepState`) : portes et passages ouverts, leviers,
+  générateurs, arènes nettoyées, ennemis vaincus, reliques, plaques et point de contrôle, en revenant comme après une chute
+  du groupe ; ce que les autres groupes ont validé s'applique au chargement.
+* **« Tester Asterion » comme une vraie instance** (`game/raid/RaidTest`) : l'état de la branche suit de zone en zone
+  (structure de `RAID_STATE`), les **joueurs simulés** sont visibles et nommés (« Joueur simulé 2 »…), menés par une IA
+  déterministe par trames (suivre, sauter, frapper, plaques, monte-charges, évents, relever, fuir le magma) ; jamais de rapport.
+* **Minimap en textures et grande carte** (touche M / Vue, modifiable ; affichage seulement, le groupe continue) : terrain,
+  passages, portes, objectifs, points de contrôle, plaques, évents, ennemis, alliés, légende (`ui/online/RaidHud`).
+* **Éditeur de HUD › « Raids »** : une disposition à part pour la minimap, le groupe, les objectifs, la barre du gigaboss,
+  les alertes, les contributions, le badge TEST ADMIN et les flèches, aperçue sur un exemple de raid à 8 joueurs.
+* **Magma réaliste** : montée et descente, dessiné devant les personnages (une lueur seulement au-dessus de ce qu'il cache),
+  les ennemis pris dedans brûlent ; lave animée générée par `tools/assetgen/environment/raid_visuals.py` (corps, croûte,
+  vagues, bulles, braises, alerte avant la montée ; `--check` mêmes octets) ; montées plus fréquentes dans le Bras droit.
+
 **Nouveau dans la version 2.68.1** :
 * **Correctif de la pause en ligne** : Échap ne referme plus aussitôt la pause en raid et en coopération ; en ligne,
   seul le joueur qui la demande est en pause, et le test admin d'Asterion s'arrête entièrement.

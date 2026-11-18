@@ -19,7 +19,10 @@ close together while its carapace protects it, its floor of basalt that gives wa
 
 Each zone's metadata.raid holds its spawn points (by the zone one comes from), its passages to its
 neighbours (rect in pixels, lock), its objectives (an id of the catalog, the object and the event
-that completes it), its magma flow (a damage zone switched on every period, announced before) and,
+that completes it), its magma flow (a damage zone switched on every period, announced before; 2.69:
+style « magma », the rising magma drawn over the players and the enemies from the generated sheet of
+tools/assetgen/environment/raid_visuals.py, rising from the bottom of its box and burning every enemy
+caught in it like the players; three zones rise, more often) and,
 for the Main, its arena (metadata.raid.arena: rect, floor, door, entry; the format of the seven
 branches' lairs) and its gigaboss (the boss's object, its vents in pixels, its carapace's phases,
 its weak points and the numbers of its fight); for the Poignet-verrou, its co-op plates
@@ -38,7 +41,8 @@ from raid_asterion import estimate_minutes
 BRANCH_ID = "asterion_bras_droit"
 # The revision of the branch: every game of an instance must have the same (the relay's GO
 # carries it). Raise it whenever a zone or the catalog changes how the branch plays.
-REVISION = 2  # 2.68 (phase 3): the Main de Pyroclast is the gigaboss's arena, the Poignet-verrou its long way
+REVISION = 3  # 2.69: the rising magma (style « magma »), more often, in the Avant-bras too
+# 2 (2.68, phase 3): the Main de Pyroclast is the gigaboss's arena, the Poignet-verrou its long way
 OUT = os.path.join(ROOT, "data", "raids", "asterion", "bras_droit")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidBranches.json")
 H, LAVA = 48, 44
@@ -51,14 +55,14 @@ ZONES = [
     (2, "Biceps de basalte", "plateformes qui respirent", 330, 200,
      "Ennemis : golem de magma (gardien), acariens de braise", ""),
     (3, "Veine de magma", "courant de lave à remonter", 330, 520,
-     "Ennemis : rôdeurs de lave, feux follets · générateur ouest", "Coulée de magma toutes les 60 s (terrasses hautes sûres)"),
+     "Ennemis : rôdeurs de lave, feux follets · générateur ouest", "Montée de magma toutes les 34 s (terrasses hautes sûres)"),
     (4, "Coude-forge", "2 soufflets à détruire", 560, 300,
      "Ennemis : forgerons de lave, drones-scories · mini-boss : l'Enclume vivante",
-     "Coulée de magma toutes les 90 s (plateformes hautes sûres)"),
+     "Montée de magma toutes les 42 s (grilles hautes sûres)"),
     (5, "Grotte des scories", "zone secrète ◆ relique", 560, 620,
      "Ennemis : gloops de magma, acariens de braise", ""),
     (6, "Avant-bras", "raccourci ⇄ depuis la Veine", 790, 160,
-     "Ennemis : drones de forge, ailes de cendre · générateur est", ""),
+     "Ennemis : drones de forge, ailes de cendre · générateur est", "Montée de magma toutes les 38 s (corniches sûres)"),
     (7, "Poignet-verrou", "s'ouvre : 2 générateurs · la longue route", 790, 470,
      "Quatre embuscades géantes sur plusieurs étages, plaques et monte-charge de groupe, points de contrôle",
      "Environ 15 min à 8 joueurs"),
@@ -145,10 +149,13 @@ class Zone:
         assert any(o[0] == oid and o[1] == self.n for o in OBJECTIVES), oid
         self.raid["objectives"].append({"id": oid, "source": source, "trigger": trigger})
 
-    def magma(self, x0, x1, y0, y1, period, first, warn=3.0, duration=8.0):
+    def magma(self, x0, x1, y0, y1, period, first, warn=4.0, duration=8.0):
+        """2.69: the rising magma (style « magma »: it rises from the bottom of its box in `rise` s,
+        drains in `fall` s, hurts the players and burns the enemies caught in it, drawn over them),
+        announced `warn` s before each rise."""
         dz = self.L.obj("damage_zone", [x0 * T, y0 * T, (x1 - x0) * T, (y1 - y0) * T], "gameplay",
-                        {"damage": 2, "interval": 0.6, "visible": True, "active": False, "style": "embers",
-                         "bounce": True}, oid="magma_flow")
+                        {"damage": 2, "interval": 0.6, "visible": True, "active": False, "style": "magma",
+                         "rise": 1.6, "fall": 1.4, "bounce": True}, oid="magma_flow")
         self.raid["magma"] = {"zone": dz, "period": period, "first": first, "warn": warn, "duration": duration}
         return dz
 
@@ -270,7 +277,7 @@ def zone_3():
     z.rock(66, 29, 82)
     z.rock(82, 26, 140)
     L.sign(20, 38, "La veine déborde : quand la lave monte, grimpez sur les terrasses hautes.")
-    z.magma(14, 50, 32, 38, period=60.0, first=30.0)
+    z.magma(14, 50, 32, 38, period=34.0, first=16.0, duration=7.0)
     for x in (24, 42, 58, 74):
         P.lavafall(x, 4, 12, hazard=False, alpha=0.5)
     L.enemy("lava_stalker", 44, 35, 5)
@@ -316,7 +323,7 @@ def zone_4():
     L.oneway(23, 27, 27, "basalt_ledge")
     z.rock(20, 36, 130)
     P.scatter(22, 128, 36, 0.25, forge=True)
-    z.magma(22, 128, 33, 36, period=90.0, first=40.0)
+    z.magma(22, 128, 33, 36, period=42.0, first=20.0)
     for x0 in (34, 54, 74, 94, 114):
         L.oneway(x0, x0 + 8, 30, "chain_grate")
     L.sign(30, 36, "Coude-forge : deux soufflets, deux groupes. Chaque groupe en détruit un (un pouvoir de tir).")
@@ -394,6 +401,11 @@ def zone_6():
     L.enemy("lava_stalker", 76, 30, 5, True)
     L.enemy("ash_wing", 84, 22, 4)
     P.scatter(41, 89, 30, 0.3, forge=True)
+    # 2.69: the magma rises along the forearm too (its ledges stay above it).
+    z.magma(42, 88, 27, 30, period=38.0, first=18.0, duration=6.0)
+    for x0 in (44, 54, 70, 80):
+        L.oneway(x0, x0 + 6, 25, "basalt_ledge")
+    L.sign(42, 30, "Le magma monte dans l'avant-bras : à l'alerte, sautez sur les corniches.")
     z.rock(90, 27, 130)
     z.passage(8, 124, 27)
     z.arrive(8, 117, 27)
@@ -603,8 +615,8 @@ def zone_8():
             L.data["objects"][-1]["props"]["onEvent"] = True
             crust.append(oid)
         magma.append(L.obj("damage_zone", [a * T, (f + 2) * T, (b - a) * T, 2 * T], "gameplay",
-                           {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False, "style": "embers",
-                            "bounce": True}))
+                           {"damage": 2, "interval": 0.6, "visible": True, "shieldProtects": True, "active": False, "style": "magma",
+                            "rise": 1.2, "fall": 1.2, "bounce": True}))
     # The towers (ledges and ladders), the high platform and its two lifts.
     for a, b, y in ((30, 40, 31), (36, 48, 26), (28, 36, 21), (188, 198, 31), (180, 192, 26), (192, 200, 21)):
         L.oneway(a, b, y, "basalt_ledge")
@@ -616,11 +628,11 @@ def zone_8():
     L.oneway(96, 104, 18, "basalt_ledge")
     L.oneway(128, 136, 18, "basalt_ledge")
     curtains = [L.obj("damage_zone", [23 * T, 2 * T, 5 * T, (f - 2) * T], "gameplay",
-                      {"damage": 2, "interval": 0.5, "visible": True, "shieldProtects": True, "active": False, "style": "embers",
-                       "bounce": False}),
+                      {"damage": 2, "interval": 0.5, "visible": True, "shieldProtects": True, "active": False, "style": "magma",
+                       "rise": 1.0, "fall": 1.0, "bounce": False}),
                 L.obj("damage_zone", [200 * T, 2 * T, 5 * T, (f - 2) * T], "gameplay",
-                      {"damage": 2, "interval": 0.5, "visible": True, "shieldProtects": True, "active": False, "style": "embers",
-                       "bounce": False})]
+                      {"damage": 2, "interval": 0.5, "visible": True, "shieldProtects": True, "active": False, "style": "magma",
+                       "rise": 1.0, "fall": 1.0, "bounce": False})]
     orbs = {}
     for ph, ox, oy in ((2, 42, 24), (2, 186, 24), (2, 116, 12), (3, 34, 19), (3, 196, 19), (3, 100, 16), (3, 132, 16)):
         L.orb("health_orb", ox, oy)
