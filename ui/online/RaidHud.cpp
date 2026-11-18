@@ -8,6 +8,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/levels/LevelTimer.h"
 #include "saves/Settings.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/UIContext.h"
@@ -105,6 +106,14 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
         case RaidHudElement::Status: {
             const float w = std::min(W * 0.42f, ui.s(560) * k), h = ui.s(34) * k;
             return Rect{m, H - m - h, w, h};
+        }
+        case RaidHudElement::Timer: {
+            // Under the group panel (and under the minimap when it had no room at the top).
+            const float w = std::min(ui.s(270), W * 0.2f) * k;
+            float y = group().bottom() + ui.s(10);
+            const Rect mm = defaultArea(ui, l, RaidHudElement::Minimap, hud);
+            if (mm.x <= m + 0.5f && mm.y > ui.s(20)) y = std::max(y, mm.bottom() + ui.s(10));
+            return Rect{m, y, w, ui.s(86) * k};
         }
         default: return {};
     }
@@ -215,6 +224,31 @@ void drawDanger(UIContext& ui, const Rect& r, float k, const std::string& text) 
     ui.r().fillRoundedRect(band, ui.s(8) * k, Color{120, 20, 20, 210});
     ui.r().drawRoundedRect(band, ui.s(8) * k, kDanger, ui.s(2) * k);
     fit(ui, text, band.center(), 20 * k, band.w - ui.s(24) * k, Color{255, 200, 200, 255}, FontFace::Bold, Align::Center);
+}
+
+void drawTimer(UIContext& ui, const Rect& r, float k, float instanceSeconds, float zoneSeconds) {
+    hudBox(ui, r);
+    const float pad = ui.s(10) * k, iconS = ui.s(28) * k;
+    const float bigH = ui.s(34) * k, smallH = ui.s(16) * k;
+    const float top = r.y + pad, rowY = top + bigH * 0.5f;
+    // The clock of the levels' timer, then the time in its font (fitted to what is left).
+    ui.icon("ui/icons_hud.png", 6, 16, {r.x + pad, rowY - iconS * 0.5f, iconS, iconS}, Color{255, 255, 255, 200});
+    const float tx = r.x + pad + iconS + ui.s(8) * k, room = r.right() - pad - tx;
+    const std::string big = LevelTimer::format(std::max(0.0f, instanceSeconds));
+    const float fs = ui.fitFont(big, FontFace::Title, 34.0f * k, room, 0.5f);
+    TextStyle st;
+    st.face = FontFace::Title;
+    st.size = ui.s(fs);
+    st.color = ui.theme().text;
+    st.align = Align::Left;
+    st.valign = VAlign::Middle;
+    st.shadow = true;
+    st.shadowOffset = ui.s(2) * k;
+    st.glow = ui.s(10) * k;
+    st.glowColor = ui.theme().text.withAlpha(40);
+    if (room > ui.s(10)) ui.text().draw(big, {tx, rowY}, st);
+    fit(ui, "Zone : " + LevelTimer::format(std::max(0.0f, zoneSeconds), false), {r.x + pad, top + bigH + ui.s(6) * k + smallH * 0.5f}, 15 * k,
+        r.w - pad * 2, kDim);
 }
 
 void drawLineBox(UIContext& ui, const Rect& r, float k, const std::string& text, Color textColor, bool test) {

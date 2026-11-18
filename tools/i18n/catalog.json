@@ -10697,6 +10697,18 @@
    ]
   },
   {
+   "fr": "Chronomètre du raid",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Chronomètre en raid (vrais raids et test admin) : le même chrono que dans les niveaux, calculé sur les pas de la simulation (identique pour tout le groupe), avec le temps depuis le début de l'instance et, en dessous, le temps passé dans la zone. Il continue pendant la pause d'un joueur (le monde ne s'arrête jamais) ; c'est un élément de la disposition « Raids » de l'éditeur de HUD (déplaçable, redimensionnable, masquable).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chute",
    "where": [
     "ui/studio/StudioDoc.cpp"
@@ -28521,7 +28533,7 @@
    ]
   },
   {
-   "fr": "La partie continue pour l'équipe pendant la pause.",
+   "fr": "La partie continue pendant la pause : vous pouvez encore être touché.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
    ]
@@ -30272,6 +30284,12 @@
    ]
   },
   {
+   "fr": "Le groupe continue à jouer : vous pouvez encore être touché.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le groupe joue déjà : rattrapage de la partie ({0} %)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -31518,7 +31536,7 @@
    ]
   },
   {
-   "fr": "Le test est en pause.",
+   "fr": "Le test continue pendant la pause : vous pouvez encore être touché.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -41499,6 +41517,12 @@
    "fr": "Pause aux extrémités (s)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pause en ligne et en test : la pause n'arrête jamais le jeu, même dans le test admin d'Asterion. Seul le joueur qui la demande cesse d'agir ; les ennemis et le boss continuent et peuvent encore le toucher (le menu de pause le rappelle).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -61976,12 +62000,6 @@
    ]
   },
   {
-   "fr": "Vous seul êtes en pause : le groupe continue à jouer.",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "vous suit",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -62464,7 +62482,8 @@
   {
    "fr": "Zone : {0}",
    "where": [
-    "game/raid/RaidRun.cpp"
+    "game/raid/RaidRun.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {

@@ -133,7 +133,8 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
   réanimations de la zone), objectifs de la zone avec leur progression (générateurs 1 / 2,
   soufflets 1 / 2), alertes du groupe, de la branche et du serveur (objectif validé ou refusé),
   bandeau de danger (« Coulée dans 3 s · montez ! »), état du réseau. La pause ne s'arrête pas : le
-  groupe continue.
+  groupe continue. 2.69 (§13) : chaque élément se place dans l'onglet « Raids » de l'éditeur de HUD, la minimap
+  est en textures et s'agrandit (M / Vue), un chronomètre s'ajoute, les flèches hors écran des niveaux aussi.
 * **Mini-film d'Asterion** (2.68, `ui/screens/AsterionFilm`) : avant le premier affichage du titan
   (CLANS › RAIDS, fiche d'un événement, tout `AsterionFigure` : un seul appel `asterionfilm::hold`),
   dix plans d'environ deux minutes joués par le moteur des histoires (`makeFilm`). Le script — légende,
@@ -361,6 +362,9 @@ Migration **0143_raid_gigaboss.sql** : `raid_instance_members.seat_from`, `raid_
   (`raid::Branch::all`, les branches ajoutées plus tard y apparaissent seules), une zone (le combat de Pyroclast par
   défaut), « Invincible (admin) · non classé », 2 à 8 joueurs simulés, phase de départ ; seul et en local
   (`RaidRun::setTest`) : aucun rapport n'est jamais produit, et le serveur refuse tout rapport marqué `test`.
+  2.69 (§13) : il se joue comme une vraie instance (`raid::TestSession`) : l'état de la branche suit d'une zone à
+  l'autre, et les joueurs simulés sont visibles et jouent vraiment (IA déterministe). 2.68.2 : la pause ne fige
+  jamais le monde, test compris (seul le joueur cesse d'agir).
 
 ## 11. La longue route du Poignet-verrou (2.68)
 
@@ -388,6 +392,8 @@ les ennemis d'une embuscade. Elle sert à toutes les arènes de gigaboss : elle 
 `floor`, `door`, `entry`), le format des sept antres (`raid::ZoneRules::arena`). La simulation ne la voit jamais.
 
 ## 13. Les raids tels qu'on les teste et qu'on les joue (2.69)
+
+<p align="center"><img src="media/raid_visuals.png" width="820" alt="Planche du générateur (raid_visuals.py --review) : la lave animée du magma montant et les tuiles et icônes de la minimap"></p>
 
 ### Flèches hors écran
 
@@ -448,10 +454,14 @@ combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas su
 
 * **Disposition à part** (`GameplaySettings::raidHud`, Paramètres › HUD › onglet « Raids ») : vie et énergie, pouvoirs,
   minimap, panneau du groupe (8), objectifs et progression de la branche, alertes, barre du gigaboss, bandeau de danger,
-  contributions, ligne du réseau / badge « TEST ADMIN » ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
+  contributions, ligne du réseau / badge « TEST ADMIN », **chronomètre du raid** ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
   danger et le réseau). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
   deux éléments ne peuvent jamais se chevaucher (l'enregistrement est refusé sinon). Chaque élément est dessiné dans sa
   boîte : textes mesurés, coupés, « … et N lignes de plus ».
+* **Chronomètre** (vrais raids et test) : le style du chrono des niveaux (horloge, police des titres, halo), le temps depuis
+  le début de l'instance (`RaidRun::tick`) et, dessous, celui de la zone (`zoneTicks`) : des pas de la simulation, donc le
+  même sur tous les jeux de l'instance (affichage seulement). Il continue pendant la pause d'un joueur (le monde ne
+  s'arrête jamais, test compris).
 * **Minimap en textures** : le terrain de la zone cuit une fois dans une texture à partir des tuiles générées (roche et son
   bord éclairé, corniches, lave), la zone que le magma inonde (hachurée, pulsant à l'alerte, vive quand il monte), les
   plateformes mobiles en direct, et des icônes (`ui/raids/minimap.png` + `.json`, même générateur) : vous (or), le groupe

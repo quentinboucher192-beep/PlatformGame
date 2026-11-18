@@ -72,6 +72,9 @@ void drawObjectives(UIContext& ui, const Rect& r, float k, const std::string& ti
 /// The alerts from the top of `r` (2 lines each); the boxes drawn (for the arrows to keep clear).
 std::vector<Rect> drawAlerts(UIContext& ui, const Rect& r, float k, const std::vector<Line>& alerts);
 void drawDanger(UIContext& ui, const Rect& r, float k, const std::string& text);
+/// The raid's chrono, in the style of the levels' timer: the time since the instance started (steps
+/// of the simulation: the same on every computer), the zone's time under it.
+void drawTimer(UIContext& ui, const Rect& r, float k, float instanceSeconds, float zoneSeconds);
 /// A line in a rounded box (the network, the contributions); `test`: the « TEST ADMIN » badge's look.
 void drawLineBox(UIContext& ui, const Rect& r, float k, const std::string& text, Color textColor, bool test);
 

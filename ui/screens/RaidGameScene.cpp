@@ -201,8 +201,9 @@ public:
         zoneReady();
     }
 
-    /// 2.68: one step of a test: this computer's input on seat 0; 2.69: the simulated players on
-    /// theirs (TestSession), the free seats vacant.
+    /// 2.68: one step of a test: this computer's input on seat 0 (neutral while paused: the pause
+    /// never stops the world); 2.69: the simulated players on theirs (TestSession, playing on during
+    /// the pause and the large map), the free seats vacant.
     void stepTest() {
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
         if (paused_) f = InputFrame{};
@@ -259,8 +260,9 @@ public:
 
     void fixedUpdate(float dt) override {
         if (test_) {
-            // An administrator's test is alone on its computer: the pause stops the whole test.
-            if (run_ && !paused_) stepTest();
+            // The pause never stops the world, not even in a test: only this player's inputs
+            // are held (neutral frame), the boss and the enemies keep going and can still hit.
+            if (run_) stepTest();
             return;
         }
         if (!run_ || catching_ || ended_) {
@@ -549,6 +551,14 @@ public:
             Color c = kText;
             const std::string t = statusText(c);
             raidhud::drawLineBox(ui, r, k(E::Status), t, c, test_);
+            hudRects_.push_back(r);
+        }
+        if (shown(E::Timer)) {
+            // 2.69: the raid's chrono from the simulation's steps (the same on every computer; it
+            // runs on during a pause: the world never stops).
+            const Rect r = at(E::Timer);
+            raidhud::drawTimer(ui, r, k(E::Timer), static_cast<float>(run_->tick()) / static_cast<float>(kSimHz),
+                               static_cast<float>(run_->zoneTicks()) / static_cast<float>(kSimHz));
             hudRects_.push_back(r);
         }
         if (shown(E::Contributions))
@@ -1032,7 +1042,7 @@ public:
         Rect box = centred(ui.s(600), ui.s(380));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
-        fit(ui, test_ ? "Le test est en pause." : "Vous seul êtes en pause : le groupe continue à jouer.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
+        fit(ui, test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
             FontFace::Body, Align::Center);
         ui.pushId("pause");
         const float bw = box.w - ui.s(80), bh = ui.s(58);

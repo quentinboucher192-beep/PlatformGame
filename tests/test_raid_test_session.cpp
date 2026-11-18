@@ -338,7 +338,11 @@ TEST_CASE("raid HUD (2.69): its layout is saved apart from the solo one; the lar
     g.raidHud[RaidHudElement::Group].visible = false;
     g.raidHud[RaidHudElement::Danger].visible = false;  // never hidden: what the group must see
     g.raidHud.arrows = false;
+    g.raidHud[RaidHudElement::Timer].visible = false;  // the raid's chrono can be hidden
     const RaidHudLayout back = RaidHudLayout::fromJson(g.raidHud.toJson());
+    CHECK(!back[RaidHudElement::Timer].visible);
+    CHECK(RaidHudLayout{}[RaidHudElement::Timer].visible);  // shown by default
+    CHECK(std::string(RaidHudLayout::id(RaidHudElement::Timer)) == "timer");
     CHECK(back[RaidHudElement::Minimap].custom);
     CHECK(std::fabs(back[RaidHudElement::Minimap].x - 0.25f) < 1e-4f);
     CHECK(std::fabs(back[RaidHudElement::Minimap].scale - 1.5f) < 1e-4f);

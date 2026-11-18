@@ -874,6 +874,7 @@ private:
             raidhud::drawLineBox(ui, at(RE::Contributions), k(RE::Contributions), "Dégâts 120 · Mécanismes 2 · Sauvetages 1 · Dégâts évités 30", kText,
                                  false);
         raidhud::drawLineBox(ui, at(RE::Status), k(RE::Status), "TEST ADMIN · non classé · 8 joueurs (7 simulés)", kGold, true);
+        if (shown(RE::Timer)) raidhud::drawTimer(ui, at(RE::Timer), k(RE::Timer), 754.36f, 201.07f);
     }
 
     raidhud::Minimap minimap_;  // 2.69: the example's minimap (the preview level's terrain)

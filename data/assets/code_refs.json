@@ -791,6 +791,7 @@
    "game/gameplay/Hud.cpp": 1,
    "game/gameplay/HudTeam.cpp": 1,
    "packaging/DependencyCollector.cpp": 1,
+   "ui/online/RaidHud.cpp": 1,
    "ui/screens/BossStatsScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 2
   },

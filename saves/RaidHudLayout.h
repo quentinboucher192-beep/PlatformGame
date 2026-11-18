@@ -23,6 +23,7 @@ enum class RaidHudElement : int {
     Danger,         // the danger band (« Montée de magma dans 3 s »)
     Contributions,  // this player's contributions
     Status,         // the network line, or the « TEST ADMIN » badge of a test
+    Timer,          // the raid's chrono: since the instance started, the zone's time under it
     Count
 };
 constexpr int kRaidHudElements = static_cast<int>(RaidHudElement::Count);

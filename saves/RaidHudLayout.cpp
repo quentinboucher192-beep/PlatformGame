@@ -17,6 +17,7 @@ const char* RaidHudLayout::id(RaidHudElement e) {
         case RaidHudElement::Danger: return "danger";
         case RaidHudElement::Contributions: return "contributions";
         case RaidHudElement::Status: return "status";
+        case RaidHudElement::Timer: return "timer";
         default: return "";
     }
 }
@@ -33,6 +34,7 @@ const char* RaidHudLayout::label(RaidHudElement e) {
         case RaidHudElement::Danger: return "Bandeau de danger";
         case RaidHudElement::Contributions: return "Contributions";
         case RaidHudElement::Status: return "Réseau · badge TEST ADMIN";
+        case RaidHudElement::Timer: return "Chronomètre du raid";
         default: return "";
     }
 }
