@@ -262,3 +262,10 @@ difficulty
 event
 box
 contour
+TEST
+affaibli
+final
+jet
+main_pyroclast
+vents
+result

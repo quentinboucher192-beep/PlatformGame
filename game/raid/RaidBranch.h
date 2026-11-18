@@ -64,6 +64,55 @@ struct Magma {
     std::string zone;  // the damage zone switched on
     float period = 90.0f, first = 45.0f, warn = 3.0f, duration = 8.0f;
 };
+/// 2.67: the gigaboss of a zone (metadata.raid.gigaboss), its fight run by raid::Gigaboss.
+struct GigabossRules {
+    bool present = false;
+    std::string boss;       // object id of the gigaboss in the level
+    std::string name;       // « Pyroclast »
+    std::string objective;  // the objective of the branch its fall accomplishes
+    std::vector<std::string> ventIds;
+    std::vector<Rect> vents;           // its vents: a player standing on one closes it
+    int carapaceFrom = 2, carapaceUntil = 3;  // its carapace protects it in phases [from, until) (1-based)
+    float hold = 3.0f;                 // seconds on a vent to close it
+    float reopen = 15.0f;              // a closed vent lights again after this (unless all are closed)
+    float exposed = 10.0f;             // its weak point bare this long once every vent is closed
+    float exposedMult = 2.0f;          // the damage it takes meanwhile
+    float jetPeriod = 6.0f, jetWarn = 1.2f, jetTime = 1.0f, jetHeight = 112.0f;  // an open vent's jet of magma
+    float jetDamage = 1.0f;
+    std::string weakEnemy;             // its weak points (enemies stuck to it while it is bare)
+    std::vector<Vec2> weakSpots;       // from its feet, x toward where it faces
+    float weakShare = 0.04f;           // share of its health a weak point takes from it when broken
+    float hpPerPlayer = 0.55f;         // health × (1 + hpPerPlayer × (players − 1)), players seated (2 to 8)
+    float weakHpPerPlayer = 0.25f;
+    float pressurePerPlayer = 0.06f;   // its cooldowns ÷ (1 + pressurePerPlayer × (players in play − 1))
+    /// « Poings de magma »: one fist per player in play every fistPeriods[phase − 1] seconds
+    /// (÷ its pressure), announced fistWarn seconds before on a mark under each one.
+    std::vector<float> fistPeriods;
+    float fistWarn = 1.4f, fistWidth = 64.0f, fistDamage = 1.0f;
+    /// The arena (world pixels): the camera's global view of the fight (display only).
+    Rect arena;
+};
+
+/// 2.67: plates (or a lift's deck) that need several players standing on EACH at once
+/// (metadata.raid.groupSwitches): `need` per plate (fewer when fewer seats are taken), held `hold`
+/// seconds; then `action` (« open », « activate ») goes to each of `targets`.
+struct GroupSwitch {
+    std::string id, label, action;
+    std::vector<Rect> plates;
+    int need = 2;
+    std::vector<std::string> targets;
+    float hold = 1.5f;
+};
+
+/// 2.67: what a zone's way takes a group (metadata.raid.estimate, written by the level's generator).
+struct RouteEstimate {
+    bool present = false;
+    int players = 8;
+    float minutes = 0.0f;
+    float routeX0 = 0.0f, routeX1 = 0.0f;  // the route (px)
+    int climb = 0;                          // tiles climbed
+};
+
 struct ZoneRules {
     int zone = 0;
     std::map<std::string, std::vector<Vec2>> spawns;  // "start" or the zone one comes from
@@ -71,6 +120,9 @@ struct ZoneRules {
     std::vector<ZoneObjective> objectives;
     Magma magma;
     std::string sealedDoor, sealedLabel;
+    GigabossRules gigaboss;  // 2.67
+    std::vector<GroupSwitch> switches;  // 2.67
+    RouteEstimate estimate;             // 2.67
 };
 
 class Branch {
@@ -81,6 +133,10 @@ public:
     bool parseCatalog(const Json& j, std::string* error = nullptr);
     /// The branch of the game (data dir), loaded once; null when it cannot be read.
     static const Branch* builtin();
+    /// 2.67: every branch of the raid in the game's data (data/raids/asterion/<branch>/branch.json,
+    /// in the order of their folders), loaded once: the administrators' tests list them all, so a
+    /// branch added later appears there without anything else to change.
+    static const std::vector<const Branch*>& all();
 
     std::string id, name, gigaboss;
     int revision = 0;

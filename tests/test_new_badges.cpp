@@ -272,7 +272,7 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
     }
     for (const EnemyDefinition* d : content.enemies()) {
         // 2.64: the tutorial's creatures are never in the gallery (nor « NOUVEAU »).
-        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty() || d->tutorial) continue;
+        if (!d->builtin || !content.isNativeEnemy(d->id) || !d->variantOf.empty() || d->tutorial || !d->raid.empty()) continue;  // 2.67: a raid's: not in the gallery
         if (d->isBoss) {
             need("boss." + d->id);
             need("gallery.boss." + d->id);

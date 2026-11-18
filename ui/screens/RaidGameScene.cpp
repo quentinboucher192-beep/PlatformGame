@@ -13,6 +13,13 @@
 //
 // Every text is measured into the room left by what is placed before it (raidui::fit / wrap):
 // nothing overlaps. The pause never stops the group (lockstep): it only hides the game.
+//
+// 2.67 (phase 3): the gigaboss PYROCLAST in the Main: its vents drawn over the arena (closed,
+// open, announced, throwing magma, the hold of each), its carapace, its objectives (vents k / N,
+// the weak point bare, allies to revive), this player's contributions at the bottom right, the
+// reports of its phases and of the contributions' tables, and the card of its fall (« Résultats
+// du raid »). An administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): the same
+// screen, solo and local (no relay), never reported, badge « TEST ADMIN · non classé ».
 
 #include <algorithm>
 #include <atomic>
@@ -32,6 +39,10 @@
 #include "game/online/Clans.h"
 #include "game/powers/PowerKeys.h"
 #include "game/raid/RaidRun.h"
+#include "game/raid/ArenaCamera.h"
+#include "game/gameplay/EnemyArrows.h"
+#include "game/gameplay/entities/Entities.h"
+#include "engine/resources/ResourceManager.h"
 #include "saves/Settings.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/Navigation.h"
@@ -65,6 +76,11 @@ std::string hex16(uint64_t v) {
 class RaidGameScene : public Scene {
 public:
     RaidGameScene(GameServices& g, RaidEntry entry) : g_(g), entry_(std::move(entry)) {}
+    /// 2.67: an administrator's test (solo, local, never reported).
+    RaidGameScene(GameServices& g, RaidTestSetup t) : g_(g), test_(true), testSetup_(std::move(t)) {
+        entry_.clanTag = "TEST";
+        entry_.group = 1;
+    }
 
     ~RaidGameScene() override {
         stopWorker_ = true;
@@ -76,6 +92,10 @@ public:
 
     void onEnter() override {
         branch_ = raid::Branch::builtin();
+        if (test_) {
+            beginTest();
+            return;
+        }
         if (!branch_) {
             fail_ = "Les zones du raid sont introuvables dans les données du jeu : réinstallez le jeu.";
             return;
@@ -130,6 +150,54 @@ public:
         }
     }
 
+    /// 2.67: an administrator's test: the branch and zone chosen, solo (the 7 other seats vacant).
+    void beginTest() {
+        branch_ = nullptr;
+        for (const raid::Branch* b : raid::Branch::all())
+            if (b->id == testSetup_.branch) branch_ = b;
+        if (!g_.online.isAdmin()) {
+            fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
+            return;
+        }
+        if (!branch_ || !branch_->zone(testSetup_.zone)) {
+            fail_ = "Cette branche ou cette zone est introuvable dans les données du jeu.";
+            return;
+        }
+        local_ = 0;
+        ResourceManager& res = g_.app.resources();
+        WorldServices ws{res, g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake,
+                         g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
+        run_ = std::make_unique<raid::RaidRun>(ws, *branch_, raid::kMaxInstancePlayers);
+        raid::RaidRun::Test t;
+        t.on = true;
+        t.invincible = testSetup_.invincible;
+        t.players = testSetup_.players;
+        t.startPhase = testSetup_.startPhase;
+        run_->setTest(t);
+        run_->setCameraFollow(0);
+        if (!run_->begin(0, testSetup_.zone)) {
+            fail_ = "Impossible de charger la zone du test.";
+            run_.reset();
+            return;
+        }
+        hud_.setRaidView(true);
+        zoneReady();
+    }
+
+    /// 2.67: one step of a test: this computer's input on seat 0, the others vacant.
+    void stepTest() {
+        InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
+        if (paused_) f = InputFrame{};
+        if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
+        frame_.assign(raid::kMaxInstancePlayers, InputFrame{});
+        frame_[0] = f;
+        for (size_t k = 1; k < frame_.size(); ++k) frame_[k].flags = InputFrame::Vacant;
+        run_->step(frame_.data(), static_cast<int>(frame_.size()), 0);
+        ++tick_;
+        run_->takeReports();  // empty: a test never reports anything
+        if (run_->zoneSerial() != serial_) zoneReady();
+    }
+
     void catchUp() {
         std::vector<InputFrame> team;
         while (!stopWorker_) {
@@ -159,6 +227,7 @@ public:
     void zoneReady() {
         GameWorld& w = run_->world();
         serial_ = run_->zoneSerial();
+        arenaCam_.reset();  // 2.67: the arena's intro plays again in a new world
         renderer_.build(g_.app.renderer(), g_.app.resources(), w);
         std::vector<Color> colors;
         for (int i = 0; i < w.teamSize(); ++i) colors.push_back(seatColor(i, local_));
@@ -172,6 +241,10 @@ public:
     }
 
     void fixedUpdate(float dt) override {
+        if (test_) {
+            if (run_) stepTest();
+            return;
+        }
         if (!run_ || catching_ || ended_) {
             if (catching_ && workerDone_) finishCatchUp();
             return;
@@ -187,6 +260,8 @@ public:
             waiting_ = 0.0f;
             run_->step(frame_.data(), static_cast<int>(frame_.size()), link_->raidStateAt(tick_));
             ++tick_;
+            if (run_->gigaboss().fellNow() && !link_->joinedLate()) fallCard_ = true;  // « Résultats du raid »
+            if (run_->gigaboss().fellNow() && link_->joinedLate() && tick_ >= link_->rejoinAt()) fallCard_ = true;
             if (run_->zoneSerial() != serial_) zoneReady();
             sendReports();
         }
@@ -206,10 +281,34 @@ public:
     }
 
     void sendReports() {
+        if (test_) return;  // 2.67: an administrator's test never reports anything
         for (const raid::Report& r : run_->takeReports()) {
             if (link_->joinedLate() && tick_ < link_->rejoinAt()) continue;  // not in play yet
-            Json body{{"kind", r.kind == raid::Report::Kind::Objective ? "objective" : "zone"}, {"zone", r.zone}, {"tick", r.tick}, {"hash", hex16(r.hash)}};
+            const char* kind = r.kind == raid::Report::Kind::Objective ? "objective"
+                               : r.kind == raid::Report::Kind::Boss    ? "boss"
+                               : r.kind == raid::Report::Kind::Result  ? "result"
+                                                                       : "zone";
+            Json body{{"kind", kind}, {"zone", r.zone}, {"tick", r.tick}, {"hash", hex16(r.hash)}};
             if (r.kind == raid::Report::Kind::Objective) body["objective"] = r.objective;
+            if (r.kind == raid::Report::Kind::Boss) body["phase"] = r.phase;
+            if (r.kind == raid::Report::Kind::Result) {
+                // 2.67: the players' contributions (the same table on every computer of the instance).
+                Json rows = Json::array();
+                for (const raid::Contribution& c : r.records)
+                    rows.push_back(Json{{"seat", c.seat},
+                                        {"from", c.from},
+                                        {"damage", c.damage},
+                                        {"boss_damage", c.bossDamage},
+                                        {"avoided", c.avoided},
+                                        {"blocks", c.blocks},
+                                        {"rescues", c.rescues},
+                                        {"vents", c.vents},
+                                        {"weak_points", c.weakPoints},
+                                        {"objectives", c.objectives},
+                                        {"ticks", c.ticks},
+                                        {"gigaboss", c.gigaboss ? 1 : 0}});
+                body["records"] = rows;
+            }
             const bool objective = r.kind == raid::Report::Kind::Objective;
             const std::string label = objective && branch_->objective(r.objective) ? branch_->objective(r.objective)->label : "";
             g_.online.send("POST", "/api/v1/raids/instances/" + entry_.instanceId + "/reports", body,
@@ -230,6 +329,10 @@ public:
 
     void update(float dt) override {
         clock_ += dt;
+        if (test_) {
+            updateGame(dt);
+            return;
+        }
         if (link_) link_->update(dt);
         if (link_ && !run_ && fail_.empty() && link_->go()) begin();
         if (link_ && !link_->error().empty() && fail_.empty() && !run_) fail_ = link_->error();
@@ -238,6 +341,10 @@ public:
             endReason_ = link_->endReason();
             g_.ui.setFocus("raidgame/end/map");
         }
+        updateGame(dt);
+    }
+
+    void updateGame(float dt) {
         if (!run_ || catching_) return;
         GameWorld& w = run_->world();
         w.update(dt);
@@ -250,6 +357,7 @@ public:
         }
         info.promptPlayer = local_;
         hud_.setTeam(info);
+        updateArenaCamera(w, dt);
         if (!ended_ && g_.app.input().menuPressed(Action::Pause)) {
             paused_ = !paused_;
             g_.ui.setFocus("raidgame/pause/resume");
@@ -276,11 +384,16 @@ public:
             drawWaiting();
         } else {
             GameWorld& w = run_->world();
-            WorldView view = w.camera().view(r.width(), r.height(), alpha);
+            // 2.67: in a gigaboss's arena, its own camera (display only): the whole arena first, then a
+            // view sized for this player; elsewhere the world's camera.
+            WorldView view = arenaCam_.active() ? arenaCam_.view(r.width(), r.height()) : w.camera().view(r.width(), r.height(), alpha);
+            view_ = view;
             RenderOptions opt;
             opt.lighting = g_.settings.graphics.dynamicLighting;
             opt.debug = g_.app.debugOverlay;
             renderer_.render(r, g_.app.resources(), w, view, alpha, opt);
+            drawGigabossWorld(w, view);  // 2.67: its vents, its carapace (over the arena, under the HUD)
+            drawSwitches(w, view);      // 2.67: the group's plates
             {
                 // The vitals and powers of this computer's player (display only).
                 GameWorld::PlayerScope me(w, std::clamp(local_, 0, w.teamSize() - 1));
@@ -294,6 +407,9 @@ public:
                 }
             }
             drawRaidHud(w);
+            drawArrows(w, view);
+            drawArenaIntro();
+            if (fallCard_ && !paused_ && !ended_) drawFall();
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
         }
@@ -349,6 +465,10 @@ public:
     }
 
     void leave() {
+        if (test_) {
+            g_.app.popScene();  // back to ADMINISTRATION › Raids
+            return;
+        }
         if (link_) link_->close();
         g_.app.switchScene(makeRaidBranch(g_, entry_.eventId), 0.3f);
     }
@@ -366,16 +486,278 @@ public:
         const float leftW = std::min(ui.s(270), W * 0.2f), rightW = std::min(ui.s(320), W * 0.24f);
         // The group panel under this player's vitals and powers (the HUD's own places).
         const float groupY = hudArea_.w > 0.0f && hudArea_.x < m + leftW ? hudArea_.bottom() + ui.s(12) : ui.s(14);
+        hudRects_.clear();
+        if (hudArea_.w > 0.0f) hudRects_.push_back(hudArea_);
         const Rect group = drawGroup(w, {m, groupY, leftW, 0});
+        hudRects_.push_back(group);
         // The minimap between what is at the left (the group, the vitals) and the objectives.
         float left = groupY <= ui.s(110) ? group.right() : m;
         if (hudArea_.w > 0.0f && hudArea_.y < ui.s(110)) left = std::max(left, hudArea_.right());
         const float mapX = left + ui.s(14), mapR = W - m - rightW - ui.s(14);
-        if (mapR - mapX > ui.s(200)) drawMinimap(w, {mapX, ui.s(14), mapR - mapX, ui.s(96)});
+        if (mapR - mapX > ui.s(200)) {
+            drawMinimap(w, {mapX, ui.s(14), mapR - mapX, ui.s(96)});
+            hudRects_.push_back({mapX, ui.s(14), mapR - mapX, ui.s(96)});
+        }
         const Rect obj = drawObjectives(w, {W - m - rightW, ui.s(14), rightW, 0});
+        hudRects_.push_back(obj);
         drawAlerts({obj.x, obj.bottom() + ui.s(10), rightW, 0});
         drawDanger();
         drawNetwork();
+        drawContribution();
+    }
+
+    // ------------------------------------------------------------- 2.67: the gigaboss
+
+    /// The vents over the arena (the generated sheet: closed, open, announced, throwing magma),
+    /// the hold of each (a ring), the carapace around the gigaboss while it protects it.
+    void drawGigabossWorld(GameWorld& w, const WorldView& view) {
+        const raid::Gigaboss& gb = run_->gigaboss();
+        if (!gb.present()) return;
+        Renderer& r = g_.ui.r();
+        if (!vents_) vents_ = g_.app.resources().animation("animations/pyroclast_vents.json");
+        const bool fighting = gb.stage() == raid::Gigaboss::Stage::Carapace || gb.stage() == raid::Gigaboss::Stage::Exposed;
+        for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k) {
+            const raid::Gigaboss::Vent& v = gb.vents()[static_cast<size_t>(k)];
+            const char* clip = !fighting || v.closed ? "closed" : gb.jetting(k) ? "jet" : gb.jetWarning(k) ? "warn" : "open";
+            const Rect world{v.area.center().x - 24.0f, v.area.bottom() - 144.0f, 48.0f, 144.0f};
+            const Rect dst = view.toScreen(world);
+            if (vents_ && vents_->texture)
+                if (const AnimationClip* c = vents_->clip(clip)) {
+                    const int n = std::max(1, c->frameCount());
+                    const int f = static_cast<int>(clock_ * (std::string(clip) == "jet" ? 12.0f : 7.0f)) % n;
+                    const Rect src = vents_->frameRect(*c, f);
+                    r.drawTexture(*vents_->texture, &src, dst);
+                }
+            if (fighting && !v.closed && gb.holdRatio(k) > 0.0f) {
+                const Vec2 c = view.toScreen({v.area.center().x, v.area.y - 30.0f});
+                const float rad = 14.0f * view.scale;
+                r.drawRing(c, rad, 3.0f * view.scale, Color{40, 30, 30, 200});
+                r.drawArc(c, rad, 3.0f * view.scale, -1.5708f, -1.5708f + 6.2832f * gb.holdRatio(k), kGold);
+            }
+        }
+        // « Poings de magma »: a mark under each player marked, then the fist falling on it.
+        const AnimationClip* fistClip = vents_ ? vents_->clip("fist") : nullptr;
+        const float warnSteps = gb.fistWarnSeconds() * static_cast<float>(kSimHz);
+        for (const auto& f : gb.fists()) {
+            const Vec2 c = view.toScreen({f.at.x, f.at.y - 2.0f});
+            const float k = std::clamp(1.0f - static_cast<float>(f.left) / std::max(1.0f, warnSteps), 0.0f, 1.0f);
+            const float rad = gb.rules()->fistWidth * 0.5f * view.scale;
+            r.drawRing(c, rad, 2.0f * view.scale, Color{255, 90, 40, static_cast<uint8_t>(120 + 120 * k)});
+            r.drawArc(c, rad * 0.7f, 3.0f * view.scale, -1.5708f, -1.5708f + 6.2832f * k, Color{255, 200, 120, 230});
+            if (fistClip && vents_->texture && f.left <= static_cast<int>(0.5f * static_cast<float>(kSimHz))) {
+                // The last half second: the fist falls from the sky onto the mark.
+                const float fall = std::clamp(static_cast<float>(f.left) / (0.5f * static_cast<float>(kSimHz)), 0.0f, 1.0f);
+                const Rect world{f.at.x - 24.0f, f.at.y - 144.0f - 220.0f * fall, 48.0f, 144.0f};
+                const Rect src = vents_->frameRect(*fistClip, static_cast<int>(clock_ * 10.0f) % std::max(1, fistClip->frameCount()));
+                r.drawTexture(*vents_->texture, &src, view.toScreen(world));
+            }
+        }
+        if (gb.stage() == raid::Gigaboss::Stage::Carapace)
+            if (const Enemy* b = gb.boss(w); b && b->alive()) {
+                const Rect sb = view.toScreen(b->box);
+                const float pulse = 0.5f + 0.5f * std::sin(clock_ * 4.0f);
+                r.drawRing(sb.center(), std::max(sb.w, sb.h) * 0.62f, 3.0f * view.scale, Color{255, 210, 122, static_cast<uint8_t>(110 + 80 * pulse)});
+            }
+    }
+
+    /// 2.67: the camera of the gigaboss's arena (display only), fed with what threatens this player.
+    void updateArenaCamera(GameWorld& w, float dt) {
+        const raid::Gigaboss& gb = run_->gigaboss();
+        raid::ArenaCamera::Frame f;
+        if (gb.present() && gb.rules()->arena.w > 0.0f && local_ >= 0 && local_ < w.teamSize()) {
+            const Player& me = w.playerAt(local_);
+            f.arena = gb.rules()->arena;
+            f.level = w.level().bounds;
+            f.me = me.center();
+            f.meInArena = w.member(local_).presence != GameWorld::Presence::Vacant && f.arena.contains(f.me) &&
+                          gb.stage() != raid::Gigaboss::Stage::Absent;
+            if (const Enemy* b = gb.boss(w); b && b->alive()) f.boss = b->box;
+            for (const auto& fist : gb.fists()) f.threats.push_back(fist.at);
+            for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
+                if (gb.jetWarning(k) || gb.jetting(k)) f.threats.push_back(gb.vents()[static_cast<size_t>(k)].area.center());
+            for (int i = 0; i < w.teamSize(); ++i)
+                if (i != local_ && w.member(i).presence == GameWorld::Presence::Playing) f.allies.push_back(w.playerAt(i).center());
+        }
+        arenaCam_.update(f, dt, g_.ui.r().width(), g_.ui.r().height());
+    }
+
+    /// 2.67: the title of the arena while its whole is shown (the intro shot).
+    void drawArenaIntro() {
+        if (!arenaCam_.intro() || !run_->gigaboss().present()) return;
+        UIContext& ui = g_.ui;
+        const float W = ui.screenW(), H = ui.screenH();
+        const float bw = std::min(ui.s(640), W * 0.5f), bh = ui.s(96);
+        const Rect box{(W - bw) * 0.5f, H * 0.3f, bw, bh};
+        const float t = arenaCam_.introProgress();
+        const float alpha = std::clamp(std::min(t * 4.0f, (1.0f - t) * 4.0f), 0.0f, 1.0f);
+        ui.r().fillRoundedRect(box, ui.s(14), Color{20, 8, 6, static_cast<uint8_t>(200 * alpha)});
+        const std::string name = run_->gigaboss().rules()->name;
+        fit(ui, name, {box.center().x, box.y + ui.s(36)}, 34, box.w - ui.s(40), kGold.withAlphaF(alpha), FontFace::Title, Align::Center, true);
+        fit(ui, "Gigaboss · l'arène entière, puis votre vue de combat", {box.center().x, box.y + ui.s(74)}, 15, box.w - ui.s(40),
+            kText.withAlphaF(alpha), FontFace::Body, Align::Center);
+    }
+
+    /// 2.67: arrows on the border toward what the view does not show: the boss (its weak points when
+    /// bare), the allies (their colours), the enemies of the ambush (violet). Kept off the HUD.
+    void drawArrows(GameWorld& w, const WorldView& view) {
+        UIContext& ui = g_.ui;
+        const float W = ui.screenW(), H = ui.screenH();
+        const Rect screen{0.0f, 0.0f, W, H};
+        const EnemyArrows::Look usual = EnemyArrows::look(false), fight = EnemyArrows::look(true);
+        auto tex = g_.app.resources().texture(usual.texture);
+        auto ambushTex = g_.app.resources().texture(fight.texture);
+        if (!tex || !ambushTex) return;
+        EnemyArrows::Layout l;
+        l.screen = screen;
+        l.arrowSize = ui.s(44);
+        l.gap = ui.s(6);
+        l.inset = l.arrowSize * 0.5f + ui.s(12);
+        l.packGap = ui.s(90);
+        l.packSpan = ui.s(260);
+        l.badgeSize = {ui.s(44), ui.s(26)};
+        l.keepOut = hudRects_;
+        if (const Enemy* b = w.activeBoss(); b && b->alive() && hudVisible(g_.settings.gameplay, HudElement::Boss))
+            l.keepOut.push_back(hud_.area(ui, w, HudElement::Boss, hud_.place(ui, w, g_.settings.gameplay, HudElement::Boss)));
+        auto draw = [&](const std::vector<Rect>& targets, const Texture& arrow, Color tint) {
+            if (targets.empty()) return;
+            for (const EnemyArrows::Arrow& a : EnemyArrows::layout(l, targets)) {
+                ui.r().drawTexture(arrow, nullptr, a.box, tint, BlendMode::Alpha, false, false, a.angle * 57.29578f);
+                if (a.count > 1) {
+                    const std::string n = "×" + std::to_string(a.count);
+                    ui.r().fillRoundedRect(a.badge, a.badge.h * 0.5f, Color{8, 12, 26, 220});
+                    fit(ui, n, a.badge.center(), 13, a.badge.w - ui.s(8), tint, FontFace::Bold, Align::Center, true);
+                }
+                l.keepOut.push_back(a.area);
+            }
+        };
+        const auto away = [&](const Rect& r) { return !view.toScreen(r).intersects(screen); };
+        // The boss, or its weak points while they are bare.
+        const raid::Gigaboss& gb = run_->gigaboss();
+        std::vector<Rect> bossT;
+        if (gb.stage() == raid::Gigaboss::Stage::Exposed) {
+            for (const auto& e : w.enemies())
+                if (e->alive() && e->summonedBy == gb.bossUid() && e->def().id == gb.rules()->weakEnemy && away(e->box)) bossT.push_back(view.toScreen(e->box));
+        } else if (const Enemy* b = gb.boss(w); b && b->alive() && away(b->box)) {
+            bossT.push_back(view.toScreen(b->box));
+        }
+        draw(bossT, *tex, kGold);
+        // The allies, each in their colour.
+        for (int i = 0; i < w.teamSize(); ++i) {
+            if (i == local_ || w.member(i).presence != GameWorld::Presence::Playing || !away(w.playerAt(i).box)) continue;
+            draw({view.toScreen(w.playerAt(i).box)}, *ambushTex, seatColor(i, local_));
+        }
+        // The enemies of the ambush under way.
+        if (const CombatZoneEntity* amb = w.activeAmbush()) {
+            std::vector<Rect> t;
+            for (const Enemy* e : amb->fightingEnemies(w))
+                if (away(e->box)) t.push_back(view.toScreen(e->box));
+            draw(t, *ambushTex, Color::white());
+        }
+    }
+
+    /// 2.67: the group's plates over the world (gold until done) and how many each needs.
+    void drawSwitches(GameWorld& w, const WorldView& view) {
+        (void)w;
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        for (size_t k = 0; k < run_->rules().switches.size() && k < run_->switches().size(); ++k) {
+            const raid::GroupSwitch& sw = run_->rules().switches[k];
+            const auto& st = run_->switches()[k];
+            const int need = run_->switchNeed(sw);
+            for (size_t p = 0; p < sw.plates.size(); ++p) {
+                const Rect sr = view.toScreen(sw.plates[p]);
+                const Rect plate{sr.x, sr.bottom() - std::max(ui.s(4), sr.h * 0.25f), sr.w, std::max(ui.s(4), sr.h * 0.25f)};
+                r.fillRect(plate, st.done ? Color{124, 240, 168, 160} : Color{255, 210, 122, 150});
+                if (st.done) continue;
+                const int on = p < st.on.size() ? st.on[p] : 0;
+                const std::string t = std::to_string(std::min(on, need)) + " / " + std::to_string(need);
+                const float pw = std::min(textW(ui, t, 13, FontFace::Bold) + ui.s(16), std::max(ui.s(40), sr.w));
+                const Rect pill{sr.center().x - pw * 0.5f, sr.y - ui.s(30), pw, ui.s(24)};
+                r.fillRoundedRect(pill, ui.s(10), Color{16, 22, 46, 220});
+                fit(ui, t, pill.center(), 13, pill.w - ui.s(10), on >= need ? kGreen : kGold, FontFace::Bold, Align::Center, true);
+            }
+        }
+    }
+
+    /// This player's contributions at the bottom right (the same numbers every computer counts).
+    void drawContribution() {
+        const raid::Contribution* me = nullptr;
+        for (const raid::Contribution& c : run_->contributions().records())
+            if (c.seat == local_) me = &c;  // the latest record of this seat
+        if (!me) return;
+        UIContext& ui = g_.ui;
+        std::string t = "Dégâts " + std::to_string(me->damage / 10) + " · Mécanismes " + std::to_string(me->vents) + " · Sauvetages " +
+                        std::to_string(me->rescues) + " · Dégâts évités " + std::to_string(me->avoided / 10);
+        if (me->weakPoints > 0) t += " · Points faibles " + std::to_string(me->weakPoints);
+        const float w = std::min(textW(ui, t, 13) + ui.s(24), ui.screenW() * 0.4f);
+        const Rect r{ui.screenW() - ui.s(16) - w, ui.screenH() - ui.s(16) - ui.s(34), w, ui.s(34)};
+        ui.r().fillRoundedRect(r, ui.s(10), kHud);
+        hudRects_.push_back(r);
+        fit(ui, t, {r.x + ui.s(12), r.center().y}, 13, r.w - ui.s(24), kText);
+    }
+
+    /// The gigaboss's lines of the objectives (its stage, the vents, the weak points, the allies down).
+    void gigabossLines(GameWorld& w, std::vector<std::string>& marks, std::vector<std::string>& texts, std::vector<Color>& colors) {
+        const raid::Gigaboss& gb = run_->gigaboss();
+        if (!gb.present()) return;
+        using S = raid::Gigaboss::Stage;
+        const std::string name = gb.rules()->name;
+        const int total = static_cast<int>(gb.vents().size());
+        auto add = [&](std::string m, std::string t, Color c) {
+            marks.push_back(std::move(m));
+            texts.push_back(std::move(t));
+            colors.push_back(c);
+        };
+        switch (gb.stage()) {
+            case S::Absent: add("✓", name + " est déjà tombé : la Main est éteinte.", kGreen); break;
+            case S::Waiting: add("→", "Entrez dans l'arène : " + name + " se réveille.", Color{255, 176, 74, 255}); break;
+            case S::Fight:
+                add("→", "Vaincre " + name + " · phase " + std::to_string(std::max(1, gb.phase())) + " / 3 : esquivez ses coups annoncés.", Color{255, 176, 74, 255});
+                break;
+            case S::Carapace:
+                add(std::to_string(gb.ventsClosed()) + " / " + std::to_string(total),
+                    "Fermer les évents de la main (tenir " + std::to_string(static_cast<int>(std::lround(gb.rules()->hold))) + " s chacun) : la carapace tombe quand les " +
+                        std::to_string(total) + " sont fermés ensemble.",
+                    kGold);
+                break;
+            case S::Exposed:
+                add(std::to_string(static_cast<int>(std::ceil(gb.exposedLeft()))) + " s",
+                    "Frapper le point faible : la carapace est brisée · points faibles " + std::to_string(gb.weakTotal() - gb.weakLeft()) + " / " +
+                        std::to_string(gb.weakTotal()),
+                    kGreen);
+                break;
+            case S::Fallen: add("✓", name + " est vaincu !", kGreen); break;
+        }
+        for (int i = 0; i < w.teamSize(); ++i)
+            if (w.member(i).presence == GameWorld::Presence::Down) {
+                add("✚", "Relever " + seatName(i) + " (" + std::to_string(static_cast<int>(GameWorld::kReviveSeconds)) + " s près de son âme) · réanimations " +
+                             std::to_string(w.revivesUsed()) + " / " + std::to_string(GameWorld::kTeamRevives),
+                    Color{255, 138, 138, 255});
+                break;
+            }
+    }
+
+    /// The card of the gigaboss's fall: its results (validated by the server) or back to the fight.
+    void drawFall() {
+        UIContext& ui = g_.ui;
+        Rect box = centred(ui.s(600), ui.s(250));
+        box.y = ui.screenH() * 0.18f;
+        ui.panel(box, true, 16);
+        const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
+        fit(ui, name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30, box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
+        const auto lines = wrap(ui, "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+                                FontFace::Body, 16, box.w - ui.s(56), 3);
+        drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(70)}, 16, ui.s(22), kDim);
+        ui.pushId("fall");
+        const float gap = ui.s(12), bw = (box.w - ui.s(56) - gap) * 0.5f, by = box.bottom() - ui.s(24) - ui.s(52);
+        UIContext::ButtonStyle bs;
+        bs.primary = true;
+        if (ui.button("results", {box.x + ui.s(28), by, bw, ui.s(52)}, "Résultats du raid", bs)) {
+            fallCard_ = false;
+            g_.app.pushScene(makeRaidResults(g_, entry_.eventId));
+        }
+        if (ui.button("continue", {box.x + ui.s(28) + bw + gap, by, bw, ui.s(52)}, "Continuer")) fallCard_ = false;
+        ui.popId();
     }
 
     Rect drawGroup(GameWorld& w, Rect r) {
@@ -448,6 +830,14 @@ public:
             const Vec2 a = at({p.rect.x, p.rect.y});
             rr.fillRect({a.x, a.y, std::max(ui.s(3), p.rect.w * k), std::max(ui.s(6), p.rect.h * k)}, run_->passageOpen(p) ? kSky : Color{120, 106, 120, 255});
         }
+        if (run_->gigaboss().present()) {
+            // 2.67: the vents of the gigaboss (gold while open, green once closed).
+            for (const auto& v : run_->gigaboss().vents()) {
+                const Vec2 c = at(v.area.center());
+                const float s = ui.s(4);
+                rr.fillRect({c.x - s, c.y - s, s * 2, s * 2}, v.closed ? kGreen : kGold);
+            }
+        }
         if (!run_->rules().sealedDoor.empty())
             if (const LevelObject* d = w.level().findObject(run_->rules().sealedDoor)) {
                 const Vec2 a = at({d->rect.x, d->rect.y});
@@ -473,7 +863,6 @@ public:
     }
 
     Rect drawObjectives(GameWorld& w, Rect r) {
-        (void)w;
         UIContext& ui = g_.ui;
         const float pad = ui.s(10), iw = r.w - pad * 2, markW = ui.s(44);
         struct Line {
@@ -513,6 +902,25 @@ public:
                 lines.push_back({"▮", name + " : passage verrouillé", kDim, {}});
         }
         if (!run_->rules().sealedLabel.empty()) lines.push_back({"▮", run_->rules().sealedLabel, kGold, {}});
+        if (const CombatZoneEntity* amb = w.activeAmbush()) {
+            // 2.67: the ambush under way (its storeys, its waves, the enemies left: violet arrows too).
+            lines.push_back({std::to_string(amb->currentWave() + 1 > amb->waveCount() ? amb->waveCount() : amb->currentWave() + 1) + " / " +
+                                 std::to_string(amb->waveCount()),
+                             "Embuscade : vague en cours, " + std::to_string(amb->enemiesLeft(w)) + " ennemis (flèches violettes)", kViolet, {}});
+        }
+        for (size_t k = 0; k < run_->rules().switches.size() && k < run_->switches().size(); ++k) {
+            const raid::GroupSwitch& sw = run_->rules().switches[k];
+            const auto& st = run_->switches()[k];
+            if (st.done) continue;
+            lines.push_back({"◇ " + std::to_string(run_->switchNeed(sw)), sw.label, kSky, {}});
+        }
+        {
+            // 2.67: the gigaboss of the zone (its stage, the vents, the weak points, the allies down).
+            std::vector<std::string> marks, texts;
+            std::vector<Color> colors;
+            gigabossLines(w, marks, texts, colors);
+            for (size_t i = 0; i < marks.size(); ++i) lines.push_back({marks[i], texts[i], colors[i], {}});
+        }
         if (lines.empty()) lines.push_back({"·", "Aucun objectif dans cette zone : avancez vers les passages.", kDim, {}});
         float h = pad * 2 + ui.s(22);
         for (auto& l : lines) {
@@ -552,6 +960,7 @@ public:
             const float h = static_cast<float>(lines.size()) * ui.s(18) + pad;
             if (y + h > ui.screenH() * 0.58f) break;  // never down to the danger band (62 %)
             ui.r().fillRoundedRect({r.x, y, r.w, h}, ui.s(8), Color{20, 14, 18, 220});
+            hudRects_.push_back({r.x, y, r.w, h});
             ui.r().fillRect({r.x, y, ui.s(4), h}, a.c);
             drawLines(ui, lines, {r.x + pad + ui.s(4), y + pad * 0.5f}, 13, ui.s(18), kText);
             y += h + ui.s(6);
@@ -570,6 +979,7 @@ public:
         const float tw = std::min(textW(ui, t, 20, FontFace::Bold) + ui.s(40), W * 0.6f);
         const Rect band{(W - tw) * 0.5f, ui.screenH() * 0.62f, tw, ui.s(44)};
         ui.r().fillRoundedRect(band, ui.s(8), Color{120, 20, 20, 210});
+        hudRects_.push_back(band);
         ui.r().drawRoundedRect(band, ui.s(8), kDanger, ui.s(2));
         fit(ui, t, {band.center().x, band.center().y}, 20, band.w - ui.s(24), Color{255, 200, 200, 255}, FontFace::Bold, Align::Center);
     }
@@ -577,6 +987,17 @@ public:
     void drawNetwork() {
         UIContext& ui = g_.ui;
         std::string t;
+        if (test_) {
+            // 2.67: an administrator's test: never counted, said where the network's line is.
+            t = "TEST ADMIN · non classé · " + std::to_string(testSetup_.players) + " joueurs simulés" + (testSetup_.invincible ? " · invincible" : "");
+            const float w = std::min(textW(ui, t, 13, FontFace::Bold) + ui.s(24), ui.screenW() * 0.4f);
+            const Rect r{ui.s(16), ui.screenH() - ui.s(16) - ui.s(34), w, ui.s(34)};
+            ui.r().fillRoundedRect(r, ui.s(10), Color{120, 20, 40, 230});
+            hudRects_.push_back(r);
+            ui.r().drawRoundedRect(r, ui.s(10), kGold, ui.s(1.5f));
+            fit(ui, t, {r.x + ui.s(12), r.center().y}, 13, r.w - ui.s(24), kGold, FontFace::Bold);
+            return;
+        }
         if (waiting_ > 0.4f) {
             const std::string who = link_->waitingFor();
             t = who.empty() ? "En attente du réseau…" : "En attente de " + who + "…";
@@ -586,6 +1007,7 @@ public:
         const float w = std::min(textW(ui, t, 13) + ui.s(24), ui.screenW() * 0.4f);
         const Rect r{ui.s(16), ui.screenH() - ui.s(16) - ui.s(34), w, ui.s(34)};
         ui.r().fillRoundedRect(r, ui.s(10), kHud);
+        hudRects_.push_back(r);
         fit(ui, t, {r.x + ui.s(12), r.center().y}, 13, r.w - ui.s(24), waiting_ > 0.4f ? kGold : kText);
     }
 
@@ -612,7 +1034,8 @@ public:
         y += bh + ui.s(14);
         UIContext::ButtonStyle danger;
         danger.danger = true;
-        if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, "Quitter le raid (retour à la carte)", danger)) leave();
+        if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
+            leave();
         ui.popId();
         if (ui.backPressed()) paused_ = false;
     }
@@ -653,6 +1076,13 @@ public:
     std::atomic<bool> stopWorker_{false}, workerDone_{false};
     std::atomic<uint32_t> progress_{0};
     bool catching_ = false, connecting_ = false, paused_ = false, ended_ = false;
+    bool test_ = false;         // 2.67: an administrator's test (solo, local, never reported)
+    RaidTestSetup testSetup_;
+    bool fallCard_ = false;     // 2.67: the gigaboss fell: « Résultats du raid »
+    raid::ArenaCamera arenaCam_;   // 2.67: the camera of a gigaboss's arena (display only)
+    std::vector<Rect> hudRects_;   // 2.67: what the HUD covers this frame (kept clear of the arrows)
+    WorldView view_;
+    AnimationSetPtr vents_;     // 2.67: the sheet of its vents
     float waiting_ = 0.0f, clock_ = 0.0f;
     std::string fail_, endReason_;
     struct Note {
@@ -666,5 +1096,7 @@ public:
 }  // namespace
 
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry) { return std::make_unique<RaidGameScene>(g, std::move(entry)); }
+
+std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup) { return std::make_unique<RaidGameScene>(g, std::move(setup)); }
 
 }  // namespace cosmic

@@ -197,6 +197,10 @@
    "name": "Gloop"
   },
   {
+   "id": "gloop_dormeur",
+   "name": "Gloop dormeur"
+  },
+  {
    "id": "gloop_small",
    "name": "Petit Gloop"
   },
@@ -273,6 +277,10 @@
    "name": "Mycélia"
   },
   {
+   "id": "mycelia_tendre",
+   "name": "Mycélia la Câline"
+  },
+  {
    "id": "nightwing",
    "name": "Aile-de-nuit"
   },
@@ -295,6 +303,14 @@
   {
    "id": "prime_sentinel",
    "name": "Sentinelle Prime"
+  },
+  {
+   "id": "pyroclast",
+   "name": "Pyroclast"
+  },
+  {
+   "id": "pyroclast_noyau",
+   "name": "Point faible de Pyroclast"
   },
   {
    "id": "pyrogyre",

@@ -15,10 +15,17 @@
 // objective id (two instances, or two concurrent acceptances, count it once). The rooms read it
 // (branchMaskOf) and give it to their games at a step, so every game of an instance applies it at
 // the same step. The catalog (raidBranches.json) is written by tools/levelgen/raid_bras_droit.py.
+//
+// 2.67 (phase 3): the gigaboss PYROCLAST in the Main (zone 8). Two more kinds of reports, by the
+// same consensus: « boss » (the phase its fight reached, 4 = its fall: raid_gigaboss_fights) and
+// « result » (the players' contributions computed by the games: raid_contributions, mapped to the
+// players by the seat they held and the step they took it from). Implausible numbers are refused
+// before any majority; the rewards (raidRewards.ts) come from accepted tables only.
 
 import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
+import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
 import { raidState } from "./raids";
 import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
@@ -62,6 +69,54 @@ export const BRANCH_LEVEL = "raid:" + BRANCH.id;
 export const INSTANCE_SIZE = 8;
 /** A report's step may be ahead of the server's clock since the start by this much (late clocks, delays). */
 const TICK_SLACK = 120 * 60;
+/** 2.67: the zone of the branch's gigaboss and its name. */
+export const GIGABOSS_ZONE = BRANCH.zones.find((z) => z.boss)?.id ?? 0;
+export const GIGABOSS_OBJECTIVE = BRANCH.objectives.find((o) => o.role === "gigaboss")?.id ?? "";
+
+/**
+ * 2.67: why a table of contributions is impossible ("" when plausible): each number bounded by
+ * what a player can do in the steps they held their seat (the games' own rules: 3 s on a vent,
+ * 2 s by a soul, three weak points per exposure...).
+ */
+export function implausible(records: Contribution[], tick: number): string {
+    if (records.length > 32) return "trop de joueurs dans le tableau";
+    const seen = new Set<string>();
+    for (const c of records) {
+        const key = `${c.seat}:${c.from}`;
+        if (seen.has(key)) return "joueur en double dans le tableau";
+        seen.add(key);
+        const span = tick - c.from + 1;
+        if (c.from > tick) return "contribution d'après le pas du rapport";
+        if (c.ticks > span) return "temps de participation impossible";
+        if (c.boss_damage > c.damage) return "dégâts au gigaboss supérieurs aux dégâts";
+        if (c.damage > span * 6 + 600) return "dégâts impossibles";
+        if (c.avoided > span * 4 + 600) return "dégâts évités impossibles";
+        if (c.blocks > Math.floor(span / 12) + 5) return "blocages impossibles";
+        if (c.rescues > Math.floor(span / 240) + 2) return "sauvetages impossibles";
+        if (c.vents > Math.floor(span / 360) + 1) return "évents impossibles";
+        if (c.weak_points > 3 * (Math.floor(span / 1200) + 1)) return "points faibles impossibles";
+        if (c.objectives > BRANCH.objectives.length) return "objectifs impossibles";
+        if (c.gigaboss > 1) return "valeur impossible";
+    }
+    return "";
+}
+
+function readRecords(raw: unknown, fail: (m: string) => never): Contribution[] {
+    if (!Array.isArray(raw) || raw.length > 32) return fail("records : un tableau de 32 lignes au plus");
+    return raw.map((r) => {
+        if (!r || typeof r !== "object" || Array.isArray(r)) return fail("records : une ligne n'est pas un objet");
+        const o = r as Record<string, unknown>;
+        const c = {} as Contribution;
+        for (const k of Object.keys(o)) if (!(CONTRIBUTION_FIELDS as readonly string[]).includes(k)) return fail(`records : champ inconnu ${k}`);
+        for (const k of CONTRIBUTION_FIELDS) {
+            const v = o[k];
+            if (typeof v !== "number" || !Number.isInteger(v) || v < 0 || v > 2_000_000_000) return fail(`records : ${k} doit être un entier positif`);
+            c[k] = v;
+        }
+        if (c.seat > 7) return fail("records : siège de 0 à 7");
+        return c;
+    });
+}
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const HASH16_RE = /^[0-9a-f]{16}$/;
@@ -158,6 +213,7 @@ interface EventRow {
     published_at: string | null;
     cancelled_at: string | null;
 }
+
 
 interface InstanceRow {
     id: string;
@@ -297,12 +353,19 @@ export async function report(ctx: Ctx): Promise<Response> {
     const id = ctx.params.instanceId ?? "";
     if (!ID_RE.test(id)) throw Errors.notFound("INSTANCE_NOT_FOUND", "Instance introuvable.");
     const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash"]);
-    const kind = v.oneOf("kind", ["objective", "zone"] as const)!;
+    // 2.67: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion ») never reports:
+    // a report flagged as a test is refused whoever sends it (an administrator or not), before anything.
+    if (body.test !== undefined) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
+    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records"]);
+    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });
     const zone = v.int("zone", { min: 1, max: BRANCH.zones.length })!;
     const tick = v.int("tick", { min: 0, max: MAX_TICKS })!;
     const hash = v.str("hash", { min: 16, max: 16, pattern: HASH16_RE })!;
+    // 2.67: the gigaboss's phase reached (1 to 4: its fall), the table of the contributions.
+    const phase = v.int("phase", { min: 1, max: 4, optional: kind !== "boss" });
+    const records = kind === "result" ? readRecords(body.records, (m) => { v.fail("records", m); return v.done() as never; }) : [];
+    if (kind !== "result" && body.records !== undefined) v.fail("records", "réservé aux rapports « result »");
     v.done();
     const now = nowIso();
     const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1").bind(id).first<InstanceRow>();
@@ -313,8 +376,9 @@ export async function report(ctx: Ctx): Promise<Response> {
         .first<{ active: number }>();
     if (!member) throw Errors.forbidden("NOT_IN_INSTANCE", "Vous ne jouez pas dans cette instance.");
     const e = await eventOf(db, inst.event_id);
-    const key = kind === "objective" ? "o:" + objective : `z:${zone}@${tick}`;
-    const value = `${zone}:${tick}:${hash}`;
+    const key = kind === "objective" ? "o:" + objective : kind === "boss" ? `b:${phase}` : kind === "result" ? `r:${tick}` : `z:${zone}@${tick}`;
+    // A table's value is its canonical text, rebuilt here from the numbers (never the game's text).
+    const value = kind === "result" ? `${zone}:${tick}:${hash}:${canonical(records)}` : `${zone}:${tick}:${hash}`;
     const reject = async (reason: string) => {
         await journal(db, id, me, key, value, reason);
         return json(ctx, { status: "rejected", reason });
@@ -326,6 +390,11 @@ export async function report(ctx: Ctx): Promise<Response> {
         return reject("le raid n'est pas en cours");
     const started = inst.started_at ? Date.parse(inst.started_at) : NaN;
     if (!Number.isFinite(started) || tick > Math.ceil(((Date.parse(now) - started) / 1000) * 120) + TICK_SLACK) return reject("pas impossible depuis le début de l'instance");
+    if (kind === "boss" && zone !== GIGABOSS_ZONE) return reject("le gigaboss n'est pas dans cette zone");
+    if (kind === "result") {
+        const why = implausible(records, tick);
+        if (why) return reject(why);
+    }
     const mask = await branchMaskOf(db, e.id, inst.branch);
     let obj: BranchObjective | undefined;
     if (kind === "objective") {
@@ -400,11 +469,112 @@ export async function report(ctx: Ctx): Promise<Response> {
                     /* the room's alarm reads it within seconds */
                 }
             }
+        } else if (kind === "boss") {
+            // 2.67: the fight of this instance reached a phase (4: the gigaboss fell).
+            await db
+                .prepare(
+                    `INSERT INTO raid_gigaboss_fights (instance_id, event_id, branch, boss, phase, defeated_tick, defeated_at, updated_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                     ON CONFLICT (instance_id) DO UPDATE SET phase = MAX(phase, excluded.phase),
+                        defeated_tick = COALESCE(defeated_tick, excluded.defeated_tick), defeated_at = COALESCE(defeated_at, excluded.defeated_at), updated_at = excluded.updated_at`,
+                )
+                .bind(id, e.id, inst.branch, BRANCH.gigaboss, phase!, phase === 4 ? tick : null, phase === 4 ? now : null, now)
+                .run();
+            if (phase === 4) await grantForInstance(db, e.id, id);
+        } else if (kind === "result") {
+            await storeResult(db, e.id, id, tick, records, now);
         } else {
             await db.prepare("UPDATE raid_instances SET zone = ?2, updated_at = ?3 WHERE id = ?1").bind(id, zone, now).run();
         }
     }
     return json(ctx, { status: "accepted" });
+}
+
+/** The players of an instance, by seat and the step they hold it from. */
+async function membersOf(db: D1Database, instanceId: string) {
+    return (
+        await db
+            .prepare("SELECT player_id, seat, seat_from, joined_at FROM raid_instance_members WHERE instance_id = ?1")
+            .bind(instanceId)
+            .all<{ player_id: string; seat: number; seat_from: number | null; joined_at: string }>()
+    ).results;
+}
+
+/** The player who held `seat` from step `from` (the relay's seat_from; without it, the latest on that seat). */
+export function holderOf(members: { player_id: string; seat: number; seat_from: number | null; joined_at: string }[], seat: number, from: number): string | null {
+    const onSeat = members.filter((m) => m.seat === seat);
+    const timed = onSeat.filter((m) => m.seat_from !== null && m.seat_from <= from).sort((a, b) => b.seat_from! - a.seat_from!);
+    if (timed.length) return timed[0]!.player_id;
+    const untimed = onSeat.filter((m) => m.seat_from === null).sort((a, b) => (a.joined_at < b.joined_at ? 1 : -1));
+    return untimed[0]?.player_id ?? null;
+}
+
+/** 2.67: an accepted table: each row kept if it is newer than the one stored (the numbers only grow). */
+async function storeResult(db: D1Database, eventId: string, instanceId: string, tick: number, records: Contribution[], now: string) {
+    const members = await membersOf(db, instanceId);
+    const stmts = records.map((c) =>
+        db
+            .prepare(
+                `INSERT INTO raid_contributions (instance_id, event_id, seat, from_tick, player_id, damage, boss_damage, avoided, blocks, rescues, vents,
+                    weak_points, objectives, ticks, gigaboss, score, tick, accepted_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18)
+                 ON CONFLICT (instance_id, seat, from_tick) DO UPDATE SET player_id = COALESCE(excluded.player_id, player_id), damage = excluded.damage,
+                    boss_damage = excluded.boss_damage, avoided = excluded.avoided, blocks = excluded.blocks, rescues = excluded.rescues,
+                    vents = excluded.vents, weak_points = excluded.weak_points, objectives = excluded.objectives, ticks = excluded.ticks,
+                    gigaboss = MAX(gigaboss, excluded.gigaboss), score = excluded.score, tick = excluded.tick, accepted_at = excluded.accepted_at
+                 WHERE excluded.tick >= raid_contributions.tick`,
+            )
+            .bind(
+                instanceId,
+                eventId,
+                c.seat,
+                c.from,
+                holderOf(members, c.seat, c.from),
+                c.damage,
+                c.boss_damage,
+                c.avoided,
+                c.blocks,
+                c.rescues,
+                c.vents,
+                c.weak_points,
+                c.objectives,
+                c.ticks,
+                c.gigaboss ? 1 : 0,
+                scoreOf(c).total,
+                tick,
+                now,
+            ),
+    );
+    if (stmts.length) await db.batch(stmts);
+    await grantForInstance(db, eventId, instanceId);
+}
+
+/** The rewards of the players of an instance after an acceptance (idempotent). */
+async function grantForInstance(db: D1Database, eventId: string, instanceId: string) {
+    const ids = (await db.prepare("SELECT DISTINCT player_id FROM raid_contributions WHERE instance_id = ?1 AND player_id IS NOT NULL").bind(instanceId).all<{ player_id: string }>()).results.map(
+        (r) => r.player_id,
+    );
+    if (ids.length) await grantFor(db, eventId, ids);
+}
+
+/**
+ * GET /raids/events/{eventId}/results (2.67): the results of an event (raidRewards.ts), for the
+ * players who may see its branch (a registered player, or a member of a clan taking part).
+ */
+export async function eventResults(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    const me = auth.player.id;
+    const db = ctx.env.DB;
+    const e = await eventOf(db, ctx.params.eventId ?? "");
+    const reg = await registrationOf(db, e.id, me);
+    if (e.kind === "clan" && !reg) {
+        const mine = await db
+            .prepare("SELECT 1 AS x FROM raid_clan_entries x JOIN clan_members m ON m.clan_id = x.clan_id WHERE x.event_id = ?1 AND m.player_id = ?2")
+            .bind(e.id, me)
+            .first();
+        if (!mine) throw Errors.notFound("RAID_NOT_FOUND", "Événement introuvable.");
+    }
+    return results(ctx, e, me);
 }
 
 /**

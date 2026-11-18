@@ -1,7 +1,7 @@
 // 2.65: the map of a branch of the raid (docs/RAIDS.md, maquette « Branche »): « BRAS DROIT » of
 // Asterion, its 8 sub-zones linked as on the titan's arm (two paths, the secret grotto, the wrist
-// locked by two generators, the shortcut, the forge that needs two groups, the sealed hand of
-// Pyroclast). Everything shown comes from the server (GET /raids/events/{id}/branch): the zones
+// locked by two generators, the shortcut, the forge that needs two groups, the hand where the
+// gigaboss Pyroclast waits: 2.67, phase 3). Everything shown comes from the server (GET /raids/events/{id}/branch): the zones
 // controlled, the objectives done and by which group, the passages open, the groups and where
 // they are. At the right, the zone selected: its objectives, what is inside, the groups present,
 // « Rejoindre » (my group's instance) and « Aider » (another group there, with a free place).
@@ -114,7 +114,12 @@ public:
         const int id = jget<int>(z, "id", 0);
         const int groups = static_cast<int>(groupsIn(id).size());
         const int required = jget<int>(z, "groups_required", 1);
-        if (jget<bool>(z, "boss", false)) return "scellée · prochaine version";
+        if (jget<bool>(z, "boss", false)) {
+            // 2.67: the gigaboss's arena: fallen once its objective is accepted.
+            if (jget<bool>(z, "controlled", false)) return "Pyroclast vaincu";
+            if (!jget<bool>(z, "reachable", false)) return "gigaboss · verrouillée";
+            return groups > 0 ? "gigaboss · " + std::to_string(groups) + (groups > 1 ? " groupes au combat" : " groupe au combat") : "gigaboss · à affronter";
+        }
         if (jget<bool>(z, "controlled", false)) return "contrôlée";
         if (!jget<bool>(z, "reachable", false)) {
             const Json& gens = data_.value("generators", Json::object());
@@ -163,8 +168,8 @@ public:
                                  (left.right() - cw - ui.s(16) - hx) * 0.5f, kText, FontFace::Title)
                                  .x;
             const float gx = hx + tw + ui.s(14);
-            fit(ui, "Gigaboss : " + jstr(data_.value("branch", Json::object()), "gigaboss", "Pyroclast") + " · prochaine version", {gx, left.y + ui.s(22)}, 15,
-                left.right() - cw - ui.s(16) - gx, kPeach);
+            fit(ui, "Gigaboss : " + jstr(data_.value("branch", Json::object()), "gigaboss", "Pyroclast") + (zoneJson(8).value("controlled", false) ? " · vaincu" : " · Main de Pyroclast"),
+                {gx, left.y + ui.s(22)}, 15, left.right() - cw - ui.s(16) - gx, kPeach);
             drawMap({left.x, left.y + ui.s(58), left.w, left.h - ui.s(58) - ui.s(34)});
             drawLegend({left.x, left.bottom() - ui.s(24), left.w, ui.s(24)});
             drawAside(aside);
@@ -355,7 +360,8 @@ public:
             if (done && !jstr(o, "by").empty()) t += " — " + jstr(o, "by");
             goals.push_back({t, {done ? "✓" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
         }
-        if (jget<bool>(z, "boss", false)) goals.push_back({"Le gigaboss Pyroclast attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
+        if (jget<bool>(z, "boss", false))
+            goals.push_back({"Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.", {"◆", kGold}});
         if (goals.empty()) goals.push_back({"Aucun objectif dans cette zone.", {"·", kDim}});
         section("Objectifs", goals);
         std::vector<std::pair<std::string, std::pair<std::string, Color>>> inside;

@@ -11,6 +11,7 @@ import catalog from "./achievementCatalog.json";
 import { requireAuth } from "./auth";
 import { revalidateCosmetics } from "./cosmetics";
 import { Errors, json, readJsonObject, type Ctx } from "./http";
+import { claimedAchievements, RAID_ACHIEVEMENTS } from "./raidRewards";
 import { rateLimit, RULES } from "./ratelimit";
 
 const STARS: Record<string, number> = (catalog as { stars: Record<string, number> }).stars;
@@ -66,6 +67,12 @@ export async function putAchievements(ctx: Ctx): Promise<Response> {
         } catch {
             // a damaged row: the list declared now replaces it
         }
+    }
+    // 2.67: a badge of the raids is never the game's word: only one whose reward the server granted
+    // and the player claimed (raidRewards.ts).
+    if ([...known].some((id) => RAID_ACHIEVEMENTS[id] !== undefined)) {
+        const allowed = await claimedAchievements(ctx.env.DB, me);
+        for (const id of Object.keys(RAID_ACHIEVEMENTS)) if (!allowed.has(id)) known.delete(id);
     }
     const ids = [...known].sort();
     const stars = ids.reduce((s, id) => s + STARS[id]!, 0);

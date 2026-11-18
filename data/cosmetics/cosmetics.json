@@ -88,6 +88,9 @@
     {"id": "title_ombre", "category": "title", "name": "Ombre insaisissable", "description": "Cent phases de boss battues sans être touché.", "achievement": "maitrise_phase_100", "look": "Ombre insaisissable"},
     {"id": "title_legende", "category": "title", "name": "Légende du cosmos", "description": "Cent heures de jeu.", "achievement": "endurance_100h", "look": "Légende du cosmos"},
     {"id": "title_defiant", "category": "title", "name": "Défiant", "description": "Un défi réussi en Or.", "challenge": {"kind": "any", "tier": "gold", "count": 1}, "look": "Défiant"},
+    {"id": "title_assaillant_asterion", "category": "title", "name": "Assaillant d'Asterion", "description": "Récompense de raid : 5 minutes de combat validées contre Asterion.", "raid": "asterion", "look": "Assaillant d'Asterion"},
+    {"id": "title_briseur_magma", "category": "title", "name": "Briseur de magma", "description": "Récompense de raid : un score de contribution d'au moins 1 500 contre Pyroclast.", "raid": "asterion", "look": "Briseur de magma"},
+    {"id": "title_fleau_pyroclast", "category": "title", "name": "Fléau de Pyroclast", "description": "Récompense de raid : un des 3 meilleurs scores de contribution d'un événement, Pyroclast vaincu.", "raid": "asterion", "look": "Fléau de Pyroclast"},
 
     {"id": "victory_classic", "category": "victory", "name": "Classique", "description": "L'arrivée habituelle au portail.", "default": true, "look": "classic"},
     {"id": "victory_fireworks", "category": "victory", "name": "Feu d'artifice", "description": "Des gerbes de couleurs à l'arrivée.", "stars": 70, "look": "fireworks"},

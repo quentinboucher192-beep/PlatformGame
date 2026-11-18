@@ -22,6 +22,7 @@
 // with its step and the digest of the state: the server accepts it when the majority of the
 // instance's players reported the same.
 
+#include <climits>
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -29,16 +30,22 @@
 
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/raid/Contributions.h"
+#include "game/raid/Gigaboss.h"
 #include "game/raid/RaidBranch.h"
 
 namespace cosmic::raid {
 
 struct Report {
-    enum class Kind { Objective, Zone } kind = Kind::Objective;
+    /// 2.67: Boss (the gigaboss's phase reached: 1 the fight begins, 2 and 3 its phases, 4 its fall)
+    /// and Result (the players' contributions, Contributions::canonical, at each milestone).
+    enum class Kind { Objective, Zone, Boss, Result } kind = Kind::Objective;
     std::string objective;  // Kind::Objective
     int zone = 0;
     uint32_t tick = 0;
     uint64_t hash = 0;
+    int phase = 0;              // Kind::Boss
+    std::vector<Contribution> records;  // Kind::Result
 };
 
 /// A line of the raid's alerts (display only, made from the simulation's events).
@@ -52,8 +59,8 @@ class RaidRun {
 public:
     RaidRun(WorldServices services, const Branch& branch, int players);
 
-    /// Loads the start zone (the branch's state known at step 0).
-    bool begin(uint32_t branchMask);
+    /// Loads the start zone (the branch's state known at step 0); `zone` another one (tests).
+    bool begin(uint32_t branchMask, int zone = 0);
     /// One step: the frames of the step (one per seat) and the branch's state at this step.
     void step(const InputFrame* frames, int count, uint32_t branchMask);
 
@@ -80,6 +87,32 @@ public:
     float magmaIn() const;
     /// Whether a passage is open now.
     bool passageOpen(const Passage& p) const { return branch_.lockOpen(p.lock, mask()); }
+    /// 2.67: the group switches of the zone: steps held, done (k = index in rules().switches).
+    struct SwitchState {
+        int hold = 0;
+        bool done = false;
+        std::vector<int> on;  // players standing on each plate this step
+    };
+    const std::vector<SwitchState>& switches() const { return switchStates_; }
+    /// The players a switch needs on each plate now (its `need`, never more than the seats taken).
+    int switchNeed(const GroupSwitch& sw) const;
+    /// 2.67: the gigaboss of the zone (its fight; nothing in a zone without one).
+    const Gigaboss& gigaboss() const { return gigaboss_; }
+    /// 2.67: what each player did since the instance started (the same on every computer).
+    const Contributions& contributions() const { return contrib_; }
+
+    /// 2.67: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): solo, local,
+    /// never counted: no report at all (takeReports stays empty), every world a training run
+    /// (invincible when asked), the gigaboss scaled for `players` and started at `startPhase`.
+    struct Test {
+        bool on = false;
+        bool invincible = false;
+        int players = 2;
+        int startPhase = 1;
+    };
+    void setTest(const Test& t);
+    bool test() const { return test_.on; }
+    const Test& testSetup() const { return test_; }
 
     /// Display / catch-up settings, kept for every world of the run.
     void setQuiet(bool on);
@@ -90,7 +123,9 @@ private:
     void applyMask(uint32_t mask, bool initial);
     void updateMagma();
     void checkPassages();
-    void completed(const std::string& source, const std::string& trigger);
+    void completed(const std::string& source, const std::string& trigger, int who);
+    void reportResult();
+    void stepSwitches();
     void alert(std::string text, Alert::Kind kind);
 
     WorldServices services_;
@@ -107,7 +142,17 @@ private:
     bool quiet_ = false;
     int follow_ = -1;
     std::vector<uint8_t> insidePassage_;  // per passage: bits of the players inside it
-    std::vector<std::pair<std::string, std::string>> events_;  // (source, trigger) of the step
+    struct Event {
+        std::string source, trigger;
+        int who = -1;  // 2.67: the seat whose attack caused it (-1 unknown)
+    };
+    std::vector<Event> events_;  // of the step
+    Contributions contrib_;      // 2.67
+    Gigaboss gigaboss_;          // 2.67
+    int bossReported_ = 0;       // 2.67: the highest phase of the gigaboss already reported
+    uint32_t lastResult_ = UINT32_MAX;  // 2.67: the step of the last table reported
+    Test test_;                         // 2.67: an administrator's test (never reported)
+    std::vector<SwitchState> switchStates_;  // 2.67
     std::vector<Report> reports_;
     std::vector<Alert> alerts_;
 };

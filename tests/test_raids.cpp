@@ -277,3 +277,40 @@ TEST_CASE("raids: groups of 8 and reminders") {
     CHECK(raids::reminderPrefs(Json()) == raids::reminderChoices());
     CHECK(raids::reminderPrefs(Json{{"reminders", Json::array()}}).empty());
 }
+
+TEST_CASE("raids: the results of an event and the rewards to claim (2.67, validated tables only)") {
+    const Json j = Json::parse(R"({
+        "event": {"id": "e", "state": "en_cours", "final": false},
+        "gigaboss": {"boss": "Pyroclast", "defeated": true, "fights": [{"group": "[AUBE]·1", "phase": 4}, {"group": "[NEBU]·2", "phase": 2}]},
+        "clans": [{"rank": 1, "tag": "AUBE", "points": 4100, "players": 2, "gigaboss": 1}],
+        "players": [
+            {"rank": 1, "id": "a", "username": "Lyra", "clan_tag": "AUBE", "score": 2300, "damage": 900, "boss_damage": 700, "avoided": 40,
+             "support": 6, "blocks": 4, "rescues": 2, "vents": 5, "weak_points": 2, "objectives": 4, "gigaboss": 1, "seconds": 1500, "progress": 1500},
+            {"rank": 2, "id": "b", "username": "Talos", "clan_tag": "AUBE", "score": 1800, "damage": 3000, "boss_damage": 2600, "avoided": 10,
+             "support": 0, "vents": 0, "objectives": 2, "gigaboss": 1, "seconds": 900, "progress": 600, "me": true}],
+        "my": {"rank": 2, "pending": true, "pending_reports": 3, "validated_at": "2026-11-21T20:10:00Z"},
+        "rewards": [{"id": 7, "reward": "pyroclast_badge", "name": "Badge « Main de Pyroclast »", "kind": "badge", "why": "Présent à la chute de Pyroclast", "event_id": "e"},
+                    {"id": 0, "name": "sans id"}]
+    })");
+    const raids::Results r = raids::parseResults(j);
+    CHECK(r.valid);
+    CHECK(!r.final);
+    CHECK(r.defeated);
+    CHECK(r.fights.size() == 2);
+    CHECK(r.fights[0] == "[AUBE]·1 · vaincu");
+    CHECK(r.fights[1] == "[NEBU]·2 · phase 2 / 3");
+    CHECK(r.pending);  // shown « en attente de validation », never as final
+    CHECK(r.pendingReports == 3);
+    CHECK(r.myRank == 2);
+    CHECK(r.rewards.size() == 1);  // a reward without an id is never shown
+    CHECK(r.rewards[0].kind == "badge");
+    // The contribution does not favour the damage: the most damage is second by contribution...
+    CHECK(raids::rankedBy(r, "score")[0].username == "Lyra");
+    // ... first by damage, and the support counts the vents held for the group.
+    CHECK(raids::rankedBy(r, "damage")[0].username == "Talos");
+    CHECK(raids::categoryValue(r.players[0], "support") == 11);
+    CHECK(raids::categoryText(r.players[0], "time") == "25 min");
+    CHECK(raids::groupDigits(48210) == "48 210");
+    CHECK(raids::resultCategories().size() >= 8);
+    CHECK(raids::parseRewards(Json::array()).empty());
+}

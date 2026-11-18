@@ -581,7 +581,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.raidStates = [[0, this.raidMask]];
             this.sendAll(this.raidStateMessage(0, this.raidMask));
             this.seats.forEach((s, i) => {
-                if (!s.vacant) void this.writeMember(i, true, false);
+                if (!s.vacant) void this.writeMember(i, true, false, 0);
             });
         }
         this.flush();
@@ -614,8 +614,11 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.sendAll(this.raidStateMessage(this.next, mask));
     }
 
-    /** 2.65: who plays in the instance (the consensus counts its active players). */
-    private async writeMember(seat: number, active: boolean, left: boolean) {
+    /**
+     * 2.65: who plays in the instance (the consensus counts its active players). 2.67: `from`, the
+     * step from which the player holds the seat (when they take it): their contributions are theirs.
+     */
+    private async writeMember(seat: number, active: boolean, left: boolean, from?: number) {
         const raid = this.info?.raid;
         const s = this.seats[seat];
         if (!raid || !s || !s.playerId) return;
@@ -624,9 +627,9 @@ export class CoopRoom extends DurableObject<Bindings> {
         try {
             await this.env.DB.batch([
                 this.env.DB.prepare(
-                    `INSERT INTO raid_instance_members (instance_id, player_id, seat, active, joined_at, left_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)
-                     ON CONFLICT (instance_id, player_id) DO UPDATE SET seat = ?3, active = ?4, left_at = ?6`,
-                ).bind(raid.instance_id, s.playerId, seat, active ? 1 : 0, now, left ? now : null),
+                    `INSERT INTO raid_instance_members (instance_id, player_id, seat, active, joined_at, left_at, seat_from) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                     ON CONFLICT (instance_id, player_id) DO UPDATE SET seat = ?3, active = ?4, left_at = ?6, seat_from = COALESCE(?7, seat_from)`,
+                ).bind(raid.instance_id, s.playerId, seat, active ? 1 : 0, now, left ? now : null, from ?? null),
                 this.env.DB.prepare("UPDATE raid_instances SET players = ?2, started_at = COALESCE(started_at, ?3), updated_at = ?3 WHERE id = ?1").bind(
                     raid.instance_id,
                     players,
@@ -634,7 +637,7 @@ export class CoopRoom extends DurableObject<Bindings> {
                 ),
             ]);
         } catch {
-            /* before migration 0142 */
+            /* before migrations 0142 / 0143 */
         }
     }
 
@@ -697,10 +700,12 @@ export class CoopRoom extends DurableObject<Bindings> {
                     f = { ...emptyFrame(), flags: s.vacant ? FLAG_VACANT : FLAG_STANDBY };
                 } else {
                     if (s.absent) {
+                        // 2.67: a seat taken by a late join is held from this step (the raids' contributions).
+                        const taken = s.vacant;
                         s.absent = false;
                         s.vacant = false;
                         s.rejoinAt = 0;
-                        void this.writeMember(k, true, false);
+                        void this.writeMember(k, true, false, taken ? this.next : undefined);
                     }
                     f = s.pending[0]!;
                 }

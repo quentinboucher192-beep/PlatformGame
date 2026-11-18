@@ -183,6 +183,62 @@ std::vector<Group> parseGroups(const Json& groups);
 /// The reminders chosen (GET /raids « prefs »): minutes before the start.
 std::vector<int> reminderPrefs(const Json& prefs);
 
+// ------------------------------------------------------------------ 2.67: results and rewards
+
+/// A reward of the raids, granted by the server from validated results only (GET /raids
+/// « rewards », the results of an event), claimed with POST /raids/rewards/claim.
+struct Reward {
+    int id = 0;
+    std::string reward, name, kind, ref, why, eventId;
+    bool claimed = false;
+};
+std::vector<Reward> parseRewards(const Json& list);
+
+/// A player of the results of an event (validated tables only): the mixed score and each category.
+struct ResultPlayer {
+    int rank = 0;
+    std::string id, username, clanTag;
+    int score = 0, damage = 0, bossDamage = 0, avoided = 0, support = 0, blocks = 0, rescues = 0, vents = 0, weakPoints = 0, objectives = 0;
+    int gigaboss = 0, seconds = 0, progress = 0;
+    bool me = false;
+};
+struct ResultClan {
+    int rank = 0;
+    std::string tag;
+    int points = 0, players = 0;
+    bool gigaboss = false;
+};
+/// GET /raids/events/{id}/results.
+struct Results {
+    bool valid = false;
+    bool final = false;       // the event is over: the ranking no longer moves
+    std::string state;
+    bool defeated = false;    // the gigaboss fell (a fight accepted)
+    std::vector<std::string> fights;  // « [AUBE]·1 · vaincu », « [NEBU]·2 · phase 2 / 3 »
+    std::vector<ResultClan> clans;
+    std::vector<ResultPlayer> players;
+    int myRank = 0;
+    bool pending = false;     // my instance's latest table waits for its majority
+    int pendingReports = 0;
+    std::string validatedAt;
+    std::vector<Reward> rewards;  // mine to claim for this event
+};
+Results parseResults(const Json& j);
+
+/// The categories of the individual ranking (maquette « Résultats »): never only the damage.
+struct Category {
+    std::string id;     // "score", "damage", "avoided", "support", "objectives", "gigaboss", "time", "rescues", "progress"
+    std::string label;  // « Contribution », « Dégâts »…
+};
+const std::vector<Category>& resultCategories();
+/// A player's value in a category (the sort key) and its text (« 2 410 », « 12 min », « oui »).
+int categoryValue(const ResultPlayer& p, const std::string& category);
+std::string categoryText(const ResultPlayer& p, const std::string& category);
+/// The players ranked by a category (best first, then by score, then by name), with their rank in it.
+std::vector<ResultPlayer> rankedBy(const Results& r, const std::string& category);
+/// « 48 210 » (a space between thousands, as the maquette).
+std::string groupDigits(int64_t v);
+
 }  // namespace raids
 
 }  // namespace cosmic

@@ -687,6 +687,30 @@
    ]
   },
   {
+   "fr": "[{0}] · {1} joueur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} joueur · Pyroclast ✓",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} joueurs",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "[{0}] · {1} joueurs · Pyroclast ✓",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "[{0}]·{1} · {2} / 8 · votre clan",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -1114,6 +1138,12 @@
    ]
   },
   {
+   "fr": "Accordées une seule fois par le serveur, à partir des résultats validés, même après une reconnexion. Une fois récupérées : badge au profil, titres dans le vestiaire.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Accordées {0}, d'après les parties vérifiées reçues à l'heure.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -1521,6 +1551,12 @@
   },
   {
    "fr": "ADMINISTRATION › Raids : programmer un événement mondial à son heure locale (enregistré en UTC, aperçu à Paris, Montréal, São Paulo et Tokyo), régler son format, son verrouillage, sa capacité et sa difficulté, ouvrir ou fermer ses inscriptions, le publier en prévenant tous les clans ou l'annuler ; chaque action va au Journal. Toutes les heures des raids suivent le fuseau de l'ordinateur et son changement d'heure.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Administration › Raids : « Tester Asterion » (administrateurs) lance seul et en local n'importe quelle zone d'une branche du raid, combat de Pyroclast compris, en mode « Invincible (admin) · non classé », avec un nombre de joueurs simulés (2 à 8) pour sa vie et une phase de départ. Un test ne compte jamais : aucun rapport, ni consensus, ni classement, ni récompense ; le serveur refuse tout rapport marqué comme test.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -3202,6 +3238,12 @@
    ]
   },
   {
+   "fr": "Assaillant d'Asterion",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Assets",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -4133,6 +4175,12 @@
    ]
   },
   {
+   "fr": "Aucun joueur classé : aucun tableau de contributions n'a encore été validé.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur ne correspond à la recherche.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -4475,6 +4523,12 @@
    "fr": "Aucun replay à montrer.",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun résultat validé pour l'instant : les tableaux arrivent quand la majorité de chaque instance les confirme.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -4854,6 +4908,12 @@
    "fr": "Aucune récompense à récupérer",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune récompense à récupérer pour cet événement.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -6119,6 +6179,12 @@
    ]
   },
   {
+   "fr": "Bombes de lave",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Bond",
    "where": [
     "data/enemies/lava_stalker.json",
@@ -6217,7 +6283,8 @@
     "game/tutorial/Tutorial.cpp",
     "saves/HudLayout.cpp",
     "ui/screens/MainMenuScene.cpp",
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -6524,7 +6591,8 @@
   {
    "fr": "Branche",
    "where": [
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -6642,6 +6710,12 @@
    "fr": "Briseur de colosses",
    "where": [
     "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Briseur de magma",
+   "where": [
     "data/cosmetics/cosmetics.json"
    ]
   },
@@ -7420,6 +7494,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Carapace de basalte",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -8527,6 +8607,12 @@
    ]
   },
   {
+   "fr": "Ces récompenses étaient déjà récupérées.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Cet asset n'est plus installé.",
    "where": [
     "ui/screens/AdminAssets.cpp"
@@ -8641,6 +8727,12 @@
    "fr": "Cette barrière de phase semble traversable... par téléportation.",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Cette branche ou cette zone est introuvable dans les données du jeu.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -9229,6 +9321,12 @@
    "fr": "Chargement des records…",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement des résultats…",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -10095,6 +10193,12 @@
    ]
   },
   {
+   "fr": "Clans classés",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "CLANS DU RAID",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -10162,6 +10266,12 @@
    ]
   },
   {
+   "fr": "CLASSEMENT DES CLANS",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Classement des clans",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -10210,9 +10320,21 @@
    ]
   },
   {
+   "fr": "Classement en cours · résultats validés par le serveur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Classement en ligne",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Classement final",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -10231,6 +10353,12 @@
    "fr": "Classement indisponible.",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "CLASSEMENT INDIVIDUEL",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -10892,6 +11020,12 @@
    ]
   },
   {
+   "fr": "COMBATS CONTRE PYROCLAST",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Combats de boss : la caméra montre toute l'arène ; une flèche lumineuse qui clignote sur le bord de l'écran indique un boss hors de vue ; les créatures invoquées disparaissent avec leur boss.",
    "where": [
     "data/news/changelog.json"
@@ -10919,6 +11053,12 @@
    "fr": "Combats sans dégât",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Combattre ensemble : tant que sa carapace le protège, rien ne le blesse. Ses trois évents crachent des jets de magma à tour de rôle ; un joueur debout 3 s sur un évent le ferme, mais un évent fermé se rallume au bout de 15 s : il faut les tenir ensemble. Les trois fermés, la carapace éclate : son cœur est à nu (dégâts doublés) et ses trois points faibles se brisent chacun pour une part de sa vie. Sa vie et la cadence de ses attaques suivent le nombre de joueurs de l'instance (2 à 8). Relever un allié à terre compte comme un sauvetage.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -12096,7 +12236,8 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/screens/MainMenuScene.cpp",
-    "ui/screens/OnlineComputer.cpp"
+    "ui/screens/OnlineComputer.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -12116,6 +12257,30 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/LevelData.cpp"
+   ]
+  },
+  {
+   "fr": "Contrib.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Contribution",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "contribution d'après le pas du rapport",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Contributions calculées dans la simulation, les mêmes sur chaque ordinateur de l'instance : dégâts (et au gigaboss), dégâts évités (ses coups esquivés, les coups bloqués par le bouclier), soutien, évents fermés, points faibles brisés, objectifs, temps de participation, présence à sa chute. Le serveur ne retient un tableau que si la majorité de l'instance a envoyé le même, refuse les valeurs impossibles et journalise les menteurs ; tant qu'il attend, le résultat est « en attente de validation ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -12322,6 +12487,12 @@
    "fr": "Corniche technologique",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Corps d'Asterion : une fois la chute de Pyroclast validée, le bras droit apparaît « détruit » sur le titan (« attaqué », puis « affaibli » pendant le combat), et son effet est noté sur la fiche de l'événement : plus de pluies de lave.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -12793,6 +12964,12 @@
     "data/enemies/bulwark.json",
     "data/enemies/forge_bulwark.json",
     "data/enemies/frost_bulwark.json"
+   ]
+  },
+  {
+   "fr": "Coup de poing",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -13745,6 +13922,12 @@
    ]
   },
   {
+   "fr": "Cœur de magma",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Cœur de nébuleuse",
    "where": [
     "data/enemies/phenix.json"
@@ -14505,6 +14688,12 @@
    ]
   },
   {
+   "fr": "Dernière pluie de magma",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Dernière salve",
    "where": [
     "data/enemies/titan.json"
@@ -14538,6 +14727,12 @@
    "fr": "Dernière victoire",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dernière éruption",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -15586,6 +15781,12 @@
    "where": [
     "data/enemies/phenix.json",
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Double poing météore",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -16834,6 +17035,7 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/online/Raids.cpp",
     "game/powers/PowerStats.cpp"
    ]
   },
@@ -16847,6 +17049,12 @@
    "fr": "Dégâts au contact",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "dégâts au gigaboss supérieurs aux dégâts",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -16866,6 +17074,12 @@
    "fr": "Dégâts du piqué",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "dégâts impossibles",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -16929,6 +17143,24 @@
    ]
   },
   {
+   "fr": "Dégâts {0} · Évents fermés {1} · Sauvetages {2} · Dégâts évités {3}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts évités",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "dégâts évités impossibles",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Déjà 5 succès suivis : décochez-en un pour suivre « {0} ».",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -16956,6 +17188,12 @@
    "fr": "Déjà publié (version {0}) : la nouvelle version remplace l'ancienne dans les listes ; les temps de l'ancienne restent dans son classement.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
+   ]
+  },
+  {
+   "fr": "Déjà récupérées.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -17353,6 +17591,12 @@
    ]
   },
   {
+   "fr": "Effet actif · {0}",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Effet de particules",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -17526,6 +17770,12 @@
    ]
   },
   {
+   "fr": "Elles viennent des résultats validés des raids : Pyroclast, sa chute, votre contribution.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Ellipse",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -17677,7 +17927,8 @@
    "where": [
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
-    "ui/screens/RaidEventScene.cpp"
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -17942,6 +18193,12 @@
    "fr": "En ligne → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -18640,6 +18897,12 @@
    ]
   },
   {
+   "fr": "Entrez dans l'arène : {0} se réveille.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Entrée",
    "where": [
     "engine/input/InputTypes.cpp",
@@ -19186,6 +19449,18 @@
    ]
   },
   {
+   "fr": "Exclusif aux raids : récupéré au raid Asterion",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Exclusif aux raids de clan : Asterion (CLANS › RAIDS)",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
    "fr": "Exemple en attente",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -19621,6 +19896,12 @@
    "fr": "Fermer les réglages",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fermer les évents de la main (tenir {0} s chacun) : la carapace tombe quand les {1} sont fermés ensemble.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -20335,6 +20616,12 @@
    ]
   },
   {
+   "fr": "Fléau de Pyroclast",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Fléau des ombres",
    "where": [
     "data/achievements/achievements.json"
@@ -20705,6 +20992,12 @@
    "fr": "Frappe sismique : sautez, puis Bas + Attaque en l'air. Brisez ce sol fissuré !",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Frapper le point faible : la carapace est brisée · points faibles {0} / {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -21246,10 +21539,18 @@
    ]
   },
   {
+   "fr": "Gigaboss",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "gigaboss",
    "where": [
+    "game/online/Raids.cpp",
     "game/raid/RaidBranch.cpp",
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -21259,7 +21560,109 @@
    ]
   },
   {
-   "fr": "Gigaboss : {0} · prochaine version",
+   "fr": "Gigaboss : {0} · Main de Pyroclast",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss : {0} · vaincu",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La carapace se reforme : les évents se rallument !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La carapace éclate : frappez le point faible ({0} s) !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La Main est éteinte : {0} est déjà tombé.",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Phase {0} / {1}",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Phase {0} / {1} · {2}",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Sa carapace vole en éclats pour de bon !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Un joueur arrive : {0} se renforce.",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Un évent se rallume : refermez-le !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "gigaboss · verrouillée",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} est vaincu ! Le bras droit d'Asterion s'éteint.",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "gigaboss · {0} groupe au combat",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "gigaboss · {0} groupes au combat",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} se cuirasse : fermez ses {1} évents ensemble (tenir {2} s sur chacun) !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} se réveille : restez groupés, regardez ses gestes !",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "gigaboss · à affronter",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -21803,9 +22206,21 @@
    ]
   },
   {
+   "fr": "GROUPE · Point faible brisé ({0} / {1})",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Évent fermé ({0} / {1})",
+   "where": [
+    "game/raid/Gigaboss.cpp"
    ]
   },
   {
@@ -23498,6 +23913,12 @@
    ]
   },
   {
+   "fr": "Impossible de charger la zone du test.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Impossible de charger le niveau",
    "where": [
     "ui/screens/ContentManagerScene.cpp",
@@ -24025,6 +24446,7 @@
   {
    "fr": "Invincible (admin) · non classé",
    "where": [
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -24423,6 +24845,12 @@
    ]
   },
   {
+   "fr": "Jet de magma",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
    "fr": "Jet de rochers",
    "where": [
     "data/enemies/monolithe.json"
@@ -24594,7 +25022,8 @@
     "ui/online/OnlineWidgets.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
-    "ui/screens/DownloadedReplaysUi.cpp"
+    "ui/screens/DownloadedReplaysUi.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -24631,6 +25060,12 @@
    "fr": "Joueur débloqué.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "joueur en double dans le tableau",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -24707,6 +25142,12 @@
   },
   {
    "fr": "Joueurs par clan (1 à 50)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs simulés",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -25980,9 +26421,33 @@
    ]
   },
   {
-   "fr": "La main du titan, où veille le gigaboss Pyroclast. Sa porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "La main de magma du bras droit d'Asterion, gigaboss d'un raid de clan. Elle marche sur ses doigts, roule en poing, tombe du ciel ; dans sa carapace de basalte, ses trois évents doivent être fermés ensemble pour mettre son cœur à nu.",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "La main du titan, où veille le gigaboss Pyroclast. Trois phases : son poing de magma, sa carapace de basalte (ses trois évents à fermer ensemble), son cœur à nu.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "La main frappe le sol : le basalte cède au magma !",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "La main se referme",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
+   "fr": "La main se referme : sa carapace se forme, ses évents s'allument !",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -26669,6 +27134,12 @@
    ]
   },
   {
+   "fr": "Lancer le test",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Lancer · {0} / {1} prêts",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -26963,6 +27434,12 @@
    "fr": "Le bouclier protège",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -27372,6 +27849,12 @@
    ]
   },
   {
+   "fr": "Le cœur à nu",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
+   ]
+  },
+  {
    "fr": "le Dash",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -27623,9 +28106,15 @@
    ]
   },
   {
-   "fr": "Le gigaboss Pyroclast attend derrière sa porte scellée : prochaine version.",
+   "fr": "Le gigaboss",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "le gigaboss n'est pas dans cette zone",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -27905,6 +28394,12 @@
    "fr": "Le magma referme l'arène !",
    "where": [
     "data/levels/confins_02.json"
+   ]
+  },
+  {
+   "fr": "Le magma se referme sur l'arène : restez au centre !",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json"
    ]
   },
   {
@@ -28339,7 +28834,13 @@
    ]
   },
   {
-   "fr": "Le raid est en cours : la branche « Bras droit » est ouverte aux groupes (le gigaboss, dans une prochaine version).",
+   "fr": "Le raid est en cours : la branche « Bras droit » et son gigaboss Pyroclast sont ouverts aux groupes.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le raid est terminé : ses résultats validés et vos récompenses.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -29782,12 +30283,6 @@
    ]
   },
   {
-   "fr": "Les récompenses arriveront avec les combats d'Asterion.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "les réglages « {0} » du niveau",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -30783,6 +31278,7 @@
   {
    "fr": "Main de Pyroclast",
    "where": [
+    "data/achievements/achievements.json",
     "data/raids/asterion/bras_droit/branch.json"
    ]
   },
@@ -31173,6 +31669,12 @@
     "data/enemies/pyrogyre.json",
     "data/enemies/pyrrhax.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Marée de magma",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -35346,6 +35848,7 @@
   {
    "fr": "Objectifs",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
@@ -36484,7 +36987,8 @@
   {
    "fr": "Page {0} / {1}",
    "where": [
-    "ui/screens/PowerGuideScene.cpp"
+    "ui/screens/PowerGuideScene.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -36931,6 +37435,12 @@
    ]
   },
   {
+   "fr": "Parmi les 3 meilleurs scores de contribution de l'événement, Pyroclast vaincu",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Part",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -36982,9 +37492,21 @@
    ]
   },
   {
+   "fr": "Participants validés",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Participation",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Participation : 5 minutes de combat validées dans le raid",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -37352,12 +37874,6 @@
    "fr": "Pas encore de données sur la période.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Pas encore de récompense : elles arriveront avec les combats d'Asterion, dans une prochaine version.",
-   "where": [
-    "server/src/raids.ts"
    ]
   },
   {
@@ -38139,13 +38655,26 @@
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/online/Raids.cpp",
     "game/planets/PlanetData.cpp"
+   ]
+  },
+  {
+   "fr": "Phase (sans gigaboss)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
    "fr": "Phase atteinte",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Phase de départ",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -39018,6 +39547,12 @@
    ]
   },
   {
+   "fr": "Pluie de magma",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Pluie de missiles",
    "where": [
     "data/enemies/titan.json"
@@ -39144,6 +39679,12 @@
    "fr": "Plus de notifications",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Plus de pluies de lave : le poing de magma d'Asterion est éteint.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -39325,6 +39866,30 @@
    ]
   },
   {
+   "fr": "Poing de magma",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "Poing météore",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "Poing roulant",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "Poing roulant furieux",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Poing-piston",
    "where": [
     "data/enemies/titan.json"
@@ -39423,6 +39988,12 @@
    ]
   },
   {
+   "fr": "Point faible de Pyroclast",
+   "where": [
+    "data/enemies/pyroclast_noyau.json"
+   ]
+  },
+  {
    "fr": "Point habituel",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -39467,6 +40038,7 @@
   {
    "fr": "points",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -39483,6 +40055,12 @@
    "fr": "Points d'un clan : la somme, sur chaque niveau EXTRÊME, du meilleur résultat vérifié par le serveur de ses membres (Solo pour l'instant ; la coopération Duo et Trio arrive bientôt).",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Points de contribution calculés par le serveur (objectifs, gigaboss, soutien, dégâts), pas seulement les dégâts.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -39509,6 +40087,12 @@
    "fr": "Points du clan : la meilleure équipe du clan sur chaque niveau EXTRÊME, vérifiée par le serveur. Solo pour l'instant : la coopération Duo et Trio arrive bientôt.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Points faibles {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -40528,6 +41112,7 @@
   {
    "fr": "Progression",
    "where": [
+    "game/online/Raids.cpp",
     "ui/screens/ChallengesScene.cpp"
    ]
   },
@@ -40994,6 +41579,12 @@
    ]
   },
   {
+   "fr": "Présent à la chute de Pyroclast (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "présente",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -41403,17 +41994,58 @@
   {
    "fr": "Pyroclast",
    "where": [
+    "data/enemies/pyroclast.json",
+    "data/raids/asterion/bras_droit/zone_8.json",
+    "game/online/Raids.cpp",
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
-   "fr": "Pyroclast — prochaine version",
+   "fr": "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute, titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, évents, objectifs, présence).",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Pyroclast au combat",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pyroclast est vaincu : le bras droit d'Asterion s'éteint.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
    ]
   },
   {
-   "fr": "Pyroclast — prochaine version. La porte de la Main restera scellée jusque-là.",
+   "fr": "Pyroclast intact",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pyroclast serre le poing.",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "Pyroclast vaincu",
+   "where": [
+    "data/raids/asterion/bras_droit/zone_8.json",
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "PYROCLAST, LA MAIN DE MAGMA",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
+   "fr": "Pyroclast, la main de magma. Ses évents nourrissent sa carapace : fermez-les ensemble.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
    ]
@@ -41650,6 +42282,12 @@
    "fr": "Quitter le salon",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter le test (retour à l'administration)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -41902,6 +42540,13 @@
    ]
   },
   {
+   "fr": "Raid de clan Asterion",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp",
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "RAID DU CLAN {0}",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -41930,6 +42575,12 @@
    "fr": "Raid programmé : les membres du clan sont prévenus.",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Raid requis",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -41965,6 +42616,12 @@
   },
   {
    "fr": "Raids de clan, phase 2 : la branche « BRAS DROIT » d'Asterion se joue. Pendant un raid en cours, la fiche de l'événement ouvre la carte de la branche : huit zones reliées sur le bras du titan (l'Épaule et ses trois points d'apparition, le Biceps de basalte aux plateformes qui respirent, la Veine de magma et sa coulée, le Coude-forge et ses deux soufflets à détruire par deux groupes, la Grotte des scories secrète, l'Avant-bras et son raccourci, le Poignet-verrou ouvert par deux générateurs, la Main de Pyroclast scellée jusqu'à la prochaine version), leur état, les objectifs faits et par quel groupe, les groupes et où ils sont, « Rejoindre » ou « Aider » un autre groupe.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 3 : le gigaboss PYROCLAST attend dans la Main de Pyroclast, au bout de la branche « BRAS DROIT ». Une main de magma géante qui marche sur ses doigts, en trois phases annoncées : « Poing de magma » (coups de poing, poing roulant, pluie de magma, éruptions, bombes de lave), « Carapace de basalte » (le sol du centre cède au magma, des dalles mobiles passent au-dessus, poing météore, secousses) et « Cœur de magma » (marée de magma, rideaux de lave qui se referment, double poing météore), puis une dernière éruption à survivre. Son apparence change à chaque phase.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -42719,6 +43376,30 @@
    ]
   },
   {
+   "fr": "records : siège de 0 à 7",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "records : un tableau de 32 lignes au plus",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "records : une ligne n'est pas un objet",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "records : {0} doit être un entier positif",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Records en cours de vérification",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -43196,6 +43877,12 @@
    "fr": "Relations",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Relever {0} ({1} s près de son âme) · réanimations {2} / {3}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -45099,7 +45786,31 @@
    ]
   },
   {
+   "fr": "Récompense de raid : 5 minutes de combat validées contre Asterion.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Récompense de raid : un des 3 meilleurs scores de contribution d'un événement, Pyroclast vaincu.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Récompense de raid : un score de contribution d'au moins 1 500 contre Pyroclast.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
    "fr": "Récompense des défis : obtenue",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompense des raids de clan : à récupérer dans CLANS › RAIDS",
    "where": [
     "ui/screens/CollectionScene.cpp"
    ]
@@ -45126,6 +45837,19 @@
    "fr": "Récompense gagnée à un défi",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Récompense introuvable.",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Récompense récupérée : elle est dans votre profil et le vestiaire.",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -45209,9 +45933,22 @@
    ]
   },
   {
+   "fr": "Récompenses non récupérées : {0}",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Récompenses retirées de ce défi.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Récompenses à récupérer (CLANS › RAIDS et l'écran des résultats, bouton « Récupérer ») : badge de profil « Main de Pyroclast » (présent à sa chute), titre « Assaillant d'Asterion » (5 minutes de combat), titres « Briseur de magma » (score de contribution de 1 500) et « Fléau de Pyroclast » (3 meilleurs scores de l'événement). Accordées par le serveur à partir des résultats validés, une seule fois même après une reconnexion ; récupérées, elles se débloquent dans le profil et le vestiaire.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -45224,6 +45961,13 @@
    "fr": "Récupération (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Récupérer",
+   "where": [
+    "ui/screens/ClanRaids.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -45550,9 +46294,21 @@
    ]
   },
   {
+   "fr": "Réservé aux administrateurs connectés à Cosmic Online.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Réservé aux administrateurs du projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "réservé aux rapports « result »",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -45584,6 +46340,31 @@
    "fr": "Résultat",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultats",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultats du raid",
+   "where": [
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Résultats du raid : classement des clans et classement individuel par catégorie (contribution, dégâts, dégâts évités, soutien, objectifs, gigaboss vaincus, temps de participation, sauvetages, progression), ouverts à la chute de Pyroclast et depuis la fiche de l'événement. Le score de contribution mélange toutes les catégories, chacune plafonnée : les dégâts seuls ne suffisent jamais.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Résultats du raid · Asterion",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -45863,6 +46644,18 @@
    "fr": "S'entraîner sur cette phase",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa carapace vole en éclats : le cœur de magma est à nu !",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -46502,6 +47295,12 @@
    ]
   },
   {
+   "fr": "Sauvetages",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Sceau de la Canopée",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -46538,12 +47337,6 @@
    ]
   },
   {
-   "fr": "scellée · prochaine version",
-   "where": [
-    "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
    "fr": "Scintillement",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -46569,12 +47362,19 @@
     "game/online/OnlineCoop.cpp",
     "game/online/OnlineRecord.cpp",
     "game/online/OnlineService.cpp",
+    "game/online/Raids.cpp",
     "game/records/Records.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Score de contribution d'au moins 1 500 (dégâts, évités, soutien, évents, objectifs, présence)",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -46693,6 +47493,12 @@
    "fr": "Secondes",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Secousse de la main",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -48267,6 +49073,12 @@
    ]
   },
   {
+   "fr": "Soutien",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Souvenir",
    "where": [
     "ui/screens/TutorialScenes.cpp"
@@ -49068,6 +49880,12 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivants ›",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -50290,6 +51108,12 @@
    ]
   },
   {
+   "fr": "Temps de participation",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "TEMPS DE PASSAGE",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -51118,6 +51942,24 @@
    ]
   },
   {
+   "fr": "TEST ADMIN · Départ en phase {0}",
+   "where": [
+    "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · {0} joueurs simulés",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · {0} joueurs simulés · invincible",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Test depuis l'éditeur : les records ne sont pas enregistrés",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -51133,6 +51975,12 @@
    "fr": "Tester : {0}",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "TESTER ASTERION · ADMINISTRATEURS",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -51426,6 +52274,12 @@
    "fr": "Titre porté",
    "where": [
     "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "Titre « Fléau de Pyroclast »",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -51949,6 +52803,12 @@
    "fr": "Tout replier",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout récupérer",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -52500,6 +53360,12 @@
    "fr": "Trop de fichiers dans l'archive",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "trop de joueurs dans le tableau",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -53697,6 +54563,12 @@
    ]
   },
   {
+   "fr": "Un test d'administration ne compte jamais : rapport refusé.",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Un titan cosmique avale les planètes de la bordure. Les clans l'affronteront ensemble, branche par branche, sur son propre corps, jusqu'à son cœur.",
    "where": [
     "server/src/raids.ts"
@@ -53730,6 +54602,12 @@
    "fr": "Un vieux gardien des catacombes des Confins, qui enferma son âme dans un cristal pour ne jamais mourir. Huit phases, huit feux d'âme : il flotte d'autel en autel, cache son âme dans son phylactère, et son dernier sort doit être survécu.",
    "where": [
     "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Un éclat de cœur de magma sur les jointures de Pyroclast, à nu quand ses trois évents sont fermés. Chacun brisé lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/pyroclast_noyau.json"
    ]
   },
   {
@@ -54928,6 +55806,12 @@
    ]
   },
   {
+   "fr": "Vaincre le gigaboss Pyroclast",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Vaincre le Kraken des Abysses.",
    "where": [
     "data/achievements/achievements.json"
@@ -55129,6 +56013,12 @@
    "fr": "Vaincre Wyrm Hurlante.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre {0} · phase {1} / 3 : esquivez ses coups annoncés.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -56419,6 +57309,12 @@
    ]
   },
   {
+   "fr": "VOS RÉCOMPENSES",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Vos résultats n'ont pas encore été lus sur Cosmic Online.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -56607,6 +57503,12 @@
    ]
   },
   {
+   "fr": "Votre dernier tableau est en attente de validation ({0} rapport(s) reçu(s)) : il compte dès que la majorité de votre instance l'a confirmé.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre groupe entre par l'Épaule ; il rejoint ensuite les zones ouvertes.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -56720,6 +57622,12 @@
    "fr": "Votre pseudonyme, votre avatar, vos temps et le replay de vos meilleurs runs (les commandes de jeu et la trajectoire de votre personnage pendant le niveau, pas une vidéo). Le mot de passe n'est conservé que sous forme d'empreinte irréversible.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre rang",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -57614,6 +58522,12 @@
    ]
   },
   {
+   "fr": "Zone",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "zone",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -58086,6 +59000,12 @@
    "fr": "{0} (WinHTTP {1})",
    "where": [
     "game/online/HttpTransportWinHttp.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ({1} gigaboss)",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -58661,6 +59581,12 @@
    ]
   },
   {
+   "fr": "{0} blocages · {1} sauv. · {2} évents",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} boss  ·  {1} embuscade  ·  {2} participant  ·  une seule vie",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -59120,6 +60046,12 @@
    ]
   },
   {
+   "fr": "{0} est déjà tombé : la Main est éteinte.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} est délié : sa prochaine connexion le liera de nouveau.",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -59177,6 +60109,18 @@
    "fr": "{0} est parti : l'équipe continue, la tentative sera classée incomplète.",
    "where": [
     "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "{0} EST VAINCU",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est vaincu !",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -59689,6 +60633,7 @@
   {
    "fr": "{0} min",
    "where": [
+    "game/online/Raids.cpp",
     "game/progression/Progression.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/OnlineComputer.cpp",
@@ -60228,6 +61173,24 @@
    ]
   },
   {
+   "fr": "{0} récompenses récupérées : badge au profil, titres dans le vestiaire.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} récompenses récupérées : elles sont dans votre profil et le vestiaire.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} récompenses à récupérer",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "{0} réponses à vos messages dans {1}",
    "where": [
     "server/src/notifications.ts"
@@ -60685,6 +61648,12 @@
    ]
   },
   {
+   "fr": "{0} · phase {1} / 3",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} · rang mondial n°{1}",
    "where": [
     "ui/screens/OnlineThreadScene.cpp"
@@ -60787,6 +61756,12 @@
    ]
   },
   {
+   "fr": "{0} · vaincu",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} · vibration activée",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -60808,6 +61783,12 @@
    "fr": "{0} · {1} / {2} inscrits",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} points faibles",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -62894,6 +63875,7 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json",
+    "data/enemies/pyroclast.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
@@ -62913,6 +63895,12 @@
    "fr": "Éruption du fleuve",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "Éruption folle",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -63110,6 +64098,12 @@
    ]
   },
   {
+   "fr": "évents impossibles",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "ÉVOLUTION DU RECORD ET DE LA SOMME DES MEILLEURS",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -63227,6 +64221,12 @@
   },
   {
    "fr": "Être le premier à terminer un niveau EXTRÊME d'un autre joueur (course à la vérification).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Pyroclast, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -63380,9 +64380,16 @@
    ]
   },
   {
+   "fr": "‹ Précédents",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "‹ Retour",
    "where": [
-    "ui/screens/RaidBranchScene.cpp"
+    "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {

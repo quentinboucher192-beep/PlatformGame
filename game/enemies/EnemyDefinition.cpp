@@ -393,6 +393,7 @@ Json EnemyDefinition::toJson() const {
     if (tint != Color::white()) j["tint"] = tint.toHex();
     if (!variantOf.empty()) j["variantOf"] = variantOf;
     if (tutorial) j["tutorial"] = true;
+    if (!raid.empty()) j["raid"] = raid;
     j["sounds"] = {{"hurt", hurtSound}, {"death", deathSound}, {"alert", alertSound}};
     if (isBoss) {
         Json ph = Json::array();
@@ -473,6 +474,7 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
     if (j.contains("tint")) d.tint = colorFromJson(j["tint"], Color::white());
     d.variantOf = jstr(j, "variantOf", "");
     d.tutorial = jget<bool>(j, "tutorial", false);
+    d.raid = jstr(j, "raid");
     if (j.contains("sounds")) {
         d.hurtSound = jstr(j["sounds"], "hurt", d.hurtSound);
         d.deathSound = jstr(j["sounds"], "death", d.deathSound);

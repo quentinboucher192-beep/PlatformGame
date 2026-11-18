@@ -87,6 +87,8 @@ export const RULES = {
     // 2.65: the reports of a raid instance (objectives, zones): a few per minute in a real game.
     raidReport: { name: "raid_report", limit: 600, windowSeconds: 600 },
     raidCall: { name: "raid_call", limit: 6, windowSeconds: 3600 },
+    // 2.67: claiming the rewards of the raids (idempotent; a few per event).
+    raidClaim: { name: "raid_claim", limit: 60, windowSeconds: 600 },
 } as const satisfies Record<string, RateRule>;
 
 /** RATE_LIMIT_SCALE multiplies every limit (development only: repeated local test runs). */

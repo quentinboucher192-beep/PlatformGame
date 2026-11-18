@@ -102,8 +102,8 @@ float Enemy::phaseSpeed() const {
 
 float Enemy::phaseCooldown() const {
     if (def_.isBoss && phase_ < static_cast<int>(def_.phases.size()))
-        return def_.phases[phase_].cooldownMultiplier * (enraged_ ? 0.7f : 1.0f);
-    return 1.0f;
+        return def_.phases[phase_].cooldownMultiplier * (enraged_ ? 0.7f : 1.0f) / pressure_;  // 2.67: a raid's pressure (1 elsewhere)
+    return 1.0f / pressure_;
 }
 
 void Enemy::wake(GameWorld& w) {
@@ -776,6 +776,12 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         hurtFlash_ = 0.05f;
         return false;
     }
+    if (raidGuard_) {
+        // 2.67: a raid's gigaboss behind its carapace (game/raid/Gigaboss): its vents must be closed.
+        if (hurtFlash_ <= 0.0f) w.particles().emit("block_sparks", box.center(), 0.6f);
+        hurtFlash_ = 0.05f;
+        return false;
+    }
     // Guard-breaking hits: impulse, dash, ground pound (from above) and the charged shot.
     bool breaksGuard = dmg.type == DamageType::Impulse || dmg.type == DamageType::Dash ||
                        dmg.type == DamageType::GroundPound || dmg.type == DamageType::ChargeShot;
@@ -814,9 +820,10 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
     }
     // 2.58: the Titan venting its steam: its core is bare.
     if (hasTitan_ && coreExposed()) mult *= 1.8f;
+    mult *= raidMult_;  // 2.67: a raid's gigaboss, its weak point bare (1 elsewhere)
     float amount = dmg.amount * mult;
     hp_ -= amount;
-    w.noteEnemyDamaged(*this, dmg);  // 2.54: statistics only (which attack of Nova reached it)
+    w.noteEnemyDamaged(*this, dmg, amount);  // 2.54: statistics only (which attack of Nova reached it); 2.67: and how much
     hurtFlash_ = 0.14f;
     invuln_ = 0.12f;
     engaged_ = true;
@@ -841,6 +848,20 @@ bool Enemy::takeDamage(GameWorld& w, const DamageInfo& dmg) {
         playClip("hurt", true);
     }
     return true;
+}
+
+void Enemy::wound(GameWorld& w, float amount) {
+    // 2.67: one of a raid gigaboss's weak points broken: a blow that ignores its guard.
+    if (!alive() || dormant() || lastStand_ || amount <= 0.0f) return;
+    hp_ -= amount;
+    hurtFlash_ = 0.3f;
+    engaged_ = true;
+    w.particles().emit("hit_weak", box.center(), 2.0f);
+    w.shake(0.45f);
+    if (hp_ <= 0.0f) {
+        if (def_.isBoss && !def_.finalAttacks.empty() && mirrorOf_ == 0) beginLastStand(w);
+        else kill(w);
+    }
 }
 
 void Enemy::kill(GameWorld& w) {

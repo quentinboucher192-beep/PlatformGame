@@ -46,6 +46,11 @@ public:
     virtual void attackStarted(const GameWorld& /*w*/, uint32_t /*tag*/, const std::string& /*power*/) {}
     /// Damage dealt to an enemy by the attack `tag` (once per blow that took health).
     virtual void enemyHit(const GameWorld& /*w*/, const Enemy& /*e*/, uint32_t /*tag*/) {}
+    /// 2.67 (the raids' contributions): the same blow with the health it took (after the enemy's
+    /// multipliers); `tag` 0 when no attack of a player is current.
+    virtual void enemyDamaged(const GameWorld& /*w*/, const Enemy& /*e*/, uint32_t /*tag*/, float /*amount*/) {}
+    /// 2.67: a blow (or a shot, reflected) stopped by the shield of the current player.
+    virtual void blowBlocked(const GameWorld& /*w*/, float /*amount*/) {}
 };
 
 }  // namespace cosmic

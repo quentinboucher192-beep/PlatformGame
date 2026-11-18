@@ -103,7 +103,7 @@ TEST_CASE("achievements: threads lead somewhere and never loop") {
 
 TEST_CASE("achievements: every condition is known and names real content") {
     Fixture f;
-    const std::set<std::string> known = {"levels_completed", "level", "planet", "planets", "all_levels", "medal_count", "medal_level",
+    const std::set<std::string> known = {"raid_reward", "levels_completed", "level", "planet", "planets", "all_levels", "medal_count", "medal_level",
                                          "medal_planet_any", "stat", "max", "set", "levels_no_death", "level_no_death",
                                          "levels_full_collect", "levels_all_secrets", "boss", "boss_distinct", "boss_nohit_distinct",
                                          "boss_total", "boss_phase_nohit", "power_uses", "powers_distinct", "playtime", "user_levels",
@@ -577,6 +577,11 @@ TEST_CASE("collection (2.24): every reward can be won and is drawn") {
             CHECK(it.challenge.count >= 1);
             CHECK(it.challenge.tier >= 1);
             CHECK(it.stars == 0);
+        } else if (!it.raid.empty()) {
+            // 2.67: a reward of the clan raids (claimed from Cosmic Online), never a milestone of the stars.
+            CHECK(it.raid == "asterion");
+            CHECK(it.stars == 0);
+            CHECK(cosmeticThreshold(it, total) == -1);
         } else if (!it.souvenir.empty()) {
             // 2.64: a souvenir (the tutorial finished), never a milestone of the stars.
             CHECK(it.souvenir == "tutorial");

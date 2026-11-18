@@ -1,10 +1,10 @@
-# Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65)
+# Raids de clan « ASTERION » — phases 2 et 3 : la branche « BRAS DROIT » et son gigaboss PYROCLAST (2.65 – 2.67)
 
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
 8 sous-zones, des instances de 8 joueurs au plus en verrouillage par entrées, et un état de la
 branche partagé par tous les groupes, que le serveur ne met à jour qu'avec le **consensus** des
-joueurs de chaque instance. Le gigaboss **Pyroclast** est la phase 3 : sa porte est scellée.
+joueurs de chaque instance. La phase 3 (2.67) ouvre la Main : le gigaboss **Pyroclast** (§6 à §9).
 
 ## 1. La branche (maquette « Branche »)
 
@@ -16,10 +16,11 @@ joueurs de chaque instance. Le gigaboss **Pyroclast** est la phase 3 : sa porte 
 | 4 | Coude-forge | **deux soufflets, deux groupes** (un chacun) ; coulée toutes les 90 s ; l'Enclume vivante (facultatif) | 2, 3, 7🔒 |
 | 5 | Grotte des scories | **zone secrète** ; la relique (facultatif) | 3 |
 | 6 | Avant-bras | générateur est ; **levier du raccourci** vers la Veine (facultatif) | 2, 3⇄, 8 |
-| 7 | Poignet-verrou | ouvert par les **2 générateurs** ; arène (3 vagues) qui ouvre la Main | 4, 8 |
-| 8 | Main de Pyroclast | porte scellée « Pyroclast — prochaine version » | 6, 7 |
+| 7 | Poignet-verrou | ouvert par les **2 générateurs** ; 2.67 : **la longue route** (§10) dont la dernière embuscade ouvre la Main | 4, 8 |
+| 8 | Main de Pyroclast | le gigaboss **Pyroclast** (§6) ; objectif `main_pyroclast` | 6, 7 |
 
-* Deux chemins : Épaule → Biceps → Avant-bras → Main, et Épaule → Veine → Coude-forge → Poignet → Main.
+* Deux chemins vers le Coude-forge (Biceps / Veine), puis le Poignet-verrou et la Main ; 2.67 : la Main ne s'ouvre
+  (aussi par l'Avant-bras) qu'une fois le verrou du Poignet brisé (`objective:poignet_verrou`).
 * **Une zone est contrôlée** quand tous ses objectifs non facultatifs sont faits. Les verrous :
   `generators` (les 2 générateurs), `shortcut` (le levier de l'Avant-bras), `objective:<id>`.
 * Ennemis du bestiaire existant (acariens de braise, rôdeurs de lave, drones de forge, golem de
@@ -38,7 +39,8 @@ instances doivent avoir la même (le `GO` du relais la porte, `hash` = révision
 cette zone), `passages` (`to`, `rect` en pixels, `lock`, `door`), `objectives` (`id` du catalogue,
 `source` = objet du niveau, `trigger` = l'événement qui l'accomplit : `cleared`, `killed`,
 `activate`, `collected`), `magma` (`zone` de dégâts allumée `duration` s toutes les `period` s à
-partir de `first`, annoncée `warn` s avant), `sealed` (la porte de Pyroclast).
+partir de `first`, annoncée `warn` s avant), `gigaboss` (2.67, §6 : l'objet du boss, ses évents en pixels, les
+phases de sa carapace, ses points faibles et les nombres de son combat). `revision` vaut 2 depuis la phase 3.
 
 L'**état de la branche** est l'ensemble des objectifs faits : le bit *i* = l'objectif *i* du
 catalogue (ordre fixe, on n'ajoute qu'à la fin). Générateurs, raccourci, passages ouverts, zones
@@ -132,12 +134,125 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
   bandeau de danger (« Coulée dans 3 s · montez ! »), état du réseau. La pause ne s'arrête pas : le
   groupe continue.
 
-## 5. Limites de cette phase
+## 5. Limites de la phase 2
 
-* Pyroclast (phase 3) : la porte de la Main reste scellée ; pas de récompense.
+* (2.67 : la Main est ouverte, voir §6.)
 * Les replays d'une instance ne sont pas encore conservés côté serveur (le relais garde les trames
   en mémoire, comme la coopération).
 * Les soufflets demandent deux groupes, sans la contrainte « à 3 s près » de la maquette : deux
   instances ne partagent pas d'horloge commune assez précise.
 * Le chat de groupe (« GROUPE · Lyra : … » de la maquette) n'est pas dans cette phase : les
   alertes viennent du jeu et du serveur seulement.
+
+## 6. Phase 3 (2.67) : le gigaboss PYROCLAST
+
+`data/enemies/pyroclast.json` : une main de magma qui marche sur ses doigts (le cerveau du golem : poing roulant
+= `shell`, poing météore = `skyfall`, secousse = `quake`), trois phases et une dernière éruption :
+
+| Phase | Seuil | Attaques | L'arène (événements `bossPhase` de la zone) |
+|---|---|---|---|
+| 1 « Poing de magma » | 100 % | coup de poing, poing roulant, pluie de magma, éruption, bombes de lave | — |
+| 2 « Carapace de basalte » | 66 % | poing météore, secousse, pluie, poing roulant, éruption | la croûte du centre cède au magma, deux dalles mobiles, soins |
+| 3 « Cœur de magma » | 33 % | marée de magma, double poing météore, secousse, éruption folle… | rideaux de lave aux deux murs, soins |
+
+Le sprite (trois feuilles, une par phase : plaques nues, carapace et évents, cœur à nu), son point faible et ses
+évents sont générés par `tools/assetgen/characters/boss_k_pyroclast.py` (`--check` : mêmes octets, testé ;
+`--review` : planche contact).
+
+`game/raid/Gigaboss` mène les règles du raid autour de lui, pas à pas, dans la simulation (le même sur chaque
+ordinateur) :
+
+* **Un géant pour 8** : 2,5 fois la taille du sprite (une boîte de 220 × 300 px), une arène de 183 tuiles (plus de
+  six écrans de large), deux tours de corniches au-dessus de fosses, deux monte-charges vers une plateforme haute
+  au-dessus de sa tête : ses trois évents sont sur les deux tours et la plateforme (le groupe doit se séparer).
+* **Poings de magma** (toutes les phases, toutes les 9 / 7 / 5,5 s ÷ sa pression) : une marque sous **chaque joueur
+  en jeu**, le même pas (8 joueurs : 8 poings), puis un poing de magma tombe sur chaque marque 1,4 s plus tard.
+  Avec la pluie de magma, les éruptions, la marée de magma (seules les corniches restent sûres) et les poings
+  météores, il attaque tout le groupe à la fois.
+* **Mise à l'échelle** : sa vie × (1 + 0,55 × (sièges occupés − 1)) au début du combat (2 à 8 joueurs), et encore
+  quand un joueur prend un siège pendant le combat (jamais à la baisse) ; ses temps de recharge ÷ (1 + 0,06 ×
+  (joueurs en jeu − 1)).
+* **Carapace** (phase 2) : rien ne le blesse (`Enemy::setRaidGuard`) tant qu'un de ses **3 évents** est ouvert. Un
+  joueur debout 3 s sur un évent le ferme (chaque joueur dessus compte un « évent fermé ») ; un évent fermé se
+  rallume au bout de 15 s (× 1,35 à deux joueurs, × 2 seul) : il faut les tenir **ensemble**. Chaque évent ouvert
+  crache un jet de magma toutes les 6 s, à tour de rôle (annoncé 1,2 s avant) : une zone de danger.
+* **Cœur à nu** : les trois fermés, la carapace éclate 10 s (dégâts × 2) et ses **3 points faibles**
+  (`pyroclast_noyau`, collés à ses jointures) peuvent être brisés : chacun lui ôte 4 % de sa vie et compte pour qui
+  l'a brisé. Puis les évents se rallument.
+* **Sauvetages** : relever un allié à terre (la règle de la coopération, 2 par zone) compte pour qui était près de
+  son âme.
+* **Sa chute** : tous les joueurs en jeu sont « présents à la chute ». Un groupe entier à terre : la zone reprend, le
+  boss aussi. Une Main dont l'objectif est déjà validé (un autre groupe l'a vaincu) est éteinte.
+
+## 7. Contributions et consensus (`game/raid/Contributions`, `raidZones.ts`)
+
+Calculées dans la simulation (l'écouteur du monde : les attaques de chaque joueur sont étiquetées), un
+enregistrement par joueur ayant tenu un siège (`seat`, `from` = le pas où il l'a pris) : dégâts (dixièmes de vie),
+dégâts au gigaboss, dégâts évités (ses coups visant ce joueur et esquivés, les coups arrêtés par son bouclier),
+blocages, sauvetages, évents, points faibles, objectifs (une action d'un joueur : la sienne ; un combat gagné : celle
+de tous les joueurs en jeu), pas en jeu, présence à la chute. L'empreinte de `RaidRun` les contient.
+
+Deux rapports de plus, par le même consensus (majorité stricte des joueurs actifs, minorité journalisée, égalité
+jamais acceptée) :
+
+* `{kind: "boss", phase}` (1 le combat commence, 2 et 3 ses phases, 4 sa chute) → `raid_gigaboss_fights` ;
+* `{kind: "result", records: [...]}` à chaque jalon (objectif, phase) → `raid_contributions` (une ligne par
+  `seat`/`from`, attribuée au membre qui tenait ce siège depuis ce pas : `raid_instance_members.seat_from`, écrit
+  par le relais ; le tableau le plus récent garde ses lignes). Avant toute majorité, les tableaux impossibles sont
+  refusés (temps au-delà du pas, plus d'évents qu'un toutes les 3 s, plus de sauvetages qu'un toutes les 2 s…).
+
+La valeur comparée est le texte canonique du tableau, reconstruit par le serveur à partir des nombres.
+
+## 8. Corps d'Asterion, résultats et récompenses (`raidRewards.ts`)
+
+* **Corps** (`body` de chaque événement, état validé seulement) : bras droit « attaque » dès qu'il y a une progression
+  validée, « affaibli » quand un combat a atteint sa phase 2, « detruit » quand `main_pyroclast` est accepté ;
+  `effects` : « Plus de pluies de lave » (seulement noté et affiché dans cette phase).
+* **Résultats** `GET /raids/events/{id}/results` : clans (somme des scores), joueurs par catégorie, combats contre
+  Pyroclast, mon dernier tableau « en attente de validation » s'il attend sa majorité ; « Classement final » une fois
+  l'événement terminé. Le **score de contribution** mélange tout, chaque part plafonnée : dégâts 500, évités 300,
+  soutien 400, progression (évents, points faibles, objectifs, chute) 1 880, présence 600.
+* **Récompenses** (`raid_reward_grants`, clé unique joueur + récompense + événement) accordées par le serveur à
+  partir des résultats validés : badge « Main de Pyroclast » (présent à une chute validée : le succès
+  `communaute_pyroclast`, que le serveur n'accepte qu'une fois la récompense récupérée), titre « Assaillant
+  d'Asterion » (5 min), « Briseur de magma » (score ≥ 1 500), « Fléau de Pyroclast » (3 meilleurs scores, à la fin
+  de l'événement). `POST /raids/rewards/claim {id?}` est idempotent ; les titres vont dans `player_won_rewards`
+  (`raid:<événement>`) : profil et vestiaire.
+
+Migration **0143_raid_gigaboss.sql** : `raid_instance_members.seat_from`, `raid_contributions`,
+`raid_gigaboss_fights`, `raid_reward_grants`.
+
+## 9. Écrans (2.67) et test des administrateurs
+
+* **Combat** : les évents dessinés sur l'arène (fermé, ouvert, annoncé, jet ; la tenue en anneau), la carapace,
+  les objectifs du gigaboss (évents k / 3, cœur à nu et ses points faibles, allié à relever), mes contributions en
+  bas à droite, la carte de sa chute (« Résultats du raid »).
+* **Résultats du raid** (maquette « Résultats ») : depuis la fiche de l'événement et à la chute de Pyroclast.
+* **CLANS › RAIDS** : « Récompenses à récupérer » avec « Récupérer ».
+* **ADMINISTRATION › Raids › « Tester Asterion »** (administrateurs) : une branche du catalogue
+  (`raid::Branch::all`, les branches ajoutées plus tard y apparaissent seules), une zone (le combat de Pyroclast par
+  défaut), « Invincible (admin) · non classé », 2 à 8 joueurs simulés, phase de départ ; seul et en local
+  (`RaidRun::setTest`) : aucun rapport n'est jamais produit, et le serveur refuse tout rapport marqué `test`.
+
+## 10. La longue route du Poignet-verrou (2.67)
+
+La zone 7 est un vrai niveau d'environ **15 minutes pour 8 joueurs** : des galeries à deux voies (sol et grilles) pour
+que huit joueurs ne s'empilent pas, **quatre embuscades géantes sur plusieurs étages** (la Tour des tendons, la
+Galerie des forges, la Fosse des scories, la Garde du verrou : des vagues sur chaque étage, les portes fermées
+pendant le combat ; l'état, le compteur et les flèches violettes des embuscades du jeu), des **mécanismes de groupe**
+(`groupSwitches` : la vanne double, 4 joueurs sur sa plaque ; le monte-charge, 3 joueurs dessus ; les plaques
+jumelles, 2 joueurs sur chacune en même temps ; le besoin suit les sièges occupés, seul la première plaque suffit),
+des **points de contrôle** (le groupe entier à terre reprend au dernier atteint) et des réanimations.
+
+L'estimation (`estimate` du générateur, recalculée par `tests/test_raid.cpp` depuis le niveau lui-même) :
+parcours à l'allure du groupe (70 px/s) + 3 s par tuile grimpée + pour chaque vague 12 s (elle apparaît, le groupe
+se répartit) + sa vie ÷ (8 × 0,6 de dégâts par seconde) + 45 s par mécanisme de groupe : **≈ 14,5 min** (13 à 17
+exigés). Les autres zones restent courtes (le raid standard dure 45 à 60 min).
+
+## 11. La caméra des arènes de gigaboss (`game/raid/ArenaCamera`, affichage seulement)
+
+En entrant dans l'arène : un plan de **l'arène entière** et du boss (4 s), puis une vue qui suit le joueur de cet
+ordinateur avec un zoom entre 300 et 620 px de monde en hauteur : assez large pour les marques qui le menacent, le
+boss quand il est proche et les alliés voisins, jamais au point de rendre l'action minuscule. Des flèches au bord de
+l'écran (hors du HUD mesuré) montrent le boss (ses points faibles quand il est à nu), les alliés (leurs couleurs) et
+les ennemis d'une embuscade. Elle sert à tous les gigaboss (`GigabossRules::arena`). La simulation ne la voit jamais.
