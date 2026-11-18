@@ -20,6 +20,10 @@
 // reports of its phases and of the contributions' tables, and the card of its fall (« Résultats
 // du raid »). An administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): the same
 // screen, solo and local (no relay), never reported, badge « TEST ADMIN · non classé ».
+//
+// 2.69 (phase 4B): Skullmaw, Dreadfang and Heartbreaker: their own rules drawn over their arenas
+// (raidui::BossOverlay), their lines of the objectives, their threats for the arena camera, the
+// arrows toward their weak points, their places on the minimap.
 
 #include <algorithm>
 #include <atomic>
@@ -46,6 +50,7 @@
 #include "saves/Settings.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/RaidGigabossOverlay.h"
 
 namespace cosmic {
 
@@ -516,6 +521,7 @@ public:
         const raid::Gigaboss& gb = run_->gigaboss();
         if (!gb.present()) return;
         Renderer& r = g_.ui.r();
+        bossOverlay_.draw(r, g_.app.resources(), w, gb, view, clock_);  // 2.69: Skullmaw, Dreadfang, Heartbreaker
         if (!vents_) vents_ = g_.app.resources().animation("animations/pyroclast_vents.json");
         const bool fighting = gb.stage() == raid::Gigaboss::Stage::Carapace || gb.stage() == raid::Gigaboss::Stage::Exposed;
         for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k) {
@@ -577,6 +583,7 @@ public:
                           !(gb.present() && gb.stage() == raid::Gigaboss::Stage::Absent);
             if (const Enemy* b = gb.boss(w); b && b->alive()) f.boss = b->box;
             for (const auto& fist : gb.fists()) f.threats.push_back(fist.at);
+            if (const raid::BossMechanic* m = gb.mechanic()) m->threats(w, f.threats);  // 2.69
             for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
                 if (gb.jetWarning(k) || gb.jetting(k)) f.threats.push_back(gb.vents()[static_cast<size_t>(k)].area.center());
             for (int i = 0; i < w.teamSize(); ++i)
@@ -638,7 +645,15 @@ public:
         // The boss, or its weak points while they are bare.
         const raid::Gigaboss& gb = run_->gigaboss();
         std::vector<Rect> bossT;
-        if (gb.stage() == raid::Gigaboss::Stage::Exposed) {
+        if (const raid::BossMechanic* m = gb.mechanic()) {
+            // 2.69: its weak points (eyes, knuckles, plates, heart) and nailing claws while they stand.
+            std::vector<uint32_t> uids;
+            m->targets(uids);
+            for (uint32_t u : uids)
+                if (const Enemy* e = w.findEnemy(u); e && e->alive() && away(e->box)) bossT.push_back(view.toScreen(e->box));
+            if (uids.empty())
+                if (const Enemy* b = gb.boss(w); b && b->alive() && away(b->box)) bossT.push_back(view.toScreen(b->box));
+        } else if (gb.stage() == raid::Gigaboss::Stage::Exposed) {
             for (const auto& e : w.enemies())
                 if (e->alive() && e->summonedBy == gb.bossUid() && e->def().id == gb.rules()->weakEnemy && away(e->box)) bossT.push_back(view.toScreen(e->box));
         } else if (const Enemy* b = gb.boss(w); b && b->alive() && away(b->box)) {
@@ -708,7 +723,14 @@ public:
             texts.push_back(std::move(t));
             colors.push_back(c);
         };
-        switch (gb.stage()) {
+        if (const raid::BossMechanic* m = gb.mechanic(); m && gb.stage() == S::Fight) {
+            // 2.69 (phase 4B): its own rules say what to do (mirrors, chains, plates, ribs…).
+            std::vector<raid::BossLine> lines;
+            m->lines(w, gb, lines);
+            for (auto& l : lines) add(std::move(l.mark), std::move(l.text), l.color);
+        } else if (m && gb.stage() == S::Absent) {
+            add("✓", m->goneLine(name), kGreen);
+        } else switch (gb.stage()) {
             case S::Absent: add("✓", name + " est déjà tombé : la Main est éteinte.", kGreen); break;
             case S::Waiting: add("→", "Entrez dans l'arène : " + name + " se réveille.", Color{255, 176, 74, 255}); break;
             case S::Fight:
@@ -745,7 +767,8 @@ public:
         ui.panel(box, true, 16);
         const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
         fit(ui, name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30, box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
-        const auto lines = wrap(ui, "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+        const raid::BossMechanic* mech = run_->gigaboss().mechanic();
+        const auto lines = wrap(ui, mech ? mech->fallCard() : "Le bras droit d'Asterion s'éteint. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
                                 FontFace::Body, 16, box.w - ui.s(56), 3);
         drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(70)}, 16, ui.s(22), kDim);
         ui.pushId("fall");
@@ -836,6 +859,13 @@ public:
                 const Vec2 c = at(v.area.center());
                 const float s = ui.s(4);
                 rr.fillRect({c.x - s, c.y - s, s * 2, s * 2}, v.closed ? kGreen : kGold);
+            }
+            std::vector<std::pair<Rect, Color>> places;  // 2.69: mirrors, anchors, ribs
+            raidui::BossOverlay::places(run_->gigaboss(), places);
+            for (const auto& [area, col] : places) {
+                const Vec2 c = at(area.center());
+                const float s = ui.s(4);
+                rr.fillRect({c.x - s, c.y - s, s * 2, s * 2}, col);
             }
         }
         for (size_t ci = 0; ci < run_->rules().coops.size(); ++ci) {  // 2.68: the co-op plates
@@ -1095,6 +1125,7 @@ public:
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)
     WorldView view_;
     AnimationSetPtr vents_;     // 2.68: the sheet of its vents
+    raidui::BossOverlay bossOverlay_;  // 2.69 (phase 4B): the own rules of Skullmaw, Dreadfang, Heartbreaker
     float waiting_ = 0.0f, clock_ = 0.0f;
     std::string fail_, endReason_;
     struct Note {

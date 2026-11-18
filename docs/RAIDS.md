@@ -1,5 +1,5 @@
 # Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6) ;
-# phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12)
+# phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12) ; phase 4B : SKULLMAW, DREADFANG, HEARTBREAKER (2.69, §13)
 
 La phase 1 (événements, inscriptions, groupes de 8, rappels : `server/src/raids.ts`, migration 0141)
 prépare le raid. La phase 2 le rend **jouable** sur une première branche du titan, le **Bras droit** :
@@ -177,7 +177,7 @@ Chaque branche : entrée à 3 points d'apparition et son arène, deux chemins, u
 sa relique, un **raccourci** ouvert au levier, une **zone à deux groupes** (une paire d'objectifs), un
 verrou `generators` sur plusieurs zones (textes propres dans `lock_texts` du catalogue), l'arène de
 la zone 7 qui ouvre l'antre (8), dont la **porte reste scellée** (« <Gigaboss> — prochaine version » ;
-les six combats viennent ensuite). Les dangers réutilisent `metadata.raid.magma` avec `name`, `hint`,
+les six combats viennent ensuite ; 2.69 : ceux du Crâne, du Bras gauche et du Torse sont ouverts, §13). Les dangers réutilisent `metadata.raid.magma` avec `name`, `hint`,
 `message` (le Bras droit garde ses textes par défaut).
 
 ### L'expédition avant l'antre (zone 7) et l'arène du gigaboss (zone 8)
@@ -386,3 +386,39 @@ boss quand il est proche et les alliés voisins, jamais au point de rendre l'act
 l'écran (hors du HUD mesuré) montrent le boss (ses points faibles quand il est à nu), les alliés (leurs couleurs) et
 les ennemis d'une embuscade. Elle sert à toutes les arènes de gigaboss : elle lit `metadata.raid.arena` (`rect`,
 `floor`, `door`, `entry`), le format des sept antres (`raid::ZoneRules::arena`). La simulation ne la voit jamais.
+
+## 13. Phase 4B (2.69) : les gigaboss SKULLMAW, DREADFANG et HEARTBREAKER
+
+Les antres du Crâne, du Bras gauche et du Torse (zone 8, `gigaboss_lair` de `tools/levelgen/raid_asterion.py`, même
+coque que les antres scellées : arène de 200 tuiles, `metadata.raid.arena`) sont ouverts : la porte n'est plus scellée,
+le gigaboss dort dans l'arène et son objectif de rôle `gigaboss` (`crane_skullmaw`, `bg_dreadfang`,
+`torse_heartbreaker`) détruit sa partie du titan. `metadata.raid.gigaboss.kind` choisit **ses propres règles**
+(`game/raid/BossMechanic.h`) : `raid::Gigaboss` garde ce qui est commun (réveil, vie selon les sièges, pression, phases,
+test des administrateurs, chute, présents à la chute) et confie chaque pas du combat à `SkullmawFight`,
+`DreadfangFight` ou `HeartbreakerFight` (Pyroclast, sans `kind`, garde ses évents et ses poings). Pièces partagées :
+marques sous chaque joueur en jeu (`mech::Marks`), places à tenir (`mech::Holds`), points faibles collés au boss
+(`mech::WeakPoints`). Tout est déterministe, dans l'empreinte de `RaidRun` ; le combat se dessine par
+`ui/screens/RaidGigabossOverlay` (affichage seulement).
+
+| Gigaboss | Phases | Sur chaque joueur | Mécanisme collectif | Points faibles |
+|---|---|---|---|---|
+| **Skullmaw** (`data/enemies/skullmaw.json`, 300 × 300 px, volant) | « Le regard qui traque », « Le voile psychique » (66 %), « Les ténèbres » (33 %, arène sombre) | **Regards traqueurs** : un laser par joueur, qui suit 1,5 s, se fige 0,45 s puis tire jusqu'au premier mur | **Voile** (phases 2-3) : rien ne le blesse ; son **Regard de mort** se charge 3,5 s puis frappe ceux qu'il voit (une colonne ou un mur les cache) ; assez de **miroirs** tenus à cet instant (1 seul, 2 de 2 à 4 joueurs, 3 à 5-6, 4 à 7-8) : aveuglé 10 s, dégâts × 2 | ses deux yeux et le cristal du front |
+| **Dreadfang** (`dreadfang.json`, 320 × 240 px, volant) | « Les griffes », « Le bras enchaîné » (66 %), « Griffes déchaînées » (33 %, plateformes tranchées) | **Griffes du sol** ; **balayages** d'un, deux puis trois étages entiers (sauter la lame ou changer d'étage) | **Trois chaînes** (phase 2) : 2,5 s sur une ancre la verrouille 12 s (plus à 1 ou 2 joueurs) ; les trois ensemble : plaqué au sol 10 s, dégâts × 2. **Griffe clouante** (phases 2-3, dès 2 joueurs) : un joueur (deux dès 5) cloué sur sa marque jusqu'à ce qu'un autre brise la griffe (un sauvetage) | ses trois jointures |
+| **Heartbreaker** (`heartbreaker.json`, 340 × 320 px, immobile) | « La cuirasse », « La cage thoracique » (66 %), « Le cœur affolé » (33 %) | **Côtes-pièges** ; **battements** en rythme (un fort sur 4, 3 puis 2) dont l'onde court au sol | **Quatre plaques** (phase 1, les plaques nord, sud, est et ouest de la branche reformées) : à briser dans les 20 s après la première (× 1,2 à 2 avec peu de joueurs), sinon elles repoussent ; **côtes à écarter** (phase 2) : un joueur sur chaque côte au même moment 2,5 s → cœur à nu 8 s, dégâts × 2,5 | ses plaques, puis la lumière du cœur |
+
+* **Mise à l'échelle** : vie × (1 + 0,55 × (sièges − 1)), pression ÷ (1 + 0,06 × (joueurs en jeu − 1)) (le cadre de
+  Pyroclast), points faibles et griffe × (1 + 0,25 × (sièges − 1)), besoins des mécanismes selon les joueurs en jeu.
+* **Contributions** : miroirs tenus au flash, chaînes verrouillées et côtes écartées comptent comme mécanismes ; un joueur
+  libéré compte un sauvetage pour qui a brisé la griffe ; une marque, un regard ou un flash évités comptent en dégâts
+  évités. Correctif : un point faible brisé compte pour qui l'a brisé (le tableau des brisures survit au pas).
+* **Serveur** (`raidRewards.ts`, sans migration) : un badge par gigaboss (`GIGABOSS_BADGES` : `skullmaw_badge`,
+  `dreadfang_badge`, `heartbreaker_badge`, succès `communaute_*`) pour les présents à une chute validée **de sa branche**,
+  une seule fois (clé unique) ; le titre « Fléau de Pyroclast » reste lié à la chute de Pyroclast ; le corps
+  (`attaque`, `affaibli`, `detruit`) et les effets valent pour chaque branche combattue ; les résultats nomment les
+  gigaboss vaincus (`defeated_bosses`, `boss` de chaque combat).
+* **Sprites** : `tools/assetgen/characters/boss_l_skullmaw.py`, `boss_l_dreadfang.py`, `boss_l_heartbreaker.py` (harnais
+  commun `boss_l_gigaboss.py`) : trois feuilles par boss (une par phase), ses points faibles, la feuille de ses règles
+  (`*_fx` : miroirs, ancres, griffes du sol, lames, côtes, pièges, ondes) ; `--check` (testé), `--review` (planche).
+* **Écrans** : objectifs du boss (miroirs k / n, chaînes, plaques, côtes, joueur cloué), flèches vers ses points faibles,
+  menaces pour la caméra d'arène, places sur la minimap, carte de sa chute ; carte d'une branche et du titan, résultats
+  et récompenses pour plusieurs gigaboss. Test des administrateurs : les trois combats, phase de départ comprise.

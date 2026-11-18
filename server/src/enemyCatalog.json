@@ -53,6 +53,18 @@
    "name": "Dragonnet de braise"
   },
   {
+   "id": "dreadfang",
+   "name": "Dreadfang"
+  },
+  {
+   "id": "dreadfang_griffe",
+   "name": "Griffe clouante"
+  },
+  {
+   "id": "dreadfang_jointure",
+   "name": "Jointure de Dreadfang"
+  },
+  {
    "id": "drone_titan",
    "name": "Drone du Titan"
   },
@@ -213,6 +225,18 @@
    "name": "Golem des ruines"
   },
   {
+   "id": "heartbreaker",
+   "name": "Heartbreaker"
+  },
+  {
+   "id": "heartbreaker_coeur",
+   "name": "Lumière du cœur"
+  },
+  {
+   "id": "heartbreaker_plaque",
+   "name": "Plaque d'armure de Heartbreaker"
+  },
+  {
    "id": "howling_wyrm",
    "name": "Wyrm Hurlante"
   },
@@ -327,6 +351,18 @@
   {
    "id": "singularis",
    "name": "Singularis"
+  },
+  {
+   "id": "skullmaw",
+   "name": "Skullmaw"
+  },
+  {
+   "id": "skullmaw_cristal",
+   "name": "Cristal de Skullmaw"
+  },
+  {
+   "id": "skullmaw_oeil",
+   "name": "Œil de Skullmaw"
   },
   {
    "id": "snow_stalker",

@@ -1,0 +1,307 @@
+{
+  "format": "cosmic.enemy",
+  "id": "skullmaw",
+  "name": "Skullmaw",
+  "description": "Le crâne colossal et cornu d'Asterion, gigaboss d'un raid de clan : ses yeux voient tout. Un regard laser traque chaque joueur, son flash aveugle ceux qu'aucune colonne ne cache ; sous son voile psychique, seuls des miroirs tenus ensemble lui renvoient son regard, et dans ses ténèbres seule la lumière de son œil révèle les plateformes.",
+  "family": "miniboss",
+  "animation": "animations/skullmaw.json",
+  "size": [
+    300,
+    300
+  ],
+  "scale": 2.5,
+  "hp": 560,
+  "contactDamage": 2,
+  "speed": 55,
+  "chaseSpeedMultiplier": 1.25,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 1000,
+  "attackRange": 1600,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "guard",
+  "reaction": "chase",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 380,
+  "hopVelocity": 0,
+  "attacks": [
+    {
+      "id": "regard",
+      "name": "Regard balayant",
+      "type": "laser",
+      "damage": 2,
+      "range": 1100,
+      "telegraph": 0.9,
+      "active": 1.3,
+      "recover": 0.6,
+      "cooldown": 4.5,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "laserLength": 1150,
+      "sweepDegrees": 80,
+      "color": "#c9a8ff",
+      "beamTexture": "plasma",
+      "beamWidth": 18,
+      "origin": [
+        0,
+        -205
+      ],
+      "knockback": 220
+    },
+    {
+      "id": "onde",
+      "name": "Onde psychique",
+      "type": "ring",
+      "damage": 2,
+      "range": 1100,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.6,
+      "cooldown": 5.5,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 170,
+      "radius": 760,
+      "spread": 50,
+      "knockback": 240
+    },
+    {
+      "id": "spirale",
+      "name": "Spirale d'âmes",
+      "type": "spiral",
+      "damage": 1,
+      "range": 900,
+      "telegraph": 0.7,
+      "active": 0.2,
+      "recover": 0.4,
+      "cooldown": 4.2,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "wisp_orb",
+      "projectileSpeed": 130,
+      "arms": 3,
+      "spread": 14,
+      "burstInterval": 0.16,
+      "duration": 2.6,
+      "origin": [
+        0,
+        -160
+      ]
+    },
+    {
+      "id": "pluie_os",
+      "name": "Pluie d'os",
+      "type": "rain",
+      "damage": 1,
+      "range": 1400,
+      "telegraph": 0.8,
+      "active": 0.3,
+      "recover": 0.5,
+      "cooldown": 3.8,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "boss_thorn",
+      "projectileSpeed": 220,
+      "count": 10,
+      "spread": 60,
+      "gravity": 300,
+      "rainHeight": 380,
+      "lead": 0.8,
+      "stagger": 0.1
+    },
+    {
+      "id": "prisme",
+      "name": "Regard prismatique",
+      "type": "prism",
+      "damage": 2,
+      "range": 1100,
+      "telegraph": 1.0,
+      "active": 0.9,
+      "recover": 0.6,
+      "cooldown": 5.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "bounces": 2,
+      "laserLength": 1500,
+      "color": "#ff6ad5",
+      "beamTexture": "prism",
+      "beamWidth": 14,
+      "knockback": 220,
+      "origin": [
+        0,
+        -205
+      ]
+    },
+    {
+      "id": "cage_os",
+      "name": "Cage d'os",
+      "type": "cage",
+      "damage": 1,
+      "range": 1000,
+      "telegraph": 0.9,
+      "active": 0.2,
+      "recover": 0.8,
+      "cooldown": 8.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "summon",
+      "projectile": "boss_thorn",
+      "projectileSpeed": 90,
+      "burstInterval": 0.4,
+      "duration": 4.0,
+      "radius": 130,
+      "height": 136,
+      "knockback": 180,
+      "look": "bone"
+    },
+    {
+      "id": "dernier_regard",
+      "name": "Dernier regard",
+      "type": "ring",
+      "damage": 2,
+      "range": 3000,
+      "telegraph": 0.6,
+      "active": 0.2,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph_special",
+      "attackAnim": "special",
+      "projectileSpeed": 190,
+      "radius": 900,
+      "spread": 44,
+      "knockback": 240
+    },
+    {
+      "id": "derniere_spirale",
+      "name": "Dernière spirale d'âmes",
+      "type": "spiral",
+      "damage": 1,
+      "range": 3000,
+      "telegraph": 0.5,
+      "active": 0.2,
+      "recover": 0.3,
+      "cooldown": 0.0,
+      "telegraphAnim": "telegraph",
+      "attackAnim": "attack",
+      "projectile": "wisp_orb",
+      "projectileSpeed": 140,
+      "arms": 4,
+      "spread": 12,
+      "burstInterval": 0.14,
+      "duration": 2.8,
+      "origin": [
+        0,
+        -160
+      ]
+    }
+  ],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {
+    "charge_shot": 1.2,
+    "ground_pound": 1.2,
+    "dash": 0.5
+  },
+  "rewards": {
+    "score": 30000,
+    "drops": [
+      {
+        "type": "health_orb",
+        "chance": 1.0
+      },
+      {
+        "type": "energy_orb",
+        "chance": 1.0
+      }
+    ]
+  },
+  "light": {
+    "color": "#c9a8ff",
+    "radius": 260
+  },
+  "sounds": {
+    "hurt": "sounds/enemy_hurt.wav",
+    "death": "sounds/story_titan_roar.wav",
+    "alert": "sounds/star_roar.wav"
+  },
+  "boss": {
+    "title": "SKULLMAW, LE CRÂNE QUI VOIT TOUT",
+    "phases": [
+      {
+        "name": "Le regard qui traque",
+        "hpThreshold": 1.0,
+        "attacks": [
+          "regard",
+          "onde",
+          "spirale",
+          "pluie_os"
+        ],
+        "speedMultiplier": 1.0,
+        "cooldownMultiplier": 1.0,
+        "combo": 2,
+        "telegraphMultiplier": 0.9,
+        "enterText": "Skullmaw ouvre les yeux : son regard traque chacun de vous.",
+        "animation": "animations/skullmaw.json",
+        "lightColor": "#c9a8ff"
+      },
+      {
+        "name": "Le voile psychique",
+        "hpThreshold": 0.66,
+        "attacks": [
+          "regard",
+          "onde",
+          "prisme",
+          "pluie_os",
+          "spirale"
+        ],
+        "speedMultiplier": 1.05,
+        "cooldownMultiplier": 0.95,
+        "combo": 2,
+        "telegraphMultiplier": 0.85,
+        "enterText": "Un voile psychique le protège : tenez les miroirs quand son regard se charge !",
+        "animation": "animations/skullmaw_p2.json",
+        "lightColor": "#ff6ad5",
+        "enterSound": "sounds/star_roar.wav"
+      },
+      {
+        "name": "Les ténèbres",
+        "hpThreshold": 0.33,
+        "attacks": [
+          "onde",
+          "prisme",
+          "cage_os",
+          "spirale",
+          "regard"
+        ],
+        "speedMultiplier": 1.15,
+        "cooldownMultiplier": 0.85,
+        "combo": 3,
+        "telegraphMultiplier": 0.75,
+        "enterText": "Les ténèbres tombent : seule la lumière de son œil révèle les plateformes !",
+        "animation": "animations/skullmaw_p3.json",
+        "lightColor": "#fff0ff",
+        "enterSound": "sounds/story_titan_roar.wav",
+        "enrageTime": 75
+      }
+    ],
+    "barIcon": "skull",
+    "barColor": "#c9a8ff",
+    "finalAttacks": [
+      "dernier_regard",
+      "derniere_spirale",
+      "dernier_regard"
+    ],
+    "finalText": "Son dernier regard : survivez !",
+    "darkPhase": 3
+  },
+  "raid": "asterion"
+}

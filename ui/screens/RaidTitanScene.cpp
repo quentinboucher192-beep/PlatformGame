@@ -174,9 +174,13 @@ public:
         rr.fillRoundedRect({x, y, w, ui.s(8)}, ui.s(4), Color{40, 34, 66, 255});
         rr.fillRoundedRect({x, y, w * std::clamp(static_cast<float>(zc) / static_cast<float>(zn), 0.0f, 1.0f), ui.s(8)}, ui.s(4), kGreen);
         y += ui.s(16);
+        int fought = 0;  // 2.69 (phase 4B): the gigaboss fought (their lair open), the others sealed
+        for (const auto& b : data_.value("branches", Json::array())) fought += jget<bool>(b, "sealed", true) ? 0 : 1;
+        const int sealed = std::max(0, jget<int>(t, "gigaboss", 7) - fought);
         const std::vector<std::pair<std::string, Color>> lines = {
-            {"Gigaboss vaincus : " + std::to_string(jget<int>(t, "gigaboss_defeated", 0)) + " / " + std::to_string(jget<int>(t, "gigaboss", 7)) +
-                 " · Pyroclast se combat, les six autres portes restent scellées (prochaine version)",
+            {"Gigaboss vaincus : " + std::to_string(jget<int>(t, "gigaboss_defeated", 0)) + " / " + std::to_string(jget<int>(t, "gigaboss", 7)) + " · " +
+                 std::to_string(fought) + (fought > 1 ? " se combattent" : " se combat") +
+                 (sealed > 0 ? ", " + std::to_string(sealed) + (sealed > 1 ? " portes scellées (prochaine version)" : " porte scellée (prochaine version)") : ""),
              kPeach},
             {"Objectifs accomplis : " + std::to_string(jget<int>(t, "objectives_done", 0)) + " / " + std::to_string(jget<int>(t, "objectives", 0)), kText},
             {"En combat : " + std::to_string(jget<int>(t, "groups", 0)) + " groupes · " + std::to_string(jget<int>(t, "players", 0)) + " joueurs · " +
@@ -297,7 +301,7 @@ public:
             fit(ui, r1, {row.right() - pad, row.y + ui.s(15)}, 12, rw, stateColor(st), FontFace::Bold, Align::Right);
             fit(ui, r2, {row.right() - pad, row.y + ui.s(32)}, 12, rw, kDim, FontFace::Body, Align::Right);
             fit(ui, jstr(b, "name"), {ix, row.y + ui.s(15)}, 15, iw - rw - ui.s(10), kText, FontFace::Bold);
-            // 2.68 (phase 3): Pyroclast (the Bras droit) is fought; the six others stay sealed.
+            // 2.68 (phase 3): a gigaboss whose lair is open is fought (2.69: Pyroclast, Skullmaw, Dreadfang, Heartbreaker).
             const std::string gstate = jget<bool>(b, "gigaboss_down", false) ? " · vaincu" : jget<bool>(b, "sealed", true) ? " · scellé" : " · dans son antre";
             fit(ui, "Gigaboss : " + jstr(b, "gigaboss") + gstate, {ix, row.y + ui.s(32)}, 12, iw - rw - ui.s(10), kPeach);
             y += rowH;

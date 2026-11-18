@@ -1,0 +1,13 @@
+{
+  "texture": "sprites/enemies/heartbreaker_fx.png",
+  "frameWidth": 64,
+  "frameHeight": 128,
+  "pivot": [32, 128],
+  "clips": {
+    "rib": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "rib_held": {"row": 0, "count": 4, "start": 1, "fps": 8, "loop": true},
+    "rib_open": {"row": 0, "count": 2, "start": 5, "fps": 6, "loop": true},
+    "trap": {"row": 1, "count": 4, "fps": 8, "loop": false},
+    "wave": {"row": 1, "count": 4, "start": 4, "fps": 12, "loop": true}
+  }
+}

@@ -1,6 +1,6 @@
 {
  "id": "asterion_torse",
- "revision": 1,
+ "revision": 2,
  "raid": "asterion",
  "branch": "torse",
  "name": "TORSE",
@@ -121,12 +121,12 @@
   {
    "id": 8,
    "name": "Antre de Heartbreaker",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · 4 plaques, côtes à écarter",
    "x": 1000,
    "y": 400,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Heartbreaker attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Heartbreaker : quatre plaques à briser ensemble, battements en rythme, côtes-pièges, côtes à écarter des deux côtés",
+   "event": "Ondes du cœur au sol à chaque battement fort (sautez-les)",
    "secret": false,
    "boss": true,
    "groups_required": 1,
@@ -278,6 +278,15 @@
    "label": "Ouvrir la cage du cœur : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "torse_heartbreaker",
+   "index": 10,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Heartbreaker",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

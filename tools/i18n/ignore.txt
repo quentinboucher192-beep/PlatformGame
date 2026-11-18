@@ -273,3 +273,9 @@ torse
 abdomen
 part
 zones
+crane_skullmaw
+bg_dreadfang
+torse_heartbreaker
+every
+flash
+front

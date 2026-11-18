@@ -455,6 +455,20 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.69.0** :
+* **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans
+  leurs antres (zone 8 de leur branche, `tools/levelgen/raid_asterion.py`) : énormes, trois phases annoncées chacun, des
+  attaques sur les 8 joueurs à la fois et des mécanismes collectifs (`game/raid/SkullmawFight`, `DreadfangFight`,
+  `HeartbreakerFight`, sur le cadre commun `game/raid/BossMechanic`) ; sprites, points faibles et éléments d'arène en
+  pixel art générés par `tools/assetgen/characters/boss_l_*.py`.
+* **Skullmaw** : regards lasers traqueurs (un par joueur), « Regard de mort » qui aveugle ceux qu'aucune colonne ne cache,
+  miroirs à tenir ensemble pour l'aveugler (yeux et cristal à briser), ténèbres où seule la lumière de son œil révèle les
+  plateformes. **Dreadfang** : griffes du sol sous chaque joueur, balayages d'étages entiers, joueur cloué à libérer,
+  trois chaînes à tenir ensemble pour le plaquer au sol, plateformes tranchées. **Heartbreaker** : quatre plaques à briser
+  ensemble (sinon elles repoussent), battements en rythme et leurs ondes, côtes-pièges, côtes à écarter des deux côtés.
+* Badge par gigaboss accordé une seule fois par le serveur (présence à une chute validée de sa branche), partie du titan
+  détruite, sauvetages et coups esquivés dans les contributions ; résultats et carte du titan pour plusieurs gigaboss.
+
 **Nouveau dans la version 2.68.0** :
 * **Raids de clan, phase 3 : le gigaboss PYROCLAST** dans la Main de Pyroclast (zone 8 du « BRAS DROIT », générée par
   `tools/levelgen/raid_bras_droit.py`) : une main de magma en trois phases (« Poing de magma », « Carapace de basalte »,

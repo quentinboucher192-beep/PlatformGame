@@ -723,7 +723,7 @@
    ]
   },
   {
-   "fr": "[{0}] · {1} joueur · Pyroclast ✓",
+   "fr": "[{0}] · {1} joueur · gigaboss ✓",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -735,7 +735,7 @@
    ]
   },
   {
-   "fr": "[{0}] · {1} joueurs · Pyroclast ✓",
+   "fr": "[{0}] · {1} joueurs · gigaboss ✓",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -3147,6 +3147,12 @@
    ]
   },
   {
+   "fr": "Armure de givre ({0}) : tenez les {1} chaînes ensemble (une ancre chacun) : une chaîne tenue cède au bout de quelques secondes.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "Armée après (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -3388,6 +3394,12 @@
    "fr": "Asterion en vrai pixel art : dans CLANS › RAIDS et la fiche d'un événement, le titan est désormais un sprite détaillé, partie par partie (crâne Skullmaw, bras Dreadfang et Pyroclast, torse Heartbreaker, abdomen Voidworm, jambes Graviton et Titanus, cœur cosmique, aura) qui respire, dont le cœur bat et autour duquel dérivent des particules. Survolez une partie à la souris ou allez-y au clavier ou à la manette : elle s'éclaire et son infobulle donne son nom, son gigaboss, son état (sous attaque, affaiblie, détruite ou non découverte) et l'effet de sa destruction sur Asterion.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Asterion est aveuglé : ses attaques perdent en précision.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -6063,7 +6075,14 @@
    "where": [
     "data/raids/asterion/bras_gauche/zone_3.json",
     "data/raids/asterion/bras_gauche/zone_4.json",
-    "data/raids/asterion/bras_gauche/zone_7.json"
+    "data/raids/asterion/bras_gauche/zone_7.json",
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "Balayage sur {0} : sautez la lame ou changez d'étage.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
    ]
   },
   {
@@ -6243,6 +6262,12 @@
    "fr": "Battement d'ailes",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Battements : une onde court au sol à chaque battement fort (un sur {0}) : sautez-la.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
    ]
   },
   {
@@ -6794,6 +6819,7 @@
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/AsterionBody.cpp",
+    "game/online/Raids.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
     "game/raid/RaidBranch.cpp",
@@ -7351,6 +7377,12 @@
    ]
   },
   {
+   "fr": "Brisez ses 4 plaques ensemble (plusieurs groupes), puis écartez ses côtes des deux côtés à la fois pour frapper son cœur.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Brisé",
    "where": [
     "data/enemies/kraken.json"
@@ -7791,6 +7823,18 @@
    ]
   },
   {
+   "fr": "Cage d'os",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Cage de Heartbreaker",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Cage de menhirs",
    "where": [
     "data/enemies/monolithe.json"
@@ -7814,6 +7858,18 @@
    "fr": "Cage stellaire",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Cage thoracique ({0}) : un joueur sur chaque côte, des deux côtés à la fois · côtes tenues {1} / {2}",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "Caillots brûlants",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -9782,6 +9838,12 @@
    ]
   },
   {
+   "fr": "Chaque gigaboss vaincu détruit sa partie du titan et donne son badge (« Regard de Skullmaw », « Griffes de Dreadfang », « Cage de Heartbreaker ») aux joueurs présents à sa chute, une seule fois ; les mécanismes tenus, les alliés libérés et les coups esquivés comptent dans les contributions. L'outil « Tester Asterion » des administrateurs propose leurs trois combats.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chaque graphique a son info-bulle à la souris, un curseur au clavier et à la manette (← →) et une vue « Tableau ». Paramètres › Jeu : « Enregistrer mes statistiques » (activé par défaut) ; « Réinitialiser les statistiques » dans l'écran.",
    "where": [
     "data/news/changelog.json"
@@ -9872,6 +9934,7 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowersExtra.cpp",
+    "game/raid/SkullmawFight.cpp",
     "ui/screens/CreatureArt.cpp",
     "ui/studio/StudioDoc.cpp"
    ]
@@ -13838,6 +13901,12 @@
    ]
   },
   {
+   "fr": "Couronne du cœur",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Couronne du gardien",
    "where": [
     "data/levels/glacior_03.json"
@@ -14143,6 +14212,12 @@
    "fr": "Cristal",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Cristal de Skullmaw",
+   "where": [
+    "data/enemies/skullmaw_cristal.json"
    ]
   },
   {
@@ -14641,6 +14716,12 @@
    ]
   },
   {
+   "fr": "Cuirasse ({0}) : brisez ses {1} plaques ensemble (les hautes depuis les tours) : elles repoussent si la dernière tarde.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "Cuisse flottante",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -14685,6 +14766,12 @@
    "fr": "Côtes hautes",
    "where": [
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Côtes-pièges",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
    ]
   },
   {
@@ -14850,9 +14937,45 @@
    ]
   },
   {
+   "fr": "DANGER · Balayage des griffes depuis l'est sur {0} : sautez par-dessus la lame ou changez d'étage !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Balayage des griffes depuis l'ouest sur {0} : sautez par-dessus la lame ou changez d'étage !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Côtes-pièges : les côtes se dressent autour de vous, sortez-en !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Griffe clouante : Dreadfang vise un joueur, écartez-vous de votre marque !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Griffes du sol : quittez votre marque !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "DANGER · Poings de magma : quittez votre marque !",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · Son regard se charge : {0} miroirs tenus le renvoient, les autres derrière une colonne !",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -15337,6 +15460,18 @@
    ]
   },
   {
+   "fr": "depuis l'est",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "depuis l'ouest",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "Depuis la sélection",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -15433,6 +15568,12 @@
    ]
   },
   {
+   "fr": "Dernier regard",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Dernier souffle",
    "where": [
     "data/enemies/pyrrhax.json",
@@ -15457,6 +15598,12 @@
    "fr": "Dernier zénith",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Dernier éventail",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -15502,6 +15649,12 @@
    ]
   },
   {
+   "fr": "Dernière grêle",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Dernière lumière",
    "where": [
     "data/enemies/singularis.json"
@@ -15517,6 +15670,12 @@
    "fr": "Dernière onde",
    "where": [
     "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Dernière onde du cœur",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -15547,6 +15706,18 @@
    "fr": "Dernière secousse",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Dernière spirale d'âmes",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Dernière spirale de sang",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -16712,15 +16883,40 @@
    ]
   },
   {
-   "fr": "Dreadfang — prochaine version",
+   "fr": "Dreadfang",
+   "where": [
+    "data/enemies/dreadfang.json",
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Dreadfang : ses griffes jaillissent du sol sous chaque joueur, ses balayages traversent des étages entiers de l'arène (sautez la lame ou changez d'étage) et il cloue un joueur au sol que les autres doivent libérer en brisant la griffe ; cuirassé de givre, il faut tenir ses trois chaînes ensemble pour le plaquer au sol et briser ses jointures. À sa dernière phase, ses griffes déchaînées tranchent des plateformes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Dreadfang déploie ses griffes : elles balaient l'arène étage par étage.",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Dreadfang est enchaîné ({0}) : brisez ses jointures · {1} / {2}",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "Dreadfang est vaincu : le bras gauche d'Asterion retombe, ses griffes arrachées.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json"
    ]
   },
   {
-   "fr": "Dreadfang — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "DREADFANG, LES GRIFFES QUI DÉCHIRENT",
    "where": [
-    "data/raids/asterion/bras_gauche/zone_8.json"
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -18836,7 +19032,7 @@
    ]
   },
   {
-   "fr": "Elles viennent des résultats validés des raids : Pyroclast, sa chute, votre contribution.",
+   "fr": "Elles viennent des résultats validés des raids : les chutes des gigaboss, votre contribution.",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -20445,6 +20641,7 @@
    "fr": "et",
    "where": [
     "game/enemies/BossAttackSheet.cpp",
+    "game/raid/DreadfangFight.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -20457,6 +20654,7 @@
   {
    "fr": "et {0}",
    "where": [
+    "game/raid/DreadfangFight.cpp",
     "ui/screens/CollectionScene.cpp"
    ]
   },
@@ -22871,7 +23069,7 @@
    ]
   },
   {
-   "fr": "Gigaboss : {0} · dans la Main",
+   "fr": "Gigaboss : {0} · dans son antre",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
@@ -22889,21 +23087,108 @@
    ]
   },
   {
+   "fr": "Gigaboss au combat",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss intacts",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincu",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/torse/zone_8.json",
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Gigaboss vaincus",
    "where": [
     "game/online/Raids.cpp"
    ]
   },
   {
-   "fr": "Gigaboss vaincus : {0} / {1} · Pyroclast se combat, les six autres portes restent scellées (prochaine version)",
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combat",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combat, {3} porte scellée (prochaine version)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combat, {3} portes scellées (prochaine version)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combattent",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combattent, {3} porte scellée (prochaine version)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss vaincus : {0} / {1} · {2} se combattent, {3} portes scellées (prochaine version)",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Armure de givre : tenez ses {0} chaînes ensemble ({1} s sur chacune) pour l'enchaîner !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Dreadfang brise ses chaînes : tenez-les de nouveau ensemble !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · L'antre est silencieux : {0} est déjà tombé.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
    "fr": "Gigaboss · l'arène entière, puis votre vue de combat",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La cage est ouverte : {0} est déjà tombé.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La cage se brise : le cœur bat à découvert !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La cage thoracique se referme : un joueur sur chaque côte, tenez-les ouvertes ensemble ({0} s) !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
    ]
   },
   {
@@ -22919,9 +23204,57 @@
    ]
   },
   {
+   "fr": "GIGABOSS · La cuirasse tombe : Heartbreaker est vulnérable, frappez-le !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · La Main est éteinte : {0} est déjà tombé.",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les chaînes tiennent : Dreadfang est plaqué au sol ! Brisez ses jointures ({0} s) !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les côtes s'écartent : la lumière du cœur est à nu ({0} s) ! Frappez-la !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les côtes se referment sur le cœur : écartez-les de nouveau, des deux côtés !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les griffes sont froides : {0} est déjà tombé.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les miroirs lui renvoient son regard : Skullmaw est aveuglé ! Crevez ses yeux et son cristal ({0} s) !",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les plaques repoussent : brisez les quatre en moins de {0} s, plusieurs groupes à la fois !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Miroirs tenus {0} / {1} : son voile tient !",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -22937,9 +23270,33 @@
    ]
   },
   {
+   "fr": "GIGABOSS · Quatre plaques d'armure gardent le cœur : brisez-les ensemble, elles repoussent {0} s après la première !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Sa carapace vole en éclats pour de bon !",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Skullmaw rouvre les yeux : son voile se reforme !",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Skullmaw se voile : quand son regard se charge, tenez {0} miroirs (sur {1}) ; les autres, derrière une colonne !",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Son armure de givre vole en éclats : ses griffes se déchaînent !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
    ]
   },
   {
@@ -22955,15 +23312,39 @@
    ]
   },
   {
+   "fr": "GIGABOSS · Une chaîne se détend : retenez-la !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "gigaboss · verrouillée",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
+   "fr": "GIGABOSS · {0} est vaincu ! La cage du torse s'ouvre : la voie du cœur d'Asterion est libre.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · {0} est vaincu ! Le bras droit d'Asterion s'éteint.",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} est vaincu ! Le bras gauche d'Asterion retombe, ses griffes arrachées.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · {0} est vaincu ! Le crâne d'Asterion s'éteint : le titan est aveuglé.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -23447,9 +23828,35 @@
    ]
   },
   {
+   "fr": "Griffe clouante",
+   "where": [
+    "data/enemies/dreadfang_griffe.json",
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "Griffes de Dreadfang",
    "where": [
+    "data/achievements/achievements.json",
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Griffes du sol",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "Griffes déchaînées",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Griffes sous la glace",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -23567,6 +23974,36 @@
    ]
   },
   {
+   "fr": "GROUPE · Chaîne tenue ({0} / {1})",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Jointure brisée ({0} / {1})",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · La griffe est brisée : le joueur est libéré !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · La griffe se retire.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · La lumière du cœur vacille : coup au but !",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Les joueurs à terre se relèvent au point de contrôle",
    "where": [
     "game/raid/RaidRun.cpp"
@@ -23576,6 +24013,12 @@
    "fr": "GROUPE · Objectif accompli : {0}",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Plaque brisée ({0} / {1})",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
    ]
   },
   {
@@ -23591,9 +24034,21 @@
    ]
   },
   {
+   "fr": "GROUPE · Point faible crevé ({0} / {1})",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Un joueur est cloué au sol : brisez la griffe pour le libérer !",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
    ]
   },
   {
@@ -23666,6 +24121,12 @@
     "data/enemies/echo_cryowyrm.json",
     "data/enemies/echo_howling_wyrm.json",
     "data/enemies/howling_wyrm.json"
+   ]
+  },
+  {
+   "fr": "Grêle de givre",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -24022,15 +24483,34 @@
    ]
   },
   {
-   "fr": "Heartbreaker — prochaine version",
+   "fr": "Heartbreaker",
+   "where": [
+    "data/enemies/heartbreaker.json",
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Heartbreaker : ses quatre plaques d'armure (deux hautes, deux basses) doivent tomber ensemble, sinon elles repoussent ; ses battements envoient en rythme des ondes au sol à sauter, des côtes-pièges se referment autour de chaque joueur, et pour frapper la lumière de son cœur il faut écarter ses côtes des deux côtés à la fois.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Heartbreaker bat : ses quatre plaques d'armure gardent le cœur.",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "Heartbreaker est vaincu : la cage du torse s'ouvre, la voie du cœur d'Asterion est libre.",
    "where": [
     "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
-   "fr": "Heartbreaker — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "HEARTBREAKER, LA CAGE QUI GARDE LE CŒUR",
    "where": [
-    "data/raids/asterion/torse/zone_8.json"
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -24586,6 +25066,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
+    "game/raid/BossMechanic.cpp",
     "game/raid/RaidBranch.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
@@ -26388,6 +26869,12 @@
    ]
   },
   {
+   "fr": "Jointure de Dreadfang",
+   "where": [
+    "data/enemies/dreadfang_jointure.json"
+   ]
+  },
+  {
    "fr": "Jordanie",
    "where": [
     "data/online/countries.json",
@@ -26953,13 +27440,13 @@
    ]
   },
   {
-   "fr": "L'antre de Heartbreaker, contre le cœur du titan. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "L'antre de Heartbreaker, contre le cœur du titan, assez grand pour huit joueurs : quatre plaques à briser ensemble, des battements en rythme, des côtes à écarter des deux côtés à la fois.",
    "where": [
     "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
-   "fr": "L'antre de Skullmaw, au cœur du crâne. Sa porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "L'antre de Skullmaw, au cœur du crâne, assez grand pour huit joueurs : son regard traque chacun, son flash aveugle ceux qu'aucune colonne ne cache, ses miroirs se tiennent ensemble.",
    "where": [
     "data/raids/asterion/crane/zone_8.json"
    ]
@@ -27387,6 +27874,12 @@
    ]
   },
   {
+   "fr": "l'étage {0}",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "L'étoile au centre du système s'ouvre quand ses trois mondes sont libérés. Ses gardiens y reviennent en échos de lumière, en son cœur veille l'Astrarque, et plus loin encore une étoile morte s'est éveillée.",
    "where": [
     "data/planets/noyau.json"
@@ -27508,6 +28001,12 @@
    ]
   },
   {
+   "fr": "La cage du torse s'ouvre : la voie du cœur d'Asterion est libre. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "La cage qui garde le cœur",
    "where": [
     "data/raids/asterion_film.json"
@@ -27517,6 +28016,24 @@
    "fr": "La cage s'ouvre ! L'antre de Heartbreaker est ouvert.",
    "where": [
     "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "La cage thoracique",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "La cage thoracique cuirassée d'Asterion, gigaboss d'un raid de clan, qui garde son cœur : quatre plaques d'armure à briser ensemble par plusieurs groupes, des battements dont les ondes courent au sol en rythme, des côtes qui se referment comme des pièges sous chaque joueur ; il faut écarter ses côtes des deux côtés à la fois pour frapper la lumière du cœur.",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "La cage thoracique est brisée : la voie du cœur s'ouvre.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -27788,6 +28305,12 @@
    "fr": "La Crypte des Noms : la Liche seule, une seule vie, aucun checkpoint. Choisissez vos quatre pouvoirs.",
    "where": [
     "data/levels/confins_05.json"
+   ]
+  },
+  {
+   "fr": "La cuirasse",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -28178,6 +28701,12 @@
    "fr": "La liste du serveur n'est pas encore lue : actualisez.",
    "where": [
     "ui/screens/AdminEnemies.cpp"
+   ]
+  },
+  {
+   "fr": "La lumière du cœur d'Asterion, entre les côtes écartées : la frapper arrache à Heartbreaker une large part de sa vie.",
+   "where": [
+    "data/enemies/heartbreaker_coeur.json"
    ]
   },
   {
@@ -29293,6 +29822,24 @@
    ]
   },
   {
+   "fr": "Le bras enchaîné",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Le bras gauche colossal d'Asterion et ses griffes-lames, gigaboss d'un raid de clan : ses griffes balaient des étages entiers de l'arène, jaillissent du sol sous chaque joueur et en clouent un au sol que les autres doivent libérer ; cuirassé de givre, il faut tenir ses trois chaînes ensemble pour l'enchaîner et frapper ses jointures.",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Le bras gauche d'Asterion retombe, ses griffes arrachées. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "le cadre",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -29562,9 +30109,27 @@
    ]
   },
   {
+   "fr": "Le cristal rose du front de Skullmaw, à nu quand son regard l'aveugle : le briser lui arrache une large part de sa vie.",
+   "where": [
+    "data/enemies/skullmaw_cristal.json"
+   ]
+  },
+  {
    "fr": "Le Cryowyrm s'effondre. Le sanctuaire de l'aurore est ouvert.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Le crâne colossal et cornu d'Asterion, gigaboss d'un raid de clan : ses yeux voient tout. Un regard laser traque chaque joueur, son flash aveugle ceux qu'aucune colonne ne cache ; sous son voile psychique, seuls des miroirs tenus ensemble lui renvoient son regard, et dans ses ténèbres seule la lumière de son œil révèle les plateformes.",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Le crâne d'Asterion s'éteint : le titan est aveuglé. Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -29583,6 +30148,12 @@
    "fr": "Le Cœur",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Le cœur affolé",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -29705,11 +30276,24 @@
    ]
   },
   {
+   "fr": "Le cœur est à nu ({0}) : frappez sa lumière entre les côtes.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "Le cœur pulse ! Restez sur les passerelles",
    "where": [
     "data/raids/asterion/torse/zone_4.json",
     "data/raids/asterion/torse/zone_6.json",
     "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Le cœur s'affole : ses battements s'accélèrent, la cage se brise !",
+   "where": [
+    "data/enemies/heartbreaker.json",
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -30951,7 +31535,7 @@
    ]
   },
   {
-   "fr": "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit.",
+   "fr": "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent dans leurs antres.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -30993,6 +31577,12 @@
    "fr": "Le regard de l'orbite : passez entre deux rayons.",
    "where": [
     "data/raids/asterion/crane/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Le regard qui traque",
+   "where": [
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -31284,6 +31874,12 @@
    ]
   },
   {
+   "fr": "le sol",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "Le sol craque par endroits... Une Frappe sismique (Bas + Attaque en l'air) le briserait.",
    "where": [
     "data/levels/glacior_01.json"
@@ -31489,6 +32085,12 @@
    "fr": "Le vestiaire, le juke-box et la galerie de la Collection.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Le voile psychique",
+   "where": [
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -31773,6 +32375,12 @@
    ]
   },
   {
+   "fr": "Les chaînes cèdent : ses griffes déchaînées tranchent les plateformes !",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Les cheminées ardentes : planez dans les courants, attention aux lasers.",
    "where": [
     "data/levels/pyralis_03.json"
@@ -31963,6 +32571,18 @@
    "fr": "Les côtes hautes bougent avec le souffle du titan. Une barrière d'énergie les traverse ; un éclat de roche les garde.",
    "where": [
     "data/raids/asterion/torse/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Les côtes se referment sur le cœur : écartez-les des deux côtés ensemble !",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "Les côtes se referment sur le cœur : écartez-les des deux côtés à la fois !",
+   "where": [
+    "data/raids/asterion/torse/zone_8.json"
    ]
   },
   {
@@ -32182,6 +32802,12 @@
    ]
   },
   {
+   "fr": "Les griffes",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Les griffes balaient le sol ! Restez en hauteur",
    "where": [
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -32190,7 +32816,7 @@
    ]
   },
   {
-   "fr": "Les griffes de Dreadfang, au bout du bras gauche. La porte est scellée : le combat arrive dans la prochaine version.",
+   "fr": "Les griffes de Dreadfang, au bout du bras gauche, assez grandes pour huit joueurs : elles balaient des étages entiers, clouent un joueur au sol, et ses trois chaînes se tiennent ensemble.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json"
    ]
@@ -32750,6 +33376,19 @@
    "fr": "Les trois mondes, une dernière fois.",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "Les ténèbres",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Les ténèbres tombent : seule la lumière de son œil révèle les plateformes !",
+   "where": [
+    "data/enemies/skullmaw.json",
+    "data/raids/asterion/crane/zone_8.json"
    ]
   },
   {
@@ -33498,6 +34137,12 @@
    ]
   },
   {
+   "fr": "Lumière du cœur",
+   "where": [
+    "data/enemies/heartbreaker_coeur.json"
+   ]
+  },
+  {
    "fr": "Lumière intacte",
    "where": [
     "data/achievements/achievements.json"
@@ -34083,6 +34728,7 @@
   {
    "fr": "Marée de plasma",
    "where": [
+    "data/enemies/heartbreaker.json",
     "data/enemies/singularis.json"
    ]
   },
@@ -38796,6 +39442,18 @@
    ]
   },
   {
+   "fr": "Onde du battement",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
+   "fr": "Onde du cœur",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Onde en anneau",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -38804,6 +39462,7 @@
   {
    "fr": "Onde psychique",
    "where": [
+    "data/enemies/skullmaw.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_4.json",
     "data/raids/asterion/crane/zone_7.json"
@@ -41571,6 +42230,22 @@
    ]
   },
   {
+   "fr": "Phase 2",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Phase 3",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
    "fr": "Phase atteinte",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -41622,6 +42297,14 @@
    "fr": "phase {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "phase {0} / 3",
+   "where": [
+    "game/raid/DreadfangFight.cpp",
+    "game/raid/HeartbreakerFight.cpp",
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -42208,6 +42891,12 @@
    ]
   },
   {
+   "fr": "Plaque d'armure de Heartbreaker",
+   "where": [
+    "data/enemies/heartbreaker_plaque.json"
+   ]
+  },
+  {
    "fr": "Plasma",
    "where": [
     "data/enemies/titan.json",
@@ -42398,6 +43087,12 @@
    ]
   },
   {
+   "fr": "Pluie d'os",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Pluie d'ossements",
    "where": [
     "data/enemies/liche.json"
@@ -42571,6 +43266,12 @@
    "fr": "plus de 2 réanimations",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "Plus de balayages : les griffes d'Asterion sont arrachées.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -42774,6 +43475,12 @@
    "fr": "Poids (probabilité)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Poigne du titan",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -44537,9 +45244,33 @@
    ]
   },
   {
+   "fr": "Présent à la chute de Dreadfang (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Présent à la chute de Heartbreaker (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Présent à la chute de Pyroclast (combat validé par votre instance)",
    "where": [
     "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Présent à la chute de Skullmaw (combat validé par votre instance)",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "présent à une chute",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -44989,32 +45720,13 @@
    "fr": "Pyroclast",
    "where": [
     "data/enemies/pyroclast.json",
-    "data/raids/asterion/bras_droit/zone_8.json",
-    "game/online/Raids.cpp"
-   ]
-  },
-  {
-   "fr": "Pyroclast (bras droit) : badge « Main de Pyroclast » à sa chute, titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, évents, objectifs, présence).",
-   "where": [
-    "server/src/raids.ts"
-   ]
-  },
-  {
-   "fr": "Pyroclast au combat",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "data/raids/asterion/bras_droit/zone_8.json"
    ]
   },
   {
    "fr": "Pyroclast est vaincu : le bras droit d'Asterion s'éteint.",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
-   ]
-  },
-  {
-   "fr": "Pyroclast intact",
-   "where": [
-    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -45026,8 +45738,7 @@
   {
    "fr": "Pyroclast vaincu",
    "where": [
-    "data/raids/asterion/bras_droit/zone_8.json",
-    "ui/screens/RaidResultsScene.cpp"
+    "data/raids/asterion/bras_droit/zone_8.json"
    ]
   },
   {
@@ -45656,6 +46367,12 @@
   },
   {
    "fr": "Raids de clan, phase 4 : tout le corps d'Asterion se joue. Aux côtés du Bras droit, six nouvelles branches de huit zones chacune (56 zones en tout), chacune avec son monde, ses ennemis, ses traversées et son danger : le CRÂNE de Skullmaw (vertèbres flottantes, regards lasers, onde psychique), le BRAS GAUCHE de Dreadfang (glace qui cède, tourelles, balayage des griffes), le TORSE de Heartbreaker (côtes mouvantes, barrières d'énergie, pulsation du cœur, quatre plaques à briser par plusieurs groupes), l'ABDOMEN de Voidworm (bassins d'acide, nid des parasites, reflux d'acide), la JAMBE GAUCHE de Graviton (puits d'apesanteur, îlots mouvants, puits de gravité) et la JAMBE DROITE de Titanus (pistons géants, lave, onde sismique). Chaque branche a deux chemins, une zone secrète et sa relique, un raccourci à ouvrir au levier, une zone qui demande deux groupes et un verrou à plusieurs objectifs ; la porte de chaque gigaboss reste scellée jusqu'à la prochaine version.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids de clan, phase 4B : trois nouveaux gigaboss d'Asterion se combattent dans leurs antres, au bout de leurs branches. SKULLMAW, le crâne qui voit tout (Crâne), DREADFANG, les griffes qui déchirent (Bras gauche) et HEARTBREAKER, la cage qui garde le cœur (Torse) : chacun énorme, en trois phases annoncées, avec ses attaques, ses zones de danger, ses points faibles et une apparence qui change avec sa santé.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -46772,15 +47489,45 @@
    ]
   },
   {
+   "fr": "Regard balayant",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Regard de mort",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
+   "fr": "Regard de Skullmaw",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Regard primordial",
    "where": [
     "data/enemies/monolithe.json"
    ]
   },
   {
+   "fr": "Regard prismatique",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Regard réfléchi",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Regard traqueur",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -48726,6 +49473,12 @@
     "data/enemies/echo_crucible_heart.json",
     "data/enemies/echo_magmaroth.json",
     "data/enemies/magmaroth.json"
+   ]
+  },
+  {
+   "fr": "Ruée des griffes",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -51142,6 +51895,12 @@
    ]
   },
   {
+   "fr": "Ses griffes déchaînées tranchent les plateformes : changez d'étage !",
+   "where": [
+    "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
    "fr": "Ses lueurs se détachent et tournoient !",
    "where": [
     "data/enemies/kraken.json"
@@ -51636,15 +52395,40 @@
    ]
   },
   {
-   "fr": "Skullmaw — prochaine version",
+   "fr": "Skullmaw",
+   "where": [
+    "data/enemies/skullmaw.json",
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Skullmaw : un regard laser traque chaque joueur à la fois, puis se fige — quittez sa ligne ; sous son voile psychique, son « Regard de mort » se charge puis aveugle tous ceux qu'aucune colonne ne cache : tenez ensemble assez de miroirs (jusqu'à quatre à huit joueurs) pour lui renvoyer son regard, il est aveuglé et ses deux yeux et le cristal de son front se brisent. À sa dernière phase, l'arène plonge dans les ténèbres et seule la lumière de son œil révèle les plateformes.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Skullmaw est aveuglé ({0}) : crevez ses yeux et son cristal · points faibles {1} / {2}",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
+   "fr": "Skullmaw est vaincu : le crâne d'Asterion s'éteint, le titan est aveuglé.",
    "where": [
     "data/raids/asterion/crane/zone_8.json"
    ]
   },
   {
-   "fr": "Skullmaw — prochaine version. La porte de l'antre restera scellée jusque-là.",
+   "fr": "Skullmaw ouvre les yeux : son regard traque chacun de vous.",
    "where": [
-    "data/raids/asterion/crane/zone_8.json"
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "SKULLMAW, LE CRÂNE QUI VOIT TOUT",
+   "where": [
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -51724,6 +52508,7 @@
   {
    "fr": "Sol gelé",
    "where": [
+    "data/enemies/dreadfang.json",
     "game/enemies/EnemyDefinition.cpp"
    ]
   },
@@ -51889,6 +52674,12 @@
    ]
   },
   {
+   "fr": "Son armure de givre : tenez ses 3 chaînes ensemble pour le plaquer au sol, brisez ses jointures, libérez les joueurs cloués.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Son arène est introuvable dans son niveau.",
    "where": [
     "game/gameplay/BossAttackDemo.cpp"
@@ -51992,9 +52783,21 @@
    ]
   },
   {
+   "fr": "Son regard se charge : miroirs tenus {0} / {1} · les autres, cachez-vous derrière une colonne !",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
    "fr": "Son temps est ajouté au chronomètre.",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Son voile : à son flash, tenez des miroirs ensemble (jusqu'à 4) pour l'aveugler ; les autres se cachent derrière les colonnes.",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -52419,7 +53222,8 @@
   {
    "fr": "Spirale d'âmes",
    "where": [
-    "data/enemies/liche.json"
+    "data/enemies/liche.json",
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -52438,6 +53242,12 @@
    "fr": "Spirale de plumes",
    "where": [
     "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Spirale de sang",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -57236,6 +58046,12 @@
    ]
   },
   {
+   "fr": "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
+   ]
+  },
+  {
    "fr": "Tête chercheuse (rad/s, 0 = non)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -57271,6 +58087,12 @@
    "fr": "Un admin a lié votre compte à un nouvel ordinateur.",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Un allié est cloué au sol : brisez la griffe qui le tient ({0}).",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
    ]
   },
   {
@@ -57355,6 +58177,12 @@
    "fr": "Un badge est un succès que vous avez obtenu, affiché à côté de votre nom et de votre titre sur votre profil Cosmic Online.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un badge par gigaboss à sa chute (Pyroclast, Skullmaw, Dreadfang, Heartbreaker), titre « Assaillant d'Asterion » pour 5 min de combat, titres de performance (score mixte : dégâts, soutien, mécanismes, objectifs, présence).",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -58034,6 +58862,18 @@
    ]
   },
   {
+   "fr": "Un voile psychique enveloppe le crâne : tenez les miroirs quand son regard se charge !",
+   "where": [
+    "data/raids/asterion/crane/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Un voile psychique le protège : tenez les miroirs quand son regard se charge !",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Un éclat de cœur de magma sur les jointures de Pyroclast, à nu quand ses trois évents sont fermés. Chacun brisé lui arrache une part de sa vie.",
    "where": [
     "data/enemies/pyroclast_noyau.json"
@@ -58052,6 +58892,12 @@
    ]
   },
   {
+   "fr": "Un œil brûlant de Skullmaw, à nu quand son propre regard l'aveugle. Chacun crevé lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/skullmaw_oeil.json"
+   ]
+  },
+  {
    "fr": "Une alcôve de cristal derrière le plasma !",
    "where": [
     "data/levels/glacior_02.json"
@@ -58061,6 +58907,13 @@
    "fr": "Une alcôve protégée par le plasma !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Une armure de givre le couvre : tenez ses trois chaînes ensemble pour l'enchaîner !",
+   "where": [
+    "data/enemies/dreadfang.json",
+    "data/raids/asterion/bras_gauche/zone_8.json"
    ]
   },
   {
@@ -58257,6 +59110,12 @@
    ]
   },
   {
+   "fr": "Une des quatre plaques d'armure du torse : tant qu'il en reste une, rien ne blesse Heartbreaker. Elles repoussent si elles ne tombent pas ensemble.",
+   "where": [
+    "data/enemies/heartbreaker_plaque.json"
+   ]
+  },
+  {
    "fr": "Une faille dans la glace : la Crevasse cachée !",
    "where": [
     "data/raids/asterion/bras_gauche/zone_3.json"
@@ -58293,6 +59152,12 @@
    ]
   },
   {
+   "fr": "Une griffe de Dreadfang qui cloue un joueur au sol : brisez-la pour le libérer avant qu'elle ne le broie.",
+   "where": [
+    "data/enemies/dreadfang_griffe.json"
+   ]
+  },
+  {
    "fr": "Une grotte secrète sous la Veine, pleine de scories. Une relique y attend qui ose la chercher.",
    "where": [
     "data/raids/asterion/bras_droit/zone_5.json"
@@ -58320,6 +59185,12 @@
    "fr": "Une image vide après celle-ci (16 au plus).",
    "where": [
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Une jointure des phalanges de Dreadfang, à nu quand ses trois chaînes le tiennent. Chacune brisée lui arrache une part de sa vie.",
+   "where": [
+    "data/enemies/dreadfang_jointure.json"
    ]
   },
   {
@@ -59241,6 +60112,12 @@
    ]
   },
   {
+   "fr": "Vaincre Dreadfang · {0} : sautez ses lames de balayage, quittez les marques des griffes du sol.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre Forgeron Primordial.",
    "where": [
     "data/achievements/achievements.json"
@@ -59250,6 +60127,12 @@
    "fr": "Vaincre Glaciarque.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Heartbreaker · {0} : frappez la cage, quittez les côtes-pièges.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
    ]
   },
   {
@@ -59283,9 +60166,27 @@
    ]
   },
   {
+   "fr": "Vaincre le gigaboss Dreadfang",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le gigaboss Heartbreaker",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Vaincre le gigaboss Pyroclast",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le gigaboss Skullmaw",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -59448,6 +60349,12 @@
    "fr": "Vaincre Singularis, le Cœur Effondré.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre Skullmaw · {0} : chaque regard laser vous suit puis se fige : quittez sa ligne à cet instant.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -60563,6 +61470,12 @@
    "fr": "Voidworm — prochaine version. La porte de l'antre restera scellée jusque-là.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Voile psychique ({0}) : rien ne le blesse. À son flash, {1} miroirs tenus lui renvoient son regard et l'aveuglent.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -63626,9 +64539,27 @@
    ]
   },
   {
+   "fr": "{0} est déjà tombé : la cage du torse est ouverte.",
+   "where": [
+    "game/raid/HeartbreakerFight.cpp"
+   ]
+  },
+  {
    "fr": "{0} est déjà tombé : la Main est éteinte.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est déjà tombé : le bras gauche ne griffe plus.",
+   "where": [
+    "game/raid/DreadfangFight.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est déjà tombé : le crâne est éteint.",
+   "where": [
+    "game/raid/SkullmawFight.cpp"
    ]
   },
   {
@@ -63797,6 +64728,12 @@
    "fr": "{0} FPS",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} gigaboss vaincus",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -65034,6 +65971,7 @@
    "fr": "{0} vaincu",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidResultsScene.cpp",
     "ui/screens/ResultsScene.cpp"
    ]
   },
@@ -65411,9 +66349,21 @@
    ]
   },
   {
+   "fr": "{0} · {1} · phase {2} / 3",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} · planète {2}",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} · vaincu",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -67571,6 +68521,12 @@
    ]
   },
   {
+   "fr": "Éruptions du cœur",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Érythrée",
    "where": [
     "data/online/countries.json",
@@ -67751,6 +68707,12 @@
    ]
   },
   {
+   "fr": "Éventail de lames",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Éventail de plumes",
    "where": [
     "data/enemies/phenix.json"
@@ -67904,7 +68866,25 @@
    ]
   },
   {
+   "fr": "Être présent à la chute de Dreadfang, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Heartbreaker, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Être présent à la chute de Pyroclast, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Être présent à la chute de Skullmaw, gigaboss d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
    "where": [
     "data/achievements/achievements.json"
    ]
@@ -68049,6 +69029,12 @@
    "fr": "Œil de l'Hydre",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Œil de Skullmaw",
+   "where": [
+    "data/enemies/skullmaw_oeil.json"
    ]
   },
   {

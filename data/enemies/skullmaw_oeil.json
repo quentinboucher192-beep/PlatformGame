@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "skullmaw_oeil",
+  "name": "Œil de Skullmaw",
+  "description": "Un œil brûlant de Skullmaw, à nu quand son propre regard l'aveugle. Chacun crevé lui arrache une part de sa vie.",
+  "family": "turret",
+  "animation": "animations/skullmaw_oeil.json",
+  "size": [
+    48,
+    48
+  ],
+  "scale": 2.0,
+  "hp": 8,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 600,
+    "drops": []
+  },
+  "light": {
+    "color": "#ffb050",
+    "radius": 60
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/shell_shatter.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

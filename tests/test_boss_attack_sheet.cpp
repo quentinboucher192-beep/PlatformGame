@@ -387,7 +387,8 @@ TEST_CASE("boss attack example: every boss of the game gets its examples, in its
         // In no level of the campaign (the tutorial's guardian): its examples in a neutral arena.
         if (!bench.places.count(d->id)) {
             std::printf("  hors des niveaux, arène neutre : %s\n", d->id.c_str());
-            ++neutral;
+            // 2.69: a raid's gigaboss (Pyroclast, Skullmaw, Dreadfang…) is fought in its lair, never in a campaign level.
+            if (d->raid.empty()) ++neutral;
         }
         cases.push_back({d->id, d->attacks.front().id});
         if (!d->finalAttacks.empty()) cases.push_back({d->id, d->finalAttacks.front()});

@@ -61,6 +61,10 @@ public:
     void objective(const GameWorld& w, int seat);
     void vent(int seat);
     void weakPoint(int seat);
+    /// 2.69 (phase 4B): an ally freed (Dreadfang's claw broken), a blow of the gigaboss aimed at
+    /// `seat` and dodged (a mark left in time, a flash hidden from), `amount` in health.
+    void rescue(int seat);
+    void dodged(int seat, float amount);
     void gigabossDown(const GameWorld& w);
     /// The uid of the gigaboss (its damage, its blows), and of its weak points.
     void setBoss(uint32_t uid) { boss_ = uid; }
@@ -85,7 +89,10 @@ private:
     std::map<uint32_t, int> tagOwner_;
     uint32_t boss_ = 0;
     std::vector<uint32_t> weak_;
-    std::vector<std::pair<uint32_t, int>> broken_;  // weak points broken this step, and by whom
+    // Weak points broken this step, and by whom (2.69: kept until the gigaboss's rules read them,
+    // after Contributions::afterStep; the entries of an older step are dropped at the next one).
+    std::vector<std::pair<uint32_t, int>> broken_;
+    size_t brokenSeen_ = 0;
     // The gigaboss's attack being followed: its target and whether it was hit.
     const AttackDef* attack_ = nullptr;
     bool prevTelegraph_ = false;

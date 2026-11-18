@@ -245,12 +245,14 @@ describe("raids phase 3: Asterion's body, results and rewards", () => {
         expect(e.effects[0].text).toContain("pluies de lave");
         const overview = await api("GET", `${V}/raids`, { token: p.token });
         expect(overview.body.data.world.find((x: { id: string }) => x.id === ev).body.bras_droit).toBe("detruit");
-        // The titan's map (phase 4) agrees: Pyroclast fought and fallen, the six other lairs sealed.
+        // The titan's map (phase 4) agrees: Pyroclast fought and fallen; 2.69: the lairs of Skullmaw, Dreadfang and
+        // Heartbreaker are open too (fought, not fallen).
         const titan = (await api("GET", `${V}/raids/events/${ev}/titan`, { token: p.token })).body.data;
         const bd = titan.branches.find((b: { part: string }) => b.part === "bras_droit");
         expect(bd).toMatchObject({ sealed: false, gigaboss_down: true, state: "detruit" });
         expect(titan.totals.gigaboss_defeated).toBe(1);
-        expect(titan.branches.filter((b: { sealed: boolean }) => b.sealed).length).toBe(6);
+        for (const part of ["crane", "bras_gauche", "torse"])
+            expect(titan.branches.find((b: { part: string }) => b.part === part)).toMatchObject({ sealed: false, gigaboss_down: false });
     });
 
     it("the results: clans, players in every category, my table waiting « en attente de validation »", async () => {
@@ -318,5 +320,64 @@ describe("raids phase 3: Asterion's body, results and rewards", () => {
         await api("GET", `${V}/raids/events/${ev}/results`, { token: p1.token });
         const top = (await grants(ev)).filter((g) => g.reward === "pyroclast_top");
         expect(top.length).toBe(2); // both were at the fall (3 places)
+    });
+});
+
+// 2.69 (phase 4B): Skullmaw, Dreadfang and Heartbreaker — each gigaboss its own badge, its part of the body.
+describe("raids phase 4B: the badge of each gigaboss", () => {
+    /** Two players of a group of the Skull at its lair (its way opened), the fall reported by both. */
+    async function skullFallen(tag: string) {
+        const a = await clan(tag, 2);
+        const ev = await runningEvent(a);
+        const now = new Date().toISOString();
+        for (const o of ["crane_oeil_gauche", "crane_oeil_droit", "crane_voute"])
+            await env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, 'asterion_crane', ?2, NULL, ?3)")
+                .bind(ev, o, now)
+                .run();
+        const j = await api("POST", `${V}/raids/events/${ev}/branches/crane/join`, { token: a.players[0]!.token, body: {} });
+        expect(j.status, JSON.stringify(j.body)).toBe(200);
+        const inst = j.body.data.instance.id as string;
+        await env.DB.prepare("UPDATE raid_instances SET started_at = ?2, players = ?3 WHERE id = ?1").bind(inst, iso(-25), 2).run();
+        let seat = 0;
+        for (const p of a.players)
+            await env.DB.prepare("INSERT OR REPLACE INTO raid_instance_members (instance_id, player_id, seat, active, joined_at, left_at, seat_from) VALUES (?1, ?2, ?3, 1, ?4, NULL, 0)")
+                .bind(inst, p.id, seat++, iso(-25))
+                .run();
+        const [p1, p2] = a.players as [TestPlayer, TestPlayer];
+        for (const p of [p1, p2]) expect((await send(p, inst, { kind: "boss", phase: 4 })).body.data.status).not.toBe("rejected");
+        const records = [row(0), row(1, { damage: 200, boss_damage: 100, vents: 0, weak_points: 0, ticks: 30000 })];
+        expect((await send(p1, inst, { kind: "result", records })).body.data.status).toBe("pending");
+        expect((await send(p2, inst, { kind: "result", records })).body.data.status).toBe("accepted");
+        for (const p of [p1, p2]) await send(p, inst, { kind: "objective", objective: "crane_skullmaw" });
+        return { ev, inst, p1, p2 };
+    }
+
+    it("Skullmaw's fall gives its own badge (never Pyroclast's), once: a replayed report or claim grants nothing more", async () => {
+        const { ev, inst, p1, p2 } = await skullFallen("SKUL");
+        const fight = await env.DB.prepare("SELECT boss, branch, phase FROM raid_gigaboss_fights WHERE instance_id = ?1").bind(inst).first();
+        expect(fight).toEqual({ boss: "Skullmaw", branch: "asterion_crane", phase: 4 });
+        const g = await grants(ev);
+        expect(g.filter((x) => x.player_id === p1.id).map((x) => x.reward)).toEqual(["asterion_participation", "pyroclast_performance", "skullmaw_badge"]);
+        expect(g.filter((x) => x.player_id === p2.id).map((x) => x.reward)).toEqual(["skullmaw_badge"]);
+        // The same reports again (a reconnection, a replayed request): nothing more.
+        for (const p of [p1, p2]) await send(p, inst, { kind: "boss", phase: 4 });
+        expect((await grants(ev)).length).toBe(g.length);
+        expect((await api("POST", `${V}/raids/rewards/claim`, { token: p2.token, body: {} })).body.data.claimed).toBe(1);
+        expect((await api("POST", `${V}/raids/rewards/claim`, { token: p2.token, body: {} })).body.data.claimed).toBe(0);
+        // Its badge is an achievement only its claimer may declare; Pyroclast's is not given by it.
+        await api("PUT", `${V}/players/me/achievements`, { token: p2.token, body: { unlocked: ["communaute_skullmaw", "communaute_pyroclast"] } });
+        const ids = (await env.DB.prepare("SELECT ids FROM player_achievements WHERE player_id = ?1").bind(p2.id).first<{ ids: string }>())!.ids;
+        expect(JSON.parse(ids)).toEqual(["communaute_skullmaw"]);
+        // The skull destroyed on Asterion's body, its effect noted; the results name the gigaboss.
+        const e = (await api("GET", `${V}/raids/events/${ev}`, { token: p1.token })).body.data.event;
+        expect(e.body.crane).toBe("detruit");
+        expect(e.effects.map((x: { part: string }) => x.part)).toContain("crane");
+        const r = (await api("GET", `${V}/raids/events/${ev}/results`, { token: p1.token })).body.data;
+        expect(r.gigaboss.defeated_bosses).toEqual(["Skullmaw"]);
+        expect(r.gigaboss.fights[0].boss).toBe("Skullmaw");
+        // The title « Fléau de Pyroclast » asks for Pyroclast's fall: not given for Skullmaw's.
+        await env.DB.prepare("UPDATE raid_events SET ends_at = ?2 WHERE id = ?1").bind(ev, iso(-1)).run();
+        await api("GET", `${V}/raids/events/${ev}/results`, { token: p1.token });
+        expect((await grants(ev)).filter((x) => x.reward === "pyroclast_top").length).toBe(0);
     });
 });

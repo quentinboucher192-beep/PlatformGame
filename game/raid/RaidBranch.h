@@ -143,6 +143,11 @@ struct GigabossRules {
     /// (÷ its pressure), announced fistWarn seconds before on a mark under each one.
     std::vector<float> fistPeriods;
     float fistWarn = 1.4f, fistWidth = 64.0f, fistDamage = 1.0f;
+    /// 2.69 (phase 4B): the rules of its own fight (raid::BossMechanic: "skullmaw", "dreadfang",
+    /// "heartbreaker"…; "" = Pyroclast's vents and fists above), and the whole of metadata.raid.gigaboss
+    /// they read their numbers from.
+    std::string kind;
+    Json params = Json::object();
 };
 
 struct ZoneRules {

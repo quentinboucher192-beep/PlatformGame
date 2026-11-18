@@ -111,12 +111,55 @@ export const RAID_REWARDS: Record<string, RaidReward> = {
         why: "Parmi les 3 meilleurs scores de contribution de l'événement, Pyroclast vaincu",
         rank: "performance",
     },
+    // 2.69 (phase 4B): the badge of each gigaboss fought since (present at a validated fall in its branch).
+    skullmaw_badge: {
+        id: "skullmaw_badge",
+        name: "Badge « Regard de Skullmaw »",
+        kind: "badge",
+        ref: "communaute_skullmaw",
+        why: "Présent à la chute de Skullmaw (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
+    dreadfang_badge: {
+        id: "dreadfang_badge",
+        name: "Badge « Griffes de Dreadfang »",
+        kind: "badge",
+        ref: "communaute_dreadfang",
+        why: "Présent à la chute de Dreadfang (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
+    heartbreaker_badge: {
+        id: "heartbreaker_badge",
+        name: "Badge « Cage de Heartbreaker »",
+        kind: "badge",
+        ref: "communaute_heartbreaker",
+        why: "Présent à la chute de Heartbreaker (combat validé par votre instance)",
+        rank: "gigaboss",
+    },
 };
+/**
+ * 2.69 (phase 4B): the badge of the gigaboss of each branch, granted to the players present at a
+ * validated fall in an instance of that branch (and only that one: a fall of Skullmaw never gives
+ * Pyroclast's badge).
+ */
+export const GIGABOSS_BADGES: Record<string, string> = {
+    asterion_bras_droit: "pyroclast_badge",
+    asterion_crane: "skullmaw_badge",
+    asterion_bras_gauche: "dreadfang_badge",
+    asterion_torse: "heartbreaker_badge",
+};
+/** The branch whose fall the title « Fléau de Pyroclast » asks for. */
+const TOP_BRANCH = "asterion_bras_droit";
 export const PARTICIPATION_TICKS = 5 * 60 * 120;
 export const PERFORMANCE_SCORE = 1500;
 export const TOP_PLAYERS = 3;
 /** The achievement each badge reward lets the player declare (achievements.ts). */
-export const RAID_ACHIEVEMENTS: Record<string, string> = { communaute_pyroclast: "pyroclast_badge" };
+export const RAID_ACHIEVEMENTS: Record<string, string> = {
+    communaute_pyroclast: "pyroclast_badge",
+    communaute_skullmaw: "skullmaw_badge", // 2.69 (phase 4B)
+    communaute_dreadfang: "dreadfang_badge",
+    communaute_heartbreaker: "heartbreaker_badge",
+};
 
 /** The prefix of the challenge_id of a raid's items in player_won_rewards. */
 export const raidSource = (eventId: string) => `raid:${eventId}`;
@@ -142,19 +185,28 @@ async function totalsOf(db: D1Database, eventId: string, players?: string[]): Pr
 /**
  * Grants what the validated results of an event give to `players` (all of them when omitted):
  * participation, the gigaboss's badge (a contribution « present at the fall » in an instance whose
- * fall was accepted), the performance. INSERT OR IGNORE on the unique key: idempotent.
+ * fall was accepted; 2.69: the badge of that instance's branch), the performance. INSERT OR IGNORE on
+ * the unique key: idempotent.
  */
 export async function grantFor(db: D1Database, eventId: string, players?: string[]): Promise<number> {
     const now = nowIso();
     const totals = await totalsOf(db, eventId, players);
     const fallen = await db
         .prepare(
-            `SELECT DISTINCT c.player_id, c.instance_id FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id
-             WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4 AND c.player_id IS NOT NULL`,
+            `SELECT DISTINCT c.player_id, c.instance_id, f.branch FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id
+             WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4 AND c.player_id IS NOT NULL ORDER BY c.instance_id`,
         )
         .bind(eventId)
-        .all<{ player_id: string; instance_id: string }>();
-    const atFall = new Map(fallen.results.map((r) => [r.player_id, r.instance_id]));
+        .all<{ player_id: string; instance_id: string; branch: string }>();
+    // A player present at the falls of several gigaboss gets each one's badge (once: the unique key).
+    const atFall = new Map<string, { badge: string; instance: string }[]>();
+    for (const r of fallen.results) {
+        const badge = GIGABOSS_BADGES[r.branch];
+        if (!badge) continue;
+        const mine = atFall.get(r.player_id) ?? [];
+        if (!mine.some((m) => m.badge === badge)) mine.push({ badge, instance: r.instance_id });
+        atFall.set(r.player_id, mine);
+    }
     const stmts: D1PreparedStatement[] = [];
     const grant = (player: string, reward: string, instance: string | null) =>
         stmts.push(
@@ -164,7 +216,7 @@ export async function grantFor(db: D1Database, eventId: string, players?: string
         );
     for (const t of totals) {
         if (t.ticks >= PARTICIPATION_TICKS) grant(t.player_id, "asterion_participation", null);
-        if (atFall.has(t.player_id)) grant(t.player_id, "pyroclast_badge", atFall.get(t.player_id)!);
+        for (const f of atFall.get(t.player_id) ?? []) grant(t.player_id, f.badge, f.instance);
         if (scoreOf(t).total >= PERFORMANCE_SCORE) grant(t.player_id, "pyroclast_performance", null);
     }
     if (!stmts.length) return 0;
@@ -179,9 +231,9 @@ export async function grantTop(db: D1Database, eventId: string): Promise<number>
         (
             await db
                 .prepare(
-                    "SELECT DISTINCT c.player_id FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4",
+                    "SELECT DISTINCT c.player_id FROM raid_contributions c JOIN raid_gigaboss_fights f ON f.instance_id = c.instance_id WHERE c.event_id = ?1 AND c.gigaboss = 1 AND f.phase = 4 AND f.branch = ?2",
                 )
-                .bind(eventId)
+                .bind(eventId, TOP_BRANCH)
                 .all<{ player_id: string }>()
         ).results.map((r) => r.player_id),
     );
@@ -208,11 +260,11 @@ export async function grantEndedTops(db: D1Database, now: string): Promise<numbe
     try {
         const ended = await db
             .prepare(
-                `SELECT DISTINCT e.id FROM raid_events e JOIN raid_gigaboss_fights f ON f.event_id = e.id AND f.phase = 4
+                `SELECT DISTINCT e.id FROM raid_events e JOIN raid_gigaboss_fights f ON f.event_id = e.id AND f.phase = 4 AND f.branch = ?3
                  WHERE e.ends_at <= ?1 AND e.ends_at > ?2
                    AND NOT EXISTS (SELECT 1 FROM raid_reward_grants g WHERE g.event_id = e.id AND g.reward = 'pyroclast_top')`,
             )
-            .bind(now, new Date(Date.parse(now) - 7 * 86400000).toISOString())
+            .bind(now, new Date(Date.parse(now) - 7 * 86400000).toISOString(), TOP_BRANCH)
             .all<{ id: string }>();
         for (const e of ended.results) n += await grantTop(db, e.id);
     } catch {
@@ -319,14 +371,23 @@ export async function claim(ctx: Ctx): Promise<Response> {
 
 // ------------------------------------------------------------------ Asterion's body
 
-/** What destroying each part does (data/raids/asterion.json, phase 3: only the right arm). */
+/** What destroying each part does (data/raids/asterion.json; phase 3: the right arm, 2.69: the skull, the left arm, the torso). */
 export const PART_EFFECTS: Record<string, string> = {
     bras_droit: "Plus de pluies de lave : le poing de magma d'Asterion est éteint.",
+    crane: "Asterion est aveuglé : ses attaques perdent en précision.",
+    bras_gauche: "Plus de balayages : les griffes d'Asterion sont arrachées.",
+    torse: "La cage thoracique est brisée : la voie du cœur s'ouvre.",
 };
-const BRAS_DROIT_ID = "asterion_bras_droit";
 export const GIGABOSS_OBJECTIVES: Record<string, { part: string; boss: string }> = {
     main_pyroclast: { part: "bras_droit", boss: "Pyroclast" },
+    crane_skullmaw: { part: "crane", boss: "Skullmaw" }, // 2.69 (phase 4B)
+    bg_dreadfang: { part: "bras_gauche", boss: "Dreadfang" },
+    torse_heartbreaker: { part: "torse", boss: "Heartbreaker" },
 };
+/** The part of the titan a branch is (« asterion_crane » -> « crane »). */
+const partOfBranch = (branch: string) => branch.replace(/^asterion_/, "");
+/** The parts whose gigaboss is fought (their progress shows on the body: attacked, weakened, destroyed). */
+const FOUGHT_PARTS = new Set(Object.values(GIGABOSS_OBJECTIVES).map((g) => g.part));
 
 export interface BodyState {
     body: Record<string, string>;
@@ -346,9 +407,9 @@ export async function bodiesOf(db: D1Database, eventIds: string[]): Promise<Map<
     try {
         const [objR, fightR] = await db.batch([
             db.prepare(`SELECT event_id, branch, objective_id, accepted_at FROM raid_branch_objectives WHERE event_id IN (${marks})`).bind(...ids),
-            db.prepare(`SELECT event_id, MAX(phase) AS phase FROM raid_gigaboss_fights WHERE event_id IN (${marks}) GROUP BY event_id`).bind(...ids),
+            db.prepare(`SELECT event_id, branch, MAX(phase) AS phase FROM raid_gigaboss_fights WHERE event_id IN (${marks}) GROUP BY event_id, branch`).bind(...ids),
         ]);
-        const fights = new Map((fightR!.results as { event_id: string; phase: number }[]).map((r) => [r.event_id, r.phase]));
+        const fights = fightR!.results as { event_id: string; branch: string; phase: number }[];
         for (const id of ids) out.set(id, { body: {}, effects: [] });
         for (const r of objR!.results as { event_id: string; branch: string; objective_id: string; accepted_at: string }[]) {
             const s = out.get(r.event_id)!;
@@ -356,15 +417,17 @@ export async function bodiesOf(db: D1Database, eventIds: string[]): Promise<Map<
             if (giga) {
                 s.body[giga.part] = "detruit";
                 s.effects.push({ part: giga.part, text: PART_EFFECTS[giga.part] ?? "", since: r.accepted_at });
-            } else if (r.branch === BRAS_DROIT_ID && !s.body.bras_droit) {
-                // 2.68: only the Right arm's own progress (the six other branches have their titan map).
-                s.body.bras_droit = "attaque";
+            } else if (FOUGHT_PARTS.has(partOfBranch(r.branch)) && !s.body[partOfBranch(r.branch)]) {
+                // 2.68: a branch whose gigaboss is fought shows its progress (2.69: the Skull, the Left arm and
+                // the Torso too); the others have their titan map.
+                s.body[partOfBranch(r.branch)] = "attaque";
             }
         }
-        for (const [id, phase] of fights) {
-            const s = out.get(id)!;
-            if (s.body.bras_droit === "detruit") continue;
-            s.body.bras_droit = phase >= 2 ? "affaibli" : "attaque";
+        for (const f of fights) {
+            const s = out.get(f.event_id)!;
+            const part = partOfBranch(f.branch ?? "asterion_bras_droit");
+            if (s.body[part] === "detruit") continue;
+            s.body[part] = f.phase >= 2 ? "affaibli" : "attaque";
         }
     } catch {
         /* before migration 0142 / 0143 */
@@ -461,9 +524,11 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
         server_time: now,
         event: { id: eventRow.id, state, final: state === "termine" },
         gigaboss: {
-            boss: "Pyroclast",
+            // 2.69 (phase 4B): several gigaboss in one event (Pyroclast, Skullmaw, Dreadfang, Heartbreaker…).
+            boss: [...new Set(fights.map((f) => f.boss))].join(" · ") || "Pyroclast",
             defeated: fights.some((f) => f.phase === 4),
-            fights: fights.map((f) => ({ group: `[${f.tag}]·${f.group_no}`, phase: f.phase, defeated_at: f.defeated_at })),
+            defeated_bosses: [...new Set(fights.filter((f) => f.phase === 4).map((f) => f.boss))],
+            fights: fights.map((f) => ({ group: `[${f.tag}]·${f.group_no}`, boss: f.boss, phase: f.phase, defeated_at: f.defeated_at })),
         },
         clans: [...clans.entries()]
             .map(([id, c]) => ({ id, ...c }))

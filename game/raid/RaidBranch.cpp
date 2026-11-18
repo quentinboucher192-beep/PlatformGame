@@ -391,6 +391,8 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         g.hpPerPlayer = std::clamp(jget<float>(giga, "hpPerPlayer", g.hpPerPlayer), 0.0f, 2.0f);
         g.weakHpPerPlayer = std::clamp(jget<float>(giga, "weakHpPerPlayer", g.weakHpPerPlayer), 0.0f, 2.0f);
         g.pressurePerPlayer = std::clamp(jget<float>(giga, "pressurePerPlayer", g.pressurePerPlayer), 0.0f, 0.3f);
+        g.kind = jstr(giga, "kind");  // 2.69 (phase 4B): its own fight (raid::BossMechanic)
+        g.params = giga;
     }
     return z;
 }

@@ -116,9 +116,17 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
         links += static_cast<int>(b.effects.size());
         CHECK(b.zones[7].boss);
         CHECK(b.zones[4].secret);
-        // 2.68 (phase 3): Pyroclast is fought in the Bras droit's Main; the six other lairs stay sealed.
-        if (tb.part == "bras_droit") CHECK(b.zoneRules(8)->sealedLabel.empty() && !b.zoneRules(8)->gigaboss.boss.empty());
-        else CHECK(!b.zoneRules(8)->sealedLabel.empty());
+        // 2.68 (phase 3): Pyroclast is fought in the Bras droit's Main; 2.69 (phase 4B): Skullmaw, Dreadfang and
+        // Heartbreaker in their lairs. A lair is either sealed or has its gigaboss (and its objective « gigaboss »).
+        const raid::ZoneRules* lair = b.zoneRules(8);
+        const bool fought = !lair->gigaboss.boss.empty();
+        CHECK(lair->sealedLabel.empty() == fought);
+        if (tb.part == "bras_droit" || tb.part == "crane" || tb.part == "bras_gauche" || tb.part == "torse") CHECK(fought);
+        if (fought) {
+            const raid::ObjectiveInfo* giga = b.objective(lair->gigaboss.objective);
+            CHECK(giga != nullptr && giga->zone == 8 && giga->role == "gigaboss");
+            CHECK(lair->arena.present);
+        }
         CHECK(b.zoneRules(1)->spawns.at("start").size() == 3);
         for (const raid::ZoneRules& z : b.rules) {
             CHECK(z.spawns.count("start") == 1);
@@ -168,7 +176,9 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
         uint32_t all = 0;
         for (const auto& o : b.objectives) all |= 1u << o.index;
         CHECK(b.reachable(all)[8]);
-        CHECK(!b.controlled(8, all));  // the lair: the gigaboss comes later
+        // The lair: controlled once its gigaboss fell (2.69); a sealed one never.
+        CHECK(b.controlled(8, all) == fought);
+        if (fought) CHECK(!b.controlled(8, all & ~(1u << b.objectiveIndex(lair->gigaboss.objective))));
     }
     CHECK(zones == 56);
     CHECK(links == static_cast<int>(titan->links.size()));
@@ -218,7 +228,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x831e15f159492184ULL;  // reference: printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0xd481bf491ab24108ULL;  // reference (2.69: the three lairs opened): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

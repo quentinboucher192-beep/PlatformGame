@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "heartbreaker_plaque",
+  "name": "Plaque d'armure de Heartbreaker",
+  "description": "Une des quatre plaques d'armure du torse : tant qu'il en reste une, rien ne blesse Heartbreaker. Elles repoussent si elles ne tombent pas ensemble.",
+  "family": "turret",
+  "animation": "animations/heartbreaker_plaque.json",
+  "size": [
+    64,
+    64
+  ],
+  "scale": 2.0,
+  "hp": 10,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 600,
+    "drops": []
+  },
+  "light": {
+    "color": "#8ea3c6",
+    "radius": 60
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/shell_shatter.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

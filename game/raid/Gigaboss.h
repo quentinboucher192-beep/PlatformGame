@@ -22,10 +22,12 @@
 // vents closed (who held them), the weak points broken (who broke them), the gigaboss down.
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "game/raid/BossMechanic.h"
 #include "game/raid/RaidBranch.h"
 
 namespace cosmic {
@@ -106,6 +108,15 @@ public:
         testPhase_ = startPhase;
     }
 
+    /// 2.69 (phase 4B): the rules of its own fight (Skullmaw's gazes and mirrors, Dreadfang's claws
+    /// and chains, Heartbreaker's plates and beats: game/raid/BossMechanic.h); nullptr for Pyroclast,
+    /// whose vents and fists are the code above. Read by the combat screen (display only).
+    const BossMechanic* mechanic() const { return mech_.get(); }
+    /// Steps since the fight began (its own rules count from it).
+    uint32_t fightTicks() const { return fightTicks_; }
+    /// A line of the raid's alerts, from its own rules.
+    void say(std::string text, AlertKind kind) { alert(std::move(text), kind); }
+
 private:
     Enemy* find(GameWorld& w);
     void alert(std::string text, AlertKind kind) { alerts_.emplace_back(std::move(text), kind); }
@@ -133,6 +144,7 @@ private:
     bool seen_ = false, fallen_ = false;   // the boss found in the world; it already fell (branch state)
     std::vector<Fist> fists_;
     int fistClock_ = 0;
+    std::unique_ptr<BossMechanic> mech_;  // 2.69 (phase 4B)
 };
 
 }  // namespace cosmic::raid

@@ -35,6 +35,7 @@ void Gigaboss::begin(GameWorld& w, const GigabossRules& rules, bool fallen, Cont
     if (!rules.present) return;
     rules_ = &rules;
     for (const Rect& r : rules.vents) vents_.push_back(Vent{r});
+    mech_ = makeBossMechanic(rules);  // 2.69 (phase 4B): its own fight (none for Pyroclast)
     stage_ = Stage::Waiting;
     fallen_ = fallen;  // the boss itself appears with the world's first step (its spawn is pending until then)
     (void)w;
@@ -61,7 +62,10 @@ void Gigaboss::before(GameWorld& w) {
     if (!rules_ || stage_ == Stage::Absent || stage_ == Stage::Fallen) return;
     Enemy* b = find(w);
     if (!b) return;
-    b->setRaidGuard(stage_ == Stage::Carapace, stage_ == Stage::Exposed ? rules_->exposedMult : 1.0f);
+    if (mech_)
+        b->setRaidGuard(mech_->guarded() && !b->lastStand(), mech_->damageMult());  // 2.69: its own guard
+    else
+        b->setRaidGuard(stage_ == Stage::Carapace, stage_ == Stage::Exposed ? rules_->exposedMult : 1.0f);
     int playing = 0;
     for (int i = 0; i < w.teamSize(); ++i) playing += w.coop() && w.member(i).presence == GameWorld::Presence::Playing ? 1 : 0;
     inPlay_ = playing;
@@ -79,7 +83,7 @@ void Gigaboss::after(GameWorld& w, Contributions& c) {
             // Another fight of the event already took it down: the hand is cold, its arena empty.
             b->despawn();
             stage_ = Stage::Absent;
-            alert("GIGABOSS · La Main est éteinte : " + rules_->name + " est déjà tombé.", AlertKind::Branch);
+            alert(mech_ ? mech_->goneText(rules_->name) : "GIGABOSS · La Main est éteinte : " + rules_->name + " est déjà tombé.", AlertKind::Branch);
             return;
         }
     }
@@ -87,11 +91,12 @@ void Gigaboss::after(GameWorld& w, Contributions& c) {
         if (!engaged_) return;
         // It fell (its last stand survived): everyone in play was there.
         endExposure(w, c);
+        if (mech_) mech_->stop(w, c);  // 2.69: its weak points, claws and holds go with it
         stage_ = Stage::Fallen;
         fellNow_ = true;
         reached_ = std::max(reached_, 4);
         c.gigabossDown(w);
-        alert("GIGABOSS · " + rules_->name + " est vaincu ! Le bras droit d'Asterion s'éteint.", AlertKind::Branch);
+        alert(mech_ ? mech_->fallText(rules_->name) : "GIGABOSS · " + rules_->name + " est vaincu ! Le bras droit d'Asterion s'éteint.", AlertKind::Branch);
         return;
     }
     if (!engaged_) {
@@ -127,6 +132,11 @@ void Gigaboss::after(GameWorld& w, Contributions& c) {
             const std::string name = now - 1 < static_cast<int>(ph.size()) ? ph[static_cast<size_t>(now - 1)].name : "";
             alert("GIGABOSS · Phase " + std::to_string(now) + " / " + std::to_string(ph.size()) + (name.empty() ? "" : " · " + name), AlertKind::Danger);
         }
+    }
+    if (mech_) {
+        // 2.69 (phase 4B): Skullmaw, Dreadfang, Heartbreaker… run their own fight from here.
+        mech_->step(w, *this, *b, c);
+        return;
     }
     stepFists(w, *b);  // its fists of magma, one per player in play (every phase)
     const bool carapacePhase = !b->lastStand() && phase_ >= rules_->carapaceFrom && phase_ < rules_->carapaceUntil && !vents_.empty();
@@ -384,6 +394,7 @@ uint64_t Gigaboss::hash() const {
         h = mix(h, (static_cast<uint64_t>(static_cast<uint32_t>(f.left)) << 32) ^ static_cast<uint64_t>(std::lround(f.at.x * 4.0f)) ^
                        (static_cast<uint64_t>(std::lround(f.at.y * 4.0f)) << 16));
     h = mix(h, (seen_ ? 1u : 0u) | (fallen_ ? 2u : 0u));
+    if (mech_) h = mix(h, mech_->hash());  // 2.69 (phase 4B)
     return h;
 }
 
