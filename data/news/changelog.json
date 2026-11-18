@@ -3,6 +3,9 @@
     "Attaque dirigée : maintenez Haut en attaquant pour frapper au-dessus de Nova, au sol comme en l'air ; en l'air, maintenez Bas pour frapper en dessous. Au sol, Bas reste « s'accroupir » (l'attaque frappe alors devant, comme avant) et, avec la Frappe sismique, Bas + Attaque en l'air reste la frappe sismique. Ces coups touchent les ennemis (mêmes dégâts, même recul) et les objets cassables comme le coup vers l'avant, avec leurs propres animations et leur arc de lame ; un coup vers le bas ne fait pas rebondir sur les ennemis (aucun nouveau passage dans les niveaux). Expliqué dans Paramètres › Clavier / souris et Manette, et dans le tutoriel.",
     "Records et classements conservés : rien n'est remis à zéro. Les replays enregistrés avant cette version se rejouent exactement comme avant (avec les règles de leur époque) ; les nouveaux replays notent la version de la simulation qui les a joués. Les combinaisons créées en ligne gardent leur planche : pendant un coup vers le haut ou vers le bas, Nova y montre le coup vers l'avant."
   ],
+  "2.68.2": [
+    "Pause en ligne et en test : la pause n'arrête jamais le jeu, même dans le test admin d'Asterion. Seul le joueur qui la demande cesse d'agir ; les ennemis et le boss continuent et peuvent encore le toucher (le menu de pause le rappelle)."
+  ],
   "2.68.1": [
     "Correctif : en raid et en coopération en ligne, la touche Échap ouvrait la pause puis la refermait aussitôt ; la pause reste maintenant ouverte. En ligne, elle ne met en pause que le joueur qui l'a demandée (le groupe continue) ; le test admin d'Asterion, seul sur son ordinateur, s'arrête entièrement."
   ],
