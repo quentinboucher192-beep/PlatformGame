@@ -201,6 +201,62 @@ describe("raids: the clan, then each member registers", () => {
         expect(await countWhere("SELECT COUNT(*) AS n FROM raid_registrations WHERE player_id = ?1", m[0]!.id)).toBe(0);
     });
 
+    it("2.72: the registrants' presence and « X/Y en ligne », to their clan's members only", async () => {
+        const a = await admin();
+        const aube = await team("AUBE", 0, 4);
+        const nebu = await team("NEBU", 0, 1);
+        const loner = await registerPlayer("Solitaire");
+        const id = await worldEvent(a);
+        expect((await registerClan(id, aube.chief)).status).toBe(201);
+        expect((await registerClan(id, nebu.chief)).status).toBe(201);
+        const [m1, m2, m3, m4] = aube.mem as [TestPlayer, TestPlayer, TestPlayer, TestPlayer];
+        for (const p of [m1, m2, m3, m4, nebu.mem[0]!]) expect((await register(id, p)).status).toBe(201);
+        const sheet = async (p?: TestPlayer) => (await api("GET", `${V}/raids/events/${id}`, { token: p?.token })).body.data;
+        const presenceOf = (data: any, p: TestPlayer) => data.roster.find((r: { id: string }) => r.id === p.id)?.presence;
+        // m1 active, m2 idle (« absent »: not counted), m3 active but hidden, m4 silent; the chief
+        // (not registered) active: he sees the list, he is not in it.
+        const heartbeat = (p: TestPlayer, state: string) => api("POST", `${V}/presence`, { token: p.token, body: { state } });
+        for (const [p, s] of [
+            [m1, "active"],
+            [m2, "idle"],
+            [m3, "active"],
+            [aube.chief, "active"],
+            [nebu.mem[0]!, "active"],
+        ] as const)
+            expect((await heartbeat(p, s)).status).toBe(200);
+        expect((await api("PATCH", `${V}/players/me`, { token: m3.token, body: { presence_visible: false } })).status).toBe(200);
+        const chief = await sheet(aube.chief);
+        expect(chief.roster).toHaveLength(4);
+        expect(chief.roster_online).toBe(1);
+        expect([m1, m2, m3, m4].map((p) => presenceOf(chief, p))).toEqual(["online", "away", "offline", "offline"]);
+        // Nothing more precise than SOCIAL.
+        for (const r of chief.roster) expect(Object.keys(r).sort()).toEqual(["avatar", "id", "presence", "registered_at", "username"]);
+        // A registrant sees the same list.
+        expect((await sheet(m4)).roster_online).toBe(1);
+        // Another clan sees its own registrants only (never AUBE's presence); no clan or no account: nothing.
+        const other = await sheet(nebu.chief);
+        expect(other.roster.map((r: { id: string }) => r.id)).toEqual([nebu.mem[0]!.id]);
+        expect(other.roster_online).toBe(1);
+        for (const viewer of [loner, undefined]) {
+            const out = await sheet(viewer);
+            expect(out.roster).toEqual([]);
+            expect(out).not.toHaveProperty("roster_online");
+        }
+        // A registration left behind by a player no longer in the clan: listed, no presence, not counted.
+        expect((await heartbeat(m4, "active")).status).toBe(200);
+        expect((await sheet(aube.chief)).roster_online).toBe(2);
+        await env.DB.prepare("DELETE FROM clan_members WHERE player_id = ?1").bind(m4.id).run();
+        const after = await sheet(aube.chief);
+        expect(after.roster).toHaveLength(4);
+        expect(presenceOf(after, m4)).toBeUndefined();
+        expect(after.roster_online).toBe(1);
+        // A heartbeat older than 150 s: offline.
+        await env.DB.prepare("UPDATE players SET presence_at = ?2 WHERE id = ?1").bind(m1.id, new Date(Date.now() - 200_000).toISOString()).run();
+        const stale = await sheet(aube.chief);
+        expect(presenceOf(stale, m1)).toBe("offline");
+        expect(stale.roster_online).toBe(0);
+    });
+
     it("lock time: neither registration nor unregistration once locked", async () => {
         const a = await admin();
         const aube = await team("AUBE", 0, 2);

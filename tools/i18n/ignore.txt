@@ -273,6 +273,11 @@ torse
 abdomen
 part
 zones
+contributions
+crust
+danger
+magma
+minimap
 branches
 instances
 journal
@@ -294,3 +299,4 @@ torse_heartbreaker
 every
 flash
 front
+ok

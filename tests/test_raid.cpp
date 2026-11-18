@@ -215,7 +215,7 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
     CHECK(b.objective("main_pyroclast") && b.objective("main_pyroclast")->zone == 8 && b.objective("main_pyroclast")->role == "gigaboss");
     CHECK(b.level(8)->findObject(b.zoneRules(8)->gigaboss.boss) != nullptr);
     CHECK(b.zoneRules(4)->magma.present);
-    CHECK(b.zoneRules(4)->magma.period == 90.0f);
+    CHECK(b.zoneRules(4)->magma.period == 42.0f);  // 2.72: more often (was 90 s)
     CHECK(b.pairDone(*b.objective("forge_soufflet_est"), 1u << b.objectiveIndex("forge_soufflet_ouest")) == "forge_soufflet_ouest");
     CHECK(b.zoneRules(1)->spawns.at("start").size() == 3);  // « 3 points d'apparition »
 }
@@ -243,7 +243,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xe57624dc0e8b74a3ULL;  // reference (2.68: the Main de Pyroclast): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0x986170e86c9d19acULL;  // reference (2.72: the rising magma): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }

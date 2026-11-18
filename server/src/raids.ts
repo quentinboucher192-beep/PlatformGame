@@ -21,7 +21,9 @@
 
 import { audit, requireAuth, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
+import { countOnline, listPresenceOf } from "./friends";
 import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
+import type { PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { bodiesOf, rewardsOf } from "./raidRewards";
 import { requireValidMap, resultSummaries } from "./raidWorld";
@@ -423,7 +425,9 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
 /**
  * GET /raids/events/{eventId}: the sheet of an event. My clan's entry (raid leader,
  * instructions), its roster and groups of 8 (only my clan's members see them), the clans
- * taking part, the invitations of a clan raid.
+ * taking part, the invitations of a clan raid. 2.72: each registrant's presence (online, away,
+ * offline; a hidden one reads offline) and `roster_online` (the « X » of « X/Y en ligne »), for
+ * the same viewers as the roster, and only for the registrants still members of their clan.
  */
 export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const now = nowIso();
@@ -443,7 +447,9 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
             .bind(id, c),
         db
             .prepare(
-                `SELECT p.id, p.username, p.avatar, r.created_at FROM raid_registrations r JOIN players p ON p.id = r.player_id
+                `SELECT p.id, p.username, p.avatar, r.created_at, p.presence_state, p.presence_at, p.presence_visible,
+                        EXISTS (SELECT 1 FROM clan_members m WHERE m.clan_id = ?2 AND m.player_id = p.id) AS in_clan
+                 FROM raid_registrations r JOIN players p ON p.id = r.player_id
                  WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username LIMIT 200`,
             )
             .bind(id, c),
@@ -467,7 +473,15 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
         updated_at: string;
     };
     const entry = (entryR!.results[0] as Entry | undefined) ?? null;
-    const roster = entry ? (rosterR!.results as { id: string; username: string; avatar: string | null; created_at: string }[]) : [];
+    type Registrant = { id: string; username: string; avatar: string | null; created_at: string; in_clan: number } & Pick<
+        PlayerRow,
+        "presence_state" | "presence_at" | "presence_visible"
+    >;
+    const roster = entry ? (rosterR!.results as Registrant[]) : [];
+    // 2.72: the registrants' presence, to the members of their clan who see the roster (the
+    // viewer is one: the roster is the viewer's clan's), from the game's heartbeat.
+    const nowMs = Date.now();
+    const presence = roster.map((p) => (clan && p.in_clan === 1 ? listPresenceOf(p, nowMs) : null));
     const invitations = invR!.results as { id: string; tag: string; name: string; status: string; created_at: string }[];
     const organizer = !!clan && e.clan_id === clan.id;
     const mineInv = clan ? invitations.find((i) => i.id === clan.id) : undefined;
@@ -494,7 +508,14 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
             can_call: isManager(clan) || (!!entry && entry.leader_id === me && me !== ""),
             is_organizer: organizer,
         },
-        roster: roster.map((p) => ({ id: p.id, username: p.username, avatar: p.avatar, registered_at: p.created_at })),
+        roster: roster.map((p, i) => ({
+            id: p.id,
+            username: p.username,
+            avatar: p.avatar,
+            registered_at: p.created_at,
+            ...(presence[i] ? { presence: presence[i] } : {}),
+        })),
+        ...(entry && clan ? { roster_online: countOnline(presence) } : {}),
         groups: groupsOf(roster, entry?.leader_id ?? null).map((g) => ({
             number: g.number,
             leader: { id: g.leader.id, username: g.leader.username },

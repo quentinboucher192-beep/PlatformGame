@@ -13,6 +13,7 @@
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
 #include "game/online/DeviceIdentity.h"
+#include "game/online/LatencyMeter.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/LevelRatings.h"
 #include "game/online/OnlineCache.h"
@@ -64,6 +65,10 @@ public:
 
     // ---------------------------------------------------------------- state
     OnlineState state() const;
+    /// 2.72: the round trip to the server in milliseconds (« En ligne - 25ms »): the median of
+    /// the last light requests timed on the network thread (LatencyMeter); -1 while none was
+    /// measured or when the server is not reachable now.
+    int latencyMs() const { return state() == OnlineState::Online ? latency_.ms() : -1; }
     const OnlineConfig& config() const { return config_; }
     const OnlineSettings& settings() const { return settings_; }
     bool usable() const;  // enabled, configured and compiled with HTTP
@@ -324,6 +329,7 @@ private:
     bool unsupported_ = false;
 
     OnlineState netState_ = OnlineState::Idle;
+    LatencyMeter latency_;  // 2.72: the samples of latencyMs()
     std::string lastError_;
     float retryTimer_ = 0.0f;
     float retryDelay_ = 15.0f;

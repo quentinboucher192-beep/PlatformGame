@@ -307,6 +307,7 @@ void OnlineService::noteResult(const ApiResult& r) {
             retryTimer_ = retryDelay_ = 15.0f;
         }
         netState_ = OnlineState::Offline;
+        latency_.clear();  // 2.72: measured again once the server answers
         lastError_ = r.message;
         return;
     }
@@ -368,6 +369,11 @@ void OnlineService::call(const std::string& method, const std::string& path, std
     client_->send(std::move(rq), [this, method, path, bodyCopy, contentType, auth, cb, retried, timeoutMs](const HttpResponse& http) {
         ApiResult r = parseApiResponse(http);
         noteResult(r);
+        // 2.72: a light request answered (any status the server sends, not a failure of its
+        // own): its round trip, timed on the network thread, is a sample of « En ligne - 25ms ».
+        if (netState_ == OnlineState::Online && LatencyMeter::probe(path) && !http.networkFailure() && http.status > 0 && http.status < 500 &&
+            http.roundTripMs >= 0.0)
+            latency_.add(http.roundTripMs);
         if (!r.ok && r.status == 401 && auth && (r.code == "TOKEN_EXPIRED" || r.code == "INVALID_TOKEN")) {
             if (!retried) {
                 // The access token died early (server restart, clock skew): refresh once.

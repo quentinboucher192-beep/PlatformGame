@@ -1,0 +1,53 @@
+{
+  "texture": "sprites/objects/raid_magma.png",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "pivot": [
+    0,
+    0
+  ],
+  "clips": {
+    "body": {
+      "row": 0,
+      "count": 8,
+      "fps": 6,
+      "loop": true
+    },
+    "crust": {
+      "row": 1,
+      "count": 8,
+      "fps": 2,
+      "loop": true
+    },
+    "surface": {
+      "row": 2,
+      "count": 8,
+      "fps": 9,
+      "loop": true
+    },
+    "bubble": {
+      "row": 3,
+      "count": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "ember": {
+      "row": 4,
+      "count": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "warn": {
+      "row": 5,
+      "count": 8,
+      "fps": 10,
+      "loop": true
+    },
+    "glow": {
+      "row": 6,
+      "count": 1,
+      "fps": 1,
+      "loop": true
+    }
+  }
+}

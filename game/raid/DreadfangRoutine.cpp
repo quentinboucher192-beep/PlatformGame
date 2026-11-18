@@ -356,7 +356,7 @@ void DreadfangRoutine::lines(const GameWorld& w, const Gigaboss& g, std::vector<
     const std::string ph = "phase " + std::to_string(std::max(1, g.phase())) + " / 3";
     for (const Pin& p : pins_)
         if (p.nailed) {
-            out.push_back({"✚", "Un allié est cloué au sol : brisez la griffe qui le tient (" + secs(p.left) + ").", kIce});
+            out.push_back({"+", "Un allié est cloué au sol : brisez la griffe qui le tient (" + secs(p.left) + ").", kIce});
             break;
         }
     if (exposed(g)) {

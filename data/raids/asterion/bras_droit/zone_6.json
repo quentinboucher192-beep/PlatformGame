@@ -710,7 +710,99 @@
    }
   },
   {
+   "id": "magma_flow",
+   "type": "damage_zone",
+   "layer": "gameplay",
+   "rect": [
+    672.0,
+    432.0,
+    736.0,
+    48.0
+   ],
+   "props": {
+    "damage": 2,
+    "interval": 0.6,
+    "visible": true,
+    "active": false,
+    "style": "magma",
+    "rise": 1.6,
+    "fall": 1.4,
+    "bounce": true
+   }
+  },
+  {
    "id": "o36",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    400.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o37",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    400.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o38",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1120.0,
+    400.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o39",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    400.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    660.0,
+    456.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Le magma monte dans l'avant-bras : à l'alerte, sautez sur les corniches.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o41",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -724,7 +816,7 @@
    }
   },
   {
-   "id": "o37",
+   "id": "o42",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -739,7 +831,7 @@
    }
   },
   {
-   "id": "o38",
+   "id": "o43",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -756,7 +848,7 @@
    }
   },
   {
-   "id": "o39",
+   "id": "o44",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -771,7 +863,7 @@
    }
   },
   {
-   "id": "o40",
+   "id": "o45",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -785,7 +877,7 @@
    }
   },
   {
-   "id": "o41",
+   "id": "o46",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -890,7 +982,13 @@
      "trigger": "activate"
     }
    ],
-   "magma": null,
+   "magma": {
+    "zone": "magma_flow",
+    "period": 38.0,
+    "first": 18.0,
+    "warn": 4.0,
+    "duration": 6.0
+   },
    "sealed": null
   }
  },

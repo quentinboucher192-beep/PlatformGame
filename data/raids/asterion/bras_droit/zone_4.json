@@ -698,7 +698,9 @@
     "interval": 0.6,
     "visible": true,
     "active": false,
-    "style": "embers",
+    "style": "magma",
+    "rise": 1.6,
+    "fall": 1.4,
     "bounce": true
    }
   },
@@ -1253,9 +1255,9 @@
    ],
    "magma": {
     "zone": "magma_flow",
-    "period": 90.0,
-    "first": 40.0,
-    "warn": 3.0,
+    "period": 42.0,
+    "first": 20.0,
+    "warn": 4.0,
     "duration": 8.0
    },
    "sealed": null

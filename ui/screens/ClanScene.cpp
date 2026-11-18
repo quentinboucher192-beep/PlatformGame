@@ -1,7 +1,8 @@
 // COSMIC ONLINE › CLANS (2.66): the player's clan (its page), the search of the clans, their
 // ranking, and the creation of a clan. The page of a clan (maquette « Page d'un clan »): its
 // emblem, name, [TAG], motto and pills; its members and their role (their presence only for the
-// clan's members, and only as each player shares it); its best team on every EXTRÊME level
+// clan's members, and only as each player shares it; 2.72: « X/Y en ligne » in the header of the
+// list, the members « en ligne » first: ui/online/PresenceList); its best team on every EXTRÊME level
 // (Solo today: the server already says `mode` and `team_size` for Duo and Trio); the pending
 // applications (chief and officers only); its discussion (a group conversation of SOCIAL).
 // 2.63.6: the page is the clan's public sheet, opened from search, the ranking, a profile or a
@@ -32,6 +33,7 @@
 #include "game/online/OnlineSession.h"
 #include "ui/online/ClanWidgets.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/online/PresenceList.h"
 #include "ui/screens/ClanRaids.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -989,10 +991,22 @@ private:
         UIContext& ui = g_.ui;
         panel(ui, r, ui.theme().border);
         const Json& members = at(page_, "members");
-        float y = sectionTitle(ui, r, "MEMBRES", std::to_string(members.size()) + " / " + std::to_string(jget<int>(c, "max_members", clans::kMaxMembers)),
-                               ui.theme().textDim);
+        // 2.72: « X/Y en ligne » (the server's count, members only, a fresh answer), else the
+        // number of members out of the most a clan may have.
+        const int total = members.is_array() ? static_cast<int>(members.size()) : 0;
+        const int online = presencelist::onlineCount(page_, "members_online", total, pageCache_);
+        float y = 0.0f;
+        if (online >= 0) {
+            const presencelist::HeaderLayout L = presencelist::layoutHeader(ui, r.x + ui.s(16), r.right() - ui.s(16), r.y + ui.s(24), "MEMBRES", 14,
+                                                                            FontFace::Bold, presencelist::counterText(online, total), 14, FontFace::Bold);
+            presencelist::drawHeader(ui, L, FontFace::Bold, ui.theme().textDim, FontFace::Bold, presencelist::counterColor(online, ui.theme().textDim));
+            y = r.y + ui.s(44);
+        } else {
+            y = sectionTitle(ui, r, "MEMBRES", std::to_string(members.size()) + " / " + std::to_string(jget<int>(c, "max_members", clans::kMaxMembers)),
+                             ui.theme().textDim);
+        }
         // The note at the bottom (measured), the list above it.
-        static const char* kNote = "Présence : seulement pour les membres du clan, et si le joueur la partage.";
+        static const char* kNote = "Présence : visible des seuls membres du clan. « En ligne » compte les joueurs actifs ; une présence masquée apparaît hors ligne.";
         const float nw = r.w - ui.s(32);
         const float nh = ui.text().measureWrapped(kNote, FontFace::Body, ui.s(13), nw).y;
         const bool note = !myRole().empty();
@@ -1001,7 +1015,9 @@ private:
         const float rowH = ui.s(44);
         ui.beginScroll("members", view, static_cast<float>(members.size()) * (rowH + ui.s(6)));
         float ry = view.y - ui.scrollOffset();
-        for (const auto& m : members) {
+        // 2.72: « en ligne » first, then « absent », « hors ligne » (the server's order inside each).
+        for (const size_t mi : presencelist::orderByPresence(members, pageCache_)) {
+            const Json& m = members[mi];
             const Json& p = at(m, "player");
             const std::string pid = jstr(p, "id"), role = jstr(m, "role");
             Rect rr{view.x, ry, view.w - ui.s(12), rowH};
@@ -1013,9 +1029,10 @@ private:
                 modal_ = Modal::Member;
             }
             float x = rr.x + ui.s(10);
-            // The presence pill: only the clan's members receive it (the server's rule).
-            if (m.contains("presence")) {
-                drawPresenceDot(ui, {x + ui.s(5), rr.center().y}, ui.s(5), jstr(m, "presence"), ui.s(1.5f));
+            // The presence pill: only the clan's members receive it (the server's rule), never
+            // from the offline cache (no longer true).
+            if (const std::string pr = presencelist::shown(m, pageCache_); !pr.empty()) {
+                drawPresenceDot(ui, {x + ui.s(5), rr.center().y}, ui.s(5), pr, ui.s(1.5f));
                 x += ui.s(18);
             }
             const float w = rr.right() - ui.s(10) - x;

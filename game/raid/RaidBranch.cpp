@@ -151,7 +151,7 @@ LockText Branch::lockText(const std::string& lock) const {
         return {"il faut les deux générateurs", "Les deux générateurs tournent : le Poignet-verrou s'ouvre",
                 "allumer les deux générateurs (Veine, Avant-bras)"};
     if (lock == "shortcut")
-        return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine ⇄ Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
+        return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine – Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
     if (lock.rfind("link:", 0) == 0) {
         const EffectInfo* e = effect(lock.substr(5));
         return {"une autre branche du titan l'ouvre", e ? e->label : std::string(), "fermé : une autre branche du titan l'ouvre"};
