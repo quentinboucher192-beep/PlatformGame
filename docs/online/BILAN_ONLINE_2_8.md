@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Bilan — cahier des charges « COSMIC PLATFORMER — ONLINE 2.8 »
 
 État au 14 novembre 2026, version **2.14.0**. Les six phases ont été traitées dans l'ordre
@@ -156,3 +158,7 @@ d'accès ; aucun secret dans le dépôt ni dans le jeu ; localisation seulement 
 facultative), masquable ; le jeu reste entièrement jouable sans compte et sans Internet ; aucune
 donnée de démonstration sur le staging (elles ne vont que sur le serveur local de
 développement).
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

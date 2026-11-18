@@ -1,8 +1,13 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Collection (2.19.0)
 
 Menu principal → **Collection** : quatre onglets, *Vestiaire*, *Route des étoiles*,
 *Musiques* et *Galerie*. Tout y est **visuel** : rien ne change dans une partie, un replay,
 un record ou la simulation (aucune empreinte de niveau ni version de simulation touchée).
+
+<p align="center"><img src="media/wardrobe.png" width="820" alt="Collection : le Vestiaire, les combinaisons de Nova et leurs paliers"></p>
+<p align="center"><sub>Le Vestiaire d'un profil neuf : chaque combinaison montre l'étoile ou le succès qui la débloque.</sub></p>
 
 ## Récompenses (Vestiaire, Route des étoiles)
 
@@ -118,3 +123,7 @@ puis 30 : les créatures de la campagne, sans les gardiens ni les petites gelée
 division) et les images des planètes enregistrées (une, puis les 5). Compteurs gardés dans
 `saves/achievements.json` (`equipped_items`, `outfit_categories`, `menu_music`,
 `photographed_planets`) ; les morceaux et les créatures sont lus dans `saves/collection.json`.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

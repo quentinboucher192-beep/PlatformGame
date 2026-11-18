@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Architecture
 
 Cosmic Platformer est écrit en C++20 sur SDL3 (rendu 2D `SDL_Renderer`, entrées, audio via
@@ -44,8 +46,10 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
   (plateformes, portes, leviers, lasers, collectibles…), projectiles, dégâts, `Hud`,
   `GameRenderer`.
 * `player/` – machine à états (Idle, Run, Jump, Fall, WallSlide, Climb, Slide, Dash, Swim,
-  Hurt, Dead, Respawn, Victory, Hidden ; double saut, atterrissage, attaque et interaction
-  sont des actions superposées à ces états) entièrement paramétrée par `data/player.json`
+  Hurt, Dead, Respawn, Victory, Hidden, Crouch ; double saut, atterrissage, attaque et
+  interaction sont des actions superposées à ces états ; l'attaque frappe devant, vers le haut
+  — Haut seul — ou, en l'air, vers le bas — Bas seul —, dans la direction choisie au début du
+  coup : `SlashDirection`, simulation 15, 2.71) entièrement paramétrée par `data/player.json`
   (vitesses, accélérations, décélérations, gravité, temps de coyote, tampon de saut,
   hauteur variable, glissade, saut mural…).
 * `powers/` – `PowerRegistry` : chaque pouvoir (Dash, Onde, Bouclier, Impulsion,
@@ -129,3 +133,7 @@ onOverlay()                        (notifications en jeu)
 
 Le chrono et toute la simulation utilisent le pas fixe : les résultats sont identiques
 quelle que soit la fréquence d'affichage.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

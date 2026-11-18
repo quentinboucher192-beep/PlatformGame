@@ -284,8 +284,26 @@ struct RaidTestSetup {
     int players = 2;
     int startPhase = 1;
     bool invincible = true;
+    /// 2.70, captures for the documentation only (`--raid-test`, never without --headless:
+    /// docs/BUILDING.md): no account needed (the test stays solo, local and never reported),
+    /// each seat played by its script (`scripts[i]`, InputScript's format; "" leaves seat 0 to
+    /// this computer and the other seats vacant), appearing at `spawns[i]` when given.
+    bool capture = false;
+    std::vector<std::string> scripts;
+    std::vector<std::optional<Vec2>> spawns;
 };
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
+/// 2.70, captures for the documentation only (`--coop-test`, never without --headless): a team
+/// of `players` (2 or 3) on one PC playing the EXTRÊME level `levelId`, each seat played by its
+/// script (`scripts[i]`, InputScript's format), appearing at `spawns[i]` when given; never
+/// ranked (one PC), as any game on one PC.
+struct CoopCapture {
+    std::string levelId;
+    int players = 2;
+    std::vector<std::string> scripts;
+    std::vector<std::optional<Vec2>> spawns;
+};
+std::unique_ptr<Scene> makeCoopCapture(GameServices& g, CoopCapture capture);
 /// The sheet of the clan whose tag is `tag` (2.63.6: a « [TAG] » clicked before a name in a
 /// ranking or in SOCIAL), pushed over the current screen; found by GET /clans?q=.
 std::unique_ptr<Scene> makeClanByTag(GameServices& g, const std::string& tag);

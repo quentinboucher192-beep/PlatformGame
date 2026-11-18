@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Compilation, tests et installateur
 
 ## Prérequis
@@ -100,6 +102,40 @@ utilisateur) ; `--input` rejoue des actions scriptées (identifiants d'`Action` 
 `attack`, `interact`… ; depuis la 2.24 les pouvoirs se déclenchent par la touche de leur
 emplacement, `power_slot_1` à `power_slot_8`) ; `--user-dir` isole les données.
 
+### Captures pour la documentation (2.70)
+
+Les images et mini-films de `docs/media/` sont tournés par le jeu lui-même, sans écran
+(`SDL_VIDEODRIVER=offscreen`), une capture `--shot` par image du film. Pour mettre en scène une
+partie à plusieurs, deux options **réservées aux captures** (elles ne font rien sans `--headless`,
+ne touchent ni la simulation, ni les classements, ni le serveur) :
+
+```
+CosmicPlatformer --headless --raid-test bras_droit:8:4:2 --spawns "2180,576;672,416;1856,224;2976,416" \
+    --input "60:attack;68:" --input2 "0:" --input3 "0:" --input4 "0:" --frames 1800 --shot 900:raid.png
+CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618;1440,618" \
+    --input "0:right" --input2 "0:left" --input3 "30:right,jump;60:right" --frames 1200 --shot 600:coop.png
+```
+
+* `--raid-test <branche>:<zone>[:<joueurs>[:<phase>[:<invincible 0|1>]]]` : le test des
+  administrateurs (ADMINISTRATION › Raids › « Tester Asterion »), sans compte : seul, en local,
+  jamais rapporté, badge « TEST ADMIN · non classé » ; le gigaboss réglé pour `<joueurs>` (2 à 8)
+  et commencé à `<phase>` ; invincible par défaut.
+* `--coop-test <niveau>[:<joueurs>]` : une équipe de 2 ou 3 sur un même PC, sur un niveau EXTRÊME
+  (hors classement, comme toute partie sur un même PC).
+* Chaque siège joue son script : `--input` pour le joueur 1, `--input2` … `--input8` pour les
+  suivants (même format que `--input`) ; un siège sans script reste libre dans un raid. `--spawns
+  "x,y;x,y;;x,y"` place chaque joueur (pieds, pixels du monde ; une place vide garde celle du niveau).
+* `--asterion-film [<secondes>]` et `--story <boss>@<secondes>` lancent le film d'Asterion et les
+  histoires des giga-boss à partir de cet instant.
+* `--raid-screen <event|titan|branch|results|world>:<id de l'événement>[:<branche>]` ouvre la fiche,
+  la carte du titan, la carte d'une branche, les résultats ou le classement mondial d'un événement de
+  raid, comme depuis CLANS › RAIDS (avec le compte connecté et ses vraies données).
+
+Les images sont ensuite assemblées en GIF avec ffmpeg (palette optimisée : `palettegen` /
+`paletteuse`, 640 px de large, 10 à 12 images par seconde). `python3 tools/docs/check_links.py`
+vérifie que chaque lien et chaque image des fichiers `.md` mène à un fichier du dépôt, et que
+chaque page atteinte depuis le README a son lien « ← Retour » en tête et en fin.
+
 ## Installateur Windows
 
 ```
@@ -136,3 +172,7 @@ Windows (MSVC + tests + installateur publié en artefact) et compile / teste sou
   l'encodage OGG). Déterministe (graines fixes), écrit dans `assets/`.
 * Niveau officiel : `python3 tools/levelgen/sylvanox_01.py` réécrit
   `data/levels/sylvanox_01.json`.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

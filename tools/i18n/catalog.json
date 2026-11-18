@@ -4039,6 +4039,12 @@
    ]
   },
   {
+   "fr": "Attaque dirigée : maintenez Haut en attaquant pour frapper au-dessus de Nova, au sol comme en l'air ; en l'air, maintenez Bas pour frapper en dessous. Au sol, Bas reste « s'accroupir » (l'attaque frappe alors devant, comme avant) et, avec la Frappe sismique, Bas + Attaque en l'air reste la frappe sismique. Ces coups touchent les ennemis (mêmes dégâts, même recul) et les objets cassables comme le coup vers l'avant, avec leurs propres animations et leur arc de lame ; un coup vers le bas en l'air rebondit toujours sur l'ennemi touché et rend les sauts en l'air, comme avant. La direction est celle choisie au début du coup. Expliqué dans Paramètres › Clavier / souris et Manette, et dans le tutoriel.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Attaque du boss",
    "where": [
     "game/records/PlayStatsRecorder.cpp"
@@ -4072,6 +4078,12 @@
    "fr": "Attaque spéciale",
    "where": [
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque vers le haut : Haut + Attaque, au sol ou en l'air. Attaque vers le bas : Bas + Attaque, en l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe).",
+   "where": [
+    "ui/screens/SettingsScene.cpp"
    ]
   },
   {
@@ -11370,7 +11382,7 @@
    ]
   },
   {
-   "fr": "Chut… ces petites bêtes dorment et ne te feront aucun mal. Approche-toi et frappe-les : chaque coup les fait clignoter. Quand les trois sont parties, la porte du jardin s'ouvre.",
+   "fr": "Chut… ces petites bêtes dorment et ne te feront aucun mal. Approche-toi et frappe-les : chaque coup les fait clignoter. Quand les trois sont parties, la porte du jardin s'ouvre. Avec Haut, tu frappes au-dessus de toi ; en l'air, avec Bas, en dessous.",
    "where": [
     "game/tutorial/Tutorial.cpp"
    ]
@@ -28502,6 +28514,7 @@
    "fr": "Joueur {0}",
    "where": [
     "game/gameplay/HudTeam.cpp",
+    "ui/screens/CoopGameScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/ReplayScene.cpp"
@@ -30570,6 +30583,12 @@
    "fr": "La préparation du niveau a échoué.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "La présentation du jeu (README) et sa documentation montrent maintenant les raids de clan et la coopération en mini-films tournés dans le jeu : trois joueurs ensemble sur un niveau EXTRÊME, les combats contre Pyroclast et Graviton, l'apparition d'Asterion et la carte du titan ; chaque page de la documentation a ses images et son lien « ← Retour ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -49382,6 +49401,12 @@
    "fr": "Records en cours de vérification",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Records et classements conservés : rien n'est remis à zéro. Les replays enregistrés avant cette version se rejouent exactement comme avant (avec les règles de leur époque) ; les nouveaux replays notent la version de la simulation qui les a joués. Les combinaisons créées en ligne gardent leur planche : pendant un coup vers le haut ou vers le bas, Nova y montre le coup vers l'avant.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

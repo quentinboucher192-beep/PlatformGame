@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Données personnelles et localisation (RGPD)
 
 ## Principes appliqués
@@ -145,3 +147,7 @@ vérification de son empreinte SHA-256.
 
 À la suppression du compte, les performances et replays locaux rattachés à ce compte sont
 également effacés.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

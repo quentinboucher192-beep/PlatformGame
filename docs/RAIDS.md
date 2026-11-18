@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Raids de clan « ASTERION » — phase 2 : la branche « BRAS DROIT » (2.65) ; phase 4 : le titan entier (2.68, §6) ;
 # phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12) ; phase 4B : VOIDWORM, GRAVITON, TITANUS (2.69, §13) ;
 # phase 5 : les événements mondiaux (2.69, §14) ; les fiches d'Asterion et des Gigaboss (2.72, §15)
@@ -7,6 +9,9 @@ prépare le raid. La phase 2 le rend **jouable** sur une première branche du ti
 8 sous-zones, des instances de 8 joueurs au plus en verrouillage par entrées, et un état de la
 branche partagé par tous les groupes, que le serveur ne met à jour qu'avec le **consensus** des
 joueurs de chaque instance. La phase 3 (2.68) ouvre la Main : le gigaboss **Pyroclast** (§7 à §12).
+
+<p align="center"><img src="media/asterion_film.gif" width="600" alt="Film d'Asterion : le titan se lève et rugit, « Le Dévoreur de mondes »"></p>
+<p align="center"><sub>Deux moments du mini-film d'Asterion (§4).</sub></p>
 
 ## 1. La branche (maquette « Branche »)
 
@@ -122,6 +127,9 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
 `raid_reports`, `raid_accepted`, `raid_branch_objectives`, `raid_report_rejections`.
 
 ## 4. Écrans
+
+<p align="center"><img src="media/raid_branch_map.png" width="820" alt="Carte de la branche Bras droit : les huit zones, leurs passages, verrous et objectifs"></p>
+<p align="center"><sub>La carte d'une branche au début d'un raid de clan (serveur lancé en local, comptes de démonstration).</sub></p>
 
 * **Fiche de l'événement** (en cours) : « Carte du Bras droit ».
 * **Carte de la branche** (maquette « Branche ») : les 8 zones reliées (ouvert, combat en cours,
@@ -264,6 +272,9 @@ Un joueur en combat garde sa partie : sa nouvelle place compte à sa prochaine e
 
 ### Écrans
 
+<p align="center"><img src="media/raid_titan_map.png" width="820" alt="Carte du titan : Asterion et ses sept branches, les groupes du clan, la progression"></p>
+<p align="center"><sub>La carte du titan au début d'un raid de clan (serveur lancé en local, comptes de démonstration).</sub></p>
+
 * **Carte du titan** (fiche d'un raid en cours › « Carte du titan ») : le titan (`AsterionFigure`, une
   partie = sa branche), les groupes par branche, la progression, les effets, les renforts, les alertes,
   « Rejoindre » et « Répartition du clan ». Les sept branches sont aussi des arrêts du focus.
@@ -273,6 +284,9 @@ Un joueur en combat garde sa partie : sa nouvelle place compte à sa prochaine e
 * **Combat** : les verrous et dangers de chaque branche, les liens actifs de la zone (✦).
 
 ## 7. Phase 3 (2.68) : le gigaboss PYROCLAST
+
+<p align="center"><img src="media/raid_pyroclast.gif" width="640" alt="Pyroclast : trois joueurs tiennent ses évents ensemble, sa carapace éclate"></p>
+<p align="center"><sub>Filmé dans le test des administrateurs (en local, jamais classé), les autres joueurs pilotés par des scripts.</sub></p>
 
 `data/enemies/pyroclast.json` : une main de magma qui marche sur ses doigts (le cerveau du golem : poing météore =
 `skyfall`, secousse = `quake`), trois phases et une dernière éruption ; les **Poings de magma** (un par joueur en
@@ -389,6 +403,11 @@ les ennemis d'une embuscade. Elle sert à toutes les arènes de gigaboss : elle 
 `floor`, `door`, `entry`), le format des sept antres (`raid::ZoneRules::arena`). La simulation ne la voit jamais.
 
 ## 13. Phase 4B (2.69) : VOIDWORM, GRAVITON, TITANUS
+
+<p align="center">
+<img src="media/raid_graviton.gif" width="640" alt="Graviton : la gravité s'inverse dans un secteur de l'arène">
+</p>
+<p align="center"><sub>Graviton inverse la gravité d'un secteur. Filmé dans le test des administrateurs (en local, jamais classé), les autres joueurs pilotés par des scripts.</sub></p>
 
 Les antres de l'ABDOMEN, de la JAMBE GAUCHE et de la JAMBE DROITE sont descellées (zone 8 de chaque branche, écrite par
 `tools/levelgen/raid_voidworm.py`, `raid_graviton.py`, `raid_titanus.py`, appelés par `raid_asterion.py` ; `BRANCH_REVISION` 2).
@@ -586,3 +605,6 @@ verrou, aucun « ??? »), et hors ligne : ce sont les données du jeu.
   d'Asterion propose alors « Sa fiche » sur le cœur, et sa partie s'ouvre depuis le titan.
 * **Capture sur demande** : `CosmicPlatformer --headless --raid-sheets <fiche>[:<onglet 0-2>][:attaque=<id>|:attaque=m:<mécanisme>]`
   (au-dessus du menu, l'attaque dépliée avec son exemple) ; `--clans --online-open raids` ouvre l'onglet RAIDS.
+---
+
+[← Retour à l'accueil (README)](../README.md)

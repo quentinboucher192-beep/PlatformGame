@@ -2,9 +2,10 @@
 
 <p align="center"><a href="docs/media/trailer.mp4"><img src="docs/media/trailer.gif" width="640" alt="Bande-annonce de Cosmic Platformer : Nova, les planètes et les sept giga-boss"></a><br><sub>La bande-annonce (40 s) — <a href="docs/media/trailer.mp4">en vidéo MP4, avec sa musique</a> ; le jeu la montre sur son écran d'accueil après une minute d'inactivité.</sub></p>
 
-<p align="center"><b>Nova traverse six mondes, apprend dix-neuf pouvoirs et tient tête à des giga-boss à huit phases.</b><br>
-Un jeu de plateforme 2D nerveux et précis, en C++20 / SDL3 : seul ou à deux ou trois, au clavier, à la
-manette ou à la souris, en français ou en anglais — et entièrement jouable hors ligne.</p>
+<p align="center"><b>Nova traverse six mondes, apprend dix-neuf pouvoirs et tient tête à des giga-boss à huit phases —
+puis, avec son clan, à Asterion, le Dévoreur de mondes.</b><br>
+Un jeu de plateforme 2D nerveux et précis, en C++20 / SDL3 : seul, à deux ou trois, ou par groupes de huit dans les
+raids de clan, au clavier, à la manette ou à la souris, en français ou en anglais — et toute la campagne se joue hors ligne.</p>
 
 <p align="center"><img src="docs/media/hero_pyrrhax.gif" width="640" alt="Nova esquive les rayons de Pyrrhax, le dragon d'obsidienne, dans La Gueule du Dragon"></p>
 
@@ -26,6 +27,7 @@ manette ou à la souris, en français ou en anglais — et entièrement jouable 
 <a href="#éditeurs-et-niveaux-de-la-communauté">Éditeurs</a> ·
 <a href="#coopération-à-deux-ou-trois">Coopération</a> ·
 <a href="#clans">Clans</a> ·
+<a href="#raids-de-clan-contre-asterion">Raids</a> ·
 <a href="#cosmic-online">Cosmic Online</a> ·
 <a href="#historique-des-versions">Versions</a>
 </p>
@@ -169,7 +171,12 @@ chacun, pas de coups entre alliés, des joueurs solides sur lesquels on peut se 
 **réanimations**, une caméra commune — et des classements **Duo** et **Trio** à part. Architecture :
 [docs/COOP.md](docs/COOP.md).
 
-<p align="center"><img src="docs/media/coop_lobby.png" width="820" alt="Salon de la coopération : le niveau, l'équipe et les règles de l'équipe"></p>
+<p align="center">
+<img src="docs/media/coop_trio.gif" width="49%" alt="Trois joueurs ensemble dans l'arène d'un niveau EXTRÊME, sous une caméra commune">
+<img src="docs/media/coop_lobby.png" width="49%" alt="Salon de la coopération : le niveau, l'équipe et les règles de l'équipe">
+</p>
+<p align="center"><sub>À gauche, trois joueurs sur un même PC (joueurs pilotés par des scripts pour la capture) ; à droite, le
+salon : le niveau, l'équipe, un périphérique par joueur et les règles.</sub></p>
 
 ## Clans
 
@@ -180,11 +187,58 @@ vérifiés par le serveur sur les niveaux EXTRÊME officiels.
 
 <p align="center"><img src="docs/media/clan_page.png" width="820" alt="Page d'un clan : membres et rôles, meilleures équipes par niveau EXTRÊME, candidatures et discussion"></p>
 
-## Raids de clan : les Gigaboss d'Asterion
+## Raids de clan contre Asterion
 
-Jusqu'à **huit joueurs** par instance attaquent **Asterion, le Dévoreur de mondes**, branche par branche ; au bout
-de chaque branche, l'antre d'un **Gigaboss** énorme, en trois phases, qui vise chaque joueur à la fois et ne tombe que
-si l'équipe agit **ensemble**. Fonctionnement complet : [docs/RAIDS.md](docs/RAIDS.md).
+Avant la première étoile, il y avait une faim. Elle s'est forgé un corps de mondes brisés et s'est donné un
+nom : **Asterion, le Dévoreur de mondes**. Sa première apparition est un mini-film de deux minutes, joué par
+le moteur des histoires du jeu :
+
+<p align="center"><img src="docs/media/asterion_film.gif" width="600" alt="Film d'Asterion : le titan se forme puis rugit, « Le Dévoreur de mondes »"><br><sub>Deux moments du film : Asterion se forge un corps, puis se nomme.</sub></p>
+
+Les clans l'affrontent **par groupes de huit**, chaque groupe dans son instance, tous les jeux avançant au
+même pas. Le titan a **sept branches** — Crâne, Bras gauche, Torse, Abdomen, Jambe gauche, Jambe droite et Bras
+droit — de huit zones chacune : deux chemins, une zone secrète et sa relique, un raccourci au levier, des
+objectifs qu'il faut **deux groupes** pour réussir, et un quart d'heure d'expédition sur trois étages avant
+chaque antre. Les branches sont liées : les yeux détruits dans le Crâne éteignent les tourelles du Bras gauche,
+les réacteurs de la Jambe droite arrêtent les coulées du Bras droit… Le serveur ne valide un objectif que si
+la majorité des joueurs de l'instance a vu la même chose.
+
+<p align="center">
+<img src="docs/media/raid_titan_map.png" width="49%" alt="Carte du titan : Asterion, ses sept branches, les groupes du clan et la progression">
+<img src="docs/media/raid_branch_map.png" width="49%" alt="Carte de la branche Bras droit : ses huit zones, leurs verrous et leurs objectifs">
+</p>
+<p align="center"><sub>La carte du titan et celle d'une branche, au début d'un raid de clan (serveur Cosmic Online lancé en
+local, comptes de démonstration).</sub></p>
+
+### Les Gigaboss
+
+Au fond de chaque branche attend un **gigaboss** taillé pour huit joueurs, en trois phases, dans une arène de
+plus de six écrans de large : sa vie et sa cadence suivent le nombre de joueurs, ses attaques visent **tout le
+groupe à la fois** (une marque sous chaque joueur, puis le coup), et chaque combat a son **mécanisme
+collectif**, qu'aucun joueur ne réussit seul.
+
+<p align="center">
+<img src="docs/media/raid_pyroclast.gif" width="49%" alt="Pyroclast, la main de magma : ses trois évents tenus ensemble, sa carapace éclate et ses points faibles apparaissent">
+<img src="docs/media/raid_graviton.gif" width="49%" alt="Graviton, la jambe qui flotte : la gravité s'inverse et soulève les joueurs vers la jambe géante">
+</p>
+<p align="center"><sub>À gauche, Pyroclast : ses trois évents fermés ensemble, sa carapace éclate et ses points faibles
+apparaissent ; à droite, Graviton inverse la gravité et soulève le groupe vers la jambe géante.</sub></p>
+
+* **Pyroclast** (Bras droit), une main de magma : ses Poings de magma tombent sur chaque joueur ; sa carapace
+  ne cède que si ses trois évents, sur deux tours et une plateforme, sont tenus **ensemble** ; alors son cœur
+  est à nu et ses points faibles se brisent.
+* **Voidworm** (Abdomen), le ver du vide : il fouit sous chaque joueur, **avale** ceux qui restent dans son
+  anneau vert — les autres crèvent sa poche pour les libérer — et ses trois crochets, tenus ensemble,
+  l'épinglent gueule ouverte.
+* **Graviton** (Jambe gauche) : la gravité s'inverse par secteurs (abri sous les dalles) et ses quatre
+  générateurs, aux quatre coins de l'arène, doivent être coupés **au même instant**.
+* **Titanus** (Jambe droite) : ses ondes de choc filent le long du sol, à sauter ; ses deux entraves de
+  cheville, brisées à moins de 1,5 s d'écart, le mettent à genou.
+
+<p align="center"><sub>Combats filmés dans le test des administrateurs (« Tester Asterion » : en local, jamais classé),
+les autres joueurs pilotés par des scripts.</sub></p>
+
+Les trois autres Gigaboss gardent les antres du Crâne, du Bras gauche et du Torse :
 
 **Skullmaw, le crâne qui voit tout** (le Crâne) : un regard laser traque chaque joueur ; sous son voile psychique,
 son Regard de mort frappe tous ceux qu'il voit, sauf si assez de joueurs tiennent un **miroir** à cet instant : son
@@ -217,6 +271,22 @@ l'éviter, ce que le groupe doit faire **ensemble** (combien de joueurs, combien
 contributions qui comptent, sa branche, son antre et son badge. Les nombres viennent des règles que lisent les combats
 eux-mêmes (`data/raids/asterion_sheets.json` ne contient que les mots) : détails dans
 [docs/RAIDS.md §15](docs/RAIDS.md#15-fiches-dasterion-et-de-ses-gigaboss-272).
+### Récompenses et événements mondiaux
+
+* **Contributions** calculées par la simulation pour chaque joueur — dégâts, dégâts évités, soutien,
+  sauvetages, évents et points faibles, objectifs, présence à la chute — puis validées par le consensus de
+  l'instance : jamais les seuls dégâts. **Résultats du raid** : classement des clans et des joueurs, catégorie
+  par catégorie.
+* **Récompenses** accordées une seule fois par le serveur : un badge par gigaboss (« Main de Pyroclast »,
+  « Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus »), les titres « Assaillant d'Asterion »,
+  « Briseur de magma », « Fléau de Pyroclast »… et le corps d'Asterion qui s'affaiblit, partie par partie.
+* **Événements mondiaux** : tous les clans contre **un seul titan**, aux mêmes heures ; chaque objectif compte
+  une fois pour le monde, le **classement mondial** montre la progression, les clans, les groupes et les
+  joueurs, puis le **résultat officiel** est figé à la clôture — « Asterion est tombé » ou « a survécu ».
+  À la clé : la combinaison « Écorce d'Asterion », le titre de clan « Dévoreurs dévorés » pour le top 10, et
+  des sessions de rattrapage pour les absents.
+
+Tout le détail : [docs/RAIDS.md](docs/RAIDS.md).
 
 ## Cosmic Online
 
@@ -481,7 +551,11 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
+* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
+
+Chaque page renvoie à celle d'où l'on vient (« ← Retour », en tête et en fin) ; `python3 tools/docs/check_links.py`
+vérifie tous les liens et toutes les images des fichiers `.md`.
 
 ## Licences
 
@@ -505,6 +579,19 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   dans les règles de son antre (celles des routines) ou dans `game/raid/GigabossTunables.h` (constantes des routines
   nommées une fois, sans changement de règle) ; la liste d'attaques dépliables est partagée avec Statistiques des boss ›
   Fiche (`ui/widgets/BossSheetWidgets`). Tests : `tests/test_raid_sheets.cpp`.
+* **Attaque dirigée** : Haut + Attaque frappe au-dessus de Nova (au sol ou en l'air), Bas + Attaque frappe en dessous, en
+  l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe). Mêmes
+  dégâts, recul et objets cassables que le coup vers l'avant ; un coup vers le bas en l'air rebondit toujours sur
+  l'ennemi touché et rend les sauts en l'air, comme avant ; la direction est celle choisie au début du coup ;
+  animations et arcs de lame générés par `tools/assetgen/characters/nova.py` (lignes 27 à 29 de la planche de Nova).
+  `kSimulationVersion` passe à 15, `kRankingGeneration` reste à 8 : **records et classements conservés** ; un replay
+  enregistré avant se rejoue avec les règles de son époque (la version de la simulation est notée dans les nouveaux replays).
+* **Documentation illustrée** : nouvelles sections « Raids de clan contre Asterion » et coopération avec des mini-films tournés
+  dans le jeu (`docs/media/` : trois joueurs sur un niveau EXTRÊME, Pyroclast, Graviton, le film
+  d'Asterion, cartes du titan et d'une branche) ; images dans les pages de `docs/`, lien « ← Retour » en
+  tête et en fin de chaque page atteinte depuis le README, vérifiés par `tools/docs/check_links.py` ; options de capture
+  `--raid-test`, `--coop-test`, `--input2` … `--input8`, `--spawns` (seulement avec `--headless`) et `--raid-screen`
+  (docs/BUILDING.md).
 
 **Nouveau dans la version 2.71.0** :
 * **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans
