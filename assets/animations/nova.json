@@ -30,6 +30,9 @@
     "shoot": {"row": 23, "count": 3, "durations": [0.06, 0.08, 0.12], "loop": false, "next": "idle", "events": [{"frame": 0, "name": "fire"}]},
     "grapple": {"row": 24, "count": 4, "durations": [0.06, 0.06, 0.06, 0.1], "loop": false, "events": [{"frame": 1, "name": "fire"}]},
     "grapple_pull": {"row": 25, "count": 2, "fps": 12, "loop": true},
-    "crouch": {"row": 26, "count": 3, "durations": [0.04, 0.06, 0.1], "loop": false}
+    "crouch": {"row": 26, "count": 3, "durations": [0.04, 0.06, 0.1], "loop": false},
+    "attack_up": {"row": 27, "count": 5, "durations": [0.04, 0.05, 0.07, 0.08, 0.1], "loop": false, "next": "idle", "events": [{"frame": 2, "name": "hit"}]},
+    "air_attack_up": {"row": 28, "count": 4, "durations": [0.04, 0.06, 0.08, 0.1], "loop": false, "events": [{"frame": 1, "name": "hit"}]},
+    "air_attack_down": {"row": 29, "count": 4, "durations": [0.04, 0.06, 0.08, 0.1], "loop": false, "events": [{"frame": 2, "name": "hit"}]}
   }
 }

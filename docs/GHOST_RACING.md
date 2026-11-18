@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Ghost Racing, succès et mode concentré (2.18.0)
 
 ## Ghost Racing
@@ -234,6 +236,8 @@ Code : `game/ghost/ReplayCompare.*` (décalage, recalage, tableau, écart),
 
 ## Succès
 
+<p align="center"><img src="media/achievements.png" width="820" alt="Succès : la toile des succès par catégorie et la liste d'une catégorie"></p>
+
 218 succès en 13 catégories (`data/achievements/achievements.json`), chacun avec 1 à 5 étoiles
 de difficulté (597 étoiles). Ils se débloquent d'après les vraies sauvegardes
 (progression, records, statistiques des boss) — y compris rétroactivement — et des compteurs
@@ -271,3 +275,7 @@ gardés se choisissent dans l'éditeur du HUD (onglet « Mode concentré ») ; p
 sont communes aux deux modes (deux éléments ne se chevauchent dans aucun des deux). Les
 **messages du niveau** (indications, titres de pouvoirs et de boss) s'affichent ou non dans
 chaque mode.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

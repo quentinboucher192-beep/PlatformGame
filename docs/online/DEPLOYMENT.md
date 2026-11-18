@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Déploiement sur Cloudflare (staging et production)
 
 Le Worker est configuré dans `server/wrangler.jsonc` :
@@ -208,3 +210,7 @@ notification « … est le défi du jour / de la semaine / du mois ! ». Le rés
 npx wrangler d1 execute cosmic-online-staging --remote --env staging \
     --command "SELECT action, details, created_at FROM audit_log WHERE action LIKE 'challenge_set_%' ORDER BY id DESC LIMIT 5"
 ```
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

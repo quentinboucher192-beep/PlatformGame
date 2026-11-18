@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # API Cosmic Online (v1)
 
 Référence de l'API REST du classement en ligne de Cosmic Platformer, implémentée par le
@@ -1818,3 +1820,7 @@ les limites du niveau ; aucun déplacement impossible entre deux échantillons (
 mort/réapparition, tolérance élargie autour d'une téléportation). Cela renchérit fortement la
 triche sans la rendre impossible : les records de tête des comptes récents restent soumis à
 vérification manuelle.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

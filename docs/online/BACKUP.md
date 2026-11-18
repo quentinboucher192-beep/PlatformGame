@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Sauvegarde complète et restauration (ADMINISTRATION › Sauvegardes)
 
 Un compte **admin** peut sauvegarder **toutes les données de tous les joueurs** de Cosmic
@@ -474,3 +476,7 @@ ancien restauré (colonne absente → valeur par défaut) ; orphelins et doublon
 pendant que les joueurs écrivent ; rétention ; tâche planifiée (et pas de copie pendant un
 import) ; PBKDF2 comparé à la fonction standard ; lecture des entrées coupées n'importe où.
 Le Journal ne contient jamais la phrase secrète.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
