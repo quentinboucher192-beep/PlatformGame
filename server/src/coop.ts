@@ -10,6 +10,12 @@
 // forgotten when the room empties. For the ranking (stage 4), the room writes in D1 which
 // accounts played and the SHA-256 of the inputs it relayed (coop_sessions).
 //
+// 2.74 (raids, phase 7): a raid instance is not in memory only. Its game is stored (the history in
+// parts of 4 s, the seats, the branch's states) every second, and comes back after a restart of its
+// object; it outlives its players for 60 s (a group that lost its link comes back to the same
+// game); nobody in play means the steps stand still (never standby frames given to nobody); a
+// second connection of the same account takes its seat back from a link that died silently.
+//
 // Nothing a game sends is trusted: the messages are bounded and checked (types, lengths,
 // action bits, flags — never Standby —, power choices, steps, rate), a bad one closes its
 // socket. The same protocol runs on a PC of the local network (game/coop/CoopRelay.cpp).
@@ -17,7 +23,7 @@
 import { DurableObject } from "cloudflare:workers";
 import { requireAuth } from "./auth";
 import { toHex } from "./crypto";
-import { ApiError, Errors, json, nowIso, readJsonObject, type Bindings, type Ctx } from "./http";
+import { ApiError, Errors, json, log, nowIso, readJsonObject, type Bindings, type Ctx } from "./http";
 import { notify } from "./notifications";
 import { branchMaskOf } from "./raidZones";
 import { HASH_RE, LEVEL_ID_RE, Validator } from "./validate";
@@ -220,6 +226,8 @@ interface Seat {
     lastSeen: number;
     absent: boolean;
     absentFrom: number;
+    /** 2.74: when it became absent (ms): with nobody in play the steps stand still, the 60 s are counted on the clock. */
+    absentAt: number;
     rejoinAt: number;
     pending: (Frame | null)[];
     budget: { start: number; count: number };
@@ -245,6 +253,48 @@ interface RoomInfo {
     raid?: RaidRoomInfo;
 }
 
+/** 2.74 (raids): steps per stored part of an instance's history (4 s; at most ~65 KB written compact). */
+export const HISTORY_CHUNK = 480;
+/** 2.74: 60 s on the clock (a seat absent while nobody plays is freed after it). */
+export const STANDBY_LIMIT_MS = 60_000;
+
+/** 2.74: a raid instance's game as its storage keeps it (the history is in parts « h:<n> »). */
+interface SavedGame {
+    players: number;
+    delay: number;
+    attempt: string;
+    next: number;
+    seats: { playerId: string; name: string; vacant: boolean; absent: boolean; absentFrom: number; absentAt: number }[];
+    raidStates: [number, number][];
+    raidMask: number;
+}
+
+/** 2.74: `count` steps of `players` frames (step by step, seat by seat), compact: each seat's frames in turn. */
+export function encodeHistory(history: Frame[], first: number, count: number, players: number): Uint8Array {
+    const o = new Out();
+    for (let s = 0; s < players; ++s) {
+        const seat: Frame[] = [];
+        for (let i = 0; i < count; ++i) seat.push(history[(first + i) * players + s]!);
+        writeFrames(o, seat);
+    }
+    return o.done();
+}
+
+/** 2.74: the steps of a stored part (null when damaged: the instance then starts again). */
+export function decodeHistory(bytes: Uint8Array, count: number, players: number): Frame[] | null {
+    const r = new In(bytes);
+    const seats: Frame[][] = [];
+    for (let s = 0; s < players; ++s) {
+        const f = readFrames(r, count);
+        if (!f) return null;
+        seats.push(f);
+    }
+    if (!r.end()) return null;
+    const out: Frame[] = [];
+    for (let i = 0; i < count; ++i) for (let s = 0; s < players; ++s) out.push(seats[s]![i]!);
+    return out;
+}
+
 export class CoopRoom extends DurableObject<Bindings> {
     private info: RoomInfo | null = null;
     private seats: Seat[] = [];
@@ -261,6 +311,19 @@ export class CoopRoom extends DurableObject<Bindings> {
     private raidStates: [number, number][] = [];
     private raidMask = 0;
     private raidPolled = 0;
+    // 2.74 (raids): the parts of the history already stored, the restarts survived, the member
+    // writes in order (an « absent » never overtakes the « back » that follows it).
+    private savedChunks = 0;
+    private storedSteps = 0;
+    private restores = 0;
+    private memberWrites: Promise<void> = Promise.resolve();
+
+    constructor(ctx: DurableObjectState, env: Bindings) {
+        super(ctx, env);
+        // 2.74: a raid instance survives a restart (deployment, eviction) of its object: its room and
+        // its game come back from storage before any request is served.
+        void ctx.blockConcurrencyWhile(() => this.restore());
+    }
 
     async fetch(request: Request): Promise<Response> {
         const url = new URL(request.url);
@@ -269,6 +332,7 @@ export class CoopRoom extends DurableObject<Bindings> {
                 const body = (await request.json()) as RoomInfo & { host_name: string };
                 if (this.info) return Response.json({ error: "exists" }, { status: 409 });
                 this.info = { id: body.id, host: body.host, level: body.level, invited: [], created: Date.now(), raid: body.raid };
+                if (this.info.raid) await this.ctx.storage.put("info", this.info); // 2.74: a raid room outlives its object
                 return Response.json({ ok: true });
             }
             case "/raid-state": // the routes and the tests: the branch's state now (else the alarm reads it)
@@ -293,9 +357,21 @@ export class CoopRoom extends DurableObject<Bindings> {
     }
 
     async alarm(): Promise<void> {
-        this.poll(Date.now());
-        if (this.info?.raid && this.started) await this.pollRaidState(false);
-        if (this.seats.some((s) => s.ws)) await this.ctx.storage.setAlarm(Date.now() + 1000);
+        const now = Date.now();
+        this.poll(now);
+        const raidGame = !!this.info?.raid && this.started;
+        if (raidGame) {
+            // 2.74: nobody in play: the seats absent for 60 s on the clock are freed; once every seat is
+            // free and nobody is connected, the instance's game ends (the next player starts a new one).
+            this.freeIdle(now);
+            if (this.seats.every((s) => s.vacant && !s.ws)) {
+                await this.closeGame();
+                return;
+            }
+            await this.pollRaidState(false);
+            await this.persist();
+        }
+        if (this.seats.some((s) => s.ws) || raidGame) await this.ctx.storage.setAlarm(now + 1000);
     }
 
     status() {
@@ -308,7 +384,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             next: this.next,
             // 2.69: `ping` (ms, -1 unknown): the latency each game measured, for the raids' live panel (raidWorld.ts).
             seats: this.seats.map((s, i) => ({ seat: i, player_id: s.playerId, name: s.name, connected: s.ws !== null && !s.absent, absent: s.absent, vacant: s.vacant, ping: s.rtt })),
-            raid: this.info?.raid ? { mask: this.raidMask, states: this.raidStates.length } : null,
+            raid: this.info?.raid ? { mask: this.raidMask, states: this.raidStates.length, restores: this.restores, stored: this.storedSteps } : null,
         };
     }
 
@@ -375,6 +451,20 @@ export class CoopRoom extends DurableObject<Bindings> {
         }
         let seat = this.seats.findIndex((s) => s.playerId === playerId && !s.vacant);
         const maxSeats = this.info!.raid ? MAX_RAID_PLAYERS : MAX_PLAYERS;
+        if (this.started && seat >= 0 && this.seats[seat]!.ws) {
+            // 2.74: the same account again while its old connection still counts (a link that died
+            // without closing, a game started again at once): the new connection takes the seat back,
+            // the old one is closed. The player is absent from the first step not given, then comes
+            // back like any return (history, catch-up, REJOIN).
+            const old = this.seats[seat]!.ws!;
+            this.markAbsent(seat);
+            try {
+                old.close(1000, "replaced");
+            } catch {
+                /* closed */
+            }
+            this.flush();
+        }
         if (this.started && this.info!.raid && seat < 0) {
             // 2.65 (raids): a late join takes a vacant seat (vacant frames until its REJOIN).
             seat = this.seats.findIndex((s) => s.vacant && !s.ws);
@@ -440,6 +530,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             lastSeen: Date.now(),
             absent: false,
             absentFrom: 0,
+            absentAt: 0,
             rejoinAt: 0,
             pending: [],
             budget: { start: Date.now(), count: 0 },
@@ -525,6 +616,7 @@ export class CoopRoom extends DurableObject<Bindings> {
                 o.u8(seat);
                 o.u32(at);
                 this.sendAll(o.done());
+                this.flush(); // 2.74: with nobody else in play, the steps up to its return are given now
                 return;
             }
             case Msg.Result: {
@@ -577,15 +669,18 @@ export class CoopRoom extends DurableObject<Bindings> {
         for (let t = 0; t < this.delay; ++t) for (let k = 0; k < this.players; ++k) this.history.push(k < held ? emptyFrame() : { ...emptyFrame(), flags: FLAG_VACANT });
         this.next = this.delay;
         this.flushed = 0;
+        this.savedChunks = 0;
+        this.storedSteps = 0;
         this.sendAll(this.goMessage());
         if (raid) {
             this.raidStates = [[0, this.raidMask]];
             this.sendAll(this.raidStateMessage(0, this.raidMask));
             this.seats.forEach((s, i) => {
-                if (!s.vacant) void this.writeMember(i, true, false, 0);
+                if (!s.vacant) void this.writeMember(i, s.playerId, true, false, 0);
             });
         }
         this.flush();
+        if (raid) void this.persist();
         if (!raid) void this.writeSession();
     }
 
@@ -618,28 +713,31 @@ export class CoopRoom extends DurableObject<Bindings> {
     /**
      * 2.65: who plays in the instance (the consensus counts its active players). 2.68: `from`, the
      * step from which the player holds the seat (when they take it): their contributions are theirs.
+     * 2.74: the player is given (a freed seat forgets its player at once); the writes go in order.
      */
-    private async writeMember(seat: number, active: boolean, left: boolean, from?: number) {
+    private writeMember(seat: number, playerId: string, active: boolean, left: boolean, from?: number): Promise<void> {
         const raid = this.info?.raid;
-        const s = this.seats[seat];
-        if (!raid || !s || !s.playerId) return;
+        if (!raid || !this.seats[seat] || !playerId) return Promise.resolve();
         const now = nowIso();
         const players = this.seats.filter((x) => !x.vacant && !x.absent && x.playerId).length;
-        try {
-            await this.env.DB.batch([
-                this.env.DB.prepare(
-                    `INSERT INTO raid_instance_members (instance_id, player_id, seat, active, joined_at, left_at, seat_from) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
-                     ON CONFLICT (instance_id, player_id) DO UPDATE SET seat = ?3, active = ?4, left_at = ?6, seat_from = COALESCE(?7, seat_from)`,
-                ).bind(raid.instance_id, s.playerId, seat, active ? 1 : 0, now, left ? now : null, from ?? null),
-                this.env.DB.prepare("UPDATE raid_instances SET players = ?2, started_at = COALESCE(started_at, ?3), updated_at = ?3 WHERE id = ?1").bind(
-                    raid.instance_id,
-                    players,
-                    now,
-                ),
-            ]);
-        } catch {
-            /* before migrations 0142 / 0143 */
-        }
+        const db = this.env.DB;
+        const write = async () => {
+            try {
+                await db.batch([
+                    db
+                        .prepare(
+                            `INSERT INTO raid_instance_members (instance_id, player_id, seat, active, joined_at, left_at, seat_from) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)
+                             ON CONFLICT (instance_id, player_id) DO UPDATE SET seat = ?3, active = ?4, left_at = ?6, seat_from = COALESCE(?7, seat_from)`,
+                        )
+                        .bind(raid.instance_id, playerId, seat, active ? 1 : 0, now, left ? now : null, from ?? null),
+                    db.prepare("UPDATE raid_instances SET players = ?2, started_at = COALESCE(started_at, ?3), updated_at = ?3 WHERE id = ?1").bind(raid.instance_id, players, now),
+                ]);
+            } catch {
+                /* before migrations 0142 / 0143 */
+            }
+        };
+        this.memberWrites = this.memberWrites.then(write);
+        return this.memberWrites;
     }
 
     private goMessage(): Uint8Array {
@@ -669,8 +767,14 @@ export class CoopRoom extends DurableObject<Bindings> {
         return o.done();
     }
 
+    /** A seat in play: held and not absent, or coming back (its step of return chosen). */
+    private static inPlay(s: Seat): boolean {
+        return !s.absent || s.rejoinAt !== 0;
+    }
+
     private flush() {
         if (!this.started) return;
+        const raid = !!this.info?.raid;
         for (;;) {
             if (this.next >= MAX_TICKS) {
                 const o = new Out();
@@ -678,18 +782,18 @@ export class CoopRoom extends DurableObject<Bindings> {
                 o.u8(EndReason.TooLong);
                 this.sendAll(o.done());
                 this.started = false;
+                if (raid) void this.closeGame();
                 return;
             }
+            // 2.74: nobody in play (every seat absent, none coming back): the steps stand still. Before,
+            // the relay gave standby frames to nobody as fast as it could, up to the 2 h limit (CPU and
+            // memory of the object exhausted when the last player of a room left).
+            if (!this.seats.some(CoopRoom.inPlay)) break;
             let complete = true;
             for (let k = 0; k < this.players && complete; ++k) {
                 const s = this.seats[k]!;
                 // 2.65 (raids): 60 s of absence free the seat (the simulation counts the same).
-                if (this.info?.raid && s.absent && !s.vacant && s.rejoinAt === 0 && this.next - s.absentFrom > STANDBY_LIMIT_TICKS) {
-                    s.vacant = true;
-                    void this.writeMember(k, false, true).then(() => {
-                        if (s.vacant) s.playerId = "";
-                    });
-                }
+                if (raid && s.absent && !s.vacant && s.rejoinAt === 0 && this.next - s.absentFrom > STANDBY_LIMIT_TICKS) this.freeSeat(k);
                 if (s.absent && (s.rejoinAt === 0 || this.next < s.rejoinAt)) continue;
                 if (!s.pending[0]) complete = false;
             }
@@ -706,7 +810,7 @@ export class CoopRoom extends DurableObject<Bindings> {
                         s.absent = false;
                         s.vacant = false;
                         s.rejoinAt = 0;
-                        void this.writeMember(k, true, false, taken ? this.next : undefined);
+                        void this.writeMember(k, s.playerId, true, false, taken ? this.next : undefined);
                     }
                     f = s.pending[0]!;
                 }
@@ -722,6 +826,42 @@ export class CoopRoom extends DurableObject<Bindings> {
         }
     }
 
+    /**
+     * 2.65 (raids): the seat is free for anybody (vacant frames). 2.74: its player is forgotten at once
+     * (a late join may take it before the write is done), unless that player is connected on it right
+     * now, catching up: then it is their late join (the seat from their step of return).
+     */
+    private freeSeat(k: number) {
+        const s = this.seats[k]!;
+        const who = s.playerId;
+        s.vacant = true;
+        if (!s.ws) s.playerId = "";
+        void this.writeMember(k, who, false, true);
+    }
+
+    /** 2.74 (raids): with nobody in play, a seat absent for 60 s on the clock is freed. */
+    private freeIdle(now: number) {
+        if (this.seats.some(CoopRoom.inPlay)) return; // someone plays: the steps count (flush)
+        this.seats.forEach((s, k) => {
+            if (s.absent && !s.vacant && !s.ws && now - s.absentAt > STANDBY_LIMIT_MS) this.freeSeat(k);
+        });
+    }
+
+    /** The seat's player is absent from the first step not given yet (the same for everyone). */
+    private markAbsent(seat: number) {
+        const s = this.seats[seat]!;
+        if (!s.absent) {
+            s.absent = true;
+            s.absentFrom = this.next;
+            s.absentAt = Date.now();
+            void this.writeMember(seat, s.playerId, false, false);
+        }
+        if (s.vacant) s.playerId = ""; // 2.74: a vacant seat taken, left before its step of return: free again
+        s.rejoinAt = 0;
+        s.pending = [];
+        s.ws = null;
+    }
+
     private disconnected(seat: number) {
         const s = this.seats[seat];
         if (!s) return;
@@ -731,16 +871,11 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.lobby();
             return;
         }
-        if (!s.absent) {
-            s.absent = true;
-            s.absentFrom = this.next;
-            void this.writeMember(seat, false, false);
-        }
-        s.rejoinAt = 0;
-        s.pending = [];
-        s.ws = null;
+        this.markAbsent(seat);
         this.flush();
-        if (this.seats.every((x) => !x.ws)) this.forget();
+        // The room empties: a team room forgets everything. 2.74: a raid instance keeps its game (its
+        // players come back within 60 s; its alarm frees their seats, then ends it, and stores it meanwhile).
+        if (this.seats.every((x) => !x.ws) && !this.info?.raid) this.forget();
     }
 
     poll(now: number) {
@@ -765,6 +900,125 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.seats = [];
         this.next = 0;
         this.flushed = 0;
+        this.savedChunks = 0;
+        this.storedSteps = 0;
+        this.raidStates = [];
+    }
+
+    /** 2.74 (raids): the instance's game is over (every seat free, nobody connected): memory and storage. */
+    private async closeGame() {
+        this.forget();
+        try {
+            await this.ctx.storage.deleteAll();
+            if (this.info) await this.ctx.storage.put("info", this.info);
+        } catch {
+            /* the next start overwrites it */
+        }
+    }
+
+    private savedGame(next: number): SavedGame {
+        return {
+            players: this.players,
+            delay: this.delay,
+            attempt: this.attempt,
+            next,
+            seats: this.seats.map((s) => ({ playerId: s.playerId, name: s.name, vacant: s.vacant, absent: s.absent, absentFrom: s.absentFrom, absentAt: s.absentAt })),
+            raidStates: this.raidStates,
+            raidMask: this.raidMask,
+        };
+    }
+
+    /**
+     * 2.74 (raids): stores the game (the alarm, every second): each complete part of the history once,
+     * the last one again while it fills, and the seats; one write is atomic, so the stored steps always
+     * match the stored state. After a restart the game goes on from the last stored step.
+     */
+    async persist(): Promise<void> {
+        if (!this.info?.raid || !this.started) return;
+        const next = this.next;
+        const full = Math.floor(next / HISTORY_CHUNK);
+        while (this.savedChunks < full) {
+            const entries: Record<string, unknown> = {};
+            for (let k = 0; k < 100 && this.savedChunks < full; ++k, ++this.savedChunks)
+                entries["h:" + this.savedChunks] = encodeHistory(this.history, this.savedChunks * HISTORY_CHUNK, HISTORY_CHUNK, this.players);
+            entries.game = this.savedGame(this.savedChunks * HISTORY_CHUNK);
+            await this.ctx.storage.put(entries);
+        }
+        const entries: Record<string, unknown> = { game: this.savedGame(next) };
+        const tail = next - full * HISTORY_CHUNK;
+        if (tail > 0) entries["h:" + full] = encodeHistory(this.history, full * HISTORY_CHUNK, tail, this.players);
+        await this.ctx.storage.put(entries);
+        this.storedSteps = next;
+    }
+
+    /**
+     * 2.74: after a restart of the object (a deployment, an eviction, a crash): the room (a raid
+     * instance) and its game come back from storage. Nobody is connected any more: every player is
+     * absent from the first step stored, written so in D1 (the consensus counts only who plays), and
+     * comes back like any return (history, catch-up, REJOIN); the seats left free after 60 s.
+     */
+    private async restore(): Promise<void> {
+        try {
+            const saved = await this.ctx.storage.get(["info", "game"]);
+            const info = saved.get("info") as RoomInfo | undefined;
+            if (!info) return;
+            this.info = info;
+            const game = saved.get("game") as SavedGame | undefined;
+            if (!info.raid || !game || game.players < 1 || game.players > MAX_RAID_PLAYERS) return;
+            const parts = Math.ceil(game.next / HISTORY_CHUNK);
+            const history: Frame[] = [];
+            for (let at = 0; at < parts; at += 100) {
+                const keys: string[] = [];
+                for (let c = at; c < Math.min(parts, at + 100); ++c) keys.push("h:" + c);
+                const got = await this.ctx.storage.get(keys);
+                for (let c = at; c < Math.min(parts, at + 100); ++c) {
+                    const bytes = got.get("h:" + c);
+                    const count = Math.min(HISTORY_CHUNK, game.next - c * HISTORY_CHUNK);
+                    const part = bytes instanceof Uint8Array ? decodeHistory(bytes, count, game.players) : null;
+                    if (!part) {
+                        log("error", "coop_restore_damaged", { room: info.id, part: c });
+                        return; // damaged: the instance starts again (the branch's state is in D1)
+                    }
+                    for (const f of part) history.push(f);
+                }
+            }
+            const now = Date.now();
+            this.players = game.players;
+            this.delay = game.delay;
+            this.attempt = game.attempt;
+            this.history = history;
+            this.next = game.next;
+            this.flushed = game.next;
+            this.savedChunks = Math.floor(game.next / HISTORY_CHUNK);
+            this.storedSteps = game.next;
+            this.raidStates = game.raidStates;
+            this.raidMask = game.raidMask;
+            this.seats = game.seats.map((s) => ({
+                playerId: s.vacant ? "" : s.playerId,
+                name: s.name,
+                ws: null,
+                ready: true,
+                rtt: -1,
+                lastSeen: now,
+                absent: true,
+                absentFrom: s.absent ? Math.min(s.absentFrom, game.next) : game.next,
+                absentAt: s.absent ? s.absentAt : now,
+                rejoinAt: 0,
+                pending: [],
+                budget: { start: now, count: 0 },
+                vacant: s.vacant,
+            }));
+            this.started = true;
+            this.restores++;
+            log("warn", "coop_restored", { room: info.id, steps: game.next });
+            this.seats.forEach((s, k) => {
+                if (!s.vacant && s.playerId) void this.writeMember(k, s.playerId, false, false);
+            });
+            await this.memberWrites;
+            if ((await this.ctx.storage.getAlarm()) === null) await this.ctx.storage.setAlarm(now + 1000);
+        } catch (err) {
+            log("error", "coop_restore_failed", { error: err instanceof Error ? err.message : String(err) });
+        }
     }
 
     private lobby() {
