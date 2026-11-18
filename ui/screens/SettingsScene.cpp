@@ -192,7 +192,7 @@ private:
         float y = c.y, w = std::min(c.w, ui.s(900));
         Rect r{c.x, y, w, ui.s(54)};
         auto next = [&]() { r.y += row(); };
-        if (ui.toggle("fullscreen", r, "Plein écran", working_.graphics.fullscreen)) {
+        if (ui.toggle("fullscreen", r, "Plein écran sans bordure (F11)", working_.graphics.fullscreen)) {
             g_.app.setFullscreen(working_.graphics.fullscreen);
         }
         next();

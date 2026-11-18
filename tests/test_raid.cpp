@@ -243,7 +243,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0x6f6da8ade4c3e9fcULL;  // reference (2.68: the Main de Pyroclast): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xe57624dc0e8b74a3ULL;  // reference (2.68: the Main de Pyroclast): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }

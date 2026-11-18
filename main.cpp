@@ -46,6 +46,9 @@
 //                           tell the story of a giga boss over the main menu (from that shot,
 //                           1 = the first, its line typed; « titre »: the title card revealed;
 //                           @12.5: from that moment, as it plays then)
+//   --asterion-film [<seconds>]
+//                           play Asterion's film (2.68) over the main menu as its first viewing
+//                           (nothing skips it), from that moment of it (screenshots)
 //   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout]]
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
@@ -115,6 +118,7 @@
 #include "ui/online/OnlineToasts.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
+#include "ui/screens/AsterionFilm.h"
 #include "ui/screens/BossStoryScene.h"
 
 using namespace cosmic;
@@ -793,6 +797,13 @@ int main(int argc, char** argv) {
         app.pushScene(makeMainMenu(game));
         if (auto story = makeBossStory(game, boss, at, seconds)) app.pushScene(std::move(story));
         else Log::error("Pas d'histoire pour le boss '{}'", boss);
+    } else if (has("--asterion-film")) {
+        // --asterion-film [<seconds>] (screenshots): Asterion's film over the main menu, locked.
+        const std::string at = value("--asterion-film");
+        app.pushScene(makeMainMenu(game));
+        if (auto film = asterionfilm::make(game, true, at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())))))
+            app.pushScene(std::move(film));
+        else Log::error("Film d'Asterion illisible");
     } else if (has("--boss-stats")) {
         // --boss-stats [<boss id>[:<clip>]]: that boss selected (and that clip of its animation).
         if (std::string b = value("--boss-stats"); !b.empty()) game.onlineOpen = "boss:" + b;

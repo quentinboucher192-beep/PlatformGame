@@ -31,6 +31,9 @@ public:
     virtual bool updatesSceneBelow() const { return false; }
     /// While this scene is on top, non-essential popups (online notifications) wait.
     virtual bool holdsNotifications() const { return false; }
+    /// While this scene is on top, the mouse pointer is hidden (a level being played); it comes
+    /// back as soon as a menu (pause, results...) is on top or the scene shows its own menu.
+    virtual bool hidesCursor() const { return false; }
 
     void attach(Application* app) { app_ = app; }
     Application& app() { return *app_; }

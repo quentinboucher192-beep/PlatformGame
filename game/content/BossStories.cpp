@@ -173,6 +173,7 @@ std::optional<StoryStage> StoryStage::fromJson(const Json& j, std::string* error
             fx.duck = jget<bool>(s, "duck", false);
             st.sounds.push_back(std::move(fx));
         }
+    st.length = std::clamp(finiteOr(jget<float>(j, "length", 0.0f), 0.0f), 0.0f, 600.0f);  // 2.68
     if (!j.contains("elements") || !j["elements"].is_array()) return fail("a stage without elements");
     for (const auto& e : j["elements"]) {
         if (!e.is_object()) return fail("an element that is not an object");
@@ -311,15 +312,32 @@ std::optional<BossStory> BossStory::fromJson(const Json& j, std::string* error) 
         shot.scene = jstr(x, "scene");
         shot.image = jstr(x, "image");
         shot.text = jstr(x, "text");
-        if (shot.text.empty()) return fail("a shot without text");
+        if (shot.text.empty() && !s.isFilm()) return fail("a shot without text");  // a film's shot may have no caption
         if (x.contains("focus")) shot.focus = vec2FromJson(x["focus"], shot.focus);
         shot.focus.x = std::clamp(shot.focus.x, 0.0f, 1.0f);
         shot.focus.y = std::clamp(shot.focus.y, 0.0f, 1.0f);
         shot.zoom = std::clamp(jget<float>(x, "zoom", shot.zoom), 1.0f, 1.5f);
         shot.particles = jstr(x, "particles", shot.particles);
         shot.glow = hexOr(x, "glow", s.color);
-        if (x.contains("duration")) shot.duration = std::clamp(jget<float>(x, "duration", 0.0f), 0.5f, 20.0f);
+        if (x.contains("duration")) shot.duration = std::clamp(finiteOr(jget<float>(x, "duration", 0.0f), 0.0f), 0.5f, 60.0f);
+        if (s.isFilm() && shot.duration <= 0.0f) shot.duration = story::shotDuration(shot.text);  // a film's shots have their own lengths
         shot.subtitle = jstr(x, "subtitle");
+        if (x.contains("titles") && x["titles"].is_array())  // 2.68: a film's titles in the picture
+            for (const auto& ti : x["titles"]) {
+                if (!ti.is_object() || jstr(ti, "text").empty()) return fail("shot " + std::to_string(s.shots.size() + 1) + ": a title without text");
+                StoryTitle t;
+                t.t = std::max(0.0f, finiteOr(jget<float>(ti, "t", 0.0f), 0.0f));
+                t.to = std::max(t.t, finiteOr(jget<float>(ti, "to", t.t + 3.0f), t.t + 3.0f));
+                t.text = jstr(ti, "text");
+                t.subtitle = jstr(ti, "subtitle");
+                if (ti.contains("pos")) t.pos = vec2FromJson(ti["pos"], t.pos);
+                if (!std::isfinite(t.pos.x) || !std::isfinite(t.pos.y)) t.pos = {0.5f, 0.5f};
+                t.pos = {std::clamp(t.pos.x, 0.0f, 1.0f), std::clamp(t.pos.y, 0.0f, 1.0f)};
+                t.width = std::clamp(finiteOr(jget<float>(ti, "width", t.width), t.width), 0.1f, 1.0f);
+                t.size = std::clamp(finiteOr(jget<float>(ti, "size", t.size), t.size), 8.0f, 200.0f);
+                t.color = hexOr(ti, "color", s.color);
+                shot.titles.push_back(std::move(t));
+            }
         if (s.version >= 2 && x.contains("stage")) {
             std::string why;
             shot.stage = StoryStage::fromJson(x["stage"], &why);
@@ -359,6 +377,45 @@ std::optional<BossStory> loadTrailer(std::string* error) {
     }
     return BossStory::fromJson(*j, error);
 }
+
+std::optional<BossStory> loadFilm(const std::filesystem::path& script, std::string* error) {
+    auto fail = [&](const std::string& why) -> std::optional<BossStory> {
+        if (error) *error = why;
+        return std::nullopt;
+    };
+    const std::string name = Paths::toUtf8(script.filename());
+    auto j = FileUtil::loadJson(script);
+    if (!j || !j->is_object()) return fail(name + " introuvable ou illisible");
+    if (jstr(*j, "kind") != "film") return fail(name + " : ce n'est pas un film");
+    // Its scenes: a file of the data (« scenes »: a path under data/), one stage per scene.
+    const std::string rel = jstr(*j, "scenes");
+    if (rel.empty() || rel.find("..") != std::string::npos) return fail(name + " : fichier des scènes absent");
+    auto scenes = FileUtil::loadJson(script.parent_path().parent_path() / Paths::fromUtf8(rel));
+    if (!scenes || !scenes->is_object() || !scenes->contains("scenes") || !(*scenes)["scenes"].is_object())
+        return fail(rel + " introuvable ou illisible");
+    Json film = *j;
+    film["version"] = 2;       // the stories' format with animated scenes
+    film["titleCard"] = 0.0f;  // a film ends on its last shot
+    if (!film.contains("shots") || !film["shots"].is_array()) return fail(name + " : aucun plan");
+    const Json& all = (*scenes)["scenes"];
+    for (auto& shot : film["shots"]) {
+        if (!shot.is_object()) return fail(name + " : un plan illisible");
+        const std::string scene = jstr(shot, "scene");
+        auto it = all.find(scene);
+        if (it == all.end()) return fail(name + " : scène « " + scene + " » absente de " + rel);
+        shot["stage"] = *it;
+    }
+    std::string why;
+    auto s = BossStory::fromJson(film, &why);
+    if (!s) return fail(name + " : " + why);
+    return s;
+}
+
+std::optional<BossStory> loadAsterionFilm(const std::filesystem::path& dataDir, std::string* error) {
+    return loadFilm(dataDir / "raids" / "asterion_film.json", error);
+}
+
+std::optional<BossStory> loadAsterionFilm(std::string* error) { return loadAsterionFilm(Paths::dataDir(), error); }
 
 StageAssets stageAssets(const BossStory& s) {
     StageAssets a;

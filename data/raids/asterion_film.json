@@ -1,0 +1,79 @@
+{
+ "format": "cosmic.film",
+ "version": 1,
+ "comment": "Asterion's film (2.68), played the first time the player sees the titan (CLANS > RAIDS, the sheet of a raid event...), then by its replay button. Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`: `t` and `to` in seconds of the shot as written, `pos` its middle in fractions of the picture, `width` the share of the picture it may take, `size` its largest size, `color` its glow). The animated scene of each shot (`scene`) is in asterion_film_scenes.json, written by tools/assetgen/environment/story_asterion.py: a length changed here stretches the scene and its titles, nothing to regenerate. The English is in data/i18n/en.json.",
+ "boss": "asterion",
+ "kind": "film",
+ "title": "LE DÉVOREUR DE MONDES",
+ "color": "#ff8a3a",
+ "accent": "#b46cff",
+ "music": "music/asterion_film.ogg",
+ "scenes": "raids/asterion_film_scenes.json",
+ "shots": [
+  {
+   "scene": "coeur",
+   "duration": 12.0,
+   "text": "Avant la première étoile, il y avait une faim."
+  },
+  {
+   "scene": "forge",
+   "duration": 12.0,
+   "text": "Elle se forgea un corps de mondes brisés, et se donna un nom : ASTERION."
+  },
+  {
+   "scene": "festin",
+   "duration": 14.0,
+   "text": "Pendant des éons, il dévora les mondes. Chaque planète avalée nourrissait ses sept gardiens."
+  },
+  {
+   "scene": "gardiens",
+   "duration": 20.0,
+   "text": "",
+   "titles": [
+    {"t": 1.2, "to": 3.6, "text": "SKULLMAW", "subtitle": "Le crâne qui voit tout", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#ff6a3d"},
+    {"t": 3.8, "to": 6.2, "text": "DREADFANG", "subtitle": "Les griffes qui déchirent", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#c8d2ff"},
+    {"t": 6.4, "to": 8.8, "text": "PYROCLAST", "subtitle": "Le poing de magma", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#ff8a2a"},
+    {"t": 9.0, "to": 11.4, "text": "HEARTBREAKER", "subtitle": "La cage qui garde le cœur", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#ff5a8a"},
+    {"t": 11.6, "to": 14.0, "text": "VOIDWORM", "subtitle": "Le ventre où grouillent les parasites", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#9dff3a"},
+    {"t": 14.2, "to": 16.6, "text": "GRAVITON", "subtitle": "La jambe qui plie l'espace", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#39f0d8"},
+    {"t": 16.8, "to": 19.2, "text": "TITANUS", "subtitle": "La jambe qui écrase tout", "pos": [0.25, 0.5], "width": 0.44, "size": 64, "color": "#ffd27a"}
+   ]
+  },
+  {
+   "scene": "galaxie",
+   "duration": 12.0,
+   "text": "Puis il sentit notre galaxie. Toutes nos planètes, alignées comme un festin."
+  },
+  {
+   "scene": "nova",
+   "duration": 12.0,
+   "text": "Nova tenta de l'arrêter seule. Un héros ne suffit pas contre un titan."
+  },
+  {
+   "scene": "clans",
+   "duration": 14.0,
+   "text": "Alors les clans répondirent. Huit par huit, des centaines de héros se levèrent."
+  },
+  {
+   "scene": "hologramme",
+   "duration": 12.0,
+   "text": "Sept branches. Sept Gigaboss. Abattez-les tous, et son cœur sera à découvert."
+  },
+  {
+   "scene": "rugissement",
+   "duration": 10.0,
+   "text": "",
+   "titles": [
+    {"t": 3.2, "to": 9.7, "text": "ASTERION", "subtitle": "LE DÉVOREUR DE MONDES", "pos": [0.5, 0.74], "width": 0.9, "size": 120, "color": "#ff8a3a"}
+   ]
+  },
+  {
+   "scene": "appel",
+   "duration": 6.0,
+   "text": "",
+   "titles": [
+    {"t": 0.4, "to": 6.0, "text": "Rassemblez votre clan.", "subtitle": "La chasse commence.", "pos": [0.5, 0.3], "width": 0.86, "size": 72, "color": "#ffd27a"}
+   ]
+  }
+ ]
+}

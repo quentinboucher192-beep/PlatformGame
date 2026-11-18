@@ -89,6 +89,8 @@ public:
     }
 
     bool holdsNotifications() const override { return true; }
+    // 2.68 (phase 3): the pointer comes back with the card of the gigaboss's fall (« Résultats du raid »).
+    bool hidesCursor() const override { return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_; }
 
     void onEnter() override {
         branch_ = raid::Branch::builtin(entry_.branch);

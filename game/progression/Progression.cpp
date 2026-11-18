@@ -30,7 +30,8 @@ Json Progression::toJson() const {
             {"playTimeSeconds", playTimeSeconds},
             {"levelPlayTime", levelPlayTime_},
             {"introSeen", introSeen},
-            {"tutorial", tutorial}};
+            {"tutorial", tutorial},
+            {"asterionFilmSeen", asterionFilmSeen}};
 }
 
 void Progression::addPlayTime(const std::string& levelId, double seconds) {
@@ -54,6 +55,7 @@ void Progression::fromJson(const Json& j) {
     // marked "before" by 2.61.x, has not seen it: it is offered once, like to a new player.
     tutorial = jstr(j, "tutorial", "");
     if (tutorial == "before") tutorial.clear();
+    asterionFilmSeen = jget<bool>(j, "asterionFilmSeen", false);  // 2.68
 }
 
 std::string Progression::furthestTutorial(const std::string& a, const std::string& b) {

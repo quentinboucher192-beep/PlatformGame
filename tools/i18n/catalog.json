@@ -2096,6 +2096,12 @@
    ]
   },
   {
+   "fr": "Alors les clans répondirent. Huit par huit, des centaines de héros se levèrent.",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Alors, pour que l'aube revienne, il alluma ses propres plumes. Il brûla, brûla… et tomba en cendres.",
    "where": [
     "data/stories/phenix.json"
@@ -3362,6 +3368,7 @@
   {
    "fr": "ASTERION",
    "where": [
+    "data/raids/asterion_film.json",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
     "ui/screens/ClanRaids.cpp",
@@ -3371,6 +3378,7 @@
   {
    "fr": "Asterion",
    "where": [
+    "game/content/AssetCatalog.cpp",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
     "ui/screens/AdminScene.cpp"
@@ -5727,6 +5735,12 @@
    "fr": "Avant la Garde du verrou",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Avant la première étoile, il y avait une faim.",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -12432,6 +12446,12 @@
    ]
   },
   {
+   "fr": "Confort : le pointeur de la souris disparaît pendant qu'on joue un niveau (campagne, coopération, raids) et réapparaît dès qu'un menu s'ouvre (pause, résultats, choix d'un pouvoir…) ; le plein écran (F11 ou Alt+Entrée) est désormais toujours un plein écran sans bordure à la résolution du bureau, sans changement de mode vidéo.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Congo",
    "where": [
     "data/online/countries.json",
@@ -16686,6 +16706,12 @@
    ]
   },
   {
+   "fr": "DREADFANG",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Dreadfang — prochaine version",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json"
@@ -18771,6 +18797,12 @@
    "fr": "Elle s'ajoute à la progression de cet ordinateur : le meilleur de chaque côté est gardé (meilleurs temps, succès, statistiques, sans double compte) et le temps de jeu s'additionne. Les sauvegardes actuelles sont d'abord copiées dans le dossier saves.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Elle se forgea un corps de mondes brisés, et se donna un nom : ASTERION.",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -23364,6 +23396,12 @@
    ]
   },
   {
+   "fr": "GRAVITON",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Graviton — prochaine version",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
@@ -23975,6 +24013,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "HEARTBREAKER",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -27464,6 +27508,12 @@
    ]
   },
   {
+   "fr": "La cage qui garde le cœur",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "La cage s'ouvre ! L'antre de Heartbreaker est ouvert.",
    "where": [
     "data/raids/asterion/torse/zone_7.json"
@@ -27564,6 +27614,12 @@
    "fr": "La chambre secrète de l'Hydre !",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "La chasse commence.",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -28012,6 +28068,18 @@
    "fr": "La herse est close. Son levier est là-haut, sur la tourelle : triple saut, puis Interagir.",
    "where": [
     "data/levels/glacior_03.json"
+   ]
+  },
+  {
+   "fr": "La jambe qui plie l'espace",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "La jambe qui écrase tout",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -29500,6 +29568,12 @@
    ]
   },
   {
+   "fr": "Le crâne qui voit tout",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Le créateur choisit les touches de son niveau dans l'éditeur (« Touches des pouvoirs ») ; le joueur peut les changer pour lui dans le choix du niveau (« Touches… », juste avant « Jouer ») et dans la pause (« Touches de ce niveau »).",
    "where": [
     "data/news/changelog.json"
@@ -29770,6 +29844,7 @@
   {
    "fr": "LE DÉVOREUR DE MONDES",
    "where": [
+    "data/raids/asterion_film.json",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
     "server/src/raids.ts",
@@ -30313,6 +30388,12 @@
    ]
   },
   {
+   "fr": "Le mini-film d'Asterion : la première fois que vous allez voir le titan (CLANS › RAIDS, la fiche d'un événement), une cinématique d'environ deux minutes raconte qui il est, en dix plans animés : le Cœur cosmique qui bat seul dans le vide, son corps forgé de mondes brisés, une planète dévorée dont les lumières s'éteignent une à une, ses sept parties et leurs Gigaboss révélés un par un (Skullmaw, Dreadfang, Pyroclast, Heartbreaker, Voidworm, Graviton, Titanus), notre galaxie dans sa ligne de mire, Nova balayée d'un revers, les balises des clans qui s'allument, l'hologramme de ses branches à abattre, son rugissement et le titre « ASTERION — LE DÉVOREUR DE MONDES », puis l'appel : « Rassemblez votre clan. La chasse commence. » Avec sa propre musique et ses bruitages. Cette première projection ne se passe pas ; elle n'est comptée comme vue qu'une fois allée jusqu'au bout (fermer le jeu au milieu la rejoue la prochaine fois), et cela vous suit sur un autre ordinateur avec votre progression. Le bouton « Revoir la cinématique » de la carte de l'événement la rejoue quand vous voulez, et celle-là se quitte.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le Miroir boréal",
    "where": [
     "data/music/tracks.json"
@@ -30714,6 +30795,12 @@
    "fr": "Le Poignet-verrou devient la longue route vers la Main : environ 15 minutes à huit joueurs (estimation calculée depuis le niveau et vérifiée par les tests), des galeries à deux voies, quatre embuscades géantes sur plusieurs étages, une vanne double à 4 joueurs, un monte-charge à 3 joueurs, des plaques jumelles à tenir ensemble et des points de contrôle. La Main ne s'ouvre qu'une fois son verrou brisé.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Le poing de magma",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -31378,6 +31465,12 @@
    "fr": "le Triple saut",
    "where": [
     "game/levels/CampaignPipeline.cpp"
+   ]
+  },
+  {
+   "fr": "Le ventre où grouillent les parasites",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -32100,6 +32193,12 @@
    "fr": "Les griffes de Dreadfang, au bout du bras gauche. La porte est scellée : le combat arrive dans la prochaine version.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Les griffes qui déchirent",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -37907,6 +38006,12 @@
    ]
   },
   {
+   "fr": "Nova tenta de l'arrêter seule. Un héros ne suffit pas contre un titan.",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "NovaRider",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
@@ -41259,6 +41364,12 @@
    ]
   },
   {
+   "fr": "Pendant des éons, il dévora les mondes. Chaque planète avalée nourrissait ses sept gardiens.",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Pendant la déconnexion, vous avez joué en local. C'est maintenant dans le compte « {0} » :",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -42236,7 +42347,7 @@
    ]
   },
   {
-   "fr": "Plein écran",
+   "fr": "Plein écran sans bordure (F11)",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -44731,6 +44842,12 @@
    ]
   },
   {
+   "fr": "Puis il sentit notre galaxie. Toutes nos planètes, alignées comme un festin.",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Puis les gens partirent vers les étoiles. Personne ne pensa à effacer la rune.",
    "where": [
     "data/stories/monolithe.json"
@@ -44860,6 +44977,12 @@
    "fr": "Pyralis, la forge en fusion. La lave est mortelle : restez sur la roche !",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "PYROCLAST",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -45669,6 +45792,12 @@
    "fr": "Rappels dans le jeu : centre de notifications et bandeau. Pas de notification Windows pour l'instant.",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Rassemblez votre clan.",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -48119,6 +48248,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revoir la cinématique",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
    ]
   },
   {
@@ -50871,6 +51006,12 @@
    ]
   },
   {
+   "fr": "Sept branches. Sept Gigaboss. Abattez-les tous, et son cœur sera à découvert.",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Sept flammes s'allument au-dessus du portail, une par jour de la série.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -51318,6 +51459,12 @@
    ]
   },
   {
+   "fr": "shot {0}: a title without text",
+   "where": [
+    "game/content/BossStories.cpp"
+   ]
+  },
+  {
    "fr": "Sierra Leone",
    "where": [
     "data/online/countries.json",
@@ -51480,6 +51627,12 @@
    "fr": "Six récompenses au plus par défi.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "SKULLMAW",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -55432,6 +55585,12 @@
    "fr": "titan.json illisible",
    "where": [
     "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "TITANUS",
+   "where": [
+    "data/raids/asterion_film.json"
    ]
   },
   {
@@ -60389,6 +60548,12 @@
    ]
   },
   {
+   "fr": "VOIDWORM",
+   "where": [
+    "data/raids/asterion_film.json"
+   ]
+  },
+  {
    "fr": "Voidworm — prochaine version",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
@@ -62509,6 +62674,12 @@
    ]
   },
   {
+   "fr": "{0} : aucun plan",
+   "where": [
+    "game/content/BossStories.cpp"
+   ]
+  },
+  {
    "fr": "{0} : aucune équipe classée pour l'instant.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -62518,6 +62689,12 @@
    "fr": "{0} : ce contenu est déjà la révision {1} de ce niveau.",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : ce n'est pas un film",
+   "where": [
+    "game/content/BossStories.cpp"
    ]
   },
   {
@@ -62566,6 +62743,12 @@
    "fr": "{0} : entier de {1} à {2} attendu",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "{0} : fichier des scènes absent",
+   "where": [
+    "game/content/BossStories.cpp"
    ]
   },
   {
@@ -62647,9 +62830,21 @@
    ]
   },
   {
+   "fr": "{0} : scène « {1} » absente de {2}",
+   "where": [
+    "game/content/BossStories.cpp"
+   ]
+  },
+  {
    "fr": "{0} : trop imbriqué",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : un plan illisible",
+   "where": [
+    "game/content/BossStories.cpp"
    ]
   },
   {
@@ -63738,6 +63933,12 @@
     "ui/screens/AdminRaids.cpp",
     "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} introuvable ou illisible",
+   "where": [
+    "game/content/BossStories.cpp"
    ]
   },
   {

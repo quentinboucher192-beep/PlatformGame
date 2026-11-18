@@ -533,6 +533,18 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
         }
     }
 
+    // 2.68: Asterion's film (data/raids/asterion_film.json): its scenes' files, its sounds, its music.
+    if (auto film = story::loadAsterionFilm(dataDir, nullptr)) {
+        uses.add(film->music, AssetUseKind::Story, "asterion", "Asterion", false);
+        for (const StoryShot& shot : film->shots)
+            if (shot.stage) {
+                for (const StoryElement& el : shot.stage->elements)
+                    if (el.kind == StoryElementKind::Layer || el.kind == StoryElementKind::Sprite)
+                        uses.add(el.source, AssetUseKind::Story, "asterion", "Asterion", false);
+                for (const StorySfx& fx : shot.stage->sounds) uses.add(fx.sound, AssetUseKind::Story, "asterion", "Asterion", false);
+            }
+    }
+
     // The suits of the Vestiaire (the standard one is Nova's own sheet).
     CosmeticCatalog cosmetics;
     if (cosmetics.load(dataDir / "cosmetics" / "cosmetics.json"))

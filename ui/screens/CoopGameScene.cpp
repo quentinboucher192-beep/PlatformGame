@@ -72,6 +72,9 @@ public:
     }
 
     bool holdsNotifications() const override { return true; }
+    bool hidesCursor() const override {
+        return mounted_ && !loadFailed_ && world_ && !catching_ && !paused_ && !choosing_ && !ended_ && !unplugShown_;
+    }
 
     void onEnter() override {
         ResourceManager& res = g_.app.resources();

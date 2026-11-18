@@ -71,6 +71,8 @@ public:
     void renderDebug() override;
     /// A run in progress is never disturbed by online notifications (they show afterwards).
     bool holdsNotifications() const override { return true; }
+    // Pause, results, power choice... are scenes pushed on top: the pointer comes back with them.
+    bool hidesCursor() const override { return true; }
 
     void restart();
     // 2.64, the tutorial (PlayOptions::tutorial) and its explanation cards (event action

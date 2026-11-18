@@ -55,6 +55,7 @@ MODULES = {
     "confins_planet": ("planet_confins", "generate"),
     "stories": ("stories", "generate"),
     "raids": ("raid_asterion", "generate"),
+    "raid_film": ("story_asterion", "generate"),  # 2.68: Asterion's film (after the titan's sprite)
 }
 
 
@@ -66,7 +67,7 @@ def load_step(name):
 
 ORDER = ["tiles", "platforms", "backgrounds", "bg_pyralis", "bg_glacior", "decor", "decor_pyralis",
          "decor_glacior", "ui", "glyphs", "planets", "banners", "bg_aethra", "aethra_planet",
-         "confins_planet", "stories", "raids"]
+         "confins_planet", "stories", "raids", "raid_film"]
 
 
 def main(argv):

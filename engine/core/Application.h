@@ -131,6 +131,8 @@ private:
     float fadeT_ = 0.0f, fadeDur_ = 0.35f;
     bool running_ = false;
     bool fullscreen_ = false;
+    bool cursorHidden_ = false;
+    void updateCursor();
     float fps_ = 0.0f, frameMs_ = 0.0f;
     uint64_t frame_ = 0;
     std::string screenshotPath_;

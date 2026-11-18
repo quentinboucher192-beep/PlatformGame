@@ -21,7 +21,7 @@ for (const i of data.items) {
     if (typeof i.souvenir === "string" && i.souvenir) continue;
     const item = { id: i.id, category: i.category, look: i.look ?? "", name: i.name };
     if (i.default === true) item.default = true;
-    else if (typeof i.raid === "string" && i.raid) item.raid = i.raid; // 2.67: a raid's reward, only once claimed (player_won_rewards)
+    else if (typeof i.raid === "string" && i.raid) item.raid = i.raid; // 2.68: a raid's reward, only once claimed (player_won_rewards)
     else if (typeof i.achievement === "string" && i.achievement) item.achievement = i.achievement;
     else if (i.challenge !== undefined) {
         // 2.34: N challenges of a kind (or any) with a verified run at a tier or better.
