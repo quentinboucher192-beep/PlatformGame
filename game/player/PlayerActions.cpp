@@ -170,23 +170,48 @@ void Player::handlePowers(GameWorld& w, const PlayerInput& in, float dt) {
 
 // ------------------------------------------------------------------ combat
 
+SlashDirection Player::slashDirectionFor(Vec2 aim, bool grounded) const {
+    if (aim.y < -0.5f && std::abs(aim.x) < 0.5f) return SlashDirection::Up;
+    if (aim.y > 0.5f && !grounded && std::abs(aim.x) < 0.5f) return SlashDirection::Down;
+    return SlashDirection::Forward;
+}
+
+Rect Player::slashArea(SlashDirection dir) const {
+    switch (dir) {
+        case SlashDirection::Up:
+            return Rect::fromCenter(center() + Vec2{0, -box.h * 0.5f - cfg_.attackRange.x * 0.4f},
+                                    {cfg_.attackRange.y + 6, cfg_.attackRange.x});
+        case SlashDirection::Down:
+            return Rect::fromCenter(center() + Vec2{0, box.h * 0.5f + cfg_.attackRange.x * 0.4f},
+                                    {cfg_.attackRange.y + 6, cfg_.attackRange.x});
+        case SlashDirection::Forward: break;
+    }
+    return Rect::fromCenter(center() + Vec2{facing * (box.w * 0.5f + cfg_.attackRange.x * 0.5f - 2), -2}, cfg_.attackRange);
+}
+
+const char* Player::attackClip() const {
+    const char* clip = attackAir_ ? "air_attack" : "attack";
+    if (slashDir_ == SlashDirection::Forward) return clip;
+    // 2.69: the strike upwards or downwards has its own animation (rows 27-29 of Nova's sheet).
+    // A sheet without it, or a suit drawn before it (a suit created online covers the first 27
+    // rows only: CreationImages kSuitSheetH), plays the usual one. Display only.
+    const char* dir = slashDir_ == SlashDirection::Up ? (attackAir_ ? "air_attack_up" : "attack_up") : "air_attack_down";
+    const AnimationClip* c = anim.set() ? anim.set()->clip(dir) : nullptr;
+    if (c && (!skin || (c->row + 1) * anim.set()->frameHeight <= skin->height())) clip = dir;
+    return clip;
+}
+
 void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
     if (attackTimer_ > 0.0f) {
         float elapsed = cfg_.attackDuration - attackTimer_;
         attackTimer_ -= dt;
         if (!attackHitDone_ && elapsed >= cfg_.attackDuration * 0.25f) {
             attackHitDone_ = true;
-            Rect hit;
-            if (aim_.y < -0.5f && std::abs(aim_.x) < 0.5f) {
-                hit = Rect::fromCenter(center() + Vec2{0, -box.h * 0.5f - cfg_.attackRange.x * 0.4f},
-                                       {cfg_.attackRange.y + 6, cfg_.attackRange.x});
-            } else if (aim_.y > 0.5f && !grounded_ && std::abs(aim_.x) < 0.5f) {
-                hit = Rect::fromCenter(center() + Vec2{0, box.h * 0.5f + cfg_.attackRange.x * 0.4f},
-                                       {cfg_.attackRange.y + 6, cfg_.attackRange.x});
-            } else {
-                hit = Rect::fromCenter(center() + Vec2{facing * (box.w * 0.5f + cfg_.attackRange.x * 0.5f - 2), -2},
-                                       cfg_.attackRange);
-            }
+            // 2.69 (simulation 15): the strike goes where the attack started (its animation), and
+            // a strike downwards never bounces (no new way through a level). A replay recorded
+            // before plays with the rules of its time: the direction read now, and the bounce.
+            const bool aimed = w.simulationVersion() >= kAimedSlashSimulation;
+            const Rect hit = slashArea(aimed ? slashDir_ : slashDirectionFor(aim_, grounded_));
             DamageInfo d;
             d.amount = cfg_.attackDamage;
             d.type = DamageType::Melee;
@@ -203,8 +228,8 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
                 w.hitStop(0.045f);
                 w.shake(0.12f);
                 w.rumble(0.3f, 0.5f, 90);
-                // Downward strike bounces off enemies (pogo).
-                if (aim_.y > 0.5f && !grounded_) launch({vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
+                // Before 2.69 only: a strike with Down held in the air bounced off the enemies (pogo).
+                if (!aimed && aim_.y > 0.5f && !grounded_) launch({vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
             }
             w.powerHit("melee", hit);
         }
@@ -217,10 +242,20 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
     attackHitDone_ = false;
     meleeTag_ = w.newAttackTag("attack");  // 2.54: statistics only
     attackAir_ = !grounded_;
-    anim.play(attackAir_ ? "air_attack" : "attack", true);
+    // 2.69: Up alone strikes above (on the ground or in the air), Down alone below (in the air).
+    slashDir_ = slashDirectionFor(aim_, grounded_);
+    anim.play(attackClip(), true);
     w.playSound("sounds/slash.wav", center(), 0.8f, w.fxRng().range(0.93f, 1.08f));
     Vec2 fxPos = center() + Vec2{facing * 12.0f, -2.0f};
-    w.particles().emit("slash_sparks", fxPos, 1.0f, {facing, 0.0f});
+    Vec2 fxDir{facing, 0.0f};
+    if (slashDir_ == SlashDirection::Up) {
+        fxPos = center() + Vec2{facing * 2.0f, -box.h * 0.5f - 6.0f};
+        fxDir = {0.0f, -1.0f};
+    } else if (slashDir_ == SlashDirection::Down) {
+        fxPos = center() + Vec2{facing * 2.0f, box.h * 0.5f + 6.0f};
+        fxDir = {0.0f, 1.0f};
+    }
+    w.particles().emit("slash_sparks", fxPos, 1.0f, fxDir);
 }
 
 void Player::handleInteract(GameWorld& w, const PlayerInput& in) {
@@ -323,7 +358,7 @@ void Player::chooseAnimation() {
         case PlayerState::Hidden: return;
         default: {
             if (attackTimer_ > 0.0f) {
-                clip = attackAir_ ? "air_attack" : "attack";
+                clip = attackClip();
             } else if (interactTimer_ > 0.0f) {
                 clip = "interact";
             } else if (castTimer_ > 0.0f && grounded_ && std::abs(vel.x) < 40.0f) {

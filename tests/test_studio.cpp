@@ -252,11 +252,12 @@ TEST_CASE("studio: documents, frames of a strip and drafts on disk") {
     const auto anims = suitAnims(*nova);
     CHECK(anims.size() == 27 && anims[0].id == "idle" && anims[0].name == "Attente" && anims[2].name == "Course" && anims[2].count == 8);
     CHECK(static_cast<int>(anims[2].durations.size()) == 8);
-    // Nova's sheet has the size a suit's image must have.
+    // A suit's image is Nova's sheet without the rows added in 2.69 (the strikes upwards and
+    // downwards, rows 27-29: a suit created online plays the forward strike instead).
     std::vector<uint8_t> px;
     int w = 0, h = 0;
     CHECK(loadRgbaImage(Paths::assetsDir() / "sprites" / "player" / "nova.png", px, w, h));
-    CHECK(w == kSuitSheetW && h == kSuitSheetH);
+    CHECK(w == kSuitSheetW && h == kSuitSheetH + 3 * kSuitFrame);
     PixelImage sheet = PixelImage::fromRgba(w, h, px);
     StudioDoc suit = StudioDoc::make(DocKind::Suit, newDraftUid(), "Aube de Sylvanox", sheet);
     CHECK(suit.sendProblem(anims).empty());

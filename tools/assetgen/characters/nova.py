@@ -2,7 +2,8 @@
 
 32x32 frames, pivot [16, 32], one clip per row: rows 0-18 = v1 clips,
 rows 19-25 = v2 abilities (glide, ground pound, charged shot, grapple),
-built in player_nova.py."""
+built in player_nova.py, row 26 = crouch (2.17), rows 27-29 = the strikes upwards
+and downwards (2.69)."""
 import math
 
 import numpy as np
@@ -257,6 +258,66 @@ def air_attack():
     return out
 
 
+def attack_up():
+    """2.69: the strike upwards (Up alone): the blade comes from behind, sweeps over the helmet
+    and ends in front, a crescent over the head (the hit is above Nova)."""
+    ps = [
+        Pose(lean=-0.1, foot_f=(19, 30), foot_b=(13, 30), hand_f=(13, 23), hand_b=(14, 25), elbow_f=1,
+             blade=2.75, scarf_ang=2.9, scarf_phase=0.0),
+        Pose(lean=-0.04, foot_f=(19, 30), foot_b=(13, 30), hand_f=(14, 17), hand_b=(14, 25), elbow_f=1,
+             blade=-2.3, scarf_ang=3.0, scarf_phase=1.0),
+        Pose(hip=(16, 25.5), lean=0.04, foot_f=(19, 30), foot_b=(13, 30), toe_b=0.2, hand_f=(18, 14), hand_b=(13, 24),
+             tilt=-0.25, blade=-1.35, blade_len=8, scarf_ang=3.05, scarf_curl=0.02, scarf_phase=2.0, scarf_len=7),
+        Pose(hip=(16, 25.5), lean=0.1, foot_f=(20, 30), foot_b=(13, 30), hand_f=(21, 16), hand_b=(13, 24),
+             tilt=-0.15, blade=-0.55, scarf_ang=3.0, scarf_phase=3.0),
+        Pose(lean=0.08, foot_f=(20, 30), foot_b=(14, 30), hand_f=(20, 21), hand_b=(13, 25),
+             blade=-0.2, scarf_ang=2.9, scarf_phase=4.0),
+    ]
+    out = frames(ps)
+    _arc(out[1], (16.5, 17.0), 10.0, 12.5, -3.05, -2.2, 1.0)
+    _arc(out[2], (16.5, 16.5), 10.5, 14.0, -2.95, -1.0, 1.0, over=True)
+    _arc(out[3], (16.5, 16.5), 12.0, 13.8, -2.0, -0.45, 0.5, over=False)
+    return out
+
+
+def air_attack_up():
+    """2.69: the strike upwards in the air: the same sweep over the head, legs in the air."""
+    base = dict(foot_f=(19, 28), foot_b=(14, 29), toe_f=0.6, toe_b=0.8, hip=(16, 25))
+    ps = [
+        Pose(lean=-0.1, hand_f=(13, 21), hand_b=(12, 23), elbow_f=1, blade=2.75, scarf_ang=2.2,
+             scarf_phase=0, **base),
+        Pose(lean=0.04, hand_f=(18, 13), hand_b=(12, 22), tilt=-0.25, blade=-1.4, blade_len=8, scarf_ang=2.4,
+             scarf_phase=1.2, **base),
+        Pose(lean=0.1, hand_f=(21, 16), hand_b=(12, 22), tilt=-0.15, blade=-0.5, scarf_ang=2.4, scarf_phase=2.4, **base),
+        Pose(lean=0.05, hand_f=(20, 20), hand_b=(12, 23), blade=-0.2, scarf_ang=2.3, scarf_phase=3.6, **base),
+    ]
+    out = frames(ps)
+    _arc(out[1], (16.5, 16.0), 10.5, 14.0, -3.0, -1.1, 1.0, over=True)
+    _arc(out[2], (16.5, 16.0), 12.0, 13.8, -2.0, -0.4, 0.5, over=False)
+    return out
+
+
+def air_attack_down():
+    """2.69: the strike downwards (Down alone, in the air only): knees tucked up, the blade
+    sweeps from the front under the boots to the back, a crescent below Nova."""
+    base = dict(hip=(16, 24), foot_f=(19, 27), foot_b=(14, 27.5), toe_f=0.7, toe_b=0.9)
+    ps = [
+        Pose(lean=0.0, hand_f=(21, 18), hand_b=(12, 21), blade=-0.6, scarf_ang=-2.3, scarf_amp=0.3,
+             scarf_phase=0, **base),
+        Pose(lean=0.15, tilt=0.3, hand_f=(22, 23), hand_b=(12, 21), blade=0.9, blade_len=8, scarf_ang=-2.2,
+             scarf_amp=0.3, scarf_phase=1.2, **base),
+        Pose(lean=0.2, tilt=0.4, hand_f=(18, 26), hand_b=(12, 21), blade=1.75, scarf_ang=-2.2, scarf_amp=0.3,
+             scarf_phase=2.4, **base),
+        Pose(lean=0.1, tilt=0.25, hand_f=(15, 25), hand_b=(12, 21), elbow_f=1, blade=2.4, scarf_ang=-2.1,
+             scarf_amp=0.3, scarf_phase=3.6, **base),
+    ]
+    out = frames(ps)
+    _arc(out[1], (16.5, 21.0), 8.0, 10.5, -0.45, 0.95, 1.0, over=True)
+    _arc(out[2], (16.5, 21.0), 7.5, 10.8, -0.1, 2.5, 1.0, over=True)
+    _arc(out[3], (16.5, 21.0), 9.0, 10.8, 1.3, 2.75, 0.5, over=False)
+    return out
+
+
 def cast():
     ps = [
         Pose(lean=-0.1, foot_f=(19, 30), foot_b=(13, 30), hand_f=(15, 22), hand_b=(12, 25), hand_glow=1.6,
@@ -438,5 +499,10 @@ def build():
     s.add("interact", interact(), durations=[0.06, 0.08, 0.14, 0.1], loop=False)
     player_nova.add_rows(s)  # rows 19-25
     s.add("crouch", crouch(), durations=[0.04, 0.06, 0.1], loop=False)  # row 26 (2.17)
+    # 2.69: the strikes upwards and downwards (rows 27-29), same timings as attack / air_attack
+    s.add("attack_up", attack_up(), durations=[0.04, 0.05, 0.07, 0.08, 0.10], loop=False, next="idle",
+          events=[(2, "hit")])
+    s.add("air_attack_up", air_attack_up(), durations=[0.04, 0.06, 0.08, 0.1], loop=False, events=[(1, "hit")])
+    s.add("air_attack_down", air_attack_down(), durations=[0.04, 0.06, 0.08, 0.1], loop=False, events=[(2, "hit")])
     s.save("animations/nova.json")
     return s

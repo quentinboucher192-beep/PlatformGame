@@ -417,6 +417,7 @@ SpectateStream::Update SpectateStream::absorb(const Json& data, std::string* err
         replay_.attemptId = h->runId;
         replay_.seed = h->seed;
         replay_.keysPerSlot = h->keysPerSlot;
+        replay_.simVersion = static_cast<uint16_t>(std::clamp(h->simVersion, 0, 0xFFFF));  // 2.69: its rules
         replay_.challengeRules = h->challengeRules;
         lastSeq_ = 0;
         result = Update::Started;

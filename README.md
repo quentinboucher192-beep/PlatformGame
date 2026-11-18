@@ -207,6 +207,8 @@ local, avec des comptes de démonstration (aucun record n'y est encore vérifié
 | Glissade | Bas en courant au sol | Bas (stick / croix) en courant |
 | S'accroupir | Bas seul au sol (même sur place) | Bas (stick / croix) sans direction |
 | Attaque | J / X | X / Carré |
+| Attaque vers le haut | Haut + Attaque (au sol ou en l'air) | Haut (stick / croix) + X / Carré |
+| Attaque vers le bas | Bas + Attaque, en l'air seulement | Bas (stick / croix) + X / Carré, en l'air |
 | Pouvoir 1 (1er emplacement du HUD) | K / Maj gauche | B / Rond |
 | Pouvoir 2 | L / C | RT / R2 |
 | Pouvoir 3 | O / V | LB / L1 |
@@ -454,6 +456,14 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.69.0** :
+* **Attaque dirigée** : Haut + Attaque frappe au-dessus de Nova (au sol ou en l'air), Bas + Attaque frappe en dessous, en
+  l'air seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe). Mêmes
+  dégâts, recul et objets cassables que le coup vers l'avant, sans rebond sur les ennemis (aucun nouveau passage) ;
+  animations et arcs de lame générés par `tools/assetgen/characters/nova.py` (lignes 27 à 29 de la planche de Nova).
+  `kSimulationVersion` passe à 15, `kRankingGeneration` reste à 8 : **records et classements conservés** ; un replay
+  enregistré avant se rejoue avec les règles de son époque (la version de la simulation est notée dans les nouveaux replays).
 
 **Nouveau dans la version 2.68.1** :
 * **Correctif de la pause en ligne** : Échap ne referme plus aussitôt la pause en raid et en coopération ; en ligne,

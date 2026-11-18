@@ -78,8 +78,17 @@ dernier est pris à la fin du niveau.
 | 12 | boss touché (course à la vérification, 2.16) | arg : boss, value : vie retirée (pour mille) |
 | 13 | vague d'embuscade (course à la vérification, 2.16) | arg : embuscade, value : vagues battues |
 | 14 | temps de passage (Ghost Racing, 2.18) | arg : n° du point (255 au-delà), value : les 16 bits bas du temps en ms ; l'échantillon de l'événement donne le reste (le temps le plus proche ayant ces 16 bits) |
+| 20 | version de la simulation (2.69) | value : `kSimulationVersion` du jeu qui a joué la partie (15 et plus). Toujours le **premier** événement, à l'échantillon 0, d'un replay exact (versions 2 à 5) ; le jeu le lit dans `ReplayData::simVersion` et ne le garde pas parmi les événements |
 
-Un lecteur ignore les types qu'il ne connaît pas (le serveur ignore le type 14).
+Un lecteur ignore les types qu'il ne connaît pas (le serveur ignore les types 14 et 20).
+
+**Version de la simulation (2.69, simulation 15).** Un replay se rejoue avec les règles de la
+version qui l'a enregistré (`ReplaySimulator` → `GameWorld::setSimulationVersion`) : un replay
+exact sans événement 20 (enregistré avant la 2.69, simulation 14 ou avant) garde l'attaque
+d'alors (direction lue au moment du coup, rebond d'un coup vers le bas en l'air) et se rejoue
+donc à l'identique ; depuis la 2.69, l'attaque garde la direction choisie au début du coup et
+ne fait plus rebondir. Ni le format ni `input_flags` ne changent : le serveur et les jeux plus
+anciens lisent ces replays comme avant.
 
 Les éclats et reliques (arg 0 et 1) forment le nombre d'objets comparé au record.
 
