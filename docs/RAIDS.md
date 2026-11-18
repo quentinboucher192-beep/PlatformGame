@@ -668,7 +668,7 @@ vérifie chaque texte du catalogue i18n, son anglais et toutes les chaînes des 
 
 ### Versions
 
-Les règles changées ne touchent que les raids : `kSimulationVersion` (14), `kCoopSimulationVersion` et
+Les règles changées ne touchent que les raids : `kSimulationVersion`, `kCoopSimulationVersion` et
 `kRankingGeneration` ne changent pas (empreintes solo et coopération inchangées) ; la révision du Bras droit passe à 3
 (le `GO` du relais la porte : toutes les instances jouent les mêmes zones) et l'empreinte des zones générées change
 (`tests/test_raid.cpp`).

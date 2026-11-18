@@ -345,6 +345,11 @@ pixels from the feet, x mirrored with the facing).
 
 * `nova` rows 19-25: `glide` 4 (loop), `pound_dive` 2 (loop), `pound_land` 4 (`impact` f0, next idle),
   `charge` 4 (loop), `shoot` 3 (`fire` f0, next idle), `grapple` 4 (`fire` f1), `grapple_pull` 2 (loop).
+* `nova` row 26: `crouch` 3 (2.17). Rows 27-29 (2.71, the strikes upwards and downwards, same timings as
+  `attack` / `air_attack`): `attack_up` 5 (`hit` f2, next idle; the blade comes from behind and sweeps over
+  the helmet, a crescent over the head), `air_attack_up` 4 (`hit` f1, legs in the air), `air_attack_down` 4
+  (`hit` f2, knees tucked, a crescent under the boots). A suit created online covers rows 0-26 only
+  (320 × 864): it plays `attack` / `air_attack` instead.
 * `projectiles` rows 6-18 (16x16, drawn travelling right): `charge_shot`, `fireball`, `magma_glob`,
   `ember`, `ice_shard`, `frost_orb`, `bomb`, `acid_glob`, `web`, `spore_big`, `energy_disc`, `rock`,
   `grapple_hook`.
