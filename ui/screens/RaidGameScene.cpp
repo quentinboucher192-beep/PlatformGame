@@ -73,6 +73,7 @@ public:
     }
 
     bool holdsNotifications() const override { return true; }
+    bool hidesCursor() const override { return run_ && !catching_ && !connecting_ && !paused_ && !ended_; }
 
     void onEnter() override {
         branch_ = raid::Branch::builtin(entry_.branch);

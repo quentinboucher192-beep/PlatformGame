@@ -172,6 +172,7 @@ void Application::run() {
     while (running_) {
         applyPending();
         if (scenes_.empty() && fadeState_ == Fade::None && pending_.empty()) break;
+        updateCursor();
 
         Uint64 now = SDL_GetPerformanceCounter();
         double dt = static_cast<double>(now - last) / freq;
@@ -304,7 +305,20 @@ void Application::saveScreenshot(const std::string& path) {
 
 void Application::setFullscreen(bool on) {
     fullscreen_ = on;
+    // Borderless fullscreen on the desktop resolution (F11): never an exclusive video mode,
+    // so no flicker, no resolution change and alt-tab stays instant.
+    if (on) SDL_SetWindowFullscreenMode(window_, nullptr);
     SDL_SetWindowFullscreen(window_, on);
+}
+
+void Application::updateCursor() {
+    // The pointer is hidden while a level is being played (the scene on top says so) and comes
+    // back with any menu (pause, results...). Display only: never part of the simulation.
+    const Scene* top = topScene();
+    const bool hide = !config_.headless && top && top->hidesCursor();
+    if (hide == cursorHidden_) return;
+    cursorHidden_ = hide;
+    if (hide) SDL_HideCursor(); else SDL_ShowCursor();
 }
 
 void Application::setVSync(bool on) { renderer_.setVSync(on); }

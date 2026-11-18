@@ -41556,7 +41556,7 @@
    ]
   },
   {
-   "fr": "Plein écran",
+   "fr": "Plein écran sans bordure (F11)",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]

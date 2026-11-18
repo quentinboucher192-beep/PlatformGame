@@ -455,6 +455,10 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.67.1** :
+* **Confort** : le pointeur de la souris disparaît pendant qu'on joue un niveau et réapparaît avec les menus
+  (pause, résultats…) ; F11 passe en plein écran sans bordure, à la résolution du bureau.
+
 **Nouveau dans la version 2.67.0** :
 * **Raids de clan, phase 4 : les sept branches d'Asterion** : six nouvelles branches de 8 zones générées par
   `tools/levelgen/raid_asterion.py` (56 zones avec le Bras droit), chacune avec son monde, ses ennemis, ses traversées
