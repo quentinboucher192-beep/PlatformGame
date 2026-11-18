@@ -28,7 +28,9 @@ namespace cosmic {
 
 class Renderer;
 
-/// Nova's sheet (sprites/player/nova.png, animations/nova.json): a suit's image has its size.
+/// Nova's sheet (sprites/player/nova.png, animations/nova.json): a suit's image has the size of
+/// its first 27 rows (2.71: the 3 rows of the strikes upwards and downwards come after them; a
+/// suit created online plays the forward strike instead: Player::attackClip).
 constexpr int kSuitSheetW = 320, kSuitSheetH = 864, kSuitFrame = 32;
 /// A particle (trail, victory effect): frames of 4..64 pixels, 1..16 of them side by side.
 constexpr int kParticleFrameMin = 4, kParticleFrameMax = 64, kImageFramesMax = 16;

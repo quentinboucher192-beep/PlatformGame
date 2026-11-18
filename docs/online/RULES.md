@@ -25,7 +25,8 @@ comparables, la génération change : chaque niveau de la campagne reçoit une n
 (migration générée par `server/scripts/levels-migration.mjs`) et les classements repartent à
 zéro ; les records de l'ancienne révision restent consultables, figés. Une règle qui ne fait
 qu'ajouter une possibilité sans rendre invalide une ancienne partie garde la génération (2.17 :
-s'accroupir). La caméra et l'affichage ne font pas partie de la simulation.
+s'accroupir ; 2.71 : l'attaque vers le haut et vers le bas, dont les anciens replays se rejouent
+avec les règles de leur époque). La caméra et l'affichage ne font pas partie de la simulation.
 
 - Génération 6 : jusqu'à la 2.16.
 - Génération 8 (2.17) : coûts d'énergie des pouvoirs selon leur force, les créatures invoquées
