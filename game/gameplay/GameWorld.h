@@ -89,9 +89,9 @@ public:
     /// first step, the start powers are granted again under the new rule if it changes them.
     void setKeysPerSlot(bool on);
     bool keysPerSlot() const { return keysPerSlot_; }
-    /// 2.70: the rules of this run, as the version of the simulation that played it
+    /// 2.71: the rules of this run, as the version of the simulation that played it
     /// (kSimulationVersion, the default). A replay plays with the rules of the version that
-    /// recorded it (ReplayData::simVersion; 0 for a replay recorded before 2.70, which did not
+    /// recorded it (ReplayData::simVersion; 0 for a replay recorded before 2.71, which did not
     /// say it): its strikes keep the rules of their time (Player::handleAttack). Changes no
     /// digest by itself.
     void setSimulationVersion(int version) { simVersion_ = version; }
@@ -621,7 +621,7 @@ private:
     float timeSlowFactor_ = 1.0f;
     std::optional<PowerOffer> powerOffer_;
     bool keysPerSlot_ = false;
-    int simVersion_ = kSimulationVersion;  // 2.70
+    int simVersion_ = kSimulationVersion;  // 2.71
     Color flash_{255, 255, 255, 0};
     float flashTimer_ = 0.0f, flashDuration_ = 0.0f;
     Enemy* boss_ = nullptr;

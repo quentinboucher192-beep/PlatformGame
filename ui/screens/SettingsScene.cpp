@@ -359,7 +359,7 @@ private:
             it.action = a;
             it.h = ui.s(52);
             items.push_back(std::move(it));
-            // 2.70: the attack upwards and downwards (no key of its own: a direction held).
+            // 2.71: the attack upwards and downwards (no key of its own: a direction held).
             if (a == Action::Attack)
                 text("", "Attaque vers le haut : Haut + Attaque, au sol ou en l'air. Attaque vers le bas : Bas + Attaque, en l'air "
                          "seulement (au sol, Bas reste « s'accroupir » ; avec la Frappe sismique, Bas + Attaque en l'air reste la frappe).");

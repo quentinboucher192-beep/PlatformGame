@@ -3,7 +3,7 @@
 32x32 frames, pivot [16, 32], one clip per row: rows 0-18 = v1 clips,
 rows 19-25 = v2 abilities (glide, ground pound, charged shot, grapple),
 built in player_nova.py, row 26 = crouch (2.17), rows 27-29 = the strikes upwards
-and downwards (2.70)."""
+and downwards (2.71)."""
 import math
 
 import numpy as np
@@ -259,7 +259,7 @@ def air_attack():
 
 
 def attack_up():
-    """2.70: the strike upwards (Up alone): the blade comes from behind, sweeps over the helmet
+    """2.71: the strike upwards (Up alone): the blade comes from behind, sweeps over the helmet
     and ends in front, a crescent over the head (the hit is above Nova)."""
     ps = [
         Pose(lean=-0.1, foot_f=(19, 30), foot_b=(13, 30), hand_f=(13, 23), hand_b=(14, 25), elbow_f=1,
@@ -281,7 +281,7 @@ def attack_up():
 
 
 def air_attack_up():
-    """2.70: the strike upwards in the air: the same sweep over the head, legs in the air."""
+    """2.71: the strike upwards in the air: the same sweep over the head, legs in the air."""
     base = dict(foot_f=(19, 28), foot_b=(14, 29), toe_f=0.6, toe_b=0.8, hip=(16, 25))
     ps = [
         Pose(lean=-0.1, hand_f=(13, 21), hand_b=(12, 23), elbow_f=1, blade=2.75, scarf_ang=2.2,
@@ -298,7 +298,7 @@ def air_attack_up():
 
 
 def air_attack_down():
-    """2.70: the strike downwards (Down alone, in the air only): knees tucked up, the blade
+    """2.71: the strike downwards (Down alone, in the air only): knees tucked up, the blade
     sweeps from the front under the boots to the back, a crescent below Nova."""
     base = dict(hip=(16, 24), foot_f=(19, 27), foot_b=(14, 27.5), toe_f=0.7, toe_b=0.9)
     ps = [
@@ -499,7 +499,7 @@ def build():
     s.add("interact", interact(), durations=[0.06, 0.08, 0.14, 0.1], loop=False)
     player_nova.add_rows(s)  # rows 19-25
     s.add("crouch", crouch(), durations=[0.04, 0.06, 0.1], loop=False)  # row 26 (2.17)
-    # 2.70: the strikes upwards and downwards (rows 27-29), same timings as attack / air_attack
+    # 2.71: the strikes upwards and downwards (rows 27-29), same timings as attack / air_attack
     s.add("attack_up", attack_up(), durations=[0.04, 0.05, 0.07, 0.08, 0.10], loop=False, next="idle",
           events=[(2, "hit")])
     s.add("air_attack_up", air_attack_up(), durations=[0.04, 0.06, 0.08, 0.1], loop=False, events=[(1, "hit")])

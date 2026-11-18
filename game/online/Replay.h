@@ -43,7 +43,7 @@ enum class ReplayEventType : uint8_t {
     Standby = 17,      // disconnected: in standby
     Return = 18,       // back from standby near the team (the trace jumps)
     Gone = 19,         // 60 s of standby: gone for good (the team is « incomplète »)
-    // 2.70: the version of the simulation that recorded an exact replay (value), written first
+    // 2.71: the version of the simulation that recorded an exact replay (value), written first
     // in the file, at frame 0, by serialize() and read back into ReplayData::simVersion by
     // parse(): never in ReplayData::events. Older games and the server ignore it.
     Simulation = 20,
@@ -116,9 +116,9 @@ struct ReplayData {
     /// Version 4: canonical form of the challenge rules the run was played with (see
     /// ChallengeRules::canonical); empty for any other run (written in version 3).
     std::string challengeRules;
-    /// 2.70: the version of the simulation that played the run (kSimulationVersion), so that
+    /// 2.71: the version of the simulation that played the run (kSimulationVersion), so that
     /// a replay plays with the rules of its time (GameWorld::setSimulationVersion). 0 for an
-    /// exact replay recorded before 2.70 (simulation 14 or earlier), which did not write it.
+    /// exact replay recorded before 2.71 (simulation 14 or earlier), which did not write it.
     /// In the file: an event ReplayEventType::Simulation first, at frame 0 (formats 2 to 5:
     /// the server and older games ignore an event they do not know).
     uint16_t simVersion = static_cast<uint16_t>(kSimulationVersion);

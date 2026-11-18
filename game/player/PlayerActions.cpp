@@ -192,7 +192,7 @@ Rect Player::slashArea(SlashDirection dir) const {
 const char* Player::attackClip() const {
     const char* clip = attackAir_ ? "air_attack" : "attack";
     if (slashDir_ == SlashDirection::Forward) return clip;
-    // 2.70: the strike upwards or downwards has its own animation (rows 27-29 of Nova's sheet).
+    // 2.71: the strike upwards or downwards has its own animation (rows 27-29 of Nova's sheet).
     // A sheet without it, or a suit drawn before it (a suit created online covers the first 27
     // rows only: CreationImages kSuitSheetH), plays the usual one. Display only.
     const char* dir = slashDir_ == SlashDirection::Up ? (attackAir_ ? "air_attack_up" : "attack_up") : "air_attack_down";
@@ -207,7 +207,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
         attackTimer_ -= dt;
         if (!attackHitDone_ && elapsed >= cfg_.attackDuration * 0.25f) {
             attackHitDone_ = true;
-            // 2.70 (simulation 15): the strike goes where the attack started (its animation), and
+            // 2.71 (simulation 15): the strike goes where the attack started (its animation), and
             // a strike downwards never bounces (no new way through a level). A replay recorded
             // before plays with the rules of its time: the direction read now, and the bounce.
             const bool aimed = w.simulationVersion() >= kAimedSlashSimulation;
@@ -228,7 +228,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
                 w.hitStop(0.045f);
                 w.shake(0.12f);
                 w.rumble(0.3f, 0.5f, 90);
-                // Before 2.70 only: a strike with Down held in the air bounced off the enemies (pogo).
+                // Before 2.71 only: a strike with Down held in the air bounced off the enemies (pogo).
                 if (!aimed && aim_.y > 0.5f && !grounded_) launch({vel.x, -cfg_.jumpVelocity() * 0.75f}, true);
             }
             w.powerHit("melee", hit);
@@ -242,7 +242,7 @@ void Player::handleAttack(GameWorld& w, const PlayerInput& in, float dt) {
     attackHitDone_ = false;
     meleeTag_ = w.newAttackTag("attack");  // 2.54: statistics only
     attackAir_ = !grounded_;
-    // 2.70: Up alone strikes above (on the ground or in the air), Down alone below (in the air).
+    // 2.71: Up alone strikes above (on the ground or in the air), Down alone below (in the air).
     slashDir_ = slashDirectionFor(aim_, grounded_);
     anim.play(attackClip(), true);
     w.playSound("sounds/slash.wav", center(), 0.8f, w.fxRng().range(0.93f, 1.08f));
