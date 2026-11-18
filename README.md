@@ -180,6 +180,32 @@ vérifiés par le serveur sur les niveaux EXTRÊME officiels.
 
 <p align="center"><img src="docs/media/clan_page.png" width="820" alt="Page d'un clan : membres et rôles, meilleures équipes par niveau EXTRÊME, candidatures et discussion"></p>
 
+## Raids de clan : les Gigaboss d'Asterion
+
+Jusqu'à **huit joueurs** par instance attaquent **Asterion, le Dévoreur de mondes**, branche par branche ; au bout
+de chaque branche, l'antre d'un **Gigaboss** énorme, en trois phases, qui vise chaque joueur à la fois et ne tombe que
+si l'équipe agit **ensemble**. Fonctionnement complet : [docs/RAIDS.md](docs/RAIDS.md).
+
+**Skullmaw, le crâne qui voit tout** (le Crâne) : un regard laser traque chaque joueur ; sous son voile psychique,
+son Regard de mort frappe tous ceux qu'il voit, sauf si assez de joueurs tiennent un **miroir** à cet instant : son
+regard renvoyé l'aveugle et met à nu ses yeux et son cristal ; dans ses ténèbres, seule la lumière de son œil révèle
+les plateformes.
+
+<p align="center"><img src="docs/media/gigaboss_skullmaw.gif" width="640" alt="Skullmaw dans ses trois phases (regard qui traque, voile psychique, ténèbres) et un miroir qui s'allume"></p>
+
+**Dreadfang, les griffes qui déchirent** (le Bras gauche) : des griffes jaillissent du sol sous chaque joueur, sa
+lame balaie un, deux puis trois étages ; une griffe **cloue** un joueur jusqu'à ce qu'un autre la brise, et seules
+ses **trois chaînes** tenues ensemble le plaquent au sol, jointures offertes.
+
+<p align="center"><img src="docs/media/gigaboss_dreadfang.gif" width="640" alt="Dreadfang dans ses trois phases et une griffe de givre qui jaillit du sol"></p>
+
+**Heartbreaker, la cage qui garde le cœur** (le Torse) : ses **quatre plaques** se brisent dans la même fenêtre ou
+repoussent, ses battements lancent des ondes au sol ; il faut ensuite **écarter ses deux côtes** en même temps pour
+atteindre la lumière de son cœur, avant qu'il ne s'affole.
+
+<p align="center"><img src="docs/media/gigaboss_heartbreaker.gif" width="640" alt="Heartbreaker dans ses trois phases et l'onde de ses battements"></p>
+<p align="center"><sub>Les trois phases de chaque Gigaboss avec les sprites du jeu (générés par <code>tools/assetgen</code>).</sub></p>
+
 ## Cosmic Online
 
 Facultatif, et jamais nécessaire pour jouer : un **globe 3D** interactif (rotation à la souris ou au
@@ -456,6 +482,20 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.71.0** :
+* **Raids de clan, phase 4B : les gigaboss SKULLMAW (Crâne), DREADFANG (Bras gauche) et HEARTBREAKER (Torse)** dans
+  leurs antres (zone 8 de leur branche, `tools/levelgen/raid_skullmaw.py`, `raid_dreadfang.py`, `raid_heartbreaker.py`) :
+  énormes, trois phases annoncées chacun, des attaques sur les 8 joueurs à la fois et des mécanismes collectifs
+  (`game/raid/SkullmawRoutine`, `DreadfangRoutine`, `HeartbreakerRoutine`, routines du cadre commun `GigabossRoutine`) ;
+  sprites, points faibles et éléments d'arène en pixel art générés par `tools/assetgen/characters/boss_l_*.py` (sur
+  `gigaboss_kit.py`). Correctifs : un joueur avalé par Voidworm ne reçoit plus de marque de « Fouissement » ;
+  à la fin d'une exposition, un gigaboss reforme sa carapace (`exposedStep` rend l'étape « combat »).
+* **Skullmaw** : regards lasers traqueurs (un par joueur), « Regard de mort » qui aveugle ceux qu'aucune colonne ne cache,
+  miroirs à tenir ensemble pour l'aveugler (yeux et cristal à briser), ténèbres où seule la lumière de son œil révèle les
+  plateformes. **Dreadfang** : griffes du sol sous chaque joueur, balayages d'étages entiers, joueur cloué à libérer,
+  trois chaînes à tenir ensemble pour le plaquer au sol, plateformes tranchées. **Heartbreaker** : quatre plaques à briser
+  ensemble (sinon elles repoussent), battements en rythme et leurs ondes, côtes-pièges, côtes à écarter des deux côtés.
+* Badge par gigaboss accordé une seule fois par le serveur (présence à une chute validée de sa branche), partie du titan
+  détruite, sauvetages et coups esquivés dans les contributions ; résultats et carte du titan pour plusieurs gigaboss.
 * **ADMINISTRATION › Assets : pastille « NOUVEAU » sur chaque nouvel asset** (vignette de la grille ou ligne de la
   liste) ; elle part dès que l'asset reçoit le focus (clavier, manette, souris) ou un clic, et reste sur ses dossiers
   du rangement, sur l'onglet Assets et sur l'entrée ADMINISTRATION tant qu'un asset en dessous est nouveau. Même

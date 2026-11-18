@@ -425,6 +425,17 @@ TEST_CASE("raid gigaboss 4B: Voidworm's hooks held together pin it; it swallows 
         int outside = 0;
         for (int i = 0; i < 3; ++i) outside += stomach.contains(run.world().playerAt(i).center()) ? 0 : 1;
         CHECK(outside >= 1);  // never the last players outside
+        // 2.69: the one in its stomach gets no mark of its « Fouissement » (it would hit them inside).
+        bool markedInside = false, volley = false;
+        for (int t = 0; t < 1000 && stomach.contains(run.world().playerAt(held).center()); ++t) {
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+            for (const auto& fist : run.gigaboss().fists()) {
+                volley = true;
+                markedInside = markedInside || fist.seat == held || stomach.contains({fist.at.x, fist.at.y - 2.0f});
+            }
+        }
+        CHECK(volley);
+        CHECK(!markedInside);
         for (auto& e : run.world().enemies())
             if (e->alive() && e->def().id == "voidworm_poche") e->kill(run.world());
         for (int t = 0; t < 3; ++t) run.step(f.data(), static_cast<int>(f.size()), 0);

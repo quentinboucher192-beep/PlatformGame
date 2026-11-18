@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "skullmaw_cristal",
+  "name": "Cristal de Skullmaw",
+  "description": "Le cristal rose du front de Skullmaw, à nu quand son regard l'aveugle : le briser lui arrache une large part de sa vie.",
+  "family": "turret",
+  "animation": "animations/skullmaw_cristal.json",
+  "size": [
+    48,
+    48
+  ],
+  "scale": 2.0,
+  "hp": 12,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 600,
+    "drops": []
+  },
+  "light": {
+    "color": "#ff6ad5",
+    "radius": 60
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/shell_shatter.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

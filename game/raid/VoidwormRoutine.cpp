@@ -242,6 +242,16 @@ public:
         for (const Gulp& q : gulps_) out.push_back(q.at);
     }
 
+    void targets(std::vector<uint32_t>& out) const override {
+        if (poche_) out.push_back(poche_);
+    }
+
+    /// 2.69: a player in its stomach gets no mark of its « Fouissement » (they cannot leave it: it
+    /// would hit them inside); its other blows never aim at them either.
+    bool spared(int seat) const override {
+        return std::any_of(held_.begin(), held_.end(), [&](const Held& h) { return h.seat == seat; });
+    }
+
 private:
     struct Gulp {
         int seat = -1;

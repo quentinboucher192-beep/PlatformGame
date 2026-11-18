@@ -1,6 +1,6 @@
 {
  "id": "asterion_crane",
- "revision": 2,
+ "revision": 3,
  "raid": "asterion",
  "branch": "crane",
  "name": "CRÂNE",
@@ -121,12 +121,12 @@
   {
    "id": 8,
    "name": "Antre de Skullmaw",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · miroirs à tenir ensemble",
    "x": 1000,
    "y": 400,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Skullmaw attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Skullmaw : regards traqueurs, flash aveuglant (cachez-vous derrière les colonnes), miroirs à tenir ensemble, ténèbres",
+   "event": "Regards lasers sur chaque joueur, flash toutes les 13 à 16 s en phases 2 et 3",
    "secret": false,
    "boss": true,
    "groups_required": 1,
@@ -275,6 +275,15 @@
    "label": "Faire taire la voûte : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "crane_skullmaw",
+   "index": 9,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Skullmaw",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

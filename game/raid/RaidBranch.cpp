@@ -386,7 +386,11 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         }
         g.weakEnemy = jstr(giga, "weakEnemy");
         for (const auto& p : giga.value("weakSpots", Json::array()))
-            if (p.is_array() && p.size() == 2) g.weakSpots.push_back({p[0].get<float>(), p[1].get<float>()});
+            if (p.is_array() && (p.size() == 2 || p.size() == 3)) {
+                g.weakSpots.push_back({p[0].get<float>(), p[1].get<float>()});
+                // 2.69 (phase 4B): a spot may name its own enemy (Skullmaw's eyes and its crystal).
+                g.weakEnemies.push_back(p.size() == 3 && p[2].is_string() ? p[2].get<std::string>() : std::string());
+            }
         g.weakShare = std::clamp(jget<float>(giga, "weakShare", g.weakShare), 0.0f, 0.2f);
         g.hpPerPlayer = std::clamp(jget<float>(giga, "hpPerPlayer", g.hpPerPlayer), 0.0f, 2.0f);
         g.weakHpPerPlayer = std::clamp(jget<float>(giga, "weakHpPerPlayer", g.weakHpPerPlayer), 0.0f, 2.0f);
@@ -398,6 +402,7 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         for (const auto& [name, id] : links.items())
             if (id.is_string()) g.links[name] = b.objectiveIndex(id.get<std::string>());
         if (fists.is_object()) g.fistName = jstr(fists, "name", g.fistName);
+        if (fists.is_object()) g.fistRise = jget<bool>(fists, "rise", false);  // 2.69: out of the ground
         if (jet.is_object()) g.jetName = jstr(jet, "name", g.jetName);
         g.fallText = jstr(giga, "fallText", g.fallText);
         g.goneText = jstr(giga, "goneText", g.goneText);

@@ -49,6 +49,9 @@ struct BossMark {
         Target,  // a mark on the ground (a ring that closes as the blow comes)
         Wave,    // a shockwave's crest along the floor (its clip)
         Arrow,   // an arrow up (gravity turning over)
+        // 2.69 (Skullmaw, Dreadfang, Heartbreaker):
+        Beam,    // a line from area's corner to `to` (a gaze: thin while it follows, bright locked, thick firing; a chain)
+        Cone,    // a light from area's corner toward `to`, `width` its half-angle: the platforms it touches show
     };
     Kind kind = Kind::Zone;
     Rect area;                       // world
@@ -57,6 +60,9 @@ struct BossMark {
     std::string clip;                // a clip of the gigaboss's effects sheet (rules().fx), "" none
     std::string label;               // a short French label over it, "" none
     bool strong = false;             // the danger is on now (not only announced)
+    Vec2 to;                         // Beam / Cone: where it goes
+    float width = 0.0f;              // Beam: its thickness (world px); Cone: its half-angle (radians)
+    bool flip = false;               // the clip mirrored (a blade or a wave going west)
 };
 
 /// A line of the objectives panel (its mark, its text, its colour).
@@ -86,6 +92,14 @@ public:
     virtual void lines(const GameWorld& w, const Gigaboss& g, std::vector<BossLine>& out) const = 0;
     /// Where it threatens the players (the arena's camera keeps them in view).
     virtual void threats(const Gigaboss& g, std::vector<Vec2>& out) const = 0;
+    /// 2.69: the enemies of its mechanisms the arrows point at when they are off screen (plates,
+    /// claws, a stomach), besides its weak points.
+    virtual void targets(std::vector<uint32_t>& out) const { (void)out; }
+    /// 2.69: a player it holds now (swallowed, nailed): no mark of a blow on them (Gigaboss's fists).
+    virtual bool spared(int seat) const {
+        (void)seat;
+        return false;
+    }
 
 protected:
     // The gigaboss's own state (Gigaboss befriends this class; the routines run its rules their way).

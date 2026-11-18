@@ -288,3 +288,9 @@ love
 poche
 double
 valves
+crane_skullmaw
+bg_dreadfang
+torse_heartbreaker
+every
+flash
+front

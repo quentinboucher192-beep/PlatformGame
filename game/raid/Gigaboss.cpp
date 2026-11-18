@@ -232,9 +232,10 @@ void Gigaboss::expose(GameWorld& w, Contributions& c, Enemy& b) {
     exposedTicks_ = steps(rules_->exposed);
     weak_.clear();
     const float factor = 1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor_ - 1));
-    for (const Vec2& s : rules_->weakSpots) {
+    for (size_t k = 0; k < rules_->weakSpots.size(); ++k) {
+        const Vec2 s = rules_->weakSpots[k];
         const Vec2 at{b.box.center().x + s.x * b.facing, b.box.bottom() + s.y};
-        if (Enemy* e = w.spawnEnemy(rules_->weakEnemy, at, b.facing < 0.0f)) {
+        if (Enemy* e = w.spawnEnemy(rules_->weakEnemyAt(k), at, b.facing < 0.0f)) {
             e->summonedBy = b.uid();
             e->countsForStats = false;
             e->scaleHealth(factor);
@@ -313,6 +314,8 @@ void Gigaboss::stepFists(GameWorld& w, Enemy& b) {
             if (!w.coop() || w.member(i).presence != P::Playing) continue;
             const Player& p = w.playerAt(i);
             if (!p.alive() || p.respawning()) continue;
+            // 2.69: a player its routine holds (swallowed by Voidworm, nailed by Dreadfang) is spared.
+            if (routine_ && routine_->spared(i)) continue;
             fists_.push_back({p.feet(), warn, i});
         }
         if (!fists_.empty()) alert("DANGER · " + rules_->fistName + " : quittez votre marque !", AlertKind::Danger);

@@ -23,6 +23,7 @@ applies it at that step.
 
 2.69 (phase 4B): the lairs of Voidworm, Graviton and Titanus are unsealed: their arenas and fights are
 written by raid_voidworm.py, raid_graviton.py and raid_titanus.py (called from here with this module),
+and those of Skullmaw, Dreadfang and Heartbreaker by raid_skullmaw.py, raid_dreadfang.py and raid_heartbreaker.py,
 each branch gains its gigaboss objective (role "gigaboss", at the end of its catalog).
 
 Never edit the JSON by hand: run
@@ -42,7 +43,7 @@ from levelkit import Level, ROOT, T
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
 TITAN_REVISION = 1
-BRANCH_REVISION = 2  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives
+BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
 H = 48
@@ -175,7 +176,9 @@ CRANE = Spec(
       "Ennemis : le golem de la tempe (gardien), spectres en renfort", ""),
      (7, "Voûte crânienne", "Cranial vault", "s'ouvre : les deux yeux crevés", 790, 250,
       "Ennemis : la garde de la voûte (arène en trois vagues)", ""),
-     (8, "Antre de Skullmaw", "Skullmaw's lair", SEALED_SUB, 1000, 400, "Le gigaboss Skullmaw attend derrière sa porte scellée", "")],
+     (8, "Antre de Skullmaw", "Skullmaw's lair", "GIGABOSS · miroirs à tenir ensemble", 1000, 400,
+      "Le gigaboss Skullmaw : regards traqueurs, flash aveuglant (cachez-vous derrière les colonnes), miroirs à tenir ensemble, ténèbres",
+      "Regards lasers sur chaque joueur, flash toutes les 13 à 16 s en phases 2 et 3")],
     [("crane_machoire", 1, "Briser la garde de la mâchoire : vaincre l'arène", "Break the jaw's guard: clear the arena", False, "", ""),
      ("crane_oeil_gauche", 2, "Crever l'œil gauche (un pouvoir de tir)", "Put out the left eye (a shooting power)", False, "generator", ""),
      ("crane_oeil_droit", 3, "Crever l'œil droit (un pouvoir de tir)", "Put out the right eye (a shooting power)", False, "generator", ""),
@@ -185,7 +188,9 @@ CRANE = Spec(
      ("crane_tempe", 6, "Abattre le golem de la tempe", "Bring down the temple's golem", False, "", ""),
      ("crane_levier", 6, "Facultatif : ouvrir le passage vers les nerfs (levier)", "Optional: open the way to the nerves (lever)", True,
       "shortcut", ""),
-     ("crane_voute", 7, "Faire taire la voûte : vaincre sa garde", "Silence the vault: defeat its guard", False, "", "")],
+     ("crane_voute", 7, "Faire taire la voûte : vaincre sa garde", "Silence the vault: defeat its guard", False, "", ""),
+     # 2.69 (phase 4B): the gigaboss of the branch; accepted once, it destroys the skull.
+     ("crane_skullmaw", 8, "Vaincre le gigaboss Skullmaw", "Defeat the gigaboss Skullmaw", False, "gigaboss", "")],
     [(1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (2, 5, "", True), (3, 6, "", False),
      (4, 6, "shortcut", False), (4, 7, "generators", False), (6, 7, "link:bd_poignet", False),
      (7, 8, "objective:crane_voute", False)],
@@ -212,7 +217,9 @@ BRAS_GAUCHE = Spec(
       "Ennemis : drones cryo, rôdeurs des neiges · cœur de givre est", ""),
      (7, "Poignet de glace", "Ice wrist", "s'ouvre : 2 cœurs de givre", 790, 470,
       "Ennemis : la garde du poignet (arène en trois vagues)", ""),
-     (8, "Griffes de Dreadfang", "Dreadfang's claws", SEALED_SUB, 1000, 320, "Le gigaboss Dreadfang attend derrière sa porte scellée", "")],
+     (8, "Griffes de Dreadfang", "Dreadfang's claws", "GIGABOSS · trois chaînes à tenir", 1000, 320,
+      "Le gigaboss Dreadfang : balayages d'étages entiers, griffes du sol, un joueur cloué à libérer, trois chaînes à tenir ensemble",
+      "Balayage des griffes toutes les 7 à 11 s (sautez par-dessus ou changez d'étage)")],
     [("bg_epaule", 1, "Reprendre l'épaule gelée : vaincre sa garde", "Retake the frozen shoulder: defeat its guard", False, "", ""),
      ("bg_golem", 2, "Abattre le golem de glace du biceps", "Bring down the biceps' ice golem", False, "", ""),
      ("bg_coeur_ouest", 3, "Briser le cœur de givre ouest (un pouvoir de tir)", "Break the west frost heart (a shooting power)", False,
@@ -224,7 +231,9 @@ BRAS_GAUCHE = Spec(
       "generator", ""),
      ("bg_levier", 6, "Facultatif : ouvrir le raccourci vers le Tendon (levier)", "Optional: open the shortcut to the Tendon (lever)",
       True, "shortcut", ""),
-     ("bg_poignet", 7, "Briser le poignet de glace : vaincre sa garde", "Break the ice wrist: defeat its guard", False, "", "")],
+     ("bg_poignet", 7, "Briser le poignet de glace : vaincre sa garde", "Break the ice wrist: defeat its guard", False, "", ""),
+     # 2.69 (phase 4B): the gigaboss of the branch; accepted once, it destroys the left arm.
+     ("bg_dreadfang", 8, "Vaincre le gigaboss Dreadfang", "Defeat the gigaboss Dreadfang", False, "gigaboss", "")],
     [(1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True), (2, 6, "", False),
      (3, 6, "shortcut", False), (4, 7, "generators", False), (5, 7, "link:jg_cheville", False),
      (7, 8, "objective:bg_poignet", False)],
@@ -250,8 +259,9 @@ TORSE = Spec(
       "Ennemis : parasites en renfort, rôdeurs · deux plaques, un groupe chacune", "Pulsation du cœur toutes les 50 s (passerelles sûres)"),
      (7, "Cage du cœur", "Heart cage", "s'ouvre : les 4 plaques brisées", 790, 400,
       "Ennemis : la garde de la cage (arène en trois vagues)", ""),
-     (8, "Antre de Heartbreaker", "Heartbreaker's lair", SEALED_SUB, 1000, 400,
-      "Le gigaboss Heartbreaker attend derrière sa porte scellée", "")],
+     (8, "Antre de Heartbreaker", "Heartbreaker's lair", "GIGABOSS · 4 plaques, côtes à écarter", 1000, 400,
+      "Le gigaboss Heartbreaker : quatre plaques à briser ensemble, battements en rythme, côtes-pièges, côtes à écarter des deux côtés",
+      "Ondes du cœur au sol à chaque battement fort (sautez-les)")],
     [("torse_clavicule", 1, "Reprendre la clavicule : vaincre sa garde", "Retake the collarbone: defeat its guard", False, "", ""),
      ("torse_cotes", 2, "Abattre l'éclat de roche des côtes hautes", "Bring down the upper ribs' rock shard", False, "", ""),
      ("torse_poumon", 3, "Crever le poumon gauche (un pouvoir de tir)", "Burst the left lung (a shooting power)", False, "", ""),
@@ -264,7 +274,9 @@ TORSE = Spec(
      ("torse_plaque_est", 6, "Briser la plaque est (un groupe)", "Break the east plate (one group)", False, "generator", "plaques_cotes"),
      ("torse_plaque_ouest", 6, "Briser la plaque ouest (un autre groupe)", "Break the west plate (another group)", False, "generator",
       "plaques_cotes"),
-     ("torse_cage", 7, "Ouvrir la cage du cœur : vaincre sa garde", "Open the heart cage: defeat its guard", False, "", "")],
+     ("torse_cage", 7, "Ouvrir la cage du cœur : vaincre sa garde", "Open the heart cage: defeat its guard", False, "", ""),
+     # 2.69 (phase 4B): the gigaboss of the branch; accepted once, it destroys the torso.
+     ("torse_heartbreaker", 8, "Vaincre le gigaboss Heartbreaker", "Defeat the gigaboss Heartbreaker", False, "gigaboss", "")],
     [(1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "shortcut", False), (3, 6, "", False), (2, 5, "", True),
      (4, 7, "generators", False), (6, 7, "generators", False), (7, 8, "objective:torse_cage", False)],
     {"generators": ("il faut briser les quatre plaques du torse", "the torso's four plates must be broken",
@@ -1164,8 +1176,8 @@ def crane():
                "La voûte crânienne, verrouillée par les deux yeux. Sa garde défend l'antre de Skullmaw.",
                "The cranial vault, locked by both eyes. Its guard defends Skullmaw's lair.",
                "La voûte se tait ! L'antre de Skullmaw est ouvert.", "The vault falls silent! Skullmaw's lair is open.")
-    lair(s, "L'antre de Skullmaw, au cœur du crâne. Sa porte est scellée : le combat arrive dans la prochaine version.",
-         "Skullmaw's lair, deep in the skull. Its door is sealed: the fight comes in the next version.")
+    import raid_skullmaw  # 2.69 (phase 4B): its lair unsealed, its fight
+    raid_skullmaw.lair(sys.modules[__name__], s)
 
 
 # ======================================================================== BRAS GAUCHE (Dreadfang)
@@ -1261,8 +1273,8 @@ def bras_gauche():
                "Le poignet de glace, verrouillé par deux cœurs de givre. Sa garde défend les griffes de Dreadfang.",
                "The ice wrist, locked by two frost hearts. Its guard defends Dreadfang's claws.",
                "Le poignet cède ! Les griffes de Dreadfang sont ouvertes.", "The wrist gives way! Dreadfang's claws are open.")
-    lair(s, "Les griffes de Dreadfang, au bout du bras gauche. La porte est scellée : le combat arrive dans la prochaine version.",
-         "Dreadfang's claws, at the end of the left arm. The door is sealed: the fight comes in the next version.")
+    import raid_dreadfang  # 2.69 (phase 4B): its lair unsealed, its fight
+    raid_dreadfang.lair(sys.modules[__name__], s)
 
 
 # ======================================================================== TORSE (Heartbreaker)
@@ -1358,8 +1370,8 @@ def torse():
                "La cage du cœur, fermée par quatre plaques. Sa garde défend l'antre de Heartbreaker.",
                "The heart cage, closed by four plates. Its guard defends Heartbreaker's lair.",
                "La cage s'ouvre ! L'antre de Heartbreaker est ouvert.", "The cage opens! Heartbreaker's lair is open.")
-    lair(s, "L'antre de Heartbreaker, contre le cœur du titan. La porte est scellée : le combat arrive dans la prochaine version.",
-         "Heartbreaker's lair, against the titan's heart. The door is sealed: the fight comes in the next version.")
+    import raid_heartbreaker  # 2.69 (phase 4B): its lair unsealed, its fight
+    raid_heartbreaker.lair(sys.modules[__name__], s)
 
 
 # ======================================================================== ABDOMEN (Voidworm)

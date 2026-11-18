@@ -555,7 +555,8 @@ public:
             if (fistClip && vents_->texture && f.left <= static_cast<int>(0.5f * static_cast<float>(kSimHz))) {
                 // The last half second: the fist falls from the sky onto the mark.
                 const float fall = std::clamp(static_cast<float>(f.left) / (0.5f * static_cast<float>(kSimHz)), 0.0f, 1.0f);
-                const Rect world{f.at.x - 24.0f, f.at.y - 144.0f - 220.0f * fall, 48.0f, 144.0f};
+                // 2.69: a blow out of the ground (Dreadfang's claws, Heartbreaker's ribs) rises in place.
+                const Rect world{f.at.x - 24.0f, f.at.y - 144.0f - (gb.rules()->fistRise ? 0.0f : 220.0f * fall), 48.0f, 144.0f};
                 const Rect src = vents_->frameRect(*fistClip, static_cast<int>(clock_ * 10.0f) % std::max(1, fistClip->frameCount()));
                 r.drawTexture(*vents_->texture, &src, view.toScreen(world));
             }
@@ -581,12 +582,12 @@ public:
         std::vector<raid::BossMark> marks;
         rt->marks(w, gb, marks);
         const float pulse = 0.5f + 0.5f * std::sin(clock_ * 6.0f);
-        auto clipAt = [&](const std::string& name, const Rect& worldRect, float fps) {
+        auto clipAt = [&](const std::string& name, const Rect& worldRect, float fps, bool flip = false) {
             if (name.empty() || !vents_ || !vents_->texture) return;
             const AnimationClip* c = vents_->clip(name);
             if (!c) return;
             const Rect src = vents_->frameRect(*c, static_cast<int>(clock_ * fps) % std::max(1, c->frameCount()));
-            r.drawTexture(*vents_->texture, &src, view.toScreen(worldRect));
+            r.drawTexture(*vents_->texture, &src, view.toScreen(worldRect), Color::white(), BlendMode::Alpha, flip);
         };
         for (const raid::BossMark& m : marks) {
             const Rect sr = view.toScreen(m.area);
@@ -620,8 +621,50 @@ public:
                     break;
                 }
                 case K::Wave:
-                    clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 12.0f);
+                    clipAt(m.clip, {m.area.center().x - 24.0f, m.area.bottom() - 144.0f, 48.0f, 144.0f}, 12.0f, m.flip);
                     break;
+                case K::Beam: {
+                    // 2.69: a gaze (thin while it follows, bright once frozen, thick when it fires) or a chain.
+                    const Vec2 a = view.toScreen(m.area.pos()), e = view.toScreen(m.to);
+                    const float thick = std::max(1.0f, m.width * view.scale);
+                    const uint8_t alpha = static_cast<uint8_t>(m.strong ? 230 : 90 + 120 * std::clamp(m.progress, 0.0f, 1.0f));
+                    r.drawLine(a, e, Color{c.r, c.g, c.b, alpha}, thick, BlendMode::Additive);
+                    if (m.strong) {
+                        r.drawLine(a, e, Color{255, 246, 255, 230}, thick * 0.35f, BlendMode::Additive);
+                        r.fillCircle(e, thick * 0.9f, Color{c.r, c.g, c.b, 200}, BlendMode::Additive);
+                    } else if (m.progress > 0.0f) {
+                        r.drawRing(e, (22.0f - 10.0f * std::clamp(m.progress, 0.0f, 1.0f)) * view.scale, 2.0f * view.scale, Color{c.r, c.g, c.b, 200});
+                    }
+                    break;
+                }
+                case K::Cone: {
+                    // 2.69: Skullmaw's eye-light in its darkness: a cone, and the edges of the platforms it touches.
+                    const Vec2 apex = m.area.pos();
+                    const Vec2 d = m.to - apex;
+                    const float len = std::max(1.0f, d.length()), ang = std::atan2(d.y, d.x), half = m.width;
+                    const Vec2 l{apex.x + std::cos(ang - half) * len, apex.y + std::sin(ang - half) * len};
+                    const Vec2 rr{apex.x + std::cos(ang + half) * len, apex.y + std::sin(ang + half) * len};
+                    r.fillTriangle(view.toScreen(apex), view.toScreen(l), view.toScreen(rr), Color{c.r, c.g, c.b, 46}, BlendMode::Additive);
+                    const Rect seen{std::min({apex.x, l.x, rr.x}) - 32.0f, std::min({apex.y, l.y, rr.y}) - 32.0f,
+                                    std::max({apex.x, l.x, rr.x}) - std::min({apex.x, l.x, rr.x}) + 64.0f,
+                                    std::max({apex.y, l.y, rr.y}) - std::min({apex.y, l.y, rr.y}) + 64.0f};
+                    w.physics().forEachIn(seen, [&](const Collider& col) {
+                        if (!col.enabled) return;
+                        const float y = col.box.y;
+                        for (float x = std::max(col.box.x, seen.x); x < std::min(col.box.right(), seen.right()); x += 16.0f) {
+                            const float dx = x + 8.0f - apex.x, dy = y - apex.y, dist = std::sqrt(dx * dx + dy * dy);
+                            if (dist > len || dist < 1.0f) continue;
+                            float diff = std::atan2(dy, dx) - ang;
+                            while (diff > 3.14159f) diff -= 6.28318f;
+                            while (diff < -3.14159f) diff += 6.28318f;
+                            if (std::abs(diff) > half) continue;
+                            const float k = 1.0f - std::abs(diff) / std::max(0.01f, half);
+                            r.drawLine(view.toScreen({x, y}), view.toScreen({std::min(x + 16.0f, col.box.right()), y}),
+                                       Color{236, 220, 255, static_cast<uint8_t>(90 + 150 * k)}, 3.0f * view.scale, BlendMode::Additive);
+                        }
+                    });
+                    break;
+                }
                 case K::Arrow: {
                     const float aw = sr.w, ah = sr.h;
                     const float lift = (m.strong ? std::fmod(clock_ * 1.6f, 1.0f) : pulse * 0.3f) * ah * 0.4f;
@@ -719,12 +762,19 @@ public:
         // The boss, or its weak points while they are bare.
         const raid::Gigaboss& gb = run_->gigaboss();
         std::vector<Rect> bossT;
-        if (gb.stage() == raid::Gigaboss::Stage::Exposed) {
-            for (const auto& e : w.enemies())
-                if (e->alive() && e->summonedBy == gb.bossUid() && e->def().id == gb.rules()->weakEnemy && away(e->box)) bossT.push_back(view.toScreen(e->box));
-        } else if (const Enemy* b = gb.boss(w); b && b->alive() && away(b->box)) {
-            bossT.push_back(view.toScreen(b->box));
-        }
+        // 2.69: its weak points by their uids (several kinds: Skullmaw's eyes and crystal), and what
+        // its routine wants found (plates, claws, a stomach).
+        std::vector<uint32_t> wanted;
+        if (gb.stage() == raid::Gigaboss::Stage::Exposed) wanted = gb.weakUids();
+        if (gb.routine()) gb.routine()->targets(wanted);
+        bool any = false;
+        for (uint32_t u : wanted)
+            if (const Enemy* e = u ? w.findEnemy(u) : nullptr; e && e->alive()) {
+                any = true;
+                if (away(e->box)) bossT.push_back(view.toScreen(e->box));
+            }
+        if (!any)
+            if (const Enemy* b = gb.boss(w); b && b->alive() && away(b->box)) bossT.push_back(view.toScreen(b->box));
         draw(bossT, *tex, kGold);
         // The allies, each in their colour.
         for (int i = 0; i < w.teamSize(); ++i) {

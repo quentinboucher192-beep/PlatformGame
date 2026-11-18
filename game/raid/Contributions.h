@@ -68,8 +68,11 @@ public:
     /// 2.69 (phase 4B): other targets of a gigaboss's mechanisms whose breaker counts (Voidworm's
     /// stomach, Titanus's restraints, Graviton's cores): brokeWeak() names who broke them.
     void setWatched(const std::vector<uint32_t>& uids) { watched_ = uids; }
-    /// 2.69: an ally freed (Voidworm's stomach broken): a rescue for `seat`.
+    /// 2.69: an ally freed (Voidworm's stomach broken, Dreadfang's claw broken): a rescue for `seat`.
     void rescue(int seat);
+    /// 2.69: a blow of the gigaboss aimed at `seat` and dodged (a gaze left in time, a flash hidden
+    /// from, a claw stepped away from), `amount` in health.
+    void dodged(int seat, float amount);
     /// The seat that broke weak point `uid` this step (-1 none).
     int brokeWeak(uint32_t uid) const;
     uint64_t hash() const;
@@ -91,7 +94,10 @@ private:
     uint32_t boss_ = 0;
     std::vector<uint32_t> weak_;
     std::vector<uint32_t> watched_;  // 2.69
-    std::vector<std::pair<uint32_t, int>> broken_;  // weak points broken this step, and by whom
+    // Weak points broken this step, and by whom (2.69: kept until the gigaboss's rules read them,
+    // after Contributions::afterStep; the entries of an older step are dropped at the next one).
+    std::vector<std::pair<uint32_t, int>> broken_;
+    size_t brokenSeen_ = 0;
     // The gigaboss's attack being followed: its target and whether it was hit.
     const AttackDef* attack_ = nullptr;
     bool prevTelegraph_ = false;

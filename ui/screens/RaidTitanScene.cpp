@@ -179,7 +179,8 @@ public:
         for (const auto& b : data_.value("branches", Json::array())) open += jget<bool>(b, "sealed", true) ? 0 : 1;
         const std::vector<std::pair<std::string, Color>> lines = {
             {"Gigaboss vaincus : " + std::to_string(jget<int>(t, "gigaboss_defeated", 0)) + " / " + std::to_string(jget<int>(t, "gigaboss", 7)) + " · " +
-                 std::to_string(open) + (open > 1 ? " antres ouvertes" : " antre ouverte") + ", les autres portes restent scellées (prochaine version)",
+                 std::to_string(open) + (open > 1 ? " antres ouvertes" : " antre ouverte") +
+                 (open < jget<int>(t, "gigaboss", 7) ? ", les autres portes restent scellées (prochaine version)" : ""),
              kPeach},
             {"Objectifs accomplis : " + std::to_string(jget<int>(t, "objectives_done", 0)) + " / " + std::to_string(jget<int>(t, "objectives", 0)), kText},
             {"En combat : " + std::to_string(jget<int>(t, "groups", 0)) + " groupes · " + std::to_string(jget<int>(t, "players", 0)) + " joueurs · " +

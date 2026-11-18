@@ -2546,6 +2546,27 @@
     "collection.cat.title",
     "collection.tab.route"
    ]
+  },
+  {
+   "id": "ach.communaute_skullmaw",
+   "version": "2.71.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_dreadfang",
+   "version": "2.71.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_heartbreaker",
+   "version": "2.71.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
   }
  ]
 }

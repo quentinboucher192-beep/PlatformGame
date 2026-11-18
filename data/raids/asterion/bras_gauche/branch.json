@@ -1,6 +1,6 @@
 {
  "id": "asterion_bras_gauche",
- "revision": 2,
+ "revision": 3,
  "raid": "asterion",
  "branch": "bras_gauche",
  "name": "BRAS GAUCHE",
@@ -121,12 +121,12 @@
   {
    "id": 8,
    "name": "Griffes de Dreadfang",
-   "sub": "GIGABOSS · prochaine version",
+   "sub": "GIGABOSS · trois chaînes à tenir",
    "x": 1000,
    "y": 320,
    "level": "zone_8.json",
-   "inside": "Le gigaboss Dreadfang attend derrière sa porte scellée",
-   "event": "",
+   "inside": "Le gigaboss Dreadfang : balayages d'étages entiers, griffes du sol, un joueur cloué à libérer, trois chaînes à tenir ensemble",
+   "event": "Balayage des griffes toutes les 7 à 11 s (sautez par-dessus ou changez d'étage)",
    "secret": false,
    "boss": true,
    "groups_required": 1,
@@ -275,6 +275,15 @@
    "label": "Briser le poignet de glace : vaincre sa garde",
    "optional": false,
    "role": "",
+   "pair": ""
+  },
+  {
+   "id": "bg_dreadfang",
+   "index": 9,
+   "zone": 8,
+   "label": "Vaincre le gigaboss Dreadfang",
+   "optional": false,
+   "role": "gigaboss",
    "pair": ""
   }
  ]

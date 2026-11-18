@@ -1,0 +1,14 @@
+{
+  "texture": "sprites/enemies/dreadfang_fx.png",
+  "frameWidth": 48,
+  "frameHeight": 144,
+  "pivot": [24, 144],
+  "clips": {
+    "closed": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "open": {"row": 0, "count": 4, "start": 1, "fps": 8, "loop": true},
+    "warn": {"row": 0, "count": 4, "start": 5, "fps": 10, "loop": true},
+    "jet": {"row": 1, "count": 4, "fps": 12, "loop": true},
+    "fist": {"row": 1, "count": 4, "start": 4, "fps": 10, "loop": true},
+    "blade": {"row": 1, "count": 4, "start": 8, "fps": 16, "loop": true}
+  }
+}

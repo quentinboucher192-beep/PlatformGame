@@ -121,9 +121,10 @@ public:
         const int groups = static_cast<int>(groupsIn(id).size());
         const int required = jget<int>(z, "groups_required", 1);
         if (jget<bool>(z, "boss", false)) {
-            // 2.68 (phase 3): the gigaboss's arena: fallen once its objective is accepted; the six
-            // others are sealed until their gigaboss comes.
-            if (part_ != "bras_droit") return "scellée · prochaine version";
+            // 2.68 (phase 3): the gigaboss's arena: fallen once its objective is accepted; 2.69: sealed only
+            // while its gigaboss is not fought (the lair's zone has none in the game's catalog).
+            const raid::Branch* local = raid::Branch::builtin(part_);
+            if (!(local && local->zoneRules(id) && local->zoneRules(id)->gigaboss.present)) return "scellée · prochaine version";
             if (jget<bool>(z, "controlled", false)) return jstr(data_.value("branch", Json::object()), "gigaboss") + " vaincu";
             if (!jget<bool>(z, "reachable", false)) return "gigaboss · verrouillée";
             return groups > 0 ? "gigaboss · " + std::to_string(groups) + (groups > 1 ? " groupes au combat" : " groupe au combat") : "gigaboss · à affronter";
