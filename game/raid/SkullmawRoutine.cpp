@@ -367,7 +367,7 @@ void SkullmawRoutine::lines(const GameWorld& w, const Gigaboss& g, std::vector<B
     } else {
         out.push_back({"→", "Vaincre Skullmaw · " + ph + " : chaque regard laser vous suit puis se fige : quittez sa ligne à cet instant.", kOrange});
     }
-    if (dark()) out.push_back({"✦", "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.", kViolet});
+    if (dark()) out.push_back({"◊", "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.", kViolet});
 }
 
 void SkullmawRoutine::threats(const Gigaboss& g, std::vector<Vec2>& out) const {

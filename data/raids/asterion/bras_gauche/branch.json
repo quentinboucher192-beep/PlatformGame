@@ -15,7 +15,7 @@
   },
   "shortcut": {
    "hint": "le levier de l'Avant-bras de givre l'ouvre",
-   "message": "Le raccourci Tendon ⇄ Avant-bras de givre est ouvert",
+   "message": "Le raccourci Tendon – Avant-bras de givre est ouvert",
    "objective": "raccourci fermé (le levier est dans l'Avant-bras de givre)"
   }
  },
@@ -93,7 +93,7 @@
   {
    "id": 6,
    "name": "Avant-bras de givre",
-   "sub": "cœur de givre est · levier ⇄",
+   "sub": "cœur de givre est · levier du raccourci",
    "x": 790,
    "y": 160,
    "level": "zone_6.json",

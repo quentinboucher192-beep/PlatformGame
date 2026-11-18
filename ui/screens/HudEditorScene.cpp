@@ -1,6 +1,13 @@
 // HUD editor (Paramètres › Jeu › Personnaliser le HUD): the player places and sizes each
 // element of the in-game HUD on a live preview (a real level drawn by the game, with the
 // real HUD). Elements can never overlap each other nor leave the screen.
+//
+// 2.72: a third tab, « Raids » (docs/RAIDS.md §15): the HUD of the clan raids, its own layout
+// (GameplaySettings::raidHud, used by RaidGameScene): this player's vitals, powers and the
+// gigaboss's bar, the minimap, the group panel, the objectives, the alerts, the danger band, the
+// contributions, the network line / « TEST ADMIN » badge, and the off-screen arrows' toggle.
+// Previewed with an example of a raid of 8 players (said as such on the preview: the editor's
+// only, never in game), drawn by the raid's own code (ui/online/RaidHud).
 
 #include <algorithm>
 #include <chrono>
@@ -20,6 +27,8 @@
 #include "game/gameplay/LevelProgress.h"
 #include "game/powers/PowerKeys.h"
 #include "ui/screens/GhostRun.h"
+#include "ui/online/RaidHud.h"
+#include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -122,7 +131,20 @@ public:
 
         // Below the preview: status, then how to use it.
         float y = P.bottom() + ui.s(18);
-        Vec2 used = ui.labelWrapped(mode_ == 1 ? withKey("Mode concentré (touche {0}, Partage à la manette, ou le menu pause) : choisissez les éléments "
+        if (mode_ == 2) {
+            // The preview is an example (the editor's only): said on it, measured into its corner.
+            const std::string ex = "EXEMPLE · raid à 8 joueurs";
+            const float ew = ui.text().measure(ex, FontFace::Bold, ui.s(15)).x + ui.s(20);
+            const Rect pill{P.x + ui.s(8), P.y + ui.s(8), std::min(ew, P.w - ui.s(16)), ui.s(28)};
+            ui.r().fillRoundedRect(pill, ui.s(8), Color{120, 20, 40, 235});
+            ui.label(ui.elide(ex, FontFace::Bold, 15, pill.w - ui.s(16)), pill.center(), 15, Color{255, 210, 122, 255}, Align::Center, FontFace::Bold,
+                     VAlign::Middle);
+        }
+        Vec2 used = ui.labelWrapped(mode_ == 2 ? withKey("Raids : la disposition des combats de raid, à part du HUD des niveaux. L'aperçu est un exemple de "
+                                                         "raid à 8 joueurs (noms et objectifs d'exemple, jamais en jeu). La carte s'agrandit "
+                                                         "en raid avec la touche {0}. Deux éléments ne peuvent jamais se chevaucher.",
+                                                         g_.app.input().bindings(), Action::RaidMap)
+                                    : mode_ == 1 ? withKey("Mode concentré (touche {0}, Partage à la manette, ou le menu pause) : choisissez les éléments "
                                                          "gardés. Les places et les tailles sont les mêmes dans les deux modes ; deux éléments ne peuvent "
                                                          "jamais se chevaucher.",
                                                          g_.app.input().bindings(), Action::FocusToggle)
@@ -205,6 +227,13 @@ private:
         r.setView(WorldView{});
         hud_.setFadeAllowed(false);  // 2.60: the blocks being placed never fade
         hud_.setEditorPreview(true);   // 2.62.2: the ambush's counter shown without a fight
+        hud_.setRaidView(mode_ == 2);  // 2.72: the raids' HUD (vitals, powers, the gigaboss's bar)
+        if (mode_ == 2) {
+            hud_.render(g_.ui, *world_, view, nullptr, raidhud::hudSettings(work_));
+            drawRaidExample();
+            r.setTarget(nullptr);
+            return;
+        }
         hud_.render(g_.ui, *world_, view, nullptr, work_);
         if (hudVisible(work_, HudElement::Splits)) {
             Hud::Place sp = hud_.place(g_.ui, *world_, work_, HudElement::Splits);
@@ -338,6 +367,14 @@ private:
     }
 
     void resetAll() {
+        if (mode_ == 2) {
+            const bool arrows = work_.raidHud.arrows;
+            work_.raidHud = RaidHudLayout{};
+            work_.raidHud.arrows = arrows;
+            status_ = "Disposition des raids par défaut rétablie.";
+            statusTimer_ = 2.0f;
+            return;
+        }
         GameplaySettings c = work_;
         bool timer = hudVisible(c, HudElement::Timer), bar = hudVisible(c, HudElement::Progress);
         HudLayout fresh;
@@ -366,7 +403,13 @@ private:
 
     std::string firstConflict() {
         auto c = conflicts();
-        if (c.empty()) return {};
+        if (c.empty()) {
+            // 2.72: the raids' layout is saved with the other one: it must fit too.
+            const auto rc = raidConflicts();
+            if (rc.empty()) return {};
+            return std::string("Raids : « ") + RaidHudLayout::label(static_cast<RaidHudElement>(rc[0].first)) + " » et « " +
+                   RaidHudLayout::label(static_cast<RaidHudElement>(rc[0].second)) + " » se chevauchent : déplacez ou réduisez l'un des deux pour enregistrer.";
+        }
         return std::string("« ") + HudLayout::label(static_cast<HudElement>(c[0].first)) + " » et « " +
                HudLayout::label(static_cast<HudElement>(c[0].second)) + " » se chevauchent : déplacez ou réduisez l'un des deux pour enregistrer.";
     }
@@ -380,6 +423,10 @@ private:
     void drawOutlines(const Rect& P) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
+        if (mode_ == 2) {
+            drawRaidOutlines(P);
+            return;
+        }
         r.pushClip(P);
         auto bad = conflicts();
         for (int i = 0; i < kHudElements; ++i) {
@@ -401,6 +448,10 @@ private:
         UIContext& ui = g_.ui;
         InputManager& in = g_.app.input();
         Vec2 m = in.mousePos();
+        if (mode_ == 2) {
+            raidPointer(P);
+            return;
+        }
         if (in.mousePressed(SDL_BUTTON_LEFT) && P.contains(m)) {
             // Topmost element under the pointer (the smallest when nested).
             int hit = -1;
@@ -437,11 +488,17 @@ private:
         float y = c.y;
         // The two modes: the full HUD, and the « mode concentré » (toggled in game).
         int mode = mode_;
-        if (ui.tabs("mode", {c.x, y, c.w, ui.s(46)}, {"HUD complet", "Mode concentré"}, mode)) {
+        if (ui.tabs("mode", {c.x, y, c.w, ui.s(46)}, {"HUD complet", "Mode concentré", "Raids"}, mode)) {
             mode_ = mode;
             work_.focusMode = mode_ == 1;
+            selected_ = 0;
+            dragging_ = false;
         }
         y += ui.s(58);
+        if (mode_ == 2) {
+            drawRaidPanel({c.x, y, c.w, c.bottom() - y});
+            return;
+        }
         ui.label(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", {c.x, y}, ui.fitFont(mode_ == 1 ? "Éléments gardés en mode concentré" : "Éléments", FontFace::Bold, 22, c.w),
                  ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(38);
@@ -517,6 +574,311 @@ private:
         if (ui.button("reset", r, "Place et taille par défaut")) resetElement(e);
     }
 
+    // ------------------------------------------------------------ 2.72: the raids' layout
+
+    using RE = RaidHudElement;
+
+    /// The game's HUD areas at the raid layout's places of `s`.
+    raidhud::HudAreas raidHudAreas(const GameplaySettings& s) {
+        raidhud::HudAreas a;
+        if (!world_) return a;
+        const GameplaySettings hs = raidhud::hudSettings(s);
+        auto of = [&](HudElement e) { return hudVisible(hs, e) ? hud_.area(g_.ui, *world_, e, hud_.place(g_.ui, *world_, hs, e)) : Rect{}; };
+        a.vitals = of(HudElement::Vitals);
+        a.powers = of(HudElement::Powers);
+        a.boss = of(HudElement::Boss);
+        return a;
+    }
+
+    /// The area an element of the raids' layout takes in `s` (empty when hidden).
+    Rect raidAreaOf(const GameplaySettings& s, RE e) {
+        if (!world_) return {};
+        if (!s.raidHud[e].visible && RaidHudLayout::canHide(e)) return {};
+        return raidhud::area(g_.ui, s.raidHud, e, raidHudAreas(s));
+    }
+
+    std::vector<std::pair<int, int>> raidConflicts() {
+        std::vector<std::pair<int, int>> out;
+        for (int i = 0; i < kRaidHudElements; ++i) {
+            const Rect a = raidAreaOf(work_, static_cast<RE>(i));
+            if (a.w <= 0.0f) continue;
+            for (int j = i + 1; j < kRaidHudElements; ++j) {
+                const Rect b = raidAreaOf(work_, static_cast<RE>(j));
+                if (b.w > 0.0f && a.intersects(b)) out.push_back({i, j});
+            }
+        }
+        return out;
+    }
+
+    std::vector<int> raidOverlapsOf(const GameplaySettings& s, RE e) {
+        std::vector<int> out;
+        const Rect a = raidAreaOf(s, e);
+        if (a.w <= 0.0f) return out;
+        for (int i = 0; i < kRaidHudElements; ++i) {
+            if (i == static_cast<int>(e)) continue;
+            const Rect b = raidAreaOf(s, static_cast<RE>(i));
+            if (b.w > 0.0f && a.intersects(b)) out.push_back(i);
+        }
+        return out;
+    }
+
+    /// As blocker(): empty when `e` fits at its place in `s`, else what is in the way.
+    std::string raidBlocker(const GameplaySettings& s, RE e) {
+        const Rect a = raidAreaOf(s, e);
+        if (a.w <= 0.0f) return {};
+        const float W = g_.ui.screenW(), H = g_.ui.screenH();
+        if (a.x < -0.5f || a.y < -0.5f || a.right() > W + 0.5f || a.bottom() > H + 0.5f) return "le bord de l'écran";
+        const std::vector<int> before = raidOverlapsOf(work_, e);
+        for (int i : raidOverlapsOf(s, e))
+            if (std::find(before.begin(), before.end(), i) == before.end()) return std::string("« ") + RaidHudLayout::label(static_cast<RE>(i)) + " »";
+        return {};
+    }
+
+    bool raidTryApply(const GameplaySettings& c, RE e) {
+        const std::string why = raidBlocker(c, e);
+        if (!why.empty()) {
+            status_ = std::string("Impossible : « ") + RaidHudLayout::label(e) + " » toucherait " + why + ".";
+            statusTimer_ = 2.5f;
+            return false;
+        }
+        work_ = c;
+        return true;
+    }
+
+    /// `s` with the element's area moved to `topLeft` (kept inside the screen).
+    GameplaySettings raidMoved(const GameplaySettings& s, RE e, Vec2 topLeft) {
+        GameplaySettings c = s;
+        if (!world_) return c;
+        UIContext& ui = g_.ui;
+        const float W = ui.screenW(), H = ui.screenH();
+        HudPlace& hp = c.raidHud[e];
+        const HudElement he = RaidHudLayout::hudElement(e);
+        if (he != HudElement::Count) {
+            // The game's HUD element: its anchor, as the solo layout keeps it.
+            GameplaySettings hs = raidhud::hudSettings(c);
+            Hud::Place p = hud_.place(ui, *world_, hs, he);
+            if (!hp.custom) {
+                hp.custom = true;
+                hp.x = p.o.x / W;
+                hp.y = p.o.y / H;
+                hs = raidhud::hudSettings(c);
+                p = hud_.place(ui, *world_, hs, he);
+            }
+            const Rect a = hud_.area(ui, *world_, he, p);
+            topLeft.x = std::clamp(topLeft.x, 0.0f, std::max(0.0f, W - a.w));
+            topLeft.y = std::clamp(topLeft.y, 0.0f, std::max(0.0f, H - a.h));
+            const Vec2 anchor = hud_.anchorForArea(ui, *world_, he, p, topLeft);
+            hp.x = std::clamp(anchor.x / W, 0.0f, 1.0f);
+            hp.y = std::clamp(anchor.y / H, 0.0f, 1.0f);
+            return c;
+        }
+        const Rect a = raidhud::area(ui, c.raidHud, e, raidHudAreas(c));
+        hp.custom = true;
+        hp.x = std::clamp(topLeft.x, 0.0f, std::max(0.0f, W - a.w)) / W;
+        hp.y = std::clamp(topLeft.y, 0.0f, std::max(0.0f, H - a.h)) / H;
+        return c;
+    }
+
+    void raidMoveTo(RE e, Vec2 topLeft) {
+        GameplaySettings c = raidMoved(work_, e, topLeft);
+        if (raidBlocker(c, e).empty()) {
+            work_ = c;
+            return;
+        }
+        // Blocked: slide along the obstacle (one axis at a time) before giving up.
+        const Rect cur = raidAreaOf(work_, e);
+        GameplaySettings cx = raidMoved(work_, e, {topLeft.x, cur.y});
+        if (raidBlocker(cx, e).empty()) {
+            work_ = cx;
+            return;
+        }
+        GameplaySettings cy = raidMoved(work_, e, {cur.x, topLeft.y});
+        if (raidBlocker(cy, e).empty()) {
+            work_ = cy;
+            return;
+        }
+        raidTryApply(c, e);  // explains what is in the way
+    }
+
+    void raidSetScale(RE e, float scale) {
+        scale = std::clamp(scale, HudLayout::kMinScale, HudLayout::kMaxScale);
+        const Rect before = raidAreaOf(work_, e);
+        GameplaySettings c = work_;
+        c.raidHud[e].scale = scale;
+        const Rect after = raidAreaOf(c, e);
+        if (before.w > 0.0f && after.w > 0.0f && (c.raidHud[e].custom || RaidHudLayout::hudElement(e) != HudElement::Count))
+            c = raidMoved(c, e, before.center() - after.size() * 0.5f);  // grows around its centre
+        raidTryApply(c, e);
+    }
+
+    void drawRaidOutlines(const Rect& P) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        r.pushClip(P);
+        const auto bad = raidConflicts();
+        for (int i = 0; i < kRaidHudElements; ++i) {
+            const Rect a = raidAreaOf(work_, static_cast<RE>(i));
+            if (a.w <= 0.0f) continue;
+            const Rect pr = toPreview(a);
+            const bool sel = i == selected_;
+            const bool clash = std::any_of(bad.begin(), bad.end(), [&](const auto& p) { return p.first == i || p.second == i; });
+            const Color c = clash ? ui.theme().danger : sel ? ui.theme().accent : Color{200, 214, 232, 120};
+            if (sel) r.fillRect(pr, ui.theme().accent.withAlpha(28));
+            r.drawRect(pr, c, sel ? ui.s(2.5f) : ui.s(1.0f));
+        }
+        r.popClip();
+    }
+
+    void raidPointer(const Rect& P) {
+        UIContext& ui = g_.ui;
+        InputManager& in = g_.app.input();
+        const Vec2 m = in.mousePos();
+        if (in.mousePressed(SDL_BUTTON_LEFT) && P.contains(m)) {
+            int hit = -1;
+            float best = 1e30f;
+            for (int i = 0; i < kRaidHudElements; ++i) {
+                const Rect pr = toPreview(raidAreaOf(work_, static_cast<RE>(i)));
+                if (pr.w > 0.0f && pr.contains(m) && pr.w * pr.h < best) {
+                    best = pr.w * pr.h;
+                    hit = i;
+                }
+            }
+            if (hit >= 0) {
+                selected_ = hit;
+                dragging_ = true;
+                grab_ = (m - P.pos()) / previewScale_ - raidAreaOf(work_, static_cast<RE>(hit)).pos();
+            }
+        }
+        if (dragging_) {
+            if (!in.mouseDown(SDL_BUTTON_LEFT)) dragging_ = false;
+            else if (in.mouseMovedThisFrame()) raidMoveTo(static_cast<RE>(selected_), (m - P.pos()) / previewScale_ - grab_);
+        }
+        if (in.wheel() != 0.0f && P.contains(m) && ui.inputEnabled) {
+            const auto e = static_cast<RE>(selected_);
+            raidSetScale(e, work_.raidHud[e].scale + (in.wheel() > 0.0f ? 0.05f : -0.05f));
+        }
+    }
+
+    void drawRaidPanel(const Rect& c) {
+        UIContext& ui = g_.ui;
+        float y = c.y;
+        const std::string head = "Éléments du HUD des raids";
+        ui.label(head, {c.x, y}, ui.fitFont(head, FontFace::Bold, 22, c.w), ui.theme().text, Align::Left, FontFace::Bold);
+        y += ui.s(38);
+        const float gap = ui.s(6);
+        const float below = ui.s(48) + gap + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);
+        const float rowH = std::clamp((c.bottom() - y - below) / static_cast<float>(kRaidHudElements) - gap, ui.s(40), ui.s(52));
+        selected_ = std::clamp(selected_, 0, kRaidHudElements - 1);
+        for (int i = 0; i < kRaidHudElements; ++i) {
+            const auto e = static_cast<RE>(i);
+            const bool vis = work_.raidHud[e].visible || !RaidHudLayout::canHide(e);
+            char sub[96];
+            if (vis)
+                std::snprintf(sub, sizeof sub, "Affiché · %d %%%s", static_cast<int>(std::lround(work_.raidHud[e].scale * 100.0f)),
+                              work_.raidHud[e].custom ? " · déplacé" : "");
+            else
+                std::snprintf(sub, sizeof sub, "Masqué");
+            if (ui.listItem("rel" + std::to_string(i), {c.x, y, c.w, rowH}, RaidHudLayout::label(e), i == selected_, sub)) selected_ = i;
+            y += rowH + gap;
+        }
+        ui.toggle("raidarrows", {c.x, y, c.w, ui.s(48)}, "Flèches hors écran (ennemis, embuscade, boss, alliés)", work_.raidHud.arrows);
+        y += ui.s(48) + gap + ui.s(14);
+        const auto e = static_cast<RE>(selected_);
+        const std::string title = std::string("Réglages : ") + RaidHudLayout::label(e);
+        ui.label(title, {c.x, y}, ui.fitFont(title, FontFace::Bold, 22, c.w), ui.theme().text, Align::Left, FontFace::Bold);
+        y += ui.s(38);
+        Rect r{c.x, y, c.w, ui.s(50)};
+        const float step = ui.s(58);
+        bool vis = work_.raidHud[e].visible || !RaidHudLayout::canHide(e);
+        if (RaidHudLayout::canHide(e)) {
+            if (ui.toggle("rvisible", r, "Afficher", vis)) {
+                GameplaySettings cand = work_;
+                cand.raidHud[e].visible = vis;
+                if (!vis) work_ = cand;
+                else raidTryApply(cand, e);
+            }
+        } else {
+            ui.labelWrapped("Toujours affiché : le groupe doit le voir.", {r.x, r.y + ui.s(12)}, r.w, 17, ui.theme().textDim);
+        }
+        r.y += step;
+        const Rect a = raidAreaOf(work_, e);
+        const bool shown = a.w > 0.0f;
+        float pct = work_.raidHud[e].scale * 100.0f;
+        if (ui.slider("rsize", r, "Taille", pct, HudLayout::kMinScale * 100.0f, HudLayout::kMaxScale * 100.0f, 5.0f, "%.0f %%")) raidSetScale(e, pct / 100.0f);
+        r.y += step;
+        const float W = ui.screenW(), H = ui.screenH();
+        float px = shown && W > a.w ? a.x / (W - a.w) * 100.0f : 0.0f;
+        float py = shown && H > a.h ? a.y / (H - a.h) * 100.0f : 0.0f;
+        if (ui.slider("rposx", r, "Position horizontale", px, 0.0f, 100.0f, 1.0f, "%.0f %%") && shown) raidMoveTo(e, {px / 100.0f * (W - a.w), a.y});
+        r.y += step;
+        if (ui.slider("rposy", r, "Position verticale", py, 0.0f, 100.0f, 1.0f, "%.0f %%") && shown) raidMoveTo(e, {a.x, py / 100.0f * (H - a.h)});
+        r.y += step;
+        if (ui.button("rreset", r, "Place et taille par défaut")) {
+            GameplaySettings cand = work_;
+            const bool keep = cand.raidHud[e].visible;
+            cand.raidHud[e] = HudPlace{};
+            cand.raidHud[e].visible = keep;
+            raidTryApply(cand, e);
+        }
+    }
+
+    /// The example of a raid of 8 players drawn into the preview (the editor's only, said on it).
+    void drawRaidExample() {
+        UIContext& ui = g_.ui;
+        using namespace raidui;
+        const RaidHudLayout& l = work_.raidHud;
+        const raidhud::HudAreas ha = raidHudAreas(work_);
+        auto at = [&](RE e) { return raidhud::area(ui, l, e, ha); };
+        auto k = [&](RE e) { return raidhud::scaleOf(l, e); };
+        auto shown = [&](RE e) { return l[e].visible || !RaidHudLayout::canHide(e); };
+        static const Color kSeat[8] = {{255, 210, 122, 255}, {255, 122, 184, 255}, {124, 240, 168, 255}, {159, 216, 255, 255},
+                                       {255, 176, 74, 255},  {201, 168, 255, 255}, {255, 236, 140, 255}, {255, 138, 138, 255}};
+        if (shown(RE::Group)) {
+            raidhud::Group g;
+            g.title = "[EXEMPLE]·1 · 8 / 8";
+            for (int i = 0; i < 8; ++i) {
+                raidhud::GroupRow row;
+                row.name = i == 0 ? "Vous" : "Joueur " + std::to_string(i + 1);
+                row.color = kSeat[i];
+                row.playing = i != 5;
+                row.health = i == 5 ? 0.0f : 1.0f - 0.1f * static_cast<float>(i % 4);
+                row.state = i == 5 ? "à terre" : "en jeu";
+                row.stateColor = i == 5 ? Color{255, 74, 74, 255} : kGreen;
+                g.rows.push_back(row);
+            }
+            g.footer = "Réanimations de la zone : 1 / 2";
+            raidhud::drawGroup(ui, at(RE::Group), k(RE::Group), g);
+        }
+        if (shown(RE::Minimap) && world_) {
+            using raidhud::Icon;
+            std::vector<raidhud::Mark> marks;
+            const Vec2 me = world_->player().center();
+            for (const auto& e : world_->enemies())
+                if (e->alive()) marks.push_back({e->def().isBoss ? Icon::Boss : Icon::Enemy, e->center()});
+            for (int i = 1; i < 8; ++i) marks.push_back({Icon::Ally, me + Vec2{static_cast<float>(i) * 26.0f - 90.0f, 0.0f}, kSeat[i]});
+            marks.push_back({Icon::Objective, me + Vec2{420.0f, -60.0f}});
+            marks.push_back({Icon::Exit, {world_->level().bounds.right() - 120.0f, me.y}});
+            marks.push_back({Icon::Me, me});
+            minimap_.drawSmall(ui, g_.app.resources(), *world_, at(RE::Minimap), k(RE::Minimap), "MINIMAP · Exemple", marks, {}, me);
+        }
+        if (shown(RE::Objectives))
+            raidhud::drawObjectives(ui, at(RE::Objectives), k(RE::Objectives), "OBJECTIFS · Exemple",
+                                    {{"→", "Générateur du verrou : frappez-le avec un pouvoir de tir", Color{255, 176, 74, 255}},
+                                     {"1 / 2", "Poignet-verrou : les deux générateurs", kGold},
+                                     {"◆", "Relique de la grotte (facultatif)", Color{201, 168, 255, 255}}});
+        if (shown(RE::Alerts))
+            raidhud::drawAlerts(ui, at(RE::Alerts), k(RE::Alerts),
+                                {{"", "GROUPE · Objectif accompli : générateur ouest", kGold}, {"", "BRANCHE · Le raccourci est ouvert", kGreen}});
+        raidhud::drawDanger(ui, at(RE::Danger), k(RE::Danger), "Montée de magma dans 3 s · montez !");
+        if (shown(RE::Contributions))
+            raidhud::drawLineBox(ui, at(RE::Contributions), k(RE::Contributions), "Dégâts 120 · Mécanismes 2 · Sauvetages 1 · Dégâts évités 30", kText,
+                                 false);
+        raidhud::drawLineBox(ui, at(RE::Status), k(RE::Status), "TEST ADMIN · non classé · 8 joueurs (7 simulés)", kGold, true);
+        if (shown(RE::Timer)) raidhud::drawTimer(ui, at(RE::Timer), k(RE::Timer), 754.36f, 201.07f);
+    }
+
+    raidhud::Minimap minimap_;  // 2.72: the example's minimap (the preview level's terrain)
+
     GameServices& g_;
     GameplaySettings& target_;
     GameplaySettings work_;
@@ -530,7 +892,7 @@ private:
     Rect preview_;
     float previewScale_ = 0.6f;
     int selected_ = 0;
-    int mode_ = 0;  // 0 the full HUD, 1 the « mode concentré »
+    int mode_ = 0;  // 0 the full HUD, 1 the « mode concentré », 2 (2.72) the raids
     bool savedFocus_ = false;
     bool dragging_ = false;
     bool bossShown_ = false;

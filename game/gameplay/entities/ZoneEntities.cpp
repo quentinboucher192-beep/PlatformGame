@@ -55,6 +55,12 @@ bool TriggerEntity::handleAction(GameWorld&, const std::string& action, const Js
     return true;
 }
 
+Json TriggerEntity::keepState(GameWorld&) const { return fired_ ? Json{{"fired", true}} : Json(nullptr); }
+
+void TriggerEntity::restoreKept(GameWorld&, const Json& state) {
+    if (jget<bool>(state, "fired", false)) fired_ = true;
+}
+
 void TriggerEntity::render(RenderContext& ctx) {
     if (ctx.editor) drawZone(ctx, box, {120, 255, 120, 255}, "Déclencheur");
 }
@@ -316,6 +322,23 @@ bool CombatZoneEntity::handleAction(GameWorld& w, const std::string& action, con
     return false;
 }
 
+// 2.72 (raids): an arena cleared stays cleared: its doors open, its enemies gone, never again.
+Json CombatZoneEntity::keepState(GameWorld&) const { return cleared_ ? Json{{"cleared", true}} : Json(nullptr); }
+
+void CombatZoneEntity::restoreKept(GameWorld& w, const Json& state) {
+    if (!jget<bool>(state, "cleared", false) || cleared_) return;
+    cleared_ = started_ = true;
+    suspended_ = false;
+    waveDelay_ = 0.0f;
+    wave_ = waves_.size();
+    for (const auto& d : doors_)
+        if (auto* door = dynamic_cast<DoorEntity*>(w.entity(d))) door->setOpen(w, true, true);
+    for (const auto& wave : waves_)
+        for (const auto& id : wave)
+            if (auto* es = dynamic_cast<EnemySpawnEntity*>(w.entity(id)))
+                if (Enemy* e = es->enemy(w); e && e->alive()) e->despawn();
+}
+
 std::string CombatZoneEntity::debugInfo() const {
     return cleared_ ? "nettoyée" : started_ ? "vague " + std::to_string(wave_ + 1) : "en attente";
 }
@@ -429,6 +452,19 @@ bool EnemySpawnEntity::handleAction(GameWorld& w, const std::string& action, con
         return true;
     }
     return false;
+}
+
+// 2.72 (raids): an enemy beaten stays beaten when the group comes back (an arena not cleared
+// calls its waves again itself).
+Json EnemySpawnEntity::keepState(GameWorld& w) const {
+    if (enemyUid_ == 0) return nullptr;
+    const Enemy* e = enemy(w);
+    return !e || !e->alive() ? Json{{"gone", true}} : Json(nullptr);
+}
+
+void EnemySpawnEntity::restoreKept(GameWorld& w, const Json& state) {
+    if (!jget<bool>(state, "gone", false)) return;
+    if (Enemy* e = enemy(w); e && e->alive()) e->despawn();
 }
 
 void EnemySpawnEntity::fixedUpdate(GameWorld& w, float /*dt*/) {

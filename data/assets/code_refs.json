@@ -110,6 +110,9 @@
   "animations/pyroclast_vents.json": {
    "game/raid/RaidBranch.h": 1
   },
+  "animations/raid_magma.json": {
+   "game/gameplay/entities/HazardEntities.cpp": 1
+  },
   "animations/receptor.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
    "game/levels/ObjectTypes.cpp": 1
@@ -420,7 +423,7 @@
    "game/enemies/BossHazards.cpp": 1,
    "game/enemies/GuardianAttacks.cpp": 1,
    "game/enemies/TitanAttacks.cpp": 3,
-   "game/gameplay/entities/HazardEntities.cpp": 1
+   "game/gameplay/entities/HazardEntities.cpp": 3
   },
   "sounds/lever.wav": {
    "game/enemies/TitanAttacks.cpp": 2,
@@ -808,6 +811,7 @@
    "game/gameplay/Hud.cpp": 1,
    "game/gameplay/HudTeam.cpp": 1,
    "packaging/DependencyCollector.cpp": 1,
+   "ui/online/RaidHud.cpp": 1,
    "ui/screens/BossStatsScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 2
   },
@@ -839,6 +843,12 @@
   },
   "ui/raids/asterion.png": {
    "ui/widgets/AsterionFigure.cpp": 1
+  },
+  "ui/raids/minimap.json": {
+   "ui/online/RaidHud.cpp": 1
+  },
+  "ui/raids/minimap.png": {
+   "ui/online/RaidHud.cpp": 1
   }
  }
 }

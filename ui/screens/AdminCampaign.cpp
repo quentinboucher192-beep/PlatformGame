@@ -398,7 +398,7 @@ void AdminCampaign::drawModal() {
         os.selected = revertChoice_ == i;
         os.align = Align::Left;
         os.danger = i == 0 && revertChoice_ == 0;
-        std::string label = (revertChoice_ == i ? "● " : "○ ") + opt[i];
+        std::string label = (revertChoice_ == i ? "(•) " : "( ) ") + opt[i];
         if (ui.button(i == 0 ? "reset" : "keep", {x, y, w, optH}, label, os)) revertChoice_ = i;
         y += optH + ui.s(6);
         ui.labelWrapped(desc[i], {x + ui.s(20), y}, w - ui.s(20), 15, ui.theme().textDim);

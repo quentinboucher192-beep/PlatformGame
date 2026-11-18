@@ -1,5 +1,6 @@
 // Hazards: spikes, liquids (acid, water, lava), damage / slow zones and lasers.
 
+#include <algorithm>
 #include <cmath>
 
 #include "engine/physics/Collision.h"
@@ -150,10 +151,27 @@ void DamageZoneEntity::init(GameWorld&) {
     // 2.33: a zone may start off (switched on by an event: the plasma of Singularis's arena).
     active = obj_.prop<bool>("active", true);
     shown_ = active ? 1.0f : 0.0f;
+    // 2.72: the raids' rising magma (docs/RAIDS.md §15).
+    magma_ = obj_.propStr("style", "toxic") == "magma";
+    level_ = magma_ && active ? 1.0f : 0.0f;
+}
+
+Rect DamageZoneEntity::magmaBody() const {
+    const float h = box.h * std::clamp(level_, 0.0f, 1.0f);
+    // A pool rises from the bottom of its box; a fall (taller than wide) pours from its top.
+    if (box.w >= box.h) return {box.x, box.bottom() - h, box.w, h};
+    return {box.x, box.y, box.w, h};
+}
+
+Rect DamageZoneEntity::overlapBox() const {
+    if (!magma_) return box;
+    const Rect b = magmaBody();
+    return b.h > 0.5f ? b : Rect{box.x, box.bottom() + 1.0f, box.w, 0.0f};  // drained: touches nothing
 }
 
 void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
     if (!active) return;
+    if (magma_ && level_ <= 0.02f) return;  // 2.72: nothing has risen yet
     Player& pl = w.player();
     if (obj_.prop<bool>("bounce", false) && pl.alive() && pl.vel.y > -200.0f) {
         // 2.33: it throws Nova back up (plasma: hurt, never stuck in it).
@@ -174,6 +192,43 @@ void DamageZoneEntity::onPlayerStay(GameWorld& w, float dt) {
 
 void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     if (!playerInside) tick_ = 0.0f;
+    if (magma_) {
+        // 2.72: it rises while on, drains after « disable » (still hurting until it is gone).
+        const float rise = std::max(0.1f, obj_.prop<float>("rise", 1.4f)), fall = std::max(0.1f, obj_.prop<float>("fall", 1.2f));
+        level_ = active && !draining_ ? std::min(1.0f, level_ + dt / rise) : std::max(0.0f, level_ - dt / fall);
+        if (draining_ && level_ <= 0.0f) {
+            draining_ = false;
+            active = false;
+        }
+        warnLeft_ = std::max(0.0f, warnLeft_ - dt);
+        hidden_.clear();
+        const Rect body = magmaBody();
+        if (active && body.h > 2.0f) {
+            // Every enemy caught in it burns like the players (not a boss, nor one still asleep).
+            enemyTick_ -= dt;
+            const bool burn = enemyTick_ <= 0.0f;
+            if (burn) enemyTick_ = obj_.prop<float>("interval", 0.8f);
+            for (auto& e : w.enemies()) {
+                if (!e->alive() || !body.intersects(e->box)) continue;
+                if (body.y < e->box.y) hidden_.push_back(e->center().x);  // display: under the surface
+                if (!burn || e->dormant() || e->def().isBoss) continue;
+                if (e->summonedBy != 0)  // a boss's creatures (Pyroclast's weak points) are its fight's
+                    if (const Enemy* owner = w.findEnemy(e->summonedBy); owner && owner->def().isBoss) continue;
+                DamageInfo d;
+                d.amount = static_cast<float>(obj_.prop<int>("damage", 1));
+                d.type = DamageType::Hazard;
+                d.source = {e->center().x, body.bottom()};
+                d.knockback = 40.0f;
+                e->takeDamage(w, d);
+            }
+            for (int i = 0; i < w.teamSize(); ++i) {
+                const Player& p = w.playerAt(i);
+                if (p.alive() && body.intersects(p.box) && body.y < p.box.y) hidden_.push_back(p.center().x);
+            }
+        } else {
+            enemyTick_ = 0.0f;
+        }
+    }
     shown_ = active ? std::min(1.0f, shown_ + dt / 0.6f) : std::max(0.0f, shown_ - dt / 0.4f);
     if (!active || !obj_.prop<bool>("visible", true)) return;
     fxTimer_ -= dt;
@@ -190,8 +245,31 @@ void DamageZoneEntity::fixedUpdate(GameWorld& w, float dt) {
     }
 }
 
-bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
+bool DamageZoneEntity::handleAction(GameWorld& w, const std::string& action, const Json& params) {
     const std::string style = obj_.propStr("style", "toxic");
+    if (magma_) {
+        // 2.72: the raids' rising magma: announced, rising, draining.
+        if (action == "warn") {
+            warnLeft_ = std::max(0.5f, jget<float>(params, "seconds", 3.0f));
+            w.playSound("sounds/lava_rise.wav", box.center(), 0.45f, 0.7f);
+            return true;
+        }
+        if (action == "enable" || action == "activate" || (action == "toggle" && (!active || draining_))) {
+            if (!active || draining_) {
+                w.playSound("sounds/lava_rise.wav", box.center(), 0.9f);
+                w.shake(0.3f);
+            }
+            active = true;
+            draining_ = false;
+            warnLeft_ = 0.0f;
+            return true;
+        }
+        if (action == "disable" || action == "toggle") {
+            if (active) draining_ = true;
+            return true;
+        }
+        return false;
+    }
     if ((action == "enable" || action == "activate") && !active &&
         (style == "plasma" || style == "abyss" || style == "embers" || style == "souls")) {
         w.playSound("sounds/lava_rise.wav", box.center(), 0.9f);
@@ -208,6 +286,10 @@ void DamageZoneEntity::render(RenderContext& ctx) {
     if (ctx.editor) {
         ctx.r.fillWorldRect(box, {255, 60, 60, 40});
         ctx.r.drawWorldRect(box, {255, 60, 60, 160});
+    }
+    if (magma_) {
+        renderMagma(ctx);
+        return;
     }
     if (!obj_.prop<bool>("visible", true) || shown_ <= 0.0f) return;
     if (obj_.propStr("style", "toxic") == "plasma") {
@@ -230,6 +312,132 @@ void DamageZoneEntity::render(RenderContext& ctx) {
         ctx.r.fillWorldRect(box, {157, 255, 58, 18}, BlendMode::Additive);
         ctx.lights.add(box.center(), std::max(box.w, box.h) * 0.6f, {120, 200, 60, 255});
     }
+}
+
+void DamageZoneEntity::renderMagma(RenderContext& ctx) const {
+    // 2.72 (raids): molten rock drawn from the generated sheet (tools/assetgen/environment/
+    // raid_visuals.py): a body that flows, dark crust drifting on it, bright waves at its surface,
+    // bubbles popping, embers, its heat; the telegraph of a rise (the level it will reach, the
+    // floor glowing). Drawn over the actors (GameRenderer): what it covers is hidden, a glow at
+    // its surface above each body under it. Display only.
+    const float t = ctx.time;
+    auto fx = ctx.res.animation("animations/raid_magma.json");
+    const bool sheet = fx && fx->texture;
+    const AnimationClip* body = sheet ? fx->clip("body") : nullptr;
+    const AnimationClip* crust = sheet ? fx->clip("crust") : nullptr;
+    const AnimationClip* surf = sheet ? fx->clip("surface") : nullptr;
+    const AnimationClip* bubble = sheet ? fx->clip("bubble") : nullptr;
+    const AnimationClip* ember = sheet ? fx->clip("ember") : nullptr;
+    const AnimationClip* warn = sheet ? fx->clip("warn") : nullptr;
+    const AnimationClip* glow = sheet ? fx->clip("glow") : nullptr;
+    const float fw = sheet ? static_cast<float>(fx->frameWidth) : 32.0f, fh = sheet ? static_cast<float>(fx->frameHeight) : 32.0f;
+    const bool pool = box.w >= box.h;
+    const Rect vis = ctx.r.view().visibleWorld().expanded(fw);
+    auto frameOf = [](const AnimationClip* c, float at, float fps) {
+        return c ? static_cast<int>(at * fps) % std::max(1, c->frameCount()) : 0;
+    };
+    // The telegraph: the area that will flood breathes, its future surface glows, the floor cracks.
+    if (warnLeft_ > 0.0f && level_ < 0.99f) {
+        const float k = 0.5f + 0.5f * dmath::sin(t * 9.0f);
+        const float near = 1.0f - std::clamp(warnLeft_ / 3.0f, 0.0f, 1.0f);  // brighter as it comes
+        ctx.r.fillWorldRect(box, Color{255, 80, 20, static_cast<uint8_t>(18 + 30 * k + 30 * near)}, BlendMode::Additive);
+        const float lineY = pool ? box.y : box.y;
+        for (float x = box.x; x < box.right(); x += 12.0f)
+            ctx.r.fillWorldRect({x, lineY - 1.0f, std::min(7.0f, box.right() - x), 3.0f}, Color{255, 190, 90, static_cast<uint8_t>(150 + 90 * k)},
+                                BlendMode::Additive);
+        if (warn && pool)
+            for (float x = std::max(box.x, std::floor((vis.x - box.x) / fw) * fw + box.x); x < std::min(box.right(), vis.right()); x += fw) {
+                const float wd = std::min(fw, box.right() - x);
+                Rect src = fx->frameRect(*warn, (frameOf(warn, t, 10.0f) + static_cast<int>(x / fw)) % std::max(1, warn->frameCount()));
+                src.w *= wd / fw;
+                ctx.r.drawWorldTexture(*fx->texture, &src, {x, box.bottom() - fh, wd, fh}, Color{255, 255, 255, static_cast<uint8_t>(160 + 95 * near)},
+                                       BlendMode::Additive);
+            }
+        for (float x = box.x + 24.0f; x < box.right(); x += 96.0f) ctx.lights.add({x, box.bottom() - 8.0f}, 70.0f + 50.0f * near, Color{255, 110, 40, 255});
+    }
+    const Rect b = magmaBody();
+    if (b.h <= 0.5f) return;
+    const Rect drawn = b.intersection(vis);
+    if (drawn.w <= 0.0f || drawn.h <= 0.0f) return;
+    const float surfaceY = pool ? b.y : b.bottom();
+    // The body: opaque molten rock (never a glimpse of what it covers), flowing.
+    ctx.r.fillWorldRect(b, Color{120, 28, 8, 255});
+    if (body && crust) {
+        const float flow = t * (pool ? 6.0f : 40.0f);  // a fall pours down, a pool drifts
+        const float x0 = b.x + std::max(0.0f, std::floor((drawn.x - b.x) / fw) * fw);
+        for (float x = x0; x < drawn.right(); x += fw) {
+            const float wd = std::min(fw, b.right() - x);
+            const int col = std::abs(static_cast<int>(std::floor((x - box.x) / fw)));
+            const float y0 = pool ? b.y + 6.0f : b.y - std::fmod(flow, fh);
+            for (float y = y0; y < b.bottom(); y += fh) {
+                const float top = std::max(y, b.y), bot = std::min(y + fh, b.bottom());
+                if (bot <= top || bot < drawn.y || top > drawn.bottom()) continue;
+                const int row = std::abs(static_cast<int>(std::floor((y - box.y) / fh)));
+                Rect src = fx->frameRect(*body, (frameOf(body, t, 6.0f) + col * 3 + row * 5) % std::max(1, body->frameCount()));
+                src.y += top - y;
+                src.h = bot - top;
+                src.w *= wd / fw;
+                ctx.r.drawWorldTexture(*fx->texture, &src, {x, top, wd, bot - top});
+                Rect cs = fx->frameRect(*crust, (frameOf(crust, t, 2.0f) + col * 5 + row * 3) % std::max(1, crust->frameCount()));
+                cs.y += top - y;
+                cs.h = bot - top;
+                cs.w *= wd / fw;
+                ctx.r.drawWorldTexture(*fx->texture, &cs, {x, top, wd, bot - top});
+            }
+            if (pool && surf) {
+                // The bright waves at its surface (their crest on the surface line).
+                Rect src = fx->frameRect(*surf, (frameOf(surf, t, 9.0f) + col * 2) % std::max(1, surf->frameCount()));
+                src.w *= wd / fw;
+                ctx.r.drawWorldTexture(*fx->texture, &src, {x, surfaceY - fh * 0.375f, wd, fh});
+            }
+        }
+    }
+    // Heat over the surface, and the glow of what it hides just under it.
+    if (pool) {
+        ctx.r.fillWorldRect({b.x, surfaceY - 18.0f, b.w, 18.0f}, Color{255, 120, 40, 34}, BlendMode::Additive);
+        ctx.r.fillWorldRect({b.x, surfaceY - 8.0f, b.w, 8.0f}, Color{255, 150, 60, 40}, BlendMode::Additive);
+        for (float x : hidden_) {
+            if (glow) {
+                const Rect src = fx->frameRect(*glow, 0);
+                ctx.r.drawWorldTexture(*fx->texture, &src, {x - fw * 0.75f, surfaceY - fh * 0.75f, fw * 1.5f, fh * 1.5f},
+                                       Color{255, 220, 160, static_cast<uint8_t>(150 + 60 * dmath::sin(t * 6.0f + x))}, BlendMode::Additive);
+            } else {
+                ctx.r.fillWorldRect({x - 10.0f, surfaceY - 3.0f, 20.0f, 6.0f}, Color{255, 220, 150, 160}, BlendMode::Additive);
+            }
+        }
+        // Bubbles popping and embers flying, at places that change every second (display time).
+        const int slots = std::max(1, static_cast<int>(b.w / 56.0f));
+        for (int k = 0; k < slots; ++k) {
+            const float cycle = t * 0.9f + static_cast<float>(k) * 0.37f;
+            const float ph = cycle - std::floor(cycle);
+            const float seed = std::floor(cycle) * 12.9898f + static_cast<float>(k) * 78.233f;
+            const float rnd = std::fabs(std::fmod(dmath::sin(seed) * 43758.547f, 1.0f));
+            const float x = b.x + 8.0f + rnd * std::max(0.0f, b.w - 16.0f);
+            if (x < vis.x || x > vis.right()) continue;
+            if (bubble) {
+                const int n = bubble->frameCount();
+                const Rect src = fx->frameRect(*bubble, std::min(n - 1, static_cast<int>(ph * static_cast<float>(n))));
+                ctx.r.drawWorldTexture(*fx->texture, &src, {x - fw * 0.5f, surfaceY - fh * 0.6f, fw, fh});
+            }
+            if (ember && (k % 2) == 0) {
+                const Rect src = fx->frameRect(*ember, frameOf(ember, t + static_cast<float>(k), 12.0f));
+                const float ey = surfaceY - 10.0f - ph * 70.0f;
+                ctx.r.drawWorldTexture(*fx->texture, &src, {x + 6.0f * dmath::sin(t * 3.0f + static_cast<float>(k)) - fw * 0.25f, ey - fh * 0.25f, fw * 0.5f, fh * 0.5f},
+                                       Color{255, 255, 255, static_cast<uint8_t>(255 * (1.0f - ph))}, BlendMode::Additive);
+            }
+        }
+    } else {
+        for (float y = b.y; y < b.bottom(); y += 6.0f) {
+            const float wv = 2.0f * dmath::sin(t * 6.0f + y * 0.09f);
+            ctx.r.fillWorldRect({b.x - 1.0f + wv, y, 3.0f, 6.0f}, Color{255, 210, 120, 200}, BlendMode::Additive);
+            ctx.r.fillWorldRect({b.right() - 2.0f - wv, y, 3.0f, 6.0f}, Color{255, 210, 120, 200}, BlendMode::Additive);
+        }
+    }
+    const Color light{255, 120, 50, 255};
+    if (pool)
+        for (float x = b.x + 40.0f; x < b.right(); x += 120.0f) ctx.lights.add({x, surfaceY}, 130.0f, light);
+    else
+        for (float y = b.y + 60.0f; y < b.bottom(); y += 140.0f) ctx.lights.add({b.center().x, y}, 140.0f, light);
 }
 
 void DamageZoneEntity::renderPlasma(RenderContext& ctx) const {

@@ -38,6 +38,7 @@ Json Settings::toJson() const {
                      {"showInputHints", gameplay.showInputHints},
                      {"progressBar", gameplay.progressBar},
                      {"hud", gameplay.hud.toJson()},
+                     {"raidHud", gameplay.raidHud.toJson()},
                      {"focusMode", gameplay.focusMode},
                      {"adminInvincible", gameplay.adminInvincible},
                      {"powerKeysShared", gameplay.powerKeysShared},
@@ -105,6 +106,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.showInputHints = jget<bool>(g, "showInputHints", true);
         s.gameplay.progressBar = std::clamp(jget<int>(g, "progressBar", 1), 0, 3);
         if (g.contains("hud")) s.gameplay.hud = HudLayout::fromJson(g["hud"]);
+        if (g.contains("raidHud")) s.gameplay.raidHud = RaidHudLayout::fromJson(g["raidHud"]);
         s.gameplay.focusMode = jget<bool>(g, "focusMode", false);
         s.gameplay.adminInvincible = jget<bool>(g, "adminInvincible", false);
         s.gameplay.powerKeysShared = jget<bool>(g, "powerKeysShared", true);

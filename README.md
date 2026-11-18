@@ -289,6 +289,28 @@ atteindre la lumière de son cœur, avant qu'il ne s'affole.
 
 Tout le détail : [docs/RAIDS.md](docs/RAIDS.md) (§15 « Fiabilité, charge et anti-triche »).
 
+### Dans un raid : zones, carte, HUD et magma
+
+Des instances de **8 joueurs** contre le titan **Asterion**, branche par branche (Bras droit et son gigaboss
+**Pyroclast**, et six autres branches) : des zones reliées par des passages, des objectifs validés par le
+serveur au consensus de l'instance, des mécanismes de groupe (plaques, monte-charges, évents), des embuscades
+géantes et une progression partagée par tous les groupes du clan. Ce qui est fait dans une zone **y reste** :
+en y revenant, portes, leviers, générateurs, arènes nettoyées et ennemis vaincus sont comme le groupe les a
+laissés. Le **magma montant** du Bras droit monte depuis le fond et redescend, annoncé avant chaque montée
+(le sol se fissure, son futur niveau s'allume), il recouvre vraiment ce qu'il engloutit et brûle aussi les
+ennemis pris dedans.
+
+Le HUD des raids a sa **propre disposition** (Paramètres › HUD › onglet « Raids ») : minimap en textures
+(terrain, passages ouverts ou verrouillés, portes, objectifs, points de contrôle, plaques, ennemis, alliés à
+leur couleur, légende), panneau du groupe, objectifs, alertes, barre du gigaboss, contributions et un
+**chronomètre** (le temps de l'instance et celui de la zone, le même pour tout le groupe). La touche **M**
+(Vue / Retour à la manette) agrandit la **carte** sur presque tout l'écran, sans jamais mettre le jeu en pause.
+Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les niveaux. Les administrateurs testent
+une zone seuls avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui suivent, combattent, tiennent
+les plaques et relèvent les joueurs à terre. Détails : [docs/RAIDS.md](docs/RAIDS.md).
+
+<p align="center"><img src="docs/media/raid_visuals.png" width="820" alt="Planche du générateur : la lave animée du magma montant (corps, croûte, vagues, bulles, braises, alerte) et les tuiles et icônes de la minimap des raids"></p>
+
 ## Cosmic Online
 
 Facultatif, et jamais nécessaire pour jouer : un **globe 3D** interactif (rotation à la souris ou au
@@ -329,6 +351,7 @@ local, avec des comptes de démonstration (aucun record n'y est encore vérifié
 | Triple saut | troisième Saut en l'air (passif) | A / Croix |
 | Interagir | E / Entrée | Y / Triangle |
 | Pause | Échap / P | Menu / Options |
+| Carte du raid (agrandir / fermer) | M | Vue / Partage (− sur Switch) |
 
 **Touches des pouvoirs (2.24)** : chaque emplacement de pouvoir du HUD a sa touche, que le
 joueur choisit (*Paramètres → Clavier / souris* et *Manette*, « Pouvoir 1 » à « Pouvoir 8 ») ;
@@ -567,6 +590,28 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.73.2** :
+* **Raids, flèches hors écran** : les flèches des niveaux reviennent en raid (ennemis déjà vus en orange, embuscade en
+  violet, avec leur nombre), en plus du gigaboss et des alliés (`game/gameplay/EnemyArrowsDraw`, partagé avec les niveaux).
+* **Les zones d'un raid gardent leur état** (`raid::RaidRun`, `LevelEntity::keepState`) : portes et passages ouverts, leviers,
+  générateurs, arènes nettoyées, ennemis vaincus, reliques, plaques et point de contrôle, en revenant comme après une chute
+  du groupe ; ce que les autres groupes ont validé s'applique au chargement.
+* **« Tester Asterion » comme une vraie instance** (`game/raid/RaidTest`) : l'état de la branche suit de zone en zone
+  (structure de `RAID_STATE`), les **joueurs simulés** sont visibles et nommés (« Joueur simulé 2 »…), menés par une IA
+  déterministe par trames (suivre, sauter, frapper, plaques, monte-charges, évents, relever, fuir le magma) ; jamais de rapport.
+* **Minimap en textures et grande carte** (touche M / Vue, modifiable ; affichage seulement, le groupe continue) : terrain,
+  passages, portes, objectifs, points de contrôle, plaques, évents, ennemis, alliés, légende (`ui/online/RaidHud`).
+* **Éditeur de HUD › « Raids »** : une disposition à part pour la minimap, le groupe, les objectifs, la barre du gigaboss,
+  les alertes, les contributions, le badge TEST ADMIN, le chronomètre et les flèches, aperçue sur un exemple de raid à 8 joueurs.
+* **Symboles lisibles partout** : les coches, croix, flèches doubles et losanges que les polices n'ont pas (des carrés vides
+  dans le HUD des raids et la légende des cartes) sont remplacés par des signes qu'elles ont ; `tests/test_font_glyphs.cpp`
+  vérifie chaque texte du catalogue (français et anglais) et les chaînes des écrans de raid avec `TTF_FontHasGlyph`.
+* **Chronomètre en raid** (vrais raids et test admin) : le chrono des niveaux, compté sur les pas de la simulation (le même
+  pour tout le groupe) : le temps de l'instance et celui de la zone ; il continue pendant la pause.
+* **Magma réaliste** : montée et descente, dessiné devant les personnages (une lueur seulement au-dessus de ce qu'il cache),
+  les ennemis pris dedans brûlent ; lave animée générée par `tools/assetgen/environment/raid_visuals.py` (corps, croûte,
+  vagues, bulles, braises, alerte avant la montée ; `--check` mêmes octets) ; montées plus fréquentes dans le Bras droit.
 
 **Nouveau dans la version 2.73.1** :
 * **Qui est en ligne dans les listes du clan** : CLANS › Membres et les inscrits de la fiche d'un raid portent la

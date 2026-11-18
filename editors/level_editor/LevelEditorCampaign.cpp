@@ -246,7 +246,7 @@ void LevelEditorScene::modalPublish(const Rect& c) {
             os.selected = ce.records == i;
             os.align = Align::Left;
             os.enabled = ce.step != 3;
-            if (ui.button(i == 0 ? "precords_reset" : "precords_keep", {c.x, y, c.w, optH}, (ce.records == i ? "● " : "○ ") + opt[i], os)) ce.records = i;
+            if (ui.button(i == 0 ? "precords_reset" : "precords_keep", {c.x, y, c.w, optH}, (ce.records == i ? "(•) " : "( ) ") + opt[i], os)) ce.records = i;
             y += optH + ui.s(4);
             ui.labelWrapped(desc[i], {c.x + ui.s(24), y}, c.w - ui.s(24), 16, ui.theme().textDim);
             y += dh + ui.s(12);

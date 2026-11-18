@@ -10,6 +10,7 @@
 #include "engine/core/Json.h"
 #include "engine/input/InputTypes.h"
 #include "saves/HudLayout.h"
+#include "saves/RaidHudLayout.h"
 
 namespace cosmic {
 
@@ -32,6 +33,8 @@ struct GameplaySettings {
     int progressBar = 1;
     /// Place and size of each HUD element (HUD editor).
     HudLayout hud;
+    /// 2.72: the HUD of the clan raids (HUD editor › « Raids »), apart from the solo / co-op one.
+    RaidHudLayout raidHud;
     /// « Mode concentré »: only the elements chosen for it (HUD editor) are shown; toggled in
     /// game (T / Partage, pause menu). Display only.
     bool focusMode = false;
