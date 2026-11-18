@@ -1,8 +1,10 @@
 // « NOUVEAU » pills (2.25): new after an update, gone once seen; a parent keeps its pill as
 // long as anything under it is new (its own focus does not take it away), through steps of
 // the trail as deep as needed; nothing new on a fresh install; the save survives a restart;
-// the shipped catalogue leads every novelty to a menu.
+// the shipped catalogue leads every novelty to a menu. 2.69: the assets of ADMINISTRATION ›
+// Assets by the same rule (data/assets/asset_versions.json, tools/assets/asset_versions.py).
 
+#include <cstdlib>
 #include <functional>
 #include <map>
 #include <set>
@@ -14,9 +16,16 @@
 #include "game/online/Replay.h"
 #include "game/powers/Power.h"
 #include "game/progression/NewBadges.h"
+#include "game/progression/NewsCenter.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
+
+#ifdef _WIN32
+#define COSMIC_NULL_DEVICE "NUL"
+#else
+#define COSMIC_NULL_DEVICE "/dev/null"
+#endif
 
 namespace {
 
@@ -299,4 +308,149 @@ TEST_CASE("new badges: every planet, level, boss, creature, achievement, reward 
                            "boss.liche", "gallery.boss.liche", "track.liche_boss", "gallery.creature.spectre", "level.confins_06",
                            "boss.titan", "gallery.boss.titan", "track.titan_boss", "gallery.creature.drone_titan", "gallery.creature.vanne"})
         CHECK(leaves.count(id));
+}
+
+// 2.69: every asset newer than the version the player had carries the pill in ADMINISTRATION ›
+// Assets until it is focused or clicked; its folders, the tab and the menu entry keep theirs
+// while anything under them is new; nothing older than « pillsFrom »; the seen ones are saved.
+TEST_CASE("new badges: assets newer than the player's version are new, their folders, the tab and the menu with them") {
+    fs::path f = tempFile();
+    auto setUp = [](NewBadges& b) {
+        b.setCatalog({{"menu.admin", "2.40.0", {}}, {"admin.tab.assets", "2.62.0", {"menu.admin"}}});
+        return b.addAssetVersions({{"sprites/enemies/pyroclast.png", "2.68.0"},
+                                   {"music/asterion_film.ogg", "2.68.0"},
+                                   {"fonts/Orbitron.ttf", "2.69.0"},     // capitals: a font
+                                   {"ui/raids/asterion.png", "2.66.1"},  // the version the player had: not new
+                                   {"ui/old_panel.png", "2.60.0"},       // before « pillsFrom »: never
+                                   {"sounds/jump.wav", "1.0.0"},
+                                   {"../outside.png", "2.69.0"},         // junk: ignored
+                                   {"sprites/bad.png", "soon"}},
+                                  "2.65.0", "admin.tab.assets");
+    };
+    // The asset tree of the tab, known once its catalogue is read: asset → folders → root → tab.
+    auto linkTree = [](NewBadges& b) {
+        const std::string root = NewBadges::assetFolderFeature("");
+        b.link(NewBadges::assetFeature("sprites/enemies/pyroclast.png"), {NewBadges::assetFolderFeature("boss/raid/pyroclast")});
+        b.link(NewBadges::assetFolderFeature("boss/raid/pyroclast"), {NewBadges::assetFolderFeature("boss/raid")});
+        b.link(NewBadges::assetFolderFeature("boss/raid"), {root});
+        b.link(NewBadges::assetFeature("music/asterion_film.ogg"), {NewBadges::assetFolderFeature("music/stories")});
+        b.link(NewBadges::assetFolderFeature("music/stories"), {root});
+        b.link(NewBadges::assetFeature("fonts/Orbitron.ttf"), {NewBadges::assetFolderFeature("fonts")});
+        b.link(NewBadges::assetFolderFeature("fonts"), {root});
+        b.link(NewBadges::assetFeature("ui/raids/asterion.png"), {NewBadges::assetFolderFeature("ui")});
+        b.link(NewBadges::assetFolderFeature("ui"), {root});
+        b.link(root, {"admin.tab.assets"});
+        b.link(root, {"admin.tab.assets"});  // twice: no change
+    };
+    {
+        NewBadges b;
+        CHECK(setUp(b) == 4);  // pyroclast, the film, Orbitron, the raids' Asterion
+        CHECK(!b.has(NewBadges::assetFeature("ui/old_panel.png")));
+        CHECK(!b.has(NewBadges::assetFeature("../outside.png")));
+        b.init(f, "2.66.1", "2.69.0");
+        // Before the tab has read its catalogue: the asset, the tab and the menu already.
+        CHECK(b.isNew(NewBadges::assetFeature("sprites/enemies/pyroclast.png")));
+        CHECK(b.isNew("admin.tab.assets"));
+        CHECK(b.isNew("menu.admin"));
+        linkTree(b);
+        CHECK(b.isNew(NewBadges::assetFeature("fonts/Orbitron.ttf")));
+        CHECK(!b.isNew(NewBadges::assetFeature("ui/raids/asterion.png")));  // 2.66.1: the player had it
+        CHECK(!b.isNew(NewBadges::assetFeature("sounds/jump.wav")));
+        CHECK(b.isNew(NewBadges::assetFolderFeature("boss/raid/pyroclast")));
+        CHECK(b.isNew(NewBadges::assetFolderFeature("boss/raid")));
+        CHECK(b.isNew(NewBadges::assetFolderFeature("")));
+        CHECK(!b.isNew(NewBadges::assetFolderFeature("ui")));  // nothing new under it
+        // A folder's own focus takes nothing away; the asset's focus or click does.
+        CHECK(!b.markSeen(NewBadges::assetFolderFeature("boss/raid")));
+        CHECK(b.isNew(NewBadges::assetFolderFeature("boss/raid")));
+        CHECK(b.markSeen(NewBadges::assetFeature("sprites/enemies/pyroclast.png")));
+        CHECK(!b.markSeen(NewBadges::assetFeature("sprites/enemies/pyroclast.png")));
+        CHECK(!b.isNew(NewBadges::assetFeature("sprites/enemies/pyroclast.png")));
+        CHECK(!b.isNew(NewBadges::assetFolderFeature("boss/raid/pyroclast")));
+        CHECK(!b.isNew(NewBadges::assetFolderFeature("boss/raid")));
+        CHECK(b.isNew(NewBadges::assetFolderFeature("")));  // the film and Orbitron still
+        CHECK(b.isNew("admin.tab.assets"));
+        CHECK(b.save());
+    }
+    {
+        // Next start (and next update): what was seen stays seen, the rest stays new.
+        NewBadges b;
+        setUp(b);
+        b.init(f, "2.69.0", "2.70.0");
+        CHECK(b.baseline() == "2.66.1");
+        linkTree(b);
+        CHECK(!b.isNew(NewBadges::assetFeature("sprites/enemies/pyroclast.png")));
+        CHECK(b.isNew(NewBadges::assetFeature("music/asterion_film.ogg")));
+        b.markSeen(NewBadges::assetFeature("music/asterion_film.ogg"));
+        CHECK(b.isNew("menu.admin"));
+        b.markSeen(NewBadges::assetFeature("fonts/Orbitron.ttf"));
+        CHECK(!b.isNew(NewBadges::assetFolderFeature("")));
+        CHECK(!b.isNew("admin.tab.assets"));
+        CHECK(!b.isNew("menu.admin"));
+    }
+    std::error_code ec;
+    fs::remove(f, ec);
+    {
+        // A fresh install: no asset is new.
+        NewBadges b;
+        setUp(b);
+        b.init(f, "", "2.69.0");
+        CHECK(!b.isNew(NewBadges::assetFeature("fonts/Orbitron.ttf")));
+        CHECK(!b.isNew("admin.tab.assets"));
+    }
+    fs::remove(f, ec);
+}
+
+// The shipped data/assets/asset_versions.json: one version per installed asset (a merge that
+// brings assets is followed by python3 tools/assets/code_refs.py, which refreshes it), none from
+// the future, the raids' assets from 2.65.0 on carry the pill, the old ones never; the
+// generator gives the same file twice.
+TEST_CASE("asset versions: every installed asset has its version, the generator is deterministic") {
+    auto j = FileUtil::loadJson(Paths::dataDir() / "assets" / "asset_versions.json");
+    CHECK(j && j->contains("versions") && (*j)["versions"].is_object());
+    if (!j || !j->contains("versions")) return;
+    CHECK(j->value("pillsFrom", std::string()) == "2.65.0");
+    std::map<std::string, std::string> versions;
+    for (auto it = (*j)["versions"].begin(); it != (*j)["versions"].end(); ++it) versions[it.key()] = it->get<std::string>();
+    std::set<std::string> installed;
+    std::error_code ec;
+    for (fs::recursive_directory_iterator it(Paths::assetsDir(), ec), end; !ec && it != end; it.increment(ec))
+        if (it->is_regular_file(ec)) installed.insert(Paths::normalizeSlashes(Paths::toUtf8(fs::relative(it->path(), Paths::assetsDir(), ec))));
+    int missing = 0, extra = 0;
+    for (const auto& a : installed)
+        if (!versions.count(a) && ++missing <= 10) std::printf("  sans version : %s\n", a.c_str());
+    for (const auto& [a, v] : versions)
+        if (!installed.count(a) && ++extra <= 10) std::printf("  plus installé : %s\n", a.c_str());
+    if (missing || extra) std::printf("  data/assets/asset_versions.json n'est pas à jour : python3 tools/assets/code_refs.py\n");
+    CHECK(missing == 0);
+    CHECK(extra == 0);
+    // No version newer than the one in preparation (the newest of the game's and the changelog's).
+    std::string preparing = COSMIC_VERSION_STRING;
+    if (auto c = FileUtil::loadJson(Paths::dataDir() / "news" / "changelog.json"); c && c->is_object())
+        for (auto it = c->begin(); it != c->end(); ++it)
+            if (versionNewer(it.key(), preparing)) preparing = it.key();
+    int fresh = 0;
+    for (const auto& [a, v] : versions) {
+        CHECK(!versionNewer(v, preparing));
+        if (!versionNewer("2.65.0", v)) ++fresh;
+    }
+    for (const char* a : {"sprites/enemies/pyroclast.png", "music/asterion_film.ogg", "stories/asterion/torse.png", "ui/raids/asterion.png"})
+        CHECK(versions.count(a) && !versionNewer("2.65.0", versions[a]));
+    for (const char* a : {"sounds/jump.wav", "sprites/enemies/golem.png", "fonts/Orbitron.ttf"})
+        CHECK(versions.count(a) && versionNewer("2.65.0", versions[a]));
+    // Loaded by the game: exactly those from « pillsFrom » on can carry the pill.
+    NewBadges b;
+    b.setCatalog({});
+    CHECK(b.loadAssetVersions(Paths::dataDir() / "assets" / "asset_versions.json", "admin.tab.assets") == fresh);
+    CHECK(fresh >= 53);
+    // The generator: up to date with assets/, and its own rules (stable order, a merge's
+    // conflict read on both sides, new assets at the version in preparation, two runs alike).
+    const fs::path root = Paths::installDir();
+    if (!fs::exists(root / "tools" / "assets" / "asset_versions.py")) return;  // sources not here (installed game)
+    if (std::system("python3 --version > " COSMIC_NULL_DEVICE " 2>&1") != 0) {
+        std::printf("  (python3 absent : vérification du générateur des versions d'assets sautée)\n");
+        return;
+    }
+    CHECK(std::system("python3 tools/assets/asset_versions.py --check > " COSMIC_NULL_DEVICE " 2>&1") == 0);
+    CHECK(std::system("python3 tools/assets/asset_versions.py --self-test > " COSMIC_NULL_DEVICE " 2>&1") == 0);
 }

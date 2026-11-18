@@ -117,6 +117,30 @@ void AdminAssets::refilter() {
     for (int i : results_) resultBytes_ += cat_->assets()[static_cast<size_t>(i)].bytes;
 }
 
+std::string AdminAssets::folderFeature(int folder) const {
+    return NewBadges::assetFolderFeature(cat_ && folder > 0 ? cat_->folders()[static_cast<size_t>(folder)].key : std::string());
+}
+
+void AdminAssets::linkBadges() {
+    // Each asset that can be new (NewBadges, from data/assets/asset_versions.json) leads to its
+    // folder, each folder to the one holding it, the root to the tab (and the tab to the menu,
+    // data/news/new_features.json): a folder keeps its pill while anything under it is new.
+    if (badgesLinked_ || !cat_) return;
+    badgesLinked_ = true;
+    NewBadges& badges = g_.newBadges;
+    for (const AssetEntry& e : cat_->assets()) {
+        const std::string id = NewBadges::assetFeature(e.path);
+        if (!badges.has(id)) continue;
+        badges.link(id, {folderFeature(e.folder)});
+        for (int f = e.folder; f > 0;) {
+            const int up = cat_->folders()[static_cast<size_t>(f)].parent;
+            badges.link(folderFeature(f), {folderFeature(std::max(0, up))});
+            f = up;
+        }
+    }
+    badges.link(folderFeature(0), {"admin.tab.assets"});
+}
+
 void AdminAssets::select(int index, bool reveal) {
     if (!cat_ || index < 0 || index >= static_cast<int>(cat_->assets().size())) return;
     const AssetEntry& e = cat_->assets()[static_cast<size_t>(index)];
@@ -154,6 +178,7 @@ void AdminAssets::draw(const Rect& in) {
         ui.popId();
         return;
     }
+    linkBadges();
     if (!pendingOpen_.empty()) {
         if (dirty_) refilter();
         const int i = cat_->indexOf(pendingOpen_);
@@ -274,6 +299,8 @@ void AdminAssets::drawTree(const Rect& r) {
             ui.app().resources().playSound("sounds/ui_move.wav", 0.5f);
         }
         if (row.bottom() < view.y || row.y > view.bottom()) continue;
+        // 2.69: « NOUVEAU » while an asset under this folder is new (its own focus changes nothing).
+        const bool fresh = ui.newBadge("f" + d.key, row, folderFeature(f), false, true);
         const bool sel = folder_ == f;
         const bool focus = ui.focused("f" + d.key);
         if (sel || hovered || focus)
@@ -288,20 +315,27 @@ void AdminAssets::drawTree(const Rect& r) {
             else rr.fillTriangle({c.x - a * 0.6f, c.y - a}, {c.x - a * 0.6f, c.y + a}, {c.x + a * 0.8f, c.y}, ui.theme().textDim);
         }
         x += ui.s(18);
-        // The count and the weight first (their own place at the right), the name in what is left.
+        // The count and the weight first (their own place at the right), the « NOUVEAU » pill
+        // before them, the name in what is left; when the row is short the weight goes, then the count.
         std::string facts = std::to_string(d.count()) + " · " + formatBytes(d.bytes);
         const float ffs = fz(ui, 13);
+        const float pillW = fresh ? ui.newPillWidth(true) + ui.s(8) : 0.0f;
         float fw = ui.text().measure(facts, FontFace::Body, ui.s(ffs)).x;
-        float room = row.right() - ui.s(10) - fw - ui.s(8) - x;
-        if (room < ui.s(70)) {
+        auto nameRoom = [&] { return row.right() - ui.s(10) - (facts.empty() ? 0.0f : fw + ui.s(8)) - pillW - x; };
+        if (nameRoom() < ui.s(70)) {
             facts = std::to_string(d.count());
             fw = ui.text().measure(facts, FontFace::Body, ui.s(ffs)).x;
-            room = row.right() - ui.s(10) - fw - ui.s(8) - x;
         }
-        ui.label(facts, {row.right() - ui.s(10), row.center().y}, ffs, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        if (fresh && nameRoom() < ui.s(30)) facts.clear();
+        const float room = nameRoom();
+        if (!facts.empty())
+            ui.label(facts, {row.right() - ui.s(10), row.center().y}, ffs, ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        if (fresh) ui.drawNewPill(row.right() - ui.s(10) - (facts.empty() ? 0.0f : fw + ui.s(8)), row.center().y, true);
         const FontFace face = sel ? FontFace::Bold : FontFace::Body;
-        const float ns = ui.fitFont(d.name, face, 16, room, 0.8f);
-        ui.label(ui.elide(d.name, face, ns, room), {x, row.center().y}, ns, sel ? Color::white() : ui.theme().text, Align::Left, face, VAlign::Middle);
+        if (room > ui.s(12)) {
+            const float ns = ui.fitFont(d.name, face, 16, room, 0.8f);
+            ui.label(ui.elide(d.name, face, ns, room), {x, row.center().y}, ns, sel ? Color::white() : ui.theme().text, Align::Left, face, VAlign::Middle);
+        }
     }
     ui.endScroll();
 }
@@ -418,22 +452,26 @@ void AdminAssets::drawGrid(const Rect& view) {
     const float thumb = std::max(ui.s(40), std::min(cellW - ui.s(16), ui.s(108)));
     const float nameS = fz(ui, 14), infoS = fz(ui, 13);
     const float cellH = ui.s(8) + thumb + ui.s(10) + ui.s(nameS) + ui.s(6) + ui.s(infoS) + ui.s(10);
-    const float pitch = cellH + gap;
+    // 2.69: a new asset's « NOUVEAU » pill sits on its tile's top edge: the rows are far enough
+    // apart for it to stay clear of the tile above, the first one low enough for it to stay in view.
+    const float pillH = ui.newPillHeight(true);
+    const float top = pillH * 0.5f + ui.s(2);
+    const float pitch = cellH + std::max(gap, pillH * 0.5f + ui.s(3));
     const int n = static_cast<int>(results_.size());
     const int rows = (n + cols - 1) / cols;
     if (scrollToSelected_) {
         const int p = cat_ ? static_cast<int>(std::find(results_.begin(), results_.end(), cat_->indexOf(selected_)) - results_.begin()) : n;
         if (p < n) {
-            ui.setScroll("grid", static_cast<float>(p / cols) * pitch - view.h * 0.3f);
+            ui.setScroll("grid", top + static_cast<float>(p / cols) * pitch - view.h * 0.3f);
             ui.setFocus("cell" + selected_);
         }
         scrollToSelected_ = false;
     }
-    ui.beginScroll("grid", view, static_cast<float>(rows) * pitch);
+    ui.beginScroll("grid", view, top + static_cast<float>(rows) * pitch);
     const float off = ui.scrollOffset();
     // Only the rows on screen are drawn (their thumbnails asked); one more above and below
     // takes the focus (the keyboard and the gamepad move on, the list follows).
-    const int firstRow = std::max(0, static_cast<int>(off / pitch) - 1);
+    const int firstRow = std::max(0, static_cast<int>((off - top) / pitch) - 1);
     const int lastRow = std::min(rows - 1, static_cast<int>((off + view.h) / pitch) + 1);
     for (int row = firstRow; row <= lastRow; ++row)
         for (int c = 0; c < cols; ++c) {
@@ -441,12 +479,14 @@ void AdminAssets::drawGrid(const Rect& view) {
             if (k >= n) break;
             const int idx = results_[static_cast<size_t>(k)];
             const AssetEntry& e = cat_->assets()[static_cast<size_t>(idx)];
-            const Rect cell{view.x + static_cast<float>(c) * (cellW + gap), view.y - off + static_cast<float>(row) * pitch, cellW, cellH};
+            const Rect cell{view.x + static_cast<float>(c) * (cellW + gap), view.y - off + top + static_cast<float>(row) * pitch, cellW, cellH};
             const std::string name = "cell" + e.path;
             bool hovered = false;
             if (ui.hotspot(name, cell, &hovered)) select(idx, false);
             const bool focus = ui.focused(name);
             if (focus && !ui.usingPointer() && selected_ != e.path) select(idx, false);
+            // Also for the tiles just out of view (the focus comes to them from there).
+            const bool fresh = ui.newBadge(name, cell, NewBadges::assetFeature(e.path), false, true);
             if (cell.bottom() < view.y || cell.y > view.bottom()) continue;
             ++drawnItems_;
             const bool sel = selected_ == e.path;
@@ -461,6 +501,7 @@ void AdminAssets::drawGrid(const Rect& view) {
             const float iy = ty + ui.s(nameS) + ui.s(6) + ui.s(infoS) * 0.5f;
             ui.label(ui.elide(info, FontFace::Body, infoS, room), {cell.center().x, iy}, infoS, unused ? ui.theme().warm : ui.theme().textDim, Align::Center,
                      FontFace::Body, VAlign::Middle);
+            if (fresh) ui.drawNewPill(cell.right() - ui.s(8), cell.y, true);
         }
     ui.endScroll();
 }
@@ -506,6 +547,8 @@ void AdminAssets::drawList(const Rect& view) {
         if (ui.hotspot(name, row, &hovered)) select(idx, false);
         const bool focus = ui.focused(name);
         if (focus && !ui.usingPointer() && selected_ != e.path) select(idx, false);
+        // Also for the rows just out of view (the focus comes to them from there).
+        const bool fresh = ui.newBadge(name, row, NewBadges::assetFeature(e.path), false, true);
         if (row.bottom() < view.y || row.y > view.bottom()) continue;
         ++drawnItems_;
         const bool sel = selected_ == e.path;
@@ -514,7 +557,17 @@ void AdminAssets::drawList(const Rect& view) {
         drawThumb(e, {row.x + ui.s(10), row.y + ui.s(6), thumb, thumb});
         const float tx = row.x + leftW;
         const float room = row.right() - rightW - ui.s(10) - tx;
-        rawLabel(ui, e.name, {tx, row.y + rowH * 0.32f}, 16, ui.theme().text, Align::Left, FontFace::Bold, room);
+        // The name, then the « NOUVEAU » pill right after it (the name gives way to it).
+        const float nameY = row.y + rowH * 0.32f;
+        const float pillW = fresh ? ui.newPillWidth(true) + ui.s(8) : 0.0f;
+        const float nameRoom = room - pillW;
+        float nameW = 0.0f;
+        if (nameRoom > ui.s(12)) {
+            rawLabel(ui, e.name, {tx, nameY}, 16, ui.theme().text, Align::Left, FontFace::Bold, nameRoom);
+            i18n::Verbatim raw;
+            nameW = ui.text().measure(ui.elide(e.name, FontFace::Bold, 16, nameRoom), FontFace::Bold, ui.s(16)).x;
+        }
+        if (fresh) ui.drawNewPill(tx + nameW + pillW, nameY, true);
         rawLabel(ui, e.path, {tx, row.y + rowH * 0.7f}, fz(ui, 13), ui.theme().textDim, Align::Left, FontFace::Body, room);
         float x = row.right() - ui.s(10);
         auto column = [&](const std::string& t, float cw, Color c) {
