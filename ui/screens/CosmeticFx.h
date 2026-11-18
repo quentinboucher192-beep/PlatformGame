@@ -5,6 +5,8 @@
 
 #include <cstdint>
 #include <deque>
+#include <functional>
+#include <memory>
 #include <string>
 
 #include "engine/core/Math.h"
@@ -13,6 +15,7 @@
 namespace cosmic {
 
 class Renderer;
+class Texture;
 
 /// Trail behind Nova (« stardust », « comet », « aurora », « eclipse », and since 2.24
 /// « flame » (embers rising), « prism » (a rainbow ribbon), « runes » (turning runes of
@@ -71,6 +74,10 @@ constexpr float kVictoryFxTime = 2.6f;
 /// ("srvvictory:<n>", or the `custom` look given): « fireworks », « starfall », « supernova »,
 /// « vortex », « borealis » or « corona » in its two colours.
 void drawVictoryFx(Renderer& r, const std::string& look, Vec2 at, float t, bool world, float scale = 1.0f, const CreationLook* custom = nullptr);
+/// 2.72 (phase 6): the generated sheets some cosmetics draw (« asterion_supernova »: the heart of Asterion
+/// bursting, sprites/fx/asterion_supernova.png by tools/assetgen/characters/boss_n_coeur.py), found by the
+/// game's resources (main.cpp sets it; without it those cosmetics draw their light only).
+void setCosmeticTextures(std::function<std::shared_ptr<Texture>(const std::string&)> find);
 
 /// How far an avatar frame reaches beyond the avatar's radius, in units of `scale` (glows
 /// aside): layouts keep this much room around a framed avatar.

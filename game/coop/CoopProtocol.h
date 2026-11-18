@@ -54,7 +54,8 @@ enum class Msg : uint8_t {
     Rejoin = 15,      // relay → game: u8 seat, u32 tick
     End = 16,         // relay → game: u8 reason
     PackagePart = 17, // relay → game (2.63.5): u32 total (0: none), u32 offset, 32 bytes SHA-256 of the whole, the bytes
-    RaidState = 18,   // relay → game (2.65, raids): u32 step from which it applies, u32 objectives done (bits)
+    RaidState = 18,   // relay → game (2.65, raids): u32 step from which it applies, u32 objectives done (bits);
+                      // 2.72 (phase 6, the Cœur d'Asterion): + u32 the heart's shared state (raid::HeartShared packed)
 };
 
 /// 2.63.5: the level of a room. `source` "campaign" (`id`: the level of the game) or
@@ -164,6 +165,9 @@ std::vector<uint8_t> rejoin(uint8_t seat, uint32_t tick);
 std::vector<uint8_t> end(EndReason r);
 /// 2.65 (raids): the branch's state (objectives done, bit i = objective i) from step `tick` on.
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask);
+/// 2.72 (phase 6): the same with the shared state of the Cœur d'Asterion (raid::HeartShared::pack):
+/// only the relays of the heart's instances send it (an older game, which cannot play the heart, never gets one).
+std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart);
 
 std::vector<uint8_t> packageAsk(uint32_t offset);
 /// `total` 0: this relay has no package to send (the bytes are then empty).

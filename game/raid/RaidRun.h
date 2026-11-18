@@ -43,16 +43,21 @@
 
 namespace cosmic::raid {
 
+class AsterionHeartRoutine;  // 2.72 (phase 6)
+
 struct Report {
     /// 2.68: Boss (the gigaboss's phase reached: 1 the fight begins, 2 and 3 its phases, 4 its fall)
     /// and Result (the players' contributions, Contributions::canonical, at each milestone).
-    enum class Kind { Objective, Zone, Boss, Result } kind = Kind::Objective;
+    /// 2.72 (phase 6): Heart (the ten-thousandths of the Cœur d'Asterion's shared health this instance
+    /// took, `damage`: every reportEvery seconds while it changes, and at its fall).
+    enum class Kind { Objective, Zone, Boss, Result, Heart } kind = Kind::Objective;
     std::string objective;  // Kind::Objective
     int zone = 0;
     uint32_t tick = 0;
     uint64_t hash = 0;
     int phase = 0;              // Kind::Boss
     std::vector<Contribution> records;  // Kind::Result
+    int damage = 0;                     // Kind::Heart (0..10000)
 };
 
 /// A line of the raid's alerts (display only, made from the simulation's events).
@@ -68,8 +73,9 @@ public:
 
     /// Loads the start zone (the branch's state known at step 0); `zone` another one (tests).
     bool begin(uint32_t branchMask, int zone = 0);
-    /// One step: the frames of the step (one per seat) and the branch's state at this step.
-    void step(const InputFrame* frames, int count, uint32_t branchMask);
+    /// One step: the frames of the step (one per seat) and the branch's state at this step; 2.72 (phase
+    /// 6): in the heart's zones, the shared state of the Cœur d'Asterion given with it (RAID_STATE).
+    void step(const InputFrame* frames, int count, uint32_t branchMask, const HeartShared& heart = {});
 
     GameWorld& world() { return *world_; }
     const GameWorld& world() const { return *world_; }
@@ -98,6 +104,15 @@ public:
     const Gigaboss& gigaboss() const { return gigaboss_; }
     /// 2.68: what each player did since the instance started (the same on every computer).
     const Contributions& contributions() const { return contrib_; }
+    /// 2.72 (phase 6): the Cœur d'Asterion. The shared state given at this step; its routine (null
+    /// outside its arena); whether its fall is validated for the event (the server set its objective in
+    /// the branch's state; an administrator's test: its fall here), and whether that happened this step
+    /// (every computer of the instance sees it at the same step: the victory film starts there).
+    const HeartShared& heart() const { return heart_; }
+    const AsterionHeartRoutine* heartRoutine() const;
+    bool heartBranch() const { return heartObjective_ >= 0; }
+    bool heartWon() const { return heartWon_; }
+    bool heartWonNow() const { return heartWonNow_; }
 
     /// 2.68: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion »): solo, local,
     /// never counted: no report at all (takeReports stays empty), every world a training run
@@ -162,6 +177,11 @@ private:
     int bossReported_ = 0;       // 2.68: the highest phase of the gigaboss already reported
     uint32_t lastResult_ = UINT32_MAX;  // 2.68: the step of the last table reported
     Test test_;                         // 2.68: an administrator's test (never reported)
+    HeartShared heart_;                 // 2.72 (phase 6): given with the step (RAID_STATE)
+    int heartObjective_ = -1;           // 2.72: the heart's objective (its branch only)
+    bool heartWon_ = false, heartWonNow_ = false;
+    int heartReported_ = -1;            // 2.72: the last own damage reported, and its step
+    uint32_t heartReportTick_ = 0;
     std::vector<uint8_t> coopDone_;       // 2.68: per co-op mechanism of the zone
     std::string lastCheckpoint_;          // 2.68: kept when the zone starts again
     std::vector<Report> reports_;

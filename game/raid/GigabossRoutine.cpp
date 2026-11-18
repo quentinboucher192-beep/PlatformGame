@@ -18,6 +18,7 @@ std::unique_ptr<GigabossRoutine> makeTitanusRoutine();
 std::unique_ptr<GigabossRoutine> makeSkullmawRoutine();      // 2.69: the Skull
 std::unique_ptr<GigabossRoutine> makeDreadfangRoutine();     // 2.69: the Left arm
 std::unique_ptr<GigabossRoutine> makeHeartbreakerRoutine();  // 2.69: the Torso
+std::unique_ptr<GigabossRoutine> makeAsterionHeartRoutine();  // 2.72 (phase 6): the Cœur d'Asterion
 
 std::unique_ptr<GigabossRoutine> GigabossRoutine::make(const std::string& name) {
     if (name == "voidworm") return makeVoidwormRoutine();
@@ -26,6 +27,7 @@ std::unique_ptr<GigabossRoutine> GigabossRoutine::make(const std::string& name) 
     if (name == "skullmaw") return makeSkullmawRoutine();
     if (name == "dreadfang") return makeDreadfangRoutine();
     if (name == "heartbreaker") return makeHeartbreakerRoutine();
+    if (name == "coeur") return makeAsterionHeartRoutine();
     return nullptr;
 }
 
@@ -87,6 +89,18 @@ bool GigabossRoutine::linkDone(const Gigaboss& g, const std::string& name) {
     if (!g.rules_) return false;
     const auto it = g.rules_->links.find(name);
     return it != g.rules_->links.end() && it->second >= 0 && it->second < 32 && ((g.mask_ >> it->second) & 1u) != 0;
+}
+
+bool GigabossRoutine::titanLinkOn(const Gigaboss& g, const std::string& id) {
+    if (!g.rules_) return false;
+    const auto it = g.rules_->titanLinks.find(id);
+    return it != g.rules_->titanLinks.end() && it->second >= 0 && it->second < 32 && ((g.mask_ >> it->second) & 1u) != 0;
+}
+
+const HeartShared& GigabossRoutine::shared(const Gigaboss& g) { return g.shared_; }
+
+void GigabossRoutine::setExposedSeconds(Gigaboss& g, float seconds) {
+    if (g.stage_ == Gigaboss::Stage::Exposed) g.exposedTicks_ = std::max(1, steps(seconds));
 }
 
 void GigabossRoutine::expose(Gigaboss& g, GameWorld& w, Contributions& c, Enemy& b, const std::string& text) {

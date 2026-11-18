@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "asterion_ventricule",
+  "name": "Ventricule du cœur",
+  "description": "Un ventricule du Cœur d'Asterion, à nu quand ses artères sont tenues ensemble (ou sa supernova contenue) : le briser arrache au cœur une large part de sa vie, pour toutes les instances à la fois.",
+  "family": "turret",
+  "animation": "animations/asterion_ventricule.json",
+  "size": [
+    72,
+    72
+  ],
+  "scale": 2.0,
+  "hp": 18,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 800,
+    "drops": []
+  },
+  "light": {
+    "color": "#ffe8a8",
+    "radius": 70
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/supernova.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

@@ -69,6 +69,36 @@ bool hold(GameServices& g) {
 
 float replayButtonWidth(UIContext& ui) { return ui.text().measure(kLabel, FontFace::Bold, ui.s(17)).x + ui.s(40); }
 
+std::shared_ptr<const BossStory> victory() {
+    static std::shared_ptr<const BossStory> cached;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        std::string err;
+        if (auto f = story::loadAsterionVictory(&err)) cached = std::make_shared<const BossStory>(std::move(*f));
+        else Log::warn("Film de la chute d'Asterion : {}", err);
+    }
+    return cached;
+}
+
+std::unique_ptr<Scene> makeVictory(GameServices& g, bool overRaid) { return makeFilm(g, victory(), false, {}, -1.0f, overRaid); }
+
+namespace {
+constexpr const char* kVictoryLabel = "Revoir la victoire";
+}
+
+float victoryButtonWidth(UIContext& ui) { return ui.text().measure(kVictoryLabel, FontFace::Bold, ui.s(17)).x + ui.s(40); }
+
+bool victoryButton(GameServices& g, const std::string& id, const Rect& r) {
+    if (!victory() || r.w <= 0.0f || r.h <= 0.0f) return false;
+    UIContext::ButtonStyle st;
+    st.small = true;
+    st.fontSize = 17.0f;
+    if (!g.ui.button(id, r, kVictoryLabel, st)) return false;
+    if (auto s = makeVictory(g, false)) g.app.pushScene(std::move(s));
+    return true;
+}
+
 bool replayButton(GameServices& g, const std::string& id, const Rect& r) {
     if (!film() || r.w <= 0.0f || r.h <= 0.0f) return false;
     UIContext::ButtonStyle st;

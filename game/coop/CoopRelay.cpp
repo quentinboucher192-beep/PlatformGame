@@ -64,9 +64,25 @@ void CoopRelay::drop(int conn) {
 void CoopRelay::setRaidState(uint32_t mask) {
     if (mask == raidMask_) return;
     raidMask_ = mask;
+    pushRaidState();
+}
+
+void CoopRelay::setRaidHeart(uint32_t heart) {
+    if (raidHeartOn_ && heart == raidHeart_) return;
+    raidHeart_ = heart;
+    raidHeartOn_ = true;
+    pushRaidState();
+}
+
+std::vector<uint8_t> CoopRelay::raidStateMsg(const RaidStateEntry& e) const {
+    return e.withHeart ? raidState(e.tick, e.mask, e.heart) : raidState(e.tick, e.mask);
+}
+
+void CoopRelay::pushRaidState() {
     if (!started_) return;
-    raidStates_.emplace_back(next_, mask);
-    sendAll(raidState(next_, mask));
+    const RaidStateEntry e{next_, raidMask_, raidHeart_, raidHeartOn_};
+    raidStates_.push_back(e);
+    sendAll(raidStateMsg(e));
 }
 
 void CoopRelay::markAbsent(int seat) {
@@ -206,7 +222,7 @@ void CoopRelay::hello(int conn, Reader& r, uint32_t now) {
         GoInfo g{seed_, static_cast<uint8_t>(players_), static_cast<uint8_t>(delay_), level_, hash_, attempt_};
         send_(conn, go(g));
         flush();
-        for (const auto& [t, m] : raidStates_) send_(conn, raidState(t, m));  // before the frames
+        for (const auto& e : raidStates_) send_(conn, raidStateMsg(e));  // before the frames
         sendHistory(conn);
     } else {
         broadcastLobby();
@@ -281,8 +297,8 @@ void CoopRelay::startGame() {
     GoInfo g{seed_, static_cast<uint8_t>(players_), static_cast<uint8_t>(delay_), level_, hash_, attempt_};
     sendAll(go(g));
     if (raid_) {
-        raidStates_.assign(1, {0u, raidMask_});
-        sendAll(raidState(0, raidMask_));
+        raidStates_.assign(1, RaidStateEntry{0u, raidMask_, raidHeart_, raidHeartOn_});
+        sendAll(raidStateMsg(raidStates_.front()));
     }
     flush();
 }

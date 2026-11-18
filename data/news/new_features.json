@@ -2567,6 +2567,37 @@
    "parents": [
     "achievements.cat.communaute"
    ]
+  },
+  {
+   "id": "ach.communaute_coeur",
+   "version": "2.72.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "cos.victory_supernova_asterion",
+   "version": "2.72.0",
+   "parents": [
+    "collection.cat.victory",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.frame_coeur_asterion",
+   "version": "2.72.0",
+   "parents": [
+    "collection.cat.frame",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_briseurs_etoile",
+   "version": "2.72.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
   }
  ]
 }

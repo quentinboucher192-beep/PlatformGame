@@ -20,6 +20,7 @@ import { toHex } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Bindings, type Ctx } from "./http";
 import { notify } from "./notifications";
 import { branchMaskOf } from "./raidZones";
+import { heartPackFor, isHeart } from "./raidHeart";
 import { HASH_RE, LEVEL_ID_RE, Validator } from "./validate";
 
 export const PROTOCOL = 1;
@@ -258,8 +259,10 @@ export class CoopRoom extends DurableObject<Bindings> {
     private flushed = 0;
     private resultWritten = false;
     // 2.65 (raids): the branch's state given so far ((step, mask) in order) and its last poll.
-    private raidStates: [number, number][] = [];
+    private raidStates: [number, number, number | null][] = [];
     private raidMask = 0;
+    // 2.72 (phase 6): a heart instance: the Cœur d'Asterion's shared state (raidHeart.ts), given with the mask.
+    private raidHeart: number | null = null;
     private raidPolled = 0;
 
     async fetch(request: Request): Promise<Response> {
@@ -308,7 +311,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             next: this.next,
             // 2.69: `ping` (ms, -1 unknown): the latency each game measured, for the raids' live panel (raidWorld.ts).
             seats: this.seats.map((s, i) => ({ seat: i, player_id: s.playerId, name: s.name, connected: s.ws !== null && !s.absent, absent: s.absent, vacant: s.vacant, ping: s.rtt })),
-            raid: this.info?.raid ? { mask: this.raidMask, states: this.raidStates.length } : null,
+            raid: this.info?.raid ? { mask: this.raidMask, states: this.raidStates.length, heart: this.raidHeart } : null,
         };
     }
 
@@ -421,7 +424,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         if (this.started) {
             this.send(ws, this.goMessage());
             this.flush();
-            for (const [t, m] of this.raidStates) this.send(ws, this.raidStateMessage(t, m)); // before the frames
+            for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h)); // before the frames
             for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
         } else {
             this.welcomeAll();
@@ -579,8 +582,8 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.flushed = 0;
         this.sendAll(this.goMessage());
         if (raid) {
-            this.raidStates = [[0, this.raidMask]];
-            this.sendAll(this.raidStateMessage(0, this.raidMask));
+            this.raidStates = [[0, this.raidMask, this.raidHeart]];
+            this.sendAll(this.raidStateMessage(0, this.raidMask, this.raidHeart));
             this.seats.forEach((s, i) => {
                 if (!s.vacant) void this.writeMember(i, true, false, 0);
             });
@@ -589,11 +592,12 @@ export class CoopRoom extends DurableObject<Bindings> {
         if (!raid) void this.writeSession();
     }
 
-    private raidStateMessage(tick: number, mask: number): Uint8Array {
+    private raidStateMessage(tick: number, mask: number, heart: number | null = null): Uint8Array {
         const o = new Out();
         o.u8(Msg.RaidState);
         o.u32(tick);
         o.u32(mask >>> 0);
+        if (heart !== null) o.u32(heart >>> 0); // 2.72: only a heart instance's games read it
         return o.done();
     }
 
@@ -603,16 +607,19 @@ export class CoopRoom extends DurableObject<Bindings> {
         if (!raid || (!force && Date.now() - this.raidPolled < 3000)) return;
         this.raidPolled = Date.now();
         let mask = 0;
+        let heart: number | null = null;
         try {
             mask = await branchMaskOf(this.env.DB, raid.event_id, raid.branch);
+            if (isHeart(raid.branch)) heart = await heartPackFor(this.env.DB, raid.event_id, raid.instance_id); // 2.72 (phase 6)
         } catch {
             return; /* before migration 0142 */
         }
-        if (mask === this.raidMask) return;
+        if (mask === this.raidMask && heart === this.raidHeart) return;
         this.raidMask = mask;
+        this.raidHeart = heart;
         if (!this.started) return;
-        this.raidStates.push([this.next, mask]);
-        this.sendAll(this.raidStateMessage(this.next, mask));
+        this.raidStates.push([this.next, mask, heart]);
+        this.sendAll(this.raidStateMessage(this.next, mask, heart));
     }
 
     /**

@@ -805,6 +805,12 @@
    ]
   },
   {
+   "fr": "A combattu le Cœur d'Asterion (1 minute validée dans son arène) jusqu'à sa chute validée",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "a créé le brouillon de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -1122,6 +1128,19 @@
    "where": [
     "data/raids/asterion.json",
     "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Abdomen",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Abdomen tombé : plus d'engeances en renfort",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -1690,6 +1709,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › Raids › « Tester Asterion » : le Cœur d'Asterion est testable, avec sa phase de départ (1 à 4), les parties du titan à simuler comme tombées (pour voir leurs effets) et les reliques ; un test ne rapporte jamais rien.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Admins",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -2159,6 +2184,12 @@
    "fr": "Alors elle se replia sur elle-même… et s'éveilla affamée. Plus rien ne s'éloignerait jamais d'elle.",
    "where": [
     "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Alors le titan chancela. Ses branches se détachèrent une à une et tombèrent dans le vide.",
+   "where": [
+    "data/raids/asterion_victoire.json"
    ]
   },
   {
@@ -2715,6 +2746,12 @@
    "fr": "Anéantisseur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
    ]
   },
   {
@@ -3393,6 +3430,18 @@
    ]
   },
   {
+   "fr": "Artères",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Artères ({0}) : un joueur sur chacune des quatre artères, ensemble · tenues {1} / {2}",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Aruba",
    "where": [
     "data/online/countries.json",
@@ -3530,10 +3579,47 @@
    ]
   },
   {
+   "fr": "ASTERION EST TOMBÉ",
+   "where": [
+    "data/raids/asterion_victoire.json",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Asterion est tombé",
    "where": [
     "server/src/notifications.ts",
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé ! Le Cœur a cédé sous les coups de tous les clans ({0}) : vos récompenses vous attendent",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé : le Cœur a cédé sous les coups de tous les groupes.",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé : le Cœur a cédé sous les coups de {0} groupe(s), sa vie partagée validée",
+   "where": [
+    "server/src/raidHeart.ts"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé : son cœur a cédé sous les coups de tous les clans.",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé : victoire de tous les clans",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -3738,6 +3824,18 @@
    "fr": "Asterion · Crâne · Voûte crânienne",
    "where": [
     "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Cœur · Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Cœur · Le Cœur d'Asterion",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -6199,6 +6297,12 @@
    ]
   },
   {
+   "fr": "Badge « Cœur d'Asterion »",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "Badges : {0} / {1} emplacements utilisés",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -6252,6 +6356,13 @@
    "fr": "Balayage (°)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Balayage des artères",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/raid/AsterionHeartRoutine.h"
    ]
   },
   {
@@ -7404,10 +7515,36 @@
    ]
   },
   {
+   "fr": "Bras droit",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bras droit tombé : plus de pluie de magma",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "BRAS GAUCHE",
    "where": [
     "data/raids/asterion.json",
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Bras gauche",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bras gauche tombé : plus de balayages des artères",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -7565,6 +7702,13 @@
    "fr": "Briseur de titans",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Briseurs d'étoile",
+   "where": [
+    "data/cosmetics/cosmetics.json",
+    "server/src/raidHeartRewards.ts"
    ]
   },
   {
@@ -7958,6 +8102,12 @@
    ]
   },
   {
+   "fr": "Cadre de profil « Cœur d'Asterion »",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "cadre du jeu",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -8070,9 +8220,21 @@
    ]
   },
   {
+   "fr": "Cage du Cœur",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Cage du cœur",
    "where": [
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Cage du Cœur ({0}) : un joueur sur chacune des quatre artères, ensemble · tenues {1} / {2}",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -10221,6 +10383,7 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowersExtra.cpp",
+    "game/raid/AsterionHeartRoutine.cpp",
     "game/raid/SkullmawRoutine.cpp",
     "ui/screens/CreatureArt.cpp",
     "ui/studio/StudioDoc.cpp"
@@ -10251,6 +10414,13 @@
    "fr": "Charge max",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Charge stellaire",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/raid/AsterionHeartRoutine.h"
    ]
   },
   {
@@ -12093,6 +12263,12 @@
    "fr": "Combat en instances de 8 joueurs : chaque groupe joue en verrouillage par entrées comme la coopération (arrivée en cours de partie, 60 s pour revenir après une déconnexion, puis la place est libérée), passe de zone en zone sans perdre ses cœurs ni ses pouvoirs, avec une minimap, le panneau du groupe, les objectifs de la zone, les alertes de la branche et l'annonce des coulées de magma. Le serveur ne valide un objectif que si la majorité des joueurs de l'instance a vu exactement la même chose ; un objectif détruit par deux groupes en même temps ne compte qu'une fois.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Combat final : vie partagée par tous les groupes",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -14303,6 +14479,7 @@
    "fr": "Couronne solaire",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "data/enemies/asterion_coeur.json",
     "data/enemies/phenix.json",
     "game/cosmetics/CreationLooks.cpp"
    ]
@@ -14763,6 +14940,19 @@
    ]
   },
   {
+   "fr": "Crâne",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Crâne tombé : ses lances stellaires perdent leur précision",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Crânes maudits",
    "where": [
     "data/enemies/liche.json"
@@ -15186,6 +15376,12 @@
    ]
   },
   {
+   "fr": "CŒUR",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "CŒUR APAISÉ",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -15195,6 +15391,58 @@
    "fr": "CŒUR COSMIQUE",
    "where": [
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "CŒUR D'ASTERION",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cœur d'Asterion",
+   "where": [
+    "data/achievements/achievements.json",
+    "data/cosmetics/cosmetics.json",
+    "data/enemies/asterion_coeur.json",
+    "data/raids/asterion/coeur/zone_2.json",
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Cœur d'Asterion : aucun effet de la chute de {0}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Cœur d'Asterion : objectif de sa chute manquant",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Cœur d'Asterion : une arène attendue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Cœur d'Asterion : zone {0} « {1} » inatteignable même tout accompli",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Cœur d'Asterion manquant",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "CŒUR D'ASTERION · {0} · vie partagée par tous les groupes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -15309,6 +15557,12 @@
    ]
   },
   {
+   "fr": "Cœur vaincu",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
    "fr": "Cœurs",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -15360,6 +15614,12 @@
    ]
   },
   {
+   "fr": "DANGER · Des engeances jaillissent du Cœur !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "DANGER · Graviton plie l'espace : la gravité va s'inverser dans les secteurs marqués !",
    "where": [
     "game/raid/GravitonRoutine.cpp"
@@ -15402,6 +15662,12 @@
    ]
   },
   {
+   "fr": "DANGER · La supernova n'est pas contenue ({0} / {1} ancres) : l'arène brûle !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "DANGER · La voûte s'effrite : des rochers tombent, quittez les ombres !",
    "where": [
     "game/raid/TitanusRoutine.cpp"
@@ -15426,6 +15692,18 @@
    ]
   },
   {
+   "fr": "DANGER · SUPERNOVA dans {0} : {1} joueur sur une ancre !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · SUPERNOVA dans {0} : {1} joueurs sur les ancres !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "DANGER · Titanus lève le talon : sautez par-dessus l'onde de choc !",
    "where": [
     "game/raid/TitanusRoutine.cpp"
@@ -15444,15 +15722,75 @@
    ]
   },
   {
+   "fr": "DANGER · {0} (ralentie : la Jambe droite est tombée) : quittez l'étage marqué !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} : aveuglé, le Cœur vise à côté, éloignez-vous des marques !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} : le sol brûle, restez sur les plateformes !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} : quittez l'étage marqué !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "DANGER · {0} : quittez votre marque !",
    "where": [
     "game/raid/Gigaboss.cpp"
    ]
   },
   {
+   "fr": "DANGER · {0} : une marque suit chacun, puis se fige — quittez-la !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} : {1} colonnes de magma vont tomber !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} dans {1} : montez sur les plateformes !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "DANGER · {0} dans {1} s : {2} !",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} sous chacun : éloignez-vous !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} sur {1} étage : sautez la lame ou changez d'étage !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "DANGER · {0} sur {1} étages : sautez la lame ou changez d'étage !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -15997,6 +16335,12 @@
    ]
   },
   {
+   "fr": "Dernier battement",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Dernier effondrement",
    "where": [
     "data/enemies/graviton.json"
@@ -16214,6 +16558,12 @@
    "fr": "Dernière spirale d'âmes",
    "where": [
     "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Dernière spirale d'étoiles",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -16698,6 +17048,12 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Deuxième vague repoussée : le cœur bat plus fort !",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -18162,6 +18518,8 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/zone_1.json",
+    "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -18250,6 +18608,8 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/zone_1.json",
+    "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -18819,6 +19179,12 @@
    "fr": "Dégâts au contact",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "dégâts au Cœur impossibles",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -19478,6 +19844,18 @@
     "data/cosmetics/cosmetics.json",
     "ui/screens/AdminCreations.cpp",
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "EFFETS DES BRANCHES SUR LE CŒUR",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Effets des récompenses",
+   "where": [
+    "game/content/AssetCatalog.cpp"
    ]
   },
   {
@@ -21462,6 +21840,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -21473,6 +21852,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -21484,6 +21864,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -21495,6 +21876,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -23013,6 +23395,12 @@
    ]
   },
   {
+   "fr": "Franchir l'Aorte cosmique : vaincre la garde du cœur",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "Franchissez le gouffre au grappin. Le récepteur, frappé d'une Onde ou d'un Tir chargé, ouvre la porte.",
    "where": [
     "data/levels/glacior_02.json"
@@ -23345,6 +23733,8 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/zone_1.json",
+    "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -23808,6 +24198,12 @@
    ]
   },
   {
+   "fr": "GIGABOSS · La cage se referme sur le Cœur : tenez de nouveau les quatre artères !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · La cage thoracique se referme : un joueur sur chaque côte, tenez-les ouvertes ensemble ({0} s) !",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
@@ -23829,6 +24225,30 @@
    "fr": "GIGABOSS · La cuirasse tombe : Heartbreaker est vulnérable, frappez-le !",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · La supernova contenue déchire le Cœur : ses ventricules sont à nu ({0} s) !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Le Torse tient encore : une cage d'os garde le Cœur ! Tenez ses quatre artères ensemble pour l'ouvrir.",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les artères se referment : tenez-les de nouveau ensemble !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Les artères sont tenues : ses ventricules sont à nu ({0} s) ! Brisez-les !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -23904,6 +24324,18 @@
    ]
   },
   {
+   "fr": "GIGABOSS · Ses artères cèdent : le Cœur bat à découvert, frappez-le !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Ses artères se gonflent : un joueur sur chacune des quatre artères, ensemble ({0} s) !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Skullmaw rouvre les yeux : son voile se reforme !",
    "where": [
     "game/raid/SkullmawRoutine.cpp"
@@ -23934,6 +24366,12 @@
    ]
   },
   {
+   "fr": "GIGABOSS · SUPERNOVA : le Cœur s'effondre ! Quand il se charge, montez sur les ancres (les artères), assez de joueurs à la fois !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Titanus se relève : ses entraves se reforgent !",
    "where": [
     "game/raid/TitanusRoutine.cpp"
@@ -23961,6 +24399,12 @@
    "fr": "GIGABOSS · Un évent se rallume : refermez-le !",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Une artère se rouvre : tenez-la de nouveau !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -24712,6 +25156,12 @@
    ]
   },
   {
+   "fr": "GROUPE · Artère tenue",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Chaîne tenue",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
@@ -24782,6 +25232,12 @@
    "where": [
     "game/raid/Gigaboss.cpp",
     "game/raid/GigabossRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE · Supernova contenue sur {0} ancres !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -25727,6 +26183,12 @@
    "where": [
     "ui/screens/GameScene.cpp",
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Huit par huit, tous les clans frappèrent le cœur d'Asterion, au même instant.",
+   "where": [
+    "data/raids/asterion_victoire.json"
    ]
   },
   {
@@ -27582,10 +28044,36 @@
    ]
   },
   {
+   "fr": "Jambe droite",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Jambe droite tombée : ses charges stellaires ralentissent",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "JAMBE GAUCHE",
    "where": [
     "data/raids/asterion.json",
     "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Jambe gauche",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Jambe gauche tombée : plus de pièges de gravité",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -27637,6 +28125,12 @@
    "fr": "Jet abyssal",
    "where": [
     "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Jet d'artère",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -28246,6 +28740,12 @@
    ]
   },
   {
+   "fr": "L'Abdomen est tombé : plus d'engeances en renfort autour du Cœur",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "L'ACIDE MONTE",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
@@ -28309,6 +28809,12 @@
    "fr": "L'antre de Voidworm, au fond de l'abdomen : le ver du vide surgit de son gouffre. Trois phases : il fouit sous chacun, avale ceux qu'il vise, puis l'acide monte ; dans sa chitine, ses trois crochets doivent être tenus ensemble.",
    "where": [
     "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "L'aorte cosmique d'Asterion, qui mène à son cœur : une longue expédition sur trois étages, embuscades géantes, écluses et monte-charge à plusieurs.",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -28661,6 +29167,12 @@
    ]
   },
   {
+   "fr": "L'onde traversa la galaxie. Les mondes promis au festin brillèrent de nouveau.",
+   "where": [
+    "data/raids/asterion_victoire.json"
+   ]
+  },
+  {
    "fr": "L'orbite droite : son regard tire des rayons. L'œil droit attend au bout ; un passage descend vers la tempe.",
    "where": [
     "data/raids/asterion/crane/zone_3.json"
@@ -28677,6 +29189,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -29060,6 +29573,12 @@
    ]
   },
   {
+   "fr": "LA CHUTE D'ASTERION",
+   "where": [
+    "data/raids/asterion_victoire.json"
+   ]
+  },
+  {
    "fr": "La clavicule du titan, porte du torse. Trois points d'apparition, une garde à disperser, puis deux chemins.",
    "where": [
     "data/raids/asterion/torse/zone_1.json"
@@ -29159,6 +29678,12 @@
    "fr": "La Couronne",
    "where": [
     "data/levels/noyau_02.json"
+   ]
+  },
+  {
+   "fr": "La couronne d'étoiles",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -29389,6 +29914,12 @@
    ]
   },
   {
+   "fr": "La garde du cœur est tombée : la porte du Cœur d'Asterion s'ouvre !",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
    "fr": "La Garde du verrou : une embuscade sur 4 étages, toutes ses vagues avant d'avancer.",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
@@ -29491,9 +30022,21 @@
    ]
   },
   {
+   "fr": "La Jambe droite est tombée : le Cœur chancelle, ses charges stellaires ralentissent",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "La jambe gauche d'Asterion, prise dans ses générateurs de gravité, gigaboss d'un raid de clan, assez grand pour huit joueurs : elle flotte, plie l'espace par secteurs (la gravité s'inverse), ouvre un puits sous chacun, fait pleuvoir ses débris ; ses générateurs, dans des zones séparées, doivent être coupés tous en même temps pour la faire tomber.",
    "where": [
     "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "La Jambe gauche est tombée : plus de pièges de gravité sous les joueurs",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -30254,6 +30797,12 @@
    ]
   },
   {
+   "fr": "La victoire est validée quand le serveur a reçu de tous les groupes de quoi éteindre sa vie partagée : patientez.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "La voûte crânienne, verrouillée par les deux yeux. Sa garde défend l'antre de Skullmaw. Une longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs.",
    "where": [
     "data/raids/asterion/crane/zone_7.json"
@@ -30437,6 +30986,13 @@
    "fr": "Lancer · {0} / {1} prêts",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Lances stellaires",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/raid/AsterionHeartRoutine.h"
    ]
   },
   {
@@ -30743,6 +31299,12 @@
    ]
   },
   {
+   "fr": "Le Bras droit est tombé : plus de pluie de magma sur l'arène du Cœur",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "Le bras enchaîné",
    "where": [
     "data/enemies/dreadfang.json"
@@ -30752,6 +31314,12 @@
    "fr": "Le bras gauche colossal d'Asterion et ses griffes-lames, gigaboss d'un raid de clan : ses griffes balaient des étages entiers de l'arène, jaillissent du sol sous chaque joueur et en clouent un au sol que les autres doivent libérer ; cuirassé de givre, il faut tenir ses trois chaînes ensemble pour l'enchaîner et frapper ses jointures.",
    "where": [
     "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Le Bras gauche est tombé : plus de balayages des artères dans l'arène du Cœur",
+   "where": [
+    "data/raids/asterion/titan.json"
    ]
   },
   {
@@ -30925,6 +31493,12 @@
    ]
   },
   {
+   "fr": "Le combat final se joue pendant l'événement, pour les inscrits.",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Le compte cible est fermé ou suspendu.",
    "where": [
     "game/online/AccountMigration.cpp",
@@ -31042,6 +31616,12 @@
    ]
   },
   {
+   "fr": "Le Crâne est tombé : le Cœur est aveuglé, ses lances stellaires perdent leur précision",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "Le crâne qui voit tout",
    "where": [
     "data/raids/asterion_film.json"
@@ -31066,9 +31646,87 @@
    ]
   },
   {
+   "fr": "Le cœur cosmique d'Asterion, le Dévoreur de mondes : une étoile captive dans une cage de chair et de cristal, aussi grande qu'un écran, qui flotte au milieu de son arène et frappe tous les joueurs à la fois. Le dernier combat du raid : tous les groupes le combattent en même temps et sa vie est partagée par toutes les instances. Ce que les sept branches ont détruit l'affaiblit.",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "Le cœur d'Asterion : le dernier combat, une fois ses branches tombées.",
    "where": [
     "data/raids/asterion.json"
+   ]
+  },
+  {
+   "fr": "LE CŒUR D'ASTERION CÈDE",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion cède : le titan s'effondre !",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
+   "fr": "le Cœur d'Asterion est encore scellé",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "le Cœur d'Asterion n'est pas dans cette zone",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Le cœur d'Asterion s'embrase",
+   "where": [
+    "data/raids/asterion_victoire.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion s'ouvre : les sept gigaboss sont tombés, rejoignez le combat final de {0}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion s'ouvre quand les sept gigaboss sont tombés (",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion s'éveille : une étoile captive bat au milieu de l'arène.",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "LE CŒUR D'ASTERION, L'ÉTOILE CAPTIVE",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion, une étoile captive au milieu d'une arène immense : tous les groupes le combattent en même temps.",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Le Cœur d'Asterion. Sa vie est partagée par toutes les instances : chaque coup compte pour tous les clans.",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -31199,10 +31857,28 @@
    ]
   },
   {
+   "fr": "Le cœur pulse ! Restez sur les passerelles hautes",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Le cœur qui bat",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Le cœur s'affole : ses battements s'accélèrent, la cage se brise !",
    "where": [
     "data/enemies/heartbreaker.json",
     "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Le cœur s'effondre sur lui-même : contenez la supernova sur les ancres, ou toute l'arène brûlera !",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -31983,6 +32659,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -32999,6 +33676,12 @@
    ]
   },
   {
+   "fr": "Le Torse est tombé : la cage du Cœur est brisée, la voie de ses ventricules s'ouvre",
+   "where": [
+    "data/raids/asterion/titan.json"
+   ]
+  },
+  {
    "fr": "Le tracé de la course de ce niveau EXTRÊME manque : publiez-le depuis une version à jour du jeu.",
    "where": [
     "server/src/community.ts"
@@ -33314,6 +33997,18 @@
    "where": [
     "data/enemies/voidworm.json",
     "data/raids/asterion/abdomen/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Les artères",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "Les artères du cœur se gonflent : tenez les quatre artères ensemble !",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -34268,6 +34963,12 @@
    ]
   },
   {
+   "fr": "Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Les sanctuaires",
    "where": [
     "data/music/tracks.json"
@@ -34295,6 +34996,18 @@
    "fr": "LES SEPT BRANCHES",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les sept gigaboss sont tombés : l'aorte mène au Cœur d'Asterion. Restez répartis sur les trois étages.",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
+   "fr": "Les sept gigaboss sont tombés : le Cœur d'Asterion s'ouvre, tous les groupes peuvent le combattre",
+   "where": [
+    "server/src/raidHeart.ts"
    ]
   },
   {
@@ -35757,7 +36470,9 @@
    "fr": "Marée de plasma",
    "where": [
     "data/enemies/heartbreaker.json",
-    "data/enemies/singularis.json"
+    "data/enemies/singularis.json",
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/raid/AsterionHeartRoutine.h"
    ]
   },
   {
@@ -37226,6 +37941,18 @@
    ]
   },
   {
+   "fr": "MONDE · Asterion est tombé : le Cœur a cédé sous les coups de tous les groupes !",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · Les autres groupes arrachent {0} de sa vie au Cœur !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Monde, Pays, Amis",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -37280,6 +38007,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -37291,6 +38019,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -37323,6 +38052,12 @@
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_4.json",
     "data/raids/asterion/crane/zone_7.json"
+   ]
+  },
+  {
+   "fr": "montez sur les passerelles",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -40584,6 +41319,12 @@
    ]
   },
   {
+   "fr": "Onde stellaire",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Onde sur le récepteur : la porte s'ouvre... quelques secondes.",
    "where": [
     "data/levels/sylvanox_04.json"
@@ -41739,6 +42480,12 @@
    ]
   },
   {
+   "fr": "Parmi les 10 meilleurs scores de contribution de l'événement (score mixte : dégâts, évités, soutien, mécanismes, objectifs, présence), le Cœur tombé",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "Parmi les 3 meilleurs scores de contribution de l'événement, Pyroclast vaincu",
    "where": [
     "server/src/raidRewards.ts"
@@ -41934,6 +42681,30 @@
    "fr": "Parties du réseau local",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Parties du titan simulées comme tombées (leurs effets sur le Cœur) :",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Parties du titan tombées : chacune affaiblit le Cœur (voir ses effets)",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Parties du titan tombées : chacune affaiblit le Cœur (voir ses effets) · {0} relique",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Parties du titan tombées : chacune affaiblit le Cœur (voir ses effets) · {0} reliques",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -42429,6 +43200,12 @@
    ]
   },
   {
+   "fr": "Passage vers : Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
    "fr": "Passage vers : Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/zone_2.json",
@@ -42640,6 +43417,12 @@
     "data/raids/asterion/abdomen/zone_3.json",
     "data/raids/asterion/abdomen/zone_6.json",
     "data/raids/asterion/abdomen/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Passage vers : Le Cœur d'Asterion",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -43331,7 +44114,8 @@
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/Raids.cpp",
-    "game/planets/PlanetData.cpp"
+    "game/planets/PlanetData.cpp",
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -43344,6 +44128,7 @@
    "fr": "Phase 2",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/torse/zone_8.json"
    ]
@@ -43352,8 +44137,15 @@
    "fr": "Phase 3",
    "where": [
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Phase 4",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -43417,6 +44209,25 @@
     "game/raid/HeartbreakerRoutine.cpp",
     "game/raid/SkullmawRoutine.cpp",
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "phase {0} / 4",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "phase {0} / 4 · {1} groupe",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "phase {0} / 4 · {1} groupes",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -43694,6 +44505,13 @@
    ]
   },
   {
+   "fr": "Piège de gravité",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/raid/AsterionHeartRoutine.h"
+   ]
+  },
+  {
    "fr": "Pièges",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -43759,6 +44577,12 @@
    "fr": "Place libre — « Modifier » pour suivre un succès",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Placement dans un groupe du Cœur d'Asterion…",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -44032,7 +44856,8 @@
    "fr": "plasma",
    "where": [
     "game/gameplay/BeamRenderer.cpp",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -44293,7 +45118,9 @@
   {
    "fr": "Pluie de magma",
    "where": [
-    "data/enemies/pyroclast.json"
+    "data/enemies/pyroclast.json",
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/raid/AsterionHeartRoutine.h"
    ]
   },
   {
@@ -45694,6 +46521,12 @@
    ]
   },
   {
+   "fr": "Première vague du cœur repoussée !",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
    "fr": "PREMIÈRE VICTOIRE !",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -45788,6 +46621,12 @@
    "fr": "Prisme rebondissant",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Prisme stellaire",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -46455,6 +47294,12 @@
    ]
   },
   {
+   "fr": "Présent à la chute validée du Cœur d'Asterion (votre instance était dans son arène)",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "présent à une chute",
    "where": [
     "game/online/Raids.cpp"
@@ -46821,6 +47666,12 @@
    ]
   },
   {
+   "fr": "Pulsation cosmique",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
+   ]
+  },
+  {
    "fr": "Pulsation du cœur",
    "where": [
     "data/raids/asterion/torse/zone_4.json",
@@ -47096,6 +47947,12 @@
    "fr": "Quand <source> <déclencheur> alors <actions>",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Quatre phases : « Le cœur qui bat », « Les artères » (tenez ses quatre artères ensemble, deux au sol aux murs et deux sur des balcons hauts, pour mettre ses trois ventricules à nu), « La couronne d'étoiles » (une marée de plasma brûle le sol : restez sur les plateformes) et une dernière phase très difficile, « Supernova » : à chaque charge, assez de joueurs doivent tenir les ancres en même temps pour la contenir, sinon toute l'arène brûle.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -47585,6 +48442,12 @@
    ]
   },
   {
+   "fr": "Raids de clan, phase 6 : LE CŒUR D'ASTERION, le combat final. Quand les sept gigaboss sont tombés (validés par le serveur), le cœur du titan s'ouvre sur la carte du titan et tous les groupes de tous les clans peuvent le combattre en même temps : une longue Aorte cosmique à huit (embuscades géantes sur trois étages, écluses, monte-charge, points de contrôle), puis une arène gigantesque de neuf écrans de large, ses navettes et ses bacs qui tournent autour d'une étoile captive plus grande qu'un écran.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "RAIDS DU CLAN",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -47680,6 +48543,7 @@
    "where": [
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowerStats.cpp",
+    "game/raid/AsterionHeartRoutine.cpp",
     "game/raid/GravitonRoutine.cpp"
    ]
   },
@@ -47867,6 +48731,7 @@
    "fr": "Rayon du cœur",
    "where": [
     "data/enemies/archon_catacombs.json",
+    "data/enemies/asterion_coeur.json",
     "data/enemies/echo_archon_catacombs.json",
     "data/enemies/echo_thornwarden.json",
     "data/enemies/thornwarden.json",
@@ -49063,6 +49928,12 @@
    "fr": "reliques",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Reliques validées",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -50285,6 +51156,12 @@
    ]
   },
   {
+   "fr": "Revoir la victoire",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
    "fr": "Revoir mon meilleur replay",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -50997,6 +51874,12 @@
    ]
   },
   {
+   "fr": "Récompense collective : votre clan était présent à la chute validée du Cœur d'Asterion",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "Récompense de défi",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -51004,6 +51887,18 @@
   },
   {
    "fr": "Récompense de raid : 5 minutes de combat validées contre Asterion.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Récompense de raid : le cœur d'Asterion bat au-dessus du portail, s'effondre, puis explose en anneaux d'or et de violet. Pour avoir combattu le Cœur d'Asterion jusqu'à sa chute validée.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Récompense de raid : un anneau de chair violette veiné d'or, trois ventricules qui s'allument tour à tour et l'étoile captive au sommet. Pour les 10 meilleurs scores de contribution d'un événement où le Cœur d'Asterion est tombé.",
    "where": [
     "data/cosmetics/cosmetics.json"
    ]
@@ -51172,6 +52067,12 @@
   },
   {
    "fr": "Récompenses à récupérer (CLANS › RAIDS et l'écran des résultats, bouton « Récupérer ») : badge de profil « Main de Pyroclast » (présent à sa chute), titre « Assaillant d'Asterion » (5 minutes de combat), titres « Briseur de magma » (score de contribution de 1 500) et « Fléau de Pyroclast » (3 meilleurs scores de l'événement). Accordées par le serveur à partir des résultats validés, une seule fois même après une reconnexion ; récupérées, elles se débloquent dans le profil et le vestiaire.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Récompenses, chacune accordée une seule fois par le serveur : le badge « Cœur d'Asterion » (présent à sa chute), l'effet de victoire « Supernova d'Asterion » (une minute de combat validée dans son arène), le cadre de profil « Cœur d'Asterion » pour les 10 meilleurs scores de contribution de l'événement (le score mixte, jamais les seuls dégâts) et le titre de clan collectif « Briseurs d'étoile » pour chaque clan présent à la chute. L'événement mondial n'annonce « Asterion est tombé » qu'avec les sept gigaboss ET le cœur ; les inscrits sont prévenus à l'ouverture du cœur et à sa chute.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -51547,6 +52448,12 @@
    "fr": "Réservé aux administrateurs du projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "réservé aux rapports « heart »",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -51933,6 +52840,12 @@
    ]
   },
   {
+   "fr": "S'ouvre quand les sept gigaboss sont tombés",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.",
    "where": [
     "game/raid/RaidBranch.h"
@@ -52005,6 +52918,12 @@
    ]
   },
   {
+   "fr": "sa pluie de magma tombe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Sa prochaine partie s'affichera ici dès qu'elle commencera.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -52020,6 +52939,12 @@
    "fr": "sa touche dans ce niveau, quel que soit son emplacement",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa vie est partagée : chaque instance joue sa propre partie, mais ce qu'elle arrache au Cœur (validé par le consensus de ses joueurs) s'additionne sur le serveur à celui de toutes les autres, et chaque groupe voit la part des autres lui être retirée au même instant sur tous ses écrans. Il tombe pour tous quand sa vie partagée est éteinte : la victoire est validée par le serveur, une seule fois, même si deux groupes portent le dernier coup ensemble.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -53244,9 +54169,33 @@
    ]
   },
   {
+   "fr": "Ses artères se gonflent de lumière : tenez les quatre artères ensemble pour mettre ses ventricules à nu !",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "ses balayages traversent les étages",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Ses boutons servent dès qu'il prend une manette.",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "ses charges stellaires sont rapides",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ses engeances viennent en renfort",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -53271,6 +54220,18 @@
    "fr": "Ses générateurs s'allument : un joueur sur chacun, tous en même temps !",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_8.json"
+   ]
+  },
+  {
+   "fr": "ses lances stellaires suivent chaque joueur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ses lances stellaires visent les huit joueurs à la fois, ses charges traversent des étages entiers. Ce que les sept branches ont détruit agit vraiment sur lui : le Crâne tombé, ses lances perdent leur précision ; le Bras gauche, plus de balayages ; le Bras droit, plus de pluie de magma ; le Torse, plus de cage autour du cœur ; l'Abdomen, plus d'engeances ; la Jambe gauche, plus de pièges de gravité ; la Jambe droite, ses charges ralentissent. Chaque relique des zones secrètes validée l'affaiblit encore. Le HUD montre sa vie partagée, sa phase, la part de votre groupe et celle des autres, et un résumé des effets des branches à l'entrée de l'arène.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -53310,6 +54271,12 @@
    ]
   },
   {
+   "fr": "ses pièges de gravité s'ouvrent",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Ses plaques se verrouillent : brisez ses deux entraves en même temps !",
    "where": [
     "data/enemies/titanus.json"
@@ -53337,6 +54304,12 @@
    "fr": "Ses réglages se modifient ici. Ses planches d'animation et la durée de leurs images restent celles du jeu (lecture seule). « Publier… » met la définition en ligne.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ses sept gardiens tombés, le Dévoreur de mondes n'avait plus que son cœur.",
+   "where": [
+    "data/raids/asterion_victoire.json"
    ]
   },
   {
@@ -54727,6 +55700,12 @@
    ]
   },
   {
+   "fr": "Spirale d'étoiles",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Spirale de braises",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -55539,15 +56518,24 @@
    ]
   },
   {
+   "fr": "SUPERNOVA",
+   "where": [
+    "data/raids/asterion_victoire.json"
+   ]
+  },
+  {
    "fr": "Supernova",
    "where": [
     "data/cosmetics/cosmetics.json",
+    "data/enemies/asterion_coeur.json",
     "data/enemies/astrarque.json",
     "data/enemies/echo_pyrogyre.json",
     "data/enemies/phenix.json",
     "data/enemies/pyrogyre.json",
     "data/enemies/singularis.json",
-    "game/cosmetics/CreationLooks.cpp"
+    "data/raids/asterion/coeur/zone_2.json",
+    "game/cosmetics/CreationLooks.cpp",
+    "game/raid/AsterionHeartRoutine.h"
    ]
   },
   {
@@ -55563,10 +56551,34 @@
    ]
   },
   {
+   "fr": "Supernova ({0}) : à chaque charge, montez sur les ancres ; la marée de plasma brûle le sol.",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Supernova : l'arène se resserre",
    "where": [
     "data/levels/confins_04.json",
     "data/levels/noyau_03.json"
+   ]
+  },
+  {
+   "fr": "SUPERNOVA : le cœur s'effondre ! Contenez-la sur les ancres, tous ensemble !",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Supernova d'Asterion",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Supernova dans {0} : {1} joueurs sur les ancres (les artères) pour la contenir !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -55776,6 +56788,12 @@
    "fr": "Sur le nouvel ordinateur, connecté au nouveau compte : PARAMÈTRES EN LIGNE › Cet ordinateur › « Récupérer un ancien compte ».",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Sur les débris du titan, les clans levèrent leurs bannières.",
+   "where": [
+    "data/raids/asterion_victoire.json"
    ]
   },
   {
@@ -57578,6 +58596,8 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/zone_1.json",
+    "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -57980,8 +59000,21 @@
   {
    "fr": "TITAN · {0}",
    "where": [
+    "game/raid/AsterionHeartRoutine.cpp",
     "game/raid/RaidRun.cpp",
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "TITAN · {0} relique des branches affaiblit le Cœur (−{1} % de sa vie)",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "TITAN · {0} reliques des branches affaiblissent le Cœur (−{1} % de sa vie)",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -58086,6 +59119,18 @@
    ]
   },
   {
+   "fr": "Titre de clan collectif : votre clan était présent à la chute validée du Cœur d'Asterion.",
+   "where": [
+    "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Titre de clan « Briseurs d'étoile »",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "Titre de clan « Dévoreurs dévorés »",
    "where": [
     "server/src/raidWorldRewards.ts"
@@ -58186,6 +59231,18 @@
    ]
   },
   {
+   "fr": "TOMBÉ",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "tombé",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
    "fr": "Ton premier pouvoir : la Ruée",
    "where": [
     "game/tutorial/Tutorial.cpp"
@@ -58234,6 +59291,19 @@
    "where": [
     "data/raids/asterion.json",
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Torse",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Torse tombé : sa cage est brisée, la voie de ses ventricules s'ouvre",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -59182,6 +60252,12 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Troisième vague repoussée : la garde du cœur approche !",
+   "where": [
+    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -60547,6 +61623,12 @@
    ]
   },
   {
+   "fr": "Un ventricule du Cœur d'Asterion, à nu quand ses artères sont tenues ensemble (ou sa supernova contenue) : le briser arrache au cœur une large part de sa vie, pour toutes les instances à la fois.",
+   "where": [
+    "data/enemies/asterion_ventricule.json"
+   ]
+  },
+  {
    "fr": "Un vieux gardien des catacombes des Confins, qui enferma son âme dans un cristal pour ne jamais mourir. Huit phases, huit feux d'âme : il flotte d'autel en autel, cache son âme dans son phylactère, et son dernier sort doit être survécu.",
    "where": [
     "data/enemies/liche.json"
@@ -60656,6 +61738,12 @@
    ]
   },
   {
+   "fr": "une cage d'os le garde dès sa 1re phase",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Une cage de lumière se referme !",
    "where": [
     "data/enemies/singularis.json"
@@ -60756,6 +61844,18 @@
    "fr": "Une couronne d'or sertie de trois gemmes au-dessus de l'avatar.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Une couronne d'étoiles se lève : la marée de plasma monte, restez sur les plateformes !",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "Une couronne d'étoiles se lève : la marée de plasma va monter, restez sur les plateformes !",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -61881,6 +62981,18 @@
    ]
   },
   {
+   "fr": "Vaincre le Cœur d'Asterion (sa vie est partagée par toutes les instances)",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre le Cœur d'Asterion · {0} : frappez-le, quittez les marques de ses lances.",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre le gigaboss Dreadfang",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -62304,6 +63416,18 @@
    "fr": "Ventre de Voidworm",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Ventricule du cœur",
+   "where": [
+    "data/enemies/asterion_ventricule.json"
+   ]
+  },
+  {
+   "fr": "Ventricules à nu ({0}) : brisez-les !",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -62774,9 +63898,27 @@
    ]
   },
   {
+   "fr": "Victoire : le film « La chute d'Asterion » (le titan s'effondre, son cœur devient une supernova, les bannières des clans se lèvent) se lance pour tout le groupe dès que le serveur valide la chute, puis se revoit depuis la fiche de l'événement (« Revoir la victoire »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Victoire après",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Victoire de tous les clans",
+   "where": [
+    "data/raids/asterion_victoire.json"
+   ]
+  },
+  {
+   "fr": "Victoire validée par le serveur pour tous les clans : vos récompenses vous attendent dans CLANS › RAIDS.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -62861,9 +64003,21 @@
    ]
   },
   {
+   "fr": "Vie du Cœur pour tous les groupes · ce groupe : {0} · les autres : {1}",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
    "fr": "Vie et énergie",
    "where": [
     "saves/HudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Vie partagée par toutes les instances. Tenez les 4 artères ensemble pour mettre ses ventricules à nu ; en phase 4, contenez la supernova sur les ancres.",
+   "where": [
+    "data/raids/asterion/coeur/zone_2.json"
    ]
   },
   {
@@ -63764,6 +64918,18 @@
    "fr": "Votre groupe est dans : {0}.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "votre groupe {0} · les autres groupes {1} · parties du titan tombées {2} / 7",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "votre groupe {0} · les autres groupes {1} · parties du titan tombées {2} / 7 · reliques {3}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -65307,6 +66473,12 @@
    "fr": "{0} + {1} toutes les {2} s",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / 7 gigaboss",
+   "where": [
+    "ui/screens/RaidTitanScene.cpp"
    ]
   },
   {
@@ -66989,12 +68161,6 @@
    ]
   },
   {
-   "fr": "{0} Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "{0} lieu",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -68305,6 +69471,12 @@
    "fr": "{0} · {1} UTC",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} · ancres {2} / {3}",
+   "where": [
+    "game/raid/AsterionHeartRoutine.cpp"
    ]
   },
   {
@@ -69934,6 +71106,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -69945,6 +71118,7 @@
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
+    "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
@@ -70988,6 +72162,12 @@
    ]
   },
   {
+   "fr": "Être présent à la chute du Cœur d'Asterion, le combat final d'un raid de clan (récompense récupérée dans CLANS › RAIDS).",
+   "where": [
+    "data/achievements/achievements.json"
+   ]
+  },
+  {
    "fr": "Île Bouvet",
    "where": [
     "data/online/country_codes.json"
@@ -71316,6 +72496,12 @@
   },
   {
    "fr": "● vous  ● groupe  ● ennemis  ◆ objectif  ▮ passage",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "✗ {0} debout : {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]

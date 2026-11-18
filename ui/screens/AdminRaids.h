@@ -91,6 +91,8 @@ private:
 
     // 2.68: « Tester Asterion » (indices in the branch catalog, its zones, 2..8 players, phases).
     int testBranch_ = 0, testZone_ = -1, testPlayers_ = 0, testPhase_ = 0;
+    uint32_t testParts_ = 0x7Fu;  // 2.72 (phase 6): the Cœur d'Asterion's test: the parts simulated as fallen
+    int testRelics_ = 0;
 };
 
 }  // namespace cosmic

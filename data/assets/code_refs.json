@@ -404,6 +404,7 @@
    "game/enemies/PhoenixAttacks.cpp": 1,
    "game/enemies/TitanAttacks.cpp": 1,
    "game/gameplay/entities/HazardEntities.cpp": 1,
+   "game/raid/AsterionHeartRoutine.cpp": 1,
    "game/raid/SkullmawRoutine.cpp": 1
   },
   "sounds/laser_fire.wav": {
@@ -414,7 +415,8 @@
   },
   "sounds/lava_bubble.wav": {
    "game/enemies/PhoenixAttacks.cpp": 1,
-   "game/gameplay/GameWorld.cpp": 1
+   "game/gameplay/GameWorld.cpp": 1,
+   "game/raid/AsterionHeartRoutine.cpp": 1
   },
   "sounds/lava_rise.wav": {
    "game/enemies/BossHazards.cpp": 1,
@@ -502,6 +504,7 @@
    "game/player/PlayerActions.cpp": 1,
    "game/powers/PowersCharged.cpp": 2,
    "game/powers/PowersSanctuary.cpp": 1,
+   "game/raid/AsterionHeartRoutine.cpp": 1,
    "game/raid/Gigaboss.cpp": 1,
    "game/raid/GigabossRoutine.cpp": 1
   },
@@ -538,7 +541,8 @@
    "game/gameplay/entities/ZoneEntities.cpp": 1
   },
   "sounds/supernova.wav": {
-   "game/enemies/PhoenixAttacks.cpp": 1
+   "game/enemies/PhoenixAttacks.cpp": 1,
+   "game/raid/AsterionHeartRoutine.cpp": 1
   },
   "sounds/teleport_in.wav": {
    "game/enemies/LicheAttacks.cpp": 1,
@@ -631,6 +635,9 @@
   },
   "sprites/decor/sylvanox_decor.json": {
    "game/levels/DecorAtlas.cpp": 1
+  },
+  "sprites/fx/asterion_supernova.png": {
+   "ui/screens/CosmeticFx.cpp": 2
   },
   "sprites/objects/bounce_pad.png": {
    "game/levels/ObjectTypes.cpp": 1

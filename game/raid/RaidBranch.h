@@ -16,6 +16,7 @@
 // and up (the objectives are below): the server sets it once the source objectives are accepted,
 // the relay gives it at a step (RAID_STATE) like the rest of the state.
 
+#include <algorithm>
 #include <cstdint>
 #include <filesystem>
 #include <map>
@@ -161,6 +162,9 @@ struct GigabossRules {
     std::string goneText = "La Main est éteinte";
     std::string fx = "animations/pyroclast_vents.json";
     std::string summary = "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.";
+    /// 2.72 (phase 6): the titan's links acting on its branch (id → bit of the branch's state), set
+    /// when the titan is attached: the Cœur d'Asterion reads its « modifier » links (a part fallen).
+    std::map<std::string, int> titanLinks;
 };
 
 struct ZoneRules {
@@ -249,7 +253,34 @@ public:
     int revision = 0;
     std::vector<TitanBranch> branches;
     Json links = Json::array();
+    /// 2.72 (phase 6): its heart, the final fight (titan.json « heart »: part « coeur »), apart from
+    /// the seven branches of its body; empty part when the titan has none.
+    TitanBranch heart;
 };
+
+/// 2.72 (phase 6): the shared state of the Cœur d'Asterion given to an instance with the branch's
+/// state (RAID_STATE, relay → game, at a step): the health the OTHER instances of the event took
+/// from it (ten-thousandths, validated by their consensus), the shared phase (1 to 4, 5: fallen,
+/// validated), the relics of the seven branches validated (each one weakens it). Every game of the
+/// instance applies it at that same step (lockstep stays exact). Zero everywhere else.
+struct HeartShared {
+    uint16_t others = 0;  // 0..10000
+    uint8_t phase = 0;
+    uint8_t relics = 0;
+    bool operator==(const HeartShared& o) const { return others == o.others && phase == o.phase && relics == o.relics; }
+    bool operator!=(const HeartShared& o) const { return !(*this == o); }
+    /// The u32 of RAID_STATE (the relay's coop.ts writes the same): others | phase << 16 | relics << 24.
+    uint32_t pack() const { return static_cast<uint32_t>(others) | (static_cast<uint32_t>(phase) << 16) | (static_cast<uint32_t>(relics) << 24); }
+    static HeartShared unpack(uint32_t v) {
+        HeartShared h;
+        h.others = static_cast<uint16_t>(std::min<uint32_t>(v & 0xFFFFu, 10000u));
+        h.phase = static_cast<uint8_t>(std::min<uint32_t>((v >> 16) & 0xFFu, 5u));
+        h.relics = static_cast<uint8_t>(std::min<uint32_t>(v >> 24, 7u));
+        return h;
+    }
+};
+constexpr int kHeartUnits = 10000;
+constexpr const char* kHeartPart = "coeur";
 
 /// The metadata of a level read as raid rules (objective indices resolved in `b`).
 ZoneRules parseZoneRules(const LevelData& level, const Branch& b);

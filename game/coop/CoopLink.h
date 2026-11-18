@@ -78,6 +78,9 @@ public:
     virtual void result(uint32_t /*ticks*/) {}
     /// 2.65 (raids): the branch's state the relay gave for step `tick` (objectives done).
     virtual uint32_t raidStateAt(uint32_t /*tick*/) const { return 0; }
+    /// 2.72 (phase 6): the shared state of the Cœur d'Asterion given for step `tick` (raid::HeartShared
+    /// packed; 0 outside the heart's instances).
+    virtual uint32_t raidHeartAt(uint32_t /*tick*/) const { return 0; }
 };
 
 /// Every player on this computer: a step's frame is the inputs just given.

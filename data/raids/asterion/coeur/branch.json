@@ -1,0 +1,69 @@
+{
+ "id": "asterion_coeur",
+ "revision": 1,
+ "raid": "asterion",
+ "branch": "coeur",
+ "name": "CŒUR",
+ "gigaboss": "Cœur d'Asterion",
+ "start_zone": 1,
+ "generators_needed": 0,
+ "lock_texts": {},
+ "zones": [
+  {
+   "id": 1,
+   "name": "Aorte cosmique",
+   "sub": "entrée · longue expédition à 8",
+   "x": 300,
+   "y": 380,
+   "level": "zone_1.json",
+   "inside": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · la garde du cœur",
+   "event": "Pulsation cosmique toutes les 75 s dans les galeries basses (étages sûrs)",
+   "secret": false,
+   "boss": false,
+   "groups_required": 1,
+   "minutes": 15.2
+  },
+  {
+   "id": 2,
+   "name": "Le Cœur d'Asterion",
+   "sub": "COMBAT FINAL · toutes les instances ensemble",
+   "x": 700,
+   "y": 380,
+   "level": "zone_2.json",
+   "inside": "Le Cœur d'Asterion : vie partagée par toutes les instances, quatre artères à tenir ensemble, plateformes mobiles, marée de plasma, supernova à contenir",
+   "event": "Lances stellaires sur chaque joueur, marée de plasma (phases 3 et 4), supernova (phase 4)",
+   "secret": false,
+   "boss": true,
+   "groups_required": 1,
+   "minutes": 2.7
+  }
+ ],
+ "edges": [
+  {
+   "a": 1,
+   "b": 2,
+   "lock": "objective:coeur_aorte",
+   "secret": false
+  }
+ ],
+ "objectives": [
+  {
+   "id": "coeur_aorte",
+   "index": 0,
+   "zone": 1,
+   "label": "Franchir l'Aorte cosmique : vaincre la garde du cœur",
+   "optional": false,
+   "role": "",
+   "pair": ""
+  },
+  {
+   "id": "coeur_asterion",
+   "index": 1,
+   "zone": 2,
+   "label": "Vaincre le Cœur d'Asterion (sa vie est partagée par toutes les instances)",
+   "optional": false,
+   "role": "gigaboss",
+   "pair": ""
+  }
+ ]
+}

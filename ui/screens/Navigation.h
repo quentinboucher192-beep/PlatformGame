@@ -280,6 +280,11 @@ struct RaidTestSetup {
     int players = 2;
     int startPhase = 1;
     bool invincible = true;
+    /// 2.72 (phase 6), the Cœur d'Asterion: the parts of the titan simulated as fallen (bit p = the part p
+    /// of raid::AsterionHeartRoutine::Part: their « modifier » links on in the test's branch state) and the
+    /// relics validated; ignored by the seven branches.
+    uint32_t parts = 0x7Fu;
+    int relics = 0;
 };
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
 /// The sheet of the clan whose tag is `tag` (2.63.6: a « [TAG] » clicked before a name in a

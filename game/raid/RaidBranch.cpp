@@ -128,6 +128,12 @@ void Branch::attachTitan(const Json& titan) {
         for (const auto& f : l.value("from", Json::array())) e.from.emplace_back(jstr(f, "branch"), jstr(f, "objective_id"));
         effects.push_back(std::move(e));
     }
+    // 2.72 (phase 6): the gigaboss of each zone knows the links acting on its branch (the Cœur
+    // d'Asterion reads its « modifier » links: the parts of the titan fallen).
+    for (ZoneRules& z : rules) {
+        z.gigaboss.titanLinks.clear();
+        for (const EffectInfo& e : effects) z.gigaboss.titanLinks[e.id] = e.bit;
+    }
 }
 
 bool EffectInfo::inZone(int z) const { return std::find(zones.begin(), zones.end(), z) != zones.end(); }
@@ -179,6 +185,10 @@ bool Titan::parse(const Json& j, std::string* error) {
     branches.clear();
     for (const auto& b : j.value("branches", Json::array())) branches.push_back({jstr(b, "part"), jstr(b, "id"), jstr(b, "dir")});
     links = j.value("links", Json::array());
+    // 2.72 (phase 6): its heart (the final fight), apart from the seven branches.
+    const Json hj = j.value("heart", Json::object());
+    heart = {};
+    if (hj.is_object()) heart = TitanBranch{jstr(hj, "part"), jstr(hj, "id"), jstr(hj, "dir")};
     return !branches.empty();
 }
 
@@ -194,9 +204,13 @@ const std::vector<const Branch*>& Branch::all() {
     static std::once_flag once;
     static std::vector<const Branch*> list;
     std::call_once(once, [] {
-        if (const Titan* t = Titan::builtin())
+        if (const Titan* t = Titan::builtin()) {
             for (const TitanBranch& tb : t->branches)
                 if (const Branch* b = builtin(tb.part)) list.push_back(b);
+            // 2.72 (phase 6): its heart last (the administrators' tests list it after the seven branches).
+            if (!t->heart.part.empty())
+                if (const Branch* b = builtin(t->heart.part)) list.push_back(b);
+        }
         if (list.empty())
             if (const Branch* b = builtin()) list.push_back(b);
     });

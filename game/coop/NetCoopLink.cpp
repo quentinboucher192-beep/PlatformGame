@@ -146,10 +146,13 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             // 2.65 (raids): the branch's state from a step on (never one already given).
             const uint32_t tick = r.u32();
             const uint32_t mask = r.u32();
+            // 2.72 (phase 6): the relay of a heart's instance adds the heart's shared state.
+            const uint32_t heart = r.ok && r.p != r.end ? r.u32() : 0u;
             if (!r.done() || !go_) return;
             std::lock_guard<std::mutex> lock(framesMutex_);
             if (tick < ticks_ || (!raidStates_.empty() && tick < raidStates_.back().first)) return;
             raidStates_.emplace_back(tick, mask);
+            raidHearts_.push_back(heart);
             break;
         }
         case Msg::Pong: {
@@ -260,6 +263,16 @@ uint32_t NetCoopLink::raidStateAt(uint32_t tick) const {
         mask = m;
     }
     return mask;
+}
+
+uint32_t NetCoopLink::raidHeartAt(uint32_t tick) const {
+    std::lock_guard<std::mutex> lock(framesMutex_);
+    uint32_t heart = 0;
+    for (size_t k = 0; k < raidStates_.size() && k < raidHearts_.size(); ++k) {
+        if (raidStates_[k].first > tick) break;
+        heart = raidHearts_[k];
+    }
+    return heart;
 }
 
 }  // namespace cosmic

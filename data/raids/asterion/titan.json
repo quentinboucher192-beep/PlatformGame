@@ -1,8 +1,8 @@
 {
  "format": "cosmic.raid_titan",
- "revision": 1,
+ "revision": 2,
  "raid": "asterion",
- "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them (an objective of one branch acts on another). Never edit by hand.",
+ "comment": "Written by tools/levelgen/raid_asterion.py: the seven branches of Asterion and the links between them (an objective of one branch acts on another), its heart (the final fight, 2.72: raid_coeur.py) and the links of kind « modifier » that the parts' falls give it. Never edit by hand.",
  "branches": [
   {
    "part": "crane",
@@ -40,6 +40,11 @@
    "dir": "jambe_droite"
   }
  ],
+ "heart": {
+  "part": "coeur",
+  "id": "asterion_coeur",
+  "dir": "coeur"
+ },
  "links": [
   {
    "id": "crane_yeux",
@@ -291,6 +296,125 @@
     "renfort_4",
     "renfort_5"
    ]
+  },
+  {
+   "id": "coeur_crane",
+   "label": "Le Crâne est tombé : le Cœur est aveuglé, ses lances stellaires perdent leur précision",
+   "from": [
+    {
+     "branch": "asterion_crane",
+     "objective_id": "crane_skullmaw"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 24,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
+  },
+  {
+   "id": "coeur_bras_gauche",
+   "label": "Le Bras gauche est tombé : plus de balayages des artères dans l'arène du Cœur",
+   "from": [
+    {
+     "branch": "asterion_bras_gauche",
+     "objective_id": "bg_dreadfang"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 25,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
+  },
+  {
+   "id": "coeur_bras_droit",
+   "label": "Le Bras droit est tombé : plus de pluie de magma sur l'arène du Cœur",
+   "from": [
+    {
+     "branch": "asterion_bras_droit",
+     "objective_id": "main_pyroclast"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 26,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
+  },
+  {
+   "id": "coeur_torse",
+   "label": "Le Torse est tombé : la cage du Cœur est brisée, la voie de ses ventricules s'ouvre",
+   "from": [
+    {
+     "branch": "asterion_torse",
+     "objective_id": "torse_heartbreaker"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 27,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
+  },
+  {
+   "id": "coeur_abdomen",
+   "label": "L'Abdomen est tombé : plus d'engeances en renfort autour du Cœur",
+   "from": [
+    {
+     "branch": "asterion_abdomen",
+     "objective_id": "abd_voidworm"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 28,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
+  },
+  {
+   "id": "coeur_jambe_gauche",
+   "label": "La Jambe gauche est tombée : plus de pièges de gravité sous les joueurs",
+   "from": [
+    {
+     "branch": "asterion_jambe_gauche",
+     "objective_id": "jg_graviton"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 29,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
+  },
+  {
+   "id": "coeur_jambe_droite",
+   "label": "La Jambe droite est tombée : le Cœur chancelle, ses charges stellaires ralentissent",
+   "from": [
+    {
+     "branch": "asterion_jambe_droite",
+     "objective_id": "jd_titanus"
+    }
+   ],
+   "to": "asterion_coeur",
+   "bit": 30,
+   "kind": "modifier",
+   "zones": [
+    2
+   ],
+   "objects": []
   }
  ]
 }

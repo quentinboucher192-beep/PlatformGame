@@ -294,3 +294,8 @@ torse_heartbreaker
 every
 flash
 front
+# 2.72 (phase 6): the Cœur d'Asterion (its objective id, a clip of its effects sheet, a key of its rules)
+coeur_asterion
+lance
+max
+heart

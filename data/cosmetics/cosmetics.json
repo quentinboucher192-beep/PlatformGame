@@ -63,6 +63,7 @@
     {"id": "frame_ossuaire", "category": "frame", "name": "Ossuaire", "description": "Des os mis bout à bout entourent le cadre, six crânes parmi eux dont les yeux s'allument tour à tour : pour avoir vaincu la Liche sans être touché.", "achievement": "maitrise_liche_nohit", "look": "ossuary"},
     {"id": "frame_engrenages", "category": "frame", "name": "Engrenages", "description": "Une couronne d'engrenages de laiton qui tournent autour du cadre, des rivets d'acier entre eux : pour avoir vaincu le Titan sans être touché.", "achievement": "maitrise_titan_nohit", "look": "cogs"},
     {"id": "frame_plumes", "category": "frame", "name": "Couronne de plumes", "description": "Des plumes de nuit bordées d'or entourent le cadre, leurs pointes s'allument comme une aube qui tourne : pour avoir vaincu le Phénix sans être touché.", "achievement": "maitrise_phenix_nohit", "look": "plumage"},
+    {"id": "frame_coeur_asterion", "category": "frame", "name": "Cœur d'Asterion", "description": "Récompense de raid : un anneau de chair violette veiné d'or, trois ventricules qui s'allument tour à tour et l'étoile captive au sommet. Pour les 10 meilleurs scores de contribution d'un événement où le Cœur d'Asterion est tombé.", "raid": "asterion", "look": "asterion_heart"},
     {"id": "frame_couronne", "category": "frame", "name": "Couronne de la semaine", "description": "Une couronne d'or sertie de trois gemmes au-dessus de l'avatar.", "challenge": {"kind": "weekly", "tier": "gold", "count": 1}, "look": "crown"},
 
     {"id": "title_none", "category": "title", "name": "Sans titre", "description": "Aucun titre sous votre nom.", "default": true, "look": ""},
@@ -93,6 +94,7 @@
     {"id": "title_assaillant_asterion", "category": "title", "name": "Assaillant d'Asterion", "description": "Récompense de raid : 5 minutes de combat validées contre Asterion.", "raid": "asterion", "look": "Assaillant d'Asterion"},
     {"id": "title_briseur_magma", "category": "title", "name": "Briseur de magma", "description": "Récompense de raid : un score de contribution d'au moins 1 500 contre Pyroclast.", "raid": "asterion", "look": "Briseur de magma"},
     {"id": "title_fleau_pyroclast", "category": "title", "name": "Fléau de Pyroclast", "description": "Récompense de raid : un des 3 meilleurs scores de contribution d'un événement, Pyroclast vaincu.", "raid": "asterion", "look": "Fléau de Pyroclast"},
+    {"id": "title_briseurs_etoile", "category": "title", "name": "Briseurs d'étoile", "description": "Titre de clan collectif : votre clan était présent à la chute validée du Cœur d'Asterion.", "raid": "asterion", "look": "Briseurs d'étoile"},
     {"id": "title_devoreurs_devores", "category": "title", "name": "Dévoreurs dévorés", "description": "Titre de clan : votre clan dans le top 10 du classement mondial officiel d'un événement Asterion.", "raid": "asterion", "look": "Dévoreurs dévorés"},
 
     {"id": "victory_classic", "category": "victory", "name": "Classique", "description": "L'arrivée habituelle au portail.", "default": true, "look": "classic"},
@@ -107,6 +109,7 @@
     {"id": "victory_raz_de_maree", "category": "victory", "name": "Raz-de-marée", "description": "Une vague géante se dresse derrière le portail, retombe en écume et laisse des bulles de lumière.", "stars": 640, "look": "tidal_wave"},
     {"id": "victory_renaissance", "category": "victory", "name": "Renaissance", "description": "Le portail s'embrase et retombe en cendres, d'où renaît un phénix de lumière qui s'envole.", "stars": 670, "look": "rebirth"},
     {"id": "victory_veillee", "category": "victory", "name": "Veillée des âmes", "description": "Des bougies d'âme s'allument une à une autour du portail, puis leurs flammes vertes s'envolent comme des âmes libérées.", "stars": 700, "look": "candles"},
+    {"id": "victory_supernova_asterion", "category": "victory", "name": "Supernova d'Asterion", "description": "Récompense de raid : le cœur d'Asterion bat au-dessus du portail, s'effondre, puis explose en anneaux d'or et de violet. Pour avoir combattu le Cœur d'Asterion jusqu'à sa chute validée.", "raid": "asterion", "look": "asterion_supernova"},
     {"id": "victory_coulee", "category": "victory", "name": "Coulée d'acier", "description": "Des engrenages tournent autour du portail, puis une coulée d'acier en fusion jaillit en gerbe d'étincelles dans un panache de vapeur.", "stars": 730, "look": "foundry"},
     {"id": "victory_serie_feu", "category": "victory", "name": "Série de feu", "description": "Sept flammes s'allument au-dessus du portail, une par jour de la série.", "challengeStreak": {"kind": "daily", "days": 7}, "look": "fire_streak"}
   ]

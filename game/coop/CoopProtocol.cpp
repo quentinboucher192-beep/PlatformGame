@@ -194,6 +194,12 @@ std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask) {
     return o;
 }
 
+std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart) {
+    auto o = raidState(tick, mask);
+    Writer{o}.u32(heart);
+    return o;
+}
+
 std::vector<uint8_t> packageAsk(uint32_t offset) {
     auto o = msg(Msg::PackageAsk);
     Writer{o}.u32(offset);

@@ -5,6 +5,7 @@
 #include <cstring>
 
 #include "game/enemies/Enemy.h"
+#include "game/raid/AsterionHeartRoutine.h"
 #include "game/gameplay/entities/Entities.h"
 
 namespace cosmic::raid {
@@ -20,10 +21,18 @@ uint64_t mix(uint64_t h, uint64_t v) {
 }  // namespace
 
 RaidRun::RaidRun(WorldServices services, const Branch& branch, int players)
-    : services_(services), branch_(branch), players_(std::clamp(players, 1, kMaxInstancePlayers)) {}
+    : services_(services), branch_(branch), players_(std::clamp(players, 1, kMaxInstancePlayers)) {
+    // 2.72 (phase 6): the heart's branch (its gigaboss's objective: the shared victory, validated).
+    if (branch_.part == kHeartPart)
+        for (const ObjectiveInfo& o : branch_.objectives)
+            if (o.role == "gigaboss") heartObjective_ = o.index;
+}
+
+const AsterionHeartRoutine* RaidRun::heartRoutine() const { return dynamic_cast<const AsterionHeartRoutine*>(gigaboss_.routine()); }
 
 bool RaidRun::begin(uint32_t branchMask, int zone) {
     branchMask_ = branchMask;
+    heartWon_ = heartObjective_ >= 0 && Branch::done(branchMask_, heartObjective_);  // 2.72: already validated
     loadZone(zone > 0 ? zone : branch_.startZone, "start", nullptr);
     return world_ != nullptr && rules_ != nullptr;
 }
@@ -313,9 +322,18 @@ void RaidRun::checkPassages() {
     }
 }
 
-void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
+void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask, const HeartShared& heart) {
     if (!world_) return;
     if (branchMask != branchMask_) applyMask(branchMask, false);
+    heartWonNow_ = false;
+    if (heartObjective_ >= 0 && !heartWon_ && Branch::done(branchMask_, heartObjective_)) {
+        // 2.72 (phase 6): the server validated the heart's fall (the shared health gone): every computer
+        // of the instance learns it at this step.
+        heartWon_ = heartWonNow_ = true;
+        alert("MONDE · Asterion est tombé : le Cœur a cédé sous les coups de tous les groupes !", Alert::Kind::Branch);
+    }
+    heart_ = heart;
+    gigaboss_.setShared(heart_);  // 2.72: the shared state of the Cœur d'Asterion
     updateMagma();
     gigaboss_.setBranchMask(mask());  // 2.69 (phase 4B)
     gigaboss_.before(*world_);  // 2.68: its carapace, its weak point bare, its pressure
@@ -336,8 +354,8 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
     }
     events_.clear();
     updateCoops();
-    if (gigaboss_.phaseReached() > bossReported_) {
-        for (int p = bossReported_ + 1; p <= gigaboss_.phaseReached(); ++p) {
+    if (gigaboss_.reportedPhase() > bossReported_) {  // 2.72: a gigaboss of four phases reports 1 to 3, then 4 at its fall
+        for (int p = bossReported_ + 1; p <= gigaboss_.reportedPhase(); ++p) {
             Report rep;
             rep.kind = Report::Kind::Boss;
             rep.zone = zone_;
@@ -345,8 +363,24 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask) {
             rep.phase = p;
             reports_.push_back(std::move(rep));
         }
-        bossReported_ = gigaboss_.phaseReached();
+        bossReported_ = gigaboss_.reportedPhase();
         reportResult();
+    }
+    if (const AsterionHeartRoutine* hr = heartRoutine(); hr && gigaboss_.engaged()) {
+        // 2.72 (phase 6): this instance's part of the heart's shared health, while it changes and at its fall.
+        const bool fell = gigaboss_.fellNow();
+        const uint32_t every = static_cast<uint32_t>(std::lround(hr->reportEvery() * static_cast<float>(kSimHz)));
+        if (hr->own() != heartReported_ && hr->own() > 0 && (fell || heartReported_ < 0 || tick_ - heartReportTick_ >= every)) {
+            Report rep;
+            rep.kind = Report::Kind::Heart;
+            rep.zone = zone_;
+            rep.tick = tick_;
+            rep.damage = hr->own();
+            reports_.push_back(std::move(rep));
+            heartReported_ = hr->own();
+            heartReportTick_ = tick_;
+        }
+        if (fell && test_.on && !heartWon_) heartWon_ = heartWonNow_ = true;  // a test: its fall is its victory (never reported)
     }
     const uint64_t h = hash();
     for (size_t i = firstReport; i < reports_.size(); ++i) reports_[i].hash = h;
@@ -379,6 +413,7 @@ uint64_t RaidRun::hash() const {
     h = mix(h, (static_cast<uint64_t>(branchMask_) << 32) | local_);
     h = mix(h, contrib_.hash());   // 2.68 (phase 3)
     h = mix(h, gigaboss_.hash());  // 2.68 (phase 3)
+    if (heart_.pack() != 0) h = mix(h, 0x4845415254000000ULL | heart_.pack());  // 2.72: the heart's shared state (zero elsewhere)
     // 2.68: the expeditions' state (nothing for the zones without checkpoints or plates).
     for (unsigned char c : lastCheckpoint_) h = mix(h, c);
     for (size_t k = 0; k < coopDone_.size(); ++k)

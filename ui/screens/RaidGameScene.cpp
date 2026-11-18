@@ -39,6 +39,8 @@
 #include "game/online/Clans.h"
 #include "game/powers/PowerKeys.h"
 #include "game/raid/RaidRun.h"
+#include "game/raid/AsterionHeartRoutine.h"
+#include "ui/screens/AsterionFilm.h"
 #include "game/raid/ArenaCamera.h"
 #include "game/gameplay/EnemyArrows.h"
 #include "game/gameplay/entities/Entities.h"
@@ -177,6 +179,13 @@ public:
         t.startPhase = testSetup_.startPhase;
         run_->setTest(t);
         run_->setCameraFollow(0);
+        // 2.72 (phase 6): the heart's test: the parts chosen as fallen (their links on), the relics.
+        testMask_ = 0;
+        for (const raid::EffectInfo& e : branch_->effects)
+            for (int p = 0; p < raid::AsterionHeartRoutine::PartCount; ++p)
+                if ((testSetup_.parts >> p) & 1u && e.id == std::string("coeur_") + raid::AsterionHeartRoutine::partId(p) && e.bit >= 0 && e.bit < 32)
+                    testMask_ |= 1u << e.bit;
+        testHeart_.relics = static_cast<uint8_t>(std::clamp(testSetup_.relics, 0, 7));
         if (!run_->begin(0, testSetup_.zone)) {
             fail_ = "Impossible de charger la zone du test.";
             run_.reset();
@@ -189,22 +198,28 @@ public:
     /// 2.68: one step of a test: this computer's input on seat 0, the others vacant.
     void stepTest() {
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
-        if (paused_) f = InputFrame{};
+        if (paused_ || g_.app.topScene() != this) f = InputFrame{};
         if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
         frame_.assign(raid::kMaxInstancePlayers, InputFrame{});
         frame_[0] = f;
         for (size_t k = 1; k < frame_.size(); ++k) frame_[k].flags = InputFrame::Vacant;
-        run_->step(frame_.data(), static_cast<int>(frame_.size()), 0);
+        run_->step(frame_.data(), static_cast<int>(frame_.size()), testMask_, testHeart_);
         ++tick_;
         run_->takeReports();  // empty: a test never reports anything
+        if (run_->heartWonNow()) playVictory();  // 2.72: a test's fall is its victory (never reported)
         if (run_->zoneSerial() != serial_) zoneReady();
+    }
+
+    /// 2.72 (phase 6): the film of Asterion's fall, over the combat (which keeps running: neutral inputs).
+    void playVictory() {
+        if (auto s = asterionfilm::makeVictory(g_, true)) g_.app.pushScene(std::move(s));
     }
 
     void catchUp() {
         std::vector<InputFrame> team;
         while (!stopWorker_) {
             if (link_->frameFor(tick_, team)) {
-                run_->step(team.data(), static_cast<int>(team.size()), link_->raidStateAt(tick_));
+                run_->step(team.data(), static_cast<int>(team.size()), link_->raidStateAt(tick_), raid::HeartShared::unpack(link_->raidHeartAt(tick_)));
                 ++tick_;
                 progress_ = tick_;
                 continue;
@@ -262,8 +277,9 @@ public:
                 break;
             }
             waiting_ = 0.0f;
-            run_->step(frame_.data(), static_cast<int>(frame_.size()), link_->raidStateAt(tick_));
+            run_->step(frame_.data(), static_cast<int>(frame_.size()), link_->raidStateAt(tick_), raid::HeartShared::unpack(link_->raidHeartAt(tick_)));
             ++tick_;
+            if (run_->heartWonNow() && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) playVictory();  // 2.72: the validated victory
             if (run_->gigaboss().fellNow() && !link_->joinedLate()) fallCard_ = true;  // « Résultats du raid »
             if (run_->gigaboss().fellNow() && link_->joinedLate() && tick_ >= link_->rejoinAt()) fallCard_ = true;
             if (run_->zoneSerial() != serial_) zoneReady();
@@ -276,7 +292,7 @@ public:
         if (sentUpTo_ != UINT32_MAX && target <= sentUpTo_) return;
         sentUpTo_ = target;
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
-        if (paused_) f = InputFrame{};
+        if (paused_ || g_.app.topScene() != this) f = InputFrame{};  // 2.72: a film over the combat holds this player only
         // A power offered to this player (none in the branch's zones): left on its tablet, through
         // the frame like every choice (the replays stay exact).
         if (const auto& offer = run_->world().powerOffer(); offer && offer->player == local_) f.choice = InputFrame::kChoiceLeave;
@@ -291,10 +307,12 @@ public:
             const char* kind = r.kind == raid::Report::Kind::Objective ? "objective"
                                : r.kind == raid::Report::Kind::Boss    ? "boss"
                                : r.kind == raid::Report::Kind::Result  ? "result"
+                               : r.kind == raid::Report::Kind::Heart   ? "heart"
                                                                        : "zone";
             Json body{{"kind", kind}, {"zone", r.zone}, {"tick", r.tick}, {"hash", hex16(r.hash)}};
             if (r.kind == raid::Report::Kind::Objective) body["objective"] = r.objective;
             if (r.kind == raid::Report::Kind::Boss) body["phase"] = r.phase;
+            if (r.kind == raid::Report::Kind::Heart) body["damage"] = r.damage;  // 2.72: this instance's part of the shared health
             if (r.kind == raid::Report::Kind::Result) {
                 // 2.68: the players' contributions (the same table on every computer of the instance).
                 Json rows = Json::array();
@@ -362,7 +380,7 @@ public:
         info.promptPlayer = local_;
         hud_.setTeam(info);
         updateArenaCamera(w, dt);
-        if (!ended_ && g_.app.input().menuPressed(Action::Pause)) {
+        if (!ended_ && g_.app.topScene() == this && g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
@@ -414,6 +432,7 @@ public:
             drawRaidHud(w);
             drawArrows(w, view);
             drawArenaIntro();
+            drawHeartBriefing();  // 2.72 (phase 6): what the branches did to the Cœur, at its arena's door
             if (fallCard_ && !paused_ && !ended_) drawFall();
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
@@ -502,6 +521,12 @@ public:
         if (mapR - mapX > ui.s(200)) {
             drawMinimap(w, {mapX, ui.s(14), mapR - mapX, ui.s(96)});
             hudRects_.push_back({mapX, ui.s(14), mapR - mapX, ui.s(96)});
+            // 2.72 (phase 6): the Cœur d'Asterion's shared health, under the minimap.
+            if (run_->heartRoutine()) {
+                const Rect bar{mapX, ui.s(14) + ui.s(96) + ui.s(8), mapR - mapX, ui.s(50)};
+                drawHeartBar(bar);
+                hudRects_.push_back(bar);
+            }
         }
         const Rect obj = drawObjectives(w, {W - m - rightW, ui.s(14), rightW, 0});
         hudRects_.push_back(obj);
@@ -725,6 +750,80 @@ public:
             kText.withAlphaF(alpha), FontFace::Body, Align::Center);
     }
 
+    // ------------------------------------------------------------- 2.72 (phase 6): the Cœur d'Asterion
+
+    /// « 63,2 % » from ten-thousandths.
+    static std::string heartPct(int units) {
+        units = std::clamp(units, 0, raid::kHeartUnits);
+        return std::to_string(units / 100) + "," + std::to_string((units % 100) / 10) + " %";
+    }
+
+    /// Its shared health: the bar (what is left for every group, this group's part, the others'), its
+    /// phase, the parts of the titan fallen. Every text measured into the bar.
+    void drawHeartBar(const Rect& r) {
+        const raid::AsterionHeartRoutine* hr = run_->heartRoutine();
+        if (!hr || r.w < g_.ui.s(160)) return;
+        UIContext& ui = g_.ui;
+        Renderer& rr = ui.r();
+        hudBox(r);
+        const float pad = ui.s(10), x = r.x + pad, w = r.w - pad * 2;
+        const int left = run_->heartWon() ? 0 : hr->remaining();
+        const int ph = std::max(1, run_->gigaboss().phase());
+        const std::string right = run_->heartWon() ? "TOMBÉ" : "phase " + std::to_string(std::min(ph, 4)) + " / 4";
+        const float rw = std::min(textW(ui, right, 13, FontFace::Bold), w * 0.3f);
+        fit(ui, right, {r.right() - pad, r.y + ui.s(13)}, 13, rw, run_->heartWon() ? kGreen : kGold, FontFace::Bold, Align::Right);
+        fit(ui, "CŒUR D'ASTERION · " + heartPct(left) + " · vie partagée par tous les groupes", {x, r.y + ui.s(13)}, 13, w - rw - ui.s(10), kText,
+            FontFace::Bold);
+        // The bar: what is left (gold), this group's part (green) and the others' (violet) at its right.
+        const Rect bar{x, r.y + ui.s(24), w, ui.s(9)};
+        rr.fillRoundedRect(bar, ui.s(4), Color{50, 36, 60, 255});
+        const float k = static_cast<float>(left) / static_cast<float>(raid::kHeartUnits);
+        const float own = static_cast<float>(hr->own()) / static_cast<float>(raid::kHeartUnits);
+        const float others = static_cast<float>(hr->others()) / static_cast<float>(raid::kHeartUnits);
+        if (k > 0.0f) rr.fillRoundedRect({bar.x, bar.y, bar.w * k, bar.h}, ui.s(4), kGold);
+        const float ox = bar.x + bar.w * k;
+        const float ow = std::min(bar.w * own, bar.right() - ox);
+        if (ow > 0.0f) rr.fillRect({ox, bar.y, ow, bar.h}, Color{124, 240, 168, 200});
+        const float vw = std::min(bar.w * others, bar.right() - ox - std::max(0.0f, ow));
+        if (vw > 0.0f) rr.fillRect({ox + std::max(0.0f, ow), bar.y, vw, bar.h}, Color{180, 108, 255, 170});
+        for (float t : {0.25f, 0.5f, 0.75f}) rr.fillRect({bar.x + bar.w * t - ui.s(1), bar.y - ui.s(2), ui.s(2), bar.h + ui.s(4)}, Color{255, 255, 255, 90});
+        int fallen = 0;
+        for (int p = 0; p < raid::AsterionHeartRoutine::PartCount; ++p) fallen += hr->down(p) ? 1 : 0;
+        const std::string sub = "votre groupe " + heartPct(hr->own()) + " · les autres groupes " + heartPct(hr->others()) + " · parties du titan tombées " +
+                                std::to_string(fallen) + " / 7" + (hr->relics() > 0 ? " · reliques " + std::to_string(hr->relics()) : std::string());
+        fit(ui, sub, {x, r.y + ui.s(42)}, 12, w, kDim);
+    }
+
+    /// Its briefing at its arena's door (the camera's intro and the first seconds before it wakes): what
+    /// each part of the titan, fallen or standing, does to it. Measured, never over the intro's title.
+    void drawHeartBriefing() {
+        const raid::AsterionHeartRoutine* hr = run_->heartRoutine();
+        if (!hr || run_->gigaboss().engaged() || run_->zoneTicks() > static_cast<uint32_t>(14 * kSimHz)) return;
+        UIContext& ui = g_.ui;
+        const float W = ui.screenW(), H = ui.screenH();
+        const float bw = std::min(ui.s(560), W * 0.44f), pad = ui.s(14);
+        static const char* kStanding[] = {"ses lances stellaires suivent chaque joueur", "ses balayages traversent les étages", "sa pluie de magma tombe",
+                                          "une cage d'os le garde dès sa 1re phase", "ses engeances viennent en renfort", "ses pièges de gravité s'ouvrent",
+                                          "ses charges stellaires sont rapides"};
+        static const char* kNames[] = {"Crâne", "Bras gauche", "Bras droit", "Torse", "Abdomen", "Jambe gauche", "Jambe droite"};
+        std::vector<std::pair<std::vector<std::string>, Color>> rows;
+        float h = pad * 2 + ui.s(30);
+        for (int p = 0; p < raid::AsterionHeartRoutine::PartCount; ++p) {
+            const bool down = hr->down(p);
+            const std::string t = down ? std::string("✓ ") + raid::AsterionHeartRoutine::partEffect(p) : std::string("✗ ") + kNames[p] + " debout : " + kStanding[p];
+            rows.push_back({wrap(ui, t, FontFace::Body, 13, bw - pad * 2, 2), down ? kGreen : kOrange});
+            h += static_cast<float>(rows.back().first.size()) * ui.s(18) + ui.s(4);
+        }
+        const Rect box{ui.s(16), std::min(H * 0.42f, H - h - ui.s(70)), bw, h};
+        if (box.y < ui.s(140)) return;  // no room under the HUD: the objectives panel says it
+        ui.r().fillRoundedRect(box, ui.s(12), Color{16, 10, 30, 220});
+        ui.r().drawRoundedRect(box, ui.s(12), kGold, ui.s(1.5f));
+        fit(ui, "EFFETS DES BRANCHES SUR LE CŒUR", {box.x + pad, box.y + pad + ui.s(10)}, 15, bw - pad * 2, kGold, FontFace::Title);
+        float y = box.y + pad + ui.s(30);
+        for (const auto& [lines, c] : rows) y += drawLines(ui, lines, {box.x + pad, y}, 13, ui.s(18), c) + ui.s(4);
+        hudRects_.push_back(box);
+    }
+
     /// 2.68: arrows on the border toward what the view does not show: the boss (its weak points when
     /// bare), the allies (their colours), the enemies of the ambush (violet). Kept off the HUD.
     void drawArrows(GameWorld& w, const WorldView& view) {
@@ -883,10 +982,16 @@ public:
         box.y = ui.screenH() * 0.18f;
         ui.panel(box, true, 16);
         const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
-        fit(ui, name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30, box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
+        // 2.72 (phase 6): the Cœur d'Asterion falls here once its shared health is gone; the victory is
+        // the server's (validated, every group's damage summed): until then the card says so.
+        const bool heart = run_->heartBranch();
+        fit(ui, heart ? (run_->heartWon() ? "ASTERION EST TOMBÉ" : "LE CŒUR D'ASTERION CÈDE") : name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30,
+            box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
         const std::string fell = run_->gigaboss().rules() ? run_->gigaboss().rules()->fallText : std::string();
-        const auto lines = wrap(ui, fell + " Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.", FontFace::Body, 16,
-                                box.w - ui.s(56), 3);
+        const std::string more = !heart ? " Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur."
+                                 : run_->heartWon() ? " Victoire validée par le serveur pour tous les clans : vos récompenses vous attendent dans CLANS › RAIDS."
+                                                    : " La victoire est validée quand le serveur a reçu de tous les groupes de quoi éteindre sa vie partagée : patientez.";
+        const auto lines = wrap(ui, fell + more, FontFace::Body, 16, box.w - ui.s(56), 3);
         drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(70)}, 16, ui.s(22), kDim);
         ui.pushId("fall");
         const float gap = ui.s(12), bw = (box.w - ui.s(56) - gap) * 0.5f, by = box.bottom() - ui.s(24) - ui.s(52);
@@ -1233,6 +1338,8 @@ public:
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
+    uint32_t testMask_ = 0;        // 2.72: the heart's test: the links of the parts chosen as fallen
+    raid::HeartShared testHeart_;  // 2.72: its relics
     bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
     raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)

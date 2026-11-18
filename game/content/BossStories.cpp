@@ -417,6 +417,12 @@ std::optional<BossStory> loadAsterionFilm(const std::filesystem::path& dataDir, 
 
 std::optional<BossStory> loadAsterionFilm(std::string* error) { return loadAsterionFilm(Paths::dataDir(), error); }
 
+std::optional<BossStory> loadAsterionVictory(const std::filesystem::path& dataDir, std::string* error) {
+    return loadFilm(dataDir / "raids" / "asterion_victoire.json", error);
+}
+
+std::optional<BossStory> loadAsterionVictory(std::string* error) { return loadAsterionVictory(Paths::dataDir(), error); }
+
 StageAssets stageAssets(const BossStory& s) {
     StageAssets a;
     std::set<std::string> seen;

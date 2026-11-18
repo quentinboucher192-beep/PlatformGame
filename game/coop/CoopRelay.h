@@ -41,6 +41,9 @@ public:
     /// 2.65 (raids): the branch's state (objectives done). Once started, it applies from the
     /// first step not given yet, for everyone (RAID_STATE), and is kept for the catch-ups.
     void setRaidState(uint32_t mask);
+    /// 2.72 (phase 6): the shared state of the Cœur d'Asterion (raid::HeartShared packed): from then on
+    /// every RAID_STATE carries it, applied from the first step not given yet, kept for the catch-ups.
+    void setRaidHeart(uint32_t heart);
     void connected(int conn, uint32_t nowMs);
     void disconnected(int conn, uint32_t nowMs);
     void received(int conn, const uint8_t* data, size_t size, uint32_t nowMs);
@@ -102,7 +105,15 @@ private:
     uint32_t flushed_ = 0;             // steps already sent
     bool raid_ = false;
     uint32_t raidMask_ = 0;
-    std::vector<std::pair<uint32_t, uint32_t>> raidStates_;  // (step, mask), in order
+    struct RaidStateEntry {
+        uint32_t tick = 0, mask = 0, heart = 0;
+        bool withHeart = false;
+    };
+    std::vector<RaidStateEntry> raidStates_;  // in order
+    uint32_t raidHeart_ = 0;  // 2.72
+    bool raidHeartOn_ = false;
+    std::vector<uint8_t> raidStateMsg(const RaidStateEntry& e) const;
+    void pushRaidState();
 };
 
 }  // namespace cosmic

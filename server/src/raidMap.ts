@@ -25,6 +25,7 @@ import brasDroitJson from "./raidBranches.json";
 import titanJson from "./raidTitan.json";
 import { raidState } from "./raids";
 import { requireEntry } from "./raidWorld";
+import { HEART_OBJECTIVE, gigabossDownIn, heartBodyState, heartOpenIn, heartView } from "./raidHeart";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 
@@ -68,7 +69,7 @@ export interface TitanLink {
     from: { branch: string; objective_id: string }[];
     to: string;
     bit: number;
-    kind: "open" | "disable" | "remove" | "hazard_off";
+    kind: "open" | "disable" | "remove" | "hazard_off" | "modifier";
     zones: number[];
     objects: string[];
 }
@@ -77,6 +78,9 @@ interface TitanFile {
     branches: { part: string; id: string; dir: string }[];
     links: TitanLink[];
     catalogs: Catalog[];
+    /** 2.72 (phase 6): its heart, the final fight (raidHeart.ts), apart from the seven branches. */
+    heart?: { part: string; id: string; dir: string };
+    heart_catalog?: Catalog;
 }
 
 export const TITAN = titanJson as unknown as TitanFile;
@@ -84,18 +88,23 @@ const BRAS_DROIT = brasDroitJson as unknown as Catalog;
 /** The seven branches in the order of the titan's body. */
 export const CATALOGS: Catalog[] = TITAN.branches.map((b) => (b.id === BRAS_DROIT.id ? BRAS_DROIT : TITAN.catalogs.find((c) => c.id === b.id)!));
 export const PARTS = TITAN.branches.map((b) => b.part);
+/** 2.72 (phase 6): the Cœur d'Asterion's catalog (two zones: its aorta, its arena), joined like a branch once open. */
+export const HEART: Catalog | undefined = TITAN.heart_catalog;
+/** The seven branches and the heart: what an instance may play. */
+const PLAYABLE: Catalog[] = HEART ? [...CATALOGS, HEART] : CATALOGS;
 export const INSTANCE_SIZE = 8;
 /** Instances of one clan on one branch (50 players fit in 7). */
 const MAX_CLAN_INSTANCES = 16;
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const PLAYER_ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 
-export const catalogById = (id: string) => CATALOGS.find((c) => c.id === id);
+export const catalogById = (id: string) => PLAYABLE.find((c) => c.id === id);
 export const catalogByPart = (part: string) => {
+    if (HEART && TITAN.heart && part === TITAN.heart.part) return HEART; // 2.72 (phase 6)
     const b = TITAN.branches.find((x) => x.part === part);
     return b ? catalogById(b.id) : undefined;
 };
-export const partOf = (id: string) => TITAN.branches.find((b) => b.id === id)?.part ?? "";
+export const partOf = (id: string) => TITAN.branches.find((b) => b.id === id)?.part ?? (HEART && TITAN.heart && id === HEART.id ? TITAN.heart.part : "");
 /** The relay's level of an instance and its hash: every game must have the same branch and titan. */
 export const levelIdOf = (c: Catalog) => "raid:" + c.id;
 export const levelHashOf = (c: Catalog) => `${c.revision}.${TITAN.revision}`;
@@ -166,7 +175,7 @@ export function linkOn(l: TitanLink, done: Map<string, Set<string>>): boolean {
 /** The state of each branch: its objectives accepted (bits below 24) and the links on (their bits). */
 export function statesOf(done: Map<string, Set<string>>): Map<string, number> {
     const out = new Map<string, number>();
-    for (const c of CATALOGS) {
+    for (const c of PLAYABLE) { // 2.72: the heart too (its « modifier » links: the parts fallen)
         let m = maskOfIds(c, done.get(c.id) ?? []);
         for (const l of linksTo(c)) if (linkOn(l, done)) m = (m | (1 << l.bit)) >>> 0;
         out.set(c.id, m);
@@ -395,6 +404,11 @@ export async function placeOnBranch(db: D1Database, eventId: string, clanId: str
  * fewest players placed (the titan's order on a tie).
  */
 async function neededBranch(db: D1Database, eventId: string, clanId: string): Promise<Catalog> {
+    // 2.72 (phase 6): once the seven gigaboss fell, every group is needed at the heart (until it falls).
+    if (HEART) {
+        const done = await doneOf(db, eventId);
+        if (heartOpenIn(done) && !done.get(HEART.id)?.has(HEART_OBJECTIVE)) return HEART;
+    }
     const [inst, placed] = await db.batch([
         db.prepare("SELECT id, branch, players FROM raid_instances WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
         db.prepare("SELECT branch, instance_id FROM raid_placements WHERE event_id = ?1 AND clan_id = ?2").bind(eventId, clanId),
@@ -464,9 +478,18 @@ export async function join(ctx: Ctx): Promise<Response> {
         c = catalogByPart(part);
         if (!c) throw Errors.notFound("BRANCH_NOT_FOUND", "Cette branche du titan n'existe pas.");
     }
+    // 2.72 (phase 6): the Cœur d'Asterion opens once the seven gigaboss fell (validated).
+    const sealedHeart = async (branch: string) => {
+        if (!HEART || branch !== HEART.id) return;
+        const done = await doneOf(db, e.id);
+        if (!heartOpenIn(done))
+            throw Errors.conflict("HEART_SEALED", "Le Cœur d'Asterion s'ouvre quand les sept gigaboss sont tombés (" + gigabossDownIn(done) + " / " + CATALOGS.length + ").");
+    };
+    if (c) await sealedHeart(c.id);
     if (wanted) {
         const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2").bind(wanted, e.id).first<InstanceRow>();
         if (!inst || (c && inst.branch !== c.id)) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
+        await sealedHeart(inst.branch);
         if (inst.players >= INSTANCE_SIZE || !(await putIn(db, e.id, reg.clan_id, me, inst, me, "aide")))
             throw Errors.conflict("INSTANCE_FULL", "Ce groupe a déjà 8 joueurs.");
         return enter(ctx, e, inst, me);
@@ -830,6 +853,9 @@ export async function titanView(ctx: Ctx): Promise<Response> {
         .slice(0, 12);
     const fighting = instances.filter((i) => i.players > 0);
     const myInst = placement ? instances.find((i) => i.id === placement.instance_id) : undefined;
+    // 2.72 (phase 6): the Cœur d'Asterion: sealed, open, fought (its shared health), fallen.
+    const heart = await heartView(db, e.id, done, states, instances, reg?.clan_id ?? null);
+    if (heart) body[heart.part] = heartBodyState(heart);
     return json(ctx, {
         server_time: now,
         event: { id: e.id, state: raidState(e, now), kind: e.kind },
@@ -848,6 +874,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             links: links.length,
         },
         branches,
+        heart,
         body,
         links,
         needs: needs.slice(0, 6),

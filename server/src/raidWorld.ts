@@ -32,7 +32,8 @@ import { audit, requireAuth } from "./auth";
 import { requireAdminRole } from "./adminRoles";
 import { ask } from "./coop";
 import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
-import { CATALOGS, TITAN, catalogById, controlledIn, isDone, partOf, reachableIn, statesOf } from "./raidMap";
+import { CATALOGS, HEART, TITAN, catalogById, controlledIn, isDone, linksTo, partOf, reachableIn, statesOf } from "./raidMap";
+import { HEART_OBJECTIVE } from "./raidHeart";
 import { PARTICIPATION_TICKS, rewardsOf, scoreOf } from "./raidRewards";
 import { CLAN_TOP_RANK, CLAN_TOP_TITLE, WORLD_REWARDS } from "./raidWorldRewards";
 import { raidState } from "./raids";
@@ -84,6 +85,8 @@ export async function eventRow(db: D1Database, id: string): Promise<WorldEventRo
 
 export interface MapCheck {
     ok: boolean;
+    /** 2.72 (phase 6): the Cœur d'Asterion's catalog checked (its arena, its fall, a « modifier » link from each part). */
+    heart: boolean;
     revision: string;
     branches: number;
     zones: number;
@@ -156,8 +159,23 @@ export function checkMap(): MapCheck {
             if (!catalogById(f.branch)?.objectives.some((o) => o.id === f.objective_id)) problems.push(`lien ${l.id} : source ${f.branch} / ${f.objective_id} inconnue`);
         for (const z of l.zones) if (!to.zones.some((x) => x.id === z)) problems.push(`lien ${l.id} : zone ${z} inconnue dans ${to.name}`);
     }
-    const revision = `titan ${TITAN.revision} · ` + CATALOGS.filter((c) => !!c).map((c) => `${partOf(c.id)} ${c.revision}`).join(" · ");
-    return { ok: problems.length === 0, revision, branches: CATALOGS.length, zones, bosses, fights, links: TITAN.links.length, problems: problems.slice(0, 20), warnings: warnings.slice(0, 10) };
+    // 2.72 (phase 6): the heart: its arena (a lair), its fall (role « gigaboss »), reachable once its aorta is
+    // crossed, and the fall of each of the seven parts acting on it (a link « modifier »).
+    if (!HEART) problems.push("Cœur d'Asterion manquant");
+    else {
+        if (HEART.zones.filter((z) => z.boss).length !== 1) problems.push("Cœur d'Asterion : une arène attendue");
+        if (!HEART.objectives.some((o) => o.id === HEART_OBJECTIVE && o.role === "gigaboss")) problems.push("Cœur d'Asterion : objectif de sa chute manquant");
+        const reach = reachableIn(HEART, states.get(HEART.id) ?? 0);
+        for (const z of HEART.zones) if (!reach[z.id]) problems.push(`Cœur d'Asterion : zone ${z.id} « ${z.name} » inatteignable même tout accompli`);
+        const mods = linksTo(HEART).filter((l) => l.kind === "modifier");
+        for (const c of CATALOGS) {
+            const g = c.objectives.find((o) => o.role === "gigaboss");
+            if (g && !mods.some((l) => l.from.some((f) => f.branch === c.id && f.objective_id === g.id))) problems.push(`Cœur d'Asterion : aucun effet de la chute de ${c.gigaboss}`);
+        }
+    }
+    const revision =
+        `titan ${TITAN.revision} · ` + CATALOGS.filter((c) => !!c).map((c) => `${partOf(c.id)} ${c.revision}`).join(" · ") + (HEART ? ` · coeur ${HEART.revision}` : "");
+    return { ok: problems.length === 0, heart: !!HEART, revision, branches: CATALOGS.length, zones, bosses, fights, links: TITAN.links.length, problems: problems.slice(0, 20), warnings: warnings.slice(0, 10) };
 }
 
 /** The stored check of an event, when it is the check of the catalogs the server plays now. */
@@ -231,6 +249,8 @@ export interface WorldBranch {
 }
 export interface WorldProgress {
     progress: number;
+    /** 2.72 (phase 6): the Cœur d'Asterion fell (validated: its shared health gone). */
+    heart_down: boolean;
     objectives_done: number;
     objectives: number;
     mandatory_done: number;
@@ -253,7 +273,7 @@ export interface WorldAggregate {
     players: WorldPlayer[];
 }
 
-/** « Asterion est tombé » once the seven gigaboss are down (validated), else « Asterion a survécu ». */
+/** « Asterion est tombé » once the seven gigaboss and its heart are down (validated), else « Asterion a survécu ». */
 export function outcomeText(outcome: string, final: boolean): string {
     if (outcome === "vaincu") return "Asterion est tombé";
     return final ? "Asterion a survécu" : "Asterion résiste encore";
@@ -288,6 +308,7 @@ export function worldOf(done: Map<string, Set<string>>): Omit<WorldProgress, "cl
     }
     return {
         progress: mandatory > 0 ? Math.floor((100 * mandatoryDone) / mandatory) : 0,
+        heart_down: !!HEART && !!done.get(HEART.id)?.has(HEART_OBJECTIVE),
         objectives_done: objectivesDone,
         objectives,
         mandatory_done: mandatoryDone,
@@ -474,7 +495,8 @@ export async function aggregate(db: D1Database, eventId: string): Promise<WorldA
             players: players.length,
             groups: groups.filter((g) => g.players > 0).length,
         },
-        outcome: w.gigaboss_defeated >= w.gigaboss && w.gigaboss > 0 ? "vaincu" : "survecu",
+        // 2.72 (phase 6): the seven gigaboss AND the Cœur d'Asterion (its shared fall, validated).
+        outcome: w.gigaboss_defeated >= w.gigaboss && w.gigaboss > 0 && w.heart_down ? "vaincu" : "survecu",
         clans,
         groups,
         players,

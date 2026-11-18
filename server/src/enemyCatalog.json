@@ -9,6 +9,14 @@
    "name": "Aile de cendre"
   },
   {
+   "id": "asterion_coeur",
+   "name": "Cœur d'Asterion"
+  },
+  {
+   "id": "asterion_ventricule",
+   "name": "Ventricule du cœur"
+  },
+  {
    "id": "astrarque",
    "name": "Astrarque"
   },
