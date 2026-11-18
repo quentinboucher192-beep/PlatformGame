@@ -32,7 +32,8 @@ manette ou à la souris, en français ou en anglais — et entièrement jouable 
 
 ## Dix-neuf pouvoirs
 
-Nova court, saute, glisse, s'accroupit sous les attaques et frappe — puis chaque monde lui apprend
+Nova court, saute, glisse, s'accroupit sous les attaques et frappe — devant elle, au-dessus d'elle
+(Haut + Attaque) ou, en l'air, en dessous (Bas + Attaque) — puis chaque monde lui apprend
 quelque chose de nouveau : **Dash** et **Ruée aérienne**, **Onde énergétique**, **Bouclier**,
 **Téléportation**, **Planeur**, **Grappin**, **Frappe sismique**, **Tir chargé**, **Triple saut**,
 **Ralenti temporel**, **Bombe plasma**, **Aimant**, **Lame boomerang** (et sa version chargée),
@@ -216,7 +217,7 @@ local, avec des comptes de démonstration (aucun record n'y est encore vérifié
 | Pouvoir 5 et 6 (niveaux à plus de 4 pouvoirs) | U / N, F / H | LT / L2, R3 |
 | Pouvoir 7 et 8 | à choisir | à choisir |
 | Planeur | maintenir Saut en tombant | maintenir A / Croix |
-| Frappe sismique | Bas + Attaque en l'air | Bas + X / Carré |
+| Frappe sismique | Bas + Attaque en l'air (remplace l'attaque vers le bas) | Bas + X / Carré |
 | Tir chargé | maintenir Attaque, relâcher | maintenir X / Carré |
 | Grappin | Interagir près d'un point d'ancrage | Y / Triangle |
 | Triple saut | troisième Saut en l'air (passif) | A / Croix |

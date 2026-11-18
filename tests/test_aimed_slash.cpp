@@ -21,6 +21,13 @@
 
 using namespace cosmic;
 
+// A check that ends the test case when it fails (what follows needs it).
+#define REQUIRE(cond)        \
+    do {                     \
+        CHECK(cond);         \
+        if (!(cond)) return; \
+    } while (0)
+
 namespace {
 
 constexpr uint32_t bit(Action a) { return 1u << static_cast<int>(a); }

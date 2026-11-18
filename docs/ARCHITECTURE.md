@@ -44,8 +44,10 @@ server/                     Cosmic Online : API Cloudflare Workers + D1 + R2 (Ty
   (plateformes, portes, leviers, lasers, collectibles…), projectiles, dégâts, `Hud`,
   `GameRenderer`.
 * `player/` – machine à états (Idle, Run, Jump, Fall, WallSlide, Climb, Slide, Dash, Swim,
-  Hurt, Dead, Respawn, Victory, Hidden ; double saut, atterrissage, attaque et interaction
-  sont des actions superposées à ces états) entièrement paramétrée par `data/player.json`
+  Hurt, Dead, Respawn, Victory, Hidden, Crouch ; double saut, atterrissage, attaque et
+  interaction sont des actions superposées à ces états ; l'attaque frappe devant, vers le haut
+  — Haut seul — ou, en l'air, vers le bas — Bas seul —, dans la direction choisie au début du
+  coup : `SlashDirection`, simulation 15, 2.69) entièrement paramétrée par `data/player.json`
   (vitesses, accélérations, décélérations, gravité, temps de coyote, tampon de saut,
   hauteur variable, glissade, saut mural…).
 * `powers/` – `PowerRegistry` : chaque pouvoir (Dash, Onde, Bouclier, Impulsion,
