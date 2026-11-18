@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Architecture
 
 Cosmic Platformer est écrit en C++20 sur SDL3 (rendu 2D `SDL_Renderer`, entrées, audio via
@@ -129,3 +131,7 @@ onOverlay()                        (notifications en jeu)
 
 Le chrono et toute la simulation utilisent le pas fixe : les résultats sont identiques
 quelle que soit la fréquence d'affichage.
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

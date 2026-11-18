@@ -1,4 +1,9 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Format des niveaux (`cosmic.level`, version 1)
+
+<p align="center"><img src="media/level_editor.png" width="720" alt="Un niveau (Les Ruines Suspendues) ouvert dans l'éditeur : ses calques, ses objets et leurs propriétés"></p>
+<p align="center"><sub>Ce que décrit ce format, vu dans l'éditeur de niveaux : calques, objets, propriétés.</sub></p>
 
 Un niveau est un fichier JSON unique. Les niveaux officiels sont dans `data/levels/`, les
 créations dans `levels/` du dossier utilisateur, les niveaux importés dans
@@ -251,3 +256,7 @@ moins d'un cœur par coup) ; `lives` (0 = illimitées) est le nombre de vies pou
 Les deux ne sont écrits que s'ils diffèrent de leur valeur par défaut, et font partie de
 l'empreinte de gameplay. La fiche du niveau affiche toujours « Dégâts reçus : ×… — Vies : … »
 (le mode défi compte `challengeMaxDeaths + 1` vies).
+
+---
+
+[← Retour à l'accueil (README)](../README.md)

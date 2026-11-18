@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Installation et développement local
 
 Tout fonctionne en local, **sans compte Cloudflare** : `wrangler dev` exécute le Worker dans
@@ -123,3 +125,7 @@ variables vers un serveur de production** : ce sont des comptes de test.
 
 Avec `--headless --frames N --shot K:capture.png`, elles servent aux captures d'écran
 automatiques.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

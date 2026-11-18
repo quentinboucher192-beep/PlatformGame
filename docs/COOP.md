@@ -1,3 +1,5 @@
+[← Retour à l'accueil (README)](../README.md)
+
 # Coopération à 2 ou 3 joueurs (niveaux EXTRÊME, 2.63)
 
 Ce document fixe l'architecture, les formats, les règles et la sécurité de la coopération.
@@ -7,6 +9,9 @@ Il a été écrit **avant** le code et sert de référence aux quatre étapes :
 2. le jeu sur **un même PC** (2 ou 3 manettes, ou clavier + manettes) ;
 3. le jeu **en ligne** (relais Durable Object) et **en réseau local** (un PC fait le relais) ;
 4. les classements **Duo** et **Trio** de la course à la vérification.
+
+<p align="center"><img src="media/coop_trio.gif" width="640" alt="Trois joueurs ensemble dans l'arène d'un niveau EXTRÊME, sous une caméra commune"></p>
+<p align="center"><sub>Trois joueurs sur un même PC, une caméra commune (joueurs pilotés par des scripts pour la capture).</sub></p>
 
 Les clans ne font pas partie de ce travail : une équipe a seulement la place d'un tag de
 clan facultatif (`clan_tag`, toujours vide pour l'instant).
@@ -104,6 +109,8 @@ voulu.
   du cadre) et les réanimations restantes. L'empreinte solo est inchangée.
 
 ## 3. Jeu sur un même PC
+
+<p align="center"><img src="media/coop_lobby.png" width="820" alt="Salon de la coopération : le niveau, l'équipe, un périphérique par joueur et les règles"></p>
 
 * **Un périphérique par joueur** (2.65, `engine/input/Devices.h`) : le clavier et la souris vont
   ensemble et ne servent qu'à un seul joueur ; chaque manette, à un seul joueur. Le joueur 1
@@ -366,3 +373,6 @@ branche à un pas. Le monde a un **mode raid** (`GameWorld::setRaidMode`) : siè
 (`Presence::Vacant`), pas de cadre d'équipe (chacun sa caméra), et `carryOf` / `restoreMember` pour
 passer d'une zone à l'autre.
 
+---
+
+[← Retour à l'accueil (README)](../README.md)

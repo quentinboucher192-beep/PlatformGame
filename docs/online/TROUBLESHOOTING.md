@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Dépannage de Cosmic Online
 
 Le journal du jeu (`cosmic.log` dans le dossier utilisateur) indique au démarrage le serveur
@@ -39,3 +41,7 @@ utilisé, l'origine de l'adresse et le client HTTP :
 Les erreurs internes ne renvoient au client qu'un message générique (`INTERNAL_ERROR`) avec un
 `request_id` ; le détail est dans les journaux du Worker (`npx wrangler tail`), retrouvable
 avec ce `request_id`.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

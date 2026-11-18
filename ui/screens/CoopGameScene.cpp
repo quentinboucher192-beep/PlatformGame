@@ -16,6 +16,7 @@
 #include <thread>
 
 #include "engine/core/Log.h"
+#include "engine/input/InputScript.h"
 #include "engine/input/LocalPad.h"
 #include "game/GameServices.h"
 #include "game/cosmetics/SuitRecolor.h"
@@ -56,6 +57,15 @@ class CoopGameScene : public Scene {
 public:
     CoopGameScene(GameServices& g, CoopSetup setup, std::unique_ptr<CoopLink> link)
         : g_(g), setup_(std::move(setup)), link_(std::move(link)) {}
+
+    /// 2.70, a capture for the documentation (--coop-test, headless only): each seat's script
+    /// and where it appears.
+    void setCapture(const CoopCapture& c) {
+        scripts_.assign(setup_.seats.size(), InputScript{});
+        for (size_t i = 0; i < c.scripts.size() && i < scripts_.size(); ++i) scripts_[i].parse(c.scripts[i]);
+        spawns_ = c.spawns;
+    }
+    bool scripted(int seat) const { return seat >= 0 && seat < static_cast<int>(scripts_.size()) && scripts_[static_cast<size_t>(seat)].active(); }
 
     ~CoopGameScene() override {
         stopWorker_ = true;
@@ -114,6 +124,9 @@ public:
         info.colors = colors;
         info.promptPlayer = setup_.localSeat >= 0 ? setup_.localSeat : 0;
         hud_.setTeam(info);
+        // 2.70, a capture: where each seat appears (a free spot near the place given).
+        for (size_t i = 0; i < spawns_.size() && static_cast<int>(i) < n; ++i)
+            if (spawns_[i]) world_->restoreMember(static_cast<int>(i), world_->carryOf(static_cast<int>(i)), *spawns_[i]);
         renderer_.build(g_.app.renderer(), res, *world_);
         renderer_.setTeamColors(colors);
         if (g_.settings.gameplay.progressBar > 0)
@@ -263,7 +276,8 @@ public:
             if (!setup_.local(i)) continue;
             const CoopSeat& s = setup_.seats[static_cast<size_t>(i)];
             PlayerInput in;
-            if (s.device == CoopSeat::Device::Pad && pads_[static_cast<size_t>(i)]) in = pads_[static_cast<size_t>(i)]->consume();
+            if (scripted(i)) in = scripts_[static_cast<size_t>(i)].next();  // 2.70: a capture's seat
+            else if (s.device == CoopSeat::Device::Pad && pads_[static_cast<size_t>(i)]) in = pads_[static_cast<size_t>(i)]->consume();
             else if (s.device == CoopSeat::Device::Keyboard) in = g_.app.input().consumePlayerInput();
             InputFrame f = InputFrame::fromPlayerInput(in);
             // 2.65: « Continuer sans » : this PC decides the player's absence as the relay does
@@ -464,6 +478,8 @@ public:
                 g_.ui.setFocus("coop/pause/resume");
             }
         }
+        // 2.70, a capture: a scripted seat leaves the power offered (no menu).
+        if (const auto& offer = world_->powerOffer(); offer && scripted(offer->player) && pendingChoice_ == 0) pendingChoice_ = InputFrame::kChoiceLeave;
         // A power offered to a player of this computer: its choice (stops the world, as alone).
         if (const auto& offer = world_->powerOffer(); offer && setup_.local(offer->player) && pendingChoice_ == 0) {
             if (!choosing_) {
@@ -929,6 +945,8 @@ public:
     Hud hud_;
     std::vector<TexturePtr> suits_;
     std::vector<std::unique_ptr<LocalPad>> pads_;
+    std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
+    std::vector<std::optional<Vec2>> spawns_;
     // 2.65, one PC: each player's device, whether the team goes on without it, the pause of a
     // device missing, the free pads (A takes a place), each player's power keys.
     std::vector<LocalDevice> devices_;
@@ -978,6 +996,24 @@ public:
 
 std::unique_ptr<Scene> makeCoopGame(GameServices& g, CoopSetup setup, std::unique_ptr<CoopLink> link) {
     return std::make_unique<CoopGameScene>(g, std::move(setup), std::move(link));
+}
+
+std::unique_ptr<Scene> makeCoopCapture(GameServices& g, CoopCapture capture) {
+    CoopSetup setup;
+    setup.mode = CoopSetup::Mode::SamePc;
+    setup.levelId = capture.levelId;
+    const int n = std::clamp(capture.players, 2, 3);
+    for (int i = 0; i < n; ++i) {
+        CoopSeat seat;
+        seat.name = "Joueur " + std::to_string(i + 1);
+        // Player 1 keeps the keyboard when it has no script; the others play their scripts only.
+        seat.device = i == 0 ? CoopSeat::Device::Keyboard : CoopSeat::Device::Remote;
+        seat.color = coopColor(i);
+        setup.seats.push_back(seat);
+    }
+    auto scene = std::make_unique<CoopGameScene>(g, std::move(setup), std::make_unique<LocalCoopLink>(n));
+    scene->setCapture(capture);
+    return scene;
 }
 
 }  // namespace cosmic

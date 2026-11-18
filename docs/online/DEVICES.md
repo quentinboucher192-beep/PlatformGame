@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Un compte, un ordinateur (2.47)
 
 Un compte Cosmic Online est **privé à un seul ordinateur**. Code : `server/src/devices.ts`,
@@ -241,3 +243,7 @@ items, look }, playtime: { seconds, levels, boss_stats }, levels: { published, t
 Limites (API.md §3) : `migration_code` 10 / h par compte ; `migration_fail_target` et
 `migration_fail_source` 5 **échecs** / 10 min par nouveau compte et par ancien compte ;
 `progress_restore` 30 / h ; l'admin : `admin_write` et `backup_create`.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

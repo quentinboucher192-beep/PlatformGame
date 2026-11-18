@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Règles des classements et validation des records
 
 ## Identité d'un classement
@@ -162,3 +164,7 @@ mais **le serveur ne re-simule pas encore** les replays ; il vérifie leur traje
 cohérence de leurs entrées. C'est pourquoi les records mondiaux des comptes peu fiables, sur un
 classement établi, passent par une revue manuelle (`/api/v1/admin/records`). La re-simulation
 côté serveur est prévue plus tard ; les entrées sont déjà conservées pour elle.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)

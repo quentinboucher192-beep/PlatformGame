@@ -29,6 +29,7 @@
 #include <memory>
 #include <thread>
 
+#include "engine/input/InputScript.h"
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/coop/CoopTransport.h"
@@ -156,8 +157,9 @@ public:
     void beginTest() {
         branch_ = nullptr;
         for (const raid::Branch* b : raid::Branch::all())
-            if (b->id == testSetup_.branch) branch_ = b;
-        if (!g_.online.isAdmin()) {
+            if (b->id == testSetup_.branch || (testSetup_.capture && b->part == testSetup_.branch)) branch_ = b;  // 2.70: « bras_droit » too
+        // 2.70: a capture for the documentation (--raid-test, headless only) needs no account.
+        if (!g_.online.isAdmin() && !testSetup_.capture) {
             fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
             return;
         }
@@ -182,18 +184,34 @@ public:
             run_.reset();
             return;
         }
+        // 2.70, a capture: each seat's script, and where it appears.
+        scripts_.assign(raid::kMaxInstancePlayers, InputScript{});
+        for (size_t k = 0; k < testSetup_.scripts.size() && k < scripts_.size(); ++k) scripts_[k].parse(testSetup_.scripts[k]);
+        GameWorld& w = run_->world();
+        for (size_t k = 0; k < testSetup_.spawns.size() && static_cast<int>(k) < w.teamSize(); ++k)
+            if (testSetup_.spawns[k]) w.restoreMember(static_cast<int>(k), w.carryOf(static_cast<int>(k)), *testSetup_.spawns[k]);
         hud_.setRaidView(true);
         zoneReady();
     }
 
     /// 2.68: one step of a test: this computer's input on seat 0, the others vacant.
     void stepTest() {
-        InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
+        const PlayerInput in = g_.app.input().consumePlayerInput();
+        InputFrame f = InputFrame::fromPlayerInput(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in);
         if (paused_) f = InputFrame{};
-        if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
+        const auto& offer = run_->world().powerOffer();
+        if (offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
         frame_.assign(raid::kMaxInstancePlayers, InputFrame{});
         frame_[0] = f;
-        for (size_t k = 1; k < frame_.size(); ++k) frame_[k].flags = InputFrame::Vacant;
+        for (size_t k = 1; k < frame_.size(); ++k) {
+            // 2.70, a capture: a seat with a script plays it; the others stay vacant.
+            if (k < scripts_.size() && scripts_[k].active()) {
+                frame_[k] = InputFrame::fromPlayerInput(scripts_[k].next());
+                if (offer && offer->player == static_cast<int>(k)) frame_[k].choice = InputFrame::kChoiceLeave;
+                continue;
+            }
+            frame_[k].flags = InputFrame::Vacant;
+        }
         run_->step(frame_.data(), static_cast<int>(frame_.size()), 0);
         ++tick_;
         run_->takeReports();  // empty: a test never reports anything
@@ -381,8 +399,8 @@ public:
 
     void render(float alpha) override {
         UIContext& ui = g_.ui;
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);  // first: it gives ui.r() (2.70: also as the first screen)
         Renderer& r = ui.r();
-        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         ui.pushId("raidgame");
         if (!run_ || catching_) {
             r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{11, 10, 28, 255});
@@ -706,7 +724,7 @@ public:
             for (int i = 0; i < w.teamSize(); ++i)
                 if (i != local_ && w.member(i).presence == GameWorld::Presence::Playing) f.allies.push_back(w.playerAt(i).center());
         }
-        arenaCam_.update(f, dt, g_.ui.r().width(), g_.ui.r().height());
+        arenaCam_.update(f, dt, g_.app.renderer().width(), g_.app.renderer().height());  // 2.70: also before any UI frame
     }
 
     /// 2.68: the title of the arena while its whole is shown (the intro shot).
@@ -1233,6 +1251,7 @@ public:
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
+    std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
     raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)

@@ -1,3 +1,5 @@
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
+
 # Secrets de Cosmic Online
 
 Règles :
@@ -61,3 +63,7 @@ En poste de travail, préférez `npx wrangler login`.
 * Sur le serveur, jetons d'accès et de renouvellement ne sont stockés que sous forme
   d'empreinte SHA-256 ; un jeton de renouvellement déjà utilisé et présenté à nouveau hors du
   délai de grâce (120 s) révoque toute la session.
+
+---
+
+[← Retour : Cosmic Online](README.md) · [Accueil (README)](../../README.md)
