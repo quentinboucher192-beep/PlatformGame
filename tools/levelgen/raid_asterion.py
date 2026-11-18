@@ -21,6 +21,10 @@ state (24 and up; the objectives are the bits below): the server sets it when th
 objectives are accepted, the relay gives it at a step (RAID_STATE), every game of an instance
 applies it at that step.
 
+2.69 (phase 4B): the lairs of Voidworm, Graviton and Titanus are unsealed: their arenas and fights are
+written by raid_voidworm.py, raid_graviton.py and raid_titanus.py (called from here with this module),
+each branch gains its gigaboss objective (role "gigaboss", at the end of its catalog).
+
 Never edit the JSON by hand: run
     python3 tools/levelgen/raid_asterion.py          (the levels, the catalogs, the titan)
     python3 tools/levelgen/raid_asterion.py --en raid_en.json   (also: the English of every
@@ -38,7 +42,7 @@ from levelkit import Level, ROOT, T
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
 TITAN_REVISION = 1
-BRANCH_REVISION = 1
+BRANCH_REVISION = 2  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
 H = 48
@@ -283,7 +287,8 @@ ABDOMEN = Spec(
       "Ennemis : tisseuses, feux follets · glande sud (un pouvoir de tir)", ""),
      (7, "Gosier de Voidworm", "Voidworm's gullet", "s'ouvre : 2 glandes", 790, 520,
       "Ennemis : la garde du gosier (arène en trois vagues)", ""),
-     (8, "Antre de Voidworm", "Voidworm's lair", SEALED_SUB, 1000, 360, "Le gigaboss Voidworm attend derrière sa porte scellée", "")],
+     (8, "Antre de Voidworm", "Voidworm's lair", "GIGABOSS · Voidworm, 3 phases", 1000, 360,
+      "Le gigaboss Voidworm : épingler ses anneaux, libérer les avalés, fuir l'acide", "Reflux d'acide à sa 3e phase (racines hautes sûres)")],
     [("abd_diaphragme", 1, "Reprendre le diaphragme : vaincre sa garde", "Retake the diaphragm: defeat its guard", False, "", ""),
      ("abd_glande_nord", 2, "Crever la glande nord (un pouvoir de tir)", "Burst the north gland (a shooting power)", False, "generator", ""),
      ("abd_nid", 3, "Détruire le nid des parasites : vaincre ses gardes", "Destroy the parasite nest: defeat its guards", False, "", ""),
@@ -293,7 +298,8 @@ ABDOMEN = Spec(
      ("abd_glande_sud", 6, "Crever la glande sud (un pouvoir de tir)", "Burst the south gland (a shooting power)", False, "generator", ""),
      ("abd_levier", 6, "Facultatif : ouvrir le raccourci vers l'Intestin (levier)", "Optional: open the shortcut to the Intestine (lever)",
       True, "shortcut", ""),
-     ("abd_gosier", 7, "Forcer le gosier : vaincre sa garde", "Force the gullet: defeat its guard", False, "", "")],
+     ("abd_gosier", 7, "Forcer le gosier : vaincre sa garde", "Force the gullet: defeat its guard", False, "", ""),
+     ("abd_voidworm", 8, "Vaincre le gigaboss Voidworm", "Defeat the gigaboss Voidworm", False, "gigaboss", "")],
     [(1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True), (2, 6, "", False),
      (4, 6, "shortcut", False), (6, 7, "generators", False), (4, 7, "link:torse_plaques", False),
      (7, 8, "objective:abd_gosier", False)],
@@ -318,7 +324,9 @@ JAMBE_GAUCHE = Spec(
       "Ennemis : ailes de nuit, rôdeurs · générateur de gravité est", ""),
      (7, "Cheville", "Ankle", "s'ouvre : 2 générateurs de gravité", 790, 480,
       "Ennemis : la garde de la cheville (arène en trois vagues)", ""),
-     (8, "Pied de Graviton", "Graviton's foot", SEALED_SUB, 1000, 330, "Le gigaboss Graviton attend derrière sa porte scellée", "")],
+     (8, "Pied de Graviton", "Graviton's foot", "GIGABOSS · Graviton, 3 phases", 1000, 330,
+      "Le gigaboss Graviton : couper ses générateurs ensemble, s'abriter quand la gravité s'inverse",
+      "Gravité inversée par secteurs (les dalles hautes abritent)")],
     [("jg_hanche", 1, "Reprendre la hanche : vaincre sa garde", "Retake the hip: defeat its guard", False, "", ""),
      ("jg_generateur_ouest", 2, "Couper le générateur de gravité ouest (un pouvoir de tir)",
       "Cut the west gravity generator (a shooting power)", False, "generator", ""),
@@ -331,7 +339,8 @@ JAMBE_GAUCHE = Spec(
       "Cut the east gravity generator (a shooting power)", False, "generator", ""),
      ("jg_levier", 6, "Facultatif : ouvrir le raccourci vers le Genou (levier)", "Optional: open the shortcut to the Knee (lever)", True,
       "shortcut", ""),
-     ("jg_cheville", 7, "Briser la cheville : vaincre sa garde", "Break the ankle: defeat its guard", False, "", "")],
+     ("jg_cheville", 7, "Briser la cheville : vaincre sa garde", "Break the ankle: defeat its guard", False, "", ""),
+     ("jg_graviton", 8, "Vaincre le gigaboss Graviton", "Defeat the gigaboss Graviton", False, "gigaboss", "")],
     [(1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True), (2, 6, "", False),
      (4, 6, "shortcut", False), (4, 7, "generators", False), (6, 7, "link:jd_cheville", False),
      (7, 8, "objective:jg_cheville", False)],
@@ -358,7 +367,8 @@ JAMBE_DROITE = Spec(
       "Ennemis : drones de forge, rôdeurs de lave · réacteur est (un pouvoir de tir)", ""),
      (7, "Cheville d'acier", "Steel ankle", "s'ouvre : 2 réacteurs", 790, 360,
       "Ennemis : la garde de la cheville (arène en trois vagues)", ""),
-     (8, "Talon de Titanus", "Titanus's heel", SEALED_SUB, 1000, 360, "Le gigaboss Titanus attend derrière sa porte scellée", "")],
+     (8, "Talon de Titanus", "Titanus's heel", "GIGABOSS · Titanus, 3 phases", 1000, 360,
+      "Le gigaboss Titanus : sauter ses ondes de choc, briser ses deux entraves ensemble", "Ondes de choc au sol (les grilles sont sûres)")],
     [("jd_hanche", 1, "Reprendre la hanche de fer : vaincre sa garde", "Retake the iron hip: defeat its guard", False, "", ""),
      ("jd_golem", 2, "Abattre le golem de la cuisse-piston", "Bring down the piston thigh's golem", False, "", ""),
      ("jd_reacteur_ouest", 3, "Couper le réacteur ouest (un pouvoir de tir)", "Cut the west reactor (a shooting power)", False,
@@ -369,7 +379,8 @@ JAMBE_DROITE = Spec(
      ("jd_reacteur_est", 6, "Couper le réacteur est (un pouvoir de tir)", "Cut the east reactor (a shooting power)", False, "generator", ""),
      ("jd_levier", 6, "Facultatif : ouvrir le raccourci vers le Genou-forge (levier)",
       "Optional: open the shortcut to the Forge knee (lever)", True, "shortcut", ""),
-     ("jd_cheville", 7, "Briser la cheville d'acier : vaincre sa garde", "Break the steel ankle: defeat its guard", False, "", "")],
+     ("jd_cheville", 7, "Briser la cheville d'acier : vaincre sa garde", "Break the steel ankle: defeat its guard", False, "", ""),
+     ("jd_titanus", 8, "Vaincre le gigaboss Titanus", "Defeat the gigaboss Titanus", False, "gigaboss", "")],
     [(1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True), (3, 6, "", False),
      (4, 6, "shortcut", False), (4, 7, "generators", False), (6, 7, "generators", False), (7, 8, "objective:jd_cheville", False)],
     {"generators": ("il faut couper les deux réacteurs", "both reactors must be cut",
@@ -1442,8 +1453,8 @@ def abdomen():
                "Le gosier de Voidworm, fermé par deux glandes. Sa garde défend l'antre.",
                "Voidworm's gullet, closed by two glands. Its guard defends the lair.",
                "Le gosier s'ouvre ! L'antre de Voidworm est ouvert.", "The gullet opens! Voidworm's lair is open.")
-    lair(s, "L'antre de Voidworm, au fond de l'abdomen. La porte est scellée : le combat arrive dans la prochaine version.",
-         "Voidworm's lair, at the bottom of the abdomen. The door is sealed: the fight comes in the next version.")
+    import raid_voidworm  # 2.69 (phase 4B): its lair unsealed, its fight
+    raid_voidworm.lair(sys.modules[__name__], s)
 
 
 # ======================================================================== JAMBE GAUCHE (Graviton)
@@ -1539,8 +1550,8 @@ def jambe_gauche():
                "La cheville gauche, verrouillée par deux générateurs de gravité. Sa garde défend le pied de Graviton.",
                "The left ankle, locked by two gravity generators. Its guard defends Graviton's foot.",
                "La cheville cède ! Le pied de Graviton est ouvert.", "The ankle gives way! Graviton's foot is open.")
-    lair(s, "Le pied de Graviton, au bout de la jambe gauche. La porte est scellée : le combat arrive dans la prochaine version.",
-         "Graviton's foot, at the end of the left leg. The door is sealed: the fight comes in the next version.")
+    import raid_graviton  # 2.69 (phase 4B): its lair unsealed, its fight
+    raid_graviton.lair(sys.modules[__name__], s)
 
 
 # ======================================================================== JAMBE DROITE (Titanus)
@@ -1630,8 +1641,8 @@ def jambe_droite():
                "La cheville d'acier, verrouillée par deux réacteurs. Sa garde défend le talon de Titanus.",
                "The steel ankle, locked by two reactors. Its guard defends Titanus's heel.",
                "La cheville d'acier cède ! Le talon de Titanus est ouvert.", "The steel ankle gives way! Titanus's heel is open.")
-    lair(s, "Le talon de Titanus, au bout de la jambe droite. La porte est scellée : le combat arrive dans la prochaine version.",
-         "Titanus's heel, at the end of the right leg. The door is sealed: the fight comes in the next version.")
+    import raid_titanus  # 2.69 (phase 4B): its lair unsealed, its fight
+    raid_titanus.lair(sys.modules[__name__], s)
 
 
 # ------------------------------------------------------------------ catalogs, links, checks

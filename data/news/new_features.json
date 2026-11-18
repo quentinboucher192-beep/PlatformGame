@@ -2501,6 +2501,27 @@
     "collection.cat.title",
     "collection.tab.route"
    ]
+  },
+  {
+   "id": "ach.communaute_voidworm",
+   "version": "2.69.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_graviton",
+   "version": "2.69.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_titanus",
+   "version": "2.69.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
   }
  ]
 }

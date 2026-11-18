@@ -455,6 +455,20 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.69.0** :
+* **Raids de clan, phase 4B : VOIDWORM, GRAVITON et TITANUS** dans les antres descellées de l'ABDOMEN, de la JAMBE GAUCHE
+  et de la JAMBE DROITE (zones 8 générées par `tools/levelgen/raid_voidworm.py`, `raid_graviton.py`, `raid_titanus.py`,
+  appelés par `raid_asterion.py`) : trois combats en trois phases, chacun sa routine (`game/raid/GigabossRoutine` et
+  `VoidwormRoutine`, `GravitonRoutine`, `TitanusRoutine`) autour des règles de Pyroclast (vie selon les sièges, marques sous
+  chaque joueur, points faibles, chute, rapports) ; sprites et planches en pixel art générés par
+  `tools/assetgen/characters/boss_m_voidworm.py`, `boss_m_graviton.py`, `boss_m_titanus.py`.
+* **Mécanismes collectifs** : les trois crochets de Voidworm tenus ensemble, les quatre générateurs de Graviton coupés au
+  même instant dans des secteurs séparés, les deux entraves de Titanus brisées à moins de 1,5 s d'écart ; Voidworm avale des
+  joueurs que les autres libèrent (sauvetages), Graviton inverse la gravité par secteurs (abris sous les dalles), Titanus
+  envoie des ondes de choc à sauter ; liens avec la phase 4A (nid, valves, générateurs, réacteurs de la branche).
+* **Serveur** : un badge par gigaboss (« Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus »), accordé une seule
+  fois à qui était présent à sa chute validée ; la partie du titan détruite ; les résultats nomment chaque gigaboss tombé.
+
 **Nouveau dans la version 2.68.2** :
 * **La pause ne fige jamais le jeu en ligne ni dans le test admin** : seul le joueur cesse d'agir, les ennemis et le
   boss continuent et peuvent encore le toucher.

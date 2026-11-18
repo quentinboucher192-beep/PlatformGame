@@ -22,10 +22,12 @@
 // vents closed (who held them), the weak points broken (who broke them), the gigaboss down.
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "game/raid/GigabossRoutine.h"
 #include "game/raid/RaidBranch.h"
 
 namespace cosmic {
@@ -105,8 +107,13 @@ public:
         testPlayers_ = players;
         testPhase_ = startPhase;
     }
+    /// 2.69 (phase 4B): the routine of the gigaboss (Voidworm, Graviton, Titanus), null for
+    /// Pyroclast; the state of the branch at this step (the objectives its routine reads).
+    const GigabossRoutine* routine() const { return routine_.get(); }
+    void setBranchMask(uint32_t mask) { mask_ = mask; }
 
 private:
+    friend class GigabossRoutine;  // 2.69: the routines run these rules their own way
     Enemy* find(GameWorld& w);
     void alert(std::string text, AlertKind kind) { alerts_.emplace_back(std::move(text), kind); }
     void stepVents(GameWorld& w, Contributions& c, Enemy& b);
@@ -133,6 +140,8 @@ private:
     bool seen_ = false, fallen_ = false;   // the boss found in the world; it already fell (branch state)
     std::vector<Fist> fists_;
     int fistClock_ = 0;
+    std::unique_ptr<GigabossRoutine> routine_;  // 2.69 (phase 4B)
+    uint32_t mask_ = 0;
 };
 
 }  // namespace cosmic::raid
