@@ -103,6 +103,15 @@ bool parseClock(const std::string& s, int& h, int& mi);
 
 enum class State { Draft, Open, Scheduled, Imminent, Running, Finished, Cancelled };
 
+/// 2.69 (phase 5): the official result of a world event once frozen by the server (« result » of an
+/// event in GET /raids and its sheet): the outcome, the world's progress, my clan's rank (0: not ranked).
+struct EventResult {
+    bool valid = false;
+    std::string outcome, text;  // "vaincu" / "survecu", « Asterion a survécu »
+    int progress = 0, gigabossDefeated = 0, gigaboss = 7, clans = 0, players = 0, myClanRank = 0;
+};
+EventResult parseEventResult(const Json& j);
+
 /// An event as the server sends it (GET /raids, /raids/events/{id}, /admin/raids).
 struct Event {
     std::string id, kind = "world", raid = "asterion", name = "Asterion", displayName = "ASTERION", displayTitle = "LE DÉVOREUR DE MONDES";
@@ -119,6 +128,15 @@ struct Event {
     int clanPlayers = 0, clanGroups = 0;
     std::string clanLeader;
     bool registered = false;
+    // 2.69 (phase 5): suspended by the administrators (nothing counts until the resumption), the late
+    // arrivals (minutes after the start a newcomer may still enter play, -1: until the end), a catch-up
+    // session (« session de rattrapage ») of an official world event, its official result once frozen.
+    bool suspended = false;
+    std::string suspendedReason;
+    int lateMinutes = -1;
+    bool catchup = false;
+    std::string catchupOf;
+    EventResult result;
     bool valid = false;  // an id and readable times
 };
 Event parseEvent(const Json& j);
@@ -238,6 +256,72 @@ std::string categoryText(const ResultPlayer& p, const std::string& category);
 std::vector<ResultPlayer> rankedBy(const Results& r, const std::string& category);
 /// « 48 210 » (a space between thousands, as the maquette).
 std::string groupDigits(int64_t v);
+
+// ------------------------------------------------------------------ 2.69: the world events (phase 5)
+
+/// « 1er », « 2ᵉ »…
+std::string ordinal(int rank);
+/// « Arrivée en retard : jusqu'à la fin », « … : jusqu'à 30 min après le début », « … : non ».
+std::string lateRuleText(const Event& e);
+/// The history's line of a frozen result: « Asterion a survécu · 42 % · [AUBE] 2ᵉ / 23 ».
+std::string resultLine(const EventResult& r, const std::string& clanTag);
+
+/// The world rankings of a world event (GET /raids/events/{id}/world), from the validated results
+/// only: every clan, the groups (instances), the players in every category, the world's progress.
+struct WorldClan {
+    int rank = 0;
+    std::string id, tag, name;
+    int points = 0, players = 0, registered = 0, groups = 0, objectives = 0, first = 0, gigaboss = 0;
+    bool mine = false;
+};
+struct WorldGroup {
+    int rank = 0;
+    std::string id, clanTag, branch, branchName;
+    int group = 0, points = 0, players = 0, objectives = 0, bossPhase = 0;
+    bool mine = false, me = false;
+};
+struct WorldBranch {
+    std::string part, name, gigaboss;
+    int objectivesDone = 0, objectives = 0, zonesControlled = 0, zones = 0;
+    bool down = false;
+};
+struct WorldRanking {
+    bool valid = false;
+    std::string state;          // the server's state of the event (« en_cours », « termine »…)
+    bool final = false;         // the official result, frozen by the server: it no longer moves
+    bool closing = false;       // ended, its official result not frozen yet (the last reports' grace)
+    bool suspended = false, catchup = false;
+    std::string frozenAt, catchupOf;
+    int progress = 0, objectivesDone = 0, objectives = 0, zonesControlled = 0, zones = 0, gigabossDefeated = 0, gigaboss = 7;
+    int clansRegistered = 0, clansPlaying = 0, participants = 0, groupsPlaying = 0;
+    std::vector<WorldBranch> branches;
+    std::string outcome, outcomeText;  // "vaincu", "survecu" or "en_cours"; « Asterion a survécu »
+    std::vector<WorldClan> clans;
+    std::vector<WorldGroup> groups;
+    std::vector<ResultPlayer> players;
+    int totalClans = 0, totalGroups = 0, totalPlayers = 0;
+    // What waits for its majority (never ranked); once final: what was never validated.
+    int pendingTables = 0, pendingObjectives = 0, pendingInstances = 0;
+    std::string myClanTag;
+    int myClanRank = 0, myClanPoints = 0, myGroupRank = 0, myRank = 0;
+    bool myPending = false;
+    int myPendingReports = 0;
+    std::vector<std::string> myClanTitles;  // « Dévoreurs dévorés · 2ᵉ mondial »
+    std::vector<Reward> rewards;            // mine to claim for this event
+    // A catch-up session: the official result it never changes.
+    bool officialFrozen = false;
+    std::string officialText;
+    int officialProgress = 0;
+};
+WorldRanking parseWorld(const Json& j);
+/// « Progression mondiale 42 % · 18 / 43 objectifs · 1 / 7 gigaboss ».
+std::string worldProgressLine(const WorldRanking& w);
+/// What waits for its majority, said apart from the rankings ("" when nothing waits).
+std::string pendingText(const WorldRanking& w);
+/// The state of the ranking: « Résultat officiel · figé le … », « Classement en cours »…
+std::string rankingStateText(const WorldRanking& w);
+/// The players ranked by a category (as rankedBy), from any list.
+std::vector<ResultPlayer> rankedPlayers(const std::vector<ResultPlayer>& players, const std::string& category);
 
 }  // namespace raids
 

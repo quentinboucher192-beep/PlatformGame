@@ -46,6 +46,10 @@ SUITS = {
     "linceul": ((58, 46, 78), (180, 245, 102), (226, 214, 184)),
     # 2.58: le Titan Mécanique (riveted gunmetal, a visor of boiler amber, a scarf of brass)
     "fonte": ((96, 104, 118), (255, 194, 60), (204, 166, 84)),
+    # 2.69: Asterion's world event (the titan's basalt bark, a magma visor, a violet aurora scarf) and
+    # the silver version of its catch-up sessions
+    "ecorce": ((92, 58, 66), (255, 122, 52), (170, 92, 255)),
+    "ecorce_argent": ((196, 200, 214), (120, 225, 255), (236, 232, 246)),
 }
 
 

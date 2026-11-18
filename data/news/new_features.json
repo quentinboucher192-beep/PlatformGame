@@ -2501,6 +2501,30 @@
     "collection.cat.title",
     "collection.tab.route"
    ]
+  },
+  {
+   "id": "cos.suit_ecorce_asterion",
+   "version": "2.69.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.suit_ecorce_argent",
+   "version": "2.69.0",
+   "parents": [
+    "collection.cat.suit",
+    "collection.tab.route"
+   ]
+  },
+  {
+   "id": "cos.title_devoreurs_devores",
+   "version": "2.69.0",
+   "parents": [
+    "collection.cat.title",
+    "collection.tab.route"
+   ]
   }
  ]
 }

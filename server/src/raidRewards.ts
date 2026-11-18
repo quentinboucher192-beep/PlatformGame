@@ -16,6 +16,7 @@ import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { raidState } from "./raids";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
+import { WORLD_REWARDS } from "./raidWorldRewards";
 
 /** One player's contributions (the numbers the games computed, tenths of health for the damage). */
 export interface Contribution {
@@ -111,6 +112,8 @@ export const RAID_REWARDS: Record<string, RaidReward> = {
         why: "Parmi les 3 meilleurs scores de contribution de l'événement, Pyroclast vaincu",
         rank: "performance",
     },
+    // 2.69 (phase 5): the exclusive rewards of the world events and their catch-up sessions (raidWorld.ts).
+    ...(WORLD_REWARDS as Record<string, RaidReward>),
 };
 export const PARTICIPATION_TICKS = 5 * 60 * 120;
 export const PERFORMANCE_SCORE = 1500;

@@ -168,9 +168,14 @@ private:
             float px = pillsX;
             const float cy = left.y + ui.s(22);
             const bool world = e.kind == "world";
-            const std::string kind = world ? "ÉVÉNEMENT MONDIAL" : "RAID DU CLAN " + clans::bracket(e.organizerTag);
+            // 2.69: a catch-up session (« session de rattrapage ») of an official world event.
+            const std::string kind = e.catchup ? "SESSION DE RATTRAPAGE" : world ? "ÉVÉNEMENT MONDIAL" : "RAID DU CLAN " + clans::bracket(e.organizerTag);
             float w = pill(ui, px, cy, kind, world ? kOrange : Color{42, 58, 122, 255}, world ? kInk : kText, left.right());
             if (w > 0.0f) px += w + ui.s(8);
+            if (e.suspended && st == raids::State::Running) {
+                const float sw2 = pill(ui, px, cy, "SUSPENDU", Color{122, 26, 26, 255}, kText, left.right());
+                if (sw2 > 0.0f) px += sw2 + ui.s(8);
+            }
             const std::string sl = st == raids::State::Open ? "Inscriptions ouvertes jusqu'à " + whenShort(e.lockAt) : raids::stateLabel(st);
             if (pill(ui, px, cy, sl, stateFill(st), stateText(st), left.right()) == 0.0f)
                 pill(ui, px, cy, raids::stateLabel(st), stateFill(st), stateText(st), left.right());
@@ -202,23 +207,36 @@ private:
             const Rect band{left.x, y, left.w, ui.s(54)};
             ui.r().fillRoundedRect(band, ui.s(10), running ? Color{122, 26, 26, 235} : Color{36, 46, 96, 235});
             const std::string label = "Carte du titan", resultsLabel = running ? "Résultats" : "Résultats du raid";
-            const float rw = std::min(textW(ui, resultsLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.25f);
-            const float bw = running ? std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.3f) : 0.0f;
+            // 2.69 (phase 5): the world rankings of a world event (every clan, the groups, the players).
+            const bool worldEvent = e.kind == "world";
+            const std::string worldLabel = "Classement mondial";
+            const float rw = std::min(textW(ui, resultsLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.22f);
+            const float ww = worldEvent ? std::min(textW(ui, worldLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.24f) : 0.0f;
+            const float bw = running ? std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(40), band.w * 0.24f) : 0.0f;
             UIContext::ButtonStyle bs;
             bs.primary = true;
             const Rect rr{band.right() - ui.s(8) - rw, band.y + ui.s(6), rw, band.h - ui.s(12)};
-            if (ui.button("results", rr, resultsLabel, running ? UIContext::ButtonStyle{} : bs)) g_.app.pushScene(makeRaidResults(g_, id_));
+            if (ui.button("results", rr, resultsLabel, running || worldEvent ? UIContext::ButtonStyle{} : bs)) g_.app.pushScene(makeRaidResults(g_, id_));
+            const Rect wr{rr.x - (worldEvent ? ui.s(8) + ww : 0.0f), band.y + ui.s(6), ww, band.h - ui.s(12)};
+            if (worldEvent && ui.button("world", wr, worldLabel, running ? UIContext::ButtonStyle{} : bs)) g_.app.pushScene(makeRaidWorld(g_, id_));
             if (running) {
-                const Rect br{rr.x - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
+                const Rect br{wr.x - ui.s(8) - bw, band.y + ui.s(6), bw, band.h - ui.s(12)};
                 if (ui.button("branch", br, label, bs)) {
                     if (ui.featureSeen && ui.isNew("raids.titan_map")) ui.featureSeen("raids.titan_map");
                     g_.app.pushScene(makeRaidTitan(g_, id_));
                 }
                 ui.newBadge("branch", br, "raids.titan_map", true, true);  // « NOUVEAU »
             }
-            const std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit."
-                                             : "Le raid est terminé : ses résultats validés et vos récompenses.";
-            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - bw - ui.s(48), kText, FontFace::Bold);
+            std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, Pyroclast attend dans la Main du bras droit."
+                                       : "Le raid est terminé : ses résultats validés et vos récompenses.";
+            if (running && e.suspended)
+                text = "Événement suspendu par les administrateurs" + (e.suspendedReason.empty() ? std::string() : " (" + e.suspendedReason + ")") +
+                       " : rien ne compte jusqu'à la reprise.";
+            else if (!running && e.result.valid)
+                text = "Résultat officiel : " + raids::resultLine(e.result, clanTag()) + ".";  // 2.69: frozen by the server
+            else if (!running && worldEvent && !e.catchup)
+                text = "Le raid est terminé : le résultat officiel est figé dix minutes après la fin (derniers rapports).";
+            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - ww - bw - ui.s(56), kText, FontFace::Bold);
             y += ui.s(66);
         }
         // Four figures.
@@ -235,7 +253,7 @@ private:
                 {"Début (votre heure)", whenShort(e.startsAt), raids::offsetLabel(loc.offsetMinutes) + " · " + raids::hhmm(utc) + " UTC", false},
                 {cd.value.empty() ? "État" : cd.caption, cd.value.empty() ? cd.caption : cd.value, "verrouillage " + std::to_string(e.lockMinutes) + " min avant",
                  true},
-                {"Format", raids::formatLine(e), raids::difficultyLabel(e.difficulty), false},
+                {"Format", raids::formatLine(e), e.kind == "world" ? raids::lateRuleText(e) : raids::difficultyLabel(e.difficulty), false},
                 {"Participation",
                  e.kind == "world" ? plural(e.clans, "clan", "clans") + " · " + plural(e.players, "joueur", "joueurs")
                                    : (e.capacity > 0 ? std::to_string(e.players) + " / " + std::to_string(e.capacity) + " inscrits" : plural(e.players, "inscrit", "inscrits")),
