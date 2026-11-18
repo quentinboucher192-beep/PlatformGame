@@ -17,7 +17,7 @@
 
 import { audit, requireAuth, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
-import { presenceOf } from "./friends";
+import { countOnline, listPresenceOf } from "./friends";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
 import { raidLeaveStatements } from "./raids";
@@ -559,7 +559,8 @@ export async function clanRanking(ctx: Ctx, viewer: AuthInfo | null): Promise<Re
 
 /**
  * GET /clans/{clanId}: the clan's page — members and roles (presence only for the clan's own
- * members, and only as each player shares it), the best team per EXTRÊME level (Solo, Duo
+ * members, and only as each player shares it: a hidden presence reads « offline »; 2.72: with
+ * `members_online`, the « X » of « X/Y en ligne »), the best team per EXTRÊME level (Solo, Duo
  * and Trio: `mode` and `team_size`; the rank on the level's race for the Solo one), the
  * clan's rank, the pending requests (chief and officers only), the discussion (members only).
  */
@@ -680,16 +681,20 @@ export async function getClan(ctx: Ctx, viewer: AuthInfo | null): Promise<Respon
         rank = (before?.n ?? 0) + 1;
     }
     const mine = (res[6]!.results as { kind: string; message: string | null; created_at: string }[])[0];
+    // Presence: to the clan's members only, as each player shares it (2.72: a hidden presence
+    // reads and counts « offline »), from the heartbeat of the game (never what a client says).
+    const now = Date.now();
+    const presence = myRole ? members.map((m) => listPresenceOf(m, now)) : null;
     return json(ctx, {
         clan: { ...clanJson(clan), rank },
-        members: members.map((m) => {
+        ...(presence ? { members_online: countOnline(presence) } : {}),
+        members: members.map((m, i) => {
             const best = bestOf.get(m.id);
             return {
                 player: { ...playerSummary(m), clan_tag: tag },
                 role: m.role,
                 joined_at: m.joined_at,
-                // Presence: to the clan's members only, as the player shares it (« hidden » otherwise).
-                ...(myRole ? { presence: presenceOf(m) } : {}),
+                ...(presence ? { presence: presence[i] } : {}),
                 best: best ? { level_id: best.level_id, title: titles.get(best.level_id) ?? best.level_id, score: best.score, finished: best.finished === 1 } : null,
             };
         }),

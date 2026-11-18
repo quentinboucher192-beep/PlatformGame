@@ -101,7 +101,17 @@ void OnlineUi::drawStatusChip(RecordStatus s, Vec2 pos, float height) const {
     ui.label(text, r.center(), height * 0.62f / ui.scale(), c, Align::Center, FontFace::Bold, VAlign::Middle);
 }
 
-void OnlineUi::drawConnection(Vec2 pos) const {
+OnlineUi::ConnectionText OnlineUi::fitConnectionText(UIContext& ui, const std::string& label, float textRoom) {
+    ConnectionText t;
+    if (label.empty() || textRoom <= 0.0f) return t;
+    t.size = ui.fitFont(label, FontFace::Body, 17, textRoom, 0.75f);
+    t.text = ui.elide(label, FontFace::Body, t.size, textRoom);
+    return t;
+}
+
+float OnlineUi::defaultConnectionTextRoom(UIContext& ui) { return ui.s(240) - ui.s(12) - ui.s(12); }
+
+void OnlineUi::drawConnection(Vec2 pos, float room) const {
     UIContext& ui = g_.ui;
     OnlineState st = g_.online.state();
     Color c = st == OnlineState::Online ? Color{120, 230, 140, 255}
@@ -111,9 +121,12 @@ void OnlineUi::drawConnection(Vec2 pos) const {
     float pulse = st == OnlineState::Connecting ? 0.5f + 0.5f * std::sin(ui.time() * 6.0f) : 1.0f;
     ui.r().drawGlow(pos, ui.s(12), c.withAlphaF(0.5f * pulse));
     ui.r().fillCircle(pos, ui.s(5), c.withAlphaF(pulse));
-    std::string label = onlineStateLabel(st);
+    // 2.72: « En ligne - 25ms » once a round trip was measured (never a guess), else unchanged.
+    std::string label = connectionLabel(st, g_.online.latencyMs());
     if (st == OnlineState::Online && g_.online.syncing()) label += " · synchronisation…";
-    ui.label(label, {pos.x + ui.s(12), pos.y}, 17, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+    const float textRoom = room > 0.0f ? room - ui.s(12) : defaultConnectionTextRoom(ui);
+    const ConnectionText t = fitConnectionText(ui, label, textRoom);
+    if (!t.text.empty()) ui.label(t.text, {pos.x + ui.s(12), pos.y}, t.size, ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
 }
 
 std::string OnlineUi::displayName(const std::string& name, int rank, bool me) const {

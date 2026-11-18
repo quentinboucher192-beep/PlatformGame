@@ -32,6 +32,11 @@ struct HttpResponse {
     std::string body;
     NetError error = NetError::None;
     std::string errorMessage;
+    /// 2.72: the round trip of the exchange, measured on the network thread by the transport:
+    /// from the request sent to the first byte of the answer, without the name lookup, the
+    /// connection and the TLS handshake when the transport tells them apart (libcurl); -1 when
+    /// unknown (no answer). The game's « En ligne - 25ms » (LatencyMeter) comes from it.
+    double roundTripMs = -1.0;
     bool networkFailure() const { return error != NetError::None; }
     std::string header(const std::string& lowerName) const {
         auto it = headers.find(lowerName);

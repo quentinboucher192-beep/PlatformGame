@@ -17,6 +17,11 @@ const char* onlineStateLabel(OnlineState s) {
     return "";
 }
 
+std::string connectionLabel(OnlineState s, int latencyMs) {
+    if (s == OnlineState::Online && latencyMs >= 0) return std::string("En ligne - ") + std::to_string(latencyMs) + "ms";
+    return onlineStateLabel(s);
+}
+
 const char* categoryId(RunCategory c) {
     switch (c) {
         case RunCategory::AnyPercent: return "ANY_PERCENT";

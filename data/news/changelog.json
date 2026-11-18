@@ -1,4 +1,9 @@
 {
+  "2.72.0": [
+    "Qui est en ligne dans votre clan : dans CLANS › Membres, chaque membre porte la pastille de présence de SOCIAL (en ligne, absent, hors ligne), les membres en ligne passent en tête, et l'en-tête de la liste annonce « X/Y en ligne ».",
+    "Fiche d'un raid : les inscrits de votre clan portent aussi leur pastille de présence dans leur groupe, et « INSCRITS DU CLAN » annonce combien sont en ligne. Une présence masquée (« Montrer ma présence à mes amis » décoché) apparaît hors ligne ; seuls les membres du clan la voient.",
+    "La pastille en haut à droite des écrans de COSMIC ONLINE affiche maintenant la latence réelle vers le serveur : « En ligne - 25ms », mesurée sur les échanges légers du jeu (signal de présence, vérification de connexion), lissée sur les derniers ; « En ligne » seul tant qu'aucune mesure n'existe."
+  ],
   "2.71.0": [
     "Raids de clan, phase 4B : trois nouveaux gigaboss d'Asterion se combattent dans leurs antres, au bout de leurs branches. SKULLMAW, le crâne qui voit tout (Crâne), DREADFANG, les griffes qui déchirent (Bras gauche) et HEARTBREAKER, la cage qui garde le cœur (Torse) : chacun énorme, en trois phases annoncées, avec ses attaques, ses zones de danger, ses points faibles et une apparence qui change avec sa santé.",
     "Skullmaw : un regard laser traque chaque joueur à la fois, puis se fige — quittez sa ligne ; sous son voile psychique, son « Regard de mort » se charge puis aveugle tous ceux qu'aucune colonne ne cache : tenez ensemble assez de miroirs (jusqu'à quatre à huit joueurs) pour lui renvoyer son regard, il est aveuglé et ses deux yeux et le cristal de son front se brisent. À sa dernière phase, l'arène plonge dans les ténèbres et seule la lumière de son œil révèle les plateformes.",

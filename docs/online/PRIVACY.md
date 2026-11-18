@@ -48,7 +48,7 @@
 |---|---|---|---|
 | Pseudonyme, avatar, date d'inscription | D1 `players` | tous (profil masqué : pseudonyme et avatar seulement) | vie du compte |
 | Pays / région, réglages de visibilité | D1 `players` | selon les réglages | vie du compte |
-| Présence (2.32.3) : dernier état « actif » ou « inactif » envoyé par le jeu et son heure (aucun historique) | D1 `players` | les amis seulement (« en ligne », « absent », « hors ligne ») ; jamais si le joueur décoche « Montrer ma présence à mes amis » | remplacée à chaque envoi ; effacée quand le jeu se ferme |
+| Présence (2.32.3) : dernier état « actif » ou « inactif » envoyé par le jeu et son heure (aucun historique) | D1 `players` | les amis (« en ligne », « absent », « hors ligne ») ; les membres de son clan dans ses listes (2.66 : CLANS › Membres ; 2.72 : les inscrits d'un raid du clan, et « X/Y en ligne ») ; jamais si le joueur décoche « Montrer ma présence à mes amis » (masquée pour les amis, « hors ligne » dans les listes du clan) | remplacée à chaque envoi ; effacée quand le jeu se ferme |
 | Empreinte du mot de passe | D1 `player_credentials` | personne | vie du compte |
 | Sessions (empreintes, dates, client) | D1 `player_sessions` | le joueur (export) | 30 jours après expiration / révocation |
 | Records (temps, catégorie, morts, dégâts, objets, version) | D1 `records` | records vérifiés : tous ; autres : le joueur | vie du compte |

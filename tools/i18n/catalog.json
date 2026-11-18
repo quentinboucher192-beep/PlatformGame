@@ -20006,6 +20006,12 @@
    ]
   },
   {
+   "fr": "En ligne - {0}ms",
+   "where": [
+    "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
    "fr": "En ligne : la définition du jeu",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -22009,6 +22015,12 @@
    "where": [
     "ui/screens/AdminAssets.cpp",
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche d'un raid : les inscrits de votre clan portent aussi leur pastille de présence dans leur groupe, et « INSCRITS DU CLAN » annonce combien sont en ligne. Une présence masquée (« Montrer ma présence à mes amis » décoché) apparaît hors ligne ; seuls les membres du clan la voient.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -26956,6 +26968,12 @@
    ]
   },
   {
+   "fr": "INSCRITS DU CLAN",
+   "where": [
+    "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
    "fr": "Inscrivez-vous au raid (fiche de l'événement) pour combattre.",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
@@ -29858,6 +29876,12 @@
    "fr": "La partie {0} doit faire {1} octets (reçu {2}).",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "La pastille en haut à droite des écrans de COSMIC ONLINE affiche maintenant la latence réelle vers le serveur : « En ligne - 25ms », mesurée sur les échanges légers du jeu (signal de présence, vérification de connexion), lissée sur les derniers ; « En ligne » seul tant qu'aucune mesure n'existe.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -46377,7 +46401,7 @@
    ]
   },
   {
-   "fr": "Présence : seulement pour les membres du clan, et si le joueur la partage.",
+   "fr": "Présence : visible des seuls membres du clan. « En ligne » compte les joueurs actifs ; une présence masquée apparaît hors ligne.",
    "where": [
     "ui/screens/ClanScene.cpp"
    ]
@@ -47102,6 +47126,12 @@
    "fr": "Quelle chaleur ! Le signal vient du fond des forges. Restons loin de la lave.",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "Qui est en ligne dans votre clan : dans CLANS › Membres, chaque membre porte la pastille de présence de SOCIAL (en ligne, absent, hors ligne), les membres en ligne passent en tête, et l'en-tête de la liste annonce « X/Y en ligne ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -68588,6 +68618,12 @@
    "fr": "{0}. {1} · {2} % de vie (renaissance)",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}/{1} en ligne",
+   "where": [
+    "ui/online/PresenceList.cpp"
    ]
   },
   {

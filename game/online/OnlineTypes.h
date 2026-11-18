@@ -21,6 +21,10 @@ enum class OnlineState {
     Offline,        // last request failed at the network level
 };
 const char* onlineStateLabel(OnlineState s);
+/// 2.72: the connection as the screens show it: « En ligne - 25ms » once a round trip was
+/// measured (`latencyMs` >= 0, OnlineService::latencyMs), else the state's own label
+/// (« En ligne » before the first sample, « Hors ligne », « Connexion… »… unchanged).
+std::string connectionLabel(OnlineState s, int latencyMs);
 
 /// Leaderboard categories (see docs/online/RULES.md). SPEEDRUN was removed in 2.40.1 (the same
 /// runs as ANY%, twice the notifications): a saved submission of it is dropped on loading.

@@ -210,11 +210,15 @@ private:
         struct {
             HINTERNET h;
         } request{req};
+        // 2.72: the round trip, request sent → answer's headers received (the session keeps its
+        // connections open: usually without a new connection nor a TLS handshake).
+        const auto sendAt = std::chrono::steady_clock::now();
         BOOL sent = WinHttpSendRequest(request.h, headers.empty() ? WINHTTP_NO_ADDITIONAL_HEADERS : headers.c_str(),
                                        headers.empty() ? 0 : static_cast<DWORD>(-1L),
                                        rq.body.empty() ? WINHTTP_NO_REQUEST_DATA : const_cast<char*>(rq.body.data()),
                                        static_cast<DWORD>(rq.body.size()), static_cast<DWORD>(rq.body.size()), 0);
         if (!sent || !WinHttpReceiveResponse(request.h, nullptr)) return failLast("échange impossible");
+        res.roundTripMs = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - sendAt).count();
         DWORD status = 0, size = sizeof(status);
         WinHttpQueryHeaders(request.h, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER, WINHTTP_HEADER_NAME_BY_INDEX, &status,
                             &size, WINHTTP_NO_HEADER_INDEX);
