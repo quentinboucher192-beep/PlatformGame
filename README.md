@@ -455,6 +455,10 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.68.2** :
+* **La pause ne fige jamais le jeu en ligne ni dans le test admin** : seul le joueur cesse d'agir, les ennemis et le
+  boss continuent et peuvent encore le toucher.
+
 **Nouveau dans la version 2.68.1** :
 * **Correctif de la pause en ligne** : Échap ne referme plus aussitôt la pause en raid et en coopération ; en ligne,
   seul le joueur qui la demande est en pause, et le test admin d'Asterion s'arrête entièrement.

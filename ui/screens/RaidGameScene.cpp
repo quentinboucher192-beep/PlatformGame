@@ -244,8 +244,9 @@ public:
 
     void fixedUpdate(float dt) override {
         if (test_) {
-            // An administrator's test is alone on its computer: the pause stops the whole test.
-            if (run_ && !paused_) stepTest();
+            // The pause never stops the world, not even in a test: only this player's inputs
+            // are held (neutral frame), the boss and the enemies keep going and can still hit.
+            if (run_) stepTest();
             return;
         }
         if (!run_ || catching_ || ended_) {
@@ -1038,7 +1039,7 @@ public:
         Rect box = centred(ui.s(560), ui.s(320));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
-        fit(ui, test_ ? "Le test est en pause." : "Vous seul êtes en pause : le groupe continue à jouer.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
+        fit(ui, test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
             FontFace::Body, Align::Center);
         ui.pushId("pause");
         const float bw = box.w - ui.s(80), bh = ui.s(58);
