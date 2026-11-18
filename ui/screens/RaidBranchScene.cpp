@@ -176,8 +176,12 @@ public:
             const Json branch = data_.value("branch", Json::object());
             const float tw = fit(ui, jstr(branch, "name"), {hx, left.y + ui.s(22)}, 28, (left.right() - cw - ui.s(16) - hx) * 0.5f, kText, FontFace::Title).x;
             const float gx = hx + tw + ui.s(14);
-            const bool fought = part_ == "bras_droit";  // 2.68 (phase 3): Pyroclast is fought; the six others later
-            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") + (!fought ? " · prochaine version" : zoneJson(8).value("controlled", false) ? " · vaincu" : " · dans la Main"),
+            // 2.68 (phase 3): Pyroclast is fought; 2.69 (phase 4B): Voidworm, Graviton, Titanus too (a lair
+            // whose zone has its gigaboss in the game's catalog); the others later.
+            const raid::Branch* local = raid::Branch::builtin(part_);
+            const bool fought = local && local->zoneRules(8) && local->zoneRules(8)->gigaboss.present;
+            fit(ui, "Gigaboss : " + jstr(branch, "gigaboss") +
+                        (!fought ? " · prochaine version" : zoneJson(8).value("controlled", false) ? " · vaincu" : part_ == "bras_droit" ? " · dans la Main" : " · dans son antre"),
                 {gx, left.y + ui.s(22)}, 15, left.right() - cw - ui.s(16) - gx, kPeach);
             drawMap({left.x, left.y + ui.s(58), left.w, left.h - ui.s(58) - ui.s(34)});
             drawLegend({left.x, left.bottom() - ui.s(24), left.w, ui.s(24)});
@@ -376,8 +380,9 @@ public:
             goals.push_back({t, {done ? "✓" : opt ? "◆" : "→", done ? kGreen : opt ? kViolet : kGold}});
         }
         if (jget<bool>(z, "boss", false)) {
-            if (part_ == "bras_droit")  // 2.68 (phase 3): Pyroclast's arena
-                goals.push_back({"Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.", {"◆", kGold}});
+            const raid::Branch* local = raid::Branch::builtin(part_);
+            if (const raid::ZoneRules* lair = local ? local->zoneRules(8) : nullptr; lair && lair->gigaboss.present)  // 2.68, 2.69: its arena
+                goals.push_back({lair->gigaboss.summary, {"◆", kGold}});
             else
                 goals.push_back({"Le gigaboss " + jstr(data_.value("branch", Json::object()), "gigaboss") + " attend derrière sa porte scellée : prochaine version.", {"▮", kGold}});
         }

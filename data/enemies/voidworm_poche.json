@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "voidworm_poche",
+  "name": "Poche de Voidworm",
+  "description": "La poche gonflée où Voidworm digère un allié avalé : la crever le libère (un sauvetage pour qui la brise).",
+  "family": "turret",
+  "animation": "animations/voidworm_poche.json",
+  "size": [
+    64,
+    64
+  ],
+  "scale": 2.0,
+  "hp": 10,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 600,
+    "drops": []
+  },
+  "light": {
+    "color": "#9dff3a",
+    "radius": 60
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/burrow.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

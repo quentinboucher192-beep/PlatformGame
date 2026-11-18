@@ -215,6 +215,7 @@ struct Results {
     std::string state;
     bool defeated = false;    // the gigaboss fell (a fight accepted)
     std::vector<std::string> fights;  // « [AUBE]·1 · vaincu », « [NEBU]·2 · phase 2 / 3 »
+    std::vector<std::string> defeatedBosses;  // 2.69 (phase 4B): the gigaboss whose fall was accepted (« Pyroclast », « Voidworm »…)
     std::vector<ResultClan> clans;
     std::vector<ResultPlayer> players;
     int myRank = 0;

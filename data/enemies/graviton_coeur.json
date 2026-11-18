@@ -1,0 +1,55 @@
+{
+  "format": "cosmic.enemy",
+  "id": "graviton_coeur",
+  "name": "Cœur de gravité de Graviton",
+  "description": "Un cœur de gravité à nu quand ses générateurs sont coupés ensemble et qu'elle s'effondre. Chacun brisé lui arrache une part de sa vie.",
+  "family": "turret",
+  "animation": "animations/graviton_coeur.json",
+  "size": [
+    56,
+    56
+  ],
+  "scale": 2.0,
+  "hp": 8,
+  "contactDamage": 0,
+  "speed": 0,
+  "chaseSpeedMultiplier": 1.0,
+  "flying": true,
+  "knockbackResist": 1,
+  "detectionRange": 2000,
+  "attackRange": 0,
+  "loseRange": 4000,
+  "needsLineOfSight": false,
+  "movement": "stationary",
+  "reaction": "none",
+  "fleeHealthRatio": 0,
+  "preferredDistance": 0,
+  "hopVelocity": 0,
+  "attacks": [],
+  "powers": {
+    "teleport": {
+      "enabled": false
+    },
+    "defend": {
+      "enabled": false
+    },
+    "reinforcements": {
+      "enabled": false
+    }
+  },
+  "damageMultipliers": {},
+  "rewards": {
+    "score": 600,
+    "drops": []
+  },
+  "light": {
+    "color": "#7ff6ff",
+    "radius": 60
+  },
+  "sounds": {
+    "hurt": "sounds/shield_block.wav",
+    "death": "sounds/shell_shatter.wav",
+    "alert": ""
+  },
+  "raid": "asterion"
+}

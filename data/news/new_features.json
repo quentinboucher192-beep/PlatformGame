@@ -2479,6 +2479,27 @@
    ]
   },
   {
+   "id": "ach.communaute_voidworm",
+   "version": "2.69.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_graviton",
+   "version": "2.69.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
+   "id": "ach.communaute_titanus",
+   "version": "2.69.0",
+   "parents": [
+    "achievements.cat.communaute"
+   ]
+  },
+  {
    "id": "cos.title_assaillant_asterion",
    "version": "2.68.0",
    "parents": [

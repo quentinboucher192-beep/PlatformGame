@@ -108,7 +108,7 @@
    "packaging/DependencyCollector.cpp": 1
   },
   "animations/pyroclast_vents.json": {
-   "ui/screens/RaidGameScene.cpp": 1
+   "game/raid/RaidBranch.h": 1
   },
   "animations/receptor.json": {
    "game/gameplay/entities/InteractiveEntities.cpp": 1,
@@ -260,7 +260,8 @@
   },
   "sounds/burrow.wav": {
    "game/enemies/Enemy.cpp": 1,
-   "game/enemies/GuardianAttacks.cpp": 1
+   "game/enemies/GuardianAttacks.cpp": 1,
+   "game/raid/VoidwormRoutine.cpp": 1
   },
   "sounds/charge_loop.wav": {
    "game/powers/PowersCharged.cpp": 1,
@@ -359,14 +360,16 @@
    "game/enemies/Enemy.cpp": 2,
    "game/enemies/EnemyAttacks.cpp": 3,
    "game/enemies/GolemAttacks.cpp": 4,
-   "game/enemies/TitanAttacks.cpp": 1
+   "game/enemies/TitanAttacks.cpp": 1,
+   "game/raid/TitanusRoutine.cpp": 2
   },
   "sounds/grapple_hit.wav": {
    "game/powers/PowersExtra.cpp": 1
   },
   "sounds/gravity_well.wav": {
    "game/enemies/GuardianAttacks.cpp": 1,
-   "game/enemies/LicheAttacks.cpp": 1
+   "game/enemies/LicheAttacks.cpp": 1,
+   "game/raid/GravitonRoutine.cpp": 2
   },
   "sounds/heart_pickup.wav": {
    "game/gameplay/entities/PickupEntities.cpp": 1
@@ -482,7 +485,8 @@
    "game/enemies/LicheAttacks.cpp": 1
   },
   "sounds/shell_shatter.wav": {
-   "game/raid/Gigaboss.cpp": 1
+   "game/raid/Gigaboss.cpp": 1,
+   "game/raid/GigabossRoutine.cpp": 1
   },
   "sounds/shield_block.wav": {
    "game/enemies/Enemy.cpp": 2,
@@ -491,7 +495,8 @@
    "game/player/PlayerActions.cpp": 1,
    "game/powers/PowersCharged.cpp": 2,
    "game/powers/PowersSanctuary.cpp": 1,
-   "game/raid/Gigaboss.cpp": 1
+   "game/raid/Gigaboss.cpp": 1,
+   "game/raid/GigabossRoutine.cpp": 1
   },
   "sounds/shield_down.wav": {
    "game/gameplay/GameWorld.cpp": 1
@@ -602,6 +607,9 @@
   "sounds/wisp_teleport.wav": {
    "game/enemies/Enemy.cpp": 1,
    "game/enemies/LicheAttacks.cpp": 1
+  },
+  "sounds/wyrm_roar.wav": {
+   "game/raid/VoidwormRoutine.cpp": 1
   },
   "sprites/decor/glacior_decor.json": {
    "game/levels/DecorAtlas.cpp": 1

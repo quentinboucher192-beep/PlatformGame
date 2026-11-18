@@ -391,6 +391,18 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         g.hpPerPlayer = std::clamp(jget<float>(giga, "hpPerPlayer", g.hpPerPlayer), 0.0f, 2.0f);
         g.weakHpPerPlayer = std::clamp(jget<float>(giga, "weakHpPerPlayer", g.weakHpPerPlayer), 0.0f, 2.0f);
         g.pressurePerPlayer = std::clamp(jget<float>(giga, "pressurePerPlayer", g.pressurePerPlayer), 0.0f, 0.3f);
+        // 2.69 (phase 4B): the routine of the other gigaboss, their texts, the objectives they read.
+        g.routine = jstr(giga, "routine");
+        g.extra = giga;
+        const Json links = giga.value("links", Json::object());  // kept alive while its items are read
+        for (const auto& [name, id] : links.items())
+            if (id.is_string()) g.links[name] = b.objectiveIndex(id.get<std::string>());
+        if (fists.is_object()) g.fistName = jstr(fists, "name", g.fistName);
+        if (jet.is_object()) g.jetName = jstr(jet, "name", g.jetName);
+        g.fallText = jstr(giga, "fallText", g.fallText);
+        g.goneText = jstr(giga, "goneText", g.goneText);
+        g.fx = jstr(giga, "fx", g.fx);
+        g.summary = jstr(giga, "summary", g.summary);
     }
     return z;
 }
