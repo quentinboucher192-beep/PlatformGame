@@ -132,6 +132,12 @@ Tables (migration **0142_raid_zones.sql**) : `raid_instances`, `raid_instance_me
 <p align="center"><sub>La carte d'une branche au début d'un raid de clan (serveur lancé en local, comptes de démonstration).</sub></p>
 
 * **Fiche de l'événement** (en cours) : « Carte du Bras droit ».
+* **Fiche de l'événement › inscrits** (2.72, `ui/online/PresenceList`) : chaque inscrit de mon clan porte la
+  pastille de présence de SOCIAL (en ligne, absent, hors ligne) dans sa case de groupe, et « INSCRITS DU CLAN »
+  annonce « X/Y en ligne » (X : inscrits « en ligne », compté par le serveur ; Y : inscrits de mon clan). Le serveur
+  ne l'envoie qu'aux membres du clan qui voient ces inscrits, depuis le signal de présence du jeu (jamais ce que dit un
+  client) ; une présence masquée se lit « hors ligne ». Sans compte, hors ligne (fiche du cache) ou d'un autre clan :
+  ni pastille ni compteur. Rafraîchie avec la fiche (30 s, fil réseau).
 * **Carte de la branche** (maquette « Branche ») : les 8 zones reliées (ouvert, combat en cours,
   verrouillé en pointillés, zone secrète, raccourci), leur état et les groupes présents (le mien en
   or) ; à droite la zone choisie : objectifs (✓, ◆ facultatif, et par quel groupe), ce qu'il y a

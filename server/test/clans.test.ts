@@ -616,13 +616,70 @@ describe("clans: the tag next to the username, presence, search", () => {
         const outside = await page(c.clan.id, lyra!);
         expect(outside.body.data.members.every((m: any) => m.presence === undefined)).toBe(true);
         await env.DB.prepare("UPDATE players SET presence_visible = 0 WHERE id = ?1").bind(orion!.id).run();
-        expect((await page(c.clan.id, nova!)).body.data.members.find((m: any) => m.player.id === orion!.id).presence).toBe("hidden");
+        // 2.72: a hidden presence reads « offline » in the clan's list (never that it is hidden).
+        expect((await page(c.clan.id, nova!)).body.data.members.find((m: any) => m.player.id === orion!.id).presence).toBe("offline");
         // Only a country, as the player shares it (never more precise).
         expect(inside.body.data.members[0].player).not.toHaveProperty("region_code");
         // The data export (RGPD) has the player's clan.
         const exported = await api("GET", `${V}/players/me/export`, { token: orion!.token });
         expect(exported.body.data.clan).toMatchObject({ id: c.clan.id, tag: "Aube", role: "member" });
         expect(exported.body.data.clan_requests).toEqual([]);
+    });
+
+    it("2.72: « X/Y en ligne » — members only, from the heartbeat, a hidden presence counts offline", async () => {
+        const [nova, orion, lyra, vega, sirius] = await Promise.all(["Nova", "Orion", "Lyra", "Vega", "Sirius"].map((n) => registerPlayer(n)));
+        const c = await createClan(nova!);
+        for (const p of [orion!, lyra!, vega!]) expect((await join(c.clan.id, p)).status).toBe(200);
+        const heartbeat = (p: TestPlayer, state: string) => api("POST", `${V}/presence`, { token: p.token, body: { state } });
+        const presenceOf = (data: any, p: TestPlayer) => data.members.find((m: any) => m.player.id === p.id).presence;
+        // Nobody's game has spoken yet: everyone offline, 0 of 4.
+        let inside = (await page(c.clan.id, nova!)).body.data;
+        expect(inside.members_online).toBe(0);
+        expect(inside.members).toHaveLength(4);
+        expect(inside.members.every((m: any) => m.presence === "offline")).toBe(true);
+        // Nova and Orion active, Lyra idle (« absent »: not counted), Vega active but hidden.
+        for (const [p, s] of [
+            [nova!, "active"],
+            [orion!, "active"],
+            [lyra!, "idle"],
+            [vega!, "active"],
+        ] as const)
+            expect((await heartbeat(p, s)).status).toBe(200);
+        expect((await api("PATCH", `${V}/players/me`, { token: vega!.token, body: { presence_visible: false } })).status).toBe(200);
+        inside = (await page(c.clan.id, orion!)).body.data;
+        expect(inside.members_online).toBe(2);
+        expect(presenceOf(inside, nova!)).toBe("online");
+        expect(presenceOf(inside, orion!)).toBe("online");
+        expect(presenceOf(inside, lyra!)).toBe("away");
+        expect(presenceOf(inside, vega!)).toBe("offline");
+        // A heartbeat older than 150 s: offline, no longer counted.
+        await env.DB.prepare("UPDATE players SET presence_at = ?2 WHERE id = ?1").bind(orion!.id, new Date(Date.now() - 200_000).toISOString()).run();
+        inside = (await page(c.clan.id, nova!)).body.data;
+        expect(inside.members_online).toBe(1);
+        expect(presenceOf(inside, orion!)).toBe("offline");
+        // Nothing more precise than SOCIAL: no time, no state of the heartbeat.
+        for (const m of inside.members) {
+            expect(Object.keys(m).sort()).toEqual(["best", "joined_at", "player", "presence", "role"]);
+            expect(m.player).not.toHaveProperty("presence_at");
+            expect(m.player).not.toHaveProperty("last_seen_at");
+        }
+        // Another clan's player and a visitor without an account: no presence, no count.
+        const other = await createClan(sirius!, { name: "Les Veilleurs", tag: "VEIL" });
+        for (const viewer of [sirius, undefined]) {
+            const outside = (await page(c.clan.id, viewer)).body.data;
+            expect(outside).not.toHaveProperty("members_online");
+            expect(outside.members.every((m: any) => m.presence === undefined)).toBe(true);
+        }
+        // A member who leaves no longer sees it; the others count one member less.
+        expect((await leave(c.clan.id, lyra!)).status).toBe(200);
+        expect((await page(c.clan.id, lyra!)).body.data).not.toHaveProperty("members_online");
+        inside = (await page(c.clan.id, nova!)).body.data;
+        expect(inside.members).toHaveLength(3);
+        expect(inside.members_online).toBe(1);
+        // Each clan counts its own members (Sirius alone in his, his game running).
+        expect((await heartbeat(sirius!, "active")).status).toBe(200);
+        expect((await page(other.clan.id, sirius!)).body.data.members_online).toBe(1);
+        expect((await page(other.clan.id, nova!)).body.data).not.toHaveProperty("members_online");
     });
 
     it("searches a tag (whatever the case) or a part of a name (accents ignored), page by page", async () => {

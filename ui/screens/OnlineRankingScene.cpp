@@ -629,7 +629,7 @@ private:
                 ui.label("Pays non renseigné", {card.x + ui.s(82), card.y + ui.s(54)}, 15, ui.theme().textDim, Align::Left, FontFace::Body,
                          VAlign::Middle);
             }
-            ui_.drawConnection({card.x + ui.s(20), card.y + ui.s(92)});
+            ui_.drawConnection({card.x + ui.s(20), card.y + ui.s(92)}, card.right() - ui.s(14) - (card.x + ui.s(20)));
             int totalLevels = static_cast<int>(installedCount_);
             int planetsDone = 0;
             for (const PlanetData* pl : g_.content.planets()) planetsDone += g_.progression.planetCompleted(*pl, g_.content) ? 1 : 0;

@@ -105,6 +105,13 @@ public:
         CURLcode rc = curl_easy_perform(h);
         long status = 0;
         curl_easy_getinfo(h, CURLINFO_RESPONSE_CODE, &status);
+        // 2.72: the round trip, request sent → first byte of the answer (microseconds from the
+        // start: « pretransfer » once the name, the connection and TLS are done).
+        curl_off_t sentUs = 0, firstByteUs = 0;
+        double roundTripMs = -1.0;
+        if (rc == CURLE_OK && curl_easy_getinfo(h, CURLINFO_PRETRANSFER_TIME_T, &sentUs) == CURLE_OK &&
+            curl_easy_getinfo(h, CURLINFO_STARTTRANSFER_TIME_T, &firstByteUs) == CURLE_OK && firstByteUs > 0 && firstByteUs >= sentUs)
+            roundTripMs = static_cast<double>(firstByteUs - sentUs) / 1000.0;
         curl_slist_free_all(headers);
         curl_easy_cleanup(h);
         if (rc != CURLE_OK) {
@@ -128,6 +135,7 @@ public:
             return res;
         }
         res.status = static_cast<int>(status);
+        res.roundTripMs = roundTripMs;
         // Keep only the headers of the final response block.
         size_t last = t.rawHeaders.rfind("HTTP/");
         parseHeaderLines(last == std::string::npos ? t.rawHeaders : t.rawHeaders.substr(last), res.headers);

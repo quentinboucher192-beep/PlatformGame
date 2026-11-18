@@ -568,6 +568,26 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.73.1** :
+* **Qui est en ligne dans les listes du clan** : CLANS › Membres et les inscrits de la fiche d'un raid portent la
+  pastille de présence de SOCIAL (en ligne, absent, hors ligne) et leur en-tête annonce **« X/Y en ligne »** (X : joueurs
+  « en ligne », Y : membres ou inscrits) ; les membres en ligne passent en tête, puis absents, puis hors ligne (ordre
+  des rôles gardé dans chaque groupe). Le serveur calcule tout depuis le signal de présence du jeu
+  (`listPresenceOf`, `countOnline` dans `server/src/friends.ts` ; `members_online`, `roster_online`) et ne l'envoie
+  qu'aux membres du même clan ; une présence masquée compte et s'affiche « hors ligne ». Sans compte, d'un autre clan
+  ou hors ligne (réponse du cache) : ni pastille ni compteur. Rafraîchi avec la page (30 s, fil réseau). En-tête
+  mesuré (`ui/online/PresenceList`) : « X/Y en ligne » garde sa taille à 1280×720 et ne chevauche jamais le titre.
+* **« En ligne - 25ms »** : la pastille de connexion en haut à droite des écrans de COSMIC ONLINE affiche la latence
+  réelle vers le serveur, chronométrée sur le fil réseau par le transport (`HttpResponse::roundTripMs` : de l'envoi
+  au premier octet de la réponse) sur les requêtes légères déjà envoyées (`GET /health`, `POST /presence`), médiane
+  des 5 dernières (`game/online/LatencyMeter`). « En ligne » seul avant la première mesure ; mesures oubliées hors
+  ligne ; « Hors ligne », « Connexion… » inchangés. Texte mesuré dans sa place (plus petit, puis raccourci).
+* **Page d'un clan** : membres et rôles (la **présence** seulement pour les membres du clan, et si le joueur la
+  partage déjà : pastille en ligne, absent ou hors ligne, membres « en ligne » d'abord et **« X/Y en ligne »** en
+  tête de la liste depuis la 2.72 ; les inscrits d'un raid du clan aussi), **meilleure équipe du clan sur chaque
+  niveau EXTRÊME** (Solo pour l'instant, la coopération Duo et Trio arrive bientôt), candidatures (chef et
+  officiers) et **discussion du clan** (un groupe de SOCIAL qui suit ses membres).
+
 **Nouveau dans la version 2.73.0** :
 * **Raids de clan, phase 7 : fiabilité, charge et anti-triche** (docs/RAIDS.md §15, migration **0149**). Relais d'une
   instance (`CoopRoom` en mode raid) : plus de trames de veille données à personne quand le dernier joueur part (l'objet
@@ -936,10 +956,6 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * Adhésion **sur invitation**, **sur candidature** (avec un court message) ou **ouverte**, au choix du chef.
   Chaque règle est décidée par le serveur dans une seule transaction : deux actions simultanées ne font jamais
   un 51ᵉ membre, deux chefs ou un clan sans chef.
-* **Page d'un clan** : membres et rôles (la **présence** seulement pour les membres du clan, et si le joueur la
-  partage déjà), **meilleure équipe du clan sur chaque niveau EXTRÊME** (Solo pour l'instant, la coopération
-  Duo et Trio arrive bientôt), candidatures (chef et officiers) et **discussion du clan** (un groupe de SOCIAL
-  qui suit ses membres).
 * **Classement des clans** : la somme des meilleurs résultats **vérifiés par le serveur** de chaque clan sur les
   niveaux EXTRÊME officiels. Le **tag** s'affiche à côté du pseudo dans les classements, le profil et SOCIAL.
 * **Administration › Clans** : un admin renomme ou dissout un clan ; chaque action va au **Journal**.
