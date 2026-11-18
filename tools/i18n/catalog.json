@@ -13270,6 +13270,12 @@
    ]
   },
   {
+   "fr": "Correctif : en raid et en coopération en ligne, la touche Échap ouvrait la pause puis la refermait aussitôt ; la pause reste maintenant ouverte. En ligne, elle ne met en pause que le joueur qui l'a demandée (le groupe continue) ; le test admin d'Asterion, seul sur son ordinateur, s'arrête entièrement.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correctif : le chrono démarre quand Nova peut bouger, que l'intro soit regardée ou passée (regarder l'intro faisait gagner environ 1 s), en jeu, en entraînement, en EXTRÊME et en ligne.",
    "where": [
     "data/news/changelog.json"
@@ -30697,12 +30703,6 @@
    ]
   },
   {
-   "fr": "Le groupe continue à jouer pendant la pause.",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Le groupe joue déjà : rattrapage de la partie ({0} %)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -31952,6 +31952,12 @@
    "fr": "Le tendon glacé grimpe vers le coude. Des tourelles le surveillent, les griffes balaient le bas ; un cœur de givre bat en haut.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Le test est en pause.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -62530,6 +62536,12 @@
    "fr": "Vous réapparaîtrez près de l'équipe dès que votre jeu sera à jour.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous seul êtes en pause : le groupe continue à jouer.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

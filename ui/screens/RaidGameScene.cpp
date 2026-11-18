@@ -249,7 +249,8 @@ public:
 
     void fixedUpdate(float dt) override {
         if (test_) {
-            if (run_) stepTest();
+            // An administrator's test is alone on its computer: the pause stops the whole test.
+            if (run_ && !paused_) stepTest();
             return;
         }
         if (!run_ || catching_ || ended_) {
@@ -367,6 +368,7 @@ public:
         updateArenaCamera(w, dt);
         if (!ended_ && g_.app.input().menuPressed(Action::Pause)) {
             paused_ = !paused_;
+            pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
         }
     }
@@ -1066,7 +1068,8 @@ public:
         Rect box = centred(ui.s(560), ui.s(320));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
-        fit(ui, "Le groupe continue à jouer pendant la pause.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim, FontFace::Body, Align::Center);
+        fit(ui, test_ ? "Le test est en pause." : "Vous seul êtes en pause : le groupe continue à jouer.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
+            FontFace::Body, Align::Center);
         ui.pushId("pause");
         const float bw = box.w - ui.s(80), bh = ui.s(58);
         float y = box.y + ui.s(124);
@@ -1079,7 +1082,8 @@ public:
         if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
             leave();
         ui.popId();
-        if (ui.backPressed()) paused_ = false;
+        if (!pauseOpenedNow_ && ui.backPressed()) paused_ = false;
+        pauseOpenedNow_ = false;
     }
 
     void drawEnd() {
@@ -1118,6 +1122,7 @@ public:
     std::atomic<bool> stopWorker_{false}, workerDone_{false};
     std::atomic<uint32_t> progress_{0};
     bool catching_ = false, connecting_ = false, paused_ = false, ended_ = false;
+    bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
     bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
