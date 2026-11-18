@@ -1,0 +1,9 @@
+{
+  "texture": "stories/asterion/aura.png",
+  "frameWidth": 149,
+  "frameHeight": 123,
+  "pivot": [76, 62],
+  "clips": {
+    "intact": {"row": 0, "count": 6, "fps": 5, "loop": true}
+  }
+}

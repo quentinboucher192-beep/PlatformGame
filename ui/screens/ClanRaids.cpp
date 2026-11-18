@@ -8,6 +8,7 @@
 #include "game/GameServices.h"
 #include "game/online/Clans.h"
 #include "ui/online/RaidWidgets.h"
+#include "ui/screens/AsterionFilm.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -165,6 +166,7 @@ void ClanRaids::putPrefs(const Json& body) {
 // ------------------------------------------------------------------ drawing
 
 void ClanRaids::draw(const Rect& body) {
+    if (asterionfilm::hold(g_)) return;  // 2.68: Asterion's film first (its first viewing), before anything of the tab
     UIContext& ui = g_.ui;
     ui.pushId("raids");
     const raids::TabLayout lay = raids::tabLayout(data_, g_.online.loggedIn());
@@ -198,6 +200,11 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
     const float pad = ui.s(26);
     const bool titan = r.w > ui.s(760);
     const float titanW = titan ? std::min(r.w * 0.34f, ui.s(400)) : 0.0f;
+    // 2.68: « Revoir la cinématique » (Asterion's film) under the titan, else at the card's bottom right.
+    const float replayH = ui.s(36), replayW = std::min(asterionfilm::replayButtonWidth(ui), titan ? titanW : r.w * 0.3f);
+    asterionfilm::replayButton(g_, "hero/film",
+                               titan ? Rect{r.right() - ui.s(16) - (titanW + replayW) * 0.5f, r.bottom() - ui.s(16) - replayH, replayW, replayH}
+                                     : Rect{r.right() - ui.s(26) - replayW, r.bottom() - ui.s(46) - replayH * 0.5f, replayW, replayH});
     if (titan) {
         Json heroJson;
         if (lay.hero)
@@ -206,10 +213,11 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
         // The world event running: a click on a branch of the titan opens its map (2.68: all seven).
         const bool running = lay.hero && raids::stateAt(raids::parseEvent(heroJson), now) == raids::State::Running;
         const std::vector<std::string> open = running ? kTitanParts : std::vector<std::string>{};
-        const std::string part = titan_.draw(g_, "asterion", {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(32)}, asterion::statesOf(heroJson), open);
+        const std::string part = titan_.draw(g_, "asterion", {r.right() - titanW - ui.s(16), r.y + ui.s(16), titanW, r.h - ui.s(40) - replayH},
+                                             asterion::statesOf(heroJson), open);
         if (!part.empty()) g_.app.pushScene(makeRaidBranch(g_, lay.heroId, part));
     }
-    const float x = r.x + pad, right = r.right() - (titan ? titanW + ui.s(28) : pad), room = right - x;
+    const float x = r.x + pad, right = r.right() - (titan ? titanW + ui.s(28) : pad + replayW + ui.s(12)), room = right - x;
     const float by = r.bottom() - ui.s(22) - ui.s(48);  // the buttons' top
     float y = r.y + ui.s(22);
     auto fits = [&](float h, float limit) { return y + h <= limit; };

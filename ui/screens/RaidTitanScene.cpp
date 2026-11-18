@@ -29,6 +29,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/AsterionFilm.h"
 #include "ui/widgets/AsterionFigure.h"
 
 namespace cosmic {
@@ -70,6 +71,7 @@ public:
         bg_.init(g_);
         g_.ui.setFocus("titan/branch0");
         load();
+        asterionfilm::hold(g_);  // 2.68: Asterion's film first (its first viewing), over the map from its first frame
     }
     void onResume() override { load(); }
 

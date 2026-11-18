@@ -53,6 +53,10 @@ public:
     bool tutorialFinished() const { return tutorial == "finished"; }
     /// "finished" > "skipped" > "started" > "" (not seen): the furthest of two (copies, migration).
     static std::string furthestTutorial(const std::string& a, const std::string& b);
+    /// 2.68: Asterion's film (ui/screens/AsterionFilm) played to its end: its first viewing (which
+    /// nothing skips) is not due any more. Written only at its end; never lost by a copy or a
+    /// migration (ProgressMerge: either side's).
+    bool asterionFilmSeen = false;
     bool unlockAll = false;  // from the settings: every level is playable (testing)
 
     Json toJson() const;

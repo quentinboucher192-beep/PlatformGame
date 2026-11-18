@@ -301,3 +301,72 @@ def story_drain(rng):
     buzz = svf(buzz, 1400, 1.5, 'lp') * points(n, [(0, 0), (0.1, 1.0), (d, 0)])
     suck = whoosh(d, rng, (2600, 600), q=1.4, peak_at=0.3) * 0.35
     return mix(buzz * 0.5, suck)
+
+
+# =========================================================================== 2.68: Asterion's film
+@sound('story_heartbeat', -14, 'story', fade_out=0.25)
+def story_heartbeat(rng):
+    """The cosmic heart beating: a deep double thump (lub-dub) and a warm shimmer of light."""
+    lub = thump(72, 36, 0.4, tau=0.05, decay=0.15, click=0.18, rng=rng, drive=1.4)
+    dub = thump(64, 32, 0.34, tau=0.05, decay=0.12, click=0.12, rng=rng, drive=1.3) * 0.75
+    shimmer = chime(392, 1.0, decay=0.55, bright=0.5) * 0.05
+    return room(place([(0.0, lub), (0.24, dub), (0.0, shimmer)]), rng, t60=1.3, wet=0.25)
+
+
+@sound('story_devour', -11, 'story', fade_out=0.7)
+def story_devour(rng):
+    """A world swallowed: a long suction, a crust crunching, a muffled boom, the rumble after."""
+    suck = whoosh(1.3, rng, (180, 1500, 260), q=1.0, peak_at=0.8, color='pink') * 0.8
+    crunch = debris(1.0, rng, count=46, fmin=250, fmax=3600, grain=(0.004, 0.03)) * 0.9
+    g = 1.5
+    m = ns(g)
+    grind = svf(noise(g, rng, 'brown'), points(m, [(0, 90), (0.5, 210), (g, 60)], 'exp'), 2.0, 'bp')
+    grind = grind * points(m, [(0, 0), (0.2, 1.0), (g, 0)])
+    boom = thump(82, 28, 1.2, tau=0.06, decay=0.45, click=0.4, rng=rng, drive=1.6)
+    return room(place([(0.0, suck), (1.05, crunch), (1.05, grind), (1.1, boom)]), rng, t60=1.8, wet=0.3)
+
+
+@sound('story_reveal', -12, 'story', fade_out=0.6)
+def story_reveal(rng):
+    """A branch of the titan lights up: a deep strike, a ringing of dark metal, sparks of light."""
+    hit = thump(110, 38, 0.9, tau=0.03, decay=0.32, click=0.5, rng=rng, drive=1.5)
+    ring = mix(bell(220, 1.8, ratio=2.76, index=2.0, decay=0.8), bell(331, 1.8, ratio=3.1, index=1.5, decay=0.7) * 0.6) * 0.22
+    shimmer = sparkle(1.4, rng, count=18, fmin=2000, fmax=7000) * 0.22
+    return room(place([(0.0, hit), (0.0, ring), (0.05, shimmer)]), rng, t60=1.5, wet=0.3)
+
+
+@sound('story_holo', -16, 'story', fade_out=0.2)
+def story_holo(rng):
+    """A hologram powering on: a rising sweep, a hum, digital blips."""
+    sweep = zap(180, 1900, 0.6, q=4.0, shape='saw') * 0.35
+    hum = tone(60, 1.3, 'saw', release=0.3, lowpass=420) * 0.12
+    blips = place([(0.55 + 0.09 * k, blip(1200 + 300 * (k % 3), 0.05)) for k in range(6)]) * 0.25
+    return room(mix(pad_to(sweep, ns(1.3)), hum, pad_to(blips, ns(1.3))), rng, t60=0.6, wet=0.2)
+
+
+@sound('story_beacon', -16, 'story', fade_out=0.4)
+def story_beacon(rng):
+    """A beacon of the clans igniting: a strike, a flame catching and roaring, a bright call."""
+    strike = whoosh(0.35, rng, (800, 3000, 1200), q=1.2, peak_at=0.2, color='white') * 0.5
+    d = 1.3
+    n = ns(d)
+    fire = svf(noise(d, rng, 'pink'), points(n, [(0, 500), (0.2, 1500), (d, 700)], 'exp'), 0.7, 'bp')
+    fire = fire * points(n, [(0, 0), (0.12, 0.8), (d, 0)])
+    call = chime(660, 1.0, decay=0.5) * 0.14
+    return room(place([(0.0, strike), (0.08, fire), (0.15, call)]), rng, t60=0.9, wet=0.25)
+
+
+@sound('story_titan_roar', -10, 'story', fade_out=0.8)
+def story_titan_roar(rng):
+    """Asterion roaring: a growl of many throats rising, a rumble that shakes the void, stars ringing."""
+    d = 3.6
+    n = ns(d)
+    f = points(n, [(0, 46), (0.35, 68), (1.6, 60), (d, 38)], 'exp')
+    throats = mix(*[saw(f * r, n) * a for r, a in ((1.0, 0.5), (1.012, 0.45), (1.5, 0.25), (2.02, 0.18))])
+    vowel = svf(throats, points(n, [(0, 300), (0.4, 900), (2.0, 600), (d, 250)], 'exp'), 1.6, 'bp')
+    breath = svf(noise(d, rng, 'pink'), points(n, [(0, 400), (0.5, 1400), (d, 500)], 'exp'), 0.8, 'bp') * 0.5
+    env = points(n, [(0, 0), (0.3, 1.0), (2.2, 0.8), (d, 0)])
+    body = soft_clip((vowel + breath) * env * 1.3, 2.0)
+    sub = thump(48, 26, 2.4, tau=0.1, decay=0.9, click=0.2, rng=rng, drive=1.4) * 0.8
+    stars_ = sparkle(2.6, rng, count=24, fmin=3000, fmax=8000) * 0.12
+    return room(mix(body, pad_to(sub, n), pad_to(place([(0.4, stars_)]), n)), rng, t60=2.2, wet=0.3)

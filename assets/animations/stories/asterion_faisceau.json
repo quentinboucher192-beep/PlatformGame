@@ -1,0 +1,9 @@
+{
+  "texture": "stories/asterion/faisceau.png",
+  "frameWidth": 10,
+  "frameHeight": 160,
+  "pivot": [5, 160],
+  "clips": {
+    "idle": {"row": 0, "count": 3, "fps": 6, "loop": true}
+  }
+}

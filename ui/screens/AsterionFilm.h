@@ -1,0 +1,48 @@
+#pragma once
+// 2.68: Asterion's mini-film (« ASTERION, LE DÉVOREUR DE MONDES », about two minutes in ten shots:
+// data/raids/asterion_film.json, its scenes written by tools/assetgen/environment/story_asterion.py),
+// played by the stories' scene (makeFilm) the first time the player would see the titan: before
+// CLANS › RAIDS shows anything, before the sheet of a raid event, before any AsterionFigure is
+// drawn. That first viewing cannot be skipped (no key, button or click; no hint); closing the
+// game's window still closes the game. « Vu » is written in the progression (saves/progress.json,
+// kept by the progression copies and the account migration: ProgressMerge) only when the film
+// has played to its end: a first viewing interrupted plays again the next time. Afterwards,
+// « Revoir la cinématique » on the RAIDS hero card plays it again, and that viewing may be left.
+// Local content: offline as online. Display only (no simulation, no replay depends on it).
+
+#include <memory>
+#include <string>
+
+#include "engine/core/Math.h"
+#include "engine/core/Scene.h"
+
+namespace cosmic {
+
+class GameServices;
+class Progression;
+class UIContext;
+struct BossStory;
+
+namespace asterionfilm {
+
+/// The film, read once (nullptr when its files cannot be read: then it never holds a screen).
+std::shared_ptr<const BossStory> film();
+/// Whether its first viewing is due: never played to its end in this progression.
+bool due(const Progression& p);
+/// The guard of every screen that shows Asterion (one call, first thing): when the first viewing
+/// is due, pushes the film over the screen (once) and returns true — the caller then draws
+/// nothing of the titan this frame. False otherwise (seen, no film). Automated runs (headless)
+/// never start it by themselves, unless `autoplayHeadless` (tests).
+bool hold(GameServices& g);
+extern bool autoplayHeadless;
+/// The film: its first viewing (`firstViewing`: locked; « vu » written at its end) or a replay
+/// (may be left). nullptr without a film.
+std::unique_ptr<Scene> make(GameServices& g, bool firstViewing, float atSeconds = -1.0f);
+/// « Revoir la cinématique »: the width it needs (pixels), then the button drawn in `r` (keyboard,
+/// gamepad, mouse); pressed, it plays the replay over the screen. False when there is no film.
+float replayButtonWidth(UIContext& ui);
+bool replayButton(GameServices& g, const std::string& id, const Rect& r);
+
+}  // namespace asterionfilm
+
+}  // namespace cosmic

@@ -13,6 +13,7 @@
 // cross-fades); every file of the story is loaded when it opens, none while it plays.
 // Display only.
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@ namespace cosmic {
 
 class GameServices;
 class UIContext;
+struct BossStory;
 struct AnimationSet;
 struct AnimationClip;
 
@@ -50,7 +52,8 @@ struct StoryNarrationLayout {
     std::vector<std::string> lines;  // the line as displayed, wrapped
 };
 /// `shown`: the line as displayed (translated). Uses the size of the screen of `ui` (begun).
-StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& shown);
+/// `skipHint` false (2.68, a film's first viewing): no hint, the line has the band's whole width.
+StoryNarrationLayout layoutStoryNarration(UIContext& ui, const std::string& shown, bool skipHint = true);
 
 /// The story of `bossId`; nullptr when it has none. `startAt` (automated screenshots): the shot
 /// to start from (0 = the first), its line already typed (the number of shots: the title card
@@ -70,6 +73,18 @@ std::unique_ptr<Scene> makeTrailer(GameServices& g, bool attract, float atSecond
 int storyShot(const Scene* s);
 /// The passes of the trailer `s` plays in attract mode (0 during the first); -1 when `s` is not one.
 int trailerPasses(const Scene* s);
+/// 2.68: a mini-film (a BossStory of kind « film », Asterion's: data/raids/asterion_film.json), played
+/// by the same scene: its shots with their own lengths, their captions typed at the bottom (none
+/// when empty), their titles large in the picture, its own music (the music before it comes back
+/// after it), no title card; it rises from black and ends with a slow fade to the screen below.
+/// `locked` (a first viewing): nothing skips it or leaves it — no key, button or click — and no
+/// hint says otherwise; only closing the game's window stops it. Else « Passer » and « Quitter »,
+/// as a story. `onEnd`: called once when it plays to its end (never when it is left or
+/// interrupted). `atSeconds` (automated screenshots): that moment of it. nullptr without a film.
+std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd = {},
+                                float atSeconds = -1.0f);
+/// 2.68: whether `s` is a film played locked (a first viewing).
+bool filmLocked(const Scene* s);
 /// The main menu's attract mode: after this long without any input, the trailer plays.
 constexpr float kAttractDelay = 60.0f;
 /// Whether the attract mode may start now: its setting on (Paramètres › Jeu), a trailer, nothing

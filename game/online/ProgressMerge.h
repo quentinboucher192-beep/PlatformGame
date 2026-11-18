@@ -13,7 +13,8 @@
 namespace cosmic {
 
 /// progress.json: completed levels (union), play time (summed, per level too), the intro seen,
-/// 2.64 the tutorial (the furthest state: never offered again once gone through or skipped);
+/// 2.64 the tutorial (the furthest state: never offered again once gone through or skipped),
+/// 2.68 Asterion's film seen (either side's: its first viewing is never forced again);
 /// the last planet and level stay those of this computer.
 Json mergeProgressJson(const Json& mine, const Json& theirs);
 /// records.json: per level, the best time with its splits, powers and level fingerprint (only

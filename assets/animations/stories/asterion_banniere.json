@@ -1,0 +1,9 @@
+{
+  "texture": "stories/asterion/banniere.png",
+  "frameWidth": 24,
+  "frameHeight": 52,
+  "pivot": [4, 52],
+  "clips": {
+    "wave": {"row": 0, "count": 4, "fps": 7, "loop": true}
+  }
+}

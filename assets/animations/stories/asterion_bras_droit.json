@@ -1,0 +1,13 @@
+{
+  "texture": "stories/asterion/bras_droit.png",
+  "frameWidth": 53,
+  "frameHeight": 79,
+  "pivot": [46, 8],
+  "clips": {
+    "intact": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "affaibli": {"row": 1, "count": 1, "fps": 1, "loop": true},
+    "detruit": {"row": 2, "count": 1, "fps": 1, "loop": true},
+    "inconnu": {"row": 3, "count": 1, "fps": 1, "loop": true},
+    "contour": {"row": 4, "count": 1, "fps": 1, "loop": true}
+  }
+}

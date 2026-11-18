@@ -1,0 +1,10 @@
+{
+  "texture": "stories/asterion/balise.png",
+  "frameWidth": 16,
+  "frameHeight": 40,
+  "pivot": [8, 40],
+  "clips": {
+    "off": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "on": {"row": 1, "count": 3, "fps": 8, "loop": true}
+  }
+}

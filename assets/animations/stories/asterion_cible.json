@@ -1,0 +1,10 @@
+{
+  "texture": "stories/asterion/cible.png",
+  "frameWidth": 40,
+  "frameHeight": 40,
+  "pivot": [20, 20],
+  "clips": {
+    "lock": {"row": 0, "count": 6, "fps": 14, "loop": false, "next": "hold"},
+    "hold": {"row": 1, "count": 2, "fps": 4, "loop": true}
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "texture": "stories/asterion/monde.png",
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "pivot": [48, 48],
+  "clips": {
+    "lit": {"row": 0, "count": 2, "fps": 2, "loop": true},
+    "extinction": {"row": 1, "count": 10, "durations": [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5], "loop": false, "next": "eteint"},
+    "eteint": {"row": 2, "count": 1, "fps": 1, "loop": true}
+  }
+}
