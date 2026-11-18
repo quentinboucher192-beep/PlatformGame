@@ -257,6 +257,10 @@ std::unique_ptr<Scene> makeRaidRoster(GameServices& g, const std::string& eventI
 /// 2.68, raids phase 3: the results of an event (validated tables only: clans, players in every
 /// category, the gigaboss's fights) and my rewards to claim, pushed.
 std::unique_ptr<Scene> makeRaidResults(GameServices& g, const std::string& eventId);
+/// 2.69, raids phase 5: the world rankings of a world event (the world's progress and final result,
+/// every clan, the groups, the players in every category, my clan; validated results only, what
+/// waits for its majority apart; the official result once frozen) and my rewards of it, pushed.
+std::unique_ptr<Scene> makeRaidWorld(GameServices& g, const std::string& eventId);
 /// The instance a player enters (POST /raids/events/{id}/branches/{part}/join): its event, id, clan,
 /// group and branch (its part).
 struct RaidEntry {

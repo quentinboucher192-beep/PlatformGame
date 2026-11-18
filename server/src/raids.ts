@@ -24,6 +24,7 @@ import { requireAdminRole } from "./adminRoles";
 import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { notify } from "./notifications";
 import { bodiesOf, rewardsOf } from "./raidRewards";
+import { requireValidMap, resultSummaries } from "./raidWorld";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 
@@ -95,6 +96,13 @@ interface EventRow {
     created_by: string | null;
     created_at: string;
     updated_at: string;
+    // 2.69 (phase 5, migration 0147, raidWorld.ts): suspended by an administrator, late arrivals,
+    // a catch-up session of an official world event, the map's latest check.
+    suspended_at?: string | null;
+    suspended_reason?: string;
+    late_minutes?: number | null;
+    catchup_of?: string | null;
+    map_check?: string | null;
     org_tag?: string | null;
     org_name?: string | null;
     clans_count?: number;
@@ -182,6 +190,13 @@ function eventView(e: EventRow, now: string) {
         players: e.players_count ?? 0,
         my_clan: { registered: !!e.my_clan_in, players: mine, groups: Math.ceil(mine / GROUP_SIZE), leader: e.leader_name ?? null },
         registered: !!e.me_in,
+        // 2.69 (phase 5): suspended by the administrators (nothing counts until the resumption), the
+        // late arrivals (minutes after the start, null: until the end), a catch-up session.
+        suspended: !!e.suspended_at,
+        suspended_reason: e.suspended_at ? (e.suspended_reason ?? "") : "",
+        late_minutes: e.late_minutes ?? null,
+        catchup: !!e.catchup_of,
+        catchup_of: e.catchup_of ?? null,
     };
 }
 
@@ -372,7 +387,8 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
         db
             .prepare(
                 `${EVENT_SELECT} WHERE (e.ends_at <= ?3 OR e.cancelled_at IS NOT NULL) AND e.published_at IS NOT NULL
-                   AND EXISTS (SELECT 1 FROM raid_clan_entries x WHERE x.event_id = e.id AND x.clan_id = ?1)
+                   AND (EXISTS (SELECT 1 FROM raid_clan_entries x WHERE x.event_id = e.id AND x.clan_id = ?1)
+                        OR (e.kind = 'world' AND e.catchup_of IS NULL AND e.cancelled_at IS NULL))
                  ORDER BY e.starts_at DESC, e.id LIMIT 10`,
             )
             .bind(c, me, now),
@@ -384,7 +400,9 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     // 2.68: Asterion's body in each event (validated results only), my rewards to claim.
     const listed = [world, mine, history].flatMap((r) => (r!.results as EventRow[]).map((e) => e.id));
     const bodies = await bodiesOf(db, listed);
-    const withBody = (e: EventRow) => ({ ...eventView(e, now), ...(bodies.get(e.id) ?? { body: {}, effects: [] }) });
+    // 2.69: the official result of the world events closed (frozen), with my clan's rank.
+    const results = await resultSummaries(db, listed, c);
+    const withBody = (e: EventRow) => ({ ...eventView(e, now), ...(bodies.get(e.id) ?? { body: {}, effects: [] }), result: results.get(e.id) ?? null });
     const rewards = await rewardsOf(db, me);
     return json(ctx, {
         server_time: now,
@@ -455,9 +473,10 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     const mineInv = clan ? invitations.find((i) => i.id === clan.id) : undefined;
     const def = definition(e.raid);
     const body = (await bodiesOf(db, [e.id])).get(e.id) ?? { body: {}, effects: [] };
+    const result = (await resultSummaries(db, [e.id], c)).get(e.id) ?? null; // 2.69: the official result once frozen
     return json(ctx, {
         server_time: now,
-        event: { ...eventView(e, now), ...body },
+        event: { ...eventView(e, now), ...body, result },
         description: def.description,
         rewards_text: e.rewards_text || def.rewards_text,
         my: {
@@ -844,6 +863,17 @@ export async function registerMe(ctx: Ctx): Promise<Response> {
     const e = await visibleEvent(db, id, clan, me);
     if (e.me_in) return json(ctx, { registered: true, already: true });
     const now = nowIso();
+    // 2.69 (phase 5): a catch-up session needs no chief: a member's registration enters their clan.
+    if (e.catchup_of && !e.my_clan_in)
+        await db
+            .prepare(
+                `INSERT INTO raid_clan_entries (event_id, clan_id, registered_by, leader_id, instructions, created_at, updated_at)
+                 SELECT e.id, m.clan_id, ?2, NULL, '', ?3, ?3 FROM raid_events e JOIN clan_members m ON m.player_id = ?2
+                 WHERE e.id = ?1 AND e.catchup_of IS NOT NULL AND e.cancelled_at IS NULL AND ?3 < e.lock_at
+                 ON CONFLICT (event_id, clan_id) DO NOTHING`,
+            )
+            .bind(id, me, now)
+            .run();
     // Every condition, the capacity of the event and of the clan included, in the INSERT itself.
     const r = await db
         .prepare(
@@ -970,7 +1000,7 @@ export async function raidTick(db: D1Database, nowMs = Date.now()): Promise<numb
         const lo = iso(Math.max(nowMs + o * 60000 - REMINDER_GRACE_MS, next === undefined ? -Infinity : nowMs + next * 60000));
         const due = await db
             .prepare(
-                "SELECT id, raid, format, kind, starts_at FROM raid_events WHERE published_at IS NOT NULL AND cancelled_at IS NULL AND starts_at > ?1 AND starts_at <= ?2 LIMIT 200",
+                "SELECT id, raid, format, kind, starts_at FROM raid_events WHERE published_at IS NOT NULL AND cancelled_at IS NULL AND suspended_at IS NULL AND starts_at > ?1 AND starts_at <= ?2 LIMIT 200",
             )
             .bind(lo, hi)
             .all<Pick<EventRow, "id" | "raid" | "format" | "kind" | "starts_at">>();
@@ -1024,11 +1054,15 @@ interface WorldFields {
     clan_capacity?: number;
     difficulty?: number;
     rewards_text?: string;
+    /** 2.69: minutes after the start a newcomer may still enter play; null: until the end. */
+    late_minutes?: number | null;
 }
 
 function readWorldFields(body: Record<string, unknown>, required: boolean): WorldFields {
-    const v = new Validator(body, ["raid", "format", "starts_at", "lock_minutes", "registration_open", "capacity", "clan_capacity", "difficulty", "rewards_text"]);
+    const v = new Validator(body, ["raid", "format", "starts_at", "lock_minutes", "registration_open", "capacity", "clan_capacity", "difficulty", "rewards_text", "late_minutes"]);
     const f: WorldFields = {};
+    if (body.late_minutes === null) f.late_minutes = null;
+    else f.late_minutes = v.int("late_minutes", { min: 0, max: 1440, optional: true });
     f.raid = v.str("raid", { max: 32, optional: true });
     if (f.raid !== undefined && !(f.raid in RAIDS)) v.fail("raid", "raid inconnu");
     f.format = v.str("format", { max: 16, optional: !required }) as RaidFormat | undefined;
@@ -1088,11 +1122,11 @@ export async function adminCreate(ctx: Ctx): Promise<Response> {
     await db
         .prepare(
             `INSERT INTO raid_events (id, kind, raid, format, clan_id, starts_at, lock_minutes, lock_at, ends_at, registration_open, capacity, clan_capacity,
-               difficulty, rewards_text, published_at, created_by, created_at, updated_at)
-             VALUES (?1, 'world', ?2, ?3, NULL, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, NULL, ?13, ?14, ?14)`,
+               difficulty, rewards_text, published_at, created_by, created_at, updated_at, late_minutes)
+             VALUES (?1, 'world', ?2, ?3, NULL, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, NULL, ?13, ?14, ?14, ?15)`,
         )
         .bind(id, f.raid ?? "asterion", f.format, t.starts_at, lock, t.lock_at, t.ends_at, f.registration_open === false ? 0 : 1, f.capacity ?? 0,
-            f.clan_capacity ?? 50, f.difficulty ?? 3, f.rewards_text ?? "", auth.player.id, now)
+            f.clan_capacity ?? 50, f.difficulty ?? 3, f.rewards_text ?? "", auth.player.id, now, f.late_minutes ?? null)
         .run();
     const e = (await loadEvent(db, id, "", ""))!;
     await audit(ctx, auth.player.id, "admin_raid_created", { raid: journalRaid(e), by_username: auth.player.username });
@@ -1117,6 +1151,8 @@ export async function adminUpdate(ctx: Ctx): Promise<Response> {
     const now = nowIso();
     if (e.cancelled_at) throw CANCELLED();
     if (now >= e.ends_at) throw FINISHED();
+    // 2.69: a catch-up session keeps its dates (registrations open until its end): cancel it and open another.
+    if (e.catchup_of) throw Errors.conflict("RAID_IS_CATCHUP", "Une session de rattrapage ne se modifie pas : annulez-la et ouvrez-en une autre.");
     if (startGiven && now >= e.starts_at) throw Errors.conflict("RAID_STARTED", "L'événement a commencé : son heure ne change plus.");
     const format = f.format ?? e.format;
     const lock = f.lock_minutes ?? e.lock_minutes;
@@ -1132,17 +1168,18 @@ export async function adminUpdate(ctx: Ctx): Promise<Response> {
         clan_capacity: f.clan_capacity ?? e.clan_capacity,
         difficulty: f.difficulty ?? e.difficulty,
         rewards_text: f.rewards_text ?? e.rewards_text,
+        late_minutes: f.late_minutes === undefined ? (e.late_minutes ?? null) : f.late_minutes,
     };
-    const changes = (Object.keys(next) as (keyof typeof next)[]).filter((k) => next[k] !== (e as unknown as Record<string, unknown>)[k]);
+    const changes = (Object.keys(next) as (keyof typeof next)[]).filter((k) => next[k] !== ((e as unknown as Record<string, unknown>)[k] ?? null));
     if (changes.length === 0) return json(ctx, { event: { ...eventView(e, now), rewards_text: e.rewards_text }, changes });
     await db
         .prepare(
             `UPDATE raid_events SET raid = ?2, format = ?3, starts_at = ?4, lock_at = ?5, ends_at = ?6, lock_minutes = ?7, registration_open = ?8,
-               capacity = ?9, clan_capacity = ?10, difficulty = ?11, rewards_text = ?12, updated_at = ?13
+               capacity = ?9, clan_capacity = ?10, difficulty = ?11, rewards_text = ?12, updated_at = ?13, late_minutes = ?14
              WHERE id = ?1 AND cancelled_at IS NULL`,
         )
         .bind(id, next.raid, next.format, next.starts_at, next.lock_at, next.ends_at, next.lock_minutes, next.registration_open, next.capacity,
-            next.clan_capacity, next.difficulty, next.rewards_text, now)
+            next.clan_capacity, next.difficulty, next.rewards_text, now, next.late_minutes)
         .run();
     const after = (await loadEvent(db, id, "", ""))!;
     if (after.published_at) {
@@ -1162,6 +1199,9 @@ export async function adminPublish(ctx: Ctx): Promise<Response> {
     const id = eventIdParam(ctx);
     const db = ctx.env.DB;
     const now = nowIso();
+    // 2.69 (phase 5): never published on a titan whose map is not valid (« Valider la carte », raidWorld.ts).
+    const draft = await loadEvent(db, id, "", "");
+    if (draft && draft.kind === "world" && !draft.published_at && !draft.cancelled_at) await requireValidMap(db, draft as Parameters<typeof requireValidMap>[1], auth.player.username);
     const r = await db
         .prepare("UPDATE raid_events SET published_at = ?2, updated_at = ?2 WHERE id = ?1 AND kind = 'world' AND published_at IS NULL AND cancelled_at IS NULL AND lock_at > ?2")
         .bind(id, now)

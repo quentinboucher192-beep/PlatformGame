@@ -28,6 +28,8 @@
     {"id": "suit_fonte", "category": "suit", "name": "Fonte et laiton", "description": "Gris acier riveté, visière ambre de chaudière, écharpe de laiton : la tenue du Titan.", "stars": 710, "look": "fonte"},
     {"id": "suit_sanctuaire", "category": "suit", "name": "Sanctuaire", "description": "Blanc nacré des sanctuaires d'Aethra, visière lavande, écharpe d'or.", "achievement": "chrono_aethra_gold", "look": "sanctuaire"},
     {"id": "suit_champion", "category": "suit", "name": "Champion des défis", "description": "Pourpre, visière d'or et écharpe blanche : la tenue des champions des défis.", "challenge": {"kind": "any", "tier": "gold", "count": 10}, "look": "champion"},
+    {"id": "suit_ecorce_asterion", "category": "suit", "name": "Écorce d'Asterion", "description": "Exclusive à l'événement mondial Asterion : écorce de basalte du titan, visière de magma, écharpe d'aurore violette.", "raid": "asterion", "look": "ecorce"},
+    {"id": "suit_ecorce_argent", "category": "suit", "name": "Écorce d'Asterion argentée", "description": "Version argentée des sessions de rattrapage d'Asterion : écorce d'argent, visière cyan, écharpe de nacre.", "raid": "asterion", "look": "ecorce_argent"},
 
     {"id": "trail_none", "category": "trail", "name": "Aucune", "description": "Pas de traînée derrière Nova.", "default": true, "look": "none"},
     {"id": "trail_stardust", "category": "trail", "name": "Poussière d'étoiles", "description": "Des étincelles cyan quand Nova court ou fait un dash.", "stars": 30, "look": "stardust"},
@@ -91,6 +93,7 @@
     {"id": "title_assaillant_asterion", "category": "title", "name": "Assaillant d'Asterion", "description": "Récompense de raid : 5 minutes de combat validées contre Asterion.", "raid": "asterion", "look": "Assaillant d'Asterion"},
     {"id": "title_briseur_magma", "category": "title", "name": "Briseur de magma", "description": "Récompense de raid : un score de contribution d'au moins 1 500 contre Pyroclast.", "raid": "asterion", "look": "Briseur de magma"},
     {"id": "title_fleau_pyroclast", "category": "title", "name": "Fléau de Pyroclast", "description": "Récompense de raid : un des 3 meilleurs scores de contribution d'un événement, Pyroclast vaincu.", "raid": "asterion", "look": "Fléau de Pyroclast"},
+    {"id": "title_devoreurs_devores", "category": "title", "name": "Dévoreurs dévorés", "description": "Titre de clan : votre clan dans le top 10 du classement mondial officiel d'un événement Asterion.", "raid": "asterion", "look": "Dévoreurs dévorés"},
 
     {"id": "victory_classic", "category": "victory", "name": "Classique", "description": "L'arrivée habituelle au portail.", "default": true, "look": "classic"},
     {"id": "victory_fireworks", "category": "victory", "name": "Feu d'artifice", "description": "Des gerbes de couleurs à l'arrivée.", "stars": 70, "look": "fireworks"},

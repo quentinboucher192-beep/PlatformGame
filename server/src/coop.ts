@@ -306,7 +306,8 @@ export class CoopRoom extends DurableObject<Bindings> {
             invited: this.info?.invited ?? [],
             started: this.started,
             next: this.next,
-            seats: this.seats.map((s, i) => ({ seat: i, player_id: s.playerId, name: s.name, connected: s.ws !== null && !s.absent, absent: s.absent, vacant: s.vacant })),
+            // 2.69: `ping` (ms, -1 unknown): the latency each game measured, for the raids' live panel (raidWorld.ts).
+            seats: this.seats.map((s, i) => ({ seat: i, player_id: s.playerId, name: s.name, connected: s.ws !== null && !s.absent, absent: s.absent, vacant: s.vacant, ping: s.rtt })),
             raid: this.info?.raid ? { mask: this.raidMask, states: this.raidStates.length } : null,
         };
     }

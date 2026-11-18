@@ -455,6 +455,35 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.71.0** :
+* **ADMINISTRATION › Assets : pastille « NOUVEAU » sur chaque nouvel asset** (vignette de la grille ou ligne de la
+  liste) ; elle part dès que l'asset reçoit le focus (clavier, manette, souris) ou un clic, et reste sur ses dossiers
+  du rangement, sur l'onglet Assets et sur l'entrée ADMINISTRATION tant qu'un asset en dessous est nouveau. Même
+  règle que les autres nouveautés (`game/progression/NewBadges.h`) : un asset arrivé dans une version plus récente
+  que celle que le joueur avait, sans une ligne par asset dans `data/news/new_features.json`.
+* **Version d'apparition de chaque asset** : `data/assets/asset_versions.json`, écrit par
+  `tools/assets/asset_versions.py` (amorcé une fois depuis l'historique git : la version qui a livré le commit
+  ajoutant le fichier ; ensuite, un asset qui apparaît reçoit la version en préparation). `tools/assets/code_refs.py`
+  le met à jour dans le même lancement (et `--check` le vérifie) : après une fusion qui apporte des assets, le
+  lancement habituel leur donne leur pastille. Seuls les assets depuis la 2.65.0 (les raids : Asterion en calques,
+  son mini-film, Pyroclast, Voidworm, Graviton, Titanus…) peuvent la porter.
+
+**Nouveau dans la version 2.70.0** :
+* **Raids de clan, phase 5 : les événements mondiaux** (`server/src/raidWorld.ts`, migration **0147**) : tous les clans
+  inscrits sur un seul titan aux mêmes heures UTC ; les résultats validés de chaque instance agrégés par le serveur en
+  totaux de clan et en progression mondiale (un objectif détruit par deux groupes à la fois compte une fois ; un rapport
+  répété, tardif ou plus ancien jamais deux fois), les doublons journalisés pour les administrateurs.
+* **Classement mondial** (`RaidWorldScene`, fiche d'un événement mondial) : progression mondiale, tous les clans, les
+  groupes, les joueurs dans chaque catégorie, mon clan ; « en attente de validation » à part, jamais final ; « Résultat
+  officiel » figé une seule fois à la clôture (un déclencheur SQL interdit toute modification), clans et joueurs prévenus,
+  historique des raids dans CLANS › RAIDS.
+* **Récompenses exclusives** : combinaison « Écorce d'Asterion » (participation validée à l'événement mondial), titre de
+  clan « Dévoreurs dévorés » (top 10 officiel), accordées une fois ; **sessions de rattrapage** avec la version argentée,
+  sans effet sur le résultat officiel ; **arrivée en retard** réglable.
+* **ADMINISTRATION › Raids › En direct** : joueurs connectés, instances (zone, joueurs, latence mesurée), gigaboss
+  vaincus, reconnexions (comptées par la base), rapports refusés, journal des actions et anomalies ; « Suspendre » /
+  « Reprendre », « Valider la carte » (exigée pour publier), « Session de rattrapage » ; chaque action au Journal.
+
 **Nouveau dans la version 2.69.0** :
 * **Raids de clan, phase 4B : VOIDWORM, GRAVITON et TITANUS** dans les antres descellées de l'ABDOMEN, de la JAMBE GAUCHE
   et de la JAMBE DROITE (zones 8 générées par `tools/levelgen/raid_voidworm.py`, `raid_graviton.py`, `raid_titanus.py`,
@@ -468,17 +497,6 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   envoie des ondes de choc à sauter ; liens avec la phase 4A (nid, valves, générateurs, réacteurs de la branche).
 * **Serveur** : un badge par gigaboss (« Ventre de Voidworm », « Pied de Graviton », « Talon de Titanus »), accordé une seule
   fois à qui était présent à sa chute validée ; la partie du titan détruite ; les résultats nomment chaque gigaboss tombé.
-* **ADMINISTRATION › Assets : pastille « NOUVEAU » sur chaque nouvel asset** (vignette de la grille ou ligne de la
-  liste) ; elle part dès que l'asset reçoit le focus (clavier, manette, souris) ou un clic, et reste sur ses dossiers
-  du rangement, sur l'onglet Assets et sur l'entrée ADMINISTRATION tant qu'un asset en dessous est nouveau. Même
-  règle que les autres nouveautés (`game/progression/NewBadges.h`) : un asset arrivé dans une version plus récente
-  que celle que le joueur avait, sans une ligne par asset dans `data/news/new_features.json`.
-* **Version d'apparition de chaque asset** : `data/assets/asset_versions.json`, écrit par
-  `tools/assets/asset_versions.py` (amorcé une fois depuis l'historique git : la version qui a livré le commit
-  ajoutant le fichier ; ensuite, un asset qui apparaît reçoit la version en préparation). `tools/assets/code_refs.py`
-  le met à jour dans le même lancement (et `--check` le vérifie) : après une fusion qui apporte des assets, le
-  lancement habituel leur donne leur pastille. Seuls les assets depuis la 2.65.0 (les raids : Asterion en calques,
-  son mini-film, Pyroclast, Voidworm, Graviton, Titanus…) peuvent la porter.
 
 **Nouveau dans la version 2.68.2** :
 * **La pause ne fige jamais le jeu en ligne ni dans le test admin** : seul le joueur cesse d'agir, les ennemis et le
