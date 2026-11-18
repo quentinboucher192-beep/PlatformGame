@@ -1,4 +1,7 @@
 {
+  "2.71.0": [
+    "Administration › Assets : chaque nouvel asset porte la pastille « NOUVEAU » sur sa vignette ou sa ligne, jusqu'à ce qu'il reçoive le focus ou un clic ; ses dossiers du rangement, l'onglet Assets et l'entrée Administration la gardent tant qu'un asset en dessous est nouveau. La version d'apparition de chaque asset est calculée automatiquement (tools/assets/asset_versions.py, relancé avec code_refs.py)."
+  ],
   "2.70.0": [
     "Raids de clan, phase 5 : les ÉVÉNEMENTS MONDIAUX. Tous les clans inscrits affrontent le même Asterion au même moment (heure de référence UTC, affichée à votre heure) : chaque groupe de 8 joue dans son instance, mais tout ce qu'il valide compte pour un seul titan, et pour son clan.",
     "Un objectif détruit en même temps par deux groupes compte une seule fois pour le monde (et pour chacun des deux clans) ; un rapport répété, arrivé en retard ou plus ancien ne compte jamais deux fois. Le serveur additionne seulement les résultats validés par la majorité de chaque instance.",

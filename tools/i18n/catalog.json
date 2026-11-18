@@ -1600,6 +1600,12 @@
    ]
   },
   {
+   "fr": "Administration › Assets : chaque nouvel asset porte la pastille « NOUVEAU » sur sa vignette ou sa ligne, jusqu'à ce qu'il reçoive le focus ou un clic ; ses dossiers du rangement, l'onglet Assets et l'entrée Administration la gardent tant qu'un asset en dessous est nouveau. La version d'apparition de chaque asset est calculée automatiquement (tools/assets/asset_versions.py, relancé avec code_refs.py).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration › Assets : tous les fichiers du jeu (images, animations, sons, musiques, polices, données), rangés en arbre — Personnages, Ennemis, Boss et giga-boss par monde, Pouvoirs, Décors et tuiles par planète, Interface et icônes, Effets et particules, Histoires, Musiques par groupe du juke-box, Sons, Polices —, chaque dossier avec son nombre d'assets et son poids.",
    "where": [
     "data/news/changelog.json"

@@ -18,14 +18,20 @@ données (niveaux, ennemis…) et des règles du jeu.
 Le test « asset catalogue: code_refs.json is up to date » (tests/test_asset_catalog.cpp)
 refait la même lecture et échoue si ce fichier n'est pas à jour.
 
+Le même lancement met à jour (ou vérifie) data/assets/asset_versions.json, la version où chaque
+asset est apparu (tools/assets/asset_versions.py) : après une fusion qui apporte des assets, le
+lancement habituel leur donne leur pastille « NOUVEAU ».
+
 Usage (depuis la racine du dépôt) :
-    python3 tools/assets/code_refs.py           # écrit data/assets/code_refs.json
-    python3 tools/assets/code_refs.py --check   # code de sortie 1 s'il n'est pas à jour
+    python3 tools/assets/code_refs.py           # écrit data/assets/code_refs.json (et asset_versions.json)
+    python3 tools/assets/code_refs.py --check   # code de sortie 1 si l'un des deux n'est pas à jour
 """
 import argparse
 import json
 import os
 import sys
+
+import asset_versions  # tools/assets/asset_versions.py (this script's folder)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT = os.path.join(ROOT, "data", "assets", "code_refs.json")
@@ -165,17 +171,20 @@ def main():
     if os.path.exists(OUT):
         with open(OUT, encoding="utf-8") as fh:
             old = fh.read()
+    # 2.69: the version in which each asset appeared (« NOUVEAU » in ADMINISTRATION › Assets)
+    # follows the same files: refreshed (or checked) in the same run, after a merge too.
+    versions = asset_versions.run(check=args.check)
     if args.check:
         if old != text:
             print("data/assets/code_refs.json n'est pas à jour : lancez python3 tools/assets/code_refs.py")
             return 1
         print("data/assets/code_refs.json est à jour.")
-        return 0
+        return versions
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(text)
     print("data/assets/code_refs.json : %d assets nommés par le code." % len(json.loads(text)["refs"]))
-    return 0
+    return versions
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -20,6 +21,12 @@ namespace cosmic {
 /// gets the focus or a click. A parent is new while something under it is still new, whatever
 /// focus it had: its pill goes only once everything deeper has been seen (and, if it is a
 /// novelty itself, once it has been seen too). Saved in saves/new_badges.json.
+///
+/// The assets (2.69, ADMINISTRATION › Assets) are novelties too, without a line each in that
+/// catalogue: data/assets/asset_versions.json (written by tools/assets/asset_versions.py) gives
+/// the version in which each file of assets/ first appeared, and each one from its « pillsFrom »
+/// on is the novelty "asset:<path>" under the Assets tab, by the same rule (newer than the
+/// baseline, not seen). Its folders join the trail once the tab has read its catalogue (link).
 class NewBadges {
 public:
     struct Feature {
@@ -31,6 +38,19 @@ public:
     /// The catalogue (data/news/new_features.json); a missing or damaged file: no novelty.
     void loadCatalog(const std::filesystem::path& file);
     void setCatalog(const std::vector<Feature>& features);
+    /// The assets' versions (data/assets/asset_versions.json), added to the catalogue already
+    /// set: "asset:<path>" for each asset from « pillsFrom » on (older ones never carry a pill:
+    /// they were never announced), under `parent` (the Assets tab). A missing or damaged file:
+    /// no asset is new. Returns the number of assets that can carry a pill.
+    int loadAssetVersions(const std::filesystem::path& file, const std::string& parent);
+    int addAssetVersions(const std::map<std::string, std::string>& versions, const std::string& pillsFrom, const std::string& parent);
+    /// `id` gets `parents` too (an id not in the catalogue yet becomes a step of the trail); a
+    /// parent it already has: no change. For the trails known late (the asset tree).
+    void link(const std::string& id, const std::vector<std::string>& parents);
+    bool has(const std::string& id) const { return features_.count(id) > 0; }
+    static std::string assetFeature(std::string_view path) { return "asset:" + std::string(path); }
+    /// A folder of the asset tree, by its stable key ("": the root, « Tous les assets »).
+    static std::string assetFolderFeature(std::string_view key) { return "asset.folder:" + (key.empty() ? std::string("/") : std::string(key)); }
     /// `previousVersion`: the version the player ran before this one ("" on a fresh install:
     /// nothing is new to a new player). Kept from the first run with pills on, so that a
     /// novelty stays new across later updates until it is seen.

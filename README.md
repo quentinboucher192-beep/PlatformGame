@@ -455,6 +455,19 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.71.0** :
+* **ADMINISTRATION › Assets : pastille « NOUVEAU » sur chaque nouvel asset** (vignette de la grille ou ligne de la
+  liste) ; elle part dès que l'asset reçoit le focus (clavier, manette, souris) ou un clic, et reste sur ses dossiers
+  du rangement, sur l'onglet Assets et sur l'entrée ADMINISTRATION tant qu'un asset en dessous est nouveau. Même
+  règle que les autres nouveautés (`game/progression/NewBadges.h`) : un asset arrivé dans une version plus récente
+  que celle que le joueur avait, sans une ligne par asset dans `data/news/new_features.json`.
+* **Version d'apparition de chaque asset** : `data/assets/asset_versions.json`, écrit par
+  `tools/assets/asset_versions.py` (amorcé une fois depuis l'historique git : la version qui a livré le commit
+  ajoutant le fichier ; ensuite, un asset qui apparaît reçoit la version en préparation). `tools/assets/code_refs.py`
+  le met à jour dans le même lancement (et `--check` le vérifie) : après une fusion qui apporte des assets, le
+  lancement habituel leur donne leur pastille. Seuls les assets depuis la 2.65.0 (les raids : Asterion en calques,
+  son mini-film, Pyroclast, Voidworm, Graviton, Titanus…) peuvent la porter.
+
 **Nouveau dans la version 2.70.0** :
 * **Raids de clan, phase 5 : les événements mondiaux** (`server/src/raidWorld.ts`, migration **0147**) : tous les clans
   inscrits sur un seul titan aux mêmes heures UTC ; les résultats validés de chaque instance agrégés par le serveur en

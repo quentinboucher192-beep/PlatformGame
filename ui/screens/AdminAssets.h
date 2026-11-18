@@ -11,6 +11,9 @@
 // narrows the list to its own assets; « Fiche » opens its sheet in the game when it has one:
 // boss, level, planet, enemy, suit, story, power) and « Ouvrir le dossier ». Read only.
 // The catalogue is read once per session off the main thread (game/content/AssetCatalog.h).
+// 2.69: a new asset (data/assets/asset_versions.json, game/progression/NewBadges.h) carries the
+// « NOUVEAU » pill on its tile or its row until it gets the focus or a click, and so do its
+// folders in the tree, the tab and the ADMINISTRATION entry while anything under them is new.
 
 #include <functional>
 #include <memory>
@@ -58,6 +61,10 @@ private:
     };
     void refilter();
     void select(int index, bool reveal);
+    /// 2.69: the « NOUVEAU » trail of the new assets through their folders, once the catalogue
+    /// is read (the novelties themselves come from data/assets/asset_versions.json).
+    void linkBadges();
+    std::string folderFeature(int folder) const;
     void drawToolbar(const Rect& r);
     void drawTypes(const Rect& r);
     void drawTree(const Rect& r);
@@ -94,6 +101,7 @@ private:
     std::string pendingOpen_;
     bool scrollToSelected_ = false;
     int drawnItems_ = 0;
+    bool badgesLinked_ = false;
 };
 
 }  // namespace cosmic

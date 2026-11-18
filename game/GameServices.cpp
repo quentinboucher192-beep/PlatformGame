@@ -72,6 +72,8 @@ void GameServices::loadAll() {
     news.load();
     // « NOUVEAU » pills: what came after the version the player had before this update.
     newBadges.loadCatalog(Paths::dataDir() / "news" / "new_features.json");
+    // 2.69: the new assets of ADMINISTRATION › Assets (tools/assets/asset_versions.py).
+    newBadges.loadAssetVersions(Paths::dataDir() / "assets" / "asset_versions.json", "admin.tab.assets");
     newBadges.init(Paths::savesDir() / "new_badges.json", news.lastVersion(), COSMIC_VERSION_STRING);
     ui.isNewFeature = [this](const std::string& id) { return newBadges.isNew(id); };
     ui.featureSeen = [this](const std::string& id) {

@@ -11572,6 +11572,7 @@
     "Événement suspendu par les administrateurs : rien ne compte jusqu'à la reprise.": "Event suspended by the administrators: nothing counts until it resumes.",
     "Événement suspendu par les administrateurs : {0} (rien ne compte jusqu'à la reprise)": "Event suspended by the administrators: {0} (nothing counts until it resumes)",
     "Événement suspendu · motif : {0}": "Event suspended · reason: {0}",
-    "Événement suspendu · rien ne compte jusqu'à la reprise": "Event suspended · nothing counts until it resumes"
+    "Événement suspendu · rien ne compte jusqu'à la reprise": "Event suspended · nothing counts until it resumes",
+    "Administration › Assets : chaque nouvel asset porte la pastille « NOUVEAU » sur sa vignette ou sa ligne, jusqu'à ce qu'il reçoive le focus ou un clic ; ses dossiers du rangement, l'onglet Assets et l'entrée Administration la gardent tant qu'un asset en dessous est nouveau. La version d'apparition de chaque asset est calculée automatiquement (tools/assets/asset_versions.py, relancé avec code_refs.py).": "Administration › Assets: every new asset carries the « NEW » badge on its thumbnail or its row until it gets the focus or a click; its folders in the tree, the Assets tab and the Administration entry keep it while an asset under them is new. The version in which each asset appeared is computed automatically (tools/assets/asset_versions.py, run again with code_refs.py)."
   }
 }
