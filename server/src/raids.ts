@@ -21,7 +21,7 @@
 
 import { audit, requireAuth, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
-import { countOnline, listPresenceOf } from "./friends";
+import { adminPresenceOf, countOnline, isAdminViewer, listPresenceOf } from "./friends";
 import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import type { PlayerRow } from "./model";
 import { notify } from "./notifications";
@@ -447,7 +447,7 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
             .bind(id, c),
         db
             .prepare(
-                `SELECT p.id, p.username, p.avatar, r.created_at, p.presence_state, p.presence_at, p.presence_visible,
+                `SELECT p.id, p.username, p.avatar, r.created_at, p.presence_state, p.presence_at, p.presence_visible, p.profile_visibility,
                         EXISTS (SELECT 1 FROM clan_members m WHERE m.clan_id = ?2 AND m.player_id = p.id) AS in_clan
                  FROM raid_registrations r JOIN players p ON p.id = r.player_id
                  WHERE r.event_id = ?1 AND r.clan_id = ?2 ORDER BY r.created_at, p.username LIMIT 200`,
@@ -473,7 +473,7 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
         updated_at: string;
     };
     const entry = (entryR!.results[0] as Entry | undefined) ?? null;
-    type Registrant = { id: string; username: string; avatar: string | null; created_at: string; in_clan: number } & Pick<
+    type Registrant = { id: string; username: string; avatar: string | null; created_at: string; in_clan: number; profile_visibility?: string } & Pick<
         PlayerRow,
         "presence_state" | "presence_at" | "presence_visible"
     >;
@@ -481,7 +481,10 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     // 2.72: the registrants' presence, to the members of their clan who see the roster (the
     // viewer is one: the roster is the viewer's clan's), from the game's heartbeat.
     const nowMs = Date.now();
-    const presence = roster.map((p) => (clan && p.in_clan === 1 ? listPresenceOf(p, nowMs) : null));
+    // 2.75: an administrator (moderation) sees the real presence, the hidden ones marked « masqué ».
+    const admin = isAdminViewer(viewer);
+    const adminView = roster.map((p) => (admin && clan && p.in_clan === 1 ? adminPresenceOf(p, nowMs) : null));
+    const presence = roster.map((p, i) => adminView[i]?.presence ?? (clan && p.in_clan === 1 ? listPresenceOf(p, nowMs) : null));
     const invitations = invR!.results as { id: string; tag: string; name: string; status: string; created_at: string }[];
     const organizer = !!clan && e.clan_id === clan.id;
     const mineInv = clan ? invitations.find((i) => i.id === clan.id) : undefined;
@@ -514,6 +517,7 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
             avatar: p.avatar,
             registered_at: p.created_at,
             ...(presence[i] ? { presence: presence[i] } : {}),
+            ...(adminView[i] ? { presence_hidden: adminView[i]!.presence_hidden, profile_hidden: p.profile_visibility === "private" } : {}),
         })),
         ...(entry && clan ? { roster_online: countOnline(presence) } : {}),
         groups: groupsOf(roster, entry?.leader_id ?? null).map((g) => ({

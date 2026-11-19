@@ -4,7 +4,8 @@
 # phase 3 : le gigaboss PYROCLAST (2.68, §7 à §12) ; phase 4B : VOIDWORM, GRAVITON, TITANUS (2.69, §13) ;
 # phase 5 : les événements mondiaux (2.69, §14) ; phase 7 : fiabilité, charge et anti-triche (2.74, §15) ;
 # phase 6 : le Cœur d'Asterion, combat final (2.74, §17)
-# les fiches d'Asterion et des Gigaboss (2.74.1, §18)
+# les fiches d'Asterion et des Gigaboss (2.74.1, §18) ; ce qu'il reste à faire, zones terminées, tableaux des zones,
+# modération, « Où frapper » (2.75, §19)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -985,6 +986,80 @@ verrou, aucun « ??? »), et hors ligne : ce sont les données du jeu.
   d'Asterion propose alors « Sa fiche » sur le cœur, et sa partie s'ouvre depuis le titan.
 * **Capture sur demande** : `CosmicPlatformer --headless --raid-sheets <fiche>[:<onglet 0-2>][:attaque=<id>|:attaque=m:<mécanisme>]`
   (au-dessus du menu, l'attaque dépliée avec son exemple) ; `--clans --online-open raids` ouvre l'onglet RAIDS.
+## 19. Ce qu'il reste à faire, zones terminées, tableaux des zones et modération (2.75)
+
+### « Ce qu'il reste à faire » (`game/raid/ZoneGoals`, `RaidHudElement::Remaining`)
+
+Une fonction pure lit l'état de la branche (les mêmes bits que le jeu et le serveur) : une zone est **terminée** quand
+tous ses objectifs non facultatifs sont faits (la zone secrète, qui n'a que des objectifs facultatifs : tous). Ses
+conditions, dans l'ordre : ce qui l'ouvre quand elle est encore verrouillée (« Ouvrir l'accès : … » avec « 1 / 2 » pour
+les générateurs, le levier, un lien du titan, un objectif), chaque objectif (une paire : « 1 / 2 », un générateur :
+« 1 générateur sur 2 »), les facultatifs en dernier. Chacune est **cochée depuis l'état validé par le serveur**
+(`RaidRun::validated`, le `RAID_STATE`) ; faite seulement par ce groupe : « validation du serveur en attente ».
+
+* **Panneau du HUD** (déplaçable, redimensionnable, masquable dans Paramètres › HUD › « Raids » ; par défaut dans la
+  colonne de droite sous les alertes, jamais sur le bandeau de danger ni sur les contributions) : les conditions de la
+  zone, ses embuscades qui ne sont pas un objectif (« Embuscade 2 sur 4 : vague en cours », dans l'ordre du niveau), ses
+  plaques à tenir ensemble, puis « BRANCHE · ce qu'il manque » : chaque autre zone non terminée avec ce qu'il lui manque,
+  les **zones à reprendre** d'abord (un groupe y est tombé : « [AUBE]·2 est tombé », lu dans `retake_by` de la carte de la
+  branche, relue toutes les 15 s). Textes mesurés dans sa boîte (« … et N lignes de plus »).
+* **Grande carte (M)** : chaque zone dit son état (terminée, à finir, verrouillée, zone à reprendre, vous êtes ici) et, tant
+  qu'elle n'est pas terminée, ce qu'il lui manque sur une seconde ligne (mesurée, un tiers de la largeur au plus).
+
+### Une zone terminée (`raid::RaidRun::checkFinished`, dans la simulation)
+
+À chaque pas, après les objectifs et l'état reçu, `RaidRun` note les zones qui viennent d'être terminées (un bit par zone,
+**une seule fois** ; celles déjà terminées à l'arrivée ne sont pas des nouvelles ; l'antre a sa propre carte). Pour la zone où
+se trouve l'instance : une alerte « ZONE TERMINÉE », sa carte et son son sur **tous les jeux de l'instance au même pas** (par
+ce groupe ou par un autre, via `RAID_STATE`), son **tableau des contributions** et un rapport `zone_table` ; pour une autre
+zone de la branche : une alerte « BRANCHE · Zone terminée : … ». Côté serveur, l'objectif accepté qui termine une zone écrit
+`raid_zone_completions` (**une ligne par événement, branche et zone**, clé primaire : deux acceptations ou deux instances la
+disent une fois) ; les alertes du titan (`feed`, `kind: "zone"`) et la carte de la branche (`finished`, `finished_by`) la
+montrent.
+
+### Le tableau des contributions d'une zone (`game/raid/Contributions`)
+
+`Contributions` tient, en plus de ses enregistrements, une ligne par joueur **et par zone** (`ZoneContribution`) : dégâts au
+**boss et aux mini-boss** de la zone (un boss du bestiaire, un ennemi dont la chute est un objectif « killed » de la zone, son
+gigaboss et ses points faibles), dégâts dans la zone, soutien (alliés relevés, coups bloqués), mécanismes (plaques tenues quand
+elles marchent, évents, points faibles), objectifs. Tout vient des événements de la simulation : les mêmes nombres sur tous
+les jeux (testé à 2 et 8 sièges). La part de chacun est celle des dégâts au boss (des dégâts de la zone quand elle n'en a pas).
+
+* **Rapport** `{kind: "zone_table", zone, tick, hash, records: [{seat, from, boss_damage, damage, support, mechanisms,
+  objectives}]}` : clé `t:<zone>`, valeur canonique reconstruite par le serveur (`zoneCanonical`), même consensus que les
+  autres (majorité stricte des joueurs actifs, minorité journalisée), tableaux impossibles refusés avant tout vote
+  (`implausibleZone`). Accepté : `raid_zone_contributions` (migration **0160**), attribué au membre qui tenait le siège.
+* **Écrans** : la carte « ZONE TERMINÉE » (tableau mesuré : nom, barre et pourcentage de la part, dégâts, soutien,
+  mécanismes, objectifs ; « Zone précédente / suivante » quand il y en a plusieurs ; elle se ferme seule après 30 s, le
+  groupe continue sous elle), la pause (« Tableaux des contributions des zones terminées »), et **Résultats du raid ›
+  « Tableaux des zones »** (`zone_tables` de `GET /raids/events/{id}/results` : les groupes de **mon** clan seulement).
+
+### Les administrateurs voient tout (modération)
+
+Pour la modération, un **administrateur actif** (`isAdminViewer`, décidé par le serveur depuis la session) reçoit la
+présence **réelle** d'un joueur qui la masque et le marqueur de profil masqué (`presence_hidden`, `profile_hidden`) dans
+ADMINISTRATION › Joueurs (le filtre « en ligne » les compte aussi), la page d'un clan et les inscrits d'un raid de son clan ;
+le jeu écrit « masqué ». **Jamais un autre joueur** (testé : membre, joueur extérieur, administrateur suspendu). La position
+précise n'est jamais collectée et le pays reste caché tant que le joueur ne le montre pas (`visibleCountry`, administrateurs
+compris). L'explication de « Montrer ma présence » (Paramètres en ligne) le dit.
+
+### Où frapper : le schéma des fiches des Gigaboss (`game/raid/BossHitboxes`)
+
+Dans l'onglet « Mécanismes » de chaque fiche (§18) : un sélecteur (une puce par phase et par état : « Combat », « Blindé »,
+« À nu » ; clavier, manette, souris), le **vrai sprite** du Gigaboss pour cette phase (son ancrage `pivot` comme le moteur le
+place), et par-dessus les rectangles lus dans les règles du combat : son corps (la boîte de l'ennemi), **vert** quand il prend
+les coups, **gris** quand son blindage tient (les phases `carapace` de ses règles, `veil` pour Skullmaw, quand il a un
+mécanisme), **rouge** ce qui blesse au contact ou attaque (son contact, les yeux de Skullmaw), ses **points faibles** à nu
+(`weakSpots`, placés par `raid::spotFeet`, la fonction même dont `Gigaboss` se sert pour les coller à lui) et les cibles de son
+mécanisme (entraves de Titanus, plaques de Heartbreaker), puis **en or** les plaques du mécanisme collectif dans son arène
+(évents, crochets, ancres, artères, miroirs, générateurs de gravité). Une légende mesurée et « Frappez ici quand… ».
+`tests/test_raid_zone_goals.cpp` vérifie un schéma par phase pour chaque Gigaboss et que ses rectangles sont ceux des règles.
+
+### Versions
+
+Rien ne change le déroulement d'une partie : `kSimulationVersion`, `kCoopSimulationVersion` et `kRankingGeneration` ne
+changent pas ; l'empreinte de `RaidRun` non plus (les tableaux des zones sont comparés par leur texte canonique).
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)

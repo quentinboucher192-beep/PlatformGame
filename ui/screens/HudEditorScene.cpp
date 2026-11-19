@@ -897,6 +897,14 @@ private:
             h.sub = "votre groupe 8,1 % · les autres groupes 28,7 % · parties du titan tombées 5 / 7";
             raidhud::drawHeartBar(ui, at(RE::Heart), k(RE::Heart), h);
         }
+        if (shown(RE::Remaining))  // 2.75
+            raidhud::drawObjectives(ui, at(RE::Remaining), k(RE::Remaining), "CE QU'IL RESTE À FAIRE · Exemple",
+                                    {{"OK", "Vaincre le golem gardien", kGreen},
+                                     {"1 / 2", "Allumer le générateur ouest · 1 générateur sur 2", Color{255, 176, 74, 255}},
+                                     {"2 / 4", "Embuscade 2 sur 4 : vague en cours", Color{201, 168, 255, 255}},
+                                     {"", "BRANCHE · ce qu'il manque", kSky},
+                                     {"!", "Coude-forge : zone à reprendre ([AUBE]·2 est tombé) · Fermer le soufflet est (1 / 2)", Color{255, 74, 74, 255}},
+                                     {"■", "Poignet-verrou : Ouvrir l'accès : allumer les deux générateurs (1 / 2)", kDim}});
         if (shown(RE::HeartEffects))
             raidhud::drawObjectives(ui, at(RE::HeartEffects), k(RE::HeartEffects), "EFFETS DES BRANCHES SUR LE CŒUR · Exemple",
                                     {{"◆", "Crâne tombé : ses lances stellaires perdent leur précision", kGreen},

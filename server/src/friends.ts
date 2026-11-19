@@ -1,7 +1,7 @@
 // Friends: requests, acceptance, removal. The target's "allow friend requests" setting is
 // respected and a player never learns more than the public identity of another one.
 
-import { audit, requireAuth } from "./auth";
+import { audit, requireAuth, type AuthInfo } from "./auth";
 import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
 import { RULES, rateLimit } from "./ratelimit";
@@ -160,6 +160,25 @@ export type ListPresence = Exclude<Presence, "hidden">;
 export function listPresenceOf(p: Pick<PlayerRow, "presence_state" | "presence_at" | "presence_visible">, now = Date.now()): ListPresence {
     const s = presenceOf(p, now);
     return s === "hidden" ? "offline" : s;
+}
+
+/**
+ * 2.75: an active administrator. For moderation, the administrators see the presence and the hidden
+ * profiles with their REAL state (« Montrer ma présence » unticked, profile not public), marked
+ * « masqué » so they know; nobody else ever does (the server decides from the session, never from what
+ * a client says). The location is NOT part of it: never precise, and the country stays hidden unless
+ * the player shows it (visibleCountry), administrators included.
+ */
+export function isAdminViewer(viewer: AuthInfo | null | undefined): boolean {
+    return !!viewer && viewer.player.role === "admin" && viewer.player.account_status === "active";
+}
+
+/** 2.75: a presence as an administrator sees it: the real state, and whether the player hides it. */
+export function adminPresenceOf(
+    p: Pick<PlayerRow, "presence_state" | "presence_at" | "presence_visible">,
+    now = Date.now(),
+): { presence: ListPresence; presence_hidden: boolean } {
+    return { presence: presenceOf({ ...p, presence_visible: 1 }, now) as ListPresence, presence_hidden: p.presence_visible === 0 };
 }
 
 /** The « X » of « X/Y en ligne »: the players of a list « online » now (« away » and « offline » are not). */

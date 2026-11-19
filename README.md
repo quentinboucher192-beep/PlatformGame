@@ -324,6 +324,14 @@ Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les nivea
 une zone seuls avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui suivent, combattent, tiennent
 les plaques et relèvent les joueurs à terre. Détails : [docs/RAIDS.md](docs/RAIDS.md).
 
+Le panneau **« Ce qu'il reste à faire »** (lui aussi placé dans l'onglet « Raids ») liste chaque condition pour terminer
+la zone, cochée dès que le serveur l'a validée, puis ce qu'il manque dans les autres zones de la branche (les **zones à
+reprendre** d'abord) ; la grande carte le répète zone par zone. Une zone terminée s'annonce à tous les joueurs de
+l'instance au même moment, avec son **tableau des contributions** (part des dégâts au boss et aux mini-boss, soutien,
+mécanismes, objectifs, comptés par la simulation), gardé dans « Résultats du raid ». Les fiches des Gigaboss ont un
+schéma **« Où frapper »** par phase et par état, lu dans les règles mêmes du combat. Détails :
+[docs/RAIDS.md §19](docs/RAIDS.md#19-ce-quil-reste-à-faire-zones-terminées-tableaux-des-zones-et-modération-275).
+
 <p align="center"><img src="docs/media/raid_visuals.png" width="820" alt="Planche du générateur : la lave animée du magma montant (corps, croûte, vagues, bulles, braises, alerte) et les tuiles et icônes de la minimap des raids"></p>
 
 ## Cosmic Online
@@ -605,6 +613,18 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.75.0** :
+* **Raids de clan** : panneau « Ce qu'il reste à faire » (HUD des raids, placé dans l'onglet « Raids ») et ce qu'il
+  manque à chaque zone sur la grande carte ; une zone terminée annoncée à toute l'instance (carte, son) et une seule fois
+  dans les alertes du titan ; **tableau des contributions** de chaque zone (dégâts au boss et aux mini-boss, soutien,
+  mécanismes, objectifs ; validé par la majorité du groupe, dans « Résultats du raid ») ; schéma **« Où frapper »** dans
+  les fiches des Gigaboss ; migration **0160** (docs/RAIDS.md §19).
+* **Modération** : les administrateurs voient la présence réelle et les profils masqués (marqués « masqué »), jamais les
+  autres joueurs ; aucune position précise, le pays seulement si le joueur le montre. ADMINISTRATION › Joueurs : chaque
+  ligne se déplie (« + ») sur les **derniers niveaux joués** (date, meilleur temps ou temps de jeu, tentatives,
+  « Regarder »), et un admin regarde un replay vérifié malgré un profil masqué (« Vu en tant qu'admin (profil masqué) »),
+  chaque consultation notée au Journal ([docs/online/PRIVACY.md](docs/online/PRIVACY.md)).
 
 **Nouveau dans la version 2.74.2** :
 * **Correctif** : la fiche d'Asterion compte de nouveau sept branches (56 zones, 7 antres), le Cœur à part.

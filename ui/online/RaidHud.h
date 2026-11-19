@@ -91,6 +91,32 @@ void drawHeartBar(UIContext& ui, const Rect& r, float k, const HeartBar& h);
 /// A box of the HUD (its rounded panel).
 void hudBox(UIContext& ui, const Rect& r);
 
+/// 2.75: the « Tableau des contributions » of a zone (docs/RAIDS.md §19): one row per player (what the
+/// simulation counted, the same on every computer), its share of the damage dealt to the zone's boss
+/// and mini-bosses (of the zone's damage when it had none) as a bar and a percentage, then damage,
+/// support, mechanisms and objectives. Shown at the end of the zone and in « Résultats du raid ».
+struct ZoneRow {
+    std::string name;
+    Color color = Color::white();
+    bool me = false;
+    int bossDamage = 0, damage = 0, support = 0, mechanisms = 0, objectives = 0;  // damage in hearts (tenths / 10)
+};
+struct ZoneTable {
+    std::string title, sub;
+    std::vector<ZoneRow> rows;
+};
+/// The six columns of a table `width` wide (x from its left): player, share, damage, support,
+/// mechanisms, objectives; `header` their titles (the share's says whose damage it counts).
+struct ZoneColumns {
+    float x[6] = {}, w[6] = {};
+    std::string header[6];
+};
+ZoneColumns zoneColumns(const ZoneTable& t, float width);
+/// Each row's share (0..1): of the boss damage when anyone hurt a boss, else of the damage.
+std::vector<float> zoneShares(const ZoneTable& t);
+/// The table in `r` (title, sub-title, header, rows; « … et N de plus » when they do not fit).
+void drawZoneTable(UIContext& ui, const Rect& r, float k, const ZoneTable& t);
+
 // --------------------------------------------------------------------------------- the maps
 
 enum class Icon {
@@ -115,6 +141,7 @@ struct ZoneChip {
     std::string name, state;
     Color color;
     bool here = false;
+    std::string missing;  // 2.75: what it still misses (its second line), "" when finished
 };
 
 class Minimap {

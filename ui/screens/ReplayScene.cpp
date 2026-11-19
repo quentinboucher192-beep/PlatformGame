@@ -181,6 +181,7 @@ public:
         if (comparing_) drawCompareProgress();
         if (comparing_) drawTags(view);
         drawSeekOverlay();
+        drawAdminNote();
         if (showInfo_) {
             if (comparing_) drawComparePanel(layout_.panel);
             else drawSplitsPanel(layout_.panel);
@@ -252,6 +253,10 @@ private:
             if (!alive.lock()) return;
             if (resp.networkFailure()) return fail(std::string("Réseau : ") + netErrorLabel(resp.error));
             if (resp.status != 200) return fail(parseApiResponse(resp).message);
+            // 2.75: an administrator watching through a privacy lock (the server decided, from the session's role).
+            const std::string lock = resp.header("x-admin-view");
+            if (lock == "profile_private") adminNote_ = "Vu en tant qu'admin (profil masqué)";
+            else if (!lock.empty()) adminNote_ = "Vu en tant qu'admin (compte inactif)";
             std::vector<uint8_t> bytes(resp.body.begin(), resp.body.end());
             std::string err;
             auto rep = ReplayData::decode(bytes, &err);
@@ -881,6 +886,20 @@ private:
         };
         tag("A · " + displayName(a_.meta), feetA(), kColorA);
         tag("B · " + displayName(b_.meta), poseB().feet, kColorB);
+    }
+
+    /// 2.75: « Vu en tant qu'admin (profil masqué) » at the top of the view, all along the playback (measured).
+    void drawAdminNote() {
+        if (adminNote_.empty()) return;
+        UIContext& ui = g_.ui;
+        const float room = std::max(ui.s(120), layout_.worldArea.w - ui.s(40));
+        const float fs = std::max(ui.fitFont(adminNote_, FontFace::Bold, fz(ui, 16), room - ui.s(32), 0.75f), 11.5f / ui.s(1.0f));
+        const std::string t = ui.elide(adminNote_, FontFace::Bold, fs, room - ui.s(32));
+        const Vec2 sz = ui.text().measure(t, FontFace::Bold, ui.s(fs));
+        const Rect box{layout_.worldArea.center().x - sz.x * 0.5f - ui.s(16), layout_.worldArea.y + ui.s(12), sz.x + ui.s(32), sz.y + ui.s(14)};
+        ui.r().fillRoundedRect(box, ui.s(8), Color{60, 40, 10, 225});
+        ui.r().drawRoundedRect(box, ui.s(8), ui.theme().warm, ui.s(1.5f));
+        ui.label(t, box.center(), fs, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
     }
 
     void drawSeekOverlay() {
@@ -1628,6 +1647,7 @@ private:
     bool local_ = false;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string status_;
+    std::string adminNote_;  // 2.75: « Vu en tant qu'admin (profil masqué) » (the server's x-admin-view)
     bool failed_ = false;
     std::string levelId_;
     ReplayChoice a_, b_;

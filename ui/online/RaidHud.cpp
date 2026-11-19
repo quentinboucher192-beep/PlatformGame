@@ -138,6 +138,21 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
                 std::max(ui.s(120), std::min({ui.s(500) * k, W * 0.28f, defaultArea(ui, l, RaidHudElement::Danger, hud).x - ui.s(10) - m}));
             return Rect{m, y, w, std::max(ui.s(80), std::min(ui.s(320) * k, bottom - y))};
         }
+        case RaidHudElement::Remaining: {
+            // 2.75: the right column under the alerts, never down to the danger band (centred) nor to the
+            // contributions' line (bottom right).
+            const Rect a = defaultArea(ui, l, RaidHudElement::Alerts, hud);
+            const float w = std::min(ui.s(320), W * 0.24f) * k;
+            const float x = W - m - w;
+            float y = a.bottom() + ui.s(10);
+            float bottom = defaultArea(ui, l, RaidHudElement::Contributions, hud).y - ui.s(10);
+            const Rect d = defaultArea(ui, l, RaidHudElement::Danger, hud);
+            if (d.right() > x && d.x < x + w && d.bottom() > y) {
+                if (d.y - ui.s(10) - y >= ui.s(120)) bottom = std::min(bottom, d.y - ui.s(10));
+                else y = d.bottom() + ui.s(10);  // a short screen: under the band
+            }
+            return Rect{x, y, w, std::max(ui.s(40), std::min(ui.s(300) * k, bottom - y))};
+        }
         default: return {};
     }
 }
@@ -174,6 +189,83 @@ void hudBox(UIContext& ui, const Rect& r) {
 }
 
 // ------------------------------------------------------------------------------------ panels
+
+std::vector<float> zoneShares(const ZoneTable& t) {
+    int64_t boss = 0, all = 0;
+    for (const ZoneRow& r : t.rows) {
+        boss += std::max(0, r.bossDamage);
+        all += std::max(0, r.damage);
+    }
+    std::vector<float> out;
+    for (const ZoneRow& r : t.rows)
+        out.push_back(boss > 0  ? static_cast<float>(std::max(0, r.bossDamage)) / static_cast<float>(boss)
+                      : all > 0 ? static_cast<float>(std::max(0, r.damage)) / static_cast<float>(all)
+                                : 0.0f);
+    return out;
+}
+
+ZoneColumns zoneColumns(const ZoneTable& t, float width) {
+    ZoneColumns c;
+    bool boss = false;
+    for (const ZoneRow& r : t.rows) boss = boss || r.bossDamage > 0;
+    static const float kShare[6] = {0.27f, 0.27f, 0.12f, 0.11f, 0.13f, 0.10f};
+    const char* heads[6] = {"Joueur", boss ? "Part des dégâts au boss" : "Part des dégâts", "Dégâts", "Soutien", "Mécanismes", "Objectifs"};
+    float x = 0.0f;
+    for (int i = 0; i < 6; ++i) {
+        c.x[i] = x;
+        c.w[i] = width * kShare[i];
+        c.header[i] = heads[i];
+        x += c.w[i];
+    }
+    return c;
+}
+
+void drawZoneTable(UIContext& ui, const Rect& r, float k, const ZoneTable& t) {
+    const float pad = ui.s(14) * k, iw = r.w - pad * 2, x = r.x + pad;
+    float y = r.y + pad;
+    fit(ui, t.title, {x, y + ui.s(11) * k}, 18 * k, iw, kGold, FontFace::Title);
+    y += ui.s(26) * k;
+    if (!t.sub.empty()) {
+        const auto lines = wrap(ui, t.sub, FontFace::Body, 13 * k, iw, 2);
+        y += drawLines(ui, lines, {x, y}, 13 * k, ui.s(18) * k, kDim) + ui.s(4) * k;
+    }
+    const ZoneColumns c = zoneColumns(t, iw);
+    const float gap = ui.s(6) * k;  // inside each column, at its right
+    for (int i = 0; i < 6; ++i)
+        fit(ui, c.header[i], {x + c.x[i] + (i >= 2 ? c.w[i] - gap : 0.0f), y + ui.s(9) * k}, 12 * k, c.w[i] - gap, kDim, FontFace::Bold,
+            i >= 2 ? Align::Right : Align::Left);
+    y += ui.s(20) * k;
+    if (t.rows.empty()) {
+        drawLines(ui, wrap(ui, "Personne n'a encore rien compté dans cette zone.", FontFace::Body, 14 * k, iw, 2), {x, y + ui.s(4) * k}, 14 * k,
+                  ui.s(20) * k, kDim);
+        return;
+    }
+    const std::vector<float> share = zoneShares(t);
+    const float rowH = ui.s(28) * k, bottom = r.bottom() - pad;
+    for (size_t i = 0; i < t.rows.size(); ++i) {
+        const size_t left = t.rows.size() - i;
+        if (y + rowH > bottom - (left > 1 ? ui.s(20) * k : 0.0f)) {
+            fit(ui, "… et " + std::to_string(left) + (left > 1 ? " joueurs de plus" : " joueur de plus"), {x, y + ui.s(9) * k}, 13 * k, iw, kDim);
+            return;
+        }
+        const ZoneRow& row = t.rows[i];
+        const Rect rr{x, y, iw, rowH - ui.s(3) * k};
+        ui.r().fillRoundedRect(rr, ui.s(6) * k, row.me ? Color{42, 42, 90, 240} : Color{22, 29, 66, 230});
+        const float cy = rr.center().y;
+        fit(ui, row.name, {x + c.x[0] + ui.s(6) * k, cy}, 14 * k, c.w[0] - gap - ui.s(6) * k, row.me ? kGold : row.color, FontFace::Bold, Align::Left, true);
+        // The share: a bar and its percentage (measured first, at the bar's right).
+        const std::string pct = std::to_string(static_cast<int>(std::lround(share[i] * 100.0f))) + " %";
+        const float pw = std::min(textW(ui, "100 %", 13 * k, FontFace::Bold), c.w[1] * 0.45f);
+        const float bw = std::max(0.0f, c.w[1] - gap - pw - ui.s(6) * k), bh = ui.s(8) * k;
+        ui.r().fillRoundedRect({x + c.x[1], cy - bh * 0.5f, bw, bh}, bh * 0.5f, Color{58, 42, 58, 255});
+        if (share[i] > 0.0f) ui.r().fillRoundedRect({x + c.x[1], cy - bh * 0.5f, bw * std::clamp(share[i], 0.0f, 1.0f), bh}, bh * 0.5f, kOrange);
+        fit(ui, pct, {x + c.x[1] + c.w[1] - gap, cy}, 13 * k, pw, kText, FontFace::Bold, Align::Right, true);
+        const int values[4] = {row.damage, row.support, row.mechanisms, row.objectives};
+        for (int v = 0; v < 4; ++v)
+            fit(ui, std::to_string(values[v]), {x + c.x[2 + v] + c.w[2 + v] - gap, cy}, 14 * k, c.w[2 + v] - gap, kText, FontFace::Body, Align::Right, true);
+        y += rowH;
+    }
+}
 
 void drawGroup(UIContext& ui, const Rect& r, float k, const Group& g) {
     Renderer& rr = ui.r();
@@ -584,10 +676,14 @@ void Minimap::drawLarge(UIContext& ui, ResourceManager& res, const GameWorld& w,
     if (!zones.empty()) {
         std::vector<std::pair<Rect, const ZoneChip*>> chips;
         float cx = x, cy = 0.0f;
-        const float chipH = ui.s(34), gap = ui.s(8);
+        // 2.75: a zone still to finish says what it misses on a second line (measured, at most a third of the row).
+        bool twoLines = false;
+        for (const ZoneChip& z : zones) twoLines = twoLines || !z.missing.empty();
+        const float chipH = ui.s(twoLines ? 52.0f : 34.0f), gap = ui.s(8);
         for (const ZoneChip& z : zones) {
             const std::string t = z.name + " · " + z.state;
-            const float cw = std::min(iw, textW(ui, t, 14, FontFace::Bold) + ui.s(24));
+            const float mw = z.missing.empty() ? 0.0f : std::min(textW(ui, z.missing, 12), iw / 3.0f);
+            const float cw = std::min(iw, std::max(textW(ui, t, 14, FontFace::Bold), mw) + ui.s(24));
             if (cx + cw > x + iw && cx > x) {
                 cx = x;
                 cy += chipH + gap;
@@ -601,7 +697,13 @@ void Minimap::drawLarge(UIContext& ui, ResourceManager& res, const GameWorld& w,
             const Rect cr{c.x, bottom + c.y, c.w, c.h};
             rr.fillRoundedRect(cr, ui.s(10), z->here ? Color{60, 44, 20, 240} : Color{26, 33, 72, 245});
             rr.drawRoundedRect(cr, ui.s(10), z->here ? kGold : z->color.withAlpha(140), ui.s(z->here ? 2.0f : 1.0f));
-            fit(ui, z->name + " · " + z->state, cr.center(), 14, cr.w - ui.s(16), z->here ? kGold : z->color, FontFace::Bold, Align::Center);
+            if (twoLines) {
+                fit(ui, z->name + " · " + z->state, {cr.center().x, cr.y + ui.s(16)}, 14, cr.w - ui.s(16), z->here ? kGold : z->color, FontFace::Bold,
+                    Align::Center);
+                if (!z->missing.empty()) fit(ui, z->missing, {cr.center().x, cr.y + ui.s(37)}, 12, cr.w - ui.s(16), kDim, FontFace::Body, Align::Center);
+            } else {
+                fit(ui, z->name + " · " + z->state, cr.center(), 14, cr.w - ui.s(16), z->here ? kGold : z->color, FontFace::Bold, Align::Center);
+            }
         }
         bottom -= ui.s(12);
     }

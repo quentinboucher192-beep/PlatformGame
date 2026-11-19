@@ -69,8 +69,10 @@ describe("admin role", () => {
         const byName = Object.fromEntries(kes.body.data.players.map((p: { username: string }) => [p.username, p]));
         expect(byName.Kestrel.country_code).toBeNull();
         expect(byName.Kestrella.country_code).toBe("US");
-        expect(byName.Kesh_77.presence).toBe("hidden");
-        expect(byName.Kesh_77.last_seen_at).toBeNull();
+        // 2.75: an administrator sees the real presence (and the last activity), marked as hidden.
+        expect(byName.Kesh_77.presence).toBe("online");
+        expect(byName.Kesh_77.presence_hidden).toBe(true);
+        expect(byName.Kestrel.presence_hidden).toBe(false);
         for (const p of kes.body.data.players) {
             expect(p).not.toHaveProperty("email");
             expect(p).not.toHaveProperty("ip_hash");
@@ -82,8 +84,8 @@ describe("admin role", () => {
         const admins = await api("GET", `${V}/admin/players?filter=admins`, { token: nova.token });
         expect(admins.body.data.players.map((p: { username: string }) => p.username)).toEqual(["NovaRider"]);
         const online = await api("GET", `${V}/admin/players?filter=online`, { token: nova.token });
-        expect(online.body.data.players.map((p: { username: string }) => p.username)).toEqual(["NovaRider"]);
-        expect(online.body.data.players[0].presence).toBe("online");
+        expect(online.body.data.players.map((p: { username: string }) => p.username)).toEqual(["Kesh_77", "NovaRider"]);
+        expect(online.body.data.players[1].presence).toBe("online");
 
         // Paging.
         const page = await api("GET", `${V}/admin/players?limit=2`, { token: nova.token });

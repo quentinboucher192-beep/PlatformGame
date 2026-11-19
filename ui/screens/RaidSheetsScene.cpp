@@ -621,6 +621,7 @@ private:
             y = attacks_.draw(view, top, y, w, g.id, items(g), o);
             view_.attackRows = attacks_.rows();
         } else if (tab == 1) {
+            y += drawHitboxes(view, y, w, g) + ui.s(10);  // 2.75: where to hit it, by phase and state
             for (const raid::SheetMechanic& m : g.mechanics) {
                 if (m.kind != "collective") continue;
                 Card c{m.name, raid::phasesLabel(m.phases, phaseCount), kGold, {}, {}, {}, {}};
@@ -681,6 +682,156 @@ private:
         endContent(top, y);
     }
 
+    // ------------------------------------------------------------- 2.75: where to hit it
+
+    static Color hitColor(raid::HitPart::Kind k) {
+        switch (k) {
+            case raid::HitPart::Kind::Weak: return Color{124, 240, 168, 255};
+            case raid::HitPart::Kind::Armour: return Color{150, 156, 176, 255};
+            case raid::HitPart::Kind::Hurt: return Color{255, 84, 84, 255};
+            case raid::HitPart::Kind::Mechanism: return Color{255, 210, 122, 255};
+        }
+        return kText;
+    }
+
+    /// « OÙ FRAPPER »: a chip per phase and state (keyboard, gamepad, mouse), its real sprite with the
+    /// rectangles of its fight (game/raid/BossHitboxes) over it, the legend measured at its right, the
+    /// plates of its mechanism in its arena under it, « Frappez ici quand… ». Returns the height used.
+    float drawHitboxes(const Rect& view, float y0, float w, const raid::GigabossSheet& g) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const raid::BossHitboxes& hb = g.hitboxes;
+        if (hb.views.empty() || !g.def) return 0.0f;
+        if (hitOf_ != g.id) {
+            hitOf_ = g.id;
+            hitView_ = 0;
+        }
+        const float x = view.x, pad = ui.s(12);
+        float y = y0;
+        const Rect box{x, y, w, 0.0f};
+        // Its title, then the chips.
+        fit(ui, "OÙ FRAPPER · selon la phase et l'état", {x + pad, y + ui.s(16)}, 16, w - 2 * pad, kGold, FontFace::Title);
+        y += ui.s(34);
+        std::vector<std::string> labels;
+        std::vector<bool> on;
+        hitView_ = std::clamp(hitView_, 0, static_cast<int>(hb.views.size()) - 1);
+        for (size_t i = 0; i < hb.views.size(); ++i) {
+            labels.push_back("Phase " + std::to_string(hb.views[i].phase) + " · " + hb.views[i].stateName);
+            on.push_back(static_cast<int>(i) == hitView_);
+        }
+        float bottom = y;
+        const int clicked = chips(ui, "hitbox", x + pad, y, x + w - pad, labels, on, bottom);
+        if (clicked >= 0) hitView_ = clicked;
+        y = bottom + ui.s(10);
+        const raid::HitboxView& v = hb.views[static_cast<size_t>(hitView_)];
+        // The stage (its sprite and the rectangles) at the left, the legend at its right.
+        const float stageH = ui.s(300), legendW = std::min(ui.s(320), w * 0.42f);
+        const Rect stage{x + pad, y, w - 2 * pad - legendW - ui.s(12), stageH};
+        r.fillRoundedRect(stage, ui.s(10), Color{11, 18, 38, 255});
+        const EnemyDefinition* look = phaseLook(g, v.phase - 1);
+        AnimationSetPtr set = g_.app.resources().animation(look->animation);
+        Rect win = hb.body;
+        Rect sprite{};
+        if (set) {
+            sprite = {-set->pivot.x * look->scale, -set->pivot.y * look->scale, static_cast<float>(set->frameWidth) * look->scale,
+                      static_cast<float>(set->frameHeight) * look->scale};
+            win = win.united(sprite);
+        }
+        for (const raid::HitPart& p : v.parts) win = win.united(p.rect);
+        const float margin = std::max(win.w, win.h) * 0.06f;
+        win = {win.x - margin, win.y - margin, win.w + 2 * margin, win.h + 2 * margin};
+        const float k = std::min((stage.w - ui.s(16)) / std::max(1.0f, win.w), (stage.h - ui.s(16)) / std::max(1.0f, win.h));
+        const Vec2 o{stage.center().x - win.center().x * k, stage.center().y - win.center().y * k};
+        auto toScreen = [&](const Rect& wr) { return Rect{o.x + wr.x * k, o.y + wr.y * k, wr.w * k, wr.h * k}; };
+        r.pushClip(stage);
+        if (set && set->texture) {
+            const AnimationClip* c = set->clip("idle");
+            if (!c && !set->clips.empty()) c = &set->clips.begin()->second;
+            if (c && c->frameCount() > 0) {
+                const int f = static_cast<int>(t_ * 6.0f) % c->frameCount();
+                const Rect src = set->frameRect(*c, f);
+                r.drawTexture(*set->texture, &src, toScreen(sprite), v.state == "armour" ? Color{200, 200, 215, 255} : Color::white());
+            }
+        }
+        // The rectangles: what to hit (green), armour (grey), what hurts (red outline), in that order.
+        for (int pass = 0; pass < 2; ++pass)
+            for (const raid::HitPart& p : v.parts) {
+                const bool hurt = p.kind == raid::HitPart::Kind::Hurt;
+                if ((pass == 0) == hurt) continue;
+                const Rect sr = toScreen(p.rect);
+                const Color c = hitColor(p.kind);
+                if (!hurt) r.fillRect(sr, c.withAlpha(p.kind == raid::HitPart::Kind::Armour ? 120 : 80));
+                r.drawRect(sr, c, std::max(1.5f, ui.s(hurt ? 2.5f : 2.0f)));
+            }
+        r.popClip();
+        // The legend: the colours present, then each part named (measured, wrapped, never past its box).
+        const Rect leg{stage.right() + ui.s(12), y, legendW, stageH};
+        r.fillRoundedRect(leg, ui.s(10), Color{18, 24, 52, 240});
+        float ly = leg.y + ui.s(10);
+        const float lx = leg.x + ui.s(12), lw = leg.w - ui.s(24);
+        struct Entry {
+            raid::HitPart::Kind kind;
+            const char* text;
+        };
+        static const Entry kEntries[] = {{raid::HitPart::Kind::Weak, "Vert : à frapper"},
+                                         {raid::HitPart::Kind::Armour, "Gris : blindé, ne prend aucun dégât"},
+                                         {raid::HitPart::Kind::Hurt, "Rouge : blesse au contact ou attaque"},
+                                         {raid::HitPart::Kind::Mechanism, "Or : plaques du mécanisme collectif"}};
+        std::vector<std::pair<std::string, Color>> lines;
+        for (const Entry& e : kEntries) {
+            bool present = false;
+            for (const raid::HitPart& p : v.parts) present = present || p.kind == e.kind;
+            if (e.kind == raid::HitPart::Kind::Mechanism) present = !v.plates.empty();
+            if (present) lines.push_back({e.text, hitColor(e.kind)});
+        }
+        std::vector<std::string> named;
+        for (const raid::HitPart& p : v.parts)
+            if (std::find(named.begin(), named.end(), p.label) == named.end()) named.push_back(p.label);
+        const float sw = ui.s(14);
+        for (const auto& [text, c] : lines) {
+            const auto ls = wrap(ui, text, FontFace::Bold, fz(ui, 13), lw - sw - ui.s(8), 2);
+            const float h = static_cast<float>(ls.size()) * ui.s(18);
+            if (ly + h > leg.bottom() - ui.s(8)) break;
+            r.fillRect({lx, ly + ui.s(2), sw, sw}, c.withAlpha(c == hitColor(raid::HitPart::Kind::Hurt) ? 255 : 200));
+            drawLines(ui, ls, {lx + sw + ui.s(8), ly}, fz(ui, 13), ui.s(18), kText, FontFace::Bold);
+            ly += h + ui.s(4);
+        }
+        ly += ui.s(6);
+        for (size_t i = 0; i < named.size(); ++i) {
+            const auto ls = wrap(ui, "• " + named[i], FontFace::Body, fz(ui, 12.5f), lw, 2);
+            const float h = static_cast<float>(ls.size()) * ui.s(17);
+            if (ly + h > leg.bottom() - ui.s(8)) {
+                fit(ui, "… et " + std::to_string(named.size() - i) + " de plus", {lx, ly + ui.s(8)}, fz(ui, 12.5f), lw, kDim);
+                break;
+            }
+            drawLines(ui, ls, {lx, ly}, fz(ui, 12.5f), ui.s(17), kDim);
+            ly += h + ui.s(2);
+        }
+        y += stageH + ui.s(10);
+        // The arena: its plates (gold) and where it stands (red), on a strip measured to the box.
+        if (!v.plates.empty() && hb.arena.w > 0.0f && hb.arena.h > 0.0f) {
+            const Rect strip{x + pad, y, w - 2 * pad, ui.s(90)};
+            r.fillRoundedRect(strip, ui.s(10), Color{14, 20, 44, 255});
+            const std::string cap = "Dans l'arène : " + std::to_string(v.plates.size()) + " " + hb.mechanism + " (en or) à tenir ensemble · le gigaboss en rouge";
+            fit(ui, cap, {strip.x + ui.s(12), strip.y + ui.s(14)}, fz(ui, 13), strip.w - ui.s(24), kDim, FontFace::Body);
+            const Rect area{strip.x + ui.s(12), strip.y + ui.s(28), strip.w - ui.s(24), strip.h - ui.s(36)};
+            const float ka = std::min(area.w / hb.arena.w, area.h / hb.arena.h);
+            const Vec2 ao{area.center().x - hb.arena.center().x * ka, area.center().y - hb.arena.center().y * ka};
+            auto arena = [&](const Rect& wr) { return Rect{ao.x + wr.x * ka, ao.y + wr.y * ka, std::max(ui.s(4), wr.w * ka), std::max(ui.s(4), wr.h * ka)}; };
+            r.drawRect(arena(hb.arena), Color{80, 90, 140, 255}, 1.0f);
+            for (const raid::HitPart& p : v.plates) r.fillRect(arena(p.rect), hitColor(raid::HitPart::Kind::Mechanism));
+            const Rect bossAt = arena(Rect::fromBottomCenter(hb.feet, hb.body.size()));
+            r.drawRect(bossAt, hitColor(raid::HitPart::Kind::Hurt), std::max(1.5f, ui.s(2)));
+            y += strip.h + ui.s(10);
+        }
+        // « Frappez ici quand… »
+        const auto ls = wrap(ui, v.hitWhen, FontFace::Bold, fz(ui, 14), w - 2 * pad, 3);
+        drawLines(ui, ls, {x + pad, y}, fz(ui, 14), ui.s(20), Color{196, 240, 210, 255}, FontFace::Bold);
+        y += static_cast<float>(ls.size()) * ui.s(20) + ui.s(6);
+        (void)box;
+        return y - y0;
+    }
+
     static std::string join(const std::vector<std::string>& v) {
         std::string out;
         for (const std::string& s : v) out += (out.empty() ? "" : " · ") + s;
@@ -705,6 +856,8 @@ private:
     std::vector<EnemyDefinition> looks_;
     int phaseShown_ = 0;
     float phaseT_ = 0.0f;
+    std::string hitOf_;  // 2.75: the sheet whose diagram is shown, and its phase and state chosen
+    int hitView_ = 0;
     std::string contentOf_;
     float contentH_ = 0.0f;
     RaidSheetsView view_;

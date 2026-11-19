@@ -16,6 +16,7 @@
 #include <cmath>
 #include <functional>
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -440,10 +441,13 @@ private:
         // 2.72: the registrants' presence (my clan's members only, a fresh answer) and, over the
         // groups, « X/Y en ligne » (X counted by the server).
         std::map<std::string, std::string> presence;
+        std::set<std::string> masked;  // 2.75: an administrator sees the real state of a hidden presence, marked
         const Json& roster = at(data_, "roster");
         if (roster.is_array())
-            for (const Json& p : roster)
+            for (const Json& p : roster) {
                 if (std::string pr = presencelist::shown(p, fromCache_); !pr.empty()) presence[jstr(p, "id")] = std::move(pr);
+                if (!fromCache_ && (jget<bool>(p, "presence_hidden", false) || jget<bool>(p, "profile_hidden", false))) masked.insert(jstr(p, "id"));
+            }
         if (!groups.empty()) {
             const int total = roster.is_array() ? static_cast<int>(roster.size()) : 0;
             const int online = presencelist::onlineCount(data_, "roster_online", total, fromCache_);
@@ -476,8 +480,9 @@ private:
                         drawPresenceDot(ui, {c.x + ui.s(9), c.center().y}, ui.s(4), pr->second, ui.s(1.5f));
                         room = {c.x + ui.s(16), c.y, c.right() - ui.s(4) - (c.x + ui.s(16)), c.h};
                     }
-                    fit(ui, filled ? g.members[static_cast<size_t>(i)].username : std::string("place libre"), room.center(), 13, room.w,
-                        filled ? kText : Color{110, 118, 160, 255}, FontFace::Body, Align::Center, filled);
+                    const bool hiddenOne = filled && masked.count(g.members[static_cast<size_t>(i)].id) > 0;
+                    fit(ui, filled ? g.members[static_cast<size_t>(i)].username + (hiddenOne ? " · " + i18n::tr("masqué") : std::string()) : std::string("place libre"),
+                        room.center(), 13, room.w, filled ? kText : Color{110, 118, 160, 255}, FontFace::Body, Align::Center, filled);
                 }
             }
             y += h + ui.s(8);

@@ -30,7 +30,8 @@ export const ADMIN_ACTIONS = {
     enemy: ["admin_enemy_published"],
     // 2.47: ADMINISTRATION › Joueurs: the computer an account is bound to (devices.ts).
     // 2.50: an account's data migrated to another one, by an admin or by the player with a code (accountMigration.ts).
-    account: ["admin_device_unbound", "admin_device_bound", "admin_account_migrated", "account_migrated"],
+    // 2.75: a player's latest levels looked at, a replay watched through a privacy lock (moderation).
+    account: ["admin_device_unbound", "admin_device_bound", "admin_account_migrated", "account_migrated", "admin_player_levels_viewed", "admin_replay_viewed"],
     // 2.66: ADMINISTRATION › Clans (clans.ts): a clan renamed or dissolved by an administrator.
     clan: ["admin_clan_renamed", "admin_clan_dissolved"],
     // ADMINISTRATION › Raids (raids.ts): a world event created, edited, published or cancelled.
@@ -86,7 +87,12 @@ export async function requireAdminRole(ctx: Ctx): Promise<AuthInfo> {
 
 type AdminPlayerRow = PlayerRow & { creations: number };
 
-/** A player as the Joueurs tab shows it: the location and presence only as the player shares them. */
+/**
+ * A player as the Joueurs tab shows it: the location only as the player shares it. 2.75: the presence
+ * and the last activity with their real state even when the player hides them (`presence_hidden`, the
+ * game says « masqué »), and `profile_hidden` for a profile that is not public: for moderation, to
+ * administrators only (requireAdminRole).
+ */
 function adminPlayerJson(p: AdminPlayerRow) {
     const presenceHidden = p.presence_visible === 0;
     return {
@@ -100,13 +106,107 @@ function adminPlayerJson(p: AdminPlayerRow) {
         // 2.50: closed after a migration of its data to another account.
         closed_at: p.closed_at ?? null,
         created_at: p.created_at,
-        last_seen_at: presenceHidden ? null : p.last_seen_at,
-        presence: presenceHidden ? "hidden" : presenceOf(p),
+        last_seen_at: p.last_seen_at,
+        presence: presenceOf({ ...p, presence_visible: 1 }),
+        presence_hidden: presenceHidden,
+        profile_hidden: p.profile_visibility === "private",
         creations: p.creations ?? 0,
         // 2.51: the game version its client declared last (null before 2.51 or never connected).
         client_version: p.client_version ?? null,
         client_version_at: p.client_version_at ?? null,
     };
+}
+
+/**
+ * 2.75: GET /admin/players/{playerId}/levels?limit=&offset= — a player's latest levels played, newest first
+ * (player_playtime: the time the game reported per level, its last update), each with the player's best
+ * attempt on it (records: time, category, collectibles), the number of attempts sent, and whether its
+ * replay can be watched (`replay`: the record, `available` only once verified; `locked`: what would stop
+ * another player — the profile hidden, the account not active — never an administrator). For
+ * administrators only (requireAdminRole: the session's role, never a parameter); the first page is
+ * written to the Journal.
+ */
+export async function playerLevels(ctx: Ctx): Promise<Response> {
+    const auth = await requireAdminRole(ctx);
+    const id = ctx.params.playerId ?? "";
+    if (!ID_RE.test(id)) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
+    const page = paging(ctx.url, 10, 20);
+    const db = ctx.env.DB;
+    const p = await db.prepare("SELECT id, username, profile_visibility, account_status FROM players WHERE id = ?1").bind(id).first<{
+        id: string;
+        username: string;
+        profile_visibility: string;
+        account_status: string;
+    }>();
+    if (!p) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
+    const [rowsR, countR] = await db.batch([
+        db
+            .prepare(
+                `SELECT t.level_key, t.seconds, t.updated_at,
+                        COALESCE((SELECT name FROM levels WHERE id = t.level_key), (SELECT title FROM community_levels WHERE id = t.level_key)) AS title,
+                        (SELECT COUNT(*) FROM records r WHERE r.player_id = ?1 AND r.level_id = t.level_key) AS attempts,
+                        (SELECT r.id FROM records r WHERE r.player_id = ?1 AND r.level_id = t.level_key AND r.verification_status <> 'REJECTED'
+                          ORDER BY (r.verification_status = 'VERIFIED') DESC, r.time_ms, r.created_at LIMIT 1) AS best_id
+                 FROM player_playtime t WHERE t.player_id = ?1 AND t.level_key <> 'other'
+                 ORDER BY t.updated_at DESC, t.level_key LIMIT ?2 OFFSET ?3`,
+            )
+            .bind(id, page.limit + 1, page.offset),
+        db.prepare("SELECT COUNT(*) AS n FROM player_playtime WHERE player_id = ?1 AND level_key <> 'other'").bind(id),
+    ]);
+    type Row = { level_key: string; seconds: number; updated_at: string; title: string | null; attempts: number; best_id: string | null };
+    const rows = (rowsR!.results as Row[]).slice(0, page.limit);
+    const ids = rows.map((r) => r.best_id).filter((x): x is string => !!x);
+    const best = new Map<string, { id: string; time_ms: number; category: string; collectibles: number; total_collectibles: number; verification_status: string; replay_id: string | null; replay_status: string | null; created_at: string }>();
+    if (ids.length) {
+        const b = await db
+            .prepare(
+                `SELECT r.id, r.time_ms, r.category, r.collectibles, r.total_collectibles, r.verification_status, r.replay_id, r.created_at,
+                        (SELECT m.verification_status FROM replay_metadata m WHERE m.id = r.replay_id) AS replay_status
+                 FROM records r WHERE r.id IN (SELECT value FROM json_each(?1))`,
+            )
+            .bind(JSON.stringify(ids))
+            .all();
+        for (const r of b.results as never[]) best.set((r as { id: string }).id, r);
+    }
+    const lock = p.profile_visibility === "private" ? "profile_private" : p.account_status !== "active" ? "account_inactive" : null;
+    if (page.offset === 0) await audit(ctx, auth.player.id, "admin_player_levels_viewed", { target: p.id, target_username: p.username, by_username: auth.player.username });
+    return json(ctx, {
+        player: { id: p.id, username: p.username, profile_hidden: p.profile_visibility === "private" },
+        levels: rows.map((r) => {
+            const b = r.best_id ? best.get(r.best_id) : undefined;
+            const replay = b?.replay_id
+                ? {
+                      record_id: b.id,
+                      // A technical impossibility stays: a replay not verified (yet, or refused) is never served.
+                      available: b.verification_status === "VERIFIED" && b.replay_status === "VERIFIED",
+                      reason: b.verification_status !== "VERIFIED" || b.replay_status !== "VERIFIED" ? "replay pas encore vérifié" : null,
+                      locked: lock,
+                  }
+                : null;
+            return {
+                level_id: r.level_key,
+                title: r.title ?? r.level_key,
+                last_played_at: r.updated_at,
+                seconds: r.seconds,
+                attempts: r.attempts,
+                best: b
+                    ? {
+                          record_id: b.id,
+                          time_ms: b.time_ms,
+                          category: b.category,
+                          collectibles: b.collectibles,
+                          total_collectibles: b.total_collectibles,
+                          verified: b.verification_status === "VERIFIED",
+                          at: b.created_at,
+                      }
+                    : null,
+                replay,
+            };
+        }),
+        total: (countR!.results[0] as { n: number } | undefined)?.n ?? 0,
+        offset: page.offset,
+        has_more: (rowsR!.results as Row[]).length > page.limit,
+    });
 }
 
 const PLAYER_COLUMNS = `p.*, (SELECT COUNT(*) FROM community_levels c WHERE c.author_id = p.id AND c.status = 'published') AS creations`;
@@ -130,7 +230,7 @@ export async function listPlayers(ctx: Ctx): Promise<Response> {
     if (filter === "admins") where.push("p.role = 'admin'");
     if (filter === "online") {
         binds.push(new Date(Date.now() - PRESENCE_TIMEOUT_MS).toISOString());
-        where.push(`p.presence_visible != 0 AND p.presence_state IS NOT NULL AND p.presence_at >= ?${binds.length}`);
+        where.push(`p.presence_state IS NOT NULL AND p.presence_at >= ?${binds.length}`); // 2.75: hidden presences too (marked)
     }
     const cond = where.length ? "WHERE " + where.join(" AND ") : "";
     binds.push(page.limit + 1, page.offset);
@@ -476,6 +576,9 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             clan: clanOfDetails(d),
             // A world event of ADMINISTRATION › Raids (created, edited, published, cancelled).
             raid: raidOfDetails(d),
+            // 2.75: the level of a replay watched by an administrator, and the lock it went through.
+            level_title: str("level_title"),
+            lock: str("lock"),
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

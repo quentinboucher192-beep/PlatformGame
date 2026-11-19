@@ -26,6 +26,7 @@ enum class RaidHudElement : int {
     Timer,          // the raid's chrono: since the instance started, the zone's time under it
     Heart,          // 2.74: the Cœur d'Asterion's health shared by every group (its arena only)
     HeartEffects,   // 2.74: what the branches did to the Cœur (at its arena's door)
+    Remaining,      // 2.75: « Ce qu'il reste à faire »: the zone's requirements ticked, the branch's zones to finish
     Count
 };
 constexpr int kRaidHudElements = static_cast<int>(RaidHudElement::Count);

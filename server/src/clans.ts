@@ -17,7 +17,7 @@
 
 import { audit, requireAuth, type AuthInfo } from "./auth";
 import { requireAdminRole } from "./adminRoles";
-import { countOnline, listPresenceOf } from "./friends";
+import { adminPresenceOf, countOnline, isAdminViewer, listPresenceOf } from "./friends";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
 import { raidLeaveStatements } from "./raids";
@@ -122,7 +122,7 @@ function clanJson(c: ClanRow) {
 type MemberRow = Pick<
     PlayerRow,
     "id" | "username" | "avatar" | "avatar_custom_key" | "country_code" | "location_visibility" | "presence_state" | "presence_at" | "presence_visible"
-> & { role: ClanRole; joined_at: string };
+> & { role: ClanRole; joined_at: string; profile_visibility?: string };
 
 // ------------------------------------------------------------- shared SQL
 
@@ -573,7 +573,7 @@ export async function getClan(ctx: Ctx, viewer: AuthInfo | null): Promise<Respon
         db
             .prepare(
                 `SELECT m.role, m.joined_at, p.id, p.username, p.avatar, p.avatar_custom_key, p.country_code, p.location_visibility,
-                        p.presence_state, p.presence_at, p.presence_visible
+                        p.presence_state, p.presence_at, p.presence_visible, p.profile_visibility
                  FROM clan_members m JOIN players p ON p.id = m.player_id WHERE m.clan_id = ?1
                  ORDER BY ${ROLE_ORDER}, m.joined_at, p.id`,
             )
@@ -684,7 +684,10 @@ export async function getClan(ctx: Ctx, viewer: AuthInfo | null): Promise<Respon
     // Presence: to the clan's members only, as each player shares it (2.72: a hidden presence
     // reads and counts « offline »), from the heartbeat of the game (never what a client says).
     const now = Date.now();
-    const presence = myRole ? members.map((m) => listPresenceOf(m, now)) : null;
+    // 2.75: an administrator (moderation) sees every member's real presence, the hidden ones marked.
+    const admin = isAdminViewer(viewer);
+    const adminView = admin ? members.map((m) => adminPresenceOf(m, now)) : null;
+    const presence = adminView ? adminView.map((a) => a.presence) : myRole ? members.map((m) => listPresenceOf(m, now)) : null;
     return json(ctx, {
         clan: { ...clanJson(clan), rank },
         ...(presence ? { members_online: countOnline(presence) } : {}),
@@ -695,6 +698,7 @@ export async function getClan(ctx: Ctx, viewer: AuthInfo | null): Promise<Respon
                 role: m.role,
                 joined_at: m.joined_at,
                 ...(presence ? { presence: presence[i] } : {}),
+                ...(adminView ? { presence_hidden: adminView[i]!.presence_hidden, profile_hidden: m.profile_visibility === "private" } : {}),
                 best: best ? { level_id: best.level_id, title: titles.get(best.level_id) ?? best.level_id, score: best.score, finished: best.finished === 1 } : null,
             };
         }),

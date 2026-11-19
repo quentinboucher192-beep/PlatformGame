@@ -20,6 +20,7 @@ const char* RaidHudLayout::id(RaidHudElement e) {
         case RaidHudElement::Timer: return "timer";
         case RaidHudElement::Heart: return "heart";
         case RaidHudElement::HeartEffects: return "heart_effects";
+        case RaidHudElement::Remaining: return "remaining";
         default: return "";
     }
 }
@@ -39,6 +40,7 @@ const char* RaidHudLayout::label(RaidHudElement e) {
         case RaidHudElement::Timer: return "Chronomètre du raid";
         case RaidHudElement::Heart: return "Vie partagée du Cœur";
         case RaidHudElement::HeartEffects: return "Effets des branches sur le Cœur";
+        case RaidHudElement::Remaining: return "Ce qu'il reste à faire";
         default: return "";
     }
 }

@@ -37,6 +37,15 @@
   (ce qu'un replay contient déjà), rien d'autre ; le spectateur, lui, n'envoie rien à votre
   jeu. Seuls les niveaux de la campagne, de la communauté installés et les défis sont
   diffusés, jamais un test de l'éditeur, un entraînement ou un niveau de l'atelier.
+* **Modération (2.75)** : un administrateur (le rôle de sa session, vérifié par le serveur à chaque
+  requête, jamais un paramètre) voit la présence réelle et la dernière activité d'un joueur qui
+  les masque, et les profils masqués, marqués « masqué » (ADMINISTRATION › Joueurs, membres d'un
+  clan, inscrits d'un raid de son clan) ; il voit les derniers niveaux joués d'un joueur (temps de
+  jeu rapporté par le jeu, records, tentatives) et peut regarder un replay vérifié malgré un
+  profil masqué ou un compte inactif, avec la mention « Vu en tant qu'admin (profil masqué) »
+  pendant la lecture. Chaque consultation de ce genre est écrite dans le journal de
+  l'administration. Jamais pour les autres joueurs ; jamais de position précise, et le pays
+  seulement si le joueur le montre. L'explication de « Montrer ma présence » le dit.
 * **Transparence et consentement** : écran d'accueil de Cosmic Online, conditions
   d'utilisation (`data/online/terms_fr.txt`, version `2026-11`) acceptées explicitement à
   l'inscription.

@@ -32,12 +32,18 @@
 // of the solo levels (enemies met, the ambush's), and the test played as a real instance
 // (raid::TestSession: the branch's state kept from zone to zone as RAID_STATE gives it, the
 // simulated players « Joueur simulé N » on their seats, seen, named, in their colours).
+// 2.75 (docs/RAIDS.md §19): « Ce qu'il reste à faire » (RaidHudElement::Remaining: the zone's
+// requirements ticked from the validated state, the branch's zones still to finish, those to take
+// back after a group fell), what each zone misses on the large map, and a zone finished: a card with
+// its sound for every player of the instance at the same step, its « Tableau des contributions »
+// (raid::RaidRun::finishes, counted in the simulation), reported to the server like the other tables.
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <map>
 #include <memory>
 #include <thread>
 
@@ -55,6 +61,7 @@
 #include "game/raid/AsterionHeartRoutine.h"
 #include "ui/screens/AsterionFilm.h"
 #include "game/raid/RaidTest.h"
+#include "game/raid/ZoneGoals.h"
 #include "game/raid/ArenaCamera.h"
 #include "game/raid/Reconnect.h"
 #include "game/gameplay/EnemyArrows.h"
@@ -110,7 +117,7 @@ public:
     bool holdsNotifications() const override { return true; }
     // 2.68 (phase 3): the pointer comes back with the card of the gigaboss's fall (« Résultats du raid »).
     bool hidesCursor() const override {
-        return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !bigMap_ && !reconnect_.active();
+        return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !bigMap_ && !reconnect_.active() && zoneCard_ < 0;
     }
 
     void onEnter() override {
@@ -320,6 +327,7 @@ public:
             }
         session_->step(f, scripted);  // never reports anything
         ++tick_;
+        if (const int z = run_->zoneFinishedNow()) zoneDone(z);  // 2.75
         if (run_->heartWonNow()) playVictory();  // 2.74: a test's fall is its victory (never reported)
         if (run_->zoneSerial() != serial_) zoneReady();
     }
@@ -401,6 +409,7 @@ public:
             if (run_->heartWonNow() && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) playVictory();  // 2.72: the validated victory
             if (run_->gigaboss().fellNow() && !link_->joinedLate()) fallCard_ = true;  // « Résultats du raid »
             if (run_->gigaboss().fellNow() && link_->joinedLate() && tick_ >= link_->rejoinAt()) fallCard_ = true;
+            if (const int z = run_->zoneFinishedNow(); z && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) zoneDone(z);  // 2.75
             if (run_->zoneSerial() != serial_) zoneReady();
             sendReports();
         }
@@ -427,6 +436,7 @@ public:
                                : r.kind == raid::Report::Kind::Boss    ? "boss"
                                : r.kind == raid::Report::Kind::Result  ? "result"
                                : r.kind == raid::Report::Kind::Heart   ? "heart"
+                               : r.kind == raid::Report::Kind::ZoneTable ? "zone_table"
                                                                        : "zone";
             Json body{{"kind", kind}, {"zone", r.zone}, {"tick", r.tick}, {"hash", hex16(r.hash)}};
             if (r.kind == raid::Report::Kind::Objective) body["objective"] = r.objective;
@@ -448,6 +458,19 @@ public:
                                         {"objectives", c.objectives},
                                         {"ticks", c.ticks},
                                         {"gigaboss", c.gigaboss ? 1 : 0}});
+                body["records"] = rows;
+            }
+            if (r.kind == raid::Report::Kind::ZoneTable) {
+                // 2.75: the zone's « Tableau des contributions » (the same on every computer of the instance).
+                Json rows = Json::array();
+                for (const raid::ZoneContribution& c : r.zoneRecords)
+                    rows.push_back(Json{{"seat", c.seat},
+                                        {"from", c.from},
+                                        {"boss_damage", c.bossDamage},
+                                        {"damage", c.damage},
+                                        {"support", c.support},
+                                        {"mechanisms", c.mechanisms},
+                                        {"objectives", c.objectives}});
                 body["records"] = rows;
             }
             const bool objective = r.kind == raid::Report::Kind::Objective;
@@ -480,6 +503,7 @@ public:
             g_.ui.setFocus("raidgame/reconnect/map");
         }
         if (reconnect_.active()) updateReconnect();
+        if (run_ && clock_ >= branchAt_) fetchBranch();  // 2.75: the zones to take back (a group fell there)
         if (link_ && !run_ && fail_.empty() && !reconnect_.active() && link_->go()) begin();
         if (link_ && !link_->error().empty() && fail_.empty() && !run_ && !reconnect_.active()) fail_ = link_->error();
         if (link_ && link_->connectionLost() && fail_.empty() && !run_ && !reconnect_.active()) fail_ = link_->endReason();  // lost in the lobby
@@ -516,6 +540,23 @@ public:
             mapPan_ = 0.0f;
         }
         if (paused_ || ended_) bigMap_ = false;
+    }
+
+    /// 2.75: the branch's map as the server knows it, every 15 s: the zones a group fell in, to take back
+    /// (`retake_by` of each zone: that group). Display only: the panel and the large map say it.
+    void fetchBranch() {
+        branchAt_ = clock_ + 15.0f;
+        if (entry_.eventId.empty()) return;
+        g_.online.get("/api/v1/raids/events/" + entry_.eventId + "/branches/" + entry_.branch, OnlineService::guard(life_, [this](const ApiResult& r) {
+                          if (!r.ok) return;
+                          std::map<int, std::string> out;
+                          if (const Json zones = r.data.value("zones", Json::array()); zones.is_array())
+                              for (const Json& z : zones)
+                                  if (const std::string by = jstr(z, "retake_by"); !by.empty() && !jget<bool>(z, "finished", false))
+                                      out[jget<int>(z, "id", 0)] = by;
+                          retake_ = std::move(out);
+                      }),
+                      false);
     }
 
     std::string seatName(int seat) const {
@@ -570,6 +611,7 @@ public:
             if (bigMap_ && !paused_ && !ended_) drawBigMap(w);
             drawArenaIntro();
             if (fallCard_ && !paused_ && !ended_) drawFall();
+            if (zoneCard_ >= 0 && !fallCard_ && !paused_ && !ended_) drawZoneCard();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
@@ -693,6 +735,13 @@ public:
                                static_cast<float>(run_->zoneTicks()) / static_cast<float>(kSimHz));
             hudRects_.push_back(r);
         }
+        if (shown(E::Remaining)) {
+            // 2.75: « Ce qu'il reste à faire »: the zone's requirements, then the branch's zones to finish.
+            const Rect r = at(E::Remaining);
+            const raid::ZoneInfo* z = branch_->zone(run_->zone());
+            raidhud::drawObjectives(ui, r, k(E::Remaining), "CE QU'IL RESTE À FAIRE · " + std::string(z ? z->name : ""), remainingLines(w));
+            hudRects_.push_back(r);
+        }
         if (shown(E::Contributions))
             if (const std::string t = contributionText(); !t.empty()) {
                 const Rect r = at(E::Contributions);
@@ -813,16 +862,18 @@ public:
         if (in.wheel() != 0.0f && r.contains(in.mousePos())) mapPan_ -= in.wheel() * 160.0f;
         const Rect b = w.level().bounds;
         mapPan_ = std::clamp(mapPan_, -b.w, b.w);
+        // 2.75: each zone with its state and, while it is not finished, what it still misses.
         std::vector<raidhud::ZoneChip> zones;
-        const uint32_t mask = run_->mask();
-        const std::vector<bool> reach = branch_->reachable(mask);
-        for (const raid::ZoneInfo& z : branch_->zones) {
+        for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
             raidhud::ZoneChip c;
-            const bool reachable = z.id >= 0 && static_cast<size_t>(z.id) < reach.size() && reach[static_cast<size_t>(z.id)];
-            c.here = z.id == run_->zone();
-            c.name = z.secret && !reachable && !c.here ? "Zone secrète" : z.name;
-            c.state = c.here ? "vous êtes ici" : branch_->controlled(z.id, mask) ? "contrôlée" : reachable ? "ouverte" : "verrouillée";
-            c.color = c.here ? kGold : branch_->controlled(z.id, mask) ? kGreen : reachable ? kSky : kDim;
+            c.here = g.zone == run_->zone();
+            c.name = g.name;
+            const auto fell = retake_.find(g.zone);
+            const bool retake = !g.finished && fell != retake_.end();
+            c.state = g.finished ? "terminée" : retake ? "zone à reprendre" : c.here ? "vous êtes ici" : g.reachable ? "à finir" : "verrouillée";
+            if (c.here && g.finished) c.state = "terminée · vous êtes ici";
+            c.color = c.here ? kGold : g.finished ? kGreen : retake ? kDanger : g.reachable ? kSky : kDim;
+            if (!g.finished) c.missing = (retake ? fell->second + " est tombé · " : std::string()) + g.missing() + (g.optional ? " (facultatif)" : "");
             zones.push_back(std::move(c));
         }
         const raid::ZoneInfo* z = branch_->zone(run_->zone());
@@ -1229,6 +1280,145 @@ public:
             }
     }
 
+    /// 2.75: a zone finished while the instance was in it (the same step on every computer): its card
+    /// with the sound, the « Tableau des contributions » of that zone.
+    void zoneDone(int zone) {
+        (void)zone;
+        if (run_->finishes().empty()) return;
+        zoneCard_ = static_cast<int>(run_->finishes().size()) - 1;
+        zoneCardAt_ = clock_;
+        g_.app.audio().playSound("sounds/boss_phase_clear.wav", 0.9f);
+        g_.ui.setFocus("raidgame/zonecard/close");
+    }
+
+    /// 2.75: the table of a zone finished (raid::ZoneFinish) as the HUD draws it.
+    raidhud::ZoneTable zoneTable(const raid::ZoneFinish& f) {
+        raidhud::ZoneTable t;
+        const raid::ZoneInfo* z = branch_->zone(f.zone);
+        t.title = "TABLEAU DES CONTRIBUTIONS · " + std::string(z ? z->name : "?");
+        const uint32_t hz = static_cast<uint32_t>(kSimHz), secs = (f.tick + hz / 2) / hz;
+        t.sub = std::string(f.byUs ? "Zone terminée par votre groupe" : "Zone terminée par un autre groupe (état validé par le serveur)") + " · raid à " +
+                std::to_string(secs / 60) + " min " + std::to_string(secs % 60) + " s · comptée par la simulation, la même sur tous les jeux du groupe";
+        for (const raid::ZoneContribution& c : f.rows) {
+            raidhud::ZoneRow row;
+            bool later = false;  // a newer holder of the same seat: this row is a player who left
+            for (const raid::ZoneContribution& o : f.rows) later = later || (o.seat == c.seat && o.from > c.from);
+            row.name = later ? "Joueur parti (place " + std::to_string(c.seat + 1) + ")" : seatName(c.seat);
+            row.color = seatColor(c.seat, local_);
+            row.me = !later && c.seat == local_;
+            row.bossDamage = static_cast<int>(c.bossDamage / 10);
+            row.damage = static_cast<int>(c.damage / 10);
+            row.support = c.support;
+            row.mechanisms = c.mechanisms;
+            row.objectives = c.objectives;
+            t.rows.push_back(std::move(row));
+        }
+        return t;
+    }
+
+    /// 2.75: the card of a zone finished: « ZONE TERMINÉE », its table, « Continuer » (and the other zones'
+    /// tables when there are several). The group keeps playing under it; it closes by itself after 30 s.
+    void drawZoneCard() {
+        UIContext& ui = g_.ui;
+        const auto& list = run_->finishes();
+        if (zoneCard_ >= static_cast<int>(list.size()) || clock_ - zoneCardAt_ > 30.0f) {
+            zoneCard_ = -1;
+            return;
+        }
+        const raid::ZoneFinish& f = list[static_cast<size_t>(zoneCard_)];
+        const raidhud::ZoneTable t = zoneTable(f);
+        const float rows = static_cast<float>(std::max<size_t>(1, t.rows.size()));
+        Rect box = centred(ui.s(780), ui.s(196) + rows * ui.s(28) + ui.s(76));
+        box.y = std::max(ui.s(20), ui.screenH() * 0.12f);
+        box.h = std::min(box.h, ui.screenH() - box.y - ui.s(20));
+        ui.panel(box, true, 16);
+        const raid::ZoneInfo* z = branch_->zone(f.zone);
+        fit(ui, "ZONE TERMINÉE · " + std::string(z ? z->name : "?"), {box.center().x, box.y + ui.s(34)}, 28, box.w - ui.s(48), kGreen, FontFace::Title,
+            Align::Center);
+        const float by = box.bottom() - ui.s(20) - ui.s(48);
+        raidhud::drawZoneTable(ui, {box.x + ui.s(10), box.y + ui.s(58), box.w - ui.s(20), by - ui.s(8) - (box.y + ui.s(58))}, 1.0f, t);
+        ui.pushId("zonecard");
+        const bool several = list.size() > 1;
+        const float gap = ui.s(12), w = box.w - ui.s(56);
+        const float bw = several ? (w - 2 * gap) / 3.0f : w;
+        float bx = box.x + ui.s(28);
+        if (several) {
+            UIContext::ButtonStyle st;
+            st.enabled = zoneCard_ > 0;
+            if (ui.button("prev", {bx, by, bw, ui.s(48)}, "‹ Zone précédente", st)) {
+                --zoneCard_;
+                zoneCardAt_ = clock_;
+            }
+            bx += bw + gap;
+        }
+        UIContext::ButtonStyle bs;
+        bs.primary = true;
+        if (ui.button("close", {bx, by, bw, ui.s(48)}, "Continuer", bs)) zoneCard_ = -1;
+        bx += bw + gap;
+        if (several && zoneCard_ >= 0) {
+            UIContext::ButtonStyle st;
+            st.enabled = zoneCard_ + 1 < static_cast<int>(list.size());
+            if (ui.button("next", {bx, by, bw, ui.s(48)}, "Zone suivante ›", st)) {
+                ++zoneCard_;
+                zoneCardAt_ = clock_;
+            }
+        }
+        ui.popId();
+    }
+
+    /// 2.75: « Ce qu'il reste à faire »: the zone's requirements ticked (from the state the server
+    /// validated; « en attente de validation » when only this group did it), its ambushes and co-op
+    /// plates, then each zone of the branch still to finish with what it misses (to take back first).
+    std::vector<raidhud::Line> remainingLines(GameWorld& w) {
+        std::vector<raidhud::Line> lines;
+        const Color todo{255, 176, 74, 255};
+        const raid::ZoneGoals here = raid::zoneGoals(*branch_, run_->zone(), run_->validated(), run_->localDone());
+        if (here.finished) lines.push_back({"OK", "Zone terminée", kGreen});
+        if (const auto fell = retake_.find(run_->zone()); fell != retake_.end() && !here.finished)
+            lines.push_back({"!", "Zone à reprendre : " + fell->second + " est tombé ici, finissez-la à sa place", kDanger});
+        for (const raid::Requirement& r : here.items) {
+            if (r.access) continue;  // the group is in it
+            if (r.done) lines.push_back({r.pending ? "…" : "OK", r.text + (r.pending ? " · validation du serveur en attente" : ""), r.pending ? kGold : kGreen});
+            else lines.push_back({r.progress.empty() ? (r.optional ? "◆" : "→") : r.progress, r.text, r.optional ? kViolet : todo});
+        }
+        // The zone's ambushes that are not an objective themselves (in the level's order), its plates.
+        std::vector<const CombatZoneEntity*> fights;
+        for (const auto& e : w.entities())
+            if (auto* c = dynamic_cast<const CombatZoneEntity*>(e.get())) {
+                bool objective = false;
+                for (const raid::ZoneObjective& zo : run_->rules().objectives) objective = objective || zo.source == e->id();
+                if (!objective) fights.push_back(c);
+            }
+        for (size_t i = 0; i < fights.size(); ++i) {
+            const CombatZoneEntity* c = fights[i];
+            const std::string name = fights.size() > 1 ? "Embuscade " + std::to_string(i + 1) + " sur " + std::to_string(fights.size()) : std::string("Embuscade");
+            if (c->cleared()) lines.push_back({"OK", name + " : nettoyée", kGreen});
+            else if (c->started()) lines.push_back({std::to_string(c->wavesDone()) + " / " + std::to_string(c->waveCount()), name + " : vague en cours", kViolet});
+            else lines.push_back({"→", name + " : à venir", todo});
+        }
+        for (size_t k = 0; k < run_->rules().coops.size(); ++k) {
+            const raid::RaidRun::CoopView v = run_->coop(k);
+            const std::string& label = run_->rules().coops[k].label;
+            if (v.done) lines.push_back({"OK", label, kGreen});
+            else lines.push_back({std::to_string(std::min(v.on, std::max(0, v.need))) + " / " + std::to_string(std::max(1, v.need)), label + " : joueurs ensemble sur la plaque", todo});
+        }
+        // The branch: what is left in its other zones (the zones to take back first).
+        std::vector<raidhud::Line> branch, retake;
+        for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
+            if (g.zone == run_->zone() || g.finished) continue;
+            const std::string miss = g.missing();
+            if (const auto fell = retake_.find(g.zone); fell != retake_.end()) {
+                retake.push_back({"!", g.name + " : zone à reprendre (" + fell->second + " est tombé)" + (miss.empty() ? "" : " · " + miss), kDanger});
+                continue;
+            }
+            branch.push_back({g.reachable ? "→" : "■", g.name + " : " + miss + (g.optional ? " (facultatif)" : ""), g.optional ? kViolet : g.reachable ? kSky : kDim});
+        }
+        lines.push_back({"", retake.empty() && branch.empty() ? "BRANCHE · toutes les autres zones sont terminées" : "BRANCHE · ce qu'il manque", kSky});
+        for (auto& l : retake) lines.push_back(std::move(l));
+        for (auto& l : branch) lines.push_back(std::move(l));
+        return lines;
+    }
+
     /// The card of the gigaboss's fall: its results (validated by the server) or back to the fight.
     void drawFall() {
         UIContext& ui = g_.ui;
@@ -1371,7 +1561,8 @@ public:
     void drawPause() {
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
-        Rect box = centred(ui.s(600), ui.s(380));
+        const bool tables = run_ && !run_->finishes().empty();  // 2.75: the tables of the zones finished
+        Rect box = centred(ui.s(600), ui.s(380) + (tables ? ui.s(72) : 0.0f));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
         fit(ui, test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
@@ -1383,6 +1574,15 @@ public:
         bs.primary = true;
         if (ui.button("resume", {box.x + ui.s(40), y, bw, bh}, "Reprendre", bs)) paused_ = false;
         y += bh + ui.s(14);
+        if (tables) {
+            if (ui.button("tables", {box.x + ui.s(40), y, bw, bh}, "Tableaux des contributions des zones terminées")) {
+                paused_ = false;
+                zoneCard_ = static_cast<int>(run_->finishes().size()) - 1;
+                zoneCardAt_ = clock_;
+                g_.ui.setFocus("raidgame/zonecard/close");
+            }
+            y += bh + ui.s(14);
+        }
         UIContext::ButtonStyle danger;
         danger.danger = true;
         if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
@@ -1468,6 +1668,10 @@ public:
     RaidTestSetup testSetup_;
     std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
+    int zoneCard_ = -1;         // 2.75: the zone finished whose table is shown (run_->finishes()), -1 none
+    float zoneCardAt_ = 0.0f;
+    std::map<int, std::string> retake_;  // 2.75: zones to take back (a group fell there): zone → that group
+    float branchAt_ = 0.0f;              // 2.75: when the branch's map is read again
     raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)
     WorldView view_;
