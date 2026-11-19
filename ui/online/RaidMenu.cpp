@@ -390,7 +390,8 @@ MenuLayout layoutMenu(UIContext& ui, const std::string& keyName) {
     float tx = x;
     for (int i = 0; i < kSections; ++i) {
         const float nw = natural[static_cast<size_t>(i)];
-        const float w = total <= room ? nw + (room - total) / static_cast<float>(kSections) : nw * room / total;
+        float w = total <= room ? nw + (room - total) / static_cast<float>(kSections) : nw * room / total;
+        if (i + 1 == kSections) w = std::max(0.0f, x + iw - tx);  // the last one ends with the row (no rounding past it)
         L.tabs.push_back({tx, y, w, th});
         tx += w + gap;
     }
@@ -417,7 +418,8 @@ MenuAction drawMenu(UIContext& ui, Menu& m, const MenuData& d) {
     const MenuLayout L = layoutMenu(ui, d.keyName);
     ui.r().fillRect({0.0f, 0.0f, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 110});
     ui.panel(L.panel, true, 16);
-    fit(ui, d.title, {L.title.x, L.title.center().y}, 24, L.title.w, kText, FontFace::Title);
+    // The body faces (« · » is not in the titles' font).
+    fit(ui, d.title, {L.title.x, L.title.center().y}, 22, L.title.w, kText, FontFace::Bold);
     UIContext::ButtonStyle cs;
     cs.small = true;
     cs.fontSize = ui.fitFont(closeText(d.keyName), FontFace::Bold, 15, std::max(ui.s(20), L.close.w - ui.s(16)));

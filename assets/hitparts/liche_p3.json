@@ -1,0 +1,10 @@
+{
+  "format": "cosmic.hitparts",
+  "version": 1,
+  "sheet": "animations/liche_p3.json",
+  "profile": "silhouette",
+  "frameWidth": 224,
+  "frameHeight": 224,
+  "pivot": [112.0, 218.0],
+  "sameAs": "liche.json"
+}

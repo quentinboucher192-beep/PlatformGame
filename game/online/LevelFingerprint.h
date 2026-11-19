@@ -22,7 +22,7 @@ struct LevelData;
 /// Version of the simulation rules. Bump it whenever a code change can alter how a run
 /// plays out (physics, AI, damage, timers...), with the reference digests of
 /// tests/test_determinism.cpp.
-constexpr int kSimulationVersion = 15;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
+constexpr int kSimulationVersion = 16;  // 6: energy 150, time slow, magnet, air dash, plasma bomb (special button),
                                        //    arena bosses keep their wounds when the player dies
                                        // 7: crouch in place (Down on the ground)
                                        // 8: energy costs by strength (charge shot = reference),
@@ -66,6 +66,14 @@ constexpr int kSimulationVersion = 15;  // 6: energy 150, time slow, magnet, air
                                        //    too). A replay recorded before (no version in the
                                        //    file) plays with its rules (GameWorld::
                                        //    simulationVersion): same digests. The rankings are kept.
+                                       // 16: (2.76) a boss whose rules say so (Pyrrhax) fights by its
+                                       //    hit parts (game/enemies/HitParts: its pose in the fixed
+                                       //    step, the blows on the part they touch, its contact by its
+                                       //    parts that hurt); an enemy that flees when weakened stays
+                                       //    within fleeMaxDistance of where its flight began, cornered
+                                       //    there. A replay of before plays with its box and its old
+                                       //    flight (same digests); the rankings are kept, as the player
+                                       //    asked.
 /// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one
 /// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
 /// a team's attempts carry it, and any change of the team rules (solid players, revivals,
@@ -87,6 +95,8 @@ constexpr int kCoopSimulationVersion = 2;  // 2 (2.75): the players pass through
 ///        only additions for the giga boss's level; every earlier run plays as before),
 ///        13 (2.47.1), 14 (2.62.2: ambushes kept after a fall; the records stay, as the
 ///        player asked) and 15 (2.71: the attack upwards and downwards; the records stay, as
+///        the player asked, and the replays recorded before play with their own rules), 16 (2.76:
+///        Pyrrhax by its hit parts, the flight of the weakened enemies bounded; the records stay, as
 ///        the player asked, and the replays recorded before play with their own rules).
 constexpr int kRankingGeneration = 8;
 

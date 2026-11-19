@@ -1,0 +1,10 @@
+{
+  "format": "cosmic.hitparts",
+  "version": 1,
+  "sheet": "animations/kraken_p3.json",
+  "profile": "silhouette",
+  "frameWidth": 256,
+  "frameHeight": 224,
+  "pivot": [128.0, 196.0],
+  "sameAs": "kraken.json"
+}

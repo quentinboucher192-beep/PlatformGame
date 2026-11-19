@@ -247,6 +247,14 @@ struct EnemyDefinition {
     MovementType movement = MovementType::Patrol;
     ReactionType reaction = ReactionType::Chase;
     float fleeHealthRatio = 0.0f;
+    /// 2.76.0: how far it flees, at most, from where its flight began (px; 88 = 5,5 tiles). Flying, it
+    /// never rises more than kFleeRise above that point. With the rules of 16 (GameWorld::simulationVersion):
+    /// at that limit it is cornered (it faces the player, guards and attacks, can be hit); a replay of
+    /// before flees as it did, without a limit.
+    float fleeMaxDistance = 88.0f;
+    static constexpr float kFleeMaxDistance = 88.0f;
+    static constexpr int kBoundedFleeSimulation = 16;  // the version of the simulation from which it applies
+    static constexpr float kFleeRise = 32.0f;
     float preferredDistance = 110.0f;  // KeepDistance
     float hopVelocity = 220.0f;
     std::vector<AttackDef> attacks;

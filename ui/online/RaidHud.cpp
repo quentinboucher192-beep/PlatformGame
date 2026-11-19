@@ -241,7 +241,7 @@ ZoneColumns zoneColumns(const ZoneTable& t, float width) {
 void drawZoneTable(UIContext& ui, const Rect& r, float k, const ZoneTable& t) {
     const float pad = ui.s(14) * k, iw = r.w - pad * 2, x = r.x + pad;
     float y = r.y + pad;
-    fit(ui, t.title, {x, y + ui.s(11) * k}, 18 * k, iw, kGold, FontFace::Title);
+    fit(ui, t.title, {x, y + ui.s(11) * k}, 18 * k, iw, kGold, FontFace::Bold);  // 2.75.5: « · » is not in the titles' font
     y += ui.s(26) * k;
     if (!t.sub.empty()) {
         const auto lines = wrap(ui, t.sub, FontFace::Body, 13 * k, iw, 2);

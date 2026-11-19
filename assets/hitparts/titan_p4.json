@@ -1,0 +1,10 @@
+{
+  "format": "cosmic.hitparts",
+  "version": 1,
+  "sheet": "animations/titan_p4.json",
+  "profile": "silhouette",
+  "frameWidth": 256,
+  "frameHeight": 224,
+  "pivot": [128.0, 212.0],
+  "sameAs": "titan.json"
+}
