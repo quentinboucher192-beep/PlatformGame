@@ -2190,14 +2190,21 @@ public:
         }
         // The branch: what is left in its other zones (the zones to take back first).
         std::vector<raidhud::Line> branch, retake;
+        // 2.76.2: « zone : ce qui manque » joined in the language shown (the requirements hold « : » too,
+        // the whole was cut at the wrong one): each part translated, the line kept as it is.
+        const char* colon = i18n::language() == Language::English ? ": " : " : ";
         for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
             if (g.zone == run_->zone() || g.finished) continue;
             const std::string miss = g.missing();
             if (const auto fell = retake_.find(g.zone); fell != retake_.end()) {
-                retake.push_back({"!", g.name + " : zone à reprendre (" + fell->second + " est tombé)" + (miss.empty() ? "" : " · " + miss), kDanger});
+                retake.push_back({"!", i18n::keep(i18n::tr(g.name) + colon + i18n::tr("zone à reprendre (" + fell->second + " est tombé)") +
+                                                  (miss.empty() ? "" : " · " + i18n::tr(miss))),
+                                  kDanger});
                 continue;
             }
-            branch.push_back({g.reachable ? "→" : "■", g.name + " : " + miss + (g.optional ? " (facultatif)" : ""), g.optional ? kViolet : g.reachable ? kSky : kDim});
+            branch.push_back({g.reachable ? "→" : "■",
+                              i18n::keep(i18n::tr(g.name) + colon + i18n::tr(miss) + (g.optional ? " " + i18n::tr("(facultatif)") : "")),
+                              g.optional ? kViolet : g.reachable ? kSky : kDim});
         }
         lines.push_back({"", retake.empty() && branch.empty() ? "BRANCHE · toutes les autres zones sont terminées" : "BRANCHE · ce qu'il manque", kSky});
         for (auto& l : retake) lines.push_back(std::move(l));

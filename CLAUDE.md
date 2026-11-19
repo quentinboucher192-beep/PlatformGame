@@ -9,6 +9,8 @@
   se garantit dans le code (mesures, ajustement, troncature) ; une capture seulement sur demande
   (`SDL_VIDEODRIVER=offscreen CosmicPlatformer --headless --shot N:fichier.png …`).
 - Tout est en français, jouable au clavier, à la manette et à la souris.
+- Tout nouveau texte passe par la traduction et reçoit son anglais dans `data/i18n/en.json`,
+  textes du serveur et notes de version compris (vérifier : `--i18n-audit`, `docs/I18N.md`).
 - Pas de bouton décoratif ni de données fictives : une fonction annoncée fonctionne vraiment.
 
 ## Livraison

@@ -59,6 +59,18 @@ public:
     /// English number formats inside a text without words: « 2,45 » → « 2.45 »,
     /// « 12 345 » → « 12,345 ».
     static std::string localizeNumbers(std::string_view s);
+    /// Every entry, exact texts and models (`f(french, translated)`): checks (the i18n audit).
+    template <class F>
+    void forEach(F&& f) const {
+        for (const auto& [k, v] : exact_) f(std::string_view(k), std::string_view(v));
+        for (const auto& m : models_) f(std::string_view{}, std::string_view(m.value));
+    }
+    /// The model keys' literal pieces (`f(piece)`): checks.
+    template <class F>
+    void forEachModelPiece(F&& f) const {
+        for (const auto& m : models_)
+            for (const auto& l : m.literals) f(std::string_view(l));
+    }
 
 private:
     struct Model {
@@ -119,6 +131,25 @@ bool verbatim();
 /// Marks `shown` as already displayed text (e.g. a translated text shortened with « … »):
 /// drawn as it is. Returns it.
 std::string keep(std::string shown);
+
+/// 2.76.2: checking that no text is left in the other language (--i18n-audit <file>, tests).
+/// While on, each text shown (once) is judged. In English: « absent » (not every word known),
+/// « identique » (unchanged although some of its words are not English), « inséré » (a model
+/// matched but a part put in its slot stayed French). In French: « anglais » (an English
+/// translation of the dictionary shown as it is). The players' own words (Verbatim) are never
+/// judged. Off by default: nothing is checked, nothing costs.
+struct AuditFinding {
+    std::string reason;  // absent, identique, inséré, anglais
+    std::string text;    // as handed to the text renderer
+    std::string shown;   // as displayed
+    std::string part;    // inséré: the part left untranslated
+};
+/// Starts (clears what was found). `fileUtf8`: each finding is also appended to it, one JSON
+/// object per line (the file is emptied first); "" = kept in memory only.
+void startAudit(const std::string& fileUtf8 = {});
+void stopAudit();
+bool auditing();
+std::vector<AuditFinding> auditFindings();
 
 }  // namespace i18n
 }  // namespace cosmic

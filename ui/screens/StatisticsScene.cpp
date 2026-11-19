@@ -36,6 +36,12 @@ namespace cosmic {
 
 namespace {
 
+/// A line's height at `px` (« Ag »: a probe, not a text: never translated, never judged).
+float probeHeight(UIContext& ui, FontFace f, float px) {
+    i18n::Verbatim probe;
+    return ui.text().measure("Ag", f, px).y;
+}
+
 using charts::Bar;
 using charts::LineSpec;
 using charts::Series;
@@ -274,12 +280,12 @@ private:
         float f1 = ui.fitFont(title, FontFace::Bold, tf, room - pill, 0.8f);
         const std::string shownTitle = ui.elide(title, FontFace::Bold, f1, room - pill);
         ui.label(shownTitle, {r.x + pad, y}, f1, ui.theme().text, Align::Left, FontFace::Bold);
-        const float th = ui.text().measure("Ag", FontFace::Bold, ui.s(f1)).y;
+        const float th = probeHeight(ui, FontFace::Bold, ui.s(f1));
         if (fresh) ui.drawNewPill(r.x + pad + ui.text().measure(shownTitle, FontFace::Bold, ui.s(f1)).x + pill, y + th * 0.5f, true);
         y += th + ui.s(3);
         if (!sub.empty()) {
             ui.label(ui.elide(sub, FontFace::Body, sf, room), {r.x + pad, y}, sf, ui.theme().textDim, Align::Left, FontFace::Body);
-            y += ui.text().measure("Ag", FontFace::Body, ui.s(sf)).y;
+            y += probeHeight(ui, FontFace::Body, ui.s(sf));
         }
         y = std::max(y, r.y + ui.s(50));
         return {r.x + pad, y + ui.s(10), r.w - 2 * pad, r.bottom() - y - ui.s(10) - pad};
@@ -288,7 +294,7 @@ private:
     /// A legend: a short line or a dot per series, then its name (measured; wraps to a new line).
     float legend(float x, float y, float w, const std::vector<std::pair<Color, std::string>>& items, bool dotsFirst = false, int dots = -1) {
         UIContext& ui = g_.ui;
-        const float f = fz(ui, 14), h = ui.text().measure("Ag", FontFace::Body, ui.s(f)).y;
+        const float f = fz(ui, 14), h = probeHeight(ui, FontFace::Body, ui.s(f));
         float cx = x, cy = y;
         for (size_t i = 0; i < items.size(); ++i) {
             const bool dot = static_cast<int>(i) == dots || (dotsFirst && i == 0 && dots < 0);

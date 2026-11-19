@@ -177,8 +177,12 @@ public:
         float textW = W - ui.s(120) - ui.s(300);
         std::vector<float> heights;
         float total = 0.0f;
+        // 2.76.2: a text the server already gave in English (an installer's notes) is shown as given.
+        const bool english = i18n::language() == Language::English;
+        auto body = [english](const NewsCenter::Item& it) -> const std::string& { return english && !it.textEn.empty() ? it.textEn : it.text; };
         for (const auto& it : items) {
-            float th = it.text.empty() ? 0.0f : ui.text().measureWrapped(it.text, FontFace::Body, ui.s(18), textW).y;
+            i18n::Verbatim given(english && !it.textEn.empty());
+            float th = it.text.empty() ? 0.0f : ui.text().measureWrapped(body(it), FontFace::Body, ui.s(18), textW).y;
             float h = std::max(ui.s(100), ui.s(70) + th + ui.s(22));
             heights.push_back(h);
             total += h + ui.s(12);
@@ -210,7 +214,10 @@ public:
             ui.label(it.title, {tx, card.y + ui.s(16)}, ui.fitFont(it.title, FontFace::Bold, 22, titleRoom), ui.theme().text, Align::Left,
                      FontFace::Bold);
             ui.label(std::string(k.name) + "  ·  " + it.date, {tx, card.y + ui.s(46)}, 15, k.color.withAlpha(200));
-            if (!it.text.empty()) ui.labelWrapped(it.text, {tx, card.y + ui.s(70)}, textW, 18, ui.theme().textDim);
+            if (!it.text.empty()) {
+                i18n::Verbatim given(english && !it.textEn.empty());
+                ui.labelWrapped(body(it), {tx, card.y + ui.s(70)}, textW, 18, ui.theme().textDim);
+            }
             actions(it, card);
         }
         ui.endScroll();
