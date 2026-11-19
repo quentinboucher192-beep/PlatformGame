@@ -188,8 +188,11 @@ describe("live spectating: who may watch", () => {
         expect((await api("GET", `${V}/notifications`, { token: nova.token })).body.data.notifications).toHaveLength(0);
         const audit = await env.DB.prepare("SELECT action FROM audit_log WHERE player_id = ?1").bind(nova.id).all<{ action: string }>();
         expect(audit.results.map((a) => a.action).filter((a) => a.includes("spectat") || a.includes("watch"))).toEqual([]);
-        // Nothing of the run is written in the database.
-        const tables = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE '%spectat%'").all();
+        // Nothing of the run is written in the database. (`raid_spectators`, 2.75.1, is another thing: the
+        // players of a raid group wiped out of its zone, never anybody watching a friend's run.)
+        const tables = await env.DB.prepare(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name LIKE '%spectat%' AND name <> 'raid_spectators'",
+        ).all();
         expect(tables.results).toHaveLength(0);
     });
 });
