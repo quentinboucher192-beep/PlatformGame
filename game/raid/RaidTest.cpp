@@ -58,6 +58,11 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     // What the group did is accepted at once, as the server would after the consensus of a real
     // instance: given back with the next step (RAID_STATE's structure, the objectives' bits).
     state_ |= run_.localDone();
+    if (botsInvincible_) {
+        GameWorld& w = run_.world();
+        for (int s = 1; s < players_ && s < w.teamSize(); ++s)
+            if (w.member(s).presence == GameWorld::Presence::Playing && w.playerAt(s).alive()) w.playerAt(s).health = w.playerAt(s).maxHealth();
+    }
     rescue();
     run_.takeReports();  // empty: a test never reports anything
 }

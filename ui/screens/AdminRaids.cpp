@@ -571,24 +571,27 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
         g_.settings.gameplay.adminInvincible = inv;
         if (!capture) g_.saveSettings();
     }
+    ui.toggle("botsinvincible", {x + half + gap, y, half, rowH}, "Joueurs simulés invincibles", simBotsInvincible_);
+    y += rowH + gap;
     UIContext::ButtonStyle bs;
     bs.primary = true;
-    bs.fontSize = std::max(ui.fitFont("Lancer la simulation", FontFace::Bold, 17, half - ui.s(20), 0.7f), 12.0f / ui.s(1.0f));
-    if (ui.button("launch", {x + half + gap, y, half, rowH}, "Lancer la simulation", bs) && !capture) {
+    bs.fontSize = std::max(ui.fitFont("Lancer la simulation", FontFace::Bold, 17, w - ui.s(20), 0.7f), 12.0f / ui.s(1.0f));
+    if (ui.button("launch", {x, y, w, rowH}, "Lancer la simulation", bs) && !capture) {
         RaidSimSetup s;
         s.groups = simGroups_ + 1;
         s.bots = simBots_ + 1;
         s.skill = testSkill_;
         s.background = simSpeed_ == 2 ? 4 : simSpeed_ == 1 ? 2 : 1;
         s.invincible = g_.settings.gameplay.adminInvincible;
+        s.botsInvincible = simBotsInvincible_;
         g_.app.pushScene(makeRaidSim(g_, s));
     }
     y += rowH + ui.s(10);
     // What it is, measured into what is left of the panel.
-    const int seats = 1 + simBots_ + 1;
+    const int seats = (simBots_ + 1) + 1;  // the simulated players and the free place
     const std::string text = "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : " +
                              std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(simBots_ + 1) + " joueurs simulés et une place libre (" +
-                             std::to_string(seats - 1) + " places). Événements mondiaux, carte du titan, zones terminées, contributions, groupes "
+                             std::to_string(seats) + " places). Événements mondiaux, carte du titan, zones terminées, contributions, groupes "
                              "éliminés et renforts comme dans un vrai raid. Rejoignez ou regardez n'importe quel groupe depuis la pause.";
     const float lineH = ui.s(18);
     const int lines = std::max(1, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));
@@ -937,19 +940,18 @@ public:
     explicit RaidSimMenuScene(GameServices& g)
         : g_(g), raids_(g, [](const std::string&, bool) {}, [](const ApiResult&) { return false; }) {}
     void onEnter() override { bg_.init(g_); }
-    void update(float dt) override {
-        bg_.update(dt);
-        if (g_.ui.backPressed()) g_.app.popScene();
-    }
+    void update(float dt) override { bg_.update(dt); }
     void render(float) override {
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
         const float w = std::min(ui.s(760), ui.screenW() - ui.s(40)), h = std::min(ui.s(600), ui.screenH() - ui.s(40));
         const Rect r{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
-        const float top = section(ui, r, "TESTER ASTERION · SIMULER UN RAID COMPLET", kGold);
+        const float top = section(ui, r, "SIMULER UN RAID COMPLET (TESTER ASTERION)", kGold);
         raids_.drawSim({r.x, top, r.w, r.bottom() - ui.s(12) - top}, true);
+        const bool back = ui.backPressed();
         ui.end();
+        if (back) g_.app.popScene();
     }
 
 private:

@@ -321,7 +321,7 @@ TEST_CASE("2.75 armory: each branch's « vestiaire » before its zones; a power 
         bool chosen = false;
         for (uint32_t t = 0; t < 120 * 40 && run.zone() == 0; ++t) {
             std::vector<InputFrame> held(1);
-            InputFrame f = right(t % 40 < 6);
+            InputFrame f = right(t % 40 < 22);  // 2.77: the tablets are up on their ledges: full jumps take them
             if (const auto& offer = run.world().powerOffer(); offer && offer->player == 0) {
                 // The first tablet's power takes the first slot (or its key's); every other one is left.
                 f = InputFrame{};

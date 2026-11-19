@@ -39,12 +39,17 @@ struct SimSetup {
     int groups = 7;                      // 1 to 14
     int bots = 4;                        // per group, the administrator not counted (1 to 7)
     bool invincible = true;              // the administrator's seat
+    bool botsInvincible = false;         // the simulated players too (a test only)
     BotSkill skill = BotSkill::Skilled;
     int background = 1;                  // steps of each group not watched per step of the raid (1, 2 or 4)
     int startPhase = 1;                  // of every gigaboss (tests)
+    int heartStartPhase = 0;             // of the heart (tests; 0: startPhase)
     /// Tests (« configuration réduite »): each branch starts at its lair, the objectives before it given
     /// as done by other groups; the heart at its arena. The real lairs, the real heart.
     bool lairs = false;
+    /// Tests: the branches (parts) whose gigaboss is given as already fallen (validated, as if other groups had
+    /// beaten it) — those the simulated players cannot beat yet (docs/RAIDS.md §21, limits).
+    std::vector<std::string> given;
     int maxReinforcements = 8;
 };
 
@@ -59,6 +64,7 @@ public:
         int relieves = 0;         // a reinforcement: the id of the group it took the zone back from
         int idleSteps = 0;        // steps with nothing left to do in its branch
         int moves = 0;            // branches it went to after the first
+        int heartBase = -1;       // tests started at a later phase: its part of the heart's health at that start (no damage)
         uint32_t formed = 0;      // the raid's step it was formed at
     };
     struct WorldEvent {
@@ -117,6 +123,7 @@ private:
     void aggregate();
     void moveGroup(Group& g, int branch, int zone);
     bool hasWork(const Group& g) const;
+    int realPart(Group& g, int own) const;
     void event(std::string text, WorldEvent::Kind kind);
     int seedBranch() const;
 

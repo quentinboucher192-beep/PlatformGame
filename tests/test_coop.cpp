@@ -391,7 +391,7 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
     // version 2 (they pass through each other) has its own.
     // 2.77: version 3 (a soul on the last safe place, a revival held) has its own; 1 and 2 keep theirs.
     const Golden golden[] = {{2, "bb2676ab728f2c52", 1}, {3, "2ac42252542c66bd", 1}, {2, "91d4357955571446", 2}, {3, "c965b1d603d7a5d0", 2},
-                             {2, "v3-a-calculer", 3},     {3, "v3-a-calculer", 3}};
+                             {2, "f7e9af3feb027a98", 3},  {3, "ccb9426b84949f0b", 3}};
     int mismatches = 0;
     for (const auto& g : golden) {
         auto script = teamScript(g.players, 31, 120 * 40);

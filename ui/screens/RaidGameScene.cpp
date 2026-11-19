@@ -727,6 +727,7 @@ public:
         s.groups = simSetup_.groups;
         s.bots = simSetup_.bots;
         s.invincible = simSetup_.invincible;
+        s.botsInvincible = simSetup_.botsInvincible;
         s.skill = static_cast<raid::BotSkill>(std::clamp(simSetup_.skill, 0, 2));
         s.background = simSetup_.background;
         sim_ = std::make_unique<raid::RaidSimulation>(ws, s);
@@ -1508,8 +1509,9 @@ public:
         }
         const raid::ZoneInfo* z = branch_->zone(run_->zone());
         const std::string key = actionKey(in, Action::RaidMap);
-        const std::string hint = (key.empty() ? std::string("La touche de la carte") : key) +
-                                 " (ou Vue à la manette) : fermer la carte · le groupe continue à jouer · glisser à la souris : déplacer";
+        std::string hint = (key.empty() ? std::string("La touche de la carte") : key) +
+                           " (ou Vue à la manette) : fermer la carte · le groupe continue à jouer · glisser à la souris : déplacer";
+        if (sim_) hint += " · tout le raid et la carte du titan : pause › Groupes";  // 2.77
         const Vec2 focus = local_ >= 0 && local_ < w.teamSize() ? w.playerAt(local_).center() : b.center();
         minimap_.drawLarge(ui, g_.app.resources(), w, r, "CARTE · " + std::string(branch_->name) + " · " + std::string(z ? z->name : "?"),
                            dangerText(), kDanger, mapMarks(w), magmaAreas(w), focus, mapPan_, zones, hint);

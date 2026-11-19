@@ -1194,13 +1194,27 @@ l'horloge, l'écran ni le réseau) :
 * Deux règles **du test seulement** (jamais dans un vrai raid) : un joueur simulé envoyé sur un mécanisme qu'il n'atteint
   pas en 6 s y est placé, et un joueur simulé qui ne se rapproche plus de son but pendant 8 s est placé sur la place
   suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît.
+* **Limites mesurées** (à 7 joueurs simulés, niveau Expert) : seuls, ils finissent les zones (l'embuscade de l'Épaule en
+  14 s, le gardien du Biceps en 16 s, le générateur de la Veine en 13 s, le vestiaire en 15 s) et, invincibles, battent
+  Pyroclast (depuis sa phase 2 : évents tenus ensemble, points faibles et corps à nu), Heartbreaker, Voidworm et Graviton.
+  Ils ne savent pas encore battre **Titanus** (ses entraves sont haut sur ses jambes, hors de portée depuis le sol),
+  **Skullmaw** (ses miroirs ne suffisent pas à le mettre à nu) ni **Dreadfang** (ses charges le gardent hors de leur portée),
+  et, mortels, ils tombent face aux Gigaboss en quelques minutes (les attaques propres à chaque boss ne sont lues qu'en
+  partie : marques, poings, jets, pluies et tirs annoncés, pas ses coups au contact). Le réglage « Joueurs simulés
+  invincibles » permet de voir un raid entier.
 
 ### « Simuler un raid complet » (`game/raid/RaidSimulation`)
 
+<p align="center">
+<img src="media/raid_sim_menu.png" width="49%" alt="Les réglages de « Simuler un raid complet » : groupes, joueurs simulés par groupe, niveau, vitesse des groupes non regardés, invincibilités, et « TEST LOCAL — rien n'est envoyé »">
+<img src="media/raid_sim.png" width="49%" alt="Le raid en cours : le groupe 1 dans la Mâchoire du Crâne, ses joueurs simulés, les événements des autres branches dans les alertes et le bandeau « TEST LOCAL — rien n'est envoyé »">
+</p>
+
 ADMINISTRATION › Raids › Tester Asterion › **« Simuler un raid complet »** : tout le raid de clan **en local**. Réglages :
 nombre de groupes (1 à 14), joueurs simulés par groupe (1 à 7, sans compter l'administrateur ; chaque groupe a en plus une
-**place libre**, la sienne), niveau des joueurs simulés, invincible (admin), vitesse des groupes non regardés (×1, ou
-**×2 / ×4 « accéléré »**, dit dans la ligne du test).
+**place libre**, la sienne), niveau des joueurs simulés, invincible (admin), **joueurs simulés invincibles** (un réglage de
+test : leurs cœurs reviennent à chaque pas, une chute dans le vide les met encore à terre), vitesse des groupes non
+regardés (×1, ou **×2 / ×4 « accéléré »**, dit dans la ligne du test).
 
 * **Les mêmes règles qu'un vrai raid**, ce que le serveur ferait entre les instances fait ici au même pas : chaque groupe
   est une instance (`raid::TestSession`), le groupe k commence dans la branche k mod 7, par son **vestiaire** ; ce qu'un
@@ -1227,7 +1241,17 @@ nombre de groupes (1 à 14), joueurs simulés par groupe (1 à 7, sans compter l
 
 ### Performances (mesurées, `tests/test_raid_bots.cpp`, Release, sans affichage)
 
-PERF_TABLE
+| Mesure (Release, une machine de 4 cœurs partagée, sans affichage) | Résultat |
+|---|---|
+| Graphe d'une zone, construit une fois par zone et par état de ses portes | Épaule : 169 places, 705 liaisons en **0,4 ms** ; Poignet-verrou (la plus grande) : 1 845 places, 17 960 liaisons en **14 à 19 ms** |
+| Un groupe de 8 places (7 joueurs simulés + la place libre), monde et IA, combat de Pyroclast | 65 675 pas en 2,7 s : **0,04 ms par pas** |
+| 7 groupes de 7, du vestiaire à leur première zone (tous sortis en 15 s de jeu), puis 30 s de combats | pas du raid (les 7 mondes) : **0,24 ms** en moyenne, 9,1 ms au pire ; puis **0,10 ms**, 10,5 ms au pire |
+| Raid complet du test (7 groupes de 8 places, des antres à la chute du Cœur : 998 s de jeu, 838 341 pas de mondes) | **0,35 ms** par pas du raid en moyenne, **126 ms** au pire (plusieurs groupes qui changent de zone au même pas : mondes chargés, graphes construits) |
+
+À 120 pas par seconde, un raid de 7 groupes coûte donc environ **0,7 ms par image** (60 images par seconde) ; en « ×4
+accéléré », les 6 groupes non regardés font 4 pas chacun : environ **2,5 ms par image**. Les pointes (un changement de zone
+de plusieurs groupes au même pas) dépassent le budget : le raid prend alors du retard sur le temps réel pendant quelques
+images, sans jamais rattraper au-delà du budget suivant.
 
 Seul le groupe regardé est dessiné ; les autres se simulent sans rendu ni son (`RaidRun::setQuiet`). Le thread principal
 n'attend jamais : chaque image donne au plus **10 ms** au raid (`kSimBudgetMs`) ; au-delà, le raid avance moins vite que
@@ -1263,8 +1287,13 @@ est déjà prise : elle garde son pouvoir pour tous).
 Les règles d'une partie de raid changent (âmes, réanimation, vestiaire) : `TITAN_REVISION` passe à **5** (une instance ne
 réunit que des jeux aux mêmes règles), `titan.json` et `server/src/raidTitan.json` régénérés ; les empreintes de référence
 des raids et de la coopération 3 sont mises à jour. Tests : `tests/test_raid_bots.cpp` (graphe, zones finies par les
-joueurs simulés seuls — embuscade, gardien, générateur, plaque du vestiaire, Pyroclast —, même empreinte à 2 et 8 places,
-pilote automatique, raid complet jusqu'à la chute du Cœur sans aucun rapport, place libre et spectateur, âme et
+joueurs simulés seuls — embuscade, gardien, générateur, plaque du vestiaire, Pyroclast depuis sa phase 2 (joueurs simulés
+invincibles) —, même empreinte à 2 et 8 places, pilote automatique, raid complet jusqu'à la chute du Cœur sans aucun
+rapport (configuration réduite : chaque branche depuis son antre, les Gigaboss depuis leur phase 3 et le Cœur depuis sa
+phase 4 — la vie que ce départ retire n'est pas comptée comme des dégâts : seul ce que les groupes ôtent ensuite est partagé —,
+7 joueurs simulés Experts et invincibles par groupe, Titanus, Skullmaw et Dreadfang donnés comme vaincus par d'autres
+groupes ; les vraies zones, les vrais combats : Heartbreaker, Pyroclast, Voidworm et Graviton tombent sous les joueurs
+simulés, puis le Cœur sous les 7 groupes ensemble, en 998 s de jeu), place libre et spectateur, âme et
 réanimation tenue, vestiaire traversé sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 

@@ -323,6 +323,7 @@ struct RaidSimSetup {
     int skill = 1;         // 0 Débutant, 1 Confirmé, 2 Expert
     int background = 1;    // the groups not watched: 1 (as the one watched), 2 or 4 steps each (« accéléré »)
     bool invincible = true;
+    bool botsInvincible = false;  // the simulated players too (a test only: their survival is not what is tested)
     bool capture = false;  // captures for the documentation (headless only): no account needed
     int panel = -1;        // captures: the raid's panel open on that tab (0 groups … 3 titan's map)
 };

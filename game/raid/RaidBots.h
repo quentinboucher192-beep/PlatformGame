@@ -114,6 +114,7 @@ private:
     int navZone_ = -1;
     uint32_t tick_ = 0;
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
+    size_t projectiles_ = 0;  // dangers_ from here on: the enemies' shots of the step
     std::string plan_;
 };
 

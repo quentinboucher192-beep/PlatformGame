@@ -139,6 +139,18 @@ void RaidSimulation::event(std::string text, WorldEvent::Kind kind) {
     if (feed_.size() > 60) feed_.erase(feed_.begin());
 }
 
+int RaidSimulation::realPart(Group& g, int own) const {
+    // A test started at a later phase: the heart's health that jump removed is not damage (each instance made it
+    // alone; summed it would end the fight at once): only what the group took afterwards is shared.
+    const int start = setup_.heartStartPhase > 0 ? setup_.heartStartPhase : setup_.startPhase;
+    if (start <= 1) return own;
+    if (g.heartBase < 0) {
+        if (g.session->run().gigaboss().phaseReached() < std::min(start, 4)) return 0;
+        g.heartBase = own;
+    }
+    return std::max(0, own - g.heartBase);
+}
+
 RaidSimulation::Group& RaidSimulation::form(int branch, int zone, const std::string& name, uint32_t extraMask) {
     auto g = std::make_unique<Group>();
     g->id = static_cast<int>(groups_.size()) + 1;
@@ -149,9 +161,10 @@ RaidSimulation::Group& RaidSimulation::form(int branch, int zone, const std::str
     t.on = true;
     t.invincible = setup_.invincible;
     t.players = 1 + setup_.bots;  // the administrator's free place and the simulated players
-    t.startPhase = setup_.startPhase;
+    t.startPhase = branch == heart_ && setup_.heartStartPhase > 0 ? setup_.heartStartPhase : setup_.startPhase;
     g->session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g->session->setSkill(setup_.skill);
+    g->session->setBotsInvincible(setup_.botsInvincible);
     g->session->setAdminSeated(false);
     g->session->setBranchState(mask(branch) | extraMask);
     g->session->begin(zone);
@@ -167,9 +180,10 @@ void RaidSimulation::moveGroup(Group& g, int branch, int zone) {
     t.on = true;
     t.invincible = setup_.invincible;
     t.players = 1 + setup_.bots;
-    t.startPhase = setup_.startPhase;
+    t.startPhase = branch == heart_ && setup_.heartStartPhase > 0 ? setup_.heartStartPhase : setup_.startPhase;
     g.session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g.session->setSkill(setup_.skill);
+    g.session->setBotsInvincible(setup_.botsInvincible);
     g.session->setAdminSeated(seatedHere);
     g.session->setBranchState(mask(branch));
     g.session->begin(zone);
@@ -187,6 +201,10 @@ bool RaidSimulation::begin() {
         for (int b = 0; b < seven; ++b)
             for (const ObjectiveInfo& o : branches_[static_cast<size_t>(b)]->objectives)
                 if (o.role != "gigaboss" && !o.optional) done_[static_cast<size_t>(b)] |= 1u << o.index;
+    for (int b = 0; b < seven; ++b)
+        if (std::find(setup_.given.begin(), setup_.given.end(), branches_[static_cast<size_t>(b)]->part) != setup_.given.end())
+            for (const ObjectiveInfo& o : branches_[static_cast<size_t>(b)]->objectives)
+                if (!o.optional) done_[static_cast<size_t>(b)] |= 1u << o.index;
     for (int b = 0; b < static_cast<int>(branches_.size()); ++b)
         for (const ZoneInfo& z : branches_[static_cast<size_t>(b)]->zones)
             if (zoneFinished(*branches_[static_cast<size_t>(b)], z.id, mask(b)) && z.id < 32) finished_[static_cast<size_t>(b)] |= 1u << z.id;
@@ -249,7 +267,7 @@ void RaidSimulation::step(const InputFrame& admin) {
     std::vector<int> own(groups_.size(), 0);
     for (size_t i = 0; i < groups_.size(); ++i)
         if (groups_[i]->branch == heart_)
-            if (const AsterionHeartRoutine* hr = groups_[i]->session->run().heartRoutine()) own[i] = hr->own();
+            if (const AsterionHeartRoutine* hr = groups_[i]->session->run().heartRoutine()) own[i] = realPart(*groups_[i], hr->own());
     int raw = 0;
     for (int o : own) raw += o;
     for (size_t i = 0; i < groups_.size(); ++i) {
@@ -300,9 +318,11 @@ void RaidSimulation::aggregate() {
         int raw = 0;
         for (const auto& g : groups_)
             if (g->branch == heart_)
-                if (const AsterionHeartRoutine* hr = g->session->run().heartRoutine()) raw += hr->own();
+                if (const AsterionHeartRoutine* hr = g->session->run().heartRoutine()) raw += realPart(*g, hr->own());
         const int before = phaseOf(heartTaken_);
-        heartTaken_ = std::min(kHeartUnits, std::max(heartTaken_, raw));
+        int base = 0;  // a test started at a later phase: the health that start removed, the same for every instance
+        for (const auto& g : groups_) base = std::max(base, g->heartBase);
+        heartTaken_ = std::min(kHeartUnits, std::max(heartTaken_, base + raw));
         if (!heartFallen_ && phaseOf(heartTaken_) > before)
             event("CŒUR · Phase " + std::to_string(phaseOf(heartTaken_)) + " : " + std::to_string(heartTaken_ / 100) + " % de sa vie ôtés par tous les groupes",
                   WorldEvent::Kind::World);
@@ -390,6 +410,11 @@ void RaidSimulation::aggregate() {
             if (b == heart_ || gigabossDown(b)) continue;
             int count = 0;
             for (const auto& o : groups_) count += o->branch == b && !o->wiped && o.get() != &g ? 1 : 0;
+            // Where a group is missing: the groups its unfinished zones ask for (a pair: 2), at least one.
+            int need = 1;
+            for (const ZoneInfo& z : branches_[static_cast<size_t>(b)]->zones)
+                if (!zoneFinished(*branches_[static_cast<size_t>(b)], z.id, mask(b))) need = std::max(need, z.groupsRequired);
+            if (count >= need) continue;
             if (count < bestCount) {
                 bestCount = count;
                 best = b;

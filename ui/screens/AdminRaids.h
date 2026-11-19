@@ -98,6 +98,7 @@ private:
     // 2.77: « Une zone » or « Simuler un raid complet » (docs/RAIDS.md §21); the level of the simulated
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
     int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
+    bool simBotsInvincible_ = false;
 };
 
 }  // namespace cosmic

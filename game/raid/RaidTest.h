@@ -80,6 +80,10 @@ public:
     void setHeartShared(const HeartShared& h) { heart_ = h; }
     /// The rescues of the test so far (a simulated player put on its mechanism or further on its path).
     int rescues() const { return rescues_; }
+    /// « Joueurs simulés invincibles » (a test's setting, never a real raid): their hearts come back
+    /// after each step (a fall into the void still puts them down, to be revived).
+    void setBotsInvincible(bool on) { botsInvincible_ = on; }
+    bool botsInvincible() const { return botsInvincible_; }
 
 private:
     void rescue();
@@ -90,6 +94,7 @@ private:
     HeartShared heart_;  // 2.74: the heart's test (its relics)
     std::vector<InputFrame> frames_;
     bool adminSeated_ = true;
+    bool botsInvincible_ = false;
     int afk_ = 0;
     int rescues_ = 0;
 };

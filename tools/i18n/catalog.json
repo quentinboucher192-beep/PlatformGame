@@ -30087,6 +30087,12 @@
    ]
   },
   {
+   "fr": "Joueurs simulés invincibles",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Joueurs simulés par groupe (sans vous)",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -57980,6 +57986,12 @@
    ]
   },
   {
+   "fr": "SIMULER UN RAID COMPLET (TESTER ASTERION)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "simultané",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -62230,12 +62242,6 @@
    ]
   },
   {
-   "fr": "TESTER ASTERION · SIMULER UN RAID COMPLET",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
    "fr": "Tester Asterion › « Simuler un raid complet » : tout le raid de clan en local, les sept branches (vestiaire compris) puis le Cœur d'Asterion avec tous les groupes. Événements du monde, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid ; rejoignez la place libre de n'importe quel groupe ou regardez-le depuis la pause. TEST LOCAL : rien n'est envoyé (aucun appel réseau, aucun résultat, aucune récompense).",
    "where": [
     "data/news/changelog.json"
@@ -63232,6 +63238,12 @@
    "fr": "Tout le niveau",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "tout le raid et la carte du titan : pause › Groupes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
