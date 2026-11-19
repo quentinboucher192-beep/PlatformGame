@@ -88,6 +88,20 @@ bool Branch::load(const std::filesystem::path& dir, std::string* error) {
         levels.push_back(std::move(*l));
         rules.push_back(parseZoneRules(levels.back(), *this));
     }
+    // 2.75: the armory (zone 0), when the branch has one.
+    armoryLevel.reset();
+    if (auto j = FileUtil::loadJson(dir / "armory.json")) {
+        std::string e;
+        if (std::optional<LevelData> l = LevelData::fromJson(*j, &e)) {
+            armoryLevel = std::move(*l);
+            armoryRules = parseZoneRules(*armoryLevel, *this);
+            armoryRules.zone = 0;
+            armoryInfo = ZoneInfo{};
+            armoryInfo.id = 0;
+            armoryInfo.name = "Vestiaire";
+            armoryInfo.level = "armory.json";
+        }
+    }
     return true;
 }
 
@@ -217,7 +231,9 @@ const std::vector<const Branch*>& Branch::all() {
     return list;
 }
 
-const ZoneInfo* Branch::zone(int zid) const { return zid >= 1 && zid <= static_cast<int>(zones.size()) ? &zones[static_cast<size_t>(zid - 1)] : nullptr; }
+const ZoneInfo* Branch::zone(int zid) const {
+    if (zid == 0) return armoryLevel ? &armoryInfo : nullptr;  // 2.75: the armory
+    return zid >= 1 && zid <= static_cast<int>(zones.size()) ? &zones[static_cast<size_t>(zid - 1)] : nullptr; }
 
 const ObjectiveInfo* Branch::objective(const std::string& oid) const {
     for (const auto& o : objectives)
@@ -230,9 +246,13 @@ int Branch::objectiveIndex(const std::string& oid) const {
     return o ? o->index : -1;
 }
 
-const LevelData* Branch::level(int zid) const { return zid >= 1 && zid <= static_cast<int>(levels.size()) ? &levels[static_cast<size_t>(zid - 1)] : nullptr; }
+const LevelData* Branch::level(int zid) const {
+    if (zid == 0) return armoryLevel ? &*armoryLevel : nullptr;  // 2.75: the armory
+    return zid >= 1 && zid <= static_cast<int>(levels.size()) ? &levels[static_cast<size_t>(zid - 1)] : nullptr; }
 
-const ZoneRules* Branch::zoneRules(int zid) const { return zid >= 1 && zid <= static_cast<int>(rules.size()) ? &rules[static_cast<size_t>(zid - 1)] : nullptr; }
+const ZoneRules* Branch::zoneRules(int zid) const {
+    if (zid == 0) return armoryLevel ? &armoryRules : nullptr;  // 2.75: the armory
+    return zid >= 1 && zid <= static_cast<int>(rules.size()) ? &rules[static_cast<size_t>(zid - 1)] : nullptr; }
 
 int Branch::generators(uint32_t mask) const {
     int n = 0;

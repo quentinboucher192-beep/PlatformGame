@@ -243,7 +243,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0x986170e86c9d19acULL;  // reference (2.72: the rising magma): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xaaa93a0738ae65daULL;  // reference (2.75: the veins wall to wall): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -420,6 +420,13 @@ TEST_CASE("raid seats: absent 60 s the seat is freed; a late join takes a vacant
     // The simulation reads the same: standby, gone then vacant, joined with every heart.
     Services s;
     raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+    // 2.75: seat 0 alone in play for a minute must not fall (its fall with the other seat away would
+    // wipe the group out): seat 0 invincible, as in an administrator's test (the seats' rules are the same).
+    raid::RaidRun::Test keep;
+    keep.on = true;
+    keep.invincible = true;
+    keep.players = 2;
+    run.setTest(keep);
     CHECK(run.begin(0));
     bool sawStandby = false, sawVacant = false;
     for (uint32_t t = 0; t < f.size(); ++t) {

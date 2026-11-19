@@ -226,7 +226,7 @@ void PowerUnlockEntity::onPlayerEnter(GameWorld& w) {
     bool everyone = true;
     for (int i = 0; i < w.teamSize() && w.coop(); ++i)
         if (w.member(i).presence != GameWorld::Presence::Gone && !w.playerAt(i).hasPower(power_)) everyone = false;
-    removed = everyone;
+    removed = everyone && !obj_.prop<bool>("armory", false);  // 2.75: an armory's tablet stays for everyone
 }
 
 void PowerUnlockEntity::exchange(GameWorld& w, const std::string& dropped) {

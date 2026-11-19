@@ -764,6 +764,8 @@ void ReplayRecorder::finish(const GameWorld& w, float elapsed) {
 ReplaySimulator::ReplaySimulator(const ReplayData& replay, GameWorld& world) : replay_(replay), world_(world) {
     world_.setKeysPerSlot(replay_.keysPerSlot);
     world_.setSimulationVersion(replay_.simVersion);  // 2.71: the rules of its time
+    // 2.75: a team replay plays with the cooperation rules it recorded (1: solid players).
+    if (!replay_.team.empty()) world_.setCoopVersion(replay_.coopVersion > 0 ? replay_.coopVersion : 1);
     world_.seedGameplay(replay_.seed);
     // A challenge run (version 4): its rules, as the run was set up (after the level's load).
     if (!replay_.challengeRules.empty())

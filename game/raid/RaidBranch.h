@@ -209,6 +209,14 @@ public:
     std::vector<ObjectiveInfo> objectives;
     std::vector<LevelData> levels;     // by zone (index id - 1)
     std::vector<ZoneRules> rules;      // by zone
+    /// 2.75: the armory (« vestiaire », armory.json, tools/levelgen/raid_armory.py): zone 0, before the
+    /// branch's zones, where each player picks the powers they take into the raid (the power tablets,
+    /// their choice through InputFrame), then the whole group on the « Prêts » plate opens the way to
+    /// the start zone. Not in the server's catalog: never reported, never on the maps.
+    std::optional<LevelData> armoryLevel;
+    ZoneRules armoryRules;
+    ZoneInfo armoryInfo;
+    bool hasArmory() const { return armoryLevel.has_value(); }
 
     const ZoneInfo* zone(int id) const;
     const ObjectiveInfo* objective(const std::string& id) const;

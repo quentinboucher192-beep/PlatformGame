@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  2048,
+  2464,
   768
  ],
  "ambientLight": "#8a6a8e",
@@ -317,9 +317,37 @@
    "layer": "terrain",
    "rect": [
     928.0,
+    544.0,
+    16.0,
+    224.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    944.0,
     576.0,
-    768.0,
+    1152.0,
     192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2096.0,
+    544.0,
+    16.0,
+    224.0
    ],
    "props": {
     "material": "sanctum_stone"
@@ -330,9 +358,9 @@
    "type": "damage_zone",
    "layer": "gameplay",
    "rect": [
-    928.0,
+    944.0,
     544.0,
-    768.0,
+    1152.0,
     32.0
    ],
    "props": {
@@ -341,35 +369,8 @@
     "visible": true,
     "active": false,
     "bounce": true,
+    "overActors": true,
     "style": "souls"
-   }
-  },
-  {
-   "id": "o13",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    976.0,
-    512.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "sanctum_ledge"
-   }
-  },
-  {
-   "id": "o14",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    1088.0,
-    464.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "sanctum_ledge"
    }
   },
   {
@@ -377,7 +378,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1200.0,
+    992.0,
     512.0,
     80.0,
     16.0
@@ -391,7 +392,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1312.0,
+    1104.0,
     464.0,
     80.0,
     16.0
@@ -405,7 +406,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1424.0,
+    1216.0,
     512.0,
     80.0,
     16.0
@@ -419,7 +420,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1536.0,
+    1328.0,
     464.0,
     80.0,
     16.0
@@ -430,10 +431,94 @@
   },
   {
    "id": "o19",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1440.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o20",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1552.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1664.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1888.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o24",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2000.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o25",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1242.0,
+    1258.0,
     436.0,
     12.0,
     12.0
@@ -447,11 +532,11 @@
    }
   },
   {
-   "id": "o20",
+   "id": "o26",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1463.0,
+    1479.0,
     564.0,
     18.0,
     12.0
@@ -465,11 +550,11 @@
    }
   },
   {
-   "id": "o21",
+   "id": "o27",
    "type": "receptor",
    "layer": "gameplay",
    "rect": [
-    1592.0,
+    1608.0,
     544.0,
     16.0,
     32.0
@@ -480,11 +565,11 @@
    }
   },
   {
-   "id": "o22",
+   "id": "o28",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    1524.0,
+    1540.0,
     552.0,
     24.0,
     24.0
@@ -495,11 +580,11 @@
    }
   },
   {
-   "id": "o23",
+   "id": "o29",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1592.0,
+    1608.0,
     520.0,
     16.0,
     16.0
@@ -512,11 +597,11 @@
    }
   },
   {
-   "id": "o24",
+   "id": "o30",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1088.0,
+    1104.0,
     416.0,
     80.0,
     16.0
@@ -526,11 +611,11 @@
    }
   },
   {
-   "id": "o25",
+   "id": "o31",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    992.0,
+    1008.0,
     368.0,
     80.0,
     16.0
@@ -540,11 +625,11 @@
    }
   },
   {
-   "id": "o26",
+   "id": "o32",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    736.0,
+    752.0,
     320.0,
     192.0,
     32.0
@@ -554,11 +639,11 @@
    }
   },
   {
-   "id": "o27",
+   "id": "o33",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
-    704.0,
+    720.0,
     192.0,
     256.0,
     160.0
@@ -568,11 +653,11 @@
    }
   },
   {
-   "id": "o28",
+   "id": "o34",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    772.0,
+    788.0,
     296.0,
     24.0,
     24.0
@@ -583,11 +668,11 @@
    }
   },
   {
-   "id": "o29",
+   "id": "o35",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    776.0,
+    792.0,
     280.0,
     16.0,
     16.0
@@ -600,11 +685,11 @@
    }
   },
   {
-   "id": "o30",
+   "id": "o36",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    752.0,
+    768.0,
     256.0,
     64.0,
     64.0
@@ -615,11 +700,11 @@
    }
   },
   {
-   "id": "o31",
+   "id": "o37",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1696.0,
+    2112.0,
     528.0,
     96.0,
     240.0
@@ -629,11 +714,11 @@
    }
   },
   {
-   "id": "o32",
+   "id": "o38",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1792.0,
+    2208.0,
     528.0,
     256.0,
     240.0
@@ -643,11 +728,11 @@
    }
   },
   {
-   "id": "o33",
+   "id": "o39",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    1972.0,
+    2388.0,
     504.0,
     24.0,
     24.0
@@ -658,11 +743,11 @@
    }
   },
   {
-   "id": "o34",
+   "id": "o40",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1976.0,
+    2392.0,
     488.0,
     16.0,
     16.0
@@ -675,11 +760,11 @@
    }
   },
   {
-   "id": "o35",
+   "id": "o41",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    1952.0,
+    2368.0,
     464.0,
     64.0,
     64.0
@@ -690,11 +775,11 @@
    }
   },
   {
-   "id": "o36",
+   "id": "o42",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1272.0,
+    1288.0,
     552.0,
     48.0,
     24.0
@@ -709,7 +794,7 @@
    }
   },
   {
-   "id": "o37",
+   "id": "o43",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -724,13 +809,28 @@
    }
   },
   {
-   "id": "o38",
+   "id": "o44",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     1120.0,
     64.0,
-    928.0,
+    1120.0,
+    352.0
+   ],
+   "props": {
+    "effect": "abyss_motes",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o45",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    2240.0,
+    64.0,
+    224.0,
     352.0
    ],
    "props": {
@@ -766,13 +866,13 @@
     ],
     "5": [
      [
-      864,
+      880,
       320
      ]
     ],
     "4": [
      [
-      1840,
+      2256,
       528
      ]
     ]
@@ -794,7 +894,7 @@
      "id": "p2_5",
      "to": 5,
      "rect": [
-      752,
+      768,
       256,
       64,
       64
@@ -806,7 +906,7 @@
      "id": "p2_4",
      "to": 4,
      "rect": [
-      1952,
+      2368,
       464,
       64,
       64
@@ -818,7 +918,7 @@
    "objectives": [
     {
      "id": "crane_oeil_gauche",
-     "source": "o21",
+     "source": "o27",
      "trigger": "activate"
     }
    ],

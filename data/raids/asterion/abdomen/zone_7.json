@@ -2454,7 +2454,8 @@
     "interval": 0.6,
     "visible": true,
     "active": false,
-    "bounce": true
+    "bounce": true,
+    "overActors": true
    }
   },
   {

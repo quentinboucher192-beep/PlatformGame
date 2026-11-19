@@ -1065,7 +1065,9 @@ bool GameWorld::resolvePowerOffer(uint8_t choice) {
     }
     std::string dropped = pl.replacePower(slot, *def);
     pl.addEnergy(100.0f);
-    tablet->exchange(*this, dropped);
+    // 2.75: an armory's tablet (a raid's « vestiaire ») keeps its own power for every player: the power
+    // left is simply put back on the rack (the armory holds a tablet of each).
+    if (!tablet->object().prop<bool>("armory", false)) tablet->exchange(*this, dropped);
     PowerUnlockEntity::celebrate(*this, *def, tablet->box.center(), {}, dropped);
     emit(offer.tabletId, "collected");
     emit(offer.powerId, "unlocked");
@@ -1089,7 +1091,18 @@ void GameWorld::practiceRespawnNow() {
 }
 
 bool GameWorld::rescueInvincible() {
-    if (!invincible()) return false;
+    if (!invinciblePlayer()) return false;
+    if (!team_.empty()) {
+        // 2.75: the player that fell, never another one (before, player 1 was moved back to the start
+        // each time a simulated player of a raid test fell into the void): back on its own solid ground.
+        TeamMember& m = team_[static_cast<size_t>(curIndex_)];
+        Player& p = *m.player;
+        p.teleportTo(m.hasSafeFeet ? m.safeFeet : respawn_);
+        p.vel = {0.0f, 0.0f};
+        p.setInvulnerable(1.0f);
+        particles_.emit("shield_up", p.center(), 0.8f);
+        return true;
+    }
     const Vec2 at = hasSafeFeet_ ? safeFeet_ : respawn_;
     player_.box.x = at.x - player_.box.w * 0.5f;
     player_.box.y = at.y - player_.box.h;

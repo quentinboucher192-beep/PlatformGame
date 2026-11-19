@@ -102,6 +102,12 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
         case Msg::Welcome: {
             const uint8_t seat = r.u8();
             r.u8();
+            if (r.ok && seat == kWatcherSeat) {  // 2.75: a spectator's socket (no seat, no input)
+                seat_ = -1;
+                watcher_ = true;
+                connected_ = true;
+                break;
+            }
             if (!r.ok || seat >= kMaxPlayers) return;
             seat_ = seat;
             connected_ = true;
@@ -205,7 +211,9 @@ void NetCoopLink::requestPackage() {
     askingPackage_ = true;
     post(packageAsk(0));
 }
-void NetCoopLink::catchupDone(uint32_t tick) { post(coopnet::catchupDone(tick)); }
+void NetCoopLink::catchupDone(uint32_t tick) {
+    if (!watcher_) post(coopnet::catchupDone(tick));  // 2.75: a spectator never comes back into play
+}
 
 void NetCoopLink::result(uint32_t ticks) {
     std::vector<uint8_t> m{8};  // RESULT: u32 steps of the attempt

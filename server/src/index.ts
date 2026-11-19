@@ -21,6 +21,7 @@ import * as raids from "./raids";
 import * as raidZones from "./raidZones";
 import * as raidRewards from "./raidRewards";
 import * as raidMap from "./raidMap";
+import * as raidWipe from "./raidWipe";
 import * as raidWorld from "./raidWorld";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
@@ -281,6 +282,9 @@ route("GET", `${V}/raids/events/{eventId}/branch`, (ctx) => raidZones.branchView
 route("POST", `${V}/raids/events/{eventId}/instance`, (ctx) => raidZones.joinInstance(ctx));
 route("GET", `${V}/raids/instances/{instanceId}/socket`, (ctx) => raidZones.instanceSocket(ctx));
 route("POST", `${V}/raids/instances/{instanceId}/reports`, (ctx) => raidZones.report(ctx));
+// 2.75 (raidWipe.ts): a wiped group's spectators (what they can watch) and the zones taken again.
+route("GET", `${V}/raids/instances/{instanceId}/watch`, (ctx) => raidWipe.watchTargets(ctx));
+route("POST", `${V}/raids/instances/{instanceId}/retake`, (ctx) => raidWipe.retake(ctx));
 // 2.68 (phase 3): the results of an event (validated tables only) and the rewards to claim.
 route("GET", `${V}/raids/events/{eventId}/results`, (ctx) => raidZones.eventResults(ctx));
 route("POST", `${V}/raids/rewards/claim`, (ctx) => raidRewards.claim(ctx));

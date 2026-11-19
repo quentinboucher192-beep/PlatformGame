@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  2368,
+  3168,
   768
  ],
  "ambientLight": "#7480a8",
@@ -224,9 +224,37 @@
    "layer": "terrain",
    "rect": [
     256.0,
+    544.0,
+    16.0,
+    224.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    272.0,
     576.0,
-    384.0,
+    1152.0,
     192.0
+   ],
+   "props": {
+    "material": "root"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    544.0,
+    16.0,
+    224.0
    ],
    "props": {
     "material": "root"
@@ -237,9 +265,9 @@
    "type": "damage_zone",
    "layer": "gameplay",
    "rect": [
-    256.0,
+    272.0,
     544.0,
-    384.0,
+    1152.0,
     32.0
    ],
    "props": {
@@ -247,35 +275,8 @@
     "interval": 0.6,
     "visible": true,
     "active": false,
-    "bounce": true
-   }
-  },
-  {
-   "id": "o7",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    304.0,
-    512.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "root_branch"
-   }
-  },
-  {
-   "id": "o8",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    400.0,
-    464.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "root_branch"
+    "bounce": true,
+    "overActors": true
    }
   },
   {
@@ -283,7 +284,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    496.0,
+    320.0,
     512.0,
     80.0,
     16.0
@@ -294,52 +295,150 @@
   },
   {
    "id": "o10",
-   "type": "moving_platform",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    688.0,
-    576.0,
-    64.0,
+    416.0,
+    464.0,
+    80.0,
     16.0
    ],
    "props": {
-    "dx": 0,
-    "dy": -48,
-    "speed": 26,
-    "wait": 1.0,
-    "phase": 0.0,
-    "active": true,
-    "triggered": false,
-    "oneway": false
+    "style": "root_branch"
    }
   },
   {
    "id": "o11",
-   "type": "moving_platform",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    816.0,
-    576.0,
-    64.0,
+    512.0,
+    512.0,
+    80.0,
     16.0
    ],
    "props": {
-    "dx": 0,
-    "dy": -48,
-    "speed": 26,
-    "wait": 1.0,
-    "phase": 0.5,
-    "active": true,
-    "triggered": false,
-    "oneway": false
+    "style": "root_branch"
    }
   },
   {
    "id": "o12",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    608.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    800.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    896.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    992.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1088.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1184.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "root_branch"
+   }
+  },
+  {
+   "id": "o20",
    "type": "moving_platform",
    "layer": "gameplay",
    "rect": [
-    928.0,
+    1488.0,
     576.0,
     64.0,
     16.0
@@ -356,11 +455,11 @@
    }
   },
   {
-   "id": "o13",
+   "id": "o21",
    "type": "moving_platform",
    "layer": "gameplay",
    "rect": [
-    1056.0,
+    1616.0,
     576.0,
     64.0,
     16.0
@@ -377,11 +476,53 @@
    }
   },
   {
-   "id": "o14",
+   "id": "o22",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1728.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -48,
+    "speed": 26,
+    "wait": 1.0,
+    "phase": 0.0,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o23",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    1856.0,
+    576.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -48,
+    "speed": 26,
+    "wait": 1.0,
+    "phase": 0.5,
+    "active": true,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o24",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1184.0,
+    1984.0,
     576.0,
     640.0,
     192.0
@@ -391,11 +532,11 @@
    }
   },
   {
-   "id": "o15",
+   "id": "o25",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1337.0,
+    2137.0,
     566.0,
     14.0,
     10.0
@@ -409,11 +550,11 @@
    }
   },
   {
-   "id": "o16",
+   "id": "o26",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1530.0,
+    2330.0,
     452.0,
     12.0,
     12.0
@@ -427,11 +568,11 @@
    }
   },
   {
-   "id": "o17",
+   "id": "o27",
    "type": "receptor",
    "layer": "gameplay",
    "rect": [
-    1688.0,
+    2488.0,
     544.0,
     16.0,
     32.0
@@ -442,11 +583,11 @@
    }
   },
   {
-   "id": "o18",
+   "id": "o28",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    1620.0,
+    2420.0,
     552.0,
     24.0,
     24.0
@@ -457,11 +598,11 @@
    }
   },
   {
-   "id": "o19",
+   "id": "o29",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1688.0,
+    2488.0,
     520.0,
     16.0,
     16.0
@@ -474,11 +615,11 @@
    }
   },
   {
-   "id": "o20",
+   "id": "o30",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1824.0,
+    2624.0,
     576.0,
     544.0,
     192.0
@@ -488,11 +629,11 @@
    }
   },
   {
-   "id": "o21",
+   "id": "o31",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    2292.0,
+    3092.0,
     552.0,
     24.0,
     24.0
@@ -503,11 +644,11 @@
    }
   },
   {
-   "id": "o22",
+   "id": "o32",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2296.0,
+    3096.0,
     536.0,
     16.0,
     16.0
@@ -520,11 +661,11 @@
    }
   },
   {
-   "id": "o23",
+   "id": "o33",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2272.0,
+    3072.0,
     512.0,
     64.0,
     64.0
@@ -535,11 +676,11 @@
    }
   },
   {
-   "id": "o24",
+   "id": "o34",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    2016.0,
+    2816.0,
     384.0,
     352.0,
     32.0
@@ -549,11 +690,11 @@
    }
   },
   {
-   "id": "o25",
+   "id": "o35",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1888.0,
+    2688.0,
     528.0,
     80.0,
     16.0
@@ -563,11 +704,11 @@
    }
   },
   {
-   "id": "o26",
+   "id": "o36",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1872.0,
+    2672.0,
     480.0,
     80.0,
     16.0
@@ -577,11 +718,11 @@
    }
   },
   {
-   "id": "o27",
+   "id": "o37",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1904.0,
+    2704.0,
     432.0,
     80.0,
     16.0
@@ -591,11 +732,11 @@
    }
   },
   {
-   "id": "o28",
+   "id": "o38",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    2292.0,
+    3092.0,
     360.0,
     24.0,
     24.0
@@ -606,11 +747,11 @@
    }
   },
   {
-   "id": "o29",
+   "id": "o39",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2296.0,
+    3096.0,
     344.0,
     16.0,
     16.0
@@ -623,11 +764,11 @@
    }
   },
   {
-   "id": "o30",
+   "id": "o40",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2272.0,
+    3072.0,
     320.0,
     64.0,
     64.0
@@ -638,7 +779,7 @@
    }
   },
   {
-   "id": "o31",
+   "id": "o41",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -658,7 +799,7 @@
    }
   },
   {
-   "id": "o32",
+   "id": "o42",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -677,7 +818,7 @@
    }
   },
   {
-   "id": "o33",
+   "id": "o43",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -697,30 +838,11 @@
    }
   },
   {
-   "id": "o34",
+   "id": "o44",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1312.0,
-    528.0,
-    32.0,
-    48.0
-   ],
-   "props": {
-    "sprite": "mushroom_tall",
-    "alpha": 0.9,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o35",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    1460.0,
+    644.0,
     552.0,
     24.0,
     24.0
@@ -735,18 +857,17 @@
    }
   },
   {
-   "id": "o36",
+   "id": "o45",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1552.0,
-    552.0,
-    32.0,
-    24.0
+    744.0,
+    560.0,
+    16.0,
+    16.0
    ],
-   "flipX": true,
    "props": {
-    "sprite": "mushroom_cluster",
+    "sprite": "mushroom_small",
     "alpha": 0.9,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -755,11 +876,108 @@
    }
   },
   {
-   "id": "o37",
+   "id": "o46",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    1800.0,
+    932.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "glow_fern",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o47",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    976.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "mushroom_tall",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o48",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1032.0,
+    560.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "mushroom_small",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o49",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1072.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "crystal_big",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o50",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1264.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "props": {
+    "sprite": "crystal_big",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o51",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    1320.0,
     560.0,
     16.0,
     16.0
@@ -775,17 +993,17 @@
    }
   },
   {
-   "id": "o38",
+   "id": "o52",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2080.0,
-    528.0,
-    32.0,
-    48.0
+    2088.0,
+    560.0,
+    16.0,
+    16.0
    ],
    "props": {
-    "sprite": "crystal_big",
+    "sprite": "glow_flowers",
     "alpha": 0.9,
     "tint": "#ffffff",
     "animSpeed": 1.0,
@@ -794,31 +1012,11 @@
    }
   },
   {
-   "id": "o39",
+   "id": "o53",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    2132.0,
-    552.0,
-    24.0,
-    24.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "glow_fern",
-    "alpha": 0.9,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o40",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    2176.0,
+    2128.0,
     528.0,
     32.0,
     48.0
@@ -834,13 +1032,91 @@
    }
   },
   {
-   "id": "o41",
+   "id": "o54",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2180.0,
+    552.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "sprite": "glow_fern",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o55",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2424.0,
+    560.0,
+    16.0,
+    16.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "glow_flowers",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o56",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    2608.0,
+    528.0,
+    32.0,
+    48.0
+   ],
+   "flipX": true,
+   "props": {
+    "sprite": "mushroom_tall",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o57",
+   "type": "decor",
+   "layer": "bg_decor",
+   "rect": [
+    3048.0,
+    560.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "sprite": "mushroom_small",
+    "alpha": 0.9,
+    "tint": "#ffffff",
+    "animSpeed": 1.0,
+    "glow": true,
+    "sway": 0.0
+   }
+  },
+  {
+   "id": "o58",
    "type": "liquid",
    "layer": "gameplay",
    "rect": [
     0.0,
     720.0,
-    2368.0,
+    3168.0,
     48.0
    ],
    "props": {
@@ -848,7 +1124,7 @@
    }
   },
   {
-   "id": "o42",
+   "id": "o59",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -863,7 +1139,7 @@
    }
   },
   {
-   "id": "o43",
+   "id": "o60",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -878,13 +1154,13 @@
    }
   },
   {
-   "id": "o44",
+   "id": "o61",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     2240.0,
     64.0,
-    128.0,
+    928.0,
     352.0
    ],
    "props": {
@@ -920,13 +1196,13 @@
     ],
     "4": [
      [
-      2160,
+      2960,
       576
      ]
     ],
     "6": [
      [
-      2144,
+      2944,
       384
      ]
     ]
@@ -948,7 +1224,7 @@
      "id": "p2_4",
      "to": 4,
      "rect": [
-      2272,
+      3072,
       512,
       64,
       64
@@ -960,7 +1236,7 @@
      "id": "p2_6",
      "to": 6,
      "rect": [
-      2272,
+      3072,
       320,
       64,
       64
@@ -972,7 +1248,7 @@
    "objectives": [
     {
      "id": "abd_glande_nord",
-     "source": "o17",
+     "source": "o27",
      "trigger": "activate"
     }
    ],

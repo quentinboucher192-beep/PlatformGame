@@ -411,10 +411,8 @@ public:
                            const Json i = r.data.value("instance", Json::object());
                            RaidEntry e;
                            e.eventId = eventId_;
-                           e.instanceId = jstr(i, "id");
-                           e.clanTag = jstr(i, "clan_tag");
-                           e.group = jget<int>(i, "group", 1);
-                           e.branch = jstr(i, "part", "coeur");
+                           e.branch = "coeur";
+                           readRaidEntry(e, r.data);  // 2.75: its start zone, a spectator
                            status_.clear();
                            g_.app.switchScene(makeRaidGame(g_, e), 0.35f);
                        }));
@@ -467,10 +465,8 @@ public:
                            const Json i = r.data.value("instance", Json::object());
                            RaidEntry e;
                            e.eventId = eventId_;
-                           e.instanceId = jstr(i, "id");
-                           e.clanTag = jstr(i, "clan_tag");
-                           e.group = jget<int>(i, "group", 1);
-                           e.branch = jstr(i, "part", "bras_droit");
+                           e.branch = "bras_droit";
+                           readRaidEntry(e, r.data);  // 2.75: its start zone, a spectator
                            status_.clear();
                            g_.app.switchScene(makeRaidGame(g_, e), 0.35f);
                        }));

@@ -318,6 +318,8 @@ public:
         js.primary = true;
         js.enabled = registered && running && !busy_;
         std::string joinLabel = myInstance.empty() ? "Rejoindre cette branche" : "Rejoindre · " + std::to_string(myFree) + (myFree > 1 ? " places" : " place");
+        // 2.75: a player whose group was wiped only watches (the server gives a spectator link).
+        if (my.value("spectator", Json()).is_object()) joinLabel = "Regarder (groupe éliminé)";
         if (ui.button("join", {x, by, jw, bh}, joinLabel, js)) join("");
         if (canHelp) {
             UIContext::ButtonStyle hs;
@@ -339,6 +341,19 @@ public:
                 ui.newBadge("sheet", sr, "raids.sheets", true, true);  // « NOUVEAU »
                 bottom = sr.y - ui.s(10);
             }
+        }
+        // 2.75: this zone is « à reprendre » and my group finished its own: take it again (a fresh instance of it).
+        for (const auto& o : my.value("retake_offers", Json::array())) {
+            if (jget<int>(o, "zone", 0) != selected_) continue;
+            UIContext::ButtonStyle rs;
+            rs.primary = true;
+            rs.enabled = registered && running && !busy_;
+            const std::string label = "Reprendre cette zone (un groupe y a été éliminé)";
+            rs.fontSize = std::max(ui.fitFont(label, FontFace::Bold, 16, w - ui.s(20), 0.7f), 11.5f / ui.s(1.0f));
+            const Rect rr{x, bottom - ui.s(44), w, ui.s(44)};
+            if (ui.button("retake", rr, label, rs)) retake(selected_);
+            bottom = rr.y - ui.s(10);
+            break;
         }
         const std::string elsewhere = jstr(my, "placed_branch");
         std::string note = !running ? "Le raid n'est pas en cours : les combats se jouent pendant l'événement."
@@ -462,13 +477,34 @@ public:
                                statusError_ = true;
                                return;
                            }
-                           const Json& i = r.data.value("instance", Json::object());
                            RaidEntry e;
                            e.eventId = eventId_;
-                           e.instanceId = jstr(i, "id");
-                           e.clanTag = jstr(i, "clan_tag");
-                           e.group = jget<int>(i, "group", 1);
-                           e.branch = jstr(i, "part", part_);
+                           e.branch = part_;
+                           readRaidEntry(e, r.data);  // 2.75: its start zone, a spectator
+                           status_.clear();
+                           g_.app.switchScene(makeRaidGame(g_, e), 0.35f);
+                       }));
+    }
+
+    /// 2.75: my group finished its zone: I take a wiped zone of the branch again (a fresh instance of that
+    /// zone, the branch's state kept; my group follows me one by one), POST /raids/instances/{id}/retake.
+    void retake(int zone) {
+        const std::string mine = jstr(data_.value("my", Json::object()), "instance_id");
+        if (mine.empty() || busy_) return;
+        busy_ = true;
+        status_ = "Reprise de la zone…";
+        statusError_ = false;
+        g_.online.send("POST", "/api/v1/raids/instances/" + mine + "/retake", Json{{"zone", zone}}, OnlineService::guard(life_, [this](const ApiResult& r) {
+                           busy_ = false;
+                           if (!r.ok) {
+                               status_ = r.message;
+                               statusError_ = true;
+                               return;
+                           }
+                           RaidEntry e;
+                           e.eventId = eventId_;
+                           e.branch = part_;
+                           readRaidEntry(e, r.data);
                            status_.clear();
                            g_.app.switchScene(makeRaidGame(g_, e), 0.35f);
                        }));

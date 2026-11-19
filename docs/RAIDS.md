@@ -5,7 +5,8 @@
 # phase 5 : les événements mondiaux (2.69, §14) ; phase 7 : fiabilité, charge et anti-triche (2.74, §15) ;
 # phase 6 : le Cœur d'Asterion, combat final (2.74, §17)
 # les fiches d'Asterion et des Gigaboss (2.74.1, §18) ; ce qu'il reste à faire, zones terminées, tableaux des zones,
-# modération, « Où frapper » (2.75, §19)
+# modération, « Où frapper » (2.75, §19) ;
+# réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1059,6 +1060,63 @@ mécanisme (entraves de Titanus, plaques de Heartbreaker), puis **en or** les pl
 
 Rien ne change le déroulement d'une partie : `kSimulationVersion`, `kCoopSimulationVersion` et `kRankingGeneration` ne
 changent pas ; l'empreinte de `RaidRun` non plus (les tableaux des zones sont comparés par leur texte canonique).
+
+## 20. Réanimations, groupe éliminé, vestiaire et liquides (2.75.1)
+
+* **Les joueurs se traversent** (raids et coopération, `GameWorld::solidTeammates`) : plus de corps solide, plus
+  d'appui sur la tête d'un allié, aucune poussée. Une équipe ou un groupe apparaît toujours côte à côte
+  (`freeSpot`). Les replays d'équipe enregistrés avant (règles de coopération **1**) se rejouent avec leurs joueurs
+  solides (`ReplayData::coopVersion` → `GameWorld::setCoopVersion`) : mêmes empreintes. `kCoopSimulationVersion`
+  passe à **2** ; les empreintes solo ne changent pas (`kSimulationVersion` 15, `kRankingGeneration` 8 : aucun record
+  effacé) ; le serveur refuse les tentatives Duo/Trio jouées avec d'autres règles (`COOP_SIMULATION_VERSION`).
+* **Affichage** : les autres joueurs (en ligne ou simulés) sont dessinés **semi-transparents** (50 %) avec un liseré de
+  leur couleur ; seuls les joueurs de cet ordinateur sont opaques (`GameRenderer::setOpaquePlayers`). Leur nom reste
+  au-dessus d'eux. Affichage seulement, hors simulation.
+* **Personne d'autre ne bouge quand un joueur tombe** : il passe « à terre » (son âme attend), les autres gardent
+  leur place, leurs cœurs et leur progression. Il ne revient **que réanimé**, près de son âme (2 s d'un allié tout
+  près) : plus de relève au point de contrôle, et un joueur à terre quand le groupe change de zone reste à terre
+  (son âme attend à l'arrivée). En coopération, **2 réanimations** par équipe et par tentative ; en raid,
+  **autant qu'on veut** tant qu'un coéquipier est en jeu pour le relever (le HUD l'indique : « Réanimations
+  illimitées »). Correctif : dans le test d'administration, la chute d'un joueur simulé renvoyait l'administrateur
+  invincible au départ (`rescueInvincible` déplaçait le joueur 1) ; seul l'administrateur est invincible, les joueurs
+  simulés tombent, sont relevés et peuvent être éliminés comme des joueurs.
+* **Groupe éliminé** (`RaidRun::wiped`, `server/src/raidWipe.ts`, migration **0161**) : quand **tous** les joueurs de
+  l'instance sont à terre en même temps, le groupe est **éliminé de la zone pour de bon** : pas de reprise, pas de
+  point de contrôle, la zone n'est **pas validée**. Ses jeux envoient un rapport `wipe` (même consensus que les
+  autres) ; une fois accepté, l'instance ne joue plus (aucune place, aucun rapport accepté), ses joueurs deviennent
+  **spectateurs** pour le reste de l'événement (`raid_spectators`) : revenir depuis le menu donne un lien de
+  spectateur, jamais une place (`spectator: true`, socket qui regarde : `NetCoopLink::kWatcherSeat`). Un joueur
+  déconnecté n'est pas à terre : tant que sa place est gardée (60 s), le groupe attend son retour (revenu alors que
+  personne n'est en jeu, il réapparaît là où il s'était arrêté, pour relever les autres) ; parti pour de bon, il
+  compte avec les joueurs à terre. Seul un groupe dont tout le monde est parti sans personne à terre reprend la zone
+  comme avant.
+* **Mode spectateur** (`ui/screens/RaidSpectator.h`) : bandeau « GROUPE ÉLIMINÉ — mode spectateur », caméra libre
+  (flèches, stick, molette), puis joueur suivant / précédent de la branche (Q/E, LB/RB, boutons à la souris) :
+  `GET /raids/instances/{id}/watch` liste les joueurs encore en jeu ; regarder un autre groupe rejoue sa partie
+  depuis son historique par une socket de spectateur, sans jamais rien envoyer.
+* **Zone à reprendre** : la carte de branche marque `to_retake` sur la zone (et `to_retake` liste les zones, le
+  groupe éliminé, depuis quand et le groupe qui la reprend). Un joueur d'un groupe qui a **fini sa zone** (tous ses
+  objectifs non optionnels faits) voit `my.retake_offers` et le bouton « Reprendre cette zone » : `POST
+  /raids/instances/{id}/retake {zone}` le place dans une **nouvelle instance de cette zone** (`start_zone`,
+  `relieves` : l'instance éliminée ; une par clan et par instance éliminée, son groupe la rejoint un par un, 8 au
+  plus) ; ses jeux commencent dans cette zone avec l'état validé de la branche, et seuls ses rapports la valident.
+* **Vestiaire** (`tools/levelgen/raid_armory.py`, `data/raids/asterion/<partie>/armory.json`, zone 0 du jeu, hors du
+  catalogue du serveur et jamais signalé) : chaque branche commence par une salle où chacun prend les pouvoirs voulus
+  pour le raid (une tablette par pouvoir ; 4 au plus : la fenêtre de choix dit lequel laisser, réponse dans
+  `InputFrame::choice`, donc replays exacts ; une tablette du vestiaire garde son pouvoir pour tous). Tout le groupe
+  sur la plaque « Prêts » ouvre la porte de la route, dont le passage mène à la zone de départ, pouvoirs emportés.
+  Le test d'administration propose aussi « Vestiaire (choix des pouvoirs) ».
+* **Liquides montants** (`raid_asterion.py : Zone.flood`, `raid_bras_droit.py`) : chaque danger périodique remplit
+  tout son bassin, au moins **72 cases** (plus large que la vue la plus large : 1 143 px), bordé d'un petit rebord de
+  roche à chaque bout (2 cases, il se saute) ; les veines de magma du Bras droit vont d'un mur à l'autre. Ils restent
+  dessinés devant les joueurs et les ennemis. `TITAN_REVISION` passe à 3 (les jeux d'une instance ont tous les mêmes
+  zones).
+* **Test d'administration** : « Joueurs simulés : 0 (vous seul) … 7 », sans compter l'administrateur ; le groupe a
+  1 + ce nombre de places et le gigaboss se met à l'échelle de ce total.
+* Tests : `tests/test_raid_revive.cpp` (empreintes à 2 et 8 places, traversée, réanimations illimitées, chute d'un
+  joueur simulé sans effet sur les autres, groupe éliminé, coopération à 2 et 3, largeur des liquides, vestiaire
+  rejoué, 0 et 7 joueurs simulés), `tests/test_coop.cpp` (règles 1 et 2), `server/test/raidWipe.test.ts`,
+  `server/test/coopRace.test.ts`.
 
 ---
 

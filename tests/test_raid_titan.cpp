@@ -232,7 +232,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x3ef206fe38e2bf27ULL;  // reference (2.69: the seven lairs opened): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0xf530b1128707fbd6ULL;  // reference (2.75: the floods wall to wall, over the actors): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

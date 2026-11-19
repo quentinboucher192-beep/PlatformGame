@@ -277,7 +277,7 @@ def zone_3():
     z.rock(66, 29, 82)
     z.rock(82, 26, 140)
     L.sign(20, 38, "La veine déborde : quand la lave monte, grimpez sur les terrasses hautes.")
-    z.magma(14, 50, 32, 38, period=34.0, first=16.0, duration=7.0)
+    z.magma(14, 50, 34, 38, period=34.0, first=16.0, duration=7.0)
     for x in (24, 42, 58, 74):
         P.lavafall(x, 4, 12, hazard=False, alpha=0.5)
     L.enemy("lava_stalker", 44, 35, 5)
@@ -303,6 +303,9 @@ def zone_3():
     z.passage(4, 134, 26)
     z.arrive(4, 129, 26)
     L.orb("health_orb", 86, 24)
+    # 2.75: the vein's basin, wall to wall (a lip at the start's edge, the terrace of the Biceps at its end);
+    # added last, the ids of the zone's objects unchanged.
+    z.rock(13, 34, 14)
     z.save()
 
 
@@ -402,7 +405,7 @@ def zone_6():
     L.enemy("ash_wing", 84, 22, 4)
     P.scatter(41, 89, 30, 0.3, forge=True)
     # 2.72: the magma rises along the forearm too (its ledges stay above it).
-    z.magma(42, 88, 27, 30, period=38.0, first=18.0, duration=6.0)
+    z.magma(41, 90, 27, 30, period=38.0, first=18.0, duration=6.0)
     for x0 in (44, 54, 70, 80):
         L.oneway(x0, x0 + 6, 25, "basalt_ledge")
     L.sign(42, 30, "Le magma monte dans l'avant-bras : à l'alerte, sautez sur les corniches.")
@@ -411,6 +414,10 @@ def zone_6():
     z.arrive(8, 117, 27)
     L.orb("health_orb", 92, 25)
     L.light(64, 26, "#39f0d8", 90, flicker=0.1)
+    # 2.75: wall to wall (a lip at the plain's left edge, a ledge to climb it; the forearm's step at its end);
+    # added last, the ids of the zone's objects unchanged.
+    z.rock(40, 27, 41)
+    L.oneway(35, 39, 30, "basalt_ledge")
     z.save()
 
 

@@ -33,6 +33,7 @@ import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHear
 import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
 import { Validator } from "./validate";
+import { acceptWipe, spectatorAnswer, spectatorOf } from "./raidWipe";
 
 export interface BranchZone {
     id: number;
@@ -277,6 +278,7 @@ interface InstanceRow {
     zone: number;
     players: number;
     started_at: string | null;
+    wiped_zone?: number | null;  // 2.75 (raidWipe.ts): the group wiped there (spectators only)
 }
 
 async function eventOf(db: D1Database, id: string): Promise<EventRow> {
@@ -344,10 +346,14 @@ export async function joinInstance(ctx: Ctx): Promise<Response> {
     const reg = await registrationOf(db, e.id, me);
     if (!reg) throw Errors.forbidden("RAID_NOT_REGISTERED", "Inscrivez-vous au raid pour y combattre.");
     await requireEntry(db, e, me); // 2.69: not while suspended; the late arrivals' rule
+    // 2.75: a player whose group was wiped only watches (a spectator link, never a seat).
+    const spect = await spectatorOf(db, e.id, me);
+    if (spect) return spectatorAnswer(ctx, e, spect, me);
     let inst: InstanceRow | null;
     if (wanted) {
         inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2").bind(wanted, e.id).first<InstanceRow>();
         if (!inst) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
+        if (inst.wiped_zone != null) throw Errors.conflict("INSTANCE_WIPED", "Ce groupe a été éliminé : sa zone attend un groupe qui la reprenne.");
         if (inst.players >= INSTANCE_SIZE) throw Errors.conflict("INSTANCE_FULL", "Ce groupe a déjà 8 joueurs.");
     } else {
         const group = await myGroup(db, e.id, reg.clan_id, me);
@@ -394,6 +400,12 @@ export async function instanceSocket(ctx: Ctx): Promise<Response> {
     const headers = new Headers(ctx.request.headers);
     headers.set("x-player-id", auth.player.id);
     headers.set("x-player-name", auth.player.username);
+    // 2.75 (raidWipe.ts): a spectator (their group wiped), a wiped instance, or a watch asked
+    // (?watch=1): a socket that receives the game and never takes a seat.
+    const watch =
+        new URL(ctx.request.url).searchParams.get("watch") === "1" || inst.wiped_zone != null || !!(await spectatorOf(db, e.id, auth.player.id));
+    if (watch) headers.set("x-raid-watch", "1");
+    else headers.delete("x-raid-watch");
     const res = await stub(ctx.env, id).fetch(new Request("https://coop/socket", { headers }));
     if (res.status === 403 || res.status === 404) throw Errors.notFound("INSTANCE_NOT_FOUND", "Instance introuvable.");
     return res;
@@ -417,7 +429,7 @@ export async function report(ctx: Ctx): Promise<Response> {
     // a report flagged as a test is refused whoever sends it (an administrator or not), before anything.
     if (body.test !== undefined) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
     const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage"]);
-    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table"] as const)!;
+    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table", "wipe"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });
     const zone = v.int("zone", { min: 1, max: BRANCH.zones.length })!;
     const tick = v.int("tick", { min: 0, max: MAX_TICKS })!;
@@ -442,7 +454,19 @@ export async function report(ctx: Ctx): Promise<Response> {
     if (!member) throw Errors.forbidden("NOT_IN_INSTANCE", "Vous ne jouez pas dans cette instance.");
     const e = await eventOf(db, inst.event_id);
     const key =
-        kind === "objective" ? "o:" + objective : kind === "boss" ? `b:${phase}` : kind === "result" ? `r:${tick}` : kind === "heart" ? `h:${tick}` : kind === "zone_table" ? `t:${zone}` : `z:${zone}@${tick}`;
+        kind === "objective"
+            ? "o:" + objective
+            : kind === "boss"
+              ? `b:${phase}`
+              : kind === "result"
+                ? `r:${tick}`
+                : kind === "heart"
+                  ? `h:${tick}`
+                  : kind === "zone_table"
+                    ? `t:${zone}`
+                    : kind === "wipe"
+                      ? `w:${zone}`
+                      : `z:${zone}@${tick}`;
     // A table's value is its canonical text, rebuilt here from the numbers (never the game's text).
     const value =
         kind === "result"
@@ -460,6 +484,12 @@ export async function report(ctx: Ctx): Promise<Response> {
     // 2.69 (phase 5): nothing counts while the event is suspended, nor once its official result is frozen.
     const halt = await reportHalt(db, e);
     if (halt) return reject(halt);
+    // 2.75 (raidWipe.ts): a wiped group is out of its zone for good: nothing it reports counts any more
+    // (the zone is validated by the group that takes it again); its wipe again is no anomaly.
+    if (inst.wiped_zone != null) {
+        if (kind === "wipe" && zone === inst.wiped_zone) return json(ctx, { status: "accepted" });
+        return reject("groupe éliminé : ses joueurs ne font plus que regarder");
+    }
     // Plausibility first: nothing impossible reaches the consensus.
     const state = raidState(e, now);
     if (state !== "en_cours" && !(state === "termine" && Date.parse(now) - Date.parse(e.ends_at) < 10 * 60000))
@@ -618,6 +648,9 @@ export async function report(ctx: Ctx): Promise<Response> {
             await wakeHeartRelays(ctx.env as never, e.id);
         } else if (kind === "zone_table") {
             await storeZoneTable(db, e.id, inst.branch, id, zone, tick, zoneRows, now);
+        } else if (kind === "wipe") {
+            // 2.75: every player of the instance down at once: out of the zone for good, spectators.
+            await acceptWipe(ctx, e.id, inst, zone, now);
         } else if (kind === "result") {
             await storeResult(db, e.id, id, tick, records, now);
             if (isHeart(inst.branch)) await grantHeart(db, e.id, now); // 2.72: its rewards follow the tables after its fall

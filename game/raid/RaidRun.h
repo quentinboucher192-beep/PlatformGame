@@ -19,8 +19,13 @@
 // * 2.68, the links of the titan (bits 24 and up of the state, given like the rest): what another
 //   branch did acts here at the same step for everyone (a passage opens, lasers go dark, the
 //   reinforcements are gone, the danger stops), and again each time a zone is loaded;
-// * the whole instance down: the zone starts again where it entered it (progress kept); 2.68: at
-//   the last checkpoint reached in it, when it has some (the players down get up at each new one);
+// * 2.75, a player down comes back as many times as a teammate revives them (no limit in a raid); the
+//   whole instance down (nobody left in play, at least one down) is a WIPE: the group is out of that
+//   zone for good (no restart, no checkpoint), the world stops, its players can only spectate, and a
+//   Wipe report tells the server (the zone « à reprendre » until another group finishes it). A player
+//   away (standby) is not down: the group waits for them (GameWorld::checkTeamDown). Only every player
+//   gone for good with nobody down starts the zone again as before, at its last checkpoint; nobody
+//   gets up at a checkpoint any more (only a revival brings a player down back);
 // * 2.68, co-op mechanisms: a plate where several players must stand together opens a lock's
 //   doors on every floor, or starts a goods lift (fewer players when fewer are in play);
 // * 2.72, the zones keep what was done in them (docs/RAIDS.md §15): leaving a zone, or starting it
@@ -57,8 +62,10 @@ struct Report {
     /// 2.74 (phase 6): Heart (the ten-thousandths of the Cœur d'Asterion's shared health this instance
     /// took, `damage`: every reportEvery seconds while it changes, and at its fall).
     /// 2.75: ZoneTable (the « Tableau des contributions » of a zone the instance was in when it was
-    /// finished: `zoneRecords`, Contributions::zoneCanonical), once per zone.
-    enum class Kind { Objective, Zone, Boss, Result, Heart, ZoneTable } kind = Kind::Objective;
+    /// finished: `zoneRecords`, Contributions::zoneCanonical), once per zone; Wipe (every player of the
+    /// instance down at once in `zone`: the group is out of it for good, its players spectators; the zone
+    /// stays to be taken again by another group).
+    enum class Kind { Objective, Zone, Boss, Result, Heart, ZoneTable, Wipe } kind = Kind::Objective;
     std::string objective;  // Kind::Objective
     int zone = 0;
     uint32_t tick = 0;
@@ -90,7 +97,9 @@ class RaidRun {
 public:
     RaidRun(WorldServices services, const Branch& branch, int players);
 
-    /// Loads the start zone (the branch's state known at step 0); `zone` another one (tests).
+    /// Loads the start zone (the branch's state known at step 0); `zone` another one (tests, a group
+    /// taking a wiped zone again); 2.75: kArmory, the branch's armory first (its start zone without one).
+    static constexpr int kArmory = -1;
     bool begin(uint32_t branchMask, int zone = 0);
     /// One step: the frames of the step (one per seat) and the branch's state at this step; 2.72 (phase
     /// 6): in the heart's zones, the shared state of the Cœur d'Asterion given with it (RAID_STATE).
@@ -159,6 +168,12 @@ public:
         bool done = false;
     };
     CoopView coop(size_t index) const;
+    /// 2.75: the group was wiped (every player down at once): out of `wipedZone()` for good, nothing
+    /// steps any more (its players spectate); wipedNow(): this very step.
+    bool wiped() const { return wiped_; }
+    bool wipedNow() const { return wipedNow_; }
+    int wipedZone() const { return wiped_ ? zone_ : 0; }
+    uint32_t wipedTick() const { return wipedTick_; }
     /// 2.68: the last checkpoint reached in this zone (the group starts again there), empty when none.
     const std::string& lastCheckpoint() const { return lastCheckpoint_; }
 
@@ -225,6 +240,8 @@ private:
     bool heartWon_ = false, heartWonNow_ = false;
     int heartReported_ = -1;            // 2.72: the last own damage reported, and its step
     uint32_t heartReportTick_ = 0;
+    bool wiped_ = false, wipedNow_ = false;  // 2.75: the group wiped (spectators from then on)
+    uint32_t wipedTick_ = 0;
     std::vector<uint8_t> coopDone_;       // 2.68: per co-op mechanism of the zone
     std::string lastCheckpoint_;          // 2.68: kept when the zone starts again
     std::map<int, ZoneMemory> memory_;    // 2.72: what each zone left keeps

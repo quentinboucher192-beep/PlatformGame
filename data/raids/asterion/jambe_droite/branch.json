@@ -60,7 +60,7 @@
    "secret": false,
    "boss": false,
    "groups_required": 1,
-   "minutes": 1.2
+   "minutes": 1.5
   },
   {
    "id": 4,

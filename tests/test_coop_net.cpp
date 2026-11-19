@@ -241,7 +241,7 @@ TEST_CASE("coop net: a team replay (format 5) is read back and plays the team's 
     CHECK(back->teamSize() == 2);
     CHECK(back->team[0].inputs == data.team[0].inputs);
     CHECK(back->team[0].frames.size() == back->frames.size());
-    CHECK(back->coopVersion == 1);
+    CHECK(back->coopVersion == kCoopSimulationVersion);
     auto view = makeWorld();
     ReplaySimulator sim(*back, *view);
     while (sim.step()) {

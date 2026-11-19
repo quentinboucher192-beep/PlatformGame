@@ -442,9 +442,9 @@
    "layer": "gameplay",
    "rect": [
     224.0,
-    512.0,
+    544.0,
     576.0,
-    96.0
+    64.0
    ],
    "props": {
     "damage": 2,
@@ -885,6 +885,20 @@
    ],
    "props": {
     "amount": 2
+   }
+  },
+  {
+   "id": "o48",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    208.0,
+    544.0,
+    16.0,
+    208.0
+   ],
+   "props": {
+    "material": "basalt"
    }
   }
  ],

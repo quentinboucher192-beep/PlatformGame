@@ -242,7 +242,12 @@ export interface RaidRoomInfo {
     event_id: string;
     branch: string;
     revision: number;
+    /** 2.75 (raidWipe.ts): the group was wiped: no seat any more, its sockets only watch. */
+    wiped?: boolean;
 }
+
+/** 2.75: the seat a watching socket is told (WELCOME): it never holds one (NetCoopLink::kWatcherSeat). */
+export const WATCHER_SEAT = 0xfe;
 
 interface RoomInfo {
     id: string;
@@ -302,6 +307,8 @@ export class CoopRoom extends DurableObject<Bindings> {
     private info: RoomInfo | null = null;
     private seats: Seat[] = [];
     private started = false;
+    /** 2.75 (raids): sockets that watch the game (spectators): every message of the game, never a seat. */
+    private watchers = new Set<WebSocket>();
     private players = 0;
     private delay = 3;
     private seed = "";
@@ -340,6 +347,12 @@ export class CoopRoom extends DurableObject<Bindings> {
                 if (this.info.raid) await this.ctx.storage.put("info", this.info); // 2.74: a raid room outlives its object
                 return Response.json({ ok: true });
             }
+            case "/wiped": // 2.75 (raidWipe.ts): the group was wiped: its seats are closed for good
+                if (this.info?.raid) {
+                    this.info.raid.wiped = true;
+                    await this.ctx.storage.put("info", this.info);
+                }
+                return Response.json({ ok: true });
             case "/raid-state": // the routes and the tests: the branch's state now (else the alarm reads it)
                 await this.pollRaidState(true);
                 return Response.json(this.status());
@@ -406,6 +419,32 @@ export class CoopRoom extends DurableObject<Bindings> {
         const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
         server.accept();
         server.binaryType = "arraybuffer";  // the messages are binary: never a Blob
+        if (this.info.raid && (request.headers.get("x-raid-watch") === "1" || this.info.raid.wiped)) {
+            // 2.75: a spectator (the Worker decided): it receives the game, its pings are answered, nothing else.
+            let welcomed = false;
+            server.addEventListener("message", (ev) => {
+                if (typeof ev.data === "string") return;
+                const bytes = ArrayBuffer.isView(ev.data) ? new Uint8Array(ev.data.buffer, ev.data.byteOffset, ev.data.byteLength) : new Uint8Array(ev.data as ArrayBuffer);
+                if (!welcomed) {
+                    welcomed = true;
+                    this.watch(server);
+                    return;
+                }
+                if (bytes[0] === Msg.Ping && bytes.length >= 5) {
+                    const r = new In(bytes);
+                    r.u8();
+                    const clock = r.u32();
+                    const o = new Out();
+                    o.u8(Msg.Pong);
+                    o.u32(clock);
+                    this.send(server, o.done());
+                }
+            });
+            const gone = () => this.watchers.delete(server);
+            server.addEventListener("close", gone);
+            server.addEventListener("error", gone);
+            return new Response(null, { status: 101, webSocket: client });
+        }
         let seat = -1;
         server.addEventListener("message", (ev) => {
             if (typeof ev.data === "string") return this.drop(server, seat);  // binary messages only
@@ -435,6 +474,22 @@ export class CoopRoom extends DurableObject<Bindings> {
     }
     private sendAll(bytes: Uint8Array) {
         for (const s of this.seats) this.send(s.ws, bytes);
+        for (const w of this.watchers) this.send(w, bytes);  // 2.75: the spectators see the same game
+    }
+
+    /** 2.75: a spectator arrives: told it holds no seat, then the game so far (as a return gets it). */
+    private watch(ws: WebSocket) {
+        if (this.watchers.size >= 64) return this.endTo(ws, EndReason.Refused);
+        this.watchers.add(ws);
+        const o = new Out();
+        o.u8(Msg.Welcome);
+        o.u8(WATCHER_SEAT);
+        o.u8(PROTOCOL);
+        this.send(ws, o.done());
+        if (!this.started) return;
+        this.send(ws, this.goMessage());
+        for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h));
+        for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
     }
     private drop(ws: WebSocket, seat: number) {
         try {
@@ -453,6 +508,11 @@ export class CoopRoom extends DurableObject<Bindings> {
         r.str(24);
         if (r.ok && r.at < r.b.length) r.str(64); // the account it says: online, the session's own is used
         if (type !== Msg.Hello || !r.end() || protocol !== PROTOCOL) {
+            this.endTo(ws, EndReason.Refused);
+            return -1;
+        }
+        if (this.info!.raid?.wiped) {
+            // 2.75: a wiped group's seats are closed for good (its players only watch).
             this.endTo(ws, EndReason.Refused);
             return -1;
         }
