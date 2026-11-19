@@ -84,6 +84,8 @@ def fly_shards(f, specs, glow=0.8, under=False):
 
 class FrostHydra(HydraTheme):
     id = "frost_hydra"
+    tags = {"back": "glace", "vine": "racines", "neck": "cous", "head": "têtes", "body": "tronc", "crown": "pointes",
+            "front": "socle"}  # 2.76.2: hit parts (raster.LABELS)
     seed = 2200
     head_len = 24.0
     head_lie = 6.5
@@ -108,10 +110,12 @@ class FrostHydra(HydraTheme):
     def back(self, cv, p):
         dead = p.dead >= 0.6
         # ice spires growing out of the ground behind the trunk (jagged silhouette)
+        cv.tag = "glace"  # 2.76.2: hit parts (raster.LABELS)
         for (x, y, a, ln, wd) in ((40, 111, -2.05, 26, 4.2), (30, 111, -2.5, 16, 3.2), (90, 111, -1.1, 24, 4.0),
                                   (101, 111, -0.65, 15, 3.0), (48, 108, -1.75, 14, 2.6)):
             crystal(cv, (x, y), a, ln * (1 - 0.25 * p.wilt), wd, CRYSTAL_DK if not dead else DIMC)
         # frozen roots behind
+        cv.tag = "socle"
         cv.part()
         for pts in (((50, 108), (38, 109), (24, 108.5), (10, 110.5)), ((78, 108), (92, 109), (106, 108.5),
                                                                        (120, 110.5))):
@@ -135,6 +139,7 @@ class FrostHydra(HydraTheme):
                     cv.tline(prev, (x, y), BARK, inten=0.18, decal=True)
                 prev = (x, y)
         # ice encasing the lower trunk (jagged frozen crust on top)
+        cv.tag = "glace"
         cv.part()
         shell = [(33, 111), (40, 106), (45, 98), (46, 88), (44, 79), (47, 73), (51, 78), (55, 71), (59, 77),
                  (63, 70), (67, 76), (71, 69), (75, 75), (79, 71), (84, 79), (83, 89), (85, 99), (90, 106),
@@ -150,6 +155,7 @@ class FrostHydra(HydraTheme):
                                  (79, 72, 83, 79)):
             cv.tline((x0 + sw * 0.6, y0 + 1), (x1 + sw * 0.6, y1), ICE, inten=0.9, decal=True)
         # glowing frost heart in the trunk
+        cv.tag = "cœur"
         cv.part()
         hx, hy = HEART[0] + sw * 0.8, HEART[1]
         cv.tellipse((hx, hy), 5.2, 6.4, BARK_DK, bias=-0.25)
@@ -160,6 +166,7 @@ class FrostHydra(HydraTheme):
                  base=0.3 + 0.45 * hg)
         cv.tpx((hx - 1, hy - 2), hm, inten=1.0, decal=True)
         # glowing crystal clusters (the hydra's "sacs")
+        cv.tag = "pointes"
         for i, (c, angs) in enumerate(CLUSTERS):
             c = (c[0] + sw * (111 - c[1]) / 60.0, c[1])
             broken = i in p.burst
@@ -215,6 +222,7 @@ class FrostHydra(HydraTheme):
         cv.tellipse((40, 110), 10, 3.6, SNOW, bias=0.08)
         cv.tellipse((90, 110), 11, 3.4, SNOW, bias=0.08)
         # small ice shards in the snow
+        cv.tag = "pointes"
         for (x, a, ln) in ((28, -2.2, 6), (102, -0.9, 7), (54, -1.8, 5), (80, -1.2, 5)):
             crystal(cv, (x, 110), a, ln, 1.6, CRYSTAL if not dead else DIMC, facet=False)
         if p.ground_glow > 0.05 and not dead:

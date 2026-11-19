@@ -291,6 +291,18 @@ TEST_CASE("i18n audit: the key screens in English, nothing left in French") {
     rig.show(makeRaidSheets(g, "asterion", 1));
     rig.show(makeRaidSheets(g, "skullmaw", 0));
     rig.show(makeRaidSheets(g, "skullmaw", 2));
+    // 2.76.2: the sheets by parts (« Où frapper ») and the enemy editor's « Parties (où frapper) », read-only and
+    // in the administration.
+    g.onlineOpen = "sheet-hit:1:";
+    rig.show(makeRaidSheets(g, "voidworm", 1));
+    for (const char* boss : {"pyrrhax", "monolithe", "magmaroth"}) {
+        g.onlineOpen = std::string("boss:") + boss + ":frapper";
+        rig.show(makeBossStats(g, boss));
+    }
+    g.onlineOpen = "parts";
+    rig.show(makeEnemyEditor(g, "pyrrhax", 6));
+    g.onlineOpen = "parts";
+    rig.show(makeEnemyEditorAdmin(g, "voidworm", 0));
     rig.show(makeCollection(g, 0));
     rig.show(makeNotifications(g, 0));
     rig.show(makeStatistics(g, 0));

@@ -794,5 +794,108 @@
       "derniere_vague"
     ],
     "finalText": "Sa dernière vague : survivez !"
-  }
+  },
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "yeux",
+        "poly": [
+          146,
+          82,
+          182,
+          82,
+          182,
+          114,
+          146,
+          114
+        ]
+      },
+      {
+        "name": "bec",
+        "poly": [
+          166,
+          112,
+          200,
+          112,
+          200,
+          140,
+          166,
+          140
+        ]
+      },
+      {
+        "name": "manteau",
+        "poly": [
+          66,
+          6,
+          184,
+          6,
+          184,
+          82,
+          146,
+          82,
+          146,
+          116,
+          66,
+          116
+        ]
+      },
+      {
+        "name": "remous",
+        "drop": true,
+        "rest": true,
+        "clips": [
+          "summon:2-4"
+        ],
+        "poly": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          1
+        ]
+      },
+      {
+        "name": "tentacules",
+        "rest": true,
+        "poly": [
+          40,
+          116,
+          230,
+          116,
+          230,
+          210,
+          40,
+          210
+        ]
+      }
+    ],
+    "roles": {
+      "yeux": {
+        "role": "weak",
+        "damage": 2
+      },
+      "manteau": {
+        "role": "normal",
+        "damage": 1
+      },
+      "tentacules": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "etreinte",
+          "fouet",
+          "double_fouet",
+          "ronde_fouets",
+          "dernier_fouet"
+        ]
+      },
+      "bec": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

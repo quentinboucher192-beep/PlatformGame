@@ -382,5 +382,6 @@
     "brainVersion": 3
   },
   "variantOf": "howling_wyrm",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

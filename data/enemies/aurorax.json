@@ -232,5 +232,62 @@
       }
     ],
     "enrageTime": 75
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2
+      },
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "charge"
+        ]
+      },
+      "bras": {
+        "role": "normal",
+        "damage": 1
+      },
+      "épaulière": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "jambes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "cape": {
+        "role": "normal",
+        "damage": 1
+      },
+      "bois": {
+        "role": "hurt"
+      },
+      "lance": {
+        "role": "hurt"
+      }
+    },
+    "origins": {
+      "prism": [
+        17,
+        -48
+      ],
+      "prism_night": [
+        17,
+        -48
+      ],
+      "shards": [
+        52,
+        -101
+      ]
+    }
+  },
+  "partsFromVersion": 17
 }

@@ -15,7 +15,10 @@ class ContentDatabase;
 ///   - the player's own entities (and imported ones) are fully editable;
 ///   - ADMINISTRATION › Ennemis (`admin`): the native's definition is edited and published
 ///     online (never saved in the user folder); its identifier, its sheet and the timings of its
-///     clips stay the game's (the definition file only).
+///     clips stay the game's (the definition file only);
+///   - 2.76.2: the roles of a boss's hit parts (data/enemies/<id>.json « parts ») are the game's: read-only
+///     for the player, changed by an administrator only, and only on a native (the player's entities fight
+///     with their box: their rules would not be read).
 struct EnemyEditAccess {
     bool fields = false;     // the definition's fields can be changed
     bool id = false;         // its identifier
@@ -23,6 +26,7 @@ struct EnemyEditAccess {
     bool save = false;       // « Enregistrer » (user folder)
     bool remove = false;     // « Supprimer »
     bool publish = false;    // « Publier… » (online, administrators)
+    bool parts = false;      // the roles of its hit parts (2.76.2: a native, administrators)
     bool readOnly() const { return !fields; }
 };
 

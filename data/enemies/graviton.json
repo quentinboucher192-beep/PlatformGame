@@ -176,6 +176,114 @@
       "lead": 0.8
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "orbe",
+        "poly": [
+          84,
+          46,
+          122,
+          46,
+          122,
+          84,
+          84,
+          84
+        ]
+      },
+      {
+        "name": "noyau",
+        "poly": [
+          110,
+          124,
+          142,
+          124,
+          142,
+          156,
+          110,
+          156
+        ]
+      },
+      {
+        "name": "débris gauche",
+        "poly": [
+          0,
+          110,
+          82,
+          110,
+          82,
+          192,
+          0,
+          192
+        ]
+      },
+      {
+        "name": "débris droite",
+        "poly": [
+          150,
+          110,
+          224,
+          110,
+          224,
+          192,
+          150,
+          192
+        ]
+      },
+      {
+        "name": "pied",
+        "poly": [
+          88,
+          190,
+          142,
+          190,
+          142,
+          244,
+          88,
+          244
+        ]
+      },
+      {
+        "name": "jambe",
+        "poly": [
+          62,
+          28,
+          152,
+          28,
+          152,
+          242,
+          62,
+          242
+        ]
+      }
+    ],
+    "roles": {
+      "orbe": {
+        "role": "weak",
+        "damage": 2
+      },
+      "noyau": {
+        "role": "weak",
+        "damage": 2
+      },
+      "débris gauche": {
+        "role": "hurt"
+      },
+      "débris droite": {
+        "role": "hurt"
+      },
+      "pied": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "jambe": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

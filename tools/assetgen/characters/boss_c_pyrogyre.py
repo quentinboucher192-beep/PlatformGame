@@ -81,9 +81,14 @@ class Pyrogyre:
     def draw(self, p):
         cv = TCanvas(W, H)
         dead = p.dead >= 0.5
+        # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
+        cv.tag = "anneau"
         self._ring(cv, p, back=True, dead=dead)
+        cv.tag = "flammes"
         self._corona(cv, p, dead)
+        cv.tag = "soleil"
         self._eye(cv, p, dead)
+        cv.tag = "anneau"
         self._ring(cv, p, back=False, dead=dead)
         return cv.render()
 
@@ -191,6 +196,7 @@ class Pyrogyre:
                 d = EYE_R * math.sqrt(rng.random()) * 0.92
                 cv.px_set(cx + math.cos(a) * d, cy + math.sin(a) * d, sm, inten=0.3 + 0.5 * rng.random(), decal=True)
         # iris + slit pupil
+        cv.tag = "œil"
         ex, ey = self.eye_pos(p)
         pw = 1.6 + 3.6 * p.pupil
         ph = 11.5 * min(1.0, p.lid)

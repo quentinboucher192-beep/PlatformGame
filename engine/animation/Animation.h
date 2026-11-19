@@ -57,6 +57,9 @@ public:
     using EventHandler = std::function<void(const std::string& event)>;
 
     void setSet(AnimationSetPtr set);
+    /// 2.76.2: another sheet with the same clips (a boss's phase): the clip playing, its frame and its
+    /// time are kept when the new sheet has that frame (else it starts the clip again).
+    void swapSet(AnimationSetPtr set);
     const AnimationSetPtr& set() const { return set_; }
 
     /// Starts `name`; does nothing if already playing unless `restart`.

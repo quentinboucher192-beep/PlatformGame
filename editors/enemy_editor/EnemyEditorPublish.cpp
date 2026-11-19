@@ -60,6 +60,7 @@ void EnemyEditorScene::drawAdminPanel(const Rect& r) {
     line("Identifiant : " + selectedId_, ui.theme().textDim);
     line(adminBase_ > 0 ? "En ligne : révision " + std::to_string(adminBase_) : std::string("En ligne : la définition du jeu"), ui.theme().textDim);
     if (dirty_) line("Modifications non publiées", ui.theme().warm);
+    if (partsDirty_) line("Parties non enregistrées (Boss › Parties)", ui.theme().warm);  // 2.76.2
     y += ui.s(8);
     // The buttons at the bottom; the explanation in the room above them only.
     const float bh = ui.s(52), gap = ui.s(10);

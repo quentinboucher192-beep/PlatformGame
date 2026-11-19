@@ -20,6 +20,25 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
     centre est le plus proche.
   * Ce profil convient aux boss qui gardent leur forme. Les parties qui bougent beaucoup (un bras levé) suivent
     moins bien : vérifiez-les sur les images d'attaque.
+  * 2.76.2, pour les parties qui bougent ou changent (exemples : les gigaboss de la campagne) :
+    * `"clips": ["attack", "telegraph:3-5", "roll:0"]` : la région ne vaut que pour ces poses, un clip entier, une
+      image (`attack:2`) ou des images (`attack:1-3`). Dessinez-la sur l'image de cette pose (poings levés, boule) ;
+    * `"sheets": ["singularis_p5", …]` : seulement pour ces feuilles, par exemple une phase redessinée (œil à nu) ;
+    * `"rest": true` : ce qu'aucune région ne contient va à celle-ci, au lieu du centre le plus proche ;
+    * `"drop": true` : ce qu'elle contient n'est aucune partie, par exemple un anneau ou un tourbillon dessiné autour
+      du boss ; avec `rest`, tout ce qu'aucune région ne contient est écarté ;
+    * plusieurs régions de même nom font une seule partie. L'ordre compte : la première qui contient un pixel le
+      prend, donc la pose particulière passe avant la région générale.
+* **Profil « rig » (2.76.2, les boss classiques)** : `"parts": {"profile": "rig"}`. Pour un boss dont le sprite sort
+  d'un générateur de `tools/assetgen/characters`, chaque partie est nommée dans le dessin lui-même
+  (`cv.tag = "tête"` avant de la dessiner). `python3 tools/assetgen/hitparts.py --rig-labels` régénère la feuille en
+  mode étiquettes (`raster.LABELS`, un processus par feuille) et écrit sa carte, `tools/assetgen/rig_labels/<feuille>.png`
+  (un octet par pixel : sa partie). L'outil lit ensuite la partie de chaque pixel de chaque image, puis donne les
+  contours et ce qui est collé dessus à la partie la plus proche (4 px au plus). Un effet dessiné sur son propre
+  canevas, sans étiquette, est laissé de côté. Le générateur et la liste des parties de chaque feuille sont dans `RIGS`
+  (hitparts.py). L'outil s'arrête si le générateur ne redonne pas la feuille déposée, ou si une carte est plus ancienne
+  que les sprites. `--check` (CI) lit les cartes sans lancer les générateurs. Après un changement d'un générateur de
+  sprites, relancez `--rig-labels`.
 * **Nouveau profil** : pour un découpage qui suit vraiment l'anatomie, ajoutez une fonction dans l'outil, sur le
   modèle de `dragon()`, et nommez ses parties dans une liste comme `DRAGON`. Elle doit rester déterministe : des
   entiers seulement pour les décisions, aucun hasard, des ordres fixes.
@@ -46,7 +65,8 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   * `weak` est un point faible ;
   * `normal` est une partie normale (rôle par défaut d'une partie sans règle, × 1) ;
   * `armour` est une partie blindée ;
-  * `hurt` est une partie qui ne fait que blesser : elle n'est jamais touchée, elle blesse au contact.
+  * `hurt` est une partie qui blesse : elle n'est jamais touchée, et elle frappe pendant les attaques du boss avec
+    leurs dégâts (comme toute partie pendant les attaques de son `hurtDuring`).
 * **Modèle validé par le joueur** : tête ou yeux × 2, carapace ou queue × 0,5, le reste × 1, et les griffes, le
   souffle, les dards ou les pointes qui blessent. Adaptez-le à chaque boss.
 * `hurtDuring` : les identifiants des attaques pendant lesquelles une partie blesse aussi. Exemple : la tête pendant
@@ -56,18 +76,57 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   fiche montre les parties et le combat garde la boîte.
 * Les parties ne figurent ni dans `EnemyDefinition` ni dans l'empreinte des niveaux classés : n'y mettez rien, les
   records restent comparables (`kRankingGeneration` reste 8).
+* `"origins": {"<attaque>": [x, y]}` (2.76.2, sous `"parts"`) : l'origine des tirs d'une attaque quand le boss se
+  bat par parties, en pixels du sprite depuis les pieds (comme `origin`). Elle corrige une origine hors du dessin
+  sans toucher à la définition de l'attaque, donc ni à l'empreinte de ses niveaux ni aux replays d'avant (exemple :
+  l'Astrarque, dont deux attaques empruntées partaient du vide).
+* **Un écho** (2.76.2, `"variantOf"`) sans bloc `"parts"` prend celles de son original (`PartRules::of`) avec son propre
+  `"partsFromVersion"`. Il peut nommer les siennes si ses rôles diffèrent ; l'éditeur d'ennemis lui en écrit un
+  bloc à lui dès qu'on règle ses parties.
+
+### Les régler dans l'éditeur d'ennemis (2.76.2)
+
+* **Où** : `Éditeur d'ennemis › Boss › Parties (où frapper)` (`editors/enemy_editor/EnemyEditorParts.cpp`). Le
+  panneau montre le sprite du boss avec la planche, la pose et l'image choisies (ou la pose animée), et ses parties
+  à la couleur et au motif de leur rôle. La partie choisie est cerclée de blanc ; on la choisit d'un clic sur le
+  sprite, ou dans la liste au clavier et à la manette.
+* **Ce qui se règle**, pour la partie choisie :
+  * son rôle (point faible, partie normale, blindée, qui blesse) ;
+  * son multiplicateur de dégâts (0 à 4, par quarts) ;
+  * ses `hurtDuring`, une case par attaque du boss.
+* **Qui** : comme pour les entités natives (2.45), les parties d'un boss du jeu sont en lecture seule pour le
+  joueur. Seul un administrateur (`ADMINISTRATION › Ennemis`) les règle. Les entités du joueur se battent avec leur
+  boîte : leurs parties sont montrées, sans règles.
+* **Où ça va** : « Enregistrer les parties » (ou Ctrl+S) réécrit le seul bloc `roles` de `data/enemies/<id>.json`
+  (`savePartRules`). Les autres clés, leur ordre, l'ordre des rôles et l'indentation sont gardés : un fichier
+  réécrit avec ses propres règles revient à l'octet près. Le combat de l'arène repart avec les nouvelles règles.
+  « Publier… » n'envoie pas les parties : elles partent avec la prochaine version du jeu.
+* **Attention** : changer les règles d'un boss qui se bat déjà par parties change ses combats, et les replays
+  enregistrés ne se rejouent plus à l'identique. Le panneau le rappelle. Une telle modification demande une nouvelle
+  version de simulation (section 6).
+* **Capture** : `CosmicPlatformer --enemy-editor <boss> --enemy-parts`.
 
 ## 3. Ce que le moteur fait (rien à coder pour un boss ordinaire)
 
 * **La pose** : l'animation d'un boss qui se bat par parties avance dans `Enemy::fixedUpdate`, ce qui en fait une
-  donnée de simulation (`fightsByParts`).
+  donnée de simulation (`fightsByParts`). À partir de la version 17 (`kPartsLookSimulation`), il prend aussi la
+  feuille de sa phase dans le pas fixe, sa pose gardée (`Animator::swapSet`), jamais dans une mise à jour d'affichage
+  dont le rythme varie : ses parties sont les mêmes à toute fréquence d'image.
 * **Les coups du joueur** : `GameWorld` (tirs, `damageEnemies`) et les pouvoirs à rayon (boomerang) passent par
   `reaches()`, qui touche la partie atteinte, par priorité point faible, puis normale, puis blindée. Les dégâts
   sont multipliés par son `damage`.
   * **Nouveau code qui frappe un ennemi** : utilisez `reaches(e, w, zone, &mult)` (boîte ou cercle), jamais
     `e.box.intersects`. Sinon le boss serait touché par sa boîte.
-* **Le contact** : `Enemy::contactDamage` ne blesse que par les parties `hurt` et celles de `hurtDuring`
-  (`hurtsWithParts`).
+* **Le contact** (règle des joueurs, 2.76.2, `kWholeBodyContactSimulation` = 17) : toucher **n'importe quelle partie**
+  du boss blesse le joueur avec ses dégâts de contact (`Enemy::contactDamage`, `touchesWithParts`). C'est la forme
+  précise de l'image en cours qui compte, jamais la boîte. Les parties `hurt` et celles du `hurtDuring` de l'attaque en
+  cours frappent **en plus** pendant l'attaque, une fois, avec les dégâts de l'attaque (`Enemy::performAttackActive`,
+  `hurtsWithParts` ; la ruée `lunge` comme en 2.76.0). Les rôles des coups reçus ne changent pas : point faible × 2,
+  blindé × 0,5, normale × 1.
+  * **Les replays de version 16** (Pyrrhax, 2.76.0) gardent la règle de la 2.76.0 : seules les parties `hurt` et
+    celles de `hurtDuring` blessent au contact. `tests/test_hitparts.cpp` vérifie les deux règles.
+  * **Pas de compensation** : une partie ne passe pas en `hurt` pour qu'un boss blesse au contact, puisque tout son
+    corps blesse (les sabots d'Aurorax sont redevenus ses jambes).
 * **Les attaques à zone propre** (lasers, ondes, plongeons, routines des Gigaboss) gardent leurs zones. Si une
   attaque doit partir d'une partie, réglez son `origin`.
 
@@ -77,6 +136,11 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
 (`attackOriginOf`). Il ne s'écrit jamais en unités du monde, faute de quoi les tirs partent loin du dessin, comme
 pour les Gigaboss avant la 2.75.2. Mesurez sur l'image de l'attaque (clip `attackAnim`) : la bouche, les yeux,
 le canon.
+
+* **Une origine qui ne vaut qu'en combat par parties** (2.76.2) : `"parts": {"origins": {"barrage": [45, -51]}}`, dans
+  les mêmes unités. Elle n'est pas dans la définition de l'ennemi : l'empreinte des niveaux classés ne change pas, et
+  un replay d'avant tire de l'origine de l'attaque (`Enemy::attackOrigin`). C'est le chemin d'un boss de la campagne
+  dont les records doivent rester.
 
 ## 5. Les tests à écrire
 
@@ -103,7 +167,7 @@ le canon.
     ne mélange jamais deux versions.
 * **Coopération** : `kCoopSimulationVersion` ne bouge pas. Les replays d'équipe portent la version de simulation,
   ils rejouent avec leurs propres règles.
-* **Journal** : sous la clé de la version (`"2.76.1"`) ; les autres agents écrivent sous la même clé, gardez les
+* **Journal** : sous la clé de la version (`"2.76.2"`) ; les autres agents écrivent sous la même clé, gardez les
   deux côtés à la fusion.
 
 ---

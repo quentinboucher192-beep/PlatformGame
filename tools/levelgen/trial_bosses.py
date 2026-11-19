@@ -63,6 +63,13 @@ for t in TRIALS:
         p["cooldownMultiplier"] = round(p.get("cooldownMultiplier", 1.0) * 0.85, 2)
     d["boss"]["title"] = t["title"]
     d["boss"]["enrageTime"] = 60
+    # 2.76.2: its hit parts (« parts », « partsFromVersion »): its own once written (its extra attacks
+    # leave its own drawing), else its base's.
+    if os.path.exists(os.path.join(ROOT, "data", "enemies", t["id"] + ".json")):
+        own = load(t["id"])
+        for k in ("parts", "partsFromVersion"):
+            if k in own:
+                d[k] = own[k]
     with open(os.path.join(ROOT, "data", "enemies", t["id"] + ".json"), "w", encoding="utf-8") as f:
         json.dump(d, f, ensure_ascii=False, indent=2)
         f.write("\n")

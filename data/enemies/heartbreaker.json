@@ -189,6 +189,115 @@
       ]
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "cœur",
+        "poly": [
+          88,
+          104,
+          136,
+          104,
+          136,
+          152,
+          88,
+          152
+        ]
+      },
+      {
+        "name": "côtes",
+        "poly": [
+          56,
+          104,
+          168,
+          104,
+          168,
+          162,
+          56,
+          162
+        ]
+      },
+      {
+        "name": "épaule gauche",
+        "poly": [
+          18,
+          60,
+          70,
+          60,
+          70,
+          98,
+          18,
+          98
+        ]
+      },
+      {
+        "name": "épaule droite",
+        "poly": [
+          154,
+          60,
+          206,
+          60,
+          206,
+          98,
+          154,
+          98
+        ]
+      },
+      {
+        "name": "pointe",
+        "poly": [
+          94,
+          196,
+          130,
+          196,
+          130,
+          216,
+          94,
+          216
+        ]
+      },
+      {
+        "name": "plastron",
+        "poly": [
+          36,
+          60,
+          188,
+          60,
+          188,
+          200,
+          36,
+          200
+        ]
+      }
+    ],
+    "roles": {
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "côtes": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "épaule gauche": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "épaule droite": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "pointe": {
+        "role": "hurt"
+      },
+      "plastron": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

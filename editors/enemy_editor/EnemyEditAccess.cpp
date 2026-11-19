@@ -12,6 +12,7 @@ EnemyEditAccess enemyEditAccess(const ContentDatabase& content, const std::strin
         if (!admin) return a;  // the campaign's entities: read-only for the player
         a.fields = true;
         a.publish = true;
+        a.parts = true;  // written into data/enemies/<id>.json (EnemyEditorParts.cpp)
         return a;
     }
     if (admin) return a;  // the administration only publishes natives

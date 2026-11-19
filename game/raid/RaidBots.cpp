@@ -6,6 +6,7 @@
 #include "engine/physics/PhysicsWorld.h"
 #include "game/enemies/BossHazards.h"
 #include "game/enemies/Enemy.h"
+#include "game/enemies/HitParts.h"
 #include "game/gameplay/Projectile.h"
 #include "game/gameplay/entities/Entities.h"
 #include "game/powers/Power.h"
@@ -74,6 +75,47 @@ int keyBit(const Power* p) {
     if (!p) return -1;
     const int k = static_cast<int>(p->key());
     return k >= 0 && k < InputFrame::kActions ? k : -1;
+}
+
+/// 2.76.2 (bosses by parts): where to strike `e` in its pose now — the box around its weak points and normal
+/// parts (else its armour), never a part that only hurts (its fingers, its claws: a blow there does nothing).
+/// Its box when it does not fight by parts.
+Rect strikeBox(const Enemy& e, const GameWorld& w) {
+    if (!fightsByParts(e, w)) return e.box;
+    const AnimationSetPtr& set = e.animator().set();
+    if (!set || set->frameWidth <= 0 || set->frameHeight <= 0) return e.box;
+    const HitPartsSheet* sheet = HitPartsSheet::of(set->sourcePath);
+    if (!sheet) return e.box;
+    const Rect src = e.animator().sourceRect();
+    const std::vector<HitPartPiece>* pieces = sheet->cell(static_cast<int>(src.y) / set->frameHeight, static_cast<int>(src.x) / set->frameWidth);
+    if (!pieces) return e.box;
+    const PartRules& rules = PartRules::of(e.def().id);
+    Rect best[2];
+    bool have[2] = {false, false};
+    for (const HitPartPiece& piece : *pieces) {
+        if (piece.part < 0 || piece.part >= static_cast<int>(sheet->parts.size())) continue;
+        const PartRule rule = rules.ruleOr(sheet->parts[static_cast<size_t>(piece.part)]);
+        if (rule.role == PartRole::Hurt) continue;
+        const int k = rule.role == PartRole::Armour ? 1 : 0;
+        const std::vector<Vec2> poly = placePiece(piece, *sheet, e.box.bottomCenter(), e.def().scale, e.facing < 0.0f);
+        if (poly.empty()) continue;
+        float x0 = poly[0].x, x1 = poly[0].x, y0 = poly[0].y, y1 = poly[0].y;
+        for (const Vec2& p : poly) {
+            x0 = std::min(x0, p.x);
+            x1 = std::max(x1, p.x);
+            y0 = std::min(y0, p.y);
+            y1 = std::max(y1, p.y);
+        }
+        const Rect r{x0, y0, x1 - x0, y1 - y0};
+        if (!have[k]) {
+            best[k] = r;
+            have[k] = true;
+        } else {
+            const float l = std::min(best[k].x, r.x), t = std::min(best[k].y, r.y);
+            best[k] = {l, t, std::max(best[k].right(), r.right()) - l, std::max(best[k].bottom(), r.bottom()) - t};
+        }
+    }
+    return have[0] ? best[0] : have[1] ? best[1] : e.box;
 }
 
 const Enemy* enemyOf(const GameWorld& w, uint32_t uid) {
@@ -881,21 +923,24 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // Its goal moves with what it strikes. A boss, or anything during a gigaboss's fight, from afar with the
     // wave when it carries one (its body hurts on contact, its blows fall around it): at its height, in sight.
     const Enemy* foe = enemyOf(w, b.target);
+    // 2.76.2: a boss by parts is struck where a blow counts (its weak points and normal parts in its pose).
+    const Rect fb = foe ? strikeBox(*foe, w) : Rect{};
+    const Vec2 fc = fb.center();
     const bool bossFight = run.gigaboss().present() && run.gigaboss().engaged();
-    const bool ranged = foe && shooter(me) && (foe->def().isBoss || foe->box.w >= 56.0f || foe->box.h >= 72.0f || bossFight);
+    const bool ranged = foe && shooter(me) && (foe->def().isBoss || fb.w >= 56.0f || fb.h >= 72.0f || bossFight);
     if (!fleeing && foe) {
-        const float side = foe->center().x < me.center().x ? 1.0f : -1.0f;
-        const float off = ranged ? foe->box.w * 0.5f + (foe->def().isBoss || foe->box.w >= 56.0f ? 200.0f : 90.0f) : foe->box.w * 0.5f + 12.0f;
-        b.goal = {foe->center().x + side * off, ranged ? foe->center().y + 11.0f : foe->box.bottom()};
+        const float side = fc.x < me.center().x ? 1.0f : -1.0f;
+        const float off = ranged ? fb.w * 0.5f + (foe->def().isBoss || fb.w >= 56.0f ? 200.0f : 90.0f) : fb.w * 0.5f + 12.0f;
+        b.goal = {fc.x + side * off, ranged ? fc.y + 11.0f : fb.bottom()};
         if (nav && (b.goalNode < 0 || (nav->node(b.goalNode).feet - b.goal).lengthSq() > 64.0f * 64.0f)) {
             b.goalNode = -1;
             if (ranged) {
-                const Vec2 c = foe->center();
-                const float half = foe->box.h * 0.5f + 4.0f;
-                const float minDx = foe->box.w * 0.5f + 40.0f;
+                const Vec2 c = fc;
+                const float half = fb.h * 0.5f + 4.0f;
+                const float minDx = fb.w * 0.5f + 40.0f;
                 b.goalNode = nav->nearest(b.goal, 180.0f, [&](const NavGraph::Node& nd) {
                     const float dx = std::fabs(nd.feet.x - c.x);
-                    return nd.mover < 0 && std::fabs(nd.feet.y - 11.0f - c.y) <= half && dx >= minDx && dx <= foe->box.w * 0.5f + 250.0f &&
+                    return nd.mover < 0 && std::fabs(nd.feet.y - 11.0f - c.y) <= half && dx >= minDx && dx <= fb.w * 0.5f + 250.0f &&
                            w.physics().lineOfSight({nd.feet.x, nd.feet.y - 11.0f}, c);
                 });
             }
@@ -945,8 +990,8 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         steer(w, seat, b, f, held, dir, stop);
         // What it does once there.
         if (foe && !fleeing) {
-            const Vec2 d = foe->center() - me.center();
-            const bool inReach = std::fabs(d.x) <= foe->box.w * 0.5f + 22.0f && std::fabs(d.y) <= foe->box.h * 0.5f + 18.0f;
+            const Vec2 d = fc - me.center();
+            const bool inReach = std::fabs(d.x) <= fb.w * 0.5f + 22.0f && std::fabs(d.y) <= fb.h * 0.5f + 18.0f;
             if (inReach) {
                 dir = 0;
                 b.goalBest = 0.0f;  // fighting where it should: not lost
@@ -958,8 +1003,8 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                     b.attackCool = 22;
                 }
                 if (d.y < -30.0f && me.grounded() && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump))) b.jumpHold = 12;  // up to it
-            } else if (const Power* sh = shooter(me); sh && keyBit(sh) >= 0 && std::fabs(d.y) < foe->box.h * 0.5f + 6.0f && std::fabs(d.x) > 30.0f &&
-                       std::fabs(d.x) - foe->box.w * 0.5f < 280.0f && !b.sync && w.physics().lineOfSight(me.center(), foe->center())) {
+            } else if (const Power* sh = shooter(me); sh && keyBit(sh) >= 0 && std::fabs(d.y) < fb.h * 0.5f + 6.0f && std::fabs(d.x) > 30.0f &&
+                       std::fabs(d.x) - fb.w * 0.5f < 280.0f && !b.sync && w.physics().lineOfSight(me.center(), fc)) {
                 // The wave from afar (energy kept for the generators, unless it fights a boss).
                 const bool facing = (d.x >= 0.0f) == (me.facing >= 0.0f);
                 if (ranged && me.grounded() && std::fabs(b.goal.x - feet.x) < 40.0f) {

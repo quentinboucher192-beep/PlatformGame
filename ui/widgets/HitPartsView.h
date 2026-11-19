@@ -23,9 +23,27 @@ struct EnemyDefinition;
 Color partRoleColor(PartRole r);
 /// The colour of a part of `rules` (its role).
 Color partColor(const PartRules& rules, const std::string& name);
-/// Draws the pieces of one cell, `toScreen` placing a vertex of the frame on the screen.
+/// 2.76.2: the pattern of a role over a convex polygon (on the screen), so that a part reads on a sprite of any
+/// colour: a weak point cross-hatched, a normal part in upright stripes, armour in close flat stripes (its
+/// plates), what hurts in thick diagonal stripes; each line over a dark one. `unit`: the pixels of one
+/// unscaled pixel (UIContext::s(1)).
+void drawPartPattern(Renderer& r, const std::vector<Vec2>& poly, PartRole role, float unit);
+/// A thick outline over a dark one.
+void drawPartOutline(Renderer& r, const std::vector<Vec2>& poly, Color c, float width, float unit);
+/// The square of a legend: the colour and the pattern of a role.
+void drawPartSwatch(Renderer& r, const Rect& box, PartRole role, float unit);
+/// Draws the pieces of one cell, `toScreen` placing a vertex of the frame on the screen: each in the colour
+/// and the pattern of its role, outlined; `highlight` (a part's name) outlined in white over the others.
 void drawHitPieces(Renderer& r, float lineWidth, const HitPartsSheet& sheet, const std::vector<HitPartPiece>& pieces, const PartRules& rules,
-                   const std::function<Vec2(Vec2)>& toScreen, uint8_t fill = 70);
+                   const std::function<Vec2(Vec2)>& toScreen, uint8_t fill = 70, const std::string& highlight = {});
+/// A part's name as shown: its first letter a capital (« tête » → « Tête », « épaule » → « Épaule »).
+std::string partNameLabel(const std::string& name);
+/// 2.76.2: the attacks during which a part also hurts (`hurtDuring`), by the names the boss's sheet gives
+/// them (« Morsure », translated when shown), never an identifier: an attack the boss does not have is
+/// left out (an écho that lacks one of its original's).
+std::vector<std::string> hurtDuringNames(const PartRule& rule, const EnemyDefinition& d);
+/// « blesse aussi pendant : Morsure, Ruée » (empty: none, or a part that always hurts).
+std::string hurtDuringLabel(const PartRule& rule, const EnemyDefinition& d);
 /// « Repos », « Élan », « Attaque »… the name of a clip on a chip (its id when it has none).
 std::string poseLabel(const std::string& clip);
 /// The clips of a sheet worth a chip, in the order of a fight (repos, déplacement, élan, attaque…).

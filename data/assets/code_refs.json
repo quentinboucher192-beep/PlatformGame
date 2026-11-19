@@ -578,6 +578,7 @@
    "ui/widgets/UIContext.cpp": 1
   },
   "sounds/ui_confirm.wav": {
+   "editors/enemy_editor/EnemyEditorParts.cpp": 1,
    "editors/enemy_editor/EnemyEditorScene.cpp": 2,
    "editors/level_editor/LevelEditorPowerKeys.cpp": 1,
    "ui/screens/BossStoryScene.cpp": 1,

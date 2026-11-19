@@ -142,6 +142,7 @@ def draw_hammer(cv, p):
     def Q(uu, vv):
         return (hc[0] + u[0] * uu + v[0] * vv, hc[1] + u[1] * uu + v[1] * vv)
     # haft (passes through the fist), pommel knob
+    cv.tag = "marteau"  # 2.76.2: hit parts (raster.LABELS)
     cv.part()
     pom = (fist[0] - u[0] * 7, fist[1] - u[1] * 7)
     cv.tcapsule(pom, Q(-4, 0), 2.0, 2.0, C.RUST_DK)
@@ -185,6 +186,7 @@ def draw_magmaroth(p):
         cv.tline(B(*a), B(*b), seam, inten=min(0.95, (0.28 + 0.45 * g) * k), decal=True)
 
     # ------------------------------------------------ volcanic back hump + vents
+    cv.tag = "bosse"  # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
     cv.part()
     hump = [B(-3, -31), B(-8, -39), B(-16, -42), B(-24, -37), B(-27, -27), B(-24, -15), B(-14, -11)]
     cv.tpoly(hump, C.BAS_DK, bevel=2.2, base=0.56)
@@ -204,6 +206,7 @@ def draw_magmaroth(p):
     SL((-22, -30), (-19, -23), 0.8)
 
     # ---------------------------------------------------------------- back arm
+    cv.tag = "bras"
     cv.part()
     el_b = ik2(sh_b, p.hand_b, 12.5, 12.5, -1.0)
     limb(cv, sh_b, el_b, p.hand_b, 5.4, 4.6, 4.2, C.BAS_BK, knee=4.8)
@@ -215,6 +218,7 @@ def draw_magmaroth(p):
               (hb[0] + ux * 7 - nx * 5, hb[1] + uy * 7 - ny * 5),
               (hb[0] - ux * 2 - nx * 5, hb[1] - uy * 2 - ny * 5)], C.BAS_BK, bevel=1.6, base=0.55)
     # ---------------------------------------------------------------- back leg
+    cv.tag = "jambes"
     cv.part()
     ank_b = (p.foot_b[0], p.foot_b[1] - 4.5)
     kn_b = ik2(hip_b, ank_b, 13.5, 13.5, 1.0)
@@ -223,6 +227,7 @@ def draw_magmaroth(p):
     boot(cv, p.foot_b, C.BAS_BK, 1.05)
 
     # -------------------------------------------------------------------- torso
+    cv.tag = "corps"
     cv.part()
     torso = [B(-13, 2), B(-18, -10), B(-18, -24), B(-10, -32), B(9, -33), B(19, -26), B(20, -11), B(13, 2)]
     cv.tpoly(torso, C.BAS_DK, bevel=2.8, base=0.6)
@@ -239,6 +244,7 @@ def draw_magmaroth(p):
     cv.part()
     cv.tdisc(cc, 8.0, C.RUST_DK, bias=-0.02)
     cv.part(line=False)
+    cv.tag = "cœur"
     cv.tdisc(cc, 6.0, C.SLOT_P, flat=0.3)
     cm = C.LAVA_M if alive else C.SEAM_DEAD
     cr = 4.4 + 0.5 * min(1.5, p.core) + p.chest_open * 1.0
@@ -255,6 +261,7 @@ def draw_magmaroth(p):
         a = k * math.pi / 3 + 0.4
         cv.tpx((cc[0] + math.cos(a) * 7.0, cc[1] + math.sin(a) * 7.0), C.RUST_M, inten=0.9, decal=True)
     # belt + tassets + hanging chain
+    cv.tag = "corps"
     cv.part()
     cv.tpoly([B(-14, -2), B(14, -2), B(15, 2), B(-15, 2)], C.RUST_DK, bevel=1.0, base=0.58)
     cv.part()
@@ -267,6 +274,7 @@ def draw_magmaroth(p):
         cv.tellipse(q, 1.6 if i % 2 == 0 else 1.0, 1.0 if i % 2 == 0 else 1.6, C.RUST_M, ang=p.lean)
 
     # --------------------------------------------------------------- front leg
+    cv.tag = "jambes"
     cv.part()
     ank_f = (p.foot_f[0], p.foot_f[1] - 4.5)
     kn_f = ik2(hip_f, ank_f, 13.5, 13.5, 1.0)
@@ -281,9 +289,11 @@ def draw_magmaroth(p):
 
     # -------------------------------------------------------------------- head
     # far horn behind the helm
+    cv.tag = "cornes"
     cv.part()
     hf = [HD(2, -5), HD(-2, -10), HD(-3, -16), HD(1, -21), HD(6, -23)]
     cv.tchain(hf, [2.6, 2.4, 1.9, 1.2, 0.5], C.OBS_DK)
+    cv.tag = "tête"
     cv.part()
     helm = [HD(-8, -6), HD(-3, -9), HD(6, -9), HD(11, -5), HD(12, 2), HD(9, 7.5), HD(-4, 8.5), HD(-9, 3)]
     cv.tpoly(helm, C.BAS, bevel=2.0, base=0.6)
@@ -312,6 +322,7 @@ def draw_magmaroth(p):
     cv.part(line=False)
     cv.tline(HD(-6, -4), HD(-3, 3), seam, inten=0.3 + 0.4 * g, decal=True)
     # near horn: big obsidian crescent curving up and forward
+    cv.tag = "cornes"
     cv.part()
     hn = [HD(-3, -3), HD(-9, -7), HD(-12, -13), HD(-10, -20), HD(-5, -24.5), HD(1, -26)]
     cv.tchain(hn, [3.4, 3.2, 2.7, 2.0, 1.3, 0.6], C.OBS_M)
@@ -324,6 +335,7 @@ def draw_magmaroth(p):
 
     # ---------------------------------------------------------- huge front arm
     el_f = ik2(sh_f, p.fist, 15.5, 15.5, -p.elbow_dir)
+    cv.tag = "bras"
     cv.part()
     cv.tcapsule(sh_f, el_f, 7.0, 6.2, C.BAS)
     cv.part()
@@ -355,6 +367,7 @@ def draw_magmaroth(p):
     for k in (-3.0, 0.0, 3.0):
         cv.tline(FQ(1.5, k), FQ(6.0, k), C.BAS_BK, inten=0.2, decal=True)
     # pauldron: craggy basalt boulder with a lava crack and spikes
+    cv.tag = "épaulière"
     cv.part()
     pc = (sh_f[0] + 0.5, sh_f[1] + 0.5)
     cv.tellipse(pc, 11.5, 8.0, C.BAS, ang=p.lean * 0.6 - 0.12, bias=0.04)
@@ -419,6 +432,7 @@ def draw_sword(cv, p):
     def Q(a, b, o=guard):
         return (o[0] + u[0] * a + v[0] * b, o[1] + u[1] * a + v[1] * b)
     # pommel + grip
+    cv.tag = "épée"  # 2.76.2: hit parts (raster.LABELS)
     cv.part()
     pom = (fist[0] - u[0] * 6.5, fist[1] - u[1] * 6.5)
     cv.tcapsule(pom, guard, 1.4, 1.4, C.STL_DK)
@@ -456,6 +470,7 @@ def draw_glaciarch(p):
     cm = C.CRYST if alive else C.ICE_DK
 
     # ------------------------------------------------------------ frozen cape
+    cv.tag = "cape"  # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
     cv.part()
     wv, lift = p.cape_wave, p.cape_lift
     cape = [B(-4, -33), B(-11, -31), B(-16, -18), B(-21 - 3 * lift, -2 - 4 * lift),
@@ -477,6 +492,7 @@ def draw_glaciarch(p):
             spike(cv, (bq[0], bq[1] - 0.5), math.pi / 2 + p.lean + 0.3 * lift + 0.05 * wv, ln, 1.3, C.ICE_M)
 
     # ---------------------------------------------------------------- back arm
+    cv.tag = "bras"
     cv.part()
     el_b = ik2(sh_b, p.hand_b, 12.0, 12.0, -1.0)
     limb(cv, sh_b, el_b, p.hand_b, 4.0, 3.4, 3.0, C.STL_BK, knee=3.6)
@@ -487,6 +503,7 @@ def draw_glaciarch(p):
         cv.tcapsule(p.hand_b, (p.hand_b[0] + math.cos(a) * 4.5, p.hand_b[1] + math.sin(a) * 4.5), 1.3, 0.6,
                     C.STL_BK)
     # ---------------------------------------------------------------- back leg
+    cv.tag = "jambes"
     cv.part()
     ank_b = (p.foot_b[0], p.foot_b[1] - 4.5)
     kn_b = ik2(hip_b, ank_b, 14.5, 14.5, 1.0)
@@ -495,6 +512,7 @@ def draw_glaciarch(p):
     boot(cv, p.foot_b, C.STL_BK, 0.9)
 
     # -------------------------------------------------------------------- torso
+    cv.tag = "corps"
     cv.part()
     torso = [B(-9, 2), B(-12, -10), B(-13, -25), B(-7, -34), B(8, -35), B(15, -27), B(13, -12), B(8, 2)]
     cv.tpoly(torso, C.STL_DK, bevel=2.6, base=0.62)
@@ -513,6 +531,7 @@ def draw_glaciarch(p):
     cv.part()
     cv.tpoly([D(0, -9.5), D(7, 0), D(0, 9.5), D(-7, 0)], C.STL, bevel=1.4, base=0.6)
     cv.part(line=False)
+    cv.tag = "cœur"
     cv.tpoly([D(0, -7.5), D(5.2, 0), D(0, 7.5), D(-5.2, 0)], C.SLOT_G, flat=0.3)
     hm = C.FROST_GLOW if alive else C.ICE_DEAD
     k = 1.0 + 0.12 * min(1.5, p.core) + 0.25 * co
@@ -527,10 +546,12 @@ def draw_glaciarch(p):
             q = (cc[0] + math.cos(a) * d, cc[1] + math.sin(a) * d)
             crystal(cv, q, a, 3.0 + 3.5 * co, 1.5, cm)
     # ice crust growing on the back of the chest
+    cv.tag = "pointes"
     cv.part()
     for (bx, by, a, ln) in ((-12, -21, -2.6, 6.0), (-13, -15, -2.9, 4.5), (-10, -29, -2.2, 5.0)):
         crystal(cv, B(bx, by), a + p.lean, ln * (1 + 0.4 * p.bristle), 1.8, cm)
     # belt with aurora gem + faulds with frost rim
+    cv.tag = "corps"
     cv.part()
     cv.tpoly([B(-10, -3), B(10, -3), B(10, 1), B(-10, 1)], C.STL_BK, bevel=1.0, base=0.6)
     cv.part(line=False)
@@ -543,22 +564,28 @@ def draw_glaciarch(p):
     cv.tline(B(4, 14.5), B(12, 12.5), C.SNOW_M, inten=0.75, decal=True)
 
     # --------------------------------------------------------------- front leg
+    cv.tag = "jambes"
     cv.part()
     ank_f = (p.foot_f[0], p.foot_f[1] - 4.5)
     kn_f = ik2(hip_f, ank_f, 14.5, 14.5, 1.0)
     limb(cv, hip_f, kn_f, ank_f, 5.2, 4.2, 3.4, C.STL_DK)
     cv.part()
     cv.tdisc(kn_f, 4.2, C.STL, bias=0.05)
+    cv.tag = "pointes"
     crystal(cv, (kn_f[0] + 2.5, kn_f[1] - 1.5), -0.5, 5.0 + 2 * p.bristle, 1.6, cm)
+    cv.tag = "jambes"
     cv.part()
     boot(cv, p.foot_f, C.STL_DK, 0.95)
+    cv.tag = "pointes"
     cv.part()
     crystal(cv, (p.foot_f[0] - 4, p.foot_f[1] - 7.5), -1.9, 3.5, 1.3, C.ICE_M)
 
     # -------------------------------------------------------------------- head
     cv.part()
     # gorget / mantle of snow-white fur-frost around the neck
+    cv.tag = "corps"
     cv.tellipse(B(2.5, -33.5), 9.5, 4.0, C.SNOW_M, ang=p.lean, bias=0.0)
+    cv.tag = "tête"
     cv.part()
     helm = [HD(-6, -6), HD(-3, -9), HD(5, -9), HD(8.5, -5), HD(8.5, 3), HD(6.5, 8), HD(-3, 8.5), HD(-6.5, 3)]
     cv.tpoly(helm, C.STL, bevel=2.0, base=0.62)
@@ -579,6 +606,7 @@ def draw_glaciarch(p):
     # frost crown: ring of crystal spikes, aurora gem
     cv.part()
     cv.tpoly([HD(-6.5, -6), HD(8.5, -6.5), HD(8.5, -9.5), HD(-6.5, -9.0)], C.STL_DK, bevel=1.0, base=0.6)
+    cv.tag = "pointes"
     cv.part()
     lens = (5.0, 8.0, 11.0, 8.5, 5.5)
     xs = (-5.5, -2.5, 1.0, 4.5, 7.5)
@@ -586,6 +614,7 @@ def draw_glaciarch(p):
     for x, ln, a in zip(xs, lens, angs):
         crystal(cv, HD(x, -9.0), a + p.lean + p.head_tilt, ln * (1 + 0.12 * p.bristle) * (1 - 0.6 * p.dead), 1.7,
                 cm)
+    cv.tag = "tête"
     cv.part(line=False)
     cv.tdisc(HD(1.0, -7.8), 1.8, C.GEM_AUR if alive else C.ICE_DEAD, flat=0.5 + 0.35 * min(1.0, g))
 
@@ -595,6 +624,7 @@ def draw_glaciarch(p):
 
     # ------------------------------------------------------------- front arm
     el_f = ik2(sh_f, p.fist, 14.0, 14.0, -p.elbow_dir)
+    cv.tag = "bras"
     cv.part()
     cv.tcapsule(sh_f, el_f, 5.0, 4.4, C.STL)
     cv.part()
@@ -607,12 +637,14 @@ def draw_glaciarch(p):
     cv.tpoly([(g0[0] + nx * 4.6, g0[1] + ny * 4.6), (g1[0] + nx * 5.8, g1[1] + ny * 5.8),
               (g1[0] - nx * 5.8, g1[1] - ny * 5.8), (g0[0] - nx * 4.6, g0[1] - ny * 4.6)], C.STL, bevel=2.0, base=0.62)
     # ice crystals growing out of the forearm toward the blade
+    cv.tag = "pointes"
     cv.part()
     fa = math.atan2(uy, ux)
     for tpos, side, ln in ((0.25, -1, 5.0), (0.55, -1, 6.5), (0.8, 1, 4.0), (0.45, 1, 3.5)):
         q = (g0[0] + (g1[0] - g0[0]) * tpos + nx * side * 4.0, g0[1] + (g1[1] - g0[1]) * tpos + ny * side * 4.0)
         crystal(cv, q, fa + side * 1.1 + 0.25, ln * (1 + 0.4 * p.bristle), 1.5, cm)
     # gauntlet
+    cv.tag = "bras"
     cv.part()
 
     def FQ(a, b):
@@ -622,6 +654,7 @@ def draw_glaciarch(p):
     for k in (-2.5, 0.0, 2.5):
         cv.tline(FQ(1.5, k), FQ(5.0, k), C.STL_BK, inten=0.2, decal=True)
     # pauldron: layered steel with tall crystals
+    cv.tag = "épaulière"
     cv.part()
     pc = (sh_f[0] + 0.5, sh_f[1] - 1.0)
     cv.tpoly([(pc[0] - 7, pc[1] + 2), (pc[0] - 4, pc[1] - 5), (pc[0] + 3, pc[1] - 6.5), (pc[0] + 8.5, pc[1] - 2),
@@ -631,6 +664,7 @@ def draw_glaciarch(p):
               (pc[0] - 5, pc[1] + 7)], C.STL_DK, bevel=1.3, base=0.6)
     cv.part(line=False)
     cv.tline((pc[0] - 5, pc[1] + 6.5), (pc[0] + 2, pc[1] + 8), C.SNOW_M, inten=0.8, decal=True)
+    cv.tag = "pointes"
     cv.part()
     for (dx, dy, a, ln) in ((-4, -5, -1.95, 7.0), (0.5, -6.5, -1.55, 10.0), (5, -5, -1.2, 6.5)):
         crystal(cv, (pc[0] + dx, pc[1] + dy), a + p.lean * 0.6, ln * (1 + 0.35 * p.bristle) * (1 - 0.5 * p.dead),

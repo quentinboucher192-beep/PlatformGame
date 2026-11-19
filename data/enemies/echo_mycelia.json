@@ -230,5 +230,6 @@
     "enrageTime": 75
   },
   "variantOf": "mycelia",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

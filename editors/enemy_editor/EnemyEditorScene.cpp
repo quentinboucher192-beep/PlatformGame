@@ -25,6 +25,12 @@ std::unique_ptr<Scene> makeEnemyEditorAdmin(GameServices& g, const std::string& 
 void EnemyEditorScene::onEnter() {
     g_.app.audio().stopMusic(500);
     auto list = g_.content.enemies();
+    // Automated checks (--enemy-parts, tests): Boss › Parties open (2.76.2).
+    if (g_.onlineOpen == "parts") {
+        tab_ = 6;
+        bossParts_ = true;
+        g_.onlineOpen.clear();
+    }
     if (admin_) {
         // One native, from the definition online (the revision this game downloaded).
         if (g_.content.isNativeEnemy(startId_)) select(startId_);
@@ -72,7 +78,7 @@ void EnemyEditorScene::duplicateToEdit() {
 
 void EnemyEditorScene::quit() {
     if (admin_) {
-        if (dirty_ && !confirmQuit_) {  // changes not published: asked once more
+        if ((dirty_ || partsDirty_) && !confirmQuit_) {  // changes not published (or parts not written): asked once more
             confirmQuit_ = true;
             return;
         }
@@ -114,6 +120,11 @@ void EnemyEditorScene::select(const std::string& id) {
     selectedAttack_ = 0;
     selectedPhase_ = 0;
     confirmDelete_ = false;
+    // Its parts read again (Boss › Parties), from its first sheet, its first pose (2.76.2).
+    partsFor_.clear();
+    partsSheet_ = partsPose_ = partsFrame_ = 0;
+    partsPlay_ = false;
+    partsChosen_.clear();
     history_.reset(work_.toJson());
     loadAnimation();
     arenaDirty_ = true;
@@ -328,13 +339,15 @@ void EnemyEditorScene::update(float dt) {
     if (arenaDirty_) resetArena();
     if (arena_) arena_->update(dt);
     if (previewPlaying_) previewAnim_.update(dt * previewSpeed_);
+    if (partsPlay_) partsTime_ += dt;
     InputManager& in = g_.app.input();
     if (controlPlayer_ && (in.keyPressed(SDL_SCANCODE_ESCAPE) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK))) controlPlayer_ = false;
     updatePublish();
     const EnemyEditAccess acc = access();
     if (!g_.ui.editingText() && in.ctrl() && !publish_) {
         if (in.shortcutPressed(SDLK_S)) {
-            if (acc.publish) openPublish();
+            if (acc.parts && partsDirty_ && tab_ == 6 && bossParts_) saveParts();  // Boss › Parties (2.76.2)
+            else if (acc.publish) openPublish();
             else saveEnemy();
         }
         // Undo / redo: only where something can change (a read-only native has no history).
@@ -365,7 +378,8 @@ void EnemyEditorScene::render(float alpha) {
     const float bh = top - ui.s(24), gap = ui.s(10);
     auto widthOf = [&](const std::string& t, float minW) { return std::max(minW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(40)); };
     float bx = W - ui.s(16);
-    const std::string quitLabel = admin_ ? (confirmQuit_ ? "Quitter sans publier" : "Retour") : "Quitter";
+    const std::string quitLabel =
+        admin_ ? (confirmQuit_ ? (dirty_ ? "Quitter sans publier" : "Quitter sans enregistrer") : "Retour") : "Quitter";
     const float qw = widthOf(quitLabel, ui.s(124));
     bx -= qw;
     UIContext::ButtonStyle q;

@@ -308,5 +308,6 @@
     "brainVersion": 3
   },
   "variantOf": "thornwarden",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

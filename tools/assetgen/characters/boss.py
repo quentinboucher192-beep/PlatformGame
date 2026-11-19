@@ -350,7 +350,8 @@ def _rubble(t):
     return cv.render()
 
 
-def build():
+def thornwarden_sheet():
+    """The Thornwarden's sheet (also read by tools/assetgen/hitparts.py, profile « rig »)."""
     s = Sheet("sprites/enemies/thornwarden.png", W, H, [48, 96])
     s.add("idle", idle(), fps=6, loop=True)
     s.add("walk", walk(), fps=9, loop=True)
@@ -367,7 +368,11 @@ def build():
     s.add("hurt", hurt(), durations=[0.08, 0.14], loop=False)
     s.add("death", death(), durations=[0.1, 0.12, 0.12, 0.14, 0.14, 0.16, 0.16, 0.18, 0.12, 0.12, 0.12, 0.14, 0.16, 0.3],
           loop=False)
-    s.save("animations/thornwarden.json")
+    return s
+
+
+def build():
+    thornwarden_sheet().save("animations/thornwarden.json")
     # v2 bosses (docs/ASSET_SPEC.md section 4b), one module per family of rigs; bosses_d: the
     # giga boss of the Noyau (Singularis, eight phase sheets); bosses_e: Pyrrhax, the obsidian
     # dragon (eight phase sheets).

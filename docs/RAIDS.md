@@ -1098,6 +1098,32 @@ jusqu'à ces tirs. Le lockstep reste le même sur chaque ordinateur d'une même 
 ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersion` (15), `kCoopSimulationVersion` (2) et
 `kRankingGeneration` (8) ne changent pas, aucun record n'est effacé.
 
+### 2.76.2 — les Gigaboss se battent par parties
+
+Les 8 Gigaboss d'Asterion se battent par leurs **parties de frappe** dès la version de simulation **17**
+(`"partsFromVersion": 17` ; [HITPARTS.md](HITPARTS.md), [HITBOX_PARTS.md](HITBOX_PARTS.md)). Leurs parties sont des
+**régions** dessinées sur leur image de repos (profil « regions » de `tools/assetgen/hitparts.py`), découpées en convexes
+sur chaque image :
+
+| Gigaboss | Point faible (× 2) | Blindé (× 0,5) | Blesse |
+|---|---|---|---|
+| Skullmaw | yeux | cornes | mâchoire |
+| Dreadfang | jointures (blessent aussi pendant la ruée) | épaule | griffes |
+| Pyroclast | phalanges | bras | doigts |
+| Heartbreaker | cœur | côtes, épaules | pointe |
+| Voidworm | gueule (blesse aussi pendant ses crachats) | racines | épines |
+| Graviton | orbe, noyau | pied | débris |
+| Titanus | genou | cuisse | pied |
+| Cœur d'Asterion | cœur | côtes | antennes |
+
+Leurs points faibles et cibles d'avant (ennemis collés à eux), leurs blindages de phase et leurs mécanismes ne changent
+pas. Les coups qui touchent leur corps en prennent le multiplicateur de la partie touchée. Tout leur corps blesse au
+contact, au pixel près, et leurs parties « blesse » frappent en plus pendant leurs attaques ; leurs attaques gardent
+leurs zones. La fiche « Où frapper » dessine leurs parties à la
+couleur de leur rôle, et leur boîte d'avant en cadre blanc. Les parties suivent la pose dans le pas fixe : le lockstep
+reste le même sur chaque ordinateur. `TITAN_REVISION` passe à 6 : une instance ne réunit que des joueurs aux mêmes
+règles. `tests/test_hitparts_gigaboss.cpp` vérifie leurs rôles, et leurs coups par parties en 17 et par boîte en 16.
+
 ## 20. Réanimations, groupe éliminé, vestiaire et liquides (2.75.1)
 
 * **Les joueurs se traversent** (raids et coopération, `GameWorld::solidTeammates`) : plus de corps solide, plus
@@ -1266,7 +1292,9 @@ l'horloge, l'écran ni le réseau) :
   suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît.
 * **Limites mesurées** (à 7 joueurs simulés, niveau Expert) : seuls, ils finissent les zones (l'embuscade de l'Épaule en
   14 s, le gardien du Biceps en 16 s, le générateur de la Veine en 13 s, le vestiaire en 15 s) et, invincibles, battent
-  Pyroclast (depuis sa phase 2 : évents tenus ensemble, points faibles et corps à nu), Heartbreaker, Voidworm et Graviton.
+  Pyroclast (depuis sa phase 2 : évents tenus ensemble, points faibles et corps à nu ; en 906 s de jeu depuis qu'il se
+  bat par parties en 2.76.2 : seuls ses phalanges, son poing et son bras comptent, jamais ses doigts — ils le frappent là,
+  depuis les plateformes ou quand son poing descend), Heartbreaker, Voidworm et Graviton.
   Ils ne savent pas encore battre **Titanus** (ses entraves sont haut sur ses jambes, hors de portée depuis le sol),
   **Skullmaw** (ses miroirs ne suffisent pas à le mettre à nu) ni **Dreadfang** (ses charges le gardent hors de leur portée),
   et, mortels, ils tombent face aux Gigaboss en quelques minutes (les attaques propres à chaque boss ne sont lues qu'en
@@ -1319,9 +1347,9 @@ regardés (×1, ou **×2 / ×4 « accéléré »**, dit dans la ligne du test).
 | Mesure (Release, une machine de 4 cœurs partagée, sans affichage) | Résultat |
 |---|---|
 | Graphe d'une zone, construit une fois par zone et par état de ses portes | Épaule : 169 places, 705 liaisons en **0,4 ms** ; Poignet-verrou (la plus grande) : 1 845 places, 17 960 liaisons en **14 à 19 ms** |
-| Un groupe de 8 places (7 joueurs simulés + la place libre), monde et IA, combat de Pyroclast | 65 675 pas en 1,6 à 2,7 s : **0,02 à 0,04 ms par pas** |
-| 7 groupes de 7, du vestiaire à leur première zone (tous sortis en 15 s de jeu), puis 30 s de combats | pas du raid (les 7 mondes) : **0,24 à 0,28 ms** en moyenne, 9 ms au pire ; puis **0,10 ms**, 10,5 ms au pire |
-| Raid complet du test (7 groupes de 8 places, des antres à la chute du Cœur : 996 s de jeu, 836 297 pas de mondes) | **0,15 à 0,35 ms** par pas du raid en moyenne, **109 à 126 ms** au pire (plusieurs groupes qui changent de zone au même pas : mondes chargés, graphes construits) |
+| Un groupe de 8 places (7 joueurs simulés + la place libre), monde et IA, combat de Pyroclast par parties (2.76.2) | 108 678 pas en 3,4 s : **0,03 ms par pas** |
+| 7 groupes de 7, du vestiaire à leur première zone (tous sortis en 15 s de jeu), puis 30 s de combats | pas du raid (les 7 mondes) : **0,19 à 0,28 ms** en moyenne, 5,4 à 9 ms au pire ; puis **0,10 à 0,16 ms**, 5,4 à 10,5 ms au pire |
+| Raid complet du test (7 groupes de 8 places, des antres à la chute du Cœur ; avec les Gigaboss par parties de la 2.76.2 : 2 226 s de jeu, 1 869 952 pas de mondes) | **0,29 à 0,33 ms** par pas du raid en moyenne, **85 ms** au pire (plusieurs groupes qui changent de zone au même pas : mondes chargés, graphes construits) |
 
 À 120 pas par seconde, un raid de 7 groupes coûte donc environ **0,7 ms par image** (60 images par seconde) ; en « ×4
 accéléré », les 6 groupes non regardés font 4 pas chacun : environ **2,5 ms par image**. Les pointes (un changement de zone
@@ -1370,8 +1398,9 @@ est déjà prise : elle garde son pouvoir pour tous).
 
 ### Versions
 
-Les règles d'une partie de raid changent (âmes, réanimation, vestiaire) : `TITAN_REVISION` passe à **6** (une instance ne
-réunit que des jeux aux mêmes règles), `titan.json` et `server/src/raidTitan.json` régénérés ; les empreintes de référence
+Les règles d'une partie de raid changent (âmes, réanimation, vestiaire) : `TITAN_REVISION` passe à **7** (le 6 est celui
+des boss par parties de la 2.76.2 ; une instance ne réunit que des jeux aux mêmes règles), `titan.json` et
+`server/src/raidTitan.json` régénérés ; les empreintes de référence
 des raids et de la coopération 3 sont mises à jour. Tests : `tests/test_raid_bots.cpp` (graphe, zones finies par les
 joueurs simulés seuls — embuscade, gardien, générateur, plaque du vestiaire, Pyroclast depuis sa phase 2 (joueurs simulés
 invincibles) —, même empreinte à 2 et 8 places, pilote automatique, raid complet jusqu'à la chute du Cœur sans aucun
@@ -1379,7 +1408,7 @@ rapport (configuration réduite : chaque branche depuis son antre, les Gigaboss 
 phase 4 — la vie que ce départ retire n'est pas comptée comme des dégâts : seul ce que les groupes ôtent ensuite est partagé —,
 7 joueurs simulés Experts et invincibles par groupe, Titanus, Skullmaw et Dreadfang donnés comme vaincus par d'autres
 groupes ; les vraies zones, les vrais combats : Heartbreaker, Pyroclast, Voidworm et Graviton tombent sous les joueurs
-simulés, puis le Cœur sous les groupes ensemble, en 996 s de jeu), place libre et spectateur, âme et
+simulés, puis le Cœur sous les groupes ensemble, en 2 226 s de jeu), place libre et spectateur, âme et
 réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va au dernier endroit sûr au-dessus du vide
 (même empreinte à 2 et 8 places), âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé
 sans rien prendre, noms des tablettes sans chevauchement),

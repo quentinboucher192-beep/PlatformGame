@@ -7,7 +7,7 @@
 //   --boss-attack <id>      with --level: the active boss uses this attack whenever it can (screenshots)
 //   --editor [<id>]         start in the level editor (--editor-help: with its help open)
 //   --tutorial              start the tutorial of the first launch at once (--tutorial-welcome: its welcome)
-//   --enemy-editor          start in the enemy editor
+//   --enemy-editor          start in the enemy editor (--enemy-parts: Boss › Parties open, 2.76.2)
 //   --planets               start on the planet selection map
 //   --level-select <planet> start on the levels of a planet (the last level played selected)
 //   --hud-editor            open the HUD editor (place and size of the HUD elements)
@@ -758,6 +758,7 @@ int main(int argc, char** argv) {
         else app.pushScene(makeLevelEditor(game, value("--editor")));
     } else if (has("--enemy-editor")) {
         if (std::string at = value("--enemy-attack"); !at.empty()) game.onlineOpen = "attack:" + at;
+        if (has("--enemy-parts")) game.onlineOpen = "parts";  // 2.76.2: Boss › Parties
         app.pushScene(makeEnemyEditor(game, value("--enemy-editor"), std::atoi(value("--enemy-tab").c_str())));
     } else if (std::string ls = value("--level-select"); !ls.empty()) {
         app.pushScene(makeLevelSelect(game, ls));

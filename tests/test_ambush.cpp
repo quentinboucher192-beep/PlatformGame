@@ -105,7 +105,7 @@ struct Ambush {
 }  // namespace
 
 TEST_CASE("ambushes: a fall keeps the ambush as it was, Nova takes it up at the same wave") {
-    CHECK(kSimulationVersion == 16);  // 2.71: the attack upwards and downwards; 2.76: bosses by parts, bounded flight
+    CHECK(kSimulationVersion == 17);  // 2.71: the attack upwards and downwards; 2.76: bosses by parts, bounded flight; 17: every boss by parts
     CHECK(kRankingGeneration == 8);  // the records are kept (the player asked for it)
     Ambush a;
     a.steps(30);

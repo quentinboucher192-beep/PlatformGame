@@ -157,6 +157,11 @@ const PartRule* PartRules::rule(const std::string& name) const {
     return nullptr;
 }
 
+const Vec2* PartRules::origin(const std::string& attackId) const {
+    const auto it = origins.find(attackId);
+    return it == origins.end() ? nullptr : &it->second;
+}
+
 PartRule PartRules::ruleOr(const std::string& name) const {
     if (const PartRule* r = rule(name)) return *r;
     PartRule r;
@@ -169,6 +174,10 @@ PartRules PartRules::parse(const Json& parts, int fromVersion) {
     out.fromVersion = std::max(0, fromVersion);
     if (!parts.is_object()) return out;
     out.profile = jstr(parts, "profile");
+    const Json origins = parts.value("origins", Json::object());
+    if (origins.is_object())
+        for (auto& [id, o] : origins.items())
+            if (o.is_array() && o.size() == 2 && o[0].is_number() && o[1].is_number()) out.origins[id] = {o[0].get<float>(), o[1].get<float>()};
     const Json roles = parts.value("roles", Json::object());
     if (!roles.is_object()) return out;
     for (auto& [name, r] : roles.items()) {
@@ -185,19 +194,117 @@ PartRules PartRules::parse(const Json& parts, int fromVersion) {
     return out;
 }
 
-const PartRules& PartRules::of(const std::string& enemyId) {
-    static std::mutex mutex;
-    static std::map<std::string, PartRules> loaded;
-    std::lock_guard<std::mutex> lock(mutex);
-    auto it = loaded.find(enemyId);
-    if (it == loaded.end()) {
-        PartRules r;
-        if (!enemyId.empty() && enemyId.find_first_of("/\\.") == std::string::npos)
-            if (auto j = FileUtil::loadJson(Paths::dataDir() / "enemies" / (enemyId + ".json")))
-                r = parse(j->value("parts", Json()), jget<int>(*j, "partsFromVersion", 0));
-        it = loaded.emplace(enemyId, std::move(r)).first;
+namespace {
+/// The rules read, per enemy (std::map: a reference to an entry stays valid when another is added).
+struct RulesCache {
+    std::mutex mutex;
+    std::map<std::string, PartRules> loaded;
+};
+RulesCache& rulesCache() {
+    static RulesCache c;
+    return c;
+}
+
+PartRules readRules(const std::string& enemyId) {
+    auto load = [](const std::string& id) -> std::optional<Json> {
+        if (id.empty() || id.find_first_of("/\\.") != std::string::npos) return std::nullopt;
+        return FileUtil::loadJson(Paths::dataDir() / "enemies" / (id + ".json"));
+    };
+    PartRules r;
+    if (auto j = load(enemyId)) {
+        Json parts = j->value("parts", Json());
+        // 2.76.2: an écho fights with the parts of its original (the same sheet), unless it names its own.
+        if (!parts.is_object())
+            if (auto original = load(jstr(*j, "variantOf"))) parts = original->value("parts", Json());
+        r = PartRules::parse(parts, jget<int>(*j, "partsFromVersion", 0));
     }
+    return r;
+}
+}  // namespace
+
+const PartRules& PartRules::of(const std::string& enemyId) {
+    RulesCache& c = rulesCache();
+    std::lock_guard<std::mutex> lock(c.mutex);
+    auto it = c.loaded.find(enemyId);
+    if (it == c.loaded.end()) it = c.loaded.emplace(enemyId, readRules(enemyId)).first;
     return it->second;
+}
+
+void PartRules::reload(const std::string& enemyId) {
+    PartRules r = readRules(enemyId);
+    RulesCache& c = rulesCache();
+    std::lock_guard<std::mutex> lock(c.mutex);
+    // Refreshed in place: the references of() gave stay valid (the enemy editor calls this on the main
+    // thread, between two frames).
+    c.loaded[enemyId] = std::move(r);
+}
+
+std::string withPartRules(const std::string& fileText, const PartRules& rules, std::string* error) {
+    using Ordered = nlohmann::ordered_json;
+    Ordered j = Ordered::parse(fileText, nullptr, false);
+    if (j.is_discarded() || !j.is_object() || !j.contains("id")) {
+        if (error) *error = "Fichier d'ennemi illisible";
+        return {};
+    }
+    Ordered& parts = j["parts"];
+    if (!parts.is_object()) parts = Ordered::object();
+    if (!rules.profile.empty() && !parts.contains("profile")) parts["profile"] = rules.profile;
+    // An écho that took its original's parts gets its own block: with their origins too (its shots unchanged).
+    if (!rules.origins.empty() && !parts.contains("origins")) {
+        Ordered o = Ordered::object();
+        for (const auto& [id, at] : rules.origins) {
+            auto num = [](float v) { return v == std::floor(v) ? Ordered(static_cast<int>(v)) : Ordered(static_cast<double>(v)); };
+            o[id] = Ordered::array({num(at.x), num(at.y)});
+        }
+        parts["origins"] = std::move(o);
+    }
+    const Ordered before = parts.contains("roles") && parts["roles"].is_object() ? parts["roles"] : Ordered::object();
+    auto write = [](const PartRule& r) {
+        Ordered o = Ordered::object();
+        o["role"] = partRoleId(r.role);
+        if (r.role != PartRole::Hurt) {
+            // Its multiplier to the hundredth, an integer written as one (« 2 », « 0.5 »).
+            const double d = std::round(static_cast<double>(std::clamp(r.damage, 0.0f, 4.0f)) * 100.0) / 100.0;
+            if (d == std::floor(d)) o["damage"] = static_cast<int>(d);
+            else o["damage"] = d;
+            if (!r.hurtDuring.empty()) o["hurtDuring"] = r.hurtDuring;
+        }
+        return o;
+    };
+    Ordered roles = Ordered::object();
+    // The roles already there in their order (a part without a rule now: removed), then the new ones.
+    for (auto it = before.begin(); it != before.end(); ++it)
+        if (const PartRule* r = rules.rule(it.key())) roles[it.key()] = write(*r);
+    for (const PartRule& r : rules.rules)
+        if (!roles.contains(r.name)) roles[r.name] = write(r);
+    parts["roles"] = std::move(roles);
+    try {
+        return j.dump(2) + "\n";
+    } catch (const nlohmann::json::exception&) {  // a name that is not UTF-8
+        if (error) *error = "Fichier d'ennemi illisible";
+        return {};
+    }
+}
+
+bool savePartRules(const std::string& enemyId, const PartRules& rules, std::string* error) {
+    if (enemyId.empty() || enemyId.find_first_of("/\\.") != std::string::npos) {
+        if (error) *error = "Identifiant invalide";
+        return false;
+    }
+    const fs::path path = Paths::dataDir() / "enemies" / (enemyId + ".json");
+    const std::optional<std::string> text = FileUtil::readText(path);
+    if (!text) {
+        if (error) *error = "Fichier introuvable : data/enemies/" + enemyId + ".json";
+        return false;
+    }
+    const std::string out = withPartRules(*text, rules, error);
+    if (out.empty()) return false;
+    if (out != *text && !FileUtil::writeTextAtomic(path, out)) {
+        if (error) *error = "Écriture impossible : data/enemies/" + enemyId + ".json";
+        return false;
+    }
+    PartRules::reload(enemyId);
+    return true;
 }
 
 const char* partRoleId(PartRole r) {
@@ -341,6 +448,18 @@ bool hurtsWithParts(const Enemy& e, const Rect& box) {
         const bool now = rule.role == PartRole::Hurt ||
                          (attack && std::find(rule.hurtDuring.begin(), rule.hurtDuring.end(), attack->id) != rule.hurtDuring.end());
         if (now && convexOverlapsRect(placePiece(piece, *pose.sheet, feet, e.def().scale, flip), box)) return true;
+    }
+    return false;
+}
+
+bool touchesWithParts(const Enemy& e, const Rect& box) {
+    const Pose pose = poseOf(e);
+    if (!pose.pieces) return false;
+    const Vec2 feet = e.box.bottomCenter();
+    const bool flip = e.facing < 0.0f;
+    for (const HitPartPiece& piece : *pose.pieces) {
+        if (piece.part < 0 || piece.part >= static_cast<int>(pose.sheet->parts.size())) continue;
+        if (convexOverlapsRect(placePiece(piece, *pose.sheet, feet, e.def().scale, flip), box)) return true;
     }
     return false;
 }

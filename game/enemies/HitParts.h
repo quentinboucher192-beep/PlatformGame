@@ -14,8 +14,9 @@
 // definition (EnemyDefinition) nor of a level's fingerprint: the records are kept; the rules of the run
 // decide (a replay of before plays with its box). docs/HITBOX_PARTS.md: how to plug a boss in.
 //
-// A boss that fights by parts (Pyrrhax from 16, GameWorld::simulationVersion() ≥ partsFromVersion): its animation
-// advances in the fixed step (its pose is part of the simulation), the player's blows and powers hit the
+// A boss that fights by parts (Pyrrhax from 16, the gigaboss of the campaign from 17, GameWorld::simulationVersion()
+// ≥ partsFromVersion): its animation advances in the fixed step (its pose is part of the simulation; from 17
+// the sheet of its phase too, kPartsLookSimulation), the player's blows and powers hit the
 // part they touch — weak point first, then a normal part, then armour — times its multiplier, and only its
 // parts that hurt (claws, breath, its head while it bites) hurt on contact. Every other boss keeps its box;
 // its sheets show its parts (« affichage »).
@@ -43,6 +44,9 @@ struct AnimationSet;
 /// The version of the simulation of the first boss that fights by parts (Pyrrhax, 2.76.0); each boss names
 /// its own (« partsFromVersion »).
 constexpr int kHitPartsSimulation = 16;
+/// 2.76.2: from this version, a boss that fights by parts takes the sheet of its phase in the fixed step
+/// (its pose kept, Animator::swapSet), never in a display update: its parts are the same at any frame rate.
+constexpr int kPartsLookSimulation = 17;
 
 /// One convex piece of a part in a cell: vertices in the frame's pixels (origin at its top left).
 struct HitPartPiece {
@@ -80,16 +84,34 @@ struct PartRule {
 /// The rules of an enemy's parts (data/enemies/<id>.json « parts »).
 struct PartRules {
     int fromVersion = 0;  // « partsFromVersion »: its fight uses its parts from this version on (0: never, drawn only)
-    std::string profile;  // how hitparts.py cuts its sprite ("dragon", "" = its silhouette)
+    std::string profile;  // how hitparts.py cuts its sprite ("dragon", "regions", "rig", "" = its silhouette)
     std::vector<PartRule> rules;
+    /// 2.76.2 (« origins »): where the shots of an attack leave when it fights by parts, in pixels of its
+    /// sprite from its feet (× its scale, like an attack's origin): its drawing, without changing its
+    /// definition (nor the fingerprint of its levels); a replay of before keeps the attack's own.
+    std::map<std::string, Vec2> origins;
     const PartRule* rule(const std::string& name) const;
+    /// The origin of an attack's shots by its parts (null: the attack's own).
+    const Vec2* origin(const std::string& attackId) const;
     /// The role and multiplier of a part without a rule: a normal part, × 1.
     PartRule ruleOr(const std::string& name) const;
     /// `parts`: the « parts » block; `fromVersion`: « partsFromVersion » (0 without it).
     static PartRules parse(const Json& parts, int fromVersion = 0);
-    /// The rules of an official enemy (read once and kept, thread-safe); empty without « parts ».
+    /// The rules of an official enemy (read once and kept, thread-safe); empty without « parts ». 2.76.2:
+    /// a variant without « parts » (an écho, « variantOf ») takes those of its original, with its own
+    /// « partsFromVersion ».
     static const PartRules& of(const std::string& enemyId);
+    /// 2.76.2: reads them again from data/enemies/<id>.json (after the enemy editor wrote them).
+    static void reload(const std::string& enemyId);
 };
+
+/// 2.76.2 (enemy editor): the text of an enemy's file (data/enemies/<id>.json) with the roles of its parts
+/// replaced by `rules` — every other key, the order of the keys and the roles already there, their
+/// indentation kept (a file written with its own rules comes back byte for byte). Empty with `error` set
+/// when the text is not an enemy's file.
+std::string withPartRules(const std::string& fileText, const PartRules& rules, std::string* error = nullptr);
+/// Writes them into data/enemies/<id>.json and reads them again (PartRules::reload). False with `error`.
+bool savePartRules(const std::string& enemyId, const PartRules& rules, std::string* error = nullptr);
 
 const char* partRoleId(PartRole r);
 /// « Point faible », « Partie normale », « Blindée », « Blesse ».
@@ -124,5 +146,14 @@ bool reaches(const Enemy& e, const GameWorld& w, Vec2 c, float radius, float* mu
 /// Whether a part of `e` that hurts touches `box` (its claws, its breath; a part of `hurtDuring` while
 /// that attack is under way).
 bool hurtsWithParts(const Enemy& e, const Rect& box);
+
+/// 2.76.2 (the player's rule): from this version a boss that fights by parts hurts on contact by ANY of its parts —
+/// the precise shape of its frame, never its box — with its contact damage, and its parts that hurt (claws, breath,
+/// hammer, a head while it bites) also strike during their attacks with the attack's damage. The roles of the blows
+/// it takes do not change (weak point × 2, armour × 0,5). With the rules of 16 (Pyrrhax's replays of 2.76.0) only
+/// its parts that hurt hurt on contact.
+constexpr int kWholeBodyContactSimulation = 17;
+/// Whether any part of `e` (its current pose) touches `box`.
+bool touchesWithParts(const Enemy& e, const Rect& box);
 
 }  // namespace cosmic

@@ -158,7 +158,9 @@ TEST_CASE("raid bots (2.77): they defeat Pyroclast by themselves from its phase 
     auto session = botsOnly(s, 8, 7, state, 2, true);  // its carapace phase, then its last
     const int idx = objectiveIndex("main_pyroclast");
     const auto t0 = std::chrono::steady_clock::now();
-    const int took = until(*session, 720 * kSimHz, [&] { return raid::Branch::done(session->run().localDone(), idx) || session->run().wiped(); });
+    // 2.76.2: it fights by its parts — only its phalanges (× 2), its fist and its arm (× 0,5) count, its fingers never:
+    // the simulated players strike it where a blow counts, from the platforms or when its fist comes down (slower).
+    const int took = until(*session, 1200 * kSimHz, [&] { return raid::Branch::done(session->run().localDone(), idx) || session->run().wiped(); });
     const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
     std::printf("  Pyroclast : %s en %d pas (%.0f s de jeu, %.0f ms ; phase %d)\n", raid::Branch::done(session->run().localDone(), idx) ? "vaincu" : "DEBOUT",
                 took, took / static_cast<double>(kSimHz), ms, session->run().gigaboss().phaseReached());

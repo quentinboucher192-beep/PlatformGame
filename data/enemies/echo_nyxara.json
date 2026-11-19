@@ -221,5 +221,6 @@
     "darkPhase": 3
   },
   "variantOf": "nyxara",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

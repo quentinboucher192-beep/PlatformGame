@@ -133,5 +133,6 @@
  },
  "tint": "#ffc8e8",
  "variantOf": "mycelia",
- "tutorial": true
+ "tutorial": true,
+ "partsFromVersion": 17
 }

@@ -82,8 +82,10 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
         ui.setScroll("scroll" + std::to_string(tab_), ui.s(scrollTo_));
         scrollTo_ = -1.0f;
     }
-    ui.beginScroll("scroll" + std::to_string(tab_), area, ui.s(2200));
-    float y = area.y + ui.s(6) - ui.scrollOffset();
+    // Its height: at least the room of before, else what the tab took last time (Boss › Parties, 2.76.2).
+    ui.beginScroll("scroll" + std::to_string(tab_), area, std::max(ui.s(2200), contentH_));
+    const float y0 = area.y + ui.s(6) - ui.scrollOffset();
+    float y = y0;
     // Read-only: every field shown greyed, reachable, unchanged (the lists of attacks and phases
     // still choose what is shown).
     const bool roBefore = ui.readOnly;
@@ -97,6 +99,7 @@ void EnemyEditorScene::drawProperties(const Rect& r) {
         case 5: tabRewards(x, y, w); break;
         case 6: tabBoss(x, y, w); break;
     }
+    contentH_ = y - y0 + ui.s(40);
     ui.readOnly = roBefore;
     ui.endScroll();
     ui.popId();
@@ -754,6 +757,25 @@ void EnemyEditorScene::tabRewards(float x, float& y, float w) {
 
 void EnemyEditorScene::tabBoss(float x, float& y, float w) {
     UIContext& ui = g_.ui;
+    if (hasHitParts()) {
+        // 2.76.2: its phases and settings, or its hit parts (EnemyEditorParts.cpp). Choosing what is shown is
+        // never read-only.
+        const bool ro = ui.readOnly;
+        ui.readOnly = false;
+        UIContext::ButtonStyle a, b;
+        a.small = b.small = true;
+        a.selected = !bossParts_;
+        b.selected = bossParts_;
+        const float bw = (w - ui.s(10)) * 0.5f;
+        if (ui.button("mode_phases", {x, y, bw, ui.s(46)}, "Phases et réglages", a)) bossParts_ = false;
+        if (ui.button("mode_parts", {x + bw + ui.s(10), y, bw, ui.s(46)}, "Parties (où frapper)", b)) bossParts_ = true;
+        ui.readOnly = ro;
+        y += ui.s(56);
+        if (bossParts_) {
+            tabParts(x, y, w);
+            return;
+        }
+    }
     bool c = false;
     c |= ui.toggle("isboss", {x, y, w, ui.s(44)}, "Mini-boss (phases, jauge de vie)", work_.isBoss);
     y += ui.s(52);

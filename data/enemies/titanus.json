@@ -193,6 +193,81 @@
       "lead": 0.8
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "genou",
+        "poly": [
+          128,
+          128,
+          172,
+          128,
+          172,
+          170,
+          128,
+          170
+        ]
+      },
+      {
+        "name": "cuisse",
+        "poly": [
+          86,
+          18,
+          162,
+          18,
+          162,
+          120,
+          86,
+          120
+        ]
+      },
+      {
+        "name": "pied",
+        "poly": [
+          84,
+          206,
+          192,
+          206,
+          192,
+          246,
+          84,
+          246
+        ]
+      },
+      {
+        "name": "jambe",
+        "poly": [
+          84,
+          118,
+          180,
+          118,
+          180,
+          208,
+          84,
+          208
+        ]
+      }
+    ],
+    "roles": {
+      "genou": {
+        "role": "weak",
+        "damage": 2
+      },
+      "cuisse": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "pied": {
+        "role": "hurt"
+      },
+      "jambe": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

@@ -114,18 +114,23 @@ class Aurorax:
         ice = ICE if not dead else ICE_DEAD
         ice_dk = ICE_DK if not dead else ICE_DEAD
         hand_f, hand_b = M(p.hand_f), M(p.hand_b)
+        cv.tag = "cape"  # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
         self._cape(cv, p, B, dead)
         # back leg, back arm, far antler
+        cv.tag = "jambes"
         self._leg(cv, B(-4.0, 2.0), M(p.foot_b), ice_dk)
         sh_b = B(-6.0, -27.0)
         el = ik2(sh_b, hand_b, 11.0 * K, 11.0 * K, bend=1.0)
+        cv.tag = "bras"
         cv.part()
         cv.capsule(sh_b, el, 3.8 * K, 3.2 * K, ice_dk)
         cv.capsule(el, hand_b, 3.2 * K, 2.7 * K, ice_dk)
         cv.part()
         cv.disc(hand_b, 3.0 * K, ice_dk, bias=0.05)
+        cv.tag = "bois"
         self._antler(cv, p, HD, far=True, dead=dead)
         # torso
+        cv.tag = "corps"
         cv.part()
         tv = [(-8, 0), (8, 0), (12, -10), (15, -19), (12, -28), (4, -32), (-6, -31), (-12, -25), (-14, -13)]
         torso = [B(*q) for q in tv]
@@ -149,6 +154,7 @@ class Aurorax:
         cv.capsule(B(-8.5, -1.0), B(8.5, -1.0), 1.6 * K, 1.6 * K, ice_dk)
         # aurora heart
         g = B(4.0, -19.0)
+        cv.tag = "cœur"
         cv.part()
         gm = GEM if not dead else GEM_DEAD
         r = 6.6 * K
@@ -161,26 +167,32 @@ class Aurorax:
         if p.gem > 1.0 and not dead:
             cv.px_set(g[0] - 1, g[1] - r2 * 0.5, gm, inten=1.0)
         # tassets (crystal shards hanging from the waist)
+        cv.tag = "corps"
         cv.part()
         for (x0, x1, y1) in ((-9, -3, 9), (-4, 3, 11), (2, 9, 9)):
             a, b = B(x0, 0), B(x1, 0)
             tip = B((x0 + x1) / 2 + 1, y1)
             cv.poly([a, b, tip], ice_dk, bevel=1.2, base=0.55)
         # front leg
+        cv.tag = "jambes"
         self._leg(cv, B(5.0, 2.0), M(p.foot_f), ice)
         # neck + head
+        cv.tag = "tête"
         cv.part()
         cv.capsule(B(3.0, -29.0), HD(-2.0, 3.0), 4.8 * K, 4.0 * K, ice_dk)
         self._head(cv, p, HD, ice, dead)
+        cv.tag = "bois"
         self._antler(cv, p, HD, far=False, dead=dead)
         # front arm + lance
         sh_f = B(8.0, -25.0)
+        cv.tag = "lance"
         if p.lance:
             butt, tip, d = self.lance_pts(p)
             cv.part()
             cv.capsule(butt, tip, 1.5, 1.3, ice_dk)
             self._blade(cv, p, tip, d, dead)
         el = ik2(sh_f, hand_f, 11.0 * K, 11.0 * K, bend=-1.0)
+        cv.tag = "bras"
         cv.part()
         cv.capsule(sh_f, el, 4.2 * K, 3.5 * K, ice)
         cv.part()
@@ -188,6 +200,7 @@ class Aurorax:
         cv.part()
         cv.disc(hand_f, 3.3 * K, ice, bias=0.05)
         # pauldron
+        cv.tag = "épaulière"
         cv.part()
         pa = [B(1, -31), B(12, -30), B(16, -23), B(10, -19), B(4, -23)]
         cv.poly(pa, ice, bevel=1.8, base=0.66)
@@ -229,7 +242,7 @@ class Aurorax:
         cv.part()
         cv.poly([(knee[0] - 3.0, knee[1] - 3.0), (knee[0] + 5.5, knee[1] - 1.0), (knee[0] + 1.0, knee[1] + 4.0)], m,
                 bevel=1.0, base=0.66)
-        # hoof
+        # hoof (part of its legs, « jambes »)
         cv.part()
         x, y = foot
         cv.poly([(x - 4.0 * K, y - 4.6 * K), (x + 3.4 * K, y - 4.6 * K), (x + 5.4 * K, y + 0.6),

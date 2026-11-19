@@ -58,9 +58,11 @@ class Pose:
 
 
 def thorn(cv, base, ang, ln, wd, mat=THORN):
+    was, cv.tag = cv.tag, "ronces"  # 2.76.2: hit parts (raster.LABELS)
     tip = (base[0] + math.cos(ang) * ln, base[1] + math.sin(ang) * ln)
     nx, ny = -math.sin(ang) * wd, math.cos(ang) * wd
     cv.tpoly([(base[0] + nx, base[1] + ny), tip, (base[0] - nx, base[1] - ny)], mat, bevel=0.8, base=0.6)
+    cv.tag = was
 
 
 def chaikin(pts, it=2):
@@ -75,6 +77,7 @@ def chaikin(pts, it=2):
 
 
 def vine(cv, pts, r, mat, thorns=(), bristle=0.0, buds=(), bud_level=0.5):
+    was, cv.tag = cv.tag, "ronces"  # 2.76.2: hit parts (raster.LABELS)
     cv.part()
     sm = chaikin(list(pts))
     cv.tchain(sm, [r] * len(sm), mat)
@@ -87,6 +90,7 @@ def vine(cv, pts, r, mat, thorns=(), bristle=0.0, buds=(), bud_level=0.5):
         cv.part(line=False)
         p = pts[min(i, len(pts) - 1)]
         cv.tdisc((p[0], p[1] - r * 0.6), 1.1 + 0.4 * bud_level, BUD, flat=0.4 + 0.5 * bud_level)
+    cv.tag = was
 
 
 def draw(p):
@@ -110,6 +114,7 @@ def draw(p):
         return (hc[0] + x * hcs - y * hsn, hc[1] + x * hsn + y * hcs)
 
     # ------------------------------------------------------------ cloak (back)
+    cv.tag = "cape"  # 2.76.2: the hit parts of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
     cv.part()
     wv = p.cloak_wave
     lift = p.cloak_lift
@@ -120,6 +125,7 @@ def draw(p):
     cv.tpoly(cloak, CLOAK, bevel=2.0, base=0.55)
 
     # ------------------------------------------------------------- back arm
+    cv.tag = "bras"
     cv.part()
     el_b = ik2(sh_b, p.hand_b, 11.5, 11.5, -1.0)
     cv.tcapsule(sh_b, el_b, 4.2, 3.6, ARMOR_BK)
@@ -129,6 +135,7 @@ def draw(p):
         a = math.atan2(p.hand_b[1] - el_b[1], p.hand_b[0] - el_b[0]) + k * 0.4
         cv.tcapsule(p.hand_b, (p.hand_b[0] + math.cos(a) * 5, p.hand_b[1] + math.sin(a) * 5), 1.3, 0.5, ARMOR_BK)
     # ------------------------------------------------------------- back leg
+    cv.tag = "jambes"
     cv.part()
     ank_b = (p.foot_b[0], p.foot_b[1] - 4.5)
     kn_b = ik2(hip_b, ank_b, 13.5, 13.5, 1.0)
@@ -140,6 +147,7 @@ def draw(p):
               (fb[0] - 7, fb[1] + 0.9), (fb[0] - 7, fb[1] - 4)], ARMOR_BK, bevel=1.5, base=0.5)
 
     # ---------------------------------------------------------------- torso
+    cv.tag = "corps"
     cv.part()
     torso = [B(-10, 2), B(-14, -10), B(-14, -23), B(-7, -31), B(10, -32), B(17, -24), B(17, -10), B(11, 2)]
     cv.tpoly(torso, ARMOR_DK, bevel=2.6, base=0.62)
@@ -153,6 +161,7 @@ def draw(p):
     cv.part()
     cv.tdisc(cc, 7.6 + co * 1.5, ARMOR_DK, bias=-0.05)
     cv.part(line=False)
+    cv.tag = "cœur"
     cv.tdisc(cc, 5.6 + co * 1.5, SLOT, flat=0.3)
     cm = CORE_DEAD if dead >= 0.7 else CORE
     cr = 4.0 + 0.6 * min(1.5, p.core) + co * 1.2
@@ -160,6 +169,7 @@ def draw(p):
     if dead < 0.7 and p.core > 0.2:
         cv.tdisc((cc[0] - 1.2, cc[1] - 1.2), 1.4 + 0.4 * p.core, cm, flat=0.95)
     # armoured shutters around the core, sliding open when the laser charges
+    cv.tag = "corps"
     if co > 0.05:
         cv.part()
         for k in range(4):
@@ -177,6 +187,7 @@ def draw(p):
          buds=(1, 4) if dead < 0.5 else (), bud_level=p.buds)
 
     # ------------------------------------------------------------- front leg
+    cv.tag = "jambes"
     cv.part()
     ank_f = (p.foot_f[0], p.foot_f[1] - 4.5)
     kn_f = ik2(hip_f, ank_f, 13.5, 13.5, 1.0)
@@ -190,6 +201,7 @@ def draw(p):
     cv.tpoly([(ff[0] - 6, ff[1] - 7.5), (ff[0] + 3, ff[1] - 7.5), (ff[0] + 10, ff[1] - 2), (ff[0] + 10, ff[1] + 0.9),
               (ff[0] - 7, ff[1] + 0.9), (ff[0] - 7, ff[1] - 4)], ARMOR_DK, bevel=1.8, base=0.62)
     # ------------------------------------------------------------------ head
+    cv.tag = "tête"
     cv.part()
     # horns (behind the helm), thorny wood curving back
     for side, (l0, sc) in ((1, (1.0, 1.0)), (-1, (0.8, 0.85))):
@@ -224,6 +236,7 @@ def draw(p):
 
     # ------------------------------------------------------- huge front arm
     el_f = ik2(sh_f, p.fist, 15.5, 15.5, -p.elbow_dir)
+    cv.tag = "bras"
     cv.part()
     cv.tcapsule(sh_f, el_f, 6.6, 6.0, ARMOR)
     cv.part()
@@ -235,6 +248,7 @@ def draw(p):
     ux, uy = ax / L, ay / L
     nx, ny = -uy, ux
     # gauntlet: flared stone forearm
+    cv.tag = "poing"
     g0 = (el_f[0] + ux * 2, el_f[1] + uy * 2)
     g1 = (fx - ux * 4, fy - uy * 4)
     cv.tpoly([(g0[0] + nx * 6.0, g0[1] + ny * 6.0), (g1[0] + nx * 9.5, g1[1] + ny * 9.5),
@@ -268,6 +282,7 @@ def draw(p):
     vine(cv, coil, 1.8, vm, thorns=((2, 1, 3.0), (5, -1, 3.5)), bristle=p.bristle,
          buds=(2, 6) if dead < 0.5 else (), bud_level=p.buds)
     # pauldron (on top of the arm)
+    cv.tag = "épaulière"
     cv.part()
     pc = (sh_f[0] + 1.0, sh_f[1] - 1.0)
     cv.tellipse(pc, 12.0, 8.2, ARMOR, ang=p.lean * 0.6 - 0.15, bias=0.05)

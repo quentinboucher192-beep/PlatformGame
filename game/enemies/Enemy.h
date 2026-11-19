@@ -185,6 +185,8 @@ public:
     void wound(GameWorld& w, float amount);
     /// 2.68: the attack it is winding up or performing (nullptr between two).
     const AttackDef* currentAttack() const { return attack_; }
+    /// Projectile / beam origin of the current attack (2.76.2: public, its drawing's when it fights by parts).
+    Vec2 attackOrigin() const;
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -242,7 +244,9 @@ private:
     void checkPhase(GameWorld& w);
     void beginLastStand(GameWorld& w);
     void stepLastStand(GameWorld& w, float dt);
-    void refreshLook(GameWorld& w);  // display: the sheet of the current phase
+    /// The sheet of the current phase: in a display update, or (2.76.2, `keepPose`) in the fixed step
+    /// for a boss that fights by parts (kPartsLookSimulation).
+    void refreshLook(GameWorld& w, bool keepPose = false);
     void applyPhysics(GameWorld& w, float dt);
     void contactDamage(GameWorld& w);
     bool groundAhead(const GameWorld& w) const;
@@ -288,12 +292,12 @@ private:
     int attackIndex_ = -1;
     bool attackStarted_ = false;
     bool attackHit_ = false;
+    bool partsStruck_ = false;  // 2.76.2 (17): its parts that hurt have struck during this attack (once)
     Vec2 aimDir_{1, 0};
     float laserAngle_ = 0.0f;
     float laserHitTimer_ = 0.0f;
     std::vector<Vec2> targets_;  // rain / eruption impact points chosen during the telegraph
     float warnTimer_ = 0.0f;
-    Vec2 attackOrigin() const;   // projectile / beam origin of the current attack
     float chargeDistance_ = 0.0f;
     int phase_ = 0;
     int patternIndex_ = 0;
@@ -319,7 +323,8 @@ private:
     bool enraged_ = false;
     bool lastStand_ = false;  // 2.33: « Dernière lumière »
     size_t finalIndex_ = 0;
-    int shownLook_ = -1;      // display only: the phase whose sheet is shown
+    int shownLook_ = -1;      // the phase whose sheet is shown (display; 2.76.2: the fixed step for a boss by parts)
+    bool partsFight_ = false; // 2.76.2: it fights by parts in this run (fightsByParts, set each fixed step)
     std::string shownAnim_;
     int burstsLeft_ = 0;
     float burstTimer_ = 0.0f;

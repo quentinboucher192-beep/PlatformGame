@@ -332,5 +332,6 @@
     "brainVersion": 3
   },
   "variantOf": "cryowyrm",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

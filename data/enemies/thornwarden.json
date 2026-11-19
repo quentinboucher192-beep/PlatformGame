@@ -306,5 +306,73 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2
+      },
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1
+      },
+      "bras": {
+        "role": "normal",
+        "damage": 1
+      },
+      "poing": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "slam",
+          "charge",
+          "v3_leap"
+        ]
+      },
+      "épaulière": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "jambes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "cape": {
+        "role": "normal",
+        "damage": 1
+      },
+      "ronces": {
+        "role": "hurt"
+      }
+    },
+    "origins": {
+      "barrage": [
+        45,
+        -51
+      ],
+      "orbs": [
+        45,
+        -51
+      ],
+      "v3_seekers": [
+        45,
+        -51
+      ],
+      "v3_volley": [
+        45,
+        -51
+      ],
+      "laser": [
+        -1,
+        -44
+      ]
+    }
+  },
+  "partsFromVersion": 17
 }

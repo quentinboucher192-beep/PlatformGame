@@ -234,7 +234,10 @@ TEST_CASE("bosses: they read the fight — moving players get hit, campers get p
         rows.push_back(r);
     }
     for (const Row& r : rows) {
-        CHECK(r.moving.attacks >= 14);     // never idle for long
+        // Never idle for long. 2.76.2: 13 (was 14): with the rules of 17 a player who runs into a boss by parts is struck
+        // by its whole body and thrown back (the player's rule); the Monolithe, which the runner used to cross, then
+        // attacks 13 times in 40 s instead of 15 (a fight of more contact, not an idle boss).
+        CHECK(r.moving.attacks >= 13);
         CHECK(r.moving.used.size() >= 3);  // varied (phase 1 only here)
         CHECK(r.moving.hits >= 4);         // aimed where the player goes
         CHECK(r.camping.hits >= 2);        // no safe spot

@@ -648,9 +648,43 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   ([docs/COOP.md §1](docs/COOP.md)). Dans un raid, une âme n'attend jamais dans un passage : réanimer ne fait jamais
   changer le groupe de zone.
 * **Vestiaire** : tablettes **en hauteur** sur leurs rebords, nom, icône et coût de chaque pouvoir au-dessus ; traverser
-  la salle au sol ne prend plus rien. Révision du titan **6**.
+  la salle au sol ne prend plus rien. Révision du titan **7**.
 
 **Nouveau dans la version 2.76.2** :
+* **Boss par parties, règle des joueurs** (version de simulation **17**) : toucher n'importe quelle partie d'un boss blesse
+  au contact, avec ses dégâts de contact : la forme précise de son image, plus sa boîte. Ses parties rouges frappent en
+  plus pendant leurs attaques, avec les dégâts de l'attaque. Point faible × 2 et blindé × 0,5 ne changent pas. Les
+  replays de Pyrrhax de la 2.76.0 gardent leur règle (seules ses parties rouges blessaient).
+* **Raids** : les 8 Gigaboss d'Asterion se battent **par parties** (version de simulation **17**) : leurs points
+  faibles dessinés × 2, leurs parties blindées × 0,5, tout leur corps blesse au contact et leurs griffes, mâchoires ou épines frappent pendant leurs attaques
+  ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Gigaboss de la campagne par parties** (version de simulation **17**, `partsFromVersion` 17) : Singularis (œil × 2,
+  coquille × 0,5, mains, épines et couronne de feu qui blessent), Monolithe (tête × 2, carapace × 0,5, torse, bras,
+  poings qui frappent, jambes), Phénix (tête × 2, queue × 0,5, corps, ailes, serres), Liche (crâne et phylactère × 2,
+  traîne × 0,5, robe, bâton, flammes d'âme), Titan (tête et réacteur × 2, blindage × 0,5, torse, canon, poing, jambes,
+  cheminées), Kraken (yeux × 2, manteau, tentacules qui fouettent, bec) et Astrarque (cœur × 2, anneaux et plaques
+  × 0,5, coque, bras, chaînes, creusets et pointes). Leurs mécanismes restent (carapace roulée, cendres, phylactère, vannes, réacteur à nu) ; les
+  replays d'avant rejouent avec leur boîte et les records sont gardés.
+* **Régions de `hitparts.py`** : une région peut ne valoir que pour certaines poses (`clips`, `attack:2`), certaines
+  feuilles (`sheets`, une phase redessinée), prendre le reste (`rest`) ou écarter un effet (`drop`)
+  ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Feuille de phase dans le pas fixe** : un boss par parties prend la feuille de sa phase dans la simulation, sa pose
+  gardée ; ses parties sont les mêmes à toute fréquence d'image. Les tirs partent de son dessin, et `parts.origins`
+  corrige l'origine d'une attaque sans toucher à sa définition (Astrarque).
+* **Boss classiques par parties** (version de simulation **17**) : les 16 gardiens des planètes et d'Aethra, Mycélia la
+  Câline et les 16 échos du Noyau se battent par parties. Leurs parties viennent de leur générateur de sprites (profil
+  « rig » de `tools/assetgen/hitparts.py` : chaque pixel de chaque image porte la partie qui l'a dessiné).
+* **Rôles** : tête, yeux et cœur exposé × 2 ; carapaces, épaulières, anneaux, chapeau et queues × 0,5 ; ronces,
+  pointes, flammes, armes et tentacules blessent ; poing, bras, gueule ou têtes blessent pendant leur attaque
+  (`hurtDuring`). Un écho prend les parties de son original.
+* **Tirs** : ils partent du dessin (« origins » des parties : poing, cœur, lance, chapeau, yeux, œil, marteau). Les
+  replays d'avant rejouent avec la boîte et l'origine d'avant ; les records sont gardés.
+* **Éditeur d'ennemis › Boss › Parties (où frapper)** : les parties d'un boss sur son sprite (pose et image
+  choisies) et, pour chacune, son rôle, son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse.
+  Lecture seule pour un boss du jeu, réglé par un administrateur et écrit dans `data/enemies/<id>.json`
+  ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Parties lisibles sur tous les sprites** : contour épais et motif propre à chaque rôle, dans les fiches « Où
+  frapper » comme dans l'éditeur.
 * **Langues : plus rien dans l'autre langue.** Le jeu vérifie lui-même chaque texte dessiné : `--i18n-audit <fichier>`
   (sans écran) relève ce qui reste en français quand le jeu est en anglais — texte absent du dictionnaire, inchangé, partie
   insérée restée en français, texte traduit deux fois — et, en français, un texte anglais. Plus de cent écrans parcourus
