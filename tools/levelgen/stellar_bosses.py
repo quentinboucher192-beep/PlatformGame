@@ -36,6 +36,10 @@ def save(d):
 
 for gid in GUARDIANS:
     d = copy.deepcopy(load(gid))
+    # 2.76.2: its hit parts are its original's (game/enemies/HitParts: an écho without « parts » takes
+    # them), with the same « partsFromVersion », written last.
+    d.pop("parts", None)
+    parts_from = d.pop("partsFromVersion", None)
     d["id"] = "echo_" + gid
     d["variantOf"] = gid
     d["name"] = "Écho : " + d["name"]
@@ -43,6 +47,8 @@ for gid in GUARDIANS:
     d["tint"] = ECHO_TINT
     d["rewards"]["drops"] = [{"type": "energy_orb", "chance": 1.0}]
     d["boss"]["title"] = "ÉCHO — " + d["boss"]["title"]
+    if parts_from:
+        d["partsFromVersion"] = parts_from
     save(d)
     print(d["id"], "PV", d["hp"])
 

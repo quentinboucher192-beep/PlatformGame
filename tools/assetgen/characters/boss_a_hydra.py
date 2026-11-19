@@ -97,6 +97,7 @@ def draw(th, p, layer=None, tf=None):
     cv = TCanvas(W, H, rot=rot, center=center, offset=(off[0] + p.offset[0], off[1] + p.offset[1]),
                  scale=p.scale)
     body = layer in (None, "body")
+    T = th.tags  # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
 
     def head(k, dark):
         hp = p.heads[k]
@@ -108,34 +109,46 @@ def draw(th, p, layer=None, tf=None):
         radii = [r0 + (r1 - r0) * i / (n - 1) for i in range(n)]
         if hp.cut is None:
             if layer in (None, "body"):
+                cv.tag = T["neck"]
                 th.neck(cv, pts, radii, k, p, dark)
+                cv.tag = T["head"]
                 th.head(cv, hp, k, p, dark)
             return
         ic = max(2, min(n - 3, int(round(hp.cut * (n - 1)))))
         if layer in (None, "body"):
             st = ic if hp.stub is None else max(2, min(n - 3, int(round(hp.stub * (n - 1)))))
+            cv.tag = T["neck"]
             th.neck(cv, pts[:st + 1], radii[:st + 1], k, p, dark)
             th.wound(cv, pts[st], radii[st], p, _dir(pts, st))
         if layer in (None, "head%d" % k):
+            cv.tag = T["neck"]
             th.neck(cv, pts[ic:], radii[ic:], k, p, dark)
             th.wound(cv, pts[ic], radii[ic], p, _dir(pts, ic) + math.pi)
+            cv.tag = T["head"]
             th.head(cv, hp, k, p, dark)
 
     if body:
+        cv.tag = T["back"]
         th.back(cv, p)
+        cv.tag = T["vine"]
         for v in p.vines:
             if v.back:
                 th.vine(cv, v, p)
     head(0, True)
     if body:
+        cv.tag = T["body"]
         th.body(cv, p)
+        cv.tag = T["crown"]
         th.crown_back(cv, p)
     head(1, False)
     if body:
+        cv.tag = T["crown"]
         th.crown_front(cv, p)
     head(2, False)
     if body:
+        cv.tag = T["front"]
         th.front(cv, p)
+        cv.tag = T["vine"]
         for v in p.vines:
             if not v.back:
                 th.vine(cv, v, p)
@@ -146,6 +159,9 @@ class HydraTheme:
     """Base class of a hydra boss theme (defaults shared by both bosses)."""
     id = "hydra"
     seed = 0
+    # 2.76.2: the hit part each layer draws (draw(); a theme may name others inside its layers).
+    tags = {"back": "feuilles", "vine": "fouets", "neck": "cous", "head": "têtes", "body": "corps", "crown": "couronne",
+            "front": "feuilles"}
     head_len = 20.0
     head_lie = 7.0             # half height of a head lying on the ground
     fall_dx = (-6.0, 4.0, 8.0)

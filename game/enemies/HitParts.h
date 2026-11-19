@@ -80,14 +80,23 @@ struct PartRule {
 /// The rules of an enemy's parts (data/enemies/<id>.json « parts »).
 struct PartRules {
     int fromVersion = 0;  // « partsFromVersion »: its fight uses its parts from this version on (0: never, drawn only)
-    std::string profile;  // how hitparts.py cuts its sprite ("dragon", "" = its silhouette)
+    std::string profile;  // how hitparts.py cuts its sprite ("dragon", "rig", "" = its silhouette)
     std::vector<PartRule> rules;
+    /// 2.76.2: where the shots and beams of an attack leave its drawing when it fights by parts
+    /// (« origins »: attack id → [x, y], pixels of its sprite from its feet, × its scale as
+    /// AttackDef::origin). Not in its definition (the records are kept); a replay of before keeps
+    /// the attack's own origin.
+    std::map<std::string, Vec2> origins;
     const PartRule* rule(const std::string& name) const;
+    /// The origin of an attack by its parts (null: the attack's own).
+    const Vec2* origin(const std::string& attackId) const;
     /// The role and multiplier of a part without a rule: a normal part, × 1.
     PartRule ruleOr(const std::string& name) const;
     /// `parts`: the « parts » block; `fromVersion`: « partsFromVersion » (0 without it).
     static PartRules parse(const Json& parts, int fromVersion = 0);
-    /// The rules of an official enemy (read once and kept, thread-safe); empty without « parts ».
+    /// The rules of an official enemy (read once and kept, thread-safe); empty without « parts ». 2.76.2:
+    /// a variant without « parts » (an écho, « variantOf ») takes those of its original, with its own
+    /// « partsFromVersion ».
     static const PartRules& of(const std::string& enemyId);
 };
 

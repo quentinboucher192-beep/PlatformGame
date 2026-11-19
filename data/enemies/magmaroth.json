@@ -337,5 +337,51 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2
+      },
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1
+      },
+      "cornes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "bras": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "slam",
+          "charge",
+          "v3_leap"
+        ]
+      },
+      "épaulière": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "bosse": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "jambes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "marteau": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

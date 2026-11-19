@@ -58,6 +58,24 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
 
 Les autres boss gardent leur boîte pour l'instant ; leurs fiches montrent déjà leurs parties.
 
+## Les boss classiques et leurs échos (2.76.2, `partsFromVersion` 17)
+
+Les 16 gardiens des planètes et d'Aethra, Mycélia la Câline et les 16 échos du Noyau se battent par parties.
+
+* **Leurs formes** (profil « rig ») viennent de leur générateur de sprites : chaque partie y est nommée au moment où
+  elle est dessinée, et chaque pixel de chaque image porte sa partie. Un bras levé, une épée qui s'abat, une tête qui
+  plonge sont donc à leur place sur chaque image.
+* **Leurs rôles** suivent le modèle validé : tête, yeux et cœur exposé × 2 ; carapace (bosse, épaulières, plaques,
+  anneaux, chapeau, glace) et queue × 0,5 ; le reste × 1. Les ronces, pointes, flammes, armes, tentacules, réacteurs
+  et lianes blessent ; le poing, le bras, la gueule ou les têtes blessent aussi pendant leur attaque (`hurtDuring`).
+* **Leurs tirs** partent de leur dessin : les origines manquantes ou fausses sont données par `"origins"` dans leurs
+  parties (le poing et le cœur du Thornwarden et de l'Archonte, la lance d'Aurorax, le chapeau de Mycélia, les yeux de
+  Nyxara, l'œil de Pyrogyre, le marteau du Cœur du Creuset).
+* **Un écho** prend les parties de son original (`PartRules::of`, `"variantOf"`).
+* **Les replays d'avant** (15, 16) rejouent avec la boîte et les origines d'avant : `tests/test_determinism.cpp` le
+  vérifie sur les combats de Magmaroth et du Cryowyrm ; `tests/test_hitparts_classics.cpp` vérifie les rôles, les
+  images, les tirs et un échantillon de combats.
+
 ## Les fiches « Où frapper »
 
 * **Boss classiques et gigaboss de la campagne** : `STATISTIQUES › boss › Où frapper` (`ui/widgets/HitPartsView`).

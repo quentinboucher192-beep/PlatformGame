@@ -321,3 +321,53 @@ TEST_CASE("determinism: Pyrrhax's fight by parts has its golden digest, and its 
     CHECK(before == golden15);
     CHECK(now == golden16);
 }
+
+// 2.76.2: the classic bosses fight by their hit parts (kSimulationVersion 17): 30 s of scripted play
+// from their second phase, Magmaroth in « pyralis_01 » and the Cryowyrm in « glacior_01 ». With the rules
+// of 16 and of 15 (replays of before) they keep their box, their shots and their animation of display:
+// the runs of the 2.76.0 build to the bit.
+TEST_CASE("determinism: the classic bosses' fights by parts have their golden digests, and their digests of before with the rules of 16 and 15") {
+    auto play = [](const char* level, const char* bossId, int rules) {
+        Sim s(level);
+        s.w->setSimulationVersion(rules);
+        std::string bossObject;
+        Rect zone;
+        for (const LevelObject& o : s.w->level().objects)
+            if (o.type == "enemy" && o.propStr("enemy") == bossId) bossObject = o.id;
+        for (const LevelObject& o : s.w->level().objects)
+            if (o.type == "combat_zone" && !bossObject.empty() && o.propStr("waves").find(bossObject) != std::string::npos) zone = o.rect;
+        CHECK(!bossObject.empty() && zone.w > 0.0f);
+        auto* spawn = dynamic_cast<EnemySpawnEntity*>(s.w->entity(bossObject));
+        Enemy* boss = spawn ? spawn->enemy(*s.w) : nullptr;
+        CHECK(boss != nullptr);
+        if (!boss) return std::string();
+        s.w->startAt({zone.x + 6.0f * 16.0f, zone.bottom() - 4.0f * 16.0f});
+        s.w->startBoss(*boss);
+        jumpBossToPhase(*s.w, *boss, 1);
+        auto checks = s.run(scriptedInputs(17, 30 * 120));
+        return checks.empty() ? std::string() : hex(checks.back());
+    };
+    struct Golden {
+        const char* level;
+        const char* boss;
+        const char* rules15;  // the 2.76.0 build, rules of 15
+        const char* rules16;  // the 2.76.0 build (its box)
+        const char* rules17;  // 2.76.2: by its parts
+    };
+    const Golden golden[] = {
+        {"pyralis_01", "magmaroth", "ea62c92bfe9cdf0e", "ea62c92bfe9cdf0e", "71b2414195897203"},
+        {"glacior_01", "cryowyrm", "de437ca806394da6", "de437ca806394da6", "5e52b6a9bee39cb8"},
+    };
+    int mismatches = 0;
+    for (const Golden& g : golden) {
+        const std::pair<int, const char*> runs[] = {{15, g.rules15}, {16, g.rules16}, {kSimulationVersion, g.rules17}};
+        for (const auto& [rules, want] : runs) {
+            const std::string got = play(g.level, g.boss, rules);
+            if (got != want) {
+                std::printf("  %s (%s, règles %d) : %s (attendu %s)\n", g.level, g.boss, rules, got.c_str(), want);
+                ++mismatches;
+            }
+        }
+    }
+    CHECK(mismatches == 0);
+}

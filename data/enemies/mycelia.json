@@ -232,5 +232,35 @@
       }
     ],
     "enrageTime": 75
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "visage": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "inhale"
+        ]
+      },
+      "pied": {
+        "role": "normal",
+        "damage": 1
+      },
+      "chapeau": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "racines": {
+        "role": "hurt"
+      }
+    },
+    "origins": {
+      "spore_volley": [
+        8,
+        -63
+      ]
+    }
+  },
+  "partsFromVersion": 17
 }

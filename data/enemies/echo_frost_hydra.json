@@ -338,5 +338,6 @@
     "brainVersion": 3
   },
   "variantOf": "frost_hydra",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

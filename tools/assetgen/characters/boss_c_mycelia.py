@@ -111,11 +111,16 @@ class Mycelia:
         cv = TCanvas(W, H)
         dead = p.dead >= 0.5
         feet = p.feet or REST_FEET
+        # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
+        cv.tag = "racines"
         for k in (1, 2):
             self._leg(cv, p, k, feet[k], dead)
+        cv.tag = "pied"
         self._stem(cv, p, dead)
+        cv.tag = "racines"
         for k in (0, 3):
             self._leg(cv, p, k, feet[k], dead)
+        cv.tag = "chapeau"
         self._cap(cv, p, dead)
         return cv.render()
 
@@ -157,6 +162,7 @@ class Mycelia:
         cv.ellipse(self.body(p, (64.5, 80.5)), 11.4 * p.sx, 2.2, SKIRT if not dead else STEM_DEAD, ang=p.lean,
                    bias=-0.05)
         # face: sockets, eyes, brows, mouth
+        cv.tag = "visage"
         e = p.eye
         for (ex, ey, s) in ((61.0, 68.5, -1), (71.0, 68.0, 1)):
             E = self.body(p, (ex, ey))

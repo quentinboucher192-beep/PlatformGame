@@ -315,5 +315,6 @@
     "brainVersion": 3
   },
   "variantOf": "prime_sentinel",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

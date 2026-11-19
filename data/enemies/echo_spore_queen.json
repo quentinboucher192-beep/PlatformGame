@@ -318,5 +318,6 @@
     "brainVersion": 3
   },
   "variantOf": "spore_queen",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

@@ -1,4 +1,10 @@
 {
+  "2.76.2": [
+    "Boss classiques : les 16 gardiens des planètes et d'Aethra, et Mycélia la Câline du didacticiel, se battent par parties, comme Pyrrhax. Leurs parties suivent leur dessin image par image : un bras levé, une épée qui s'abat, une tête de dragon qui plonge sont touchés là où vous les voyez.",
+    "Où frapper : la tête, les yeux et le cœur exposé sont des points faibles (× 2) ; les carapaces, épaulières, anneaux, chapeau et queues sont blindés (× 0,5) ; le reste prend les coups normalement. Les ronces, pointes, flammes, armes, tentacules et réacteurs blessent au contact, et chaque attaque fait blesser ses propres parties : le poing ou le bras qui frappe, la gueule qui plonge, les têtes qui mordent.",
+    "Les tirs et les rayons des boss classiques partent de leur dessin : le poing du Thornwarden et de l'Archonte, leur cœur pour le rayon, la lance d'Aurorax, le chapeau de Mycélia, les yeux de Nyxara, l'œil de Pyrogyre, le marteau du Cœur du Creuset.",
+    "Les 16 échos du Noyau stellaire se battent comme leur original, avec les mêmes parties. Les replays d'avant rejouent avec la boîte, à l'identique, et aucun record n'est effacé."
+  ],
   "2.76.0": [
     "Boss : chaque boss est découpé en parties qui suivent son dessin image par image (tête, cou, corps, ailes, queue, pattes, griffes, souffle pour Pyrrhax ; le corps pour les autres), au lieu d'une seule boîte. Les formes sont tirées des sprites de ses 94 feuilles par un outil, au pixel près.",
     "Pyrrhax se bat par parties : sa tête est un point faible (× 2), sa queue est blindée (× 0,5), son cou, son corps, ses ailes et ses pattes prennent les coups normalement. Vous pouvez le toucher au bout d'une aile, bien au-delà de son ancienne boîte. Seules ses griffes, son souffle et sa tête pendant la morsure blessent au contact. Les replays d'avant rejouent à l'identique et aucun record n'est effacé.",

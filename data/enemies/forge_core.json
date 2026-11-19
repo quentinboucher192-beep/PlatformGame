@@ -342,5 +342,49 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "coque": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "slam",
+          "v3_dive"
+        ]
+      },
+      "bras": {
+        "role": "normal",
+        "damage": 1
+      },
+      "chaînes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "anneaux": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "plaques": {
+        "role": "armour",
+        "damage": 0.5,
+        "hurtDuring": [
+          "slam",
+          "v3_dive"
+        ]
+      },
+      "creusets": {
+        "role": "hurt"
+      },
+      "pointes": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

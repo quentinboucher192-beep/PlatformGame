@@ -157,6 +157,11 @@ const PartRule* PartRules::rule(const std::string& name) const {
     return nullptr;
 }
 
+const Vec2* PartRules::origin(const std::string& attackId) const {
+    const auto it = origins.find(attackId);
+    return it == origins.end() ? nullptr : &it->second;
+}
+
 PartRule PartRules::ruleOr(const std::string& name) const {
     if (const PartRule* r = rule(name)) return *r;
     PartRule r;
@@ -169,6 +174,10 @@ PartRules PartRules::parse(const Json& parts, int fromVersion) {
     out.fromVersion = std::max(0, fromVersion);
     if (!parts.is_object()) return out;
     out.profile = jstr(parts, "profile");
+    const Json origins = parts.value("origins", Json::object());
+    if (origins.is_object())
+        for (auto& [id, o] : origins.items())
+            if (o.is_array() && o.size() == 2 && o[0].is_number() && o[1].is_number()) out.origins[id] = {o[0].get<float>(), o[1].get<float>()};
     const Json roles = parts.value("roles", Json::object());
     if (!roles.is_object()) return out;
     for (auto& [name, r] : roles.items()) {
@@ -192,9 +201,17 @@ const PartRules& PartRules::of(const std::string& enemyId) {
     auto it = loaded.find(enemyId);
     if (it == loaded.end()) {
         PartRules r;
-        if (!enemyId.empty() && enemyId.find_first_of("/\\.") == std::string::npos)
-            if (auto j = FileUtil::loadJson(Paths::dataDir() / "enemies" / (enemyId + ".json")))
-                r = parse(j->value("parts", Json()), jget<int>(*j, "partsFromVersion", 0));
+        auto load = [](const std::string& id) -> std::optional<Json> {
+            if (id.empty() || id.find_first_of("/\\.") != std::string::npos) return std::nullopt;
+            return FileUtil::loadJson(Paths::dataDir() / "enemies" / (id + ".json"));
+        };
+        if (auto j = load(enemyId)) {
+            Json parts = j->value("parts", Json());
+            // 2.76.2: an écho fights with the parts of its original (the same sheet), unless it names its own.
+            if (!parts.is_object())
+                if (auto original = load(jstr(*j, "variantOf"))) parts = original->value("parts", Json());
+            r = parse(parts, jget<int>(*j, "partsFromVersion", 0));
+        }
         it = loaded.emplace(enemyId, std::move(r)).first;
     }
     return it->second;

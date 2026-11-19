@@ -14,6 +14,14 @@ them as it places the frame: (vertex − pivot) × scale, mirrored when it faces
 * profile « regions » (« parts »: {"profile": "regions", "regions": [{"name", "poly"}, …]}): named polygons
   drawn on its idle image; each pixel of each frame goes to the first that holds it, else to the nearest
   centre (docs/HITBOX_PARTS.md);
+* profile « rig » (« parts »: {"profile": "rig"}, 2.76.2: the classic bosses and their échos): the parts
+  their sprite generator draws (tools/assetgen/characters, `cv.tag = "tête"` …). `--rig-labels` runs the
+  generator again in label mode (raster.LABELS: each pixel the colour of its part, the sheet assembled as
+  usual; it must give back the committed drawing) and writes its label map, tools/assetgen/rig_labels/
+  <sheet>.png (RIGS: the generator and the parts of each sheet). Then each pixel of each frame takes its
+  part, the outlines and the effects pasted on it the part nearest along the drawing; a canvas without
+  parts (an effect drawn with its own canvas) is left out. The maps are read, never regenerated, by the
+  other runs and by --check: the result depends on no generator, no floating point;
 * profile « silhouette » (every other boss): its body (« corps »), the drawing itself without the
   sparks and dust around it.
 
@@ -24,10 +32,11 @@ masks differ takes the parts of the same cell of the own sheet pixel by pixel (n
 
 Writes assets/hitparts/<sheet>.json. Deterministic: the same sheets give the same bytes
 (`--check` compares without writing; tests/test_hitparts.cpp reads them back).
-Usage: python3 tools/assetgen/hitparts.py [--check] [--only <enemy id>]"""
+Usage: python3 tools/assetgen/hitparts.py [--check] [--only <enemy id>] [--rig-labels]"""
 import heapq
 import json
 import os
+import subprocess
 import sys
 from collections import deque
 
@@ -44,6 +53,23 @@ MAX_PIECES = 6     # per part
 MAX_VERTICES = 10  # per piece
 DRAGON = ['tête', 'cou', 'corps', 'aile gauche', 'aile droite', 'queue', 'pattes', 'griffes', 'souffle']
 SILHOUETTE = ['corps']
+# 2.76.2, profile « rig »: for each sheet, how its generator builds it (tools/assetgen/characters) and its
+# parts in order (the tags its drawing names; the first one takes a frame no tag reaches, its ruins).
+RIGS = {
+    'thornwarden': ('boss:thornwarden_sheet', ['corps', 'tête', 'cœur', 'bras', 'poing', 'épaulière', 'jambes', 'cape', 'ronces']),
+    'magmaroth': ('bosses_b:magmaroth', ['corps', 'tête', 'cœur', 'cornes', 'bras', 'épaulière', 'bosse', 'jambes', 'marteau']),
+    'glaciarch': ('bosses_b:glaciarch', ['corps', 'tête', 'cœur', 'bras', 'épaulière', 'jambes', 'cape', 'épée', 'pointes']),
+    'ignivore': ('bosses_b:ignivore', ['corps', 'tête', 'queue', 'flammes', 'pointes']),
+    'cryowyrm': ('bosses_b:cryowyrm', ['corps', 'tête', 'crinière', 'nageoire', 'queue', 'pointes']),
+    'spore_queen': ('boss_a_hydra:spore', ['bulbe', 'têtes', 'cous', 'sacs', 'pétales', 'feuilles', 'lianes']),
+    'frost_hydra': ('boss_a_hydra:frost', ['tronc', 'têtes', 'cœur', 'cous', 'glace', 'socle', 'racines', 'pointes']),
+    'prime_sentinel': ('boss_a_core:prime_sentinel', ['corps', 'œil', 'canons', 'plaques', 'réacteur']),
+    'forge_core': ('boss_a_core:forge_core', ['coque', 'cœur', 'bras', 'chaînes', 'anneaux', 'plaques', 'creusets', 'pointes']),
+    'aurorax': ('boss_c:aurorax', ['corps', 'tête', 'cœur', 'bras', 'épaulière', 'jambes', 'cape', 'bois', 'lance', 'sabots']),
+    'mycelia': ('boss_c:mycelia', ['pied', 'visage', 'chapeau', 'racines']),
+    'nyxara': ('boss_c:nyxara', ['sphère', 'yeux', 'anneau', 'tentacules']),
+    'pyrogyre': ('boss_c:pyrogyre', ['soleil', 'œil', 'anneau', 'flammes']),
+}
 
 
 # ------------------------------------------------------------------ pixel sets as runs
@@ -344,6 +370,151 @@ def regions(rgba, regs):
     return {r['name']: body & (label == i) for i, r in enumerate(regs)}
 
 
+RIG_LABELS = os.path.join(ROOT, 'tools', 'assetgen', 'rig_labels')
+RIG_EFFECT = 255  # in a label map: a pixel of an effect drawn on its own canvas (left out)
+RIG_REACH = 4  # px: how far the parts reach over what the label run does not draw (outlines, effects)
+
+
+def rig_generate(name):
+    """Runs the generator of a « rig » sheet in label mode (raster.LABELS), nothing written but its label map:
+    tools/assetgen/rig_labels/<sheet>.png, one byte per pixel: 0 nothing (or an outline, a pasted effect),
+    i + 1 the part RIGS[name][1][i], RIG_EFFECT an effect drawn on its own canvas. The label run must give
+    back the sheet's drawing exactly (its alpha), else the tool stops."""
+    chars = os.path.join(ROOT, 'tools', 'assetgen', 'characters')
+    for d in (chars, os.path.dirname(chars)):
+        if d not in sys.path:
+            sys.path.insert(0, d)
+    sys.dont_write_bytecode = True
+    import raster
+    import sheet as sheet_mod
+    captured = {}
+    if not raster.LABELS.on:
+        raster.LABELS.on = True
+        # Colour only, never the shape: the labels go through untouched (before the generators import them).
+        same = lambda img, *a, **k: img.copy()  # noqa: E731
+        raster.tint_toward = raster.recolor = raster.nearest_palette = same
+        import effects
+        import boss_b_fx
+        effects.flash = boss_b_fx.flash = same
+        sheet_mod.save_png = lambda img, rel: rel
+        sheet_mod.save_json = lambda obj, rel: rel
+    sheet_mod.Sheet.save = lambda self, json_rel: captured.setdefault(sheet_name(json_rel), self)
+    import importlib
+    mod, arg = RIGS[name][0].split(':')
+    if mod == 'boss':
+        captured[name] = importlib.import_module('boss').thornwarden_sheet()
+    elif mod == 'bosses_b':
+        importlib.import_module('bosses_b').build(only=[arg])
+    elif mod == 'boss_a_hydra':
+        importlib.import_module('boss_a_hydra').build_sheet(importlib.import_module('boss_a_' + arg).THEME)
+    elif mod == 'boss_a_core':
+        importlib.import_module('boss_a_core').build_one(arg)
+    elif mod == 'boss_c':
+        importlib.import_module('boss_c_' + arg).build()
+    lab = captured[name].image()
+    a, img = load_sheet(f'animations/{name}.json')
+    if lab.shape != img.shape or not np.array_equal(lab[:, :, 3] > 0, img[:, :, 3] > 0):
+        raise SystemExit(f'hitparts : le générateur ne redonne pas animations/{name}.json (régénérez les sprites)')
+    tags = raster.LABELS.names
+    names = RIGS[name][1]
+    is_lab = (lab[:, :, 3] > 0) & (lab[:, :, 1] == raster.LABEL_G) & (lab[:, :, 2] == raster.LABEL_B)
+    idx = np.where(is_lab, lab[:, :, 0].astype(np.int32), 0)
+    out = np.zeros(idx.shape, dtype=np.uint8)
+    for i in sorted(set(np.unique(idx).tolist()) - {0}):
+        tag = tags[i]
+        if tag == '?':
+            out[idx == i] = RIG_EFFECT
+        elif tag in names:
+            out[idx == i] = names.index(tag) + 1
+        else:
+            raise SystemExit(f'hitparts : la partie « {tag} » du générateur de {name} manque à RIGS')
+    os.makedirs(RIG_LABELS, exist_ok=True)
+    Image.fromarray(out, 'L').save(os.path.join(RIG_LABELS, name + '.png'), optimize=True)
+    return out
+
+
+def rig_labels(name, img):
+    """The label map of a « rig » sheet (rig_generate). A labelled pixel the sheet does not draw: the map is
+    older than the sprites, the tool stops."""
+    path = os.path.join(RIG_LABELS, name + '.png')
+    if not os.path.exists(path):
+        raise SystemExit(f'hitparts : pas d\'étiquettes pour {name} (python3 tools/assetgen/hitparts.py --rig-labels)')
+    lab = np.array(Image.open(path).convert('L'))
+    if lab.shape != img.shape[:2] or ((lab > 0) & (img[:, :, 3] == 0)).any():
+        raise SystemExit(f'hitparts : étiquettes de {name} périmées (python3 tools/assetgen/hitparts.py --rig-labels)')
+    return lab
+
+
+def grow(label, within, steps=None):
+    """Labels (≥ 0) spread to the unlabelled pixels (-1) of `within`, 4-connected, nearest first (ties: the
+    lower neighbour order: below, above, right, left), at most `steps` times (None: until nothing moves)."""
+    label = label.copy()
+    k = 0
+    while steps is None or k < steps:
+        k += 1
+        grown = label.copy()
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            sh = np.full_like(label, -1)
+            ys = slice(max(dy, 0), label.shape[0] + min(dy, 0))
+            yd = slice(max(-dy, 0), label.shape[0] + min(-dy, 0))
+            xs = slice(max(dx, 0), label.shape[1] + min(dx, 0))
+            xd = slice(max(-dx, 0), label.shape[1] + min(-dx, 0))
+            sh[ys, xs] = label[yd, xd]
+            take = within & (grown < 0) & (sh >= 0)
+            grown[take] = sh[take]
+        if np.array_equal(grown, label):
+            break
+        label = grown
+    return label
+
+
+def rig(rgba, lab, names):
+    """Profile « rig »: the parts of a frame from its label map (rig_labels)."""
+    mask = rgba[:, :, 3] > ALPHA
+    if not mask.any():
+        return {}
+    effect = mask & (lab == RIG_EFFECT)
+    label = np.where(mask & (lab > 0) & (lab <= len(names)), lab.astype(np.int32) - 1, -1)
+    body = body_of(mask & ~effect)
+    label[~body] = -1
+    if not (label >= 0).any():  # no label left (a dissolving frame, its ruins): see rig_fill
+        return None
+    # Its outlines and what is pasted on it take the nearest part along the drawing, 4 px at most:
+    # beyond, an effect around it (dust, speed lines, a flash) is left out.
+    label = grow(label, body, RIG_REACH)
+    return {n: body & (label == i) for i, n in enumerate(names)}
+
+
+def rig_fill(labels, masks, names):
+    """The frames of a « rig » sheet without any label (its dissolving death, its ruins): the parts of its
+    labelled frame whose drawing covers it best (first in the sheet's order on a tie), spread along it;
+    nothing alike (half of the drawing at least: a ruin unlike any pose): its first part."""
+    done = [rc for rc in sorted(labels) if labels[rc] is not None]
+    for rc in sorted(labels):
+        if labels[rc] is not None:
+            continue
+        body = body_of(masks[rc])
+        best, score = None, 0
+        for o in done:
+            inter = int((masks[o] & body).sum())
+            union = int((masks[o] | body).sum())
+            if union and inter * 1000 // union > score:
+                best, score = o, inter * 1000 // union
+        if best is None or score < 500:
+            labels[rc] = {names[0]: body}
+            continue
+        lab = np.full(body.shape, -1, dtype=np.int32)
+        for i, n in enumerate(names):
+            if n in labels[best]:
+                lab[labels[best][n] & body] = i
+        if not (lab >= 0).any():
+            labels[rc] = {names[0]: body}
+            continue
+        lab = grow(lab, body)
+        lab[body & (lab < 0)] = 0
+        labels[rc] = {n: body & (lab == i) for i, n in enumerate(names)}
+
+
 def transfer(base_parts, mask, names):
     """A cell whose mask differs from the own sheet's: each pixel takes the part of the nearest pixel
     of the same cell of the own sheet (6 px at most; beyond, a spark: left out)."""
@@ -430,8 +601,12 @@ def bosses(only=None):
         for p in d['boss'].get('phases', []):
             if p.get('animation') and p['animation'] not in sheets:
                 sheets.append(p['animation'])
-        profile = d.get('parts', {}).get('profile') or 'silhouette'
-        out.append((d['id'], profile, sheets, d.get('parts', {}).get('regions', [])))
+        parts = d.get('parts')
+        if parts is None and d.get('variantOf'):  # 2.76.2: an écho takes the parts of its original
+            parts = json.load(open(os.path.join(ROOT, 'data', 'enemies', d['variantOf'] + '.json'), encoding='utf-8')).get('parts')
+        parts = parts or {}
+        profile = parts.get('profile') or 'silhouette'
+        out.append((d['id'], profile, sheets, parts.get('regions', [])))
     return out
 
 
@@ -451,7 +626,13 @@ def build(only=None):
     for rel in sorted(plan, key=lambda r: (plan[r][1] is not None, r)):
         profile, own, regs = plan[rel]
         a, img = load_sheet(rel)
-        names = [r['name'] for r in regs] if profile == 'regions' else names_of[profile]
+        if profile == 'rig':
+            if sheet_name(rel) not in RIGS:
+                raise SystemExit(f'hitparts : pas de générateur pour {rel} (RIGS)')
+            names = RIGS[sheet_name(rel)][1]
+            labels_img = rig_labels(sheet_name(rel), img)
+        else:
+            names = [r['name'] for r in regs] if profile == 'regions' else names_of[profile]
         cells = cells_of(a)
         base = cache.get(own) if own else None
         if base and base[1] == cells and all(np.array_equal(cell(img, a, rc)[:, :, 3] > ALPHA, base[2][rc]) for rc in cells):
@@ -469,10 +650,16 @@ def build(only=None):
                     parts = dragon(rgba, a['pivot'])
                 elif profile == 'regions':
                     parts = regions(rgba, regs)
+                elif profile == 'rig':
+                    lab = labels_img[rc[0] * a['frameHeight']:(rc[0] + 1) * a['frameHeight'], rc[1] * a['frameWidth']:(rc[1] + 1) * a['frameWidth']]
+                    parts = rig(rgba, np.pad(lab, ((0, a['frameHeight'] - lab.shape[0]), (0, a['frameWidth'] - lab.shape[1]))), names)
                 else:
                     parts = silhouette(rgba)
                 labels[rc] = parts
-                res.append((rc, {n: pieces(m) for n, m in parts.items() if m.any()}))
+            if profile == 'rig':
+                rig_fill(labels, masks, names)
+            for rc in cells:
+                res.append((rc, {n: pieces(m) for n, m in labels[rc].items() if m.any()}))
             cache[rel] = (a, cells, masks, labels)
             text = encode(rel, a, profile, names, res)
         out[os.path.join('assets', 'hitparts', sheet_name(rel) + '.json')] = text
@@ -482,6 +669,20 @@ def build(only=None):
 def main():
     check = '--check' in sys.argv
     only = sys.argv[sys.argv.index('--only') + 1] if '--only' in sys.argv else None
+    if '--rig-label-one' in sys.argv:  # one sheet, in a process of its own (the generators keep state)
+        rig_generate(sys.argv[sys.argv.index('--rig-label-one') + 1])
+        return
+    if '--rig-labels' in sys.argv:  # the generators run again in label mode (a sprite generator changed)
+        for eid, profile, sheets, _ in bosses(only):
+            if profile == 'rig' and (sheet_name(sheets[0]) not in RIGS or not os.path.exists(os.path.join(ROOT, 'assets', sheets[0]))):
+                raise SystemExit(f'hitparts : pas de générateur pour {sheets[0]} (RIGS)')
+        done = set()
+        for eid, profile, sheets, _ in bosses(only):
+            if profile == 'rig' and sheet_name(sheets[0]) not in done:
+                done.add(sheet_name(sheets[0]))
+                # A process per sheet: the same map whatever the others (--only or not).
+                subprocess.run([sys.executable, os.path.abspath(__file__), '--rig-label-one', sheet_name(sheets[0])], check=True)
+        print(f'tools/assetgen/rig_labels : {len(done)} cartes d\'étiquettes écrites.')
     files = build(only)
     stale = []
     for rel, text in sorted(files.items()):

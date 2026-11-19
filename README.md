@@ -619,6 +619,16 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.76.2** :
+* **Boss classiques par parties** (version de simulation **17**) : les 16 gardiens des planètes et d'Aethra, Mycélia la
+  Câline et les 16 échos du Noyau se battent par parties. Leurs parties viennent de leur générateur de sprites (profil
+  « rig » de `tools/assetgen/hitparts.py` : chaque pixel de chaque image porte la partie qui l'a dessiné).
+* **Rôles** : tête, yeux et cœur exposé × 2 ; carapaces, épaulières, anneaux, chapeau et queues × 0,5 ; ronces,
+  pointes, flammes, armes et tentacules blessent ; poing, bras, gueule ou têtes blessent pendant leur attaque
+  (`hurtDuring`). Un écho prend les parties de son original.
+* **Tirs** : ils partent du dessin (« origins » des parties : poing, cœur, lance, chapeau, yeux, œil, marteau). Les
+  replays d'avant rejouent avec la boîte et l'origine d'avant ; les records sont gardés.
+
 **Nouveau dans la version 2.76.0** :
 * **Boss en parties** : chaque boss est découpé en parties qui suivent son dessin image par image. Les formes sont
   des polygones convexes tirés des sprites par `tools/assetgen/hitparts.py` (`assets/hitparts`), et les rôles et

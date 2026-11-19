@@ -272,5 +272,40 @@
       }
     ],
     "enrageTime": 75
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "œil": {
+        "role": "weak",
+        "damage": 2
+      },
+      "soleil": {
+        "role": "normal",
+        "damage": 1
+      },
+      "anneau": {
+        "role": "armour",
+        "damage": 0.5,
+        "hurtDuring": [
+          "crown",
+          "supernova"
+        ]
+      },
+      "flammes": {
+        "role": "hurt"
+      }
+    },
+    "origins": {
+      "ray": [
+        4,
+        -28
+      ],
+      "flare_line": [
+        3,
+        -26
+      ]
+    }
+  },
+  "partsFromVersion": 17
 }

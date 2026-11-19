@@ -204,6 +204,7 @@ void Enemy::moveTowards(GameWorld& w, Vec2 target, float speed, float dt) {
 
 void Enemy::fixedUpdate(GameWorld& w, float dt) {
     prevBox = box;
+    byParts_ = fightsByParts(*this, w);
     auto tick = [dt](float& t) { t = std::max(0.0f, t - dt); };
     tick(hurtFlash_);
     tick(invuln_);
@@ -226,7 +227,7 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     if (state_ == EnemyState::Dormant) return;
     // 2.76.0: a boss that fights by parts (Pyrrhax): its pose is part of the simulation, its animation
     // advances in the fixed step (every computer, every replay: the same frame at the same step).
-    if (fightsByParts(*this, w)) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
+    if (byParts_) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
     if (state_ == EnemyState::Dead) {
         deathTimer_ -= dt;
         vel.x = approach(vel.x, 0.0f, 400.0f * dt);

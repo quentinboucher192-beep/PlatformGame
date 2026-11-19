@@ -294,7 +294,14 @@ void Enemy::beginAttack(GameWorld& w) {
 }
 
 Vec2 Enemy::attackOrigin() const {
-    if (attack_) return attackOriginOf(*attack_, box, facing, def_.scale);  // 2.75.2: shared with the raid sheets' diagram
+    if (attack_) {
+        // 2.76.2: a boss that fights by its parts shoots from its drawing (« origins » of its parts,
+        // pixels of its sprite from its feet × its scale, like an attack's own origin).
+        if (byParts_)
+            if (const Vec2* o = PartRules::of(def_.id).origin(attack_->id))
+                return box.bottomCenter() + Vec2{facing * o->x * def_.scale, o->y * def_.scale};
+        return attackOriginOf(*attack_, box, facing, def_.scale);  // 2.75.2: shared with the raid sheets' diagram
+    }
     return box.center() + Vec2{facing * box.w * 0.4f, -box.h * 0.1f};
 }
 

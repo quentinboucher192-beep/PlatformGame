@@ -185,6 +185,8 @@ public:
     void wound(GameWorld& w, float amount);
     /// 2.68: the attack it is winding up or performing (nullptr between two).
     const AttackDef* currentAttack() const { return attack_; }
+    /// Projectile / beam origin of the current attack (2.76.2: public, its drawing's when it fights by parts).
+    Vec2 attackOrigin() const;
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -255,6 +257,9 @@ private:
 
     EnemyDefinition def_;
     Animator anim_;
+    /// 2.76.2: whether it fights by its hit parts (fightsByParts), refreshed at each fixed step: its
+    /// shots then leave its drawing (attackOrigin, « origins » of its parts).
+    bool byParts_ = false;
     std::string objectId_;
     uint32_t uid_;
     EnemyState state_ = EnemyState::Idle;
@@ -293,7 +298,6 @@ private:
     float laserHitTimer_ = 0.0f;
     std::vector<Vec2> targets_;  // rain / eruption impact points chosen during the telegraph
     float warnTimer_ = 0.0f;
-    Vec2 attackOrigin() const;   // projectile / beam origin of the current attack
     float chargeDistance_ = 0.0f;
     int phase_ = 0;
     int patternIndex_ = 0;

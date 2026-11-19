@@ -102,12 +102,34 @@ class Mat:
         return idx
 
 
+class _Labels:
+    """2.76.2: the hit parts of the bosses (tools/assetgen/hitparts.py, profile « rig »). A generator names
+    the part of the body it draws (`cv.tag = "tête"`). In label mode (`LABELS.on`, set by hitparts.py
+    only) every rendered pixel takes the colour of its tag, (index, LABEL_G, LABEL_B): outlines index 0,
+    pixels of a canvas without a tag (an effect) "?", and the sheet is assembled as usual: the tool
+    reads the part of every pixel of every frame. Off (always, for the sprites): nothing changes."""
+    on = False
+    names = [""]
+
+    def index(self, name):
+        name = name or "?"
+        if name not in self.names:
+            self.names.append(name)
+        return self.names.index(name)
+
+
+LABELS = _Labels()
+LABEL_G, LABEL_B = 1, 254
+
+
 class Canvas:
     def __init__(self, w, h):
         self.w, self.h = w, h
         self.mat = np.full((h, w), -1, np.int32)
         self.inten = np.zeros((h, w), np.float32)
         self.pid = np.zeros((h, w), np.int32)
+        self.tag = None  # 2.76.2: the part of the body drawn now (LABELS)
+        self.tagmap = np.zeros((h, w), np.int32) if LABELS.on else None
         self.mats = []
         self._mat_ids = {}
         self.part_line = {0: False}
@@ -154,6 +176,8 @@ class Canvas:
             self.inten[mask] = np.clip(inten[mask] + bias, 0, 1)
         if not decal:
             self.pid[mask] = self.cur
+            if self.tagmap is not None:
+                self.tagmap[mask] = LABELS.index(self.tag)
         return mask
 
     def erase(self, mask):
@@ -351,6 +375,11 @@ class Canvas:
             img[sel] = ramp[np.clip(idx[sel], 0, len(m.ramp) - 1)]
         if outline:
             outline_pass(img, self, diag=outline_diag)
+        if self.tagmap is not None:  # label mode: the colour of each pixel's part (alpha unchanged)
+            lab = np.where(occ, self.tagmap, 0)
+            img[:, :, 0] = np.where(img[:, :, 3] > 0, lab, 0).astype(np.uint8)
+            img[:, :, 1] = np.where(img[:, :, 3] > 0, LABEL_G, 0)
+            img[:, :, 2] = np.where(img[:, :, 3] > 0, LABEL_B, 0)
         return img
 
 

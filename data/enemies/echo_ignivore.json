@@ -315,5 +315,6 @@
     "brainVersion": 3
   },
   "variantOf": "ignivore",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

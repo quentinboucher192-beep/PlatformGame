@@ -105,24 +105,33 @@ class Forge:
         L = lambda x, y: (c[0] + x, c[1] + y)  # noqa: E731
         dead = p.dead >= 0.5
         plates = self._plate_specs(p)
+        # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
         if layer == "plates":
+            cv.tag = "plaques"
             for sp in plates:
                 self._plate(cv, p, L, sp, dead)
             return cv.render()
+        cv.tag = "chaînes"
         self._chains(cv, p, L, back=True)
         self._arm(cv, p, L, -1, dead)
         if layer is None:
+            cv.tag = "plaques"
             for sp in plates:
                 if sp[3] < 0:
                     self._plate(cv, p, L, sp, dead)
+        cv.tag = "anneaux"
         self._rings(cv, p, L, back=True, dead=dead)
+        cv.tag = "cœur"
         self._heart(cv, p, L, dead)
+        cv.tag = "anneaux"
         self._rings(cv, p, L, back=False, dead=dead)
         self._caps(cv, p, L, dead)
         if layer is None:
+            cv.tag = "plaques"
             for sp in plates:
                 if sp[3] >= 0:
                     self._plate(cv, p, L, sp, dead)
+        cv.tag = "chaînes"
         self._chains(cv, p, L, back=False)
         self._arm(cv, p, L, 1, dead)
         return cv.render()
@@ -289,6 +298,7 @@ class Forge:
     # caps / chimney / keel ----------------------------------------------------
     def _caps(self, cv, p, L, dead):
         # top cap (riveted dome) + obsidian spikes + chimney
+        cv.tag = "coque"
         cv.part()
         cv.tchain([L(-3, -26), L(-2.5, -33)], [3.2, 3.6], IRON_DK)
         cv.part()
@@ -299,8 +309,10 @@ class Forge:
             b = L(x, -21)
             tip = (b[0] + math.cos(a) * ln, b[1] + math.sin(a) * ln)
             nx, ny = -math.sin(a) * wd, math.cos(a) * wd
+            cv.tag = "pointes"
             cv.part()
             cv.tpoly([(b[0] + nx, b[1] + ny), tip, (b[0] - nx, b[1] - ny)], OBSID, bevel=0.9, base=0.62)
+        cv.tag = "coque"
         cv.part()
         cv.tellipse(L(0, -19.0), 12.5, 5.5, IRON)
         cv.part(line=False)
@@ -335,6 +347,7 @@ class Forge:
         hd = self.hand(p, side)
         el = ik2(sh, hd, 13.0, 19.0, side * 1.0)
         el = (el[0], min(el[1], sh[1] + 2))
+        cv.tag = "bras"
         cv.part()
         cv.tdisc(L(*sh), 4.2, m, bias=0.05)
         cv.part()
@@ -355,6 +368,7 @@ class Forge:
             q = rot2((u, v), tl)
             return L(hd[0] + q[0], hd[1] + q[1])
         cm = IRON if side > 0 else IRON_DK
+        cv.tag = "creusets"
         cv.part()
         cv.tchain([Q(-6.5, 5.5), Q(-4, 1), Q(0, -0.5), Q(4, 1), Q(6.5, 5.5)], [0.8] * 5, m)
         cv.part()

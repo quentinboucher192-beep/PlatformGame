@@ -98,6 +98,8 @@ def thorn(cv, base, ang, ln, wd, m):
 
 class SporeQueen(HydraTheme):
     id = "spore_queen"
+    tags = {"back": "feuilles", "vine": "lianes", "neck": "cous", "head": "têtes", "body": "bulbe", "crown": "pétales",
+            "front": "feuilles"}  # 2.76.2: hit parts (raster.LABELS)
     seed = 1100
     head_len = 24.0
     head_lie = 7.0
@@ -161,6 +163,7 @@ class SporeQueen(HydraTheme):
                              (-12, 6), (13, 7), (2, 3)):
                 cv.tpx((cx + ox, cy + oy), SAC, inten=0.35 + 0.45 * min(1.0, p.glow), decal=True)
         # sacs
+        cv.tag = "sacs"  # 2.76.2: hit parts (raster.LABELS)
         for i, (c, r) in enumerate(SACS):
             c = (c[0] + p.sway * 0.25, c[1])
             cv.part()
