@@ -451,7 +451,7 @@ TEST_CASE("tutorial: the souvenir title is the tutorial's, local, shown once ear
 }
 
 TEST_CASE("tutorial: the levels of the campaign are untouched (no tutorial rule, no bubble)") {
-    CHECK(kSimulationVersion == 15);  // 2.71: the attack upwards and downwards (no tutorial rule)
+    CHECK(kSimulationVersion == 16);  // 2.71: the attack upwards and downwards (no tutorial rule); 2.76: parts, flight
     int levels = 0;
     for (const PlanetData* planet : content().planets())
         for (const std::string& id : planet->levels) {

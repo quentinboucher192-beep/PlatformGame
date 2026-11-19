@@ -18,6 +18,7 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"power_slot_7", "Pouvoir 7"},    {"power_slot_8", "Pouvoir 8"},
     {"pause", "Pause"},               {"ghost_toggle", "Afficher / masquer les fantômes"},
     {"focus_toggle", "Mode concentré"}, {"raid_map", "Carte du raid (agrandir)"},
+    {"raid_menu", "Menu du raid"},
     {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
     {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
     {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},
@@ -66,6 +67,7 @@ void InputBindings::resetKeyboard() {
     set(Action::GhostToggle, SDL_SCANCODE_G);
     set(Action::FocusToggle, SDL_SCANCODE_T);
     set(Action::RaidMap, SDL_SCANCODE_M);  // 2.72: the raid's large map
+    set(Action::RaidMenu, SDL_SCANCODE_TAB);  // 2.75.5: the raid's menu
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
     set(Action::MenuLeft, SDL_SCANCODE_LEFT, SDL_SCANCODE_A);
@@ -95,6 +97,9 @@ void InputBindings::resetGamepad() {
     set(Action::FocusToggle, B::button(SDL_GAMEPAD_BUTTON_MISC1), B::button(SDL_GAMEPAD_BUTTON_TOUCHPAD));
     // 2.72: the raid's large map on View / Back / Select (− on Switch, Share on PlayStation).
     set(Action::RaidMap, B::button(SDL_GAMEPAD_BUTTON_BACK));
+    // 2.75.5: the raid's menu on the left stick's click (L3), the button of the ghosts of Ghost
+    // Racing: never in the same game (no ghost in a raid, no raid menu out of one).
+    set(Action::RaidMenu, B::button(SDL_GAMEPAD_BUTTON_LEFT_STICK));
     set(Action::MenuUp, B::button(SDL_GAMEPAD_BUTTON_DPAD_UP), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuDown, B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN), B::axisPos(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuLeft, B::button(SDL_GAMEPAD_BUTTON_DPAD_LEFT), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTX));
@@ -313,6 +318,17 @@ InputBindings InputBindings::fromJson(const Json& j) {
                 used = b.pad[o][0] == def || b.pad[o][1] == def;
             if (!used) b.pad[i] = d.pad[i];
         }
+    // 2.75.5: a file written before the raid's menu (no « raid_menu »): its key (Tab) and its button
+    // (L3) only when no command of that file has them (L3 stays shared with the ghosts' toggle).
+    const int menu = static_cast<int>(Action::RaidMenu);
+    auto lacksMenu = [&](const char* device) { return !j.contains(device) || !j[device].is_object() || !j[device].contains(actionId(Action::RaidMenu)); };
+    if (lacksMenu("keyboard"))
+        for (int o = 0; o < kFirstMenuAction; ++o)
+            if (o != menu && (b.keys[o][0] == d.keys[menu][0] || b.keys[o][1] == d.keys[menu][0])) b.keys[menu] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
+    if (lacksMenu("gamepad"))
+        for (int o = 0; o < kFirstMenuAction; ++o)
+            if (o != menu && o != static_cast<int>(Action::GhostToggle) && (b.pad[o][0] == d.pad[menu][0] || b.pad[o][1] == d.pad[menu][0]))
+                b.pad[menu] = {PadBinding{}, PadBinding{}};
     b.keepOneBinding();
     return b;
 }

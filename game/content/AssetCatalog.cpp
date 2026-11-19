@@ -627,6 +627,10 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
             });
         }
     }
+    // 2.76.0: the hit parts of a sheet (hitparts/<sheet>.json, tools/assetgen/hitparts.py) are used with
+    // its animation (animations/<sheet>.json): the same users.
+    for (const AssetEntry& a : cat.assets_)
+        if (a.path.rfind("hitparts/", 0) == 0) describedBy.emplace_back(a.path, "animations/" + a.name);
     // A described file inherits the users of its description (a level using golem.json uses
     // golem.png too), with the same count.
     for (const auto& [tex, json] : describedBy)
@@ -764,6 +768,12 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
         if (a.type != AssetType::Animation) continue;
         auto s = placeOf.find(a.sheet);
         placeOf[a.path] = s != placeOf.end() ? s->second : folderOf(a);
+    }
+    // 2.76.0: the hit parts of a sheet go with its animation.
+    for (const AssetEntry& a : cat.assets_) {
+        if (a.path.rfind("hitparts/", 0) != 0) continue;
+        auto s = placeOf.find("animations/" + a.name);
+        if (s != placeOf.end()) placeOf[a.path] = s->second;
     }
 
     // Folders (rank and name order among siblings), then the assets in the order of the tree.

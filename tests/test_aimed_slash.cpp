@@ -300,7 +300,7 @@ TEST_CASE("aimed slash: a new replay plays back exactly and says its simulation"
 }
 
 TEST_CASE("aimed slash: a replay recorded before 2.71 still reproduces its run") {
-    CHECK(kSimulationVersion == 15 && kAimedSlashSimulation == 15);
+    CHECK(kSimulationVersion >= 16 && kAimedSlashSimulation == 15);  // 2.76: 16, the bosses by parts and the bounded flight
     CHECK(kRankingGeneration == 8);      // the records are kept (the player asked for it)
     CHECK(kCoopSimulationVersion == 3);  // 2.75: players pass through each other; 2.77: souls on safe places, revivals held (team rules only)
     // A run of 2.68 or before: the old rules, and no version in the file (simVersion 0).

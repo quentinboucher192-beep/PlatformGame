@@ -802,5 +802,48 @@
       "dernier_souffle"
     ],
     "finalText": "Son dernier feu : survivez !"
-  }
+  },
+  "parts": {
+    "profile": "dragon",
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "morsure"
+        ]
+      },
+      "cou": {
+        "role": "normal",
+        "damage": 1
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1
+      },
+      "aile gauche": {
+        "role": "normal",
+        "damage": 1
+      },
+      "aile droite": {
+        "role": "normal",
+        "damage": 1
+      },
+      "pattes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "queue": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "griffes": {
+        "role": "hurt"
+      },
+      "souffle": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 16
 }

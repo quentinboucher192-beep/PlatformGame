@@ -327,6 +327,9 @@ Le HUD des raids a sa **propre disposition** (Paramètres › HUD › onglet « 
 leur couleur, légende), panneau du groupe, objectifs, alertes, barre du gigaboss, contributions et un
 **chronomètre** (le temps de l'instance et celui de la zone, le même pour tout le groupe). La touche **M**
 (Vue / Retour à la manette) agrandit la **carte** sur presque tout l'écran, sans jamais mettre le jeu en pause.
+La touche **Tab** (L3 à la manette) ouvre et ferme le **menu du raid** (ce qu'il reste à faire, zones terminées et leurs
+tableaux, journal des notifications, groupe, titan) ; ce qui arrive en jeu n'est qu'une **notification courte** qui ne
+prend jamais les touches.
 Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les niveaux. Les administrateurs testent
 une zone avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui **jouent la zone eux-mêmes**, même quand
 l'administrateur est AFK : ils lisent ce qu'il reste à faire, se répartissent générateurs, plaques et combats, trouvent
@@ -334,7 +337,7 @@ leur chemin (sauts, échelles, plateformes mobiles), esquivent, fuient le liquid
 relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert. **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
 carte du titan, contributions, groupes éliminés et renforts ; l'administrateur rejoint ou regarde n'importe quel groupe,
-et **rien n'est envoyé**. Détails : [docs/RAIDS.md §21](docs/RAIDS.md).
+et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md).
 
 Dans le **vestiaire**, les tablettes de pouvoir sont en hauteur sur leurs rebords (deux étages), avec le nom, l'icône et
 le coût d'énergie de chaque pouvoir au-dessus : on n'en prend une qu'en sautant dessus.
@@ -390,6 +393,7 @@ local, avec des comptes de démonstration (aucun record n'y est encore vérifié
 | Interagir | E / Entrée | Y / Triangle |
 | Pause | Échap / P | Menu / Options |
 | Carte du raid (agrandir / fermer) | M | Vue / Partage (− sur Switch) |
+| Menu du raid (ouvrir / fermer ; Échap ou B le ferment aussi) | Tab | L3 (clic du stick gauche) |
 
 **Touches des pouvoirs (2.24)** : chaque emplacement de pouvoir du HUD a sa touche, que le
 joueur choisit (*Paramètres → Clavier / souris* et *Manette*, « Pouvoir 1 » à « Pouvoir 8 ») ;
@@ -633,7 +637,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * **Tester Asterion** : les joueurs simulés **jouent vraiment** la zone, même si vous êtes AFK (pilote automatique de
   votre place après 15 s) : objectifs de la zone répartis, chemin sur un graphe du niveau, combats, esquives, fuite du
   liquide qui monte, Gigaboss (mécanisme quand il est blindé, points faibles à nu), réanimations, choix des pouvoirs au
-  vestiaire ; « Niveau des joueurs simulés » : Débutant, Confirmé, Expert ([docs/RAIDS.md §21](docs/RAIDS.md)).
+  vestiaire ; « Niveau des joueurs simulés » : Débutant, Confirmé, Expert ([docs/RAIDS.md §22](docs/RAIDS.md)).
 * **« Simuler un raid complet »** : tout le raid de clan en local, sept branches puis le Cœur avec tous les groupes,
   événements du monde, carte du titan, contributions, groupes éliminés et renforts ; rejoindre ou regarder n'importe
   quel groupe ; **TEST LOCAL — rien n'est envoyé**.
@@ -642,6 +646,31 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   ([docs/COOP.md §1](docs/COOP.md)).
 * **Vestiaire** : tablettes **en hauteur** sur leurs rebords, nom, icône et coût de chaque pouvoir au-dessus ; traverser
   la salle au sol ne prend plus rien. Révision du titan **5**.
+
+**Nouveau dans la version 2.76.1** :
+* **Raids : plus aucune carte qui bloque le joueur.** Une zone terminée, le groupe éliminé, une zone reprise par un
+  renfort, un gigaboss vaincu, un lien du titan : une **notification courte** (3,5 s, un son, trois au plus l'une sous
+  l'autre) qui ne prend aucune touche, sous le bouton du menu et loin du milieu de l'écran, avec le rappel de sa touche
+  (« Tableau : Tab ») ; sa place se règle dans Paramètres › HUD › « Raids ». La carte « ZONE TERMINÉE », qui réagissait au
+  saut et aux déplacements, et celle de la chute du gigaboss, qui pouvait figer le personnage sous les résultats, n'existent
+  plus.
+* **Menu du raid** (**Tab**, **L3** à la manette, le bouton du HUD, ou la pause ; Échap ou B le ferment) : « Ce qu'il reste à
+  faire », « Zones terminées » et leurs tableaux des contributions, « Journal » (toutes les notifications, à l'heure du
+  raid), « Groupe » (à terre, spectateur…), « Titan » (parties, liens, événements, « Résultats du raid »). Le jeu continue
+  comme pendant la pause, et ses touches ne bougent jamais le personnage ([docs/RAIDS.md §21](docs/RAIDS.md)).
+
+**Nouveau dans la version 2.76.0** :
+* **Boss en parties** : chaque boss est découpé en parties qui suivent son dessin image par image. Les formes sont
+  des polygones convexes tirés des sprites par `tools/assetgen/hitparts.py` (`assets/hitparts`), et les rôles et
+  dégâts se trouvent dans `data/enemies` ([docs/HITPARTS.md](docs/HITPARTS.md) ; brancher un boss :
+  [docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Pyrrhax** se bat par parties (version de simulation **16**) : tête × 2, queue blindée × 0,5. Seules ses griffes,
+  son souffle et sa tête pendant la morsure blessent. Les replays d'avant rejouent avec sa boîte et les records sont
+  gardés.
+* **Fiches** : onglet « Où frapper » pour chaque boss, avec le vrai sprite, ses poses, ses parties et une légende de
+  leurs rôles ; les fiches d'Asterion montrent aussi les parties.
+* **Fuite bornée** : un ennemi affaibli ne s'éloigne plus qu'à 5,5 tuiles d'où il a commencé à fuir, et monte 2 tuiles
+  au plus ; à la limite, il est acculé et se laisse toucher (`fleeMaxDistance`, réglable dans l'éditeur d'ennemis).
 
 **Nouveau dans la version 2.75.3** :
 * **Modération : les administrateurs voient tout des profils** (le rôle de leur session, jamais un paramètre) : profil

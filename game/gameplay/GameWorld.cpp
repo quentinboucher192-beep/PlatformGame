@@ -11,6 +11,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/enemies/Enemy.h"
+#include "game/enemies/HitParts.h"
 #include "game/gameplay/EntityFactory.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/gameplay/entities/Entities.h"
@@ -538,14 +539,15 @@ void GameWorld::updateProjectiles(float frameDt) {
             for (auto& e : enemies_) {
                 if (!e->alive() || e->dormant()) continue;
                 if (std::find(p.hitTargets.begin(), p.hitTargets.end(), e.get()) != p.hitTargets.end()) continue;
-                if (!Collision::circleIntersectsRect(p.pos, p.radius, e->box)) continue;
+                float mult = 1.0f;  // 2.76.0: the part it touches (a boss that fights by parts), else its box as before
+                if (!reaches(*e, *this, p.pos, p.radius, &mult)) continue;
                 if (p.explosionRadius > 0.0f) {  // plasma bomb: bursts on the first enemy
                     p.alive = false;
                     explodeProjectile(p, p.pos);
                     break;
                 }
                 DamageInfo d;
-                d.amount = p.damage;
+                d.amount = p.damage * mult;
                 d.type = p.type;
                 d.source = p.pos - p.vel.normalized() * 8.0f;
                 d.knockback = p.knockback;
@@ -794,8 +796,16 @@ void GameWorld::spawnDrop(const std::string& type, Vec2 pos) {
 int GameWorld::damageEnemies(const Rect& area, const DamageInfo& dmg, const void* /*source*/) {
     int hits = 0;
     for (auto& e : enemies_) {
-        if (!e->alive() || e->dormant() || !e->box.intersects(area)) continue;
-        if (e->takeDamage(*this, dmg)) ++hits;
+        if (!e->alive() || e->dormant()) continue;
+        float mult = 1.0f;  // 2.76.0: the part it touches (a boss that fights by parts), else its box as before
+        if (!reaches(*e, *this, area, &mult)) continue;
+        if (mult == 1.0f) {
+            if (e->takeDamage(*this, dmg)) ++hits;
+            continue;
+        }
+        DamageInfo d = dmg;
+        d.amount *= mult;
+        if (e->takeDamage(*this, d)) ++hits;
     }
     return hits;
 }

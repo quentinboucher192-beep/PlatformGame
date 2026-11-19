@@ -388,6 +388,9 @@ Json EnemyDefinition::toJson() const {
     j["movement"] = movementId(movement);
     j["reaction"] = reactionId(reaction);
     j["fleeHealthRatio"] = fleeHealthRatio;
+    // 2.76.0: written only when it is not the default: the definitions of before, and the fingerprints of
+    // the levels that use them, stay the same (records kept).
+    if (fleeMaxDistance != kFleeMaxDistance) j["fleeMaxDistance"] = fleeMaxDistance;
     j["preferredDistance"] = preferredDistance;
     j["hopVelocity"] = hopVelocity;
     Json atk = Json::array();
@@ -448,6 +451,7 @@ EnemyDefinition EnemyDefinition::fromJson(const Json& j) {
     d.movement = enumFromId(jstr(j, "movement", "patrol"), &movementId, MovementType::Patrol);
     d.reaction = enumFromId(jstr(j, "reaction", "chase"), &reactionId, ReactionType::Chase);
     d.fleeHealthRatio = std::clamp(jget<float>(j, "fleeHealthRatio", 0.0f), 0.0f, 1.0f);
+    d.fleeMaxDistance = std::clamp(jget<float>(j, "fleeMaxDistance", EnemyDefinition::kFleeMaxDistance), 16.0f, 480.0f);
     d.preferredDistance = jget<float>(j, "preferredDistance", 110.0f);
     d.hopVelocity = jget<float>(j, "hopVelocity", 220.0f);
     if (j.contains("attacks") && j["attacks"].is_array())
