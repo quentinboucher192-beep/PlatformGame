@@ -533,6 +533,9 @@ int main(int argc, char** argv) {
     i18n::setLanguage(settingsLanguage(initial));
     const std::optional<Language> langArg = i18n::parse(value("--lang"));
     if (langArg) i18n::setLanguage(*langArg);
+    // 2.76.2: --i18n-audit <file>: every text shown that is left in the other language, one JSON
+    // line each (docs/I18N.md). Off without it: nothing is checked.
+    if (std::string f = value("--i18n-audit"); !f.empty()) i18n::startAudit(f);
     AppConfig cfg;
     cfg.headless = has("--headless");
     // Screenshots without a screen: 1600×900 unless --width / --height say otherwise.
@@ -873,6 +876,7 @@ int main(int argc, char** argv) {
         }
         t.branch = f[0];
         t.zone = f.size() > 1 ? std::max(1, std::atoi(f[1].c_str())) : 8;
+        if (f.size() > 1 && f[1] == "vestiaire") t.zone = -1;  // 2.76.2: the branch's armory (raid::RaidRun::kArmory)
         t.players = f.size() > 2 ? std::clamp(std::atoi(f[2].c_str()), 2, 8) : 2;
         t.startPhase = f.size() > 3 ? std::clamp(std::atoi(f[3].c_str()), 1, 3) : 1;
         t.invincible = f.size() <= 4 || f[4] != "0";
@@ -1009,6 +1013,7 @@ int main(int argc, char** argv) {
     game.presenceOffline();  // friends see « hors ligne » at once (else after 150 s)
     game.online.shutdown();
     app.shutdown();
+    if (i18n::auditing()) Log::info("Vérification des langues : {} texte(s) relevé(s)", i18n::auditFindings().size());
     Log::info("Bye");
     Log::shutdown();
     return 0;

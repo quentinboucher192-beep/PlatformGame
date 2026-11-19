@@ -59,6 +59,12 @@
    ]
   },
   {
+   "fr": "(facultatif)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "(fermé le {0} après une migration)",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -135,12 +141,6 @@
    "fr": "(tiré à nouveau : « {0} »)",
    "where": [
     "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
-   "fr": "(zone à reprendre)",
-   "where": [
-    "server/src/raidMap.ts"
    ]
   },
   {
@@ -496,6 +496,12 @@
    ]
   },
   {
+   "fr": "2 (Duo) ou 3 (Trio)",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "2 caractères minimum",
    "where": [
     "server/src/players.ts"
@@ -508,9 +514,57 @@
    ]
   },
   {
+   "fr": "2 lames à briser : 2 groupes",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "2 nerfs à trancher : 2 groupes",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "2 ou 3 joueurs distincts",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "2 ou 3 joueurs · niveaux EXTRÊME",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "2 pistons à bloquer : 2 groupes",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "2 plaques : 2 groupes",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "2 rotules : 2 groupes",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "2 soufflets à détruire",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "2 valves : 2 groupes · reflux d'acide",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -1290,13 +1344,6 @@
    ]
   },
   {
-   "fr": "absent",
-   "where": [
-    "ui/online/OnlineWidgets.cpp",
-    "ui/screens/AdminScene.cpp"
-   ]
-  },
-  {
    "fr": "absent {0} s",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -1488,6 +1535,12 @@
    ]
   },
   {
+   "fr": "action inconnue",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Action non autorisée.",
    "where": [
     "server/src/http.ts"
@@ -1630,6 +1683,12 @@
    ]
   },
   {
+   "fr": "added, title, rating, downloads ou updated",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
    "fr": "Adhérence (1 = normale)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -1730,12 +1789,6 @@
    "fr": "Administration : pour la modération, les administrateurs voient la présence réelle et les profils masqués (marqués « masqué ») dans ADMINISTRATION › Joueurs, les membres des clans et les inscrits des raids ; le serveur ne l'envoie qu'aux administrateurs connectés, jamais aux autres joueurs. Aucune position précise n'est collectée et le pays reste caché tant que le joueur ne le montre pas. Paramètres en ligne : l'explication de « masquer » le dit.",
    "where": [
     "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "Administration : « Enregistrer les parties » écrit leurs règles dans data/enemies/{0}.json de ce jeu ; elles partent avec sa prochaine version (« Publier… » ne les envoie pas).",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -2299,6 +2352,18 @@
    ]
   },
   {
+   "fr": "all, available ou unavailable",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "all, unread, creators, comments, projects ou raids",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Allemagne",
    "where": [
     "data/online/countries.json",
@@ -2623,12 +2688,6 @@
    ]
   },
   {
-   "fr": "Animer la pose",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Anneau",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -2656,12 +2715,6 @@
    "fr": "Anneau poli",
    "where": [
     "game/cosmetics/CreationLooks.cpp"
-   ]
-  },
-  {
-   "fr": "anneaux",
-   "where": [
-    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -2728,7 +2781,6 @@
   {
    "fr": "Annuler",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
@@ -2853,12 +2905,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "antennes",
-   "where": [
-    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -4529,12 +4575,6 @@
    ]
   },
   {
-   "fr": "Attention : changer leurs règles change ses combats ; les replays enregistrés ne se rejoueraient plus à l'identique. Une telle modification demande une nouvelle version de simulation (docs/HITBOX_PARTS.md).",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Attention : la colonne « {0}.{1} » n'existe plus sur ce serveur : ses valeurs seront ignorées.",
    "where": [
     "server/src/backups.ts"
@@ -5234,6 +5274,12 @@
    ]
   },
   {
+   "fr": "Aucun lien avec ce joueur.",
+   "where": [
+    "server/src/friends.ts"
+   ]
+  },
+  {
    "fr": "Aucun lieu sûr dans l'arène à cette phase : départ au point habituel.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -5556,6 +5602,31 @@
    ]
   },
   {
+   "fr": "Aucun replay pour ce record.",
+   "where": [
+    "server/src/records.ts"
+   ]
+  },
+  {
+   "fr": "Aucun replay pour cet essai.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Aucun replay pour cette partie.",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "Aucun replay pour cette tentative.",
+   "where": [
+    "server/src/coopRace.ts",
+    "server/src/race.ts"
+   ]
+  },
+  {
    "fr": "Aucun replay téléchargé pour l'instant. Sur un classement en ligne, « Télécharger » (ou la flèche à côté de « Voir ») garde un replay sur ce PC pour le regarder plus tard, même sans connexion.",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -5729,9 +5800,21 @@
    ]
   },
   {
+   "fr": "Aucune candidature de ce joueur.",
+   "where": [
+    "server/src/clans.ts"
+   ]
+  },
+  {
    "fr": "Aucune candidature en attente. Un joueur postule depuis la fiche du clan quand il recrute sur candidature.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune candidature ni invitation pour ce clan.",
+   "where": [
+    "server/src/clans.ts"
    ]
   },
   {
@@ -5789,6 +5872,12 @@
    ]
   },
   {
+   "fr": "Aucune demande d'ami de ce joueur.",
+   "where": [
+    "server/src/friends.ts"
+   ]
+  },
+  {
    "fr": "Aucune demande en attente.",
    "where": [
     "ui/screens/ClanScene.cpp",
@@ -5833,6 +5922,12 @@
    ]
   },
   {
+   "fr": "aucune image",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
    "fr": "Aucune image : déposez des PNG dans le dossier « Images à importer » ({0}), ou glissez-en un dans la fenêtre.",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -5866,6 +5961,12 @@
    "fr": "Aucune invitation en attente. Invitez un joueur par son pseudonyme, ou depuis son profil (onglet « Clan »).",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune invitation pour ce joueur.",
+   "where": [
+    "server/src/clans.ts"
    ]
   },
   {
@@ -6029,6 +6130,12 @@
    "fr": "Aucune session enregistrée.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "aucune sortie",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -6220,6 +6327,12 @@
    "fr": "auteur parti",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Authentification requise.",
+   "where": [
+    "server/src/http.ts"
    ]
   },
   {
@@ -6471,12 +6584,6 @@
    ]
   },
   {
-   "fr": "avant-bras",
-   "where": [
-    "data/enemies/dreadfang.json"
-   ]
-  },
-  {
    "fr": "Avant-bras de givre",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -6516,6 +6623,12 @@
     "ui/screens/RaceScene.cpp",
     "ui/screens/SocialScene.cpp",
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "Avatar PNG attendu (image/png).",
+   "where": [
+    "server/src/players.ts"
    ]
   },
   {
@@ -6706,9 +6819,51 @@
    ]
   },
   {
+   "fr": "Badge « Cage de Heartbreaker »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Badge « Cœur d'Asterion »",
    "where": [
     "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
+   "fr": "Badge « Griffes de Dreadfang »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Badge « Main de Pyroclast »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Badge « Pied de Graviton »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Badge « Regard de Skullmaw »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Badge « Talon de Titanus »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "Badge « Ventre de Voidworm »",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -6794,6 +6949,30 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion_sheets.json",
     "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Balayage des griffes toutes les 60 s (terrasses hautes sûres)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Balayage des griffes toutes les 7 à 11 s (sautez par-dessus ou changez d'étage)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Balayage des griffes toutes les 75 s (corniches hautes sûres)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Balayage des griffes toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -6986,6 +7165,12 @@
    "fr": "Basse",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "bassins d'acide · glande nord",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -7339,18 +7524,6 @@
    ]
   },
   {
-   "fr": "blesse aussi en attaquant",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
-   "fr": "Blesse aussi pendant ces attaques :",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Blessure",
    "where": [
     "ui/studio/StudioDoc.cpp"
@@ -7685,12 +7858,6 @@
    ]
   },
   {
-   "fr": "Boss du jeu : ses parties sont en lecture seule ; seul un administrateur règle leurs rôles (Administration › Ennemis).",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Boss du niveau",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -7700,6 +7867,13 @@
    "fr": "Boss et giga-boss",
    "where": [
     "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "boss inconnu",
+   "where": [
+    "server/src/coopRace.ts",
+    "server/src/race.ts"
    ]
   },
   {
@@ -7828,6 +8002,12 @@
    ]
   },
   {
+   "fr": "bounds : 4 nombres attendus",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "Bourgeons",
    "where": [
     "data/enemies/echo_mycelia.json",
@@ -7947,6 +8127,12 @@
    ]
   },
   {
+   "fr": "branche inconnue",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "branche introuvable : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -8024,12 +8210,6 @@
    "fr": "Bras",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
-   ]
-  },
-  {
-   "fr": "bras",
-   "where": [
-    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -8646,12 +8826,6 @@
    ]
   },
   {
-   "fr": "Cadre blanc : sa boîte d'avant (les replays d'avant)",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
    "fr": "Cadre blanc : sa boîte, qui prend et donne les coups",
    "where": [
     "ui/widgets/HitPartsView.cpp"
@@ -8721,6 +8895,12 @@
    "fr": "Cadre {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "cadre « srvframe:<n> » attendu",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -9153,6 +9333,12 @@
    ]
   },
   {
+   "fr": "Carapace : ses 3 évents à tenir 3 s, ensemble",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Carapace brisée",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -9293,6 +9479,12 @@
    ]
   },
   {
+   "fr": "catalogue de branche manquant",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "catalogue de la branche illisible",
    "where": [
     "game/raid/RaidBranch.cpp"
@@ -9384,6 +9576,12 @@
    ]
   },
   {
+   "fr": "Ce clan a trop de demandes en attente.",
+   "where": [
+    "server/src/clans.ts"
+   ]
+  },
+  {
    "fr": "Ce clan est complet.",
    "where": [
     "game/online/Clans.cpp"
@@ -9397,6 +9595,12 @@
   },
   {
    "fr": "Ce clan ne recrute plus librement : il faut une invitation ou une candidature.",
+   "where": [
+    "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Ce clan recrute seulement sur invitation.",
    "where": [
     "server/src/clans.ts"
    ]
@@ -10857,12 +11061,6 @@
    ]
   },
   {
-   "fr": "chair",
-   "where": [
-    "data/enemies/asterion_coeur.json"
-   ]
-  },
-  {
    "fr": "Chaleur du Titan",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -10872,6 +11070,13 @@
    "fr": "Chambre noyée",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "champ inconnu",
+   "where": [
+    "server/src/challenges.ts",
+    "server/src/validate.ts"
    ]
   },
   {
@@ -10890,6 +11095,12 @@
    "fr": "Champion des défis",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "champs attendus",
+   "where": [
+    "server/src/live.ts"
    ]
   },
   {
@@ -13115,6 +13326,12 @@
    ]
   },
   {
+   "fr": "COMBAT FINAL · toutes les instances ensemble",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "Combat par parties : vos coups touchent la partie visée (point faible d'abord), seules les parties rouges blessent.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
@@ -13236,6 +13453,12 @@
    "fr": "combinaison {0}, accent {1}, écharpe {2}",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "combinaison « srvsuit:<n> » attendue",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -13577,6 +13800,12 @@
    "fr": "Communauté · version {0}",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "community ou official",
+   "where": [
+    "server/src/race.ts"
    ]
   },
   {
@@ -14308,6 +14537,13 @@
    ]
   },
   {
+   "fr": "Connexion WebSocket attendue.",
+   "where": [
+    "server/src/coop.ts",
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Connexion à Cosmic Online nécessaire pour la télécharger.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
@@ -14536,6 +14772,12 @@
    ]
   },
   {
+   "fr": "Conversation impossible avec ce joueur.",
+   "where": [
+    "server/src/social.ts"
+   ]
+  },
+  {
    "fr": "Conversation introuvable.",
    "where": [
     "server/src/social.ts"
@@ -14657,6 +14899,12 @@
    ]
   },
   {
+   "fr": "Copie interrompue.",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "Copie locale introuvable : ouvrez d'abord le projet dans l'éditeur.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -14697,18 +14945,6 @@
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/SettingsScene.cpp"
-   ]
-  },
-  {
-   "fr": "corne droite",
-   "where": [
-    "data/enemies/skullmaw.json"
-   ]
-  },
-  {
-   "fr": "corne gauche",
-   "where": [
-    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -15190,6 +15426,12 @@
    ]
   },
   {
+   "fr": "couleur « #rrggbb » attendue",
+   "where": [
+    "server/src/creations.ts"
+   ]
+  },
+  {
    "fr": "Couleur à la fin de sa vie",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -15378,6 +15620,12 @@
    "fr": "Courant ascendant : sautez dedans et maintenez Saut pour vous élever.",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "courant de lave à remonter",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -15692,6 +15940,12 @@
    ]
   },
   {
+   "fr": "court, standard ou legendaire",
+   "where": [
+    "server/src/raids.ts"
+   ]
+  },
+  {
    "fr": "Couvée",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -15743,6 +15997,12 @@
    "fr": "Crayon",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "creators, comments, projects ou raids",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -16004,12 +16264,6 @@
    "where": [
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "crâne",
-   "where": [
-    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -16390,12 +16644,6 @@
    ]
   },
   {
-   "fr": "cuisse",
-   "where": [
-    "data/enemies/titanus.json"
-   ]
-  },
-  {
    "fr": "Cuisse flottante",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -16437,21 +16685,9 @@
    ]
   },
   {
-   "fr": "côtes",
-   "where": [
-    "data/enemies/heartbreaker.json"
-   ]
-  },
-  {
    "fr": "Côtes basses",
    "where": [
     "data/raids/asterion/torse/branch.json"
-   ]
-  },
-  {
-   "fr": "côtes basses",
-   "where": [
-    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -16461,9 +16697,9 @@
    ]
   },
   {
-   "fr": "côtes hautes",
+   "fr": "côtes mouvantes · barrière d'énergie",
    "where": [
-    "data/enemies/asterion_coeur.json"
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -16483,13 +16719,6 @@
    "fr": "CŒUR",
    "where": [
     "data/raids/asterion/coeur/branch.json"
-   ]
-  },
-  {
-   "fr": "cœur",
-   "where": [
-    "data/enemies/asterion_coeur.json",
-    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -16596,6 +16825,12 @@
    "fr": "Cœur de givre est : frappez-le avec un pouvoir de tir.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "cœur de givre est · levier du raccourci",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -17123,6 +17358,12 @@
    ]
   },
   {
+   "fr": "date AAAA-MM-JJ attendue",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
    "fr": "Date attendue : JJ/MM/AAAA.",
    "where": [
     "ui/screens/AdminRaids.cpp",
@@ -17133,6 +17374,12 @@
    "fr": "date du jour invalide",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "date ISO attendue",
+   "where": [
+    "server/src/social.ts"
    ]
   },
   {
@@ -18683,12 +18930,6 @@
    ]
   },
   {
-   "fr": "doigts",
-   "where": [
-    "data/enemies/pyroclast.json"
-   ]
-  },
-  {
    "fr": "doit être entre {0} et {1}",
    "where": [
     "server/src/validate.ts"
@@ -18998,6 +19239,12 @@
    ]
   },
   {
+   "fr": "drapeau inconnu",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "DREADFANG",
    "where": [
     "data/raids/asterion_film.json"
@@ -19151,6 +19398,12 @@
   },
   {
    "fr": "du mois {0}/{1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Du nouveau dans votre clan {0}",
    "where": [
     "server/src/notifications.ts"
    ]
@@ -19522,18 +19775,6 @@
    "fr": "débranchée il y a {0} s",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
-   "fr": "débris droite",
-   "where": [
-    "data/enemies/graviton.json"
-   ]
-  },
-  {
-   "fr": "débris gauche",
-   "where": [
-    "data/enemies/graviton.json"
    ]
   },
   {
@@ -21133,6 +21374,18 @@
    ]
   },
   {
+   "fr": "effet de victoire « srvvictory:<n> » attendu",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "Effet de victoire « Supernova d'Asterion »",
+   "where": [
+    "server/src/raidHeartRewards.ts"
+   ]
+  },
+  {
    "fr": "Effet de victoire « {0} » archivé : il n'est plus proposé en récompense ; ceux qui l'ont gagné le gardent.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -21389,6 +21642,13 @@
    ]
   },
   {
+   "fr": "embuscade inconnue",
+   "where": [
+    "server/src/coopRace.ts",
+    "server/src/race.ts"
+   ]
+  },
+  {
    "fr": "Embuscade {0} sur {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -21448,6 +21708,12 @@
    "fr": "Empreinte du niveau impossible à calculer.",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "empreinte incorrecte pour « {0} »",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -22022,18 +22288,6 @@
    ]
   },
   {
-   "fr": "enemies",
-   "where": [
-    "game/content/AssetCatalog.cpp",
-    "game/levels/DifficultyRating.cpp",
-    "game/online/LevelFingerprint.cpp",
-    "game/progression/NewsCenter.cpp",
-    "game/raid/RaidSheets.cpp",
-    "packaging/PackageExporter.cpp",
-    "saves/HudLayout.cpp"
-   ]
-  },
-  {
    "fr": "English",
    "where": [
     "engine/core/I18n.cpp"
@@ -22137,6 +22391,248 @@
    "fr": "ennemis",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Ennemis : acariens de braise · la relique de la forge",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : acariens de braise, rôdeurs de lave · arène de la garde",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : ailes de nuit, rôdeurs · générateur de gravité est",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : dragonnets, ailes de nuit · générateur de gravité ouest",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : drones cryo, rôdeurs des neiges · cœur de givre est",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : drones de forge, ailes de cendre · générateur est",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : drones de forge, rôdeurs de lave · réacteur est (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : forgerons de lave, drones-scories · mini-boss : l'Enclume vivante",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : gloops de magma, acariens de braise",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : gloops, feux follets · glande nord (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : gloops, tisseuses · arène de la garde",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : golem de glace (gardien), ailes de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : golem de magma (gardien), acariens de braise",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : golem de magma (gardien), drones de forge · pistons",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : l'éclat de roche (gardien), rôdeurs · îlots mouvants",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : l'éclat de roche (gardien), sentinelles · barrière d'énergie",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : la garde du nid (arène en deux vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : le golem de la tempe (gardien), spectres en renfort",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : lucioles d'os · la relique de l'ossuaire",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : mites de givre · la relique de la crevasse",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : mites de givre, rôdeurs des neiges · arène de la garde",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : mites lumineuses · la relique du reliquaire",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : mites lumineuses · la relique du sanctuaire",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : parasites en renfort, rôdeurs · deux plaques, un groupe chacune",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : parasites en renfort, étincelles · le poumon (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : petits gloops · la relique de la poche",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rempart de forge, drones de forge · deux pistons, un groupe chacun",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rempart de givre, ailes de givre · deux lames, un groupe chacune",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rempart, dragonnets · deux rotules, un groupe chacune",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rempart, sentinelles · barrières d'énergie · deux plaques, un groupe chacune",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rôdeurs de lave, bombardiers · réacteur ouest (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rôdeurs de lave, feux follets · générateur ouest",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rôdeurs des neiges, drones cryo · tourelles · cœur de givre ouest",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rôdeurs, ailes de nuit · regards lasers · l'œil droit",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : rôdeurs, mites lumineuses · arène de la garde",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : spectres en renfort, rempart · deux nerfs, un par groupe",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : spectres, lucioles d'os · l'œil gauche (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : spectres, rôdeurs · arène de la garde",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : tisseuses, bombardiers · deux valves, un groupe chacune",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Ennemis : tisseuses, feux follets · glande sud (un pouvoir de tir)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -22262,18 +22758,6 @@
    ]
   },
   {
-   "fr": "Enregistrer les parties",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
-   "fr": "Enregistrer les parties*",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Enregistrer mes statistiques",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -22337,6 +22821,19 @@
    "fr": "Ensuite, chaque membre s'inscrit lui-même.",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "entier attendu",
+   "where": [
+    "server/src/community.ts",
+    "server/src/globe.ts"
+   ]
+  },
+  {
+   "fr": "entier positif attendu",
+   "where": [
+    "server/src/devices.ts"
    ]
   },
   {
@@ -22528,6 +23025,12 @@
    ]
   },
   {
+   "fr": "entre 0,5 et 5",
+   "where": [
+    "server/src/community.ts"
+   ]
+  },
+  {
    "fr": "Entre deux colonnes (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -22619,6 +23122,24 @@
    ]
   },
   {
+   "fr": "entrée · 3 points d'apparition",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "entrée · longue expédition à 8",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "Entrées",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -22666,6 +23187,12 @@
    "fr": "Entêté",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Environ 15 min à 8 joueurs",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -23969,12 +24496,6 @@
    ]
   },
   {
-   "fr": "Fiches « Où frapper » et éditeur : chaque partie a un contour épais et un motif propre à son rôle (point faible quadrillé, partie normale rayée en long, partie blindée rayée en travers, partie qui blesse à grosses rayures obliques). Elle reste lisible sur un sprite de n'importe quelle couleur, comme la cuisse grise de Titanus. Les légendes gardent les mêmes couleurs et montrent le motif.",
-   "where": [
-    "data/news/changelog.json"
-   ]
-  },
-  {
    "fr": "Fichier",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -24011,15 +24532,18 @@
    ]
   },
   {
-   "fr": "Fichier d'ennemi illisible",
-   "where": [
-    "game/enemies/HitParts.cpp"
-   ]
-  },
-  {
    "fr": "Fichier de brouillon inconnu.",
    "where": [
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier de replay absent.",
+   "where": [
+    "server/src/challenges.ts",
+    "server/src/coopRace.ts",
+    "server/src/race.ts",
+    "server/src/records.ts"
    ]
   },
   {
@@ -24046,6 +24570,12 @@
    "fr": "Fichier du replay trop volumineux.",
    "where": [
     "game/ghost/ReplayLibrary.cpp"
+   ]
+  },
+  {
+   "fr": "fichier en double",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -24097,15 +24627,21 @@
    ]
   },
   {
-   "fr": "fichier introuvable",
+   "fr": "fichier inattendu : {0}",
    "where": [
-    "packaging/ZipArchive.cpp"
+    "server/src/backups.ts"
    ]
   },
   {
-   "fr": "Fichier introuvable : data/enemies/{0}.json",
+   "fr": "fichier inconnu",
    "where": [
-    "game/enemies/HitParts.cpp"
+    "server/src/devices.ts"
+   ]
+  },
+  {
+   "fr": "fichier introuvable",
+   "where": [
+    "packaging/ZipArchive.cpp"
    ]
   },
   {
@@ -24153,6 +24689,12 @@
    ]
   },
   {
+   "fr": "fichier PNG attendu",
+   "where": [
+    "server/src/players.ts"
+   ]
+  },
+  {
    "fr": "Fichier PNG invalide (en-tête IHDR absent).",
    "where": [
     "game/cosmetics/CreationImages.cpp",
@@ -24163,6 +24705,12 @@
    "fr": "Fichier PNG invalide (format de couleur).",
    "where": [
     "game/cosmetics/CreationImages.cpp",
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
+   "fr": "Fichier PNG sans image (IDAT absent).",
+   "where": [
     "server/src/creationAssets.ts"
    ]
   },
@@ -24188,6 +24736,12 @@
    ]
   },
   {
+   "fr": "fichier trop court",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
    "fr": "fichier trop grand",
    "where": [
     "game/cosmetics/CreationImages.cpp"
@@ -24203,6 +24757,12 @@
    "fr": "Fichier trop petit pour être une sauvegarde Cosmic Online.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "fichier trop volumineux",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -24254,6 +24814,12 @@
    ]
   },
   {
+   "fr": "Fichiers : {0}",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "Fichiers manquants : {0}",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -24297,6 +24863,12 @@
    ]
   },
   {
+   "fr": "fin de fichier inattendue",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "FIN DE L'INSTANCE",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -24330,6 +24902,18 @@
    "fr": "Fin de quart",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "fin de sauvegarde absente",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "fin de sauvegarde illisible",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -24665,6 +25249,12 @@
    ]
   },
   {
+   "fr": "followers, levels, downloads ou recent",
+   "where": [
+    "server/src/creators.ts"
+   ]
+  },
+  {
    "fr": "fond",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -24835,9 +25425,16 @@
    ]
   },
   {
+   "fr": "format inconnu (attendu cosmic.enemy)",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "format inconnu (attendu cosmic.level)",
    "where": [
-    "game/levels/LevelData.cpp"
+    "game/levels/LevelData.cpp",
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -25610,12 +26207,6 @@
    ]
   },
   {
-   "fr": "genou",
-   "where": [
-    "data/enemies/titanus.json"
-   ]
-  },
-  {
    "fr": "Genou-forge",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
@@ -25796,6 +26387,12 @@
    ]
   },
   {
+   "fr": "GIGABOSS · 4 plaques, côtes à écarter",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Armure de givre : tenez ses {0} chaînes ensemble ({1} s sur chacune) pour l'enchaîner !",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
@@ -25823,6 +26420,12 @@
    "fr": "GIGABOSS · Graviton se relève : ses générateurs se rallument !",
    "where": [
     "game/raid/GravitonRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Graviton, 3 phases",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {
@@ -25940,6 +26543,12 @@
    ]
   },
   {
+   "fr": "GIGABOSS · miroirs à tenir ensemble",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Phase {0} / {1}",
    "where": [
     "game/raid/Gigaboss.cpp"
@@ -25949,6 +26558,12 @@
    "fr": "GIGABOSS · Phase {0} / {1} · {2}",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Pyroclast",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -26030,6 +26645,18 @@
    ]
   },
   {
+   "fr": "GIGABOSS · Titanus, 3 phases",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · trois chaînes à tenir",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "GIGABOSS · Un anneau s'arrache à son crochet : épinglez-le de nouveau !",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
@@ -26099,6 +26726,12 @@
    "fr": "GIGABOSS · Voidworm se love dans sa chitine : tenez ses {0} crochets ensemble ({1} s chacun) pour l'épingler !",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "GIGABOSS · Voidworm, 3 phases",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -26241,6 +26874,12 @@
    "fr": "Glacior... Le dernier relais émet depuis ces terres gelées. Avancez vers l'est.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "glande sud · levier du raccourci",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -26654,6 +27293,12 @@
    ]
   },
   {
+   "fr": "Gravité inversée par secteurs (les dalles hautes abritent)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Grenade",
    "where": [
     "data/online/countries.json",
@@ -26672,12 +27317,6 @@
     "data/enemies/dreadfang_griffe.json",
     "data/raids/asterion_sheets.json",
     "game/raid/DreadfangRoutine.cpp"
-   ]
-  },
-  {
-   "fr": "griffes",
-   "where": [
-    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -26977,15 +27616,15 @@
    ]
   },
   {
-   "fr": "Groupe éliminé :",
-   "where": [
-    "server/src/raidMap.ts"
-   ]
-  },
-  {
    "fr": "groupe éliminé : ses joueurs ne font plus que regarder",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Groupe éliminé : {0} (zone à reprendre)",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -27120,12 +27759,6 @@
    ]
   },
   {
-   "fr": "gueule",
-   "where": [
-    "data/enemies/voidworm.json"
-   ]
-  },
-  {
    "fr": "Gueule ouverte",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -27232,6 +27865,12 @@
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json",
     "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "générateur est · levier du raccourci",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {
@@ -28156,6 +28795,13 @@
    ]
   },
   {
+   "fr": "identifiant attendu : {0}",
+   "where": [
+    "server/src/campaignRevisions.ts",
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "Identifiant d'une entité native : votre entité est enregistrée sous « {0} »",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -28165,6 +28811,12 @@
    "fr": "identifiant de défi invalide",
    "where": [
     "game/gameplay/ChallengeRules.cpp"
+   ]
+  },
+  {
+   "fr": "identifiant de joueur attendu",
+   "where": [
+    "server/src/projects.ts"
    ]
   },
   {
@@ -28185,12 +28837,6 @@
    "fr": "identifiant du défi invalide",
    "where": [
     "game/online/DailyChallenges.cpp"
-   ]
-  },
-  {
-   "fr": "Identifiant invalide",
-   "where": [
-    "game/enemies/HitParts.cpp"
    ]
   },
   {
@@ -28215,6 +28861,12 @@
    "fr": "Identifiant vide",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "identifiants attendus",
+   "where": [
+    "server/src/achievements.ts"
    ]
   },
   {
@@ -28433,12 +29085,6 @@
    ]
   },
   {
-   "fr": "Il n'a pas d'attaque.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Il ne sera plus proposé, même plus tard. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause) : tu pourras t'y reporter à tout moment.",
    "where": [
     "ui/screens/TutorialScenes.cpp"
@@ -28478,18 +29124,6 @@
    "fr": "Il savait tous leurs noms. « Tant qu'on se souvient de toi, disait-il, tu n'es jamais tout à fait parti. »",
    "where": [
     "data/stories/liche.json"
-   ]
-  },
-  {
-   "fr": "Il se bat par ses parties depuis les règles de simulation {0}.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
-   "fr": "Il se battra par ses parties à partir des règles de simulation {0}.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -28564,7 +29198,6 @@
   {
    "fr": "Image",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "game/content/AssetCatalog.cpp"
    ]
   },
@@ -28643,6 +29276,12 @@
    "fr": "image trop lourde",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Image trop lourde : {0} Ko au plus.",
+   "where": [
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -28866,6 +29505,12 @@
    "fr": "Importer…",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Imports de sauvegarde en cours.",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -29258,6 +29903,14 @@
    "fr": "Inscrivez-vous au raid pour voir la répartition de votre clan.",
    "where": [
     "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Inscrivez-vous au raid pour y combattre.",
+   "where": [
+    "server/src/raidMap.ts",
+    "server/src/raidWipe.ts",
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -29881,13 +30534,6 @@
    ]
   },
   {
-   "fr": "jambe",
-   "where": [
-    "data/enemies/graviton.json",
-    "data/enemies/titanus.json"
-   ]
-  },
-  {
    "fr": "JAMBE DROITE",
    "where": [
     "data/raids/asterion.json",
@@ -30051,12 +30697,6 @@
    "fr": "Jointure de Dreadfang",
    "where": [
     "data/enemies/dreadfang_jointure.json"
-   ]
-  },
-  {
-   "fr": "jointures",
-   "where": [
-    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -30241,6 +30881,12 @@
    ]
   },
   {
+   "fr": "joueur inconnu",
+   "where": [
+    "server/src/coopRace.ts"
+   ]
+  },
+  {
    "fr": "Joueur introuvable.",
    "where": [
     "server/src/adminRoles.ts",
@@ -30312,6 +30958,12 @@
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "joueur {0}",
+   "where": [
+    "server/src/coopRace.ts"
    ]
   },
   {
@@ -31288,9 +31940,21 @@
    ]
   },
   {
+   "fr": "l'œil droit · regard laser",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "L'œil gauche : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
    "where": [
     "data/raids/asterion/crane/zone_2.json"
+   ]
+  },
+  {
+   "fr": "l'œil gauche à crever",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -32720,6 +33384,12 @@
    ]
   },
   {
+   "fr": "La table « {0} » n'a aucune colonne commune avec ce serveur.",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "La table « {0} » ne fait jamais partie d'une sauvegarde : ce fichier n'a pas été produit par ce serveur.",
    "where": [
     "server/src/backups.ts"
@@ -33009,6 +33679,12 @@
    ]
   },
   {
+   "fr": "Lances stellaires sur chaque joueur, marée de plasma (phases 3 et 4), supernova (phase 4)",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "Lancez le raid quand votre groupe est là : ceux qui arrivent ensuite rejoignent la partie en cours.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -33033,7 +33709,19 @@
    ]
   },
   {
+   "fr": "Langue choisie à l'installation vérifiée de bout en bout : un jeu installé en anglais est en anglais dès son premier lancement, et Paramètres › Jeu › « Langue / Language » change de langue à tout moment, sans redémarrer.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Langue du jeu : français ou anglais, au choix dans l'installateur Windows, qui s'affiche lui-même dans la langue choisie ; le jeu démarre dans cette langue.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Langues : en anglais, plus aucun texte français à l'écran, et inversement. Une vérification faite par le jeu lui-même relève chaque texte dessiné resté dans l'autre langue (absent du dictionnaire, inchangé, partie insérée restée en français, texte traduit deux fois) ; elle a parcouru plus de cent écrans sans écran ni compte (menus, paramètres, fiches, « Où frapper », vestiaire et HUD des raids d'Asterion, coopération, administration, profils, replays, histoires) et chaque fuite trouvée est corrigée.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -33699,6 +34387,12 @@
    ]
   },
   {
+   "fr": "Le Cœur d'Asterion : vie partagée par toutes les instances, quatre artères à tenir ensemble, plateformes mobiles, marée de plasma, supernova à contenir",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "LE CŒUR D'ASTERION CÈDE",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -34236,9 +34930,51 @@
    ]
   },
   {
+   "fr": "Le gigaboss Dreadfang : balayages d'étages entiers, griffes du sol, un joueur cloué à libérer, trois chaînes à tenir ensemble",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Le gigaboss Graviton : couper ses générateurs ensemble, s'abriter quand la gravité s'inverse",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Le gigaboss Heartbreaker : quatre plaques à briser ensemble, battements en rythme, côtes-pièges, côtes à écarter des deux côtés",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "le gigaboss n'est pas dans cette zone",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Le gigaboss Pyroclast : trois phases, sa carapace, ses trois évents à fermer ensemble",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Le gigaboss Skullmaw : regards traqueurs, flash aveuglant (cachez-vous derrière les colonnes), miroirs à tenir ensemble, ténèbres",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Le gigaboss Titanus : sauter ses ondes de choc, briser ses deux entraves ensemble",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Le gigaboss Voidworm : épingler ses anneaux, libérer les avalés, fuir l'acide",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -34823,6 +35559,12 @@
    ]
   },
   {
+   "fr": "le nid à détruire",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Le niveau a changé depuis ce défi : « S'entraîner » seulement, hors classement.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -35117,6 +35859,12 @@
    "fr": "Le poumon gauche se gonfle et siffle. Il faut le crever ; des parasites y affluent. Son levier ouvre le raccourci vers le sternum.",
    "where": [
     "data/raids/asterion/torse/zone_3.json"
+   ]
+  },
+  {
+   "fr": "le poumon à crever · levier du raccourci",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -35898,6 +36646,12 @@
    "fr": "le {0}/{1}/{2}",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "leader_id ou instructions",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -36871,6 +37625,12 @@
    ]
   },
   {
+   "fr": "Les mots de passe ne figurent que sous forme d'empreintes PBKDF2 (player_credentials), jamais en clair.",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "les mots des fiches sont illisibles",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -36931,12 +37691,6 @@
    ]
   },
   {
-   "fr": "Les parties d'un boss du jeu sont en lecture seule, comme ses autres réglages : seul un administrateur les règle, et « Enregistrer les parties » les écrit dans le fichier de l'ennemi. Vos propres ennemis se battent avec leur boîte : leurs parties sont montrées, sans règles.",
-   "where": [
-    "data/news/changelog.json"
-   ]
-  },
-  {
    "fr": "les parties du titan sont illisibles",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -36946,6 +37700,12 @@
    "fr": "Les parties détruites et leurs effets viennent des résultats validés par le serveur, pour tous les groupes.",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les parties s'envoient en application/octet-stream.",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -37472,6 +38232,12 @@
    ]
   },
   {
+   "fr": "level_id et seconds attendus",
+   "where": [
+    "server/src/creators.ts"
+   ]
+  },
+  {
    "fr": "Levier",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -37511,6 +38277,12 @@
    "fr": "Levier : il ouvre le raccourci vers le Tendon glacé à tous les groupes.",
    "where": [
     "data/raids/asterion/bras_gauche/zone_6.json"
+   ]
+  },
+  {
+   "fr": "levier du raccourci vers les nerfs",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -37670,6 +38442,24 @@
    ]
   },
   {
+   "fr": "lien {0} : branche cible inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "lien {0} : source {1} / {2} inconnue",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "lien {0} : zone {1} inconnue dans {2}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Liens",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -37756,6 +38546,18 @@
    ]
   },
   {
+   "fr": "ligne de {0} valeurs dans {1}",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "ligne illisible dans {0}",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "Lignes",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -37803,6 +38605,12 @@
    "fr": "Limite de temps",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Limite de {0} amis atteinte.",
+   "where": [
+    "server/src/friends.ts"
    ]
   },
   {
@@ -37885,6 +38693,13 @@
    ]
   },
   {
+   "fr": "liste d'entiers attendue",
+   "where": [
+    "server/src/coopRace.ts",
+    "server/src/race.ts"
+   ]
+  },
+  {
    "fr": "liste d'entiers de 0 à {0} attendue (64 au plus)",
    "where": [
     "server/src/challenges.ts"
@@ -37894,6 +38709,12 @@
    "fr": "liste d'identifiants de succès attendue",
    "where": [
     "server/src/badges.ts"
+   ]
+  },
+  {
+   "fr": "liste d'objets absente ou trop longue",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -37909,6 +38730,18 @@
    ]
   },
   {
+   "fr": "liste de 1000 identifiants au plus",
+   "where": [
+    "server/src/achievements.ts"
+   ]
+  },
+  {
+   "fr": "liste de 16 identifiants de pouvoirs au plus attendue",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
    "fr": "liste de 50 entrées au plus",
    "where": [
     "server/src/creators.ts"
@@ -37921,6 +38754,12 @@
    ]
   },
   {
+   "fr": "liste de fichiers inattendue : {0}",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "liste de fichiers invalide",
    "where": [
     "server/src/backups.ts"
@@ -37930,6 +38769,12 @@
    "fr": "liste de fichiers mal placée",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "liste de pouvoirs attendue",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -37972,6 +38817,12 @@
    "fr": "Liste indisponible : {0}",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "liste non vide parmi : {0}",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -38072,6 +38923,49 @@
    "fr": "Long-courrier",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la cage (arène en trois vagues)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la cheville (arène en trois vagues)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde de la voûte (arène en trois vagues)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde du gosier (arène en trois vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · Ennemis : la garde du poignet (arène en trois vagues)",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · la garde du cœur",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "longueur attendue entre {0} et {1}",
+   "where": [
+    "server/src/validate.ts"
    ]
   },
   {
@@ -38594,6 +39488,18 @@
    "fr": "manifest.json n'est pas celui d'un package Cosmic Platformer",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "manifeste illisible",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "manifeste inconnu",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -39537,6 +40443,12 @@
    ]
   },
   {
+   "fr": "metadata.enemyRevisions attendu",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "metadata.enemyRevisions.{0} : entité native inconnue",
    "where": [
     "server/src/enemyRevisions.ts"
@@ -39546,6 +40458,18 @@
    "fr": "metadata.enemyRevisions.{0} : révision inconnue",
    "where": [
     "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "metadata.enemyRevisions.{0} attendu : {1}",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
+   "fr": "metadata.revision attendu : {0}",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -39990,12 +40914,6 @@
    ]
   },
   {
-   "fr": "Modifications des parties annulées",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Modifications non enregistrées",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
@@ -40160,6 +41078,13 @@
    "fr": "Mois",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "mois AAAA-MM attendu",
+   "where": [
+    "server/src/adminChallenges.ts",
+    "server/src/challenges.ts"
    ]
   },
   {
@@ -40538,6 +41463,24 @@
    ]
   },
   {
+   "fr": "Montée de magma toutes les 34 s (terrasses hautes sûres)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Montée de magma toutes les 38 s (corniches sûres)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "Montée de magma toutes les 42 s (grilles hautes sûres)",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Monténégro",
    "where": [
     "data/online/countries.json",
@@ -40661,6 +41604,12 @@
    ]
   },
   {
+   "fr": "Mot de passe incorrect.",
+   "where": [
+    "server/src/players.ts"
+   ]
+  },
+  {
    "fr": "Mot de passe pour confirmer",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -40729,12 +41678,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "Multiplicateur de dégâts",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -40914,12 +41857,6 @@
    "fr": "Mâchoire",
    "where": [
     "data/raids/asterion/crane/branch.json"
-   ]
-  },
-  {
-   "fr": "mâchoire",
-   "where": [
-    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -41306,6 +42243,18 @@
    ]
   },
   {
+   "fr": "niveau attendu",
+   "where": [
+    "server/src/coop.ts"
+   ]
+  },
+  {
+   "fr": "niveau attendu (objet JSON)",
+   "where": [
+    "server/src/projects.ts"
+   ]
+  },
+  {
    "fr": "niveau créé avec une version plus récente du jeu",
    "where": [
     "game/levels/LevelData.cpp"
@@ -41412,6 +42361,12 @@
    "fr": "Niveau déjà terminé",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "niveau en double",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -41711,6 +42666,12 @@
    "fr": "niveau tout ramassé",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau trop volumineux (maximum {0} octets).",
+   "where": [
+    "server/src/campaignRevisions.ts"
    ]
   },
   {
@@ -42046,6 +43007,12 @@
    ]
   },
   {
+   "fr": "nom de fichier non UTF-8",
+   "where": [
+    "server/src/zip.ts"
+   ]
+  },
+  {
    "fr": "Nom de l'effet (32 caractères au plus)",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -42162,6 +43129,12 @@
    ]
   },
   {
+   "fr": "nom ou tag obligatoire",
+   "where": [
+    "server/src/clans.ts"
+   ]
+  },
+  {
    "fr": "Nom, couleur, type…",
    "where": [
     "ui/studio/Studio.cpp"
@@ -42198,6 +43171,12 @@
    "fr": "nombre de fichiers invalide",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "nombre entier attendu",
+   "where": [
+    "server/src/projects.ts"
    ]
   },
   {
@@ -42454,6 +43433,12 @@
    "fr": "Notes (facultatif)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Notes de version en anglais : chaque installateur publié a désormais ses notes dans les deux langues, écrites depuis le dictionnaire du jeu ; la notification « Nouvelle version disponible » montre celles de la langue du jeu.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -42909,6 +43894,12 @@
    ]
   },
   {
+   "fr": "Nouvelle version de {0} : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Nouvelle version disponible : {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -43295,6 +44286,12 @@
    ]
   },
   {
+   "fr": "objectif inconnu",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "objectif « Vitesse » ou « Finir le niveau » attendu",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -43364,7 +44361,31 @@
    ]
   },
   {
+   "fr": "objects[{0}] : objet attendu",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "objects[{0}].id en double : {1}",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
    "fr": "objects[{0}].id invalide",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "objects[{0}].props : objet attendu",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "objects[{0}].rect : 4 nombres attendus",
    "where": [
     "server/src/campaignRevisions.ts"
    ]
@@ -43382,6 +44403,16 @@
    ]
   },
   {
+   "fr": "objet attendu",
+   "where": [
+    "server/src/admin.ts",
+    "server/src/devices.ts",
+    "server/src/enemyRevisions.ts",
+    "server/src/live.ts",
+    "server/src/spectate.ts"
+   ]
+  },
+  {
    "fr": "Objet au sol",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -43394,9 +44425,53 @@
    ]
   },
   {
+   "fr": "objet JSON attendu",
+   "where": [
+    "server/src/campaignRevisions.ts",
+    "server/src/devices.ts",
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "Objet ramassé",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "objet { finished, bosses, waves } attendu",
+   "where": [
+    "server/src/challenges.ts"
+   ]
+  },
+  {
+   "fr": "objet { id, name } attendu",
+   "where": [
+    "server/src/devices.ts"
+   ]
+  },
+  {
+   "fr": "objet { kind, ref, condition, value } attendu",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "objet { shape, primary, secondary } attendu",
+   "where": [
+    "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "objet { source, id, version } attendu",
+   "where": [
+    "server/src/adminChallenges.ts"
+   ]
+  },
+  {
+   "fr": "objet { {0} } attendu",
+   "where": [
+    "server/src/creations.ts"
    ]
   },
   {
@@ -43853,6 +44928,24 @@
    ]
   },
   {
+   "fr": "Onde psychique toutes les 70 s (corniches hautes sûres)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Onde psychique toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "Onde psychique toutes les 80 s (corniches hautes sûres)",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "Onde qui s'étend de son centre jusqu'à {0} : passez par son ouverture",
    "where": [
     "game/raid/BossHitboxes.cpp"
@@ -43872,6 +44965,30 @@
     "data/raids/asterion/jambe_droite/zone_3.json",
     "data/raids/asterion/jambe_droite/zone_4.json",
     "data/raids/asterion/jambe_droite/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Onde sismique toutes les 60 s (grilles hautes sûres)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Onde sismique toutes les 75 s (grilles hautes sûres)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Onde sismique toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "onde sismique · réacteur ouest",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -43919,6 +45036,18 @@
     "data/raids/asterion_sheets.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Ondes de choc au sol (les grilles sont sûres)",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Ondes du cœur au sol à chaque battement fort (sautez-les)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -44135,12 +45264,6 @@
    "fr": "Orbe",
    "where": [
     "game/online/Clans.cpp"
-   ]
-  },
-  {
-   "fr": "orbe",
-   "where": [
-    "data/enemies/graviton.json"
    ]
   },
   {
@@ -45250,7 +46373,6 @@
   {
    "fr": "Partie : {0}",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -45270,6 +46392,12 @@
    "fr": "partie de défi : elle ne compte que pour son défi",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "partie de table inattendue : {0}",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -45339,21 +46467,9 @@
    ]
   },
   {
-   "fr": "Parties (où frapper)",
-   "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
-   ]
-  },
-  {
    "fr": "Parties : affichage ; combat par boîte jusqu'à son étape.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "Parties : {0}",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -45393,29 +46509,9 @@
    ]
   },
   {
-   "fr": "Parties enregistrées dans data/enemies/{0}.json",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
-   "fr": "Parties non enregistrées (Boss › Parties)",
-   "where": [
-    "editors/enemy_editor/EnemyEditorPublish.cpp"
-   ]
-  },
-  {
    "fr": "Parties vérifiées par Cosmic Online",
    "where": [
     "ui/screens/ChallengesScene.cpp"
-   ]
-  },
-  {
-   "fr": "parts",
-   "where": [
-    "game/online/AsterionBody.cpp",
-    "main.cpp",
-    "ui/screens/AdminBackups.cpp"
    ]
   },
   {
@@ -45505,6 +46601,12 @@
    ]
   },
   {
+   "fr": "Pas de course pour cette version.",
+   "where": [
+    "server/src/race.ts"
+   ]
+  },
+  {
    "fr": "Pas de danger ici : remontez à gauche et réessayez.",
    "where": [
     "data/levels/sylvanox_03.json"
@@ -45588,6 +46690,12 @@
    "fr": "Pas de traînée derrière Nova.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Pas de vignette.",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -46593,6 +47701,13 @@
    ]
   },
   {
+   "fr": "pays inconnu",
+   "where": [
+    "server/src/auth.ts",
+    "server/src/players.ts"
+   ]
+  },
+  {
    "fr": "Pays inconnu : choisissez votre pays dans votre compte (EN LIGNE) pour ce classement.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -46854,12 +47969,6 @@
    ]
   },
   {
-   "fr": "phalanges",
-   "where": [
-    "data/enemies/pyroclast.json"
-   ]
-  },
-  {
    "fr": "Phase",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -46962,7 +48071,6 @@
   {
    "fr": "Phase {0}",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
     "game/raid/RaidSheets.cpp",
@@ -47051,12 +48159,6 @@
    "fr": "Phases et attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Phases et réglages",
-   "where": [
-    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -47200,13 +48302,6 @@
    ]
   },
   {
-   "fr": "pied",
-   "where": [
-    "data/enemies/graviton.json",
-    "data/enemies/titanus.json"
-   ]
-  },
-  {
    "fr": "Pied de Graviton",
    "where": [
     "data/achievements/achievements.json",
@@ -47298,6 +48393,12 @@
    "fr": "Pistons",
    "where": [
     "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "pistons géants · gardien",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -47458,7 +48559,6 @@
   {
    "fr": "Planche",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminAssets.cpp"
    ]
   },
@@ -47720,12 +48820,6 @@
    ]
   },
   {
-   "fr": "plastron",
-   "where": [
-    "data/enemies/heartbreaker.json"
-   ]
-  },
-  {
    "fr": "Plateforme fragile",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -47754,6 +48848,18 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "plateformes de glace fragiles",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "plateformes qui respirent",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
    ]
   },
   {
@@ -48375,12 +49481,6 @@
    ]
   },
   {
-   "fr": "poing",
-   "where": [
-    "data/enemies/pyroclast.json"
-   ]
-  },
-  {
    "fr": "Poing de magma",
    "where": [
     "data/enemies/pyroclast.json"
@@ -48562,12 +49662,6 @@
    ]
   },
   {
-   "fr": "pointe",
-   "where": [
-    "data/enemies/heartbreaker.json"
-   ]
-  },
-  {
    "fr": "POINTS",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -48723,6 +49817,18 @@
     "ui/online/CommentsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "popular, hardest, recent, top, friends ou mine",
+   "where": [
+    "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "popular, recent ou top",
+   "where": [
+    "server/src/creators.ts"
    ]
   },
   {
@@ -48885,12 +49991,6 @@
    "fr": "Portée min",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
-   ]
-  },
-  {
-   "fr": "Pose",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -49088,6 +50188,13 @@
    ]
   },
   {
+   "fr": "Pour confirmer, tapez exactement : {0}",
+   "where": [
+    "server/src/accountMigration.ts",
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "Pour invoquer des créatures, ajoutez une attaque de type « Appel de renforts ».",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -49250,9 +50357,21 @@
    ]
   },
   {
+   "fr": "pouvoir en double",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "Pouvoir inconnu : {0}",
    "where": [
     "packaging/DependencyCollector.cpp"
+   ]
+  },
+  {
+   "fr": "pouvoir inconnu : {0}",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -49700,6 +50819,12 @@
    "fr": "profondeur",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "profondeur 8 bits attendue",
+   "where": [
+    "server/src/players.ts"
    ]
   },
   {
@@ -50374,6 +51499,12 @@
    ]
   },
   {
+   "fr": "Pseudonyme disponible.",
+   "where": [
+    "server/src/auth.ts"
+   ]
+  },
+  {
    "fr": "Pseudonyme du compte cible",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -50389,6 +51520,19 @@
    "fr": "Pseudonyme du joueur",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "pseudonyme ou identifiant obligatoire",
+   "where": [
+    "server/src/clans.ts",
+    "server/src/friends.ts"
+   ]
+  },
+  {
+   "fr": "Pseudonyme ou mot de passe incorrect.",
+   "where": [
+    "server/src/auth.ts"
    ]
   },
   {
@@ -50624,6 +51768,12 @@
    ]
   },
   {
+   "fr": "puits d'apesanteur · générateur ouest",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
    "fr": "Puits d'effondrement",
    "where": [
     "data/enemies/singularis.json"
@@ -50644,6 +51794,24 @@
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_4.json",
     "data/raids/asterion/jambe_gauche/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Puits de gravité toutes les 60 s (îlots hauts sûrs)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Puits de gravité toutes les 70 s (îlots hauts sûrs)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Puits de gravité toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {
@@ -50680,11 +51848,35 @@
    ]
   },
   {
+   "fr": "Pulsation cosmique toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
    "fr": "Pulsation du cœur",
    "where": [
     "data/raids/asterion/torse/zone_4.json",
     "data/raids/asterion/torse/zone_6.json",
     "data/raids/asterion/torse/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Pulsation du cœur toutes les 45 s (passerelles sûres)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Pulsation du cœur toutes les 50 s (passerelles sûres)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Pulsation du cœur toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -50970,6 +52162,12 @@
    ]
   },
   {
+   "fr": "Quatre embuscades géantes sur plusieurs étages, plaques et monte-charge de groupe, points de contrôle",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "Quatre phases : « Le cœur qui bat », « Les artères » (tenez ses quatre artères ensemble, deux au sol aux murs et deux sur des balcons hauts, pour mettre ses trois ventricules à nu), « La couronne d'étoiles » (une marée de plasma brûle le sol : restez sur les plateformes) et une dernière phase très difficile, « Supernova » : à chaque charge, assez de joueurs doivent tenir les ancres en même temps pour la contenir, sinon toute l'arène brûle.",
    "where": [
     "data/news/changelog.json"
@@ -50979,6 +52177,12 @@
    "fr": "Quelle chaleur ! Le signal vient du fond des forges. Restons loin de la lave.",
    "where": [
     "data/levels/pyralis_01.json"
+   ]
+  },
+  {
+   "fr": "quelques instants",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -51069,12 +52273,6 @@
    "fr": "Quitter le test (retour à l'administration)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Quitter sans enregistrer",
-   "where": [
-    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -51178,6 +52376,12 @@
    ]
   },
   {
+   "fr": "raccourci depuis la Veine",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
    "fr": "raccourci fermé (le levier est dans l'Avant-bras de givre)",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -51239,12 +52443,6 @@
    "where": [
     "data/levels/aethra_01.json",
     "game/levels/ObjectTypes.cpp"
-   ]
-  },
-  {
-   "fr": "racines",
-   "where": [
-    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -51413,7 +52611,8 @@
   {
    "fr": "raid court",
    "where": [
-    "game/online/Raids.cpp"
+    "game/online/Raids.cpp",
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -51427,6 +52626,12 @@
    "fr": "RAID DU CLAN {0}",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "raid inconnu",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -51469,7 +52674,8 @@
   {
    "fr": "raid standard",
    "where": [
-    "game/online/Raids.cpp"
+    "game/online/Raids.cpp",
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -51495,12 +52701,6 @@
   },
   {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
-   "where": [
-    "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "Raids : les 8 Gigaboss d'Asterion se battent par parties. Leurs points faibles dessinés prennent × 2 : les yeux de Skullmaw, les jointures de Dreadfang, les phalanges de Pyroclast, le cœur de Heartbreaker et du Cœur d'Asterion, la gueule du Voidworm, les orbes de Graviton, le genou de Titanus. Cornes, épaules, côtes, cuisse et racines sont blindées (× 0,5). Seules les griffes, mâchoires, doigts, épines, débris et pieds blessent au contact. Leurs fiches montrent leurs parties à la couleur de leur rôle. Une instance ne réunit que des joueurs aux mêmes règles.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -51783,6 +52983,12 @@
    "fr": "Rangée {0} → {1} · {2} images / s, en boucle",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Rappel : {0} commence dans {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -52099,6 +53305,12 @@
    ]
   },
   {
+   "fr": "recent, popular ou oldest",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
    "fr": "Recentrer",
    "where": [
     "ui/screens/AchievementsScene.cpp"
@@ -52404,6 +53616,12 @@
    ]
   },
   {
+   "fr": "Record mondial battu de plus de 20 %",
+   "where": [
+    "server/src/records.ts"
+   ]
+  },
+  {
    "fr": "Record perdu : {0}",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -52472,6 +53690,12 @@
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "records : champ inconnu {0}",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -52775,9 +53999,33 @@
    ]
   },
   {
+   "fr": "Reflux d'acide toutes les 50 s (branches hautes sûres)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Reflux d'acide toutes les 65 s (branches hautes sûres)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Reflux d'acide toutes les 75 s dans les galeries basses (étages sûrs)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
    "fr": "Reflux d'acide toutes les {0} s : restez sur les racines hautes.",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Reflux d'acide à sa 3e phase (racines hautes sûres)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
    ]
   },
   {
@@ -52971,6 +54219,12 @@
    "fr": "Regardez le sol : quittez les marques pendant l'annonce.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Regards lasers sur chaque joueur, flash toutes les 13 à 16 s en phases 2 et 3",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -53615,6 +54869,16 @@
     "ui/screens/RaceScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Replay illisible : {0}.",
+   "where": [
+    "server/src/challenges.ts",
+    "server/src/community.ts",
+    "server/src/coopRace.ts",
+    "server/src/race.ts",
+    "server/src/records.ts"
    ]
   },
   {
@@ -54899,6 +56163,13 @@
    ]
   },
   {
+   "fr": "Route inconnue.",
+   "where": [
+    "server/src/adminRoles.ts",
+    "server/src/index.ts"
+   ]
+  },
+  {
    "fr": "Royaume-Uni",
    "where": [
     "data/online/countries.json",
@@ -55144,6 +56415,12 @@
    "fr": "Réacteur est : coupez-le avec un pouvoir de tir.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_6.json"
+   ]
+  },
+  {
+   "fr": "réacteur est · levier du raccourci",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
    ]
   },
   {
@@ -56252,7 +57529,6 @@
   {
    "fr": "Rôle",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -56317,6 +57593,48 @@
    ]
   },
   {
+   "fr": "s'ouvre : 2 cœurs de givre",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "s'ouvre : 2 glandes",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "s'ouvre : 2 générateurs de gravité",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "s'ouvre : 2 générateurs · la longue route",
+   "where": [
+    "data/raids/asterion/bras_droit/branch.json"
+   ]
+  },
+  {
+   "fr": "s'ouvre : 2 réacteurs",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "s'ouvre : les 4 plaques brisées",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "s'ouvre : les deux yeux crevés",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
    "fr": "S'ouvre quand les sept gigaboss sont tombés",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
@@ -56362,6 +57680,36 @@
    "fr": "Sa cuirasse éclate : le magma monte des fissures !",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Sa dernière aube : survivez !",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
+   "fr": "Sa dernière lumière : survivez !",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Sa dernière salve : survivez !",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "Sa dernière vague : survivez !",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
+   "fr": "Sa dernière éruption : survivez !",
+   "where": [
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -56754,6 +58102,12 @@
    "fr": "SANS MORT",
    "where": [
     "game/online/OnlineTypes.cpp"
+   ]
+  },
+  {
+   "fr": "sans mort",
+   "where": [
+    "server/src/records.ts"
    ]
   },
   {
@@ -57738,6 +59092,12 @@
    ]
   },
   {
+   "fr": "Service temporairement indisponible.",
+   "where": [
+    "server/src/index.ts"
+   ]
+  },
+  {
    "fr": "Ses ailes arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_01.json",
@@ -57775,6 +59135,12 @@
    ]
   },
   {
+   "fr": "Ses charges ralentissent : Asterion chancelle.",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "ses charges stellaires sont rapides",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -57784,6 +59150,12 @@
    "fr": "Ses côtes se referment sur le cœur. Un joueur sur chacune des {0} côtes, ensemble pendant {1} s : elles s'écartent ; une côte lâchée se referme en {2} s. Écartées, la lumière du cœur est à nu {3} s et il prend × {4} dégâts.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses dernières griffes : survivez !",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -57862,12 +59234,6 @@
    "fr": "Ses parties",
    "where": [
     "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "Ses parties : affichage seulement ; son combat se joue sur sa boîte.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -58885,6 +60251,60 @@
    ]
   },
   {
+   "fr": "Son dernier battement : survivez !",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "Son dernier battement : tenez bon !",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
+   "fr": "Son dernier effondrement : tenez bon !",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Son dernier feu : survivez !",
+   "where": [
+    "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Son dernier reflux : tenez bon !",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
+   "fr": "Son dernier regard : survivez !",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "Son dernier sort : survivez !",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
+   "fr": "Son dernier séisme : survivez !",
+   "where": [
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Son dernier séisme : tenez bon !",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Son histoire, avant le premier combat : « la Lanterne », le petit poulpe des mers enfouies qui devint le Kraken.",
    "where": [
     "data/news/changelog.json"
@@ -59361,6 +60781,12 @@
    ]
   },
   {
+   "fr": "soutien impossible",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Souvenir",
    "where": [
     "ui/screens/TutorialScenes.cpp"
@@ -59406,6 +60832,12 @@
    "fr": "Spam ou publicité",
    "where": [
     "ui/online/CommentsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "sparkles : 0 ou 1",
+   "where": [
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -59914,6 +61346,12 @@
    "fr": "Statistiques réinitialisées.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "statut inconnu",
+   "where": [
+    "server/src/admin.ts"
    ]
   },
   {
@@ -61475,6 +62913,12 @@
    ]
   },
   {
+   "fr": "taux de compression suspect",
+   "where": [
+    "server/src/community.ts"
+   ]
+  },
+  {
    "fr": "Taux de compression suspect (bombe ZIP) : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -61604,7 +63048,19 @@
    ]
   },
   {
+   "fr": "temps de l'Argent (ms)",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "temps de l'Argent et de l'Or obligatoires pour un niveau de la communauté",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "temps de l'Or (ms)",
    "where": [
     "server/src/challengeSpec.mjs"
    ]
@@ -61613,6 +63069,12 @@
    "fr": "Temps de participation",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "temps de participation impossible",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -62747,6 +64209,12 @@
    ]
   },
   {
+   "fr": "Textes du serveur traduits : messages d'erreur (« Pseudonyme ou mot de passe incorrect. »), notifications des raids, des clans et de sécurité (« Rappel : … commence dans … », « … participe au raid commun … »), alertes du titan. Près de deux cents messages que la traduction ne voyait pas ont maintenant leur anglais.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "texture",
    "where": [
     "engine/animation/Animation.cpp",
@@ -62795,12 +64263,6 @@
    "fr": "Tibia",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
-   ]
-  },
-  {
-   "fr": "tige",
-   "where": [
-    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -63142,9 +64604,21 @@
    ]
   },
   {
+   "fr": "Titre « Briseur de magma »",
+   "where": [
+    "server/src/raidRewards.ts"
+   ]
+  },
+  {
    "fr": "Titre « Fléau de Pyroclast »",
    "where": [
     "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "titre « srv:<n> » attendu",
+   "where": [
+    "server/src/adminChallenges.ts"
    ]
   },
   {
@@ -63521,6 +64995,12 @@
    "fr": "Tourelle",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "tourelles-regards · cœur de givre ouest",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
    ]
   },
   {
@@ -64421,6 +65901,12 @@
    ]
   },
   {
+   "fr": "trop de fichiers dans l'archive",
+   "where": [
+    "server/src/zip.ts"
+   ]
+  },
+  {
    "fr": "trop de joueurs dans le tableau",
    "where": [
     "server/src/raidZones.ts"
@@ -64598,6 +66084,12 @@
    "where": [
     "game/cosmetics/CreationImages.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "type de fichier interdit ({0})",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -64901,12 +66393,6 @@
    ]
   },
   {
-   "fr": "tête",
-   "where": [
-    "data/enemies/voidworm.json"
-   ]
-  },
-  {
    "fr": "Tête chercheuse (rad/s, 0 = non)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -65105,6 +66591,12 @@
    "fr": "Un cercle de runes se referme autour de vous : encore dedans quand il se ferme, vos sauts s'alourdissent un moment. Un pas hors du cercle suffit.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Un clan compte au plus {0} membres.",
+   "where": [
+    "server/src/clans.ts"
    ]
   },
   {
@@ -65377,6 +66869,12 @@
    ]
   },
   {
+   "fr": "Un groupe compte au plus {0} membres.",
+   "where": [
+    "server/src/social.ts"
+   ]
+  },
+  {
    "fr": "Un groupe ne réunit que vos amis.",
    "where": [
     "server/src/social.ts"
@@ -65405,6 +66903,12 @@
    "fr": "un import était en cours",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un joueur",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -66347,12 +67851,6 @@
    "fr": "Une partie par jour, à n'importe quel palier, à l'heure : une partie hors délai ne compte pas. Seules les parties vérifiées par Cosmic Online comptent.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
-   ]
-  },
-  {
-   "fr": "Une partie qui blesse ne prend aucun coup : elle blesse qui la touche, à tout moment.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -67533,6 +69031,30 @@
    ]
   },
   {
+   "fr": "valeur attendue",
+   "where": [
+    "server/src/live.ts"
+   ]
+  },
+  {
+   "fr": "valeur attendue : start, chunk, end",
+   "where": [
+    "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "valeur attendue : {0}",
+   "where": [
+    "server/src/validate.ts"
+   ]
+  },
+  {
+   "fr": "valeur impossible",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "valeur introuvable : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -67542,6 +69064,12 @@
    "fr": "valeur invalide dans {0}",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "valeurs attendues : {0}",
+   "where": [
+    "server/src/accountMigration.ts"
    ]
   },
   {
@@ -67933,6 +69461,24 @@
    ]
   },
   {
+   "fr": "version de format {0} inconnue de ce serveur",
+   "where": [
+    "server/src/backupFormat.ts"
+   ]
+  },
+  {
+   "fr": "version de format {0} non prise en charge",
+   "where": [
+    "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "version de manifeste {0} inconnue",
+   "where": [
+    "server/src/backups.ts"
+   ]
+  },
+  {
    "fr": "version de niveau différente",
    "where": [
     "server/src/community.ts",
@@ -67944,6 +69490,13 @@
    "fr": "version de niveau différente du record",
    "where": [
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "Version de niveau inconnue.",
+   "where": [
+    "server/src/levels.ts",
+    "server/src/records.ts"
    ]
   },
   {
@@ -68040,6 +69593,7 @@
   {
    "fr": "Version initiale",
    "where": [
+    "server/src/projects.ts",
     "ui/screens/ProjectsScene.cpp"
    ]
   },
@@ -68984,12 +70538,6 @@
    ]
   },
   {
-   "fr": "Vos entités se battent avec leur boîte : seules les entités du jeu se battent par parties. Ses parties sont montrées ici, sans règles.",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Vos meilleurs segments à la suite, chacun rejoué à l'identique (course ou entraînement).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -69050,6 +70598,12 @@
    ]
   },
   {
+   "fr": "votre ancien compte",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -69059,6 +70613,12 @@
    "fr": "VOTRE CLAN",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "votre clan",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -69675,6 +71235,12 @@
    ]
   },
   {
+   "fr": "Vous ne pouvez ajouter que vos amis.",
+   "where": [
+    "server/src/social.ts"
+   ]
+  },
+  {
    "fr": "Vous ne pouvez pas changer votre propre rôle.",
    "where": [
     "server/src/adminRoles.ts"
@@ -70044,6 +71610,12 @@
    ]
   },
   {
+   "fr": "vrai ou faux attendu",
+   "where": [
+    "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
    "fr": "vu en tant qu'admin",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -70329,12 +71901,6 @@
    ]
   },
   {
-   "fr": "yeux",
-   "where": [
-    "data/enemies/skullmaw.json"
-   ]
-  },
-  {
    "fr": "Yémen",
    "where": [
     "data/online/countries.json",
@@ -70447,6 +72013,12 @@
    ]
   },
   {
+   "fr": "zone inconnue",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Zone invisible : utilisez l'éditeur d'événements pour définir ce qu'elle déclenche.",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -70459,7 +72031,7 @@
    ]
   },
   {
-   "fr": "Zone reprise par un groupe de renfort :",
+   "fr": "Zone reprise par un groupe de renfort : {0}",
    "where": [
     "server/src/raidMap.ts"
    ]
@@ -70484,6 +72056,18 @@
    ]
   },
   {
+   "fr": "zone secrète ◆ relique",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Zone sécurisée",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
@@ -70496,15 +72080,15 @@
    ]
   },
   {
-   "fr": "Zone terminée :",
-   "where": [
-    "server/src/raidMap.ts"
-   ]
-  },
-  {
    "fr": "Zone terminée : au même instant, tous les joueurs de l'instance voient la carte « ZONE TERMINÉE » avec un son, que la zone ait été finie par leur groupe ou par un autre ; les autres zones de la branche finies ailleurs sont annoncées dans les alertes, et les alertes du titan (carte du titan) l'écrivent une seule fois par zone.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Zone terminée : {0}",
+   "where": [
+    "server/src/raidMap.ts"
    ]
   },
   {
@@ -70570,6 +72154,12 @@
    ]
   },
   {
+   "fr": "zone {0}",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "Zone {0} sur 8 · délai d'entrée {1} images",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -70589,6 +72179,12 @@
   },
   {
    "fr": "zone à reprendre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "zone à reprendre ({0} est tombé)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -70923,6 +72519,12 @@
    ]
   },
   {
+   "fr": "{0} (course de {1})",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
    "fr": "{0} (et d'autres : NOTIFICATIONS).",
    "where": [
     "game/online/OnlineService.cpp"
@@ -71246,6 +72848,12 @@
    ]
   },
   {
+   "fr": "{0} : inconnu",
+   "where": [
+    "server/src/creationAssets.ts"
+   ]
+  },
+  {
    "fr": "{0} : indisponible hors ligne.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -71294,9 +72902,27 @@
    ]
   },
   {
+   "fr": "{0} : liste attendue",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : liste trop longue",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "{0} : nettoyée",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : nombre entier attendu",
+   "where": [
+    "server/src/creationAssets.ts"
    ]
   },
   {
@@ -71312,9 +72938,27 @@
    ]
   },
   {
+   "fr": "{0} : objectif {1} en double",
+   "where": [
+    "server/src/raidWorld.ts"
+   ]
+  },
+  {
    "fr": "{0} : objectif {1} à l'index {2} invalide",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : objet attendu",
+   "where": [
+    "server/src/campaignRevisions.ts"
+   ]
+  },
+  {
+   "fr": "{0} : objet JSON attendu",
+   "where": [
+    "server/src/community.ts"
    ]
   },
   {
@@ -71360,9 +73004,21 @@
    ]
   },
   {
+   "fr": "{0} : texte trop long",
+   "where": [
+    "server/src/enemyRevisions.ts"
+   ]
+  },
+  {
    "fr": "{0} : tombé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : trop de champs",
+   "where": [
+    "server/src/enemyRevisions.ts"
    ]
   },
   {
@@ -71408,27 +73064,15 @@
    ]
   },
   {
-   "fr": "{0} : zone {1} « {2} » inatteignable même tout accompli",
+   "fr": "{0} : zone {1} en double",
    "where": [
     "server/src/raidWorld.ts"
    ]
   },
   {
-   "fr": "{0} : zone à reprendre ({1} est tombé)",
+   "fr": "{0} : zone {1} « {2} » inatteignable même tout accompli",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} : zone à reprendre ({1} est tombé) · {2}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} : {1} (facultatif)",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -71481,6 +73125,12 @@
   },
   {
    "fr": "{0} a accepté votre raid commun : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} a battu votre record mondial sur {1} ({2}) : {3} contre {4}",
    "where": [
     "server/src/notifications.ts"
    ]
@@ -71739,6 +73389,12 @@
    ]
   },
   {
+   "fr": "{0} badges au plus",
+   "where": [
+    "server/src/badges.ts"
+   ]
+  },
+  {
    "fr": "{0} badges au plus avec {1} étoiles.",
    "where": [
     "server/src/badges.ts"
@@ -71790,6 +73446,12 @@
    "fr": "{0} branches",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} branches au lieu de 7",
+   "where": [
+    "server/src/raidWorld.ts"
    ]
   },
   {
@@ -72378,6 +74040,12 @@
    ]
   },
   {
+   "fr": "{0} et {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} fantômes au plus en même temps (réglable dans « Options d'affichage »).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -72841,6 +74509,12 @@
    ]
   },
   {
+   "fr": "{0} Ko au plus",
+   "where": [
+    "server/src/devices.ts"
+   ]
+  },
+  {
    "fr": "{0} lame, basse ou haute",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -73163,6 +74837,12 @@
    ]
   },
   {
+   "fr": "{0} nombres attendus",
+   "where": [
+    "server/src/admin.ts"
+   ]
+  },
+  {
    "fr": "{0} note",
    "where": [
     "game/online/LevelRatings.cpp"
@@ -73196,6 +74876,18 @@
    "fr": "{0} nouveautés",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} nouveaux commentaires sur votre course : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} nouveaux commentaires sur {1}",
+   "where": [
+    "server/src/notifications.ts"
    ]
   },
   {
@@ -73271,6 +74963,12 @@
    ]
   },
   {
+   "fr": "{0} participe au raid commun {1} : inscrivez-vous",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} performance(s) à envoyer",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -73328,6 +75026,12 @@
    "fr": "{0} pourra ouvrir l'écran Administration : nommer d'autres admins ou leur retirer le rôle, et lire le journal.",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} pouvoirs pour {1} emplacements",
+   "where": [
+    "server/src/challengeSpec.mjs"
    ]
   },
   {
@@ -73769,6 +75473,12 @@
    ]
   },
   {
+   "fr": "{0} trop volumineux",
+   "where": [
+    "server/src/community.ts"
+   ]
+  },
+  {
    "fr": "{0} trouvée !",
    "where": [
     "game/gameplay/entities/PickupEntities.cpp"
@@ -74013,12 +75723,6 @@
    ]
   },
   {
-   "fr": "{0} · image {1} / {2} · cliquez sur une partie pour la choisir",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "{0} · inscrit le {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -74028,6 +75732,18 @@
    "fr": "{0} · itinéraire {1} %",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · masquée",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · masquée · profil masqué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -74058,6 +75774,12 @@
    "fr": "{0} · phase {1} / 3",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · profil masqué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -75423,12 +77145,6 @@
    ]
   },
   {
-   "fr": "Échec de l'enregistrement des parties",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Échec de l'export : {0}",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -76074,12 +77790,6 @@
    ]
   },
   {
-   "fr": "Écriture impossible : data/enemies/{0}.json",
-   "where": [
-    "game/enemies/HitParts.cpp"
-   ]
-  },
-  {
    "fr": "écriture impossible : {0}",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -76165,12 +77875,6 @@
   },
   {
    "fr": "Éditeur d'ennemis : texture et épaisseur de chaque rayon, avec aperçu ; les libellés longs ne passent plus sous leur champ.",
-   "where": [
-    "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "Éditeur d'ennemis : un onglet Boss › « Parties (où frapper) » montre les parties d'un boss sur son sprite, avec la pose et l'image de votre choix. Pour chaque partie, il règle son rôle (point faible, normale, blindée, qui blesse), son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse aussi. Choisissez une partie en cliquant dessus ou dans la liste, au clavier ou à la manette.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -76420,33 +78124,9 @@
    ]
   },
   {
-   "fr": "épaule",
-   "where": [
-    "data/enemies/dreadfang.json"
-   ]
-  },
-  {
-   "fr": "épaule droite",
-   "where": [
-    "data/enemies/heartbreaker.json"
-   ]
-  },
-  {
-   "fr": "épaule gauche",
-   "where": [
-    "data/enemies/heartbreaker.json"
-   ]
-  },
-  {
    "fr": "Épaule gelée",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
-   ]
-  },
-  {
-   "fr": "épines",
-   "where": [
-    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -77248,6 +78928,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "îlots mouvants · gardien",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
    ]
   },
   {

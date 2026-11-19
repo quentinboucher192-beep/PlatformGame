@@ -294,9 +294,15 @@ std::string Dictionary::localizeNumbers(std::string_view in) {
     return out;
 }
 
+namespace {
+/// While the i18n audit judges a text: the parts put in a model's slots that stayed untranslated.
+thread_local std::vector<std::string>* t_auditParts = nullptr;
+}  // namespace
+
 std::string Dictionary::piece(std::string_view s, int depth) const {
     std::string out;
-    translateInto(s, out, depth + 1);
+    const bool full = translateInto(s, out, depth + 1);
+    if (!full && t_auditParts && letterCount(s) >= 2) t_auditParts->emplace_back(s);
     return out.empty() ? std::string(s) : out;
 }
 
@@ -401,6 +407,42 @@ bool Dictionary::byCase(std::string_view s, std::string& out, int depth) const {
 }
 
 bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const {
+    // 2.76.2: pieces joined by the interface (« Fantômes · Comparer deux replays dans le lecteur de
+    // replays. »), each one a known text: first, before the signs around the whole are cut (its last
+    // piece lost its final period, and a model such as « {0} replays » took it).
+    for (const char* sepC : {"  ·  ", " · ", " | ", " • "}) {
+        std::string_view sep(sepC);
+        if (s.find(sep) == std::string_view::npos) continue;
+        std::string res;
+        bool all = true;
+        for (size_t start = 0; all;) {
+            const size_t f = s.find(sep, start);
+            const std::string_view part = s.substr(start, f == std::string_view::npos ? std::string_view::npos : f - start);
+            std::string t;
+            if (part.empty()) res.append(part);
+            else if (translateInto(part, t, depth + 1)) res += t;  // no letter: the number written the English way
+            else all = false;
+            if (f == std::string_view::npos) break;
+            res.append(sep);
+            start = f + sep.size();
+        }
+        if (all) {
+            out = res;
+            return true;
+        }
+        break;
+    }
+    // 2.76.2: a counter after a known text: « Détruire le soufflet ouest (un groupe) (0 / 2) ».
+    if (s.size() > 3 && s.back() == ')') {
+        const size_t open = s.rfind(" (");
+        if (open != std::string_view::npos && open > 0 && !hasLetter(s.substr(open)) && hasLetter(s.substr(0, open))) {
+            std::string core;
+            if (translateInto(s.substr(0, open), core, depth + 1)) {
+                out = core + localizeNumbers(s.substr(open));
+                return true;
+            }
+        }
+    }
     // Signs around a known text: « • Texte », « Texte : », « (Texte) », « Texte… ».
     std::string decorated;
     size_t a = 0, b = s.size();
@@ -415,11 +457,26 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
         if (letterAt(s, p) || isDigit(s[p])) break;
         b = p;
     }
+    // 2.76.2: the sentence keeps its own final sign inside quotes (« « Son dernier regard : survivez ! » »).
+    size_t bs = b;
+    for (bool more = true; more;) {
+        more = false;
+        size_t k = bs, sp = 0;
+        if (k < s.size() && isSpaceAt(s, k, sp)) k += sp;
+        if (k < s.size() && (s[k] == '.' || s[k] == '!' || s[k] == '?')) bs = k + 1, more = true;
+        else if (k + 3 <= s.size() && s.compare(k, 3, "\xE2\x80\xA6") == 0) bs = k + 3, more = true;  // …
+    }
     if ((a != 0 || b != s.size()) && a < b) {
-        // Signs before only (« • Phrase complète. »), after only, then both.
-        const std::pair<size_t, size_t> cuts[] = {{a, s.size()}, {0, b}, {a, b}};
+        // Signs before only (« • Phrase complète. »), after only, then both; with the sentence's own sign first.
+        std::vector<std::pair<size_t, size_t>> cuts;
+        if (bs != b && bs != s.size()) cuts.emplace_back(a, bs);
+        cuts.insert(cuts.end(), {{a, s.size()}, {0, b}, {a, b}});
         for (auto [ca, cb] : cuts) {
             if (ca == 0 && cb == s.size()) continue;
+            // 2.76.2: never a bracket cut off from its pair (« Détruire le soufflet (un groupe » would
+            // then be read by a model « {0} groupe »).
+            const std::string_view kept = s.substr(ca, cb - ca);
+            if (std::count(kept.begin(), kept.end(), '(') != std::count(kept.begin(), kept.end(), ')')) continue;
             std::string core;
             bool full = translateInto(s.substr(ca, cb - ca), core, depth + 1);
             if (core.empty()) continue;
@@ -616,7 +673,18 @@ struct State {
     std::set<std::string> missing;
     std::string missingFile;
     bool missingInit = false;
+    // 2.76.2: the i18n audit (startAudit).
+    struct Audit {
+        std::string file;
+        std::vector<AuditFinding> found;
+        std::set<std::string, std::less<>> judged;     // French: texts already judged
+        std::set<std::string, std::less<>> produced;   // English: translations handed out
+        std::set<std::string, std::less<>> englishWords, frenchWords, englishOnlyTexts;
+    } audit;
 };
+
+/// The i18n audit is on (read on the slow path only: a text not in the cache).
+bool g_audit = false;
 
 State& state() {
     static State s;
@@ -653,7 +721,171 @@ void noteMissing(State& st, std::string_view s) {
     }
 }
 
+// ------------------------------------------------------------------ i18n audit (2.76.2)
+
+/// The words of a text (runs of letters, lowercase; apostrophes and hyphens cut them).
+template <class F>
+void eachWord(std::string_view s, F&& f) {
+    for (size_t i = 0; i < s.size();) {
+        if (!letterAt(s, i)) {
+            ++i;
+            continue;
+        }
+        size_t j = i;
+        while (j < s.size())
+            if (size_t k = letterAt(s, j)) j += k;
+            else break;
+        std::string w(s.substr(i, j - i));
+        for (size_t k = 0; k < w.size(); ++k) setCaseAt(w, k, false);
+        f(w, letterCount(w));
+        i = j;
+    }
+}
+
+bool hasAccent(std::string_view w) {
+    for (char c : w)
+        if (static_cast<unsigned char>(c) >= 0x80) return true;
+    return false;
+}
+
+/// Every word of `s` reads as English (a word of the dictionary's translations), so the text
+/// looks right in English even unchanged (« Options », « Asterion · Phase 2 », « Level 3 »).
+bool readsEnglish(const State::Audit& a, std::string_view s) {
+    bool ok = true;
+    eachWord(s, [&](const std::string& w, int letters) {
+        if (!ok) return;
+        if (letters < 2 && !hasAccent(w)) return;  // « s », « x », « D »: units, letters
+        if (!a.englishWords.count(w)) ok = false;
+    });
+    return ok;
+}
+
+/// Every word of `s` is English and not French (« Level », « Settings »): an English text.
+bool readsOnlyEnglish(const State::Audit& a, std::string_view s) {
+    int words = 0;
+    bool ok = true;
+    eachWord(s, [&](const std::string& w, int letters) {
+        if (!ok || letters < 2) return;
+        ++words;
+        if (hasAccent(w) || !a.englishWords.count(w) || a.frenchWords.count(w)) ok = false;
+    });
+    return ok && words > 0;
+}
+
+void auditNote(State& st, AuditFinding f) {
+    if (!st.audit.file.empty()) {
+        if (FILE* out = std::fopen(st.audit.file.c_str(), "ab")) {
+            Json j = {{"reason", f.reason}, {"text", f.text}, {"shown", f.shown}};
+            if (!f.part.empty()) j["part"] = f.part;
+            std::string line = j.dump() + "\n";
+            std::fwrite(line.data(), 1, line.size(), out);
+            std::fclose(out);
+        }
+    }
+    st.audit.found.push_back(std::move(f));
+}
+
+/// English: `source` (drawn) became `out`; `full` when every word was known; `parts`: the parts
+/// put in slots that stayed untranslated.
+void auditEnglish(State& st, std::string_view source, std::string_view french, const std::string& out, bool full,
+                  const std::vector<std::string>& parts) {
+    State::Audit& a = st.audit;
+    const bool again = a.produced.count(french) > 0;  // a translation handed back to the renderer
+    if (out != french) a.produced.emplace(out);
+    if (letterCount(french) < 2) return;
+    AuditFinding f;
+    if (again) {
+        // Translated twice (a translation changed again by a model or its parts): give the French text.
+        // A text that is also a French text of the dictionary (« Explorer » is both) is not told apart.
+        if (full && out != french && !st.english.exact(french)) f.reason = "retraduit";
+    } else if (!full) {
+        if (!readsEnglish(a, french)) f.reason = "absent";
+    } else if (out == french) {
+        if (!st.english.exact(french) && !readsEnglish(a, french)) f.reason = "identique";
+    } else if (!parts.empty() && !readsEnglish(a, out)) {
+        // A model applied but what it holds stayed French: the words of the translation that are not English.
+        f.reason = "inséré";
+        for (size_t i = 0; i < out.size();) {
+            if (!letterAt(out, i)) {
+                ++i;
+                continue;
+            }
+            size_t j = i;
+            while (j < out.size())
+                if (size_t k = letterAt(out, j)) j += k;
+                else break;
+            const std::string_view w = std::string_view(out).substr(i, j - i);
+            if ((letterCount(w) >= 2 || hasAccent(w)) && !readsEnglish(a, w)) f.part += (f.part.empty() ? "" : " ") + std::string(w);
+            i = j;
+        }
+    }
+    if (f.reason.empty()) return;
+    f.text = std::string(source);
+    f.shown = out;
+    auditNote(st, std::move(f));
+}
+
+/// French: an English text shown as it is (a translation of the dictionary, or only English words).
+void auditFrench(State& st, std::string_view french) {
+    State::Audit& a = st.audit;
+    if (letterCount(french) < 2 || a.judged.count(french)) return;
+    a.judged.emplace(french);
+    if (st.english.exact(french)) return;  // a French text of the dictionary
+    if (a.englishOnlyTexts.count(french) || readsOnlyEnglish(a, french)) auditNote(st, {"anglais", std::string(french), std::string(french), {}});
+}
+
 }  // namespace
+
+void startAudit(const std::string& fileUtf8) {
+    State& st = state();
+    std::lock_guard lock(st.mutex);
+    ensureLoaded(st, Language::English);
+    State::Audit& a = st.audit;
+    a = State::Audit{};
+    a.file = fileUtf8;
+    if (!a.file.empty())
+        if (FILE* f = std::fopen(a.file.c_str(), "wb")) std::fclose(f);
+    st.english.forEach([&](std::string_view fr, std::string_view en) {
+        eachWord(en, [&](const std::string& w, int) { a.englishWords.insert(w); });
+        if (!fr.empty()) {
+            eachWord(fr, [&](const std::string& w, int) { a.frenchWords.insert(w); });
+            if (fr != en) a.englishOnlyTexts.emplace(en);
+        }
+    });
+    st.english.forEachModelPiece([&](std::string_view piece) { eachWord(piece, [&](const std::string& w, int) { a.frenchWords.insert(w); }); });
+    // French little words kept by names in the translations (« Les Confins », « Cœur de … »): never English.
+    // (One literal cut at « _ »: a list of words, not texts to translate.)
+    const std::string_view little = "le_la_les_de_du_des_un_une_et_est_en_au_aux_pour_sans_sur_dans_avec_par_ou_que_qui_ne_pas_ce_cette_ces_"
+                                    "votre_vos_son_sa_ses_leur_leurs";
+    for (size_t i = 0; i < little.size();) {
+        const size_t j = std::min(little.find('_', i), little.size());
+        a.englishWords.erase(std::string(little.substr(i, j - i)));
+        i = j + 1;
+    }
+    // An English text that is also a French text of the dictionary is no leak.
+    for (auto it = a.englishOnlyTexts.begin(); it != a.englishOnlyTexts.end();)
+        it = st.english.exact(*it) ? a.englishOnlyTexts.erase(it) : std::next(it);
+    st.clearCache();  // every text judged again
+    g_audit = true;
+}
+
+void stopAudit() {
+    State& st = state();
+    std::lock_guard lock(st.mutex);
+    g_audit = false;
+}
+
+bool auditing() {
+    State& st = state();
+    std::lock_guard lock(st.mutex);
+    return g_audit;
+}
+
+std::vector<AuditFinding> auditFindings() {
+    State& st = state();
+    std::lock_guard lock(st.mutex);
+    return st.audit.found;
+}
 
 const char* code(Language l) { return l == Language::English ? "en" : "fr"; }
 const char* nativeName(Language l) { return l == Language::English ? "English" : "Français"; }
@@ -722,7 +954,11 @@ std::string_view display(std::string_view source) {
     if (french.empty() || g_verbatim > 0) return french;
     State& st = state();
     std::lock_guard lock(st.mutex);
-    if (st.language == Language::French || (context.empty() && unchangedNumbers(french))) return french;
+    if (st.language == Language::French) {
+        if (g_audit) auditFrench(st, french);
+        return french;
+    }
+    if (context.empty() && unchangedNumbers(french)) return french;
     auto it = st.cache.find(source);
     if (it != st.cache.end()) return it->second;
     std::string key(source), out;
@@ -730,12 +966,17 @@ std::string_view display(std::string_view source) {
         out = old->second;  // seen in the previous generation: kept
     } else if (const std::string* v = context.empty() ? nullptr : st.english.exact(context)) {
         out = *v;
+        if (g_audit) st.audit.produced.emplace(out);
     } else {
+        std::vector<std::string> parts;
+        if (g_audit) t_auditParts = &parts;
         bool full = st.english.lookup(french, out);
+        t_auditParts = nullptr;
         if (!full) {
             if (out.empty()) out = std::string(french);
             if (letterCount(french) >= 2) noteMissing(st, french);
         }
+        if (g_audit) auditEnglish(st, source, french, out, full, parts);
     }
     auto [ins, ok] = st.cache.emplace(std::move(key), std::move(out));
     return ins->second;

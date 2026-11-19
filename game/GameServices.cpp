@@ -552,18 +552,26 @@ void GameServices::checkForUpdate() {
         const Json& rel = r.data["release"];
         std::string v = jstr(rel, "version");
         if (v.empty() || !versionNewer(v, COSMIC_VERSION_STRING)) return;
-        std::string notes;
+        // 2.76.2: the notes in English too (notes_en, written from the dictionary of their version):
+        // shown when the game is in English, only when every release has them.
+        std::string notes, notesEn;
+        bool english = true;
         if (r.data.contains("changes") && r.data["changes"].is_array()) {
             for (const Json& c : r.data["changes"]) {
-                const std::string cv = jstr(c, "version"), cn = jstr(c, "notes");
+                const std::string cv = jstr(c, "version"), cn = jstr(c, "notes"), ce = jstr(c, "notes_en");
                 if (cv.empty() || cn.empty() || !versionNewer(cv, COSMIC_VERSION_STRING)) continue;
-                if (!notes.empty()) notes += "\n\n";
+                if (!notes.empty()) notes += "\n\n", notesEn += "\n\n";
                 // Notes written from the changelog already start with « Version x.y.z : ».
                 notes += cn.rfind("Version ", 0) == 0 ? cn : "Version " + cv + " :\n" + cn;
+                notesEn += ce.rfind("Version ", 0) == 0 ? ce : "Version " + cv + ":\n" + ce;
+                english = english && !ce.empty();
             }
         }
-        if (notes.empty()) notes = jstr(rel, "notes");  // an older server: the newest installer's notes
-        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), notes);
+        if (notes.empty()) {  // an older server: the newest installer's notes
+            notes = jstr(rel, "notes");
+            notesEn = jstr(rel, "notes_en");
+        }
+        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), notes, english ? notesEn : std::string{});
     }, false);
 }
 

@@ -1,5 +1,7 @@
 #include "ui/screens/PauseScene.h"
 
+#include "engine/core/I18n.h"
+
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
 #include "game/achievements/AchievementSuggestions.h"
@@ -26,7 +28,11 @@ namespace {
 
 /// `text` in at most `maxLines` lines no wider than `width` at `size` (unscaled), the last one
 /// shortened with « … » when words are left over.
-std::vector<std::string> wrapLines(UIContext& ui, const std::string& text, float size, float width, int maxLines) {
+std::vector<std::string> wrapLines(UIContext& ui, const std::string& source, float size, float width, int maxLines) {
+    // 2.76.2: cut in the language shown (a French sentence cut into lines no longer matched its
+    // translation): the text translated first, its lines drawn as they are (i18n::keep).
+    const std::string text = i18n::tr(source);
+    i18n::Verbatim shown;
     std::vector<std::string> words, lines;
     std::string w;
     for (char ch : text) {
@@ -59,8 +65,10 @@ std::vector<std::string> wrapLines(UIContext& ui, const std::string& text, float
         for (; i < words.size(); ++i) rest += " " + words[i];
         lines.back() = ui.elide(rest, FontFace::Body, size, width);
     }
-    for (auto& l : lines)
+    for (auto& l : lines) {
         if (ui.text().measure(l, FontFace::Body, px).x > width) l = ui.elide(l, FontFace::Body, size, width);
+        l = i18n::keep(l);
+    }
     return lines;
 }
 

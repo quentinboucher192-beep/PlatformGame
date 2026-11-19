@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "engine/core/I18n.h"
 #include "engine/input/InputManager.h"
 #include "engine/rendering/Renderer.h"
 #include "engine/rendering/Text.h"
@@ -27,7 +28,10 @@ SDL_Vertex vtx(Vec2 p, Color c) {
 }
 
 float textW(UIContext& ui, const std::string& t, FontFace f, float size) { return ui.text().measure(t, f, ui.s(size)).x; }
-float lineH(UIContext& ui, FontFace f, float size) { return ui.text().measure("Ag", f, ui.s(size)).y; }
+float lineH(UIContext& ui, FontFace f, float size) {
+    i18n::Verbatim probe;  // a line's height, not a text (never translated, never judged)
+    return ui.text().measure("Ag", f, ui.s(size)).y;
+}
 
 /// The keyboard cursor of a focused chart: ← → (the focus does not move that way).
 void moveCursor(UIContext& ui, int& cursor, int count) {

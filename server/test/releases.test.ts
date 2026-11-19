@@ -1,5 +1,6 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
+import { englishNotes, releasesOfMigrations } from "../scripts/release-notes.mjs";
 import { api, seedAll } from "./helpers";
 
 beforeEach(seedAll);
@@ -63,5 +64,44 @@ describe("installers", () => {
         const ip = "203.0.113.77";
         for (let i = 0; i < 6; ++i) expect((await api("GET", "/api/v1/client/download/2.4.0", { ip })).status).toBe(200);
         expect((await api("GET", "/api/v1/client/download/2.4.0", { ip })).status).toBe(429);
+    });
+
+    it("notes_en: the same notes in English, both given, the game shows those of its language (2.76.2)", async () => {
+        await publish("2.75.3", 2075003, new Uint8Array([1]));
+        await publish("2.75.4", 2075004, new Uint8Array([2]));
+        await env.DB.prepare("UPDATE client_releases SET notes = ?1, notes_en = ?2 WHERE version = '2.75.4'")
+            .bind("Version 2.75.4 :\n• Tout le jeu en anglais.", "Version 2.75.4:\n• The whole game in English.")
+            .run();
+        const r = await api("GET", "/api/v1/client/latest?platform=windows&since=2.75.2");
+        expect(r.status).toBe(200);
+        expect(r.body.data.release.notes).toBe("Version 2.75.4 :\n• Tout le jeu en anglais.");
+        expect(r.body.data.release.notes_en).toBe("Version 2.75.4:\n• The whole game in English.");
+        expect(r.body.data.changes[0].notes_en).toBe("Version 2.75.4:\n• The whole game in English.");
+        // An installer registered without its English notes: "" (the game shows the French ones, translated as it can).
+        expect(r.body.data.changes[1].version).toBe("2.75.3");
+        expect(r.body.data.changes[1].notes_en).toBe("");
+    });
+});
+
+describe("English notes of the installers (scripts/release-notes.mjs, 2.76.2)", () => {
+    const strings = { "Tout le jeu en anglais.": "The whole game in English.", "Raids : le titan tombe.": "Raids: the titan falls." };
+
+    it("each line by the dictionary, the version line in English typography", () => {
+        expect(englishNotes("Version 2.75.4 :\n• Tout le jeu en anglais.\n• Raids : le titan tombe.\n\nVersion 2.75.3 :\n• Tout le jeu en anglais.", strings)).toBe(
+            "Version 2.75.4:\n• The whole game in English.\n• Raids: the titan falls.\n\nVersion 2.75.3:\n• The whole game in English.",
+        );
+        expect(englishNotes("Tout le jeu en anglais.", strings)).toBe("The whole game in English.");
+        expect(englishNotes("", strings)).toBe("");
+    });
+
+    it("a line without translation: no English notes at all (never French among English)", () => {
+        expect(englishNotes("Version 2.75.4 :\n• Tout le jeu en anglais.\n• Une ligne inconnue.", strings)).toBeNull();
+        expect(englishNotes("toString", strings)).toBeNull();
+    });
+
+    it("the installers of the migrations: version and notes read from their INSERT", () => {
+        const sql =
+            "-- Installer 2.4.0\nINSERT INTO client_releases (version, version_key, platform, file_key, file_name, size, sha256, notes, published_at) VALUES ('2.4.0', 2004000, 'windows', 'releases/a.exe', 'a.exe', 31397133, 'ab', 'L''aspect des boss.', '2026-11-14T09:34:01.493Z') ON CONFLICT (version) DO NOTHING;";
+        expect(releasesOfMigrations({ "0008_release_2_4_0.sql": sql, "0009_other.sql": sql })).toEqual([{ version: "2.4.0", notes: "L'aspect des boss." }]);
     });
 });
