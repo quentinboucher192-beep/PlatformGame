@@ -42,7 +42,7 @@ struct Sheet {
     std::shared_ptr<AnimationSet> set;
     SDL_Surface* pixels = nullptr;
     explicit Sheet(const std::string& rel) {
-        if (auto j = loadJson("assets/" + rel)) set = AnimationSet::fromJson(*j, rel);
+        if (auto j = FileUtil::loadJson("assets/" + rel)) set = AnimationSet::fromJson(*j, rel);
         if (!set) return;
         if (SDL_Surface* s = IMG_Load(("assets/" + set->texturePath).c_str())) {
             pixels = SDL_ConvertSurface(s, SDL_PIXELFORMAT_RGBA32);
@@ -157,7 +157,7 @@ TEST_CASE("gigaboss (2.75.2): their shots and beams leave their drawing; the dia
                     if (s.kind == raid::HitShape::Kind::Origin) CHECK(s.at == attackOriginOf(*a, hb.body, 1.0f, g.def->scale));
             }
     }
-    CHECK(origins >= 15);
+    CHECK(origins >= 12);  // Skullmaw 4, Dreadfang 2, Pyroclast 1, Heartbreaker 3, Voidworm 2
     // Skullmaw's gaze leaves between its eyes (the eyes of its rules, SkullmawRoutine).
     if (const raid::GigabossSheet* sk = sheets.find("skullmaw"); sk && sk->def)
         if (const AttackDef* gaze = sk->def->attack("regard")) {
@@ -196,10 +196,13 @@ TEST_CASE("orbit (2.75.2): the crown keeps its radius; every other enemy's crown
     a.hasOrigin = true;
     a.origin = {10.0f, -40.0f};
     const Rect box{100.0f, 200.0f, 60.0f, 80.0f};
-    CHECK(attackOriginOf(a, box, -1.0f, 2.0f) == Vec2{130.0f - 20.0f, 280.0f - 80.0f});
+    const Vec2 left{130.0f - 20.0f, 280.0f - 80.0f};
+    CHECK(attackOriginOf(a, box, -1.0f, 2.0f) == left);
     a.hasOrigin = false;
     a.type = AttackType::Laser;
-    CHECK(attackOriginOf(a, box, 1.0f, 2.0f) == box.center() + Vec2{60.0f * 0.3f, -80.0f * 0.2f});
+    const Vec2 laser = box.center() + Vec2{60.0f * 0.3f, -80.0f * 0.2f};
+    CHECK(attackOriginOf(a, box, 1.0f, 2.0f) == laser);
     a.type = AttackType::Spread;
-    CHECK(attackOriginOf(a, box, 1.0f, 2.0f) == box.center() + Vec2{60.0f * 0.4f, -80.0f * 0.1f});
+    const Vec2 other = box.center() + Vec2{60.0f * 0.4f, -80.0f * 0.1f};
+    CHECK(attackOriginOf(a, box, 1.0f, 2.0f) == other);
 }

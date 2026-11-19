@@ -4719,6 +4719,12 @@
    ]
   },
   {
+   "fr": "Au repos",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Au sol, sautez chaque onde ; les plateformes sont sûres.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -7231,6 +7237,12 @@
    ]
   },
   {
+   "fr": "Blindé (plaques)",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Blizzard",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -8090,6 +8102,12 @@
    "fr": "Brisez ses 4 plaques ensemble (plusieurs groupes), puis écartez ses côtes des deux côtés à la fois pour frapper son cœur.",
    "where": [
     "data/raids/asterion/torse/zone_8.json"
+   ]
+  },
+  {
+   "fr": "Brisez ses {0} plaques en vert à moins de {1} s d'écart (elles repoussent sinon) : sa cuirasse tombe et son corps prend les coups.",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -14443,6 +14461,12 @@
    ]
   },
   {
+   "fr": "Corps cuirassé : rien ne le blesse",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Corps d'Asterion : une fois la chute de Pyroclast validée, le bras droit apparaît « détruit » sur le titan (« attaqué », puis « affaibli » pendant le combat), et son effet est noté sur la fiche de l'événement : plus de pluies de lave.",
    "where": [
     "data/news/changelog.json"
@@ -14974,6 +14998,12 @@
    ]
   },
   {
+   "fr": "Coup devant lui, sur {0} (rouge)",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Coupe caméra",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -15142,6 +15172,12 @@
    "where": [
     "data/enemies/pyrrhax.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Couronne de flammes entre {0} et {1} de son centre",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -15569,6 +15605,12 @@
    "fr": "Croix bas",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Croix blanche : ses pieds",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -23443,6 +23485,18 @@
    ]
   },
   {
+   "fr": "Fiches d'Asterion : le schéma « Où frapper » montre maintenant chaque attaque sur sa vraie animation. Sous les phases et états, choisissez une pose (« Au repos » ou une attaque de la phase) : le Gigaboss joue son élan puis son coup, et le schéma montre ce qui en part (rouge : ce qui blesse, comme la ruée, l'impact et ses ondes de choc, la couronne de flammes ; rose : d'où partent ses tirs et rayons).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Fiches d'Asterion : les points faibles et les cibles sont dessinés avec leur propre sprite, là où le combat les colle (yeux et cristal de Skullmaw, phalanges de Pyroclast, genou et entraves de Titanus…) ; une croix marque les pieds du Gigaboss, d'où tout se mesure. Correction : les quatre plaques de Heartbreaker sont le blindage de sa première phase (le schéma les montrait en phase 2).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fiches des boss : lieux, animations, entraînement",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -27879,6 +27933,12 @@
    ]
   },
   {
+   "fr": "Il retombe sur un joueur : écrase tout à {0} de son corps (rouge)",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Il savait tous leurs noms. « Tant qu'on se souvient de toi, disait-il, tu n'es jamais tout à fait parti. »",
    "where": [
     "data/stories/liche.json"
@@ -28142,6 +28202,12 @@
    "fr": "Impact au sol",
    "where": [
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Impact à ses pieds, puis une onde de choc de chaque côté sur {0} : sautez-la",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -42993,6 +43059,12 @@
    ]
   },
   {
+   "fr": "Onde qui s'étend de son centre jusqu'à {0} : passez par son ouverture",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Onde sismique",
    "where": [
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -43658,7 +43730,7 @@
    ]
   },
   {
-   "fr": "OÙ FRAPPER · selon la phase et l'état",
+   "fr": "OÙ FRAPPER : selon la phase, l'état et la pose",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
    ]
@@ -46710,6 +46782,12 @@
    ]
   },
   {
+   "fr": "Plaques brisées",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "PLAQUES · {0}",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
@@ -47883,6 +47961,12 @@
    "fr": "Portée min",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Pose :",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -50457,6 +50541,12 @@
    ]
   },
   {
+   "fr": "Raids : les tirs et rayons des Gigaboss partent enfin de leur dessin, et non plus de 80 à 300 px au-dessus d'eux : regard de Skullmaw, bombes de Pyroclast, caillots de Heartbreaker, crachat du Voidworm, rayon du Cœur d'Asterion. La couronne de flammes de Heartbreaker, Graviton et du Cœur respecte son rayon (elle tournait bien plus loin). Les autres ennemis ne changent pas et aucun record n'est effacé.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
    "where": [
     "data/news/changelog.json"
@@ -50862,6 +50952,12 @@
    ]
   },
   {
+   "fr": "Rayon de {0} depuis le point rose, vers un joueur",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Rayon du cercle",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -50896,6 +50992,12 @@
    "fr": "Rayon du projectile (0 = auto)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Rayon en diagonale qui rebondit sur les murs, depuis le point rose",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -53641,6 +53743,12 @@
    ]
   },
   {
+   "fr": "Rose : d'où part l'attaque",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Rose et violet des nébuleuses, visière cyan.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -53872,6 +53980,12 @@
    "fr": "ruée",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Ruée : tout son corps blesse pendant l'élan (rouge)",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -56700,6 +56814,12 @@
    ]
   },
   {
+   "fr": "Ses plaques brisées, frappez son corps jusqu'à la phase suivante, en évitant son contact et ses coups annoncés.",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Ses plaques se verrouillent : brisez ses deux entraves en même temps !",
    "where": [
     "data/enemies/titanus.json"
@@ -56763,6 +56883,12 @@
    "fr": "Ses tentacules arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_03.json"
+   ]
+  },
+  {
+   "fr": "Ses tirs partent du point rose",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -61632,6 +61758,12 @@
    "fr": "tirage {0}",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Tirs en spirale, nés sur le cercle rose ({0} de son centre)",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -67132,6 +67264,12 @@
    ]
   },
   {
+   "fr": "Vise les joueurs dans l'arène : rien ne part de son corps",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Visibilité du calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -71936,7 +72074,8 @@
    "fr": "{0} px",
    "where": [
     "data/raids/asterion_sheets.json",
-    "game/enemies/BossAttackSheet.cpp"
+    "game/enemies/BossAttackSheet.cpp",
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {

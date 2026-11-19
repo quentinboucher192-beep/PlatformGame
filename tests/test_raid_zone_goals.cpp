@@ -316,7 +316,8 @@ TEST_CASE("raid sheets (2.75): every gigaboss has its « Où frapper » diagram 
             if (v.state == "armour") {
                 armour = true;
                 CHECK(v.phase >= rules.carapaceFrom - 1);  // Skullmaw's veil: its own range
-                if (!rules.vents.empty()) {
+                // 2.75.2: Heartbreaker's first phase: its plates on its body, no rib to hold in its arena.
+                if (!rules.vents.empty() && v.stateName != "Blindé (plaques)") {
                     CHECK(v.plates.size() == rules.vents.size());
                     for (size_t k = 0; k < v.plates.size() && k < rules.vents.size(); ++k) CHECK(v.plates[k].rect == rules.vents[k]);
                 }

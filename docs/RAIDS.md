@@ -986,7 +986,9 @@ verrou, aucun « ??? »), et hors ligne : ce sont les données du jeu.
   "coeur"`), son ennemi (`enemy`) et son antre (`lair`: `{"part": <dossier de branche>, "zone": <zone>}`) ; la fiche
   d'Asterion propose alors « Sa fiche » sur le cœur, et sa partie s'ouvre depuis le titan.
 * **Capture sur demande** : `CosmicPlatformer --headless --raid-sheets <fiche>[:<onglet 0-2>][:attaque=<id>|:attaque=m:<mécanisme>]`
-  (au-dessus du menu, l'attaque dépliée avec son exemple) ; `--clans --online-open raids` ouvre l'onglet RAIDS.
+  (au-dessus du menu, l'attaque dépliée avec son exemple) ; `--clans --online-open raids` ouvre l'onglet RAIDS. 2.75.2 :
+  `--raid-sheets <fiche>:1:frapper=<n>[:pose=<attaque>]` ouvre « Où frapper » sur sa n-ième puce de phase et d'état, et sur la
+  pose de cette attaque.
 ## 19. Ce qu'il reste à faire, zones terminées, tableaux des zones et modération (2.75)
 
 ### « Ce qu'il reste à faire » (`game/raid/ZoneGoals`, `RaidHudElement::Remaining`)
@@ -1056,10 +1058,39 @@ mécanisme (entraves de Titanus, plaques de Heartbreaker), puis **en or** les pl
 (évents, crochets, ancres, artères, miroirs, générateurs de gravité). Une légende mesurée et « Frappez ici quand… ».
 `tests/test_raid_zone_goals.cpp` vérifie un schéma par phase pour chaque Gigaboss et que ses rectangles sont ceux des règles.
 
+**2.75.2 — les poses et les sprites.** Sous les puces de phase et d'état, une rangée **« Pose : »** : « Au repos » ou une des
+attaques de la phase choisie. La pose joue la **vraie animation** de l'attaque (son élan `telegraphAnim`, puis son coup
+`attackAnim`, avec leurs durées) sur la feuille de la phase. Par-dessus, ce que l'attaque envoie depuis son corps, lu dans le
+code de son type (`raid::hitAttack`) :
+* en **rouge** ce qui blesse : la ruée (le corps entier), l'impact au sol et ses deux ondes de choc, l'atterrissage, la couronne
+  de flammes (`orbitRadii`), l'onde qui s'étend ;
+* en **rose** d'où partent les tirs et les rayons (`attackOriginOf`, la formule même d'`Enemy::attackOrigin`).
+
+Une phrase sous la scène dit la portée. Les points faibles et les cibles sont dessinés avec **leur propre sprite** là où le
+combat les colle (yeux et cristal de Skullmaw, phalanges de Pyroclast, genou et entraves de Titanus…). Une croix blanche marque
+ses pieds (le pivot), d'où tout se mesure. Heartbreaker : ses **quatre plaques** sont le blindage de sa **première phase**
+(`HeartbreakerRoutine`), ses côtes celui de la deuxième ; le schéma montrait les plaques en phase 2.
+
+**2.75.2 — les tirs partent du dessin.** Les `origin` des attaques sont des pixels du sprite depuis les pieds, multipliés par
+l'échelle (`Enemy::attackOrigin`). Celles des Gigaboss avaient été écrites en unités du monde : × 2,5 ou × 3, leurs tirs
+partaient de 80 à 300 px au-dessus d'eux (regard de Skullmaw, bombes de Pyroclast, caillots de Heartbreaker, crachat du
+Voidworm, rayon du Cœur). Elles sont maintenant divisées par l'échelle : yeux, phalanges, haut de la poitrine, gueule du Voidworm
+(mesurée sur l'image de son crachat), cœur. La **couronne de flammes** (`Orbit`) garde son `radius` : son rayon intérieur,
+« boîte × échelle + 14 », dépassait le rayon des Gigaboss, qui était alors ignoré. Le rayon intérieur reste le même pour tous
+les autres ennemis (`orbitRadii`, vérifié sur toutes les définitions) ; pour les Gigaboss, il passe juste au bord de la boîte.
+Celui de Graviton passe à 330 pour faire le tour de son corps dessiné. `tests/test_raid_hitbox_sprites.cpp` lit les pixels des
+feuilles : chaque origine de tir tombe sur le dessin de son attaque.
+
 ### Versions
 
 Rien ne change le déroulement d'une partie : `kSimulationVersion`, `kCoopSimulationVersion` et `kRankingGeneration` ne
 changent pas ; l'empreinte de `RaidRun` non plus (les tableaux des zones sont comparés par leur texte canonique).
+
+2.75.2 : les origines des tirs des Gigaboss et leur couronne changent le déroulement de leurs **combats de raid**. Les
+empreintes de référence des raids (`tests/test_raid.cpp`, `tests/test_raid_titan.cpp`) ne changent pas : elles ne vont pas
+jusqu'à ces tirs. Le lockstep reste le même sur chaque ordinateur d'une même version. Aucun niveau solo ni de coopération n'a ces
+ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersion` (15), `kCoopSimulationVersion` (2) et
+`kRankingGeneration` (8) ne changent pas, aucun record n'est effacé.
 
 ## 20. Réanimations, groupe éliminé, vestiaire et liquides (2.75.1)
 
