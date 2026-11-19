@@ -2,7 +2,8 @@
 -- language: the language is only a display choice, the server decides nothing from it. Every line is
 -- translated by the game's dictionary (data/i18n/en.json); the installers published before are
 -- filled below by: node scripts/release-migration.mjs --english-backfill. Apply before deploying the
--- worker that reads the column (GET /client/latest).
+-- worker that reads the column (GET /client/latest); the installers registered after it write
+-- their English notes themselves (release-migration.mjs, a migration numbered above 0170).
 ALTER TABLE client_releases ADD COLUMN notes_en TEXT NOT NULL DEFAULT '';
 UPDATE client_releases SET notes_en = 'Progress bar, menu notifications (lost records, what''s new, new installer), look of the bosses.' WHERE version = '2.4.0';
 UPDATE client_releases SET notes_en = '4 new powers (Time Slow, Plasma Bomb, Magnet, Air Dash), animated power guide, bosses that keep their wounds, progress bar without a frame.' WHERE version = '2.5.0';
@@ -283,3 +284,20 @@ UPDATE client_releases SET notes_en = 'Version 2.75.1:
 • Raids: the magma and the other rising liquids fill their whole basin (at least the screen''s width, from one rock rim to the other), always in front of the players and the enemies.
 • Fix (« Test Asterion »): a simulated player''s fall sent the administrator back to the start; only the administrator is invincible, the simulated players fall, revive each other and can be wiped out like a real group.
 • « Test Asterion »: « Simulated players: 0 (just you) … 7 », the administrator not counted (before, choosing 2 gave a single simulated player).' WHERE version = '2.75.1';
+UPDATE client_releases SET notes_en = 'Version 2.75.3:
+• Moderation: an administrator sees all of a player''s profile, even hidden or of an inactive account: statistics, time played, achievements, outfit, badges and title, private followers and follows, drafts and levels hidden by reports, best progressions. The server decides from the role of their session, never from a parameter; other players keep exactly their locks.
+• Profile seen by an administrator: a discreet “Viewed as admin” mark on everything that would be hidden from others (header, tabs, unpublished levels), and a new “Admin” tab: privacy settings, real presence and last activity, friends (their profile opens from there) and friend requests, pending clan requests (without their message), and every record sent with its status and “Watch”.
+• Unverified records, attempts and replays (pending, rejected): visible to administrators for moderation, always marked (“Viewed as admin (awaiting verification)” during playback) and never counted as verified records. A replay never sent or incomplete, or of another version of the level, stays unavailable with its reason.
+• What stays hidden, even from an administrator: a country or region the player hides (only the setting is told), any precise position, passwords and other secrets, and private messages between players.
+• Administration log: each view of a normally hidden profile or replay is written there, grouped into one entry per player while they follow each other within an hour (“3 views, the last one on …”, with the locks lifted and the levels seen). Online settings: the privacy explanation says what administrators see.
+
+Version 2.75.2:
+• Asterion''s sheets: the « Where to hit » diagram now shows each attack on its real animation. Under the phases and states, pick a pose (« At rest » or an attack of the phase): the Gigaboss plays its wind-up then its blow, and the diagram shows what comes out of it (red: what hurts, such as the rush, the impact and its shockwaves, the crown of flames; pink: where its shots and beams come from).
+• Asterion''s sheets: the weak points and targets are drawn with their own sprite, where the fight sticks them (Skullmaw''s eyes and crystal, Pyroclast''s knuckles, Titanus''s knee and restraints…); a cross marks the Gigaboss''s feet, where everything is measured from. Fix: Heartbreaker''s four plates are the armour of its first phase (the diagram showed them in phase 2).
+• Raids: the Gigaboss''s shots and beams finally leave their drawing, no longer 80 to 300 px above them: Skullmaw''s gaze, Pyroclast''s bombs, Heartbreaker''s clots, the Voidworm''s spit, the beam of Asterion''s Heart. The crown of flames of Heartbreaker, Graviton and the Heart keeps its radius (it circled much further out). Other enemies do not change and no record is erased.
+• Raids: the Gigaboss rules change (shots and crown), so a raid instance only brings together players on 2.75.2 or later: update the game to join your group.' WHERE version = '2.75.3';
+UPDATE client_releases SET notes_en = 'Version 2.76.0:
+• Bosses: each boss is cut into parts that follow its drawing frame by frame (head, neck, body, wings, tail, legs, claws, breath for Pyrrhax; the body for the others), instead of a single box. The shapes are drawn from the sprites of its 94 sheets by a tool, to the pixel.
+• Pyrrhax fights by parts: its head is a weak point (× 2), its tail is armoured (× 0.5), its neck, body, wings and legs take the hits normally. You can hit it at the tip of a wing, far beyond its old box. Only its claws, its breath and its head while biting hurt on contact. Earlier replays play again exactly and no record is erased.
+• Boss sheets: new « Where to hit » tab (STATISTICS › a boss). It shows the real sprite with a chip per phase and a chip per pose (rest, wind-up, attack…), its parts on the current frame, and a legend with the role and damage of each part. The sheets of Asterion''s Gigaboss show their parts too.
+• Fleeing enemies: a weakened enemy no longer goes further than 5.5 tiles from where it started fleeing, and a flying enemy no longer rises more than 2 tiles above it. At that limit it is cornered: it faces you, attacks or guards if it can, and can be hit. Ghosts no longer end up on the ceiling or off screen. Enemy editor: « Max flee distance ».' WHERE version = '2.76.0';

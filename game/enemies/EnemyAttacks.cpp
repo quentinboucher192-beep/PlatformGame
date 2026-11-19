@@ -4,6 +4,7 @@
 
 #include "engine/physics/Collision.h"
 #include "engine/resources/ResourceManager.h"
+#include "game/enemies/HitParts.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/BeamRenderer.h"
 #include "game/gameplay/GameWorld.h"
@@ -637,7 +638,13 @@ void Enemy::performAttackActive(GameWorld& w, float dt) {
             break;
         }
         case AttackType::Lunge:
-            if (!attackHit_ && w.playerIn(box.expanded(2))) attackHit_ = w.hurtPlayersIn(box.expanded(2), d) || true;
+            if (fightsByParts(*this, w)) {
+                // 2.76.0: its bite: only its parts that hurt during it (its head), not its whole box.
+                auto bites = [&](const Player& q) { return hurtsWithParts(*this, q.box); };
+                if (!attackHit_ && w.anyPlayerWhere(bites)) attackHit_ = w.hurtPlayersWhere(bites, d) || true;
+            } else if (!attackHit_ && w.playerIn(box.expanded(2))) {
+                attackHit_ = w.hurtPlayersIn(box.expanded(2), d) || true;
+            }
             if (!def_.flying) vel.x = approach(vel.x, 0.0f, 300.0f * dt);
             break;
         case AttackType::Charge: {

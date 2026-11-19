@@ -31,6 +31,7 @@
 #include "game/gameplay/BossBadge.h"
 #include "ui/online/RatingWidgets.h"
 #include "ui/widgets/BossSheetWidgets.h"
+#include "ui/widgets/HitPartsView.h"
 #include "ui/screens/BossStoryScene.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/screens/MenuBackground.h"
@@ -130,6 +131,11 @@ public:
             for (size_t i = 1; i < parts.size(); ++i) {
                 const std::string& p = parts[i];
                 if (p == "fiche") tab_ = 1;
+                else if (p == "frapper") tab_ = 2;  // 2.76.0: « Où frapper » (its parts)
+                else if (p.rfind("frapper=", 0) == 0) {
+                    tab_ = 2;
+                    hitView_.choosePose(p.substr(8));
+                }
                 else if (p == "tout") unfoldAll = true;
                 else if (p == "attaques") listOnTop = true;
                 else if (p.rfind("attaque=", 0) == 0) unfold = p.substr(8);
@@ -384,14 +390,19 @@ private:
         // Below, two sub-tabs: the player's statistics (the phases, where to fight it), and the
         // boss's sheet.
         y = box.bottom() + ui.s(18);
-        Rect tabsR{x, y, std::min(w, ui.s(440)), ui.s(40)};
-        ui.tabs("sub", tabsR, {"Mes statistiques", "Fiche"}, tab_);
+        Rect tabsR{x, y, std::min(w, ui.s(620)), ui.s(40)};
+        ui.tabs("sub", tabsR, {"Mes statistiques", "Fiche", "Où frapper"}, tab_);
         // « NOUVEAU » (2.37) on the sheet's tab until the sheet is shown once.
         if (tab_ == 1 && ui.isNew("stats.sheet") && ui.featureSeen) ui.featureSeen("stats.sheet");
         if (ui.isNew("stats.sheet")) ui.drawNewPill(tabsR.right() - ui.s(10), tabsR.y, true);
         y = tabsR.bottom() + ui.s(14);
         float bh = p.bottom() - ui.s(22) - y;
         float colGap = ui.s(28);
+        if (tab_ == 2) {
+            // 2.76.0: its hit parts on its sprite, pose by pose (ui/widgets/HitPartsView).
+            hitView_.draw(g_, {x, y, w, bh}, d, g_.app.frameTime() / 1000.0f);
+            return;
+        }
         if (tab_ == 1) {
             // Its difficulty in stars (computed from its definition: game/enemies/BossDifficulty.h).
             const float dh = ui.s(40);
@@ -850,7 +861,8 @@ private:
     int forcedClip_ = -1;
     bool holdClip_ = false;
     std::shared_ptr<const CreatureAtlas> atlas_;
-    int tab_ = 0;              // 0: « Mes statistiques », 1: « Fiche »
+    int tab_ = 0;              // 0: « Mes statistiques », 1: « Fiche », 2: « Où frapper » (2.76.0)
+    HitPartsView hitView_;     // 2.76.0
     std::string sheetOf_;      // the boss whose sheet is shown, and its content's height
     float sheetH_ = 0.0f;
     std::string placesOf_;

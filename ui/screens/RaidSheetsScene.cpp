@@ -21,6 +21,7 @@
 #include "ui/screens/RaidSheetSketch.h"
 #include "ui/widgets/AsterionFigure.h"
 #include "ui/widgets/BossSheetWidgets.h"
+#include "ui/widgets/HitPartsView.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic {
@@ -803,6 +804,7 @@ private:
         auto at = [&](Vec2 p) { return Vec2{o.x + p.x * k, o.y + p.y * k}; };
         r.pushClip(stage);
         const bool armour = v.state == "armour";
+        bool partsShown = false;  // 2.76.0
         if (set && set->texture) {
             // At rest: its idle; a pose: its wind-up, then its blow (their own durations), a breath, again.
             const AnimationClip* c = set->clip("idle");
@@ -824,6 +826,15 @@ private:
             if (c && c->frameCount() > 0) {
                 const Rect src = set->frameRect(*c, f);
                 r.drawTexture(*set->texture, &src, toScreen(sprite), armour ? Color{200, 200, 215, 255} : Color::white());
+                // 2.76.0: its hit parts on this very frame (assets/hitparts), drawn only: its fight uses its box.
+                if (const HitPartsSheet* hp = HitPartsSheet::of(look->animation))
+                    if (const std::vector<HitPartPiece>* pieces = hp->frame(*set, *c, f)) {
+                        const Vec2 pv = set->pivot;
+                        const float sc = look->scale;
+                        drawHitPieces(r, std::max(1.0f, ui.s(1.5f)), *hp, *pieces, PartRules::of(g.def->id),
+                                      [&](Vec2 v) { return Vec2{o.x + (v.x - pv.x) * sc * k, o.y + (v.y - pv.y) * sc * k}; }, 40);
+                        partsShown = true;
+                    }
             }
         }
         // 2.75.2: the sprites of its weak points and targets, their feet where the fight sticks them.
@@ -907,6 +918,7 @@ private:
             if (present) lines.push_back({e.text, hitColor(e.kind)});
         }
         if (sourceShown) lines.push_back({"Rose : d'où part l'attaque", kSource});
+        if (partsShown) lines.push_back({"Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)", partRoleColor(PartRole::Normal)});
         lines.push_back({"Croix blanche : ses pieds", Color{255, 255, 255, 220}});
         std::vector<std::string> named;
         for (const raid::HitPart& p : v.parts)

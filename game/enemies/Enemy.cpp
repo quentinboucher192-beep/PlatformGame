@@ -5,6 +5,7 @@
 
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/enemies/HitParts.h"
 #include "engine/core/DetMath.h"
 
 namespace cosmic {
@@ -223,6 +224,9 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     }
 
     if (state_ == EnemyState::Dormant) return;
+    // 2.76.0: a boss that fights by parts (Pyrrhax): its pose is part of the simulation, its animation
+    // advances in the fixed step (every computer, every replay: the same frame at the same step).
+    if (fightsByParts(*this, w)) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
     if (state_ == EnemyState::Dead) {
         deathTimer_ -= dt;
         vel.x = approach(vel.x, 0.0f, 400.0f * dt);
@@ -469,6 +473,34 @@ void Enemy::stepEngaged(GameWorld& w, float dt) {
         state_ = EnemyState::Flee;
         Vec2 away = box.center() + (box.center() - playerPos_).normalized() * 100.0f;
         if (def_.flying) away.y -= 30.0f;
+        if (w.simulationVersion() >= EnemyDefinition::kBoundedFleeSimulation) {
+            // 2.76.0: never out of reach: within fleeMaxDistance of where its flight began, flying never more
+            // than kFleeRise above it (nor into a ceiling: its moves stop at solids). At that limit it is
+            // cornered: it faces the player, guards and attacks if it can, and can be hit.
+            if (!fleeAnchored_) {
+                fleeAnchor_ = box.center();
+                fleeAnchored_ = true;
+            }
+            const Vec2 out = away - fleeAnchor_;
+            const float reach = def_.fleeMaxDistance;
+            if (out.lengthSq() > reach * reach) away = fleeAnchor_ + out.normalized() * reach;
+            if (def_.flying) away.y = std::max(away.y, fleeAnchor_.y - EnemyDefinition::kFleeRise);
+            if ((away - box.center()).lengthSq() < 36.0f) {
+                if (def_.canDefend && defendCooldown_ <= 0.0f && playerVisible_ && playerDist_ < 70.0f &&
+                    signf(box.center().x - w.player().center().x) == w.player().facing) {
+                    state_ = EnemyState::Defend;
+                    stateTimer_ = def_.defendDuration;
+                    playClip("defend", true);
+                    return;
+                }
+                if (playerVisible_ && chooseAttack(w)) return;
+                if (def_.flying) vel = lerpv(vel, {}, damp(6.0f, dt));
+                else vel.x = approach(vel.x, 0.0f, 900.0f * dt);
+                face(playerPos_.x - box.center().x);
+                playClip("idle");
+                return;
+            }
+        }
         moveTowards(w, away, def_.speed * def_.chaseSpeedMultiplier, dt);
         playClip(def_.flying ? "move" : "run");
         if (def_.canTeleport && teleportTimer_ <= 0.0f && playerDist_ < 70.0f) tryTeleport(w);
@@ -571,6 +603,12 @@ void Enemy::tryTeleport(GameWorld& w) {
         Vec2 c = playerPos_ + Vec2::fromAngle(ang) * def_.teleportRange;
         if (!def_.flying) c.y = playerPos_.y;
         Rect cand = Rect::fromCenter(c, box.size());
+        if (state_ == EnemyState::Flee && fleeAnchored_ && w.simulationVersion() >= EnemyDefinition::kBoundedFleeSimulation) {
+            // 2.76.0: fleeing, it reappears within its limit, flying never above it: where the player reaches it.
+            const Vec2 out = cand.center() - fleeAnchor_;
+            if (out.lengthSq() > def_.fleeMaxDistance * def_.fleeMaxDistance) continue;
+            if (def_.flying && cand.center().y < fleeAnchor_.y - EnemyDefinition::kFleeRise) continue;
+        }
         MoveOptions opt;
         opt.isEnemy = true;
         if (w.physics().overlapsSolid(cand, opt)) continue;
@@ -736,8 +774,10 @@ void Enemy::contactDamage(GameWorld& w) {
         return;
     // 2.62: every player it touches (alone: the only one).
     bool hit = false;
+    const bool parts = fightsByParts(*this, w);  // 2.76.0: only its parts that hurt (claws, breath, its head biting)
     w.forEachPlayer([&](Player& p) {
-        if (!p.alive() || !box.expanded(-1).intersects(p.box)) return;
+        if (!p.alive()) return;
+        if (parts ? !hurtsWithParts(*this, p.box) : !box.expanded(-1).intersects(p.box)) return;
         DamageInfo d;
         d.amount = def_.contactDamage;
         d.type = DamageType::Contact;
@@ -908,7 +948,7 @@ void Enemy::freeze(float seconds) {
 
 void Enemy::update(GameWorld& w, float dt) {
     if (def_.isBoss && shownLook_ != phase_) refreshLook(w);
-    anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
+    if (!fightsByParts(*this, w)) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });  // 2.76.0: else in fixedUpdate
 }
 
 // ============================================================ the giga boss (2.33)

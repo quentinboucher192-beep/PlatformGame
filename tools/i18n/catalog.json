@@ -1431,7 +1431,8 @@
   {
    "fr": "Accroupi",
    "where": [
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -3081,7 +3082,8 @@
   {
    "fr": "Apparition",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -4372,7 +4374,8 @@
     "game/enemies/EnemyDefinition.h",
     "ui/screens/CreatureArt.cpp",
     "ui/screens/StatisticsScene.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -4414,7 +4417,8 @@
   {
    "fr": "Attaque spéciale",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -4609,7 +4613,8 @@
   {
    "fr": "Atterrissage",
    "where": [
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -7006,7 +7011,8 @@
   {
    "fr": "Barrage",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -7476,6 +7482,12 @@
    ]
   },
   {
+   "fr": "Blesse",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "Blessure",
    "where": [
     "ui/studio/StudioDoc.cpp"
@@ -7485,6 +7497,12 @@
    "fr": "Bleu",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -7509,6 +7527,12 @@
    "fr": "Blindé (plaques)",
    "where": [
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Blindée",
+   "where": [
+    "game/enemies/HitParts.cpp"
    ]
   },
   {
@@ -7747,6 +7771,12 @@
    "fr": "Boss (PV retirés)",
    "where": [
     "ui/screens/RaceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Boss : chaque boss est découpé en parties qui suivent son dessin image par image (tête, cou, corps, ailes, queue, pattes, griffes, souffle pour Pyrrhax ; le corps pour les autres), au lieu d'une seule boîte. Les formes sont tirées des sprites de ses 94 feuilles par un outil, au pixel près.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8756,6 +8786,18 @@
    "fr": "Cadre argent.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre blanc : sa boîte, qui prend et donne les coups",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Cadre blanc : son ancienne boîte (les replays d'avant)",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -11299,7 +11341,8 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/powers/PowerStats.cpp",
     "ui/screens/CreatureArt.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -11310,7 +11353,8 @@
     "game/raid/AsterionHeartRoutine.cpp",
     "game/raid/SkullmawRoutine.cpp",
     "ui/screens/CreatureArt.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -12123,7 +12167,8 @@
   {
    "fr": "Chute",
    "where": [
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -13240,6 +13285,12 @@
    "fr": "COMBAT FINAL · toutes les instances ensemble",
    "where": [
     "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "Combat par parties : vos coups touchent la partie visée (point faible d'abord), seules les parties rouges blessent.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -15629,7 +15680,8 @@
    "fr": "Course",
    "where": [
     "ui/screens/CreatureArt.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -15947,6 +15999,12 @@
    "fr": "CREVEZ LA POCHE",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Cri",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -18623,7 +18681,8 @@
   {
    "fr": "Disparition",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -18728,6 +18787,12 @@
    "fr": "distance",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Distance de fuite max",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -20978,6 +21043,12 @@
    ]
   },
   {
+   "fr": "Dépli",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Désactiver",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -22489,6 +22560,12 @@
    "fr": "Ennemis gelés",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Ennemis qui fuient : un ennemi affaibli ne s'éloigne plus qu'à 5,5 tuiles au plus d'où il a commencé à fuir, et un ennemi volant ne monte plus qu'à 2 tuiles au-dessus. Arrivé à la limite, il est acculé : il vous fait face, attaque ou pare s'il le peut, et se laisse toucher. Les fantômes ne finissent plus au plafond ni hors de l'écran. Éditeur d'ennemis : « Distance de fuite max ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -24297,6 +24374,12 @@
    ]
   },
   {
+   "fr": "Fiches des boss : nouvel onglet « Où frapper » (STATISTIQUES › un boss). Il montre le vrai sprite avec une puce par phase et une puce par pose (repos, élan, attaque…), ses parties sur l'image en cours, et une légende avec le rôle et les dégâts de chaque partie. Les fiches des Gigaboss d'Asterion montrent aussi leurs parties.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fiches des Gigaboss : nouveau schéma « Où frapper » dans l'onglet « Mécanismes » : le vrai sprite du Gigaboss pour la phase et l'état choisis (combat, blindé, à nu), avec ses zones lues dans les règles mêmes du combat : à frapper (vert), blindé (gris), ce qui blesse au contact ou attaque (rouge), les plaques du mécanisme collectif dans l'arène (or), une légende mesurée et « Frappez ici quand… ».",
    "where": [
     "data/news/changelog.json"
@@ -25196,6 +25279,7 @@
     "game/achievements/Achievements.cpp",
     "game/content/ContentDatabase.cpp",
     "game/cosmetics/CreationImages.cpp",
+    "game/enemies/HitParts.cpp",
     "game/ghost/Ghost.cpp",
     "game/ghost/GhostStore.cpp",
     "game/ghost/ReplayLibrary.cpp",
@@ -25414,6 +25498,12 @@
    "fr": "Frappe",
    "where": [
     "ui/screens/CreatureArt.cpp"
+   ]
+  },
+  {
+   "fr": "Frappe au sol",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -30186,7 +30276,8 @@
   {
    "fr": "Invocation",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -33531,7 +33622,8 @@
    "fr": "Laser",
    "where": [
     "data/enemies/titan.json",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -33540,7 +33632,8 @@
     "game/enemies/EnemyDefinition.cpp",
     "game/gameplay/EntityFactory.cpp",
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -38063,7 +38156,8 @@
   {
    "fr": "Lianes",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -39261,7 +39355,8 @@
   {
    "fr": "Marche",
    "where": [
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -41205,7 +41300,8 @@
     "data/enemies/ice_burrower.json",
     "data/enemies/lava_burrower.json",
     "data/enemies/weaver.json",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -41232,6 +41328,12 @@
    "fr": "Morsure plongeante",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Mort",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -41698,7 +41800,8 @@
   {
    "fr": "Météores",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -45315,6 +45418,12 @@
    ]
   },
   {
+   "fr": "Où frapper",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "OÙ FRAPPER : selon la phase, l'état et la pose",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -46074,6 +46183,12 @@
    ]
   },
   {
+   "fr": "Partie normale",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "Partie n° {0} — {1}",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -46101,6 +46216,12 @@
    "fr": "Partie trop longue pour être suivie en direct.",
    "where": [
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Parties : affichage ; combat par boîte jusqu'à son étape.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -46406,6 +46527,12 @@
    "fr": "Pas encore de données sur la période.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore de parties",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -47696,7 +47823,8 @@
     "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/GameScene.cpp",
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -48577,7 +48705,8 @@
   {
    "fr": "Plongeon",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -49227,6 +49356,12 @@
    ]
   },
   {
+   "fr": "Point faible",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "Point faible de Pyroclast",
    "where": [
     "data/enemies/pyroclast_noyau.json"
@@ -49607,7 +49742,8 @@
   {
    "fr": "Pose :",
    "where": [
-    "ui/screens/RaidSheetsScene.cpp"
+    "ui/screens/RaidSheetsScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -51649,6 +51785,12 @@
    ]
   },
   {
+   "fr": "Pyrrhax se bat par parties : sa tête est un point faible (× 2), sa queue est blindée (× 0,5), son cou, son corps, ses ailes et ses pattes prennent les coups normalement. Vous pouvez le toucher au bout d'une aile, bien au-delà de son ancienne boîte. Seules ses griffes, son souffle et sa tête pendant la morsure blessent au contact. Les replays d'avant rejouent à l'identique et aucun record n'est effacé.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pyrrhax vaincu",
    "where": [
     "data/levels/confins_01.json"
@@ -52642,7 +52784,8 @@
    "where": [
     "game/levels/ObjectTypes.cpp",
     "game/powers/PowerStats.cpp",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -54703,9 +54846,16 @@
    ]
   },
   {
+   "fr": "Repli",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Repos",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -55696,6 +55846,12 @@
    ]
   },
   {
+   "fr": "Roulade",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Roumanie",
    "where": [
     "data/online/countries.json",
@@ -55799,7 +55955,8 @@
     "ui/screens/RewardsScene.cpp",
     "ui/screens/TutorialScenes.cpp",
     "ui/studio/StudioDoc.cpp",
-    "ui/studio/StudioFrise.cpp"
+    "ui/studio/StudioFrise.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -57469,7 +57626,8 @@
   {
    "fr": "Salve",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -57757,7 +57915,8 @@
    "where": [
     "engine/input/InputTypes.cpp",
     "ui/screens/ReplayScene.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -58776,6 +58935,12 @@
    ]
   },
   {
+   "fr": "Ses parties",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
@@ -59760,6 +59925,12 @@
    ]
   },
   {
+   "fr": "Son combat se joue sur sa boîte.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Son cœur de cristal vous attire !",
    "where": [
     "data/enemies/monolithe.json"
@@ -60054,7 +60225,8 @@
   {
    "fr": "Souffle",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -60470,7 +60642,8 @@
     "data/enemies/cinder_bloom.json",
     "data/enemies/frost_bloom.json",
     "data/enemies/sporeflower.json",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -60479,7 +60652,8 @@
     "game/enemies/GuardianAttacks.cpp",
     "game/gameplay/entities/HazardEntities.cpp",
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -61936,7 +62110,8 @@
    "fr": "Séisme",
    "where": [
     "data/enemies/monolithe.json",
-    "game/enemies/BossAttackSheet.cpp"
+    "game/enemies/BossAttackSheet.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -64427,7 +64602,8 @@
   {
    "fr": "Touché",
    "where": [
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -69918,7 +70094,8 @@
    "fr": "Vol",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
-    "ui/screens/CreatureArt.cpp"
+    "ui/screens/CreatureArt.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -75154,7 +75331,8 @@
   {
    "fr": "{0} · image {1} / {2}",
    "where": [
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -77428,13 +77606,20 @@
   {
    "fr": "Élan",
    "where": [
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
    "fr": "Élan au lâcher",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "Élan · {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -77855,6 +78040,12 @@
    "fr": "Étoiles traqueuses",
    "where": [
     "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "Étourdi",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -78367,7 +78558,8 @@
   {
    "fr": "… et {0} de plus",
    "where": [
-    "ui/screens/RaidSheetsScene.cpp"
+    "ui/screens/RaidSheetsScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {

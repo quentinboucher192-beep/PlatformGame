@@ -288,3 +288,36 @@ TEST_CASE("determinism: replay files reject inconsistent input sections") {
     CHECK(v1->formatVersion == 1);
     CHECK(!v1->exact());
 }
+
+// 2.76.0: Pyrrhax fights by its hit parts (kSimulationVersion 16): 30 s of scripted play from its
+// second phase in « La Gueule de Pyrralis » (confins_01). With the rules of version 15 (a replay of
+// before) the run is the one of 2.75 to the bit: the digest computed by the 2.75.2 build.
+TEST_CASE("determinism: Pyrrhax's fight by parts has its golden digest, and its digest of before with the rules of 15") {
+    auto play = [](int rules) {
+        Sim s("confins_01");
+        s.w->setSimulationVersion(rules);
+        std::string bossObject;
+        Rect zone;
+        for (const LevelObject& o : s.w->level().objects)
+            if (o.type == "enemy" && o.propStr("enemy") == "pyrrhax") bossObject = o.id;
+        for (const LevelObject& o : s.w->level().objects)
+            if (o.type == "combat_zone" && !bossObject.empty() && o.propStr("waves").find(bossObject) != std::string::npos) zone = o.rect;
+        CHECK(!bossObject.empty() && zone.w > 0.0f);
+        auto* spawn = dynamic_cast<EnemySpawnEntity*>(s.w->entity(bossObject));
+        Enemy* boss = spawn ? spawn->enemy(*s.w) : nullptr;
+        CHECK(boss != nullptr);
+        if (!boss) return std::string();
+        s.w->startAt({zone.x + 48.0f * 16.0f, zone.bottom() - 4.0f * 16.0f});
+        s.w->startBoss(*boss);
+        jumpBossToPhase(*s.w, *boss, 1);
+        auto checks = s.run(scriptedInputs(13, 30 * 120));
+        return checks.empty() ? std::string() : hex(checks.back());
+    };
+    const std::string before = play(15), now = play(kSimulationVersion);
+    const char* golden15 = "e22ee37a63ecc0fe";  // the 2.75.2 build (its box)
+    const char* golden16 = "c410f3197ff713d1";  // 2.76.0: by its parts
+    if (before != golden15) std::printf("  confins_01 (Pyrrhax, règles 15) : %s (attendu %s)\n", before.c_str(), golden15);
+    if (now != golden16) std::printf("  confins_01 (Pyrrhax, règles %d) : %s (attendu %s)\n", kSimulationVersion, now.c_str(), golden16);
+    CHECK(before == golden15);
+    CHECK(now == golden16);
+}

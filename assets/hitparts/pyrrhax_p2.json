@@ -1,0 +1,10 @@
+{
+  "format": "cosmic.hitparts",
+  "version": 1,
+  "sheet": "animations/pyrrhax_p2.json",
+  "profile": "dragon",
+  "frameWidth": 256,
+  "frameHeight": 192,
+  "pivot": [128.0, 152.0],
+  "sameAs": "pyrrhax.json"
+}
