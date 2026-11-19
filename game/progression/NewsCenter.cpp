@@ -41,6 +41,7 @@ bool versionNewer(const std::string& a, const std::string& b) {
 
 Json NewsCenter::Item::toJson() const {
     Json j = {{"id", id}, {"kind", kind}, {"title", title}, {"text", text}, {"date", date}, {"target", target}, {"read", read}};
+    if (!textEn.empty()) j["text_en"] = textEn;
     if (kind == "update") {
         j["size"] = size;
         j["sha256"] = sha256;
@@ -55,6 +56,7 @@ NewsCenter::Item NewsCenter::Item::fromJson(const Json& j) {
     it.kind = jstr(j, "kind");
     it.title = jstr(j, "title");
     it.text = jstr(j, "text");
+    it.textEn = jstr(j, "text_en");
     it.date = jstr(j, "date");
     it.target = jstr(j, "target");
     it.read = jget<bool>(j, "read", false);
@@ -222,13 +224,14 @@ void NewsCenter::noteRevision(const std::string& levelId, const std::string& lev
 }
 
 void NewsCenter::offerRelease(const std::string& version, int64_t size, const std::string& sha256, const std::string& download,
-                              const std::string& notes) {
+                              const std::string& notes, const std::string& notesEn) {
     Item it;
     it.id = "update:" + version;
     it.kind = "update";
     it.target = version;
     it.title = "Nouvelle version disponible : " + version;
     it.text = notes.empty() ? "L'installateur est prêt à être téléchargé." : notes;
+    if (!notes.empty()) it.textEn = notesEn;
     it.size = size;
     it.sha256 = sha256;
     it.download = download;

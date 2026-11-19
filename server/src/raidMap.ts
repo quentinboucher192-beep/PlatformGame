@@ -891,7 +891,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             const c = catalogById(z.branch);
             const name = c?.zones.find((x) => x.id === z.zone)?.name ?? String(z.zone);
             // 2.75.1: finished by a group that took it back after another one was wiped there.
-            const text = z.relieves ? "Zone reprise par un groupe de renfort : " + name : "Zone terminée : " + name;
+            const text = z.relieves ? `Zone reprise par un groupe de renfort : ${name}` : `Zone terminée : ${name}`; // 2.76.2: models the game translates
             return { at: z.completed_at, kind: z.relieves ? "retake" : "zone", branch: partOf(z.branch), branch_name: c?.name ?? "", by: groupTag(z.tag, z.group_no), text, zone: z.zone };
         }),
         // 2.75.1 (raidWipe.ts): a group wiped (every player down at once): its zone to take back.
@@ -901,7 +901,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             .map((i) => {
                 const c = catalogById(i.branch);
                 const name = c?.zones.find((x) => x.id === i.wiped_zone)?.name ?? String(i.wiped_zone);
-                return { at: i.wiped_at!, kind: "wipe", branch: partOf(i.branch), branch_name: c?.name ?? "", by: groupTag(i.tag, i.group_no), text: "Groupe éliminé : " + name + " (zone à reprendre)", zone: i.wiped_zone! };
+                return { at: i.wiped_at!, kind: "wipe", branch: partOf(i.branch), branch_name: c?.name ?? "", by: groupTag(i.tag, i.group_no), text: `Groupe éliminé : ${name} (zone à reprendre)`, zone: i.wiped_zone! };
             }),
     ]
         .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))

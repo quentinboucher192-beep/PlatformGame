@@ -342,9 +342,11 @@ public:
             const bool link = jstr(f, "kind") == "link";
             const bool zoneDone = jstr(f, "kind") == "zone";  // 2.75: a zone finished (told once)
             const std::string by = jstr(f, "by");
-            const std::string text = link ? "TITAN · " + jstr(f, "text")
-                                          : (by.empty() ? "" : by + " · ") + jstr(f, "branch_name") + " : " + jstr(f, "text");
-            const auto ls = wrap(ui, text, FontFace::Body, 13, r.w - ui.s(28) - timeW, 2);
+            // 2.76.2: the group's tag as its clan wrote it, the rest (the server's words) translated.
+            const std::string text = link ? "TITAN · " + i18n::tr(jstr(f, "text"))
+                                          : (by.empty() ? "" : by + " · ") + i18n::tr(jstr(f, "branch_name")) +
+                                                (i18n::language() == Language::English ? ": " : " : ") + i18n::tr(jstr(f, "text"));
+            const auto ls = wrap(ui, text, FontFace::Body, 13, r.w - ui.s(28) - timeW, 2, true);
             const float lh = static_cast<float>(ls.size()) * ui.s(18);
             if (fy + lh > feed.bottom() - ui.s(8)) break;
             fit(ui, clockOf(jstr(f, "at")), {r.x + ui.s(14), fy + ui.s(9)}, 12, timeW - ui.s(6), kDim, FontFace::Bold, Align::Left, true);
