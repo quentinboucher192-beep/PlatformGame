@@ -584,7 +584,9 @@ def add(out, text, where, words, source=None):
 
 DATA_KEYS = {"name", "text", "description", "label", "message", "subtitle", "title", "enterText", "exitText", "speaker", "hint",
              "detail", "prompt", "caption", "tooltip", "summary", "question", "answer", "unlockText", "objective",
-             "where"}
+             "where",
+             # 2.75.4: the zones of a raid branch (RaidBranchScene) and a boss's last words (its final phase)
+             "sub", "inside", "event", "finalText"}
 DATA_SKIP_FILES = {"data/online/config.json", "data/online/flags.json", "data/levels/ratings.json", "data/news/new_features.json"}
 
 
@@ -631,6 +633,15 @@ def extract_data(words, out):
 
 # ----------------------------------------------------------------------------- server
 
+# 2.75.4: words that make a server literal French (« Mot de passe incorrect. », « votre clan »,
+# « raid inconnu », « quelques instants » were missed by the accents alone), and SQL to leave out.
+SERVER_FRENCH = re.compile(
+    r"\b(le|la|les|du|des|une?|est|sont|pas|aucune?|introuvable|invalide|inconnue?|attendue?s?|obligatoire|impossible|interdit|"
+    r"absente?|illisible|votre|vos|notre|nos|au|aux|ce|cette|ces|cet|qui|que|dans|avec|sans|pour|sur|ou|et|en|de|quelques|trop|"
+    r"joueurs?|niveaux?|clans?|raids?|zones?|fichiers?|ligne|liste|nom|temps|partie|version)\b", re.I)
+SQL = re.compile(r"\b(SELECT|INSERT|UPDATE|DELETE FROM|LEFT JOIN|WHERE|CREATE TABLE)\b")
+
+
 def extract_server(words, out):
     """Messages of the Cosmic Online server shown by the game (errors, refusals…)."""
     lit = re.compile(r"\"((?:[^\"\\\n]|\\.)*)\"|'((?:[^'\\\n]|\\.)*)'|`((?:[^`\\]|\\.)*)`")
@@ -639,6 +650,9 @@ def extract_server(words, out):
         rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
         with open(path, encoding="utf-8") as f:
             src = f.read()
+        # 2.75.4: block comments too (their apostrophes made fake literals), before the line ones
+        # (« /** … "cosmic://…" */ » holds a « // »).
+        src = re.sub(r"/\*.*?\*/", lambda c: "\n" * c.group(0).count("\n"), src, flags=re.S)
         src = re.sub(r"//[^\n]*", "", src)
         for m in lit.finditer(src):
             s = m.group(1) if m.group(1) is not None else m.group(2) if m.group(2) is not None else m.group(3)
@@ -651,8 +665,34 @@ def extract_server(words, out):
             line = src[line_start + 1: m.start()]
             if "log(" in line or "console." in line:
                 continue
-            if (FR_ACCENT.search(s) or re.search(r"\b(le|la|les|du|des|une?|est|pas|aucun|introuvable|invalide)\b", s)) and " " in s:
+            if SQL.search(s):
+                continue
+            if (FR_ACCENT.search(s) or SERVER_FRENCH.search(s)) and " " in s.strip():
                 add(out, s.strip(), rel, words)
+
+
+def extract_releases(words, out):
+    """2.75.4: the notes of the installers published (server/migrations/*_release_*.sql), line by
+    line: their English (column notes_en, server/scripts/release-migration.mjs) is written from
+    this dictionary."""
+    values = re.compile(r"INSERT INTO client_releases \(([^)]*)\) VALUES \(([\s\S]*)\) ON CONFLICT")
+    for path in sorted(glob.glob(os.path.join(ROOT, "server", "migrations", "*_release_*.sql"))):
+        rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
+        with open(path, encoding="utf-8") as f:
+            m = values.search(f.read())
+        if not m:
+            continue
+        cols = [c.strip() for c in m.group(1).split(",")]
+        vals = [b if b else a.replace("''", "'") for a, b in re.findall(r"'((?:[^']|'')*)'|(-?\d+)", m.group(2))]
+        if "notes" not in cols or len(cols) != len(vals):
+            continue
+        for line in vals[cols.index("notes")].split("\n"):
+            line = line.strip()
+            if not line or re.match(r"^Version \d+\.\d+\.\d+ :$", line):
+                continue
+            body = re.sub(r"^[•\-–]\s+", "", line).strip()
+            if LETTER.search(body):
+                out.setdefault(body, {"where": set()})["where"].add(rel)
 
 
 # ----------------------------------------------------------------------------- main
@@ -713,9 +753,10 @@ def load_dictionary():
 
 
 def save_dictionary(d):
-    d["strings"] = dict(sorted(d["strings"].items(), key=lambda kv: (kv[0].lower(), kv[0])))
+    # The order of the file is kept (new texts at its end): a merge of two branches then joins
+    # their additions instead of moving thousands of lines.
     with open(DICTIONARY, "w", encoding="utf-8", newline="\n") as f:
-        json.dump(d, f, ensure_ascii=False, indent=1)
+        json.dump(d, f, ensure_ascii=False, indent=2)  # en.json: 2 spaces
         f.write("\n")
 
 
@@ -761,6 +802,13 @@ def main():
     if auto:
         save_dictionary(d)
     missing = [k for k in found if not strings.get(k)]
+    # 2.75.4: the notes of the published installers, line by line, need their English too (written to
+    # client_releases.notes_en); kept out of the catalogue: this game never shows the notes of its own
+    # version or older ones (some hold signs its fonts no longer have).
+    notes = {}
+    extract_releases(None, notes)
+    missing += [k for k in notes if k not in found and not strings.get(k)]
+    found = {**notes, **found} if missing else found
     bad = [k for k in found if strings.get(k) and placeholders(k) != placeholders(strings[k])]
     unused = [k for k in strings if k not in found]
     total = len(found)

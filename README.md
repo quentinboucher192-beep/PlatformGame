@@ -619,6 +619,20 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.75.4** :
+* **Langues : plus rien dans l'autre langue.** Le jeu vérifie lui-même chaque texte dessiné : `--i18n-audit <fichier>`
+  (sans écran) relève ce qui reste en français quand le jeu est en anglais — texte absent du dictionnaire, inchangé, partie
+  insérée restée en français, texte traduit deux fois — et, en français, un texte anglais. Plus de cent écrans parcourus
+  (menus, paramètres, fiches, « Où frapper », vestiaire et HUD des raids d'Asterion, coopération, administration, profils,
+  replays, histoires), chaque fuite corrigée ; `tests/test_i18n_audit.cpp` garde les écrans clés
+  ([docs/I18N.md](docs/I18N.md#vérifier-quil-ne-reste-rien-2754)).
+* **Textes du serveur** : l'extracteur lit aussi les messages sans accent (« Mot de passe incorrect. », « votre clan »,
+  « Rappel : … commence dans … ») et ignore commentaires et SQL : près de deux cents messages de plus ont leur anglais.
+* **Notes de version en anglais** : colonne `notes_en` (migration 0170, remplie pour toutes les versions publiées depuis le
+  dictionnaire), écrite par `server/scripts/release-migration.mjs` ; le jeu affiche les notes de sa langue (un simple choix
+  d'affichage). Un `language.ini` « en » donne un jeu en anglais dès le premier lancement, et « Langue / Language » change
+  de langue à tout moment.
+
 **Nouveau dans la version 2.75.3** :
 * **Modération : les administrateurs voient tout des profils** (le rôle de leur session, jamais un paramètre) : profil
   masqué ou compte inactif, statistiques, temps de jeu, abonnés et abonnements privés, brouillons, records et tentatives

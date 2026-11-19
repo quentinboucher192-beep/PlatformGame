@@ -1,4 +1,10 @@
 {
+  "2.75.4": [
+    "Langues : en anglais, plus aucun texte français à l'écran, et inversement. Une vérification faite par le jeu lui-même relève chaque texte dessiné resté dans l'autre langue (absent du dictionnaire, inchangé, partie insérée restée en français, texte traduit deux fois) ; elle a parcouru plus de cent écrans sans écran ni compte (menus, paramètres, fiches, « Où frapper », vestiaire et HUD des raids d'Asterion, coopération, administration, profils, replays, histoires) et chaque fuite trouvée est corrigée.",
+    "Textes du serveur traduits : messages d'erreur (« Pseudonyme ou mot de passe incorrect. »), notifications des raids, des clans et de sécurité (« Rappel : … commence dans … », « … participe au raid commun … »), alertes du titan. Près de deux cents messages que la traduction ne voyait pas ont maintenant leur anglais.",
+    "Notes de version en anglais : chaque installateur publié a désormais ses notes dans les deux langues, écrites depuis le dictionnaire du jeu ; la notification « Nouvelle version disponible » montre celles de la langue du jeu.",
+    "Langue choisie à l'installation vérifiée de bout en bout : un jeu installé en anglais est en anglais dès son premier lancement, et Paramètres › Jeu › « Langue / Language » change de langue à tout moment, sans redémarrer."
+  ],
   "2.75.3": [
     "Modération : un administrateur voit tout du profil d'un joueur, même masqué ou d'un compte inactif : statistiques, temps de jeu, succès, tenue, badges et titre, abonnés et abonnements privés, brouillons et niveaux masqués par les signalements, meilleures progressions. Le serveur en décide depuis le rôle de sa session, jamais depuis un paramètre ; les autres joueurs gardent exactement leurs verrous.",
     "Profil vu par un administrateur : une marque discrète « Vu en tant qu'admin » sur tout ce qui serait caché aux autres (en-tête, onglets, niveaux non publiés), et un nouvel onglet « Admin » : réglages de confidentialité, présence réelle et dernière activité, amis (leur profil s'ouvre de là) et demandes d'ami, demandes de clan en attente (sans leur message), et tous les records envoyés avec leur statut et « Regarder ».",

@@ -26,6 +26,9 @@ public:
         std::string kind;   // level, level_changed, record, power, enemy, boss, update, version
         std::string title;
         std::string text;
+        /// 2.75.4: the text already in English, when the server gave it (the notes of an installer:
+        /// written from the dictionary of its version, which this game may not know yet).
+        std::string textEn;
         std::string date;
         std::string target;  // level id, power id, enemy id, version
         bool read = false;
@@ -61,7 +64,7 @@ public:
                       const std::optional<LevelRecord>& old);
     /// A newer installer exists on the server (GET /client/latest).
     void offerRelease(const std::string& version, int64_t size, const std::string& sha256, const std::string& download,
-                      const std::string& notes);
+                      const std::string& notes, const std::string& notesEn = {});
 
     const std::vector<Item>& items() const { return items_; }
     int unread() const;

@@ -686,13 +686,14 @@ private:
         cell(c, 1, row, country.empty() ? "masqué" : ui_.countryName(country), country.empty() ? ui.theme().textDim : ui.theme().text);
         cell(c, 2, row, dayText(jstr(p, "created_at")), ui.theme().text);
         std::string seen = jstr(p, "last_seen_at");
-        cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen) + (presHidden ? " · " + i18n::tr("masquée") : ""), seen.empty() ? ui.theme().textDim : ui.theme().text);
+        // 2.75.4: the French text, translated whole when drawn (a translated piece in it stayed English in French terms).
+        cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen) + (presHidden ? " · masquée" : ""), seen.empty() ? ui.theme().textDim : ui.theme().text);
         {
             float dx = c.x[4] + ui.s(12);
             drawPresenceDot(ui, {dx + ui.s(5), row.y + row.h * 0.5f}, ui.s(5), pres, 0.0f);
             float r2 = c.x[5] - dx - ui.s(30);
             // 2.75: the real state of a hidden presence, marked (the server sends it to administrators only).
-            const std::string pt = i18n::tr(presenceText(pres)) + (presHidden ? " · " + i18n::tr("masquée") : "") + (profHidden && pillW <= 0.0f ? " · " + i18n::tr("profil masqué") : "");
+            const std::string pt = std::string(presenceText(pres)) + (presHidden ? " · masquée" : "") + (profHidden && pillW <= 0.0f ? " · profil masqué" : "");
             ui.label(ui.elide(pt, FontFace::Body, 16, r2), {dx + ui.s(16), row.y + row.h * 0.5f}, 16,
                      pres == "hidden" || presHidden ? ui.theme().textDim : ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
         }

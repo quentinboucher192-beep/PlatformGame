@@ -12,6 +12,7 @@ interface ReleaseRow {
     size: number;
     sha256: string;
     notes: string;
+    notes_en: string;
     published_at: string;
 }
 
@@ -22,7 +23,7 @@ export async function latest(ctx: Ctx): Promise<Response> {
     const platform = ctx.url.searchParams.get("platform") ?? "windows";
     if (!/^[a-z]{1,16}$/.test(platform)) throw Errors.validation("Plateforme invalide.");
     const r = await ctx.env.DB.prepare(
-        "SELECT version, file_key, file_name, size, sha256, notes, published_at FROM client_releases WHERE platform = ?1 ORDER BY version_key DESC LIMIT 1",
+        "SELECT version, file_key, file_name, size, sha256, notes, notes_en, published_at FROM client_releases WHERE platform = ?1 ORDER BY version_key DESC LIMIT 1",
     )
         .bind(platform)
         .first<ReleaseRow>();
@@ -30,15 +31,17 @@ export async function latest(ctx: Ctx): Promise<Response> {
     // 2.62: `since` = the version the player has: the notes of every release published after it,
     // newest first, so that a player several versions behind sees everything that changed.
     const since = ctx.url.searchParams.get("since");
-    let changes: { version: string; notes: string; published_at: string }[] | undefined;
+    // 2.75.4: `notes_en` = the same notes in English (written from the game's dictionary when the
+    // installer was registered, "" when there are none): the game shows those of its language.
+    let changes: { version: string; notes: string; notes_en: string; published_at: string }[] | undefined;
     if (since !== null) {
         if (!VERSION.test(since)) throw Errors.validation("Version invalide.");
         const [a = 0, b = 0, c = 0] = since.split(".").map(Number);
         const rows = await ctx.env.DB.prepare(
-            "SELECT version, notes, published_at FROM client_releases WHERE platform = ?1 AND version_key > ?2 ORDER BY version_key DESC LIMIT 100",
+            "SELECT version, notes, notes_en, published_at FROM client_releases WHERE platform = ?1 AND version_key > ?2 ORDER BY version_key DESC LIMIT 100",
         )
             .bind(platform, a * 1000000 + b * 1000 + c)
-            .all<{ version: string; notes: string; published_at: string }>();
+            .all<{ version: string; notes: string; notes_en: string; published_at: string }>();
         changes = rows.results ?? [];
     }
     return json(ctx, {
@@ -49,6 +52,7 @@ export async function latest(ctx: Ctx): Promise<Response> {
             size: r.size,
             sha256: r.sha256,
             notes: r.notes,
+            notes_en: r.notes_en,
             published_at: r.published_at,
             download: `/api/v1/client/download/${r.version}`,
         },
@@ -60,7 +64,7 @@ export async function download(ctx: Ctx): Promise<Response> {
     await rateLimit(ctx, RULES.clientDownload, "ip:" + ctx.ip);
     const v = ctx.params.version ?? "";
     if (!VERSION.test(v)) throw Errors.notFound("RELEASE_NOT_FOUND", "Version introuvable.");
-    const r = await ctx.env.DB.prepare("SELECT version, file_key, file_name, size, sha256, notes, published_at FROM client_releases WHERE version = ?1")
+    const r = await ctx.env.DB.prepare("SELECT version, file_key, file_name, size, sha256, notes, notes_en, published_at FROM client_releases WHERE version = ?1")
         .bind(v)
         .first<ReleaseRow>();
     if (!r) throw Errors.notFound("RELEASE_NOT_FOUND", "Version introuvable.");
