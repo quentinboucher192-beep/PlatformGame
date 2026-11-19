@@ -891,7 +891,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             const c = catalogById(z.branch);
             const name = c?.zones.find((x) => x.id === z.zone)?.name ?? String(z.zone);
             // 2.75.1: finished by a group that took it back after another one was wiped there.
-            const text = z.relieves ? `Zone reprise par un groupe de renfort : ${name}` : `Zone terminée : ${name}`; // 2.75.4: models the game translates
+            const text = z.relieves ? `Zone reprise par un groupe de renfort : ${name}` : `Zone terminée : ${name}`; // 2.76.1: models the game translates
             return { at: z.completed_at, kind: z.relieves ? "retake" : "zone", branch: partOf(z.branch), branch_name: c?.name ?? "", by: groupTag(z.tag, z.group_no), text, zone: z.zone };
         }),
         // 2.75.1 (raidWipe.ts): a group wiped (every player down at once): its zone to take back.

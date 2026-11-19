@@ -407,7 +407,7 @@ bool Dictionary::byCase(std::string_view s, std::string& out, int depth) const {
 }
 
 bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const {
-    // 2.75.4: pieces joined by the interface (« Fantômes · Comparer deux replays dans le lecteur de
+    // 2.76.1: pieces joined by the interface (« Fantômes · Comparer deux replays dans le lecteur de
     // replays. »), each one a known text: first, before the signs around the whole are cut (its last
     // piece lost its final period, and a model such as « {0} replays » took it).
     for (const char* sepC : {"  ·  ", " · ", " | ", " • "}) {
@@ -432,7 +432,7 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
         }
         break;
     }
-    // 2.75.4: a counter after a known text: « Détruire le soufflet ouest (un groupe) (0 / 2) ».
+    // 2.76.1: a counter after a known text: « Détruire le soufflet ouest (un groupe) (0 / 2) ».
     if (s.size() > 3 && s.back() == ')') {
         const size_t open = s.rfind(" (");
         if (open != std::string_view::npos && open > 0 && !hasLetter(s.substr(open)) && hasLetter(s.substr(0, open))) {
@@ -457,7 +457,7 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
         if (letterAt(s, p) || isDigit(s[p])) break;
         b = p;
     }
-    // 2.75.4: the sentence keeps its own final sign inside quotes (« « Son dernier regard : survivez ! » »).
+    // 2.76.1: the sentence keeps its own final sign inside quotes (« « Son dernier regard : survivez ! » »).
     size_t bs = b;
     for (bool more = true; more;) {
         more = false;
@@ -473,7 +473,7 @@ bool Dictionary::byParts(std::string_view s, std::string& out, int depth) const 
         cuts.insert(cuts.end(), {{a, s.size()}, {0, b}, {a, b}});
         for (auto [ca, cb] : cuts) {
             if (ca == 0 && cb == s.size()) continue;
-            // 2.75.4: never a bracket cut off from its pair (« Détruire le soufflet (un groupe » would
+            // 2.76.1: never a bracket cut off from its pair (« Détruire le soufflet (un groupe » would
             // then be read by a model « {0} groupe »).
             const std::string_view kept = s.substr(ca, cb - ca);
             if (std::count(kept.begin(), kept.end(), '(') != std::count(kept.begin(), kept.end(), ')')) continue;
@@ -673,7 +673,7 @@ struct State {
     std::set<std::string> missing;
     std::string missingFile;
     bool missingInit = false;
-    // 2.75.4: the i18n audit (startAudit).
+    // 2.76.1: the i18n audit (startAudit).
     struct Audit {
         std::string file;
         std::vector<AuditFinding> found;
@@ -721,7 +721,7 @@ void noteMissing(State& st, std::string_view s) {
     }
 }
 
-// ------------------------------------------------------------------ i18n audit (2.75.4)
+// ------------------------------------------------------------------ i18n audit (2.76.1)
 
 /// The words of a text (runs of letters, lowercase; apostrophes and hyphens cut them).
 template <class F>

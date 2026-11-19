@@ -306,15 +306,18 @@ max
 heart
 ok
 hitbox
-# 2.75.4: the reasons of the i18n audit (engine/core/I18n.cpp: its report, never shown)
+# 2.76.1: the reasons of the i18n audit (engine/core/I18n.cpp: its report, never shown)
 absent
 anglais
 identique
 inséré
 retraduit
-# 2.75.4: the header of the English notes (game/GameServices.cpp: already English, shown as given)
+# 2.76.1: the header of the English notes (game/GameServices.cpp: already English, shown as given)
 Version {0}:\n{1}
 # a piece of a nested template (notifications.ts: « {0} 1er sur {1} clans », « {0} {1}ᵉ sur {2} clans »)
 } sur {0} clans
 # a JSON key (« seconds » of an event's parameters), now a word of the dictionary (a server message)
 seconds
+# 2.75.5 : identifiants (puces de RaidWorldScene, clé JSON de main.cpp) que « Tab » et « sections » des textes du menu du raid rendaient « français »
+tab
+sections

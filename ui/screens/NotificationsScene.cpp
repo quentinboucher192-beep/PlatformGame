@@ -177,7 +177,7 @@ public:
         float textW = W - ui.s(120) - ui.s(300);
         std::vector<float> heights;
         float total = 0.0f;
-        // 2.75.4: a text the server already gave in English (an installer's notes) is shown as given.
+        // 2.76.1: a text the server already gave in English (an installer's notes) is shown as given.
         const bool english = i18n::language() == Language::English;
         auto body = [english](const NewsCenter::Item& it) -> const std::string& { return english && !it.textEn.empty() ? it.textEn : it.text; };
         for (const auto& it : items) {

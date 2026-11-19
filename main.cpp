@@ -533,7 +533,7 @@ int main(int argc, char** argv) {
     i18n::setLanguage(settingsLanguage(initial));
     const std::optional<Language> langArg = i18n::parse(value("--lang"));
     if (langArg) i18n::setLanguage(*langArg);
-    // 2.75.4: --i18n-audit <file>: every text shown that is left in the other language, one JSON
+    // 2.76.1: --i18n-audit <file>: every text shown that is left in the other language, one JSON
     // line each (docs/I18N.md). Off without it: nothing is checked.
     if (std::string f = value("--i18n-audit"); !f.empty()) i18n::startAudit(f);
     AppConfig cfg;
@@ -875,7 +875,7 @@ int main(int argc, char** argv) {
         }
         t.branch = f[0];
         t.zone = f.size() > 1 ? std::max(1, std::atoi(f[1].c_str())) : 8;
-        if (f.size() > 1 && f[1] == "vestiaire") t.zone = -1;  // 2.75.4: the branch's armory (raid::RaidRun::kArmory)
+        if (f.size() > 1 && f[1] == "vestiaire") t.zone = -1;  // 2.76.1: the branch's armory (raid::RaidRun::kArmory)
         t.players = f.size() > 2 ? std::clamp(std::atoi(f[2].c_str()), 2, 8) : 2;
         t.startPhase = f.size() > 3 ? std::clamp(std::atoi(f[3].c_str()), 1, 3) : 1;
         t.invincible = f.size() <= 4 || f[4] != "0";

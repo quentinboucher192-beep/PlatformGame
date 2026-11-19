@@ -132,7 +132,7 @@ bool verbatim();
 /// drawn as it is. Returns it.
 std::string keep(std::string shown);
 
-/// 2.75.4: checking that no text is left in the other language (--i18n-audit <file>, tests).
+/// 2.76.1: checking that no text is left in the other language (--i18n-audit <file>, tests).
 /// While on, each text shown (once) is judged. In English: « absent » (not every word known),
 /// « identique » (unchanged although some of its words are not English), « inséré » (a model
 /// matched but a part put in its slot stayed French). In French: « anglais » (an English

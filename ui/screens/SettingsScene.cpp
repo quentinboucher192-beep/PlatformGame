@@ -356,7 +356,8 @@ private:
                      "Les touches des pouvoirs se règlent pour chaque niveau : éditeur, choix du niveau › Touches…, pause › Touches de ce niveau.");
             if (a == Action::Pause) text("Partie", "");
             if (a == Action::RaidMap)
-                text("Raids", "La carte agrandie de la zone et de la branche, pendant un raid (le groupe continue à jouer).");
+                text("Raids", "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, "
+                              "groupe, titan), pendant un raid : le groupe continue à jouer.");
             ListItem it;
             it.action = a;
             it.h = ui.s(52);

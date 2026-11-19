@@ -1,9 +1,9 @@
-// 2.75.4: no text left in the other language (docs/I18N.md, « Vérifier qu'il ne reste rien »).
+// 2.76.1: no text left in the other language (docs/I18N.md, « Vérifier qu'il ne reste rien »).
 // The audit of the text renderer (i18n::startAudit, --i18n-audit <file>): what it notes in English
 // (a text absent from the dictionary, left French although some of its words are not English, a
 // French part put in a model's slot, a translation handed back to the renderer) and in French (an
 // English text); the key screens drawn in English with nothing noted (main menu, settings, raid
-// sheets, wardrobe, notifications, statistics, a raid's HUD with « Ce qu'il reste à faire »); the
+// sheets, wardrobe, notifications, statistics, a raid's HUD with « Ce qu'il reste à faire » and its menu (Tab)); the
 // texts the Cosmic Online server writes (notifications, the titan's alerts, errors) translated by
 // their models; the installer's language and the setting.
 
@@ -30,6 +30,20 @@
 using namespace cosmic;
 
 namespace {
+
+/// A key pressed then released (the next frame reads it).
+void key(SDL_Scancode sc, SDL_Keycode k) {
+    SDL_Event down{};
+    down.type = SDL_EVENT_KEY_DOWN;
+    down.key.scancode = sc;
+    down.key.key = k;
+    down.key.down = true;
+    SDL_PushEvent(&down);
+    SDL_Event up = down;
+    up.type = SDL_EVENT_KEY_UP;
+    up.key.down = false;
+    SDL_PushEvent(&up);
+}
 
 std::string describe(const std::vector<i18n::AuditFinding>& found, size_t max = 25) {
     std::string out;
@@ -290,6 +304,22 @@ TEST_CASE("i18n audit: the key screens in English, nothing left in French") {
     rig.show(makeRaidTest(g, t), 60);
     t.zone = -1;  // the branch's armory (raid::RaidRun::kArmory): « Ce qu'il reste à faire » lists the other zones
     rig.show(makeRaidTest(g, t), 60);
+    // 2.76.1: the raid's menu (Tab), each of its sections (→), in a zone of the branch.
+    t.zone = 3;
+    {
+        const size_t before = rig.app.sceneCount();
+        rig.app.pushScene(makeRaidTest(g, t));
+        rig.app.runFrames(40);
+        key(SDL_SCANCODE_TAB, SDLK_TAB);
+        rig.app.runFrames(4);
+        for (int s = 0; s < 6; ++s) {
+            key(SDL_SCANCODE_RIGHT, SDLK_RIGHT);
+            rig.app.runFrames(4);
+        }
+        key(SDL_SCANCODE_TAB, SDLK_TAB);
+        rig.app.runFrames(2);
+        rig.close(before);
+    }
     const auto found = i18n::auditFindings();
     std::fprintf(stderr, "%s", describe(found, 60).c_str());
     CHECK(found.empty());

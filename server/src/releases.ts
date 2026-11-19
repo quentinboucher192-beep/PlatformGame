@@ -31,7 +31,7 @@ export async function latest(ctx: Ctx): Promise<Response> {
     // 2.62: `since` = the version the player has: the notes of every release published after it,
     // newest first, so that a player several versions behind sees everything that changed.
     const since = ctx.url.searchParams.get("since");
-    // 2.75.4: `notes_en` = the same notes in English (written from the game's dictionary when the
+    // 2.76.1: `notes_en` = the same notes in English (written from the game's dictionary when the
     // installer was registered, "" when there are none): the game shows those of its language.
     let changes: { version: string; notes: string; notes_en: string; published_at: string }[] | undefined;
     if (since !== null) {

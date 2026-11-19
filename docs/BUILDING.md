@@ -120,8 +120,8 @@ CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618
   administrateurs (ADMINISTRATION › Raids › « Tester Asterion »), sans compte : seul, en local,
   jamais rapporté, badge « TEST ADMIN · non classé » ; le gigaboss réglé pour `<joueurs>` (2 à 8)
   et commencé à `<phase>` ; invincible par défaut. `<zone>` = `vestiaire` : le vestiaire de la
-  branche (2.75.4).
-* `--i18n-audit <fichier>` (2.75.4) : chaque texte dessiné resté dans l'autre langue, une ligne JSON
+  branche (2.76.1).
+* `--i18n-audit <fichier>` (2.76.1) : chaque texte dessiné resté dans l'autre langue, une ligne JSON
   par texte (avec `--lang en` : ce qui reste en français ; voir [I18N.md](I18N.md)).
 * `--coop-test <niveau>[:<joueurs>]` : une équipe de 2 ou 3 sur un même PC, sur un niveau EXTRÊME
   (hors classement, comme toute partie sur un même PC).

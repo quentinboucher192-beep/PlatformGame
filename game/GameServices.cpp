@@ -552,7 +552,7 @@ void GameServices::checkForUpdate() {
         const Json& rel = r.data["release"];
         std::string v = jstr(rel, "version");
         if (v.empty() || !versionNewer(v, COSMIC_VERSION_STRING)) return;
-        // 2.75.4: the notes in English too (notes_en, written from the dictionary of their version):
+        // 2.76.1: the notes in English too (notes_en, written from the dictionary of their version):
         // shown when the game is in English, only when every release has them.
         std::string notes, notesEn;
         bool english = true;

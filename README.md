@@ -325,6 +325,9 @@ Le HUD des raids a sa **propre disposition** (Paramètres › HUD › onglet « 
 leur couleur, légende), panneau du groupe, objectifs, alertes, barre du gigaboss, contributions et un
 **chronomètre** (le temps de l'instance et celui de la zone, le même pour tout le groupe). La touche **M**
 (Vue / Retour à la manette) agrandit la **carte** sur presque tout l'écran, sans jamais mettre le jeu en pause.
+La touche **Tab** (L3 à la manette) ouvre et ferme le **menu du raid** (ce qu'il reste à faire, zones terminées et leurs
+tableaux, journal des notifications, groupe, titan) ; ce qui arrive en jeu n'est qu'une **notification courte** qui ne
+prend jamais les touches.
 Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les niveaux. Les administrateurs testent
 une zone seuls avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui suivent, combattent, tiennent
 les plaques et relèvent les joueurs à terre. Détails : [docs/RAIDS.md](docs/RAIDS.md).
@@ -380,6 +383,7 @@ local, avec des comptes de démonstration (aucun record n'y est encore vérifié
 | Interagir | E / Entrée | Y / Triangle |
 | Pause | Échap / P | Menu / Options |
 | Carte du raid (agrandir / fermer) | M | Vue / Partage (− sur Switch) |
+| Menu du raid (ouvrir / fermer ; Échap ou B le ferment aussi) | Tab | L3 (clic du stick gauche) |
 
 **Touches des pouvoirs (2.24)** : chaque emplacement de pouvoir du HUD a sa touche, que le
 joueur choisit (*Paramètres → Clavier / souris* et *Manette*, « Pouvoir 1 » à « Pouvoir 8 ») ;
@@ -619,13 +623,23 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
-**Nouveau dans la version 2.75.4** :
+**Nouveau dans la version 2.76.1** :
+* **Raids : plus aucune carte qui bloque le joueur.** Une zone terminée, le groupe éliminé, une zone reprise par un
+  renfort, un gigaboss vaincu, un lien du titan : une **notification courte** (3,5 s, un son, trois au plus l'une sous
+  l'autre) qui ne prend aucune touche, sous le bouton du menu et loin du milieu de l'écran, avec le rappel de sa touche
+  (« Tableau : Tab ») ; sa place se règle dans Paramètres › HUD › « Raids ». La carte « ZONE TERMINÉE », qui réagissait au
+  saut et aux déplacements, et celle de la chute du gigaboss, qui pouvait figer le personnage sous les résultats, n'existent
+  plus.
+* **Menu du raid** (**Tab**, **L3** à la manette, le bouton du HUD, ou la pause ; Échap ou B le ferment) : « Ce qu'il reste à
+  faire », « Zones terminées » et leurs tableaux des contributions, « Journal » (toutes les notifications, à l'heure du
+  raid), « Groupe » (à terre, spectateur…), « Titan » (parties, liens, événements, « Résultats du raid »). Le jeu continue
+  comme pendant la pause, et ses touches ne bougent jamais le personnage ([docs/RAIDS.md §21](docs/RAIDS.md)).
 * **Langues : plus rien dans l'autre langue.** Le jeu vérifie lui-même chaque texte dessiné : `--i18n-audit <fichier>`
   (sans écran) relève ce qui reste en français quand le jeu est en anglais — texte absent du dictionnaire, inchangé, partie
   insérée restée en français, texte traduit deux fois — et, en français, un texte anglais. Plus de cent écrans parcourus
   (menus, paramètres, fiches, « Où frapper », vestiaire et HUD des raids d'Asterion, coopération, administration, profils,
   replays, histoires), chaque fuite corrigée ; `tests/test_i18n_audit.cpp` garde les écrans clés
-  ([docs/I18N.md](docs/I18N.md#vérifier-quil-ne-reste-rien-2754)).
+  ([docs/I18N.md](docs/I18N.md#vérifier-quil-ne-reste-rien-2761)).
 * **Textes du serveur** : l'extracteur lit aussi les messages sans accent (« Mot de passe incorrect. », « votre clan »,
   « Rappel : … commence dans … ») et ignore commentaires et SQL : près de deux cents messages de plus ont leur anglais.
 * **Notes de version en anglais** : colonne `notes_en` (migration 0170, remplie pour toutes les versions publiées depuis le

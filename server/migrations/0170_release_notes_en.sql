@@ -1,4 +1,4 @@
--- 2.75.4: the notes of each installer in English too (notes_en). The game shows the notes of its
+-- 2.76.1: the notes of each installer in English too (notes_en). The game shows the notes of its
 -- language: the language is only a display choice, the server decides nothing from it. Every line is
 -- translated by the game's dictionary (data/i18n/en.json); the installers published before are
 -- filled below by: node scripts/release-migration.mjs --english-backfill. Apply before deploying the
