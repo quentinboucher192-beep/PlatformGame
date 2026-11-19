@@ -63,7 +63,7 @@
       "duration": 2.6,
       "origin": [
         0,
-        -170
+        -68
       ]
     },
     {
@@ -86,7 +86,7 @@
       "lead": 0.7,
       "origin": [
         0,
-        -280
+        -112
       ],
       "explosionRadius": 20,
       "hitEffect": "fire_burst"
@@ -185,7 +185,7 @@
       "duration": 2.8,
       "origin": [
         0,
-        -170
+        -68
       ]
     }
   ],

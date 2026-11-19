@@ -1,5 +1,7 @@
 #include "game/enemies/EnemyDefinition.h"
 
+#include <algorithm>
+
 namespace cosmic {
 
 namespace {
@@ -53,6 +55,19 @@ const char* reactionId(ReactionType r) { return kReactions[static_cast<int>(r)].
 const char* reactionLabel(ReactionType r) { return kReactions[static_cast<int>(r)].label; }
 const char* attackTypeId(AttackType a) { return kAttacks[static_cast<int>(a)].id; }
 const char* attackTypeLabel(AttackType a) { return kAttacks[static_cast<int>(a)].label; }
+
+Vec2 attackOriginOf(const AttackDef& a, const Rect& box, float facing, float scale) {
+    if (a.hasOrigin) return box.bottomCenter() + Vec2{facing * a.origin.x * scale, a.origin.y * scale};
+    if (a.type == AttackType::Laser) return box.center() + Vec2{facing * box.w * 0.3f, -box.h * 0.2f};
+    return box.center() + Vec2{facing * box.w * 0.4f, -box.h * 0.1f};
+}
+
+std::pair<float, float> orbitRadii(const AttackDef& a, Vec2 boxSize, float scale) {
+    const float reach = a.radius > 0.0f ? a.radius : 150.0f;
+    float rMin = std::max(boxSize.x, boxSize.y) * 0.5f * scale + 14.0f;
+    if (rMin + 20.0f > reach) rMin = std::max(4.0f, std::min(std::max(boxSize.x, boxSize.y) * 0.5f + 14.0f, reach - 20.0f));
+    return {rMin, std::max(rMin + 20.0f, reach)};
+}
 
 template <typename E>
 E enumFromId(const std::string& id, const char* (*idFn)(E), E fallback) {

@@ -293,9 +293,7 @@ void Enemy::beginAttack(GameWorld& w) {
 }
 
 Vec2 Enemy::attackOrigin() const {
-    if (attack_ && attack_->hasOrigin)
-        return box.bottomCenter() + Vec2{facing * attack_->origin.x * def_.scale, attack_->origin.y * def_.scale};
-    if (attack_ && attack_->type == AttackType::Laser) return box.center() + Vec2{facing * box.w * 0.3f, -box.h * 0.2f};
+    if (attack_) return attackOriginOf(*attack_, box, facing, def_.scale);  // 2.75.2: shared with the raid sheets' diagram
     return box.center() + Vec2{facing * box.w * 0.4f, -box.h * 0.1f};
 }
 

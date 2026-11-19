@@ -53,7 +53,7 @@
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
 //                           unfolded with its example, or every attack unfolded)
-//   --raid-sheets [<sheet>[:<tab>][:attaque=<id>]]
+//   --raid-sheets [<sheet>[:<tab>][:frapper=<n>[:pose=<attack>]][:attaque=<id>]]
 //                           2.73: the raid sheets (asterion, skullmaw…) over the main menu, on
 //                           that tab (0, 1, 2), that attack (or mechanism « m:<id> ») unfolded
 //   --boss-training <boss> [--boss-training-go] [--boss-training-spawn <where>[:pick]]
@@ -833,7 +833,7 @@ int main(int argc, char** argv) {
             app.pushScene(std::move(film));
         else Log::error("Film d'Asterion illisible");
     } else if (has("--raid-sheets")) {
-        // --raid-sheets [<sheet>[:<tab>][:attaque=<id>]] (screenshots): the raid sheets over the menu.
+        // --raid-sheets [<sheet>[:<tab>][:frapper=<n>[:pose=<attack>]][:attaque=<id>]] (screenshots): the raid sheets over the menu.
         const std::string v = value("--raid-sheets");
         std::vector<std::string> parts;
         for (size_t from = 0;;) {
@@ -843,7 +843,11 @@ int main(int argc, char** argv) {
             from = c + 1;
         }
         int tab = 0;
+        std::string hit, pose;  // 2.75.2: frapper=<n> (the n-th phase and state of « Où frapper »), pose=<attack>
         for (size_t i = 1; i < parts.size(); ++i) {
+            if (parts[i].rfind("frapper=", 0) == 0) hit = parts[i].substr(8);
+            if (parts[i].rfind("pose=", 0) == 0) pose = parts[i].substr(5);
+            if (!hit.empty()) game.onlineOpen = "sheet-hit:" + hit + ":" + pose;
             if (parts[i].rfind("attaque=", 0) == 0) {
                 // The rest of the value (a mechanism « m:<id> » holds a colon).
                 game.onlineOpen = "sheet-unfold:" + v.substr(v.find("attaque=") + 8);
