@@ -923,7 +923,8 @@ paths:
       - {}
       - {bearerAuth: []}
       description: 'Three shapes: the owner gets OwnProfile + statistics; others get PublicProfile + statistics, or HiddenProfile + `statistics: null` when the profile
-        is private. Suspended players answer 404.'
+        is private. Suspended players answer 404. 2.75.3: an active administrator (the role of the session, never a parameter) gets the whole profile, even hidden
+        or suspended, with `admin_view` (locks, privacy settings, real presence, friends, clan requests, records not verified); a hidden country stays null.'
       parameters:
       - {$ref: '#/components/parameters/PlayerIdPath'}
       responses:
@@ -2226,7 +2227,9 @@ paths:
       - {}
       - {bearerAuth: []}
       description: Others can download only the VERIFIED replay of a VERIFIED record of a public, active profile. The owner can download their replay whatever its
-        status. Never edge-cached.
+        status. Never edge-cached. 2.75.3 - an active administrator (the role of the session) also downloads it through a hidden profile, an inactive account
+        or a status that is not verified, with the headers `x-admin-view` (profile_private or account_inactive) and `x-admin-replay-status` (PENDING or REJECTED),
+        journaled; a replay never sent or missing stays 404 REPLAY_NOT_FOUND.
       parameters:
       - {$ref: '#/components/parameters/RecordIdPath'}
       responses:

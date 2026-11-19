@@ -1047,7 +1047,9 @@ présence **réelle** d'un joueur qui la masque et le marqueur de profil masqué
 ADMINISTRATION › Joueurs (le filtre « en ligne » les compte aussi), la page d'un clan et les inscrits d'un raid de son clan ;
 le jeu écrit « masqué ». **Jamais un autre joueur** (testé : membre, joueur extérieur, administrateur suspendu). La position
 précise n'est jamais collectée et le pays reste caché tant que le joueur ne le montre pas (`visibleCountry`, administrateurs
-compris). L'explication de « Montrer ma présence » (Paramètres en ligne) le dit.
+compris). L'explication de « Montrer ma présence » (Paramètres en ligne) le dit. Depuis la 2.75.3, l'administrateur voit
+aussi **tout** du profil d'un joueur (records et replays non vérifiés, listes, amis, réglages) : voir
+[online/PRIVACY.md](online/PRIVACY.md#ce-que-voit-un-administrateur-2753).
 
 ### Où frapper : le schéma des fiches des Gigaboss (`game/raid/BossHitboxes`)
 

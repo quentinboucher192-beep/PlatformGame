@@ -10,6 +10,7 @@
 
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
+#include "game/online/AdminView.h"
 #include "game/online/Replay.h"
 #include "engine/core/I18n.h"
 #include "ui/online/OnlineWidgets.h"
@@ -355,7 +356,8 @@ private:
                 vs.fontSize = ui.fitFont("Voir", FontFace::Bold, 20, replayW - ui.s(20));
                 if (ui.button("v/" + runId, vb, vl, vs)) watch(e);
                 Rect db{vb.right() + replayGap, row.y + (rh - ui.s(40)) * 0.5f, dlW, ui.s(40)};
-                ReplayDownloadUi::icon(g_, "dl/" + runId, db, raceDownload(e), jget<bool>(e, "has_replay", false) && !runId.empty());
+                // 2.75.3: a replay only an administrator may watch (a profile masked: `admin_view`) is watched, never kept.
+                ReplayDownloadUi::icon(g_, "dl/" + runId, db, raceDownload(e), jget<bool>(e, "has_replay", false) && !runId.empty() && !e.contains("admin_view"));
             }
             ui.endScroll();
         }
@@ -520,7 +522,9 @@ private:
                     return;
                 }
                 msg_.clear();
-                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + who + " – " + decimal(score) + " %"));
+                // 2.75.3: an administrator watching through a lock: said all along the playback.
+                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + who + " – " + decimal(score) + " %",
+                                                       adminview::replayNote(r.header("x-admin-view"), r.header("x-admin-replay-status"))));
             },
             16u << 20);
     }

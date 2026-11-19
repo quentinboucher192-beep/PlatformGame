@@ -5,6 +5,7 @@
 // either direction ends the follow. The player is always identified by the session.
 
 import { type AuthInfo, optionalAuth, requireAuth } from "./auth";
+import { adminViewing, auditAdminView, profileLocks, type AdminLock } from "./adminView";
 import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
 import { notify } from "./notifications";
@@ -15,11 +16,23 @@ const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const LEVEL_KEY_RE = /^(other|[a-z0-9_]{1,64}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/;
 const MAX_SESSION_SECONDS = 6 * 3600;
 
-async function loadPlayer(ctx: Ctx, id: string): Promise<PlayerRow & { follows_visibility: string }> {
+/** A player; 2.75.3: an administrator (the session's role, `viewer`) also reads an account that is not active. */
+async function loadPlayer(ctx: Ctx, id: string, viewer: AuthInfo | null = null): Promise<PlayerRow & { follows_visibility: string }> {
     if (!ID_RE.test(id)) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
-    const p = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1 AND account_status = 'active'").bind(id).first<PlayerRow & { follows_visibility: string }>();
-    if (!p) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
+    const p = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(id).first<PlayerRow & { follows_visibility: string }>();
+    if (!p || (p.account_status !== "active" && !adminViewing(viewer, p.id))) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
     return p;
+}
+
+/**
+ * 2.75.3: the locks of this page an administrator goes through (`which`: the ones that would stop
+ * another player here), journaled with the profile's consultation; [] for anyone else.
+ */
+async function liftedFor(ctx: Ctx, viewer: AuthInfo | null, p: PlayerRow & { follows_visibility: string }, which: readonly AdminLock[], extra: AdminLock[] = []): Promise<AdminLock[] | null> {
+    if (!adminViewing(viewer, p.id)) return null;
+    const locks = [...profileLocks(p).filter((l) => which.includes(l)), ...extra];
+    if (locks.length) await auditAdminView(ctx, viewer!, "admin_profile_viewed", { id: p.id, username: p.username }, locks);
+    return locks;
 }
 
 async function blockedBetween(ctx: Ctx, a: string, b: string): Promise<boolean> {
@@ -134,10 +147,12 @@ export async function unfollow(ctx: Ctx): Promise<Response> {
 
 /** Lists of followers / followed creators: visible to their owner, or when the player made them public. */
 async function followList(ctx: Ctx, viewer: AuthInfo | null, which: "followers" | "following"): Promise<Response> {
-    const p = await loadPlayer(ctx, ctx.params.playerId!);
+    const p = await loadPlayer(ctx, ctx.params.playerId!, viewer);
     const me = viewer?.player.id ?? null;
     const own = me === p.id;
-    if (!own && (p.follows_visibility === "private" || p.profile_visibility === "private"))
+    // 2.75.3: an administrator (the session's role) reads private lists too, marked and journaled.
+    const lifted = await liftedFor(ctx, viewer, p, ["profile_private", "account_inactive", "follows_private"]);
+    if (!own && !lifted && (p.follows_visibility === "private" || p.profile_visibility === "private"))
         throw Errors.forbidden("FOLLOWS_PRIVATE", "Ce joueur garde ses abonnements privés.");
     const { limit, offset } = paging(ctx.url, 30, 100);
     const col = which === "followers" ? "f.follower_id" : "f.creator_id";
@@ -156,9 +171,14 @@ async function followList(ctx: Ctx, viewer: AuthInfo | null, which: "followers" 
         .bind(p.id, me ?? "", limit, offset)
         .all<PlayerRow & { since: string; is_creator: number; followers: number }>();
     const n = total?.n ?? 0;
-    return json(ctx, { players: rows.results.map((r) => ({ ...playerSummary(r), creator: r.is_creator === 1, followers: r.followers, since: r.since })) }, {
-        meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null },
-    });
+    return json(
+        ctx,
+        {
+            players: rows.results.map((r) => ({ ...playerSummary(r), creator: r.is_creator === 1, followers: r.followers, since: r.since })),
+            ...(lifted ? { admin_view: { locks: lifted } } : {}),
+        },
+        { meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null } },
+    );
 }
 
 export const followers = (ctx: Ctx, viewer: AuthInfo | null) => followList(ctx, viewer, "followers");
@@ -166,8 +186,10 @@ export const following = (ctx: Ctx, viewer: AuthInfo | null) => followList(ctx, 
 
 /** GET /players/{id}/creations?sort=popular|recent|top&limit=&offset= : published levels (and drafts for oneself). */
 export async function creations(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
-    const p = await loadPlayer(ctx, ctx.params.playerId!);
+    const p = await loadPlayer(ctx, ctx.params.playerId!, viewer);
     const me = viewer?.player.id ?? "";
+    // 2.75.3: an administrator (the session's role) also sees the drafts and the levels hidden by reports.
+    const admin = adminViewing(viewer, p.id);
     const sort = ctx.url.searchParams.get("sort") ?? "recent";
     const order = {
         popular: "(l.downloads + 3 * l.completions + 2 * l.rating_sum + 2 * l.favorite_count) DESC, l.updated_at DESC",
@@ -176,7 +198,7 @@ export async function creations(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
     }[sort];
     if (!order) throw Errors.validation([{ field: "sort", message: "popular, recent ou top" }]);
     const { limit, offset } = paging(ctx.url, 20, 50);
-    const where = me === p.id ? "l.author_id = ?1 AND l.status <> 'removed'" : "l.author_id = ?1 AND l.status = 'published'";
+    const where = me === p.id || admin ? "l.author_id = ?1 AND l.status <> 'removed'" : "l.author_id = ?1 AND l.status = 'published'";
     const total = await ctx.env.DB.prepare(`SELECT COUNT(*) AS n FROM community_levels l WHERE ${where}`).bind(p.id).first<{ n: number }>();
     const rows = await ctx.env.DB.prepare(
         `SELECT l.id, l.title, l.description, l.planet, l.difficulty, l.status, l.current_version, l.downloads, l.completions, l.rating_sum, l.rating_count,
@@ -187,6 +209,9 @@ export async function creations(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
         .bind(p.id, limit, offset)
         .all<Record<string, unknown>>();
     const n = total?.n ?? 0;
+    const lifted = admin
+        ? await liftedFor(ctx, viewer, p, ["account_inactive"], rows.results.some((l) => l.status !== "published") ? ["levels_unpublished" as AdminLock] : [])
+        : null;
     return json(ctx, {
         creations: rows.results.map((l) => ({
             id: l.id,
@@ -206,6 +231,7 @@ export async function creations(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             thumbnail_url: `/api/v1/community/levels/${l.id}/thumbnail`,
         })),
         sort,
+        ...(lifted ? { admin_view: { locks: lifted } } : {}),
     }, { meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null } });
 }
 
@@ -297,7 +323,9 @@ export async function reportPlaytime(ctx: Ctx): Promise<Response> {
 
 /** GET /players/{id}/playtime : total and per level (profiles that are visible). */
 export async function getPlaytime(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
-    const p = await loadPlayer(ctx, ctx.params.playerId!);
-    if (viewer?.player.id !== p.id && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Ce profil est privé.");
-    return json(ctx, { player_id: p.id, playtime: await playtime(ctx, p.id, 50) });
+    const p = await loadPlayer(ctx, ctx.params.playerId!, viewer);
+    // 2.75.3: an administrator (the session's role) through a masked profile, marked and journaled.
+    const lifted = await liftedFor(ctx, viewer, p, ["profile_private", "account_inactive"]);
+    if (viewer?.player.id !== p.id && !lifted && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Ce profil est privé.");
+    return json(ctx, { player_id: p.id, playtime: await playtime(ctx, p.id, 50), ...(lifted ? { admin_view: { locks: lifted } } : {}) });
 }
