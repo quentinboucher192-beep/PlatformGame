@@ -59,6 +59,12 @@
    ]
   },
   {
+   "fr": "(fermé le {0} après une migration)",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "(hors ligne)",
    "where": [
     "ui/online/RatingWidgets.cpp",
@@ -836,6 +842,18 @@
    ]
   },
   {
+   "fr": "a consulté le profil de {0} (profil public)",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a consulté le profil de {0} · vu malgré : {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a consulté les derniers niveaux joués de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -980,25 +998,25 @@
    ]
   },
   {
-   "fr": "a regardé un replay de {0} ({1}) malgré son compte inactif",
+   "fr": "a regardé un replay de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
   },
   {
-   "fr": "a regardé un replay de {0} ({1}) malgré son profil masqué",
+   "fr": "a regardé un replay de {0} ({1})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
   },
   {
-   "fr": "a regardé un replay de {0} malgré son compte inactif",
+   "fr": "a regardé un replay de {0} ({1}) · vu malgré : {2}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
   },
   {
-   "fr": "a regardé un replay de {0} malgré son profil masqué",
+   "fr": "a regardé un replay de {0} · vu malgré : {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1236,6 +1254,12 @@
    ]
   },
   {
+   "fr": "abonnements privés",
+   "where": [
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
    "fr": "Abonné",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -1249,6 +1273,12 @@
   },
   {
    "fr": "abonnés",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Abonnés et abonnements",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
    ]
@@ -1325,6 +1355,12 @@
    "fr": "acceptée",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "acceptées",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -1408,7 +1444,8 @@
   {
    "fr": "actif",
    "where": [
-    "game/gameplay/entities/HazardEntities.cpp"
+    "game/gameplay/entities/HazardEntities.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -1497,6 +1534,7 @@
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/TutorialScenes.cpp",
     "ui/studio/Studio.cpp"
    ]
@@ -1623,7 +1661,8 @@
   {
    "fr": "Admin",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -2401,6 +2440,7 @@
    "fr": "Amis ({0})",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -4850,6 +4890,12 @@
    ]
   },
   {
+   "fr": "Aucun ami.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun asset inutilisé ici.",
    "where": [
     "ui/screens/AdminAssets.cpp"
@@ -5432,6 +5478,12 @@
    ]
   },
   {
+   "fr": "Aucun record envoyé.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun record ne correspond à la recherche.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -5983,7 +6035,8 @@
   {
    "fr": "Aucune.",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -6134,6 +6187,12 @@
    "fr": "Autoriser les demandes d'amis",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "autorisé",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -8838,6 +8897,12 @@
    ]
   },
   {
+   "fr": "Candidature au clan",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Candidature envoyée",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -9810,6 +9875,12 @@
    "fr": "Ce qui est partagé",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qui reste caché, même pour un administrateur : un pays ou une région que le joueur masque (seul le réglage est dit), toute position précise, les mots de passe et autres secrets, et les messages privés entre joueurs.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -13396,7 +13467,8 @@
    "fr": "Compte",
    "where": [
     "ui/screens/AdminScene.cpp",
-    "ui/screens/OnlineAccountScene.cpp"
+    "ui/screens/OnlineAccountScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -13434,6 +13506,12 @@
    "fr": "Compte et données en ligne supprimés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "compte inactif",
+   "where": [
+    "game/online/AdminView.cpp"
    ]
   },
   {
@@ -16963,9 +17041,21 @@
    ]
   },
   {
+   "fr": "Demandes d'ami",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Demandes d'amis",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Demandes de clan en attente",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -16986,6 +17076,12 @@
    "where": [
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "demandes reçues : {0} · envoyées : {1}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -17070,6 +17166,12 @@
    "fr": "Depuis le départ du niveau, sans point de contrôle",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "depuis le {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -17225,6 +17327,12 @@
    "fr": "Dernière activité",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "dernière activité {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -18755,6 +18863,12 @@
    "fr": "du parcours · Or en finissant",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "du plus récent au plus ancien",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -21058,6 +21172,7 @@
    "where": [
     "game/gameplay/entities/HazardEntities.cpp",
     "game/gameplay/entities/ZoneEntities.cpp",
+    "game/online/AdminView.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
@@ -21080,6 +21195,12 @@
    "where": [
     "game/online/DailyChallenges.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "en attente de vérification",
+   "where": [
+    "game/online/AdminView.cpp"
    ]
   },
   {
@@ -28524,6 +28645,12 @@
    ]
   },
   {
+   "fr": "Inscription",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Inscription annulée.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -29110,6 +29237,12 @@
    "fr": "invité",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invité par le clan",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -29769,6 +29902,12 @@
    "fr": "JOURNAL (ACTIONS ADMIN ET ANOMALIES)",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Journal de l'administration : chaque consultation de profil ou de replay normalement cachés y est notée, regroupée en une entrée par joueur tant qu'elles se suivent à moins d'une heure (« 3 consultations, la dernière le … », avec les verrous levés et les niveaux vus). Paramètres en ligne : l'explication de la confidentialité dit ce que voient les administrateurs.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -35186,6 +35325,7 @@
    "fr": "le {0}",
    "where": [
     "ui/screens/ClanScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -37281,6 +37421,18 @@
    ]
   },
   {
+   "fr": "listes privées",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "listes publiques",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Lituanie",
    "where": [
     "data/online/countries.json",
@@ -38083,6 +38235,18 @@
    ]
   },
   {
+   "fr": "masqué aux autres joueurs",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "masqué par le joueur : caché aussi aux administrateurs",
+   "where": [
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
    "fr": "Masquée",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -38092,6 +38256,12 @@
    "fr": "masquée",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "masquée aux amis · état réel : {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -39339,6 +39509,12 @@
    ]
   },
   {
+   "fr": "Modération : un administrateur voit tout du profil d'un joueur, même masqué ou d'un compte inactif : statistiques, temps de jeu, succès, tenue, badges et titre, abonnés et abonnements privés, brouillons et niveaux masqués par les signalements, meilleures progressions. Le serveur en décide depuis le rôle de sa session, jamais depuis un paramètre ; les autres joueurs gardent exactement leurs verrous.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Moi",
    "where": [
     "ui/screens/ChallengesScene.cpp",
@@ -39703,6 +39879,18 @@
    ]
   },
   {
+   "fr": "montré (classements et globe)",
+   "where": [
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
+   "fr": "montré (classements)",
+   "where": [
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
    "fr": "Montré en fantôme sur le chronomètre de A, décalable dans le temps.",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -39712,6 +39900,12 @@
    "fr": "Montréal",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "montrée aux amis · état réel : {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -40314,6 +40508,12 @@
    "fr": "Navigateur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "ne compte pas comme record vérifié",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -41080,6 +41280,12 @@
    ]
   },
   {
+   "fr": "niveaux non publiés",
+   "where": [
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
    "fr": "niveaux publiés",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -41462,6 +41668,12 @@
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "non vérifié : {0}",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
    ]
   },
   {
@@ -45622,7 +45834,8 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/OnlineAccountScene.cpp"
+    "ui/screens/OnlineAccountScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -48610,6 +48823,7 @@
     "ui/screens/AdminCreations.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
   },
@@ -48640,6 +48854,7 @@
   {
    "fr": "profil masqué",
    "where": [
+    "game/online/AdminView.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -48659,6 +48874,12 @@
    "fr": "Profil public visible",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Profil vu par un administrateur : une marque discrète « Vu en tant qu'admin » sur tout ce qui serait caché aux autres (en-tête, onglets, niveaux non publiés), et un nouvel onglet « Admin » : réglages de confidentialité, présence réelle et dernière activité, amis (leur profil s'ouvre de là) et demandes d'ami, demandes de clan en attente (sans leur message), et tous les records envoyés avec leur statut et « Regarder ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -49163,7 +49384,8 @@
   {
    "fr": "Présence",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -49193,6 +49415,7 @@
   {
    "fr": "présence masquée",
    "where": [
+    "game/online/AdminView.cpp",
     "ui/online/OnlineWidgets.cpp"
    ]
   },
@@ -49203,7 +49426,7 @@
    ]
   },
   {
-   "fr": "Présence masquée : vos amis voient un rond barré, et ne peuvent pas vous regarder jouer. Pour la modération, les administrateurs voient votre présence et votre profil, même masqués (marqués « masqué ») ; jamais votre position, et votre pays seulement si vous le montrez.",
+   "fr": "Présence masquée : vos amis voient un rond barré, et ne peuvent pas vous regarder jouer. Pour la modération, les administrateurs voient les profils masqués : votre présence, vos records et replays (même non vérifiés), vos listes, vos amis et vos réglages, chaque consultation notée à leur Journal ; jamais votre position, ni votre pays si vous le masquez, ni vos messages privés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -49215,7 +49438,7 @@
    ]
   },
   {
-   "fr": "Présence masquée : vos amis voient un rond barré. Pour la modération, les administrateurs voient votre présence et votre profil, même masqués (marqués « masqué ») ; jamais votre position, et votre pays seulement si vous le montrez.",
+   "fr": "Présence masquée : vos amis voient un rond barré. Pour la modération, les administrateurs voient les profils masqués : votre présence, vos records et replays (même non vérifiés), vos listes, vos amis et vos réglages, chaque consultation notée à leur Journal ; jamais votre position, ni votre pays si vous le masquez, ni vos messages privés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -51425,6 +51648,12 @@
    ]
   },
   {
+   "fr": "Records envoyés (tous les statuts)",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Records et classements conservés : rien n'est remis à zéro. Les replays enregistrés avant cette version se rejouent exactement comme avant (avec les règles de leur époque) ; les nouveaux replays notent la version de la simulation qui les a joués. Les combinaisons créées en ligne gardent leur planche : pendant un coup vers le haut ou vers le bas, Nova y montre le coup vers l'avant.",
    "where": [
     "data/news/changelog.json"
@@ -51482,6 +51711,12 @@
    "fr": "Records, meilleurs temps et replays ({0} · {1} meilleurs temps)",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Records, tentatives et replays non vérifiés (en attente, refusés) : visibles par les administrateurs pour la modération, toujours marqués (« Vu en tant qu'admin (en attente de vérification) » pendant la lecture) et jamais comptés comme records vérifiés. Un replay jamais envoyé ou incomplet, ou d'une autre version du niveau, reste indisponible avec sa raison.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -51725,6 +51960,13 @@
    ]
   },
   {
+   "fr": "refusé",
+   "where": [
+    "game/online/AdminView.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Refusé : la période de ce défi vient de se terminer.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -51745,9 +51987,21 @@
    ]
   },
   {
+   "fr": "refusé à la vérification",
+   "where": [
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
    "fr": "refusée",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "refusées",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -51828,6 +52082,7 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -51835,6 +52090,12 @@
    "fr": "Regarder (groupe éliminé)",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Regarder jouer (amis)",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -52584,6 +52845,12 @@
    "fr": "Replay non envoyé",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "replay non envoyé",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -54432,6 +54699,12 @@
    "fr": "Réglages : {0}",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réglages de confidentialité et activité",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -59527,6 +59800,12 @@
    ]
   },
   {
+   "fr": "suspendu",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
    "fr": "Suspension",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -62047,7 +62326,8 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
-    "ui/screens/OnlineRankingScene.cpp"
+    "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -68340,7 +68620,7 @@
    ]
   },
   {
-   "fr": "Vous n'êtes pas prévenu quand un ami regarde. Pour la modération, les administrateurs voient votre présence et votre profil, même masqués (marqués « masqué ») ; jamais votre position, et votre pays seulement si vous le montrez.",
+   "fr": "Vous n'êtes pas prévenu quand un ami regarde. Pour la modération, les administrateurs voient les profils masqués : votre présence, vos records et replays (même non vérifiés), vos listes, vos amis et vos réglages, chaque consultation notée à leur Journal ; jamais votre position, ni votre pays si vous le masquez, ni vos messages privés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -68739,15 +69019,45 @@
    ]
   },
   {
-   "fr": "Vu en tant qu'admin (compte inactif)",
+   "fr": "vu en tant qu'admin",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
-   "fr": "Vu en tant qu'admin (profil masqué)",
+   "fr": "Vu en tant qu'admin ({0})",
    "where": [
-    "ui/screens/ReplayScene.cpp"
+    "game/online/AdminView.cpp"
+   ]
+  },
+  {
+   "fr": "Vu en tant qu'admin : ce profil est masqué. Les autres joueurs ne voient que son pseudonyme, son avatar, ses niveaux publiés et son clan.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vu en tant qu'admin : ce que les autres joueurs ne voient pas de ce profil. Chaque consultation est notée au Journal de l'administration ; un record en attente ou refusé ne compte jamais comme vérifié.",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vu en tant qu'admin : onglet caché aux autres joueurs",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vu en tant qu'admin : onglet caché aux autres joueurs ({0})",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vu en tant qu'admin : {0}",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -68880,6 +69190,12 @@
     "game/online/Clans.cpp",
     "game/online/DailyChallenges.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "vérifié",
+   "where": [
+    "game/online/AdminView.cpp"
    ]
   },
   {
@@ -69579,6 +69895,12 @@
    "fr": "{0} (ma version)",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (masquée)",
+   "where": [
+    "ui/screens/PlayerProfileScene.cpp"
    ]
   },
   {
@@ -70543,6 +70865,12 @@
    "fr": "{0} compris",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} consultations, la dernière le {1}",
+   "where": [
+    "game/online/AdminView.cpp"
    ]
   },
   {

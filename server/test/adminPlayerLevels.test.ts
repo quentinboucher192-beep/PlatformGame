@@ -5,7 +5,7 @@
 
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { api, registerPlayer, seedAll, verifiedRun, type TestPlayer } from "./helpers";
+import { LEVEL2_HASH, api, registerPlayer, seedAll, submission, verifiedRun, type TestPlayer } from "./helpers";
 
 beforeEach(seedAll);
 
@@ -90,16 +90,29 @@ describe("2.75: ADMINISTRATION › Joueurs — latest levels and replays", () =>
         expect(suspended.headers.get("x-admin-view")).toBe("account_inactive");
     });
 
-    it("a technical impossibility is never bypassed: a replay not verified stays unavailable, even to an administrator", async () => {
+    // 2.75.3: a replay not verified (pending, refused) is no technical impossibility: an administrator watches it,
+    // its status said (x-admin-replay-status), never counted as verified; the others keep the lock. A replay never
+    // sent stays unavailable to everyone, with its reason.
+    it("a replay not verified: watched by an administrator (marked), never by the others; a technical impossibility stays one", async () => {
         const nova = await registerPlayer("NovaRider");
         const admin = await registerPlayer("Moderatrice");
+        const other = await registerPlayer("Curieux");
         await makeAdmin(admin);
         const run = await verifiedRun(nova, 61000);
         await env.DB.prepare("UPDATE replay_metadata SET verification_status = 'PENDING' WHERE record_id = ?1").bind(run.recordId).run();
-        expect((await api("GET", `${V}/records/${run.recordId}/replay`, { token: admin.token })).status).toBe(404);
+        expect((await api("GET", `${V}/records/${run.recordId}/replay`, { token: other.token })).status).toBe(404);
+        const seen = await api("GET", `${V}/records/${run.recordId}/replay`, { token: admin.token });
+        expect(seen.status).toBe(200);
+        expect(seen.headers.get("x-admin-replay-status")).toBe("PENDING");
         await env.DB.prepare("INSERT INTO player_playtime (player_id, level_key, seconds, updated_at) VALUES (?1, 'test_01', 30, '2026-11-01T10:00:00.000Z')").bind(nova.id).run();
         const list = await api("GET", `${V}/admin/players/${nova.id}/levels`, { token: admin.token });
-        expect(list.body.data.levels[0].replay).toMatchObject({ available: false });
+        expect(list.body.data.levels[0].replay).toMatchObject({ available: false, watchable: true, status: "PENDING" });
         expect(list.body.data.levels[0].replay.reason).toBeTruthy();
+        // No replay sent: unavailable, even to an administrator.
+        const sub = await api("POST", `${V}/records/submit`, { token: nova.token, body: submission({ level_id: "test_02", level_hash: LEVEL2_HASH, time_ms: 70000 }) });
+        expect(sub.status).toBe(201);
+        const none = await api("GET", `${V}/records/${sub.body.data.record.id}/replay`, { token: admin.token });
+        expect(none.status).toBe(404);
+        expect(none.body.error.code).toBe("REPLAY_NOT_FOUND");
     });
 });

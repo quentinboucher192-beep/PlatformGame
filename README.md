@@ -619,6 +619,16 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.75.3** :
+* **Modération : les administrateurs voient tout des profils** (le rôle de leur session, jamais un paramètre) : profil
+  masqué ou compte inactif, statistiques, temps de jeu, abonnés et abonnements privés, brouillons, records et tentatives
+  **non vérifiés** (en attente, refusés : marqués, jamais comptés comme vérifiés) et leurs replays, réglages de
+  confidentialité, présence réelle, amis, demandes de clan ; nouvel onglet **« Admin »** du profil, une marque discrète
+  « Vu en tant qu'admin » sur ce qui serait caché aux autres, et pendant la lecture d'un replay. Les autres joueurs gardent
+  exactement leurs verrous ; un pays ou une région masqués restent cachés, même aux administrateurs ; jamais de message
+  privé ni de secret. Le **Journal** regroupe les consultations (une entrée par joueur et par heure, avec leur nombre), et
+  Paramètres en ligne le dit ([docs/online/PRIVACY.md](docs/online/PRIVACY.md#ce-que-voit-un-administrateur-2753)).
+
 **Nouveau dans la version 2.75.1** :
 * **Raids et coopération** : les joueurs **se traversent** (les autres dessinés en semi-transparence, vous opaque) ; un
   joueur qui tombe ne déplace personne et ne revient qu'une fois **réanimé** près de son âme (2 par tentative en

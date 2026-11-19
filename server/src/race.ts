@@ -10,6 +10,7 @@
 // checkpoints are allowed when the challenge has its checkpoints on.
 
 import { refreshClanOfPlayer } from "./clans";
+import { adminReplayHeaders, adminViewing, auditAdminView, profileLocks, statusLock, usernameOf, type AdminLock } from "./adminView";
 import { optionalAuth, requireAuth } from "./auth";
 import { pseudoVersionOf } from "./community";
 import { boardCosmetics, withCosmetics } from "./cosmetics";
@@ -449,6 +450,7 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
                        FROM race_runs r WHERE r.board ${IN_KEYS(1)} AND r.status = 'VERIFIED')
          SELECT b.id, b.player_id, b.score, b.route, b.bosses_beaten, b.waves, b.finished, b.detail, b.time_ms, b.verified_at,
                 b.replay_key IS NOT NULL AND p.profile_visibility != 'private' AS has_replay,
+                b.replay_key IS NOT NULL AS replay_kept, p.profile_visibility,
                 p.username, p.avatar FROM best b JOIN players p ON p.id = b.player_id WHERE b.n = 1
          ORDER BY b.score DESC, b.verified_at ASC LIMIT 100`,
     )
@@ -470,6 +472,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
         .first<{ n: number }>();
     // Frame, title and suit of each ranked player (2.23), when their profile is visible.
     const looks = await boardCosmetics(ctx, rows.results.map((r) => String(r.player_id)));
+    // 2.75.3: an administrator (the session's role) may watch the replay of a masked profile (marked).
+    const isAdmin = adminViewing(viewer, "");
     return json(ctx, {
         race: {
             kind: board.kind,
@@ -493,7 +497,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
             time_ms: r.time_ms,
             at: r.verified_at,
             run_id: String(r.id),
-            has_replay: r.has_replay === 1 || r.player_id === me,
+            has_replay: r.has_replay === 1 || r.player_id === me || (isAdmin && r.replay_kept === 1),
+            ...(isAdmin && r.player_id !== me && r.replay_kept === 1 && r.profile_visibility === "private" ? { admin_view: { locks: ["profile_private"] } } : {}),
             me: r.player_id === me,
         })),
         my_pending: pending?.n ?? 0,
@@ -509,25 +514,49 @@ export async function downloadRunReplay(ctx: Ctx): Promise<Response> {
     const id = ctx.params.runId ?? "";
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
     const r = await ctx.env.DB.prepare(
-        `SELECT r.player_id, r.status, r.replay_key, p.account_status, p.profile_visibility
+        `SELECT r.player_id, r.board, r.status, r.replay_key, p.account_status, p.profile_visibility
            FROM race_runs r JOIN players p ON p.id = r.player_id WHERE r.id = ?1`,
     )
         .bind(id)
-        .first<{ player_id: string; status: string; replay_key: string | null; account_status: string; profile_visibility: string }>();
+        .first<{ player_id: string; board: string; status: string; replay_key: string | null; account_status: "active" | "suspended"; profile_visibility: "public" | "private" }>();
     const isOwner = !!r && viewer?.player.id === r.player_id;
-    if (!r || (!isOwner && (r.status !== "VERIFIED" || r.account_status !== "active"))) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
-    if (!isOwner && r.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
+    // 2.75.3: an administrator (the session's role, never a parameter) watches through every lock — a
+    // masked profile, an account not active, an attempt pending or refused — marked and journaled; a
+    // technical impossibility (no replay kept, its file gone) stays one.
+    const admin = !!r && !isOwner && adminViewing(viewer, r.player_id);
+    if (!r || (!isOwner && !admin && (r.status !== "VERIFIED" || r.account_status !== "active"))) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    if (!isOwner && !admin && r.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
     if (!r.replay_key) throw Errors.notFound("REPLAY_NOT_FOUND", "Aucun replay pour cette tentative.");
     const obj = await ctx.env.STORAGE.get(r.replay_key);
     if (!obj) throw Errors.notFound("REPLAY_NOT_FOUND", "Fichier de replay absent.");
+    let headers: Record<string, string> = {};
+    if (admin) {
+        const locks: AdminLock[] = profileLocks(r).filter((l) => l === "profile_private" || l === "account_inactive");
+        const sl = statusLock(r.status);
+        if (sl) locks.push(sl);
+        if (locks.length) {
+            const title = await raceTitle(ctx, r.board);
+            await auditAdminView(ctx, viewer!, "admin_replay_viewed", { id: r.player_id, username: await usernameOf(ctx, r.player_id) }, locks, { item: title, run_id: id });
+            headers = adminReplayHeaders(locks, r.status);
+        }
+    }
     return new Response(obj.body, {
         headers: {
             "content-type": "application/octet-stream",
             "content-length": String(obj.size),
             "cache-control": "private, max-age=3600",
             "x-content-type-options": "nosniff",
+            ...headers,
         },
     });
+}
+
+/** 2.75.3: the title of a race's level (the Journal names what an administrator watched). */
+async function raceTitle(ctx: Ctx, board: string): Promise<string | null> {
+    const [k, levelId] = board.split(":");
+    if (!levelId) return null;
+    if (k === "c") return (await ctx.env.DB.prepare("SELECT title FROM community_levels WHERE id = ?1").bind(levelId).first<{ title: string }>())?.title ?? null;
+    return (await ctx.env.DB.prepare("SELECT name FROM levels WHERE id = ?1").bind(levelId).first<{ name: string }>())?.name ?? levelId;
 }
 
 /**
@@ -538,12 +567,15 @@ export async function downloadRunReplay(ctx: Ctx): Promise<Response> {
 export async function playerRaces(ctx: Ctx): Promise<Response> {
     const viewer = await optionalAuth(ctx);
     const pid = ctx.params.playerId ?? "";
-    const p = await ctx.env.DB.prepare("SELECT id, account_status, profile_visibility FROM players WHERE id = ?1")
+    const p = await ctx.env.DB.prepare("SELECT id, username, account_status, profile_visibility FROM players WHERE id = ?1")
         .bind(pid)
-        .first<{ id: string; account_status: string; profile_visibility: string }>();
-    if (!p || p.account_status !== "active") throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
+        .first<{ id: string; username: string; account_status: "active" | "suspended"; profile_visibility: "public" | "private" }>();
+    // 2.75.3: an administrator (the session's role) also reads a masked profile or an account not active,
+    // and the attempts not verified (`unverified`: pending or refused, never ranked).
+    const admin = !!p && adminViewing(viewer, p.id);
+    if (!p || (p.account_status !== "active" && !admin)) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
     const self = viewer?.player.id === p.id;
-    if (!self && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Ce profil est privé.");
+    if (!self && !admin && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Ce profil est privé.");
     const rows = await ctx.env.DB.prepare(
         `WITH best AS (SELECT r.*, ROW_NUMBER() OVER (PARTITION BY r.board ORDER BY r.score DESC, r.verified_at ASC) AS n
                        FROM race_runs r WHERE r.player_id = ?1 AND r.status = 'VERIFIED')
@@ -615,5 +647,38 @@ export async function playerRaces(ctx: Ctx): Promise<Response> {
             at: r.verified_at,
         });
     }
-    return json(ctx, { player_id: p.id, races });
+    if (!admin) return json(ctx, { player_id: p.id, races });
+    // 2.75.3: the administrator's view: the latest attempts not verified, with their status.
+    const gate: AdminLock[] = profileLocks(p).filter((l) => l === "profile_private" || l === "account_inactive");
+    const pend = await ctx.env.DB.prepare(
+        `SELECT id, board, status, score, finished, time_ms, created_at, replay_key IS NOT NULL AS has_replay FROM race_runs
+         WHERE player_id = ?1 AND status <> 'VERIFIED' ORDER BY created_at DESC LIMIT 30`,
+    )
+        .bind(p.id)
+        .all<{ id: string; board: string; status: string; score: number | null; finished: number; time_ms: number; created_at: string; has_replay: number }>();
+    const unverified = [];
+    for (const r of pend.results) {
+        const [k, levelId] = r.board.split(":");
+        if (!levelId) continue;
+        unverified.push({
+            kind: k === "c" ? "community" : "official",
+            level_id: levelId,
+            title: (await raceTitle(ctx, r.board)) ?? levelId,
+            score: r.score ?? 0,
+            finished: r.finished === 1,
+            time_ms: r.time_ms,
+            rank: null,
+            run_id: r.id,
+            has_replay: r.has_replay === 1,
+            status: r.status,
+            at: r.created_at,
+        });
+    }
+    const lifted = new Set<AdminLock>(gate);
+    for (const u of unverified) {
+        const sl = statusLock(u.status);
+        if (sl) lifted.add(sl);
+    }
+    if (lifted.size) await auditAdminView(ctx, viewer!, "admin_profile_viewed", { id: p.id, username: p.username }, [...lifted]);
+    return json(ctx, { player_id: p.id, races, unverified, admin_view: { locks: gate } });
 }

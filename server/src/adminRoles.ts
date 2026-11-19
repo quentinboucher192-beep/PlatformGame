@@ -31,7 +31,16 @@ export const ADMIN_ACTIONS = {
     // 2.47: ADMINISTRATION › Joueurs: the computer an account is bound to (devices.ts).
     // 2.50: an account's data migrated to another one, by an admin or by the player with a code (accountMigration.ts).
     // 2.75: a player's latest levels looked at, a replay watched through a privacy lock (moderation).
-    account: ["admin_device_unbound", "admin_device_bound", "admin_account_migrated", "account_migrated", "admin_player_levels_viewed", "admin_replay_viewed"],
+    // 2.75.3: a profile seen by an administrator (adminView.ts: grouped, one entry per player and per hour).
+    account: [
+        "admin_device_unbound",
+        "admin_device_bound",
+        "admin_account_migrated",
+        "account_migrated",
+        "admin_player_levels_viewed",
+        "admin_replay_viewed",
+        "admin_profile_viewed",
+    ],
     // 2.66: ADMINISTRATION › Clans (clans.ts): a clan renamed or dissolved by an administrator.
     clan: ["admin_clan_renamed", "admin_clan_dissolved"],
     // ADMINISTRATION › Raids (raids.ts): a world event created, edited, published or cancelled.
@@ -174,13 +183,18 @@ export async function playerLevels(ctx: Ctx): Promise<Response> {
         player: { id: p.id, username: p.username, profile_hidden: p.profile_visibility === "private" },
         levels: rows.map((r) => {
             const b = r.best_id ? best.get(r.best_id) : undefined;
+            const verified = b?.verification_status === "VERIFIED" && b?.replay_status === "VERIFIED";
             const replay = b?.replay_id
                 ? {
                       record_id: b.id,
-                      // A technical impossibility stays: a replay not verified (yet, or refused) is never served.
-                      available: b.verification_status === "VERIFIED" && b.replay_status === "VERIFIED",
-                      reason: b.verification_status !== "VERIFIED" || b.replay_status !== "VERIFIED" ? "replay pas encore vérifié" : null,
+                      // 2.75: `available` once verified (what the game of 2.75 reads).
+                      available: verified,
+                      reason: !verified ? (b.replay_status === null ? "replay incomplet" : "replay pas encore vérifié") : null,
                       locked: lock,
+                      // 2.75.3: an administrator also watches a replay not verified yet, or refused (its status
+                      // said while it plays, never counted as verified); a replay incomplete stays unavailable.
+                      watchable: b.replay_status !== null,
+                      status: verified ? "VERIFIED" : b.verification_status !== "VERIFIED" ? b.verification_status : b.replay_status,
                   }
                 : null;
             return {
@@ -579,6 +593,11 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             // 2.75: the level of a replay watched by an administrator, and the lock it went through.
             level_title: str("level_title"),
             lock: str("lock"),
+            // 2.75.3: a consultation grouped (adminView.ts): how many, the last one, the locks lifted, the levels seen.
+            count: typeof d.count === "number" ? d.count : 1,
+            last_at: str("last_at") ?? r.created_at,
+            locks: Array.isArray(d.locks) ? (d.locks as unknown[]).filter((x): x is string => typeof x === "string") : str("lock") ? [str("lock")!] : [],
+            items: Array.isArray(d.items) ? (d.items as unknown[]).filter((x): x is string => typeof x === "string") : [],
         };
     });
     return json(ctx, { entries, has_more: rows.results.length > page.limit, offset: page.offset });

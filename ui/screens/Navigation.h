@@ -346,6 +346,7 @@ std::unique_ptr<Scene> makeOnlineThread(GameServices& g, const std::string& thre
 /// Downloads and plays back the replay of a verified record.
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId);
 /// Plays a replay already in memory (the run just finished, a .cprz file).
-std::unique_ptr<Scene> makeLocalReplayViewer(GameServices& g, ReplayData replay, const std::string& title);
+/// 2.75.3: `adminNote`, « Vu en tant qu'admin (…) » shown all along (a replay an administrator watches through a lock).
+std::unique_ptr<Scene> makeLocalReplayViewer(GameServices& g, ReplayData replay, const std::string& title, const std::string& adminNote = {});
 
 }  // namespace cosmic

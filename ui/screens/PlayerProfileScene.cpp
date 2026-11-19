@@ -4,12 +4,20 @@
 // creations, followers and followed creators, and the actions FOLLOW / friend / block; 2.63.6:
 // the tab « Clan » (the sheet of the player's clan, and « Inviter dans mon clan » for the chief
 // and the officers of a clan). Every number comes from the server.
+//
+// 2.75.3: an administrator sees all of a profile (moderation; the server decides from the role of
+// the session and sends `admin_view` to administrators only): a masked profile, an account that is
+// not active, private lists, a hidden presence, the records and the progressions not verified (or
+// refused: never counted as verified), and the tab « Admin » (privacy settings, friends, clan
+// requests, every record sent). What would be hidden from the other players carries a discreet
+// « Vu en tant qu'admin » ; a country the player hides stays hidden, administrators included.
 
 #include <algorithm>
 #include <cmath>
 #include <map>
 
 #include "engine/core/I18n.h"
+#include "game/online/AdminView.h"
 #include "game/online/Clans.h"
 #include "game/GameServices.h"
 #include "game/online/Replay.h"
@@ -62,7 +70,7 @@ public:
     void onEnter() override {
         g_.ui.setFocus("profile/close");
         if (g_.onlineOpen.rfind("profile-tab:", 0) == 0) {  // automated screenshots
-            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, kTabClan);
+            tab_ = std::clamp(std::atoi(g_.onlineOpen.c_str() + 12), 0, kTabAdmin);
             g_.onlineOpen.clear();
         }
         load();
@@ -108,6 +116,38 @@ public:
 private:
     bool me() const { return playerId_ == g_.online.playerId(); }
 
+    // ------------------------------------------------------- 2.75.3: the administrator's view
+    /// The server's `admin_view`: sent to an active administrator only (the role of the session).
+    const Json& adminView() const {
+        static const Json none;
+        if (!data_.is_object()) return none;
+        auto it = data_.find("admin_view");
+        return it != data_.end() && it->is_object() ? *it : none;
+    }
+    bool adminSees() const { return adminView().is_object() && !me(); }
+    /// Whether the server says this lock stands for the other players (`admin_view.locks`).
+    bool locked(const char* lock) const {
+        const Json& av = adminView();
+        if (!av.is_object()) return false;
+        auto it = av.find("locks");
+        if (it == av.end() || !it->is_array()) return false;
+        for (const Json& e : *it)
+            if (e.is_string() && e.get<std::string>() == lock) return true;
+        return false;
+    }
+    /// The words of the locks the server lifted for this administrator (« profil masqué · … »).
+    std::string lockWords() const {
+        const Json& av = adminView();
+        return av.is_object() ? adminview::joinLabels(adminview::lockLabels(av.value("locks", Json::array()))) : std::string();
+    }
+    /// Whether a tab would be hidden from the other players (then marked « Vu en tant qu'admin »).
+    bool tabHiddenToOthers(int tab) const {
+        if (!adminSees()) return false;
+        if (tab == kTabAdmin || locked("account_inactive")) return true;
+        if (locked("profile_private") && tab >= 1 && tab <= 5) return true;
+        return locked("follows_private") && (tab == 4 || tab == 5);
+    }
+
     void say(const std::string& m, bool error) {
         status_ = m;
         statusError_ = error;
@@ -129,8 +169,9 @@ private:
                           error_.clear();
                           data_ = r.data;
                           fromCache_ = r.fromCache;
-                          bool hidden = jget<bool>(data_.value("player", Json::object()), "hidden", false);
+                          bool hidden = jget<bool>(data_.value("player", Json::object()), "hidden", false) && !adminSees();
                           if (hidden && tab_ != kTabClan) tab_ = 0;  // a clan is public: its tab stays
+                          if (tab_ == kTabAdmin && !adminSees()) tab_ = 0;
                           loadTab();
                       }));
     }
@@ -146,6 +187,7 @@ private:
         else if (tab_ == 3) path = base + "/races";
         else if (tab_ == 4) path = base + "/followers?limit=60";
         else if (tab_ == 5) path = base + "/following?limit=60";
+        else if (tab_ == kTabAdmin) path = base + "/records?limit=100";  // 2.75.3: every status, administrators only
         if (path.empty()) return;  // best times: in the profile itself
         int gen = ++tabGeneration_;
         tabLoading_ = true;
@@ -264,7 +306,11 @@ private:
         const Json& p = data_["player"];
         const Json& creator = data_.value("creator", Json::object());
         const Json& fstate = data_.value("follow", Json::object());
-        const bool hidden = jget<bool>(p, "hidden", false);
+        // 2.75.3: `masked`, what the other players meet; `hidden`, what this reader is shown reduced
+        // (never for an administrator, who sees all of it, marked).
+        const bool masked = jget<bool>(p, "hidden", false);
+        const bool admin = adminSees();
+        const bool hidden = masked && !admin;
         const bool isCreator = jget<bool>(creator, "is_creator", false);
         const float x = box_.x + ui.s(28);
         const float w = box_.w - ui.s(56);
@@ -278,8 +324,10 @@ private:
         ui_.avatarsOpenProfile = true;
         drawAvatarFrame(ui.r(), {x + av * 0.5f, y + av * 0.5f}, av * 0.5f, dressed ? g_.cosmetics.lookOr("frame", wornLook(worn, "frame")) : "simple",
                         ui.s(1.0f), ui.time());
-        // A friend's presence (2.33.1): the pill on the avatar, its word on the line under.
-        const std::string presence = jstr(p, "presence");
+        // A friend's presence (2.33.1): the pill on the avatar, its word on the line under. 2.75.3: for an
+        // administrator, the real one (and « masquée » when the player hides it).
+        const std::string presence = admin && !jstr(adminView(), "presence").empty() ? jstr(adminView(), "presence") : jstr(p, "presence");
+        const bool presenceHidden = admin && jget<bool>(adminView(), "presence_hidden", false);
         if (!presence.empty()) {
             float rad = ui.s(13);
             Vec2 pc{x + av - rad * 0.9f, y + av - rad * 0.9f};
@@ -299,7 +347,7 @@ private:
                 if (jget<bool>(fstate, "following", false))
                     acts.push_back({"notify", jget<bool>(fstate, "notify", false) ? "Nouveaux niveaux : notifiés" : "Nouveaux niveaux : sans alerte"});
                 std::string fr = jstr(p, "friendship");
-                if (!hidden)
+                if (!masked)
                     acts.push_back({"friend", fr == "friends" ? "Retirer des amis" : fr == "request_sent" ? "Demande envoyée" : fr == "request_received" ? "Accepter en ami" : "Ajouter en ami"});
             }
             acts.push_back({"block", blocked ? "Débloquer" : "Bloquer"});
@@ -438,13 +486,20 @@ private:
                      FontFace::Body, VAlign::Middle);
             ly += ui.s(40);
         }
+        // 2.75.3: what of this profile is hidden from the other players, said once in the header.
+        if (const std::string locks = admin ? lockWords() : std::string(); !locks.empty()) {
+            const std::string t = "Vu en tant qu'admin : " + locks;
+            const float f = std::max(fz(ui, 12), ui.fitFont(t, FontFace::Bold, 14, nameRoom, 0.8f));
+            ui.label(ui.elide(t, FontFace::Bold, f, nameRoom), {nx, ly}, f, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+            ly += ui.s(26);
+        }
         std::string sub;
         if (!hidden && p.contains("created_at")) sub = "Inscrit le " + dateFr(jstr(p, "created_at"));
         if (jget<bool>(fstate, "followed_by", false)) sub += (sub.empty() ? "" : "  ·  ") + std::string("vous suit");
         if (!presence.empty() || !sub.empty()) {
             float sx = nx;
             if (!presence.empty()) {
-                const std::string word = presenceLabel(presence, true);
+                const std::string word = presenceLabel(presence, true) + (presenceHidden ? std::string(" (masquée)") : std::string());
                 Vec2 ws = ui.label(word, {sx, ly}, 15, presenceColor(presence), Align::Left, FontFace::Bold, VAlign::Middle);
                 sx += ws.x + ui.s(14);
             }
@@ -515,6 +570,11 @@ private:
             Vec2 hs = ui.labelWrapped("Ce joueur a choisi de masquer son profil public : seuls son pseudonyme, son avatar et ses niveaux publiés sont visibles.",
                                       {x, y}, w, 16, ui.theme().textDim);
             y += hs.y + ui.s(10);
+        } else if (admin && masked) {
+            Vec2 hs = ui.labelWrapped("Vu en tant qu'admin : ce profil est masqué. Les autres joueurs ne voient que son pseudonyme, son avatar, ses niveaux "
+                                      "publiés et son clan.",
+                                      {x, y}, w, 15, ui.theme().warm);
+            y += hs.y + ui.s(10);
         }
         // Tabs.
         // 2.63.6: « Clan » (the player's clan is public: shown even on a hidden profile).
@@ -524,12 +584,17 @@ private:
             labels = {"Créations", "Clan"};
             tabIds = {0, kTabClan};
         }
+        if (admin) {  // 2.75.3: what the other players never see (administrators only)
+            labels.push_back("Admin");
+            tabIds.push_back(kTabAdmin);
+        }
         const int shownTab = static_cast<int>(std::find(tabIds.begin(), tabIds.end(), tab_) - tabIds.begin()) % static_cast<int>(tabIds.size());
         int tab = shownTab;
         const float tabsW = std::min(w, ui.s(230) * labels.size()), oneTab = tabsW / static_cast<float>(labels.size());
         ui.tabs("tabs", {x, y, tabsW, ui.s(42)}, labels, tab);
         if (!hidden) ui.newBadge("tabs", {x + oneTab * 3, y, oneTab, ui.s(42)}, "profile.races");  // « NOUVEAU » (2.32.2)
-        ui.newBadge("tabs", {x + oneTab * static_cast<float>(labels.size() - 1), y, oneTab, ui.s(42)}, "profile.tab.clan");  // 2.63.6
+        const float clanAt = static_cast<float>(std::find(tabIds.begin(), tabIds.end(), kTabClan) - tabIds.begin());
+        ui.newBadge("tabs", {x + oneTab * clanAt, y, oneTab, ui.s(42)}, "profile.tab.clan");  // 2.63.6
         if (tab != shownTab) {
             tab_ = tabIds[static_cast<size_t>(std::clamp(tab, 0, static_cast<int>(tabIds.size()) - 1))];
             query_.clear();
@@ -537,8 +602,21 @@ private:
             loadTab();
         }
         y += ui.s(54);
+        // 2.75.3: a tab the other players do not see, marked for the administrator.
+        if (tabHiddenToOthers(tab_) && tab_ != kTabAdmin) {
+            const std::string why = lockWords();
+            const std::string t = "Vu en tant qu'admin : onglet caché aux autres joueurs" + (why.empty() ? std::string() : " (" + why + ")");
+            const float f = std::max(fz(ui, 12), ui.fitFont(t, FontFace::Body, 14, w, 0.8f));
+            ui.label(ui.elide(t, FontFace::Body, f, w), {x, y + ui.s(9)}, f, ui.theme().warm, Align::Left, FontFace::Body, VAlign::Middle);
+            y += ui.s(26);
+        }
         if (tab_ == kTabClan) {
             drawClanTab({x, y, w, box_.bottom() - y - ui.s(44)});
+            drawFooter(x, w);
+            return;
+        }
+        if (tab_ == kTabAdmin) {
+            drawAdminTab({x, y, w, box_.bottom() - y - ui.s(44)});
             drawFooter(x, w);
             return;
         }
@@ -949,10 +1027,14 @@ private:
             float tx = th.right() + ui.s(14), room = row.right() - tx - ui.s(14);
             std::string title = jstr(l, "title");
             std::string badge = published ? "" : (jstr(l, "status") == "hidden" ? "masqué (signalements)" : "brouillon");
-            float bw = badge.empty() ? 0.0f : ui.text().measure(badge, FontFace::Bold, ui.s(14)).x + ui.s(16);
-            ui.label(title, {tx, row.y + ui.s(24)}, ui.fitFont(title, FontFace::Bold, 19, room - bw), ui.theme().text, Align::Left, FontFace::Bold,
+            if (!badge.empty() && adminSees()) badge += " · vu en tant qu'admin";  // 2.75.3: never listed for the others
+            float bw = badge.empty() ? 0.0f : std::min(ui.text().measure(badge, FontFace::Bold, ui.s(14)).x + ui.s(16), room * 0.6f);
+            const float titleF = ui.fitFont(title, FontFace::Bold, 19, room - bw);
+            ui.label(ui.elide(title, FontFace::Bold, titleF, room - bw), {tx, row.y + ui.s(24)}, titleF, ui.theme().text, Align::Left, FontFace::Bold,
                      VAlign::Middle);
-            if (!badge.empty()) ui.label(badge, {row.right() - ui.s(14), row.y + ui.s(24)}, 14, ui.theme().danger, Align::Right, FontFace::Bold, VAlign::Middle);
+            if (!badge.empty())
+                ui.label(ui.elide(badge, FontFace::Bold, 14, bw - ui.s(16)), {row.right() - ui.s(14), row.y + ui.s(24)}, 14, ui.theme().danger, Align::Right,
+                         FontFace::Bold, VAlign::Middle);
             std::string stats = "v" + std::to_string(jget<int>(l, "version", 1)) + "  ·  " + std::to_string(jget<int>(l, "downloads", 0)) + " téléch.  ·  " +
                                 std::to_string(jget<int>(l, "favorites", 0)) + " favoris  ·  " + std::to_string(jget<int>(l, "comments", 0)) + " commentaires";
             const Json& rt = l.value("rating", Json::object());
@@ -1061,7 +1143,12 @@ private:
     /// « Meilleures progressions » (2.32.2): the best verified attempt on every EXTRÊME level.
     void drawRaces(Rect area) {
         UIContext& ui = g_.ui;
-        Json all = filtered(tabData_.is_object() ? tabData_.value("races", Json::array()) : Json::array(), "title");
+        Json races = tabData_.is_object() ? tabData_.value("races", Json::array()) : Json::array();
+        // 2.75.3: an administrator also gets the attempts not verified (pending, refused), after the
+        // ranked ones, each with its status: never ranked, never counted as verified.
+        if (adminSees() && tabData_.is_object() && races.is_array())
+            for (const Json& u : tabData_.value("unverified", Json::array())) races.push_back(u);
+        Json all = filtered(races, "title");
         Json list = Json::array();
         for (const auto& r : all) {
             bool fin = jget<bool>(r, "finished", false);
@@ -1091,11 +1178,18 @@ private:
             if (ui.button("rv/" + runId, vb, fetching_ == runId ? "…" : "Voir", vs)) watchRace(r);
             // 2.45: the replay kept on this computer, to watch it without a connection.
             Rect db{vb.x - ui.s(10) - ui.s(42), vb.y, ui.s(42), ui.s(42)};
-            ReplayDownloadUi::icon(g_, "rd/" + runId, db, raceDownload(r), jget<bool>(r, "has_replay", false) && !runId.empty());
+            // 2.75.3: what only an administrator may watch (a profile masked, an account not active, an attempt
+            // not verified) is watched, never kept on this computer.
+            const bool adminOnly = adminSees() && (locked("profile_private") || locked("account_inactive") || !jstr(r, "status").empty());
+            ReplayDownloadUi::icon(g_, "rd/" + runId, db, raceDownload(r), jget<bool>(r, "has_replay", false) && !runId.empty() && !adminOnly);
             int rank = jget<int>(r, "rank", 0), n = jget<int>(r, "participants", 0);
-            std::string rk = rank > 0 ? "n°" + std::to_string(rank) + " / " + std::to_string(n) : "—";
+            const std::string status = jstr(r, "status");  // 2.75.3: "" (ranked) or an administrator's PENDING / REJECTED
+            const bool unverified = !status.empty() && !adminview::countsAsVerified(status);
+            std::string rk = unverified ? adminview::statusChip(status) : rank > 0 ? "n°" + std::to_string(rank) + " / " + std::to_string(n) : "—";
             float rkw = ui.s(120);
-            ui.label(rk, {db.x - ui.s(16), row.center().y}, ui.fitFont(rk, FontFace::Bold, 17, rkw), rank > 0 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : ui.theme().text,
+            const Color rc = unverified ? (status == "REJECTED" ? ui.theme().danger : ui.theme().warm)
+                             : rank > 0 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : ui.theme().text;
+            ui.label(ui.elide(rk, FontFace::Bold, ui.fitFont(rk, FontFace::Bold, 17, rkw), rkw), {db.x - ui.s(16), row.center().y}, ui.fitFont(rk, FontFace::Bold, 17, rkw), rc,
                      Align::Right, FontFace::Bold, VAlign::Middle);
             float bx = db.x - ui.s(16) - rkw - ui.s(20) - barW;
             double score = jget<double>(r, "score", 0.0);
@@ -1159,7 +1253,9 @@ private:
                 auto rep = ReplayData::decode(std::vector<uint8_t>(resp.body.begin(), resp.body.end()), &err);
                 if (!rep) return say("Replay illisible : " + err, true);
                 say("", false);
-                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + title + " – " + decimal(score) + " %"));
+                // 2.75.3: an administrator watching through a lock (or an attempt not verified): said all along.
+                g_.app.pushScene(makeLocalReplayViewer(g_, std::move(*rep), "Course à la vérification – " + title + " – " + decimal(score) + " %",
+                                                       adminview::replayNote(resp.header("x-admin-view"), resp.header("x-admin-replay-status"))));
             },
             16u << 20);
     }
@@ -1195,6 +1291,171 @@ private:
             }
             ui.label(info, {row.right() - ui.s(14), row.center().y}, ui.fitFont(info, FontFace::Body, 14, iw), ui.theme().textDim, Align::Right,
                      FontFace::Body, VAlign::Middle);
+        }
+        ui.endScroll();
+        if (!chosen.empty()) openOther(chosen);
+    }
+
+    // ------------------------------------------------------------ tab « Admin » (2.75.3)
+    /// What the other players do not see of this profile (the server sends it to administrators
+    /// only): its privacy settings, its real presence and activity, its friends, its clan
+    /// requests, and every record it sent — a pending or refused one marked, never counted as
+    /// verified, and watchable when its replay was sent (else the reason). Measured rows, one
+    /// after the other, in a scroll.
+    void drawAdminTab(const Rect& area) {
+        UIContext& ui = g_.ui;
+        const Json& av = adminView();
+        if (!av.is_object()) return;
+        const Json privacy = jfield(av, "privacy", Json::object());
+        const Json friends = jfield(av, "friends", Json::object());
+        Json friendList = jfield(friends, "list", Json::array());
+        if (!friendList.is_array()) friendList = Json::array();
+        Json clanReqs = jfield(av, "clan_requests", Json::array());
+        if (!clanReqs.is_array()) clanReqs = Json::array();
+        Json records = tabData_.is_object() ? tabData_.value("records", Json::array()) : Json::array();
+        if (!records.is_array()) records = Json::array();
+        // The settings and the activity: a key, its value (the settings as the player chose them).
+        struct Line {
+            std::string key, value;
+            Color c;
+        };
+        const Color dim = ui.theme().textDim, warm = ui.theme().warm, text = ui.theme().text;
+        std::vector<Line> lines;
+        const bool priv = jstr(privacy, "profile_visibility") == "private";
+        lines.push_back({"Profil", priv ? "masqué aux autres joueurs" : "public", priv ? warm : text});
+        const std::string status = jstr(av, "account_status", "active");
+        std::string acct = status == "active" ? "actif" : "suspendu";
+        if (!jstr(av, "closed_at").empty()) acct += " (fermé le " + dateFr(jstr(av, "closed_at")) + " après une migration)";
+        lines.push_back({"Compte", acct, status == "active" ? text : warm});
+        const bool presHidden = jget<bool>(av, "presence_hidden", false);
+        std::string pres = (presHidden ? std::string("masquée aux amis") : std::string("montrée aux amis")) + " · état réel : " + presenceLabel(jstr(av, "presence", "offline"), false);
+        if (!jstr(av, "last_seen_at").empty()) pres += " · dernière activité " + OnlineUi::ageOf(jstr(av, "last_seen_at"));
+        lines.push_back({"Présence", pres, presHidden ? warm : text});
+        const bool followsPriv = jstr(privacy, "follows_visibility") == "private";
+        lines.push_back({"Abonnés et abonnements", followsPriv ? "listes privées" : "listes publiques", followsPriv ? warm : text});
+        lines.push_back({"Demandes d'ami", jget<bool>(privacy, "allow_friend_requests", true) ? "acceptées" : "refusées", text});
+        lines.push_back({"Regarder jouer (amis)", jget<bool>(privacy, "spectate_allowed", true) ? "autorisé" : "refusé", text});
+        lines.push_back({"Pays", adminview::locationSetting(jstr(privacy, "location_visibility", "hidden")), dim});
+        if (!jstr(av, "created_at").empty()) lines.push_back({"Inscription", dateFr(jstr(av, "created_at")), text});
+        // Heights first (the scroll's content), then the rows in that order.
+        const std::string intro =
+            "Vu en tant qu'admin : ce que les autres joueurs ne voient pas de ce profil. Chaque consultation est notée au Journal de "
+            "l'administration ; un record en attente ou refusé ne compte jamais comme vérifié.";
+        const float inner = area.w - ui.s(16);
+        const float introF = std::max(fz(ui, 14), 14.0f);
+        const float introH = ui.text().measureWrapped(intro, FontFace::Body, ui.s(introF), inner).y;
+        const float headH = ui.s(40), lineH = ui.s(30), friendH = ui.s(44), recH = ui.s(56), gap = ui.s(10);
+        const int cols = inner > ui.s(900) ? 3 : 2;
+        const int friendRows = (static_cast<int>(friendList.size()) + cols - 1) / cols;
+        float total = introH + gap + headH + lineH * static_cast<float>(lines.size()) + gap;
+        total += headH + (friendList.empty() ? lineH : friendH * static_cast<float>(friendRows)) + gap;
+        total += headH + (clanReqs.empty() ? lineH : lineH * static_cast<float>(clanReqs.size())) + gap;
+        total += headH + (records.empty() ? lineH : recH * static_cast<float>(records.size())) + gap;
+        ui.beginScroll("admin", area, total);
+        float y = area.y - ui.scrollOffset();
+        const float x = area.x;
+        ui.labelWrapped(intro, {x, y}, inner, introF, warm);
+        y += introH + gap;
+        auto heading = [&](const std::string& t, const std::string& right) {
+            const float rw = right.empty() ? 0.0f : std::min(textWidth(right, 14) + ui.s(4), inner * 0.45f);
+            if (rw > 0.0f) fitText(right, {x + inner, y + headH * 0.5f}, 14, rw, dim, FontFace::Body, Align::Right);
+            fitText(t, {x, y + headH * 0.5f}, 18, inner - rw - (rw > 0.0f ? ui.s(12) : 0.0f), ui.theme().accent, FontFace::Bold);
+            y += headH;
+        };
+        heading("Réglages de confidentialité et activité", {});
+        const float keyW = std::min(ui.s(280), inner * 0.32f);
+        for (const Line& l : lines) {
+            fitText(l.key, {x, y + lineH * 0.5f}, 15, keyW - ui.s(12), dim);
+            fitText(l.value, {x + keyW, y + lineH * 0.5f}, 15, inner - keyW, l.c, FontFace::Bold);
+            y += lineH;
+        }
+        y += gap;
+        // Friends (their profiles open from here), and the requests waiting either way.
+        const int incoming = jget<int>(friends, "incoming", 0), outgoing = jget<int>(friends, "outgoing", 0);
+        heading("Amis (" + std::to_string(jget<int>(friends, "total", static_cast<int>(friendList.size()))) + ")",
+                "demandes reçues : " + std::to_string(incoming) + " · envoyées : " + std::to_string(outgoing));
+        std::string chosen;
+        if (friendList.empty()) {
+            fitText("Aucun ami.", {x, y + lineH * 0.5f}, 15, inner, dim);
+            y += lineH;
+        } else {
+            const float cw = (inner - ui.s(10) * static_cast<float>(cols - 1)) / static_cast<float>(cols);
+            int i = 0;
+            for (const Json& f : friendList) {
+                const Json pl = jfield(f, "player", Json());
+                const std::string id = jstr(pl, "id");
+                const Rect b{x + static_cast<float>(i % cols) * (cw + ui.s(10)), y + static_cast<float>(i / cols) * friendH, cw, friendH - ui.s(6)};
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.align = Align::Left;
+                if (ui.button("adm/f" + id, b, "", st) && !id.empty()) chosen = id;
+                const std::string since = "depuis le " + dateFr(jstr(f, "since"));
+                const float sw = std::min(textWidth(since, 13) + ui.s(4), b.w * 0.45f);
+                fitText(since, {b.right() - ui.s(10), b.center().y}, 13, sw, dim, FontFace::Body, Align::Right);
+                fitText(jstr(pl, "username"), {b.x + ui.s(12), b.center().y}, 15, b.w - sw - ui.s(30), text, FontFace::Bold, Align::Left, true);
+                ++i;
+            }
+            y += friendH * static_cast<float>(friendRows);
+        }
+        y += gap;
+        // Clan requests waiting (applications sent, invitations received): the clan and the date, never a message.
+        heading("Demandes de clan en attente", {});
+        if (clanReqs.empty()) {
+            fitText("Aucune.", {x, y + lineH * 0.5f}, 15, inner, dim);
+            y += lineH;
+        }
+        for (const Json& q : clanReqs) {
+            const Json c = jfield(q, "clan", Json());
+            const std::string what = jstr(q, "kind") == "invite" ? "Invité par le clan" : "Candidature au clan";
+            const std::string when = "le " + dateFr(jstr(q, "created_at"));
+            const float ww = std::min(textWidth(when, 14) + ui.s(4), inner * 0.3f);
+            fitText(when, {x + inner, y + lineH * 0.5f}, 14, ww, dim, FontFace::Body, Align::Right);
+            const Vec2 ws = fitText(what, {x, y + lineH * 0.5f}, 15, (inner - ww) * 0.5f, text);
+            fitText(clans::tagged(jstr(c, "name"), jstr(c, "tag")), {x + ws.x + ui.s(8), y + lineH * 0.5f}, 15, inner - ww - ws.x - ui.s(20),
+                    Color{255, 210, 122, 255}, FontFace::Bold, Align::Left, true);
+            y += lineH;
+        }
+        y += gap;
+        // Every record sent (the newest first), whatever its status.
+        heading("Records envoyés (tous les statuts)", records.empty() ? std::string() : std::string("du plus récent au plus ancien"));
+        if (records.empty()) {
+            const std::string t = !tabError_.empty() ? tabError_ : tabLoading_ || !tabData_.is_object() ? std::string("Chargement…") : std::string("Aucun record envoyé.");
+            fitText(t, {x, y + lineH * 0.5f}, 15, inner, tabError_.empty() ? dim : ui.theme().danger);
+            y += lineH;
+        }
+        for (const Json& rec : records) {
+            const Rect row{x, y, inner, recH - ui.s(6)};
+            y += recH;
+            ui.r().fillRoundedRect(row, ui.s(8), Color{14, 20, 42, 220});
+            const std::string rid = jstr(rec, "id"), st = jstr(rec, "verification_status");
+            const Json adm = jfield(rec, "admin_view", Json());
+            // Right to left: « Regarder » (or why not), the date; the level, its time and its status in what is left.
+            const float bw = std::min(ui.s(150), row.w * 0.2f);
+            const Rect bb{row.right() - ui.s(8) - bw, row.y + (row.h - ui.s(38)) * 0.5f, bw, ui.s(38)};
+            if (jget<bool>(rec, "has_replay", false)) {
+                UIContext::ButtonStyle bs;
+                bs.small = true;
+                bs.fontSize = ui.fitFont("Regarder", FontFace::Bold, 16, bw - ui.s(16));
+                if (ui.button("adm/r" + rid, bb, "Regarder", bs)) g_.app.pushScene(makeReplayViewer(g_, rid));
+            } else {
+                fitText("replay non envoyé", {bb.right(), bb.center().y}, 13, bw, dim, FontFace::Body, Align::Right);
+            }
+            const std::string when = dateFr(jstr(rec, "created_at"));
+            const float dw = std::min(textWidth(when, 13) + ui.s(4), row.w * 0.14f);
+            fitText(when, {bb.x - ui.s(12), row.center().y}, 13, dw, dim, FontFace::Body, Align::Right);
+            const float tx = row.x + ui.s(12), room = bb.x - ui.s(24) - dw - tx;
+            const std::string lid = jstr(rec, "level_id");
+            std::string level = lid;
+            if (const LevelEntry* e = g_.content.level(lid)) level = e->name;
+            RunCategory cat;
+            const std::string what = level + " · " + (categoryFromId(jstr(rec, "category"), cat) ? std::string(categoryLabel(cat)) : jstr(rec, "category")) + " · " +
+                                     runTime(jget<int64_t>(rec, "time_ms", 0));
+            fitText(what, {tx, row.y + ui.s(16)}, 15, room, text, FontFace::Bold);
+            std::string state = adminview::statusLabel(st);
+            if (const std::string why = jstr(adm, "rejection_reason"); !why.empty() && st == "REJECTED") state += " : " + why;
+            if (!adminview::countsAsVerified(st)) state += " · ne compte pas comme record vérifié";
+            const Color sc = st == "VERIFIED" ? ui.theme().success : st == "REJECTED" ? ui.theme().danger : warm;
+            fitText(state, {tx, row.y + ui.s(36)}, 13, room, sc);
         }
         ui.endScroll();
         if (!chosen.empty()) openOther(chosen);
@@ -1238,6 +1499,7 @@ private:
     int filter_ = 0;        // filter of the current tab (category, finished or not)
     std::string fetching_;  // attempt whose replay is downloading
     static constexpr int kTabClan = 6;  // 2.63.6: the player's clan
+    static constexpr int kTabAdmin = 7;  // 2.75.3: what the other players do not see (administrators only)
     Json tabData_;
     Json myClanPage_;  // tab « Clan »: GET /clans/{the viewer's clan} (its pending requests), chief and officers only
     std::string tabError_;

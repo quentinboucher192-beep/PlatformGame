@@ -3,7 +3,8 @@
 
 import { clanAfterAccountDeletion, clanOfPlayer } from "./clans";
 import { progressCopyKeys } from "./devices";
-import { presenceOf } from "./friends";
+import { adminPresenceOf, presenceOf } from "./friends";
+import { adminViewing, auditAdminView, profileLocks, statusLock, type AdminLock } from "./adminView";
 import { achievementSummary } from "./achievements";
 import { profileCosmetics } from "./cosmetics";
 import { profileBadges } from "./badges";
@@ -38,11 +39,127 @@ import {
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
-async function loadPlayer(ctx: Ctx, id: string): Promise<PlayerRow> {
+type ProfileRow = PlayerRow & { follows_visibility?: string | null };
+
+/** A player; 2.75.3: an administrator (the session's role, `viewer`) also reads an account that is not active. */
+async function loadPlayer(ctx: Ctx, id: string, viewer: AuthInfo | null = null): Promise<ProfileRow> {
     if (!ID_RE.test(id)) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
-    const p = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(id).first<PlayerRow>();
-    if (!p || p.account_status !== "active") throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
+    const p = await ctx.env.DB.prepare("SELECT * FROM players WHERE id = ?1").bind(id).first<ProfileRow>();
+    if (!p || (p.account_status !== "active" && !adminViewing(viewer, p.id))) throw Errors.notFound("PLAYER_NOT_FOUND", "Joueur introuvable.");
     return p;
+}
+
+/**
+ * 2.75.3: the locks of a profile's own pages (masked profile, account not active) an administrator
+ * goes through; [] for anyone else, and for an administrator on a profile without them.
+ */
+function gateLocks(p: ProfileRow, viewer: AuthInfo | null): AdminLock[] {
+    if (!adminViewing(viewer, p.id)) return [];
+    return profileLocks(p).filter((l) => l === "profile_private" || l === "account_inactive");
+}
+
+/** The relation between the viewer and a player: friends, a request sent or received, or none. */
+async function friendshipOf(ctx: Ctx, viewer: AuthInfo | null, playerId: string): Promise<string | null> {
+    if (!viewer) return null;
+    const f = await ctx.env.DB.prepare(
+        `SELECT player_id, status FROM player_friends WHERE (player_id = ?1 AND friend_id = ?2) OR (player_id = ?2 AND friend_id = ?1)`,
+    )
+        .bind(viewer.player.id, playerId)
+        .all<{ player_id: string; status: string }>();
+    if (f.results.some((r) => r.status === "accepted")) return "friends";
+    if (f.results.some((r) => r.player_id === viewer.player.id)) return "request_sent";
+    if (f.results.length) return "request_received";
+    return null;
+}
+
+/**
+ * 2.75.3: a profile as an administrator sees it (moderation): everything the other players see
+ * on a public profile, even when it is masked or the account not active, and `admin_view` — the
+ * locks the others meet, the privacy settings (the country's setting only: a hidden country stays
+ * hidden), the real presence and activity, the friends, the clan requests (never their message),
+ * the records not verified. Written to the Journal (grouped).
+ */
+async function adminProfile(ctx: Ctx, admin: AuthInfo, p: ProfileRow): Promise<Record<string, unknown>> {
+    const db = ctx.env.DB;
+    const locks = profileLocks(p);
+    const friendship = await friendshipOf(ctx, admin, p.id);
+    const real = adminPresenceOf(p);
+    const [countsR, friendsR, clanR] = await db.batch([
+        db
+            .prepare(
+                `SELECT
+                   (SELECT COUNT(*) FROM player_friends f JOIN players q ON q.id = f.friend_id
+                      WHERE f.player_id = ?1 AND f.status = 'accepted' AND q.account_status = 'active') AS friends,
+                   (SELECT COUNT(*) FROM player_friends WHERE friend_id = ?1 AND status = 'pending') AS incoming,
+                   (SELECT COUNT(*) FROM player_friends WHERE player_id = ?1 AND status = 'pending') AS outgoing,
+                   (SELECT COUNT(*) FROM records WHERE player_id = ?1 AND verification_status = 'PENDING') AS pending,
+                   (SELECT COUNT(*) FROM records WHERE player_id = ?1 AND verification_status = 'REJECTED') AS rejected`,
+            )
+            .bind(p.id),
+        db
+            .prepare(
+                `SELECT f.created_at AS since, q.* FROM player_friends f JOIN players q ON q.id = f.friend_id
+                 WHERE f.player_id = ?1 AND f.status = 'accepted' AND q.account_status = 'active'
+                 ORDER BY q.username_normalized LIMIT 100`,
+            )
+            .bind(p.id),
+        db
+            .prepare(
+                `SELECT q.kind, q.created_at, c.id, c.tag, c.name FROM clan_requests q JOIN clans c ON c.id = q.clan_id
+                 WHERE q.player_id = ?1 ORDER BY q.created_at DESC LIMIT 20`,
+            )
+            .bind(p.id),
+    ]);
+    const n = (countsR!.results[0] ?? {}) as Record<string, number>;
+    await auditAdminView(ctx, admin, "admin_profile_viewed", { id: p.id, username: p.username }, locks);
+    return {
+        player: {
+            ...playerSummary(p),
+            region_code: visibleCountry(p) ? p.region_code : null,
+            created_at: p.created_at,
+            // What the other players meet (the game shows it all to the administrator, marked).
+            hidden: p.profile_visibility === "private",
+            friendship,
+            ...(friendship === "friends" ? { presence: presenceOf(p) } : {}),
+        },
+        statistics: await statistics(ctx, p.id),
+        creator: await creatorStats(ctx, p.id),
+        follow: await followState(ctx, admin.player.id, p.id),
+        playtime: await playtime(ctx, p.id),
+        achievements: await achievementSummary(ctx, p.id),
+        cosmetics: await profileCosmetics(ctx, p.id),
+        badges: await profileBadges(ctx, p.id),
+        clan: await clanOfPlayer(db, p.id),
+        admin_view: {
+            locks,
+            account_status: p.account_status,
+            closed_at: p.closed_at ?? null,
+            created_at: p.created_at,
+            last_seen_at: p.last_seen_at,
+            presence: real.presence,
+            presence_hidden: real.presence_hidden,
+            privacy: {
+                profile_visibility: p.profile_visibility,
+                location_visibility: p.location_visibility,
+                allow_friend_requests: p.allow_friend_requests === 1,
+                presence_visible: p.presence_visible !== 0,
+                follows_visibility: p.follows_visibility ?? "public",
+                spectate_allowed: p.spectate_allowed !== 0,
+            },
+            friends: {
+                total: n.friends ?? 0,
+                incoming: n.incoming ?? 0,
+                outgoing: n.outgoing ?? 0,
+                list: (friendsR!.results as (PlayerRow & { since: string })[]).map((f) => ({ player: playerSummary(f), since: f.since })),
+            },
+            clan_requests: (clanR!.results as { kind: string; created_at: string; id: string; tag: string; name: string }[]).map((q) => ({
+                kind: q.kind,
+                clan: { id: q.id, tag: q.tag, name: q.name },
+                created_at: q.created_at,
+            })),
+            records: { pending: n.pending ?? 0, rejected: n.rejected ?? 0 },
+        },
+    };
 }
 
 function isSelf(viewer: AuthInfo | null, id: string): boolean {
@@ -103,7 +220,7 @@ async function statistics(ctx: Ctx, playerId: string) {
 
 /** GET /players/{id}: public profile (reduced when the profile is private). */
 export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
-    const p = await loadPlayer(ctx, ctx.params.playerId!);
+    const p = await loadPlayer(ctx, ctx.params.playerId!, viewer);
     if (isSelf(viewer, p.id))
         return json(ctx, {
             player: { ...privateProfile(p), hidden: false, follows_visibility: (p as unknown as { follows_visibility?: string }).follows_visibility ?? "public" },
@@ -115,6 +232,8 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             badges: await profileBadges(ctx, p.id),
             clan: await clanOfPlayer(ctx.env.DB, p.id),
         });
+    // 2.75.3: an administrator (the session's role, never a parameter) sees everything, marked.
+    if (adminViewing(viewer, p.id)) return json(ctx, await adminProfile(ctx, viewer!, p));
     if (p.profile_visibility === "private")
         return json(ctx, {
             player: { ...playerSummary(p), hidden: true },
@@ -128,17 +247,7 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
             // 2.66: a clan is public (its page lists its members): its tag shows even here.
             clan: await clanOfPlayer(ctx.env.DB, p.id),
         });
-    let friendship: string | null = null;
-    if (viewer) {
-        const f = await ctx.env.DB.prepare(
-            `SELECT player_id, status FROM player_friends WHERE (player_id = ?1 AND friend_id = ?2) OR (player_id = ?2 AND friend_id = ?1)`,
-        )
-            .bind(viewer.player.id, p.id)
-            .all<{ player_id: string; status: string }>();
-        if (f.results.some((r) => r.status === "accepted")) friendship = "friends";
-        else if (f.results.some((r) => r.player_id === viewer.player.id)) friendship = "request_sent";
-        else if (f.results.length) friendship = "request_received";
-    }
+    const friendship = await friendshipOf(ctx, viewer, p.id);
     return json(ctx, {
         player: {
             ...playerSummary(p), region_code: visibleCountry(p) ? p.region_code : null, created_at: p.created_at, hidden: false, friendship,
@@ -160,20 +269,30 @@ export async function getPlayer(ctx: Ctx, viewer: AuthInfo | null): Promise<Resp
 
 /** GET /players/{id}/statistics */
 export async function getStatistics(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
-    const p = await loadPlayer(ctx, ctx.params.playerId!);
-    if (!isSelf(viewer, p.id) && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
-    return json(ctx, { player_id: p.id, statistics: await statistics(ctx, p.id) });
+    const p = await loadPlayer(ctx, ctx.params.playerId!, viewer);
+    const admin = adminViewing(viewer, p.id);
+    if (!isSelf(viewer, p.id) && !admin && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
+    // 2.75.3: an administrator through a masked profile or an account not active: marked, journaled.
+    const locks = gateLocks(p, viewer);
+    if (locks.length) await auditAdminView(ctx, viewer!, "admin_profile_viewed", { id: p.id, username: p.username }, locks);
+    return json(ctx, { player_id: p.id, statistics: await statistics(ctx, p.id), ...(admin ? { admin_view: { locks } } : {}) });
 }
 
-/** GET /players/{id}/records: verified records for others, every status for the owner. */
+/**
+ * GET /players/{id}/records: verified records for others, every status for the owner. 2.75.3: and
+ * for an administrator (the session's role), even on a masked profile or an account not active,
+ * each with `admin_view` (its status, the reason of a refusal; a record pending or refused never
+ * counts as verified).
+ */
 export async function getPlayerRecords(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
-    const p = await loadPlayer(ctx, ctx.params.playerId!);
+    const p = await loadPlayer(ctx, ctx.params.playerId!, viewer);
     const self = isSelf(viewer, p.id);
-    if (!self && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
+    const admin = !self && adminViewing(viewer, p.id);
+    if (!self && !admin && p.profile_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
     const page = paging(ctx.url, 50, 200);
     const levelId = queryString(ctx.url, "level_id", LEVEL_ID_RE);
     const category = ctx.url.searchParams.get("category") ? queryEnum(ctx.url, "category", CATEGORIES, "ANY_PERCENT") : undefined;
-    const status = self ? queryString(ctx.url, "status", /^(PENDING|VERIFIED|REJECTED)$/) : "VERIFIED";
+    const status = self || admin ? queryString(ctx.url, "status", /^(PENDING|VERIFIED|REJECTED)$/) : "VERIFIED";
     const where = ["player_id = ?1"];
     const binds: unknown[] = [p.id];
     if (levelId) {
@@ -191,11 +310,35 @@ export async function getPlayerRecords(ctx: Ctx, viewer: AuthInfo | null): Promi
     const sql = `SELECT *, COUNT(*) OVER () AS total FROM records WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT ?${binds.length + 1} OFFSET ?${binds.length + 2}`;
     const rows = await ctx.env.DB.prepare(sql).bind(...binds, page.limit, page.offset).all<RecordRow & { total: number }>();
     const total = rows.results[0]?.total ?? 0;
-    return json(
-        ctx,
-        { player_id: p.id, records: rows.results.map((r) => recordJson(r, { owner: self })) },
-        { meta: { limit: page.limit, offset: page.offset, total, next_offset: page.offset + page.limit < total ? page.offset + page.limit : null } },
-    );
+    const meta = { meta: { limit: page.limit, offset: page.offset, total, next_offset: page.offset + page.limit < total ? page.offset + page.limit : null } };
+    if (!admin) return json(ctx, { player_id: p.id, records: rows.results.map((r) => recordJson(r, { owner: self })) }, meta);
+    // 2.75.3: the administrator's view: each record's status and what stops the others.
+    const gate = gateLocks(p, viewer);
+    const replays = new Map<string, string>();
+    const ids = rows.results.map((r) => r.replay_id).filter((x): x is string => !!x);
+    if (ids.length) {
+        const m = await ctx.env.DB.prepare("SELECT id, verification_status FROM replay_metadata WHERE id IN (SELECT value FROM json_each(?1))")
+            .bind(JSON.stringify(ids))
+            .all<{ id: string; verification_status: string }>();
+        for (const r of m.results) replays.set(r.id, r.verification_status);
+    }
+    const lifted = new Set<string>(gate);
+    const records = rows.results.map((r) => {
+        const sl = statusLock(r.verification_status);
+        if (sl) lifted.add(sl);
+        return {
+            ...recordJson(r, { owner: false }),
+            admin_view: {
+                locks: sl ? [...gate, sl] : gate,
+                status: r.verification_status,
+                rejection_reason: r.rejection_reason,
+                verification_notes: r.verification_notes,
+                replay_status: r.replay_id ? (replays.get(r.replay_id) ?? null) : null,
+            },
+        };
+    });
+    if (lifted.size) await auditAdminView(ctx, viewer!, "admin_profile_viewed", { id: p.id, username: p.username }, [...lifted]);
+    return json(ctx, { player_id: p.id, records, admin_view: { locks: gate } }, meta);
 }
 
 /** GET /players/search?q=: pseudonym prefix search (public identities only). */
