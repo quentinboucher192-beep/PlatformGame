@@ -10,7 +10,9 @@
 #include "editors/shared/EditorHistory.h"
 #include "engine/animation/Animation.h"
 #include "engine/core/Scene.h"
+#include "engine/rendering/Text.h"
 #include "game/enemies/EnemyDefinition.h"
+#include "game/enemies/HitParts.h"
 #include "game/gameplay/GameRenderer.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/online/EnemyPublication.h"
@@ -35,6 +37,21 @@ public:
     void update(float dt) override;
     void fixedUpdate(float dt) override;
     void render(float alpha) override;
+
+    /// What Boss › Parties drew last (tests: nothing overlaps, every text holds in its place).
+    struct PartsLayout {
+        struct Text {
+            std::string text;
+            Rect r;
+            float px = 0.0f;  // its size on the screen
+            FontFace face = FontFace::Body;
+        };
+        std::vector<Text> texts;  // the texts drawn by the panel itself
+        std::vector<Rect> boxes;  // every element, in order (widgets, stage, legend cells, texts)
+        bool editable = false;    // its rules can be changed (a native, the administration)
+        int parts = 0;            // the parts of the sheet shown
+    };
+    const PartsLayout& partsLayout() const { return partsLayout_; }
 
 private:
     void select(const std::string& id);
@@ -89,6 +106,13 @@ private:
     void tabResistances(float x, float& y, float w);
     void tabRewards(float x, float& y, float w);
     void tabBoss(float x, float& y, float w);
+    // 2.76.2 (EnemyEditorParts.cpp): the hit parts of a boss on its sprite (the pose and the frame chosen) and
+    // their rules — role, damage multiplier, the attacks during which a part also hurts. Read-only but on a
+    // native in the administration, where they are written into data/enemies/<id>.json.
+    bool hasHitParts() const;
+    void tabParts(float x, float& y, float w);
+    void loadParts();
+    void saveParts();
     std::vector<std::string> clipNames() const;
     void flash(const std::string& m, bool error = false);
 
@@ -131,6 +155,17 @@ private:
     bool adminMissing_ = false;   // that revision is not in this game: nothing can be published
     bool confirmQuit_ = false;    // « Retour » with changes not published: asked again
     std::unique_ptr<Publish> publish_;
+    // Boss › Parties (2.76.2)
+    bool bossParts_ = false;      // the Boss tab shows its hit parts (else its phases)
+    std::string partsFor_;        // the enemy partsWork_ was read for
+    PartRules partsWork_;         // its rules as edited
+    bool partsDirty_ = false;     // changed, not written yet
+    int partsSheet_ = 0, partsPose_ = 0, partsFrame_ = 0;
+    bool partsPlay_ = false;      // the pose animated (else the frame chosen)
+    float partsTime_ = 0.0f;
+    std::string partsChosen_;     // the part whose rules are shown
+    float contentH_ = 0.0f;       // the height of the tab drawn last (its scroll)
+    PartsLayout partsLayout_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
 };
 

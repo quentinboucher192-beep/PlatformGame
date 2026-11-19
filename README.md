@@ -619,6 +619,14 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.76.2** :
+* **Éditeur d'ennemis › Boss › Parties (où frapper)** : les parties d'un boss sur son sprite (pose et image
+  choisies) et, pour chacune, son rôle, son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse.
+  Lecture seule pour un boss du jeu, réglé par un administrateur et écrit dans `data/enemies/<id>.json`
+  ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Parties lisibles sur tous les sprites** : contour épais et motif propre à chaque rôle, dans les fiches « Où
+  frapper » comme dans l'éditeur.
+
 **Nouveau dans la version 2.76.1** :
 * **Raids** : les 8 Gigaboss d'Asterion se battent **par parties** (version de simulation **17**) : leurs points
   faibles dessinés × 2, leurs parties blindées × 0,5, et seules leurs griffes, mâchoires ou épines blessent au contact

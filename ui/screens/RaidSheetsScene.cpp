@@ -806,6 +806,7 @@ private:
         r.pushClip(stage);
         const bool armour = v.state == "armour";
         bool partsShown = false;  // 2.76.0
+        bool rolesShown[4] = {false, false, false, false};  // 2.76.2: the roles of the parts drawn (PartRole)
         // 2.76.1: a Gigaboss that fights by its parts: its parts in the colour of their role, its box a thin frame.
         const PartRules& partRules = PartRules::of(g.def->id);
         const bool partsFight = partRules.fromVersion > 0 && partRules.fromVersion <= kSimulationVersion;
@@ -838,6 +839,9 @@ private:
                         drawHitPieces(r, std::max(1.0f, ui.s(1.5f)), *hp, *pieces, partRules,
                                       [&](Vec2 v) { return Vec2{o.x + (v.x - pv.x) * sc * k, o.y + (v.y - pv.y) * sc * k}; }, partsFight ? 90 : 40);
                         partsShown = true;
+                        for (const HitPartPiece& p : *pieces)
+                            if (p.part >= 0 && p.part < static_cast<int>(hp->parts.size()))
+                                rolesShown[static_cast<int>(partRules.ruleOr(hp->parts[static_cast<size_t>(p.part)]).role)] = true;
                     }
             }
         }
@@ -918,7 +922,12 @@ private:
                                          {raid::HitPart::Kind::Armour, "Gris : blindé, ne prend aucun dégât"},
                                          {raid::HitPart::Kind::Hurt, "Rouge : blesse au contact ou attaque"},
                                          {raid::HitPart::Kind::Mechanism, "Or : plaques du mécanisme collectif"}};
-        std::vector<std::pair<std::string, Color>> lines;
+        struct Line {
+            std::string text;
+            Color color;
+            int role = -1;  // 2.76.2: a part's role: its swatch has the role's pattern
+        };
+        std::vector<Line> lines;
         for (const Entry& e : kEntries) {
             bool present = false;
             for (const raid::HitPart& p : v.parts) present = present || p.kind == e.kind;
@@ -928,21 +937,38 @@ private:
         }
         if (sourceShown) lines.push_back({"Rose : d'où part l'attaque", kSource});
         if (partsShown && partsFight) {
-            lines.push_back({"Ses parties : vert × 2, bleu × 1, gris × 0,5, rouge blesse", partRoleColor(PartRole::Weak)});
+            // Its parts by role, each with its colour and its pattern (2.76.2) and its multiplier when its parts
+            // of that role share one.
+            for (PartRole role : {PartRole::Weak, PartRole::Normal, PartRole::Armour, PartRole::Hurt}) {
+                if (!rolesShown[static_cast<int>(role)]) continue;
+                std::string text = std::string("Parties : ") + partRoleLabel(role);
+                std::string mult;
+                bool same = true;
+                for (const PartRule& rule : partRules.rules)
+                    if (rule.role == role) {
+                        const std::string m = partDamageLabel(rule);
+                        same = same && (mult.empty() || m == mult);
+                        mult = m;
+                    }
+                if (role != PartRole::Hurt && same && !mult.empty()) text += " " + mult;
+                lines.push_back({text, partRoleColor(role), static_cast<int>(role)});
+            }
             lines.push_back({"Cadre blanc : sa boîte d'avant (les replays d'avant)", Color{255, 255, 255, 200}});
         } else if (partsShown) {
-            lines.push_back({"Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)", partRoleColor(PartRole::Normal)});
+            lines.push_back({"Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)", partRoleColor(PartRole::Normal),
+                             static_cast<int>(PartRole::Normal)});
         }
         lines.push_back({"Croix blanche : ses pieds", Color{255, 255, 255, 220}});
         std::vector<std::string> named;
         for (const raid::HitPart& p : v.parts)
             if (std::find(named.begin(), named.end(), p.label) == named.end()) named.push_back(p.label);
-        const float sw = ui.s(14);
-        for (const auto& [text, c] : lines) {
-            const auto ls = wrap(ui, text, FontFace::Bold, fz(ui, 13), lw - sw - ui.s(8), 2);
-            const float h = static_cast<float>(ls.size()) * ui.s(18);
+        const float sw = ui.s(16);
+        for (const Line& line : lines) {
+            const auto ls = wrap(ui, line.text, FontFace::Bold, fz(ui, 13), lw - sw - ui.s(8), 2);
+            const float h = std::max(sw + ui.s(2), static_cast<float>(ls.size()) * ui.s(18));
             if (ly + h > leg.bottom() - ui.s(8)) break;
-            r.fillRect({lx, ly + ui.s(2), sw, sw}, c.withAlpha(c == hitColor(raid::HitPart::Kind::Hurt) ? 255 : 200));
+            if (line.role >= 0) drawPartSwatch(r, {lx, ly + ui.s(1), sw, sw}, static_cast<PartRole>(line.role), ui.s(1.0f));
+            else r.fillRect({lx, ly + ui.s(1), sw, sw}, line.color.withAlpha(line.color == hitColor(raid::HitPart::Kind::Hurt) ? 255 : 200));
             drawLines(ui, ls, {lx + sw + ui.s(8), ly}, fz(ui, 13), ui.s(18), kText, FontFace::Bold);
             ly += h + ui.s(4);
         }

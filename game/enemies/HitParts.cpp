@@ -185,19 +185,100 @@ PartRules PartRules::parse(const Json& parts, int fromVersion) {
     return out;
 }
 
+namespace {
+/// The rules read, per enemy (std::map: a reference to an entry stays valid when another is added).
+struct RulesCache {
+    std::mutex mutex;
+    std::map<std::string, PartRules> loaded;
+};
+RulesCache& rulesCache() {
+    static RulesCache c;
+    return c;
+}
+
+PartRules readRules(const std::string& enemyId) {
+    PartRules r;
+    if (!enemyId.empty() && enemyId.find_first_of("/\\.") == std::string::npos)
+        if (auto j = FileUtil::loadJson(Paths::dataDir() / "enemies" / (enemyId + ".json")))
+            r = PartRules::parse(j->value("parts", Json()), jget<int>(*j, "partsFromVersion", 0));
+    return r;
+}
+}  // namespace
+
 const PartRules& PartRules::of(const std::string& enemyId) {
-    static std::mutex mutex;
-    static std::map<std::string, PartRules> loaded;
-    std::lock_guard<std::mutex> lock(mutex);
-    auto it = loaded.find(enemyId);
-    if (it == loaded.end()) {
-        PartRules r;
-        if (!enemyId.empty() && enemyId.find_first_of("/\\.") == std::string::npos)
-            if (auto j = FileUtil::loadJson(Paths::dataDir() / "enemies" / (enemyId + ".json")))
-                r = parse(j->value("parts", Json()), jget<int>(*j, "partsFromVersion", 0));
-        it = loaded.emplace(enemyId, std::move(r)).first;
-    }
+    RulesCache& c = rulesCache();
+    std::lock_guard<std::mutex> lock(c.mutex);
+    auto it = c.loaded.find(enemyId);
+    if (it == c.loaded.end()) it = c.loaded.emplace(enemyId, readRules(enemyId)).first;
     return it->second;
+}
+
+void PartRules::reload(const std::string& enemyId) {
+    PartRules r = readRules(enemyId);
+    RulesCache& c = rulesCache();
+    std::lock_guard<std::mutex> lock(c.mutex);
+    // Refreshed in place: the references of() gave stay valid (the enemy editor calls this on the main
+    // thread, between two frames).
+    c.loaded[enemyId] = std::move(r);
+}
+
+std::string withPartRules(const std::string& fileText, const PartRules& rules, std::string* error) {
+    using Ordered = nlohmann::ordered_json;
+    Ordered j = Ordered::parse(fileText, nullptr, false);
+    if (j.is_discarded() || !j.is_object() || !j.contains("id")) {
+        if (error) *error = "Fichier d'ennemi illisible";
+        return {};
+    }
+    Ordered& parts = j["parts"];
+    if (!parts.is_object()) parts = Ordered::object();
+    if (!rules.profile.empty() && !parts.contains("profile")) parts["profile"] = rules.profile;
+    const Ordered before = parts.contains("roles") && parts["roles"].is_object() ? parts["roles"] : Ordered::object();
+    auto write = [](const PartRule& r) {
+        Ordered o = Ordered::object();
+        o["role"] = partRoleId(r.role);
+        if (r.role != PartRole::Hurt) {
+            // Its multiplier to the hundredth, an integer written as one (« 2 », « 0.5 »).
+            const double d = std::round(static_cast<double>(std::clamp(r.damage, 0.0f, 4.0f)) * 100.0) / 100.0;
+            if (d == std::floor(d)) o["damage"] = static_cast<int>(d);
+            else o["damage"] = d;
+            if (!r.hurtDuring.empty()) o["hurtDuring"] = r.hurtDuring;
+        }
+        return o;
+    };
+    Ordered roles = Ordered::object();
+    // The roles already there in their order (a part without a rule now: removed), then the new ones.
+    for (auto it = before.begin(); it != before.end(); ++it)
+        if (const PartRule* r = rules.rule(it.key())) roles[it.key()] = write(*r);
+    for (const PartRule& r : rules.rules)
+        if (!roles.contains(r.name)) roles[r.name] = write(r);
+    parts["roles"] = std::move(roles);
+    try {
+        return j.dump(2) + "\n";
+    } catch (const nlohmann::json::exception&) {  // a name that is not UTF-8
+        if (error) *error = "Fichier d'ennemi illisible";
+        return {};
+    }
+}
+
+bool savePartRules(const std::string& enemyId, const PartRules& rules, std::string* error) {
+    if (enemyId.empty() || enemyId.find_first_of("/\\.") != std::string::npos) {
+        if (error) *error = "Identifiant invalide";
+        return false;
+    }
+    const fs::path path = Paths::dataDir() / "enemies" / (enemyId + ".json");
+    const std::optional<std::string> text = FileUtil::readText(path);
+    if (!text) {
+        if (error) *error = "Fichier introuvable : data/enemies/" + enemyId + ".json";
+        return false;
+    }
+    const std::string out = withPartRules(*text, rules, error);
+    if (out.empty()) return false;
+    if (out != *text && !FileUtil::writeTextAtomic(path, out)) {
+        if (error) *error = "Écriture impossible : data/enemies/" + enemyId + ".json";
+        return false;
+    }
+    PartRules::reload(enemyId);
+    return true;
 }
 
 const char* partRoleId(PartRole r) {

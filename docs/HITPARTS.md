@@ -66,6 +66,11 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
   élan, attaque…). Sur l'image en cours, les parties sont remplies à la couleur de leur rôle et la boîte est tracée
   en cadre blanc. Une légende mesurée donne le rôle et le multiplicateur de chaque partie, et dit comment le combat
   les utilise.
+* **Motifs (2.76.2)** : chaque partie a un contour épais sur un contour sombre et un motif propre à son rôle
+  (`drawPartPattern`). Le point faible est quadrillé, la partie normale rayée en long, la partie blindée rayée en
+  travers (ses plaques) et la partie qui blesse à grosses rayures obliques. Chaque trait est posé sur un trait
+  sombre : la partie reste lisible sur un sprite de n'importe quelle couleur, comme la cuisse grise de Titanus. Les
+  légendes gardent les couleurs et montrent le motif (`drawPartSwatch`).
 * **Gigaboss d'Asterion** : `FICHES D'ASTERION › Mécanismes › Où frapper`. Leurs parties sont dessinées sur
   l'image de chaque pose ; leur combat se joue encore sur leur boîte.
 * **Captures** :
@@ -81,6 +86,11 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
   * coups par parties en 16 et par boîte en 15 ;
   * contact par les seules parties qui blessent.
 * `tests/test_determinism.cpp` : empreintes du combat de Pyrrhax en 15 et en 16.
+* `tests/test_enemy_parts_editor.cpp` (2.76.2) :
+  * fichiers réécrits à l'octet près ;
+  * un changement ne touche que les rôles ;
+  * verrou des natives ;
+  * panneau sans chevauchement (1280 × 720 et 1920 × 1080, français et anglais).
 
 ---
 

@@ -1733,6 +1733,12 @@
    ]
   },
   {
+   "fr": "Administration : « Enregistrer les parties » écrit leurs règles dans data/enemies/{0}.json de ce jeu ; elles partent avec sa prochaine version (« Publier… » ne les envoie pas).",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Administration › Assets : chaque nouvel asset porte la pastille « NOUVEAU » sur sa vignette ou sa ligne, jusqu'à ce qu'il reçoive le focus ou un clic ; ses dossiers du rangement, l'onglet Assets et l'entrée Administration la gardent tant qu'un asset en dessous est nouveau. La version d'apparition de chaque asset est calculée automatiquement (tools/assets/asset_versions.py, relancé avec code_refs.py).",
    "where": [
     "data/news/changelog.json"
@@ -2617,6 +2623,12 @@
    ]
   },
   {
+   "fr": "Animer la pose",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Anneau",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -2716,6 +2728,7 @@
   {
    "fr": "Annuler",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
@@ -4513,6 +4526,12 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Attention : changer leurs règles change ses combats ; les replays enregistrés ne se rejoueraient plus à l'identique. Une telle modification demande une nouvelle version de simulation (docs/HITBOX_PARTS.md).",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -7296,6 +7315,18 @@
    ]
   },
   {
+   "fr": "blesse aussi en attaquant",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Blesse aussi pendant ces attaques :",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Blessure",
    "where": [
     "ui/studio/StudioDoc.cpp"
@@ -7627,6 +7658,12 @@
    "fr": "Boss de la planète jouée récemment",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Boss du jeu : ses parties sont en lecture seule ; seul un administrateur règle leurs rôles (Administration › Ennemis).",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -21912,6 +21949,18 @@
    ]
   },
   {
+   "fr": "enemies",
+   "where": [
+    "game/content/AssetCatalog.cpp",
+    "game/levels/DifficultyRating.cpp",
+    "game/online/LevelFingerprint.cpp",
+    "game/progression/NewsCenter.cpp",
+    "game/raid/RaidSheets.cpp",
+    "packaging/PackageExporter.cpp",
+    "saves/HudLayout.cpp"
+   ]
+  },
+  {
    "fr": "English",
    "where": [
     "engine/core/I18n.cpp"
@@ -22137,6 +22186,18 @@
    "fr": "Enregistrer les changements",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrer les parties",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrer les parties*",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -23816,6 +23877,12 @@
    ]
   },
   {
+   "fr": "Fiches « Où frapper » et éditeur : chaque partie a un contour épais et un motif propre à son rôle (point faible quadrillé, partie normale rayée en long, partie blindée rayée en travers, partie qui blesse à grosses rayures obliques). Elle reste lisible sur un sprite de n'importe quelle couleur, comme la cuisse grise de Titanus. Les légendes gardent les mêmes couleurs et montrent le motif.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fichier",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -23849,6 +23916,12 @@
    "fr": "Fichier corrompu (CRC) : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier d'ennemi illisible",
+   "where": [
+    "game/enemies/HitParts.cpp"
    ]
   },
   {
@@ -23935,6 +24008,12 @@
    "fr": "fichier introuvable",
    "where": [
     "packaging/ZipArchive.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier introuvable : data/enemies/{0}.json",
+   "where": [
+    "game/enemies/HitParts.cpp"
    ]
   },
   {
@@ -27996,6 +28075,12 @@
    ]
   },
   {
+   "fr": "Identifiant invalide",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "identifiant invalide",
    "where": [
     "server/src/devices.ts"
@@ -28235,6 +28320,12 @@
    ]
   },
   {
+   "fr": "Il n'a pas d'attaque.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Il ne sera plus proposé, même plus tard. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause) : tu pourras t'y reporter à tout moment.",
    "where": [
     "ui/screens/TutorialScenes.cpp"
@@ -28274,6 +28365,18 @@
    "fr": "Il savait tous leurs noms. « Tant qu'on se souvient de toi, disait-il, tu n'es jamais tout à fait parti. »",
    "where": [
     "data/stories/liche.json"
+   ]
+  },
+  {
+   "fr": "Il se bat par ses parties depuis les règles de simulation {0}.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Il se battra par ses parties à partir des règles de simulation {0}.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -28348,6 +28451,7 @@
   {
    "fr": "Image",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "game/content/AssetCatalog.cpp"
    ]
   },
@@ -36665,6 +36769,12 @@
    ]
   },
   {
+   "fr": "Les parties d'un boss du jeu sont en lecture seule, comme ses autres réglages : seul un administrateur les règle, et « Enregistrer les parties » les écrit dans le fichier de l'ennemi. Vos propres ennemis se battent avec leur boîte : leurs parties sont montrées, sans règles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "les parties du titan sont illisibles",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -39681,6 +39791,12 @@
    ]
   },
   {
+   "fr": "Modifications des parties annulées",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Modifications non enregistrées",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
@@ -40408,6 +40524,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Multiplicateur de dégâts",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -44898,6 +45020,7 @@
   {
    "fr": "Partie : {0}",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -44986,9 +45109,21 @@
    ]
   },
   {
+   "fr": "Parties (où frapper)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Parties : affichage ; combat par boîte jusqu'à son étape.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Parties : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -45028,9 +45163,29 @@
    ]
   },
   {
+   "fr": "Parties enregistrées dans data/enemies/{0}.json",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Parties non enregistrées (Boss › Parties)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Parties vérifiées par Cosmic Online",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "parts",
+   "where": [
+    "game/online/AsterionBody.cpp",
+    "main.cpp",
+    "ui/screens/AdminBackups.cpp"
    ]
   },
   {
@@ -46571,6 +46726,7 @@
   {
    "fr": "Phase {0}",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
     "game/raid/RaidSheets.cpp",
@@ -46659,6 +46815,12 @@
    "fr": "Phases et attaques",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Phases et réglages",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
    ]
   },
   {
@@ -47060,6 +47222,7 @@
   {
    "fr": "Planche",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminAssets.cpp"
    ]
   },
@@ -48486,6 +48649,12 @@
    "fr": "Portée min",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Pose",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -50664,6 +50833,12 @@
    "fr": "Quitter le test (retour à l'administration)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter sans enregistrer",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -55817,6 +55992,7 @@
   {
    "fr": "Rôle",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -57429,9 +57605,9 @@
    ]
   },
   {
-   "fr": "Ses parties : vert × 2, bleu × 1, gris × 0,5, rouge blesse",
+   "fr": "Ses parties : affichage seulement ; son combat se joue sur sa boîte.",
    "where": [
-    "ui/screens/RaidSheetsScene.cpp"
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -65871,6 +66047,12 @@
    ]
   },
   {
+   "fr": "Une partie qui blesse ne prend aucun coup : elle blesse qui la touche, à tout moment.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Une petite bête de la Pépinière d'étoiles qui dort à poings fermés : elle ne riposte jamais.",
    "where": [
     "data/enemies/gloop_dormeur.json"
@@ -68490,6 +68672,12 @@
    "fr": "Vos droits",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vos entités se battent avec leur boîte : seules les entités du jeu se battent par parties. Ses parties sont montrées ici, sans règles.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -73462,6 +73650,12 @@
    ]
   },
   {
+   "fr": "{0} · image {1} / {2} · cliquez sur une partie pour la choisir",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "{0} · inscrit le {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -74854,6 +75048,12 @@
    ]
   },
   {
+   "fr": "Échec de l'enregistrement des parties",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Échec de l'export : {0}",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -75499,6 +75699,12 @@
    ]
   },
   {
+   "fr": "Écriture impossible : data/enemies/{0}.json",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "écriture impossible : {0}",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -75584,6 +75790,12 @@
   },
   {
    "fr": "Éditeur d'ennemis : texture et épaisseur de chaque rayon, avec aperçu ; les libellés longs ne passent plus sous leur champ.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Éditeur d'ennemis : un onglet Boss › « Parties (où frapper) » montre les parties d'un boss sur son sprite, avec la pose et l'image de votre choix. Pour chaque partie, il règle son rôle (point faible, normale, blindée, qui blesse), son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse aussi. Choisissez une partie en cliquant dessus ou dans la liste, au clavier ou à la manette.",
    "where": [
     "data/news/changelog.json"
    ]

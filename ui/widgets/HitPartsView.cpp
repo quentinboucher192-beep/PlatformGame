@@ -50,17 +50,101 @@ Color partRoleColor(PartRole r) {
 
 Color partColor(const PartRules& rules, const std::string& name) { return partRoleColor(rules.ruleOr(name).role); }
 
-void drawHitPieces(Renderer& r, float lineWidth, const HitPartsSheet& sheet, const std::vector<HitPartPiece>& pieces, const PartRules& rules,
-                   const std::function<Vec2(Vec2)>& toScreen, uint8_t fill) {
-    for (const HitPartPiece& p : pieces) {
-        if (p.part < 0 || p.part >= static_cast<int>(sheet.parts.size()) || p.pts.size() < 3) continue;
-        const Color c = partColor(rules, sheet.parts[static_cast<size_t>(p.part)]);
-        std::vector<Vec2> pts;
-        pts.reserve(p.pts.size());
-        for (const Vec2& v : p.pts) pts.push_back(toScreen(v));
-        r.fillConvexPolygon(pts, c.withAlpha(fill));
-        for (size_t i = 0; i < pts.size(); ++i) r.drawLine(pts[i], pts[(i + 1) % pts.size()], c, lineWidth);
+std::string partNameLabel(const std::string& name) { return capitalized(name); }
+
+namespace {
+
+/// The chord of the line {p : n·p = c} (n of length 1) through a convex polygon: false when it misses it.
+bool chord(const std::vector<Vec2>& poly, Vec2 n, float c, Vec2& a, Vec2& b) {
+    const Vec2 d{-n.y, n.x};
+    bool any = false;
+    float lo = 0.0f, hi = 0.0f;
+    for (size_t i = 0; i < poly.size(); ++i) {
+        const Vec2 p = poly[i], q = poly[(i + 1) % poly.size()];
+        const float dp = p.x * n.x + p.y * n.y - c, dq = q.x * n.x + q.y * n.y - c;
+        if ((dp > 0.0f && dq > 0.0f) || (dp < 0.0f && dq < 0.0f) || dp == dq) continue;
+        const float t = dp / (dp - dq);
+        const Vec2 x{p.x + (q.x - p.x) * t, p.y + (q.y - p.y) * t};
+        const float s = x.x * d.x + x.y * d.y;
+        lo = any ? std::min(lo, s) : s;
+        hi = any ? std::max(hi, s) : s;
+        any = true;
     }
+    if (!any || hi - lo < 1.0f) return false;
+    a = {n.x * c + d.x * lo, n.y * c + d.y * lo};
+    b = {n.x * c + d.x * hi, n.y * c + d.y * hi};
+    return true;
+}
+
+/// Parallel lines across a convex polygon, anchored to the screen (two pieces of a part line up).
+void hatch(Renderer& r, const std::vector<Vec2>& poly, Vec2 n, float spacing, Color c, float width, float unit) {
+    float lo = 0.0f, hi = 0.0f;
+    for (size_t i = 0; i < poly.size(); ++i) {
+        const float s = poly[i].x * n.x + poly[i].y * n.y;
+        lo = i ? std::min(lo, s) : s;
+        hi = i ? std::max(hi, s) : s;
+    }
+    // Each line over a dark one, thin enough that the sprite still shows between them.
+    const Color under{8, 10, 18, 130};
+    for (float k = std::ceil(lo / spacing) * spacing; k <= hi; k += spacing) {
+        Vec2 a, b;
+        if (!chord(poly, n, k, a, b)) continue;
+        r.drawLine(a, b, under, width + unit);
+        r.drawLine(a, b, c, width);
+    }
+}
+
+}  // namespace
+
+void drawPartPattern(Renderer& r, const std::vector<Vec2>& poly, PartRole role, float unit) {
+    if (poly.size() < 3) return;
+    unit = std::max(0.75f, unit);
+    const float sp = std::max(6.0f, 8.0f * unit), thin = std::max(1.0f, unit);
+    const float h = 0.70710678f;
+    const Color c = partRoleColor(role).withAlpha(220);
+    switch (role) {
+        case PartRole::Weak:  // a cross-hatch: the target
+            hatch(r, poly, {h, h}, sp * 1.4f, c, thin, unit);
+            hatch(r, poly, {h, -h}, sp * 1.4f, c, thin, unit);
+            break;
+        case PartRole::Normal: hatch(r, poly, {1.0f, 0.0f}, sp * 1.6f, c, thin, unit); break;  // upright stripes
+        case PartRole::Armour: hatch(r, poly, {0.0f, 1.0f}, sp * 0.9f, c, thin, unit); break;  // plates, close together
+        case PartRole::Hurt: hatch(r, poly, {h, -h}, sp * 1.6f, c, thin * 2.0f, unit); break;  // thick warning stripes
+    }
+}
+
+void drawPartOutline(Renderer& r, const std::vector<Vec2>& poly, Color c, float width, float unit) {
+    for (size_t i = 0; i < poly.size(); ++i) r.drawLine(poly[i], poly[(i + 1) % poly.size()], Color{8, 10, 18, 200}, width + 2.0f * std::max(0.75f, unit));
+    for (size_t i = 0; i < poly.size(); ++i) r.drawLine(poly[i], poly[(i + 1) % poly.size()], c, width);
+}
+
+void drawPartSwatch(Renderer& r, const Rect& box, PartRole role, float unit) {
+    const std::vector<Vec2> sq = {{box.x, box.y}, {box.right(), box.y}, {box.right(), box.bottom()}, {box.x, box.bottom()}};
+    r.fillConvexPolygon(sq, partRoleColor(role).withAlpha(120));
+    drawPartPattern(r, sq, role, unit);
+    drawPartOutline(r, sq, partRoleColor(role), std::max(1.5f, 1.5f * unit), unit);
+}
+
+void drawHitPieces(Renderer& r, float lineWidth, const HitPartsSheet& sheet, const std::vector<HitPartPiece>& pieces, const PartRules& rules,
+                   const std::function<Vec2(Vec2)>& toScreen, uint8_t fill, const std::string& highlight) {
+    // 2.76.2: each part its role's colour, its pattern and a thick outline over a dark one, so that it reads on a
+    // sprite of any colour (grey armour on a grey leg); the part chosen in the editor outlined in white.
+    const float unit = lineWidth * 0.5f, width = lineWidth * 1.5f;
+    std::vector<Vec2> pts;
+    for (int pass = 0; pass < 2; ++pass)
+        for (const HitPartPiece& p : pieces) {
+            if (p.part < 0 || p.part >= static_cast<int>(sheet.parts.size()) || p.pts.size() < 3) continue;
+            const std::string& name = sheet.parts[static_cast<size_t>(p.part)];
+            const bool chosen = !highlight.empty() && name == highlight;
+            if ((pass == 1) != chosen) continue;  // the chosen part over the others
+            const PartRole role = rules.ruleOr(name).role;
+            const Color c = partRoleColor(role);
+            pts.clear();
+            for (const Vec2& v : p.pts) pts.push_back(toScreen(v));
+            r.fillConvexPolygon(pts, c.withAlpha(chosen ? static_cast<uint8_t>(std::min(255, fill + 50)) : fill));
+            drawPartPattern(r, pts, role, unit);
+            drawPartOutline(r, pts, chosen ? Color::white() : c, chosen ? width * 1.5f : width, unit);
+        }
 }
 
 std::string poseLabel(const std::string& clip) {
@@ -206,7 +290,7 @@ void HitPartsView::draw(GameServices& g, const Rect& area, const EnemyDefinition
         fit(ui, poseLabel(poses[static_cast<size_t>(pose_)]) + " · image " + std::to_string(frame + 1) + " / " + std::to_string(clip->frameCount()),
             {stage.x + ui.s(10), stage.y + ui.s(14)}, fz(ui, 13), stage.w - ui.s(20), kDim, FontFace::Body);
     // The legend: each part, its role and its multiplier; then the box; then how its fight uses them.
-    const float lx = leg.x + ui.s(12), lw = leg.w - ui.s(24), sw = ui.s(14);
+    const float lx = leg.x + ui.s(12), lw = leg.w - ui.s(24), sw = ui.s(16);
     float ly = leg.y + ui.s(12);
     fit(ui, parts ? "Ses parties" : "Pas encore de parties", {lx, ly + ui.s(9)}, fz(ui, 15), lw, kGold, FontFace::Bold);
     ly += ui.s(28);
@@ -219,8 +303,7 @@ void HitPartsView::draw(GameServices& g, const Rect& area, const EnemyDefinition
             break;
         }
         const PartRule rule = rules.ruleOr(shown[i]);
-        const Color c = partRoleColor(rule.role);
-        r.fillRect({lx, ly + ui.s(3), sw, sw}, c.withAlpha(220));
+        drawPartSwatch(r, {lx, ly + ui.s(2), sw, sw}, rule.role, ui.s(1.0f));  // its colour and its pattern (2.76.2)
         const std::string right = std::string(partRoleLabel(rule.role)) + " · " + partDamageLabel(rule);
         const float rw = std::min(lw * 0.62f, textW(ui, right, fz(ui, 12.5f), FontFace::Body) + ui.s(4));
         fit(ui, right, {lx + lw, ly + ui.s(10)}, fz(ui, 12.5f), rw, kDim, FontFace::Body, Align::Right);

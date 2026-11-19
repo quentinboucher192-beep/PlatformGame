@@ -57,6 +57,28 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
 * Les parties ne figurent ni dans `EnemyDefinition` ni dans l'empreinte des niveaux classés : n'y mettez rien, les
   records restent comparables (`kRankingGeneration` reste 8).
 
+### Les régler dans l'éditeur d'ennemis (2.76.2)
+
+* **Où** : `Éditeur d'ennemis › Boss › Parties (où frapper)` (`editors/enemy_editor/EnemyEditorParts.cpp`). Le
+  panneau montre le sprite du boss avec la planche, la pose et l'image choisies (ou la pose animée), et ses parties
+  à la couleur et au motif de leur rôle. La partie choisie est cerclée de blanc ; on la choisit d'un clic sur le
+  sprite, ou dans la liste au clavier et à la manette.
+* **Ce qui se règle**, pour la partie choisie :
+  * son rôle (point faible, partie normale, blindée, qui blesse) ;
+  * son multiplicateur de dégâts (0 à 4, par quarts) ;
+  * ses `hurtDuring`, une case par attaque du boss.
+* **Qui** : comme pour les entités natives (2.45), les parties d'un boss du jeu sont en lecture seule pour le
+  joueur. Seul un administrateur (`ADMINISTRATION › Ennemis`) les règle. Les entités du joueur se battent avec leur
+  boîte : leurs parties sont montrées, sans règles.
+* **Où ça va** : « Enregistrer les parties » (ou Ctrl+S) réécrit le seul bloc `roles` de `data/enemies/<id>.json`
+  (`savePartRules`). Les autres clés, leur ordre, l'ordre des rôles et l'indentation sont gardés : un fichier
+  réécrit avec ses propres règles revient à l'octet près. Le combat de l'arène repart avec les nouvelles règles.
+  « Publier… » n'envoie pas les parties : elles partent avec la prochaine version du jeu.
+* **Attention** : changer les règles d'un boss qui se bat déjà par parties change ses combats, et les replays
+  enregistrés ne se rejouent plus à l'identique. Le panneau le rappelle. Une telle modification demande une nouvelle
+  version de simulation (section 6).
+* **Capture** : `CosmicPlatformer --enemy-editor <boss> --enemy-parts`.
+
 ## 3. Ce que le moteur fait (rien à coder pour un boss ordinaire)
 
 * **La pose** : l'animation d'un boss qui se bat par parties avance dans `Enemy::fixedUpdate`, ce qui en fait une

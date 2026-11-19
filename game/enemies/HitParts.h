@@ -89,7 +89,17 @@ struct PartRules {
     static PartRules parse(const Json& parts, int fromVersion = 0);
     /// The rules of an official enemy (read once and kept, thread-safe); empty without « parts ».
     static const PartRules& of(const std::string& enemyId);
+    /// 2.76.2: reads them again from data/enemies/<id>.json (after the enemy editor wrote them).
+    static void reload(const std::string& enemyId);
 };
+
+/// 2.76.2 (enemy editor): the text of an enemy's file (data/enemies/<id>.json) with the roles of its parts
+/// replaced by `rules` — every other key, the order of the keys and the roles already there, their
+/// indentation kept (a file written with its own rules comes back byte for byte). Empty with `error` set
+/// when the text is not an enemy's file.
+std::string withPartRules(const std::string& fileText, const PartRules& rules, std::string* error = nullptr);
+/// Writes them into data/enemies/<id>.json and reads them again (PartRules::reload). False with `error`.
+bool savePartRules(const std::string& enemyId, const PartRules& rules, std::string* error = nullptr);
 
 const char* partRoleId(PartRole r);
 /// « Point faible », « Partie normale », « Blindée », « Blesse ».

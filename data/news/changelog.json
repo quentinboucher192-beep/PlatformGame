@@ -1,4 +1,9 @@
 {
+  "2.76.2": [
+    "Éditeur d'ennemis : un onglet Boss › « Parties (où frapper) » montre les parties d'un boss sur son sprite, avec la pose et l'image de votre choix. Pour chaque partie, il règle son rôle (point faible, normale, blindée, qui blesse), son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse aussi. Choisissez une partie en cliquant dessus ou dans la liste, au clavier ou à la manette.",
+    "Les parties d'un boss du jeu sont en lecture seule, comme ses autres réglages : seul un administrateur les règle, et « Enregistrer les parties » les écrit dans le fichier de l'ennemi. Vos propres ennemis se battent avec leur boîte : leurs parties sont montrées, sans règles.",
+    "Fiches « Où frapper » et éditeur : chaque partie a un contour épais et un motif propre à son rôle (point faible quadrillé, partie normale rayée en long, partie blindée rayée en travers, partie qui blesse à grosses rayures obliques). Elle reste lisible sur un sprite de n'importe quelle couleur, comme la cuisse grise de Titanus. Les légendes gardent les mêmes couleurs et montrent le motif."
+  ],
   "2.76.1": [
     "Raids : les 8 Gigaboss d'Asterion se battent par parties. Leurs points faibles dessinés prennent × 2 : les yeux de Skullmaw, les jointures de Dreadfang, les phalanges de Pyroclast, le cœur de Heartbreaker et du Cœur d'Asterion, la gueule du Voidworm, les orbes de Graviton, le genou de Titanus. Cornes, épaules, côtes, cuisse et racines sont blindées (× 0,5). Seules les griffes, mâchoires, doigts, épines, débris et pieds blessent au contact. Leurs fiches montrent leurs parties à la couleur de leur rôle. Une instance ne réunit que des joueurs aux mêmes règles."
   ],
