@@ -50541,6 +50541,12 @@
    ]
   },
   {
+   "fr": "Raids : les règles des Gigaboss changent (tirs et couronne), donc une instance de raid ne réunit que des joueurs en 2.75.2 ou plus récent : mettez le jeu à jour pour rejoindre votre groupe.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : les tirs et rayons des Gigaboss partent enfin de leur dessin, et non plus de 80 à 300 px au-dessus d'eux : regard de Skullmaw, bombes de Pyroclast, caillots de Heartbreaker, crachat du Voidworm, rayon du Cœur d'Asterion. La couronne de flammes de Heartbreaker, Graviton et du Cœur respecte son rayon (elle tournait bien plus loin). Les autres ennemis ne changent pas et aucun record n'est effacé.",
    "where": [
     "data/news/changelog.json"
