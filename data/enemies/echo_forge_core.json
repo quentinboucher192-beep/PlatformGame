@@ -340,5 +340,6 @@
     "brainVersion": 3
   },
   "variantOf": "forge_core",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

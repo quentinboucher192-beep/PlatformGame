@@ -353,5 +353,6 @@
     "brainVersion": 3
   },
   "variantOf": "archon_catacombs",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

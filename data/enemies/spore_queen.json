@@ -320,5 +320,40 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "têtes": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "bite"
+        ]
+      },
+      "cous": {
+        "role": "normal",
+        "damage": 1
+      },
+      "bulbe": {
+        "role": "normal",
+        "damage": 1
+      },
+      "sacs": {
+        "role": "normal",
+        "damage": 1
+      },
+      "pétales": {
+        "role": "hurt"
+      },
+      "feuilles": {
+        "role": "normal",
+        "damage": 1
+      },
+      "lianes": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

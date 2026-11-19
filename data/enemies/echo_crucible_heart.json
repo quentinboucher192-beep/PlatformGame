@@ -383,5 +383,6 @@
     "brainVersion": 3
   },
   "variantOf": "crucible_heart",
-  "tint": "#a894ff"
+  "tint": "#a894ff",
+  "partsFromVersion": 17
 }

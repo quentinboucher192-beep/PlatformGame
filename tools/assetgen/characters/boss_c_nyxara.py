@@ -83,10 +83,16 @@ class Nyxara:
         dead = p.dead >= 0.5
         if p.scale <= 0.04:
             return cv.render()
+        # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
+        cv.tag = "tentacules"
         self._tentacles(cv, p, back=True, dead=dead)
+        cv.tag = "anneau"
         self._disc(cv, p, back=True, dead=dead)
+        cv.tag = "sphère"
         self._sphere(cv, p, dead)
+        cv.tag = "tentacules"
         self._tentacles(cv, p, back=False, dead=dead)
+        cv.tag = "anneau"
         self._disc(cv, p, back=False, dead=dead)
         return cv.render()
 
@@ -137,6 +143,7 @@ class Nyxara:
                 d = r * (0.3 + 0.5 * rng.random())
                 cv.px_set(cx + math.cos(a) * d, cy + math.sin(a) * d, RIM, inten=0.3 + 0.3 * (kk % 2), decal=True)
             # eyes
+            cv.tag = "yeux"
             for (q, rx, ry, ang) in self.eyes(p):
                 cv.part(line=False)
                 ry2 = ry * max(0.15, min(1.25, p.lid))
@@ -145,6 +152,7 @@ class Nyxara:
                 if p.lid > 0.4:
                     cv.ellipse((q[0] + 0.6, q[1]), rx * 0.4, ry2 * 0.45, EYE, ang=ang, flat=min(1.0, 0.8 + 0.2 * p.eye))
         else:
+            cv.tag = "yeux"
             for (q, rx, ry, ang) in self.eyes(p):
                 cv.part(line=False)
                 cv.line((q[0] - rx * 0.7, q[1]), (q[0] + rx * 0.7, q[1]), DEAD, inten=0.9)

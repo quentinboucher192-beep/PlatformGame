@@ -92,9 +92,12 @@ class Sentinel:
         cv = TCanvas(W, H, rot=p.tilt, center=c)
         L = lambda x, y: (c[0] + x, c[1] + y)  # noqa: E731
         dead = p.dead >= 0.5
+        # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
         if layer in (None, "body"):
+            cv.tag = "réacteur"
             self._thruster(cv, p, L)
         if layer in (None, "plates"):
+            cv.tag = "plaques"
             self._plates(cv, p, L)
         if layer == "plates":
             return cv.render()
@@ -102,16 +105,22 @@ class Sentinel:
             # plates are rendered on their own layer: start a fresh canvas for the rest
             body_only = cv.render()
             cv = TCanvas(W, H, rot=p.tilt, center=c)
+            cv.tag = "corps"
             self._sphere(cv, p, L, dead)
+            cv.tag = "œil"
             self._eye(cv, p, L, dead)
+            cv.tag = "canons"
             for (pv, a, dark) in self.cannons(p):
                 self._cannon(cv, p, L, pv, a, dark, dead)
             img = cv.render()
             sel = (body_only[:, :, 3] > 0) & (img[:, :, 3] == 0)
             img[sel] = body_only[sel]
             return img
+        cv.tag = "corps"
         self._sphere(cv, p, L, dead)
+        cv.tag = "œil"
         self._eye(cv, p, L, dead)
+        cv.tag = "canons"
         for (pv, a, dark) in self.cannons(p):
             self._cannon(cv, p, L, pv, a, dark, dead)
         return cv.render()
@@ -232,8 +241,10 @@ class Sentinel:
         ex, ey = self.EYE_OFF
         E = L(ex, ey)
         # bezel
+        cv.tag = "corps"
         cv.part()
         cv.tdisc(E, 12.0 + 0.8 * p.open, METAL, bias=0.05)
+        cv.tag = "œil"
         cv.part()
         cv.tdisc(E, 9.8 + 0.6 * p.open, SOCKET, flat=0.3)
         cv.part(line=False)
@@ -249,6 +260,7 @@ class Sentinel:
                         0.9, 0.9, SOCKET, flat=0.1)
         cv.tpx((E[0] - 2.0, E[1] - 3.0), EYE, inten=1.0)
         # iris shutters (eyelids)
+        cv.tag = "plaques"
         if lid < 0.98:
             Ec = cv.T(E)
             gap = 9.8 * max(0.0, lid)

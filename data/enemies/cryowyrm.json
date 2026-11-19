@@ -334,5 +334,42 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "dive",
+          "v3_dive"
+        ]
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "dive",
+          "v3_dive"
+        ]
+      },
+      "crinière": {
+        "role": "normal",
+        "damage": 1
+      },
+      "nageoire": {
+        "role": "normal",
+        "damage": 1
+      },
+      "queue": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "pointes": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

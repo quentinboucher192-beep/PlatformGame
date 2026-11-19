@@ -317,5 +317,38 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "œil": {
+        "role": "weak",
+        "damage": 2
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "slam",
+          "v3_dive"
+        ]
+      },
+      "canons": {
+        "role": "normal",
+        "damage": 1
+      },
+      "plaques": {
+        "role": "armour",
+        "damage": 0.5,
+        "hurtDuring": [
+          "slam",
+          "v3_dive"
+        ]
+      },
+      "réacteur": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

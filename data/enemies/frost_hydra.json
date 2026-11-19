@@ -340,5 +340,44 @@
     ],
     "enrageTime": 75,
     "brainVersion": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "têtes": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "bite"
+        ]
+      },
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "cous": {
+        "role": "normal",
+        "damage": 1
+      },
+      "tronc": {
+        "role": "normal",
+        "damage": 1
+      },
+      "glace": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "socle": {
+        "role": "normal",
+        "damage": 1
+      },
+      "racines": {
+        "role": "hurt"
+      },
+      "pointes": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

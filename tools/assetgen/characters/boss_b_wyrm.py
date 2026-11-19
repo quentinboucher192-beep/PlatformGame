@@ -124,6 +124,7 @@ def radius(u):
 
 def _flame(cv, base, d, perp, ln, wd, bend, t):
     """Three-tone flame tongue from `base` along direction d, curling by `bend`."""
+    was, cv.tag = cv.tag, "flammes"  # 2.76.2: hit parts (raster.LABELS)
     for k, (scale, inten) in enumerate(((1.0, 0.2), (0.74, 0.5), (0.45, 0.88))):
         l2, w2 = ln * scale, wd * scale
         mid = (base[0] + d[0] * l2 * 0.5 + perp[0] * bend * 0.6, base[1] + d[1] * l2 * 0.5 + perp[1] * bend * 0.6)
@@ -133,6 +134,7 @@ def _flame(cv, base, d, perp, ln, wd, bend, t):
                                                                     mid[1] + perp[1] * w2 * 0.6), tip,
                   (mid[0] - perp[0] * w2 * 0.5, mid[1] - perp[1] * w2 * 0.5),
                   (base[0] - perp[0] * w2, base[1] - perp[1] * w2)], C.FLAME, flat=inten)
+    cv.tag = was
 
 
 def draw(p, kind):
@@ -158,6 +160,7 @@ def draw(p, kind):
         return g if alive else 0.0
 
     # ----------------------------------------------------------- tail end
+    cv.tag = "pointes"  # 2.76.2: the hit part of each pixel (raster.LABELS, tools/assetgen/hitparts.py)
     ex, ey = x[-1], y[-1]
     etx, ety = tx[-1], ty[-1]
     if fire:
@@ -197,6 +200,7 @@ def draw(p, kind):
         bkx, bky = tx[km], ty[km]                # toward the tail
         rr = r[km]
         # dorsal features (behind the segment)
+        cv.tag = "pointes"
         if fire:
             if uc < 0.34 and alive:
                 flick = math.sin((fl + uc * 3.1) * TAU)
@@ -229,6 +233,7 @@ def draw(p, kind):
                     _flame(cv, (cx + vnx * rr * 0.3, cy + vny * rr * 0.3), d, (-d[1], d[0]),
                            11 + 2 * math.sin((fl + j * 0.4) * TAU) + 3 * p.sweep, 3.0, 1.5, fl)
             elif not fire:
+                cv.tag = "nageoire"
                 cv.part()
                 fa = fin_ang
                 q0 = (cx + vnx * rr * 0.4, cy + vny * rr * 0.4)
@@ -241,6 +246,7 @@ def draw(p, kind):
                     cv.tline(q0, (q0[0] + math.cos(fa + ofs) * dd * 0.9, q0[1] + math.sin(fa + ofs) * dd * 0.9),
                              C.ICE_DK, inten=0.4, decal=True)
         # body segment
+        cv.tag = "corps" if uc < 0.5 else "queue"
         cv.part()
         idx = list(range(a, min(n, b + 2)))
         pts = [(x[k], y[k]) for k in idx]
@@ -290,6 +296,7 @@ def draw(p, kind):
         dx, dy = lx - hinge[0], ly - hinge[1]
         return HL(hinge[0] + dx * jc - dy * js, hinge[1] + dx * js + dy * jc)
 
+    cv.tag = "tête"
     if fire:
         _head_fire(cv, p, HL, JL, alive, fl)
     else:
@@ -376,6 +383,7 @@ def _head_fire(cv, p, HL, JL, alive, fl):
 def _head_ice(cv, p, HL, JL, alive, fl):
     cm = C.CRYST if alive else C.ICE_DK
     # frost mane: white strands flowing back over the neck
+    cv.tag = "crinière"
     for k, (bx, by, ln, a) in enumerate(((-3, -4, 17, -2.75), (-4, -1, 19, -3.0), (-3.5, 2.5, 15, 2.95),
                                          (0, -6, 12, -2.45), (-2, 4, 10, 2.6))):
         cv.part()
@@ -391,6 +399,7 @@ def _head_ice(cv, p, HL, JL, alive, fl):
             pts.append((px_, py_))
         cv.tchain(pts, [1.9, 1.6, 1.2, 0.8, 0.4], C.SNOW_M if k % 2 == 0 else C.MIST_M)
     # far antler
+    cv.tag = "tête"
     cv.part()
     crystal(cv, HL(3, -6), -2.35 + p.ang, 11 * HS * (1 - 0.4 * p.dead), 1.5 * HS, C.ICE_DK)
     upper = [(-5, -3), (-1, -6.8), (8, -7.2), (14, -5.4), (20, -3.2), (25, -1.2), (24.5, 0.6), (20, 1.4), (6, 2.0),

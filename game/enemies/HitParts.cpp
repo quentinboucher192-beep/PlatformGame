@@ -206,10 +206,18 @@ RulesCache& rulesCache() {
 }
 
 PartRules readRules(const std::string& enemyId) {
+    auto load = [](const std::string& id) -> std::optional<Json> {
+        if (id.empty() || id.find_first_of("/\\.") != std::string::npos) return std::nullopt;
+        return FileUtil::loadJson(Paths::dataDir() / "enemies" / (id + ".json"));
+    };
     PartRules r;
-    if (!enemyId.empty() && enemyId.find_first_of("/\\.") == std::string::npos)
-        if (auto j = FileUtil::loadJson(Paths::dataDir() / "enemies" / (enemyId + ".json")))
-            r = PartRules::parse(j->value("parts", Json()), jget<int>(*j, "partsFromVersion", 0));
+    if (auto j = load(enemyId)) {
+        Json parts = j->value("parts", Json());
+        // 2.76.2: an écho fights with the parts of its original (the same sheet), unless it names its own.
+        if (!parts.is_object())
+            if (auto original = load(jstr(*j, "variantOf"))) parts = original->value("parts", Json());
+        r = PartRules::parse(parts, jget<int>(*j, "partsFromVersion", 0));
+    }
     return r;
 }
 }  // namespace
@@ -241,6 +249,15 @@ std::string withPartRules(const std::string& fileText, const PartRules& rules, s
     Ordered& parts = j["parts"];
     if (!parts.is_object()) parts = Ordered::object();
     if (!rules.profile.empty() && !parts.contains("profile")) parts["profile"] = rules.profile;
+    // An écho that took its original's parts gets its own block: with their origins too (its shots unchanged).
+    if (!rules.origins.empty() && !parts.contains("origins")) {
+        Ordered o = Ordered::object();
+        for (const auto& [id, at] : rules.origins) {
+            auto num = [](float v) { return v == std::floor(v) ? Ordered(static_cast<int>(v)) : Ordered(static_cast<double>(v)); };
+            o[id] = Ordered::array({num(at.x), num(at.y)});
+        }
+        parts["origins"] = std::move(o);
+    }
     const Ordered before = parts.contains("roles") && parts["roles"].is_object() ? parts["roles"] : Ordered::object();
     auto write = [](const PartRule& r) {
         Ordered o = Ordered::object();

@@ -223,5 +223,32 @@
     ],
     "enrageTime": 80,
     "darkPhase": 3
-  }
+  },
+  "parts": {
+    "profile": "rig",
+    "roles": {
+      "yeux": {
+        "role": "weak",
+        "damage": 2
+      },
+      "sphère": {
+        "role": "normal",
+        "damage": 1
+      },
+      "anneau": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "tentacules": {
+        "role": "hurt"
+      }
+    },
+    "origins": {
+      "seekers": [
+        7,
+        -31
+      ]
+    }
+  },
+  "partsFromVersion": 17
 }

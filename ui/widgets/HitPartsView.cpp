@@ -32,6 +32,8 @@ std::string capitalized(const std::string& s) {
     } else if (b0 == 0xC3 && out.size() > 1) {
         const auto b1 = static_cast<unsigned char>(out[1]);
         if (b1 >= 0xA0 && b1 <= 0xBE && b1 != 0xB7) out[1] = static_cast<char>(b1 - 0x20);
+    } else if (b0 == 0xC5 && out.size() > 1 && static_cast<unsigned char>(out[1]) == 0x93) {
+        out[1] = static_cast<char>(0x92);  // 2.76.2: « œil » → « Œil »
     }
     return out;
 }

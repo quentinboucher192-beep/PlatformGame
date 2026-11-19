@@ -204,6 +204,8 @@ void Enemy::moveTowards(GameWorld& w, Vec2 target, float speed, float dt) {
 
 void Enemy::fixedUpdate(GameWorld& w, float dt) {
     prevBox = box;
+    // 2.76.2: whether it fights by its parts in this run, at every step (its shots leave its drawing).
+    partsFight_ = fightsByParts(*this, w);
     auto tick = [dt](float& t) { t = std::max(0.0f, t - dt); };
     tick(hurtFlash_);
     tick(invuln_);
@@ -226,7 +228,6 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     if (state_ == EnemyState::Dormant) return;
     // 2.76.0: a boss that fights by parts (Pyrrhax): its pose is part of the simulation, its animation
     // advances in the fixed step (every computer, every replay: the same frame at the same step).
-    partsFight_ = fightsByParts(*this, w);
     // 2.76.2: and from 17 the sheet of its phase, its pose kept (never in a display update, whose rate
     // varies: the parts of a phase sheet are its own).
     if (partsFight_ && def_.isBoss && shownLook_ != phase_ && w.simulationVersion() >= kPartsLookSimulation) refreshLook(w, true);

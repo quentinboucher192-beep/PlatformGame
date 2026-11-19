@@ -7852,6 +7852,12 @@
    ]
   },
   {
+   "fr": "Boss classiques : les 16 gardiens des planètes et d'Aethra, et Mycélia la Câline du didacticiel, se battent par parties, comme Pyrrhax. Leurs parties suivent leur dessin image par image : un bras levé, une épée qui s'abat, une tête de dragon qui plonge sont touchés là où vous les voyez.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Boss de la planète jouée récemment",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -36827,6 +36833,12 @@
    ]
   },
   {
+   "fr": "Les 16 échos du Noyau stellaire se battent comme leur original, avec les mêmes parties. Les replays d'avant rejouent avec la boîte, à l'identique, et aucun record n'est effacé.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les 26 morceaux du juke-box débloqués.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -38026,6 +38038,12 @@
    "fr": "Les temps passent par la vérification habituelle avant d'entrer dans les classements. Une copie de la progression part dans quelques secondes.",
    "where": [
     "ui/screens/OnlineComputer.cpp"
+   ]
+  },
+  {
+   "fr": "Les tirs et les rayons des boss classiques partent de leur dessin : le poing du Thornwarden et de l'Archonte, leur cœur pour le rayon, la lance d'Aurorax, le chapeau de Mycélia, les yeux de Nyxara, l'œil de Pyrogyre, le marteau du Cœur du Creuset.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -45656,6 +45674,12 @@
    "fr": "Où frapper",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Où frapper : la tête, les yeux et le cœur exposé sont des points faibles (× 2) ; les carapaces, épaulières, anneaux, chapeau et queues sont blindés (× 0,5) ; le reste prend les coups normalement. Les ronces, pointes, flammes, armes, tentacules et réacteurs blessent au contact, et chaque attaque fait blesser ses propres parties : le poing ou le bras qui frappe, la gueule qui plonge, les têtes qui mordent.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

@@ -29,6 +29,16 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
       du boss ; avec `rest`, tout ce qu'aucune région ne contient est écarté ;
     * plusieurs régions de même nom font une seule partie. L'ordre compte : la première qui contient un pixel le
       prend, donc la pose particulière passe avant la région générale.
+* **Profil « rig » (2.76.2, les boss classiques)** : `"parts": {"profile": "rig"}`. Pour un boss dont le sprite sort
+  d'un générateur de `tools/assetgen/characters`, chaque partie est nommée dans le dessin lui-même
+  (`cv.tag = "tête"` avant de la dessiner). `python3 tools/assetgen/hitparts.py --rig-labels` régénère la feuille en
+  mode étiquettes (`raster.LABELS`, un processus par feuille) et écrit sa carte, `tools/assetgen/rig_labels/<feuille>.png`
+  (un octet par pixel : sa partie). L'outil lit ensuite la partie de chaque pixel de chaque image, puis donne les
+  contours et ce qui est collé dessus à la partie la plus proche (4 px au plus). Un effet dessiné sur son propre
+  canevas, sans étiquette, est laissé de côté. Le générateur et la liste des parties de chaque feuille sont dans `RIGS`
+  (hitparts.py). L'outil s'arrête si le générateur ne redonne pas la feuille déposée, ou si une carte est plus ancienne
+  que les sprites. `--check` (CI) lit les cartes sans lancer les générateurs. Après un changement d'un générateur de
+  sprites, relancez `--rig-labels`.
 * **Nouveau profil** : pour un découpage qui suit vraiment l'anatomie, ajoutez une fonction dans l'outil, sur le
   modèle de `dragon()`, et nommez ses parties dans une liste comme `DRAGON`. Elle doit rester déterministe : des
   entiers seulement pour les décisions, aucun hasard, des ordres fixes.
@@ -69,6 +79,9 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   bat par parties, en pixels du sprite depuis les pieds (comme `origin`). Elle corrige une origine hors du dessin
   sans toucher à la définition de l'attaque, donc ni à l'empreinte de ses niveaux ni aux replays d'avant (exemple :
   l'Astrarque, dont deux attaques empruntées partaient du vide).
+* **Un écho** (2.76.2, `"variantOf"`) sans bloc `"parts"` prend celles de son original (`PartRules::of`) avec son propre
+  `"partsFromVersion"`. Il peut nommer les siennes si ses rôles diffèrent ; l'éditeur d'ennemis lui en écrit un
+  bloc à lui dès qu'on règle ses parties.
 
 ### Les régler dans l'éditeur d'ennemis (2.76.2)
 
@@ -115,6 +128,11 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
 pour les Gigaboss avant la 2.75.2. Mesurez sur l'image de l'attaque (clip `attackAnim`) : la bouche, les yeux,
 le canon.
 
+* **Une origine qui ne vaut qu'en combat par parties** (2.76.2) : `"parts": {"origins": {"barrage": [45, -51]}}`, dans
+  les mêmes unités. Elle n'est pas dans la définition de l'ennemi : l'empreinte des niveaux classés ne change pas, et
+  un replay d'avant tire de l'origine de l'attaque (`Enemy::attackOrigin`). C'est le chemin d'un boss de la campagne
+  dont les records doivent rester.
+
 ## 5. Les tests à écrire
 
 * **Rôles du boss** : les rôles et `partsFromVersion` lus par `PartRules::of(id)`, sur le modèle du test
@@ -140,7 +158,7 @@ le canon.
     ne mélange jamais deux versions.
 * **Coopération** : `kCoopSimulationVersion` ne bouge pas. Les replays d'équipe portent la version de simulation,
   ils rejouent avec leurs propres règles.
-* **Journal** : sous la clé de la version (`"2.76.1"`) ; les autres agents écrivent sous la même clé, gardez les
+* **Journal** : sous la clé de la version (`"2.76.2"`) ; les autres agents écrivent sous la même clé, gardez les
   deux côtés à la fusion.
 
 ---

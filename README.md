@@ -640,6 +640,14 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * **Feuille de phase dans le pas fixe** : un boss par parties prend la feuille de sa phase dans la simulation, sa pose
   gardée ; ses parties sont les mêmes à toute fréquence d'image. Les tirs partent de son dessin, et `parts.origins`
   corrige l'origine d'une attaque sans toucher à sa définition (Astrarque).
+* **Boss classiques par parties** (version de simulation **17**) : les 16 gardiens des planètes et d'Aethra, Mycélia la
+  Câline et les 16 échos du Noyau se battent par parties. Leurs parties viennent de leur générateur de sprites (profil
+  « rig » de `tools/assetgen/hitparts.py` : chaque pixel de chaque image porte la partie qui l'a dessiné).
+* **Rôles** : tête, yeux et cœur exposé × 2 ; carapaces, épaulières, anneaux, chapeau et queues × 0,5 ; ronces,
+  pointes, flammes, armes et tentacules blessent ; poing, bras, gueule ou têtes blessent pendant leur attaque
+  (`hurtDuring`). Un écho prend les parties de son original.
+* **Tirs** : ils partent du dessin (« origins » des parties : poing, cœur, lance, chapeau, yeux, œil, marteau). Les
+  replays d'avant rejouent avec la boîte et l'origine d'avant ; les records sont gardés.
 * **Éditeur d'ennemis › Boss › Parties (où frapper)** : les parties d'un boss sur son sprite (pose et image
   choisies) et, pour chacune, son rôle, son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse.
   Lecture seule pour un boss du jeu, réglé par un administrateur et écrit dans `data/enemies/<id>.json`
