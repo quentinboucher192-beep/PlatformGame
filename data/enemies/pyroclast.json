@@ -105,8 +105,8 @@
       "projectileSpeed": 230,
       "lead": 0.7,
       "origin": [
-        100,
-        -280
+        40,
+        -112
       ],
       "projectile": "fireball",
       "explosionRadius": 20,

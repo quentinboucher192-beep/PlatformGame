@@ -629,6 +629,15 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   privé ni de secret. Le **Journal** regroupe les consultations (une entrée par joueur et par heure, avec leur nombre), et
   Paramètres en ligne le dit ([docs/online/PRIVACY.md](docs/online/PRIVACY.md#ce-que-voit-un-administrateur-2753)).
 
+**Nouveau dans la version 2.75.2** :
+* **Fiches d'Asterion** : « Où frapper » par **pose**. Chaque attaque d'une phase est jouée sur sa vraie animation (élan
+  puis coup), avec ce qui part de son corps : rouge, ce qui blesse ; rose, d'où partent les tirs. Les points faibles et les
+  cibles sont dessinés avec leur sprite, là où le combat les colle. Correction : les plaques de Heartbreaker sont le blindage de
+  sa **première** phase ([docs/RAIDS.md §18](docs/RAIDS.md)).
+* **Raids** : les tirs des Gigaboss partent de leur dessin (leurs `origin` étaient multipliées par leur échelle), et leur
+  couronne de flammes respecte son rayon. Seuls leurs combats de raid changent ; rien en solo ni en coopération, aucun
+  record effacé.
+
 **Nouveau dans la version 2.75.1** :
 * **Raids et coopération** : les joueurs **se traversent** (les autres dessinés en semi-transparence, vous opaque) ; un
   joueur qui tombe ne déplace personne et ne revient qu'une fois **réanimé** près de son âme (2 par tentative en

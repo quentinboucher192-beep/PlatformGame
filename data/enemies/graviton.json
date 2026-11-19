@@ -58,7 +58,7 @@
       "projectile": "rock",
       "projectileRadius": 10,
       "count": 7,
-      "radius": 190,
+      "radius": 330,
       "spread": 110,
       "duration": 2.8,
       "knockback": 220

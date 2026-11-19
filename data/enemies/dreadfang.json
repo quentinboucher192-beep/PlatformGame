@@ -79,7 +79,7 @@
       "spread": 14,
       "origin": [
         0,
-        -120
+        -48
       ],
       "lead": 0.7
     },
@@ -175,7 +175,7 @@
       "spread": 12,
       "origin": [
         0,
-        -120
+        -48
       ],
       "bursts": 3,
       "burstInterval": 0.3

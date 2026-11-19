@@ -44,8 +44,8 @@
       "spread": 16,
       "gravity": 160,
       "origin": [
-        70,
-        -300
+        68,
+        -190
       ],
       "lead": 0.7,
       "hitEffect": "eruption_spore"
@@ -186,8 +186,8 @@
       "spread": 14,
       "gravity": 160,
       "origin": [
-        70,
-        -300
+        68,
+        -190
       ],
       "hitEffect": "eruption_spore"
     }

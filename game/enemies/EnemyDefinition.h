@@ -2,6 +2,7 @@
 
 #include <array>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/core/Json.h"
@@ -166,6 +167,17 @@ struct AttackDef {
     Json toJson() const;
     static AttackDef fromJson(const Json& j);
 };
+
+/// 2.75.2: where the shots and beams of `a` leave its body (Enemy::attackOrigin, and the « Où
+/// frapper » diagram of the raid sheets): its `origin` when given (pixels of its sprite from its
+/// feet, × its `scale`, x toward where it faces), else a point of its box.
+Vec2 attackOriginOf(const AttackDef& a, const Rect& box, float facing, float scale);
+/// 2.75.2: the crown of an Orbit attack, its narrowest and widest radius from its box's centre (the
+/// flames widen from the first to the second, then close). The inner one is its box × its scale + 14
+/// as before when that leaves room under its `radius` (150 by default): every enemy but the gigaboss
+/// of Asterion plays as before. Past it (their box is already in world units, × 2.5 went far beyond
+/// their radius, which was then ignored): just outside its box, the widest being its radius.
+std::pair<float, float> orbitRadii(const AttackDef& a, Vec2 boxSize, float scale);
 
 struct BossPhase {
     std::string name = "Phase";

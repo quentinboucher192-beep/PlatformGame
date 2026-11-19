@@ -170,6 +170,16 @@ public:
             attacks_.scrollTo(item);
             g_.onlineOpen.clear();
         }
+        // 2.75.2 (--raid-sheets <sheet>:1:frapper=<n>[:pose=<attack>]): the n-th phase and state of its
+        // « Où frapper » diagram (the first chips of its « Mécanismes »), on the pose of that attack.
+        if (g_.onlineOpen.rfind("sheet-hit:", 0) == 0) {
+            const std::string rest = g_.onlineOpen.substr(10);
+            const size_t c = rest.find(':');
+            hitOf_ = ids_[static_cast<size_t>(selected_)];
+            hitView_ = std::max(0, std::atoi(rest.substr(0, c).c_str()) - 1);
+            hitPose_ = c == std::string::npos ? std::string() : rest.substr(c + 1);
+            g_.onlineOpen.clear();
+        }
         titan_.setOpenHint("Clic ou validation : la fiche de son gigaboss");
         atlas_ = officialCreatureAtlas(g_.content);  // the examples of the attacks (a neutral arena for a gigaboss)
         attacks_.setAtlas(atlas_);
@@ -684,6 +694,8 @@ private:
 
     // ------------------------------------------------------------- 2.75: where to hit it
 
+    static constexpr Color kSource{255, 120, 220, 255};  // 2.75.2: where an attack leaves its body
+
     static Color hitColor(raid::HitPart::Kind k) {
         switch (k) {
             case raid::HitPart::Kind::Weak: return Color{124, 240, 168, 255};
@@ -694,9 +706,13 @@ private:
         return kText;
     }
 
-    /// « OÙ FRAPPER »: a chip per phase and state (keyboard, gamepad, mouse), its real sprite with the
-    /// rectangles of its fight (game/raid/BossHitboxes) over it, the legend measured at its right, the
-    /// plates of its mechanism in its arena under it, « Frappez ici quand… ». Returns the height used.
+    /// « OÙ FRAPPER »: a chip per phase and state, then (2.75.2) a chip per pose — at rest, or one of
+    /// the attacks of that phase on its own animation (its wind-up, then its blow) with what it sends
+    /// from its body (game/raid/BossHitboxes::hitAttack) — (keyboard, gamepad, mouse); its real sprite
+    /// (the sheet of its phase, its pivot and scale as Enemy::render) with the rectangles of its fight
+    /// over it and the sprites of its weak points and targets where the fight sticks them; the legend
+    /// measured at its right, the plates of its mechanism in its arena under it, « Frappez ici quand… ».
+    /// Returns the height used.
     float drawHitboxes(const Rect& view, float y0, float w, const raid::GigabossSheet& g) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
@@ -705,12 +721,13 @@ private:
         if (hitOf_ != g.id) {
             hitOf_ = g.id;
             hitView_ = 0;
+            hitPose_.clear();
         }
         const float x = view.x, pad = ui.s(12);
         float y = y0;
-        const Rect box{x, y, w, 0.0f};
         // Its title, then the chips.
-        fit(ui, "OÙ FRAPPER · selon la phase et l'état", {x + pad, y + ui.s(16)}, 16, w - 2 * pad, kGold, FontFace::Title);
+        // (« · » is not in the title font: a colon)
+        fit(ui, "OÙ FRAPPER : selon la phase, l'état et la pose", {x + pad, y + ui.s(16)}, 16, w - 2 * pad, kGold, FontFace::Title);
         y += ui.s(34);
         std::vector<std::string> labels;
         std::vector<bool> on;
@@ -722,10 +739,37 @@ private:
         float bottom = y;
         const int clicked = chips(ui, "hitbox", x + pad, y, x + w - pad, labels, on, bottom);
         if (clicked >= 0) hitView_ = clicked;
-        y = bottom + ui.s(10);
+        y = bottom + ui.s(8);
         const raid::HitboxView& v = hb.views[static_cast<size_t>(hitView_)];
+        // 2.75.2: the poses of this phase: at rest, then its attacks (those of its definition).
+        std::vector<const raid::HitAttack*> poses;
+        for (const raid::HitAttack& a : hb.attacks)
+            if (std::find(a.phases.begin(), a.phases.end(), v.phase) != a.phases.end()) poses.push_back(&a);
+        const raid::HitAttack* pose = nullptr;
+        for (const raid::HitAttack* a : poses)
+            if (a->id == hitPose_) pose = a;
+        {
+            const float lab = std::min(ui.s(70), textW(ui, "Pose :", fz(ui, 14), FontFace::Bold) + ui.s(12));
+            fit(ui, "Pose :", {x + pad, y + ui.s(18)}, fz(ui, 14), lab, kDim, FontFace::Bold);
+            std::vector<std::string> pl = {"Au repos"};
+            std::vector<bool> pon = {pose == nullptr};
+            for (const raid::HitAttack* a : poses) {
+                pl.push_back(a->name);
+                pon.push_back(a == pose);
+            }
+            float pb = y;
+            const int pc = chips(ui, "hitpose", x + pad + lab, y, x + w - pad, pl, pon, pb);
+            if (pc == 0) {
+                hitPose_.clear();
+                pose = nullptr;
+            } else if (pc > 0) {
+                pose = poses[static_cast<size_t>(pc - 1)];
+                hitPose_ = pose->id;
+            }
+            y = pb + ui.s(10);
+        }
         // The stage (its sprite and the rectangles) at the left, the legend at its right.
-        const float stageH = ui.s(300), legendW = std::min(ui.s(320), w * 0.42f);
+        const float stageH = ui.s(320), legendW = std::min(ui.s(320), w * 0.42f);
         const Rect stage{x + pad, y, w - 2 * pad - legendW - ui.s(12), stageH};
         r.fillRoundedRect(stage, ui.s(10), Color{11, 18, 38, 255});
         const EnemyDefinition* look = phaseLook(g, v.phase - 1);
@@ -738,20 +782,64 @@ private:
             win = win.united(sprite);
         }
         for (const raid::HitPart& p : v.parts) win = win.united(p.rect);
+        const float big = std::max(win.w, win.h);
+        if (pose)
+            for (const raid::HitShape& sh : pose->shapes) {
+                switch (sh.kind) {
+                    case raid::HitShape::Kind::Area: win = win.united(sh.rect); break;
+                    case raid::HitShape::Kind::Origin: win = win.united(Rect::fromCenter(sh.at, {40.0f, 40.0f})); break;
+                    case raid::HitShape::Kind::Wave: win = win.united(Rect{std::min(sh.at.x, sh.to.x), sh.at.y - 20.0f, std::abs(sh.to.x - sh.at.x), 40.0f}); break;
+                    case raid::HitShape::Kind::Ring:  // a crown close to it in the frame; an immense ring drawn cut
+                        if (sh.radius <= big * 0.75f) win = win.united(Rect::fromCenter(sh.at, {sh.radius * 2.0f, sh.radius * 2.0f}));
+                        break;
+                    case raid::HitShape::Kind::Beam: break;  // its start (the origin) is in; the beam drawn cut
+                }
+            }
         const float margin = std::max(win.w, win.h) * 0.06f;
         win = {win.x - margin, win.y - margin, win.w + 2 * margin, win.h + 2 * margin};
         const float k = std::min((stage.w - ui.s(16)) / std::max(1.0f, win.w), (stage.h - ui.s(16)) / std::max(1.0f, win.h));
         const Vec2 o{stage.center().x - win.center().x * k, stage.center().y - win.center().y * k};
         auto toScreen = [&](const Rect& wr) { return Rect{o.x + wr.x * k, o.y + wr.y * k, wr.w * k, wr.h * k}; };
+        auto at = [&](Vec2 p) { return Vec2{o.x + p.x * k, o.y + p.y * k}; };
         r.pushClip(stage);
+        const bool armour = v.state == "armour";
         if (set && set->texture) {
+            // At rest: its idle; a pose: its wind-up, then its blow (their own durations), a breath, again.
             const AnimationClip* c = set->clip("idle");
             if (!c && !set->clips.empty()) c = &set->clips.begin()->second;
-            if (c && c->frameCount() > 0) {
-                const int f = static_cast<int>(t_ * 6.0f) % c->frameCount();
-                const Rect src = set->frameRect(*c, f);
-                r.drawTexture(*set->texture, &src, toScreen(sprite), v.state == "armour" ? Color{200, 200, 215, 255} : Color::white());
+            int f = c && c->frameCount() > 0 ? static_cast<int>(t_ * 6.0f) % c->frameCount() : 0;
+            if (pose) {
+                const AnimationClip* tele = set->clip(pose->telegraphClip);
+                const AnimationClip* blow = set->clip(pose->attackClip);
+                const float tt = tele ? tele->totalDuration() : 0.0f, bt = blow ? blow->totalDuration() : 0.0f;
+                if (tele || blow) {
+                    float tc = std::fmod(t_, tt + bt + 0.6f);
+                    const AnimationClip* now = tele && tc < tt ? tele : (blow ? blow : tele);
+                    if (now == blow && tele) tc -= tt;
+                    c = now;
+                    f = 0;
+                    while (f + 1 < c->frameCount() && tc >= c->durations[static_cast<size_t>(f)]) tc -= c->durations[static_cast<size_t>(f++)];
+                }
             }
+            if (c && c->frameCount() > 0) {
+                const Rect src = set->frameRect(*c, f);
+                r.drawTexture(*set->texture, &src, toScreen(sprite), armour ? Color{200, 200, 215, 255} : Color::white());
+            }
+        }
+        // 2.75.2: the sprites of its weak points and targets, their feet where the fight sticks them.
+        for (const raid::HitPart& p : v.parts) {
+            if (p.enemy.empty()) continue;
+            const EnemyDefinition* d = g_.content.enemy(p.enemy);
+            AnimationSetPtr ps = d ? g_.app.resources().animation(d->animation) : nullptr;
+            if (!ps || !ps->texture) continue;
+            const AnimationClip* c = ps->clip("idle");
+            if (!c && !ps->clips.empty()) c = &ps->clips.begin()->second;
+            if (!c || c->frameCount() <= 0) continue;
+            const Rect src = ps->frameRect(*c, static_cast<int>(t_ * 6.0f) % c->frameCount());
+            const Vec2 feet = p.rect.bottomCenter();
+            r.drawTexture(*ps->texture, &src,
+                          toScreen({feet.x - ps->pivot.x * d->scale, feet.y - ps->pivot.y * d->scale, static_cast<float>(ps->frameWidth) * d->scale,
+                                    static_cast<float>(ps->frameHeight) * d->scale}));
         }
         // The rectangles: what to hit (green), armour (grey), what hurts (red outline), in that order.
         for (int pass = 0; pass < 2; ++pass)
@@ -763,6 +851,39 @@ private:
                 if (!hurt) r.fillRect(sr, c.withAlpha(p.kind == raid::HitPart::Kind::Armour ? 120 : 80));
                 r.drawRect(sr, c, std::max(1.5f, ui.s(hurt ? 2.5f : 2.0f)));
             }
+        // 2.75.2: what the attack of the pose sends: red what hurts, pink where it leaves from.
+        bool sourceShown = false, hurtShown = false;
+        if (pose)
+            for (const raid::HitShape& sh : pose->shapes) {
+                const Color c = sh.hurts ? hitColor(raid::HitPart::Kind::Hurt) : kSource;
+                (sh.hurts ? hurtShown : sourceShown) = true;
+                const float th = std::max(2.0f, ui.s(3.0f));
+                switch (sh.kind) {
+                    case raid::HitShape::Kind::Area: {
+                        const Rect sr = toScreen(sh.rect);
+                        r.fillRect(sr, c.withAlpha(60));
+                        r.drawRect(sr, c, th);
+                        break;
+                    }
+                    case raid::HitShape::Kind::Origin:
+                        r.fillCircle(at(sh.at), std::max(4.0f, ui.s(8)), Color::white());
+                        r.fillCircle(at(sh.at), std::max(3.0f, ui.s(6)), c);
+                        break;
+                    case raid::HitShape::Kind::Ring: r.drawRing(at(sh.at), sh.radius * k, th, c.withAlpha(230)); break;
+                    case raid::HitShape::Kind::Beam: r.drawLine(at(sh.at), at(sh.to), c.withAlpha(230), std::max(3.0f, ui.s(5.0f))); break;
+                    case raid::HitShape::Kind::Wave:
+                        r.drawLine(at(sh.at), at(sh.to), c, th);
+                        r.fillCircle(at(sh.to), std::max(3.0f, ui.s(6)), c);
+                        break;
+                }
+            }
+        // Its feet: the pivot of its sprite, where every rectangle is measured from.
+        {
+            const Vec2 f0 = at({0.0f, 0.0f});
+            const float arm = ui.s(9), th = std::max(1.5f, ui.s(2));
+            r.drawLine({f0.x - arm, f0.y}, {f0.x + arm, f0.y}, Color{255, 255, 255, 200}, th);
+            r.drawLine({f0.x, f0.y - arm}, {f0.x, f0.y + arm}, Color{255, 255, 255, 200}, th);
+        }
         r.popClip();
         // The legend: the colours present, then each part named (measured, wrapped, never past its box).
         const Rect leg{stage.right() + ui.s(12), y, legendW, stageH};
@@ -782,8 +903,11 @@ private:
             bool present = false;
             for (const raid::HitPart& p : v.parts) present = present || p.kind == e.kind;
             if (e.kind == raid::HitPart::Kind::Mechanism) present = !v.plates.empty();
+            if (e.kind == raid::HitPart::Kind::Hurt) present = present || hurtShown;
             if (present) lines.push_back({e.text, hitColor(e.kind)});
         }
+        if (sourceShown) lines.push_back({"Rose : d'où part l'attaque", kSource});
+        lines.push_back({"Croix blanche : ses pieds", Color{255, 255, 255, 220}});
         std::vector<std::string> named;
         for (const raid::HitPart& p : v.parts)
             if (std::find(named.begin(), named.end(), p.label) == named.end()) named.push_back(p.label);
@@ -808,6 +932,12 @@ private:
             ly += h + ui.s(2);
         }
         y += stageH + ui.s(10);
+        // 2.75.2: the attack of the pose, in a sentence.
+        if (pose) {
+            const auto ls = wrap(ui, "« " + pose->name + " » : " + pose->reach, FontFace::Bold, fz(ui, 14), w - 2 * pad, 2);
+            drawLines(ui, ls, {x + pad, y}, fz(ui, 14), ui.s(20), kPeach, FontFace::Bold);
+            y += static_cast<float>(ls.size()) * ui.s(20) + ui.s(6);
+        }
         // The arena: its plates (gold) and where it stands (red), on a strip measured to the box.
         if (!v.plates.empty() && hb.arena.w > 0.0f && hb.arena.h > 0.0f) {
             const Rect strip{x + pad, y, w - 2 * pad, ui.s(90)};
@@ -828,7 +958,6 @@ private:
         const auto ls = wrap(ui, v.hitWhen, FontFace::Bold, fz(ui, 14), w - 2 * pad, 3);
         drawLines(ui, ls, {x + pad, y}, fz(ui, 14), ui.s(20), Color{196, 240, 210, 255}, FontFace::Bold);
         y += static_cast<float>(ls.size()) * ui.s(20) + ui.s(6);
-        (void)box;
         return y - y0;
     }
 
@@ -858,6 +987,7 @@ private:
     float phaseT_ = 0.0f;
     std::string hitOf_;  // 2.75: the sheet whose diagram is shown, and its phase and state chosen
     int hitView_ = 0;
+    std::string hitPose_;  // 2.75.2: the attack whose pose is shown ("" at rest)
     std::string contentOf_;
     float contentH_ = 0.0f;
     RaidSheetsView view_;

@@ -497,8 +497,8 @@ void Enemy::guardianActive(GameWorld& w, float dt) {
             break;
         case AttackType::Orbit: {
             const float dur = std::max(0.1f, orDefault(a.duration, 4.0f));
-            const float rMin = std::max(box.w, box.h) * 0.5f * def_.scale + 14.0f;
-            const float rMax = std::max(rMin + 20.0f, orDefault(a.radius, 150.0f));
+            const std::pair<float, float> orb = orbitRadii(a, box.size(), def_.scale);  // 2.75.2: its radius respected
+            const float rMin = orb.first, rMax = orb.second;
             const float r = rMin + (rMax - rMin) * dmath::sin(kPi * std::clamp(t / dur, 0.0f, 1.0f));
             const float omega = degToRad(a.spread > 0.0f ? a.spread : 85.0f);
             const int n = std::max(1, a.count);
@@ -740,8 +740,8 @@ void Enemy::renderGuardian(RenderContext& ctx, float prog) const {
         }
         case AttackType::Orbit: {
             const float dur = std::max(0.1f, orDefault(a.duration, 4.0f));
-            const float rMin = std::max(box.w, box.h) * 0.5f * def_.scale + 14.0f;
-            const float rMax = std::max(rMin + 20.0f, orDefault(a.radius, 150.0f));
+            const std::pair<float, float> orb = orbitRadii(a, box.size(), def_.scale);  // 2.75.2: its radius respected
+            const float rMin = orb.first, rMax = orb.second;
             const float r = tele ? rMin : rMin + (rMax - rMin) * dmath::sin(kPi * std::clamp(t / dur, 0.0f, 1.0f));
             const float omega = degToRad(a.spread > 0.0f ? a.spread : 85.0f);
             const int n = std::max(1, a.count);
