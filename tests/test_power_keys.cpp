@@ -541,6 +541,8 @@ TEST_CASE("power keys: the settings give no key to the power slots any more (2.3
             }
         for (const auto& pb : d.pad[a])
             if (pb.kind != PadBinding::Kind::None) {
+                // 2.75.5: the raid's menu shares L3 with the ghosts' toggle: never in the same game.
+                if (static_cast<Action>(a) == Action::RaidMenu && pb == d.pad[static_cast<int>(Action::GhostToggle)][0]) continue;
                 for (const auto& other : pads) CHECK(!(other == pb));
                 pads.push_back(pb);
             }
