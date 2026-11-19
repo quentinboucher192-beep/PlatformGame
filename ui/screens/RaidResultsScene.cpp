@@ -19,6 +19,8 @@
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/online/Raids.h"
+#include "game/raid/RaidBranch.h"
+#include "ui/online/RaidHud.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -219,6 +221,10 @@ public:
             labels.push_back(cats[i].label);
             on.push_back(static_cast<int>(i) == cat_);
         }
+        // 2.75: the zones' « Tableaux des contributions » (my clan's groups), after the categories.
+        const int zonesChip = static_cast<int>(cats.size());
+        labels.push_back("Tableaux des zones");
+        on.push_back(cat_ == zonesChip);
         float bottom = y;
         const int clicked = chips(ui, "cat", x, y, x + w, labels, on, bottom);
         if (clicked >= 0) {
@@ -226,6 +232,10 @@ public:
             page_ = 0;
         }
         y = bottom + ui.s(10);
+        if (cat_ == zonesChip) {
+            drawZoneTables({r.x, y, r.w, r.bottom() - y}, x, w);
+            return;
+        }
         if (res_.pending) {
             const std::string t = "Votre dernier tableau est en attente de validation (" + std::to_string(res_.pendingReports) +
                                   " rapport(s) reçu(s)) : il compte dès que la majorité de votre instance l'a confirmé.";
@@ -278,6 +288,57 @@ public:
             if (ui.button("prev", {x, by, bw, navH}, "‹ Précédents", st)) --page_;
             st.enabled = page_ + 1 < pages;
             if (ui.button("next", {x + w - bw, by, bw, navH}, "Suivants ›", st)) ++page_;
+            fit(ui, label, {x + w * 0.5f, by + navH * 0.5f}, 14, w - 2 * bw - ui.s(20), kDim, FontFace::Body, Align::Center);
+        }
+    }
+
+    /// 2.75: one zone's table per page (newest first), as the combat showed it at the end of the zone.
+    void drawZoneTables(const Rect& r, float x, float w) {
+        UIContext& ui = g_.ui;
+        const auto& list = res_.zoneTables;
+        if (list.empty()) {
+            drawLines(ui, wrap(ui, "Aucun tableau de zone validé : un tableau compte quand la majorité du groupe l'a confirmé à la fin de la zone.", FontFace::Body, 15, w, 3),
+                      {x, r.y + ui.s(6)}, 15, ui.s(22), kDim);
+            return;
+        }
+        const int pages = static_cast<int>(list.size());
+        page_ = std::clamp(page_, 0, pages - 1);
+        const raids::ZoneResultTable& z = list[static_cast<size_t>(page_)];
+        std::string zoneName = "Zone " + std::to_string(z.zone), branchName;
+        for (const raid::Branch* b : raid::Branch::all())
+            if (b->id == z.branch) {
+                branchName = b->name;
+                if (const raid::ZoneInfo* zi = b->zone(z.zone)) zoneName = zi->name;
+            }
+        raidhud::ZoneTable t;
+        t.title = zoneName + (branchName.empty() ? "" : " · " + branchName);
+        const uint32_t secs = z.tick / 120;
+        t.sub = "Groupe " + z.group + " · zone terminée à " + std::to_string(secs / 60) + " min " + std::to_string(secs % 60) + " s du raid · validé par le serveur";
+        for (const raids::ZoneResultRow& row : z.rows) {
+            raidhud::ZoneRow zr;
+            zr.name = row.username.empty() ? std::string("Joueur parti") : row.username;
+            zr.color = kText;
+            zr.me = row.me;
+            zr.bossDamage = row.bossDamage;
+            zr.damage = row.damage;
+            zr.support = row.support;
+            zr.mechanisms = row.mechanisms;
+            zr.objectives = row.objectives;
+            t.rows.push_back(std::move(zr));
+        }
+        const float navH = ui.s(40);
+        raidhud::drawZoneTable(ui, {x - ui.s(14), r.y, w + ui.s(28), r.h - navH - ui.s(20)}, 1.0f, t);
+        if (pages > 1) {
+            const float by = r.bottom() - ui.s(12) - navH;
+            const std::string label = "Tableau " + std::to_string(page_ + 1) + " / " + std::to_string(pages);
+            const float lw = textW(ui, label, 14) + ui.s(20);
+            const float bw = std::min(ui.s(160), (w - lw - ui.s(20)) * 0.5f);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            st.enabled = page_ > 0;
+            if (ui.button("zprev", {x, by, bw, navH}, "‹ Précédent", st)) --page_;
+            st.enabled = page_ + 1 < pages;
+            if (ui.button("znext", {x + w - bw, by, bw, navH}, "Suivant ›", st)) ++page_;
             fit(ui, label, {x + w * 0.5f, by + navH * 0.5f}, 14, w - 2 * bw - ui.s(20), kDim, FontFace::Body, Align::Center);
         }
     }

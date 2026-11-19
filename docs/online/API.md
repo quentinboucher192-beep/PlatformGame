@@ -1681,6 +1681,19 @@ routes publiques `GET /campaign/revisions` (manifeste) et
 `GET /campaign/levels/{levelId}/revisions/{version}/file` : voir
 [CAMPAIGN_REVISIONS.md](CAMPAIGN_REVISIONS.md).
 
+Joueurs (2.75, compte admin, rôle de la session) : `GET /admin/players` donne la présence et la
+dernière activité réelles d'un joueur qui les masque (`presence_hidden: true`) et `profile_hidden`
+(profil masqué) ; `GET /admin/players/{playerId}/levels?limit=&offset=` (10 par défaut, 20 au plus) :
+ses derniers niveaux joués, du plus récent au plus ancien (`player_playtime` : temps rapporté par
+le jeu, `last_played_at`), chacun avec `best` (sa meilleure tentative : `time_ms`, `category`,
+`collectibles` / `total_collectibles`, `verified`), `attempts` (tentatives envoyées) et `replay`
+(`record_id`, `available` seulement une fois vérifié, `reason` sinon, `locked` : `profile_private`
+ou `account_inactive`, le verrou qui arrêterait un autre joueur) ; la première page est écrite au
+journal (`admin_player_levels_viewed`). `GET /records/{recordId}/replay` sert un replay vérifié à
+un admin malgré un profil masqué ou un compte inactif, avec l'en-tête `x-admin-view:
+profile_private | account_inactive` et une entrée `admin_replay_viewed` ; un replay non vérifié
+reste indisponible, et les autres joueurs gardent `403 PROFILE_PRIVATE`.
+
 Modération des commentaires : `GET /admin/comments` (commentaires masqués ou signalés, avec
 les motifs, de tous les fils : `thread` vaut `community` — avec `level_id` — ou
 `level:<niveau officiel>` / `run:<record>`) et `POST /admin/comments/{id}/moderate { action:

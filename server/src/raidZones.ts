@@ -26,7 +26,7 @@ import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
-import { catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, type Catalog } from "./raidMap";
+import { catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
 import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartFallenIn, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
@@ -102,6 +102,54 @@ export function implausible(records: Contribution[], tick: number, objectives = 
         if (c.gigaboss > 1) return "valeur impossible";
     }
     return "";
+}
+
+/** 2.75: a line of a zone's « Tableau des contributions » (game/raid/Contributions: ZoneContribution). */
+export const ZONE_FIELDS = ["seat", "from", "boss_damage", "damage", "support", "mechanisms", "objectives"] as const;
+export type ZoneContribution = Record<(typeof ZONE_FIELDS)[number], number>;
+
+/** 2.75: the zone's table as the games write it (Contributions::zoneCanonical): sorted by seat, then step. */
+export function zoneCanonical(rows: ZoneContribution[]): string {
+    return [...rows]
+        .sort((a, b) => a.seat - b.seat || a.from - b.from)
+        .map((r) => `${r.seat},${r.from},${r.boss_damage},${r.damage},${r.support},${r.mechanisms},${r.objectives};`)
+        .join("");
+}
+
+/** 2.75: why a zone's table is impossible ("" when plausible), with the bounds of the instance's tables. */
+export function implausibleZone(rows: ZoneContribution[], tick: number, objectives = BRANCH.objectives.length): string {
+    if (rows.length > 32) return "trop de joueurs dans le tableau";
+    const seen = new Set<string>();
+    for (const r of rows) {
+        const key = `${r.seat}:${r.from}`;
+        if (seen.has(key)) return "joueur en double dans le tableau";
+        seen.add(key);
+        const span = tick - r.from + 1;
+        if (r.from > tick) return "contribution d'après le pas du rapport";
+        if (r.boss_damage > r.damage) return "dégâts au boss supérieurs aux dégâts";
+        if (r.damage > span * 6 + 600) return "dégâts impossibles";
+        if (r.support > Math.floor(span / 12) + Math.floor(span / 240) + 7) return "soutien impossible";
+        if (r.mechanisms > Math.floor(span / 360) + 3 * (Math.floor(span / 1200) + 1) + 8) return "mécanismes impossibles";
+        if (r.objectives > objectives) return "objectifs impossibles";
+    }
+    return "";
+}
+
+function readZoneRecords(raw: unknown, fail: (m: string) => never): ZoneContribution[] {
+    if (!Array.isArray(raw) || raw.length > 32) return fail("records : un tableau de 32 lignes au plus");
+    return raw.map((r) => {
+        if (!r || typeof r !== "object" || Array.isArray(r)) return fail("records : une ligne n'est pas un objet");
+        const o = r as Record<string, unknown>;
+        const c = {} as ZoneContribution;
+        for (const k of Object.keys(o)) if (!(ZONE_FIELDS as readonly string[]).includes(k)) return fail(`records : champ inconnu ${k}`);
+        for (const k of ZONE_FIELDS) {
+            const v = o[k];
+            if (typeof v !== "number" || !Number.isInteger(v) || v < 0 || v > 2_000_000_000) return fail(`records : ${k} doit être un entier positif`);
+            c[k] = v;
+        }
+        if (c.seat > 7) return fail("records : siège de 0 à 7");
+        return c;
+    });
 }
 
 function readRecords(raw: unknown, fail: (m: string) => never): Contribution[] {
@@ -369,7 +417,7 @@ export async function report(ctx: Ctx): Promise<Response> {
     // a report flagged as a test is refused whoever sends it (an administrator or not), before anything.
     if (body.test !== undefined) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
     const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage"]);
-    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart"] as const)!;
+    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });
     const zone = v.int("zone", { min: 1, max: BRANCH.zones.length })!;
     const tick = v.int("tick", { min: 0, max: MAX_TICKS })!;
@@ -380,7 +428,9 @@ export async function report(ctx: Ctx): Promise<Response> {
     const damage = v.int("damage", { min: 0, max: HEART_UNITS, optional: kind !== "heart" });
     if (kind !== "heart" && body.damage !== undefined) v.fail("damage", "réservé aux rapports « heart »");
     const records = kind === "result" ? readRecords(body.records, (m) => { v.fail("records", m); return v.done() as never; }) : [];
-    if (kind !== "result" && body.records !== undefined) v.fail("records", "réservé aux rapports « result »");
+    // 2.75: the « Tableau des contributions » of a zone finished.
+    const zoneRows = kind === "zone_table" ? readZoneRecords(body.records, (m) => { v.fail("records", m); return v.done() as never; }) : [];
+    if (kind !== "result" && kind !== "zone_table" && body.records !== undefined) v.fail("records", "réservé aux rapports « result » et « zone_table »");
     v.done();
     const now = nowIso();
     const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1").bind(id).first<InstanceRow>();
@@ -392,9 +442,16 @@ export async function report(ctx: Ctx): Promise<Response> {
     if (!member) throw Errors.forbidden("NOT_IN_INSTANCE", "Vous ne jouez pas dans cette instance.");
     const e = await eventOf(db, inst.event_id);
     const key =
-        kind === "objective" ? "o:" + objective : kind === "boss" ? `b:${phase}` : kind === "result" ? `r:${tick}` : kind === "heart" ? `h:${tick}` : `z:${zone}@${tick}`;
+        kind === "objective" ? "o:" + objective : kind === "boss" ? `b:${phase}` : kind === "result" ? `r:${tick}` : kind === "heart" ? `h:${tick}` : kind === "zone_table" ? `t:${zone}` : `z:${zone}@${tick}`;
     // A table's value is its canonical text, rebuilt here from the numbers (never the game's text).
-    const value = kind === "result" ? `${zone}:${tick}:${hash}:${canonical(records)}` : kind === "heart" ? `${zone}:${tick}:${hash}:${damage}` : `${zone}:${tick}:${hash}`;
+    const value =
+        kind === "result"
+            ? `${zone}:${tick}:${hash}:${canonical(records)}`
+            : kind === "zone_table"
+              ? `${zone}:${tick}:${hash}:${zoneCanonical(zoneRows)}`
+              : kind === "heart"
+                ? `${zone}:${tick}:${hash}:${damage}`
+                : `${zone}:${tick}:${hash}`;
     const reject = async (reason: string) => {
         await journal(db, id, me, key, value, reason);
         return json(ctx, { status: "rejected", reason });
@@ -420,6 +477,10 @@ export async function report(ctx: Ctx): Promise<Response> {
     }
     if (kind === "result") {
         const why = implausible(records, tick, cat.objectives.length);
+        if (why) return reject(why);
+    }
+    if (kind === "zone_table") {
+        const why = implausibleZone(zoneRows, tick, cat.objectives.length);
         if (why) return reject(why);
     }
     if (kind === "heart") {
@@ -529,6 +590,8 @@ export async function report(ctx: Ctx): Promise<Response> {
             if (!counted.meta.changes) await journalDuplicate(db, e.id, id, inst.branch, obj.id, obj.label, now);
             // 2.74 (phase 6): the seventh gigaboss down opens the Cœur d'Asterion (told once).
             if (obj.role === "gigaboss") await checkHeartOpen(db, e, now);
+            // 2.75: the zone finished with this objective: written once (the raid's feed tells it).
+            await checkZoneFinished(db, e.id, cat, inst.branch, obj.zone, id, now);
             // Every relay of the event gives the new state to its games (a few seconds anyway);
             // 2.68: those of the other branches too (the titan's links).
             // 2.74: all at once and after the answer (dozens of instances in a world event: before, one
@@ -553,6 +616,8 @@ export async function report(ctx: Ctx): Promise<Response> {
             await storeHeartDamage(db, e.id, id, damage!, tick, now);
             await checkHeartFall(db, e, id, now);
             await wakeHeartRelays(ctx.env as never, e.id);
+        } else if (kind === "zone_table") {
+            await storeZoneTable(db, e.id, inst.branch, id, zone, tick, zoneRows, now);
         } else if (kind === "result") {
             await storeResult(db, e.id, id, tick, records, now);
             if (isHeart(inst.branch)) await grantHeart(db, e.id, now); // 2.72: its rewards follow the tables after its fall
@@ -572,6 +637,40 @@ export async function report(ctx: Ctx): Promise<Response> {
         return json(ctx, { status: "rejected", reason: "minoritaire : l'instance a validé une autre valeur" });
     }
     return json(ctx, { status: "accepted" });
+}
+
+/**
+ * 2.75: the zone `zone` of the branch is finished in the state accepted now (every required objective):
+ * written once per event, branch and zone (INSERT OR IGNORE on the primary key: two acceptances, or two
+ * instances at the same moment, tell it once). Returns whether this call wrote it.
+ */
+export async function checkZoneFinished(db: D1Database, eventId: string, cat: Catalog, branch: string, zone: number, instanceId: string, now: string): Promise<boolean> {
+    const mask = await branchMaskOf(db, eventId, branch);
+    if (!zoneFinishedIn(cat, zone, mask)) return false;
+    const put = await db
+        .prepare("INSERT OR IGNORE INTO raid_zone_completions (event_id, branch, zone, instance_id, completed_at) VALUES (?1, ?2, ?3, ?4, ?5)")
+        .bind(eventId, branch, zone, instanceId, now)
+        .run();
+    return put.meta.changes > 0;
+}
+
+/** 2.75: an accepted zone table: its lines (the newest step wins, as raid_contributions). */
+async function storeZoneTable(db: D1Database, eventId: string, branch: string, instanceId: string, zone: number, tick: number, rows: ZoneContribution[], now: string) {
+    const members = await membersOf(db, instanceId);
+    const stmts = rows.map((r) =>
+        db
+            .prepare(
+                `INSERT INTO raid_zone_contributions (instance_id, event_id, branch, zone, seat, from_tick, player_id, boss_damage, damage, support, mechanisms,
+                    objectives, tick, accepted_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
+                 ON CONFLICT (instance_id, zone, seat, from_tick) DO UPDATE SET player_id = COALESCE(excluded.player_id, player_id),
+                    boss_damage = excluded.boss_damage, damage = excluded.damage, support = excluded.support, mechanisms = excluded.mechanisms,
+                    objectives = excluded.objectives, tick = excluded.tick, accepted_at = excluded.accepted_at
+                 WHERE excluded.tick >= raid_zone_contributions.tick`,
+            )
+            .bind(instanceId, eventId, branch, zone, r.seat, r.from, holderOf(members, r.seat, r.from), r.boss_damage, r.damage, r.support, r.mechanisms, r.objectives, tick, now),
+    );
+    if (stmts.length) await db.batch(stmts);
 }
 
 /** The players of an instance, by seat and the step they hold it from. */

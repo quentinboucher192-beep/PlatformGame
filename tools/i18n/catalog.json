@@ -824,6 +824,12 @@
    ]
   },
   {
+   "fr": "a consulté les derniers niveaux joués de {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a créé le brouillon de {0}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -957,6 +963,30 @@
   },
   {
    "fr": "a publié {0} : {1} joueurs prévenus",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a regardé un replay de {0} ({1}) malgré son compte inactif",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a regardé un replay de {0} ({1}) malgré son profil masqué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a regardé un replay de {0} malgré son compte inactif",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a regardé un replay de {0} malgré son profil masqué",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1645,6 +1675,12 @@
    ]
   },
   {
+   "fr": "Administration : pour la modération, les administrateurs voient la présence réelle et les profils masqués (marqués « masqué ») dans ADMINISTRATION › Joueurs, les membres des clans et les inscrits des raids ; le serveur ne l'envoie qu'aux administrateurs connectés, jamais aux autres joueurs. Aucune position précise n'est collectée et le pays reste caché tant que le joueur ne le montre pas. Paramètres en ligne : l'explication de « masquer » le dit.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration › Assets : chaque nouvel asset porte la pastille « NOUVEAU » sur sa vignette ou sa ligne, jusqu'à ce qu'il reçoive le focus ou un clic ; ses dossiers du rangement, l'onglet Assets et l'entrée Administration la gardent tant qu'un asset en dessous est nouveau. La version d'apparition de chaque asset est calculée automatiquement (tools/assets/asset_versions.py, relancé avec code_refs.py).",
    "where": [
     "data/news/changelog.json"
@@ -1706,6 +1742,12 @@
   },
   {
    "fr": "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION › Joueurs : chaque ligne se déplie (« + » : clic, Entrée ou A) et montre les derniers niveaux joués du joueur, du plus récent au plus ancien : le niveau, la date, son meilleur temps (cristaux, en vérification) ou son temps de jeu, ses tentatives et « Regarder » quand un replay vérifié existe ; pages de dix. Les données sont celles du serveur, données aux administrateurs seulement et écrites au Journal.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -2213,6 +2255,12 @@
    ]
   },
   {
+   "fr": "Allumer le générateur ouest · 1 générateur sur 2",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "allumer les deux générateurs (Veine, Avant-bras)",
    "where": [
     "game/raid/RaidBranch.cpp"
@@ -2398,6 +2446,12 @@
    "where": [
     "data/levels/aethra_04.json",
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Ancres",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -3489,7 +3543,8 @@
   {
    "fr": "Artères",
    "where": [
-    "game/raid/AsterionHeartRoutine.cpp"
+    "game/raid/AsterionHeartRoutine.cpp",
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -5141,6 +5196,12 @@
    ]
   },
   {
+   "fr": "Aucun niveau joué connu du serveur.",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun niveau ne correspond à la recherche.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -5306,6 +5367,7 @@
   {
    "fr": "aucun record",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/GhostSetupScene.cpp"
    ]
   },
@@ -5358,6 +5420,12 @@
    ]
   },
   {
+   "fr": "aucun schéma des zones à frapper",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Aucun serveur Cosmic Online n'est configuré pour cette version du jeu.",
    "where": [
     "game/online/OnlineService.cpp"
@@ -5403,6 +5471,12 @@
    "fr": "Aucun survivant",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Aucun tableau de zone validé : un tableau compte quand la majorité du groupe l'a confirmé à la fin de la zone.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -7090,6 +7164,12 @@
    ]
   },
   {
+   "fr": "Blindé",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Blizzard",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -7638,9 +7718,28 @@
    ]
   },
   {
+   "fr": "BRANCHE · ce qu'il manque",
+   "where": [
+    "ui/screens/HudEditorScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "BRANCHE · Le raccourci est ouvert",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "BRANCHE · toutes les autres zones sont terminées",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "BRANCHE · Zone terminée : {0}",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -9534,6 +9633,30 @@
    "fr": "Ce pseudonyme est réservé.",
    "where": [
     "server/src/auth.ts"
+   ]
+  },
+  {
+   "fr": "CE QU'IL RESTE À FAIRE",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qu'il reste à faire",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "CE QU'IL RESTE À FAIRE · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "CE QU'IL RESTE À FAIRE · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -12228,7 +12351,7 @@
    ]
   },
   {
-   "fr": "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer",
+   "fr": "Clic sur un pseudo : son profil · « + » : ses derniers niveaux joués · Entrée sur le rôle : le changer",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -12545,6 +12668,7 @@
    "fr": "Combat",
    "where": [
     "data/achievements/achievements.json",
+    "game/raid/BossHitboxes.cpp",
     "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -13892,6 +14016,12 @@
    ]
   },
   {
+   "fr": "Contact : il blesse qui le touche",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Contact avec le boss",
    "where": [
     "game/records/PlayStatsRecorder.cpp"
@@ -14010,8 +14140,7 @@
   {
    "fr": "contrôlée",
    "where": [
-    "ui/screens/RaidBranchScene.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -14203,6 +14332,18 @@
    ]
   },
   {
+   "fr": "Corps : il prend les coups",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Corps blindé : rien ne le blesse",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Corps d'Asterion : une fois la chute de Pyroclast validée, le bras droit apparaît « détruit » sur le titan (« attaqué », puis « affaibli » pendant le combat), et son effet est noté sur la fiche de l'événement : plus de pluies de lave.",
    "where": [
     "data/news/changelog.json"
@@ -14212,6 +14353,12 @@
    "fr": "Corps à corps",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Corps à nu : dégâts × {0}",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -14490,6 +14637,12 @@
    "fr": "Coude-forge : deux soufflets, deux groupes. Chaque groupe en détruit un (un pouvoir de tir).",
    "where": [
     "data/raids/asterion/bras_droit/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Coude-forge : zone à reprendre ([AUBE]·2 est tombé) · Fermer le soufflet est (1 / 2)",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -15282,6 +15435,12 @@
    ]
   },
   {
+   "fr": "Crochets",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Croissant",
    "where": [
     "game/online/Clans.cpp"
@@ -15819,6 +15978,12 @@
    ]
   },
   {
+   "fr": "Côtes",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Côtes basses",
    "where": [
     "data/raids/asterion/torse/branch.json"
@@ -16289,6 +16454,12 @@
    "fr": "Dans l'arène",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dans l'arène : {0} {1} (en or) à tenir ensemble · le gigaboss en rouge",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -16931,6 +17102,12 @@
    "fr": "Derniers débris",
    "where": [
     "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Derniers niveaux joués par {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -19727,7 +19904,8 @@
     "game/enemies/BossAttackSheet.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/Raids.cpp",
-    "game/powers/PowerStats.cpp"
+    "game/powers/PowerStats.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -19746,6 +19924,12 @@
    "fr": "Dégâts : à tous les ennemis, et au gigaboss avec ses points faibles.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "dégâts au boss supérieurs aux dégâts",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -20578,6 +20762,12 @@
    ]
   },
   {
+   "fr": "Embuscade",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "embuscade",
    "where": [
     "game/gameplay/LevelProgress.cpp"
@@ -20587,6 +20777,12 @@
    "fr": "Embuscade !",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscade 2 sur 4 : vague en cours",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -20629,6 +20825,12 @@
    "fr": "Embuscade : {0} ennemis restants · vague {1} / {2}",
    "where": [
     "game/gameplay/Hud.cpp"
+   ]
+  },
+  {
+   "fr": "Embuscade {0} sur {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -21119,6 +21321,12 @@
    "fr": "En vol",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "en vérification",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -22666,6 +22874,12 @@
    ]
   },
   {
+   "fr": "Facultatif : {0}",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
    "fr": "Facultative (500 caractères)",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -23111,6 +23325,12 @@
    "fr": "Fiches des boss : lieux, animations, entraînement",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiches des Gigaboss : nouveau schéma « Où frapper » dans l'onglet « Mécanismes » : le vrai sprite du Gigaboss pour la phase et l'état choisis (combat, blindé, à nu), avec ses zones lues dans les règles mêmes du combat : à frapper (vert), blindé (gris), ce qui blesse au contact ou attaque (rouge), les plaques du mécanisme collectif dans l'arène (or), une légende mesurée et « Frappez ici quand… ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -24170,6 +24390,24 @@
    "fr": "Frapper le point faible : la carapace est brisée · points faibles {0} / {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Frappez ici quand son blindage éclate : ses points faibles et son corps (dégâts × {0}) pendant {1} s.",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Frappez ses cibles en vert ensemble : son blindage tombe quand elles sont brisées ; son corps ne prend rien.",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Frappez son corps à tout moment de cette phase, en évitant son contact et ses coups annoncés.",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -25551,6 +25789,12 @@
    ]
   },
   {
+   "fr": "Grande carte (M) : chaque zone dit son état (terminée, à finir, verrouillée, zone à reprendre) et, tant qu'elle n'est pas terminée, ce qu'il lui manque.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Grande carte du raid : appuyez sur M (ou Vue / Retour à la manette, touche modifiable dans Paramètres › Commandes, bouton de souris possible) pour agrandir la carte sur presque tout l'écran : la zone entière (ou une fenêtre qui vous suit avec un aperçu de toute la zone), les zones de la branche et leur état, toute la légende. Elle ne met jamais le jeu en pause : le groupe continue à jouer. La touche est rappelée dans la pause du raid.",
    "where": [
     "data/news/changelog.json"
@@ -25823,6 +26067,12 @@
    ]
   },
   {
+   "fr": "Gris : blindé, ne prend aucun dégât",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Gris acier riveté, visière ambre de chaudière, écharpe de laiton : la tenue du Titan.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -25890,6 +26140,12 @@
    "fr": "Groupe {0} · chef {1}",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupe {0} · zone terminée à {1} min {2} s du raid · validé par le serveur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -26245,6 +26501,12 @@
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json",
     "data/raids/asterion/bras_droit/zone_6.json"
+   ]
+  },
+  {
+   "fr": "Générateurs de gravité",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -27113,6 +27375,7 @@
     "ui/screens/RaceScene.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
     "ui/screens/RaidTitanScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
@@ -28027,6 +28290,7 @@
   {
    "fr": "indisponible",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
@@ -29119,6 +29383,7 @@
    "where": [
     "game/coop/CoopRelay.cpp",
     "ui/online/OnlineWidgets.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
@@ -29193,6 +29458,18 @@
    "fr": "Joueur n°{0}",
    "where": [
     "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur parti",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur parti (place {0})",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -29326,6 +29603,12 @@
    "fr": "JOURNAL (ACTIONS ADMIN ET ANOMALIES)",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Joué le",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -37590,7 +37873,9 @@
   {
    "fr": "masqué",
    "where": [
-    "ui/screens/AdminScene.cpp"
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/ClanScene.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
@@ -37830,6 +38115,12 @@
    "fr": "Meilleur",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleur : temps ou progression",
+   "where": [
+    "ui/screens/AdminScene.cpp"
    ]
   },
   {
@@ -38428,6 +38719,12 @@
    ]
   },
   {
+   "fr": "min de jeu",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Mini-boss",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
@@ -38536,7 +38833,8 @@
   {
    "fr": "Miroirs",
    "where": [
-    "data/enemies/singularis.json"
+    "data/enemies/singularis.json",
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -39627,6 +39925,7 @@
   {
    "fr": "Mécanismes",
    "where": [
+    "ui/online/RaidHud.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -39634,6 +39933,12 @@
    "fr": "Mécanismes : {0}",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "mécanismes impossibles",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -39833,6 +40138,12 @@
    ]
   },
   {
+   "fr": "Ne frappez pas son corps : tenez ses {0} {1} (en or, dans l'arène) ensemble pour briser son blindage.",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Ne le donnez à personne : avec le mot de passe de {0}, il donne toutes ses données. Une fois la migration faite, ce compte est fermé.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -39930,6 +40241,7 @@
     "editors/level_editor/LevelEditorLayout.cpp",
     "game/content/AssetCatalog.cpp",
     "ui/screens/AdminCalendar.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ProjectsScene.cpp"
@@ -41947,6 +42259,7 @@
    "fr": "Objectifs",
    "where": [
     "game/online/Raids.cpp",
+    "ui/online/RaidHud.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
@@ -42352,6 +42665,7 @@
     "game/raid/GravitonRoutine.cpp",
     "game/raid/TitanusRoutine.cpp",
     "game/raid/VoidwormRoutine.cpp",
+    "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp",
@@ -42671,6 +42985,12 @@
    ]
   },
   {
+   "fr": "Or : plaques du mécanisme collectif",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Or < {0}",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -42976,12 +43296,6 @@
    ]
   },
   {
-   "fr": "ouverte",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Ouverte au départ",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -43046,6 +43360,24 @@
    "fr": "Ouvrir dans l'éditeur",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir l'accès : passage verrouillé",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir l'accès : un objectif de la branche",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir l'accès : {0}",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
    ]
   },
   {
@@ -43126,6 +43458,12 @@
    "fr": "OÙ ET QUAND",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "OÙ FRAPPER · selon la phase et l'état",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -43711,6 +44049,18 @@
    "fr": "Part des coups reçus",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Part des dégâts",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Part des dégâts au boss",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -45260,6 +45610,12 @@
    ]
   },
   {
+   "fr": "Personne n'a encore rien compté dans cette zone.",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "Personne n'est encore classé. Toute tentative compte, même sans arriver au bout.",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -45506,6 +45862,12 @@
    "where": [
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Phase {0} · {1}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -46511,6 +46873,12 @@
    ]
   },
   {
+   "fr": "Plus anciens ›",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "plus d'entrées qu'annoncé",
    "where": [
     "game/online/Spectate.cpp",
@@ -46787,6 +47155,12 @@
    ]
   },
   {
+   "fr": "Poignet-verrou : Ouvrir l'accès : allumer les deux générateurs (1 / 2)",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Poignet-verrou : quatre embuscades, des plaques et un monte-charge de groupe. Restez ensemble.",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
@@ -46931,6 +47305,12 @@
    "fr": "point faible introuvable : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
+   "fr": "Point faible · {0}",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -48034,6 +48414,12 @@
    ]
   },
   {
+   "fr": "profil masqué",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "Profil privé : pas de fantôme.",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -48593,7 +48979,19 @@
    ]
   },
   {
+   "fr": "Présence masquée : vos amis voient un rond barré, et ne peuvent pas vous regarder jouer. Pour la modération, les administrateurs voient votre présence et votre profil, même masqués (marqués « masqué ») ; jamais votre position, et votre pays seulement si vous le montrez.",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
    "fr": "Présence masquée : vos amis voient un rond barré.",
+   "where": [
+    "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Présence masquée : vos amis voient un rond barré. Pour la modération, les administrateurs voient votre présence et votre profil, même masqués (marqués « masqué ») ; jamais votre position, et votre pays seulement si vous le montrez.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -49840,6 +50238,12 @@
    ]
   },
   {
+   "fr": "Raids de clan : nouveau panneau « Ce qu'il reste à faire » (HUD des raids, déplaçable et redimensionnable dans Paramètres › HUD › « Raids ») : chaque condition pour terminer la zone (« 1 générateur sur 2 », « Ouvrir l'accès : … », « Embuscade 2 sur 4 », les plaques à tenir ensemble), cochée dès que le serveur l'a validée (« validation du serveur en attente » tant que seul votre groupe l'a faite), puis ce qu'il manque dans chaque autre zone de la branche.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids de clan : relancer le jeu ou changer de réseau au milieu d'un combat ne vous refuse plus l'entrée ; votre nouvelle connexion reprend votre place.",
    "where": [
     "data/news/changelog.json"
@@ -51080,6 +51484,12 @@
    ]
   },
   {
+   "fr": "Regard (laser)",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "Regard balayant",
    "where": [
     "data/enemies/skullmaw.json"
@@ -51136,6 +51546,7 @@
   {
    "fr": "Regarder",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -51708,6 +52119,7 @@
   {
    "fr": "Replay",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -51718,6 +52130,7 @@
     "game/ghost/SegmentHistory.cpp",
     "game/ghost/TrainingSegments.cpp",
     "game/online/DailyChallenges.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/CommunityPublishScene.cpp"
    ]
   },
@@ -51886,6 +52299,12 @@
    "fr": "Replay non envoyé",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "replay pas encore vérifié",
+   "where": [
+    "server/src/adminRoles.ts"
    ]
   },
   {
@@ -52989,6 +53408,12 @@
    ]
   },
   {
+   "fr": "Rouge : blesse au contact ou attaque",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Roumanie",
    "where": [
     "data/online/countries.json",
@@ -54030,7 +54455,7 @@
    ]
   },
   {
-   "fr": "réservé aux rapports « result »",
+   "fr": "réservé aux rapports « result » et « zone_table »",
    "where": [
     "server/src/raidZones.ts"
    ]
@@ -55457,6 +55882,7 @@
    "where": [
     "game/achievements/AchievementSuggestions.cpp",
     "game/raid/RaidBranch.cpp",
+    "game/raid/ZoneGoals.cpp",
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
@@ -57413,7 +57839,8 @@
   {
    "fr": "Soutien",
    "where": [
-    "game/online/Raids.cpp"
+    "game/online/Raids.cpp",
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -58248,6 +58675,12 @@
    "fr": "Suivant",
    "where": [
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "Suivant ›",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -59155,6 +59588,42 @@
    ]
   },
   {
+   "fr": "Tableau des contributions de chaque zone : à la fin d'une zone, la part de chaque joueur des dégâts infligés au boss et aux mini-boss de la zone (gardiens, ennemis dont la chute est un objectif, Gigaboss), ses dégâts, son soutien, ses mécanismes et ses objectifs, comptés par la simulation (les mêmes nombres sur tous les jeux du groupe) ; envoyé au serveur et validé par la majorité du groupe, il reste dans « Résultats du raid » (« Tableaux des zones ») et se revoit depuis la pause.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "TABLEAU DES CONTRIBUTIONS · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TABLEAU DES CONTRIBUTIONS · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau {0} / {1}",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tableaux des contributions des zones terminées",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tableaux des zones",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Tablette : Aimant",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -59974,6 +60443,7 @@
   {
    "fr": "Tentatives",
    "where": [
+    "ui/screens/AdminScene.cpp",
     "ui/screens/StatisticsScene.cpp"
    ]
   },
@@ -60404,6 +60874,18 @@
    "fr": "Terminé, encore sans médaille",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "terminée",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée · vous êtes ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -62335,6 +62817,12 @@
    ]
   },
   {
+   "fr": "Trouver le passage caché qui y mène",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
    "fr": "Trouver une relique.",
    "where": [
     "data/achievements/achievements.json"
@@ -62802,6 +63290,12 @@
    "fr": "Un admin a lié votre compte à un nouvel ordinateur.",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "Un administrateur peut regarder un replay vérifié malgré un profil masqué ou un compte inactif (contrôle du serveur par le rôle de la session) : « Vu en tant qu'admin (profil masqué) » reste affiché pendant la lecture et le Journal le note ; un replay incomplet ou d'une autre version du niveau reste refusé avec sa raison, et les autres joueurs gardent exactement leurs verrous.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -65115,6 +65609,12 @@
    ]
   },
   {
+   "fr": "Vaincre le golem gardien",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Vaincre le Kraken des Abysses.",
    "where": [
     "data/achievements/achievements.json"
@@ -65955,6 +66455,12 @@
    "where": [
     "saves/Settings.cpp",
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "Vert : à frapper",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -67436,7 +67942,7 @@
    ]
   },
   {
-   "fr": "Vous n'êtes pas prévenu quand un ami regarde.",
+   "fr": "Vous n'êtes pas prévenu quand un ami regarde. Pour la modération, les administrateurs voient votre présence et votre profil, même masqués (marqués « masqué ») ; jamais votre position, et votre pays seulement si vous le montrez.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
    ]
@@ -67823,6 +68329,18 @@
    ]
   },
   {
+   "fr": "Vu en tant qu'admin (compte inactif)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vu en tant qu'admin (profil masqué)",
+   "where": [
+    "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
    "fr": "Vue",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
@@ -68097,6 +68615,7 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "game/levels/EventSystem.cpp",
+    "game/online/Raids.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/screens/RaidBranchScene.cpp",
@@ -68186,7 +68705,7 @@
    "fr": "Zone secrète",
    "where": [
     "game/levels/ObjectTypes.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "game/raid/ZoneGoals.cpp"
    ]
   },
   {
@@ -68196,15 +68715,89 @@
    ]
   },
   {
+   "fr": "Zone suivante ›",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone sécurisée",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
    ]
   },
   {
+   "fr": "Zone terminée",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone terminée :",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Zone terminée : au même instant, tous les joueurs de l'instance voient la carte « ZONE TERMINÉE » avec un son, que la zone ait été finie par leur groupe ou par un autre ; les autres zones de la branche finies ailleurs sont annoncées dans les alertes, et les alertes du titan (carte du titan) l'écrivent une seule fois par zone.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Zone terminée par un autre groupe (état validé par le serveur)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone terminée par un autre groupe (état validé par le serveur) · raid à {0} min {1} s · comptée par la simulation, la même sur tous les jeux du groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone terminée par votre groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone terminée par votre groupe · raid à {0} min {1} s · comptée par la simulation, la même sur tous les jeux du groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ZONE TERMINÉE · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ZONE TERMINÉE · {0}",
+   "where": [
+    "game/raid/RaidRun.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ZONE TERMINÉE · {0} (par un autre groupe)",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "zone verrouillée pour la branche",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Zone {0}",
+   "where": [
+    "game/raid/ZoneGoals.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -68223,6 +68816,18 @@
    "fr": "zone {0}, « {1} »",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "zone à reprendre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone à reprendre : {0} est tombé ici, finissez-la à sa place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -68534,6 +69139,12 @@
    "fr": "{0} (et d'autres : NOTIFICATIONS).",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (facultatif)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -68884,6 +69495,12 @@
    ]
   },
   {
+   "fr": "{0} : nettoyée",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : nombre invalide",
    "where": [
     "server/src/enemyRevisions.ts"
@@ -68956,6 +69573,12 @@
    ]
   },
   {
+   "fr": "{0} : vague en cours",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : valeur de l'exemple introuvable ({1})",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -68986,6 +69609,24 @@
    ]
   },
   {
+   "fr": "{0} : zone à reprendre ({1} est tombé)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : zone à reprendre ({1} est tombé) · {2}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : {1} (facultatif)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : {1} ajouté(s), {2} supprimé(s), {3} modifié(s), {4} réglage(s)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -69013,6 +69654,12 @@
    "fr": "{0} : {1} modifications",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : à venir",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -69872,6 +70519,18 @@
    ]
   },
   {
+   "fr": "{0} est tombé · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est tombé · {1} (facultatif)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} EST VAINCU",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -70003,6 +70662,18 @@
    "fr": "{0} groupes requis",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} générateur",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "{0} générateurs",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
    ]
   },
   {
@@ -71655,6 +72326,12 @@
    ]
   },
   {
+   "fr": "{0} · validation du serveur en attente",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · vibration activée",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -71688,6 +72365,12 @@
    "fr": "{0} · {1} points faibles",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} sur {2}",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
    ]
   },
   {
@@ -72407,6 +73090,12 @@
    ]
   },
   {
+   "fr": "À briser · {0}",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "À chaque publication (ou retour à une ancienne révision), choix obligatoire : réinitialiser les records ou les garder (changement sans effet sur le jeu), inscrit au Journal.",
    "where": [
     "data/news/changelog.json"
@@ -72434,6 +73123,12 @@
    "fr": "À découvrir : {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "à finir",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -72543,6 +73238,12 @@
    "fr": "à n'importe quel palier",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "À nu",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
    ]
   },
   {
@@ -74227,6 +74928,12 @@
    ]
   },
   {
+   "fr": "Évents",
+   "where": [
+    "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
    "fr": "évents impossibles",
    "where": [
     "server/src/raidZones.ts"
@@ -74651,6 +75358,24 @@
    ]
   },
   {
+   "fr": "… et {0} de plus",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "… et {0} joueur de plus",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "… et {0} joueurs de plus",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "… et {0} ligne de plus",
    "where": [
     "ui/online/RaidHud.cpp"
@@ -74669,6 +75394,18 @@
    ]
   },
   {
+   "fr": "‹ Plus récents",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "‹ Précédent",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "‹ Précédents",
    "where": [
     "ui/screens/RaidResultsScene.cpp",
@@ -74684,6 +75421,12 @@
     "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/RaidTitanScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "‹ Zone précédente",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

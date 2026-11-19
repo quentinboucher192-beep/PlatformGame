@@ -45,10 +45,30 @@ struct Contribution {
     bool gigaboss = false;    // in play when the gigaboss fell
 };
 
+/// 2.75: what one player did in ONE zone of the branch (its « Tableau des contributions » at the end
+/// of the zone, docs/RAIDS.md §19): the damage dealt to the zone's boss and mini-bosses (its guardians,
+/// the enemies whose fall is an objective, its gigaboss and weak points), the damage dealt in the zone,
+/// support (allies revived, blows blocked), mechanisms (plates held when they worked, vents, weak
+/// points) and objectives. Counted inside the simulation like the records: every game agrees.
+struct ZoneContribution {
+    int seat = 0;
+    uint32_t from = 0;
+    int64_t bossDamage = 0;  // tenths
+    int64_t damage = 0;      // tenths
+    int support = 0, mechanisms = 0, objectives = 0;
+};
+
 class Contributions : public WorldListener {
 public:
     /// A new world (a zone loaded): the tags of the players' attacks start again.
     void attach(GameWorld& w);
+    /// 2.75: the zone of that world and the object ids of its bosses and mini-bosses (the sources of its
+    /// « killed » objectives, its gigaboss): what is counted from now on goes to this zone's table.
+    void setZone(int zone, std::vector<std::string> bosses);
+    /// 2.75: the table of a zone (one line per record that did something there, by seat then step).
+    std::vector<ZoneContribution> zoneTable(int zone) const;
+    /// 2.75: « s,f,b,d,u,m,o;… » of zoneTable(zone): what the server's consensus compares.
+    static std::string zoneCanonical(const std::vector<ZoneContribution>& rows);
     /// After each step of the world (step `tick`): new holders of a seat, steps in play, allies
     /// revived (whoever stood by the soul), the gigaboss's blows dodged.
     void afterStep(const GameWorld& w, uint32_t tick, const Enemy* boss);
@@ -86,7 +106,12 @@ public:
     void playerHurt(const GameWorld& w, const DamageInfo& d, const HurtSource& src) override;
 
 private:
+    /// 2.75: the line of `seat`'s record in the current zone's table (nullptr when nobody holds it).
+    ZoneContribution* zoneLine(int seat);
     std::vector<Contribution> records_;
+    int zone_ = 0;                                      // 2.75
+    std::vector<std::string> zoneBosses_;               // 2.75: object ids
+    std::map<int, std::vector<ZoneContribution>> zones_;  // 2.75: by zone, by record index
     int seatRecord_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
     bool wasVacant_[8] = {true, true, true, true, true, true, true, true};
     int revivedSeen_[8] = {};

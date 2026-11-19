@@ -15,7 +15,9 @@
 //                trails, avatar frames and victory effects (a style, two colours);
 //   « Assets » (2.63, AdminAssets.cpp): every file of assets/ sorted in a tree, searched,
 //                previewed, with who uses it (read only).
-// The country, the last activity and the presence of a player appear only as they share them.
+// The country, the last activity and the presence of a player appear only as they share them; 2.75: for moderation,
+// the presence and last activity with their real state when the player hides them (marked « masquée »), and a profile
+// that is not public (« profil masqué »): the server sends them to administrators only.
 
 #include <algorithm>
 #include <chrono>
@@ -25,6 +27,7 @@
 #include <vector>
 
 #include "engine/core/I18n.h"
+#include "game/levels/LevelTimer.h"
 #include "game/GameServices.h"
 #include "game/online/Clans.h"
 #include "game/online/OnlineSession.h"
@@ -511,8 +514,18 @@ private:
         if (n == 0)
             ui.label(loadedPlayers_ ? "Aucun joueur ne correspond." : "Chargement…", {list.center().x, list.y + ui.s(40)}, 18, ui.theme().textDim,
                      Align::Center, FontFace::Body, VAlign::Middle);
-        ui.beginScroll("list", list, n * (rowH + gap));
-        for (int i = 0; i < n; ++i) drawPlayerRow(rows[i], {list.x, list.y + i * (rowH + gap) - ui.scrollOffset(), list.w - ui.s(16), rowH}, "r");
+        // 2.75: a row unfolds (its « + »): the player's latest levels under it, the rows after it lower.
+        float listH = 0.0f;
+        for (int i = 0; i < n; ++i) listH += rowH + gap + levelsHeight(rows[i], "r");
+        ui.beginScroll("list", list, listH);
+        float ry = list.y - ui.scrollOffset();
+        for (int i = 0; i < n; ++i) {
+            const Rect row{list.x, ry, list.w - ui.s(16), rowH};
+            drawPlayerRow(rows[i], row, "r");
+            const float extra = levelsHeight(rows[i], "r");
+            if (extra > 0.0f) drawLevels(rows[i], {row.x + ui.s(24), row.bottom() + ui.s(4), row.w - ui.s(24), extra - ui.s(4)});
+            ry += rowH + gap + extra;
+        }
         ui.endScroll();
 
         // Admins
@@ -522,8 +535,17 @@ private:
         ui.label("toujours affichés ici, recherche ou pas", {in.x + aw + ui.s(14), ay + ui.s(14)}, 15, ui.theme().textDim, Align::Left,
                  FontFace::Body, VAlign::Middle);
         Rect alist{in.x, ay + ui.s(36), in.w, adminsH - ui.s(36)};
-        ui.beginScroll("admins", alist, nAdmins * (rowH + gap));
-        for (int i = 0; i < nAdmins; ++i) drawPlayerRow(admins_[i], {alist.x, alist.y + i * (rowH + gap) - ui.scrollOffset(), alist.w - ui.s(16), rowH}, "a");
+        float adminsListH = 0.0f;
+        for (int i = 0; i < nAdmins; ++i) adminsListH += rowH + gap + levelsHeight(admins_[i], "a");
+        ui.beginScroll("admins", alist, adminsListH);
+        float ay2 = alist.y - ui.scrollOffset();
+        for (int i = 0; i < nAdmins; ++i) {
+            const Rect row{alist.x, ay2, alist.w - ui.s(16), rowH};
+            drawPlayerRow(admins_[i], row, "a");
+            const float extra = levelsHeight(admins_[i], "a");
+            if (extra > 0.0f) drawLevels(admins_[i], {row.x + ui.s(24), row.bottom() + ui.s(4), row.w - ui.s(24), extra - ui.s(4)});
+            ay2 += rowH + gap + extra;
+        }
         ui.endScroll();
 
         // Pager
@@ -533,7 +555,7 @@ private:
         st.small = true;
         st.enabled = offset_ > 0 && !busy_;
         float hintRoom = in.w - 2 * bw - ui.s(40);
-        std::string hint = "Clic sur un pseudo : son profil · Entrée sur le rôle : le changer";
+        std::string hint = "Clic sur un pseudo : son profil · « + » : ses derniers niveaux joués · Entrée sur le rôle : le changer";
         float hs = ui.fitFont(hint, FontFace::Body, 15, hintRoom);
         ui.label(ui.elide(hint, FontFace::Body, hs, hintRoom), {in.x, py + pagerH * 0.5f}, hs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
         if (ui.button("prev", {in.right() - 2 * bw - ui.s(10), py, bw, pagerH}, "Précédents", st)) {
@@ -621,9 +643,18 @@ private:
         Color bgc = admin ? Color{30, 26, 22, 235} : Color{18, 26, 50, 235};
         ui.r().fillRoundedRect(row, ui.s(8), bgc);
         Columns c = columns(row);
+        // 2.75: « + » unfolds the row (its latest levels played), « – » folds it; a button: click, Entrée, A.
+        const bool open = expanded_ == prefix + id;
+        {
+            UIContext::ButtonStyle ts;
+            ts.small = true;
+            ts.selected = open;
+            ts.fontSize = 18;
+            if (ui.button("levels" + prefix + id, {row.x + ui.s(6), row.y + ui.s(9), ui.s(30), row.h - ui.s(18)}, open ? "–" : "+", ts)) toggleLevels(p, prefix);
+        }
         // Player: avatar, name (opens the profile), « vous ».
         float av = row.h - ui.s(14);
-        Rect ar{row.x + ui.s(10), row.y + ui.s(7), av, av};
+        Rect ar{row.x + ui.s(42), row.y + ui.s(7), av, av};
         ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), id, ar);
         std::string pres = jstr(p, "presence");
         if (pres == "online" || pres == "away" || pres == "hidden") {
@@ -631,31 +662,38 @@ private:
             drawPresenceDot(ui, {ar.right() - rad * 0.6f, ar.bottom() - rad * 0.6f}, rad, pres, ui.s(2));
         }
         float nx = ar.right() + ui.s(12);
-        float pillW = me ? ui.text().measure("vous", FontFace::Bold, ui.s(13)).x + ui.s(18) : 0.0f;
-        float room = c.x[1] - nx - ui.s(10) - (me ? pillW + ui.s(8) : 0.0f);
+        // 2.75: a profile that is not public: « profil masqué » (administrators only, for moderation).
+        const bool profHidden = jget<bool>(p, "profile_hidden", false), presHidden = jget<bool>(p, "presence_hidden", false);
+        const std::string tag = me ? "vous" : profHidden ? "profil masqué" : "";
+        float pillW = tag.empty() ? 0.0f : ui.text().measure(i18n::tr(tag), FontFace::Bold, ui.s(13)).x + ui.s(18);
+        if (!tag.empty() && pillW > (c.x[1] - nx) * 0.55f) pillW = 0.0f;  // no room: the column says it instead
+        float room = c.x[1] - nx - ui.s(10) - (pillW > 0.0f ? pillW + ui.s(8) : 0.0f);
         std::string name = ui.elide(jstr(p, "username"), FontFace::Bold, 17, room);
         float nw = ui.text().measure(name, FontFace::Bold, ui.s(17)).x;
         Rect nameR{nx, row.y, nw, row.h};
         bool hov = false;
         if (ui.mouseClick("name" + prefix + id, nameR, &hov)) g_.app.pushScene(makePlayerProfile(g_, id));
         ui.label(name, {nx, row.y + row.h * 0.5f}, 17, hov ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
-        if (me) {
+        if (pillW > 0.0f) {
+            const Color tc = me ? ui.theme().warm : ui.theme().textDim;
             Rect pr{nx + nw + ui.s(8), row.y + row.h * 0.5f - ui.s(11), pillW, ui.s(22)};
-            ui.r().fillRoundedRect(pr, ui.s(11), ui.theme().warm.withAlphaF(0.16f));
-            ui.r().drawRoundedRect(pr, ui.s(11), ui.theme().warm, ui.s(1));
-            ui.label("vous", {pr.center().x, pr.center().y}, 13, ui.theme().warm, Align::Center, FontFace::Bold, VAlign::Middle);
+            ui.r().fillRoundedRect(pr, ui.s(11), tc.withAlphaF(0.16f));
+            ui.r().drawRoundedRect(pr, ui.s(11), tc, ui.s(1));
+            ui.label(tag, {pr.center().x, pr.center().y}, 13, tc, Align::Center, FontFace::Bold, VAlign::Middle);
         }
         std::string country = jstr(p, "country_code");
         cell(c, 1, row, country.empty() ? "masqué" : ui_.countryName(country), country.empty() ? ui.theme().textDim : ui.theme().text);
         cell(c, 2, row, dayText(jstr(p, "created_at")), ui.theme().text);
         std::string seen = jstr(p, "last_seen_at");
-        cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen), seen.empty() ? ui.theme().textDim : ui.theme().text);
+        cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen) + (presHidden ? " · " + i18n::tr("masquée") : ""), seen.empty() ? ui.theme().textDim : ui.theme().text);
         {
             float dx = c.x[4] + ui.s(12);
             drawPresenceDot(ui, {dx + ui.s(5), row.y + row.h * 0.5f}, ui.s(5), pres, 0.0f);
             float r2 = c.x[5] - dx - ui.s(30);
-            ui.label(ui.elide(presenceText(pres), FontFace::Body, 16, r2), {dx + ui.s(16), row.y + row.h * 0.5f}, 16,
-                     pres == "hidden" ? ui.theme().textDim : ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
+            // 2.75: the real state of a hidden presence, marked (the server sends it to administrators only).
+            const std::string pt = i18n::tr(presenceText(pres)) + (presHidden ? " · " + i18n::tr("masquée") : "") + (profHidden && pillW <= 0.0f ? " · " + i18n::tr("profil masqué") : "");
+            ui.label(ui.elide(pt, FontFace::Body, 16, r2), {dx + ui.s(16), row.y + row.h * 0.5f}, 16,
+                     pres == "hidden" || presHidden ? ui.theme().textDim : ui.theme().text, Align::Left, FontFace::Body, VAlign::Middle);
         }
         drawVersionCell(c, 5, row, p);
         int made = jget<int>(p, "creations", 0);
@@ -680,6 +718,133 @@ private:
             st.fontSize = 15;
             st.enabled = !busyRole_;
             if (ui.button("role" + prefix + id, rb, admin ? "admin" : "joueur", st)) askRole(p);
+        }
+    }
+
+    // ------------------------------------------------------------- 2.75: latest levels played
+
+    void toggleLevels(const Json& p, const std::string& prefix) {
+        const std::string key = prefix + jstr(p, "id");
+        if (expanded_ == key) {
+            expanded_.clear();
+            return;
+        }
+        expanded_ = key;
+        levelsOffset_ = 0;
+        loadLevels(jstr(p, "id"));
+    }
+
+    void loadLevels(const std::string& id) {
+        levelsFor_ = id;
+        levelsData_ = Json();
+        levelsError_.clear();
+        g_.online.get("/api/v1/admin/players/" + id + "/levels?limit=10&offset=" + std::to_string(levelsOffset_),
+                      OnlineService::guard(life_, [this, id](const ApiResult& r) {
+                          if (levelsFor_ != id) return;
+                          if (lostRole(r)) return;
+                          if (!r.ok) {
+                              levelsError_ = r.message;
+                              return;
+                          }
+                          levelsData_ = r.data;
+                      }),
+                      false);
+    }
+
+    /// The height of the levels unfolded under a row (0 when folded): a title, a line per level, the pager.
+    float levelsHeight(const Json& p, const std::string& prefix) const {
+        if (expanded_ != prefix + jstr(p, "id")) return 0.0f;
+        const UIContext& ui = g_.ui;
+        const Json list = levelsData_.is_object() ? levelsData_.value("levels", Json::array()) : Json::array();
+        const int n = list.is_array() ? static_cast<int>(list.size()) : 0;
+        const bool pager = levelsOffset_ > 0 || jget<bool>(levelsData_, "has_more", false);
+        return ui.s(46) + ui.s(26) + static_cast<float>(std::max(1, n)) * ui.s(34) + (pager ? ui.s(46) : 0.0f) + ui.s(14);
+    }
+
+    /// The player's latest levels played, newest first (the server's: the time the game reported per level,
+    /// the best attempt and the attempts sent, its replay): « Regarder » when it can be watched.
+    void drawLevels(const Json& p, const Rect& r) {
+        UIContext& ui = g_.ui;
+        ui.r().fillRoundedRect(r, ui.s(8), Color{12, 18, 38, 240});
+        ui.r().drawRoundedRect(r, ui.s(8), ui.theme().accent.withAlpha(90), ui.s(1));
+        const float x = r.x + ui.s(14), w = r.w - ui.s(28);
+        float y = r.y + ui.s(8);
+        const int total = jget<int>(levelsData_, "total", 0);
+        std::string title = "Derniers niveaux joués par " + jstr(p, "username");
+        if (levelsData_.is_object()) title += " · " + std::to_string(total) + (total > 1 ? " niveaux" : " niveau");
+        const float tf = ui.fitFont(title, FontFace::Bold, 16, w);
+        ui.label(ui.elide(title, FontFace::Bold, tf, w), {x, y + ui.s(14)}, tf, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        y += ui.s(34);
+        const Json list = levelsData_.is_object() ? levelsData_.value("levels", Json::array()) : Json::array();
+        if (!levelsError_.empty() || !list.is_array() || list.empty()) {
+            const std::string t = !levelsError_.empty() ? levelsError_ : !levelsData_.is_object() ? "Chargement…" : "Aucun niveau joué connu du serveur.";
+            const float fs = ui.fitFont(t, FontFace::Body, 15, w);
+            ui.label(ui.elide(t, FontFace::Body, fs, w), {x, y + ui.s(22)}, fs, levelsError_.empty() ? ui.theme().textDim : ui.theme().danger, Align::Left,
+                     FontFace::Body, VAlign::Middle);
+            return;
+        }
+        // Columns: level, played on, best (time or progress), attempts, replay.
+        static const float share[5] = {0.34f, 0.17f, 0.27f, 0.10f, 0.12f};
+        float cx[6];
+        cx[0] = x;
+        for (int i = 0; i < 5; ++i) cx[i + 1] = cx[i] + w * share[i];
+        static const char* heads[5] = {"Niveau", "Joué le", "Meilleur : temps ou progression", "Tentatives", "Replay"};
+        for (int i = 0; i < 5; ++i) {
+            const float room = cx[i + 1] - cx[i] - ui.s(10);
+            const float fs = ui.fitFont(heads[i], FontFace::Bold, 13, room);
+            ui.label(ui.elide(heads[i], FontFace::Bold, fs, room), {cx[i], y + ui.s(10)}, fs, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+        }
+        y += ui.s(26);
+        auto cell = [&](int i, const std::string& t, Color c, float cy, bool verbatim = false) {
+            const float room = cx[i + 1] - cx[i] - ui.s(10);
+            i18n::Verbatim v(verbatim);
+            const float fs = ui.fitFont(t, FontFace::Body, 15, room);
+            ui.label(ui.elide(t, FontFace::Body, fs, room), {cx[i], cy}, fs, c, Align::Left, FontFace::Body, VAlign::Middle);
+        };
+        for (const Json& l : list) {
+            const float cy = y + ui.s(16);
+            cell(0, jstr(l, "title"), ui.theme().text, cy);
+            cell(1, dayText(jstr(l, "last_played_at")), ui.theme().text, cy);
+            const Json& best = jfield(l, "best", Json());
+            const int secs = jget<int>(l, "seconds", 0);
+            std::string b;
+            if (best.is_object()) {
+                b = LevelTimer::format(static_cast<float>(jget<int64_t>(best, "time_ms", 0)) / 1000.0f);
+                const int tot = jget<int>(best, "total_collectibles", 0);
+                if (tot > 0) b += " · " + std::to_string(jget<int>(best, "collectibles", 0)) + " / " + std::to_string(tot);
+                if (!jget<bool>(best, "verified", false)) b += " · " + i18n::tr("en vérification");
+            } else {
+                b = i18n::tr("aucun record") + " · " + std::to_string(std::max(1, secs / 60)) + " " + i18n::tr("min de jeu");
+            }
+            cell(2, b, best.is_object() ? ui.theme().text : ui.theme().textDim, cy, true);
+            cell(3, std::to_string(jget<int>(l, "attempts", 0)), ui.theme().text, cy, true);
+            const Json& rep = jfield(l, "replay", Json());
+            const Rect bb{cx[4], y + ui.s(2), cx[5] - cx[4] - ui.s(4), ui.s(30)};
+            if (rep.is_object() && jget<bool>(rep, "available", false)) {
+                UIContext::ButtonStyle st;
+                st.small = true;
+                st.fontSize = 14;
+                const std::string label = ui.elide("Regarder", FontFace::Bold, 14, bb.w - ui.s(12));
+                if (ui.button("watch" + jstr(rep, "record_id"), bb, label, st)) g_.app.pushScene(makeReplayViewer(g_, jstr(rep, "record_id")));
+            } else {
+                cell(4, rep.is_object() ? jstr(rep, "reason", "indisponible") : std::string("—"), ui.theme().textDim, cy);
+            }
+            y += ui.s(34);
+        }
+        if (levelsOffset_ > 0 || jget<bool>(levelsData_, "has_more", false)) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            const float bw = std::min(ui.s(200), w * 0.4f);
+            st.enabled = levelsOffset_ > 0;
+            if (ui.button("lnewer", {x, y + ui.s(6), bw, ui.s(36)}, "‹ Plus récents", st)) {
+                levelsOffset_ = std::max(0, levelsOffset_ - 10);
+                loadLevels(levelsFor_);
+            }
+            st.enabled = jget<bool>(levelsData_, "has_more", false);
+            if (ui.button("lolder", {x + w - bw, y + ui.s(6), bw, ui.s(36)}, "Plus anciens ›", st)) {
+                levelsOffset_ += 10;
+                loadLevels(levelsFor_);
+            }
         }
     }
 
@@ -989,6 +1154,11 @@ private:
         // 2.47: the computer an account is bound to.
         if (action == "admin_device_unbound") return {"Compte", ui.theme().warm, "a délié " + target + " de son ordinateur"};
         if (action == "admin_device_bound") return {"Compte", ui.theme().warm, "a lié " + target + " à un nouvel ordinateur"};
+        // 2.75: moderation: a player's latest levels looked at, a replay watched through a privacy lock.
+        if (action == "admin_player_levels_viewed") return {"Compte", ui.theme().textDim, "a consulté les derniers niveaux joués de " + target};
+        if (action == "admin_replay_viewed")
+            return {"Compte", ui.theme().warm, "a regardé un replay de " + target + (jstr(e, "level_title").empty() ? std::string() : " (" + jstr(e, "level_title") + ")") +
+                                                    (jstr(e, "lock") == "profile_private" ? " malgré son profil masqué" : " malgré son compte inactif")};
         // 2.50: an account's data migrated to another one, by an admin or by the player with a code.
         const Json& mig = jfield(e, "migration", Json());
         if (mig.is_object() && (action == "admin_account_migrated" || action == "account_migrated")) {
@@ -1316,6 +1486,10 @@ private:
     Json admins_ = Json::array();
     std::string confirmId_;
     Json devicePlayer_, deviceData_;  // 2.47: « Ordinateur de … »
+    std::string expanded_;            // 2.75: the row unfolded (list prefix + player id), "" none
+    std::string levelsFor_, levelsError_;
+    Json levelsData_;                 // 2.75: GET /admin/players/{id}/levels
+    int levelsOffset_ = 0;
     bool busyDevice_ = false;
     Json confirmPlayer_;
     // Journal

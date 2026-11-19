@@ -226,6 +226,22 @@ struct ResultClan {
     int points = 0, players = 0;
     bool gigaboss = false;
 };
+/// 2.75: the « Tableau des contributions » of a zone finished by a group of my clan (validated by the
+/// instance's majority, docs/RAIDS.md §19): its branch (catalog id), zone, group and each player.
+struct ZoneResultRow {
+    std::string username;
+    bool me = false;
+    double share = 0.0;  // of the boss damage (shareOfBoss) or of the zone's damage
+    int bossDamage = 0, damage = 0, support = 0, mechanisms = 0, objectives = 0;
+};
+struct ZoneResultTable {
+    std::string branch, group, acceptedAt;
+    int zone = 0;
+    uint32_t tick = 0;
+    bool shareOfBoss = false;
+    std::vector<ZoneResultRow> rows;
+};
+
 /// GET /raids/events/{id}/results.
 struct Results {
     bool valid = false;
@@ -241,6 +257,7 @@ struct Results {
     int pendingReports = 0;
     std::string validatedAt;
     std::vector<Reward> rewards;  // mine to claim for this event
+    std::vector<ZoneResultTable> zoneTables;  // 2.75: my clan's groups' zone tables (newest first)
 };
 Results parseResults(const Json& j);
 

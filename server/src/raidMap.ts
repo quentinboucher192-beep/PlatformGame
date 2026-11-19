@@ -167,6 +167,17 @@ export function controlledIn(c: Catalog, zone: number, mask: number): boolean {
     return mandatory.length > 0 && mandatory.every((o) => isDone(mask, o.index));
 }
 
+/**
+ * 2.75: a zone is FINISHED (game/raid/ZoneGoals: zoneFinished, the same rule) when every objective of it
+ * that is not optional is done; a zone of optional objectives only (the secret one): all of them.
+ */
+export function zoneFinishedIn(c: Catalog, zone: number, mask: number): boolean {
+    const all = c.objectives.filter((o) => o.zone === zone);
+    const mandatory = all.filter((o) => !o.optional);
+    if (mandatory.length > 0) return mandatory.every((o) => isDone(mask, o.index));
+    return all.length > 0 && all.every((o) => isDone(mask, o.index));
+}
+
 /** A link is on when every one of its source objectives is accepted (`done`: branch id → objectives). */
 export function linkOn(l: TitanLink, done: Map<string, Set<string>>): boolean {
     return l.from.every((f) => done.get(f.branch)?.has(f.objective_id) ?? false);
@@ -707,7 +718,7 @@ interface InstRow {
 }
 
 async function snapshot(db: D1Database, eventId: string) {
-    const [objR, instR] = await db.batch([
+    const [objR, instR, zoneR] = await db.batch([
         db
             .prepare(
                 `SELECT o.branch, o.objective_id, o.accepted_at, i.group_no, i.clan_id, c.tag, c.name AS clan_name FROM raid_branch_objectives o
@@ -721,7 +732,16 @@ async function snapshot(db: D1Database, eventId: string) {
                  FROM raid_instances i JOIN clans c ON c.id = i.clan_id WHERE i.event_id = ?1 ORDER BY c.tag, i.branch, i.group_no LIMIT 500`,
             )
             .bind(eventId),
+        // 2.75: the zones finished (once each, raid_zone_completions) and by which group.
+        db
+            .prepare(
+                `SELECT z.branch, z.zone, z.completed_at, i.group_no, c.tag FROM raid_zone_completions z
+                 LEFT JOIN raid_instances i ON i.id = z.instance_id LEFT JOIN clans c ON c.id = i.clan_id
+                 WHERE z.event_id = ?1 ORDER BY z.completed_at DESC LIMIT 200`,
+            )
+            .bind(eventId),
     ]);
+    const finished = zoneR!.results as { branch: string; zone: number; completed_at: string; group_no: number | null; tag: string | null }[];
     const objectives = objR!.results as ObjRow[];
     const instances = instR!.results as InstRow[];
     const done = new Map<string, Set<string>>();
@@ -729,7 +749,7 @@ async function snapshot(db: D1Database, eventId: string) {
         if (!done.has(o.branch)) done.set(o.branch, new Set());
         done.get(o.branch)!.add(o.objective_id);
     }
-    return { objectives, instances, done, states: statesOf(done) };
+    return { objectives, instances, done, states: statesOf(done), finished };
 }
 
 const groupTag = (tag: string | null, group: number | null) => (tag ? `[${tag}]·${group ?? 1}` : null);
@@ -775,7 +795,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
     const now = nowIso();
     const e = await eventOf(db, ctx.params.eventId ?? "");
     const reg = await requireViewer(db, e, me);
-    const { objectives, instances, done, states } = await snapshot(db, e.id);
+    const { objectives, instances, done, states, finished } = await snapshot(db, e.id);
     const placement = await placementOf(db, e.id, me);
     const body: Record<string, string> = {};
     let zonesControlled = 0;
@@ -848,6 +868,12 @@ export async function titanView(ctx: Ctx): Promise<Response> {
             return { at: o.accepted_at, kind: "objective", branch: partOf(o.branch), branch_name: c?.name ?? "", by: groupTag(o.tag, o.group_no), text: objectiveIn(c ?? CATALOGS[0]!, o.objective_id)?.label ?? o.objective_id };
         }),
         ...links.filter((l) => l.on && l.at).map((l) => ({ at: l.at!, kind: "link", branch: l.to, branch_name: l.to_name, by: null, text: l.label })),
+        // 2.75: a zone finished (told once: raid_zone_completions).
+        ...finished.slice(0, 12).map((z) => {
+            const c = catalogById(z.branch);
+            const name = c?.zones.find((x) => x.id === z.zone)?.name ?? String(z.zone);
+            return { at: z.completed_at, kind: "zone", branch: partOf(z.branch), branch_name: c?.name ?? "", by: groupTag(z.tag, z.group_no), text: "Zone terminée : " + name, zone: z.zone };
+        }),
     ]
         .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
         .slice(0, 12);
@@ -903,8 +929,9 @@ export async function branchView(ctx: Ctx): Promise<Response> {
     if (!c) throw Errors.notFound("BRANCH_NOT_FOUND", "Cette branche du titan n'existe pas.");
     const e = await eventOf(db, ctx.params.eventId ?? "");
     const reg = await requireViewer(db, e, me);
-    const { objectives, instances: all, done, states } = await snapshot(db, e.id);
+    const { objectives, instances: all, done, states, finished } = await snapshot(db, e.id);
     const mask = states.get(c.id) ?? 0;
+    const finishedBy = new Map(finished.filter((z) => z.branch === c.id).map((z) => [z.zone, { by: groupTag(z.tag, z.group_no), at: z.completed_at }]));
     const reach = reachableIn(c, mask);
     const mineDone = objectives.filter((o) => o.branch === c.id);
     const by = new Map(mineDone.map((d) => [d.objective_id, groupTag(d.tag, d.group_no)]));
@@ -936,6 +963,10 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             ...z,
             reachable: !!reach[z.id],
             controlled: controlledIn(c, z.id, mask),
+            // 2.75: finished (every required objective accepted), when and by which group.
+            finished: zoneFinishedIn(c, z.id, mask),
+            finished_by: finishedBy.get(z.id)?.by ?? null,
+            finished_at: finishedBy.get(z.id)?.at ?? null,
             groups: instances.filter((i) => i.zone === z.id && i.players > 0).length,
             objectives: c.objectives
                 .filter((o) => o.zone === z.id)

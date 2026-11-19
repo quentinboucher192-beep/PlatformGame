@@ -1038,7 +1038,16 @@ private:
             const float w = rr.right() - ui.s(10) - x;
             const float nameW = w * 0.40f, roleW = w * 0.22f, bestW = w - nameW - roleW - ui.s(16);
             const bool me = pid == g_.online.playerId();
-            fitLabel(ui, jstr(p, "username"), {x, rr.center().y}, 15, nameW - ui.s(6), me ? ui.theme().accent : ui.theme().text, FontFace::Bold, Align::Left,
+            // 2.75: an administrator sees the real presence of a player who hides it, and a profile that is
+            // not public: « masqué » at the right of the name (measured first; the server sends it to them only).
+            const bool masked = !pageCache_ && (jget<bool>(m, "presence_hidden", false) || jget<bool>(m, "profile_hidden", false));
+            float nameRoom = nameW - ui.s(6);
+            if (masked) {
+                const float tw = std::min(ui.text().measure(i18n::tr("masqué"), FontFace::Bold, ui.s(12)).x, nameRoom * 0.45f);
+                fitLabel(ui, "masqué", {x + nameW - ui.s(6), rr.center().y}, 12, tw, ui.theme().warm, FontFace::Bold, Align::Right);
+                nameRoom -= tw + ui.s(8);
+            }
+            fitLabel(ui, jstr(p, "username"), {x, rr.center().y}, 15, nameRoom, me ? ui.theme().accent : ui.theme().text, FontFace::Bold, Align::Left,
                      true);
             fitLabel(ui, clans::roleLabel(role), {x + nameW + ui.s(8), rr.center().y}, 13, roleW - ui.s(6), clanRoleColor(ui, role));
             const Json& best = at(m, "best");

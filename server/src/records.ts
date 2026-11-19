@@ -11,6 +11,7 @@ import { sha256Hex } from "./crypto";
 import { ApiError, Errors, json, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { ensureRankingEnabled, getLevel } from "./levels";
 import { playerSummary, recordJson, type LevelVersionRow, type PlayerRow, type RecordRow } from "./model";
+import { isAdminViewer } from "./friends";
 import { notify } from "./notifications";
 import { RULES, rateLimit } from "./ratelimit";
 import { MAX_REPLAY_UPLOAD, ReplayError, analyzeReplay, inflateContainer, parseReplay, type ReplayAnalysis } from "./replay";
@@ -442,7 +443,8 @@ function canView(r: RecordRow & { owner_visibility: string; owner_status: string
 
 export async function getRecord(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     let r = await loadRecord(ctx, ctx.params.recordId!);
-    if (!canView(r, viewer)) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
+    // 2.75: an administrator reads a verified record of an account that is not active (moderation; its replay journaled).
+    if (!canView(r, viewer) && !(isAdminViewer(viewer) && r.verification_status === "VERIFIED")) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
     const owner = viewer?.player.id === r.player_id;
     // The game polls its PENDING records: a record held by an outdated rule is re-decided.
     if (owner && (await recheckHeld(ctx, r))) r = await loadRecord(ctx, r.id);
@@ -539,9 +541,14 @@ export async function uploadReplay(ctx: Ctx): Promise<Response> {
 
 export async function downloadReplay(ctx: Ctx, viewer: AuthInfo | null): Promise<Response> {
     const r = await loadRecord(ctx, ctx.params.recordId!);
-    if (!canView(r, viewer)) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
     const isOwner = viewer?.player.id === r.player_id;
-    if (!isOwner && r.owner_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
+    // 2.75: an administrator (the session's role, never a parameter) watches through the privacy locks — a
+    // hidden profile, an account that is not active — for moderation, journaled; never through a technical
+    // one (a record or replay not verified stays unavailable).
+    const admin = !isOwner && isAdminViewer(viewer);
+    const lock = isOwner ? null : r.owner_visibility === "private" ? "profile_private" : r.owner_status !== "active" ? "account_inactive" : null;
+    if (!canView(r, viewer) && !(admin && r.verification_status === "VERIFIED")) throw Errors.notFound("RECORD_NOT_FOUND", "Record introuvable.");
+    if (!isOwner && !admin && r.owner_visibility === "private") throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil.");
     if (!r.replay_id) throw Errors.notFound("REPLAY_NOT_FOUND", "Aucun replay pour ce record.");
     const meta = await ctx.env.DB.prepare("SELECT storage_key, sha256, verification_status FROM replay_metadata WHERE id = ?1")
         .bind(r.replay_id)
@@ -549,8 +556,20 @@ export async function downloadReplay(ctx: Ctx, viewer: AuthInfo | null): Promise
     if (!meta || (!isOwner && meta.verification_status !== "VERIFIED")) throw Errors.notFound("REPLAY_NOT_FOUND", "Aucun replay pour ce record.");
     const obj = await ctx.env.STORAGE.get(meta.storage_key);
     if (!obj) throw Errors.notFound("REPLAY_NOT_FOUND", "Fichier de replay absent.");
+    if (admin && lock) {
+        const title = await ctx.env.DB.prepare("SELECT name FROM levels WHERE id = ?1").bind(r.level_id).first<{ name: string }>();
+        await audit(ctx, viewer!.player.id, "admin_replay_viewed", {
+            target: r.player_id,
+            target_username: (await ctx.env.DB.prepare("SELECT username FROM players WHERE id = ?1").bind(r.player_id).first<{ username: string }>())?.username ?? null,
+            by_username: viewer!.player.username,
+            record_id: r.id,
+            level_title: title?.name ?? r.level_id,
+            lock,
+        });
+    }
     return new Response(obj.body, {
         headers: {
+            ...(admin && lock ? { "x-admin-view": lock } : {}),
             "content-type": "application/octet-stream",
             "content-length": String(obj.size),
             "x-replay-sha256": meta.sha256,

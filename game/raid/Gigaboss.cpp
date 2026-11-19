@@ -1,5 +1,7 @@
 #include "game/raid/Gigaboss.h"
 
+#include "game/raid/BossHitboxes.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -233,8 +235,7 @@ void Gigaboss::expose(GameWorld& w, Contributions& c, Enemy& b) {
     weak_.clear();
     const float factor = 1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor_ - 1));
     for (size_t k = 0; k < rules_->weakSpots.size(); ++k) {
-        const Vec2 s = rules_->weakSpots[k];
-        const Vec2 at{b.box.center().x + s.x * b.facing, b.box.bottom() + s.y};
+        const Vec2 at = spotFeet(b.box, b.facing, rules_->weakSpots[k]);  // 2.75: the sheets' diagram reads the same
         if (Enemy* e = w.spawnEnemy(rules_->weakEnemyAt(k), at, b.facing < 0.0f)) {
             e->summonedBy = b.uid();
             e->countsForStats = false;
@@ -258,8 +259,7 @@ void Gigaboss::gluWeak(GameWorld& w, const Enemy& b) {
         Enemy* e = weak_[k] ? w.findEnemy(weak_[k]) : nullptr;
         if (!e || !e->alive()) continue;
         // Stuck to its knuckles wherever it goes (the order of weakSpots, those broken aside).
-        const Vec2 s = rules_->weakSpots[k];
-        const Vec2 at{b.box.center().x + s.x * b.facing, b.box.bottom() + s.y};
+        const Vec2 at = spotFeet(b.box, b.facing, rules_->weakSpots[k]);  // 2.75: the sheets' diagram reads the same
         e->box = Rect::fromBottomCenter(at, e->box.size());
         e->prevBox = e->box;
         e->vel = {0.0f, 0.0f};

@@ -317,6 +317,11 @@ void buildGigaboss(GigabossSheet& s, const Json& e, const ContentDatabase& conte
         if (s.weak.empty()) problem("aucun point faible");
     }
     const int phaseCount = s.def ? std::max<int>(1, static_cast<int>(s.def->phases.size())) : 3;
+    // 2.75: where to hit it, from the rules its fight reads (and where it stands in its lair).
+    if (rules && s.def) {
+        s.hitboxes = bossHitboxes(*rules, *s.def, content, b ? b->level(s.lairZone) : nullptr, phaseCount);
+        if (s.hitboxes.views.empty()) problem("aucun schéma des zones à frapper");
+    }
     if (s.def) {
         s.name = s.def->name;
         s.title = s.def->bossTitle;

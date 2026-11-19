@@ -249,7 +249,8 @@
    "game/enemies/TitanAttacks.cpp": 1
   },
   "sounds/boss_phase_clear.wav": {
-   "ui/screens/GameScene.cpp": 2
+   "ui/screens/GameScene.cpp": 2,
+   "ui/screens/RaidGameScene.cpp": 1
   },
   "sounds/boss_roar.wav": {
    "game/enemies/Enemy.cpp": 2

@@ -6,6 +6,7 @@
 
 #include "game/enemies/Enemy.h"
 #include "game/raid/AsterionHeartRoutine.h"
+#include "game/raid/ZoneGoals.h"
 #include "game/gameplay/entities/Entities.h"
 
 namespace cosmic::raid {
@@ -34,6 +35,7 @@ bool RaidRun::begin(uint32_t branchMask, int zone) {
     branchMask_ = branchMask;
     heartWon_ = heartObjective_ >= 0 && Branch::done(branchMask_, heartObjective_);  // 2.72: already validated
     loadZone(zone > 0 ? zone : branch_.startZone, "start", nullptr);
+    checkFinished(true);  // 2.75: the zones already finished are not news
     return world_ != nullptr && rules_ != nullptr;
 }
 
@@ -80,6 +82,14 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     restoreZone(zid);  // 2.72: as the group left it (before the players are placed: its doors)
     // 2.68: the players' contributions listen to this world; an event knows whose attack caused it.
     contrib_.attach(*world_);
+    {
+        // 2.75: the zone's table counts its boss and mini-bosses (the enemies whose fall is an objective).
+        std::vector<std::string> bosses;
+        for (const ZoneObjective& zo : rules->objectives)
+            if (zo.trigger == "killed") bosses.push_back(zo.source);
+        if (rules->gigaboss.present) bosses.push_back(rules->gigaboss.boss);
+        contrib_.setZone(zid, std::move(bosses));
+    }
     world_->eventObserver = [this](const std::string& src, const std::string& trig) {
         events_.push_back({src, trig, world_ ? contrib_.ownerOf(world_->attackTag()) : -1});
     };
@@ -315,6 +325,37 @@ void RaidRun::reportResult() {
     reports_.push_back(std::move(rep));
 }
 
+void RaidRun::checkFinished(bool initial) {
+    finishedNow_ = 0;
+    const uint32_t m = mask();
+    for (const ZoneInfo& z : branch_.zones) {
+        if (z.id <= 0 || z.id >= 32 || (finishedSeen_ >> z.id) & 1u || !zoneFinished(branch_, z.id, m)) continue;
+        finishedSeen_ |= 1u << z.id;
+        if (initial || z.boss) continue;  // the lair: its gigaboss's fall has its own card
+        // Done by this instance when its own completions finish it (else another group's, validated).
+        const bool byUs = !zoneFinished(branch_, z.id, branchMask_);
+        if (z.id != zone_) {
+            alert("BRANCHE · Zone terminée : " + z.name, Alert::Kind::Branch);
+            continue;
+        }
+        alert("ZONE TERMINÉE · " + z.name + (byUs ? "" : " (par un autre groupe)"), Alert::Kind::Branch);
+        finishedNow_ = z.id;
+        ZoneFinish f;
+        f.zone = z.id;
+        f.tick = tick_;
+        f.byUs = byUs;
+        f.rows = contrib_.zoneTable(z.id);
+        Report rep;
+        rep.kind = Report::Kind::ZoneTable;
+        rep.zone = z.id;
+        rep.tick = tick_;
+        rep.zoneRecords = f.rows;
+        reports_.push_back(std::move(rep));
+        finishes_.push_back(std::move(f));
+        if (finishes_.size() > 16) finishes_.erase(finishes_.begin());
+    }
+}
+
 void RaidRun::checkPassages() {
     for (size_t k = 0; k < rules_->passages.size(); ++k) {
         const Passage& p = rules_->passages[k];
@@ -376,6 +417,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask, con
     }
     events_.clear();
     updateCoops();
+    checkFinished(false);  // 2.75: a zone finished (by this group, or another's validated objective)
     if (gigaboss_.reportedPhase() > bossReported_) {  // 2.72: a gigaboss of four phases reports 1 to 3, then 4 at its fall
         for (int p = bossReported_ + 1; p <= gigaboss_.reportedPhase(); ++p) {
             Report rep;

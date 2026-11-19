@@ -56,7 +56,9 @@ struct Report {
     /// and Result (the players' contributions, Contributions::canonical, at each milestone).
     /// 2.74 (phase 6): Heart (the ten-thousandths of the Cœur d'Asterion's shared health this instance
     /// took, `damage`: every reportEvery seconds while it changes, and at its fall).
-    enum class Kind { Objective, Zone, Boss, Result, Heart } kind = Kind::Objective;
+    /// 2.75: ZoneTable (the « Tableau des contributions » of a zone the instance was in when it was
+    /// finished: `zoneRecords`, Contributions::zoneCanonical), once per zone.
+    enum class Kind { Objective, Zone, Boss, Result, Heart, ZoneTable } kind = Kind::Objective;
     std::string objective;  // Kind::Objective
     int zone = 0;
     uint32_t tick = 0;
@@ -64,6 +66,17 @@ struct Report {
     int phase = 0;              // Kind::Boss
     std::vector<Contribution> records;  // Kind::Result
     int damage = 0;                     // Kind::Heart (0..10000)
+    std::vector<ZoneContribution> zoneRecords;  // 2.75: Kind::ZoneTable
+};
+
+/// 2.75: a zone of the branch finished while the instance was in it (by this group or another, the
+/// branch's state at a step): every player of the instance sees it at that step (banner, sound), with
+/// what each one did there (Contributions::zoneTable).
+struct ZoneFinish {
+    int zone = 0;
+    uint32_t tick = 0;
+    bool byUs = false;  // this instance did its last objective (else another group, RAID_STATE)
+    std::vector<ZoneContribution> rows;
 };
 
 /// A line of the raid's alerts (display only, made from the simulation's events).
@@ -94,6 +107,13 @@ public:
     /// What the instance knows done: the branch's state and its own completions.
     uint32_t mask() const { return branchMask_ | local_; }
     uint32_t localDone() const { return local_; }
+    /// 2.75: the branch's state as the server validated it (RAID_STATE at this step).
+    uint32_t validated() const { return branchMask_; }
+    /// 2.75: the zones finished while the instance was in them (oldest first), and the one finished at
+    /// this very step (0: none); zonesFinished(): every zone finished in mask(), one bit each.
+    const std::vector<ZoneFinish>& finishes() const { return finishes_; }
+    int zoneFinishedNow() const { return finishedNow_; }
+    uint32_t zonesFinished() const { return finishedSeen_; }
     /// Changes each time another world is loaded (the scene builds its renderer again).
     int zoneSerial() const { return serial_; }
     /// Digest of the run (the world's simulationStateHash, the zone, the steps, the state).
@@ -171,6 +191,9 @@ private:
     void checkPassages();
     void completed(const std::string& source, const std::string& trigger, int who);
     void reportResult();
+    /// 2.75: the zones finished since the last step (once each): alert, and in the zone of the
+    /// instance its table and its report.
+    void checkFinished(bool initial);
     void alert(std::string text, Alert::Kind kind);
 
     WorldServices services_;
@@ -207,6 +230,9 @@ private:
     std::map<int, ZoneMemory> memory_;    // 2.72: what each zone left keeps
     std::vector<Report> reports_;
     std::vector<Alert> alerts_;
+    uint32_t finishedSeen_ = 0;           // 2.75: zones finished (bit = zone id)
+    int finishedNow_ = 0;                 // 2.75
+    std::vector<ZoneFinish> finishes_;    // 2.75
 };
 
 }  // namespace cosmic::raid

@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "engine/core/Json.h"
+#include "game/raid/BossHitboxes.h"
 
 namespace cosmic {
 class ContentDatabase;
@@ -128,6 +129,8 @@ struct GigabossSheet {
     float exposed = 0.0f, exposedMult = 1.0f, weakShare = 0.0f;
     std::vector<std::string> scaling, contributions;
     std::vector<SheetReward> rewards;  // its badge first
+    /// 2.75: where to hit it, by phase and state (game/raid/BossHitboxes: from its fight's rules).
+    BossHitboxes hitboxes;
     /// What could not be read (a value, a phase, its enemy, its lair…): empty for a sound sheet.
     std::vector<std::string> problems;
 };

@@ -553,6 +553,33 @@ std::vector<Reward> parseRewards(const Json& list) {
 Results parseResults(const Json& j) {
     Results r;
     if (!j.is_object()) return r;
+    // 2.75: the zones' tables (bounded: the server sends 40 at most).
+    if (const Json zt = jfield(j, "zone_tables", Json()); zt.is_array())
+        for (const Json& t : zt) {
+            if (r.zoneTables.size() >= 40) break;
+            ZoneResultTable z;
+            z.branch = jstr(t, "branch");
+            z.group = jstr(t, "group");
+            z.acceptedAt = jstr(t, "accepted_at");
+            z.zone = std::clamp(jget<int>(t, "zone", 0), 0, 32);
+            z.tick = static_cast<uint32_t>(std::max(0, jget<int>(t, "tick", 0)));
+            z.shareOfBoss = jstr(t, "share_of") == "boss";
+            if (const Json rows = jfield(t, "rows", Json()); rows.is_array())
+                for (const Json& x : rows) {
+                    if (z.rows.size() >= 32) break;
+                    ZoneResultRow row;
+                    row.username = jstr(x, "username");
+                    row.me = jget<bool>(x, "me", false);
+                    row.share = std::clamp(jget<double>(x, "share", 0.0), 0.0, 1.0);
+                    row.bossDamage = std::max(0, jget<int>(x, "boss_damage", 0));
+                    row.damage = std::max(0, jget<int>(x, "damage", 0));
+                    row.support = std::max(0, jget<int>(x, "support", 0));
+                    row.mechanisms = std::max(0, jget<int>(x, "mechanisms", 0));
+                    row.objectives = std::max(0, jget<int>(x, "objectives", 0));
+                    z.rows.push_back(std::move(row));
+                }
+            r.zoneTables.push_back(std::move(z));
+        }
     const Json ev = jfield(j, "event", Json());
     r.state = jstr(ev, "state");
     r.final = jget<bool>(ev, "final", false);

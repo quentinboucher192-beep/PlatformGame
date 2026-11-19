@@ -409,6 +409,7 @@ route("POST", `${V}/admin/comments/{commentId}/moderate`, async (ctx) => {
 
 // ADMINISTRATION in the game (2.40): accounts with the admin role, checked on every request.
 route("GET", `${V}/admin/players`, (ctx) => adminRoles.listPlayers(ctx));
+route("GET", `${V}/admin/players/{playerId}/levels`, (ctx) => adminRoles.playerLevels(ctx)); // 2.75
 route("POST", `${V}/admin/players/{playerId}/role`, (ctx) => adminRoles.setRole(ctx));
 route("GET", `${V}/admin/log`, (ctx) => adminRoles.listLog(ctx));
 // Backups of all the data (docs/online/BACKUP.md): server-side copies, encrypted download,

@@ -39,6 +39,44 @@ void Contributions::attach(GameWorld& w) {
     }
 }
 
+void Contributions::setZone(int zone, std::vector<std::string> bosses) {
+    zone_ = zone;
+    zoneBosses_ = std::move(bosses);
+}
+
+ZoneContribution* Contributions::zoneLine(int seat) {
+    if (zone_ <= 0 || !current(seat)) return nullptr;
+    const size_t index = static_cast<size_t>(seatRecord_[seat]);
+    std::vector<ZoneContribution>& lines = zones_[zone_];
+    if (lines.size() < records_.size()) lines.resize(records_.size());
+    ZoneContribution& z = lines[index];
+    z.seat = records_[index].seat;
+    z.from = records_[index].from;
+    return &z;
+}
+
+std::vector<ZoneContribution> Contributions::zoneTable(int zone) const {
+    std::vector<ZoneContribution> out;
+    const auto it = zones_.find(zone);
+    if (it == zones_.end()) return out;
+    for (size_t i = 0; i < it->second.size() && i < records_.size(); ++i) {
+        ZoneContribution z = it->second[i];
+        z.seat = records_[i].seat;
+        z.from = records_[i].from;
+        if (z.bossDamage || z.damage || z.support || z.mechanisms || z.objectives) out.push_back(z);
+    }
+    std::stable_sort(out.begin(), out.end(), [](const ZoneContribution& a, const ZoneContribution& b) { return a.seat != b.seat ? a.seat < b.seat : a.from < b.from; });
+    return out;
+}
+
+std::string Contributions::zoneCanonical(const std::vector<ZoneContribution>& rows) {
+    std::string out;
+    for (const ZoneContribution& z : rows)
+        out += std::to_string(z.seat) + "," + std::to_string(z.from) + "," + std::to_string(z.bossDamage) + "," + std::to_string(z.damage) + "," +
+               std::to_string(z.support) + "," + std::to_string(z.mechanisms) + "," + std::to_string(z.objectives) + ";";
+    return out;
+}
+
 Contribution* Contributions::current(int seat) {
     if (seat < 0 || seat >= 8 || wasVacant_[seat] || seatRecord_[seat] < 0) return nullptr;
     return &records_[static_cast<size_t>(seatRecord_[seat])];
@@ -88,7 +126,10 @@ void Contributions::afterStep(const GameWorld& w, uint32_t tick, const Enemy* bo
             if (j == i || w.member(j).presence != P::Playing || !w.playerAt(j).alive()) continue;
             const Vec2 f = w.playerAt(j).feet();
             if (std::abs(f.x - m.soul.x) <= GameWorld::kReviveReachX + 8.0f && std::abs(f.y - m.soul.y) <= GameWorld::kReviveReachY + 8.0f)
-                if (Contribution* c = current(j)) ++c->rescues;
+                if (Contribution* c = current(j)) {
+                    ++c->rescues;
+                    if (ZoneContribution* z = zoneLine(j)) ++z->support;  // 2.75
+                }
         }
     }
     // The gigaboss's blows: the player it aimed at, dodged or not.
@@ -110,23 +151,30 @@ void Contributions::afterStep(const GameWorld& w, uint32_t tick, const Enemy* bo
 void Contributions::objective(const GameWorld& w, int seat) {
     if (Contribution* c = current(seat)) {
         ++c->objectives;
+        if (ZoneContribution* z = zoneLine(seat)) ++z->objectives;  // 2.75
         return;
     }
     for (int i = 0; i < std::min(w.teamSize(), 8); ++i)
         if (w.coop() && w.member(i).presence == GameWorld::Presence::Playing)
-            if (Contribution* c = current(i)) ++c->objectives;
+            if (Contribution* c = current(i)) {
+                ++c->objectives;
+                if (ZoneContribution* z = zoneLine(i)) ++z->objectives;
+            }
 }
 
 void Contributions::vent(int seat) {
     if (Contribution* c = current(seat)) ++c->vents;
+    if (ZoneContribution* z = zoneLine(seat)) ++z->mechanisms;  // 2.75
 }
 
 void Contributions::rescue(int seat) {
     if (Contribution* c = current(seat)) ++c->rescues;
+    if (ZoneContribution* z = zoneLine(seat)) ++z->support;  // 2.75
 }
 
 void Contributions::weakPoint(int seat) {
     if (Contribution* c = current(seat)) ++c->weakPoints;
+    if (ZoneContribution* z = zoneLine(seat)) ++z->mechanisms;  // 2.75
 }
 
 void Contributions::dodged(int seat, float amount) {
@@ -156,6 +204,14 @@ void Contributions::enemyDamaged(const GameWorld&, const Enemy& e, uint32_t tag,
     c->damage += t;
     const bool weak = std::find(weak_.begin(), weak_.end(), e.uid()) != weak_.end();
     if (boss_ != 0 && (e.uid() == boss_ || weak)) c->bossDamage += t;
+    // 2.75: the zone's table: every enemy, and its boss and mini-bosses (a boss of the bestiary, an
+    // enemy whose fall is an objective of the zone, its gigaboss and weak points).
+    if (ZoneContribution* z = zoneLine(seat)) {
+        z->damage += t;
+        if ((boss_ != 0 && (e.uid() == boss_ || weak)) || e.def().isBoss ||
+            (!e.objectId().empty() && std::find(zoneBosses_.begin(), zoneBosses_.end(), e.objectId()) != zoneBosses_.end()))
+            z->bossDamage += t;
+    }
     if (weak && e.hp() <= 0.0f && brokeWeak(e.uid()) < 0) broken_.emplace_back(e.uid(), seat);
     // 2.69 (phase 4B): a target of a mechanism (a stomach, a restraint, a core) broken by this seat.
     if (!weak && e.hp() <= 0.0f && brokeWeak(e.uid()) < 0 && std::find(watched_.begin(), watched_.end(), e.uid()) != watched_.end())
@@ -166,6 +222,7 @@ void Contributions::blowBlocked(const GameWorld& w, float amount) {
     if (Contribution* c = current(w.currentPlayer())) {
         ++c->blocks;
         c->avoided += tenths(amount);
+        if (ZoneContribution* z = zoneLine(w.currentPlayer())) ++z->support;  // 2.75
     }
 }
 

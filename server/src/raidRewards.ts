@@ -496,7 +496,7 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
     const now = nowIso();
     const state = raidState(eventRow, now);
     if (state === "termine") await grantTop(db, eventRow.id);
-    const [rowsR, fightsR, pendingR, myR] = await db.batch([
+    const [rowsR, fightsR, pendingR, myR, zonesR] = await db.batch([
         db
             .prepare(
                 `SELECT t.*, p.username, c.tag AS clan_tag, c.id AS clan_id FROM (${TOTALS_SQL} GROUP BY player_id) t
@@ -522,6 +522,18 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
             )
             .bind(eventRow.id, me),
         db.prepare("SELECT MAX(accepted_at) AS at FROM raid_contributions WHERE event_id = ?1 AND player_id = ?2").bind(eventRow.id, me),
+        // 2.75: the « Tableaux des contributions » of the zones finished, for the instances of my clan
+        // (the players' own clan only: another clan's group stays private).
+        db
+            .prepare(
+                `SELECT z.instance_id, z.branch, z.zone, z.seat, z.from_tick, z.boss_damage, z.damage, z.support, z.mechanisms, z.objectives, z.tick,
+                        z.accepted_at, p.username, i.group_no, c.tag, (z.player_id = ?2) AS mine
+                 FROM raid_zone_contributions z JOIN raid_instances i ON i.id = z.instance_id JOIN clans c ON c.id = i.clan_id
+                 LEFT JOIN players p ON p.id = z.player_id
+                 WHERE z.event_id = ?1 AND i.clan_id = (SELECT r.clan_id FROM raid_registrations r WHERE r.event_id = ?1 AND r.player_id = ?2)
+                 ORDER BY z.accepted_at DESC, z.instance_id, z.zone, z.seat, z.from_tick LIMIT 400`,
+            )
+            .bind(eventRow.id, me),
     ]);
     const rows = rowsR!.results as ResultRow[];
     const players = rows
@@ -563,7 +575,43 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
     const fights = fightsR!.results as { instance_id: string; phase: number; defeated_at: string | null; boss: string; group_no: number; tag: string }[];
     const pending = pendingR!.results as { instance_id: string; report_key: string; n: number }[];
     const mine = await rewardsOf(db, me);
+    // 2.75: one table per instance and zone (newest first), the share of each player computed here.
+    type ZoneRowDb = {
+        instance_id: string; branch: string; zone: number; seat: number; from_tick: number; boss_damage: number; damage: number; support: number;
+        mechanisms: number; objectives: number; tick: number; accepted_at: string; username: string | null; group_no: number; tag: string; mine: number;
+    };
+    const tables = new Map<string, { branch: string; zone: number; group: string; tick: number; accepted_at: string; rows: ZoneRowDb[] }>();
+    for (const r of (zonesR?.results ?? []) as ZoneRowDb[]) {
+        const key = `${r.instance_id}:${r.zone}`;
+        const t = tables.get(key) ?? { branch: r.branch, zone: r.zone, group: `[${r.tag}]·${r.group_no}`, tick: r.tick, accepted_at: r.accepted_at, rows: [] };
+        t.rows.push(r);
+        tables.set(key, t);
+    }
+    const zoneTables = [...tables.values()].slice(0, 40).map((t) => {
+        const boss = t.rows.reduce((n, r) => n + r.boss_damage, 0);
+        const all = t.rows.reduce((n, r) => n + r.damage, 0);
+        return {
+            branch: t.branch,
+            zone: t.zone,
+            group: t.group,
+            tick: t.tick,
+            accepted_at: t.accepted_at,
+            share_of: boss > 0 ? "boss" : "damage",
+            rows: t.rows.map((r) => ({
+                username: r.username,
+                seat: r.seat,
+                me: r.mine === 1,
+                share: boss > 0 ? r.boss_damage / boss : all > 0 ? r.damage / all : 0,
+                boss_damage: Math.round(r.boss_damage / 10),
+                damage: Math.round(r.damage / 10),
+                support: r.support,
+                mechanisms: r.mechanisms,
+                objectives: r.objectives,
+            })),
+        };
+    });
     return json(ctx, {
+        zone_tables: zoneTables,
         server_time: now,
         event: { id: eventRow.id, state, final: state === "termine" },
         gigaboss: {
