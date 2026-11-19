@@ -54,7 +54,9 @@ jobs:
           sudo apt-get install -y --no-install-recommends ninja-build libxcursor-dev libasound2-dev libpulse-dev \
             libxi-dev libxrandr-dev libxss-dev libxfixes-dev libxkbcommon-dev libdrm-dev libgbm-dev \
             libegl1-mesa-dev libgl1-mesa-dev libxtst-dev libdbus-1-dev libudev-dev libwayland-dev wayland-protocols \
-            libcurl4-openssl-dev python3-pil python3-numpy
+            libcurl4-openssl-dev
+      - name: Python imaging (the versions the asset generators were run with, for their byte-exact checks)
+        run: python3 -m pip install --user --break-system-packages pillow==12.3.0 numpy==2.5.3
       - name: Hit parts of the bosses up to date (2.76.0, docs/HITPARTS.md)
         run: python3 tools/assetgen/hitparts.py --check
       - name: Cache dependencies
