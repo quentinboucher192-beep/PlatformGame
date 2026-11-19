@@ -1,11 +1,24 @@
 #pragma once
 
+#include <cstdint>
+
 #include "engine/core/Scene.h"
 
 namespace cosmic {
 
 class GameServices;
-class GameScene;
+class GameWorld;
+struct PowerKeyMap;
+
+/// 2.75: what asks the choice (a level, GameScene; a raid's armory, RaidGameScene): its world, the
+/// power keys shown, and where the answer goes (the next input frame of the player offered).
+class PowerChoiceHost {
+public:
+    virtual ~PowerChoiceHost() = default;
+    virtual GameWorld* world() = 0;
+    virtual const PowerKeyMap& powerKeys() const = 0;
+    virtual void answerPowerOffer(uint8_t choice) = 0;
+};
 
 /// Shown over the level when a power tablet is touched with every power slot taken: the
 /// player replaces one of the carried powers (the new one takes its slot; each power keeps
@@ -15,7 +28,7 @@ class GameScene;
 /// contains it.
 class PowerChoiceScene : public Scene {
 public:
-    PowerChoiceScene(GameServices& g, GameScene& game) : g_(g), game_(game) {}
+    PowerChoiceScene(GameServices& g, PowerChoiceHost& game) : g_(g), game_(game) {}
     void onEnter() override;
     void onExit() override;
     void update(float dt) override { t_ += dt; }
@@ -26,7 +39,7 @@ private:
     void answer(uint8_t choice);
 
     GameServices& g_;
-    GameScene& game_;
+    PowerChoiceHost& game_;
     float t_ = 0.0f;
     bool answered_ = false;
 };

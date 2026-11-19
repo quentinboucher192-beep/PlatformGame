@@ -5,6 +5,7 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { api, buildReplay, EXIT, registerPlayer, seedAll, SPAWN, type TestPlayer } from "./helpers";
+import { COOP_SIMULATION_VERSION } from "../src/coopRace";
 import { LH, octet, PNG, zip } from "./publish";
 
 beforeEach(seedAll);
@@ -58,7 +59,7 @@ interface Mate {
 }
 
 /** A team replay (format 5): player 1 as buildReplay writes it, then the other players. */
-async function teamReplay(attemptId: string, durationMs: number, lead: Mate & { finished?: boolean; boss: number; waves: number }, mates: Mate[], o: { revives?: number; incomplete?: boolean } = {}) {
+async function teamReplay(attemptId: string, durationMs: number, lead: Mate & { finished?: boolean; boss: number; waves: number }, mates: Mate[], o: { revives?: number; incomplete?: boolean; coopVersion?: number } = {}) {
     const extra = [...(lead.events ?? [])];
     if (lead.boss > 0) extra.push({ frame: 200, type: 12, arg: 0, value: lead.boss });
     if (lead.waves > 0) extra.push({ frame: 300, type: 13, arg: 0, value: lead.waves });
@@ -98,7 +99,7 @@ async function teamReplay(attemptId: string, durationMs: number, lead: Mate & { 
         for (const x of b) u8(x);
     };
     u8(1 + mates.length);
-    u16(1);
+    u16(o.coopVersion ?? COOP_SIMULATION_VERSION); // 2.75: the team rules' version (2: players pass through)
     u8(o.incomplete ? 1 : 0);
     u8(o.revives ?? 0);
     for (const m of mates) {
@@ -153,7 +154,7 @@ async function teamAttempt(
     levelId: string,
     lead: Mate & { finished?: boolean; boss: number; waves: number },
     mates: Mate[],
-    o: { revives?: number; incomplete?: boolean; confirm?: boolean } = {},
+    o: { revives?: number; incomplete?: boolean; confirm?: boolean; coopVersion?: number } = {},
 ) {
     const attemptId = crypto.randomUUID();
     const durationMs = 40000;
@@ -202,6 +203,17 @@ describe("coop: Duo and Trio boards", () => {
         expect((await board(levelId, 3)).body.data.ranking).toHaveLength(0);
         const solo = await api("GET", `${V}/races/board?kind=community&level_id=${levelId}`);
         expect(solo.body.data.ranking).toHaveLength(0);
+    });
+
+    it("2.75: refuses a team attempt played with other team rules (version 1: solid players)", async () => {
+        expect(COOP_SIMULATION_VERSION).toBe(2);
+        const author = await registerPlayer("Auteur");
+        const levelId = await publishExtreme(author);
+        const nova = await registerPlayer("Nova");
+        const lyra = await registerPlayer("Lyra");
+        const { run } = await teamAttempt([nova, lyra], levelId, { upTo: 0.3, boss: 0, waves: 0 }, [{ upTo: 0.3 }], { coopVersion: 1 });
+        expect(run.status).toBe("REJECTED");
+        expect(run.reasons.join(" ")).toContain("version des règles de coopération");
     });
 
     it("orders the teams: score, then complete before incomplete, then fewer revivals", async () => {

@@ -714,9 +714,9 @@
    "type": "damage_zone",
    "layer": "gameplay",
    "rect": [
-    672.0,
+    656.0,
     432.0,
-    736.0,
+    784.0,
     48.0
    ],
    "props": {
@@ -891,6 +891,34 @@
     "radius": 90,
     "flicker": 0.1,
     "bloom": true
+   }
+  },
+  {
+   "id": "o47",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    432.0,
+    16.0,
+    320.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o48",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    560.0,
+    480.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "basalt_ledge"
    }
   }
  ],

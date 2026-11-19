@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  2208,
+  2240,
   768
  ],
  "ambientLight": "#8a6a8e",
@@ -332,9 +332,37 @@
    "layer": "terrain",
    "rect": [
     512.0,
+    544.0,
+    16.0,
+    224.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    528.0,
     576.0,
     1152.0,
     192.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1680.0,
+    544.0,
+    16.0,
+    224.0
    ],
    "props": {
     "material": "sanctum_stone"
@@ -345,7 +373,7 @@
    "type": "damage_zone",
    "layer": "gameplay",
    "rect": [
-    512.0,
+    528.0,
     544.0,
     1152.0,
     32.0
@@ -356,35 +384,8 @@
     "visible": true,
     "active": false,
     "bounce": true,
+    "overActors": true,
     "style": "souls"
-   }
-  },
-  {
-   "id": "o14",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    560.0,
-    512.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "sanctum_ledge"
-   }
-  },
-  {
-   "id": "o15",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    688.0,
-    464.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "sanctum_ledge"
    }
   },
   {
@@ -392,7 +393,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    816.0,
+    576.0,
     512.0,
     80.0,
     16.0
@@ -406,7 +407,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    944.0,
+    704.0,
     464.0,
     80.0,
     16.0
@@ -420,7 +421,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1072.0,
+    832.0,
     512.0,
     80.0,
     16.0
@@ -434,7 +435,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1200.0,
+    960.0,
     464.0,
     80.0,
     16.0
@@ -448,7 +449,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1328.0,
+    1088.0,
     512.0,
     80.0,
     16.0
@@ -462,7 +463,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1456.0,
+    1216.0,
     464.0,
     80.0,
     16.0
@@ -473,10 +474,38 @@
   },
   {
    "id": "o22",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1344.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o23",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1472.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o24",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    548.0,
+    564.0,
     552.0,
     24.0,
     24.0
@@ -487,43 +516,11 @@
    }
   },
   {
-   "id": "o23",
-   "type": "receptor",
-   "layer": "gameplay",
-   "rect": [
-    792.0,
-    544.0,
-    16.0,
-    32.0
-   ],
-   "props": {
-    "targets": "",
-    "duration": 0.0
-   }
-  },
-  {
-   "id": "o24",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    792.0,
-    520.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#c9a8ff",
-    "radius": 90,
-    "flicker": 0.1,
-    "bloom": true
-   }
-  },
-  {
    "id": "o25",
    "type": "receptor",
    "layer": "gameplay",
    "rect": [
-    1368.0,
+    808.0,
     544.0,
     16.0,
     32.0
@@ -538,7 +535,39 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1368.0,
+    808.0,
+    520.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 90,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o27",
+   "type": "receptor",
+   "layer": "gameplay",
+   "rect": [
+    1384.0,
+    544.0,
+    16.0,
+    32.0
+   ],
+   "props": {
+    "targets": "",
+    "duration": 0.0
+   }
+  },
+  {
+   "id": "o28",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1384.0,
     520.0,
     16.0,
     16.0
@@ -555,7 +584,7 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    986.0,
+    1002.0,
     420.0,
     12.0,
     12.0
@@ -573,7 +602,7 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1210.0,
+    1226.0,
     420.0,
     12.0,
     12.0
@@ -591,7 +620,7 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1079.0,
+    1095.0,
     564.0,
     18.0,
     12.0
@@ -605,11 +634,11 @@
    }
   },
   {
-   "id": "o30",
+   "id": "o32",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1496.0,
+    1512.0,
     552.0,
     16.0,
     24.0
@@ -623,11 +652,11 @@
    }
   },
   {
-   "id": "o31",
+   "id": "o33",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    1082.0,
+    1098.0,
     442.0,
     12.0,
     12.0
@@ -637,11 +666,11 @@
    }
   },
   {
-   "id": "o32",
+   "id": "o34",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1664.0,
+    1696.0,
     576.0,
     544.0,
     192.0
@@ -651,11 +680,11 @@
    }
   },
   {
-   "id": "o33",
+   "id": "o35",
    "type": "door",
    "layer": "gameplay",
    "rect": [
-    2064.0,
+    2096.0,
     512.0,
     16.0,
     64.0
@@ -665,11 +694,11 @@
    }
   },
   {
-   "id": "o34",
+   "id": "o36",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    2132.0,
+    2164.0,
     552.0,
     24.0,
     24.0
@@ -680,11 +709,11 @@
    }
   },
   {
-   "id": "o35",
+   "id": "o37",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2136.0,
+    2168.0,
     536.0,
     16.0,
     16.0
@@ -697,11 +726,11 @@
    }
   },
   {
-   "id": "o36",
+   "id": "o38",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2112.0,
+    2144.0,
     512.0,
     64.0,
     64.0
@@ -712,11 +741,11 @@
    }
   },
   {
-   "id": "o37",
+   "id": "o39",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1856.0,
+    1888.0,
     384.0,
     352.0,
     32.0
@@ -726,11 +755,11 @@
    }
   },
   {
-   "id": "o38",
+   "id": "o40",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1728.0,
+    1760.0,
     528.0,
     80.0,
     16.0
@@ -740,11 +769,11 @@
    }
   },
   {
-   "id": "o39",
+   "id": "o41",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1712.0,
+    1744.0,
     480.0,
     80.0,
     16.0
@@ -754,11 +783,11 @@
    }
   },
   {
-   "id": "o40",
+   "id": "o42",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    1744.0,
+    1776.0,
     432.0,
     80.0,
     16.0
@@ -768,11 +797,11 @@
    }
   },
   {
-   "id": "o41",
+   "id": "o43",
    "type": "door",
    "layer": "gameplay",
    "rect": [
-    2064.0,
+    2096.0,
     320.0,
     16.0,
     64.0
@@ -782,11 +811,11 @@
    }
   },
   {
-   "id": "o42",
+   "id": "o44",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    2132.0,
+    2164.0,
     360.0,
     24.0,
     24.0
@@ -797,11 +826,11 @@
    }
   },
   {
-   "id": "o43",
+   "id": "o45",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2136.0,
+    2168.0,
     344.0,
     16.0,
     16.0
@@ -814,11 +843,11 @@
    }
   },
   {
-   "id": "o44",
+   "id": "o46",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2112.0,
+    2144.0,
     320.0,
     64.0,
     64.0
@@ -829,7 +858,7 @@
    }
   },
   {
-   "id": "o45",
+   "id": "o47",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -844,13 +873,13 @@
    }
   },
   {
-   "id": "o46",
+   "id": "o48",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     1120.0,
     64.0,
-    1088.0,
+    1120.0,
     352.0
    ],
    "props": {
@@ -892,13 +921,13 @@
     ],
     "7": [
      [
-      2000,
+      2032,
       576
      ]
     ],
     "6": [
      [
-      1984,
+      2016,
       384
      ]
     ]
@@ -932,36 +961,36 @@
      "id": "p4_7",
      "to": 7,
      "rect": [
-      2112,
+      2144,
       512,
       64,
       64
      ],
      "lock": "generators",
-     "door": "o33"
+     "door": "o35"
     },
     {
      "id": "p4_6",
      "to": 6,
      "rect": [
-      2112,
+      2144,
       320,
       64,
       64
      ],
      "lock": "shortcut",
-     "door": "o41"
+     "door": "o43"
     }
    ],
    "objectives": [
     {
      "id": "crane_nerf_gauche",
-     "source": "o23",
+     "source": "o25",
      "trigger": "activate"
     },
     {
      "id": "crane_nerf_droit",
-     "source": "o25",
+     "source": "o27",
      "trigger": "activate"
     }
    ],

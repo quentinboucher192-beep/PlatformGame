@@ -37,6 +37,10 @@ public:
     bool connected() const { return connected_; }
     const std::string& error() const { return error_; }
     int seat() const { return seat_; }
+    /// 2.75 (raids): the seat a relay gives a socket that only watches (a spectator: its group was
+    /// wiped, or it watches another group of its branch): seat() is -1, it never sends an input.
+    static constexpr uint8_t kWatcherSeat = 0xFE;
+    bool watcher() const { return watcher_; }
     /// What the relay says of the lobby (seats, level, ready), null before it said anything.
     const Json& lobby() const { return lobby_; }
     void setReady(bool on);
@@ -95,6 +99,7 @@ private:
     bool connected_ = false;
     std::string error_, endReason_;
     int seat_ = -1;
+    bool watcher_ = false;  // 2.75
     Json lobby_;
     std::optional<coopnet::GoInfo> go_;
     bool joinedLate_ = false;

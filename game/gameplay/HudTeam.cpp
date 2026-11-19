@@ -97,7 +97,7 @@ void Hud::drawTeamPanel(UIContext& ui, GameWorld& w) {
             case Presence::Down:
                 stateColor = gold;
                 frame = gold;
-                if (w.revivesLeft() <= 0) state = "à terre";
+                if (!w.canRevive()) state = "à terre";
                 else if (m.revive > 0.0f) state = "relevé dans " + seconds1(GameWorld::kReviveSeconds - m.revive);
                 else state = "à terre · son âme attend";
                 break;
@@ -168,9 +168,14 @@ void Hud::drawTeamPanel(UIContext& ui, GameWorld& w) {
         y = box.bottom() + ui.s(6);
     };
     const int used = w.revivesUsed();
-    line("Réanimations de l'équipe : " + std::to_string(used) + (used > 1 ? " utilisées" : " utilisée") + " sur " +
-             std::to_string(GameWorld::kTeamRevives),
-         gold);
+    if (w.revivesUnlimited())  // 2.75 (raids): no limit while a teammate is in play; the whole group down: eliminated
+        line("Réanimations illimitées (" + std::to_string(w.revivalsDone()) +
+                 " faites) · tout le groupe à terre : groupe éliminé, mode spectateur",
+             gold);
+    else
+        line("Réanimations de l'équipe : " + std::to_string(used) + (used > 1 ? " utilisées" : " utilisée") + " sur " +
+                 std::to_string(GameWorld::kTeamRevives),
+             gold);
     for (int i = 0; i < w.teamSize(); ++i) {
         const GameWorld::TeamMember& m = w.member(i);
         if (m.presence == Presence::Standby)
@@ -239,7 +244,7 @@ void Hud::drawTeamLabels(UIContext& ui, GameWorld& w, const WorldView& view) {
         } else if (m.presence == Presence::Down) {
             const Vec2 at = view.toScreen(m.soul + Vec2{0.0f, -34.0f});
             std::string t;
-            if (w.revivesLeft() <= 0) {
+            if (!w.canRevive()) {
                 t = teamName(i) + " à terre : plus de réanimation";
             } else if (m.revive > 0.0f) {
                 const int who = rescuer(m.soul);

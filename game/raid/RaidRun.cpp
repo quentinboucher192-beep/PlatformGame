@@ -34,7 +34,8 @@ const AsterionHeartRoutine* RaidRun::heartRoutine() const { return dynamic_cast<
 bool RaidRun::begin(uint32_t branchMask, int zone) {
     branchMask_ = branchMask;
     heartWon_ = heartObjective_ >= 0 && Branch::done(branchMask_, heartObjective_);  // 2.72: already validated
-    loadZone(zone > 0 ? zone : branch_.startZone, "start", nullptr);
+    zone_ = -2;  // 2.75: no zone yet (the armory is zone 0)
+    loadZone(zone > 0 ? zone : zone == kArmory && branch_.hasArmory() ? 0 : branch_.startZone, "start", nullptr);
     checkFinished(true);  // 2.75: the zones already finished are not news
     return world_ != nullptr && rules_ != nullptr;
 }
@@ -143,7 +144,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     gigaboss_.setBranchMask(mask());  // 2.69 (phase 4B): the objectives its routine reads
     for (auto& [text, kind] : gigaboss_.takeAlerts())
         alert(std::move(text), kind == Gigaboss::AlertKind::Danger ? Alert::Kind::Danger : kind == Gigaboss::AlertKind::Branch ? Alert::Kind::Branch : Alert::Kind::Group);
-    reports_.push_back({Report::Kind::Zone, {}, zid, tick_, hash()});
+    if (zid > 0) reports_.push_back({Report::Kind::Zone, {}, zid, tick_, hash()});  // 2.75: the armory is not the server's
 }
 
 void RaidRun::applyMask(uint32_t mask, bool initial) {
@@ -247,17 +248,9 @@ void RaidRun::updateCoops() {
 void RaidRun::reachedCheckpoint(const std::string& id) {
     if (id == lastCheckpoint_ || std::find(rules_->checkpoints.begin(), rules_->checkpoints.end(), id) == rules_->checkpoints.end()) return;
     lastCheckpoint_ = id;
-    alert("GROUPE · Point de contrôle : la zone reprendra ici", Alert::Kind::Group);
-    // The players down get up at the checkpoint (half their hearts), all at this step.
-    const auto it = rules_->spawns.find("cp:" + id);
-    if (it == rules_->spawns.end() || it->second.empty()) return;
-    bool up = false;
-    for (int i = 0; i < world_->teamSize(); ++i) {
-        if (world_->member(i).presence != GameWorld::Presence::Down) continue;
-        world_->restoreMember(i, world_->carryOf(i), it->second.front());
-        up = true;
-    }
-    if (up) alert("GROUPE · Les joueurs à terre se relèvent au point de contrôle", Alert::Kind::Group);
+    alert("GROUPE · Point de contrôle atteint", Alert::Kind::Group);
+    // 2.75: nobody comes back at a checkpoint: a player down gets up only when a teammate revives them,
+    // near their soul (before, the players down got up here); nobody else is moved.
 }
 
 float RaidRun::magmaIn() const {
@@ -387,6 +380,13 @@ void RaidRun::checkPassages() {
 
 void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask, const HeartShared& heart) {
     if (!world_) return;
+    wipedNow_ = false;
+    if (wiped_) {
+        // 2.75: a group wiped stays out of its zone: the steps go on (the relay still gives them), the
+        // world stays as it fell, nothing more is done nor reported.
+        ++tick_;
+        return;
+    }
     if (branchMask != branchMask_) applyMask(branchMask, false);
     heartWonNow_ = false;
     if (heartObjective_ >= 0 && !heartWon_ && Branch::done(branchMask_, heartObjective_)) {
@@ -449,8 +449,26 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask, con
     const uint64_t h = hash();
     for (size_t i = firstReport; i < reports_.size(); ++i) reports_[i].hash = h;
     if (world_->state() == WorldState::Failed) {
-        // Everybody down: the zone again from where the instance entered it (objectives kept),
-        // every player on their feet with every heart.
+        // 2.75: every player down at once (the players away swept along): the group is wiped, out of the
+        // zone for good; its players spectate from now on (no restart, no checkpoint).
+        bool down = false;
+        for (int i = 0; i < world_->teamSize(); ++i) down = down || world_->member(i).presence == GameWorld::Presence::Down;
+        if (down) {
+            wiped_ = wipedNow_ = true;
+            wipedTick_ = tick_;
+            alert("GROUPE ÉLIMINÉ · Tout le groupe est à terre : mode spectateur. La zone reste à reprendre par un autre groupe.",
+                  Alert::Kind::Danger);
+            Report rep;
+            rep.kind = Report::Kind::Wipe;
+            rep.zone = zone_;
+            rep.tick = tick_;
+            rep.hash = hash();
+            reports_.push_back(std::move(rep));
+            if (test_.on) reports_.clear();  // an administrator's test never reports anything
+            return;
+        }
+        // Every player away at once (nobody down): the zone again from where the instance entered it
+        // (objectives kept), every player on their feet with every heart.
         std::vector<GameWorld::MemberCarry> carry;
         for (int i = 0; i < world_->teamSize(); ++i) {
             GameWorld::MemberCarry c = world_->carryOf(i);
@@ -479,6 +497,7 @@ uint64_t RaidRun::hash() const {
     h = mix(h, contrib_.hash());   // 2.68 (phase 3)
     h = mix(h, gigaboss_.hash());  // 2.68 (phase 3)
     if (heart_.pack() != 0) h = mix(h, 0x4845415254000000ULL | heart_.pack());  // 2.72: the heart's shared state (zero elsewhere)
+    if (wiped_) h = mix(h, 0x5749504500000000ULL | wipedTick_);                  // 2.75: the group wiped
     // 2.68: the expeditions' state (nothing for the zones without checkpoints or plates).
     for (unsigned char c : lastCheckpoint_) h = mix(h, c);
     for (size_t k = 0; k < coopDone_.size(); ++k)

@@ -148,6 +148,21 @@ void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
         const Player& p = world.playerAt(i);
         const Color c = teamColor(i);
         if (m.presence == Presence::Playing) {
+            if (i >= 32 || ((opaquePlayers_ >> i) & 1u)) {
+                p.render(ctx);
+                continue;
+            }
+            // 2.75: another computer's player (or a simulated one): an outline of its colour, then its
+            // body semi-transparent (this computer's player is never hidden behind it).
+            if (p.state() != PlayerState::Hidden && p.anim.set() && p.anim.set()->texture) {
+                const Texture& tex = p.skin ? *p.skin : *p.anim.set()->texture;
+                const Rect src = p.anim.sourceRect();
+                const Rect dst = p.anim.destRect(p.renderFeet(ctx.alpha), p.facing < 0.0f);
+                static const Vec2 kRim[4] = {{-1.5f, 0.0f}, {1.5f, 0.0f}, {0.0f, -1.5f}, {0.0f, 1.5f}};
+                for (const Vec2& d : kRim)
+                    ctx.r.drawWorldTexture(tex, &src, dst.translated(d), Color{c.r, c.g, c.b, 150}, BlendMode::Additive, p.facing < 0.0f);
+            }
+            DrawGroup ghost(ctx.r, kOtherPlayerOpacity);
             p.render(ctx);
             continue;
         }
@@ -155,7 +170,7 @@ void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
             // Its soul: a light of its colour, bobbing; the revival fills a ring around it.
             const float bob = std::sin(ctx.time * 2.6f + static_cast<float>(i)) * 2.5f;
             const Vec2 at = m.soul + Vec2{0.0f, -16.0f + bob};
-            const bool canRevive = world.revivesLeft() > 0;
+            const bool canRevive = world.canRevive();
             const uint8_t a = canRevive ? 220 : 90;
             ctx.r.drawWorldGlow(at, 16.0f, Color{c.r, c.g, c.b, static_cast<uint8_t>(a / 2)});
             ctx.r.drawWorldGlow(at, 6.0f, Color{255, 255, 255, a});

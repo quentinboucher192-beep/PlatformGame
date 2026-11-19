@@ -90,7 +90,7 @@ private:
     float liveAt_ = -1000.0f;
 
     // 2.68: « Tester Asterion » (indices in the branch catalog, its zones, 2..8 players, phases).
-    int testBranch_ = 0, testZone_ = -1, testPlayers_ = 0, testPhase_ = 0;
+    int testBranch_ = 0, testZone_ = -1, testPlayers_ = 1, testPhase_ = 0;  // 2.75: testPlayers_ = simulated players (0..7)
     uint32_t testParts_ = 0x7Fu;  // 2.74 (phase 6): the Cœur d'Asterion's test: the parts simulated as fallen
     int testRelics_ = 0;
 };

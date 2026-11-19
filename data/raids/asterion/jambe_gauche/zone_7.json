@@ -2556,6 +2556,7 @@
     "visible": true,
     "active": false,
     "bounce": true,
+    "overActors": true,
     "style": "abyss"
    }
   },

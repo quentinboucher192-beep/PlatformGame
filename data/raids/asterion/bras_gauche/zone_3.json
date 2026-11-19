@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  2432,
+  3136,
   768
  ],
  "ambientLight": "#8ca4c8",
@@ -224,9 +224,37 @@
    "layer": "terrain",
    "rect": [
     256.0,
+    544.0,
+    16.0,
+    224.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    272.0,
     576.0,
-    480.0,
+    1152.0,
     192.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o8",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    1424.0,
+    544.0,
+    16.0,
+    224.0
    ],
    "props": {
     "material": "snow_rock"
@@ -237,9 +265,9 @@
    "type": "damage_zone",
    "layer": "gameplay",
    "rect": [
-    256.0,
+    272.0,
     544.0,
-    480.0,
+    1152.0,
     32.0
    ],
    "props": {
@@ -248,35 +276,8 @@
     "visible": true,
     "active": false,
     "bounce": true,
+    "overActors": true,
     "style": "plasma"
-   }
-  },
-  {
-   "id": "o7",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    304.0,
-    512.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o8",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    416.0,
-    464.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
    }
   },
   {
@@ -284,7 +285,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    528.0,
+    320.0,
     512.0,
     80.0,
     16.0
@@ -298,7 +299,7 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    640.0,
+    432.0,
     464.0,
     80.0,
     16.0
@@ -309,10 +310,122 @@
   },
   {
    "id": "o11",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    544.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o12",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    656.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    768.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o14",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    880.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    992.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1104.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o17",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1216.0,
+    512.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1328.0,
+    464.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o19",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    439.0,
+    455.0,
     564.0,
     18.0,
     12.0
@@ -326,11 +439,11 @@
    }
   },
   {
-   "id": "o12",
+   "id": "o20",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    736.0,
+    1440.0,
     528.0,
     192.0,
     240.0
@@ -340,11 +453,11 @@
    }
   },
   {
-   "id": "o13",
+   "id": "o21",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    928.0,
+    1632.0,
     480.0,
     192.0,
     288.0
@@ -354,11 +467,11 @@
    }
   },
   {
-   "id": "o14",
+   "id": "o22",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1120.0,
+    1824.0,
     432.0,
     192.0,
     336.0
@@ -368,11 +481,11 @@
    }
   },
   {
-   "id": "o15",
+   "id": "o23",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1312.0,
+    2016.0,
     432.0,
     576.0,
     336.0
@@ -382,11 +495,11 @@
    }
   },
   {
-   "id": "o16",
+   "id": "o24",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1424.0,
+    2128.0,
     272.0,
     48.0,
     16.0
@@ -400,7 +513,7 @@
    "type": "laser",
    "layer": "gameplay",
    "rect": [
-    1376.0,
+    2080.0,
     344.0,
     144.0,
     16.0
@@ -415,11 +528,11 @@
    }
   },
   {
-   "id": "o18",
+   "id": "o26",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1648.0,
+    2352.0,
     272.0,
     48.0,
     16.0
@@ -433,7 +546,7 @@
    "type": "laser",
    "layer": "gameplay",
    "rect": [
-    1600.0,
+    2304.0,
     344.0,
     144.0,
     16.0
@@ -448,11 +561,11 @@
    }
   },
   {
-   "id": "o20",
+   "id": "o28",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    1348.0,
+    2052.0,
     408.0,
     24.0,
     24.0
@@ -463,11 +576,11 @@
    }
   },
   {
-   "id": "o21",
+   "id": "o29",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    1560.0,
+    2264.0,
     306.0,
     16.0,
     14.0
@@ -481,11 +594,11 @@
    }
   },
   {
-   "id": "o22",
+   "id": "o30",
    "type": "receptor",
    "layer": "gameplay",
    "rect": [
-    1816.0,
+    2520.0,
     400.0,
     16.0,
     32.0
@@ -496,11 +609,11 @@
    }
   },
   {
-   "id": "o23",
+   "id": "o31",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    1748.0,
+    2452.0,
     408.0,
     24.0,
     24.0
@@ -511,11 +624,11 @@
    }
   },
   {
-   "id": "o24",
+   "id": "o32",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1816.0,
+    2520.0,
     376.0,
     16.0,
     16.0
@@ -528,11 +641,11 @@
    }
   },
   {
-   "id": "o25",
+   "id": "o33",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    512.0,
+    528.0,
     416.0,
     80.0,
     16.0
@@ -542,11 +655,11 @@
    }
   },
   {
-   "id": "o26",
+   "id": "o34",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    384.0,
+    400.0,
     368.0,
     80.0,
     16.0
@@ -556,11 +669,11 @@
    }
   },
   {
-   "id": "o27",
+   "id": "o35",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    160.0,
+    176.0,
     320.0,
     192.0,
     32.0
@@ -570,11 +683,11 @@
    }
   },
   {
-   "id": "o28",
+   "id": "o36",
    "type": "secret_area",
    "layer": "gameplay",
    "rect": [
-    128.0,
+    144.0,
     192.0,
     256.0,
     160.0
@@ -584,11 +697,11 @@
    }
   },
   {
-   "id": "o29",
+   "id": "o37",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    196.0,
+    212.0,
     296.0,
     24.0,
     24.0
@@ -599,11 +712,11 @@
    }
   },
   {
-   "id": "o30",
+   "id": "o38",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    200.0,
+    216.0,
     280.0,
     16.0,
     16.0
@@ -616,11 +729,11 @@
    }
   },
   {
-   "id": "o31",
+   "id": "o39",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    176.0,
+    192.0,
     256.0,
     64.0,
     64.0
@@ -631,11 +744,11 @@
    }
   },
   {
-   "id": "o32",
+   "id": "o40",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    1888.0,
+    2592.0,
     432.0,
     544.0,
     336.0
@@ -645,11 +758,11 @@
    }
   },
   {
-   "id": "o33",
+   "id": "o41",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    2356.0,
+    3060.0,
     408.0,
     24.0,
     24.0
@@ -660,129 +773,12 @@
    }
   },
   {
-   "id": "o34",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    2360.0,
-    392.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 70,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o35",
-   "type": "emitter",
-   "layer": "gameplay",
-   "rect": [
-    2336.0,
-    368.0,
-    64.0,
-    64.0
-   ],
-   "props": {
-    "effect": "fireflies",
-    "rate": 1.2
-   }
-  },
-  {
-   "id": "o36",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    2080.0,
-    240.0,
-    352.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o37",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    1952.0,
-    384.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o38",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    1936.0,
-    336.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o39",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    1968.0,
-    288.0,
-    80.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o40",
-   "type": "door",
-   "layer": "gameplay",
-   "rect": [
-    2288.0,
-    176.0,
-    16.0,
-    64.0
-   ],
-   "props": {
-    "open": false
-   }
-  },
-  {
-   "id": "o41",
-   "type": "sign",
-   "layer": "gameplay",
-   "rect": [
-    2356.0,
-    216.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "text": "Passage vers : Avant-bras de givre",
-    "auto": true
-   }
-  },
-  {
    "id": "o42",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    2360.0,
-    200.0,
+    3064.0,
+    392.0,
     16.0,
     16.0
    ],
@@ -798,8 +794,8 @@
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    2336.0,
-    176.0,
+    3040.0,
+    368.0,
     64.0,
     64.0
    ],
@@ -810,6 +806,123 @@
   },
   {
    "id": "o44",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    2784.0,
+    240.0,
+    352.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o45",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2656.0,
+    384.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o46",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2640.0,
+    336.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o47",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2672.0,
+    288.0,
+    80.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o48",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    2992.0,
+    176.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o49",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    3060.0,
+    216.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Avant-bras de givre",
+    "auto": true
+   }
+  },
+  {
+   "id": "o50",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3064.0,
+    200.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o51",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3040.0,
+    176.0,
+    64.0,
+    64.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 1.2
+   }
+  },
+  {
+   "id": "o52",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -824,7 +937,7 @@
    }
   },
   {
-   "id": "o45",
+   "id": "o53",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -839,13 +952,13 @@
    }
   },
   {
-   "id": "o46",
+   "id": "o54",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     2240.0,
     64.0,
-    192.0,
+    896.0,
     352.0
    ],
    "props": {
@@ -881,19 +994,19 @@
     ],
     "5": [
      [
-      288,
+      304,
       320
      ]
     ],
     "4": [
      [
-      2224,
+      2928,
       432
      ]
     ],
     "6": [
      [
-      2208,
+      2912,
       240
      ]
     ]
@@ -915,7 +1028,7 @@
      "id": "p3_5",
      "to": 5,
      "rect": [
-      176,
+      192,
       256,
       64,
       64
@@ -927,7 +1040,7 @@
      "id": "p3_4",
      "to": 4,
      "rect": [
-      2336,
+      3040,
       368,
       64,
       64
@@ -939,19 +1052,19 @@
      "id": "p3_6",
      "to": 6,
      "rect": [
-      2336,
+      3040,
       176,
       64,
       64
      ],
      "lock": "shortcut",
-     "door": "o40"
+     "door": "o48"
     }
    ],
    "objectives": [
     {
      "id": "bg_coeur_ouest",
-     "source": "o22",
+     "source": "o30",
      "trigger": "activate"
     }
    ],

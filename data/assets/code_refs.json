@@ -250,7 +250,7 @@
   },
   "sounds/boss_phase_clear.wav": {
    "ui/screens/GameScene.cpp": 2,
-   "ui/screens/RaidGameScene.cpp": 1
+   "ui/screens/RaidGameScene.cpp": 2
   },
   "sounds/boss_roar.wav": {
    "game/enemies/Enemy.cpp": 2
@@ -447,7 +447,8 @@
    "game/enemies/GuardianAttacks.cpp": 1
   },
   "sounds/player_death.wav": {
-   "game/player/PlayerActions.cpp": 1
+   "game/player/PlayerActions.cpp": 1,
+   "ui/screens/RaidGameScene.cpp": 1
   },
   "sounds/player_hurt.wav": {
    "game/player/PlayerActions.cpp": 1

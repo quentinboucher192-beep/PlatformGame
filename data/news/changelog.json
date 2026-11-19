@@ -1,4 +1,14 @@
 {
+  "2.75.1": [
+    "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
+    "Raids : une zone où un groupe a été éliminé est « à reprendre » sur la carte de la branche ; un groupe qui a fini sa propre zone la reprend (« Reprendre cette zone ») dans une nouvelle instance de cette zone, l'état validé de la branche gardé, et c'est lui seul qui la valide.",
+    "Raids : chaque branche commence par un vestiaire où chacun prend les pouvoirs voulus pour le raid (une tablette par pouvoir, quatre au plus : la fenêtre de choix dit lequel laisser), puis tout le groupe sur la plaque « Prêts » ouvre la route.",
+    "Raids et coopération : les joueurs se traversent (plus de joueurs solides ni d'appui sur un allié) et les autres joueurs, réels ou simulés, sont dessinés en semi-transparence avec un liseré de leur couleur ; seul votre personnage reste opaque.",
+    "Raids et coopération : quand un joueur tombe, personne d'autre ne bouge ni ne réapparaît au dernier point de passage ; il ne revient qu'une fois réanimé, près de son âme. En coopération, les réanimations restent limitées à 2 par tentative. Les tentatives Duo/Trio d'avant se rejouent à l'identique et leurs records sont gardés ; le serveur refuse les tentatives jouées avec d'anciennes règles.",
+    "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
+    "Correctif (test « Tester Asterion ») : la chute d'un joueur simulé renvoyait l'administrateur au départ ; seul l'administrateur est invincible, les joueurs simulés tombent, se relèvent entre eux et peuvent être éliminés comme un vrai groupe.",
+    "Test « Tester Asterion » : « Joueurs simulés : 0 (vous seul) … 7 », sans compter l'administrateur (avant, choisir 2 donnait un seul joueur simulé)."
+  ],
   "2.75.0": [
     "Raids de clan : nouveau panneau « Ce qu'il reste à faire » (HUD des raids, déplaçable et redimensionnable dans Paramètres › HUD › « Raids ») : chaque condition pour terminer la zone (« 1 générateur sur 2 », « Ouvrir l'accès : … », « Embuscade 2 sur 4 », les plaques à tenir ensemble), cochée dès que le serveur l'a validée (« validation du serveur en attente » tant que seul votre groupe l'a faite), puis ce qu'il manque dans chaque autre zone de la branche.",
     "Grande carte (M) : chaque zone dit son état (terminée, à finir, verrouillée, zone à reprendre) et, tant qu'elle n'est pas terminée, ce qu'il lui manque.",

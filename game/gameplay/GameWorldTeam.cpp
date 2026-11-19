@@ -131,6 +131,8 @@ void GameWorld::loadTeam() {
 }
 
 void GameWorld::teamBodies(int self, bool on) {
+    // 2.75: the players pass through each other (a raid; a team from cooperation version 2).
+    if (!solidTeammates()) on = false;
     for (size_t j = 0; j < team_.size(); ++j) {
         const TeamMember& m = team_[j];
         if (on && static_cast<int>(j) != self && solidMember(static_cast<int>(j))) {
@@ -274,12 +276,15 @@ void GameWorld::updateTeamStandby() {
                     best = d2;
                 }
             }
-            if (toward < 0) continue;  // nobody in play: the attempt is over anyway
-            const TeamMember& t = team_[static_cast<size_t>(toward)];
+            if (toward < 0 && !raidMode_) continue;  // nobody in play: the attempt is over anyway
             m.presence = Presence::Playing;
             ++m.returned;
             PlayerScope scope(*this, static_cast<int>(i));
-            p.spawn(*this, freeSpot(t.hasSafeFeet ? t.safeFeet : t.player->feet(), static_cast<int>(i)), p.facing < 0.0f, true);
+            // 2.75 (raids): nobody in play (the others down): back where it stopped, to revive them.
+            const Vec2 back = toward < 0 ? (m.hasSafeFeet ? m.safeFeet : p.feet())
+                                         : (team_[static_cast<size_t>(toward)].hasSafeFeet ? team_[static_cast<size_t>(toward)].safeFeet
+                                                                                           : team_[static_cast<size_t>(toward)].player->feet());
+            p.spawn(*this, freeSpot(back, static_cast<int>(i)), p.facing < 0.0f, true);
             p.setInvulnerable(1.75f);
             m.safeFeet = p.feet();
             m.hasSafeFeet = true;
@@ -306,7 +311,7 @@ void GameWorld::memberDown(int i) {
 void GameWorld::reviveMember(int i) {
     TeamMember& m = team_[static_cast<size_t>(i)];
     Player& p = *m.player;
-    --revivesLeft_;
+    if (!revivesUnlimited()) --revivesLeft_;  // 2.75: a raid counts them without a limit
     ++m.revived;
     m.revive = 0.0f;
     if (m.absent) {
@@ -343,16 +348,17 @@ void GameWorld::regroupMember(int i, int toward) {
 void GameWorld::checkTeamDown() {
     if (state_ == WorldState::Failed || state_ == WorldState::Completed || state_ == WorldState::Outro) return;
     for (const TeamMember& m : team_)
-        if (m.presence == Presence::Playing) return;
+        if (m.presence == Presence::Playing || (raidMode_ && m.presence == Presence::Standby)) return;  // 2.75: a raid waits for its absent
     failLevel("Toute l'équipe est à terre");
 }
 
 void GameWorld::updateTeamRules(float dt) {
-    // Revivals: an ally in play staying near a soul (2 s without a break), 2 per attempt.
+    // Revivals: an ally in play staying near a soul (2 s without a break), 2 per attempt; 2.75: in
+    // a raid, as many as wanted (while a teammate is in play to stay near the soul).
     for (size_t i = 0; i < team_.size(); ++i) {
         TeamMember& m = team_[i];
         if (m.presence != Presence::Down) continue;
-        if (revivesLeft_ <= 0) {
+        if (!canRevive()) {
             m.revive = 0.0f;
             continue;
         }
@@ -526,13 +532,25 @@ void GameWorld::restoreMember(int i, const MemberCarry& c, Vec2 feet) {
         return;
     }
     TeamMember& m = team_[static_cast<size_t>(i)];
-    // A player down when the group left comes back on its feet with half its hearts.
-    m.presence = c.presence == Presence::Down ? Presence::Playing : c.presence;
-    if (c.presence == Presence::Down) health = std::max(1, (p.maxHealth() + 1) / 2);
     m.absent = c.absent;
     m.standbyTicks = c.standbyTicks;
     m.revive = 0.0f;
     m.offFrame = 0.0f;
+    if (c.presence == Presence::Down && raidMode_) {
+        // 2.75 (raids): a player down stays down until a teammate revives them, even when the group
+        // moves on: their soul waits at the place where the group arrives.
+        m.presence = Presence::Down;
+        m.soul = feet;
+        m.fell = false;
+        p.teleportTo(feet);
+        p.setHidden(true);
+        p.health = health;
+        p.energy = c.energy;
+        return;
+    }
+    // A player down when the group left comes back on its feet with half its hearts.
+    m.presence = c.presence == Presence::Down ? Presence::Playing : c.presence;
+    if (c.presence == Presence::Down) health = std::max(1, (p.maxHealth() + 1) / 2);
     if (m.presence == Presence::Playing) {
         PlayerScope scope(*this, i);
         p.spawn(*this, freeSpot(feet, i), false, false);

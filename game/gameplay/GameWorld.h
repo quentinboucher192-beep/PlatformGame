@@ -154,6 +154,9 @@ public:
     /// run that counts: a training run is never recorded nor ranked.
     void setInvincible(bool on) { invincible_ = on; }
     bool invincible() const { return invincible_ && training_ && !challenge_.has_value(); }
+    /// 2.75: whether the current player is invincible: in a raid (an administrator's test) only seat 0,
+    /// the administrator — the simulated players fall, go down and are revived like real players.
+    bool invinciblePlayer() const { return invincible() && (!raidMode_ || curIndex_ == 0); }
     /// Puts an invincible Nova back on her last solid ground (instead of a fall); false when not invincible.
     bool rescueInvincible();
     /// 2.64, the tutorial (LevelData::tutorial): a fall never kills; Nova comes back at once on
@@ -239,6 +242,24 @@ public:
     int currentPlayer() const { return curIndex_; }
     int revivesLeft() const { return revivesLeft_; }
     int revivesUsed() const { return kTeamRevives - revivesLeft_; }
+    /// 2.75 (raids): a player down comes back as many times as a teammate revives them (no limit:
+    /// revivesLeft() stays as it was, the revivals are counted per player, TeamMember::revived).
+    bool revivesUnlimited() const { return raidMode_; }
+    /// Whether a soul can be revived now (a raid: always; a team: while revivals are left).
+    bool canRevive() const { return raidMode_ || revivesLeft_ > 0; }
+    /// Revivals done in this world (every player's).
+    int revivalsDone() const {
+        int n = 0;
+        for (const TeamMember& m : team_) n += m.revived;
+        return n;
+    }
+    /// 2.75: the rules of cooperation a team plays with (kCoopSimulationVersion; a team replay: the
+    /// version it recorded, ReplayData::coopVersion). From 2 the players pass through each other (no
+    /// body, nobody stands on an ally's head); 1 (the replays of 2.62 to 2.74): solid for each other.
+    /// A raid world always lets its players pass through each other.
+    void setCoopVersion(int version) { coopVersion_ = version; }
+    int coopVersion() const { return coopVersion_; }
+    bool solidTeammates() const { return !raidMode_ && coopVersion_ < 2; }
     /// A player was gone for good (60 s of standby): the attempt is ranked « incomplète ».
     bool teamIncomplete() const;
     /// Players in play (not down, in standby or gone), in order; each one is the current
@@ -546,6 +567,7 @@ private:
     Player* cur_ = &player_;
     int curIndex_ = 0;
     int revivesLeft_ = kTeamRevives;
+    int coopVersion_ = kCoopSimulationVersion;  // 2.75
     std::vector<PlayerInput> teamInputs_;
     bool raidMode_ = false;
     int cameraFollow_ = -1;

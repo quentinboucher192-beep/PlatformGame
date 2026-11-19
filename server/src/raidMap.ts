@@ -28,6 +28,7 @@ import { requireEntry } from "./raidWorld";
 import { HEART_OBJECTIVE, gigabossDownIn, heartBodyState, heartOpenIn, heartView } from "./raidHeart";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
+import { spectatorAnswer, spectatorOf, zoneFinished, zonesToRetake } from "./raidWipe";
 
 export interface CatalogZone {
     id: number;
@@ -232,6 +233,10 @@ interface InstanceRow {
     branch: string;
     zone: number;
     players: number;
+    /** 2.75 (raidWipe.ts): the zone where the group was wiped (null: in play), a reinforcement's first zone. */
+    wiped_zone?: number | null;
+    start_zone?: number | null;
+    relieves?: string | null;
 }
 
 async function eventOf(db: D1Database, id: string): Promise<EventRow> {
@@ -307,7 +312,7 @@ async function placementOf(db: D1Database, eventId: string, playerId: string) {
  * Puts `playerId` (of `clanId`) in instance `inst`, unless 8 others are already placed there (one
  * statement: two placements at once never make a ninth). Journals a change. True when placed.
  */
-async function putIn(db: D1Database, eventId: string, clanId: string, playerId: string, inst: InstanceRow, by: string, reason: string): Promise<boolean> {
+export async function putIn(db: D1Database, eventId: string, clanId: string, playerId: string, inst: InstanceRow, by: string, reason: string): Promise<boolean> {
     const before = await placementOf(db, eventId, playerId);
     if (before?.instance_id === inst.id) return true;
     const now = nowIso();
@@ -359,7 +364,7 @@ async function openInstance(db: D1Database, eventId: string, clanId: string, c: 
     const id = crypto.randomUUID();
     const full = whenFull
         ? ` AND NOT EXISTS (SELECT 1 FROM raid_instances j WHERE j.event_id = ?2 AND j.clan_id = ?3 AND j.branch = ?4
-                AND (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = j.id) < ${INSTANCE_SIZE})`
+                AND j.wiped_zone IS NULL AND (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = j.id) < ${INSTANCE_SIZE})`
         : "";
     await db
         .prepare(
@@ -380,12 +385,12 @@ export async function placeOnBranch(db: D1Database, eventId: string, clanId: str
     const current = await placementOf(db, eventId, playerId);
     if (current && current.branch === c.id) {
         const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1").bind(current.instance_id).first<InstanceRow>();
-        if (inst) return inst;
+        if (inst && inst.wiped_zone == null) return inst;  // 2.75: never back in a wiped instance
     }
     const group = await rosterGroup(db, eventId, clanId, playerId);
     // Others may be placed at the same time: read again and retry until a place is taken.
     for (let attempt = 0; attempt < 12; ++attempt) {
-        const mine = await clanInstances(db, eventId, clanId, c.id);
+        const mine = (await clanInstances(db, eventId, clanId, c.id)).filter((i) => i.wiped_zone == null);  // 2.75
         const counts = await placedCounts(
             db,
             mine.map((i) => i.id),
@@ -435,7 +440,7 @@ async function neededBranch(db: D1Database, eventId: string, clanId: string): Pr
 }
 
 /** The answer of a join: the instance, its branch and the relay's level (made once). */
-async function enter(ctx: Ctx, e: EventRow, inst: InstanceRow, me: string) {
+export async function enter(ctx: Ctx, e: EventRow, inst: InstanceRow, me: string, spectator = false) {
     const c = catalogById(inst.branch);
     if (!c) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
     await ask(ctx.env, inst.id, "/create", {
@@ -446,7 +451,12 @@ async function enter(ctx: Ctx, e: EventRow, inst: InstanceRow, me: string) {
     });
     const tag = await ctx.env.DB.prepare("SELECT tag FROM clans WHERE id = ?1").bind(inst.clan_id).first<{ tag: string }>();
     return json(ctx, {
+        // 2.75 (raidWipe.ts): a spectator (their group wiped) only watches: a socket that never takes a seat.
+        spectator,
         instance: {
+            start_zone: inst.start_zone ?? 0, // a group taking a wiped zone again starts there (0: the armory, then the start zone)
+            wiped_zone: inst.wiped_zone ?? null,
+            relieves: inst.relieves ?? null,
             id: inst.id,
             group: inst.group_no,
             clan_tag: tag?.tag ?? "",
@@ -497,9 +507,13 @@ export async function join(ctx: Ctx): Promise<Response> {
             throw Errors.conflict("HEART_SEALED", "Le Cœur d'Asterion s'ouvre quand les sept gigaboss sont tombés (" + gigabossDownIn(done) + " / " + CATALOGS.length + ").");
     };
     if (c) await sealedHeart(c.id);
+    // 2.75: a player whose group was wiped only watches from now on (their seat is closed for good).
+    const spect = await spectatorOf(db, e.id, me);
+    if (spect) return spectatorAnswer(ctx, e, spect, me);
     if (wanted) {
         const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1 AND event_id = ?2").bind(wanted, e.id).first<InstanceRow>();
         if (!inst || (c && inst.branch !== c.id)) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
+        if (inst.wiped_zone != null) throw Errors.conflict("INSTANCE_WIPED", "Ce groupe a été éliminé : sa zone attend un groupe qui la reprenne.");
         await sealedHeart(inst.branch);
         if (inst.players >= INSTANCE_SIZE || !(await putIn(db, e.id, reg.clan_id, me, inst, me, "aide")))
             throw Errors.conflict("INSTANCE_FULL", "Ce groupe a déjà 8 joueurs.");
@@ -715,6 +729,10 @@ interface InstRow {
     clan_id: string;
     tag: string;
     placed: number;
+    wiped_zone: number | null;  // 2.75 (raidWipe.ts)
+    wiped_at: string | null;
+    start_zone: number | null;
+    relieves: string | null;
 }
 
 async function snapshot(db: D1Database, eventId: string) {
@@ -728,20 +746,20 @@ async function snapshot(db: D1Database, eventId: string) {
             .bind(eventId),
         db
             .prepare(
-                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS placed
+                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, i.wiped_zone, i.wiped_at, i.start_zone, i.relieves, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS placed
                  FROM raid_instances i JOIN clans c ON c.id = i.clan_id WHERE i.event_id = ?1 ORDER BY c.tag, i.branch, i.group_no LIMIT 500`,
             )
             .bind(eventId),
         // 2.75: the zones finished (once each, raid_zone_completions) and by which group.
         db
             .prepare(
-                `SELECT z.branch, z.zone, z.completed_at, i.group_no, c.tag FROM raid_zone_completions z
+                `SELECT z.branch, z.zone, z.completed_at, i.group_no, c.tag, i.relieves FROM raid_zone_completions z
                  LEFT JOIN raid_instances i ON i.id = z.instance_id LEFT JOIN clans c ON c.id = i.clan_id
                  WHERE z.event_id = ?1 ORDER BY z.completed_at DESC LIMIT 200`,
             )
             .bind(eventId),
     ]);
-    const finished = zoneR!.results as { branch: string; zone: number; completed_at: string; group_no: number | null; tag: string | null }[];
+    const finished = zoneR!.results as { branch: string; zone: number; completed_at: string; group_no: number | null; tag: string | null; relieves: string | null }[];
     const objectives = objR!.results as ObjRow[];
     const instances = instR!.results as InstRow[];
     const done = new Map<string, Set<string>>();
@@ -872,8 +890,19 @@ export async function titanView(ctx: Ctx): Promise<Response> {
         ...finished.slice(0, 12).map((z) => {
             const c = catalogById(z.branch);
             const name = c?.zones.find((x) => x.id === z.zone)?.name ?? String(z.zone);
-            return { at: z.completed_at, kind: "zone", branch: partOf(z.branch), branch_name: c?.name ?? "", by: groupTag(z.tag, z.group_no), text: "Zone terminée : " + name, zone: z.zone };
+            // 2.75.1: finished by a group that took it back after another one was wiped there.
+            const text = z.relieves ? "Zone reprise par un groupe de renfort : " + name : "Zone terminée : " + name;
+            return { at: z.completed_at, kind: z.relieves ? "retake" : "zone", branch: partOf(z.branch), branch_name: c?.name ?? "", by: groupTag(z.tag, z.group_no), text, zone: z.zone };
         }),
+        // 2.75.1 (raidWipe.ts): a group wiped (every player down at once): its zone to take back.
+        ...instances
+            .filter((i) => i.wiped_zone != null && i.wiped_at)
+            .slice(0, 12)
+            .map((i) => {
+                const c = catalogById(i.branch);
+                const name = c?.zones.find((x) => x.id === i.wiped_zone)?.name ?? String(i.wiped_zone);
+                return { at: i.wiped_at!, kind: "wipe", branch: partOf(i.branch), branch_name: c?.name ?? "", by: groupTag(i.tag, i.group_no), text: "Groupe éliminé : " + name + " (zone à reprendre)", zone: i.wiped_zone! };
+            }),
     ]
         .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0))
         .slice(0, 12);
@@ -947,9 +976,27 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             placed: i.placed,
             free: Math.max(0, INSTANCE_SIZE - Math.max(i.players, i.placed)),
             mine: !!reg && i.clan_id === reg.clan_id,
+            wiped_zone: i.wiped_zone ?? null,  // 2.75: the group was wiped there (spectators)
+            start_zone: i.start_zone ?? null,
+            relieves: i.relieves ?? null,
         }));
     const placement = await placementOf(db, e.id, me);
-    const mine = placement && placement.branch === c.id ? instances.find((i) => i.id === placement.instance_id) : undefined;
+    let mine = placement && placement.branch === c.id ? instances.find((i) => i.id === placement.instance_id) : undefined;
+    if (!mine) {
+        // 2.75: the instance I play in without a placement (my group's, joined directly: raidZones.joinInstance).
+        const seat = await db
+            .prepare(
+                `SELECT m.instance_id FROM raid_instance_members m JOIN raid_instances i ON i.id = m.instance_id
+                 WHERE i.event_id = ?1 AND i.branch = ?2 AND m.player_id = ?3 AND m.left_at IS NULL AND i.wiped_zone IS NULL ORDER BY m.joined_at DESC LIMIT 1`,
+            )
+            .bind(e.id, c.id, me)
+            .first<{ instance_id: string }>();
+        if (seat) mine = instances.find((i) => i.id === seat.instance_id);
+    }
+    // 2.75 (raidWipe.ts): the zones to take again, whether I only watch, and what my group may take again.
+    const retakes = await zonesToRetake(db, e.id, c, mask);
+    const spect = await spectatorOf(db, e.id, me);
+    const myZoneDone = !!mine && mine.wiped_zone == null && zoneFinished(c, mine.zone, mask);
     const links = linkViews(done, objectives);
     return json(ctx, {
         server_time: now,
@@ -967,7 +1014,13 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             finished: zoneFinishedIn(c, z.id, mask),
             finished_by: finishedBy.get(z.id)?.by ?? null,
             finished_at: finishedBy.get(z.id)?.at ?? null,
-            groups: instances.filter((i) => i.zone === z.id && i.players > 0).length,
+            groups: instances.filter((i) => i.zone === z.id && i.players > 0 && i.wiped_zone == null).length,
+            // 2.75 (raidWipe.ts): « zone à reprendre »: the group wiped there (shown by the game's panel and map).
+            to_retake: retakes.some((r) => r.zone === z.id),
+            retake_by: (() => {
+                const r = retakes.find((x) => x.zone === z.id);
+                return r ? groupTag(r.clan_tag, r.group) : null;
+            })(),
             objectives: c.objectives
                 .filter((o) => o.zone === z.id)
                 .map((o) => ({ id: o.id, label: o.label, optional: o.optional, done: isDone(mask, o.index), by: by.get(o.id) ?? null })),
@@ -984,7 +1037,11 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             clan_tag: reg?.tag ?? null,
             instance_id: mine?.id ?? null,
             placed_branch: placement ? partOf(placement.branch) : null,
+            spectator: spect ? { instance_id: spect.instance_id, zone: spect.zone, part: partOf(spect.branch) } : null,
+            zone_finished: myZoneDone,
+            retake_offers: myZoneDone && !spect ? retakes.map((r) => ({ zone: r.zone, name: c.zones.find((z) => z.id === r.zone)?.name ?? "" })) : [],
         },
+        to_retake: retakes,
         journal: mineDone.slice(0, 10).map((d) => ({ objective: d.objective_id, label: objectiveIn(c, d.objective_id)?.label ?? d.objective_id, by: by.get(d.objective_id) ?? null, at: d.accepted_at })),
     });
 }

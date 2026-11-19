@@ -46,7 +46,7 @@ void PowerChoiceScene::render(float /*alpha*/) {
     }
     float k = std::min(1.0f, t_ / 0.22f);
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{3, 5, 12, 255}.withAlphaF(0.72f * k));
-    const auto& powers = w->player().powers();
+    const auto& powers = w->playerAt(offer->player).powers();  // 2.75: the player it was offered to (a raid: any seat)
     int n = static_cast<int>(powers.size());
     const PowerTriggerInfo newUse = powerTriggerInfo(*def);
     const bool newFree = newUse.kind != PowerTrigger::SlotKey;

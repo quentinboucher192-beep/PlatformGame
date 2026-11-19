@@ -63,7 +63,7 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count) {
         b.mechanism = {};
     }
     std::vector<bool> busy(static_cast<size_t>(kMaxInstancePlayers), false);
-    if (w.revivesLeft() > 0)
+    if (w.canRevive())  // 2.75: in a raid, always (as many revivals as wanted)
         for (int d = 0; d < w.teamSize(); ++d) {
             if (w.member(d).presence != GameWorld::Presence::Down) continue;
             const Vec2 soul = w.member(d).soul;
@@ -336,6 +336,9 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     frames_[0] = admin;
     bots_.think(run_, frames_.data(), static_cast<int>(frames_.size()));
     for (int s = players_; s < kMaxInstancePlayers; ++s) frames_[static_cast<size_t>(s)].flags = InputFrame::Vacant;
+    // 2.75: a power offered to a simulated player (the armory's tablets): left there, through its frame.
+    if (const auto& offer = run_.world().powerOffer(); offer && offer->player > 0 && offer->player < players_)
+        frames_[static_cast<size_t>(offer->player)].choice = InputFrame::kChoiceLeave;
     for (const auto& [seat, f] : scripted)  // a capture's script plays its seat
         if (seat > 0 && seat < kMaxInstancePlayers) frames_[static_cast<size_t>(seat)] = f;
     run_.step(frames_.data(), static_cast<int>(frames_.size()), state_, heart_);

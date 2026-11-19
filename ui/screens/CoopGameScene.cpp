@@ -129,6 +129,13 @@ public:
             if (spawns_[i]) world_->restoreMember(static_cast<int>(i), world_->carryOf(static_cast<int>(i)), *spawns_[i]);
         renderer_.build(g_.app.renderer(), res, *world_);
         renderer_.setTeamColors(colors);
+        {
+            // 2.75: this computer's players opaque, the others semi-transparent (display only).
+            uint32_t mine = 0;
+            for (int i = 0; i < n && i < 32; ++i)
+                if (setup_.local(i)) mine |= 1u << i;
+            renderer_.setOpaquePlayers(mine);
+        }
         if (g_.settings.gameplay.progressBar > 0)
             trackFuture_ = std::async(std::launch::async, [level = level_, &content = g_.content] { return buildProgressTrack(level, content); });
         // The progress of the attempt (the course à la vérification counts the most advanced player).

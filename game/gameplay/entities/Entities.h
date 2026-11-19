@@ -248,7 +248,9 @@ public:
     /// glow at its surface above what it hides. « warn » (sent `warn` s before a rise) shows its
     /// telegraph: the level it will reach, glowing cracks, heat.
     Rect overlapBox() const override;
-    bool drawnOverActors() const override { return magma_; }
+    /// 2.75: a raid's periodic liquid of another style (souls, plasma, embers…) is drawn over the actors
+    /// too (prop « overActors », tools/levelgen/raid_asterion.py).
+    bool drawnOverActors() const override { return magma_ || obj_.prop<bool>("overActors", false); }
     bool magma() const { return magma_; }
     /// Share of the box under the magma now (0: drained, 1: full); the part that hurts.
     float magmaLevel() const { return level_; }

@@ -271,7 +271,21 @@ struct RaidEntry {
     std::string eventId, instanceId, clanTag;
     int group = 1;
     std::string branch = "bras_droit";
+    /// 2.75: the zone its games start in (a group taking a wiped zone again: that zone; 0: the
+    /// branch's start), and whether this player only watches (their group was wiped: spectator).
+    int startZone = 0;
+    bool spectator = false;
 };
+/// 2.75: the instance a join answered (POST …/join, …/retake): its fields, as RaidEntry keeps them.
+inline void readRaidEntry(RaidEntry& e, const Json& data) {
+    const Json& i = data.value("instance", Json::object());
+    e.instanceId = jstr(i, "id");
+    e.clanTag = jstr(i, "clan_tag");
+    e.group = jget<int>(i, "group", 1);
+    e.branch = jstr(i, "part", e.branch);
+    e.startZone = jget<int>(i, "start_zone", 0);
+    e.spectator = jget<bool>(data, "spectator", false);
+}
 /// The combat of a raid instance (up to 8 players in lockstep), in place of the current screen.
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry);
 /// 2.68: an administrator's test of a raid (ADMINISTRATION › Raids › « Tester Asterion »): a

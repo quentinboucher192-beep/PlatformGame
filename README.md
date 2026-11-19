@@ -167,8 +167,9 @@ mieux notés, amis…) ; **PROJETS** permet de créer un niveau à plusieurs, en
 
 Les niveaux EXTRÊME se jouent aussi à **2 ou 3 joueurs** : **sur un même PC** (une manette par joueur en
 plus du clavier), **en réseau local** (sans compte ni serveur) ou **en ligne** avec vos amis. Une vie
-chacun, pas de coups entre alliés, des joueurs solides sur lesquels on peut se poser, des
-**réanimations**, une caméra commune — et des classements **Duo** et **Trio** à part. Architecture :
+chacun, pas de coups entre alliés, des joueurs qui **se traversent** (les autres dessinés en
+semi-transparence), **2 réanimations** par tentative — un joueur tombé ne revient qu'une fois relevé, sans
+déplacer les autres —, une caméra commune et des classements **Duo** et **Trio** à part. Architecture :
 [docs/COOP.md](docs/COOP.md).
 
 <p align="center">
@@ -196,7 +197,11 @@ le moteur des histoires du jeu :
 <p align="center"><img src="docs/media/asterion_film.gif" width="600" alt="Film d'Asterion : le titan se forme puis rugit, « Le Dévoreur de mondes »"><br><sub>Deux moments du film : Asterion se forge un corps, puis se nomme.</sub></p>
 
 Les clans l'affrontent **par groupes de huit**, chaque groupe dans son instance, tous les jeux avançant au
-même pas. Le titan a **sept branches** — Crâne, Bras gauche, Torse, Abdomen, Jambe gauche, Jambe droite et Bras
+même pas. Chaque branche commence par un **vestiaire** où chacun choisit ses pouvoirs avant la route.
+En raid, un joueur à terre revient **autant de fois qu'un coéquipier le relève** ; si **tout le groupe** tombe,
+il est **éliminé** de la zone : ses joueurs deviennent spectateurs (caméra libre, ou un joueur encore en jeu de la
+branche) et la zone attend qu'un groupe ayant fini la sienne vienne la **reprendre**. Les liquides qui montent
+remplissent tout leur bassin, d'un bord de l'écran à l'autre ([docs/RAIDS.md §20](docs/RAIDS.md)). Le titan a **sept branches** — Crâne, Bras gauche, Torse, Abdomen, Jambe gauche, Jambe droite et Bras
 droit — de huit zones chacune : deux chemins, une zone secrète et sa relique, un raccourci au levier, des
 objectifs qu'il faut **deux groupes** pour réussir, et un quart d'heure d'expédition sur trois étages avant
 chaque antre. Les branches sont liées : les yeux détruits dans le Crâne éteignent les tourelles du Bras gauche,
@@ -613,6 +618,16 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.75.1** :
+* **Raids et coopération** : les joueurs **se traversent** (les autres dessinés en semi-transparence, vous opaque) ; un
+  joueur qui tombe ne déplace personne et ne revient qu'une fois **réanimé** près de son âme (2 par tentative en
+  coopération, **illimitées** en raid) ; coopération version 2 (les replays d'avant se rejouent à l'identique, records
+  gardés). Correctif : la chute d'un joueur simulé ne renvoie plus l'administrateur au départ.
+* **Raids** : tout le groupe à terre = **groupe éliminé** (spectateurs : caméra libre, joueur suivant / précédent), sa
+  zone **à reprendre** par un groupe qui a fini la sienne ; un **vestiaire** au début de chaque branche pour choisir ses
+  pouvoirs ; liquides montants d'un bord à l'autre ; « Joueurs simulés : 0 … 7 » ; migration **0161**
+  ([docs/RAIDS.md §20](docs/RAIDS.md)).
 
 **Nouveau dans la version 2.75.0** :
 * **Raids de clan** : panneau « Ce qu'il reste à faire » (HUD des raids, placé dans l'onglet « Raids ») et ce qu'il

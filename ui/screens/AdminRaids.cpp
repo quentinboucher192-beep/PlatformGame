@@ -9,6 +9,7 @@
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/raid/RaidBranch.h"
+#include "game/raid/RaidRun.h"
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
 #include "ui/online/RaidWidgets.h"
@@ -448,8 +449,12 @@ void AdminRaids::drawTest(const Rect& r) {
         zoneNames.push_back(std::to_string(z.id) + " · " + z.name + (z.boss ? " (" + b.gigaboss + ")" : ""));
         if (z.boss && bossZone == 0) bossZone = static_cast<int>(zoneNames.size()) - 1;
     }
+    // 2.75: the armory (« vestiaire ») before the branch's zones, last in the list.
+    const bool armory = b.hasArmory();
+    if (armory) zoneNames.push_back("Vestiaire (choix des pouvoirs)");
     if (testZone_ < 0 || testZone_ >= static_cast<int>(zoneNames.size())) testZone_ = bossZone;  // the gigaboss's fight by default
-    const raid::ZoneRules* rules = b.zoneRules(b.zones[static_cast<size_t>(testZone_)].id);
+    const bool atArmory = armory && testZone_ == static_cast<int>(b.zones.size());
+    const raid::ZoneRules* rules = atArmory ? b.zoneRules(0) : b.zoneRules(b.zones[static_cast<size_t>(testZone_)].id);
     const bool giga = rules && rules->gigaboss.present;
     const float x = r.x + ui.s(14), w = r.w - ui.s(28), gap = ui.s(10), rowH = ui.s(44);
     const float half = (w - gap) * 0.5f;
@@ -459,7 +464,8 @@ void AdminRaids::drawTest(const Rect& r) {
     if (testBranch_ != prevBranch) testZone_ = -1;
     ui.cycle("zone", {x + half + gap, y, half, rowH}, "Zone", testZone_, zoneNames);
     y += rowH + gap;
-    static const std::vector<std::string> kPlayers = {"2", "3", "4", "5", "6", "7", "8"};
+    // 2.75: the simulated players only (the administrator is not counted): 0 (alone) to 7; seats = 1 + them.
+    static const std::vector<std::string> kPlayers = {"0 (vous seul)", "1", "2", "3", "4", "5", "6", "7"};
     // 2.74 (phase 6): the Cœur d'Asterion has four phases; the seven gigaboss three.
     const bool heart = b.part == raid::kHeartPart;
     static const std::vector<std::string> kPhases = {"1", "2", "3"};
@@ -499,8 +505,8 @@ void AdminRaids::drawTest(const Rect& r) {
     if (ui.button("launch", {x + half + gap, y, half, rowH}, "Lancer le test", bs)) {
         RaidTestSetup t;
         t.branch = b.id;
-        t.zone = b.zones[static_cast<size_t>(testZone_)].id;
-        t.players = testPlayers_ + 2;
+        t.zone = atArmory ? raid::RaidRun::kArmory : b.zones[static_cast<size_t>(testZone_)].id;
+        t.players = 1 + testPlayers_;  // 2.75: the administrator + the simulated players chosen
         t.startPhase = giga ? testPhase_ + 1 : 1;
         t.invincible = g_.settings.gameplay.adminInvincible;
         t.parts = testParts_;  // 2.74 (phase 6): the heart's test only

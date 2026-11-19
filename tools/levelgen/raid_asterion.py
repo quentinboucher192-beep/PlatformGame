@@ -42,12 +42,15 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 2  # 2.72 (phase 6): the heart (titan.json « heart ») and the seven links « modifier » to it
+TITAN_REVISION = 3  # 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
 H = 48
 START_POWERS = ["dash", "wave", "shield", "impulse"]
+# 2.75: the narrowest rising liquid (tiles): wider than the widest view (Camera::kViewWidth / kMinFitZoom,
+# 1143 px = 71.4 tiles), so that it always fills the screen's width (tests/test_raid_revive.cpp).
+FLOOD_MIN = 72
 LINK_BIT0 = 24  # the links' bits in a branch's state (the objectives are below)
 
 EN = {}
@@ -606,13 +609,28 @@ class Zone:
     def hazard(self, x0, x1, period, first, warn=3.0, duration=6.0):
         """The branch's periodic danger over the ground rows [y-2, y) from x0 to x1 (the ledges above are safe)."""
         th = self.th
-        props = {"damage": 2, "interval": 0.6, "visible": True, "active": False, "bounce": True}
+        props = {"damage": 2, "interval": 0.6, "visible": True, "active": False, "bounce": True, "overActors": True}
         if th["style"] != "toxic":
             props["style"] = th["style"]
         dz = self.L.obj("damage_zone", [x0 * T, (self.y - 2) * T, (x1 - x0) * T, 2 * T], "gameplay", props, oid="magma_flow")
         self.raid["magma"] = {"zone": dz, "period": period, "first": first, "warn": warn, "duration": duration,
                               "name": tr(*th["hazard"]), "hint": tr(*th["advice"]), "message": tr(*th["alarm"])}
         return dz
+
+    def flood(self, n, period, first, warn=3.0, duration=6.0, every=14):
+        """2.75: the branch's rising liquid fills its whole basin: at least FLOOD_MIN tiles wide (wider
+        than the widest view: it spans the screen), a low lip of rock at each end (2 rows: its surface
+        never ends in the air nor in the middle of the ground; a jump crosses it), safe ledges all along.
+        Returns the basin's left end."""
+        w = max(n, FLOOD_MIN)
+        self.rock(self.x, self.y - 2, self.x + 1)
+        self.x += 1
+        x0 = self.flat(w)
+        self.rock(self.x, self.y - 2, self.x + 1)
+        self.x += 1
+        self.hazard(x0, x0 + w, period, first, warn=warn, duration=duration)
+        self.safe_ledges(x0, x0 + w, every=every)
+        return x0
 
     def safe_ledges(self, x0, x1, every=14):
         """Ledges 4 rows up and walkways 7 rows up along a hazard: the safe places."""
@@ -1093,9 +1111,7 @@ def crane():
     z.flat(12)
     z.enemy("small", z.x - 5)
     z.cross(30)
-    x0 = z.flat(48)
-    z.hazard(x0, x0 + 48, period=70.0, first=35.0)
-    z.safe_ledges(x0, x0 + 48)
+    x0 = z.flood(48, period=70.0, first=35.0)
     z.enemy("flyer", x0 + 20, z.y - 8)
     z.enemy("mid", x0 + 34, flip=True)
     z.receptor("crane_oeil_gauche", x0 + 42, sign=tr("L'œil gauche : frappez-le avec un pouvoir de tir (Onde, Tir chargé, Boomerang).",
@@ -1131,9 +1147,7 @@ def crane():
     z = Zone(s, 4, "Les nerfs optiques relient les yeux au cerveau. Deux nerfs, deux groupes ; l'onde psychique y revient sans cesse.",
              "The optic nerves link the eyes to the brain. Two nerves, two groups; the psychic wave keeps coming back.")
     z.west(low=3, high=2)
-    x0 = z.flat(72)
-    z.hazard(x0, x0 + 72, period=80.0, first=40.0)
-    z.safe_ledges(x0, x0 + 72, every=16)
+    x0 = z.flood(72, period=80.0, first=40.0, every=16)
     z.L.sign(x0 + 3, z.y, tr("Deux nerfs, deux groupes : chaque groupe en tranche un (un pouvoir de tir).",
                              "Two nerves, two groups: each group severs one (a shooting power)."))
     z.receptor("crane_nerf_gauche", x0 + 18)
@@ -1208,9 +1222,7 @@ def bras_gauche():
     z = Zone(s, 3, "Le tendon glacé grimpe vers le coude. Des tourelles le surveillent, les griffes balaient le bas ; un cœur de givre bat en haut.",
              "The frozen tendon climbs to the elbow. Turrets watch it, the claws sweep the bottom; a frost heart beats at the top.")
     z.west(low=1)
-    x0 = z.flat(30)
-    z.hazard(x0, x0 + 30, period=60.0, first=30.0)
-    z.safe_ledges(x0, x0 + 30, every=14)
+    x0 = z.flood(30, period=60.0, first=30.0, every=14)
     z.enemy("mid", x0 + 12)
     z.up(3, w=12)
     x1 = z.flat(36)
@@ -1229,9 +1241,7 @@ def bras_gauche():
     z = Zone(s, 4, "Le coude des lames, où Dreadfang aiguise ses griffes. Deux lames : il faut deux groupes, un par lame. Les griffes balaient le sol.",
              "The elbow of blades, where Dreadfang sharpens its claws. Two blades: two groups are needed, one per blade. The claws sweep the floor.")
     z.west(low=3, high=2)
-    x0 = z.flat(70)
-    z.hazard(x0, x0 + 70, period=75.0, first=40.0)
-    z.safe_ledges(x0, x0 + 70, every=16)
+    x0 = z.flood(70, period=75.0, first=40.0, every=16)
     z.L.sign(x0 + 3, z.y, tr("Deux lames, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
                              "Two blades, two groups: each group breaks one (a shooting power)."))
     z.slab(x0 + 40, z.y - 11, x0 + 52, z.y - 9)
@@ -1329,9 +1339,7 @@ def torse():
     z = Zone(s, 4, "Le sternum, cuirassé de deux plaques. Deux groupes, une plaque chacun ; le cœur pulse sous le métal et des barrières le défendent.",
              "The sternum, armoured with two plates. Two groups, one plate each; the heart pulses under the metal and barriers defend it.")
     z.west(low=2, high=3)
-    x0 = z.flat(72)
-    z.hazard(x0, x0 + 72, period=45.0, first=25.0, duration=4.0)
-    z.safe_ledges(x0, x0 + 72, every=16)
+    x0 = z.flood(72, period=45.0, first=25.0, duration=4.0, every=16)
     z.lasers([x0 + 12, x0 + 60], ["barriere_2", "barriere_3"], top_gap=10)
     z.L.sign(x0 + 3, z.y, tr("Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
                              "Two plates, two groups: each group breaks one (a shooting power)."))
@@ -1353,9 +1361,7 @@ def torse():
     z.west(low=3)
     z.flat(10)
     z.cross(30)
-    x0 = z.flat(60)
-    z.hazard(x0, x0 + 60, period=50.0, first=30.0, duration=4.0)
-    z.safe_ledges(x0, x0 + 60, every=15)
+    x0 = z.flood(60, period=50.0, first=30.0, duration=4.0, every=15)
     z.receptor("torse_plaque_ouest", x0 + 14)
     z.receptor("torse_plaque_est", x0 + 46)
     z.L.sign(x0 + 3, z.y, tr("Deux plaques, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
@@ -1387,9 +1393,7 @@ def abdomen():
     z = Zone(s, 2, "L'estomac du titan : des bassins d'acide, des parois qui respirent et une glande à crever. L'acide reflue sans prévenir.",
              "The titan's stomach: acid pools, breathing walls and a gland to burst. The acid flows back without warning.")
     z.west(low=1)
-    x0 = z.flat(24)
-    z.hazard(x0, x0 + 24, period=65.0, first=35.0)
-    z.safe_ledges(x0, x0 + 24, every=12)
+    x0 = z.flood(24, period=65.0, first=35.0, every=12)
     z.cross(34)
     x1 = z.flat(40)
     z.enemy("mid", x1 + 10)
@@ -1422,9 +1426,7 @@ def abdomen():
              "The titan's intestine, long and shifting. Two valves: two groups, one each. Acid flows back often.")
     z.west(low=3, high=2)
     z.cross(26)
-    x0 = z.flat(66)
-    z.hazard(x0, x0 + 66, period=50.0, first=25.0)
-    z.safe_ledges(x0, x0 + 66, every=16)
+    x0 = z.flood(66, period=50.0, first=25.0, every=16)
     z.L.sign(x0 + 3, z.y, tr("Deux valves, deux groupes : chaque groupe en ferme une (un pouvoir de tir).",
                              "Two valves, two groups: each group closes one (a shooting power)."))
     z.slab(x0 + 36, z.y - 11, x0 + 48, z.y - 9)
@@ -1485,9 +1487,7 @@ def jambe_gauche():
     z.flat(10)
     z.L.sign(12, z.y, tr("Les puits d'apesanteur vous portent : laissez-vous soulever.", "The weightless wells carry you: let them lift you."))
     z.cross(36)
-    x0 = z.flat(44)
-    z.hazard(x0, x0 + 44, period=70.0, first=35.0)
-    z.safe_ledges(x0, x0 + 44, every=14)
+    x0 = z.flood(44, period=70.0, first=35.0, every=14)
     z.enemy("flyer", x0 + 14, z.y - 8)
     z.enemy("flyer2", x0 + 26, z.y - 9, flip=True)
     z.receptor("jg_generateur_ouest", x0 + 38, sign=tr("Générateur de gravité ouest : coupez-le avec un pouvoir de tir.",
@@ -1519,9 +1519,7 @@ def jambe_gauche():
     z = Zone(s, 4, "Le genou du titan, tenu par deux rotules. Deux groupes, une rotule chacun ; des puits de gravité y écrasent tout.",
              "The titan's knee, held by two kneecaps. Two groups, one kneecap each; gravity wells crush everything there.")
     z.west(low=3, high=2)
-    x0 = z.flat(70)
-    z.hazard(x0, x0 + 70, period=60.0, first=30.0)
-    z.safe_ledges(x0, x0 + 70, every=16)
+    x0 = z.flood(70, period=60.0, first=30.0, every=16)
     z.L.sign(x0 + 3, z.y, tr("Deux rotules, deux groupes : chaque groupe en brise une (un pouvoir de tir).",
                              "Two kneecaps, two groups: each group breaks one (a shooting power)."))
     z.slab(x0 + 44, z.y - 11, x0 + 56, z.y - 9)
@@ -1594,9 +1592,7 @@ def jambe_droite():
     z = Zone(s, 3, "Le fémur fendu : la lave affleure dans ses fissures et l'onde sismique de Titanus y frappe. Un réacteur tourne au fond.",
              "The split femur: lava rises in its cracks and Titanus' seismic wave strikes there. A reactor spins at the back.")
     z.west(low=1)
-    x0 = z.flat(46)
-    z.hazard(x0, x0 + 46, period=60.0, first=30.0)
-    z.safe_ledges(x0, x0 + 46, every=14)
+    x0 = z.flood(46, period=60.0, first=30.0, every=14)
     z.enemy("mid", x0 + 16)
     z.enemy("flyer2", x0 + 30, z.y - 9)
     z.ledge(x0 + 34, x0 + 39, z.y - 10)
@@ -1612,9 +1608,7 @@ def jambe_droite():
     z = Zone(s, 4, "Le genou-forge, actionné par deux pistons. Deux groupes, un piston chacun ; l'onde sismique y revient souvent.",
              "The forge knee, driven by two pistons. Two groups, one piston each; the seismic wave comes back often.")
     z.west(low=3, high=2)
-    x0 = z.flat(72)
-    z.hazard(x0, x0 + 72, period=75.0, first=40.0)
-    z.safe_ledges(x0, x0 + 72, every=16)
+    x0 = z.flood(72, period=75.0, first=40.0, every=16)
     z.L.sign(x0 + 3, z.y, tr("Deux pistons, deux groupes : chaque groupe en bloque un (un pouvoir de tir).",
                              "Two pistons, two groups: each group jams one (a shooting power)."))
     z.slab(x0 + 40, z.y - 11, x0 + 52, z.y - 9)

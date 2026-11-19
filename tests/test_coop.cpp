@@ -44,7 +44,7 @@ struct Team {
     std::unique_ptr<GameWorld> w;
     std::vector<InputFrame> prev;
 
-    explicit Team(int n, const std::string& levelId = {}) {
+    explicit Team(int n, const std::string& levelId = {}, int coopVersion = kCoopSimulationVersion) {
         content.reload();
         res.init(nullptr, &audio);
         LevelData l;
@@ -59,6 +59,7 @@ struct Team {
         WorldServices s{res, audio, content, nullptr, 0.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, WorldMode::Play);
         w->setTeamSize(n);
+        w->setCoopVersion(coopVersion);  // 2.75: 1 = solid players (2.62 to 2.74), 2 = they pass through
         w->setKeysPerSlot(true);
         w->load(l);
         w->seedGameplay(levelSeed(levelId.empty() ? "test_coop" : levelId));
@@ -151,8 +152,8 @@ TEST_CASE("coop: a team starts side by side, never one inside another") {
     CHECK(solo.w->teamSize() == 1);
 }
 
-TEST_CASE("coop: players are solid for each other, and nobody is ever pushed") {
-    Team t(2);
+TEST_CASE("coop 1 (replays of 2.62 to 2.74): players are solid for each other, and nobody is ever pushed") {
+    Team t(2, {}, 1);
     t.idle(60);
     const float ground = t.p(0).feet().y;
     t.place(0, {700.0f, ground});
@@ -180,8 +181,8 @@ TEST_CASE("coop: players are solid for each other, and nobody is ever pushed") {
     CHECK(t.p(0).box.right() <= t.p(1).box.x + 0.01f);
 }
 
-TEST_CASE("coop: landing on an ally, who carries nobody") {
-    Team t(2);
+TEST_CASE("coop 1 (replays of 2.62 to 2.74): landing on an ally, who carries nobody") {
+    Team t(2, {}, 1);
     t.idle(60);
     const float ground = t.p(0).feet().y;
     t.place(0, {700.0f, ground});
@@ -198,6 +199,35 @@ TEST_CASE("coop: landing on an ally, who carries nobody") {
     CHECK(std::abs(t.p(1).feet().x - x2) < 0.01f);
     CHECK(std::abs(t.p(1).feet().y - ground) < 0.01f);
     CHECK(!t.overlapping());
+}
+
+TEST_CASE("coop 2 (2.75): the players pass through each other, nobody pushed nor carried") {
+    CHECK(kCoopSimulationVersion == 2);
+    Team t(2);
+    t.idle(60);
+    const float ground = t.p(0).feet().y;
+    t.place(0, {700.0f, ground});
+    t.place(1, {600.0f, ground});
+    t.idle(10);
+    const Vec2 still = t.p(0).feet();
+    // Player 2 runs through player 1 and goes on: player 1 never moves.
+    bool crossed = false;
+    for (int i = 0; i < 240; ++i) {
+        t.step({InputFrame{}, frame(1)});
+        if (t.p(1).box.intersects(t.p(0).box)) crossed = true;
+    }
+    CHECK(crossed);
+    CHECK(t.p(1).box.x > t.p(0).box.right());
+    CHECK(std::abs(t.p(0).feet().x - still.x) < 0.001f);
+    // Falling on an ally's head: through it, down to the ground.
+    t.place(1, {700.0f, ground - 120.0f});
+    t.idle(90);
+    CHECK(std::abs(t.p(1).feet().y - ground) < 0.01f);
+    CHECK(std::abs(t.p(0).feet().y - ground) < 0.01f);
+    // A team still starts side by side (never one inside another).
+    Team u(3);
+    u.idle(60);
+    CHECK(!u.overlapping());
 }
 
 TEST_CASE("coop: attacks and powers never hurt an ally") {
@@ -287,8 +317,8 @@ TEST_CASE("coop: everybody down at once ends the attempt") {
     CHECK(t.w->state() == WorldState::Failed);
 }
 
-TEST_CASE("coop: a player in standby is not solid, comes back near the team, or is gone after 60 s") {
-    Team t(2);
+TEST_CASE("coop 1: a player in standby is not solid, comes back near the team, or is gone after 60 s") {
+    Team t(2, {}, 1);  // the overlap checks are the solid players' (cooperation 2: they pass through anyway)
     t.idle(60);
     const float ground = t.p(0).feet().y;
     t.place(0, {700.0f, ground});
@@ -346,27 +376,30 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
     struct Golden {
         int players;
         const char* digest;
+        int version;
     };
-    const Golden golden[] = {{2, "bb2676ab728f2c52"}, {3, "2ac42252542c66bd"}};
+    // 2.75: version 1 (solid players: the replays of 2.62 to 2.74) keeps its digests exactly;
+    // version 2 (they pass through each other) has its own.
+    const Golden golden[] = {{2, "bb2676ab728f2c52", 1}, {3, "2ac42252542c66bd", 1}, {2, "91d4357955571446", 2}, {3, "c965b1d603d7a5d0", 2}};
     int mismatches = 0;
     for (const auto& g : golden) {
         auto script = teamScript(g.players, 31, 120 * 40);
-        Team a(g.players, "sylvanox_01");
+        Team a(g.players, "sylvanox_01", g.version);
         auto ra = runScript(a, script);
-        Team b(g.players, "sylvanox_01");
+        Team b(g.players, "sylvanox_01", g.version);
         auto rb = runScript(b, script);
         CHECK(ra == rb);
         std::string got = ra.empty() ? "" : hex(ra.back());
         if (got != g.digest) {
-            std::printf("  équipe de %d (sylvanox_01, 40 s) : %s (attendu %s)\n", g.players, got.c_str(), g.digest);
+            std::printf("  équipe de %d, coop %d (sylvanox_01, 40 s) : %s (attendu %s)\n", g.players, g.version, got.c_str(), g.digest);
             ++mismatches;
         }
         // Another input of player 2 changes the run.
         auto other = script;
         other[200][1].held ^= 1u << J;
-        Team c(g.players, "sylvanox_01");
+        Team c(g.players, "sylvanox_01", g.version);
         CHECK(runScript(c, other) != ra);
     }
     CHECK(mismatches == 0);
-    CHECK(kCoopSimulationVersion == 1);
+    CHECK(kCoopSimulationVersion == 2);
 }

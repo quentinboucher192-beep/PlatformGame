@@ -73,6 +73,8 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/PowerChoiceScene.h"
+#include "ui/screens/RaidSpectator.h"
 
 namespace cosmic {
 
@@ -99,7 +101,7 @@ std::string hex16(uint64_t v) {
     return b;
 }
 
-class RaidGameScene : public Scene {
+class RaidGameScene : public Scene, public PowerChoiceHost {
 public:
     RaidGameScene(GameServices& g, RaidEntry entry) : g_(g), entry_(std::move(entry)) {}
     /// 2.68: an administrator's test (solo, local, never reported).
@@ -115,9 +117,14 @@ public:
     }
 
     bool holdsNotifications() const override { return true; }
+    // 2.75: the armory's power choice (PowerChoiceScene over the combat, which never stops).
+    GameWorld* world() override { return run_ && !catching_ ? &run_->world() : nullptr; }
+    const PowerKeyMap& powerKeys() const override { return powerKeys_; }
+    void answerPowerOffer(uint8_t choice) override { pendingChoice_ = choice; }
     // 2.68 (phase 3): the pointer comes back with the card of the gigaboss's fall (« Résultats du raid »).
     bool hidesCursor() const override {
-        return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !bigMap_ && !reconnect_.active() && zoneCard_ < 0;
+        return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !bigMap_ && !reconnect_.active() && zoneCard_ < 0 &&
+               !spec_.on;
     }
 
     void onEnter() override {
@@ -148,7 +155,9 @@ public:
             }
             stopCatchUp();
             if (link_) link_->close();
-            link_ = std::make_unique<NetCoopLink>(makeWebSocketTransport(url + "/api/v1/raids/instances/" + entry_.instanceId + "/socket", token),
+            // 2.75: a spectator's socket only watches (?watch=1: never a seat; the server decides anyway).
+            const bool watch = entry_.spectator || watchSeat_ >= 0;
+            link_ = std::make_unique<NetCoopLink>(makeWebSocketTransport(url + "/api/v1/raids/instances/" + entry_.instanceId + "/socket" + (watch ? "?watch=1" : ""), token),
                                                   g_.online.username(), 255, g_.online.playerId());
             link_->start();
             fresh_ = reconnect_.active();
@@ -237,8 +246,9 @@ public:
                          g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
         ownRun_ = std::make_unique<raid::RaidRun>(ws, *branch_, go.players);
         run_ = ownRun_.get();
-        run_->setCameraFollow(local_);
-        if (!run_->begin(link_->raidStateAt(0))) {
+        run_->setCameraFollow(watchSeat_ >= 0 ? watchSeat_ : local_);  // 2.75: a spectator follows the player watched
+        // 2.75: the armory first (each player picks their powers), else a group taking a wiped zone again starts there.
+        if (!run_->begin(link_->raidStateAt(0), entry_.startZone > 0 ? entry_.startZone : raid::RaidRun::kArmory)) {
             fail_ = "Impossible de charger la première zone du raid.";
             run_ = nullptr;
             ownRun_.reset();
@@ -267,7 +277,7 @@ public:
             fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
             return;
         }
-        if (!branch_ || !branch_->zone(testSetup_.zone)) {
+        if (!branch_ || !branch_->zone(testSetup_.zone == raid::RaidRun::kArmory ? 0 : testSetup_.zone)) {  // 2.75: the armory too
             fail_ = "Cette branche ou cette zone est introuvable dans les données du jeu.";
             return;
         }
@@ -316,7 +326,11 @@ public:
         InputFrame f = InputFrame::fromPlayerInput(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in);
         if (paused_ || g_.app.topScene() != this) f = InputFrame{};  // 2.72: a film over the combat holds this player only
         const auto& offer = run_->world().powerOffer();
-        if (offer && offer->player == 0) f.choice = InputFrame::kChoiceLeave;
+        if (offer && offer->player == 0 && (!scripts_.empty() && scripts_[0].active())) f.choice = InputFrame::kChoiceLeave;  // a capture
+        else if (offer && offer->player == 0 && pendingChoice_ != 0) {  // 2.75: the armory's choice window
+            f.choice = pendingChoice_;
+            pendingChoice_ = 0;
+        }
         // 2.70, a capture: a seat with a script plays it (in place of its simulated player, 2.72).
         std::vector<std::pair<int, InputFrame>> scripted;
         for (size_t k = 1; k < scripts_.size(); ++k)
@@ -328,6 +342,7 @@ public:
         session_->step(f, scripted);  // never reports anything
         ++tick_;
         if (const int z = run_->zoneFinishedNow()) zoneDone(z);  // 2.75
+        if (run_->wipedNow()) groupWiped();  // 2.75.1
         if (run_->heartWonNow()) playVictory();  // 2.74: a test's fall is its victory (never reported)
         if (run_->zoneSerial() != serial_) zoneReady();
     }
@@ -375,6 +390,9 @@ public:
         std::vector<Color> colors;
         for (int i = 0; i < w.teamSize(); ++i) colors.push_back(seatColor(i, local_));
         renderer_.setTeamColors(colors);
+        // 2.75: this player opaque (a spectator: the player watched), the others semi-transparent.
+        const int opaque = local_ >= 0 ? local_ : watchSeat_;
+        renderer_.setOpaquePlayers(opaque >= 0 && opaque < 32 ? 1u << opaque : 0u);
         if (local_ >= 0 && local_ < w.teamSize()) {
             suit_ = g_.suitSheet(g_.cosmeticLook("suit"));
             w.playerAt(local_).skin = suit_ ? suit_.get() : nullptr;
@@ -395,6 +413,22 @@ public:
             return;
         }
         if (reconnect_.active()) return;  // 2.74: no relay for now: the world waits under its card
+        if (entry_.spectator && !run_ && link_ && link_->watcher() && !link_->go()) {
+            // 2.75: a spectator whose group's game is over (nobody left in it): the first player of the branch.
+            link_->update(dt);
+            spectatorWait_ += dt;
+            if (spectatorWait_ > 4.0f) {
+                if (ownInstance_.empty()) ownInstance_ = entry_.instanceId;
+                if (clock_ - spec_.fetchedAt > 10.0f) fetchTargets();
+                if (!spec_.targets.empty()) {
+                    spectatorWait_ = 0.0f;
+                    spec_.on = true;
+                    spec_.index = -1;
+                    watchStep(+1);
+                }
+            }
+            return;
+        }
         int steps = 1;
         if (link_->available() > tick_ + static_cast<uint32_t>(link_->inputDelay() + 6)) steps = 4;
         for (int k = 0; k < steps && !ended_; ++k) {
@@ -410,26 +444,36 @@ public:
             if (run_->gigaboss().fellNow() && !link_->joinedLate()) fallCard_ = true;  // « Résultats du raid »
             if (run_->gigaboss().fellNow() && link_->joinedLate() && tick_ >= link_->rejoinAt()) fallCard_ = true;
             if (const int z = run_->zoneFinishedNow(); z && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) zoneDone(z);  // 2.75
+            if (run_->wipedNow() && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) groupWiped();  // 2.75.1: every computer, this step
             if (run_->zoneSerial() != serial_) zoneReady();
             sendReports();
         }
     }
 
     void sendLocal() {
+        if (link_->watcher()) return;  // 2.75: a spectator never plays
         const uint32_t target = tick_ + static_cast<uint32_t>(link_->inputDelay());
         if (sentUpTo_ != UINT32_MAX && target <= sentUpTo_) return;
         sentUpTo_ = target;
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
         if (paused_ || g_.app.topScene() != this) f = InputFrame{};  // 2.72: a film over the combat holds this player only
-        // A power offered to this player (none in the branch's zones): left on its tablet, through
-        // the frame like every choice (the replays stay exact).
-        if (const auto& offer = run_->world().powerOffer(); offer && offer->player == local_) f.choice = InputFrame::kChoiceLeave;
+        if (run_->wiped()) f = InputFrame{};  // 2.75: the group wiped: neutral frames (the relay goes on for the others)
+        // A power offered to this player (2.75: the armory's tablets): the answer of its choice window,
+        // through the frame like every choice (the replays stay exact).
+        if (const auto& offer = run_->world().powerOffer(); offer && offer->player == local_ && pendingChoice_ != 0) {
+            f.choice = pendingChoice_;
+            pendingChoice_ = 0;
+        }
         frames_.assign(1, {local_, f});
         link_->pushLocal(target, frames_);
     }
 
     void sendReports() {
         if (test_) return;  // 2.68: an administrator's test never reports anything
+        if (link_->watcher()) {  // 2.75: a spectator never reports
+            run_->takeReports();
+            return;
+        }
         for (const raid::Report& r : run_->takeReports()) {
             if (link_->joinedLate() && tick_ < link_->rejoinAt()) continue;  // not in play yet
             const char* kind = r.kind == raid::Report::Kind::Objective ? "objective"
@@ -437,6 +481,7 @@ public:
                                : r.kind == raid::Report::Kind::Result  ? "result"
                                : r.kind == raid::Report::Kind::Heart   ? "heart"
                                : r.kind == raid::Report::Kind::ZoneTable ? "zone_table"
+                               : r.kind == raid::Report::Kind::Wipe      ? "wipe"  // 2.75
                                                                        : "zone";
             Json body{{"kind", kind}, {"zone", r.zone}, {"tick", r.tick}, {"hash", hex16(r.hash)}};
             if (r.kind == raid::Report::Kind::Objective) body["objective"] = r.objective;
@@ -529,6 +574,11 @@ public:
         info.promptPlayer = local_;
         hud_.setTeam(info);
         updateArenaCamera(w, dt);
+        updateSpectator(w, dt);  // 2.75
+        // 2.75: a power tablet of the armory with every slot taken: which power to leave (the world goes on).
+        if (const auto& offer = w.powerOffer(); offer && offer->player == local_ && pendingChoice_ == 0 && !paused_ && !ended_ &&
+                                                g_.app.topScene() == this && !(test_ && !scripts_.empty() && scripts_[0].active()))
+            g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
         if (!ended_ && g_.app.topScene() == this && g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
@@ -554,6 +604,15 @@ public:
                               for (const Json& z : zones)
                                   if (const std::string by = jstr(z, "retake_by"); !by.empty() && !jget<bool>(z, "finished", false))
                                       out[jget<int>(z, "id", 0)] = by;
+                          // 2.75.1: a zone to take back now finished: a reinforcement group took it back (told once).
+                          if (const Json zones = r.data.value("zones", Json::array()); zones.is_array())
+                              for (const Json& z : zones) {
+                                  const int id = jget<int>(z, "id", 0);
+                                  if (retake_.count(id) && jget<bool>(z, "finished", false)) {
+                                      note("ZONE REPRISE · " + jstr(z, "name") + " : terminée par le groupe de renfort " + jstr(z, "finished_by", "?"), kGreen);
+                                      g_.app.audio().playSound("sounds/boss_phase_clear.wav", 0.8f);
+                                  }
+                              }
                           retake_ = std::move(out);
                       }),
                       false);
@@ -583,7 +642,9 @@ public:
             GameWorld& w = run_->world();
             // 2.68: in a gigaboss's arena, its own camera (display only): the whole arena first, then a
             // view sized for this player; elsewhere the world's camera.
-            WorldView view = arenaCam_.active() ? arenaCam_.view(r.width(), r.height()) : w.camera().view(r.width(), r.height(), alpha);
+            WorldView view = spec_.on && spec_.free  ? spec_.view(r.width(), r.height())  // 2.75: the spectator's free camera
+                             : arenaCam_.active() ? arenaCam_.view(r.width(), r.height())
+                                                  : w.camera().view(r.width(), r.height(), alpha);
             view_ = view;
             RenderOptions opt;
             opt.lighting = g_.settings.graphics.dynamicLighting;
@@ -594,7 +655,7 @@ public:
             {
                 // The vitals, powers and gigaboss bar of this computer's player, at the raid layout's
                 // places (2.72, Paramètres › HUD › « Raids »; display only).
-                GameWorld::PlayerScope me(w, std::clamp(local_, 0, w.teamSize() - 1));
+                GameWorld::PlayerScope me(w, std::clamp(spec_.on && watchSeat_ >= 0 ? watchSeat_ : local_, 0, w.teamSize() - 1));
                 hudSettings_ = raidhud::hudSettings(g_.settings.gameplay);
                 hud_.render(ui, w, view, nullptr, hudSettings_);
                 hudAreas_ = {};
@@ -613,11 +674,121 @@ public:
             if (fallCard_ && !paused_ && !ended_) drawFall();
             if (zoneCard_ >= 0 && !fallCard_ && !paused_ && !ended_) drawZoneCard();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
+            if (spec_.on && !paused_ && !ended_ && !bigMap_) drawSpectator();  // 2.75
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
         }
         ui.popId();
         ui.end();
+    }
+
+    // ------------------------------------------------------------------ 2.75: the spectator mode
+
+    /// Whether this computer only watches: its group was wiped, or it watches another group.
+    bool spectating() const { return run_ && !catching_ && (run_->wiped() || (link_ && link_->watcher())); }
+
+    /// Enters the spectator mode (once), then moves its free camera and switches the player watched.
+    void updateSpectator(GameWorld& w, float dt) {
+        if (!spectating()) return;
+        if (!spec_.on) {
+            spec_.start(w.camera().center());
+            spec_.free = watchSeat_ < 0;
+            if (ownInstance_.empty()) ownInstance_ = entry_.instanceId;
+            note("GROUPE ÉLIMINÉ — mode spectateur : caméra libre, ou joueur suivant / précédent de la branche", kDanger);
+        }
+        if (!test_ && clock_ - spec_.fetchedAt > 10.0f) fetchTargets();
+        InputManager& in = g_.app.input();
+        if (paused_ || ended_ || bigMap_ || g_.app.topScene() != this) return;
+        if (in.menuPressed(Action::MenuTabNext)) watchStep(+1);
+        if (in.menuPressed(Action::MenuTabPrev)) watchStep(-1);
+        if (spec_.free) spec_.move(in, dt, w.level().bounds);
+    }
+
+    /// The players still playing in the branch (the server's list, refreshed every 10 s).
+    void fetchTargets() {
+        spec_.fetchedAt = clock_;
+        g_.online.send("GET", "/api/v1/raids/instances/" + ownInstance_ + "/watch", Json(), OnlineService::guard(life_, [this](const ApiResult& r) {
+                           if (!r.ok) return;
+                           std::vector<raidspec::Target> list;
+                           for (const auto& t : r.data.value("targets", Json::array())) {
+                               raidspec::Target x;
+                               x.instance = jstr(t, "instance_id");
+                               x.name = jstr(t, "name");
+                               x.clan = jstr(t, "clan_tag");
+                               x.seat = std::clamp(jget<int>(t, "seat", 0), 0, raid::kMaxInstancePlayers - 1);
+                               x.group = jget<int>(t, "group", 1);
+                               x.zone = jget<int>(t, "zone", 0);
+                               x.startZone = jget<int>(t, "start_zone", 0);
+                               if (!x.instance.empty()) list.push_back(std::move(x));
+                           }
+                           if (list.size() > 200) list.resize(200);
+                           spec_.targets = std::move(list);
+                           if (spec_.index >= static_cast<int>(spec_.targets.size())) spec_.index = -1;
+                       }));
+    }
+
+    /// The next (+1) or previous (−1) view: the free camera, or a player of the branch (another group:
+    /// its game watched through a spectator's socket, its history replayed first).
+    void watchStep(int dir) {
+        const int k = spec_.step(dir);
+        if (k < 0) return;  // the free camera over the world shown
+        const raidspec::Target t = spec_.targets[static_cast<size_t>(k)];
+        if (t.instance == entry_.instanceId && run_) {
+            watchSeat_ = t.seat;
+            run_->setCameraFollow(t.seat);
+            renderer_.setOpaquePlayers(1u << t.seat);
+            return;
+        }
+        stopCatchUp();
+        if (link_) link_->close();
+        link_.reset();
+        run_ = nullptr;
+        ownRun_.reset();
+        entry_.instanceId = t.instance;
+        entry_.startZone = t.startZone;
+        watchSeat_ = t.seat;
+        tick_ = 0;
+        sentUpTo_ = UINT32_MAX;
+        serial_ = -1;
+        connect();
+    }
+
+    void drawSpectator() {
+        UIContext& ui = g_.ui;
+        const float W = ui.screenW();
+        const float bw = std::min(ui.s(640), W - ui.s(24)), x = (W - bw) * 0.5f, y = ui.s(64), pad = ui.s(14);
+        const Rect box{x, y, bw, ui.s(132)};
+        ui.panel(box, true, 12);
+        const bool wiped = run_ && run_->wiped();
+        fit(ui, wiped ? "GROUPE ÉLIMINÉ — mode spectateur" : "MODE SPECTATEUR", {box.center().x, y + ui.s(22)}, 20, bw - pad * 2, kDanger, FontFace::Bold,
+            Align::Center);
+        std::string sub;
+        if (spec_.free || spec_.index < 0 || spec_.index >= static_cast<int>(spec_.targets.size()))
+            sub = spec_.targets.empty() ? "Caméra libre (flèches, stick, molette) · plus personne ne joue dans la branche"
+                                        : "Caméra libre (flèches, stick, molette) · " + std::to_string(spec_.targets.size()) + " joueurs à suivre";
+        else {
+            const raidspec::Target& t = spec_.targets[static_cast<size_t>(spec_.index)];
+            sub = "Vous regardez " + t.name + " · [" + t.clan + "]·" + std::to_string(t.group) + " · zone " + std::to_string(t.zone);
+        }
+        fit(ui, sub, {box.center().x, y + ui.s(50)}, 14, bw - pad * 2, kText, FontFace::Body, Align::Center);
+        const float gap = ui.s(8), bh = ui.s(40), by = box.bottom() - pad - bh;
+        const float each = (bw - pad * 2 - gap * 2) / 3.0f;
+        const char* labels[3] = {"◀ Précédent", "Caméra libre", "Suivant ▶"};
+        for (int k = 0; k < 3; ++k) {
+            UIContext::ButtonStyle bs;
+            bs.small = true;
+            bs.enabled = k == 1 ? !spec_.free : !spec_.targets.empty();
+            bs.fontSize = std::max(ui.fitFont(labels[k], FontFace::Bold, 15, each - ui.s(16), 0.7f), 11.0f / ui.s(1.0f));
+            const Rect br{x + pad + static_cast<float>(k) * (each + gap), by, each, bh};
+            if (!ui.button(std::string("spec") + std::to_string(k), br, labels[k], bs)) continue;
+            if (k == 0) watchStep(-1);
+            else if (k == 2) watchStep(+1);
+            else {
+                spec_.index = -1;
+                spec_.free = true;
+                if (run_) spec_.center = run_->world().camera().center();
+            }
+        }
     }
 
     /// Before the game: connecting, the instance's lobby (« Lancer »), the catch-up.
@@ -633,6 +804,11 @@ public:
         bool lobby = false;
         if (!fail_.empty()) {
             line = fail_;
+        } else if (entry_.spectator && !run_ && link_ && link_->watcher() && !link_->go()) {
+            // 2.75: back after the group was wiped, its game over: a player of the branch is looked for.
+            line = "GROUPE ÉLIMINÉ — mode spectateur";
+            sub = spec_.targets.empty() && clock_ - spec_.fetchedAt < 10.0f ? "Plus personne ne joue dans la branche pour l'instant."
+                                                                            : "Recherche d'un joueur de la branche à regarder…";
         } else if (reconnect_.active()) {
             line = reconnect_.message(clock_);  // 2.74: a catch-up interrupted by a lost link
             sub = "Le groupe continue sans vous ; vous le rejoignez dès que la liaison revient.";
@@ -800,7 +976,9 @@ public:
             }
             g.rows.push_back(std::move(row));
         }
-        g.footer = "Réanimations de la zone : " + std::to_string(w.revivesUsed()) + " / " + std::to_string(GameWorld::kTeamRevives);
+        // 2.75: as many revivals as wanted; the whole group down: eliminated from the zone (spectators).
+        g.footer = run_ && run_->wiped() ? "GROUPE ÉLIMINÉ — mode spectateur"
+                                         : "Réanimations illimitées (" + std::to_string(w.revivalsDone()) + ") · tous à terre : groupe éliminé";
         return g;
     }
 
@@ -1273,11 +1451,18 @@ public:
         }
         for (int i = 0; i < w.teamSize(); ++i)
             if (w.member(i).presence == GameWorld::Presence::Down) {
-                add("+", "Relever " + seatName(i) + " (" + std::to_string(static_cast<int>(GameWorld::kReviveSeconds)) + " s près de son âme) · réanimations " +
-                             std::to_string(w.revivesUsed()) + " / " + std::to_string(GameWorld::kTeamRevives),
+                add("+", "Relever " + seatName(i) + " (" + std::to_string(static_cast<int>(GameWorld::kReviveSeconds)) +
+                             " s près de son âme) · réanimations illimitées · si tout le groupe tombe, il est éliminé",
                     Color{255, 138, 138, 255});
                 break;
             }
+    }
+
+    /// 2.75.1: the whole group down at this step (every computer of the instance): eliminated from the zone.
+    void groupWiped() {
+        note("GROUPE ÉLIMINÉ · tout le groupe est à terre : la zone attend un groupe de renfort", kDanger);
+        g_.app.audio().playSound("sounds/player_death.wav", 0.9f);
+        branchAt_ = clock_;  // the branch's map again now (« zone à reprendre »)
     }
 
     /// 2.75: a zone finished while the instance was in it (the same step on every computer): its card
@@ -1539,8 +1724,10 @@ public:
     std::string statusText(Color& c) {
         if (test_) {
             c = kGold;
-            return "TEST ADMIN · non classé · " + std::to_string(testSetup_.players) + " joueurs (" +
-                   std::to_string(std::max(0, testSetup_.players - 1)) + " simulés)" + (testSetup_.invincible ? " · invincible" : "");
+            // 2.75: the simulated players counted without the administrator (0 to 7).
+            const int bots = std::max(0, testSetup_.players - 1);
+            return "TEST ADMIN · non classé · vous + " + std::to_string(bots) + (bots > 1 ? " joueurs simulés" : " joueur simulé") +
+                   (run_ && run_->wiped() ? " · GROUPE ÉLIMINÉ — mode spectateur" : "") + (testSetup_.invincible ? " · invincible (vous)" : "");
         }
         if (waiting_ > 0.4f) {
             c = kGold;
@@ -1637,6 +1824,11 @@ public:
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     const raid::Branch* branch_ = nullptr;
     std::unique_ptr<NetCoopLink> link_;
+    raidspec::Spectator spec_;   // 2.75: the spectator mode (a group wiped)
+    std::string ownInstance_;    // 2.75: the instance of this player's group (its spectators' list)
+    int watchSeat_ = -1;         // 2.75: the seat watched in the instance shown (-1: none)
+    float spectatorWait_ = 0.0f; // 2.75: a spectator waiting for a game to watch
+    uint8_t pendingChoice_ = 0;  // 2.75: the armory's power choice, for this player's next frame
     std::unique_ptr<raid::RaidRun> ownRun_;        // a real instance's run
     std::unique_ptr<raid::TestSession> session_;   // 2.72: an administrator's test (its run, its simulated players)
     raid::RaidRun* run_ = nullptr;                 // the one played

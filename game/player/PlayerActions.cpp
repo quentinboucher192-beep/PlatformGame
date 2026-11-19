@@ -272,7 +272,7 @@ void Player::handleInteract(GameWorld& w, const PlayerInput& in) {
 
 bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
     if (!alive() || state_ == PlayerState::Respawn || state_ == PlayerState::Victory) return false;
-    if (w.invincible()) return false;  // 2.51: administrators' training runs
+    if (w.invinciblePlayer()) return false;  // 2.51: administrators' training runs (2.75: a raid test: the administrator only)
     if (invulnerable() && dmg.type != DamageType::Hazard) return false;
     if (shield_ && !dmg.ignoreShield) {
         w.noteBlocked(dmg.amount);  // 2.68: the raids' contributions (statistics only)

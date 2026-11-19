@@ -11,6 +11,7 @@
 #include "game/achievements/Achievements.h"
 #include "game/gameplay/EnemyArrows.h"
 #include "game/gameplay/GameRenderer.h"
+#include "ui/screens/PowerChoiceScene.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
 #include "game/online/LevelFingerprint.h"
@@ -54,7 +55,7 @@ struct ChallengeEndData {
 std::unique_ptr<Scene> makeChallengeEnd(GameServices& g, GameScene& game, ChallengeEndData data);
 
 /// Plays a level: simulation, rendering, HUD, pause menu and end of level.
-class GameScene : public Scene {
+class GameScene : public Scene, public PowerChoiceHost {
 public:
     GameScene(GameServices& g, std::string levelId, PlayOptions opt);
     ~GameScene() override;
@@ -90,12 +91,12 @@ public:
     bool editorTest() const { return opt_.editorTest; }
     bool sectionTraining() const { return opt_.training; }  // « Répéter un segment »: quitting returns to its setup
     /// Answer of the power choice window (InputFrame::choice), used by the next step.
-    void answerPowerOffer(uint8_t choice) { pendingChoice_ = choice; }
+    void answerPowerOffer(uint8_t choice) override { pendingChoice_ = choice; }
     const std::string& levelId() const { return levelId_; }
     // Keys of the powers (2.31): each power keeps its own key in the level (the level's, the
     // player's, the suggestion); the slot keys of the input follow the powers carried.
     const LevelData& level() const { return level_; }
-    const PowerKeyMap& powerKeys() const { return powerKeys_; }
+    const PowerKeyMap& powerKeys() const override { return powerKeys_; }
     /// Powers given besides the level's own (boss training): « Touches de ce niveau » lists them too.
     const std::vector<std::string>& powerKeyExtra() const { return powerKeyExtra_; }
     /// 2.51: « Invincible » (administrators, training runs only): can it be switched here, is it on.
@@ -111,7 +112,7 @@ public:
     bool ghostsVisible() const { return ghostRun_.visible(); }
     void setGhostsVisible(bool on) { ghostRun_.setVisible(on); }
     void applyGhostSettings();
-    GameWorld* world() { return world_.get(); }
+    GameWorld* world() override { return world_.get(); }
     /// 2.51: the achievements' counters with what this run has added so far, as leaving it now
     /// would count them (the pause menu's « Succès suivis »); the saved ones when it counts for nothing.
     AchievementStats liveAchievementStats() const;

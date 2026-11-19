@@ -25,7 +25,7 @@ import type { LevelVersionRow } from "./model";
 import { Validator } from "./validate";
 
 /** Version of the team rules (game/online/LevelFingerprint.h: kCoopSimulationVersion). */
-export const COOP_SIMULATION_VERSION = 1;
+export const COOP_SIMULATION_VERSION = 2; // 2.75: the players pass through each other (version 1 attempts refused, their records kept)
 export const MAX_REVIVES = 2;
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;

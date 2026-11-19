@@ -132,6 +132,12 @@
    ]
   },
   {
+   "fr": "(zone à reprendre)",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
    "fr": "({0} essai)",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -358,6 +364,12 @@
    "fr": "- Sécurité : sessions de connexion (jetons stockés uniquement sous forme d'empreinte), journal des opérations sensibles (connexions, modifications de compte) et limitation du nombre de requêtes. Les adresses IP ne sont jamais conservées en clair, seulement sous forme d'empreinte salée.",
    "where": [
     "data/online/terms_fr.txt"
+   ]
+  },
+  {
+   "fr": "0 (vous seul)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -3791,6 +3803,12 @@
    ]
   },
   {
+   "fr": "Asterion · Abdomen · Vestiaire",
+   "where": [
+    "data/raids/asterion/abdomen/armory.json"
+   ]
+  },
+  {
    "fr": "Asterion · Bras droit · Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/zone_6.json"
@@ -3830,6 +3848,12 @@
    "fr": "Asterion · Bras droit · Veine de magma",
    "where": [
     "data/raids/asterion/bras_droit/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Vestiaire",
+   "where": [
+    "data/raids/asterion/bras_droit/armory.json"
    ]
   },
   {
@@ -3881,6 +3905,12 @@
    ]
   },
   {
+   "fr": "Asterion · Bras gauche · Vestiaire",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory.json"
+   ]
+  },
+  {
    "fr": "Asterion · Bras gauche · Épaule gelée",
    "where": [
     "data/raids/asterion/bras_gauche/zone_1.json"
@@ -3929,6 +3959,12 @@
    ]
   },
   {
+   "fr": "Asterion · Crâne · Vestiaire",
+   "where": [
+    "data/raids/asterion/crane/armory.json"
+   ]
+  },
+  {
    "fr": "Asterion · Crâne · Voûte crânienne",
    "where": [
     "data/raids/asterion/crane/zone_7.json"
@@ -3944,6 +3980,12 @@
    "fr": "Asterion · Cœur · Le Cœur d'Asterion",
    "where": [
     "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Cœur · Vestiaire",
+   "where": [
+    "data/raids/asterion/coeur/armory.json"
    ]
   },
   {
@@ -3995,6 +4037,12 @@
    ]
   },
   {
+   "fr": "Asterion · Jambe droite · Vestiaire",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory.json"
+   ]
+  },
+  {
    "fr": "Asterion · Jambe gauche · Cheville",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_7.json"
@@ -4043,6 +4091,12 @@
    ]
   },
   {
+   "fr": "Asterion · Jambe gauche · Vestiaire",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory.json"
+   ]
+  },
+  {
    "fr": "Asterion · Torse · Antre de Heartbreaker",
    "where": [
     "data/raids/asterion/torse/zone_8.json"
@@ -4088,6 +4142,12 @@
    "fr": "Asterion · Torse · Sternum",
    "where": [
     "data/raids/asterion/torse/zone_4.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Vestiaire",
+   "where": [
+    "data/raids/asterion/torse/armory.json"
    ]
   },
   {
@@ -6979,7 +7039,8 @@
   {
    "fr": "Beaucoup de joueurs arrivent en même temps : réessayez.",
    "where": [
-    "server/src/raidMap.ts"
+    "server/src/raidMap.ts",
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -8752,6 +8813,24 @@
    ]
   },
   {
+   "fr": "Caméra libre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Caméra libre (flèches, stick, molette) · plus personne ne joue dans la branche",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Caméra libre (flèches, stick, molette) · {0} joueurs à suivre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Canada",
    "where": [
     "data/online/countries.json",
@@ -9282,9 +9361,23 @@
    ]
   },
   {
+   "fr": "Ce groupe a été éliminé : sa zone attend un groupe qui la reprenne.",
+   "where": [
+    "server/src/raidMap.ts",
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Ce groupe a été éliminé.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "Ce groupe n'est plus en jeu.",
    "where": [
     "server/src/raidMap.ts",
+    "server/src/raidWipe.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -10501,6 +10594,12 @@
    "fr": "Cette version peut être publiée : ATELIER → Mes niveaux → Publier en ligne.",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cette zone n'est pas à reprendre.",
+   "where": [
+    "server/src/raidWipe.ts"
    ]
   },
   {
@@ -14359,6 +14458,12 @@
    "fr": "Corps à nu : dégâts × {0}",
    "where": [
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Correctif (test « Tester Asterion ») : la chute d'un joueur simulé renvoyait l'administrateur au départ ; seul l'administrateur est invincible, les joueurs simulés tombent, se relèvent entre eux et peuvent être éliminés comme un vrai groupe.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -19231,6 +19336,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/armory.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -19239,6 +19345,7 @@
     "data/raids/asterion/abdomen/zone_6.json",
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
+    "data/raids/asterion/bras_droit/armory.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -19247,6 +19354,7 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -19255,8 +19363,10 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/armory.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
+    "data/raids/asterion/crane/armory.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -19265,6 +19375,7 @@
     "data/raids/asterion/crane/zone_6.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -19273,6 +19384,7 @@
     "data/raids/asterion/jambe_droite/zone_6.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -19281,6 +19393,7 @@
     "data/raids/asterion/jambe_gauche/zone_6.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/armory.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -19321,6 +19434,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/armory.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -19329,6 +19443,7 @@
     "data/raids/asterion/abdomen/zone_6.json",
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
+    "data/raids/asterion/bras_droit/armory.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -19337,6 +19452,7 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -19345,8 +19461,10 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/armory.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
+    "data/raids/asterion/crane/armory.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -19355,6 +19473,7 @@
     "data/raids/asterion/crane/zone_6.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -19363,6 +19482,7 @@
     "data/raids/asterion/jambe_droite/zone_6.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -19371,6 +19491,7 @@
     "data/raids/asterion/jambe_gauche/zone_6.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/armory.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -23792,6 +23913,12 @@
    ]
   },
   {
+   "fr": "Finissez d'abord la zone de votre groupe : seuls les groupes qui ont fini la leur reprennent une zone.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "Finissez le niveau depuis son début pour voir votre record et votre somme des meilleurs.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -24668,6 +24795,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/armory.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -24676,6 +24804,7 @@
     "data/raids/asterion/abdomen/zone_6.json",
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
+    "data/raids/asterion/bras_droit/armory.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -24684,6 +24813,7 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -24692,8 +24822,10 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/armory.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
+    "data/raids/asterion/crane/armory.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -24702,6 +24834,7 @@
     "data/raids/asterion/crane/zone_6.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -24710,6 +24843,7 @@
     "data/raids/asterion/jambe_droite/zone_6.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -24718,6 +24852,7 @@
     "data/raids/asterion/jambe_gauche/zone_6.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/armory.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -26203,12 +26338,6 @@
    ]
   },
   {
-   "fr": "GROUPE · Les joueurs à terre se relèvent au point de contrôle",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
    "fr": "GROUPE · Objectif accompli : générateur ouest",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -26227,7 +26356,7 @@
    ]
   },
   {
-   "fr": "GROUPE · Point de contrôle : la zone reprendra ici",
+   "fr": "GROUPE · Point de contrôle atteint",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -26279,6 +26408,42 @@
    "fr": "GROUPE · Évent fermé ({0} / {1})",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "Groupe éliminé :",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "groupe éliminé : ses joueurs ne font plus que regarder",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ · tout le groupe est à terre : la zone attend un groupe de renfort",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ · Tout le groupe est à terre : mode spectateur. La zone reste à reprendre par un autre groupe.",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ — mode spectateur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ — mode spectateur : caméra libre, ou joueur suivant / précédent de la branche",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -27364,6 +27529,7 @@
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/Navigation.h",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
@@ -27377,7 +27543,6 @@
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
-    "ui/screens/RaidTitanScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
@@ -28533,6 +28698,7 @@
   {
    "fr": "Instance introuvable.",
    "where": [
+    "server/src/raidWipe.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -33502,6 +33668,12 @@
    ]
   },
   {
+   "fr": "Le groupe qui reprend cette zone a déjà 8 joueurs.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "Le haut et le bas s'échangent : la moitié de l'arène tombe vers le ciel !",
    "where": [
     "data/enemies/graviton.json"
@@ -34405,6 +34577,12 @@
    ]
   },
   {
+   "fr": "Le raid n'est pas en cours.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "le Ralenti",
    "where": [
     "game/levels/CampaignPipeline.cpp"
@@ -34971,6 +35149,19 @@
    "fr": "Le verrouillage des inscriptions est passé : changez l'heure de début avant de publier.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Le vestiaire du raid : chacun choisit ses pouvoirs avant la route, puis tout le groupe sur la plaque « Prêts ».",
+   "where": [
+    "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/torse/armory.json"
    ]
   },
   {
@@ -38960,6 +39151,12 @@
    "fr": "Mode entraînement : un segment depuis un point de sauvegarde, répété automatiquement contre les fantômes ; aucun record, aucune progression, rien n'est envoyé.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "MODE SPECTATEUR",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -44786,6 +44983,7 @@
   {
    "fr": "Passage vers : Aorte cosmique",
    "where": [
+    "data/raids/asterion/coeur/armory.json",
     "data/raids/asterion/coeur/zone_2.json"
    ]
   },
@@ -44847,6 +45045,7 @@
   {
    "fr": "Passage vers : Clavicule",
    "where": [
+    "data/raids/asterion/torse/armory.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json"
    ]
@@ -44907,6 +45106,7 @@
   {
    "fr": "Passage vers : Diaphragme",
    "where": [
+    "data/raids/asterion/abdomen/armory.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json"
    ]
@@ -44983,6 +45183,7 @@
   {
    "fr": "Passage vers : Hanche",
    "where": [
+    "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json"
    ]
@@ -44990,6 +45191,7 @@
   {
    "fr": "Passage vers : Hanche de fer",
    "where": [
+    "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json"
    ]
@@ -45035,6 +45237,7 @@
   {
    "fr": "Passage vers : Mâchoire",
    "where": [
+    "data/raids/asterion/crane/armory.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json"
    ]
@@ -45184,6 +45387,7 @@
   {
    "fr": "Passage vers : Épaule",
    "where": [
+    "data/raids/asterion/bras_droit/armory.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json"
    ]
@@ -45191,6 +45395,7 @@
   {
    "fr": "Passage vers : Épaule gelée",
    "where": [
+    "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json"
    ]
@@ -46492,6 +46697,19 @@
    ]
   },
   {
+   "fr": "Plaque « Prêts » : tout le groupe dessus ouvre la porte de la route.",
+   "where": [
+    "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
    "fr": "PLAQUES · {0}",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
@@ -46993,6 +47211,12 @@
    "where": [
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Plus personne ne joue dans la branche pour l'instant.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -49087,6 +49311,19 @@
    ]
   },
   {
+   "fr": "Prêts",
+   "where": [
+    "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
    "fr": "Pseudonyme",
    "where": [
     "ui/screens/OnlineAccountScene.cpp",
@@ -50202,9 +50439,33 @@
    ]
   },
   {
+   "fr": "Raids : chaque branche commence par un vestiaire où chacun prend les pouvoirs voulus pour le raid (une tablette par pouvoir, quatre au plus : la fenêtre de choix dit lequel laisser), puis tout le groupe sur la plaque « Prêts » ouvre la route.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : la disposition des combats de raid, à part du HUD des niveaux. L'aperçu est un exemple de raid à 8 joueurs (noms et objectifs d'exemple, jamais en jeu). La carte s'agrandit en raid avec la touche {0}. Deux éléments ne peuvent jamais se chevaucher.",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : une zone où un groupe a été éliminé est « à reprendre » sur la carte de la branche ; un groupe qui a fini sa propre zone la reprend (« Reprendre cette zone ») dans une nouvelle instance de cette zone, l'état validé de la branche gardé, et c'est lui seul qui la valide.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -50325,6 +50586,18 @@
    "fr": "RAIDS DU CLAN",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Raids et coopération : les joueurs se traversent (plus de joueurs solides ni d'appui sur un allié) et les autres joueurs, réels ou simulés, sont dessinés en semi-transparence avec un liseré de leur couleur ; seul votre personnage reste opaque.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids et coopération : quand un joueur tombe, personne d'autre ne bouge ni ne réapparaît au dernier point de passage ; il ne revient qu'une fois réanimé, près de son âme. En coopération, les réanimations restent limitées à 2 par tentative. Les tentatives Duo/Trio d'avant se rejouent à l'identique et leurs records sont gardés ; le serveur refuse les tentatives jouées avec d'anciennes règles.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -50768,6 +51041,12 @@
    "fr": "Recherche",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Recherche d'un joueur de la branche à regarder…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -51553,6 +51832,12 @@
    ]
   },
   {
+   "fr": "Regarder (groupe éliminé)",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Regarder l'édition en direct",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -51727,7 +52012,7 @@
    ]
   },
   {
-   "fr": "Relever {0} ({1} s près de son âme) · réanimations {2} / {3}",
+   "fr": "Relever {0} ({1} s près de son âme) · réanimations illimitées · si tout le groupe tombe, il est éliminé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -52478,6 +52763,12 @@
    ]
   },
   {
+   "fr": "Reprendre cette zone (un groupe y a été éliminé)",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Reprendre l'épaule : vaincre la garde de l'arène",
    "where": [
     "data/raids/asterion/bras_droit/branch.json"
@@ -52517,6 +52808,12 @@
    "fr": "Reprendre le diaphragme : vaincre sa garde",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "Reprise de la zone…",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -53791,7 +54088,13 @@
    ]
   },
   {
-   "fr": "Réanimations de la zone : {0} / {1}",
+   "fr": "Réanimations illimitées ({0} faites) · tout le groupe à terre : groupe éliminé, mode spectateur",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimations illimitées ({0}) · tous à terre : groupe éliminé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -58684,6 +58987,12 @@
    ]
   },
   {
+   "fr": "Suivant ▶",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Suivants",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -60922,6 +61231,7 @@
     "data/levels/sylvanox_02.json",
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
+    "data/raids/asterion/abdomen/armory.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -60930,6 +61240,7 @@
     "data/raids/asterion/abdomen/zone_6.json",
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
+    "data/raids/asterion/bras_droit/armory.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -60938,6 +61249,7 @@
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
+    "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -60946,8 +61258,10 @@
     "data/raids/asterion/bras_gauche/zone_6.json",
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
+    "data/raids/asterion/coeur/armory.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
+    "data/raids/asterion/crane/armory.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -60956,6 +61270,7 @@
     "data/raids/asterion/crane/zone_6.json",
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
+    "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -60964,6 +61279,7 @@
     "data/raids/asterion/jambe_droite/zone_6.json",
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -60972,6 +61288,7 @@
     "data/raids/asterion/jambe_gauche/zone_6.json",
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
+    "data/raids/asterion/torse/armory.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -61047,13 +61364,49 @@
    ]
   },
   {
-   "fr": "TEST ADMIN · non classé · {0} joueurs ({1} simulés)",
+   "fr": "TEST ADMIN · non classé · vous + {0} joueur simulé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
-   "fr": "TEST ADMIN · non classé · {0} joueurs ({1} simulés) · invincible",
+   "fr": "TEST ADMIN · non classé · vous + {0} joueur simulé · GROUPE ÉLIMINÉ — mode spectateur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · vous + {0} joueur simulé · GROUPE ÉLIMINÉ — mode spectateur · invincible (vous)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · vous + {0} joueur simulé · invincible (vous)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · vous + {0} joueurs simulés",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · vous + {0} joueurs simulés · GROUPE ÉLIMINÉ — mode spectateur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · vous + {0} joueurs simulés · GROUPE ÉLIMINÉ — mode spectateur · invincible (vous)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST ADMIN · non classé · vous + {0} joueurs simulés · invincible (vous)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -61062,6 +61415,12 @@
    "fr": "Test depuis l'éditeur : les records ne sont pas enregistrés",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Test « Tester Asterion » : « Joueurs simulés : 0 (vous seul) … 7 », sans compter l'administrateur (avant, choisir 2 donnait un seul joueur simulé).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -62052,6 +62411,19 @@
    "fr": "Tout est synchronisé",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout le groupe est prêt : la route s'ouvre !",
+   "where": [
+    "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/torse/armory.json"
    ]
   },
   {
@@ -66479,7 +66851,27 @@
    "fr": "Vestiaire",
    "where": [
     "game/content/AssetCatalog.cpp",
+    "game/raid/RaidBranch.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vestiaire (choix des pouvoirs)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Vestiaire : touchez une tablette pour prendre son pouvoir. Quatre au plus : choisissez celui que vous laissez.",
+   "where": [
+    "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/torse/armory.json"
    ]
   },
   {
@@ -67541,6 +67933,12 @@
    ]
   },
   {
+   "fr": "Votre groupe a été éliminé : vous ne pouvez plus que regarder.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "Votre groupe est dans : {0}.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -67960,6 +68358,12 @@
    ]
   },
   {
+   "fr": "Vous ne jouez pas dans ce groupe.",
+   "where": [
+    "server/src/raidWipe.ts"
+   ]
+  },
+  {
    "fr": "Vous ne jouez pas dans cette instance.",
    "where": [
     "server/src/raidZones.ts"
@@ -68144,6 +68548,12 @@
    "fr": "Vous pouvez masquer votre profil, exporter vos données ou supprimer votre compte depuis les paramètres en ligne.",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous regardez {0} · [{1}]·{2} · zone {3}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -68699,6 +69109,18 @@
    "fr": "Zone morte",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone reprise par un groupe de renfort :",
+   "where": [
+    "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "ZONE REPRISE · {0} : terminée par le groupe de renfort {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -74985,6 +75407,7 @@
    "fr": "Événement introuvable.",
    "where": [
     "server/src/raidMap.ts",
+    "server/src/raidWipe.ts",
     "server/src/raidWorld.ts",
     "server/src/raidZones.ts"
    ]
@@ -75529,6 +75952,12 @@
    "fr": "▼ {0} — en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "◀ Précédent",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

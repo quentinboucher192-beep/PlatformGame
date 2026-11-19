@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <unordered_map>
 #include <vector>
 
@@ -42,6 +43,13 @@ public:
     /// 2.62, a team: the colour of each player (souls, standby ghosts). Display only.
     void setTeamColors(std::vector<Color> colors) { teamColors_ = std::move(colors); }
     Color teamColor(int i) const;
+    /// 2.75, display only: the players of this computer (bit i: player i), drawn fully opaque; the
+    /// others (online teammates, simulated players) semi-transparent with an outline of their colour,
+    /// so that they never hide this computer's player. Every bit set (the default): all opaque.
+    void setOpaquePlayers(uint32_t mask) { opaquePlayers_ = mask; }
+    uint32_t opaquePlayers() const { return opaquePlayers_; }
+    /// The opacity of another player's body (display only; tests).
+    static constexpr float kOtherPlayerOpacity = 0.5f;
     size_t lastLightCount() const { return lastLights_; }
 
 private:
@@ -54,6 +62,7 @@ private:
     /// as a ring filling up), a grey ghost for a player in standby.
     void drawTeam(RenderContext& ctx, GameWorld& world);
     std::vector<Color> teamColors_;
+    uint32_t opaquePlayers_ = 0xFFFFFFFFu;
 
     TerrainRenderer terrain_;
     ParallaxBackground parallax_;
