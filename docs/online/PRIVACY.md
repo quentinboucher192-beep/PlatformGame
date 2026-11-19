@@ -46,6 +46,10 @@
   pendant la lecture. Chaque consultation de ce genre est écrite dans le journal de
   l'administration. Jamais pour les autres joueurs ; jamais de position précise, et le pays
   seulement si le joueur le montre. L'explication de « Montrer ma présence » le dit.
+  **2.75.3** : un administrateur voit **tout** d'un profil (voir
+  [Ce que voit un administrateur](#ce-que-voit-un-administrateur-2753) ci-dessous), y compris les
+  records et replays non vérifiés, ses listes, ses amis et ses réglages ; le pays ou la région
+  masqués restent cachés, les messages privés n'en font pas partie.
 * **Transparence et consentement** : écran d'accueil de Cosmic Online, conditions
   d'utilisation (`data/online/terms_fr.txt`, version `2026-11`) acceptées explicitement à
   l'inscription.
@@ -62,10 +66,10 @@
 | Présence (2.32.3) : dernier état « actif » ou « inactif » envoyé par le jeu et son heure (aucun historique) | D1 `players` | les amis (« en ligne », « absent », « hors ligne ») ; les membres de son clan dans ses listes (2.66 : CLANS › Membres ; 2.72 : les inscrits d'un raid du clan, et « X/Y en ligne ») ; jamais si le joueur décoche « Montrer ma présence à mes amis » (masquée pour les amis, « hors ligne » dans les listes du clan) | remplacée à chaque envoi ; effacée quand le jeu se ferme |
 | Empreinte du mot de passe | D1 `player_credentials` | personne | vie du compte |
 | Sessions (empreintes, dates, client) | D1 `player_sessions` | le joueur (export) | 30 jours après expiration / révocation |
-| Records (temps, catégorie, morts, dégâts, objets, version) | D1 `records` | records vérifiés : tous ; autres : le joueur | vie du compte |
-| Replays (commandes de jeu pendant le niveau, trajectoire, événements) | R2 `replays/` + D1 `replay_metadata` | records vérifiés des profils publics | vie du compte |
+| Records (temps, catégorie, morts, dégâts, objets, version) | D1 `records` | records vérifiés : tous ; autres : le joueur ; tous : les administrateurs (2.75.3, modération, marqués, jamais comptés comme vérifiés) | vie du compte |
+| Replays (commandes de jeu pendant le niveau, trajectoire, événements) | R2 `replays/` + D1 `replay_metadata` | records vérifiés des profils publics ; tous (masqués, en attente, refusés) : les administrateurs (2.75.3, « Vu en tant qu'admin », Journal) | vie du compte |
 | Avatar personnalisé (PNG contrôlé) | R2 `avatars/` | tous | jusqu'au changement d'avatar |
-| Amis et demandes | D1 `player_friends` | les deux joueurs concernés | jusqu'au retrait |
+| Amis et demandes | D1 `player_friends` | les deux joueurs concernés ; les administrateurs (2.75.3 : la liste des amis et le nombre de demandes, Journal) | jusqu'au retrait |
 | Messages (texte, date, auteur) et conversations | D1 `messages`, `conversations`, `conversation_members` | les membres de la conversation | vie du compte de l'auteur (le texte d'un message effacé par son auteur est supprimé) |
 | Marque de lecture d'une conversation (date jusqu'à laquelle le joueur a lu ; donne les compteurs de messages non lus) | D1 `conversation_members.last_read_at` | le joueur seul (les autres membres ne voient pas si vous avez lu) | tant que le joueur est membre de la conversation |
 | Joueurs bloqués | D1 `player_blocks` | le joueur qui bloque | jusqu'au déblocage |
@@ -103,6 +107,56 @@
 | Compteurs de limitation (empreintes) | D1 `rate_limits` | personne | 24 heures |
 | Copies de la progression envoyées par le jeu (2.47 : `progress`, `records`, `boss_stats`, `achievements`, `collection` ; 2.55 : `stats`, l'écran Statistiques), avec le nom de l'ordinateur | R2 privé `progress/` + D1 `progress_copies` | vous (restauration après « Migrer vers un nouveau compte ») et les admins ; jamais les autres joueurs | les 5 plus récentes ; supprimées avec votre compte |
 | Copies de sauvegarde de toutes les données ci-dessus, sauf les sessions et les compteurs (voir [BACKUP.md](BACKUP.md)) | R2 privé `backups/` ; fichier `.cpbk` chiffré quand un admin le télécharge | comptes admin | automatiques : 14 jours ; avant un import : 30 jours ; manuelles : jusqu'à ce que 10 plus récentes existent |
+
+## Ce que voit un administrateur (2.75.3)
+
+Pour la modération, un **administrateur actif** voit **tout** d'un profil. Le serveur en décide
+à chaque requête depuis le **rôle de la session** (`isAdminViewer` / `adminViewing`,
+`server/src/adminView.ts`) : jamais un paramètre, un en-tête ou une donnée envoyée par le jeu ;
+un administrateur suspendu n'est plus administrateur. Les autres joueurs gardent **exactement**
+leurs verrous (`server/test/adminProfiles.test.ts` vérifie chaque verrou dans les deux sens).
+
+| Ce que les autres joueurs ne voient pas | Verrou pour les autres | Pour un administrateur | Marque dans le jeu |
+|---|---|---|---|
+| Profil masqué : statistiques, temps de jeu, succès, tenue, badges et titre, date d'inscription (`GET /players/{id}`) | profil réduit | tout, avec `admin_view` | « Vu en tant qu'admin : profil masqué » dans l'en-tête et le paragraphe du profil |
+| Compte suspendu ou fermé après une migration | `404 PLAYER_NOT_FOUND` | le profil, ses onglets et ses replays (`account_inactive`) | « compte inactif » |
+| Onglets Temps de jeu, Meilleurs temps, Meilleures progressions, statistiques (`/playtime`, `/statistics`, `/races`) | `403 PROFILE_PRIVATE` | servis, `admin_view.locks` | « Vu en tant qu'admin : onglet caché aux autres joueurs (…) » |
+| Abonnés et abonnements privés (`/followers`, `/following`) | `403 FOLLOWS_PRIVATE` | servis | même marque (« abonnements privés ») |
+| Niveaux non publiés d'un créateur (brouillons, masqués par les signalements, `/creations`) | absents | listés avec leur statut | « brouillon · vu en tant qu'admin » |
+| Records en attente ou refusés (`/players/{id}/records`, `GET /records/{id}`) | absents / `404` | listés avec leur statut et le motif d'un refus (`admin_view`) | onglet « Admin » : « en attente de vérification » / « refusé à la vérification · ne compte pas comme record vérifié » |
+| Replays d'un profil masqué, d'un compte inactif, d'un record ou d'une tentative non vérifiés (`/records/{id}/replay`, `/races/runs/{id}/replay`) | `403` / `404` | servis avec `x-admin-view` (verrou de confidentialité) et `x-admin-replay-status` (`PENDING` / `REJECTED`) | « Vu en tant qu'admin (profil masqué · en attente de vérification) » pendant toute la lecture ; jamais compté comme vérifié ; jamais gardé dans « Replays téléchargés » |
+| Tentatives non vérifiées de la course à la vérification (`/players/{id}/races`) | absentes | `unverified` (statut, jamais classées) | statut à la place du rang |
+| Replay d'un profil masqué dans le classement d'une course (`/races/board`) | `has_replay: false` | `has_replay: true`, `admin_view` | marque pendant la lecture |
+| Réglages de confidentialité (profil, présence, abonnements, demandes d'ami, « Regarder jouer », visibilité du pays : le réglage seulement) | jamais | `admin_view.privacy` | onglet « Admin » |
+| Présence réelle et dernière activité d'un joueur qui la masque | rond barré / « hors ligne » | `admin_view.presence`, `last_seen_at` | « En ligne (masquée) » |
+| Amis et demandes d'ami | jamais (sauf les deux joueurs) | liste des amis, nombres de demandes reçues et envoyées | onglet « Admin » (le profil d'un ami s'ouvre de là) |
+| Demandes de clan en attente (candidatures, invitations) | le joueur et les responsables du clan | le clan et la date, **jamais le message** | onglet « Admin » |
+
+**Ce qui reste caché, même pour un administrateur** : un **pays ou une région masqués** par le
+joueur (`visibleCountry`, aussi pour ses amis listés) — seul le réglage est dit (« masqué par le
+joueur : caché aussi aux administrateurs ») ; aucune position précise n'existe ; aucun mot de
+passe, jeton, empreinte d'IP ou identifiant d'appareil n'est jamais envoyé ; les **messages
+privés** entre joueurs (et le message d'une candidature à un clan) ne font pas partie d'un profil.
+
+**Impossibilités techniques** : un replay jamais envoyé ou dont le fichier a disparu reste
+indisponible avec sa raison (`404 REPLAY_NOT_FOUND`, « replay incomplet ») ; un replay d'une
+autre version du niveau est refusé par le jeu avec sa raison, comme pour tout le monde.
+
+**Journal** : chaque consultation de profil (`admin_profile_viewed`) et de replay
+(`admin_replay_viewed`) normalement cachés est écrite au journal de l'administration, **regroupée** :
+une entrée par administrateur, par joueur et par sorte tant que les consultations se suivent à
+moins d'une heure (sur 24 h au plus), avec leur nombre, la dernière, les verrous levés et les
+niveaux vus (ADMINISTRATION › Journal : « a consulté le profil de X · vu malgré : profil masqué ·
+3 consultations, la dernière le … »).
+
+**Hors du profil** : les fantômes des défis du jour (téléchargés et gardés comme fantômes sur
+l'ordinateur) gardent le verrou du profil masqué pour tous ; la liste des créateurs (CRÉATEURS)
+ne montre que les profils publics.
+
+**Transparence** : *Paramètres en ligne › Compte et confidentialité* le dit sous « Montrer ma
+présence » : les administrateurs voient les profils masqués (présence, records et replays même
+non vérifiés, listes, amis, réglages), chaque consultation notée à leur Journal ; jamais la
+position, ni le pays masqué, ni les messages privés.
 
 ## Droits du joueur (Paramètres en ligne)
 

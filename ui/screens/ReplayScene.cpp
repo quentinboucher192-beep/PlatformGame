@@ -32,6 +32,7 @@
 #include "game/ghost/GhostRace.h"
 #include "game/ghost/ReplayCompare.h"
 #include "game/ghost/ReplayPlayback.h"
+#include "game/online/AdminView.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/Replay.h"
 #include "ui/screens/LevelPowerKeysScene.h"
@@ -66,8 +67,9 @@ class ReplayScene : public Scene {
 public:
     /// Online record (downloaded).
     ReplayScene(GameServices& g, std::string recordId) : g_(g), recordId_(std::move(recordId)) {}
-    /// A replay already in memory (file, local run).
-    ReplayScene(GameServices& g, ReplayData replay, std::string title) : g_(g) {
+    /// A replay already in memory (file, local run). 2.75.3: `adminNote`, « Vu en tant qu'admin (…) »
+    /// for a replay an administrator watches through a lock (the server's headers, adminview::replayNote).
+    ReplayScene(GameServices& g, ReplayData replay, std::string title, std::string adminNote = {}) : g_(g), adminNote_(std::move(adminNote)) {
         local_ = true;
         auto r = std::make_shared<const ReplayData>(std::move(replay));
         a_.replay = r;
@@ -113,6 +115,14 @@ public:
             a_.meta.category = jstr(rec, "category");
             a_.meta.timeMs = timeMs_;
             a_.meta.validated = true;
+            // 2.75.3: an administrator reads a record hidden from the others (a profile masked, an account
+            // not active, a record or replay still pending or refused): marked all along, and a record that
+            // is not verified never counts as one.
+            if (const Json& av = r.data.value("admin_view", Json()); av.is_object()) {
+                adminNote_ = adminview::recordNote(av);
+                recordStatus_ = jstr(av, "status", jstr(rec, "verification_status"));
+                a_.meta.validated = adminview::countsAsVerified(recordStatus_);
+            }
             downloadReplay(jstr(rec, "level_id"));
         }), false);
     }
@@ -253,10 +263,14 @@ private:
             if (!alive.lock()) return;
             if (resp.networkFailure()) return fail(std::string("Réseau : ") + netErrorLabel(resp.error));
             if (resp.status != 200) return fail(parseApiResponse(resp).message);
-            // 2.75: an administrator watching through a privacy lock (the server decided, from the session's role).
-            const std::string lock = resp.header("x-admin-view");
-            if (lock == "profile_private") adminNote_ = "Vu en tant qu'admin (profil masqué)";
-            else if (!lock.empty()) adminNote_ = "Vu en tant qu'admin (compte inactif)";
+            // 2.75: an administrator watching through a privacy lock (the server decided, from the session's role);
+            // 2.75.3: or a replay not verified yet, or refused (x-admin-replay-status), never counted as verified.
+            const std::string lock = resp.header("x-admin-view"), status = resp.header("x-admin-replay-status");
+            if (const std::string note = adminview::replayNote(lock, status); !note.empty()) adminNote_ = note;
+            if (!status.empty()) {
+                recordStatus_ = status;
+                a_.meta.validated = adminview::countsAsVerified(status);
+            }
             std::vector<uint8_t> bytes(resp.body.begin(), resp.body.end());
             std::string err;
             auto rep = ReplayData::decode(bytes, &err);
@@ -1291,6 +1305,8 @@ private:
             if (!categoryText_.empty()) sub += " · " + categoryText_;
             if (timeMs_ > 0) sub += " · " + formatRunMs(timeMs_);
             if (rank_ > 0) sub += " · n°" + std::to_string(rank_);
+            // 2.75.3: a record an administrator watches before (or after refusing) its verification.
+            if (!recordStatus_.empty() && !adminview::countsAsVerified(recordStatus_)) sub += " · non vérifié : " + adminview::statusLabel(recordStatus_);
         }
         ui.label(ui.elide(sub, FontFace::Body, fz(ui, 15), w), {x0, y + lineH(15) * 0.5f}, fz(ui, 15), th.text, Align::Left, FontFace::Body, VAlign::Middle);
         y += lineH(15);
@@ -1647,7 +1663,8 @@ private:
     bool local_ = false;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string status_;
-    std::string adminNote_;  // 2.75: « Vu en tant qu'admin (profil masqué) » (the server's x-admin-view)
+    std::string adminNote_;     // 2.75: « Vu en tant qu'admin (profil masqué) » (the server's x-admin-view)
+    std::string recordStatus_;  // 2.75.3: an administrator's record not verified (PENDING, REJECTED); "" otherwise
     bool failed_ = false;
     std::string levelId_;
     ReplayChoice a_, b_;
@@ -1711,8 +1728,8 @@ private:
 
 std::unique_ptr<Scene> makeReplayViewer(GameServices& g, const std::string& recordId) { return std::make_unique<ReplayScene>(g, recordId); }
 
-std::unique_ptr<Scene> makeLocalReplayViewer(GameServices& g, ReplayData replay, const std::string& title) {
-    return std::make_unique<ReplayScene>(g, std::move(replay), title);
+std::unique_ptr<Scene> makeLocalReplayViewer(GameServices& g, ReplayData replay, const std::string& title, const std::string& adminNote) {
+    return std::make_unique<ReplayScene>(g, std::move(replay), title, adminNote);
 }
 
 std::unique_ptr<Scene> makeReplayCompare(GameServices& g, const std::string& levelId, ReplayChoice a, ReplayChoice b) {

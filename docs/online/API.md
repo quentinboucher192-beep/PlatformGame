@@ -477,6 +477,18 @@ Auth : facultative. Trois formes de `player` :
   `created_at`, `hidden: false`, `friendship` (`friends`, `request_sent`,
   `request_received` ou `null`, toujours `null` en anonyme) ;
 - profil privé vu par un autre : `PlayerSummary` + `hidden: true`, et `statistics: null`.
+
+**Administrateur (2.75.3, rôle de la session)** : le profil d'un autre joueur, même masqué ou
+d'un compte non actif, en entier (`statistics`, `playtime`, `achievements`, `cosmetics`,
+`badges` ; `player.hidden` dit toujours ce que voient les autres), avec `admin_view` :
+`{ locks: ["profile_private" | "account_inactive" | "presence_hidden" | "follows_private"…],
+account_status, closed_at, created_at, last_seen_at, presence ("online" | "away" | "offline",
+l'état réel), presence_hidden, privacy: { profile_visibility, location_visibility,
+allow_friend_requests, presence_visible, follows_visibility, spectate_allowed }, friends: { total,
+incoming, outgoing, list: [{ player: PlayerSummary, since }] (100 au plus) }, clan_requests: [{
+kind: "apply" | "invite", clan: { id, tag, name }, created_at }] (jamais le message), records: {
+pending, rejected } }`. Le pays et la région masqués restent `null`. Écrit au journal
+(`admin_profile_viewed`, regroupé). Voir [PRIVACY.md](PRIVACY.md#ce-que-voit-un-administrateur-2753).
 ```sh
 curl -s $API/players/a908a1fb-a574-47c3-b6ed-f550f36cc212
 ```
@@ -501,7 +513,12 @@ formé, inconnu ou suspendu).
 #### `GET /players/{playerId}/statistics`
 Auth : facultative. Exemple : `curl -s $API/players/a908a1fb-a574-47c3-b6ed-f550f36cc212/statistics`.
 `200` : `{ "player_id": "…", "statistics": { … } }` (même objet que ci-dessus). Erreurs :
-401, 403 (`PROFILE_PRIVATE`, `ACCOUNT_SUSPENDED`), 404.
+401, 403 (`PROFILE_PRIVATE`, `ACCOUNT_SUSPENDED`), 404. 2.75.3 : un administrateur passe le
+profil masqué et le compte non actif (`admin_view: { locks }`, journal) ; de même pour
+`GET /players/{id}/playtime`, `/followers` et `/following` (abonnements privés : `follows_private`),
+`/creations` (brouillons et niveaux masqués par les signalements : `levels_unpublished`) et
+`/races` (avec `unverified` : les 30 dernières tentatives `PENDING` / `REJECTED`, `status`,
+`rank: null`).
 
 #### `GET /players/{playerId}/records` — historique
 Auth : facultative. Paramètres : `limit` (1 à 200, défaut 50), `offset`, `level_id`,
@@ -512,7 +529,11 @@ le propriétaire voit tout, avec `attempt_id`, `rejection_reason`, `verification
 curl -s "$API/players/a908a1fb-a574-47c3-b6ed-f550f36cc212/records?level_id=sylvanox_01&limit=10"
 ```
 `200` : `{ "player_id": "…", "records": [ { …record… } ] }` + `meta`. Erreurs : 400, 401,
-403 (`PROFILE_PRIVATE`, `ACCOUNT_SUSPENDED`), 404.
+403 (`PROFILE_PRIVATE`, `ACCOUNT_SUSPENDED`), 404. 2.75.3 : un administrateur (rôle de la
+session) voit tous les statuts (filtre `status` permis), même sur un profil masqué, chaque record
+avec `admin_view: { locks, status, rejection_reason, verification_notes, replay_status }` ; un
+record `PENDING` ou `REJECTED` ne compte jamais comme vérifié. `GET /records/{recordId}` lui
+répond de même (`admin_view`) pour tout statut.
 
 Un **record** (vue publique) : `id`, `player_id`, `level_id`, `level_version`, `level_hash`,
 `mode`, `category`, `time_ms`, `deaths`, `damage_taken`, `collectibles`,
@@ -1693,6 +1714,20 @@ journal (`admin_player_levels_viewed`). `GET /records/{recordId}/replay` sert un
 un admin malgré un profil masqué ou un compte inactif, avec l'en-tête `x-admin-view:
 profile_private | account_inactive` et une entrée `admin_replay_viewed` ; un replay non vérifié
 reste indisponible, et les autres joueurs gardent `403 PROFILE_PRIVATE`.
+
+2.75.3 (tout voir des profils, `server/src/adminView.ts`) : un replay **non vérifié** (record ou
+replay `PENDING` / `REJECTED`) est servi à un admin, avec `x-admin-replay-status: PENDING |
+REJECTED` (jamais compté comme vérifié) ; de même `GET /races/runs/{runId}/replay` (profil
+masqué, compte inactif, tentative non vérifiée) ; `GET /races/board` donne `has_replay: true` et
+`admin_view: { locks: ["profile_private"] }` à un admin pour le replay d'un profil masqué. Un
+replay jamais envoyé ou dont le fichier manque reste `404 REPLAY_NOT_FOUND` pour tous. Dans
+`GET /admin/players/{playerId}/levels`, `replay` gagne `watchable` (l'admin peut le regarder :
+le replay existe, vérifié ou non) et `status` ; `available` garde son sens de 2.75 (vérifié) ;
+`reason` : « replay pas encore vérifié » ou « replay incomplet ». Le journal regroupe les
+consultations (`admin_profile_viewed`, `admin_replay_viewed`) : une entrée par admin, joueur et
+sorte tant qu'elles se suivent à moins d'une heure ; `GET /admin/log` donne pour chacune `count`,
+`last_at`, `locks` (verrous levés) et `items` (niveaux vus). Le détail :
+[PRIVACY.md](PRIVACY.md#ce-que-voit-un-administrateur-2753).
 
 Modération des commentaires : `GET /admin/comments` (commentaires masqués ou signalés, avec
 les motifs, de tous les fils : `thread` vaut `community` — avec `level_id` — ou

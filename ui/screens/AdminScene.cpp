@@ -29,6 +29,7 @@
 #include "engine/core/I18n.h"
 #include "game/levels/LevelTimer.h"
 #include "game/GameServices.h"
+#include "game/online/AdminView.h"
 #include "game/online/Clans.h"
 #include "game/online/OnlineSession.h"
 #include "game/progression/NewsCenter.h"
@@ -820,7 +821,9 @@ private:
             cell(3, std::to_string(jget<int>(l, "attempts", 0)), ui.theme().text, cy, true);
             const Json& rep = jfield(l, "replay", Json());
             const Rect bb{cx[4], y + ui.s(2), cx[5] - cx[4] - ui.s(4), ui.s(30)};
-            if (rep.is_object() && jget<bool>(rep, "available", false)) {
+            // 2.75.3: an administrator also watches a replay not verified yet, or refused (`watchable`; its
+            // status said while it plays); a technical impossibility keeps its reason.
+            if (rep.is_object() && (jget<bool>(rep, "available", false) || jget<bool>(rep, "watchable", false))) {
                 UIContext::ButtonStyle st;
                 st.small = true;
                 st.fontSize = 14;
@@ -1156,9 +1159,26 @@ private:
         if (action == "admin_device_bound") return {"Compte", ui.theme().warm, "a lié " + target + " à un nouvel ordinateur"};
         // 2.75: moderation: a player's latest levels looked at, a replay watched through a privacy lock.
         if (action == "admin_player_levels_viewed") return {"Compte", ui.theme().textDim, "a consulté les derniers niveaux joués de " + target};
-        if (action == "admin_replay_viewed")
-            return {"Compte", ui.theme().warm, "a regardé un replay de " + target + (jstr(e, "level_title").empty() ? std::string() : " (" + jstr(e, "level_title") + ")") +
-                                                    (jstr(e, "lock") == "profile_private" ? " malgré son profil masqué" : " malgré son compte inactif")};
+        // 2.75.3: a profile or a replay hidden from the other players, seen by an administrator; one entry
+        // per player and per hour of consultations (`count`, `last_at`), with the locks lifted.
+        if (action == "admin_profile_viewed" || action == "admin_replay_viewed") {
+            const Json& lj = e.contains("locks") && e["locks"].is_array() ? e["locks"] : e.value("lock", Json());
+            const std::string locks = adminview::joinLabels(adminview::lockLabels(lj));
+            const std::string grouped = adminview::groupedText(jget<int>(e, "count", 1), stampText(jstr(e, "last_at")));
+            std::string text;
+            if (action == "admin_profile_viewed") {
+                text = "a consulté le profil de " + target + (locks.empty() ? std::string(" (profil public)") : " · vu malgré : " + locks);
+            } else {
+                std::string levels;
+                if (e.contains("items") && e["items"].is_array())
+                    for (const Json& i : e["items"])
+                        if (i.is_string()) levels += (levels.empty() ? "" : ", ") + i.get<std::string>();
+                if (levels.empty()) levels = jstr(e, "level_title");
+                text = "a regardé un replay de " + target + (levels.empty() ? std::string() : " (" + levels + ")") + (locks.empty() ? std::string() : " · vu malgré : " + locks);
+            }
+            if (!grouped.empty()) text += " · " + grouped;
+            return {"Compte", locks.empty() ? ui.theme().textDim : ui.theme().warm, text};
+        }
         // 2.50: an account's data migrated to another one, by an admin or by the player with a code.
         const Json& mig = jfield(e, "migration", Json());
         if (mig.is_object() && (action == "admin_account_migrated" || action == "account_migrated")) {
