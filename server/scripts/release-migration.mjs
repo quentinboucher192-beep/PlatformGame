@@ -5,7 +5,7 @@
 //   npx wrangler r2 object put cosmic-online-staging-files/releases/CosmicPlatformer-Setup-2.4.0.exe \
 //       --file path/to/CosmicPlatformer-Setup-2.4.0.exe --remote --env staging
 //   npx wrangler d1 migrations apply cosmic-online-staging --remote --env staging
-// 2.76.1: the notes are written in French and in English (notes_en), each line translated by the
+// 2.76.2: the notes are written in French and in English (notes_en), each line translated by the
 // game's dictionary (data/i18n/en.json; tools/i18n/extract.py --check asks for every line). A 4th
 // argument gives the English notes by hand. The English notes of the installers published before
 // (migration 0170): node scripts/release-migration.mjs --english-backfill.

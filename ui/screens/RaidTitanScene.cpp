@@ -342,7 +342,7 @@ public:
             const bool link = jstr(f, "kind") == "link";
             const bool zoneDone = jstr(f, "kind") == "zone";  // 2.75: a zone finished (told once)
             const std::string by = jstr(f, "by");
-            // 2.76.1: the group's tag as its clan wrote it, the rest (the server's words) translated.
+            // 2.76.2: the group's tag as its clan wrote it, the rest (the server's words) translated.
             const std::string text = link ? "TITAN · " + i18n::tr(jstr(f, "text"))
                                           : (by.empty() ? "" : by + " · ") + i18n::tr(jstr(f, "branch_name")) +
                                                 (i18n::language() == Language::English ? ": " : " : ") + i18n::tr(jstr(f, "text"));

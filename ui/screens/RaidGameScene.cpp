@@ -1736,7 +1736,7 @@ public:
         }
         // The branch: what is left in its other zones (the zones to take back first).
         std::vector<raidhud::Line> branch, retake;
-        // 2.76.1: « zone : ce qui manque » joined in the language shown (the requirements hold « : » too,
+        // 2.76.2: « zone : ce qui manque » joined in the language shown (the requirements hold « : » too,
         // the whole was cut at the wrong one): each part translated, the line kept as it is.
         const char* colon = i18n::language() == Language::English ? ": " : " : ";
         for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {

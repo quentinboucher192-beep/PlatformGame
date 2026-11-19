@@ -66,7 +66,7 @@ describe("installers", () => {
         expect((await api("GET", "/api/v1/client/download/2.4.0", { ip })).status).toBe(429);
     });
 
-    it("notes_en: the same notes in English, both given, the game shows those of its language (2.76.1)", async () => {
+    it("notes_en: the same notes in English, both given, the game shows those of its language (2.76.2)", async () => {
         await publish("2.75.3", 2075003, new Uint8Array([1]));
         await publish("2.75.4", 2075004, new Uint8Array([2]));
         await env.DB.prepare("UPDATE client_releases SET notes = ?1, notes_en = ?2 WHERE version = '2.75.4'")
@@ -83,7 +83,7 @@ describe("installers", () => {
     });
 });
 
-describe("English notes of the installers (scripts/release-notes.mjs, 2.76.1)", () => {
+describe("English notes of the installers (scripts/release-notes.mjs, 2.76.2)", () => {
     const strings = { "Tout le jeu en anglais.": "The whole game in English.", "Raids : le titan tombe.": "Raids: the titan falls." };
 
     it("each line by the dictionary, the version line in English typography", () => {

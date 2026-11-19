@@ -1,4 +1,4 @@
-// 2.76.1: the English notes of a game installer, written from the game's own dictionary
+// 2.76.2: the English notes of a game installer, written from the game's own dictionary
 // (data/i18n/en.json, French → English). The notes are made of the changelog's entries
 // (« Version x.y.z : », then « • entrée » lines) or of a short text: every line is a text of the
 // dictionary (tools/i18n/extract.py reads the notes of the published installers too, and its

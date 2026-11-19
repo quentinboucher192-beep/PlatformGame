@@ -686,7 +686,7 @@ private:
         cell(c, 1, row, country.empty() ? "masqué" : ui_.countryName(country), country.empty() ? ui.theme().textDim : ui.theme().text);
         cell(c, 2, row, dayText(jstr(p, "created_at")), ui.theme().text);
         std::string seen = jstr(p, "last_seen_at");
-        // 2.76.1: the French text, translated whole when drawn (a translated piece in it stayed English in French terms).
+        // 2.76.2: the French text, translated whole when drawn (a translated piece in it stayed English in French terms).
         cell(c, 3, row, seen.empty() ? "masquée" : OnlineUi::ageOf(seen) + (presHidden ? " · masquée" : ""), seen.empty() ? ui.theme().textDim : ui.theme().text);
         {
             float dx = c.x[4] + ui.s(12);

@@ -1,4 +1,4 @@
-// 2.76.1: no text left in the other language (docs/I18N.md, « Vérifier qu'il ne reste rien »).
+// 2.76.2: no text left in the other language (docs/I18N.md, « Vérifier qu'il ne reste rien »).
 // The audit of the text renderer (i18n::startAudit, --i18n-audit <file>): what it notes in English
 // (a text absent from the dictionary, left French although some of its words are not English, a
 // French part put in a model's slot, a translation handed back to the renderer) and in French (an
@@ -304,7 +304,7 @@ TEST_CASE("i18n audit: the key screens in English, nothing left in French") {
     rig.show(makeRaidTest(g, t), 60);
     t.zone = -1;  // the branch's armory (raid::RaidRun::kArmory): « Ce qu'il reste à faire » lists the other zones
     rig.show(makeRaidTest(g, t), 60);
-    // 2.76.1: the raid's menu (Tab), each of its sections (→), in a zone of the branch.
+    // 2.76.2: the raid's menu (Tab), each of its sections (→), in a zone of the branch.
     t.zone = 3;
     {
         const size_t before = rig.app.sceneCount();

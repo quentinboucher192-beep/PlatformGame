@@ -26,7 +26,7 @@ public:
         std::string kind;   // level, level_changed, record, power, enemy, boss, update, version
         std::string title;
         std::string text;
-        /// 2.76.1: the text already in English, when the server gave it (the notes of an installer:
+        /// 2.76.2: the text already in English, when the server gave it (the notes of an installer:
         /// written from the dictionary of its version, which this game may not know yet).
         std::string textEn;
         std::string date;

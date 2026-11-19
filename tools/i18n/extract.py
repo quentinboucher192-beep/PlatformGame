@@ -585,7 +585,7 @@ def add(out, text, where, words, source=None):
 DATA_KEYS = {"name", "text", "description", "label", "message", "subtitle", "title", "enterText", "exitText", "speaker", "hint",
              "detail", "prompt", "caption", "tooltip", "summary", "question", "answer", "unlockText", "objective",
              "where",
-             # 2.76.1: the zones of a raid branch (RaidBranchScene) and a boss's last words (its final phase)
+             # 2.76.2: the zones of a raid branch (RaidBranchScene) and a boss's last words (its final phase)
              "sub", "inside", "event", "finalText"}
 DATA_SKIP_FILES = {"data/online/config.json", "data/online/flags.json", "data/levels/ratings.json", "data/news/new_features.json"}
 
@@ -633,7 +633,7 @@ def extract_data(words, out):
 
 # ----------------------------------------------------------------------------- server
 
-# 2.76.1: words that make a server literal French (« Mot de passe incorrect. », « votre clan »,
+# 2.76.2: words that make a server literal French (« Mot de passe incorrect. », « votre clan »,
 # « raid inconnu », « quelques instants » were missed by the accents alone), and SQL to leave out.
 SERVER_FRENCH = re.compile(
     r"\b(le|la|les|du|des|une?|est|sont|pas|aucune?|introuvable|invalide|inconnue?|attendue?s?|obligatoire|impossible|interdit|"
@@ -651,7 +651,7 @@ def extract_server(words, out):
         rel = os.path.relpath(path, ROOT).replace(os.sep, "/")
         with open(path, encoding="utf-8") as f:
             src = f.read()
-        # 2.76.1: block comments too (their apostrophes made fake literals), before the line ones
+        # 2.76.2: block comments too (their apostrophes made fake literals), before the line ones
         # (« /** … "cosmic://…" */ » holds a « // »).
         src = re.sub(r"/\*.*?\*/", lambda c: "\n" * c.group(0).count("\n"), src, flags=re.S)
         src = re.sub(r"//[^\n]*", "", src)
@@ -673,7 +673,7 @@ def extract_server(words, out):
 
 
 def extract_releases(words, out):
-    """2.76.1: the notes of the installers published (server/migrations/*_release_*.sql), line by
+    """2.76.2: the notes of the installers published (server/migrations/*_release_*.sql), line by
     line: their English (column notes_en, server/scripts/release-migration.mjs) is written from
     this dictionary."""
     values = re.compile(r"INSERT INTO client_releases \(([^)]*)\) VALUES \(([\s\S]*)\) ON CONFLICT")
@@ -803,7 +803,7 @@ def main():
     if auto:
         save_dictionary(d)
     missing = [k for k in found if not strings.get(k)]
-    # 2.76.1: the notes of the published installers, line by line, need their English too (written to
+    # 2.76.2: the notes of the published installers, line by line, need their English too (written to
     # client_releases.notes_en); kept out of the catalogue: this game never shows the notes of its own
     # version or older ones (some hold signs its fonts no longer have).
     notes = {}

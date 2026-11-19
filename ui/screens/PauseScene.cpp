@@ -29,7 +29,7 @@ namespace {
 /// `text` in at most `maxLines` lines no wider than `width` at `size` (unscaled), the last one
 /// shortened with « … » when words are left over.
 std::vector<std::string> wrapLines(UIContext& ui, const std::string& source, float size, float width, int maxLines) {
-    // 2.76.1: cut in the language shown (a French sentence cut into lines no longer matched its
+    // 2.76.2: cut in the language shown (a French sentence cut into lines no longer matched its
     // translation): the text translated first, its lines drawn as they are (i18n::keep).
     const std::string text = i18n::tr(source);
     i18n::Verbatim shown;
