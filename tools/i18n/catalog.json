@@ -5639,6 +5639,12 @@
    ]
   },
   {
+   "fr": "Aucun événement du titan pour l'instant.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Aucun événement mondial pour l'instant : programmez-en un à gauche.",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -5898,6 +5904,12 @@
    ]
   },
   {
+   "fr": "Aucune notification pour l'instant : chacune s'ajoute ici avec son heure dans le raid.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Aucune notification pour l'instant. Suivez des créateurs, ajoutez des niveaux à vos favoris et commentez : leurs nouveautés apparaîtront ici.",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -6041,6 +6053,12 @@
    "fr": "Aucune version nommée pour l'instant.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune zone terminée pendant que votre instance y était : le tableau des contributions de chaque zone finie ici s'ajoute ici.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -6298,6 +6316,12 @@
    "fr": "Autres sons",
    "where": [
     "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "AUTRES ZONES TERMINÉES DANS LA BRANCHE",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -7925,7 +7949,8 @@
   {
    "fr": "BRANCHE · Zone terminée : {0}",
    "where": [
-    "game/raid/RaidRun.cpp"
+    "game/raid/RaidRun.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -9911,7 +9936,14 @@
   {
    "fr": "Ce qu'il reste à faire",
    "where": [
-    "saves/RaidHudLayout.cpp"
+    "saves/RaidHudLayout.cpp",
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "CE QU'IL RESTE À FAIRE · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -13270,13 +13302,49 @@
    ]
   },
   {
-   "fr": "Commandes du raid · carte agrandie : aucune touche (Vue / Retour à la manette) · à changer dans Paramètres › Commandes",
+   "fr": "Commandes du raid · carte agrandie : aucune touche (Vue / Retour à la manette) · menu du raid : aucune touche (aucun bouton à la manette) · à changer dans Paramètres › Commandes",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
-   "fr": "Commandes du raid · carte agrandie : {0} (Vue / Retour à la manette) · à changer dans Paramètres › Commandes",
+   "fr": "Commandes du raid · carte agrandie : aucune touche (Vue / Retour à la manette) · menu du raid : aucune touche ({0} à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : aucune touche (Vue / Retour à la manette) · menu du raid : {0} (aucun bouton à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : aucune touche (Vue / Retour à la manette) · menu du raid : {0} ({1} à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : {0} (Vue / Retour à la manette) · menu du raid : aucune touche (aucun bouton à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : {0} (Vue / Retour à la manette) · menu du raid : aucune touche ({1} à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : {0} (Vue / Retour à la manette) · menu du raid : {1} (aucun bouton à la manette) · à changer dans Paramètres › Commandes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commandes du raid · carte agrandie : {0} (Vue / Retour à la manette) · menu du raid : {1} ({2} à la manette) · à changer dans Paramètres › Commandes",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -14384,8 +14452,7 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/screens/MainMenuScene.cpp",
-    "ui/screens/OnlineComputer.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/OnlineComputer.cpp"
    ]
   },
   {
@@ -14736,6 +14803,12 @@
   },
   {
    "fr": "Correctifs des Gigaboss : un joueur avalé par Voidworm ne reçoit plus de marque de « Fouissement » et n'est plus frappé dans son estomac ; à la fin de leur exposition, Voidworm, Graviton et Titanus reforment bien leur carapace au lieu de rester vulnérables jusqu'à la fin du combat.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Correction : la carte « ZONE TERMINÉE » réagissait au saut (Espace, A) et aux déplacements, et celle de la chute d'un gigaboss pouvait ouvrir les résultats par-dessus le combat et figer le personnage ; les deux sont remplacées par les notifications et le menu. Aucune règle de jeu ne change : records et replays gardés.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -22479,6 +22552,12 @@
    ]
   },
   {
+   "fr": "Entrée ou A : les résultats validés par le serveur, tous les groupes comptés.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "entrée trop volumineuse",
    "where": [
     "server/src/backupFormat.ts"
@@ -23041,6 +23120,12 @@
    "fr": "Exclusives et accordées une seule fois par le serveur, à partir des résultats validés. Les sessions de rattrapage donnent des versions argentées et ne changent pas le résultat officiel.",
    "where": [
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Exemple : tout le groupe est à terre, la zone attend un groupe de renfort.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -23608,6 +23693,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "game/levels/EventSystem.cpp",
+    "ui/online/RaidMenu.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
@@ -23677,6 +23763,12 @@
    "fr": "Fermer « {0} » ?",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Fermer · {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -26630,6 +26722,7 @@
     "editors/level_editor/LevelEditorLayout.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/online/RaidHud.cpp",
+    "ui/online/RaidMenu.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -26637,6 +26730,12 @@
    "fr": "Groupe 1 : bras droit, puis le torse…",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupe : {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -26787,13 +26886,21 @@
   {
    "fr": "GROUPE · {0}",
    "where": [
-    "game/raid/RaidRun.cpp"
+    "game/raid/RaidRun.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
    "fr": "GROUPE · Évent fermé ({0} / {1})",
    "where": [
     "game/raid/Gigaboss.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ",
+   "where": [
+    "ui/screens/HudEditorScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -26806,12 +26913,6 @@
    "fr": "groupe éliminé : ses joueurs ne font plus que regarder",
    "where": [
     "server/src/raidZones.ts"
-   ]
-  },
-  {
-   "fr": "GROUPE ÉLIMINÉ · tout le groupe est à terre : la zone attend un groupe de renfort",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -27157,6 +27258,18 @@
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Haut / Bas, stick ou molette : défiler · Gauche / Droite, Q / E ou LB / RB : sections · {0}, Échap ou B : fermer",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Haut / Bas, stick ou molette : défiler · Gauche / Droite, Q / E ou LB / RB : sections · Échap ou B : fermer",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -30184,8 +30297,15 @@
    ]
   },
   {
+   "fr": "JOURNAL",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Journal",
    "where": [
+    "ui/online/RaidMenu.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -30196,9 +30316,27 @@
    ]
   },
   {
+   "fr": "Journal : {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Journal de l'administration : chaque consultation de profil ou de replay normalement cachés y est notée, regroupée en une entrée par joueur tant qu'elles se suivent à moins d'une heure (« 3 consultations, la dernière le … », avec les verrous levés et les niveaux vus). Paramètres en ligne : l'explication de la confidentialité dit ce que voient les administrateurs.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "JOURNAL · {0} notification",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "JOURNAL · {0} notifications",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -31193,7 +31331,7 @@
    ]
   },
   {
-   "fr": "La carte agrandie de la zone et de la branche, pendant un raid (le groupe continue à jouer).",
+   "fr": "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, groupe, titan), pendant un raid : le groupe continue à jouer.",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -33415,6 +33553,12 @@
    ]
   },
   {
+   "fr": "Le Cœur a cédé sous les coups de tous les groupes.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le cœur affolé",
    "where": [
     "data/enemies/heartbreaker.json"
@@ -34133,6 +34277,18 @@
    "fr": "Le jeu attend votre choix. Un pouvoir remplacé reste sur la tablette : revenez le reprendre quand vous voulez.",
    "where": [
     "ui/screens/PowerChoiceScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le jeu continue : vous pouvez être touché. Tant que ce menu est ouvert, vos touches ne bougent pas votre personnage.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Le jeu continue pendant que le menu du raid est ouvert, comme la pause en ligne, et le menu le dit : « Le jeu continue : vous pouvez être touché. » Ses touches de navigation ne bougent jamais le personnage.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -35430,6 +35586,12 @@
    "fr": "Le Tir chargé coûte de l'énergie : ramassez les orbes d'énergie.",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "LE TITAN",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -39029,6 +39191,43 @@
    ]
   },
   {
+   "fr": "MENU DU RAID",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Menu du raid",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "menu du raid",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "MENU DU RAID · {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Menu du raid · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Menu du raid, ouvert et fermé par le joueur : Tab au clavier, L3 à la manette (réglables dans Paramètres › Commandes), le bouton du HUD à la souris ou la pause ; Échap ou B le ferment aussi. Sections « Ce qu'il reste à faire », « Zones terminées » et leurs tableaux des contributions, « Journal » (toutes les notifications, à l'heure du raid), « Groupe » (en jeu, à terre, spectateur) et « Titan » (son gigaboss, les parties tombées, les liens des autres branches, ses événements, « Résultats du raid »), avec défilement au clavier, à la manette et à la souris.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Menu gauche",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -40045,6 +40244,12 @@
    "fr": "Monde",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · Asterion est tombé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -42205,6 +42410,18 @@
    "fr": "NOTIFICATIONS DE RAID",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Notifications des raids : sous le bouton « MENU DU RAID », entre les colonnes du HUD et loin du milieu de l'écran, chacune avec le rappel de la touche du menu (« Tableau : Tab », « Groupe : L3 ») ; leur place et leur taille se règlent dans Paramètres › HUD › « Raids » (« Notifications et menu du raid »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Notifications et menu du raid",
+   "where": [
+    "saves/RaidHudLayout.cpp"
    ]
   },
   {
@@ -44524,9 +44741,22 @@
    ]
   },
   {
+   "fr": "Par un autre groupe (état validé par le serveur) : son tableau est dans le menu du raid.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "par un joueur · version {0}",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Par votre groupe : son tableau des contributions est dans le menu du raid.",
+   "where": [
+    "ui/screens/HudEditorScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -45221,6 +45451,12 @@
    "fr": "pas encore",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas encore : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -51106,6 +51342,12 @@
    ]
   },
   {
+   "fr": "Raids : plus aucune carte ne s'ouvre d'elle-même pendant qu'on joue. Une zone terminée, le groupe éliminé, une zone reprise par un groupe de renfort ou à reprendre, un gigaboss vaincu, un lien du titan, la chute d'Asterion : une notification courte (3,5 s, avec un son) qui ne prend aucune touche ni le focus, l'une sous l'autre quand plusieurs arrivent ensemble (trois au plus, les suivantes attendent leur tour).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
    "where": [
     "data/news/changelog.json"
@@ -54163,6 +54405,12 @@
    ]
   },
   {
+   "fr": "Rien du titan n'agit sur cette branche pour l'instant.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Rien en réserve ici : tout a déjà été donné en récompense (ou archivé).",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -54226,6 +54474,12 @@
    "fr": "Rien à envoyer.",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Rien à faire ici pour l'instant.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -55589,14 +55843,20 @@
   {
    "fr": "Résultats du raid",
    "where": [
-    "ui/screens/RaidEventScene.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/online/RaidMenu.cpp",
+    "ui/screens/RaidEventScene.cpp"
    ]
   },
   {
    "fr": "Résultats du raid : classement des clans et classement individuel par catégorie (contribution, dégâts, dégâts évités, soutien, objectifs, gigaboss vaincus, temps de participation, sauvetages, progression), ouverts à la chute de Pyroclast et depuis la fiche de l'événement. Le score de contribution mélange toutes les catégories, chacune plafonnée : les dégâts seuls ne suffisent jamais.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Résultats du raid : menu du raid, section Titan.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -58990,6 +59250,12 @@
    ]
   },
   {
+   "fr": "spectateur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Spectre",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -60695,6 +60961,12 @@
    ]
   },
   {
+   "fr": "Tableau : {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Tableau des contributions de chaque zone : à la fin d'une zone, la part de chaque joueur des dégâts infligés au boss et aux mini-boss de la zone (gardiens, ennemis dont la chute est un objectif, Gigaboss), ses dégâts, son soutien, ses mécanismes et ses objectifs, comptés par la simulation (les mêmes nombres sur tous les jeux du groupe) ; envoyé au serveur et validé par la majorité du groupe, il reste dans « Résultats du raid » (« Tableaux des zones ») et se revoit depuis la pause.",
    "where": [
     "data/news/changelog.json"
@@ -60716,12 +60988,6 @@
    "fr": "Tableau {0} / {1}",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Tableaux des contributions des zones terminées",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -61996,6 +62262,12 @@
    ]
   },
   {
+   "fr": "Terminée par le groupe de renfort {0}.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "terminée · vous êtes ici",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -62005,6 +62277,12 @@
    "fr": "Terminées",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Terminées ailleurs ou avant votre arrivée : leurs tableaux, pour les groupes de votre clan, sont dans Résultats du raid.",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -62147,6 +62425,12 @@
    "fr": "test",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Test : rien n'est compté.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -62499,9 +62783,22 @@
    ]
   },
   {
+   "fr": "TITAN",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Titan",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Titan : {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -63242,6 +63539,12 @@
     "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Tout le groupe est à terre : la zone attend un groupe de renfort. Vous devenez spectateurs.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -67114,6 +67417,12 @@
    ]
   },
   {
+   "fr": "Validée par le serveur pour toute la branche.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Vanne de pression",
    "where": [
     "data/enemies/vanne.json"
@@ -69999,7 +70308,7 @@
    ]
   },
   {
-   "fr": "ZONE REPRISE · {0} : terminée par le groupe de renfort {1}",
+   "fr": "ZONE REPRISE · {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -70015,12 +70324,6 @@
    "fr": "zone secrète",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
-   "fr": "Zone suivante ›",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -70075,6 +70378,12 @@
    "fr": "ZONE TERMINÉE · ?",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "ZONE TERMINÉE · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -70134,6 +70443,12 @@
    ]
   },
   {
+   "fr": "ZONE À REPRENDRE · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Zones",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -70143,6 +70458,12 @@
    "fr": "Zones & événements",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Zones : {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -70167,6 +70488,12 @@
    "fr": "zones de la branche dans le désordre",
    "where": [
     "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "Zones terminées",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -70720,6 +71047,12 @@
    ]
   },
   {
+   "fr": "{0} : debout",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : empreinte impossible",
    "where": [
     "game/online/LevelFingerprint.cpp"
@@ -70867,6 +71200,12 @@
    "fr": "{0} : scène « {1} » absente de {2}",
    "where": [
     "game/content/BossStories.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : tombé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -71762,6 +72101,18 @@
    ]
   },
   {
+   "fr": "{0} est debout · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est debout · {1} · {2}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} est déconnecté : intouchable, il revient près de l'équipe s'il se reconnecte dans {1} s.",
    "where": [
     "game/gameplay/HudTeam.cpp"
@@ -71834,6 +72185,12 @@
    ]
   },
   {
+   "fr": "{0} est tombé : un groupe qui a fini sa zone peut la reprendre.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} est tombé · {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -71853,6 +72210,12 @@
   },
   {
    "fr": "{0} est vaincu !",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est vaincu · {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -73553,6 +73916,12 @@
    ]
   },
   {
+   "fr": "{0} · Résultats du raid : menu du raid, section Titan.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · révision {1} → {2} · aucun meilleur temps · amenée par une autre entité",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -74440,6 +74809,12 @@
    "fr": "À découvrir : {0}",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "À faire : {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -76455,6 +76830,12 @@
    ]
   },
   {
+   "fr": "ÉVÉNEMENTS",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Événements",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -76765,12 +77146,6 @@
     "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/RaidTitanScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
-   ]
-  },
-  {
-   "fr": "‹ Zone précédente",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

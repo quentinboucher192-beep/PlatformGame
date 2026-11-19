@@ -140,7 +140,7 @@ TEST_CASE("fonts (2.72): the raid screens and the gigabosses' routines only writ
                            "game/raid/RaidRun.cpp",          "game/raid/Gigaboss.cpp",         "game/raid/RaidTest.cpp",
                            "game/raid/VoidwormRoutine.cpp",  "game/raid/GravitonRoutine.cpp",  "game/raid/TitanusRoutine.cpp",
                            "game/raid/SkullmawRoutine.cpp",  "game/raid/DreadfangRoutine.cpp", "game/raid/HeartbreakerRoutine.cpp",
-                           "saves/RaidHudLayout.cpp"};
+                           "saves/RaidHudLayout.cpp",        "ui/online/RaidMenu.cpp"};
     int read = 0;
     std::set<std::string> bad;
     for (const char* f : files) {

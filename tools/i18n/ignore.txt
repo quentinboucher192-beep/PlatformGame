@@ -306,3 +306,6 @@ max
 heart
 ok
 hitbox
+# 2.75.5 : identifiants (puces de RaidWorldScene, clé JSON de main.cpp) que « Tab » et « sections » des textes du menu du raid rendaient « français »
+tab
+sections

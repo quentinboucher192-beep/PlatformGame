@@ -116,6 +116,8 @@ ZoneColumns zoneColumns(const ZoneTable& t, float width);
 std::vector<float> zoneShares(const ZoneTable& t);
 /// The table in `r` (title, sub-title, header, rows; « … et N de plus » when they do not fit).
 void drawZoneTable(UIContext& ui, const Rect& r, float k, const ZoneTable& t);
+/// 2.75.5: the height drawZoneTable needs to show every row of `t` at `width` (the raid's menu).
+float zoneTableHeight(UIContext& ui, const ZoneTable& t, float width, float k);
 
 // --------------------------------------------------------------------------------- the maps
 
