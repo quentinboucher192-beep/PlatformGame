@@ -623,7 +623,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
-**Nouveau dans la version 2.75.5** :
+**Nouveau dans la version 2.76.1** :
 * **Raids : plus aucune carte qui bloque le joueur.** Une zone terminée, le groupe éliminé, une zone reprise par un
   renfort, un gigaboss vaincu, un lien du titan : une **notification courte** (3,5 s, un son, trois au plus l'une sous
   l'autre) qui ne prend aucune touche, sous le bouton du menu et loin du milieu de l'écran, avec le rappel de sa touche

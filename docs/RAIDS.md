@@ -7,7 +7,7 @@
 # les fiches d'Asterion et des Gigaboss (2.74.1, §18) ; ce qu'il reste à faire, zones terminées, tableaux des zones,
 # modération, « Où frapper » (2.75, §19) ;
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
-# notifications et menu du raid : plus aucune carte qui bloque le joueur (2.75.5, §21)
+# notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -795,7 +795,7 @@ combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas su
 * **Disposition à part** (`GameplaySettings::raidHud`, Paramètres › HUD › onglet « Raids ») : vie et énergie, pouvoirs,
   minimap, panneau du groupe (8), objectifs et progression de la branche, alertes, barre du gigaboss, bandeau de danger,
   contributions, ligne du réseau / badge « TEST ADMIN », **chronomètre du raid** ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
-  danger, le réseau et, depuis la 2.75.5, les notifications avec le bouton du menu du raid, §21). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
+  danger, le réseau et, depuis la 2.76.1, les notifications avec le bouton du menu du raid, §21). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
   deux éléments ne peuvent jamais se chevaucher (l'enregistrement est refusé sinon). Chaque élément est dessiné dans sa
   boîte : textes mesurés, coupés, « … et N lignes de plus ».
 * **Chronomètre** (vrais raids et test) : le style du chrono des niveaux (horloge, police des titres, halo), le temps depuis
@@ -1034,7 +1034,7 @@ les jeux (testé à 2 et 8 sièges). La part de chacun est celle des dégâts au
   autres (majorité stricte des joueurs actifs, minorité journalisée), tableaux impossibles refusés avant tout vote
   (`implausibleZone`). Accepté : `raid_zone_contributions` (migration **0160**), attribué au membre qui tenait le siège.
 * **Écrans** : le tableau mesuré (nom, barre et pourcentage de la part, dégâts, soutien, mécanismes, objectifs) est dans
-  le **menu du raid › « Zones terminées »** depuis la 2.75.5 (§21 : une notification courte annonce la zone terminée ;
+  le **menu du raid › « Zones terminées »** depuis la 2.76.1 (§21 : une notification courte annonce la zone terminée ;
   la carte « ZONE TERMINÉE » de la 2.75, qui prenait les touches du joueur, n'existe plus), et dans **Résultats du raid ›
   « Tableaux des zones »** (`zone_tables` de `GET /raids/events/{id}/results` : les groupes de **mon** clan seulement).
 
@@ -1152,7 +1152,7 @@ ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersio
   rejoué, 0 et 7 joueurs simulés), `tests/test_coop.cpp` (règles 1 et 2), `server/test/raidWipe.test.ts`,
   `server/test/coopRace.test.ts`.
 
-## 21. Notifications et menu du raid (2.75.5)
+## 21. Notifications et menu du raid (2.76.1)
 
 Une portion finie ne doit jamais arrêter un joueur, peut-être au-dessus du vide. Plus **aucune carte ne s'ouvre d'elle-même**
 pendant qu'on joue en raid : une **notification courte** annonce ce qui arrive, et le **menu du raid**, que chaque joueur ouvre
@@ -1160,7 +1160,7 @@ et ferme lui-même, garde tout le détail (`ui/online/RaidMenu`).
 
 ### Ce qui bloquait vraiment (recensement)
 
-| Ce qui s'ouvrait seul | Ce que cela faisait | Depuis la 2.75.5 |
+| Ce qui s'ouvrait seul | Ce que cela faisait | Depuis la 2.76.1 |
 | --- | --- | --- |
 | Carte « ZONE TERMINÉE » et tableau des contributions (2.75) | 30 s au milieu de l'écran (les plateformes cachées) ; elle prenait le **focus** de l'interface sur « Continuer » : **Espace / A, le saut**, la fermait ou changeait de zone, les **déplacements** (flèches, ZQSD, croix, stick) promenaient le focus entre ses boutons, le pointeur revenait. Les entrées du lockstep n'étaient pas neutres, mais chaque saut agissait aussi sur la carte. | Notification ; le tableau dans le menu › « Zones terminées » |
 | Carte de la chute d'un gigaboss (« PYROCLAST EST VAINCU », 2.68 ; « LE CŒUR D'ASTERION CÈDE ») | Le premier déplacement donnait le focus à « Résultats du raid », le saut suivant ouvrait les résultats **par-dessus le combat** : tant qu'ils étaient ouverts (`topScene() != this`), **entrées neutres envoyées au lockstep**, le personnage figé. | Notification ; « Résultats du raid » dans le menu › « Titan » (bouton, Entrée / A) |
