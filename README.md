@@ -627,6 +627,19 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * **Raids** : les 8 Gigaboss d'Asterion se battent **par parties** (version de simulation **17**) : leurs points
   faibles dessinés × 2, leurs parties blindées × 0,5, et seules leurs griffes, mâchoires ou épines blessent au contact
   ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Gigaboss de la campagne par parties** (version de simulation **17**, `partsFromVersion` 17) : Singularis (œil × 2,
+  coquille × 0,5, mains, épines et couronne de feu qui blessent), Monolithe (tête × 2, carapace × 0,5, torse, bras,
+  poings qui frappent, jambes), Phénix (tête × 2, queue × 0,5, corps, ailes, serres), Liche (crâne et phylactère × 2,
+  traîne × 0,5, robe, bâton, flammes d'âme), Titan (tête et réacteur × 2, blindage × 0,5, torse, canon, poing, jambes,
+  cheminées), Kraken (yeux × 2, manteau, tentacules qui fouettent, bec) et Astrarque (cœur × 2, anneaux et plaques
+  × 0,5, coque, bras, chaînes, creusets et pointes). Leurs mécanismes restent (carapace roulée, cendres, phylactère, vannes, réacteur à nu) ; les
+  replays d'avant rejouent avec leur boîte et les records sont gardés.
+* **Régions de `hitparts.py`** : une région peut ne valoir que pour certaines poses (`clips`, `attack:2`), certaines
+  feuilles (`sheets`, une phase redessinée), prendre le reste (`rest`) ou écarter un effet (`drop`)
+  ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Feuille de phase dans le pas fixe** : un boss par parties prend la feuille de sa phase dans la simulation, sa pose
+  gardée ; ses parties sont les mêmes à toute fréquence d'image. Les tirs partent de son dessin, et `parts.origins`
+  corrige l'origine d'une attaque sans toucher à sa définition (Astrarque).
 * **Éditeur d'ennemis › Boss › Parties (où frapper)** : les parties d'un boss sur son sprite (pose et image
   choisies) et, pour chacune, son rôle, son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse.
   Lecture seule pour un boss du jeu, réglé par un administrateur et écrit dans `data/enemies/<id>.json`

@@ -13,7 +13,10 @@ them as it places the frame: (vertex − pivot) × scale, mirrored when it faces
   its fire, and geodesic distances along the drawing from its snout and from its tail's tip;
 * profile « regions » (« parts »: {"profile": "regions", "regions": [{"name", "poly"}, …]}): named polygons
   drawn on its idle image; each pixel of each frame goes to the first that holds it, else to the nearest
-  centre (docs/HITBOX_PARTS.md);
+  centre (docs/HITBOX_PARTS.md). 2.76.2: a region may be drawn for some poses only (« clips »: a clip,
+  « attack:2 » one of its frames, « attack:1-3 » several), for some sheets only (« sheets »: a phase
+  redrawn), take what no region holds (« rest ») or hold what is no part (« drop »: an effect around it);
+  several regions may make one part (the same name);
 * profile « silhouette » (every other boss): its body (« corps »), the drawing itself without the
   sparks and dust around it.
 
@@ -319,10 +322,51 @@ def dragon(rgba, pivot):
     return parts
 
 
+def region_names(regs):
+    """The parts of a « regions » profile: each name once, in the order of its first region."""
+    out = []
+    for r in regs:
+        if not r.get('drop') and r['name'] not in out:
+            out.append(r['name'])
+    return out
+
+
+def cell_tags(anim):
+    """2.76.2: for each cell, the clips that show it (« attack ») and their frames (« attack:2 »)."""
+    out = {}
+    for name, c in sorted(anim['clips'].items()):
+        for i in range(max(1, c.get('count', 1))):
+            tags = out.setdefault((c.get('row', 0), c.get('start', 0) + i), set())
+            tags.update((name, f'{name}:{i}'))
+    return out
+
+
+def region_applies(r, sheet, tags):
+    """2.76.2: whether a region applies to a cell: « sheets » (the sheets it is drawn for, by name: its
+    phase sheets redrawn) and « clips » (the poses it is drawn for: « attack », a frame « attack:2 » or
+    frames « attack:1-3 »); without them, every sheet and every pose."""
+    if 'sheets' in r and sheet not in r['sheets']:
+        return False
+    if 'clips' not in r:
+        return True
+    for c in r['clips']:
+        name, _, frames = c.partition(':')
+        if '-' in frames:
+            lo, hi = (int(v) for v in frames.split('-'))
+            if any(f'{name}:{i}' in tags for i in range(lo, hi + 1)):
+                return True
+        elif c in tags:
+            return True
+    return False
+
+
 def regions(rgba, regs):
     """Profile « regions » (data/enemies/<id>.json « parts »: {"profile": "regions", "regions": [{"name": ...,
     "poly": [x0, y0, x1, y1, …]}, …]}, polygons in the frame's pixels, drawn on its idle image): each pixel of
-    the drawing goes to the first region that holds it, else to the nearest region's centre (integers)."""
+    the drawing goes to the first region that holds it, else to the region marked « rest » (2.76.2), else to
+    the nearest region's centre (integers). Several regions may bear the same name (one part); a region
+    marked « drop » holds what is no part (an effect drawn around it); `regs` are those that apply to this
+    cell (region_applies)."""
     from PIL import ImageDraw
     body = body_of(rgba[:, :, 3] > ALPHA)
     h, w = body.shape
@@ -337,11 +381,20 @@ def regions(rgba, regs):
         cx = sum(p[0] for p in pts) // max(1, len(pts))
         cy = sum(p[1] for p in pts) // max(1, len(pts))
         centres.append((cx, cy))
+    rest = [i for i, r in enumerate(regs) if r.get('rest')]
+    if rest:
+        label[body & (label < 0)] = rest[0]
     ys, xs = np.nonzero(body & (label < 0))
     if len(ys) and centres:
         d = np.stack([(xs - cx) ** 2 + (ys - cy) ** 2 for cx, cy in centres])
         label[ys, xs] = np.argmin(d, axis=0)
-    return {r['name']: body & (label == i) for i, r in enumerate(regs)}
+    out = {}
+    for i, r in enumerate(regs):
+        if r.get('drop'):
+            continue  # an effect drawn around it (a ring, a spell): no part
+        m = body & (label == i)
+        out[r['name']] = out[r['name']] | m if r['name'] in out else m
+    return out
 
 
 def transfer(base_parts, mask, names):
@@ -437,24 +490,30 @@ def bosses(only=None):
 
 def build(only=None):
     """{relative output path: text} for every sheet of every boss (a sheet shared by several bosses
-    once, with the profile of the first that names one other than the silhouette)."""
+    once, with the profile of the first that names one other than the silhouette; 2.76.2: the profile of
+    the boss the sheet is named after first, when it names one: forge_core's sheet, that Astrarque wears)."""
     plan = {}
     for eid, profile, sheets, regs in bosses(only):
         own = sheets[0]
+        mine = sheet_name(own) == eid
         for rel in sheets:
             cur = plan.get(rel)
-            if cur is None or (cur[0] == 'silhouette' and profile != 'silhouette'):
-                plan[rel] = (profile, own if rel != own else None, regs)
+            if cur is None or (cur[0] == 'silhouette' and profile != 'silhouette') or (mine and profile != 'silhouette' and not cur[3]):
+                plan[rel] = (profile, own if rel != own else None, regs, mine)
     out = {}
     cache = {}
     names_of = {'dragon': DRAGON, 'silhouette': SILHOUETTE}
     for rel in sorted(plan, key=lambda r: (plan[r][1] is not None, r)):
-        profile, own, regs = plan[rel]
+        profile, own, regs, _ = plan[rel]
         a, img = load_sheet(rel)
-        names = [r['name'] for r in regs] if profile == 'regions' else names_of[profile]
+        names = region_names(regs) if profile == 'regions' else names_of[profile]
         cells = cells_of(a)
+        tags = cell_tags(a)
         base = cache.get(own) if own else None
-        if base and base[1] == cells and all(np.array_equal(cell(img, a, rc)[:, :, 3] > ALPHA, base[2][rc]) for rc in cells):
+        # 2.76.2: a phase sheet whose regions differ from those of the own sheet (« sheets ») is never « sameAs ».
+        same_regs = not own or [r for r in regs if 'sheets' not in r or sheet_name(rel) in r['sheets']] == \
+            [r for r in regs if 'sheets' not in r or sheet_name(own) in r['sheets']]
+        if base and same_regs and base[1] == cells and all(np.array_equal(cell(img, a, rc)[:, :, 3] > ALPHA, base[2][rc]) for rc in cells):
             text = encode(rel, a, profile, names, [], same=os.path.basename(own))
         else:
             res = []
@@ -468,7 +527,7 @@ def build(only=None):
                 elif profile == 'dragon':
                     parts = dragon(rgba, a['pivot'])
                 elif profile == 'regions':
-                    parts = regions(rgba, regs)
+                    parts = regions(rgba, [r for r in regs if region_applies(r, sheet_name(rel), tags.get(rc, set()))])
                 else:
                     parts = silhouette(rgba)
                 labels[rc] = parts

@@ -88,6 +88,19 @@ void Animator::setSet(AnimationSetPtr set) {
     currentName_.clear();
 }
 
+void Animator::swapSet(AnimationSetPtr set) {
+    const std::string name = currentName_;
+    set_ = std::move(set);
+    const AnimationClip* c = set_ && !name.empty() ? set_->clip(name) : nullptr;
+    if (c && frame_ < c->frameCount()) {
+        clip_ = c;  // the same pose on the new sheet: frame, time and events as they were
+        return;
+    }
+    clip_ = nullptr;
+    currentName_.clear();
+    if (!name.empty()) play(name, true);
+}
+
 bool Animator::has(const std::string& name) const { return set_ && set_->clip(name); }
 
 void Animator::play(const std::string& name, bool restart) {

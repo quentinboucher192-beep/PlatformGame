@@ -14,8 +14,9 @@
 // definition (EnemyDefinition) nor of a level's fingerprint: the records are kept; the rules of the run
 // decide (a replay of before plays with its box). docs/HITBOX_PARTS.md: how to plug a boss in.
 //
-// A boss that fights by parts (Pyrrhax from 16, GameWorld::simulationVersion() ≥ partsFromVersion): its animation
-// advances in the fixed step (its pose is part of the simulation), the player's blows and powers hit the
+// A boss that fights by parts (Pyrrhax from 16, the gigaboss of the campaign from 17, GameWorld::simulationVersion()
+// ≥ partsFromVersion): its animation advances in the fixed step (its pose is part of the simulation; from 17
+// the sheet of its phase too, kPartsLookSimulation), the player's blows and powers hit the
 // part they touch — weak point first, then a normal part, then armour — times its multiplier, and only its
 // parts that hurt (claws, breath, its head while it bites) hurt on contact. Every other boss keeps its box;
 // its sheets show its parts (« affichage »).
@@ -43,6 +44,9 @@ struct AnimationSet;
 /// The version of the simulation of the first boss that fights by parts (Pyrrhax, 2.76.0); each boss names
 /// its own (« partsFromVersion »).
 constexpr int kHitPartsSimulation = 16;
+/// 2.76.2: from this version, a boss that fights by parts takes the sheet of its phase in the fixed step
+/// (its pose kept, Animator::swapSet), never in a display update: its parts are the same at any frame rate.
+constexpr int kPartsLookSimulation = 17;
 
 /// One convex piece of a part in a cell: vertices in the frame's pixels (origin at its top left).
 struct HitPartPiece {
@@ -82,7 +86,13 @@ struct PartRules {
     int fromVersion = 0;  // « partsFromVersion »: its fight uses its parts from this version on (0: never, drawn only)
     std::string profile;  // how hitparts.py cuts its sprite ("dragon", "" = its silhouette)
     std::vector<PartRule> rules;
+    /// 2.76.2 (« origins »): where the shots of an attack leave when it fights by parts, in pixels of its
+    /// sprite from its feet (× its scale, like an attack's origin): its drawing, without changing its
+    /// definition (nor the fingerprint of its levels); a replay of before keeps the attack's own.
+    std::map<std::string, Vec2> origins;
     const PartRule* rule(const std::string& name) const;
+    /// The origin of an attack's shots by its parts (null: the attack's own).
+    const Vec2* origin(const std::string& attackId) const;
     /// The role and multiplier of a part without a rule: a normal part, × 1.
     PartRule ruleOr(const std::string& name) const;
     /// `parts`: the « parts » block; `fromVersion`: « partsFromVersion » (0 without it).

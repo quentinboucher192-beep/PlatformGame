@@ -462,5 +462,247 @@
     "barIcon": "star",
     "barColor": "#fff1c9"
   },
-  "tint": "#ffe7a8"
+  "tint": "#ffe7a8",
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "pointes",
+        "poly": [
+          38,
+          20,
+          74,
+          20,
+          74,
+          31,
+          38,
+          31
+        ]
+      },
+      {
+        "name": "cœur",
+        "poly": [
+          68,
+          56,
+          66,
+          62,
+          62,
+          66,
+          56,
+          68,
+          50,
+          66,
+          46,
+          62,
+          44,
+          56,
+          46,
+          50,
+          50,
+          46,
+          56,
+          44,
+          62,
+          46,
+          66,
+          50
+        ]
+      },
+      {
+        "name": "coque",
+        "poly": [
+          36,
+          4,
+          76,
+          4,
+          76,
+          40,
+          36,
+          40
+        ]
+      },
+      {
+        "name": "coque",
+        "poly": [
+          42,
+          70,
+          70,
+          70,
+          70,
+          82,
+          42,
+          82
+        ]
+      },
+      {
+        "name": "chaînes",
+        "poly": [
+          24,
+          74,
+          88,
+          74,
+          88,
+          110,
+          24,
+          110
+        ]
+      },
+      {
+        "name": "anneaux",
+        "poly": [
+          78,
+          56,
+          76,
+          64,
+          72,
+          72,
+          64,
+          76,
+          56,
+          78,
+          48,
+          76,
+          40,
+          72,
+          36,
+          64,
+          34,
+          56,
+          36,
+          48,
+          40,
+          40,
+          48,
+          36,
+          56,
+          34,
+          64,
+          36,
+          72,
+          40,
+          76,
+          48
+        ]
+      },
+      {
+        "name": "creusets",
+        "poly": [
+          6,
+          50,
+          30,
+          50,
+          30,
+          74,
+          6,
+          74
+        ]
+      },
+      {
+        "name": "creusets",
+        "poly": [
+          82,
+          50,
+          106,
+          50,
+          106,
+          74,
+          82,
+          74
+        ]
+      },
+      {
+        "name": "plaques",
+        "poly": [
+          30,
+          42,
+          40,
+          42,
+          40,
+          74,
+          30,
+          74
+        ]
+      },
+      {
+        "name": "plaques",
+        "poly": [
+          72,
+          42,
+          82,
+          42,
+          82,
+          74,
+          72,
+          74
+        ]
+      },
+      {
+        "name": "bras",
+        "rest": true,
+        "poly": [
+          20,
+          30,
+          92,
+          30,
+          92,
+          50,
+          20,
+          50
+        ]
+      }
+    ],
+    "roles": {
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "anneaux": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "plaques": {
+        "role": "armour",
+        "damage": 0.5,
+        "hurtDuring": [
+          "slam",
+          "v3_dive",
+          "a_ignivore_dive"
+        ]
+      },
+      "coque": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "slam",
+          "v3_dive",
+          "a_ignivore_dive"
+        ]
+      },
+      "bras": {
+        "role": "normal",
+        "damage": 1
+      },
+      "chaînes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "creusets": {
+        "role": "hurt"
+      },
+      "pointes": {
+        "role": "hurt"
+      }
+    },
+    "origins": {
+      "a_cryowyrm_breath": [
+        12,
+        -24
+      ],
+      "a_ignivore_bolts": [
+        25,
+        -36
+      ]
+    }
+  },
+  "partsFromVersion": 17
 }

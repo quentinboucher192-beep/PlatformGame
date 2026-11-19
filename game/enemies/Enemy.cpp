@@ -226,7 +226,11 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     if (state_ == EnemyState::Dormant) return;
     // 2.76.0: a boss that fights by parts (Pyrrhax): its pose is part of the simulation, its animation
     // advances in the fixed step (every computer, every replay: the same frame at the same step).
-    if (fightsByParts(*this, w)) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
+    partsFight_ = fightsByParts(*this, w);
+    // 2.76.2: and from 17 the sheet of its phase, its pose kept (never in a display update, whose rate
+    // varies: the parts of a phase sheet are its own).
+    if (partsFight_ && def_.isBoss && shownLook_ != phase_ && w.simulationVersion() >= kPartsLookSimulation) refreshLook(w, true);
+    if (partsFight_) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
     if (state_ == EnemyState::Dead) {
         deathTimer_ -= dt;
         vel.x = approach(vel.x, 0.0f, 400.0f * dt);
@@ -947,8 +951,10 @@ void Enemy::freeze(float seconds) {
 }
 
 void Enemy::update(GameWorld& w, float dt) {
-    if (def_.isBoss && shownLook_ != phase_) refreshLook(w);
-    if (!fightsByParts(*this, w)) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });  // 2.76.0: else in fixedUpdate
+    const bool parts = fightsByParts(*this, w);
+    // 2.76.2: a boss that fights by parts takes the sheet of its phase in the fixed step (fixedUpdate).
+    if (def_.isBoss && shownLook_ != phase_ && !(parts && w.simulationVersion() >= kPartsLookSimulation)) refreshLook(w);
+    if (!parts) anim_.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });  // 2.76.0: else in fixedUpdate
 }
 
 // ============================================================ the giga boss (2.33)
@@ -966,9 +972,10 @@ Color Enemy::lightColor() const {
     return def_.lightColor;
 }
 
-void Enemy::refreshLook(GameWorld& w) {
-    // Display only: a boss whose phase has its own sheet changes look (the roar of the new
-    // phase plays on it). The simulation never reads the animation.
+void Enemy::refreshLook(GameWorld& w, bool keepPose) {
+    // A boss whose phase has its own sheet changes look (the roar of the new phase plays on it).
+    // Display only, except for a boss that fights by parts (2.76.2, `keepPose`): its sheet is that of
+    // its parts, taken in the fixed step with its pose as it is.
     shownLook_ = phase_;
     std::string path = phaseAnimation();
     if (path == shownAnim_) return;
@@ -979,6 +986,11 @@ void Enemy::refreshLook(GameWorld& w) {
     AnimationSetPtr set = w.resources().animation(path);
     if (!def_.assetRoot.empty()) w.resources().popMount();
     if (!set) return;
+    if (keepPose) {
+        anim_.swapSet(std::move(set));
+        if (anim_.current().empty()) playClip("idle", true);
+        return;
+    }
     std::string clip = anim_.current();
     anim_.setSet(std::move(set));
     playClip(clip.empty() ? "idle" : clip, true);

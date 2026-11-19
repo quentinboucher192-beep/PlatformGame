@@ -2,7 +2,7 @@
   "format": "cosmic.hitparts",
   "version": 1,
   "sheet": "animations/phenix_p4.json",
-  "profile": "silhouette",
+  "profile": "regions",
   "frameWidth": 256,
   "frameHeight": 192,
   "pivot": [128.0, 190.0],

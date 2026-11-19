@@ -175,30 +175,105 @@ TEST_CASE("determinism: golden digests are identical on every platform") {
     CHECK(mismatches == 0);
 }
 
-// 2.33: the giga boss's fight (its arena changed by its phases: debris in orbit, the crust floor
-// collapsed into the plasma, tides of plasma, rings, cages...): 30 s of scripted play from its
-// fifth phase in « Le Cœur d'une Étoile Mourante ». Computed by the Linux build.
-TEST_CASE("determinism: the giga boss's fight has its golden digest on every platform") {
-    Sim s("noyau_03");
+namespace {
+
+/// 2.76.2: a boss's fight in its level: the player at `tileX` columns of its arena and `tilesUp` rows
+/// above its bottom, the fight started at `phase`, `seconds` of scripted play (`seed`) with the rules of
+/// `rules`; display updates at the rates of `frameDts` (none: the simulation alone). Its last digest.
+std::string bossFight(const char* level, const char* enemy, int phase, float tileX, float tilesUp, uint64_t seed, int rules,
+                      const std::vector<float>& frameDts = {}, int seconds = 30) {
+    Sim s(level);
+    s.w->setSimulationVersion(rules);
     std::string bossObject;
     Rect zone;
     for (const LevelObject& o : s.w->level().objects)
-        if (o.type == "enemy" && o.propStr("enemy") == "singularis") bossObject = o.id;
+        if (o.type == "enemy" && o.propStr("enemy") == enemy) bossObject = o.id;
     for (const LevelObject& o : s.w->level().objects)
         if (o.type == "combat_zone" && !bossObject.empty() && o.propStr("waves").find(bossObject) != std::string::npos) zone = o.rect;
     CHECK(!bossObject.empty() && zone.w > 0.0f);
     auto* spawn = dynamic_cast<EnemySpawnEntity*>(s.w->entity(bossObject));
     Enemy* boss = spawn ? spawn->enemy(*s.w) : nullptr;
     CHECK(boss != nullptr);
-    if (!boss) return;
-    s.w->startAt({zone.x + 18.0f * 16.0f, zone.bottom() - 14.0f * 16.0f});
+    if (!boss) return std::string();
+    s.w->startAt({zone.x + tileX * 16.0f, zone.bottom() - tilesUp * 16.0f});
     s.w->startBoss(*boss);
-    jumpBossToPhase(*s.w, *boss, 4);
-    auto checks = s.run(scriptedInputs(11, 30 * 120));
-    std::string got = checks.empty() ? "" : hex(checks.back());
-    const char* golden = "c96ae243962c105a";  // 2.50: the tablets of every power before it (the arena moved)
-    if (got != golden) std::printf("  noyau_03 (Singularis, phase 5) : %s (attendu %s)\n", got.c_str(), golden);
-    CHECK(got == golden);
+    jumpBossToPhase(*s.w, *boss, phase);
+    auto checks = s.run(scriptedInputs(seed, seconds * 120), frameDts);
+    return checks.empty() ? std::string() : hex(checks.back());
+}
+
+}  // namespace
+
+// 2.33: the giga boss's fight (its arena changed by its phases: debris in orbit, the crust floor
+// collapsed into the plasma, tides of plasma, rings, cages...): 30 s of scripted play from its
+// fifth phase in « Le Cœur d'une Étoile Mourante ». Computed by the Linux build. 2.76.2: Singularis
+// fights by its hit parts (kSimulationVersion 17); with the rules of 16 and of 15 (a replay of
+// before) the run is the one of 2.76.0 to the bit (its box).
+TEST_CASE("determinism: the giga boss's fight has its golden digest on every platform") {
+    const std::string now = bossFight("noyau_03", "singularis", 4, 18.0f, 14.0f, 11, kSimulationVersion);
+    const std::string before = bossFight("noyau_03", "singularis", 4, 18.0f, 14.0f, 11, 16);
+    const std::string older = bossFight("noyau_03", "singularis", 4, 18.0f, 14.0f, 11, 15);
+    const char* golden16 = "c96ae243962c105a";  // 2.50: the tablets of every power before it (the arena moved); its box
+    const char* golden17 = "1cbd3f4c5440aa1a";  // 2.76.2: by its parts
+    if (before != golden16) std::printf("  noyau_03 (Singularis, phase 5, règles 16) : %s (attendu %s)\n", before.c_str(), golden16);
+    if (older != golden16) std::printf("  noyau_03 (Singularis, phase 5, règles 15) : %s (attendu %s)\n", older.c_str(), golden16);
+    if (now != golden17) std::printf("  noyau_03 (Singularis, phase 5, règles %d) : %s (attendu %s)\n", kSimulationVersion, now.c_str(), golden17);
+    CHECK(before == golden16);
+    CHECK(older == golden16);
+    CHECK(now == golden17);
+}
+
+// 2.76.2: every gigaboss of the campaign fights by its hit parts (kSimulationVersion 17): 30 s of
+// scripted play in its lair, from a phase drawn with its own sheet. With the rules of 16 and of 15
+// (the replays of before) each run is the one of 2.76.0 to the bit: the digests computed by the
+// 2.76.0 build (its box).
+TEST_CASE("determinism: the gigaboss of the campaign by their parts (17), their digests of before with the rules of 16 and 15") {
+    struct Fight {
+        const char* level;
+        const char* enemy;
+        int phase;
+        float tileX, tilesUp;
+        const char* golden15;
+        const char* golden16;
+        const char* golden17;
+    };
+    const Fight fights[] = {
+        {"confins_02", "monolithe", 4, 48.0f, 4.0f, "3f7efa1e0052ed3f", "3f7efa1e0052ed3f", "ed51966113d5a5a1"},
+        {"confins_03", "kraken", 4, 48.0f, 4.0f, "ac7dcbd5112d08c7", "ac7dcbd5112d08c7", "717bc86125130e86"},
+        {"confins_04", "phenix", 4, 48.0f, 4.0f, "fca498addc59720e", "fca498addc59720e", "ac7b53bf0c7a7c6d"},
+        {"confins_05", "liche", 4, 48.0f, 4.0f, "c528c34b39256053", "c528c34b39256053", "c528c34b39256053"},
+        {"confins_06", "titan", 4, 48.0f, 4.0f, "ac4f8ae0adb40d94", "ac4f8ae0adb40d94", "493d83eecd1880f8"},
+        {"noyau_02", "astrarque", 1, 20.0f, 0.0f, "f6c54221fbf1c96d", "f6c54221fbf1c96d", "76fe3b93e31ba15b"},
+    };
+    int mismatches = 0;
+    for (const Fight& f : fights) {
+        const std::string d15 = bossFight(f.level, f.enemy, f.phase, f.tileX, f.tilesUp, 17, 15);
+        const std::string d16 = bossFight(f.level, f.enemy, f.phase, f.tileX, f.tilesUp, 17, 16);
+        const std::string d17 = bossFight(f.level, f.enemy, f.phase, f.tileX, f.tilesUp, 17, kSimulationVersion);
+        const std::string got[] = {d15, d16, d17};
+        const char* want[] = {f.golden15, f.golden16, f.golden17};
+        for (int k = 0; k < 3; ++k)
+            if (got[k] != want[k]) {
+                std::printf("  %s (%s, phase %d, règles %d) : %s (attendu %s)\n", f.level, f.enemy, f.phase + 1, k == 2 ? kSimulationVersion : 15 + k,
+                            got[k].c_str(), want[k]);
+                ++mismatches;
+            }
+    }
+    CHECK(mismatches == 0);
+}
+
+// 2.76.2: a boss that fights by parts changes its sheet with its phase IN the fixed step (its pose is
+// part of the simulation): display updates at any rate change nothing, phase sheets included.
+TEST_CASE("determinism: a boss fighting by parts plays the same run at any frame rate, its phase sheets included") {
+    const std::vector<float> uneven = {1.0f / 37.0f, 1.0f / 144.0f, 1.0f / 60.0f, 0.05f};
+    const std::string plain = bossFight("noyau_03", "singularis", 4, 18.0f, 14.0f, 11, kSimulationVersion, {}, 10);
+    const std::string shown = bossFight("noyau_03", "singularis", 4, 18.0f, 14.0f, 11, kSimulationVersion, uneven, 10);
+    CHECK(!plain.empty());
+    CHECK(plain == shown);
+    const std::string calm = bossFight("confins_04", "phenix", 4, 48.0f, 4.0f, 17, kSimulationVersion, {}, 10);
+    const std::string watched = bossFight("confins_04", "phenix", 4, 48.0f, 4.0f, 17, kSimulationVersion, uneven, 10);
+    CHECK(!calm.empty());
+    CHECK(calm == watched);
 }
 
 TEST_CASE("determinism: a recorded replay plays the run again exactly") {

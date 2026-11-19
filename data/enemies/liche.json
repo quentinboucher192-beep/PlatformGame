@@ -796,5 +796,361 @@
       "dernier_glas"
     ],
     "finalText": "Son dernier sort : survivez !"
-  }
+  },
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "phylactère",
+        "clips": [
+          "idle",
+          "telegraph:0",
+          "telegraph_special:0",
+          "hurt",
+          "roar:0",
+          "roar:7"
+        ],
+        "poly": [
+          150,
+          36,
+          164,
+          36,
+          164,
+          64,
+          150,
+          64
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "walk",
+          "move"
+        ],
+        "poly": [
+          167,
+          44,
+          180,
+          44,
+          180,
+          70,
+          167,
+          70
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "telegraph:1-5"
+        ],
+        "poly": [
+          130,
+          10,
+          160,
+          10,
+          160,
+          58,
+          130,
+          58
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "telegraph_special:1-5"
+        ],
+        "poly": [
+          130,
+          8,
+          160,
+          8,
+          160,
+          46,
+          130,
+          46
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "attack:0"
+        ],
+        "poly": [
+          162,
+          26,
+          176,
+          26,
+          176,
+          50,
+          162,
+          50
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "attack:1"
+        ],
+        "poly": [
+          186,
+          40,
+          208,
+          40,
+          208,
+          64,
+          186,
+          64
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "attack:2"
+        ],
+        "poly": [
+          177,
+          50,
+          195,
+          50,
+          195,
+          68,
+          177,
+          68
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "attack:3"
+        ],
+        "poly": [
+          173,
+          40,
+          190,
+          40,
+          190,
+          62,
+          173,
+          62
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "attack:4"
+        ],
+        "poly": [
+          156,
+          37,
+          168,
+          37,
+          168,
+          60,
+          156,
+          60
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "special"
+        ],
+        "poly": [
+          179,
+          68,
+          210,
+          68,
+          210,
+          94,
+          179,
+          94
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "summon"
+        ],
+        "poly": [
+          154,
+          22,
+          180,
+          22,
+          180,
+          58,
+          154,
+          58
+        ]
+      },
+      {
+        "name": "phylactère",
+        "clips": [
+          "roar:1-6"
+        ],
+        "poly": [
+          152,
+          12,
+          168,
+          12,
+          168,
+          55,
+          152,
+          55
+        ]
+      },
+      {
+        "name": "bâton",
+        "clips": [
+          "telegraph:2-5",
+          "telegraph_special:2-5"
+        ],
+        "poly": [
+          134,
+          24,
+          152,
+          24,
+          162,
+          214,
+          146,
+          214
+        ]
+      },
+      {
+        "name": "crâne",
+        "poly": [
+          108,
+          32,
+          149,
+          32,
+          149,
+          94,
+          108,
+          94
+        ]
+      },
+      {
+        "name": "bâton",
+        "clips": [
+          "attack:1-2"
+        ],
+        "poly": [
+          88,
+          175,
+          190,
+          65,
+          182,
+          59,
+          80,
+          169
+        ]
+      },
+      {
+        "name": "bâton",
+        "clips": [
+          "special"
+        ],
+        "poly": [
+          83,
+          190,
+          185,
+          96,
+          179,
+          88,
+          77,
+          182
+        ]
+      },
+      {
+        "name": "bâton",
+        "clips": [
+          "idle",
+          "walk",
+          "move",
+          "telegraph",
+          "hurt",
+          "summon",
+          "roar",
+          "attack:0",
+          "attack:3-4",
+          "telegraph_special:0-3"
+        ],
+        "poly": [
+          146,
+          60,
+          186,
+          60,
+          186,
+          216,
+          146,
+          216
+        ]
+      },
+      {
+        "name": "flammes d'âme",
+        "poly": [
+          36,
+          198,
+          92,
+          198,
+          92,
+          224,
+          36,
+          224
+        ]
+      },
+      {
+        "name": "traîne",
+        "poly": [
+          36,
+          172,
+          112,
+          172,
+          112,
+          224,
+          36,
+          224
+        ]
+      },
+      {
+        "name": "robe",
+        "rest": true,
+        "poly": [
+          70,
+          90,
+          150,
+          90,
+          150,
+          172,
+          70,
+          172
+        ]
+      }
+    ],
+    "roles": {
+      "crâne": {
+        "role": "weak",
+        "damage": 2
+      },
+      "phylactère": {
+        "role": "weak",
+        "damage": 2
+      },
+      "robe": {
+        "role": "normal",
+        "damage": 1
+      },
+      "bâton": {
+        "role": "normal",
+        "damage": 1
+      },
+      "traîne": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "flammes d'âme": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }
