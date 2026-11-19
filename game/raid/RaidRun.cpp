@@ -134,6 +134,7 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     for (size_t k = 0; k < rules->passages.size(); ++k)
         for (int i = 0; i < world_->teamSize(); ++i)
             if (rules->passages[k].rect.intersects(world_->playerAt(i).box)) insidePassage_[k] |= static_cast<uint8_t>(1u << i);
+    inPlayBefore_ = seatsInPlay();  // 2.77: those who arrive are in play already
     applyMask(branchMask_, true);
     for (const EffectInfo& e : branch_.effects)
         if (Branch::on(mask(), e) && e.inZone(zid)) applyEffect(e);
@@ -349,7 +350,67 @@ void RaidRun::checkFinished(bool initial) {
     }
 }
 
+uint8_t RaidRun::seatsInPlay() const {
+    uint8_t bits = 0;
+    for (int i = 0; i < world_->teamSize() && i < 8; ++i) {
+        const Player& pl = world_->playerAt(i);
+        if (world_->member(i).presence == GameWorld::Presence::Playing && pl.alive() && !pl.respawning()) bits |= static_cast<uint8_t>(1u << i);
+    }
+    return bits;
+}
+
+void RaidRun::keepSoulsOffPassages() {
+    if (!rules_) return;
+    // What changes the zone (its passages) or would stand over a soul (a door): a soul never waits there.
+    auto forbidden = [&](const Rect& body) {
+        for (const Passage& p : rules_->passages)
+            if (p.rect.expanded(8.0f).intersects(body)) return true;
+        for (const auto& e : world_->entities())
+            if (!e->removed && dynamic_cast<const DoorEntity*>(e.get()) && e->box.intersects(body)) return true;
+        return false;
+    };
+    // The dangers as for a soul's safe place (a rising liquid: up to its highest level).
+    auto danger = [&](const Rect& body) {
+        for (const auto& e : world_->entities()) {
+            if (e->removed || !e->active) continue;
+            const bool zone = dynamic_cast<const DamageZoneEntity*>(e.get()) != nullptr;
+            const auto* liquid = dynamic_cast<const LiquidEntity*>(e.get());
+            if (!zone && !dynamic_cast<const SpikesEntity*>(e.get()) && !(liquid && !liquid->swimmable())) continue;
+            const Rect r = zone ? e->box : e->overlapBox();
+            if (r.h > 0.5f && r.intersects(body)) return true;
+        }
+        return false;
+    };
+    for (int i = 0; i < world_->teamSize(); ++i) {
+        const GameWorld::TeamMember& m = world_->member(i);
+        if (m.presence != GameWorld::Presence::Down) continue;
+        if (!forbidden({m.soul.x - 5.0f, m.soul.y - 22.0f, 10.0f, 21.5f})) continue;
+        // The nearest safe floor of the zone: firm ground with room above, out of every danger, passage and door.
+        const Rect size = world_->playerAt(i).box;
+        Vec2 best = m.soul;
+        float bestD = -1.0f;
+        for (const Collider& c : world_->physics().colliders()) {
+            if (!c.enabled || c.dynamic || (c.tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate | ColliderTag::EnemyOnly))) continue;
+            if (c.box.w < 12.0f || c.box.y < world_->level().bounds.y + 24.0f) continue;
+            for (float x = c.box.x + 6.0f; x <= c.box.right() - 6.0f; x += 16.0f) {
+                const Vec2 at{x, c.box.y};
+                const float d = (at - m.soul).lengthSq();
+                if (bestD >= 0.0f && d >= bestD) continue;
+                const Rect body{at.x - size.w * 0.5f, at.y - size.h, size.w, size.h - 0.5f};
+                if (forbidden(body) || world_->physics().overlapsSolid(body) || danger(body)) continue;
+                best = at;
+                bestD = d;
+            }
+        }
+        if (bestD >= 0.0f) world_->restoreMember(i, world_->carryOf(i), best);  // still down: its soul waits there
+    }
+}
+
 void RaidRun::checkPassages() {
+    // 2.77: a player takes a passage by walking into it, never by coming into play inside it (revived,
+    // back from an absence, reappearing): they must step out of it first.
+    const uint8_t inPlayBefore = inPlayBefore_;
+    inPlayBefore_ = seatsInPlay();
     for (size_t k = 0; k < rules_->passages.size(); ++k) {
         const Passage& p = rules_->passages[k];
         uint8_t inside = 0;
@@ -359,7 +420,7 @@ void RaidRun::checkPassages() {
             const Player& pl = world_->playerAt(i);
             if (m.presence != GameWorld::Presence::Playing || !pl.alive() || pl.respawning() || !p.rect.intersects(pl.box)) continue;
             inside |= static_cast<uint8_t>(1u << i);
-            if (taker < 0 && !(insidePassage_[k] & (1u << i))) taker = i;
+            if (taker < 0 && !(insidePassage_[k] & (1u << i)) && (inPlayBefore & (1u << i))) taker = i;
         }
         insidePassage_[k] = inside;
         if (taker < 0) continue;
@@ -402,6 +463,7 @@ void RaidRun::step(const InputFrame* frames, int count, uint32_t branchMask, con
     gigaboss_.before(*world_);  // 2.68: its carapace, its weak point bare, its pressure
     // The events since the last step (a world just loaded, this step): all of them, in order.
     stepTeam(*world_, frames, count, kSimDt);
+    keepSoulsOffPassages();  // 2.77: a revival never takes the group to another zone
     const size_t firstReport = reports_.size();
     // 2.68: the players' contributions of the step, then the gigaboss's rules (vents, jets, weak
     // points, its fall) and what they tell the raid.

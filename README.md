@@ -643,7 +643,8 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   quel groupe ; **TEST LOCAL — rien n'est envoyé**.
 * **Coopération et raids** (règles de coopération **3**) : l'âme attend sur le **dernier endroit sûr** du joueur, et la
   réanimation se fait en **maintenant « Interagir »** 2 s (relâcher interrompt) ; replays d'avant rejoués à l'identique
-  ([docs/COOP.md §1](docs/COOP.md)).
+  ([docs/COOP.md §1](docs/COOP.md)). Dans un raid, une âme n'attend jamais dans un passage : réanimer ne fait jamais
+  changer le groupe de zone.
 * **Vestiaire** : tablettes **en hauteur** sur leurs rebords, nom, icône et coût de chaque pouvoir au-dessus ; traverser
   la salle au sol ne prend plus rien. Révision du titan **6**.
 

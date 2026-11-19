@@ -1272,6 +1272,11 @@ l'horloge, l'écran ni le réseau) :
   et, mortels, ils tombent face aux Gigaboss en quelques minutes (les attaques propres à chaque boss ne sont lues qu'en
   partie : marques, poings, jets, pluies et tirs annoncés, pas ses coups au contact). Le réglage « Joueurs simulés
   invincibles » permet de voir un raid entier.
+* **Pas encore corrigé : les îlots flottants.** Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
+  Cuisse flottante, Muscle suspendu…), leurs sauts visent la plateforme où elle est, pas où elle sera : ils tombent
+  encore dans le vide. Un groupe de renfort qui reprend une telle zone peut y être éliminé à son tour, et les 8 renforts
+  s'épuiser ; « Joueurs simulés invincibles » n'y change rien (une chute dans le vide met encore à terre). Corriger
+  demande de viser la position future de la plateforme (sa route est dans le graphe) : laissé pour une prochaine version.
 
 ### « Simuler un raid complet » (`game/raid/RaidSimulation`)
 
@@ -1335,6 +1340,11 @@ suffit à garder le déterminisme sans verrou.
   qui s'effrite), hors de tout liquide et de tout danger, tenu à jour pas à pas dans la simulation. Mort dans un liquide
   mortel (magma, acide, liquide qui monte), sur des pics, dans le vide ou écrasé : il peut toujours être relevé. Si un
   liquide qui monte recouvre l'âme, elle remonte au sol sûr le plus proche **au-dessus** de son niveau le plus haut.
+* **Jamais dans un passage** (raids) : une âme posée dans un passage vers une autre zone ou dans une porte (le dernier
+  endroit sûr y était : un passage verrouillé, un joueur remis en jeu sur place) est déplacée au pas même sur le **sol sûr
+  le plus proche de la zone**, hors de tout passage, de toute porte et de tout danger (`RaidRun::keepSoulsOffPassages`).
+  Et une réanimation ne fait jamais changer le groupe de zone : on ne prend un passage qu'en **y entrant** en jeu ; un
+  joueur qui revient en jeu dedans (réanimé, de retour d'absence, réapparu) doit d'abord en sortir.
 * La réanimation se fait en **maintenant « Interagir »** 2 s près de l'âme ; relâcher l'interrompt. Jauge circulaire autour
   de l'âme ; le joueur à côté voit « Maintenir [sa touche Interagir] : réanimer ». Tout passe par les entrées.
 * `kCoopSimulationVersion` passe à **3** (les replays d'équipe 1 et 2 gardent leurs règles et leurs empreintes ; le serveur
@@ -1364,7 +1374,8 @@ phase 4 — la vie que ce départ retire n'est pas comptée comme des dégâts :
 7 joueurs simulés Experts et invincibles par groupe, Titanus, Skullmaw et Dreadfang donnés comme vaincus par d'autres
 groupes ; les vraies zones, les vrais combats : Heartbreaker, Pyroclast, Voidworm et Graviton tombent sous les joueurs
 simulés, puis le Cœur sous les groupes ensemble, en 996 s de jeu), place libre et spectateur, âme et
-réanimation tenue, vestiaire traversé sans rien prendre, noms des tablettes sans chevauchement),
+réanimation tenue, âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé sans rien
+prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 
 ---

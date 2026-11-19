@@ -392,6 +392,74 @@ TEST_CASE("cooperation 3 (2.77): death in the rising magma, the soul on the last
     CHECK(w.member(1).presence == GameWorld::Presence::Playing);
 }
 
+TEST_CASE("cooperation 3 (2.77): a soul never waits in a passage; a revival never takes the group to another zone") {
+    Svc s;
+    raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
+    CHECK(run.begin(0, 3));
+    Pair pair;
+    auto step = [&](std::vector<InputFrame> held = {}) {
+        auto f = pair.frames(std::move(held));
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+    };
+    for (int t = 0; t < 120; ++t) step();
+    GameWorld& w = run.world();
+    const raid::Passage* open = nullptr;
+    for (const raid::Passage& p : run.rules().passages)
+        if (run.passageOpen(p)) open = &p;
+    CHECK(open != nullptr);
+    if (!open) return;
+    const Rect passage = open->rect;
+    auto inPassage = [&](const Rect& r) {
+        for (const raid::Passage& p : run.rules().passages)
+            if (p.rect.intersects(r)) return true;
+        return false;
+    };
+    const int serial = run.zoneSerial();
+    // Seat 1 down, its soul in the middle of an open passage (its last safe place there): at the next step, the
+    // soul is on the nearest safe floor of the zone, out of every passage.
+    GameWorld::MemberCarry down = w.carryOf(1);
+    down.presence = GameWorld::Presence::Down;
+    w.restoreMember(1, down, passage.center());
+    CHECK(w.member(1).presence == GameWorld::Presence::Down);
+    step();
+    const Vec2 soul = w.member(1).soul;
+    std::printf("  passage (%.0f, %.0f, %.0f, %.0f) ; âme déplacée en (%.0f, %.0f)\n", passage.x, passage.y, passage.w, passage.h, soul.x, soul.y);
+    CHECK(!inPassage(Rect{soul.x - 5.0f, soul.y - 22.0f, 10.0f, 21.5f}.expanded(8.0f)));
+    bool floor = false;
+    for (const Collider& c : w.physics().colliders())
+        floor = floor || (c.enabled && !c.dynamic && std::abs(c.box.y - soul.y) < 0.5f && soul.x >= c.box.x && soul.x <= c.box.right());
+    CHECK(floor);
+    CHECK(run.zoneSerial() == serial);
+    // Revived there (« Interagir » held by seat 0 on the soul): on its feet in the same zone, out of the passage.
+    w.playerAt(0).teleportTo(soul);
+    for (int t = 0; t < 2 * kSimHz + 60 && w.member(1).presence == GameWorld::Presence::Down; ++t) step({interact()});
+    CHECK(w.member(1).presence == GameWorld::Presence::Playing);
+    for (int t = 0; t < 120; ++t) step();
+    CHECK(run.zoneSerial() == serial);
+    CHECK(!inPassage(w.playerAt(1).box));
+    // Coming into play inside a passage (revived, back from an absence) never takes it: the player must step out
+    // of it, then walk into it.
+    {
+        GameWorld::PlayerScope sc(w, 1);
+        w.playerAt(1).kill(w);
+    }
+    for (int t = 0; t < 240; ++t) step();
+    CHECK(w.member(1).presence == GameWorld::Presence::Down);
+    GameWorld::MemberCarry back = w.carryOf(1);
+    back.presence = GameWorld::Presence::Playing;
+    w.restoreMember(1, back, passage.center());
+    CHECK(w.playerAt(1).box.intersects(passage));
+    for (int t = 0; t < 120; ++t) step();
+    CHECK(run.zoneSerial() == serial);
+    CHECK(w.member(1).presence == GameWorld::Presence::Playing);
+    w.playerAt(1).teleportTo(w.playerAt(0).feet());
+    for (int t = 0; t < 30; ++t) step();
+    CHECK(run.zoneSerial() == serial);
+    w.playerAt(1).teleportTo(passage.center());
+    for (int t = 0; t < 60 && run.zoneSerial() == serial; ++t) step();
+    CHECK(run.zoneSerial() != serial);  // walked into it: the group goes (the passage works as before)
+}
+
 // ------------------------------------------------------------------ the armory (2.77)
 
 TEST_CASE("raid armory (2.77): walking on the floor to « Prêts » takes nothing; each tablet is up on its ledge, within a jump") {

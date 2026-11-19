@@ -204,6 +204,11 @@ private:
     void reachedCheckpoint(const std::string& id);
     void updateMagma();
     void checkPassages();
+    /// 2.77: a soul never waits in a passage or a door (a revival there would take the whole group to
+    /// another zone): it is moved to the nearest safe floor of this zone, outside every one of them.
+    void keepSoulsOffPassages();
+    /// 2.77: the seats in play now (on their feet, not reappearing).
+    uint8_t seatsInPlay() const;
     void completed(const std::string& source, const std::string& trigger, int who);
     void reportResult();
     /// 2.75: the zones finished since the last step (once each): alert, and in the zone of the
@@ -225,6 +230,7 @@ private:
     bool quiet_ = false;
     int follow_ = -1;
     std::vector<uint8_t> insidePassage_;  // per passage: bits of the players inside it
+    uint8_t inPlayBefore_ = 0;            // 2.77: the seats in play at the last passage check
     struct Event {
         std::string source, trigger;
         int who = -1;  // 2.68: the seat whose attack caused it (-1 unknown)
