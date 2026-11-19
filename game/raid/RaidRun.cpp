@@ -385,12 +385,21 @@ void RaidRun::keepSoulsOffPassages() {
         const GameWorld::TeamMember& m = world_->member(i);
         if (m.presence != GameWorld::Presence::Down) continue;
         if (!forbidden({m.soul.x - 5.0f, m.soul.y - 22.0f, 10.0f, 21.5f})) continue;
-        // The nearest safe floor of the zone: firm ground with room above, out of every danger, passage and door.
         const Rect size = world_->playerAt(i).box;
+        // The player's last safe place when it is clear of them all (2.77: as for a death over the void).
+        const Rect safe{m.safeFeet.x - size.w * 0.5f, m.safeFeet.y - size.h, size.w, size.h - 0.5f};
+        if (m.hasSafeFeet && !forbidden(safe) && !world_->physics().overlapsSolid(safe) && !danger(safe)) {
+            world_->restoreMember(i, world_->carryOf(i), m.safeFeet);  // still down: its soul waits there
+            continue;
+        }
+        // Else the nearest safe floor of the zone: firm ground with room above, out of every danger, passage and door.
         Vec2 best = m.soul;
         float bestD = -1.0f;
         for (const Collider& c : world_->physics().colliders()) {
-            if (!c.enabled || c.dynamic || (c.tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate | ColliderTag::EnemyOnly))) continue;
+            if (!c.enabled || c.dynamic ||
+                (c.tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate | ColliderTag::EnemyOnly | ColliderTag::Door |
+                           ColliderTag::Gate | ColliderTag::Breakable)))
+                continue;
             if (c.box.w < 12.0f || c.box.y < world_->level().bounds.y + 24.0f) continue;
             for (float x = c.box.x + 6.0f; x <= c.box.right() - 6.0f; x += 16.0f) {
                 const Vec2 at{x, c.box.y};

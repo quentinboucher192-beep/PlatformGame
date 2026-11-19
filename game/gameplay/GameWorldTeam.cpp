@@ -300,10 +300,41 @@ void GameWorld::memberDown(int i) {
     Player& p = *m.player;
     if (m.presence == Presence::Gone) return;
     m.presence = Presence::Down;
-    // Its soul: where it fell, or on its last solid ground after a fall into the void. 2.77 (rules 3):
-    // always on its last SAFE place (firm ground out of danger, kept step by step): a player who dies in
-    // a deadly liquid, on spikes, in the void or crushed can always be reached and revived.
-    if (coopVersion_ >= 3) m.soul = m.hasSafeFeet ? m.safeFeet : p.feet();
+    // Its soul (rules 1 and 2): where it fell, or on its last solid ground after a fall into the void.
+    // 2.77 (rules of cooperation 3): the soul FALLS straight down from where its player died (in a jump, hit
+    // in the air…), like a dropped object, to the first firm ground under it, where an ally can walk to it.
+    // It goes to the player's last SAFE place instead (firm ground out of danger, kept step by step) when
+    // under that point there is the void or the level's way out, a deadly liquid, spikes or another
+    // danger, ground more than 6 tiles down, ground that moves, crumbles, breaks or opens, a door, or no
+    // room to stand: a player who dies anywhere can always be reached and revived.
+    const auto rest = [&]() -> Vec2 {
+        const Vec2 from = p.feet();
+        const Vec2 safe = m.hasSafeFeet ? m.safeFeet : from;
+        constexpr float kMaxDrop = 6.0f * 16.0f;  // 6 tiles
+        const Collider* ground = nullptr;
+        physics_.forEachIn({from.x - 0.5f, from.y - 1.0f, 1.0f, kMaxDrop + 2.0f}, [&](const Collider& c) {
+            if (!c.enabled || (c.tags & (ColliderTag::Teammate | ColliderTag::EnemyOnly))) return;
+            // Above its feet (a ceiling, or what crushed it) or beside it: not under it.
+            if (c.box.y < from.y - 0.5f || from.x < c.box.x || from.x > c.box.right()) return;
+            if (!ground || c.box.y < ground->box.y) ground = &c;
+        });
+        constexpr uint32_t kNotFirm = ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Door | ColliderTag::Gate | ColliderTag::Breakable |
+                                      ColliderTag::Bounce | ColliderTag::ShieldPass;
+        if (!ground || ground->dynamic || (ground->tags & kNotFirm) || ground->box.y - from.y > kMaxDrop ||
+            ground->box.y > level_.bounds.bottom() || ground->box.y >= level_.effectiveKillY())
+            return safe;
+        const Vec2 at{from.x, ground->box.y};
+        const Rect body{at.x - p.box.w * 0.5f, at.y - p.box.h, p.box.w, p.box.h - 0.5f};
+        const Rect fall{at.x - 5.0f, std::min(from.y, at.y) - 22.0f, 10.0f, std::abs(at.y - from.y) + 21.5f};  // its way down
+        if (inDanger(fall, true)) return safe;
+        MoveOptions mo;
+        mo.ignoreTags = ColliderTag::Teammate;
+        if (physics_.overlapsSolid(body, mo)) return safe;
+        for (const auto& e : entities_)
+            if (!e->removed && dynamic_cast<const DoorEntity*>(e.get()) && e->box.intersects(body)) return safe;
+        return at;
+    };
+    if (coopVersion_ >= 3) m.soul = rest();
     else m.soul = m.fell && m.hasSafeFeet ? m.safeFeet : p.feet();
     m.fell = false;
     m.revive = 0.0f;
@@ -374,7 +405,9 @@ bool GameWorld::inDanger(const Rect& body, bool whole) const {
 
 bool GameWorld::safeStand(const Player& p) const {
     const Collider* g = physics_.get(p.groundCollider());
-    if (!g || g->dynamic || (g->tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate))) return false;
+    if (!g || g->dynamic ||
+        (g->tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate | ColliderTag::Door | ColliderTag::Gate | ColliderTag::Breakable)))
+        return false;
     if (p.inWater) return false;
     return !inDanger(p.box.expanded(2.0f), false);
 }

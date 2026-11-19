@@ -143,6 +143,33 @@ Color GameRenderer::teamColor(int i) const {
 
 void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
     using Presence = GameWorld::Presence;
+    // 2.77: each soul glides from where its player died to where it waits (world time: it stops with
+    // the game's pause; display only).
+    const float dt = soulClock_ < 0.0f ? 0.0f : std::clamp(ctx.time - soulClock_, 0.0f, 0.1f);
+    soulClock_ = ctx.time;
+    if (souls_.size() != static_cast<size_t>(std::max(0, world.teamSize()))) souls_.assign(static_cast<size_t>(std::max(0, world.teamSize())), SoulGlide{});
+    for (int i = 0; i < world.teamSize(); ++i) {
+        const GameWorld::TeamMember& m = world.member(i);
+        SoulGlide& g = souls_[static_cast<size_t>(i)];
+        if (m.presence != Presence::Down) {
+            g.down = false;
+            g.seen = g.seen || m.presence == Presence::Playing;
+            continue;
+        }
+        if (!g.down || (g.to - m.soul).lengthSq() > 0.25f) {
+            // Just down (from its body, still where it died; a soul met already down: in place), or moved.
+            g.from = !g.down ? (g.seen ? world.playerAt(i).feet() : m.soul) : g.at;
+            g.to = m.soul;
+            g.at = g.from;
+            g.t = 0.0f;
+            g.duration = soulGlideTime((g.to - g.from).length());
+            g.down = true;
+        }
+        g.t += dt;
+        const float k = g.duration > 0.0f ? std::clamp(g.t / g.duration, 0.0f, 1.0f) : 1.0f;
+        const float e = 1.0f - (1.0f - k) * (1.0f - k) * (1.0f - k);  // eased out: it settles
+        g.at = lerpv(g.from, g.to, e);
+    }
     for (int i = 0; i < world.teamSize(); ++i) {
         const GameWorld::TeamMember& m = world.member(i);
         const Player& p = world.playerAt(i);
@@ -167,11 +194,24 @@ void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
             continue;
         }
         if (m.presence == Presence::Down) {
-            // Its soul: a light of its colour, bobbing; the revival fills a ring around it.
-            const float bob = std::sin(ctx.time * 2.6f + static_cast<float>(i)) * 2.5f;
-            const Vec2 at = m.soul + Vec2{0.0f, -16.0f + bob};
+            // Its soul: a light of its colour, bobbing; the revival fills a ring around it. 2.77: it glides
+            // to where it waits (a trail behind it), where a mark on the ground shows where to revive it.
+            const SoulGlide& g = souls_[static_cast<size_t>(i)];
             const bool canRevive = world.canRevive();
             const uint8_t a = canRevive ? 220 : 90;
+            if (canRevive) {
+                const Vec2 f = m.soul;
+                const float pulse = 0.5f + 0.5f * std::sin(ctx.time * 4.0f + static_cast<float>(i));
+                const Color mark{c.r, c.g, c.b, static_cast<uint8_t>(150 + 90 * pulse)};
+                ctx.r.drawWorldGlow(f + Vec2{0.0f, -2.0f}, 18.0f, Color{c.r, c.g, c.b, 70});
+                ctx.r.drawWorldLine(f + Vec2{-16.0f, -1.0f}, f + Vec2{16.0f, -1.0f}, mark, 2.0f);
+                ctx.r.drawWorldLine(f + Vec2{-16.0f, -1.0f}, f + Vec2{-16.0f, -7.0f}, mark, 2.0f);
+                ctx.r.drawWorldLine(f + Vec2{16.0f, -1.0f}, f + Vec2{16.0f, -7.0f}, mark, 2.0f);
+            }
+            if (g.t < g.duration && (g.to - g.from).lengthSq() > 1.0f)
+                ctx.r.drawWorldLine(g.from + Vec2{0.0f, -16.0f}, g.at + Vec2{0.0f, -16.0f}, Color{c.r, c.g, c.b, 90}, 3.0f);
+            const float bob = g.t < g.duration ? 0.0f : std::sin(ctx.time * 2.6f + static_cast<float>(i)) * 2.5f;
+            const Vec2 at = g.at + Vec2{0.0f, -16.0f + bob};
             ctx.r.drawWorldGlow(at, 16.0f, Color{c.r, c.g, c.b, static_cast<uint8_t>(a / 2)});
             ctx.r.drawWorldGlow(at, 6.0f, Color{255, 255, 255, a});
             ctx.lights.add(at, 60.0f, c);

@@ -1846,9 +1846,19 @@ public:
         if (!any)
             if (const Enemy* b = gb.boss(w); b && b->alive() && off(b->box)) bossT.push_back(view.toScreen(b->box));
         draw(bossT, *tex, kGold);
-        // The allies, each in their colour.
+        // The allies, each in their colour; 2.77: the soul of an ally down, where to revive them (pulsing).
         for (int i = 0; i < w.teamSize(); ++i) {
-            if (i == local_ || w.member(i).presence != GameWorld::Presence::Playing || !off(w.playerAt(i).box)) continue;
+            if (i == local_) continue;
+            const GameWorld::TeamMember& m = w.member(i);
+            if (m.presence == GameWorld::Presence::Down) {
+                const Rect soul{m.soul.x - 8.0f, m.soul.y - 28.0f, 16.0f, 28.0f};
+                if (!off(soul)) continue;
+                const Color c = seatColor(i, local_);
+                const float pulse = 0.5f + 0.5f * std::sin(w.time() * 5.0f);
+                draw({view.toScreen(soul)}, *ambushTex, Color{c.r, c.g, c.b, static_cast<uint8_t>(150 + 105 * pulse)});
+                continue;
+            }
+            if (m.presence != GameWorld::Presence::Playing || !off(w.playerAt(i).box)) continue;
             draw({view.toScreen(w.playerAt(i).box)}, *ambushTex, seatColor(i, local_));
         }
         // The enemies: the ambush's first (violet), then those already met (amber), as in solo.

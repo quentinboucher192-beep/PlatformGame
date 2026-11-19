@@ -460,6 +460,120 @@ TEST_CASE("cooperation 3 (2.77): a soul never waits in a passage; a revival neve
     CHECK(run.zoneSerial() != serial);  // walked into it: the group goes (the passage works as before)
 }
 
+TEST_CASE("cooperation 3 (2.77): killed in mid-jump in a raid — the soul falls under it; over the void, at the last safe place; revived; the same digest (2 and 8 seats)") {
+    Svc s;
+    constexpr uint32_t kNotFirm = ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate | ColliderTag::EnemyOnly | ColliderTag::Door |
+                                  ColliderTag::Gate | ColliderTag::Breakable | ColliderTag::Bounce | ColliderTag::ShieldPass;
+    for (int seats : {2, 8}) {
+        uint64_t digest[2] = {0, 0};
+        for (int k = 0; k < 2; ++k) {
+            raid::RaidRun run(s.ws(), bras(), seats);
+            CHECK(run.begin(0, 3));
+            std::vector<InputFrame> prev(static_cast<size_t>(seats));
+            auto step = [&](bool interact) {
+                std::vector<InputFrame> f(static_cast<size_t>(seats));
+                if (interact) f[0].held = 1u << kI;
+                for (size_t j = 0; j < f.size(); ++j) {
+                    f[j].pressed = f[j].held & ~prev[j].held;
+                    f[j].released = prev[j].held & ~f[j].held;
+                    prev[j] = f[j];
+                }
+                run.step(f.data(), seats, 0);
+            };
+            for (int t = 0; t < 120; ++t) step(false);
+            GameWorld& w = run.world();
+            const int serial = run.zoneSerial();
+            auto clear = [&](const Rect& r) {
+                for (const Collider& c : w.physics().colliders())
+                    if (c.enabled && !(c.tags & (ColliderTag::Teammate | ColliderTag::EnemyOnly)) && c.box.intersects(r)) return false;
+                for (const raid::Passage& p : run.rules().passages)
+                    if (p.rect.expanded(8.0f).intersects(r)) return false;
+                return true;
+            };
+            // A firm ground beside seat 1, the air clear 70 px over it: where it is killed in mid-jump.
+            const Vec2 f = w.playerAt(1).feet();
+            Vec2 under{-1.0f, -1.0f};
+            for (float dx : {64.0f, -64.0f, 48.0f, -48.0f, 96.0f, -96.0f, 32.0f, -32.0f, 128.0f, -128.0f}) {
+                const float x = f.x + dx;
+                bool firm = false;
+                for (const Collider& c : w.physics().colliders())
+                    firm = firm || (c.enabled && !c.dynamic && !(c.tags & kNotFirm) && std::abs(c.box.y - f.y) < 0.5f && x >= c.box.x && x <= c.box.right());
+                if (firm && clear({x - 6.0f, f.y - 96.0f, 12.0f, 95.5f})) {
+                    under = {x, f.y};
+                    break;
+                }
+            }
+            CHECK(under.x >= 0.0f);
+            if (under.x < 0.0f) return;
+            // A column over the void: nothing under it down to the bottom of the level.
+            const Rect b = w.level().bounds;
+            Vec2 over{-1.0f, -1.0f};
+            for (float x = b.x + 48.0f; x < b.right() - 48.0f && over.x < 0.0f; x += 8.0f) {
+                float lowest = b.y;
+                for (const Collider& c : w.physics().colliders())
+                    if (c.enabled && !(c.tags & (ColliderTag::Teammate | ColliderTag::EnemyOnly)) && c.box.x <= x + 8.0f && c.box.right() >= x - 8.0f)
+                        lowest = std::max(lowest, c.box.bottom());
+                const Vec2 at{x, lowest + 48.0f};
+                if (at.y < b.bottom() - 16.0f && at.y < w.level().effectiveKillY() && clear({x - 6.0f, at.y - 26.0f, 12.0f, 26.0f})) over = at;
+            }
+            CHECK(over.x >= 0.0f);
+            if (over.x < 0.0f) return;
+            auto killAt = [&](Vec2 feet) {
+                w.playerAt(1).teleportTo(feet);
+                GameWorld::PlayerScope sc(w, 1);
+                w.playerAt(1).kill(w);
+            };
+            auto revived = [&]() {
+                w.playerAt(0).teleportTo(w.member(1).soul);
+                for (int t = 0; t < 2 * kSimHz + 60 && w.member(1).presence == GameWorld::Presence::Down; ++t) step(true);
+                return w.member(1).presence == GameWorld::Presence::Playing;
+            };
+            // Killed in mid-jump over the ground: the soul falls under the point of its death.
+            const Vec2 safe = w.member(1).safeFeet;
+            killAt(under + Vec2{0.0f, -70.0f});
+            for (int t = 0; t < 150; ++t) step(false);
+            CHECK(w.member(1).presence == GameWorld::Presence::Down);
+            const Vec2 soul = w.member(1).soul;
+            if (k == 0)
+                std::printf("  %d places : mort en (%.0f, %.0f), âme en (%.0f, %.0f) (dernier endroit sûr (%.0f, %.0f))\n", seats, under.x, under.y - 70.0f,
+                            soul.x, soul.y, safe.x, safe.y);
+            CHECK(std::abs(soul.x - under.x) < 0.5f);
+            CHECK(std::abs(soul.y - under.y) < 0.5f);
+            CHECK(revived());
+            for (int t = 0; t < 60; ++t) step(false);
+            // Killed over the void: the soul at the last safe place (where it stood, on firm ground).
+            const Vec2 safe2 = w.member(1).safeFeet;
+            killAt(over);
+            for (int t = 0; t < 150; ++t) step(false);
+            CHECK(w.member(1).presence == GameWorld::Presence::Down);
+            if (k == 0)
+                std::printf("  %d places : mort au-dessus du vide en (%.0f, %.0f), âme en (%.0f, %.0f) (dernier endroit sûr (%.0f, %.0f))\n", seats, over.x,
+                            over.y, w.member(1).soul.x, w.member(1).soul.y, safe2.x, safe2.y);
+            // (A last safe place in a door or a passage — the zone's entrance — is left for the nearest safe floor.)
+            auto inDoor = [&](Vec2 feet) {
+                const Rect body{feet.x - 5.0f, feet.y - 22.0f, 10.0f, 21.5f};
+                for (const auto& e : w.entities())
+                    if (!e->removed && dynamic_cast<const DoorEntity*>(e.get()) && e->box.intersects(body)) return true;
+                return !clear({feet.x - 5.0f, feet.y - 22.0f, 10.0f, 21.5f});
+            };
+            const Vec2 soul2 = w.member(1).soul;
+            if (k == 0 && inDoor(safe2)) std::printf("  (dernier endroit sûr dans une porte ou un passage : l'âme va sur le sol sûr le plus proche)\n");
+            if (!inDoor(safe2)) {
+                CHECK(std::abs(soul2.x - safe2.x) < 0.5f);
+                CHECK(std::abs(soul2.y - safe2.y) < 0.5f);
+            } else {
+                CHECK(!inDoor(soul2));
+                CHECK(std::abs(soul2.x - safe2.x) < 64.0f);
+            }
+            CHECK(revived());
+            for (int t = 0; t < 60; ++t) step(false);
+            CHECK(run.zoneSerial() == serial);
+            digest[k] = run.hash();
+        }
+        CHECK(digest[0] == digest[1]);
+    }
+}
+
 // ------------------------------------------------------------------ the armory (2.77)
 
 TEST_CASE("raid armory (2.77): walking on the floor to « Prêts » takes nothing; each tablet is up on its ledge, within a jump") {

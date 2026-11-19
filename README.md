@@ -641,7 +641,9 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * **« Simuler un raid complet »** : tout le raid de clan en local, sept branches puis le Cœur avec tous les groupes,
   événements du monde, carte du titan, contributions, groupes éliminés et renforts ; rejoindre ou regarder n'importe
   quel groupe ; **TEST LOCAL — rien n'est envoyé**.
-* **Coopération et raids** (règles de coopération **3**) : l'âme attend sur le **dernier endroit sûr** du joueur, et la
+* **Coopération et raids** (règles de coopération **3**) : l'âme **tombe** sous le point de la mort (tué en plein saut :
+  juste dessous), ou va sur le **dernier endroit sûr** du joueur au-dessus du vide ou d'un danger ; elle glisse jusqu'à sa
+  place, une marque au sol et une flèche hors écran la montrent ; la
   réanimation se fait en **maintenant « Interagir »** 2 s (relâcher interrompt) ; replays d'avant rejoués à l'identique
   ([docs/COOP.md §1](docs/COOP.md)). Dans un raid, une âme n'attend jamais dans un passage : réanimer ne fait jamais
   changer le groupe de zone.

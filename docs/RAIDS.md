@@ -1336,13 +1336,19 @@ suffit à garder le déterminisme sans verrou.
 
 ### Les âmes et la réanimation (règles de coopération 3, raids compris)
 
-* L'âme d'un joueur à terre est posée sur son **dernier endroit sûr** : un sol ferme (ni plateforme mobile ni plateforme
-  qui s'effrite), hors de tout liquide et de tout danger, tenu à jour pas à pas dans la simulation. Mort dans un liquide
-  mortel (magma, acide, liquide qui monte), sur des pics, dans le vide ou écrasé : il peut toujours être relevé. Si un
+* L'âme d'un joueur à terre **tombe à la verticale** du point de sa mort jusqu'au premier sol ferme dessous (tué en plein
+  saut : juste dessous). Elle va sur son **dernier endroit sûr** quand, dessous, il y a le vide ou la sortie du niveau, un
+  liquide mortel, des pics ou un danger, un sol à plus de 6 tuiles (96 px), un sol qui bouge, s'effrite ou s'ouvre, une
+  porte ou un passage. Le dernier endroit sûr est un sol ferme (ni plateforme mobile ni plateforme qui s'effrite, ni porte),
+  hors de tout liquide et de tout danger, tenu à jour pas à pas dans la simulation : toujours atteignable à pied. Mort dans
+  un liquide mortel (magma, acide, liquide qui monte), sur des pics, en l'air, dans le vide ou écrasé : il peut toujours être
+  relevé. L'âme glisse à l'écran jusqu'à son point de repos (une marque au sol : où réanimer) ; hors de la vue, une flèche
+  de la couleur du joueur la montre au bord de l'écran. Si un
   liquide qui monte recouvre l'âme, elle remonte au sol sûr le plus proche **au-dessus** de son niveau le plus haut.
 * **Jamais dans un passage** (raids) : une âme posée dans un passage vers une autre zone ou dans une porte (le dernier
-  endroit sûr y était : un passage verrouillé, un joueur remis en jeu sur place) est déplacée au pas même sur le **sol sûr
-  le plus proche de la zone**, hors de tout passage, de toute porte et de tout danger (`RaidRun::keepSoulsOffPassages`).
+  endroit sûr y était : un passage verrouillé, un joueur remis en jeu sur place) est déplacée au pas même sur le **dernier
+  endroit sûr** du joueur s'il est hors de tout passage, de toute porte et de tout danger, sinon sur le **sol sûr le plus
+  proche de la zone** (`RaidRun::keepSoulsOffPassages`).
   Et une réanimation ne fait jamais changer le groupe de zone : on ne prend un passage qu'en **y entrant** en jeu ; un
   joueur qui revient en jeu dedans (réanimé, de retour d'absence, réapparu) doit d'abord en sortir.
 * La réanimation se fait en **maintenant « Interagir »** 2 s près de l'âme ; relâcher l'interrompt. Jauge circulaire autour
@@ -1374,8 +1380,9 @@ phase 4 — la vie que ce départ retire n'est pas comptée comme des dégâts :
 7 joueurs simulés Experts et invincibles par groupe, Titanus, Skullmaw et Dreadfang donnés comme vaincus par d'autres
 groupes ; les vraies zones, les vrais combats : Heartbreaker, Pyroclast, Voidworm et Graviton tombent sous les joueurs
 simulés, puis le Cœur sous les groupes ensemble, en 996 s de jeu), place libre et spectateur, âme et
-réanimation tenue, âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé sans rien
-prendre, noms des tablettes sans chevauchement),
+réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va au dernier endroit sûr au-dessus du vide
+(même empreinte à 2 et 8 places), âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé
+sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 
 ---

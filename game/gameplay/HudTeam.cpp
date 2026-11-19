@@ -244,6 +244,43 @@ void Hud::drawTeamLabels(UIContext& ui, GameWorld& w, const WorldView& view) {
             put(teamName(i), view.toScreen({p.center().x, p.box.y - 4.0f}), c, 14, false);
         } else if (m.presence == Presence::Down) {
             const Vec2 at = view.toScreen(m.soul + Vec2{0.0f, -34.0f});
+            // 2.77: its soul out of view: an arrow of its colour on the border toward it, its name beside.
+            const Vec2 s = view.toScreen(m.soul + Vec2{0.0f, -14.0f});
+            const float inset = ui.s(34);
+            if (!raidView_ && (s.x < 0.0f || s.y < 0.0f || s.x > ui.screenW() || s.y > ui.screenH())) {
+                const Vec2 mid{ui.screenW() * 0.5f, ui.screenH() * 0.5f};
+                const Vec2 d = s - mid;
+                const float kx = std::abs(d.x) > 0.01f ? (mid.x - inset) / std::abs(d.x) : 1e9f;
+                const float ky = std::abs(d.y) > 0.01f ? (mid.y - inset) / std::abs(d.y) : 1e9f;
+                Vec2 tip = mid + d * std::min(kx, ky);
+                const Vec2 dir = d.normalized(), side{-dir.y, dir.x};
+                const float len = ui.s(22), half = ui.s(12);
+                // Never over the team panel nor another label: slid along its border past what it meets.
+                for (int guard = 0; guard < 6; ++guard) {
+                    bool hit = false;
+                    for (const Rect& o : taken)
+                        if (o.intersects({tip.x - len, tip.y - len, len * 2.0f, len * 2.0f})) {
+                            if (std::abs(dir.y) > std::abs(dir.x)) tip.x = o.right() + len + ui.s(4);
+                            else tip.y = o.bottom() + len + ui.s(4);
+                            hit = true;
+                        }
+                    if (!hit) break;
+                }
+                tip.x = std::clamp(tip.x, inset, std::max(inset, ui.screenW() - inset));
+                tip.y = std::clamp(tip.y, inset, std::max(inset, ui.screenH() - inset));
+                const Vec2 a = tip + dir * (len * 0.5f), b = tip - dir * (len * 0.5f) + side * half, c2 = tip - dir * (len * 0.5f) - side * half;
+                const float pulse = 0.5f + 0.5f * std::sin(time_ * 5.0f);
+                r.fillTriangle(a, b, c2, Color{c.r, c.g, c.b, static_cast<uint8_t>(170 + 85 * pulse)});
+                r.drawLine(a, b, Color{7, 11, 26, 230}, ui.s(1.5f));
+                r.drawLine(b, c2, Color{7, 11, 26, 230}, ui.s(1.5f));
+                r.drawLine(c2, a, Color{7, 11, 26, 230}, ui.s(1.5f));
+                taken.push_back({tip.x - len, tip.y - len, len * 2.0f, len * 2.0f});
+                // Its name inside the screen, below or above the arrow (moved off any other label).
+                const Vec2 label = tip - dir * (len + ui.s(6)) + Vec2{0.0f, dir.y > 0.5f ? 0.0f : ui.s(30)};
+                const std::string soulName = "Âme de " + teamName(i);
+                put(soulName, label, c, 13, true);
+                continue;
+            }
             const bool held = w.coopVersion() >= 3;  // 2.77: a revival is held (« Interagir »)
             const int me = team_.promptPlayer;
             const bool near = held && me >= 0 && me < w.teamSize() && me != i && w.member(me).presence == Presence::Playing &&

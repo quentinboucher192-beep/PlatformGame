@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstdint>
 #include <unordered_map>
 #include <vector>
@@ -50,6 +51,14 @@ public:
     uint32_t opaquePlayers() const { return opaquePlayers_; }
     /// The opacity of another player's body (display only; tests).
     static constexpr float kOtherPlayerOpacity = 0.5f;
+    /// 2.77, display only: where the soul of player `i` is drawn (its feet): it glides from where its
+    /// player died to where it waits (GameWorld::TeamMember::soul), and again when it is moved (a liquid
+    /// rising over it, a passage). `fallback` when it is not down.
+    Vec2 soulShown(int i, Vec2 fallback) const {
+        return i >= 0 && i < static_cast<int>(souls_.size()) && souls_[static_cast<size_t>(i)].down ? souls_[static_cast<size_t>(i)].at : fallback;
+    }
+    /// How long a soul takes to glide `distance` world pixels (seconds of the world).
+    static float soulGlideTime(float distance) { return distance <= 0.5f ? 0.0f : std::min(1.0f, 0.3f + distance / 700.0f); }
     size_t lastLightCount() const { return lastLights_; }
 
 private:
@@ -63,6 +72,14 @@ private:
     void drawTeam(RenderContext& ctx, GameWorld& world);
     std::vector<Color> teamColors_;
     uint32_t opaquePlayers_ = 0xFFFFFFFFu;
+    struct SoulGlide {
+        bool seen = false;  // drawn once on its feet: its next soul glides from where it died
+        bool down = false;
+        Vec2 from, to, at;
+        float t = 0.0f, duration = 0.0f;
+    };
+    std::vector<SoulGlide> souls_;  // display: the souls as drawn (2.77)
+    float soulClock_ = -1.0f;       // display: the world time of the last team drawn
 
     TerrainRenderer terrain_;
     ParallaxBackground parallax_;

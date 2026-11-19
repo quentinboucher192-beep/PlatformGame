@@ -14849,7 +14849,7 @@
    ]
   },
   {
-   "fr": "Coopération et raids : l'âme d'un joueur à terre attend sur son dernier endroit sûr (sol ferme, hors liquide et hors danger) : mort dans le magma, l'acide, sur des pics ou dans le vide, il peut toujours être relevé. Si un liquide monte sur l'âme, elle remonte au-dessus. Dans un raid, une âme n'attend jamais dans un passage ni une porte (elle passe sur le sol sûr le plus proche) : réanimer un joueur ne fait jamais changer le groupe de zone.",
+   "fr": "Coopération et raids : l'âme d'un joueur à terre tombe à la verticale jusqu'au sol sous le point de sa mort : tué en plein saut, il attend juste dessous. Au-dessus du vide, d'un liquide mortel, de pics, d'un sol trop bas ou d'une porte, elle va sur son dernier endroit sûr (sol ferme, hors liquide et hors danger, toujours atteignable à pied) : mort dans le magma, l'acide, sur des pics, en l'air ou dans le vide, il peut toujours être relevé. L'âme glisse jusqu'à sa place, une marque au sol montre où réanimer, et une flèche la montre quand elle est hors de l'écran. Si un liquide monte sur l'âme, elle remonte au-dessus. Dans un raid, une âme n'attend jamais dans un passage ni une porte (elle va sur le dernier endroit sûr du joueur, ou sur le sol sûr le plus proche) : réanimer un joueur ne fait jamais changer le groupe de zone.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -77435,6 +77435,12 @@
    "fr": "À équiper",
    "where": [
     "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Âme de {0}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {

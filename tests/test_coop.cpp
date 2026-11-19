@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -44,7 +45,8 @@ struct Team {
     std::unique_ptr<GameWorld> w;
     std::vector<InputFrame> prev;
 
-    explicit Team(int n, const std::string& levelId = {}, int coopVersion = kCoopSimulationVersion) {
+    explicit Team(int n, const std::string& levelId = {}, int coopVersion = kCoopSimulationVersion,
+                  const std::function<void(LevelData&)>& shape = {}) {
         content.reload();
         res.init(nullptr, &audio);
         LevelData l;
@@ -56,6 +58,7 @@ struct Team {
             CHECK(lvl.has_value());
             if (lvl) l = *lvl;
         }
+        if (shape) shape(l);  // 2.77: a test level made to measure (a pit)
         WorldServices s{res, audio, content, nullptr, 0.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, WorldMode::Play);
         w->setTeamSize(n);
@@ -313,6 +316,69 @@ TEST_CASE("coop: a player down is revived by an ally holding « Interagir » 2 s
             CHECK(t.w->revivesLeft() == 0);
         }
     }
+}
+
+TEST_CASE("coop 3 (2.77): killed in mid-jump, the soul falls to the ground under it; over the void or too high, at the last safe place; revived") {
+    InputFrame hold;
+    hold.held = 1u << static_cast<int>(Action::Interact);
+    // The flat level with a pit from x 1000 to 1400, down to the bottom of the level.
+    Team t(2, {}, kCoopSimulationVersion, [](LevelData& l) {
+        for (LevelObject& o : l.objects)
+            if (o.id == "o1") o.rect = {0.0f, 800.0f, 1000.0f, 160.0f};
+        LevelObject far;
+        far.id = "o9";
+        far.type = "solid";
+        far.layer = "terrain";
+        far.rect = {1400.0f, 800.0f, 1000.0f, 160.0f};
+        far.props = {{"material", "ruin_stone"}};
+        l.objects.push_back(far);
+    });
+    t.idle(60);
+    const float ground = t.p(0).feet().y;
+    CHECK(std::abs(ground - 800.0f) < 0.5f);
+    t.place(0, {500.0f, ground});
+    t.place(1, {700.0f, ground});
+    t.idle(10);
+    CHECK(std::abs(t.m(1).safeFeet.x - 700.0f) < 1.0f);
+    auto killAt = [&](Vec2 feet) {
+        t.place(1, feet);
+        GameWorld::PlayerScope s(*t.w, 1);
+        t.p(1).kill(*t.w);
+    };
+    auto revived = [&]() {
+        const Vec2 soul = t.m(1).soul;
+        t.place(0, {soul.x - 20.0f, soul.y});
+        for (int k = 0; k < 2 * kSimHz + 60 && t.m(1).presence == GameWorld::Presence::Down; ++k) t.step({hold, InputFrame{}});
+        return t.m(1).presence == GameWorld::Presence::Playing;
+    };
+    // 1. Killed at the top of a jump over the ground, 200 px from where it last stood: the soul falls under it.
+    killAt({900.0f, ground - 70.0f});
+    t.idle(150);
+    CHECK(t.m(1).presence == GameWorld::Presence::Down);
+    std::printf("  mort en (900, %.0f) : âme en (%.0f, %.0f)\n", ground - 70.0f, t.m(1).soul.x, t.m(1).soul.y);
+    CHECK(std::abs(t.m(1).soul.x - 900.0f) < 0.5f);
+    CHECK(std::abs(t.m(1).soul.y - ground) < 0.5f);
+    CHECK(revived());
+    t.idle(30);
+    // 2. Killed over the pit: its soul at its last safe place (the ground where it stood).
+    const Vec2 safe = t.m(1).safeFeet;
+    CHECK(safe.x < 1000.0f);
+    killAt({1200.0f, ground - 40.0f});
+    t.idle(150);
+    CHECK(t.m(1).presence == GameWorld::Presence::Down);
+    std::printf("  mort au-dessus du vide (1200, %.0f) : âme en (%.0f, %.0f), dernier endroit sûr (%.0f, %.0f)\n", ground - 40.0f, t.m(1).soul.x,
+                t.m(1).soul.y, safe.x, safe.y);
+    CHECK(std::abs(t.m(1).soul.x - safe.x) < 0.5f);
+    CHECK(std::abs(t.m(1).soul.y - safe.y) < 0.5f);
+    CHECK(revived());
+    t.idle(30);
+    // 3. Killed over the ground but more than 6 tiles above it: the last safe place too (no revival left to try).
+    const Vec2 safe2 = t.m(1).safeFeet;
+    killAt({600.0f, ground - 200.0f});
+    t.idle(150);
+    CHECK(t.m(1).presence == GameWorld::Presence::Down);
+    CHECK(std::abs(t.m(1).soul.x - safe2.x) < 0.5f);
+    CHECK(std::abs(t.m(1).soul.y - safe2.y) < 0.5f);
 }
 
 TEST_CASE("coop: everybody down at once ends the attempt") {
