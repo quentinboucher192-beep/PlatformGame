@@ -49,10 +49,11 @@
 //   --asterion-film [<seconds>]
 //                           play Asterion's film (2.68) over the main menu as its first viewing
 //                           (nothing skips it), from that moment of it (screenshots)
-//   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout]]
+//   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout][:frapper[=<clip>]]]
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
-//                           unfolded with its example, or every attack unfolded)
+//                           unfolded with its example, or every attack unfolded; 2.76.0
+//                           « frapper »: its « Où frapper » tab, its parts on that pose)
 //   --raid-sheets [<sheet>[:<tab>][:frapper=<n>[:pose=<attack>]][:attaque=<id>]]
 //                           2.73: the raid sheets (asterion, skullmaw…) over the main menu, on
 //                           that tab (0, 1, 2), that attack (or mechanism « m:<id> ») unfolded

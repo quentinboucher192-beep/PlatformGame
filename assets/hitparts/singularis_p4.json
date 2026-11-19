@@ -1,0 +1,10 @@
+{
+  "format": "cosmic.hitparts",
+  "version": 1,
+  "sheet": "animations/singularis_p4.json",
+  "profile": "silhouette",
+  "frameWidth": 192,
+  "frameHeight": 192,
+  "pivot": [96.0, 124.0],
+  "sameAs": "singularis.json"
+}

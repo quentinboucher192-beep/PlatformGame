@@ -8,6 +8,7 @@
 #include "engine/input/InputManager.h"
 #include "engine/physics/Collision.h"
 #include "engine/rendering/Renderer.h"
+#include "game/enemies/HitParts.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/entities/Entities.h"
@@ -302,10 +303,11 @@ void BoomerangChargePower::strikeBack(GameWorld& w) {
     Vec2 travel = pos_ - prevPos_;
     if (travel.lengthSq() < 1e-6f) travel = -dir_;
     for (auto& e : w.enemies()) {
-        if (!e->alive() || e->dormant() || !Collision::circleIntersectsRect(pos_, r, e->box)) continue;
+        float mult = 1.0f;  // 2.76.0: the part it touches, else its box as before
+        if (!e->alive() || e->dormant() || !reaches(*e, w, pos_, r, &mult)) continue;
         if (std::find(hitBack_.begin(), hitBack_.end(), e->uid()) != hitBack_.end()) continue;
         DamageInfo d;
-        d.amount = def_.param("damage", 1.0f);
+        d.amount = def_.param("damage", 1.0f) * mult;
         d.type = DamageType::Wave;
         d.source = pos_ - travel.normalized() * 8.0f;
         d.knockback = def_.param("knockback", 150.0f);

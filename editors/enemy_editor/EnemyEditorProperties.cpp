@@ -175,6 +175,8 @@ void EnemyEditorScene::tabBehaviour(float x, float& y, float w) {
     y += ui.s(52);
     c |= ui.slider("flee", {x, y, w, ui.s(44)}, "Fuite sous (% PV)", work_.fleeHealthRatio, 0, 1, 0.05f, "%.2f");
     y += ui.s(52);
+    // 2.76.0: how far it flees at most (from where its flight began): never out of the player's reach.
+    c |= ui.numberField("fleemax", row.field("Distance de fuite max"), work_.fleeMaxDistance, 8, 16, 480, "%.0f");
     c |= ui.numberField("pref", row.field("Distance préférée (tir)"), work_.preferredDistance, 5, 0, 1000, "%.0f");
     c |= ui.numberField("hop", row.field("Force des sauts"), work_.hopVelocity, 10, 0, 1000, "%.0f");
     y += ui.s(10);

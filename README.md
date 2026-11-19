@@ -619,6 +619,19 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.76.0** :
+* **Boss en parties** : chaque boss est découpé en parties qui suivent son dessin image par image. Les formes sont
+  des polygones convexes tirés des sprites par `tools/assetgen/hitparts.py` (`assets/hitparts`), et les rôles et
+  dégâts se trouvent dans `data/enemies` ([docs/HITPARTS.md](docs/HITPARTS.md) ; brancher un boss :
+  [docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Pyrrhax** se bat par parties (version de simulation **16**) : tête × 2, queue blindée × 0,5. Seules ses griffes,
+  son souffle et sa tête pendant la morsure blessent. Les replays d'avant rejouent avec sa boîte et les records sont
+  gardés.
+* **Fiches** : onglet « Où frapper » pour chaque boss, avec le vrai sprite, ses poses, ses parties et une légende de
+  leurs rôles ; les fiches d'Asterion montrent aussi les parties.
+* **Fuite bornée** : un ennemi affaibli ne s'éloigne plus qu'à 5,5 tuiles d'où il a commencé à fuir, et monte 2 tuiles
+  au plus ; à la limite, il est acculé et se laisse toucher (`fleeMaxDistance`, réglable dans l'éditeur d'ennemis).
+
 **Nouveau dans la version 2.75.2** :
 * **Fiches d'Asterion** : « Où frapper » par **pose**. Chaque attaque d'une phase est jouée sur sa vraie animation (élan
   puis coup), avec ce qui part de son corps : rouge, ce qui blesse ; rose, d'où partent les tirs. Les points faibles et les

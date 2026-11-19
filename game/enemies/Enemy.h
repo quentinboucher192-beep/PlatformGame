@@ -259,6 +259,9 @@ private:
     uint32_t uid_;
     EnemyState state_ = EnemyState::Idle;
     Vec2 origin_;
+    // 2.76.0: where its flight began (the rules of 16 keep it within fleeMaxDistance of it).
+    Vec2 fleeAnchor_;
+    bool fleeAnchored_ = false;
     float patrolRange_ = 96.0f;
     float hp_ = 1.0f, maxHp_ = 1.0f;
     bool grounded_ = false;
