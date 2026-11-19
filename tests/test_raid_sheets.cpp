@@ -272,7 +272,7 @@ TEST_CASE("raid sheets: every gigaboss has its sheet, from real data, with phase
         badges += r.kind == "badge" ? 1 : 0;
         titles += r.kind == "title" ? 1 : 0;
     }
-    CHECK(badges == 7 && titles >= 3);
+    CHECK(badges == 8 && titles >= 3);  // the badges of its seven gigaboss, and its heart's
     CHECK(!a.lore.empty() && !a.contributions.empty());
 }
 
