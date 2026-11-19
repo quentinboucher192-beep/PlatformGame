@@ -2072,6 +2072,12 @@
    ]
   },
   {
+   "fr": "ailes",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Aimant",
    "where": [
     "data/powers/magnet.json",
@@ -2644,6 +2650,12 @@
    "fr": "Anneau poli",
    "where": [
     "game/cosmetics/CreationLooks.cpp"
+   ]
+  },
+  {
+   "fr": "anneaux",
+   "where": [
+    "data/enemies/astrarque.json"
    ]
   },
   {
@@ -7115,6 +7127,12 @@
    ]
   },
   {
+   "fr": "bec",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Belgique",
    "where": [
     "data/online/countries.json",
@@ -7305,6 +7323,12 @@
    "fr": "Bleu des grands fonds, lueurs vertes et écharpe corail.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "blindage",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -7947,6 +7971,13 @@
    ]
   },
   {
+   "fr": "bras",
+   "where": [
+    "data/enemies/astrarque.json",
+    "data/enemies/monolithe.json"
+   ]
+  },
+  {
    "fr": "Bras de la spirale",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -8417,6 +8448,12 @@
    "fr": "Bâtisseur",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "bâton",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -8999,6 +9036,12 @@
    ]
   },
   {
+   "fr": "canon",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Canon rotatif",
    "where": [
     "data/enemies/titan.json"
@@ -9058,6 +9101,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "carapace",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -9887,6 +9936,12 @@
    "fr": "Ce que verront les joueurs",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qui blesse au contact : les épines et la couronne de feu de Singularis (sa coquille aussi pendant sa chute), les poings du Monolithe pendant ses frappes et ses séismes, les serres du Phénix, les flammes d'âme de la traîne de la Liche, les cheminées du Titan (son poing pendant sa frappe), le bec du Kraken (ses tentacules pendant ses coups de fouet et son étreinte), les creusets et les pointes de l'Astrarque (sa coque et ses plaques pendant ses ruées). Le reste de leur corps ne blesse plus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -11367,6 +11422,12 @@
    ]
   },
   {
+   "fr": "chaînes",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
    "fr": "checkpoint",
    "where": [
     "game/gameplay/BossTraining.cpp",
@@ -11465,6 +11526,12 @@
    "fr": "Cheminées",
    "where": [
     "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "cheminées",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -14560,6 +14627,18 @@
    ]
   },
   {
+   "fr": "coque",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
+   "fr": "coquille",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Corniche de basalte",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -14575,6 +14654,12 @@
    "fr": "Corniche technologique",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "corps",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -15278,6 +15363,12 @@
    ]
   },
   {
+   "fr": "couronne",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Couronne ardente",
    "where": [
     "data/enemies/astrarque.json"
@@ -15600,6 +15691,12 @@
    ]
   },
   {
+   "fr": "creusets",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
    "fr": "Crevasse cachée",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -15846,6 +15943,12 @@
    "where": [
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "crâne",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -16295,6 +16398,12 @@
    "fr": "CŒUR",
    "where": [
     "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "cœur",
+   "where": [
+    "data/enemies/astrarque.json"
    ]
   },
   {
@@ -24237,6 +24346,12 @@
    ]
   },
   {
+   "fr": "flammes d'âme",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Flammèches",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -25481,6 +25596,12 @@
    "fr": "Gigaboss : {0} · vaincu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss de la campagne : Singularis, le Monolithe, le Phénix, la Liche, le Titan Mécanique, le Kraken et l'Astrarque se battent par parties, comme Pyrrhax. Leur tête, leurs yeux, leur réacteur ou leur phylactère sont des points faibles (× 2), leur coquille, leur carapace, leurs anneaux, leur blindage, leur queue ou leur traîne sont blindés (× 0,5), le reste prend les coups normalement, et vous pouvez les toucher bien au-delà de leur ancienne boîte. Les replays d'avant rejouent à l'identique et aucun record n'est effacé.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -26999,6 +27120,12 @@
    "fr": "Habitué des courses",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "halo",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -29580,6 +29707,13 @@
    "fr": "Jambe gauche tombée : plus de pièges de gravité",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "jambes",
+   "where": [
+    "data/enemies/monolithe.json",
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -37048,6 +37182,12 @@
    ]
   },
   {
+   "fr": "Leurs mécanismes ne changent pas : le Monolithe roulé en boule reste blindé et s'expose étourdi, le Phénix est intouchable dans ses cendres, la Liche tant que son âme est dans le cristal de l'autel, le Titan arrêté tant que ses vannes ne sont pas tournées, et son réacteur à nu prend encore plus.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "level.json manquant",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -37944,6 +38084,12 @@
    ]
   },
   {
+   "fr": "mains",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Maintenance en cours : les joueurs ne peuvent rien modifier pendant l'import.",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -38206,6 +38352,12 @@
    "fr": "Manquant : {0}",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "manteau",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -46579,6 +46731,12 @@
    ]
   },
   {
+   "fr": "phylactère",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Phylactère : à la fin de sa quatrième phase, la Liche cache son âme dans un cristal posé sur l'un de ses autels ; elle est intouchable tant que vous ne l'avez pas brisé.",
    "where": [
     "data/news/changelog.json"
@@ -47120,6 +47278,12 @@
     "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "plaques",
+   "where": [
+    "data/enemies/astrarque.json"
    ]
   },
   {
@@ -47811,6 +47975,12 @@
    ]
   },
   {
+   "fr": "poing",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Poing de magma",
    "where": [
     "data/enemies/pyroclast.json"
@@ -47826,6 +47996,12 @@
    "fr": "Poing-piston",
    "where": [
     "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "poings",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -47989,6 +48165,12 @@
    "fr": "Point »",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "pointes",
+   "where": [
+    "data/enemies/astrarque.json"
    ]
   },
   {
@@ -50400,6 +50582,12 @@
    ]
   },
   {
+   "fr": "queue",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Qui est en ligne dans votre clan : dans CLANS › Membres, chaque membre porte la pastille de présence de SOCIAL (en ligne, absent, hors ligne), les membres en ligne passent en tête, et l'en-tête de la liste annonce « X/Y en ligne ».",
    "where": [
     "data/news/changelog.json"
@@ -52669,6 +52857,12 @@
    ]
   },
   {
+   "fr": "remous",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Rempart",
    "where": [
     "data/enemies/bulwark.json"
@@ -54083,6 +54277,12 @@
    ]
   },
   {
+   "fr": "robe",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Robot",
    "where": [
     "data/online/avatars.json",
@@ -54520,6 +54720,12 @@
    "fr": "règles invalides",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "réacteur",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -57049,6 +57255,12 @@
    "fr": "Serpent de cristal des plaines gelées. Son souffle fige le sang.",
    "where": [
     "data/enemies/cryowyrm.json"
+   ]
+  },
+  {
+   "fr": "serres",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -61265,6 +61477,12 @@
    ]
   },
   {
+   "fr": "tentacules",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Tentative",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -62218,6 +62436,12 @@
    "fr": "tirage {0}",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Tirs des gigaboss : ils partent de leur dessin (l'œil et les mains de Singularis, le cristal de la Liche, le bec du Phénix et du Kraken, le canon du Titan). L'Astrarque lance désormais le souffle et les éclairs qu'il emprunte depuis son cœur et son bras, et non plus du vide au-dessus de lui.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -63526,6 +63750,12 @@
    ]
   },
   {
+   "fr": "traîne",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Traînée",
    "where": [
     "game/cosmetics/Collection.cpp",
@@ -64218,6 +64448,14 @@
    "fr": "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.",
    "where": [
     "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "tête",
+   "where": [
+    "data/enemies/monolithe.json",
+    "data/enemies/phenix.json",
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -69622,6 +69860,12 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "yeux",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -75626,6 +75870,12 @@
    ]
   },
   {
+   "fr": "épines",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Épines chercheuses",
    "where": [
     "data/enemies/archon_catacombs.json",
@@ -76424,6 +76674,12 @@
    "fr": "Œil",
    "where": [
     "game/gameplay/BossBadge.cpp"
+   ]
+  },
+  {
+   "fr": "œil",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {

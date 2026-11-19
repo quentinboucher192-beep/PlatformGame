@@ -653,5 +653,313 @@
       "derniere_lumiere"
     ],
     "finalText": "Sa dernière lumière : survivez !"
-  }
+  },
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "œil",
+        "sheets": [
+          "singularis",
+          "singularis_p2",
+          "singularis_p3",
+          "singularis_p4"
+        ],
+        "poly": [
+          78,
+          90,
+          84,
+          82,
+          96,
+          77,
+          110,
+          77,
+          122,
+          83,
+          125,
+          90,
+          118,
+          98,
+          104,
+          102,
+          90,
+          101,
+          81,
+          96
+        ]
+      },
+      {
+        "name": "œil",
+        "sheets": [
+          "singularis_p5",
+          "singularis_p6",
+          "singularis_p7",
+          "singularis_p8"
+        ],
+        "poly": [
+          123,
+          96,
+          120,
+          108,
+          111,
+          117,
+          99,
+          120,
+          87,
+          117,
+          78,
+          108,
+          75,
+          96,
+          78,
+          84,
+          87,
+          75,
+          99,
+          72,
+          111,
+          75,
+          120,
+          84
+        ]
+      },
+      {
+        "name": "épines",
+        "poly": [
+          64,
+          40,
+          96,
+          22,
+          128,
+          40,
+          126,
+          52,
+          66,
+          52
+        ]
+      },
+      {
+        "name": "coquille",
+        "poly": [
+          135,
+          89,
+          132,
+          104,
+          124,
+          117,
+          111,
+          125,
+          96,
+          128,
+          81,
+          125,
+          68,
+          117,
+          60,
+          104,
+          57,
+          89,
+          60,
+          74,
+          68,
+          61,
+          81,
+          53,
+          96,
+          50,
+          111,
+          53,
+          124,
+          61,
+          132,
+          74
+        ]
+      },
+      {
+        "name": "mains",
+        "clips": [
+          "telegraph_special",
+          "special",
+          "roar:2-5"
+        ],
+        "poly": [
+          14,
+          28,
+          72,
+          28,
+          66,
+          64,
+          52,
+          96,
+          46,
+          112,
+          14,
+          112
+        ]
+      },
+      {
+        "name": "mains",
+        "clips": [
+          "telegraph_special",
+          "special",
+          "roar:2-5"
+        ],
+        "poly": [
+          178,
+          28,
+          120,
+          28,
+          126,
+          64,
+          140,
+          96,
+          146,
+          112,
+          178,
+          112
+        ]
+      },
+      {
+        "name": "couronne",
+        "poly": [
+          148,
+          89,
+          142,
+          108,
+          129,
+          122,
+          113,
+          130,
+          96,
+          133,
+          79,
+          130,
+          63,
+          122,
+          50,
+          108,
+          44,
+          89,
+          47,
+          69,
+          59,
+          52,
+          76,
+          40,
+          96,
+          36,
+          116,
+          40,
+          133,
+          52,
+          145,
+          69
+        ]
+      },
+      {
+        "name": "couronne",
+        "poly": [
+          78,
+          124,
+          114,
+          124,
+          104,
+          164,
+          88,
+          164
+        ]
+      },
+      {
+        "name": "mains",
+        "clips": [
+          "idle",
+          "walk",
+          "move",
+          "telegraph",
+          "attack",
+          "hurt",
+          "summon",
+          "death",
+          "teleport_out",
+          "teleport_in",
+          "roar:0-1",
+          "roar:6-7"
+        ],
+        "poly": [
+          0,
+          60,
+          66,
+          60,
+          66,
+          160,
+          0,
+          160
+        ]
+      },
+      {
+        "name": "mains",
+        "clips": [
+          "idle",
+          "walk",
+          "move",
+          "telegraph",
+          "attack",
+          "hurt",
+          "summon",
+          "death",
+          "teleport_out",
+          "teleport_in",
+          "roar:0-1",
+          "roar:6-7"
+        ],
+        "poly": [
+          128,
+          56,
+          192,
+          56,
+          192,
+          160,
+          128,
+          160
+        ]
+      },
+      {
+        "name": "halo",
+        "drop": true,
+        "rest": true,
+        "poly": [
+          0,
+          0,
+          1,
+          0,
+          1,
+          1
+        ]
+      }
+    ],
+    "roles": {
+      "œil": {
+        "role": "weak",
+        "damage": 2
+      },
+      "coquille": {
+        "role": "armour",
+        "damage": 0.5,
+        "hurtDuring": [
+          "chute"
+        ]
+      },
+      "mains": {
+        "role": "normal",
+        "damage": 1
+      },
+      "épines": {
+        "role": "hurt"
+      },
+      "couronne": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

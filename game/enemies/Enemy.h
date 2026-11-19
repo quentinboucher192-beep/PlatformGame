@@ -242,7 +242,9 @@ private:
     void checkPhase(GameWorld& w);
     void beginLastStand(GameWorld& w);
     void stepLastStand(GameWorld& w, float dt);
-    void refreshLook(GameWorld& w);  // display: the sheet of the current phase
+    /// The sheet of the current phase: in a display update, or (2.76.2, `keepPose`) in the fixed step
+    /// for a boss that fights by parts (kPartsLookSimulation).
+    void refreshLook(GameWorld& w, bool keepPose = false);
     void applyPhysics(GameWorld& w, float dt);
     void contactDamage(GameWorld& w);
     bool groundAhead(const GameWorld& w) const;
@@ -319,7 +321,8 @@ private:
     bool enraged_ = false;
     bool lastStand_ = false;  // 2.33: « Dernière lumière »
     size_t finalIndex_ = 0;
-    int shownLook_ = -1;      // display only: the phase whose sheet is shown
+    int shownLook_ = -1;      // the phase whose sheet is shown (display; 2.76.2: the fixed step for a boss by parts)
+    bool partsFight_ = false; // 2.76.2: it fights by parts in this run (fightsByParts, set each fixed step)
     std::string shownAnim_;
     int burstsLeft_ = 0;
     float burstTimer_ = 0.0f;

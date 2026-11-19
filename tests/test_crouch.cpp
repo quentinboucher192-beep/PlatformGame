@@ -104,7 +104,7 @@ TEST_CASE("crouch: a shot at head height passes over a crouching player") {
 }
 
 TEST_CASE("crouch: the rankings generation follows the rules (2.17: a new generation)") {
-    CHECK(kSimulationVersion == 16);  // 2.71: the attack upwards and downwards (2.62.2: ambushes kept); 2.76: parts, flight
+    CHECK(kSimulationVersion == 17);  // 2.71: the attack upwards and downwards (2.62.2: ambushes kept); 2.76: parts, flight; 17: every boss by parts
     CHECK(kRankingGeneration == 8);  // ... so the 2.17 rankings are kept
     ContentDatabase content;
     content.reload();

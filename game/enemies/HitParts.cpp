@@ -157,6 +157,11 @@ const PartRule* PartRules::rule(const std::string& name) const {
     return nullptr;
 }
 
+const Vec2* PartRules::origin(const std::string& attackId) const {
+    const auto it = origins.find(attackId);
+    return it == origins.end() ? nullptr : &it->second;
+}
+
 PartRule PartRules::ruleOr(const std::string& name) const {
     if (const PartRule* r = rule(name)) return *r;
     PartRule r;
@@ -169,6 +174,10 @@ PartRules PartRules::parse(const Json& parts, int fromVersion) {
     out.fromVersion = std::max(0, fromVersion);
     if (!parts.is_object()) return out;
     out.profile = jstr(parts, "profile");
+    const Json origins = parts.value("origins", Json::object());
+    if (origins.is_object())
+        for (auto& [id, o] : origins.items())
+            if (o.is_array() && o.size() == 2 && o[0].is_number() && o[1].is_number()) out.origins[id] = {o[0].get<float>(), o[1].get<float>()};
     const Json roles = parts.value("roles", Json::object());
     if (!roles.is_object()) return out;
     for (auto& [name, r] : roles.items()) {

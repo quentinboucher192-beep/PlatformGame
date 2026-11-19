@@ -20,6 +20,15 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
     centre est le plus proche.
   * Ce profil convient aux boss qui gardent leur forme. Les parties qui bougent beaucoup (un bras levé) suivent
     moins bien : vérifiez-les sur les images d'attaque.
+  * 2.76.2, pour les parties qui bougent ou changent (exemples : les gigaboss de la campagne) :
+    * `"clips": ["attack", "telegraph:3-5", "roll:0"]` : la région ne vaut que pour ces poses, un clip entier, une
+      image (`attack:2`) ou des images (`attack:1-3`). Dessinez-la sur l'image de cette pose (poings levés, boule) ;
+    * `"sheets": ["singularis_p5", …]` : seulement pour ces feuilles, par exemple une phase redessinée (œil à nu) ;
+    * `"rest": true` : ce qu'aucune région ne contient va à celle-ci, au lieu du centre le plus proche ;
+    * `"drop": true` : ce qu'elle contient n'est aucune partie, par exemple un anneau ou un tourbillon dessiné autour
+      du boss ; avec `rest`, tout ce qu'aucune région ne contient est écarté ;
+    * plusieurs régions de même nom font une seule partie. L'ordre compte : la première qui contient un pixel le
+      prend, donc la pose particulière passe avant la région générale.
 * **Nouveau profil** : pour un découpage qui suit vraiment l'anatomie, ajoutez une fonction dans l'outil, sur le
   modèle de `dragon()`, et nommez ses parties dans une liste comme `DRAGON`. Elle doit rester déterministe : des
   entiers seulement pour les décisions, aucun hasard, des ordres fixes.
@@ -56,11 +65,17 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   fiche montre les parties et le combat garde la boîte.
 * Les parties ne figurent ni dans `EnemyDefinition` ni dans l'empreinte des niveaux classés : n'y mettez rien, les
   records restent comparables (`kRankingGeneration` reste 8).
+* `"origins": {"<attaque>": [x, y]}` (2.76.2, sous `"parts"`) : l'origine des tirs d'une attaque quand le boss se
+  bat par parties, en pixels du sprite depuis les pieds (comme `origin`). Elle corrige une origine hors du dessin
+  sans toucher à la définition de l'attaque, donc ni à l'empreinte de ses niveaux ni aux replays d'avant (exemple :
+  l'Astrarque, dont deux attaques empruntées partaient du vide).
 
 ## 3. Ce que le moteur fait (rien à coder pour un boss ordinaire)
 
 * **La pose** : l'animation d'un boss qui se bat par parties avance dans `Enemy::fixedUpdate`, ce qui en fait une
-  donnée de simulation (`fightsByParts`).
+  donnée de simulation (`fightsByParts`). À partir de la version 17 (`kPartsLookSimulation`), il prend aussi la
+  feuille de sa phase dans le pas fixe, sa pose gardée (`Animator::swapSet`), jamais dans une mise à jour d'affichage
+  dont le rythme varie : ses parties sont les mêmes à toute fréquence d'image.
 * **Les coups du joueur** : `GameWorld` (tirs, `damageEnemies`) et les pouvoirs à rayon (boomerang) passent par
   `reaches()`, qui touche la partie atteinte, par priorité point faible, puis normale, puis blindée. Les dégâts
   sont multipliés par son `damage`.

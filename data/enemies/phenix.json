@@ -804,5 +804,118 @@
       "derniere_aube"
     ],
     "finalText": "Sa dernière aube : survivez !"
-  }
+  },
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "tête",
+        "poly": [
+          172,
+          40,
+          224,
+          40,
+          224,
+          100,
+          172,
+          100
+        ]
+      },
+      {
+        "name": "serres",
+        "clips": [
+          "attack"
+        ],
+        "poly": [
+          136,
+          104,
+          206,
+          104,
+          206,
+          162,
+          136,
+          162
+        ]
+      },
+      {
+        "name": "serres",
+        "poly": [
+          100,
+          122,
+          138,
+          122,
+          138,
+          158,
+          100,
+          158
+        ]
+      },
+      {
+        "name": "queue",
+        "poly": [
+          0,
+          92,
+          72,
+          90,
+          104,
+          112,
+          104,
+          136,
+          62,
+          188,
+          0,
+          188
+        ]
+      },
+      {
+        "name": "corps",
+        "poly": [
+          104,
+          70,
+          172,
+          70,
+          172,
+          124,
+          104,
+          124
+        ]
+      },
+      {
+        "name": "ailes",
+        "rest": true,
+        "poly": [
+          40,
+          0,
+          176,
+          0,
+          176,
+          70,
+          40,
+          70
+        ]
+      }
+    ],
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2
+      },
+      "corps": {
+        "role": "normal",
+        "damage": 1
+      },
+      "ailes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "queue": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "serres": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }

@@ -56,7 +56,38 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
   empreinte reste celle de la 2.75.2, et `tests/test_determinism.cpp` le vérifie sur le combat de Pyrrhax.
   `kRankingGeneration` reste 8 : les records sont gardés, comme le joueur l'a demandé.
 
-Les autres boss gardent leur boîte pour l'instant ; leurs fiches montrent déjà leurs parties.
+## Les gigaboss de la campagne (2.76.2, `partsFromVersion` 17)
+
+Découpés par le profil « regions » (des régions par pose et par feuille, [HITBOX_PARTS.md](HITBOX_PARTS.md)), sur le
+modèle de Pyrrhax :
+
+| Gigaboss | Point faible × 2 | Blindé × 0,5 | × 1 | Blesse | Blesse pendant |
+|---|---|---|---|---|---|
+| Singularis | œil (à nu dès la phase 5) | coquille | mains | épines, couronne de feu | coquille : chute |
+| Monolithe | tête | carapace (la boule entière quand il roule) | torse, bras, poings, jambes | — | poings : frappe, séismes |
+| Phénix | tête | queue | corps, ailes | serres | — |
+| Liche | crâne, phylactère (le cristal de son bâton) | traîne | robe, bâton | flammes d'âme | — |
+| Titan Mécanique | tête, réacteur | blindage (épaulière, phases 1 à 4) | torse, canon, poing, jambes | cheminées | poing : frappe |
+| Kraken | yeux | — | manteau, tentacules | bec | tentacules : fouets, étreinte |
+| Astrarque | cœur | anneaux, plaques | coque, bras, chaînes | creusets, pointes | coque, plaques : ruées |
+
+* **L'Astrarque porte la feuille du Forgeron primordial** (`forge_core`) : ses parties ont les noms de celles de ce
+  boss. Une feuille partagée prend le profil du boss dont elle porte le nom quand il en a un, sinon celui du
+  premier qui en a un (ici les régions de l'Astrarque).
+
+* **Leurs mécanismes restent**, et s'ajoutent aux parties : le Monolithe roulé reste blindé (× 0,35 de son attaque,
+  en plus de sa carapace) et s'expose étourdi ; le Phénix est intouchable dans ses cendres ; la Liche tant que son âme
+  est dans le cristal de l'autel ; le Titan arrêté tant que ses vannes ne sont pas tournées, et son réacteur à nu
+  multiplie encore les coups par 1,8. Les vannes et le cristal de l'autel gardent leur boîte.
+* **Les tirs** partent de leur dessin : l'œil et les mains de Singularis, le cristal de la Liche, le bec du Phénix et du
+  Kraken, le canon du Titan, l'œil et les poings du Monolithe. Les deux attaques que l'Astrarque emprunte (souffle de
+  Cryowyrm, éclairs d'Ignivore) partent de son cœur et de son bras par `parts.origins`.
+* **La feuille de phase** est prise dans le pas fixe (`kPartsLookSimulation`), la pose gardée : à toute fréquence
+  d'image, la même partie au même pas.
+* **Les replays d'avant** (versions 16 et 15) rejouent avec la boîte ; `tests/test_determinism.cpp` le vérifie sur le
+  combat de chacun.
+
+Les autres boss gardent leur boîte jusqu'à leur étape ; leurs fiches montrent déjà leurs parties.
 
 ## Les fiches « Où frapper »
 
@@ -80,6 +111,11 @@ Les autres boss gardent leur boîte pour l'instant ; leurs fiches montrent déj�
   * coups par parties en 16 et par boîte en 15 ;
   * contact par les seules parties qui blessent.
 * `tests/test_determinism.cpp` : empreintes du combat de Pyrrhax en 15 et en 16.
+* 2.76.2, gigaboss de la campagne :
+  * `tests/test_hitparts.cpp` : leurs règles, un coup sur le point faible × 2 et sur le blindage × 0,5, une partie hors
+    de l'ancienne boîte touchée en 17 et manquée en 16, les parties qui blessent (et pendant quelle attaque), leurs
+    tirs partis de la bonne partie, la feuille de phase prise dans le pas fixe ;
+  * `tests/test_determinism.cpp` : le combat de chacun en 15, 16 et 17, et le même combat à toute fréquence d'image.
 
 ---
 

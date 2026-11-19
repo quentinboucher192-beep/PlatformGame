@@ -519,8 +519,9 @@ TEST_CASE("monolithe: in its arena it fights, never camps a corner nor a pit edg
             CHECK(worstEdge < 3.0f);
             CHECK(worstCorner < 2.0f);
             // A fighter: it follows a moving player over its floor (a still one, it faces from its
-            // distance, ~170 px, never from the edge).
-            if (!still) CHECK(maxX - minX > 160.0f);
+            // distance, ~170 px, never from the edge). 2.76.2: by its parts its body no longer throws
+            // her back, she runs through it; in its phase of spells (« Or ») it follows her ~150 px.
+            if (!still) CHECK(maxX - minX > 128.0f);
         }
     for (AttackType t : golemTypes()) {
         if (!used.count(t)) std::printf("  jamais choisie : %s\n", attackTypeId(t));

@@ -658,5 +658,254 @@
       "derniere_onde"
     ],
     "finalText": "Sa dernière salve : survivez !"
-  }
+  },
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "poing",
+        "clips": [
+          "telegraph:2-5",
+          "attack:0"
+        ],
+        "poly": [
+          62,
+          18,
+          120,
+          18,
+          120,
+          82,
+          62,
+          82
+        ]
+      },
+      {
+        "name": "tête",
+        "clips": [
+          "attack:1-4"
+        ],
+        "poly": [
+          128,
+          50,
+          170,
+          50,
+          170,
+          86,
+          128,
+          86
+        ]
+      },
+      {
+        "name": "réacteur",
+        "clips": [
+          "attack:1-4"
+        ],
+        "poly": [
+          140,
+          88,
+          178,
+          88,
+          178,
+          126,
+          140,
+          126
+        ]
+      },
+      {
+        "name": "poing",
+        "clips": [
+          "attack:1-4"
+        ],
+        "poly": [
+          156,
+          154,
+          220,
+          154,
+          220,
+          214,
+          156,
+          214
+        ]
+      },
+      {
+        "name": "tête",
+        "poly": [
+          118,
+          34,
+          156,
+          34,
+          156,
+          70,
+          118,
+          70
+        ]
+      },
+      {
+        "name": "réacteur",
+        "poly": [
+          130,
+          76,
+          168,
+          76,
+          168,
+          114,
+          130,
+          114
+        ]
+      },
+      {
+        "name": "cheminées",
+        "poly": [
+          74,
+          26,
+          116,
+          26,
+          116,
+          62,
+          74,
+          62
+        ]
+      },
+      {
+        "name": "canon",
+        "poly": [
+          168,
+          70,
+          256,
+          70,
+          256,
+          120,
+          168,
+          120
+        ]
+      },
+      {
+        "name": "blindage",
+        "sheets": [
+          "titan",
+          "titan_p2",
+          "titan_p3",
+          "titan_p4"
+        ],
+        "poly": [
+          74,
+          62,
+          128,
+          62,
+          128,
+          114,
+          74,
+          114
+        ]
+      },
+      {
+        "name": "torse",
+        "sheets": [
+          "titan_p5",
+          "titan_p6",
+          "titan_p7",
+          "titan_p8"
+        ],
+        "poly": [
+          74,
+          62,
+          128,
+          62,
+          128,
+          114,
+          74,
+          114
+        ]
+      },
+      {
+        "name": "poing",
+        "clips": [
+          "idle",
+          "walk",
+          "move",
+          "telegraph:0-1",
+          "attack:0",
+          "telegraph_special",
+          "special",
+          "hurt",
+          "summon",
+          "roar",
+          "death"
+        ],
+        "poly": [
+          158,
+          118,
+          212,
+          118,
+          212,
+          172,
+          158,
+          172
+        ]
+      },
+      {
+        "name": "torse",
+        "poly": [
+          100,
+          112,
+          166,
+          112,
+          166,
+          146,
+          100,
+          146
+        ]
+      },
+      {
+        "name": "jambes",
+        "poly": [
+          90,
+          146,
+          190,
+          146,
+          190,
+          214,
+          90,
+          214
+        ]
+      }
+    ],
+    "roles": {
+      "tête": {
+        "role": "weak",
+        "damage": 2
+      },
+      "réacteur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "blindage": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "torse": {
+        "role": "normal",
+        "damage": 1
+      },
+      "canon": {
+        "role": "normal",
+        "damage": 1
+      },
+      "poing": {
+        "role": "normal",
+        "damage": 1,
+        "hurtDuring": [
+          "poing"
+        ]
+      },
+      "jambes": {
+        "role": "normal",
+        "damage": 1
+      },
+      "cheminées": {
+        "role": "hurt"
+      }
+    }
+  },
+  "partsFromVersion": 17
 }
