@@ -2647,6 +2647,12 @@
    ]
   },
   {
+   "fr": "anneaux",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Anneaux d'or",
    "where": [
     "data/enemies/monolithe.json"
@@ -2834,6 +2840,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "antennes",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -6416,6 +6428,12 @@
    ]
   },
   {
+   "fr": "avant-bras",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Avant-bras de givre",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -7947,6 +7965,12 @@
    ]
   },
   {
+   "fr": "bras",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Bras de la spirale",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -8557,6 +8581,12 @@
    "fr": "Cadre argent.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre blanc : sa boîte d'avant (les replays d'avant)",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -10755,6 +10785,12 @@
    "fr": "Chacun de ses pas fait trembler les Confins !",
    "where": [
     "data/enemies/monolithe.json"
+   ]
+  },
+  {
+   "fr": "chair",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -14560,6 +14596,18 @@
    ]
   },
   {
+   "fr": "corne droite",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "corne gauche",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Corniche de basalte",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -15849,6 +15897,12 @@
    ]
   },
   {
+   "fr": "crâne",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Crâne tombé : ses lances stellaires perdent leur précision",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp",
@@ -16226,6 +16280,12 @@
    ]
   },
   {
+   "fr": "cuisse",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Cuisse flottante",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -16267,15 +16327,33 @@
    ]
   },
   {
+   "fr": "côtes",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Côtes basses",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
+   "fr": "côtes basses",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Côtes hautes",
    "where": [
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "côtes hautes",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -16295,6 +16373,13 @@
    "fr": "CŒUR",
    "where": [
     "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "cœur",
+   "where": [
+    "data/enemies/asterion_coeur.json",
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -18488,6 +18573,12 @@
    ]
   },
   {
+   "fr": "doigts",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "doit être entre {0} et {1}",
    "where": [
     "server/src/validate.ts"
@@ -19321,6 +19412,18 @@
    "fr": "débranchée il y a {0} s",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "débris droite",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "débris gauche",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -25336,6 +25439,12 @@
    ]
   },
   {
+   "fr": "genou",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Genou-forge",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
@@ -26395,6 +26504,12 @@
    ]
   },
   {
+   "fr": "griffes",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Griffes de Dreadfang",
    "where": [
     "data/achievements/achievements.json",
@@ -26822,6 +26937,12 @@
    "fr": "GUEULE",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "gueule",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -29543,6 +29664,13 @@
    ]
   },
   {
+   "fr": "jambe",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "JAMBE DROITE",
    "where": [
     "data/raids/asterion.json",
@@ -29706,6 +29834,12 @@
    "fr": "Jointure de Dreadfang",
    "where": [
     "data/enemies/dreadfang_jointure.json"
+   ]
+  },
+  {
+   "fr": "jointures",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -40456,6 +40590,12 @@
    ]
   },
   {
+   "fr": "mâchoire",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Mèche",
    "where": [
     "game/powers/PowerStats.cpp"
@@ -43659,6 +43799,12 @@
    ]
   },
   {
+   "fr": "orbe",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
    "fr": "Orbe d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -46317,6 +46463,12 @@
    ]
   },
   {
+   "fr": "phalanges",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Phase",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -46647,6 +46799,13 @@
    "where": [
     "data/enemies/echo_frost_hydra.json",
     "data/enemies/frost_hydra.json"
+   ]
+  },
+  {
+   "fr": "pied",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -47159,6 +47318,12 @@
    "fr": "Plasma d'étoile",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "plastron",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -47811,6 +47976,12 @@
    ]
   },
   {
+   "fr": "poing",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Poing de magma",
    "where": [
     "data/enemies/pyroclast.json"
@@ -47989,6 +48160,12 @@
    "fr": "Point »",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "pointe",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -50654,6 +50831,12 @@
    ]
   },
   {
+   "fr": "racines",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Racines de givre",
    "where": [
     "data/enemies/echo_frost_hydra.json",
@@ -50901,6 +51084,12 @@
   },
   {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : les 8 Gigaboss d'Asterion se battent par parties. Leurs points faibles dessinés prennent × 2 : les yeux de Skullmaw, les jointures de Dreadfang, les phalanges de Pyroclast, le cœur de Heartbreaker et du Cœur d'Asterion, la gueule du Voidworm, les orbes de Graviton, le genou de Titanus. Cornes, épaules, côtes, cuisse et racines sont blindées (× 0,5). Seules les griffes, mâchoires, doigts, épines, débris et pieds blessent au contact. Leurs fiches montrent leurs parties à la couleur de leur rôle. Une instance ne réunit que des joueurs aux mêmes règles.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -57240,6 +57429,12 @@
    ]
   },
   {
+   "fr": "Ses parties : vert × 2, bleu × 1, gris × 0,5, rouge blesse",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
@@ -62143,6 +62338,12 @@
    ]
   },
   {
+   "fr": "tige",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Timor-Leste",
    "where": [
     "data/online/countries.json",
@@ -64218,6 +64419,12 @@
    "fr": "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.",
    "where": [
     "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "tête",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -69622,6 +69829,12 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "yeux",
+   "where": [
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -75620,9 +75833,33 @@
    ]
   },
   {
+   "fr": "épaule",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "épaule droite",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "épaule gauche",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Épaule gelée",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "épines",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {

@@ -42,7 +42,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 5  # 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16)
+TITAN_REVISION = 6  # 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.1): every boss by its hit parts (simulation 17)
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")

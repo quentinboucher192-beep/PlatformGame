@@ -619,6 +619,11 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.76.1** :
+* **Raids** : les 8 Gigaboss d'Asterion se battent **par parties** (version de simulation **17**) : leurs points
+  faibles dessinés × 2, leurs parties blindées × 0,5, et seules leurs griffes, mâchoires ou épines blessent au contact
+  ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+
 **Nouveau dans la version 2.76.0** :
 * **Boss en parties** : chaque boss est découpé en parties qui suivent son dessin image par image. Les formes sont
   des polygones convexes tirés des sprites par `tools/assetgen/hitparts.py` (`assets/hitparts`), et les rôles et

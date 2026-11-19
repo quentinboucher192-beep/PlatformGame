@@ -192,6 +192,102 @@
       "hitEffect": "eruption_spore"
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "gueule",
+        "poly": [
+          148,
+          42,
+          188,
+          42,
+          188,
+          86,
+          148,
+          86
+        ]
+      },
+      {
+        "name": "épines",
+        "poly": [
+          72,
+          8,
+          110,
+          8,
+          110,
+          80,
+          72,
+          80
+        ]
+      },
+      {
+        "name": "tête",
+        "poly": [
+          96,
+          14,
+          190,
+          14,
+          190,
+          98,
+          96,
+          98
+        ]
+      },
+      {
+        "name": "racines",
+        "poly": [
+          30,
+          222,
+          226,
+          222,
+          226,
+          256,
+          30,
+          256
+        ]
+      },
+      {
+        "name": "anneaux",
+        "poly": [
+          78,
+          96,
+          180,
+          96,
+          180,
+          236,
+          78,
+          236
+        ]
+      }
+    ],
+    "roles": {
+      "gueule": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "crachat",
+          "derniere_morsure"
+        ]
+      },
+      "épines": {
+        "role": "hurt"
+      },
+      "tête": {
+        "role": "normal",
+        "damage": 1
+      },
+      "racines": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "anneaux": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

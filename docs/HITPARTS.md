@@ -56,7 +56,8 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
   empreinte reste celle de la 2.75.2, et `tests/test_determinism.cpp` le vérifie sur le combat de Pyrrhax.
   `kRankingGeneration` reste 8 : les records sont gardés, comme le joueur l'a demandé.
 
-Les autres boss gardent leur boîte pour l'instant ; leurs fiches montrent déjà leurs parties.
+2.76.1 : les 8 Gigaboss d'Asterion se battent par parties dès la version 17 (profil « regions », tableau dans
+[RAIDS.md](RAIDS.md)). Les autres boss gardent leur boîte jusqu'à leur étape ; leurs fiches montrent déjà leurs parties.
 
 ## Les fiches « Où frapper »
 

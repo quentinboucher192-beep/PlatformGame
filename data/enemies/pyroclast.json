@@ -262,6 +262,81 @@
       "hitEffect": "fire_burst"
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "phalanges",
+        "poly": [
+          66,
+          66,
+          138,
+          66,
+          138,
+          100,
+          66,
+          100
+        ]
+      },
+      {
+        "name": "bras",
+        "poly": [
+          0,
+          64,
+          64,
+          64,
+          64,
+          124,
+          0,
+          124
+        ]
+      },
+      {
+        "name": "doigts",
+        "poly": [
+          56,
+          150,
+          156,
+          150,
+          156,
+          214,
+          56,
+          214
+        ]
+      },
+      {
+        "name": "poing",
+        "poly": [
+          56,
+          96,
+          150,
+          96,
+          150,
+          150,
+          56,
+          150
+        ]
+      }
+    ],
+    "roles": {
+      "phalanges": {
+        "role": "weak",
+        "damage": 2
+      },
+      "bras": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "doigts": {
+        "role": "hurt"
+      },
+      "poing": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

@@ -12,6 +12,7 @@
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
 #include "game/enemies/BossAttackSheet.h"
+#include "game/online/LevelFingerprint.h"
 #include "game/raid/RaidSheets.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
@@ -805,6 +806,9 @@ private:
         r.pushClip(stage);
         const bool armour = v.state == "armour";
         bool partsShown = false;  // 2.76.0
+        // 2.76.1: a Gigaboss that fights by its parts: its parts in the colour of their role, its box a thin frame.
+        const PartRules& partRules = PartRules::of(g.def->id);
+        const bool partsFight = partRules.fromVersion > 0 && partRules.fromVersion <= kSimulationVersion;
         if (set && set->texture) {
             // At rest: its idle; a pose: its wind-up, then its blow (their own durations), a breath, again.
             const AnimationClip* c = set->clip("idle");
@@ -831,8 +835,8 @@ private:
                     if (const std::vector<HitPartPiece>* pieces = hp->frame(*set, *c, f)) {
                         const Vec2 pv = set->pivot;
                         const float sc = look->scale;
-                        drawHitPieces(r, std::max(1.0f, ui.s(1.5f)), *hp, *pieces, PartRules::of(g.def->id),
-                                      [&](Vec2 v) { return Vec2{o.x + (v.x - pv.x) * sc * k, o.y + (v.y - pv.y) * sc * k}; }, 40);
+                        drawHitPieces(r, std::max(1.0f, ui.s(1.5f)), *hp, *pieces, partRules,
+                                      [&](Vec2 v) { return Vec2{o.x + (v.x - pv.x) * sc * k, o.y + (v.y - pv.y) * sc * k}; }, partsFight ? 90 : 40);
                         partsShown = true;
                     }
             }
@@ -859,6 +863,11 @@ private:
                 if ((pass == 0) == hurt) continue;
                 const Rect sr = toScreen(p.rect);
                 const Color c = hitColor(p.kind);
+                if (partsFight && partsShown && p.enemy.empty() && p.label.rfind("À briser", 0) != 0) {
+                    // 2.76.1: its body fights by its parts (drawn above): its box only as a thin frame.
+                    r.drawRect(sr, Color{255, 255, 255, 150}, std::max(1.0f, ui.s(1.5f)));
+                    continue;
+                }
                 if (!hurt) r.fillRect(sr, c.withAlpha(p.kind == raid::HitPart::Kind::Armour ? 120 : 80));
                 r.drawRect(sr, c, std::max(1.5f, ui.s(hurt ? 2.5f : 2.0f)));
             }
@@ -918,7 +927,12 @@ private:
             if (present) lines.push_back({e.text, hitColor(e.kind)});
         }
         if (sourceShown) lines.push_back({"Rose : d'où part l'attaque", kSource});
-        if (partsShown) lines.push_back({"Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)", partRoleColor(PartRole::Normal)});
+        if (partsShown && partsFight) {
+            lines.push_back({"Ses parties : vert × 2, bleu × 1, gris × 0,5, rouge blesse", partRoleColor(PartRole::Weak)});
+            lines.push_back({"Cadre blanc : sa boîte d'avant (les replays d'avant)", Color{255, 255, 255, 200}});
+        } else if (partsShown) {
+            lines.push_back({"Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)", partRoleColor(PartRole::Normal)});
+        }
         lines.push_back({"Croix blanche : ses pieds", Color{255, 255, 255, 220}});
         std::vector<std::string> named;
         for (const raid::HitPart& p : v.parts)

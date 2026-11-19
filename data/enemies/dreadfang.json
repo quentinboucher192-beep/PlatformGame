@@ -181,6 +181,86 @@
       "burstInterval": 0.3
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "griffes",
+        "poly": [
+          84,
+          155,
+          192,
+          155,
+          192,
+          214,
+          84,
+          214
+        ]
+      },
+      {
+        "name": "jointures",
+        "poly": [
+          110,
+          124,
+          178,
+          124,
+          178,
+          156,
+          110,
+          156
+        ]
+      },
+      {
+        "name": "épaule",
+        "poly": [
+          14,
+          34,
+          66,
+          34,
+          66,
+          92,
+          14,
+          92
+        ]
+      },
+      {
+        "name": "avant-bras",
+        "poly": [
+          48,
+          60,
+          120,
+          60,
+          150,
+          124,
+          120,
+          150,
+          48,
+          100
+        ]
+      }
+    ],
+    "roles": {
+      "griffes": {
+        "role": "hurt"
+      },
+      "jointures": {
+        "role": "weak",
+        "damage": 2,
+        "hurtDuring": [
+          "ruee"
+        ]
+      },
+      "épaule": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "avant-bras": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

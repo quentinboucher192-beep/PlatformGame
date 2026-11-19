@@ -313,11 +313,11 @@ TEST_CASE("determinism: Pyrrhax's fight by parts has its golden digest, and its 
         auto checks = s.run(scriptedInputs(13, 30 * 120));
         return checks.empty() ? std::string() : hex(checks.back());
     };
-    const std::string before = play(15), now = play(kSimulationVersion);
+    const std::string before = play(15), now = play(16);
     const char* golden15 = "e22ee37a63ecc0fe";  // the 2.75.2 build (its box)
     const char* golden16 = "c410f3197ff713d1";  // 2.76.0: by its parts
     if (before != golden15) std::printf("  confins_01 (Pyrrhax, règles 15) : %s (attendu %s)\n", before.c_str(), golden15);
-    if (now != golden16) std::printf("  confins_01 (Pyrrhax, règles %d) : %s (attendu %s)\n", kSimulationVersion, now.c_str(), golden16);
+    if (now != golden16) std::printf("  confins_01 (Pyrrhax, règles 16) : %s (attendu %s)\n", now.c_str(), golden16);
     CHECK(before == golden15);
     CHECK(now == golden16);
 }

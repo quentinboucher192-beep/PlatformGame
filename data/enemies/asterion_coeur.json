@@ -173,6 +173,98 @@
       ]
     }
   ],
+  "parts": {
+    "profile": "regions",
+    "regions": [
+      {
+        "name": "cœur",
+        "poly": [
+          92,
+          122,
+          132,
+          122,
+          132,
+          162,
+          92,
+          162
+        ]
+      },
+      {
+        "name": "antennes",
+        "poly": [
+          18,
+          38,
+          206,
+          38,
+          206,
+          82,
+          18,
+          82
+        ]
+      },
+      {
+        "name": "côtes hautes",
+        "poly": [
+          18,
+          84,
+          206,
+          84,
+          206,
+          120,
+          18,
+          120
+        ]
+      },
+      {
+        "name": "côtes basses",
+        "poly": [
+          18,
+          160,
+          206,
+          160,
+          206,
+          200,
+          18,
+          200
+        ]
+      },
+      {
+        "name": "chair",
+        "poly": [
+          14,
+          78,
+          210,
+          78,
+          210,
+          222,
+          14,
+          222
+        ]
+      }
+    ],
+    "roles": {
+      "cœur": {
+        "role": "weak",
+        "damage": 2
+      },
+      "antennes": {
+        "role": "hurt"
+      },
+      "côtes hautes": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "côtes basses": {
+        "role": "armour",
+        "damage": 0.5
+      },
+      "chair": {
+        "role": "normal",
+        "damage": 1
+      }
+    }
+  },
+  "partsFromVersion": 17,
   "powers": {
     "teleport": {
       "enabled": false

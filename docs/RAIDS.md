@@ -1094,6 +1094,31 @@ jusqu'à ces tirs. Le lockstep reste le même sur chaque ordinateur d'une même 
 ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersion` (15), `kCoopSimulationVersion` (2) et
 `kRankingGeneration` (8) ne changent pas, aucun record n'est effacé.
 
+### 2.76.1 — les Gigaboss se battent par parties
+
+Les 8 Gigaboss d'Asterion se battent par leurs **parties de frappe** dès la version de simulation **17**
+(`"partsFromVersion": 17` ; [HITPARTS.md](HITPARTS.md), [HITBOX_PARTS.md](HITBOX_PARTS.md)). Leurs parties sont des
+**régions** dessinées sur leur image de repos (profil « regions » de `tools/assetgen/hitparts.py`), découpées en convexes
+sur chaque image :
+
+| Gigaboss | Point faible (× 2) | Blindé (× 0,5) | Blesse |
+|---|---|---|---|
+| Skullmaw | yeux | cornes | mâchoire |
+| Dreadfang | jointures (blessent aussi pendant la ruée) | épaule | griffes |
+| Pyroclast | phalanges | bras | doigts |
+| Heartbreaker | cœur | côtes, épaules | pointe |
+| Voidworm | gueule (blesse aussi pendant ses crachats) | racines | épines |
+| Graviton | orbe, noyau | pied | débris |
+| Titanus | genou | cuisse | pied |
+| Cœur d'Asterion | cœur | côtes | antennes |
+
+Leurs points faibles et cibles d'avant (ennemis collés à eux), leurs blindages de phase et leurs mécanismes ne changent
+pas. Les coups qui touchent leur corps en prennent le multiplicateur de la partie touchée. Le contact ne blesse plus que
+par leurs parties « blesse », et leurs attaques gardent leurs zones. La fiche « Où frapper » dessine leurs parties à la
+couleur de leur rôle, et leur boîte d'avant en cadre blanc. Les parties suivent la pose dans le pas fixe : le lockstep
+reste le même sur chaque ordinateur. `TITAN_REVISION` passe à 6 : une instance ne réunit que des joueurs aux mêmes
+règles. `tests/test_hitparts_gigaboss.cpp` vérifie leurs rôles, et leurs coups par parties en 17 et par boîte en 16.
+
 ## 20. Réanimations, groupe éliminé, vestiaire et liquides (2.75.1)
 
 * **Les joueurs se traversent** (raids et coopération, `GameWorld::solidTeammates`) : plus de corps solide, plus
