@@ -153,6 +153,24 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
             }
             return Rect{x, y, w, std::max(ui.s(40), std::min(ui.s(300) * k, bottom - y))};
         }
+        case RaidHudElement::Notices: {
+            // 2.75.5: between the two columns, under the minimap and the heart's bar when they are at the
+            // top, above the danger band: away from the middle of the screen, where the players are.
+            const Rect g = group(), o = objectives();
+            float left = g.right() + ui.s(14);
+            const float right = o.x - ui.s(14);
+            for (const Rect& a : {hud.vitals, hud.powers})
+                if (a.w > 0.0f && a.x < W * 0.5f && a.y < H * 0.4f) left = std::max(left, a.right() + ui.s(14));
+            const float w = std::max(ui.s(160), std::min(ui.s(520) * k, right - left));
+            const float x = std::clamp(left + (right - left - w) * 0.5f, m, std::max(m, W - m - w));
+            float y = ui.s(14);
+            for (const RaidHudElement above : {RaidHudElement::Minimap, RaidHudElement::Heart}) {
+                const Rect a = defaultArea(ui, l, above, hud);
+                if (a.w > 0.0f && a.y < H * 0.3f && a.x < x + w && a.right() > x) y = std::max(y, a.bottom() + ui.s(10));
+            }
+            const float bottom = defaultArea(ui, l, RaidHudElement::Danger, hud).y - ui.s(10);
+            return Rect{x, y, w, std::max(ui.s(60), std::min(ui.s(200) * k, bottom - y))};
+        }
         default: return {};
     }
 }
@@ -223,7 +241,7 @@ ZoneColumns zoneColumns(const ZoneTable& t, float width) {
 void drawZoneTable(UIContext& ui, const Rect& r, float k, const ZoneTable& t) {
     const float pad = ui.s(14) * k, iw = r.w - pad * 2, x = r.x + pad;
     float y = r.y + pad;
-    fit(ui, t.title, {x, y + ui.s(11) * k}, 18 * k, iw, kGold, FontFace::Title);
+    fit(ui, t.title, {x, y + ui.s(11) * k}, 18 * k, iw, kGold, FontFace::Bold);  // 2.75.5: « · » is not in the titles' font
     y += ui.s(26) * k;
     if (!t.sub.empty()) {
         const auto lines = wrap(ui, t.sub, FontFace::Body, 13 * k, iw, 2);
@@ -265,6 +283,16 @@ void drawZoneTable(UIContext& ui, const Rect& r, float k, const ZoneTable& t) {
             fit(ui, std::to_string(values[v]), {x + c.x[2 + v] + c.w[2 + v] - gap, cy}, 14 * k, c.w[2 + v] - gap, kText, FontFace::Body, Align::Right, true);
         y += rowH;
     }
+}
+
+float zoneTableHeight(UIContext& ui, const ZoneTable& t, float width, float k) {
+    // The same steps as drawZoneTable: padding, title, sub-title (2 lines at most), header, rows.
+    const float pad = ui.s(14) * k, iw = width - pad * 2;
+    float h = pad + ui.s(26) * k;
+    if (!t.sub.empty()) h += static_cast<float>(wrap(ui, t.sub, FontFace::Body, 13 * k, iw, 2).size()) * ui.s(18) * k + ui.s(4) * k;
+    h += ui.s(20) * k;
+    h += t.rows.empty() ? ui.s(4) * k + 2.0f * ui.s(20) * k : static_cast<float>(t.rows.size()) * ui.s(28) * k;
+    return h + pad + ui.s(2);
 }
 
 void drawGroup(UIContext& ui, const Rect& r, float k, const Group& g) {

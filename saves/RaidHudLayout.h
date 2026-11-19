@@ -27,6 +27,7 @@ enum class RaidHudElement : int {
     Heart,          // 2.74: the Cœur d'Asterion's health shared by every group (its arena only)
     HeartEffects,   // 2.74: what the branches did to the Cœur (at its arena's door)
     Remaining,      // 2.75: « Ce qu'il reste à faire »: the zone's requirements ticked, the branch's zones to finish
+    Notices,        // 2.75.5: the raid menu's button and the short notifications under it (ui/online/RaidMenu)
     Count
 };
 constexpr int kRaidHudElements = static_cast<int>(RaidHudElement::Count);
@@ -44,8 +45,11 @@ struct RaidHudLayout {
     static const char* label(RaidHudElement e);
     /// The game's HUD element an element is (Vitals, Powers, Boss), HudElement::Count for the raid's own.
     static HudElement hudElement(RaidHudElement e);
-    /// The danger band and the network line cannot be hidden (what the group must see).
-    static bool canHide(RaidHudElement e) { return e != RaidHudElement::Danger && e != RaidHudElement::Status; }
+    /// The danger band, the network line and the notifications (with the menu's button) cannot be
+    /// hidden (what the group must see); they are moved and resized like the others.
+    static bool canHide(RaidHudElement e) {
+        return e != RaidHudElement::Danger && e != RaidHudElement::Status && e != RaidHudElement::Notices;
+    }
 
     Json toJson() const;
     static RaidHudLayout fromJson(const Json& j);
