@@ -292,6 +292,7 @@ private:
     int attackIndex_ = -1;
     bool attackStarted_ = false;
     bool attackHit_ = false;
+    bool partsStruck_ = false;  // 2.76.2 (17): its parts that hurt have struck during this attack (once)
     Vec2 aimDir_{1, 0};
     float laserAngle_ = 0.0f;
     float laserHitTimer_ = 0.0f;

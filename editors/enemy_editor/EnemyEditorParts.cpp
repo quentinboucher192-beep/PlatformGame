@@ -134,7 +134,10 @@ void EnemyEditorScene::tabParts(float x, float& y, float w) {
     const bool fights = partsWork_.fromVersion > 0 && partsWork_.fromVersion <= kSimulationVersion;
     if (native) {
         if (partsWork_.fromVersion == 0) note("Ses parties : affichage seulement ; son combat se joue sur sa boîte.", ui.theme().textDim);
-        else if (fights) note("Il se bat par ses parties depuis les règles de simulation " + std::to_string(partsWork_.fromVersion) + ".", ui.theme().textDim);
+        else if (fights) {
+            note("Il se bat par ses parties depuis les règles de simulation " + std::to_string(partsWork_.fromVersion) + ".", ui.theme().textDim);
+            note("Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques.", ui.theme().textDim);
+        }
         else note("Il se battra par ses parties à partir des règles de simulation " + std::to_string(partsWork_.fromVersion) + ".", ui.theme().textDim);
         if (acc.parts && fights)
             note("Attention : changer leurs règles change ses combats ; les replays enregistrés ne se rejoueraient plus à l'identique. "
@@ -290,7 +293,7 @@ void EnemyEditorScene::tabParts(float x, float& y, float w) {
         const std::string& name = hp->parts[i];
         const PartRule rule = partsWork_.ruleOr(name);
         std::string sub = std::string(partRoleLabel(rule.role)) + " · " + partDamageLabel(rule);
-        if (!rule.hurtDuring.empty() && rule.role != PartRole::Hurt) sub += " · blesse aussi en attaquant";
+        if (const std::string during = hurtDuringLabel(rule, work_); !during.empty()) sub += " · " + during;  // its attacks' names
         if (ui.listItem("parts_part" + std::to_string(i), widget({x, y, w, ui.s(52)}), partNameLabel(name), name == partsChosen_, sub,
                         partRoleColor(rule.role)))
             partsChosen_ = name;
@@ -317,7 +320,7 @@ void EnemyEditorScene::tabParts(float x, float& y, float w) {
         }
         y += ui.s(44) + gap;
         if (cur.role == PartRole::Hurt) {
-            note("Une partie qui blesse ne prend aucun coup : elle blesse qui la touche, à tout moment.", ui.theme().textDim);
+            note("Une partie qui blesse ne prend aucun coup ; pendant ses attaques, elle frappe avec leurs dégâts.", ui.theme().textDim);
         } else {
             FieldRow row{ui, x, w, w * 0.5f, y};
             const Rect f = row.field("Multiplicateur de dégâts");
@@ -325,11 +328,18 @@ void EnemyEditorScene::tabParts(float x, float& y, float w) {
             c |= ui.numberField("parts_damage", f, cur.damage, 0.25f, 0.0f, 4.0f, "%.2f");
             line("Blesse aussi pendant ces attaques :", {x, y, w, ui.s(28)}, 16.0f, ui.theme().text, FontFace::Body);
             y += ui.s(28) + gap * 0.5f;
-            // Its attacks, then any attack its rules name that it no longer has (so that it can be removed).
+            // Its attacks by their names, then any attack its rules name that it does not have (so that it can be
+            // removed), by the name another enemy gives it — never an identifier.
             std::vector<std::pair<std::string, std::string>> attacks;
-            for (const AttackDef& a : work_.attacks) attacks.push_back({a.id, a.name.empty() ? a.id : a.name});
+            for (const AttackDef& a : work_.attacks) attacks.push_back({a.id, a.name.empty() ? std::string("Attaque sans nom") : a.name});
             for (const std::string& id : cur.hurtDuring)
-                if (std::none_of(attacks.begin(), attacks.end(), [&](const auto& a) { return a.first == id; })) attacks.push_back({id, id});
+                if (std::none_of(attacks.begin(), attacks.end(), [&](const auto& a) { return a.first == id; })) {
+                    std::string name = "Attaque absente";
+                    for (const EnemyDefinition* e : g_.content.enemies())
+                        for (const AttackDef& a : e->attacks)
+                            if (a.id == id && !a.name.empty() && name == "Attaque absente") name = a.name + " (absente de ce boss)";
+                    attacks.push_back({id, name});
+                }
             if (attacks.empty()) note("Il n'a pas d'attaque.", ui.theme().textDim);
             for (size_t i = 0; i < attacks.size(); ++i) {
                 bool on = std::find(cur.hurtDuring.begin(), cur.hurtDuring.end(), attacks[i].first) != cur.hurtDuring.end();

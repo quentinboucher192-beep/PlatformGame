@@ -779,10 +779,14 @@ void Enemy::contactDamage(GameWorld& w) {
         return;
     // 2.62: every player it touches (alone: the only one).
     bool hit = false;
-    const bool parts = fightsByParts(*this, w);  // 2.76.0: only its parts that hurt (claws, breath, its head biting)
+    // 2.76.0 (rules of 16): a boss by parts hurts by its parts that hurt only (claws, breath, its head biting);
+    // 2.76.2 (17): by any of its parts, the precise shape of its frame, never its box.
+    const bool parts = fightsByParts(*this, w);
+    const bool whole = parts && w.simulationVersion() >= kWholeBodyContactSimulation;
     w.forEachPlayer([&](Player& p) {
         if (!p.alive()) return;
-        if (parts ? !hurtsWithParts(*this, p.box) : !box.expanded(-1).intersects(p.box)) return;
+        const bool touches = !parts ? box.expanded(-1).intersects(p.box) : whole ? touchesWithParts(*this, p.box) : hurtsWithParts(*this, p.box);
+        if (!touches) return;
         DamageInfo d;
         d.amount = def_.contactDamage;
         d.type = DamageType::Contact;

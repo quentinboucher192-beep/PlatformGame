@@ -1792,6 +1792,12 @@
    ]
   },
   {
+   "fr": "Administration : « Enregistrer les parties » écrit leurs règles dans data/enemies/{0}.json de ce jeu ; elles partent avec sa prochaine version (« Publier… » ne les envoie pas).",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Administration › Assets : chaque nouvel asset porte la pastille « NOUVEAU » sur sa vignette ou sa ligne, jusqu'à ce qu'il reçoive le focus ou un clic ; ses dossiers du rangement, l'onglet Assets et l'entrée Administration la gardent tant qu'un asset en dessous est nouveau. La version d'apparition de chaque asset est calculée automatiquement (tools/assets/asset_versions.py, relancé avec code_refs.py).",
    "where": [
     "data/news/changelog.json"
@@ -2128,6 +2134,12 @@
    "fr": "Aile-de-nuit",
    "where": [
     "data/enemies/nightwing.json"
+   ]
+  },
+  {
+   "fr": "ailes",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -2688,6 +2700,12 @@
    ]
   },
   {
+   "fr": "Animer la pose",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Anneau",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -2715,6 +2733,13 @@
    "fr": "Anneau poli",
    "where": [
     "game/cosmetics/CreationLooks.cpp"
+   ]
+  },
+  {
+   "fr": "anneaux",
+   "where": [
+    "data/enemies/astrarque.json",
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -2781,6 +2806,7 @@
   {
    "fr": "Annuler",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorPublish.cpp",
     "editors/level_editor/LevelEditorCampaign.cpp",
     "editors/level_editor/LevelEditorChat.cpp",
@@ -2905,6 +2931,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "antennes",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -4385,6 +4417,12 @@
    ]
   },
   {
+   "fr": "Attaque absente",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Attaque dirigée : maintenez Haut en attaquant pour frapper au-dessus de Nova, au sol comme en l'air ; en l'air, maintenez Bas pour frapper en dessous. Au sol, Bas reste « s'accroupir » (l'attaque frappe alors devant, comme avant) et, avec la Frappe sismique, Bas + Attaque en l'air reste la frappe sismique. Ces coups touchent les ennemis (mêmes dégâts, même recul) et les objets cassables comme le coup vers l'avant, avec leurs propres animations et leur arc de lame ; un coup vers le bas en l'air rebondit toujours sur l'ennemi touché et rend les sauts en l'air, comme avant. La direction est celle choisie au début du coup. Expliqué dans Paramètres › Clavier / souris et Manette, et dans le tutoriel.",
    "where": [
     "data/news/changelog.json"
@@ -4418,6 +4456,12 @@
    "fr": "Attaque fatale la plus fréquente : {0} · {1} défaites sur {2} tentatives arrivées là · difficulté {3}",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque sans nom",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -4572,6 +4616,12 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Attention : changer leurs règles change ses combats ; les replays enregistrés ne se rejoueraient plus à l'identique. Une telle modification demande une nouvelle version de simulation (docs/HITBOX_PARTS.md).",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -6584,6 +6634,12 @@
    ]
   },
   {
+   "fr": "avant-bras",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Avant-bras de givre",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -7361,6 +7417,12 @@
    ]
   },
   {
+   "fr": "bec",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Belgique",
    "where": [
     "data/online/countries.json",
@@ -7524,6 +7586,18 @@
    ]
   },
   {
+   "fr": "blesse aussi pendant : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Blesse aussi pendant ces attaques :",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Blessure",
    "where": [
     "ui/studio/StudioDoc.cpp"
@@ -7536,7 +7610,7 @@
    ]
   },
   {
-   "fr": "Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)",
+   "fr": "Bleu : ses parties (affichage ; son combat se joue sur sa boîte)",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
    ]
@@ -7551,6 +7625,12 @@
    "fr": "Bleu des grands fonds, lueurs vertes et écharpe corail.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "blindage",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -7864,6 +7944,12 @@
    ]
   },
   {
+   "fr": "Boss du jeu : ses parties sont en lecture seule ; seul un administrateur règle leurs rôles (Administration › Ennemis).",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Boss du niveau",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -7886,6 +7972,12 @@
    "fr": "Boss jamais affronté",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Boss par parties, règle demandée par les joueurs : toucher n'importe quelle partie d'un boss blesse au contact, avec ses dégâts de contact habituels. C'est la forme précise de son image qui compte, et non plus sa boîte. Ses parties rouges (griffes, souffle, marteau, morsure…) frappent en plus pendant leurs attaques, avec les dégâts de l'attaque. Les zones plus faibles restent : point faible × 2, blindé × 0,5. Les replays de Pyrrhax de la 2.76.0 gardent leur règle : seules ses parties rouges blessaient.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -8216,6 +8308,14 @@
    "fr": "Bras",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "bras",
+   "where": [
+    "data/enemies/astrarque.json",
+    "data/enemies/monolithe.json",
+    "data/enemies/pyroclast.json"
    ]
   },
   {
@@ -8692,6 +8792,12 @@
    ]
   },
   {
+   "fr": "bâton",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Bénin",
    "where": [
     "data/online/countries.json",
@@ -8829,6 +8935,12 @@
    "fr": "Cadre argent.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "Cadre blanc : sa boîte d'avant (les replays d'avant)",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -9277,6 +9389,12 @@
    ]
   },
   {
+   "fr": "canon",
+   "where": [
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Canon rotatif",
    "where": [
     "data/enemies/titan.json"
@@ -9336,6 +9454,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "carapace",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -10247,6 +10371,12 @@
    ]
   },
   {
+   "fr": "Ce qui frappe aussi pendant leurs attaques : les épines et la couronne de feu de Singularis (sa coquille aussi pendant sa chute), les poings du Monolithe pendant ses frappes et ses séismes, les serres du Phénix, les flammes d'âme de la traîne de la Liche, les cheminées du Titan (son poing pendant sa frappe), le bec du Kraken (ses tentacules pendant ses coups de fouet et son étreinte), les creusets et les pointes de l'Astrarque (sa coque et ses plaques pendant ses ruées).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Ce qui reste caché, même pour un administrateur : un pays ou une région que le joueur masque (seul le réglage est dit), toute position précise, les mots de passe et autres secrets, et les messages privés entre joueurs.",
    "where": [
     "data/news/changelog.json"
@@ -11067,6 +11197,12 @@
    ]
   },
   {
+   "fr": "chair",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Chaleur du Titan",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -11689,6 +11825,12 @@
    ]
   },
   {
+   "fr": "chaînes",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
    "fr": "checkpoint",
    "where": [
     "game/gameplay/BossTraining.cpp",
@@ -11787,6 +11929,12 @@
    "fr": "Cheminées",
    "where": [
     "data/levels/aethra_03.json"
+   ]
+  },
+  {
+   "fr": "cheminées",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -13338,7 +13486,7 @@
    ]
   },
   {
-   "fr": "Combat par parties : vos coups touchent la partie visée (point faible d'abord), seules les parties rouges blessent.",
+   "fr": "Combat par parties : vos coups touchent la partie visée (point faible d'abord). Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
    ]
@@ -14954,6 +15102,30 @@
    ]
   },
   {
+   "fr": "coque",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
+   "fr": "coquille",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
+   "fr": "corne droite",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
+   "fr": "corne gauche",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Corniche de basalte",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -14969,6 +15141,12 @@
    "fr": "Corniche technologique",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "corps",
+   "where": [
+    "data/enemies/phenix.json"
    ]
   },
   {
@@ -15690,6 +15868,12 @@
    ]
   },
   {
+   "fr": "couronne",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Couronne ardente",
    "where": [
     "data/enemies/astrarque.json"
@@ -16024,6 +16208,12 @@
    ]
   },
   {
+   "fr": "creusets",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
    "fr": "Crevasse cachée",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -16270,6 +16460,13 @@
    "where": [
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "crâne",
+   "where": [
+    "data/enemies/liche.json",
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -16650,6 +16847,12 @@
    ]
   },
   {
+   "fr": "cuisse",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Cuisse flottante",
    "where": [
     "data/raids/asterion/jambe_gauche/branch.json"
@@ -16691,15 +16894,33 @@
    ]
   },
   {
+   "fr": "côtes",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Côtes basses",
    "where": [
     "data/raids/asterion/torse/branch.json"
    ]
   },
   {
+   "fr": "côtes basses",
+   "where": [
+    "data/enemies/asterion_coeur.json"
+   ]
+  },
+  {
    "fr": "Côtes hautes",
    "where": [
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "côtes hautes",
+   "where": [
+    "data/enemies/asterion_coeur.json"
    ]
   },
   {
@@ -16725,6 +16946,14 @@
    "fr": "CŒUR",
    "where": [
     "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "cœur",
+   "where": [
+    "data/enemies/asterion_coeur.json",
+    "data/enemies/astrarque.json",
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -18936,6 +19165,12 @@
    ]
   },
   {
+   "fr": "doigts",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "doit être entre {0} et {1}",
    "where": [
     "server/src/validate.ts"
@@ -19781,6 +20016,18 @@
    "fr": "débranchée il y a {0} s",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "débris droite",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "débris gauche",
+   "where": [
+    "data/enemies/graviton.json"
    ]
   },
   {
@@ -22294,6 +22541,18 @@
    ]
   },
   {
+   "fr": "enemies",
+   "where": [
+    "game/content/AssetCatalog.cpp",
+    "game/levels/DifficultyRating.cpp",
+    "game/online/LevelFingerprint.cpp",
+    "game/progression/NewsCenter.cpp",
+    "game/raid/RaidSheets.cpp",
+    "packaging/PackageExporter.cpp",
+    "saves/HudLayout.cpp"
+   ]
+  },
+  {
    "fr": "English",
    "where": [
     "engine/core/I18n.cpp"
@@ -22761,6 +23020,18 @@
    "fr": "Enregistrer les changements",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrer les parties",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Enregistrer les parties*",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -24502,6 +24773,12 @@
    ]
   },
   {
+   "fr": "Fiches « Où frapper » et éditeur : chaque partie a un contour épais et un motif propre à son rôle (point faible quadrillé, partie normale rayée en long, partie blindée rayée en travers, partie qui blesse à grosses rayures obliques). Elle reste lisible sur un sprite de n'importe quelle couleur, comme la cuisse grise de Titanus. Les légendes gardent les mêmes couleurs et montrent le motif.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Fichier",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -24535,6 +24812,12 @@
    "fr": "Fichier corrompu (CRC) : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier d'ennemi illisible",
+   "where": [
+    "game/enemies/HitParts.cpp"
    ]
   },
   {
@@ -24648,6 +24931,12 @@
    "fr": "fichier introuvable",
    "where": [
     "packaging/ZipArchive.cpp"
+   ]
+  },
+  {
+   "fr": "Fichier introuvable : data/enemies/{0}.json",
+   "where": [
+    "game/enemies/HitParts.cpp"
    ]
   },
   {
@@ -25098,6 +25387,12 @@
    "fr": "Flammes bleues",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "flammes d'âme",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -26213,6 +26508,12 @@
    ]
   },
   {
+   "fr": "genou",
+   "where": [
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "Genou-forge",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
@@ -26358,6 +26659,12 @@
    "fr": "Gigaboss : {0} · vaincu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss de la campagne : Singularis, le Monolithe, le Phénix, la Liche, le Titan Mécanique, le Kraken et l'Astrarque se battent par parties, comme Pyrrhax. Leur tête, leurs yeux, leur réacteur ou leur phylactère sont des points faibles (× 2), leur coquille, leur carapace, leurs anneaux, leur blindage, leur queue ou leur traîne sont blindés (× 0,5), le reste prend les coups normalement, et vous pouvez les toucher bien au-delà de leur ancienne boîte. Les replays d'avant rejouent à l'identique et aucun record n'est effacé.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -27326,6 +27633,12 @@
    ]
   },
   {
+   "fr": "griffes",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
    "fr": "Griffes de Dreadfang",
    "where": [
     "data/achievements/achievements.json",
@@ -27765,6 +28078,12 @@
    ]
   },
   {
+   "fr": "gueule",
+   "where": [
+    "data/enemies/voidworm.json"
+   ]
+  },
+  {
    "fr": "Gueule ouverte",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -27945,6 +28264,12 @@
    "fr": "Habitué des courses",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "halo",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {
@@ -28846,6 +29171,12 @@
    ]
   },
   {
+   "fr": "Identifiant invalide",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "identifiant invalide",
    "where": [
     "server/src/devices.ts"
@@ -29091,6 +29422,12 @@
    ]
   },
   {
+   "fr": "Il n'a pas d'attaque.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Il ne sera plus proposé, même plus tard. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause) : tu pourras t'y reporter à tout moment.",
    "where": [
     "ui/screens/TutorialScenes.cpp"
@@ -29130,6 +29467,18 @@
    "fr": "Il savait tous leurs noms. « Tant qu'on se souvient de toi, disait-il, tu n'es jamais tout à fait parti. »",
    "where": [
     "data/stories/liche.json"
+   ]
+  },
+  {
+   "fr": "Il se bat par ses parties depuis les règles de simulation {0}.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Il se battra par ses parties à partir des règles de simulation {0}.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -29204,6 +29553,7 @@
   {
    "fr": "Image",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "game/content/AssetCatalog.cpp"
    ]
   },
@@ -30540,6 +30890,13 @@
    ]
   },
   {
+   "fr": "jambe",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/enemies/titanus.json"
+   ]
+  },
+  {
    "fr": "JAMBE DROITE",
    "where": [
     "data/raids/asterion.json",
@@ -30577,6 +30934,13 @@
    "fr": "Jambe gauche tombée : plus de pièges de gravité",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "jambes",
+   "where": [
+    "data/enemies/monolithe.json",
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -30703,6 +31067,12 @@
    "fr": "Jointure de Dreadfang",
    "where": [
     "data/enemies/dreadfang_jointure.json"
+   ]
+  },
+  {
+   "fr": "jointures",
+   "where": [
+    "data/enemies/dreadfang.json"
    ]
   },
   {
@@ -37703,6 +38073,12 @@
    ]
   },
   {
+   "fr": "Les parties d'un boss du jeu sont en lecture seule, comme ses autres réglages : seul un administrateur les règle, et « Enregistrer les parties » les écrit dans le fichier de l'ennemi. Vos propres ennemis se battent avec leur boîte : leurs parties sont montrées, sans règles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "les parties du titan sont illisibles",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -38229,6 +38605,12 @@
    "where": [
     "data/powers/decoy.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Leurs mécanismes ne changent pas : le Monolithe roulé en boule reste blindé et s'expose étourdi, le Phénix est intouchable dans ses cendres, la Liche tant que son âme est dans le cristal de l'autel, le Titan arrêté tant que ses vannes ne sont pas tournées, et son réacteur à nu prend encore plus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -39262,6 +39644,12 @@
    ]
   },
   {
+   "fr": "mains",
+   "where": [
+    "data/enemies/singularis.json"
+   ]
+  },
+  {
    "fr": "Maintenance en cours : les joueurs ne peuvent rien modifier pendant l'import.",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -39536,6 +39924,12 @@
    "fr": "Manquant : {0}",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "manteau",
+   "where": [
+    "data/enemies/kraken.json"
    ]
   },
   {
@@ -40932,6 +41326,12 @@
    ]
   },
   {
+   "fr": "Modifications des parties annulées",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Modifications non enregistrées",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp",
@@ -41699,6 +42099,12 @@
    ]
   },
   {
+   "fr": "Multiplicateur de dégâts",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Multiplicateur de dégâts par source : 0 = immunisé, < 1 = résistance, > 1 = faiblesse.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -41875,6 +42281,12 @@
    "fr": "Mâchoire",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "mâchoire",
+   "where": [
+    "data/enemies/skullmaw.json"
    ]
   },
   {
@@ -45285,6 +45697,12 @@
    ]
   },
   {
+   "fr": "orbe",
+   "where": [
+    "data/enemies/graviton.json"
+   ]
+  },
+  {
    "fr": "Orbe d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -45677,7 +46095,7 @@
    ]
   },
   {
-   "fr": "Où frapper : la tête, les yeux et le cœur exposé sont des points faibles (× 2) ; les carapaces, épaulières, anneaux, chapeau et queues sont blindés (× 0,5) ; le reste prend les coups normalement. Les ronces, pointes, flammes, armes, tentacules et réacteurs blessent au contact, et chaque attaque fait blesser ses propres parties : le poing ou le bras qui frappe, la gueule qui plonge, les têtes qui mordent.",
+   "fr": "Où frapper : la tête, les yeux et le cœur exposé sont des points faibles (× 2) ; les carapaces, épaulières, anneaux, chapeau et queues sont blindés (× 0,5) ; le reste prend les coups normalement. Les ronces, pointes, flammes, armes, tentacules et réacteurs frappent pendant leurs attaques, et chaque attaque fait frapper ses propres parties : le poing ou le bras qui frappe, la gueule qui plonge, les têtes qui mordent.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -46397,6 +46815,7 @@
   {
    "fr": "Partie : {0}",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -46491,9 +46910,21 @@
    ]
   },
   {
-   "fr": "Parties : affichage ; combat par boîte jusqu'à son étape.",
+   "fr": "Parties (où frapper)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Parties : affichage ; son combat se joue sur sa boîte.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Parties : {0}",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -46533,9 +46964,29 @@
    ]
   },
   {
+   "fr": "Parties enregistrées dans data/enemies/{0}.json",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "Parties non enregistrées (Boss › Parties)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
    "fr": "Parties vérifiées par Cosmic Online",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "parts",
+   "where": [
+    "game/online/AsterionBody.cpp",
+    "main.cpp",
+    "ui/screens/AdminBackups.cpp"
    ]
   },
   {
@@ -47993,6 +48444,12 @@
    ]
   },
   {
+   "fr": "phalanges",
+   "where": [
+    "data/enemies/pyroclast.json"
+   ]
+  },
+  {
    "fr": "Phase",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
@@ -48095,6 +48552,7 @@
   {
    "fr": "Phase {0}",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
     "game/raid/RaidSheets.cpp",
@@ -48186,6 +48644,12 @@
    ]
   },
   {
+   "fr": "Phases et réglages",
+   "where": [
+    "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
    "fr": "Phases sans dégât",
    "where": [
     "ui/screens/BossStatsScene.cpp",
@@ -48252,6 +48716,12 @@
    "fr": "Phrase secrète incorrecte : impossible de déchiffrer ce fichier.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "phylactère",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -48323,6 +48793,13 @@
    "where": [
     "data/enemies/echo_frost_hydra.json",
     "data/enemies/frost_hydra.json"
+   ]
+  },
+  {
+   "fr": "pied",
+   "where": [
+    "data/enemies/graviton.json",
+    "data/enemies/titanus.json"
    ]
   },
   {
@@ -48583,6 +49060,7 @@
   {
    "fr": "Planche",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminAssets.cpp"
    ]
   },
@@ -48805,6 +49283,12 @@
    ]
   },
   {
+   "fr": "plaques",
+   "where": [
+    "data/enemies/astrarque.json"
+   ]
+  },
+  {
    "fr": "Plaques brisées",
    "where": [
     "game/raid/BossHitboxes.cpp"
@@ -48841,6 +49325,12 @@
    "fr": "Plasma d'étoile",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "plastron",
+   "where": [
+    "data/enemies/heartbreaker.json"
    ]
   },
   {
@@ -49505,6 +49995,13 @@
    ]
   },
   {
+   "fr": "poing",
+   "where": [
+    "data/enemies/pyroclast.json",
+    "data/enemies/titan.json"
+   ]
+  },
+  {
    "fr": "Poing de magma",
    "where": [
     "data/enemies/pyroclast.json"
@@ -49520,6 +50017,12 @@
    "fr": "Poing-piston",
    "where": [
     "data/enemies/titan.json"
+   ]
+  },
+  {
+   "fr": "poings",
+   "where": [
+    "data/enemies/monolithe.json"
    ]
   },
   {
@@ -49683,6 +50186,18 @@
    "fr": "Point »",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "pointe",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "pointes",
+   "where": [
+    "data/enemies/astrarque.json"
    ]
   },
   {
@@ -50015,6 +50530,12 @@
    "fr": "Portée min",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Pose",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -52210,6 +52731,12 @@
    ]
   },
   {
+   "fr": "queue",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Qui est en ligne dans votre clan : dans CLANS › Membres, chaque membre porte la pastille de présence de SOCIAL (en ligne, absent, hors ligne), les membres en ligne passent en tête, et l'en-tête de la liste annonce « X/Y en ligne ».",
    "where": [
     "data/news/changelog.json"
@@ -52297,6 +52824,12 @@
    "fr": "Quitter le test (retour à l'administration)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter sans enregistrer",
+   "where": [
+    "editors/enemy_editor/EnemyEditorScene.cpp"
    ]
   },
   {
@@ -52467,6 +53000,12 @@
    "where": [
     "data/levels/aethra_01.json",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "racines",
+   "where": [
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -52725,6 +53264,12 @@
   },
   {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : les 8 Gigaboss d'Asterion se battent par parties. Leurs points faibles dessinés prennent × 2 : les yeux de Skullmaw, les jointures de Dreadfang, les phalanges de Pyroclast, le cœur de Heartbreaker et du Cœur d'Asterion, la gueule du Voidworm, les orbes de Graviton, le genou de Titanus. Cornes, épaules, côtes, cuisse et racines sont blindées (× 0,5). Tout leur corps blesse au contact, au pixel près ; griffes, mâchoires, doigts, épines, débris et pieds frappent aussi pendant leurs attaques. Leurs fiches montrent leurs parties à la couleur de leur rôle. Une instance ne réunit que des joueurs aux mêmes règles.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -54553,6 +55098,12 @@
    ]
   },
   {
+   "fr": "remous",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Rempart",
    "where": [
     "data/enemies/bulwark.json"
@@ -55989,6 +56540,12 @@
    ]
   },
   {
+   "fr": "robe",
+   "where": [
+    "data/enemies/liche.json"
+   ]
+  },
+  {
    "fr": "Robot",
    "where": [
     "data/online/avatars.json",
@@ -56433,6 +56990,12 @@
    "fr": "règles invalides",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "réacteur",
+   "where": [
+    "data/enemies/titan.json"
    ]
   },
   {
@@ -57553,6 +58116,7 @@
   {
    "fr": "Rôle",
    "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -59055,6 +59619,12 @@
    ]
   },
   {
+   "fr": "serres",
+   "where": [
+    "data/enemies/phenix.json"
+   ]
+  },
+  {
    "fr": "Serveur",
    "where": [
     "ui/screens/AdminBackups.cpp",
@@ -59258,6 +59828,12 @@
    "fr": "Ses parties",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Ses parties : affichage seulement ; son combat se joue sur sa boîte.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -63388,6 +63964,12 @@
    ]
   },
   {
+   "fr": "tentacules",
+   "where": [
+    "data/enemies/kraken.json"
+   ]
+  },
+  {
    "fr": "Tentative",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -64290,6 +64872,12 @@
    ]
   },
   {
+   "fr": "tige",
+   "where": [
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Timor-Leste",
    "where": [
     "data/online/countries.json",
@@ -64365,6 +64953,12 @@
    "fr": "tirage {0}",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Tirs des gigaboss : ils partent de leur dessin (l'œil et les mains de Singularis, le cristal de la Liche, le bec du Phénix et du Kraken, le canon du Titan). L'Astrarque lance désormais le souffle et les éclairs qu'il emprunte depuis son cœur et son bras, et non plus du vide au-dessus de lui.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -65186,6 +65780,18 @@
    ]
   },
   {
+   "fr": "Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Tout le groupe est prêt : la route s'ouvre !",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
@@ -65707,6 +66313,12 @@
    "fr": "Traversez les plaines jusqu'au lac de l'aurore.",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "traîne",
+   "where": [
+    "data/enemies/liche.json"
    ]
   },
   {
@@ -66414,6 +67026,15 @@
    "fr": "Ténèbres : la lumière de son œil balaie l'arène et révèle les plateformes ; les miroirs brillent.",
    "where": [
     "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "tête",
+   "where": [
+    "data/enemies/monolithe.json",
+    "data/enemies/phenix.json",
+    "data/enemies/titan.json",
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -67875,6 +68496,12 @@
    "fr": "Une partie par jour, à n'importe quel palier, à l'heure : une partie hors délai ne compte pas. Seules les parties vérifiées par Cosmic Online comptent.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Une partie qui blesse ne prend aucun coup ; pendant ses attaques, elle frappe avec leurs dégâts.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -70562,6 +71189,12 @@
    ]
   },
   {
+   "fr": "Vos entités se battent avec leur boîte : seules les entités du jeu se battent par parties. Ses parties sont montrées ici, sans règles.",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Vos meilleurs segments à la suite, chacun rejoué à l'identique (course ou entraînement).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -71925,6 +72558,13 @@
    ]
   },
   {
+   "fr": "yeux",
+   "where": [
+    "data/enemies/kraken.json",
+    "data/enemies/skullmaw.json"
+   ]
+  },
+  {
    "fr": "Yémen",
    "where": [
     "data/online/countries.json",
@@ -72520,6 +73160,12 @@
    "fr": "{0} % · {1} Mo reçus",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (absente de ce boss)",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
    ]
   },
   {
@@ -75747,6 +76393,12 @@
    ]
   },
   {
+   "fr": "{0} · image {1} / {2} · cliquez sur une partie pour la choisir",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "{0} · inscrit le {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -77169,6 +77821,12 @@
    ]
   },
   {
+   "fr": "Échec de l'enregistrement des parties",
+   "where": [
+    "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
    "fr": "Échec de l'export : {0}",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
@@ -77814,6 +78472,12 @@
    ]
   },
   {
+   "fr": "Écriture impossible : data/enemies/{0}.json",
+   "where": [
+    "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
    "fr": "écriture impossible : {0}",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -77899,6 +78563,12 @@
   },
   {
    "fr": "Éditeur d'ennemis : texture et épaisseur de chaque rayon, avec aperçu ; les libellés longs ne passent plus sous leur champ.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Éditeur d'ennemis : un onglet Boss › « Parties (où frapper) » montre les parties d'un boss sur son sprite, avec la pose et l'image de votre choix. Pour chaque partie, il règle son rôle (point faible, normale, blindée, qui blesse), son multiplicateur de dégâts et les attaques pendant lesquelles elle blesse aussi. Choisissez une partie en cliquant dessus ou dans la liste, au clavier ou à la manette.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -78148,9 +78818,34 @@
    ]
   },
   {
+   "fr": "épaule",
+   "where": [
+    "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "épaule droite",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
+   "fr": "épaule gauche",
+   "where": [
+    "data/enemies/heartbreaker.json"
+   ]
+  },
+  {
    "fr": "Épaule gelée",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "épines",
+   "where": [
+    "data/enemies/singularis.json",
+    "data/enemies/voidworm.json"
    ]
   },
   {
@@ -78964,6 +79659,12 @@
    "fr": "Œil",
    "where": [
     "game/gameplay/BossBadge.cpp"
+   ]
+  },
+  {
+   "fr": "œil",
+   "where": [
+    "data/enemies/singularis.json"
    ]
   },
   {

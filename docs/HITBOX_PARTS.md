@@ -65,7 +65,8 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   * `weak` est un point faible ;
   * `normal` est une partie normale (rôle par défaut d'une partie sans règle, × 1) ;
   * `armour` est une partie blindée ;
-  * `hurt` est une partie qui ne fait que blesser : elle n'est jamais touchée, elle blesse au contact.
+  * `hurt` est une partie qui blesse : elle n'est jamais touchée, et elle frappe pendant les attaques du boss avec
+    leurs dégâts (comme toute partie pendant les attaques de son `hurtDuring`).
 * **Modèle validé par le joueur** : tête ou yeux × 2, carapace ou queue × 0,5, le reste × 1, et les griffes, le
   souffle, les dards ou les pointes qui blessent. Adaptez-le à chaque boss.
 * `hurtDuring` : les identifiants des attaques pendant lesquelles une partie blesse aussi. Exemple : la tête pendant
@@ -116,8 +117,16 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   sont multipliés par son `damage`.
   * **Nouveau code qui frappe un ennemi** : utilisez `reaches(e, w, zone, &mult)` (boîte ou cercle), jamais
     `e.box.intersects`. Sinon le boss serait touché par sa boîte.
-* **Le contact** : `Enemy::contactDamage` ne blesse que par les parties `hurt` et celles de `hurtDuring`
-  (`hurtsWithParts`).
+* **Le contact** (règle des joueurs, 2.76.2, `kWholeBodyContactSimulation` = 17) : toucher **n'importe quelle partie**
+  du boss blesse le joueur avec ses dégâts de contact (`Enemy::contactDamage`, `touchesWithParts`). C'est la forme
+  précise de l'image en cours qui compte, jamais la boîte. Les parties `hurt` et celles du `hurtDuring` de l'attaque en
+  cours frappent **en plus** pendant l'attaque, une fois, avec les dégâts de l'attaque (`Enemy::performAttackActive`,
+  `hurtsWithParts` ; la ruée `lunge` comme en 2.76.0). Les rôles des coups reçus ne changent pas : point faible × 2,
+  blindé × 0,5, normale × 1.
+  * **Les replays de version 16** (Pyrrhax, 2.76.0) gardent la règle de la 2.76.0 : seules les parties `hurt` et
+    celles de `hurtDuring` blessent au contact. `tests/test_hitparts.cpp` vérifie les deux règles.
+  * **Pas de compensation** : une partie ne passe pas en `hurt` pour qu'un boss blesse au contact, puisque tout son
+    corps blesse (les sabots d'Aurorax sont redevenus ses jambes).
 * **Les attaques à zone propre** (lasers, ondes, plongeons, routines des Gigaboss) gardent leurs zones. Si une
   attaque doit partir d'une partie, réglez son `origin`.
 

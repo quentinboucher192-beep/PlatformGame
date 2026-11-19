@@ -262,6 +262,37 @@ TEST_CASE("hit parts (2.76.0): Pyrrhax is hit by its parts with the rules of 16,
     if (const auto wing = now.spot("aile gauche")) CHECK(!hurtsWithParts(*now.dragon, *wing));
 }
 
+// 2.76.2, the player's rule: with the rules of 17 touching ANY part of a boss by parts hurts on contact (its precise
+// shape, not its box); with those of 16 (Pyrrhax's replays of 2.76.0) only its parts that hurt did.
+TEST_CASE("hit parts (2.76.2): with the rules of 17 its whole body hurts on contact, with those of 16 only its red parts") {
+    CHECK(kWholeBodyContactSimulation == 17 && kSimulationVersion >= kWholeBodyContactSimulation);
+    Lair now(kSimulationVersion), v16(16);
+    CHECK(now.dragon != nullptr && v16.dragon != nullptr);
+    if (!now.dragon || !v16.dragon) return;
+    // The middle of a wing: a part that does not hurt by itself, and a point beyond its box.
+    const auto wing = now.spot("aile gauche"), wing16 = v16.spot("aile gauche");
+    CHECK(wing.has_value() && wing16.has_value());
+    if (!wing || !wing16) return;
+    CHECK(touchesWithParts(*now.dragon, *wing));
+    CHECK(!hurtsWithParts(*now.dragon, *wing) && !hurtsWithParts(*v16.dragon, *wing16));
+    // Nova against it for one step: hurt with its contact damage in 17, untouched in 16.
+    auto against = [](Lair& l, const Rect& spot) {
+        Player& p = l.w->player();
+        p.health = p.maxHealth();
+        p.box = Rect::fromCenter(spot.center(), {4.0f, 4.0f});
+        if (!touchesWithParts(*l.dragon, p.box) || hurtsWithParts(*l.dragon, p.box)) return -1;
+        const int before = p.health;
+        l.w->fixedUpdate({}, 1.0f / 120.0f);
+        return before - p.health;
+    };
+    const int lost17 = against(now, *wing), lost16 = against(v16, *wing16);
+    std::printf("  aile de Pyrrhax touchée : %d PV perdus en 17, %d en 16\n", lost17, lost16);
+    CHECK(lost17 > 0);
+    CHECK(lost16 == 0);
+    // Far from it, nothing (its box alone never hurts).
+    CHECK(!touchesWithParts(*now.dragon, Rect::fromCenter(now.dragon->box.center() + Vec2{0.0f, -2000.0f}, {4.0f, 4.0f})));
+}
+
 // ------------------------------------------------------------------ 2.76.2: the gigaboss of the campaign
 
 namespace {
@@ -410,7 +441,10 @@ TEST_CASE("hit parts (2.76.2): the gigaboss of the campaign have the rules of Py
             if (!p.animation.empty()) sheets.push_back(p.animation);
         for (const std::string& path : sheets) {
             const HitPartsSheet* hp = HitPartsSheet::of(path);
-            CHECK(hp != nullptr && hp->profile == "regions");
+            // The Astrarque wears the sheet of the Forgeron primordial (forge_core): its rig (2.76.2, step e; the
+            // « mine » rule of hitparts.py), with the same part names; its own roles.
+            const std::string wantProfile = std::string(id) == "astrarque" ? "rig" : "regions";
+            CHECK(hp != nullptr && hp->profile == wantProfile);
             if (!hp) continue;
             CHECK(hp->parts.size() == r.rules.size());
             for (const std::string& n : hp->parts) CHECK(r.rule(n) != nullptr);

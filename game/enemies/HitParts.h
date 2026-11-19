@@ -147,4 +147,13 @@ bool reaches(const Enemy& e, const GameWorld& w, Vec2 c, float radius, float* mu
 /// that attack is under way).
 bool hurtsWithParts(const Enemy& e, const Rect& box);
 
+/// 2.76.2 (the player's rule): from this version a boss that fights by parts hurts on contact by ANY of its parts —
+/// the precise shape of its frame, never its box — with its contact damage, and its parts that hurt (claws, breath,
+/// hammer, a head while it bites) also strike during their attacks with the attack's damage. The roles of the blows
+/// it takes do not change (weak point × 2, armour × 0,5). With the rules of 16 (Pyrrhax's replays of 2.76.0) only
+/// its parts that hurt hurt on contact.
+constexpr int kWholeBodyContactSimulation = 17;
+/// Whether any part of `e` (its current pose) touches `box`.
+bool touchesWithParts(const Enemy& e, const Rect& box);
+
 }  // namespace cosmic

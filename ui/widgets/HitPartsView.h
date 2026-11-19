@@ -38,6 +38,12 @@ void drawHitPieces(Renderer& r, float lineWidth, const HitPartsSheet& sheet, con
                    const std::function<Vec2(Vec2)>& toScreen, uint8_t fill = 70, const std::string& highlight = {});
 /// A part's name as shown: its first letter a capital (« tête » → « Tête », « épaule » → « Épaule »).
 std::string partNameLabel(const std::string& name);
+/// 2.76.2: the attacks during which a part also hurts (`hurtDuring`), by the names the boss's sheet gives
+/// them (« Morsure », translated when shown), never an identifier: an attack the boss does not have is
+/// left out (an écho that lacks one of its original's).
+std::vector<std::string> hurtDuringNames(const PartRule& rule, const EnemyDefinition& d);
+/// « blesse aussi pendant : Morsure, Ruée » (empty: none, or a part that always hurts).
+std::string hurtDuringLabel(const PartRule& rule, const EnemyDefinition& d);
 /// « Repos », « Élan », « Attaque »… the name of a clip on a chip (its id when it has none).
 std::string poseLabel(const std::string& clip);
 /// The clips of a sheet worth a chip, in the order of a fight (repos, déplacement, élan, attaque…).

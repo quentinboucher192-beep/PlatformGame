@@ -54,7 +54,8 @@ struct Room {
     ResourceManager res;
     AudioSystem audio;
     std::unique_ptr<GameWorld> w;
-    explicit Room(uint64_t seed = 7) {
+    /// `rules`: the version of the simulation (0: the game's own).
+    explicit Room(uint64_t seed = 7, int rules = 0) {
         res.init(nullptr, &audio);
         LevelData l = LevelData::makeEmpty("test_pyrrhax", "Test", "pyralis");
         l.intro.steps.clear();
@@ -69,6 +70,7 @@ struct Room {
         l.objects.push_back(o);
         WorldServices s{res, audio, content(), nullptr, 1.0f, 1.0f};
         w = std::make_unique<GameWorld>(s, WorldMode::Arena);
+        if (rules > 0) w->setSimulationVersion(rules);
         w->seedGameplay(seed);
         w->load(l);
         w->silent = true;
@@ -266,8 +268,10 @@ TEST_CASE("pyrrhax: the dive shows its line, holds it still, then strikes throug
     CHECK(e->box.bottom() < kFloor - 100.0f);
 }
 
-TEST_CASE("pyrrhax: a dive can be dodged once its line holds still") {
-    Room r;
+// With the rules of 16 (its fight of 2.76.0, where only its red parts hurt). 2.76.2: with those of 17 its whole body
+// hurts on contact (the player's rule) and its wings, 160 px on each side, reach a player who only ran out of its lane.
+TEST_CASE("pyrrhax: a dive can be dodged once its line holds still (rules of 16)") {
+    Room r(7, 16);
     Enemy* e = r.spawn({700.0f, kFloor - 190.0f});
     REQUIRE(e != nullptr);
     REQUIRE(e->forceAttack(*r.w, "pique"));

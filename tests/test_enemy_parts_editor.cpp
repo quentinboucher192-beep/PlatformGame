@@ -18,6 +18,9 @@
 #include "game/enemies/HitParts.h"
 #include "tests/TestFramework.h"
 #include "ui/screens/Navigation.h"
+#include "ui/widgets/HitPartsView.h"
+
+#include <algorithm>
 
 using namespace cosmic;
 
@@ -49,6 +52,7 @@ TEST_CASE("enemy editor parts (2.76.2): a boss's file written with its own rules
         if (!d->builtin || PartRules::of(d->id).rules.empty()) continue;
         const std::string text = enemyFile(d->id);
         CHECK(!text.empty());
+        if (!Json::parse(text, nullptr, false).contains("parts")) continue;  // an écho with its original's parts (no block of its own)
         const std::string again = withPartRules(text, PartRules::of(d->id));
         if (again != text) std::printf("  %s : le fichier réécrit diffère\n", d->id.c_str());
         CHECK(again == text);
@@ -59,7 +63,7 @@ TEST_CASE("enemy editor parts (2.76.2): a boss's file written with its own rules
         CHECK(enemyFile(d->id) == text);
     }
     std::printf("  %d fichiers de boss avec des parties\n", files);
-    CHECK(files >= 9);  // Pyrrhax (2.76.0) and the 8 Gigaboss of Asterion (2.76.1)
+    CHECK(files >= 9);  // Pyrrhax (2.76.0) and the 8 Gigaboss of Asterion (2.76.2, step c)
     std::string error;
     CHECK(withPartRules("pas du json", PartRules{}, &error).empty());
     CHECK(!error.empty());
@@ -111,6 +115,46 @@ TEST_CASE("enemy editor parts (2.76.2): a change touches only the roles; a part 
     CHECK(back.rule("cou") && back.rule("cou")->hurtDuring == std::vector<std::string>{"morsure"});
     // The game's file itself is untouched (the editor writes only on « Enregistrer les parties »).
     CHECK(enemyFile("pyrrhax") == text);
+}
+
+TEST_CASE("enemy editor parts (2.76.2): no « blesse pendant » list of a sheet shows an attack's identifier; each name has its English") {
+    ContentDatabase content;
+    content.reload();
+    const i18n::Dictionary& en = i18n::dictionary(Language::English);
+    int lists = 0;
+    for (const EnemyDefinition* d : content.enemies()) {
+        if (!d->isBoss) continue;
+        for (const PartRule& rule : PartRules::of(d->id).rules) {
+            if (rule.role == PartRole::Hurt || rule.hurtDuring.empty()) continue;
+            const std::vector<std::string> names = hurtDuringNames(rule, *d);
+            const std::string label = hurtDuringLabel(rule, *d);
+            // Each attack the boss has, by its name; none of the boss's identifiers anywhere in the list.
+            int own = 0;
+            for (const std::string& id : rule.hurtDuring)
+                for (const AttackDef& a : d->attacks)
+                    if (a.id == id) ++own;
+            CHECK(static_cast<int>(names.size()) <= own);
+            CHECK(names.empty() == label.empty());
+            for (const std::string& n : names) {
+                CHECK(!n.empty() && n.find('_') == std::string::npos);
+                for (const AttackDef& a : d->attacks) CHECK(n != a.id);
+                std::string out;
+                if (!en.lookup(n, out)) std::printf("  %s, %s : « %s » sans anglais\n", d->id.c_str(), rule.name.c_str(), n.c_str());
+                CHECK(en.lookup(n, out));
+            }
+            for (const AttackDef& a : d->attacks)
+                if (std::find(rule.hurtDuring.begin(), rule.hurtDuring.end(), a.id) != rule.hurtDuring.end())
+                    CHECK(std::find(names.begin(), names.end(), a.name) != names.end());
+            if (!label.empty()) {
+                std::string out;
+                CHECK(en.lookup(label, out));
+                CHECK(en.lookup(partNameLabel(rule.name) + " " + label, out));  // as the sheets of Asterion write it
+                ++lists;
+            }
+        }
+    }
+    std::printf("  %d listes « blesse aussi pendant »\n", lists);
+    CHECK(lists >= 10);
 }
 
 TEST_CASE("enemy editor parts (2.76.2): a native's parts are read-only for the player and set by an administrator only") {

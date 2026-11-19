@@ -233,6 +233,7 @@ void Enemy::beginAttack(GameWorld& w) {
     if (def_.isBoss) stateTimer_ = std::max(0.3f, stateTimer_);  // always readable
     attackStarted_ = false;
     attackHit_ = false;
+    partsStruck_ = false;
     attackClock_ = 0.0f;
     burstsLeft_ = 0;
     staged_.clear();
@@ -577,6 +578,22 @@ void Enemy::performAttackStart(GameWorld& w) {
 void Enemy::performAttackActive(GameWorld& w, float dt) {
     const AttackDef& a = *attack_;
     attackClock_ += dt;
+    // 2.76.2 (rules of 17): a boss by parts — its parts that hurt (claws, breath, hammer…) and those that hurt during
+    // this attack (its fists during « Frappe »…) strike with the attack's damage, once per attack; its whole body
+    // hurts on contact besides (contactDamage). Its rush (Lunge) does it below, as in 2.76.0.
+    if (partsFight_ && !partsStruck_ && a.type != AttackType::Lunge && a.damage > 0.0f && w.simulationVersion() >= kWholeBodyContactSimulation) {
+        auto strikes = [&](const Player& q) { return hurtsWithParts(*this, q.box); };
+        if (w.anyPlayerWhere(strikes)) {
+            DamageInfo d;
+            d.amount = a.damage;
+            d.type = DamageType::Contact;
+            d.source = box.center();
+            d.knockback = a.knockback;
+            d.slow = a.slow;
+            d.slowDuration = a.slowDuration;
+            partsStruck_ = w.hurtPlayersWhere(strikes, d) || true;
+        }
+    }
     if (a.isGuardianType()) {
         guardianActive(w, dt);
         return;

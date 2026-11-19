@@ -68,7 +68,7 @@ RIGS = {
     'frost_hydra': ('boss_a_hydra:frost', ['tronc', 'têtes', 'cœur', 'cous', 'glace', 'socle', 'racines', 'pointes']),
     'prime_sentinel': ('boss_a_core:prime_sentinel', ['corps', 'œil', 'canons', 'plaques', 'réacteur']),
     'forge_core': ('boss_a_core:forge_core', ['coque', 'cœur', 'bras', 'chaînes', 'anneaux', 'plaques', 'creusets', 'pointes']),
-    'aurorax': ('boss_c:aurorax', ['corps', 'tête', 'cœur', 'bras', 'épaulière', 'jambes', 'cape', 'bois', 'lance', 'sabots']),
+    'aurorax': ('boss_c:aurorax', ['corps', 'tête', 'cœur', 'bras', 'épaulière', 'jambes', 'cape', 'bois', 'lance']),
     'mycelia': ('boss_c:mycelia', ['pied', 'visage', 'chapeau', 'racines']),
     'nyxara': ('boss_c:nyxara', ['sphère', 'yeux', 'anneau', 'tentacules']),
     'pyrogyre': ('boss_c:pyrogyre', ['soleil', 'œil', 'anneau', 'flammes']),

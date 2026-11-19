@@ -242,8 +242,7 @@ class Aurorax:
         cv.part()
         cv.poly([(knee[0] - 3.0, knee[1] - 3.0), (knee[0] + 5.5, knee[1] - 1.0), (knee[0] + 1.0, knee[1] + 4.0)], m,
                 bevel=1.0, base=0.66)
-        # hoof
-        cv.tag = "sabots"  # 2.76.2: hit parts (raster.LABELS)
+        # hoof (part of its legs, « jambes »)
         cv.part()
         x, y = foot
         cv.poly([(x - 4.0 * K, y - 4.6 * K), (x + 3.4 * K, y - 4.6 * K), (x + 5.4 * K, y + 0.6),

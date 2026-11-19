@@ -807,7 +807,7 @@ private:
         const bool armour = v.state == "armour";
         bool partsShown = false;  // 2.76.0
         bool rolesShown[4] = {false, false, false, false};  // 2.76.2: the roles of the parts drawn (PartRole)
-        // 2.76.1: a Gigaboss that fights by its parts: its parts in the colour of their role, its box a thin frame.
+        // 2.76.2: a Gigaboss that fights by its parts: its parts in the colour of their role, its box a thin frame.
         const PartRules& partRules = PartRules::of(g.def->id);
         const bool partsFight = partRules.fromVersion > 0 && partRules.fromVersion <= kSimulationVersion;
         if (set && set->texture) {
@@ -868,7 +868,7 @@ private:
                 const Rect sr = toScreen(p.rect);
                 const Color c = hitColor(p.kind);
                 if (partsFight && partsShown && p.enemy.empty() && p.label.rfind("À briser", 0) != 0) {
-                    // 2.76.1: its body fights by its parts (drawn above): its box only as a thin frame.
+                    // 2.76.2: its body fights by its parts (drawn above): its box only as a thin frame.
                     r.drawRect(sr, Color{255, 255, 255, 150}, std::max(1.0f, ui.s(1.5f)));
                     continue;
                 }
@@ -950,12 +950,18 @@ private:
                         same = same && (mult.empty() || m == mult);
                         mult = m;
                     }
-                if (role != PartRole::Hurt && same && !mult.empty()) text += " " + mult;
+                if (role != PartRole::Hurt && same && !mult.empty()) text += " · " + mult;  // « · »: each piece translated
                 lines.push_back({text, partRoleColor(role), static_cast<int>(role)});
             }
+            lines.push_back({"Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques", partRoleColor(PartRole::Hurt),
+                             static_cast<int>(PartRole::Hurt)});
+            // The parts that also hurt during an attack, by the attacks' names (never their identifiers).
+            for (const PartRule& rule : partRules.rules)
+                if (const std::string during = hurtDuringLabel(rule, *g.def); !during.empty())
+                    lines.push_back({partNameLabel(rule.name) + " " + during, partRoleColor(rule.role), static_cast<int>(rule.role)});
             lines.push_back({"Cadre blanc : sa boîte d'avant (les replays d'avant)", Color{255, 255, 255, 200}});
         } else if (partsShown) {
-            lines.push_back({"Bleu : ses parties (affichage ; combat par sa boîte jusqu'à son étape)", partRoleColor(PartRole::Normal),
+            lines.push_back({"Bleu : ses parties (affichage ; son combat se joue sur sa boîte)", partRoleColor(PartRole::Normal),
                              static_cast<int>(PartRole::Normal)});
         }
         lines.push_back({"Croix blanche : ses pieds", Color{255, 255, 255, 220}});

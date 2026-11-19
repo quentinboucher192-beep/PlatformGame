@@ -1095,7 +1095,7 @@ jusqu'à ces tirs. Le lockstep reste le même sur chaque ordinateur d'une même 
 ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersion` (15), `kCoopSimulationVersion` (2) et
 `kRankingGeneration` (8) ne changent pas, aucun record n'est effacé.
 
-### 2.76.1 — les Gigaboss se battent par parties
+### 2.76.2 — les Gigaboss se battent par parties
 
 Les 8 Gigaboss d'Asterion se battent par leurs **parties de frappe** dès la version de simulation **17**
 (`"partsFromVersion": 17` ; [HITPARTS.md](HITPARTS.md), [HITBOX_PARTS.md](HITBOX_PARTS.md)). Leurs parties sont des
@@ -1114,8 +1114,9 @@ sur chaque image :
 | Cœur d'Asterion | cœur | côtes | antennes |
 
 Leurs points faibles et cibles d'avant (ennemis collés à eux), leurs blindages de phase et leurs mécanismes ne changent
-pas. Les coups qui touchent leur corps en prennent le multiplicateur de la partie touchée. Le contact ne blesse plus que
-par leurs parties « blesse », et leurs attaques gardent leurs zones. La fiche « Où frapper » dessine leurs parties à la
+pas. Les coups qui touchent leur corps en prennent le multiplicateur de la partie touchée. Tout leur corps blesse au
+contact, au pixel près, et leurs parties « blesse » frappent en plus pendant leurs attaques ; leurs attaques gardent
+leurs zones. La fiche « Où frapper » dessine leurs parties à la
 couleur de leur rôle, et leur boîte d'avant en cadre blanc. Les parties suivent la pose dans le pas fixe : le lockstep
 reste le même sur chaque ordinateur. `TITAN_REVISION` passe à 6 : une instance ne réunit que des joueurs aux mêmes
 règles. `tests/test_hitparts_gigaboss.cpp` vérifie leurs rôles, et leurs coups par parties en 17 et par boîte en 16.

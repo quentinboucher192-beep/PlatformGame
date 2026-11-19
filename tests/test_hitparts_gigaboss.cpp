@@ -1,4 +1,4 @@
-// 2.76.1 (step c): the 8 Gigaboss of Asterion fight by their parts from the simulation 17 (docs/HITBOX_PARTS.md):
+// 2.76.2 (step c): the 8 Gigaboss of Asterion fight by their parts from the simulation 17 (docs/HITBOX_PARTS.md):
 // their regions (data/enemies « parts », profile « regions ») name the parts of every frame; in their lair
 // with the rules of 17, a weak point takes × 2 and armour × 0,5, only their parts that hurt hurt; with the rules
 // of 16 (a run of before) their box, as before.
@@ -61,7 +61,7 @@ std::vector<std::pair<std::string, std::vector<Vec2>>> piecesOf(const Enemy& e, 
 
 }  // namespace
 
-TEST_CASE("hit parts 2.76.1: the 8 Gigaboss of Asterion name their parts (regions) and fight by them from 17") {
+TEST_CASE("hit parts 2.76.2: the 8 Gigaboss of Asterion name their parts (regions) and fight by them from 17") {
     ContentDatabase content;
     content.reload();
     CHECK(kSimulationVersion >= 17);
@@ -89,7 +89,7 @@ TEST_CASE("hit parts 2.76.1: the 8 Gigaboss of Asterion name their parts (region
     }
 }
 
-TEST_CASE("hit parts 2.76.1: in its lair, a Gigaboss is hit by its parts with the rules of 17, by its box with those of 16") {
+TEST_CASE("hit parts 2.76.2: in its lair, a Gigaboss is hit by its parts with the rules of 17, by its box with those of 16") {
     ContentDatabase content;
     content.reload();
     ResourceManager res;

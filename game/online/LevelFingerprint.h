@@ -74,8 +74,11 @@ constexpr int kSimulationVersion = 17;  // 6: energy 150, time slow, magnet, air
                                        //    there. A replay of before plays with its box and its old
                                        //    flight (same digests); the rankings are kept, as the player
                                        //    asked.
-                                       // 17: (2.76.1) every other boss fights by its hit parts
+                                       // 17: (2.76.2) every other boss fights by its hit parts
                                        //    (partsFromVersion 17 in data/enemies). The rankings are kept.
+                                       //    Any part of a boss by parts hurts on contact, its red
+                                       //    parts strike during their attacks (the player's rule,
+                                       //    kWholeBodyContactSimulation); Pyrrhax's 16 is unchanged.
 /// 2.62: version of the rules of cooperation (docs/COOP.md): a team of 2 or 3 players in one
 /// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
 /// a team's attempts carry it, and any change of the team rules (solid players, revivals,

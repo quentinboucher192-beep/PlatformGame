@@ -272,9 +272,6 @@
       },
       "lance": {
         "role": "hurt"
-      },
-      "sabots": {
-        "role": "hurt"
       }
     },
     "origins": {

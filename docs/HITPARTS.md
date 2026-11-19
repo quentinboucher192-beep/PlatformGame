@@ -46,8 +46,10 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
 * **Les coups du joueur** : tirs, coups d'épée, bombes, boomerang. Ils touchent **la partie** qu'ils atteignent,
   par priorité : point faible, puis partie normale, puis blindage. Les dégâts sont multipliés par sa valeur
   (`reaches`, `partHitBy`). Une partie qui ne fait que blesser n'est jamais touchée.
-* **Le contact** : seules les parties qui blessent touchent le joueur (`hurtsWithParts`), ainsi que la tête pendant
-  la morsure. La boîte entière ne compte plus ; les attaques gardent leurs zones.
+* **Le contact** : en version 16, seules les parties qui blessent touchent le joueur (`hurtsWithParts`), ainsi que la
+  tête pendant la morsure. Depuis la 2.76.2 (version 17, la règle des joueurs), **tout le corps** blesse au contact,
+  au pixel près (`touchesWithParts`), et les parties qui blessent frappent en plus pendant leurs attaques avec leurs
+  dégâts. La boîte entière ne compte plus ; les attaques gardent leurs zones.
 * **La géométrie** : axes séparateurs entre un convexe et une boîte ou un cercle (`convexOverlapsRect`,
   `convexOverlapsCircle`). Les opérations sont faites dans un ordre fixe et le build interdit les contractions
   (`-ffp-contract=off`) : le résultat est le même partout. La boîte physique du boss (sol, murs, déplacements) ne
@@ -56,8 +58,11 @@ le souffle blessent ; la tête blesse aussi pendant la morsure.
   empreinte reste celle de la 2.75.2, et `tests/test_determinism.cpp` le vérifie sur le combat de Pyrrhax.
   `kRankingGeneration` reste 8 : les records sont gardés, comme le joueur l'a demandé.
 
-2.76.1 : les 8 Gigaboss d'Asterion se battent par parties dès la version 17 (profil « regions », tableau dans
-[RAIDS.md](RAIDS.md)). Les autres boss gardent leur boîte jusqu'à leur étape ; leurs fiches montrent déjà leurs parties.
+## Les Gigaboss d'Asterion (2.76.2, `partsFromVersion` 17)
+
+Les 8 Gigaboss d'Asterion se battent par parties (profil « regions », tableau dans [RAIDS.md](RAIDS.md)). Leurs
+fiches de raid montrent leurs parties, et leur ancienne boîte en cadre blanc (les replays d'avant).
+
 ## Les gigaboss de la campagne (2.76.2, `partsFromVersion` 17)
 
 Découpés par le profil « regions » (des régions par pose et par feuille, [HITBOX_PARTS.md](HITBOX_PARTS.md)), sur le
@@ -75,7 +80,9 @@ modèle de Pyrrhax :
 
 * **L'Astrarque porte la feuille du Forgeron primordial** (`forge_core`) : ses parties ont les noms de celles de ce
   boss. Une feuille partagée prend le profil du boss dont elle porte le nom quand il en a un, sinon celui du
-  premier qui en a un (ici les régions de l'Astrarque).
+  premier qui en a un : ici le « rig » du Forgeron primordial (ses parties nommées dans son générateur). Chacun des
+  deux boss garde ses propres rôles (`data/enemies/astrarque.json`, `data/enemies/forge_core.json`) ; les régions
+  de l'Astrarque ne servent plus que si le Forgeron perdait son profil.
 
 * **Leurs mécanismes restent**, et s'ajoutent aux parties : le Monolithe roulé reste blindé (× 0,35 de son attaque,
   en plus de sa carapace) et s'expose étourdi ; le Phénix est intouchable dans ses cendres ; la Liche tant que son âme
@@ -88,8 +95,6 @@ modèle de Pyrrhax :
   d'image, la même partie au même pas.
 * **Les replays d'avant** (versions 16 et 15) rejouent avec la boîte ; `tests/test_determinism.cpp` le vérifie sur le
   combat de chacun.
-
-Les autres boss gardent leur boîte jusqu'à leur étape ; leurs fiches montrent déjà leurs parties.
 
 ## Les boss classiques et leurs échos (2.76.2, `partsFromVersion` 17)
 
@@ -109,6 +114,9 @@ Les 16 gardiens des planètes et d'Aethra, Mycélia la Câline et les 16 échos 
   vérifie sur les combats de Magmaroth et du Cryowyrm ; `tests/test_hitparts_classics.cpp` vérifie les rôles, les
   images, les tirs et un échantillon de combats.
 
+En 2.76.2, les 49 boss se battent tous par parties à partir de la version de simulation 17 : Pyrrhax depuis la 16,
+les Gigaboss d'Asterion, les gigaboss de la campagne, les boss classiques et leurs échos depuis la 17.
+
 ## Les fiches « Où frapper »
 
 * **Boss classiques et gigaboss de la campagne** : `STATISTIQUES › boss › Où frapper` (`ui/widgets/HitPartsView`).
@@ -122,7 +130,7 @@ Les 16 gardiens des planètes et d'Aethra, Mycélia la Câline et les 16 échos 
   sombre : la partie reste lisible sur un sprite de n'importe quelle couleur, comme la cuisse grise de Titanus. Les
   légendes gardent les couleurs et montrent le motif (`drawPartSwatch`).
 * **Gigaboss d'Asterion** : `FICHES D'ASTERION › Mécanismes › Où frapper`. Leurs parties sont dessinées sur
-  l'image de chaque pose ; leur combat se joue encore sur leur boîte.
+  l'image de chaque pose, et leur ancienne boîte en cadre blanc.
 * **Captures** :
   * `CosmicPlatformer --headless --boss-stats <boss>:frapper[=<clip>]` ;
   * `--raid-sheets <fiche>:1:frapper=<n>[:pose=<attaque>]`.

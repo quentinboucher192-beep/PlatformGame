@@ -452,4 +452,16 @@ bool hurtsWithParts(const Enemy& e, const Rect& box) {
     return false;
 }
 
+bool touchesWithParts(const Enemy& e, const Rect& box) {
+    const Pose pose = poseOf(e);
+    if (!pose.pieces) return false;
+    const Vec2 feet = e.box.bottomCenter();
+    const bool flip = e.facing < 0.0f;
+    for (const HitPartPiece& piece : *pose.pieces) {
+        if (piece.part < 0 || piece.part >= static_cast<int>(pose.sheet->parts.size())) continue;
+        if (convexOverlapsRect(placePiece(piece, *pose.sheet, feet, e.def().scale, flip), box)) return true;
+    }
+    return false;
+}
+
 }  // namespace cosmic

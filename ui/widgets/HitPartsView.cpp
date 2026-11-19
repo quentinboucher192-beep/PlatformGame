@@ -54,6 +54,24 @@ Color partColor(const PartRules& rules, const std::string& name) { return partRo
 
 std::string partNameLabel(const std::string& name) { return capitalized(name); }
 
+std::vector<std::string> hurtDuringNames(const PartRule& rule, const EnemyDefinition& d) {
+    std::vector<std::string> out;
+    for (const std::string& id : rule.hurtDuring)
+        for (const AttackDef& a : d.attacks)
+            if (a.id == id && !a.name.empty() && std::find(out.begin(), out.end(), a.name) == out.end()) out.push_back(a.name);
+    return out;
+}
+
+std::string hurtDuringLabel(const PartRule& rule, const EnemyDefinition& d) {
+    if (rule.role == PartRole::Hurt) return {};
+    const std::vector<std::string> names = hurtDuringNames(rule, d);
+    if (names.empty()) return {};
+    // « · » between the names: each one translated by itself when shown (I18n: the parts of a text).
+    std::string list;
+    for (const std::string& n : names) list += (list.empty() ? "" : " · ") + n;
+    return "blesse aussi pendant : " + list;
+}
+
 namespace {
 
 /// The chord of the line {p : n·p = c} (n of length 1) through a convex polygon: false when it misses it.
@@ -299,25 +317,29 @@ void HitPartsView::draw(GameServices& g, const Rect& area, const EnemyDefinition
     std::vector<std::string> shown = parts ? parts->parts : std::vector<std::string>{};
     const float rowH = ui.s(22);
     for (size_t i = 0; i < shown.size(); ++i) {
-        if (ly + rowH > leg.bottom() - ui.s(96)) {
+        const PartRule rule = rules.ruleOr(shown[i]);
+        // 2.76.2: the attacks during which it also hurts, by their names, on a line of their own under it.
+        const std::string during = hurtDuringLabel(rule, d);
+        const float extra = during.empty() ? 0.0f : ui.s(16);
+        if (ly + rowH + extra > leg.bottom() - ui.s(96)) {
             fit(ui, "… et " + std::to_string(shown.size() - i) + " de plus", {lx, ly + ui.s(9)}, fz(ui, 12.5f), lw, kDim);
             ly += rowH;
             break;
         }
-        const PartRule rule = rules.ruleOr(shown[i]);
         drawPartSwatch(r, {lx, ly + ui.s(2), sw, sw}, rule.role, ui.s(1.0f));  // its colour and its pattern (2.76.2)
         const std::string right = std::string(partRoleLabel(rule.role)) + " · " + partDamageLabel(rule);
         const float rw = std::min(lw * 0.62f, textW(ui, right, fz(ui, 12.5f), FontFace::Body) + ui.s(4));
         fit(ui, right, {lx + lw, ly + ui.s(10)}, fz(ui, 12.5f), rw, kDim, FontFace::Body, Align::Right);
         fit(ui, capitalized(shown[i]), {lx + sw + ui.s(8), ly + ui.s(10)}, fz(ui, 13.5f), lw - sw - ui.s(16) - rw, kText, FontFace::Bold);
-        ly += rowH;
+        if (!during.empty()) fit(ui, during, {lx + sw + ui.s(8), ly + rowH + ui.s(6)}, fz(ui, 11.5f), lw - sw - ui.s(8), kPeach, FontFace::Body);
+        ly += rowH + extra;
     }
     ly += ui.s(6);
     const bool combat = rules.fromVersion > 0 && rules.fromVersion <= kSimulationVersion;
     const std::string boxLine = combat ? "Cadre blanc : son ancienne boîte (les replays d'avant)" : "Cadre blanc : sa boîte, qui prend et donne les coups";
     const std::string how = !parts ? "Son combat se joue sur sa boîte."
-                            : combat ? "Combat par parties : vos coups touchent la partie visée (point faible d'abord), seules les parties rouges blessent."
-                                     : "Parties : affichage ; combat par boîte jusqu'à son étape.";
+                            : combat ? "Combat par parties : vos coups touchent la partie visée (point faible d'abord). Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques."
+                                     : "Parties : affichage ; son combat se joue sur sa boîte.";
     for (const std::string& line : {boxLine, how}) {
         const auto ls = wrap(ui, line, FontFace::Body, fz(ui, 12.5f), lw, 3);
         if (ly + static_cast<float>(ls.size()) * ui.s(17) > leg.bottom() - ui.s(6)) break;
