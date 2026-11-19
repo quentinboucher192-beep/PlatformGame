@@ -120,6 +120,10 @@ CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618
   administrateurs (ADMINISTRATION › Raids › « Tester Asterion »), sans compte : seul, en local,
   jamais rapporté, badge « TEST ADMIN · non classé » ; le gigaboss réglé pour `<joueurs>` (2 à 8)
   et commencé à `<phase>` ; invincible par défaut.
+* `--raid-sim <groupes>:<joueurs simulés>[:<vitesse 1|2|4>[:<onglet 0-3>]]` (2.77) : « Simuler un raid complet »
+  sans compte (en local, rien n'est envoyé), vous dans le groupe 1 ; l'onglet ouvre le panneau du raid (groupes,
+  contributions, événements du monde, carte du titan). `--raid-sim-menu` : ses réglages, tels que « Tester Asterion »
+  les montre (rien n'est lancé).
 * `--coop-test <niveau>[:<joueurs>]` : une équipe de 2 ou 3 sur un même PC, sur un niveau EXTRÊME
   (hors classement, comme toute partie sur un même PC).
 * Chaque siège joue son script : `--input` pour le joueur 1, `--input2` … `--input8` pour les

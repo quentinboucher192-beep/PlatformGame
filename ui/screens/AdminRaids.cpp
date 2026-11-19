@@ -13,6 +13,7 @@
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
 #include "ui/online/RaidWidgets.h"
+#include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -437,7 +438,20 @@ void AdminRaids::drawTest(const Rect& r) {
     // of its zones, then « Lancer le test »: solo, local, never reported.
     UIContext& ui = g_.ui;
     ui.pushId("test");
-    const float top = section(ui, r, "TESTER ASTERION · ADMINISTRATEURS", kGold);
+    float top = section(ui, r, "TESTER ASTERION · ADMINISTRATEURS", kGold);
+    {
+        // 2.77: one zone of a branch, or the whole clan raid simulated (every branch, then the heart).
+        std::vector<bool> on{testMode_ == 0, testMode_ == 1};
+        float bottom = top;
+        const int m = chips(ui, "mode", r.x + ui.s(14), top, r.right() - ui.s(14), {"Une zone", "Simuler un raid complet"}, on, bottom);
+        if (m >= 0) testMode_ = m;
+        top = bottom + ui.s(10);
+    }
+    if (testMode_ == 1) {
+        ui.popId();
+        drawSim({r.x, top, r.w, r.bottom() - top});
+        return;
+    }
     const auto& branches = raid::Branch::all();
     testBranch_ = std::clamp(testBranch_, 0, static_cast<int>(branches.size()) - 1);
     const raid::Branch& b = *branches[static_cast<size_t>(testBranch_)];
@@ -495,6 +509,12 @@ void AdminRaids::drawTest(const Rect& r) {
         ui.cycle("relics", {x, y, half, rowH}, "Reliques validées", testRelics_, kRelics);
         y += rowH + gap;
     }
+    {
+        // 2.77: the simulated players' level (their reaction time and precision), the whole width.
+        static const std::vector<std::string> kSkills = {"Débutant", "Confirmé", "Expert"};
+        ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
+        y += rowH + gap;
+    }
     bool inv = g_.settings.gameplay.adminInvincible;
     if (ui.toggle("invincible", {x, y, half, rowH}, "Invincible (admin) · non classé", inv)) {
         g_.settings.gameplay.adminInvincible = inv;
@@ -511,12 +531,70 @@ void AdminRaids::drawTest(const Rect& r) {
         t.invincible = g_.settings.gameplay.adminInvincible;
         t.parts = testParts_;  // 2.74 (phase 6): the heart's test only
         t.relics = testRelics_;
+        t.skill = testSkill_;  // 2.77
         g_.app.pushScene(makeRaidTest(g_, t));
     }
     y += rowH + ui.s(6);
-    drawLines(ui, wrap(ui, "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense.", FontFace::Body, 13, w,
+    drawLines(ui, wrap(ui, std::string("En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense. "
+                                   "Les joueurs simulés jouent la zone eux-mêmes (") +
+                               (testSkill_ == 0 ? "réaction 0,3 s, 60 % de précision" : testSkill_ == 2 ? "réaction 0,05 s, toujours précis" : "réaction 0,15 s, 85 % de précision") +
+                               ") ; après 15 s sans commande, votre joueur passe en pilote automatique.",
+                       FontFace::Body, 13, w,
                        std::max(1, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))),
               {x, y}, 13, ui.s(18), kDim);
+    ui.popId();
+}
+
+void AdminRaids::drawSim(const Rect& r, bool capture) {
+    // 2.77: « Simuler un raid complet » — the whole clan raid in local: the seven branches (each one's
+    // armory first), their zones, then the Cœur d'Asterion with every group. Nothing is ever sent.
+    UIContext& ui = g_.ui;
+    ui.pushId("sim");
+    const float x = r.x + ui.s(14), w = r.w - ui.s(28), gap = ui.s(10), rowH = ui.s(44);
+    const float half = (w - gap) * 0.5f;
+    float y = r.y;
+    static const std::vector<std::string> kGroups = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"};
+    static const std::vector<std::string> kBots = {"1", "2", "3", "4", "5", "6", "7"};
+    static const std::vector<std::string> kSkills = {"Débutant", "Confirmé", "Expert"};
+    static const std::vector<std::string> kSpeeds = {"×1 (temps réel)", "×2 (accéléré)", "×4 (accéléré)"};
+    // Each setting on the whole width (its caption has room).
+    ui.cycle("groups", {x, y, w, rowH}, "Groupes", simGroups_, kGroups);
+    y += rowH + gap;
+    ui.cycle("bots", {x, y, w, rowH}, "Joueurs simulés par groupe (sans vous)", simBots_, kBots);
+    y += rowH + gap;
+    ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
+    y += rowH + gap;
+    ui.cycle("speed", {x, y, w, rowH}, "Vitesse des groupes non regardés", simSpeed_, kSpeeds);
+    y += rowH + gap;
+    bool inv = g_.settings.gameplay.adminInvincible;
+    if (ui.toggle("invincible", {x, y, half, rowH}, "Invincible (admin) · non classé", inv)) {
+        g_.settings.gameplay.adminInvincible = inv;
+        if (!capture) g_.saveSettings();
+    }
+    UIContext::ButtonStyle bs;
+    bs.primary = true;
+    bs.fontSize = std::max(ui.fitFont("Lancer la simulation", FontFace::Bold, 17, half - ui.s(20), 0.7f), 12.0f / ui.s(1.0f));
+    if (ui.button("launch", {x + half + gap, y, half, rowH}, "Lancer la simulation", bs) && !capture) {
+        RaidSimSetup s;
+        s.groups = simGroups_ + 1;
+        s.bots = simBots_ + 1;
+        s.skill = testSkill_;
+        s.background = simSpeed_ == 2 ? 4 : simSpeed_ == 1 ? 2 : 1;
+        s.invincible = g_.settings.gameplay.adminInvincible;
+        g_.app.pushScene(makeRaidSim(g_, s));
+    }
+    y += rowH + ui.s(10);
+    // What it is, measured into what is left of the panel.
+    const int seats = 1 + simBots_ + 1;
+    const std::string text = "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : " +
+                             std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(simBots_ + 1) + " joueurs simulés et une place libre (" +
+                             std::to_string(seats - 1) + " places). Événements mondiaux, carte du titan, zones terminées, contributions, groupes "
+                             "éliminés et renforts comme dans un vrai raid. Rejoignez ou regardez n'importe quel groupe depuis la pause.";
+    const float lineH = ui.s(18);
+    const int lines = std::max(1, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));
+    y += drawLines(ui, wrap(ui, text, FontFace::Body, 13, w, lines), {x, y}, 13, lineH, kDim) + ui.s(6);
+    if (y + ui.s(22) <= r.bottom())
+        fit(ui, "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.", {x, y + ui.s(10)}, 13, w, kGold, FontFace::Bold);
     ui.popId();
 }
 
@@ -849,5 +927,39 @@ void AdminRaids::drawModal() {
                        load();
                    }));
 }
+
+namespace {
+
+/// 2.77, captures for the documentation (headless only, docs/BUILDING.md): the settings of « Simuler un
+/// raid complet » as ADMINISTRATION › Raids › Tester Asterion shows them (no account: nothing is launched).
+class RaidSimMenuScene : public Scene {
+public:
+    explicit RaidSimMenuScene(GameServices& g)
+        : g_(g), raids_(g, [](const std::string&, bool) {}, [](const ApiResult&) { return false; }) {}
+    void onEnter() override { bg_.init(g_); }
+    void update(float dt) override {
+        bg_.update(dt);
+        if (g_.ui.backPressed()) g_.app.popScene();
+    }
+    void render(float) override {
+        UIContext& ui = g_.ui;
+        ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
+        bg_.render(g_, 0.6f);
+        const float w = std::min(ui.s(760), ui.screenW() - ui.s(40)), h = std::min(ui.s(600), ui.screenH() - ui.s(40));
+        const Rect r{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
+        const float top = section(ui, r, "TESTER ASTERION · SIMULER UN RAID COMPLET", kGold);
+        raids_.drawSim({r.x, top, r.w, r.bottom() - ui.s(12) - top}, true);
+        ui.end();
+    }
+
+private:
+    GameServices& g_;
+    MenuBackground bg_;
+    AdminRaids raids_;
+};
+
+}  // namespace
+
+std::unique_ptr<Scene> makeRaidSimMenu(GameServices& g) { return std::make_unique<RaidSimMenuScene>(g); }
 
 }  // namespace cosmic

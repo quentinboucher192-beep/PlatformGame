@@ -332,6 +332,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
     if (decoyTimer_ > 0.0f) updateDecoy();
     if (!frozenPlatforms_.empty() || !enemies_.empty()) syncFrozenPlatforms();
 
+    const size_t entitiesBefore = entities_.size();
     entities_.erase(std::remove_if(entities_.begin(), entities_.end(),
                                    [&](const auto& e) {
                                        if (!e->removed) return false;
@@ -340,6 +341,7 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
                                        return true;
                                    }),
                     entities_.end());
+    if (entities_.size() != entitiesBefore) ++entityGen_;  // 2.77: the dangers' cache (GameWorld::harmful)
 
     checkKillPlane();
     if (coop()) updateTeamRules(dt);  // 2.62: revivals, the team's frame, everybody down
@@ -784,6 +786,7 @@ void GameWorld::spawnDrop(const std::string& type, Vec2 pos) {
     e->init(*this);
     entityById_[e->id()] = e.get();
     entities_.push_back(std::move(e));
+    ++entityGen_;  // 2.77
 }
 
 // =================================================================== combat

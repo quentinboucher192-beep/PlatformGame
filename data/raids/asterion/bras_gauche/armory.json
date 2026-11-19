@@ -210,17 +210,31 @@
     24.0
    ],
    "props": {
-    "text": "Vestiaire : touchez une tablette pour prendre son pouvoir. Quatre au plus : choisissez celui que vous laissez.",
+    "text": "Vestiaire : sautez sur une tablette pour prendre son pouvoir. Quatre au plus : choisissez celui que vous laissez.",
     "auto": true
    }
   },
   {
    "id": "o6",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    240.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o7",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
     244.0,
-    356.0,
+    308.0,
     24.0,
     24.0
    ],
@@ -232,12 +246,12 @@
    }
   },
   {
-   "id": "o7",
+   "id": "o8",
    "type": "light",
    "layer": "gameplay",
    "rect": [
     248.0,
-    328.0,
+    280.0,
     16.0,
     16.0
    ],
@@ -249,12 +263,26 @@
    }
   },
   {
-   "id": "o8",
+   "id": "o9",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    320.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o10",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
     324.0,
-    356.0,
+    260.0,
     24.0,
     24.0
    ],
@@ -266,46 +294,12 @@
    }
   },
   {
-   "id": "o9",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    328.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o10",
-   "type": "power_unlock",
-   "layer": "gameplay",
-   "rect": [
-    404.0,
-    356.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "power": "boomerang_charge",
-    "message": "",
-    "armory": true,
-    "station": true
-   }
-  },
-  {
    "id": "o11",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    408.0,
     328.0,
+    232.0,
     16.0,
     16.0
    ],
@@ -318,11 +312,73 @@
   },
   {
    "id": "o12",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    400.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    404.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "boomerang_charge",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o14",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    408.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o16",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
     484.0,
-    356.0,
+    260.0,
     24.0,
     24.0
    ],
@@ -334,80 +390,12 @@
    }
   },
   {
-   "id": "o13",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    488.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o14",
-   "type": "power_unlock",
-   "layer": "gameplay",
-   "rect": [
-    564.0,
-    356.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "power": "dash",
-    "message": "",
-    "armory": true,
-    "station": true
-   }
-  },
-  {
-   "id": "o15",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    568.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o16",
-   "type": "power_unlock",
-   "layer": "gameplay",
-   "rect": [
-    644.0,
-    356.0,
-    24.0,
-    24.0
-   ],
-   "props": {
-    "power": "decoy",
-    "message": "",
-    "armory": true,
-    "station": true
-   }
-  },
-  {
    "id": "o17",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    648.0,
-    328.0,
+    488.0,
+    232.0,
     16.0,
     16.0
    ],
@@ -420,62 +408,42 @@
   },
   {
    "id": "o18",
-   "type": "power_unlock",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    724.0,
-    356.0,
-    24.0,
-    24.0
+    560.0,
+    336.0,
+    32.0,
+    16.0
    ],
    "props": {
-    "power": "frost_nova",
-    "message": "",
-    "armory": true,
-    "station": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o19",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    728.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o20",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    804.0,
-    356.0,
+    564.0,
+    308.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "glide",
+    "power": "dash",
     "message": "",
     "armory": true,
     "station": true
    }
   },
   {
-   "id": "o21",
+   "id": "o20",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    808.0,
-    328.0,
+    568.0,
+    280.0,
     16.0,
     16.0
    ],
@@ -484,6 +452,20 @@
     "radius": 46,
     "flicker": 0.05,
     "bloom": true
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
    }
   },
   {
@@ -491,13 +473,13 @@
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    884.0,
-    356.0,
+    644.0,
+    260.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "grapple",
+    "power": "decoy",
     "message": "",
     "armory": true,
     "station": true
@@ -508,8 +490,8 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    888.0,
-    328.0,
+    648.0,
+    232.0,
     16.0,
     16.0
    ],
@@ -522,62 +504,42 @@
   },
   {
    "id": "o24",
-   "type": "power_unlock",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    964.0,
-    356.0,
-    24.0,
-    24.0
+    720.0,
+    336.0,
+    32.0,
+    16.0
    ],
    "props": {
-    "power": "ground_pound",
-    "message": "",
-    "armory": true,
-    "station": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o25",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    968.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o26",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1044.0,
-    356.0,
+    724.0,
+    308.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "impulse",
+    "power": "frost_nova",
     "message": "",
     "armory": true,
     "station": true
    }
   },
   {
-   "id": "o27",
+   "id": "o26",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1048.0,
-    328.0,
+    728.0,
+    280.0,
     16.0,
     16.0
    ],
@@ -586,6 +548,20 @@
     "radius": 46,
     "flicker": 0.05,
     "bloom": true
+   }
+  },
+  {
+   "id": "o27",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    800.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
    }
   },
   {
@@ -593,13 +569,13 @@
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1124.0,
-    356.0,
+    804.0,
+    260.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "magnet",
+    "power": "glide",
     "message": "",
     "armory": true,
     "station": true
@@ -610,8 +586,8 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1128.0,
-    328.0,
+    808.0,
+    232.0,
     16.0,
     16.0
    ],
@@ -624,62 +600,42 @@
   },
   {
    "id": "o30",
-   "type": "power_unlock",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    1204.0,
-    356.0,
-    24.0,
-    24.0
+    880.0,
+    336.0,
+    32.0,
+    16.0
    ],
    "props": {
-    "power": "plasma_bomb",
-    "message": "",
-    "armory": true,
-    "station": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o31",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    1208.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o32",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1284.0,
-    356.0,
+    884.0,
+    308.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "recall",
+    "power": "grapple",
     "message": "",
     "armory": true,
     "station": true
    }
   },
   {
-   "id": "o33",
+   "id": "o32",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1288.0,
-    328.0,
+    888.0,
+    280.0,
     16.0,
     16.0
    ],
@@ -688,6 +644,20 @@
     "radius": 46,
     "flicker": 0.05,
     "bloom": true
+   }
+  },
+  {
+   "id": "o33",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    960.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
    }
   },
   {
@@ -695,13 +665,13 @@
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1364.0,
-    356.0,
+    964.0,
+    260.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "shield",
+    "power": "ground_pound",
     "message": "",
     "armory": true,
     "station": true
@@ -712,8 +682,8 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1368.0,
-    328.0,
+    968.0,
+    232.0,
     16.0,
     16.0
    ],
@@ -726,62 +696,42 @@
   },
   {
    "id": "o36",
-   "type": "power_unlock",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    1444.0,
-    356.0,
-    24.0,
-    24.0
+    1040.0,
+    336.0,
+    32.0,
+    16.0
    ],
    "props": {
-    "power": "teleport",
-    "message": "",
-    "armory": true,
-    "station": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o37",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    1448.0,
-    328.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 46,
-    "flicker": 0.05,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o38",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1524.0,
-    356.0,
+    1044.0,
+    308.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "time_slow",
+    "power": "impulse",
     "message": "",
     "armory": true,
     "station": true
    }
   },
   {
-   "id": "o39",
+   "id": "o38",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1528.0,
-    328.0,
+    1048.0,
+    280.0,
     16.0,
     16.0
    ],
@@ -790,6 +740,20 @@
     "radius": 46,
     "flicker": 0.05,
     "bloom": true
+   }
+  },
+  {
+   "id": "o39",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1120.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
    }
   },
   {
@@ -797,13 +761,13 @@
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1604.0,
-    356.0,
+    1124.0,
+    260.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "triple_jump",
+    "power": "magnet",
     "message": "",
     "armory": true,
     "station": true
@@ -814,8 +778,8 @@
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1608.0,
-    328.0,
+    1128.0,
+    232.0,
     16.0,
     16.0
    ],
@@ -828,28 +792,42 @@
   },
   {
    "id": "o42",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o43",
    "type": "power_unlock",
    "layer": "gameplay",
    "rect": [
-    1684.0,
-    356.0,
+    1204.0,
+    308.0,
     24.0,
     24.0
    ],
    "props": {
-    "power": "wave",
+    "power": "plasma_bomb",
     "message": "",
     "armory": true,
     "station": true
    }
   },
   {
-   "id": "o43",
+   "id": "o44",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    1688.0,
-    328.0,
+    1208.0,
+    280.0,
     16.0,
     16.0
    ],
@@ -861,7 +839,295 @@
    }
   },
   {
-   "id": "o44",
+   "id": "o45",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o46",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1284.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "recall",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o47",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1288.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o48",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o49",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1364.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o50",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1368.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o51",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1440.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o52",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1444.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o53",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1448.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o54",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1520.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o55",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1524.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "time_slow",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o56",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1528.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o57",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1600.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o58",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1604.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "triple_jump",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o59",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1608.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o60",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1680.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o61",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1684.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "wave",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o62",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1688.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o63",
    "type": "door",
    "layer": "gameplay",
    "rect": [
@@ -875,7 +1141,7 @@
    }
   },
   {
-   "id": "o45",
+   "id": "o64",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -890,7 +1156,7 @@
    }
   },
   {
-   "id": "o46",
+   "id": "o65",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -907,7 +1173,7 @@
    }
   },
   {
-   "id": "o47",
+   "id": "o66",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -994,7 +1260,7 @@
      ],
      "players": 8,
      "targets": [
-      "o44"
+      "o63"
      ],
      "action": "open",
      "label": "Prêts",

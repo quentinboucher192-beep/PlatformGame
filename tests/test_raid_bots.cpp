@@ -1,0 +1,466 @@
+// 2.77 (docs/RAIDS.md §21): the simulated players of a raid test play the zone themselves (raid::TestBots
+// on raid::NavGraph): alone they finish an ambush, a guardian, a generator, the armory's plate and a
+// gigaboss; the same steps give the same digest (2 and 8 seats); the administrator AFK is played by the AI.
+// « Simuler un raid complet » (raid::RaidSimulation): the whole raid in local up to the Cœur's fall, never
+// a report. The rules of cooperation 3 (raids too): a soul on the last safe place, a revival held with
+// « Interagir ». The armory: tablets up on their ledges, nothing taken walking on the floor, a name over each.
+
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <cstdio>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <SDL3/SDL.h>
+
+#include "engine/audio/AudioSystem.h"
+#include "engine/core/Application.h"
+#include "engine/physics/PhysicsWorld.h"
+#include "engine/resources/ResourceManager.h"
+#include "game/GameServices.h"
+#include "game/content/ContentDatabase.h"
+#include "game/gameplay/GameWorld.h"
+#include "game/gameplay/InputFrame.h"
+#include "game/gameplay/entities/Entities.h"
+#include "game/online/LevelFingerprint.h"
+#include "game/raid/RaidBranch.h"
+#include "game/raid/RaidNav.h"
+#include "game/raid/RaidRun.h"
+#include "game/raid/RaidSimulation.h"
+#include "game/raid/RaidTest.h"
+#include "tests/TestFramework.h"
+#include "ui/online/RaidHud.h"
+#include "ui/widgets/UIContext.h"
+
+using namespace cosmic;
+
+namespace {
+
+constexpr int kI = static_cast<int>(Action::Interact);
+constexpr int kR = static_cast<int>(Action::MoveRight);
+
+struct Svc {
+    ContentDatabase content;
+    ResourceManager res;
+    AudioSystem audio;
+    Svc() {
+        content.reload();
+        res.init(nullptr, &audio);
+    }
+    WorldServices ws() { return WorldServices{res, audio, content, nullptr, 0.0f, 1.0f}; }
+};
+
+const raid::Branch& bras() {
+    const raid::Branch* b = raid::Branch::builtin();
+    CHECK(b != nullptr);
+    return *b;
+}
+
+/// A test of `bots` simulated players without the administrator (their free place vacant), at `zone`.
+std::unique_ptr<raid::TestSession> botsOnly(Svc& s, int zone, int bots, uint32_t state = 0) {
+    raid::RaidRun::Test t;
+    t.on = true;
+    t.invincible = true;
+    t.players = 1 + bots;
+    auto session = std::make_unique<raid::TestSession>(s.ws(), bras(), t);
+    session->setAdminSeated(false);
+    session->setBranchState(state);
+    CHECK(session->begin(zone));
+    return session;
+}
+
+/// Steps until `done` (or `limit` steps); the steps it took (-1: not within the limit).
+template <class F>
+int until(raid::TestSession& s, int limit, F done) {
+    for (int t = 0; t < limit; ++t) {
+        s.step(InputFrame{});
+        if (done()) return t + 1;
+    }
+    return -1;
+}
+
+int objectiveIndex(const char* id) { return bras().objectiveIndex(id); }
+
+}  // namespace
+
+TEST_CASE("raid bots (2.77): the zone's graph — places, jumps, ladders; a path from the start to each passage; the same graph twice") {
+    Svc s;
+    for (int zone : {1, 2, 3, 7}) {
+        raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
+        CHECK(run.begin(0, zone));
+        raid::NavGraph a, b;
+        a.build(run.world(), run.rules().magma.present ? run.rules().magma.zone : std::string());
+        b.build(run.world(), run.rules().magma.present ? run.rules().magma.zone : std::string());
+        CHECK(a.size() > 40);
+        CHECK(a.edgeCount() > static_cast<size_t>(a.size()));
+        CHECK(a.hash() == b.hash());
+        const int from = a.locate(run.world().playerAt(0).feet());
+        CHECK(from >= 0);
+        int reached = 0, passages = 0;
+        std::vector<int> path;
+        for (const raid::Passage& p : run.rules().passages) {
+            if (p.door.empty() == false) continue;  // a door that opens later (generators, the wrist)
+            ++passages;
+            const int to = a.nearest(p.rect.bottomCenter(), 96.0f);
+            if (to >= 0 && a.path(from, to, path)) ++reached;
+        }
+        std::printf("  zone %d : %d places, %zu liaisons, %d / %d passages atteints, graphe en %.1f ms\n", zone, a.size(), a.edgeCount(), reached, passages,
+                    a.buildMs());
+        CHECK(reached >= 1);
+    }
+}
+
+TEST_CASE("raid bots (2.77): alone (no administrator), they clear the Épaule's ambush, kill the Biceps' guardian, light the Veine's generator") {
+    Svc s;
+    struct Case {
+        int zone;
+        const char* objective;
+        int limit;
+    };
+    for (const Case c : {Case{1, "epaule_arene", 150 * kSimHz}, Case{2, "biceps_gardien", 180 * kSimHz}, Case{3, "veine_generateur", 180 * kSimHz}}) {
+        auto session = botsOnly(s, c.zone, 4);
+        const int idx = objectiveIndex(c.objective);
+        CHECK(idx >= 0);
+        const auto t0 = std::chrono::steady_clock::now();
+        const int took = until(*session, c.limit, [&] { return raid::Branch::done(session->run().localDone(), idx); });
+        const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+        std::printf("  zone %d (%s) : %s en %d pas (%.1f s de jeu, %.0f ms, %d sauvetages du test)\n", c.zone, c.objective, took > 0 ? "fini" : "PAS FINI", took,
+                    took / static_cast<double>(kSimHz), ms, session->rescues());
+        CHECK(took > 0);
+        CHECK(session->run().takeReports().empty());
+    }
+}
+
+TEST_CASE("raid bots (2.77): the armory — each takes its power by jumping onto its tablet, then the whole group on « Prêts » leaves") {
+    Svc s;
+    auto session = botsOnly(s, raid::RaidRun::kArmory, 4);
+    CHECK(session->run().zone() == 0);
+    const int took = until(*session, 120 * kSimHz, [&] { return session->run().zone() != 0; });
+    std::printf("  vestiaire : sortie en %d pas\n", took);
+    CHECK(took > 0);
+    CHECK(session->run().zone() == bras().startZone);
+    const GameWorld& w = session->run().world();
+    for (int seat = 1; seat <= 4; ++seat) CHECK(w.playerAt(seat).hasPower(raid::TestBots::wish(seat)));  // chosen through InputFrame
+}
+
+TEST_CASE("raid bots (2.77): they defeat Pyroclast by themselves (its vents together, its weak points bare), within a limit of steps") {
+    Svc s;
+    // Its zone, the objectives before it given as done by other groups (the branch's state).
+    uint32_t state = 0;
+    for (const raid::ObjectiveInfo& o : bras().objectives)
+        if (o.role != "gigaboss" && !o.optional) state |= 1u << o.index;
+    auto session = botsOnly(s, 8, 6, state);
+    const int idx = objectiveIndex("main_pyroclast");
+    const auto t0 = std::chrono::steady_clock::now();
+    const int took = until(*session, 900 * kSimHz, [&] { return raid::Branch::done(session->run().localDone(), idx) || session->run().wiped(); });
+    const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    std::printf("  Pyroclast : %s en %d pas (%.0f s de jeu, %.0f ms ; phase %d)\n", raid::Branch::done(session->run().localDone(), idx) ? "vaincu" : "DEBOUT",
+                took, took / static_cast<double>(kSimHz), ms, session->run().gigaboss().phaseReached());
+    CHECK(raid::Branch::done(session->run().localDone(), idx));
+}
+
+TEST_CASE("raid bots (2.77): the same steps, the same digest (2 and 8 seats); the administrator AFK is played by the AI") {
+    Svc s;
+    for (int players : {2, 8}) {
+        uint64_t digest[2] = {0, 0};
+        for (int k = 0; k < 2; ++k) {
+            raid::RaidRun::Test t;
+            t.on = true;
+            t.invincible = true;
+            t.players = players;
+            raid::TestSession session(s.ws(), bras(), t);
+            CHECK(session.begin(1));
+            for (int step = 0; step < 20 * kSimHz; ++step) session.step(InputFrame{});
+            CHECK(session.autopilot());  // 15 s without a key: the AI plays the administrator's seat
+            digest[k] = session.hash();
+        }
+        CHECK(digest[0] == digest[1]);
+    }
+}
+
+TEST_CASE("raid simulation (2.77): the whole raid in local up to the Cœur's fall (reduced: from the lairs), never a report nor a network call") {
+    Svc s;
+    raid::SimSetup setup;
+    setup.groups = 7;
+    setup.bots = 5;
+    setup.lairs = true;  // the real lairs, then the real heart
+    auto run = [&](uint64_t& digest, uint32_t& steps, double& avg, double& worst) {
+        raid::RaidSimulation sim(s.ws(), setup);
+        CHECK(sim.begin());
+        CHECK(sim.groups().size() == 7u);
+        const uint32_t limit = 1800u * kSimHz;
+        while (!sim.heartFallen() && sim.tick() < limit) {
+            sim.step(InputFrame{});
+            for (const auto& g : sim.groups()) CHECK(g->session->run().takeReports().empty());
+        }
+        digest = sim.hash();
+        steps = sim.tick();
+        avg = sim.avgStepMs();
+        worst = sim.maxStepMs();
+        std::printf("  raid complet : %s en %u pas (%.0f s de jeu), %d Gigaboss, %zu groupes, pas moyen %.2f ms (max %.1f ms), %llu pas de mondes\n",
+                    sim.heartFallen() ? "Cœur tombé" : "PAS FINI", steps, steps / static_cast<double>(kSimHz), sim.gigabossesDown(), sim.groups().size(), avg, worst,
+                    static_cast<unsigned long long>(sim.worldSteps()));
+        for (const auto& e : sim.feed()) std::printf("    %5.0f s  %s\n", e.tick / static_cast<double>(kSimHz), e.text.c_str());
+        CHECK(sim.heartFallen());
+        CHECK(sim.gigabossesDown() == 7);
+    };
+    uint64_t a = 0;
+    uint32_t sa = 0;
+    double avg = 0, worst = 0;
+    run(a, sa, avg, worst);
+}
+
+TEST_CASE("raid simulation (2.77): the same raid twice — the same digest at every step checked (7 groups, from the lairs)") {
+    Svc s;
+    raid::SimSetup setup;
+    setup.groups = 7;
+    setup.bots = 3;
+    setup.lairs = true;
+    std::vector<uint64_t> d[2];
+    for (int k = 0; k < 2; ++k) {
+        raid::RaidSimulation sim(s.ws(), setup);
+        CHECK(sim.begin());
+        for (int t = 0; t < 40 * kSimHz; ++t) {
+            sim.step(InputFrame{});
+            if (t % 600 == 599) d[k].push_back(sim.hash());
+        }
+    }
+    CHECK(!d[0].empty());
+    CHECK(d[0] == d[1]);
+}
+
+TEST_CASE("raid simulation (2.77): from the armories, 7 groups of 7 leave them for their branch; the cost of a step of the whole raid") {
+    Svc s;
+    raid::SimSetup setup;
+    setup.groups = 7;
+    setup.bots = 7;
+    raid::RaidSimulation sim(s.ws(), setup);
+    CHECK(sim.begin());
+    sim.watch(0);  // nobody seated: every group plays alone
+    const auto t0 = std::chrono::steady_clock::now();
+    int left = 0;
+    for (int t = 0; t < 150 * kSimHz && left < 7; ++t) {
+        sim.step(InputFrame{});
+        left = 0;
+        for (const auto& g : sim.groups()) left += g->session->run().zone() != 0;
+    }
+    const double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    std::printf("  7 groupes de 7 : %d / 7 sortis du vestiaire en %u pas (%.0f s de jeu) ; pas du raid : moyen %.2f ms, max %.1f ms ; %.0f ms au total\n", left,
+                sim.tick(), sim.tick() / static_cast<double>(kSimHz), sim.avgStepMs(), sim.maxStepMs(), ms);
+    CHECK(left == 7);
+    for (int t = 0; t < 30 * kSimHz; ++t) sim.step(InputFrame{});  // the first zones (graphs built, fights)
+    std::printf("  ensuite 30 s dans les premières zones : pas moyen %.2f ms, max %.1f ms\n", sim.avgStepMs(), sim.maxStepMs());
+}
+
+TEST_CASE("raid simulation (2.77): the administrator takes a group's free place, watches another; the groups go on without them") {
+    Svc s;
+    raid::SimSetup setup;
+    setup.groups = 3;
+    setup.bots = 2;
+    raid::RaidSimulation sim(s.ws(), setup);
+    CHECK(sim.begin());
+    CHECK(sim.seated());
+    CHECK(sim.viewed() == 0);
+    CHECK(sim.group(0).session->adminSeated());
+    CHECK(!sim.group(1).session->adminSeated());
+    for (int t = 0; t < 120; ++t) sim.step(InputFrame{});
+    CHECK(sim.join(2));
+    CHECK(sim.viewed() == 2);
+    CHECK(!sim.group(0).session->adminSeated());
+    CHECK(sim.group(2).session->adminSeated());
+    for (int t = 0; t < 120; ++t) sim.step(InputFrame{});
+    CHECK(sim.group(0).session->run().world().member(0).presence == GameWorld::Presence::Vacant);  // its free place again
+    CHECK(sim.group(2).session->run().world().member(0).presence == GameWorld::Presence::Playing);
+    sim.watch(1);
+    CHECK(!sim.seated());
+    for (int t = 0; t < 120; ++t) sim.step(InputFrame{});
+    for (int g = 0; g < 3; ++g) CHECK(!sim.group(g).session->adminSeated());
+    CHECK(sim.feed().size() >= 1u);
+}
+
+// ------------------------------------------------------------------ the rules of cooperation 3 (2.77)
+
+namespace {
+
+struct Pair {
+    std::vector<InputFrame> prev = std::vector<InputFrame>(raid::kMaxInstancePlayers);
+    std::vector<InputFrame> frames(std::vector<InputFrame> held) {
+        held.resize(raid::kMaxInstancePlayers);
+        for (int k = 0; k < raid::kMaxInstancePlayers; ++k) {
+            InputFrame& f = held[static_cast<size_t>(k)];
+            if (k >= 2) {
+                f = InputFrame{};
+                f.flags = InputFrame::Vacant;
+                continue;
+            }
+            f.pressed = f.held & ~prev[static_cast<size_t>(k)].held;
+            f.released = prev[static_cast<size_t>(k)].held & ~f.held;
+            prev[static_cast<size_t>(k)] = f;
+        }
+        return held;
+    }
+};
+
+InputFrame interact() {
+    InputFrame f;
+    f.held = 1u << kI;
+    return f;
+}
+
+}  // namespace
+
+TEST_CASE("cooperation 3 (2.77): death in the rising magma, the soul on the last safe ground; revived only with « Interagir » held, let go it stops") {
+    CHECK(kCoopSimulationVersion == 3);
+    Svc s;
+    raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
+    CHECK(run.begin(0, 3));  // the Veine de magma
+    CHECK(run.rules().magma.present);
+    Pair pair;
+    auto step = [&](std::vector<InputFrame> held = {}) {
+        auto f = pair.frames(std::move(held));
+        run.step(f.data(), static_cast<int>(f.size()), 0);
+    };
+    for (int t = 0; t < 120; ++t) step();
+    GameWorld& w = run.world();
+    auto* magma = dynamic_cast<DamageZoneEntity*>(w.entity(run.rules().magma.zone));
+    CHECK(magma != nullptr);
+    if (!magma) return;
+    const Rect zone = magma->object().rect;
+    // Seat 1 on the floor of the magma's basin while it is drained (safe then), then the magma rises.
+    const Vec2 safe = w.member(1).safeFeet;
+    w.playerAt(1).teleportTo({zone.center().x, zone.bottom() - 1.0f});
+    for (int t = 0; t < 40; ++t) step();
+    magma->handleAction(w, "enable", Json::object());
+    for (int t = 0; t < 900 && w.member(1).presence != GameWorld::Presence::Down; ++t) step();
+    CHECK(w.member(1).presence == GameWorld::Presence::Down);
+    const Vec2 soul = w.member(1).soul;
+    // Out of the liquid (its highest level), on firm ground: where seat 1 last stood safely, or lifted above.
+    const Rect body{soul.x - 5.0f, soul.y - 22.0f, 10.0f, 21.5f};
+    CHECK(!magma->overlapBox().intersects(body));
+    std::printf("  âme en (%.0f, %.0f) ; magma (%.0f, %.0f, %.0f, %.0f) ; dernier sol sûr (%.0f, %.0f)\n", soul.x, soul.y, zone.x, zone.y, zone.w, zone.h, safe.x, safe.y);
+    // Seat 0 beside the soul without « Interagir »: nothing.
+    w.playerAt(0).teleportTo(soul + Vec2{-14.0f, 0.0f});
+    for (int t = 0; t < 360; ++t) step();
+    CHECK(w.member(1).presence == GameWorld::Presence::Down);
+    // Held 1 s, let go: the revival stops (back to zero).
+    w.playerAt(0).teleportTo(soul + Vec2{-14.0f, 0.0f});
+    for (int t = 0; t < kSimHz; ++t) step({interact()});
+    CHECK(w.member(1).revive > 0.5f);
+    step();
+    CHECK(w.member(1).revive == 0.0f);
+    for (int t = 0; t < 300; ++t) step();
+    CHECK(w.member(1).presence == GameWorld::Presence::Down);
+    // Held 2 s: back on its feet.
+    w.playerAt(0).teleportTo(soul + Vec2{-14.0f, 0.0f});
+    for (int t = 0; t < 2 * kSimHz + 60 && w.member(1).presence == GameWorld::Presence::Down; ++t) step({interact()});
+    CHECK(w.member(1).presence == GameWorld::Presence::Playing);
+    // The rules of cooperation 2 (an old team replay): standing near the soul was enough.
+    {
+        GameWorld::PlayerScope sc(w, 1);
+        w.playerAt(1).kill(w);
+    }
+    for (int t = 0; t < 240; ++t) step();
+    CHECK(w.member(1).presence == GameWorld::Presence::Down);
+    w.setCoopVersion(2);
+    w.playerAt(0).teleportTo(w.member(1).soul + Vec2{-14.0f, 0.0f});
+    for (int t = 0; t < 2 * kSimHz + 60 && w.member(1).presence == GameWorld::Presence::Down; ++t) step();
+    CHECK(w.member(1).presence == GameWorld::Presence::Playing);
+}
+
+// ------------------------------------------------------------------ the armory (2.77)
+
+TEST_CASE("raid armory (2.77): walking on the floor to « Prêts » takes nothing; each tablet is up on its ledge, within a jump") {
+    Svc s;
+    for (const raid::Branch* b : raid::Branch::all()) {
+        if (!b->hasArmory()) continue;
+        raid::RaidRun run(s.ws(), *b, raid::kMaxInstancePlayers);
+        CHECK(run.begin(0, raid::RaidRun::kArmory));
+        Pair pair;
+        GameWorld& w = run.world();
+        const float floorY = w.playerAt(0).feet().y;
+        std::vector<std::string> before;
+        for (const auto& p : w.playerAt(0).powers()) before.push_back(p->id());
+        bool offered = false;
+        int tablets = 0;
+        for (const auto& e : w.entities())
+            if (auto* t = dynamic_cast<const PowerUnlockEntity*>(e.get())) {
+                ++tablets;
+                CHECK(e->box.bottom() < floorY - 22.0f);         // over a walking player's head
+                CHECK(e->box.bottom() > floorY - 22.0f - 58.0f - 48.0f);  // a jump from the floor or a lower ledge reaches it
+                (void)t;
+            }
+        CHECK(tablets >= 19);
+        InputFrame r;
+        r.held = 1u << kR;
+        r.moveX = 127;
+        const Rect plate = run.rules().coops.front().rect;
+        for (int t = 0; t < 30 * kSimHz && w.playerAt(0).feet().x < plate.x; ++t) {
+            auto f = pair.frames({r});
+            run.step(f.data(), static_cast<int>(f.size()), 0);
+            offered = offered || w.powerOffer().has_value();
+        }
+        CHECK(w.playerAt(0).feet().x >= plate.x);
+        CHECK(!offered);
+        std::vector<std::string> after;
+        for (const auto& p : w.playerAt(0).powers()) after.push_back(p->id());
+        CHECK(before == after);
+    }
+}
+
+TEST_CASE("raid armory (2.77): a name over every tablet, measured; two names never overlap, nor a tablet or a ledge") {
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+    Application app;
+    AppConfig cfg;
+    cfg.headless = true;
+    cfg.width = 1280;
+    cfg.height = 720;
+    cfg.vsync = false;
+    CHECK(app.init(cfg));
+    {
+        GameServices g(app);
+        g.loadAll();
+        WorldServices ws{app.resources(), app.audio(), g.content, nullptr, 0.0f, 1.0f};
+        raid::RaidRun run(ws, bras(), raid::kMaxInstancePlayers);
+        CHECK(run.begin(0, raid::RaidRun::kArmory));
+        GameWorld& w = run.world();
+        for (const Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}}) {
+            app.setWindowSize(static_cast<int>(size.x), static_cast<int>(size.y));
+            app.renderer().refreshOutputSize();
+            UIContext& ui = g.ui;
+            ui.begin(app, 1.0f / 60.0f);
+            // The raid's camera at three places of the room, and the whole room at once.
+            std::vector<WorldView> views;
+            for (float x : {300.0f, 900.0f, 1500.0f}) {
+                WorldView v = w.camera().view(static_cast<int>(ui.screenW()), static_cast<int>(ui.screenH()), 1.0f);
+                v.topLeft = {x - ui.screenW() * 0.5f / v.scale, w.level().bounds.bottom() - ui.screenH() / v.scale};
+                views.push_back(v);
+            }
+            WorldView all;
+            all.scale = ui.screenW() / w.level().bounds.w;
+            all.screenW = static_cast<int>(ui.screenW());
+            all.screenH = static_cast<int>(ui.screenH());
+            all.topLeft = {w.level().bounds.x, w.level().bounds.bottom() - ui.screenH() / all.scale};
+            views.push_back(all);
+            for (const WorldView& v : views) {
+                const auto labels = raidhud::armoryLabels(ui, w, v);
+                CHECK(labels.size() >= 19u);  // every tablet has its name (in or out of the view)
+                std::vector<Rect> solid;
+                for (const auto& e : w.entities())
+                    if (dynamic_cast<const PowerUnlockEntity*>(e.get())) solid.push_back(v.toScreen(e->box));
+                for (const Collider& c : w.physics().colliders())
+                    if (c.enabled && !c.dynamic && c.kind == ColliderKind::OneWay) solid.push_back(v.toScreen(c.box));
+                for (size_t i = 0; i < labels.size(); ++i) {
+                    CHECK(!labels[i].name.empty());
+                    for (size_t j = i + 1; j < labels.size(); ++j) CHECK(!labels[i].box.intersects(labels[j].box));
+                    for (const Rect& r : solid) CHECK(!labels[i].box.intersects(r));
+                    const float nameW = ui.text().measure(labels[i].name, FontFace::Bold, ui.s(labels[i].size)).x;
+                    CHECK(nameW <= labels[i].box.w + 0.5f);
+                }
+            }
+            ui.end();
+        }
+    }
+    app.shutdown();
+}

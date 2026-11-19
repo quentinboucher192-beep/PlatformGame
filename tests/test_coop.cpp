@@ -202,7 +202,7 @@ TEST_CASE("coop 1 (replays of 2.62 to 2.74): landing on an ally, who carries nob
 }
 
 TEST_CASE("coop 2 (2.75): the players pass through each other, nobody pushed nor carried") {
-    CHECK(kCoopSimulationVersion == 2);
+    CHECK(kCoopSimulationVersion >= 2);
     Team t(2);
     t.idle(60);
     const float ground = t.p(0).feet().y;
@@ -263,7 +263,12 @@ TEST_CASE("coop: an enemy aims at the nearest player in play") {
     CHECK(t.w->targetIndex({880.0f, ground - 10.0f}) != 1);
 }
 
-TEST_CASE("coop: a player down is revived by an ally staying 2 s near its soul, 2 per attempt") {
+TEST_CASE("coop: a player down is revived by an ally holding « Interagir » 2 s near its soul (rules 3, 2.77), 2 per attempt") {
+    InputFrame hold;
+    hold.held = 1u << static_cast<int>(Action::Interact);
+    auto holding = [&](Team& t, int ticks) {
+        for (int i = 0; i < ticks; ++i) t.step({hold, InputFrame{}});
+    };
     Team t(2);
     t.idle(60);
     const float ground = t.p(0).feet().y;
@@ -283,15 +288,19 @@ TEST_CASE("coop: a player down is revived by an ally staying 2 s near its soul, 
         t.place(0, {soul.x - 300.0f, ground});
         t.idle(300);
         CHECK(t.m(1).presence == GameWorld::Presence::Down);
-        // Near it, 1 s, then away: the count starts again.
+        // Near it without « Interagir »: nothing (rules 3).
         t.place(0, {soul.x - 20.0f, ground});
-        t.idle(120);
+        t.idle(300);
+        CHECK(t.m(1).presence == GameWorld::Presence::Down);
+        CHECK(t.m(1).revive == 0.0f);
+        // Near it, held 1 s, then away: the count starts again.
+        holding(t, 120);
         CHECK(t.m(1).presence == GameWorld::Presence::Down);
         t.place(0, {soul.x - 300.0f, ground});
-        t.idle(2);
+        holding(t, 2);
         CHECK(t.m(1).revive == 0.0f);
         t.place(0, {soul.x - 20.0f, ground});
-        t.idle(250);
+        holding(t, 250);
         if (round < 2) {
             CHECK(t.m(1).presence == GameWorld::Presence::Playing);
             CHECK(t.w->revivesLeft() == 1 - round);
@@ -380,7 +389,9 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
     };
     // 2.75: version 1 (solid players: the replays of 2.62 to 2.74) keeps its digests exactly;
     // version 2 (they pass through each other) has its own.
-    const Golden golden[] = {{2, "bb2676ab728f2c52", 1}, {3, "2ac42252542c66bd", 1}, {2, "91d4357955571446", 2}, {3, "c965b1d603d7a5d0", 2}};
+    // 2.77: version 3 (a soul on the last safe place, a revival held) has its own; 1 and 2 keep theirs.
+    const Golden golden[] = {{2, "bb2676ab728f2c52", 1}, {3, "2ac42252542c66bd", 1}, {2, "91d4357955571446", 2}, {3, "c965b1d603d7a5d0", 2},
+                             {2, "v3-a-calculer", 3},     {3, "v3-a-calculer", 3}};
     int mismatches = 0;
     for (const auto& g : golden) {
         auto script = teamScript(g.players, 31, 120 * 40);
@@ -401,5 +412,5 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
         CHECK(runScript(c, other) != ra);
     }
     CHECK(mismatches == 0);
-    CHECK(kCoopSimulationVersion == 2);
+    CHECK(kCoopSimulationVersion == 3);
 }

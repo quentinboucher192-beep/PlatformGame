@@ -179,10 +179,11 @@ void GameWorld::stepTeamPlayers(float dt) {
         if (m.presence != Presence::Playing) continue;
         teamBodies(static_cast<int>(i), true);  // the others' bodies where they stand now
         p.fixedUpdate(*this, control && i < teamInputs_.size() ? teamInputs_[i] : PlayerInput{}, dt);
-        // Its last solid ground (an ally's head is no ground to come back to).
+        // Its last solid ground (an ally's head is no ground to come back to). 2.77 (rules 3): a SAFE
+        // place only — firm ground (no moving or crumbling platform), out of every liquid and danger.
         if (m.presence == Presence::Playing && p.grounded() && p.state() != PlayerState::Dead &&
             p.state() != PlayerState::Respawn && p.state() != PlayerState::Hidden && p.vel.y >= 0.0f &&
-            !teammateBody(p.groundCollider())) {
+            !teammateBody(p.groundCollider()) && (coopVersion_ < 3 || safeStand(p))) {
             m.safeFeet = p.feet();
             m.hasSafeFeet = true;
         }
@@ -299,8 +300,11 @@ void GameWorld::memberDown(int i) {
     Player& p = *m.player;
     if (m.presence == Presence::Gone) return;
     m.presence = Presence::Down;
-    // Its soul: where it fell, or on its last solid ground after a fall into the void.
-    m.soul = m.fell && m.hasSafeFeet ? m.safeFeet : p.feet();
+    // Its soul: where it fell, or on its last solid ground after a fall into the void. 2.77 (rules 3):
+    // always on its last SAFE place (firm ground out of danger, kept step by step): a player who dies in
+    // a deadly liquid, on spikes, in the void or crushed can always be reached and revived.
+    if (coopVersion_ >= 3) m.soul = m.hasSafeFeet ? m.safeFeet : p.feet();
+    else m.soul = m.fell && m.hasSafeFeet ? m.safeFeet : p.feet();
     m.fell = false;
     m.revive = 0.0f;
     m.offFrame = 0.0f;
@@ -345,6 +349,66 @@ void GameWorld::regroupMember(int i, int toward) {
     playSound("sounds/teleport.wav", p.center(), 0.6f);
 }
 
+// 2.77 (rules of cooperation 3): the places a soul may wait on.
+const std::vector<LevelEntity*>& GameWorld::harmful() const {
+    if (harmfulFor_ != entities_.size() + (entityGen_ << 32)) {
+        harmful_.clear();
+        for (const auto& e : entities_)
+            if (dynamic_cast<const DamageZoneEntity*>(e.get()) || dynamic_cast<const SpikesEntity*>(e.get()) ||
+                (dynamic_cast<const LiquidEntity*>(e.get()) && !static_cast<const LiquidEntity*>(e.get())->swimmable()))
+                harmful_.push_back(e.get());
+        harmfulFor_ = entities_.size() + (entityGen_ << 32);
+    }
+    return harmful_;
+}
+
+bool GameWorld::inDanger(const Rect& body, bool whole) const {
+    for (const LevelEntity* e : harmful()) {
+        if (e->removed || !e->active) continue;
+        // `whole`: the box a rising liquid fills at its highest (a place below it is not safe from it).
+        const Rect r = whole && dynamic_cast<const DamageZoneEntity*>(e) ? e->box : e->overlapBox();
+        if (r.h > 0.5f && r.intersects(body)) return true;
+    }
+    return false;
+}
+
+bool GameWorld::safeStand(const Player& p) const {
+    const Collider* g = physics_.get(p.groundCollider());
+    if (!g || g->dynamic || (g->tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate))) return false;
+    if (p.inWater) return false;
+    return !inDanger(p.box.expanded(2.0f), false);
+}
+
+void GameWorld::liftSoul(TeamMember& m) {
+    const Rect body{m.soul.x - 5.0f, m.soul.y - 22.0f, 10.0f, 21.5f};
+    const LevelEntity* over = nullptr;
+    for (const LevelEntity* e : harmful())
+        if (!e->removed && e->active && e->overlapBox().h > 0.5f && e->overlapBox().intersects(body)) {
+            over = e;
+            break;
+        }
+    if (!over) return;
+    // The nearest firm ground above the whole liquid (its highest level), with room and out of danger.
+    const float limit = over->box.y - 2.0f;
+    Vec2 best = m.soul;
+    float bestD = -1.0f;
+    for (const Collider& c : physics_.colliders()) {
+        if (!c.enabled || c.dynamic || (c.tags & (ColliderTag::Moving | ColliderTag::Crumble | ColliderTag::Teammate | ColliderTag::EnemyOnly))) continue;
+        if (c.box.y >= limit || c.box.w < 12.0f || c.box.y < level_.bounds.y + 24.0f) continue;
+        const Vec2 at{std::clamp(m.soul.x, c.box.x + 6.0f, c.box.right() - 6.0f), c.box.y};
+        const float d = (at - m.soul).lengthSq();
+        if (bestD >= 0.0f && d >= bestD) continue;
+        const Rect b{at.x - 5.0f, at.y - 22.0f, 10.0f, 21.5f};
+        if (physics_.overlapsSolid(b) || inDanger(b, true)) continue;
+        best = at;
+        bestD = d;
+    }
+    if (bestD >= 0.0f) {
+        m.soul = best;
+        m.revive = 0.0f;
+    }
+}
+
 void GameWorld::checkTeamDown() {
     if (state_ == WorldState::Failed || state_ == WorldState::Completed || state_ == WorldState::Outro) return;
     for (const TeamMember& m : team_)
@@ -362,11 +426,18 @@ void GameWorld::updateTeamRules(float dt) {
             m.revive = 0.0f;
             continue;
         }
+        // 2.77 (rules 3): a liquid rising over its soul lifts it to the nearest safe place above it.
+        if (coopVersion_ >= 3) liftSoul(m);
         bool near = false;
+        m.reviver = -1;
         for (size_t j = 0; j < team_.size() && !near; ++j) {
             if (j == i || !solidMember(static_cast<int>(j)) || team_[j].player->respawning()) continue;
             const Vec2 f = team_[j].player->feet();
             near = std::abs(f.x - m.soul.x) <= kReviveReachX && std::abs(f.y - m.soul.y) <= kReviveReachY;
+            // 2.77 (rules 3): « Interagir » held near the soul (its frames: replays stay exact); let go,
+            // the revival stops.
+            if (near && coopVersion_ >= 3) near = j < teamInputs_.size() && teamInputs_[j].isHeld(Action::Interact);
+            if (near) m.reviver = static_cast<int>(j);
         }
         m.revive = near ? m.revive + dt : 0.0f;
         if (m.revive >= kReviveSeconds) reviveMember(static_cast<int>(i));

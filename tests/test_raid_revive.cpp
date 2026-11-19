@@ -98,6 +98,21 @@ void idleTeam(GameWorld& w, int ticks) {
     for (int t = 0; t < ticks; ++t) stepTeam(w, f.data(), static_cast<int>(f.size()), kSimDt);
 }
 
+/// 2.77 (rules 3): seat 0 holds « Interagir » (a revival is held).
+InputFrame interact() {
+    InputFrame f;
+    f.held = 1u << static_cast<int>(Action::Interact);
+    return f;
+}
+void holdTeam(GameWorld& w, int ticks) {
+    std::vector<InputFrame> f(static_cast<size_t>(w.teamSize()));
+    f[0] = interact();
+    for (int t = 0; t < ticks; ++t) {
+        f[0].pressed = t == 0 ? f[0].held : 0u;
+        stepTeam(w, f.data(), static_cast<int>(f.size()), kSimDt);
+    }
+}
+
 }  // namespace
 
 TEST_CASE("2.75: a player's fall moves nobody else; they come back only once revived (cooperation 2 and 3)") {
@@ -124,9 +139,9 @@ TEST_CASE("2.75: a player's fall moves nobody else; they come back only once rev
         CHECK(w->member(n - 1).presence == GameWorld::Presence::Down);
         for (int i = 0; i + 1 < n; ++i) CHECK(std::abs(w->playerAt(i).feet().x - at[static_cast<size_t>(i)].x) < 0.01f);
         CHECK(w->state() == WorldState::Playing);
-        // An ally near the soul for 2 s: back, near it (2 revivals per attempt in cooperation).
+        // An ally near the soul, « Interagir » held 2 s (2.77): back, near it (2 revivals per attempt in cooperation).
         w->playerAt(0).teleportTo(w->member(n - 1).soul + Vec2{-20.0f, 0.0f});
-        idleTeam(*w, 280);
+        holdTeam(*w, 280);
         CHECK(w->member(n - 1).presence == GameWorld::Presence::Playing);
         CHECK(std::abs(w->playerAt(n - 1).feet().x - w->member(n - 1).soul.x) < 80.0f);
         CHECK(w->revivesLeft() == GameWorld::kTeamRevives - 1);
@@ -163,7 +178,7 @@ TEST_CASE("2.75 raid test: a simulated player falls at step N: the administrator
     CHECK(!session.run().wiped());
     // The administrator stays near the soul: the bot is back (raids: as many revivals as wanted).
     w.playerAt(0).teleportTo(w.member(1).soul + Vec2{-16.0f, 0.0f});
-    for (int t = 0; t < 300; ++t) session.step(InputFrame{});
+    for (int t = 0; t < 300; ++t) session.step(interact());  // 2.77: « Interagir » held
     CHECK(w.member(1).presence == GameWorld::Presence::Playing);
     CHECK(w.member(1).revived == 1);
 }
@@ -201,7 +216,7 @@ TEST_CASE("2.75 raid: unlimited revivals, the players pass through each other, a
         for (int t = 0; t < 200; ++t) step();
         CHECK(w.member(1).presence == GameWorld::Presence::Down);
         w.playerAt(0).teleportTo(w.member(1).soul + Vec2{-16.0f, 0.0f});
-        for (int t = 0; t < 300; ++t) step();
+        for (int t = 0; t < 300; ++t) step({interact()});  // 2.77: « Interagir » held
         CHECK(w.member(1).presence == GameWorld::Presence::Playing);
     }
     CHECK(w.revivalsDone() == 3);
@@ -257,7 +272,7 @@ TEST_CASE("2.75 raid lockstep: 2 and 8 seats, the same digest twice; reference d
         }
     }
     CHECK(mismatches == 0);
-    CHECK(kCoopSimulationVersion == 2);
+    CHECK(kCoopSimulationVersion == 3);  // 2.77: rules 3 (souls on the last safe place, revivals held)
 }
 
 TEST_CASE("2.75: every rising liquid of the raid fills the view's width, or its basin wall to wall") {

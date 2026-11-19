@@ -10,6 +10,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Hud.h"
 #include "game/powers/Powers.h"
+#include "ui/widgets/Glyphs.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic {
@@ -243,15 +244,51 @@ void Hud::drawTeamLabels(UIContext& ui, GameWorld& w, const WorldView& view) {
             put(teamName(i), view.toScreen({p.center().x, p.box.y - 4.0f}), c, 14, false);
         } else if (m.presence == Presence::Down) {
             const Vec2 at = view.toScreen(m.soul + Vec2{0.0f, -34.0f});
+            const bool held = w.coopVersion() >= 3;  // 2.77: a revival is held (« Interagir »)
+            const int me = team_.promptPlayer;
+            const bool near = held && me >= 0 && me < w.teamSize() && me != i && w.member(me).presence == Presence::Playing &&
+                              std::abs(w.playerAt(me).feet().x - m.soul.x) <= GameWorld::kReviveReachX &&
+                              std::abs(w.playerAt(me).feet().y - m.soul.y) <= GameWorld::kReviveReachY;
             std::string t;
             if (!w.canRevive()) {
                 t = teamName(i) + " à terre : plus de réanimation";
+            } else if (near && m.reviver != me) {
+                // This player beside the soul: « Maintenir [its own key] : réanimer » (keyboard or gamepad).
+                const float h = ui.s(26);
+                const std::string before = "Maintenir", after = ": réanimer " + teamName(i);
+                const float size = ui.s(15);  // teamStyle(ui, 15, …)
+                const float w1 = ui.text().measure(before, FontFace::Bold, size).x, w2 = ui.text().measure(after, FontFace::Bold, size).x;
+                const float key = Glyphs::measureAction(ui, Action::Interact, h);
+                const float gap = ui.s(6), total = w1 + gap + key + gap + w2;
+                Rect box{at.x - total * 0.5f - ui.s(10), at.y - h - ui.s(10), total + ui.s(20), h + ui.s(10)};
+                box.x = std::clamp(box.x, ui.s(4), std::max(ui.s(4), ui.screenW() - box.w - ui.s(4)));
+                for (int guard = 0; guard < 8; ++guard) {
+                    bool hit = false;
+                    for (const Rect& o : taken)
+                        if (o.intersects(box)) {
+                            box.y = o.y - box.h - ui.s(2);
+                            hit = true;
+                        }
+                    if (!hit) break;
+                }
+                if (box.y >= ui.s(2) && box.right() <= ui.screenW() && box.bottom() <= ui.screenH()) {
+                    taken.push_back(box);
+                    r.fillRoundedRect(box, ui.s(8), {7, 11, 26, 225});
+                    r.drawRoundedRect(box, ui.s(8), Color{255, 210, 122, 220}, ui.s(1.4f));
+                    const float cy = box.center().y;
+                    float x = box.x + ui.s(10);
+                    ui.text().draw(before, {x, cy}, teamStyle(ui, 15, Color{255, 210, 122, 255}, FontFace::Bold, Align::Left, VAlign::Middle));
+                    x += w1 + gap;
+                    x += Glyphs::drawAction(ui, Action::Interact, {x, cy}, h) + gap;
+                    ui.text().draw(after, {x, cy}, teamStyle(ui, 15, Color{255, 210, 122, 255}, FontFace::Bold, Align::Left, VAlign::Middle));
+                }
+                continue;
             } else if (m.revive > 0.0f) {
-                const int who = rescuer(m.soul);
+                const int who = held && m.reviver >= 0 ? m.reviver : rescuer(m.soul);
                 t = (who >= 0 ? teamName(who) + " relève " : "Réanimation de ") + teamName(i) + " : " +
                     seconds1(GameWorld::kReviveSeconds - m.revive);
             } else {
-                t = teamName(i) + " à terre : restez 2 s près de son âme";
+                t = held ? teamName(i) + " à terre : maintenez Interagir 2 s près de son âme" : teamName(i) + " à terre : restez 2 s près de son âme";
             }
             put(t, at, Color{255, 210, 122, 255}, 15, true);
         } else if (m.presence == Presence::Standby) {

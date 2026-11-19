@@ -6,7 +6,8 @@
 # phase 6 : le Cœur d'Asterion, combat final (2.74, §17)
 # les fiches d'Asterion et des Gigaboss (2.74.1, §18) ; ce qu'il reste à faire, zones terminées, tableaux des zones,
 # modération, « Où frapper » (2.75, §19) ;
-# réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20)
+# réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
+# joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §21)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -769,7 +770,9 @@ combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas su
   même empreinte (testé à 2 et 8 sièges) ;
 * deux règles du test seulement : un joueur simulé resté loin derrière pendant 5 s revient près de l'administrateur, et
   celui qu'un mécanisme attend sans pouvoir l'atteindre en 6 s y est placé — pour que les mécanismes à plusieurs marchent
-  dans un test seul ;
+  dans un test seul ; **2.77** : les joueurs simulés ne suivent plus l'administrateur, ils jouent la zone eux-mêmes
+  (objectifs, chemin sur le graphe de la zone, Gigaboss, pilote automatique de l'administrateur AFK) et la première règle
+  devient « un joueur simulé qui ne se rapproche plus de son but pendant 8 s avance sur son chemin » (§21) ;
 * un test ne produit **aucun rapport** (`RaidRun::Test`) et le serveur refuse tout rapport marqué `test`.
 
 ### Le magma montant (style « magma » de `damage_zone`)
@@ -1105,7 +1108,7 @@ ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersio
   au-dessus d'eux. Affichage seulement, hors simulation.
 * **Personne d'autre ne bouge quand un joueur tombe** : il passe « à terre » (son âme attend), les autres gardent
   leur place, leurs cœurs et leur progression. Il ne revient **que réanimé**, près de son âme (2 s d'un allié tout
-  près) : plus de relève au point de contrôle, et un joueur à terre quand le groupe change de zone reste à terre
+  près ; 2.77 : l'allié **maintient « Interagir »** et l'âme attend sur le dernier endroit sûr, §21) : plus de relève au point de contrôle, et un joueur à terre quand le groupe change de zone reste à terre
   (son âme attend à l'arrivée). En coopération, **2 réanimations** par équipe et par tentative ; en raid,
   **autant qu'on veut** tant qu'un coéquipier est en jeu pour le relever (le HUD l'indique : « Réanimations
   illimitées »). Correctif : dans le test d'administration, la chute d'un joueur simulé renvoyait l'administrateur
@@ -1148,6 +1151,120 @@ ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersio
   joueur simulé sans effet sur les autres, groupe éliminé, coopération à 2 et 3, largeur des liquides, vestiaire
   rejoué, 0 et 7 joueurs simulés), `tests/test_coop.cpp` (règles 1 et 2), `server/test/raidWipe.test.ts`,
   `server/test/coopRace.test.ts`.
+
+## 21. Des joueurs simulés qui jouent, le raid complet en local, les âmes et le vestiaire (2.77)
+
+### Les joueurs simulés jouent la zone (`game/raid/RaidBots`, `game/raid/RaidNav`)
+
+Dans « Tester Asterion », les joueurs simulés ne suivent plus l'administrateur : ils **jouent la zone eux-mêmes**, qu'il
+soit là, absent ou AFK. Une IA à objectifs, déterministe, qui répond à chaque pas par une `InputFrame` par siège (jamais
+l'horloge, l'écran ni le réseau) :
+
+* **Ce qu'il reste à faire** : les mêmes données que le panneau du §19 — les objectifs de la branche pas encore faits dans
+  la zone (générateurs, leviers, arènes, gardiens, reliques ; une paire dont ce groupe a déjà fait l'autre moitié est
+  laissée), les plaques à tenir ensemble, les embuscades en cours, le Gigaboss, puis la **sortie** vers la prochaine zone
+  à finir (recherche en largeur sur les passages ouverts : les zones à finir d'abord, puis la relique de la zone secrète,
+  l'antre en dernier). Les tâches sont redistribuées tous les quarts de seconde, les plus proches d'abord : **deux par
+  générateur** (seulement ceux qui portent un tir : l'onde ou le boomerang), un par levier ou relique, **le bon nombre
+  sur chaque plaque** (son compte moins les joueurs qui y sont déjà), tous les autres sur le combat. Quand
+  l'administrateur est là et joue, le groupe l'**attend près de la sortie** ; absent ou AFK, il y va seul.
+* **Se déplacer** : un graphe de la zone (`raid::NavGraph`) construit depuis le monde de collision du niveau — une place
+  tous les 16 px sur chaque sol et chaque plateforme traversable (avec la place de passer, hors des dangers durables :
+  pics, lave, zone de dégâts qui n'est pas le liquide périodique), les échelles, la route de chaque plateforme mobile —,
+  des liaisons marcher, sauter (saut puis double saut : 88 px de haut au plus), descendre (d'un rebord ou à travers une
+  plateforme), grimper, se laisser porter ; chaque saut est vérifié sur son trajet (12 corps sur une courbe). A* avec
+  départage fixe (le plus petit numéro d'abord) : le même chemin à chaque fois. Le graphe ne dépend que du niveau et de
+  ses portes : un petit cache le partage entre les groupes d'une même zone, refait quand une porte s'ouvre ou se ferme.
+* **Combattre** : au corps à corps, l'onde de loin quand il reste de l'énergie (au moins 40) ; les coups annoncés (poings,
+  jets des évents, marques et zones d'un Gigaboss) sont esquivés par le côté le plus proche ; le **liquide qui monte**
+  (annoncé ou montant) fait monter chacun à la place la plus proche au-dessus de son niveau le plus haut.
+* **Gigaboss**, avec les états des fiches « Où frapper » (§19) : **blindé**, ses plaques ou évents (un joueur sur chacun,
+  tenus ensemble) ; les cibles de son mécanisme (entraves de Titanus…) frappées **ensemble** (personne ne frappe tant
+  que tous ne sont pas à portée) ; **à nu**, ses points faibles ; sinon son corps.
+* **Réanimer** le joueur à terre le plus proche (l'administrateur compris), en **maintenant « Interagir »** près de l'âme ;
+  **choisir ses pouvoirs** au vestiaire : chacun saute sur la tablette de son vœu (les impairs : triple saut, les pairs :
+  boomerang) et répond à la fenêtre de choix par `InputFrame::choice` (il laisse l'impulsion).
+* **Niveau des joueurs simulés** (réglage de « Tester Asterion » et du raid complet) : **Débutant** (réagit en 0,3 s,
+  60 % de ses coups et tirs partent au bon moment), **Confirmé** (0,15 s, 85 %), **Expert** (0,05 s, toujours). Rien
+  d'autre ne change.
+* **Pilote automatique** : 15 s sans aucune commande, la place de l'administrateur est jouée par la même IA jusqu'à ce
+  qu'il touche une touche (dit dans la ligne du test). Les entrées restent celles de la session : mêmes trames, même partie.
+* Deux règles **du test seulement** (jamais dans un vrai raid) : un joueur simulé envoyé sur un mécanisme qu'il n'atteint
+  pas en 6 s y est placé, et un joueur simulé qui ne se rapproche plus de son but pendant 8 s est placé sur la place
+  suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît.
+
+### « Simuler un raid complet » (`game/raid/RaidSimulation`)
+
+ADMINISTRATION › Raids › Tester Asterion › **« Simuler un raid complet »** : tout le raid de clan **en local**. Réglages :
+nombre de groupes (1 à 14), joueurs simulés par groupe (1 à 7, sans compter l'administrateur ; chaque groupe a en plus une
+**place libre**, la sienne), niveau des joueurs simulés, invincible (admin), vitesse des groupes non regardés (×1, ou
+**×2 / ×4 « accéléré »**, dit dans la ligne du test).
+
+* **Les mêmes règles qu'un vrai raid**, ce que le serveur ferait entre les instances fait ici au même pas : chaque groupe
+  est une instance (`raid::TestSession`), le groupe k commence dans la branche k mod 7, par son **vestiaire** ; ce qu'un
+  groupe accomplit est accepté pour tous les groupes de la branche (le consensus, ici immédiat) ; les **liens du titan**
+  sont calculés comme `statesOf` (`server/src/raidMap.ts`) ; un groupe qui n'a plus rien à faire dans sa branche part là où
+  il manque le plus de groupes (la branche dont le Gigaboss tient encore) ; un groupe **éliminé** devient spectateur, sa
+  zone est **à reprendre** et un **groupe de renfort** la reprend depuis cette zone (des joueurs simulés nouveaux ; dans un
+  vrai raid, ceux d'un groupe qui a fini sa zone ; 8 renforts au plus) ; les sept Gigaboss tombés, le **Cœur** s'ouvre et
+  tous les groupes encore en jeu y vont : sa vie est **partagée** (la part de chaque instance additionnée, ce que les autres
+  ont pris donné à chacune, sa phase, les reliques validées : `server/src/raidHeart.ts`), et sa chute finit le raid.
+* **Événements du monde** (objectifs, zones terminées, liens du titan, Gigaboss tombés, groupes éliminés, renforts, phases
+  du Cœur) : alertes en jeu et onglet « Événements du monde » ; **carte du titan** (chaque partie : pas encore découverte,
+  combat en cours, affaiblie, détruite) ; zone terminée annoncée avec son **tableau des contributions** ; onglet
+  « Contributions » (chaque joueur de chaque groupe : dégâts, Gigaboss, relevés, mécanismes, points faibles, objectifs).
+* **L'administrateur** : depuis la pause, « Groupes, contributions et carte du titan » ; chaque groupe dit sa branche, sa
+  zone, ses joueurs en jeu et ce qu'ils font ; **Rejoindre** (sa place libre ; l'ancienne redevient libre) ou
+  **Regarder** (Q / E, LB / RB ou les boutons : joueur précédent / suivant). La grande carte (**M**) montre la branche du
+  groupe regardé avec ses zones à reprendre.
+* **Rien n'est envoyé** : aucune ligne de réseau dans `RaidSimulation` (elle ne reçoit que les services du monde), chaque
+  instance est un test (`RaidRun::Test` : aucun rapport), aucun résultat, aucune récompense. Le bandeau **« TEST LOCAL —
+  rien n'est envoyé »** commence la ligne du test (toujours affichée, jamais masquable) et reste visible par-dessus la pause
+  et le panneau du raid.
+* **Déterministe** : mêmes commandes de l'administrateur (et mêmes choix de groupe, aux mêmes pas), même raid.
+
+### Performances (mesurées, `tests/test_raid_bots.cpp`, Release, sans affichage)
+
+PERF_TABLE
+
+Seul le groupe regardé est dessiné ; les autres se simulent sans rendu ni son (`RaidRun::setQuiet`). Le thread principal
+n'attend jamais : chaque image donne au plus **10 ms** au raid (`kSimBudgetMs`) ; au-delà, le raid avance moins vite que
+le temps réel et la ligne du test le dit (« simulation à N % du temps réel »). Pas de thread de simulation : les mondes
+partagent des services (ressources, sons, contenu) qui ne sont pas faits pour plusieurs threads, et le budget par image
+suffit à garder le déterminisme sans verrou.
+
+### Les âmes et la réanimation (règles de coopération 3, raids compris)
+
+* L'âme d'un joueur à terre est posée sur son **dernier endroit sûr** : un sol ferme (ni plateforme mobile ni plateforme
+  qui s'effrite), hors de tout liquide et de tout danger, tenu à jour pas à pas dans la simulation. Mort dans un liquide
+  mortel (magma, acide, liquide qui monte), sur des pics, dans le vide ou écrasé : il peut toujours être relevé. Si un
+  liquide qui monte recouvre l'âme, elle remonte au sol sûr le plus proche **au-dessus** de son niveau le plus haut.
+* La réanimation se fait en **maintenant « Interagir »** 2 s près de l'âme ; relâcher l'interrompt. Jauge circulaire autour
+  de l'âme ; le joueur à côté voit « Maintenir [sa touche Interagir] : réanimer ». Tout passe par les entrées.
+* `kCoopSimulationVersion` passe à **3** (les replays d'équipe 1 et 2 gardent leurs règles et leurs empreintes ; le serveur
+  refuse une tentative Duo/Trio d'une autre version, records gardés) ; `kSimulationVersion` et `kRankingGeneration` ne
+  changent pas (rien en solo). Détails : [docs/COOP.md §1](COOP.md#1-règles-du-jeu).
+
+### Le vestiaire : des tablettes en hauteur (`tools/levelgen/raid_armory.py`)
+
+Les tablettes de pouvoir sont **en hauteur**, chacune sur son propre petit rebord traversable : les paires à 3 cases du
+sol, les impaires à 6 (deux étages), 5 cases d'écart. On ne prend un pouvoir qu'en sautant exprès dessus (d'un saut
+normal depuis le sol, ou depuis un rebord du bas pour l'étage) : le sol reste libre jusqu'à la plaque « Prêts », et le
+traverser ne prend rien. Le générateur vérifie que chaque tablette est hors de portée en marchant et à portée d'un saut ;
+le panneau dit « sautez sur une tablette pour prendre son pouvoir ». Au-dessus de chacune, le jeu écrit le **nom du
+pouvoir** (lu dans `data/powers`), et dessous, quand la place le permet, son **icône** et son **coût d'énergie**
+(`raidhud::armoryLabels` : mesurés et ajustés, jamais sur un nom voisin, une tablette ou un rebord, même quand la tablette
+est déjà prise : elle garde son pouvoir pour tous).
+
+### Versions
+
+Les règles d'une partie de raid changent (âmes, réanimation, vestiaire) : `TITAN_REVISION` passe à **5** (une instance ne
+réunit que des jeux aux mêmes règles), `titan.json` et `server/src/raidTitan.json` régénérés ; les empreintes de référence
+des raids et de la coopération 3 sont mises à jour. Tests : `tests/test_raid_bots.cpp` (graphe, zones finies par les
+joueurs simulés seuls — embuscade, gardien, générateur, plaque du vestiaire, Pyroclast —, même empreinte à 2 et 8 places,
+pilote automatique, raid complet jusqu'à la chute du Cœur sans aucun rapport, place libre et spectateur, âme et
+réanimation tenue, vestiaire traversé sans rien prendre, noms des tablettes sans chevauchement),
+`tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 
 ---
 

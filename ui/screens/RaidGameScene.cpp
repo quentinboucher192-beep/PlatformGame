@@ -61,6 +61,9 @@
 #include "game/raid/AsterionHeartRoutine.h"
 #include "ui/screens/AsterionFilm.h"
 #include "game/raid/RaidTest.h"
+#include "game/raid/RaidSimulation.h"
+#include "game/online/AsterionBody.h"
+#include "ui/widgets/AsterionFigure.h"
 #include "game/raid/ZoneGoals.h"
 #include "game/raid/ArenaCamera.h"
 #include "game/raid/Reconnect.h"
@@ -109,6 +112,15 @@ public:
         entry_.clanTag = "TEST";
         entry_.group = 1;
     }
+    /// 2.77: « Simuler un raid complet » (local, every branch and the heart, never anything sent).
+    RaidGameScene(GameServices& g, RaidSimSetup s) : g_(g), test_(true) {
+        simSetup_ = s;
+        simMode_ = true;
+        entry_.clanTag = "TEST";
+        entry_.group = 1;
+        testSetup_.capture = s.capture;
+        testSetup_.invincible = s.invincible;
+    }
 
     ~RaidGameScene() override {
         stopWorker_ = true;
@@ -124,11 +136,15 @@ public:
     // 2.68 (phase 3): the pointer comes back with the card of the gigaboss's fall (« Résultats du raid »).
     bool hidesCursor() const override {
         return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !bigMap_ && !reconnect_.active() && zoneCard_ < 0 &&
-               !spec_.on;
+               !spec_.on && simPanel_ < 0;
     }
 
     void onEnter() override {
         branch_ = raid::Branch::builtin(entry_.branch);
+        if (simMode_) {
+            beginSim();
+            return;
+        }
         if (test_) {
             beginTest();
             return;
@@ -291,6 +307,7 @@ public:
         t.players = testSetup_.players;
         t.startPhase = testSetup_.startPhase;
         session_ = std::make_unique<raid::TestSession>(ws, *branch_, t);
+        session_->setSkill(static_cast<raid::BotSkill>(std::clamp(testSetup_.skill, 0, 2)));  // 2.77
         run_ = &session_->run();
         run_->setCameraFollow(0);
         // 2.74 (phase 6): the heart's test: the parts chosen as fallen (their links on), the relics.
@@ -405,7 +422,8 @@ public:
         if (test_) {
             // The pause never stops the world, not even in a test: only this player's inputs
             // are held (neutral frame), the boss and the enemies keep going and can still hit.
-            if (run_) stepTest();
+            if (sim_) stepSim();
+            else if (run_) stepTest();
             return;
         }
         if (!run_ || catching_ || ended_) {
@@ -539,6 +557,7 @@ public:
     void update(float dt) override {
         clock_ += dt;
         if (test_) {
+            if (sim_) updateSim();
             updateGame(dt);
             return;
         }
@@ -574,18 +593,18 @@ public:
         info.promptPlayer = local_;
         hud_.setTeam(info);
         updateArenaCamera(w, dt);
-        updateSpectator(w, dt);  // 2.75
+        if (!sim_) updateSpectator(w, dt);  // 2.75 (the full raid's simulation has its own: updateSim)
         // 2.75: a power tablet of the armory with every slot taken: which power to leave (the world goes on).
         if (const auto& offer = w.powerOffer(); offer && offer->player == local_ && pendingChoice_ == 0 && !paused_ && !ended_ &&
                                                 g_.app.topScene() == this && !(test_ && !scripts_.empty() && scripts_[0].active()))
             g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
-        if (!ended_ && g_.app.topScene() == this && g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
+        if (!ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
         }
         // 2.72: the large map (display only: the group, and this player, keep playing).
-        if (!ended_ && !paused_ && g_.app.input().menuPressed(Action::RaidMap)) {
+        if (!ended_ && !paused_ && simPanel_ < 0 && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
         }
@@ -620,6 +639,11 @@ public:
 
     std::string seatName(int seat) const {
         if (seat == local_) return g_.online.username().empty() ? "Vous" : g_.online.username();
+        if (sim_) {
+            // 2.77: the free place of every group is the administrator's; the others its simulated players.
+            if (seat == 0) return "Place libre (vous)";
+            return seat <= simSetup_.bots ? raid::TestSession::botName(seat) : "Place libre";
+        }
         // 2.72: a test's simulated players (the seats beyond them are free).
         if (session_) return seat < session_->players() ? raid::TestSession::botName(seat) : "Place libre";
         if (link_ && link_->lobby().is_object())
@@ -655,7 +679,7 @@ public:
             {
                 // The vitals, powers and gigaboss bar of this computer's player, at the raid layout's
                 // places (2.72, Paramètres › HUD › « Raids »; display only).
-                GameWorld::PlayerScope me(w, std::clamp(spec_.on && watchSeat_ >= 0 ? watchSeat_ : local_, 0, w.teamSize() - 1));
+                GameWorld::PlayerScope me(w, std::clamp((spec_.on || (sim_ && local_ < 0)) && watchSeat_ >= 0 ? watchSeat_ : local_, 0, w.teamSize() - 1));
                 hudSettings_ = raidhud::hudSettings(g_.settings.gameplay);
                 hud_.render(ui, w, view, nullptr, hudSettings_);
                 hudAreas_ = {};
@@ -668,18 +692,443 @@ public:
                 hudAreas_.boss = areaOf(HudElement::Boss);
             }
             drawRaidHud(w);
+            drawArmoryLabels(w, view);  // 2.77: the names of the armory's powers
             drawArrows(w, view);
             if (bigMap_ && !paused_ && !ended_) drawBigMap(w);
             drawArenaIntro();
             if (fallCard_ && !paused_ && !ended_) drawFall();
             if (zoneCard_ >= 0 && !fallCard_ && !paused_ && !ended_) drawZoneCard();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
-            if (spec_.on && !paused_ && !ended_ && !bigMap_) drawSpectator();  // 2.75
+            if (spec_.on && !sim_ && !paused_ && !ended_ && !bigMap_) drawSpectator();  // 2.75
+            if (sim_ && local_ < 0 && !paused_ && !bigMap_ && simPanel_ < 0) drawSimWatch();  // 2.77
+            if (sim_ && simPanel_ >= 0 && !paused_) drawSimPanel();                         // 2.77
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
+            if (sim_) drawSimBanner();  // 2.77: « TEST LOCAL — rien n'est envoyé », over everything
         }
         ui.popId();
         ui.end();
+    }
+
+    // ------------------------------------------------------------------ 2.77: the full raid's simulation
+
+    /// « Simuler un raid complet »: every branch and the heart, played locally by simulated players
+    /// (raid::RaidSimulation); this computer takes the free place of a group or watches one. Nothing is
+    /// ever sent: no network call, no report, no reward.
+    void beginSim() {
+        if (!g_.online.isAdmin() && !simSetup_.capture) {
+            fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
+            return;
+        }
+        ResourceManager& res = g_.app.resources();
+        WorldServices ws{res, g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake,
+                         g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
+        raid::SimSetup s;
+        s.groups = simSetup_.groups;
+        s.bots = simSetup_.bots;
+        s.invincible = simSetup_.invincible;
+        s.skill = static_cast<raid::BotSkill>(std::clamp(simSetup_.skill, 0, 2));
+        s.background = simSetup_.background;
+        sim_ = std::make_unique<raid::RaidSimulation>(ws, s);
+        if (!sim_->begin()) {
+            fail_ = "Les branches du raid sont introuvables dans les données du jeu : réinstallez le jeu.";
+            sim_.reset();
+            return;
+        }
+        hud_.setRaidView(true);
+        bindView();
+        if (simSetup_.panel >= 0) openSimPanel(simSetup_.panel);
+    }
+
+    /// The group shown: its run, its branch, this computer's seat (0 when it holds the free place, else
+    /// -1 and the seat watched).
+    void bindView() {
+        const raid::RaidSimulation::Group& g = sim_->group(sim_->viewed());
+        boundSession_ = g.session.get();
+        run_ = &g.session->run();
+        branch_ = &run_->branch();
+        entry_.group = g.id;
+        local_ = sim_->seated() ? 0 : -1;
+        GameWorld& w = run_->world();
+        if (local_ >= 0) watchSeat_ = -1;
+        else if (watchSeat_ < 1 || watchSeat_ >= w.teamSize() || w.member(watchSeat_).presence == GameWorld::Presence::Vacant) watchSeat_ = 1;
+        run_->setCameraFollow(local_ >= 0 ? 0 : watchSeat_);
+        zoneCard_ = -1;
+        zoneReady();
+    }
+
+    /// One step of the raid, within the image's budget of time (the main thread never waits on it: past
+    /// the budget the raid runs slower than real time, and the screen says so).
+    void stepSim() {
+        ++simWanted_;
+        if (simSpent_ > kSimBudgetMs) return;
+        const auto t0 = std::chrono::steady_clock::now();
+        InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
+        if (paused_ || simPanel_ >= 0 || g_.app.topScene() != this || !sim_->seated()) f = InputFrame{};
+        if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0 && sim_->seated() && pendingChoice_ != 0) {
+            f.choice = pendingChoice_;  // the armory's choice window, through the frame
+            pendingChoice_ = 0;
+        }
+        sim_->step(f);
+        ++simDone_;
+        ++tick_;
+        simSpent_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+        // The group shown went to another branch or to the heart (a new instance), or this player lost
+        // their place (the group wiped): shown again.
+        if (sim_->group(sim_->viewed()).session.get() != boundSession_ || (local_ >= 0) != sim_->seated()) {
+            if (run_->wipedNow()) groupWiped();
+            bindView();
+            return;
+        }
+        if (const int z = run_->zoneFinishedNow()) zoneDone(z);
+        if (run_->wipedNow()) groupWiped();
+        if (run_->heartWonNow() && !victoryPlayed_) {
+            victoryPlayed_ = true;
+            playVictory();
+        }
+        if (run_->zoneSerial() != serial_) zoneReady();
+    }
+
+    /// Once an image: its budget again, the speed measured, the world's events as notes, the zones to take
+    /// back (the large map), the spectator's keys.
+    void updateSim() {
+        if (!sim_) return;
+        simSpent_ = 0.0;
+        panelJustClosed_ = false;
+        if (clock_ - speedAt_ >= 1.0f) {
+            speedPct_ = simWanted_ > 0 ? static_cast<int>(100 * simDone_ / simWanted_) : 100;
+            simWanted_ = simDone_ = 0;
+            speedAt_ = clock_;
+        }
+        const auto& feed = sim_->feed();
+        for (const auto& e : feed)
+            if (e.tick > feedSeen_ || (feedSeen_ == 0 && e.tick == 0 && !feedStarted_)) {
+                using K = raid::RaidSimulation::WorldEvent::Kind;
+                note(e.text, e.kind == K::Danger ? kDanger : e.kind == K::World ? kGold : e.kind == K::Branch ? kGreen : kSky);
+            }
+        if (!feed.empty()) feedSeen_ = feed.back().tick;
+        feedStarted_ = true;
+        retake_ = sim_->retake(sim_->group(sim_->viewed()).branch);
+        InputManager& in = g_.app.input();
+        if (simPanel_ >= 0) {
+            if (g_.ui.backPressed() || in.menuPressed(Action::Pause)) {
+                simPanel_ = -1;
+                panelJustClosed_ = true;  // the same press must not open the pause
+            }
+            return;
+        }
+        // Watching a group: the previous / next of its players in play (Q / E, LB / RB).
+        if (local_ < 0 && !paused_ && !bigMap_ && run_ && g_.app.topScene() == this) {
+            if (in.menuPressed(Action::MenuTabNext)) watchNext(+1);
+            if (in.menuPressed(Action::MenuTabPrev)) watchNext(-1);
+        }
+    }
+
+    void watchNext(int dir) {
+        GameWorld& w = run_->world();
+        const int n = w.teamSize();
+        for (int k = 1; k <= n; ++k) {
+            const int s = ((watchSeat_ < 0 ? 0 : watchSeat_) + dir * k + n * 4) % n;
+            if (w.member(s).presence == GameWorld::Presence::Vacant) continue;
+            watchSeat_ = s;
+            run_->setCameraFollow(s);
+            renderer_.setOpaquePlayers(1u << s);
+            return;
+        }
+    }
+
+    void openSimPanel(int tab) {
+        simPanel_ = std::clamp(tab, 0, 3);
+        bigMap_ = false;
+        g_.ui.setFocus("raidgame/simpanel/close");
+    }
+
+    /// « TEST LOCAL — rien n'est envoyé » first, then where this player is (the line is fitted from its start).
+    std::string simStatus() const {
+        const raid::RaidSimulation::Group& g = sim_->group(sim_->viewed());
+        std::string t = "TEST LOCAL — rien n'est envoyé · " + g.name + " · " + g.session->run().branch().name;
+        if (g.wiped) t += " · groupe éliminé (spectateurs)";
+        else if (sim_->seated()) t += g.session->autopilot() ? " · vous : pilote automatique (AFK)" : " · vous jouez";
+        else t += " · vous regardez";
+        if (simSetup_.background > 1) t += " · autres groupes ×" + std::to_string(simSetup_.background) + " (accéléré)";
+        if (speedPct_ < 97) t += " · simulation à " + std::to_string(speedPct_) + " % du temps réel";
+        return t;
+    }
+
+    /// The banner over everything that dims the screen (the pause, the raid's panel): always visible.
+    void drawSimBanner() {
+        if (!(paused_ || simPanel_ >= 0) || statusRect_.w <= 0.0f) return;
+        raidhud::drawLineBox(g_.ui, statusRect_, statusK_, simStatus(), kGold, true);
+    }
+
+    /// Watching a group: whom, and how to change (keyboard, gamepad, mouse), in a free place over the status.
+    void drawSimWatch() {
+        UIContext& ui = g_.ui;
+        const float w = std::min(ui.s(560), ui.screenW() - ui.s(24)), h = ui.s(70);
+        Rect box{statusRect_.w > 0.0f ? statusRect_.x : ui.s(12), (statusRect_.w > 0.0f ? statusRect_.y : ui.screenH()) - h - ui.s(10), w, h};
+        for (int guard = 0; guard < 12; ++guard) {
+            bool hit = false;
+            for (const Rect& o : hudRects_)
+                if (o.intersects(box) && !(o.x == statusRect_.x && o.y == statusRect_.y)) {
+                    box.y = o.y - h - ui.s(8);
+                    hit = true;
+                }
+            if (!hit) break;
+        }
+        if (box.y < ui.s(4)) return;
+        ui.panel(box, true, 10);
+        const raid::RaidSimulation::Group& g = sim_->group(sim_->viewed());
+        const std::string who = watchSeat_ >= 0 ? seatName(watchSeat_) : std::string("le groupe");
+        const float pad = ui.s(12), bw = ui.s(44), gap = ui.s(6);
+        fit(ui, "VOUS REGARDEZ · " + g.name + " · " + who, {box.x + pad, box.y + ui.s(20)}, 15, box.w - pad * 2 - bw * 2 - gap * 2, kGold, FontFace::Bold);
+        fit(ui, "Q / E (LB / RB) : joueur précédent / suivant · Échap : rejoindre un groupe", {box.x + pad, box.y + ui.s(48)}, 13,
+            box.w - pad * 2 - bw * 2 - gap * 2, kDim);
+        UIContext::ButtonStyle bs;
+        bs.small = true;
+        ui.pushId("simwatch");
+        if (ui.button("prev", {box.right() - pad - bw * 2 - gap, box.y + ui.s(13), bw, ui.s(44)}, "◀", bs)) watchNext(-1);
+        if (ui.button("next", {box.right() - pad - bw, box.y + ui.s(13), bw, ui.s(44)}, "▶", bs)) watchNext(+1);
+        ui.popId();
+    }
+
+    /// The raid's panel (from the pause): its groups (join, watch), the contributions of every player, the
+    /// world's events, the titan's map with the state of the whole raid. Measured, scrolled, never over the
+    /// status line.
+    void drawSimPanel() {
+        UIContext& ui = g_.ui;
+        const float W = ui.screenW(), H = ui.screenH();
+        ui.r().fillRect({0, 0, W, H}, Color{2, 4, 10, 170});
+        const float bottom = statusRect_.w > 0.0f && statusRect_.y > H * 0.5f ? statusRect_.y - ui.s(10) : H - ui.s(24);
+        const float pw = std::min(ui.s(1180), W - ui.s(32));
+        const Rect box{(W - pw) * 0.5f, ui.s(24), pw, std::max(ui.s(200), bottom - ui.s(24))};
+        ui.panel(box, true, 16);
+        ui.pushId("simpanel");
+        const float pad = ui.s(20), x = box.x + pad, w = box.w - pad * 2;
+        const float closeW = ui.s(150), bh = ui.s(44);
+        UIContext::ButtonStyle cs;
+        cs.small = true;
+        if (ui.button("close", {box.right() - pad - closeW, box.y + ui.s(14), closeW, bh}, "Fermer", cs)) {
+            simPanel_ = -1;
+            ui.popId();
+            return;
+        }
+        fit(ui, "RAID COMPLET · TEST LOCAL — rien n'est envoyé", {x, box.y + ui.s(36)}, 20, w - closeW - ui.s(16), kGold, FontFace::Title);
+        const std::vector<std::string> tabs = {"Groupes", "Contributions", "Événements du monde", "Carte du titan"};
+        std::vector<bool> on(tabs.size(), false);
+        on[static_cast<size_t>(simPanel_)] = true;
+        float chipsBottom = box.y + ui.s(70);
+        const int t = chips(ui, "tabs", x, box.y + ui.s(66), box.right() - pad, tabs, on, chipsBottom);
+        if (t >= 0) simPanel_ = t;
+        const Rect body{x, chipsBottom + ui.s(12), w, box.bottom() - pad - chipsBottom - ui.s(12)};
+        if (simPanel_ == 0) drawSimGroups(body);
+        else if (simPanel_ == 1) drawSimContributions(body);
+        else if (simPanel_ == 2) drawSimFeed(body);
+        else drawSimTitan(body);
+        ui.popId();
+    }
+
+    std::string groupWhere(const raid::RaidSimulation::Group& g) const {
+        const raid::RaidRun& r = g.session->run();
+        const raid::ZoneInfo* z = r.branch().zone(r.zone());
+        return r.branch().name + " · " + (r.zone() == 0 ? std::string("Vestiaire") : z ? z->name : std::string("?"));
+    }
+
+    void drawSimGroups(const Rect& body) {
+        UIContext& ui = g_.ui;
+        const std::string head = "Gigaboss tombés : " + std::to_string(sim_->gigabossesDown()) + " / 7 · Cœur : " +
+                                 (sim_->heartFallen() ? std::string("tombé") : sim_->heartOpen() ? "ouvert, " + std::to_string(sim_->heartTaken() / 100) + " % ôtés" : std::string("fermé")) +
+                                 " · Reliques : " + std::to_string(sim_->relics()) + " / 7 · coût d'un pas du raid : " +
+                                 std::to_string(static_cast<int>(sim_->avgStepMs() * 100.0 + 0.5) / 100) + "," +
+                                 std::to_string(static_cast<int>(sim_->avgStepMs() * 100.0 + 0.5) % 100 / 10) + " ms";
+        fit(ui, head, {body.x, body.y + ui.s(10)}, 14, body.w, kText, FontFace::Bold);
+        const Rect list{body.x, body.y + ui.s(30), body.w, body.h - ui.s(30)};
+        const float rowH = ui.s(72), gap = ui.s(8);
+        const auto& groups = sim_->groups();
+        ui.beginScroll("groups", list, static_cast<float>(groups.size()) * (rowH + gap));
+        float y = list.y - ui.scrollOffset();
+        const float bw = std::min(ui.s(150), list.w * 0.18f), bgap = ui.s(8);
+        for (size_t i = 0; i < groups.size(); ++i, y += rowH + gap) {
+            if (y + rowH < list.y || y > list.bottom()) continue;
+            const raid::RaidSimulation::Group& g = *groups[i];
+            const bool here = static_cast<int>(i) == sim_->viewed();
+            const Rect row{list.x, y, list.w - ui.s(14), rowH};
+            ui.r().fillRoundedRect(row, ui.s(8), here ? Color{40, 34, 72, 255} : Color{22, 28, 60, 255});
+            const float textW = row.w - bw * 2 - bgap * 3;
+            int inPlay = 0, seats = 0;
+            const GameWorld& w = g.session->run().world();
+            for (int s = 1; s < w.teamSize(); ++s) {
+                if (w.member(s).presence == GameWorld::Presence::Vacant) continue;
+                ++seats;
+                inPlay += w.member(s).presence == GameWorld::Presence::Playing;
+            }
+            std::string state = g.wiped ? "ÉLIMINÉ · ses joueurs regardent" : std::to_string(inPlay) + " / " + std::to_string(seats) + " joueurs simulés en jeu";
+            if (g.relieves > 0) state += " · renfort du Groupe " + std::to_string(g.relieves);
+            if (here) state += sim_->seated() ? " · VOUS ÊTES ICI" : " · vous regardez";
+            fit(ui, g.name + " · " + groupWhere(g), {row.x + ui.s(12), row.y + ui.s(18)}, 16, textW, here ? kGold : kText, FontFace::Bold);
+            fit(ui, state, {row.x + ui.s(12), row.y + ui.s(40)}, 13, textW, g.wiped ? kDanger : kGreen);
+            const std::string plan = g.session->bots().plan();
+            fit(ui, plan.empty() ? "—" : "Ce qu'ils font : " + plan, {row.x + ui.s(12), row.y + ui.s(60)}, 12, textW, kDim);
+            UIContext::ButtonStyle bs;
+            bs.small = true;
+            bs.enabled = !g.wiped && !(here && sim_->seated());
+            bs.primary = bs.enabled;
+            const float by = row.y + (rowH - ui.s(44)) * 0.5f;
+            if (ui.button("join" + std::to_string(g.id), {row.right() - bw * 2 - bgap * 2, by, bw, ui.s(44)}, "Rejoindre", bs) && sim_->join(static_cast<int>(i))) {
+                simPanel_ = -1;
+                bindView();
+            }
+            UIContext::ButtonStyle ws;
+            ws.small = true;
+            ws.enabled = !(here && !sim_->seated());
+            if (ui.button("watch" + std::to_string(g.id), {row.right() - bw - bgap, by, bw, ui.s(44)}, "Regarder", ws)) {
+                sim_->watch(static_cast<int>(i));
+                simPanel_ = -1;
+                bindView();
+            }
+        }
+        ui.endScroll();
+    }
+
+    void drawSimContributions(const Rect& body) {
+        UIContext& ui = g_.ui;
+        // Every player of every group (the same counts as the tables of the zones), columns measured.
+        static const char* kCols[] = {"Dégâts", "Gigaboss", "Relevés", "Mécanismes", "Points faibles", "Objectifs"};
+        const float nameW = body.w * 0.34f, colW = (body.w - nameW - ui.s(14)) / 6.0f, lineH = ui.s(24);
+        for (int c = 0; c < 6; ++c)
+            fit(ui, kCols[c], {body.x + nameW + colW * static_cast<float>(c) + colW * 0.5f, body.y + ui.s(10)}, 13, colW - ui.s(6), kDim, FontFace::Bold, Align::Center);
+        fit(ui, "Groupe · joueur", {body.x, body.y + ui.s(10)}, 13, nameW - ui.s(6), kDim, FontFace::Bold);
+        struct Row {
+            std::string name;
+            std::vector<std::string> cells;
+            bool group = false;
+        };
+        std::vector<Row> rows;
+        for (const auto& gp : sim_->groups()) {
+            const raid::RaidSimulation::Group& g = *gp;
+            rows.push_back({g.name + " · " + groupWhere(g), {}, true});
+            for (const raid::Contribution& c : g.session->run().contributions().records()) {
+                if (c.seat < 0) continue;
+                Row r;
+                r.name = c.seat == 0 ? std::string("Place libre (vous)") : raid::TestSession::botName(c.seat);
+                r.cells = {std::to_string(c.damage / 10), std::to_string(c.bossDamage / 10), std::to_string(c.rescues), std::to_string(c.vents),
+                           std::to_string(c.weakPoints), std::to_string(c.objectives)};
+                rows.push_back(std::move(r));
+            }
+        }
+        const Rect list{body.x, body.y + ui.s(26), body.w, body.h - ui.s(26)};
+        ui.beginScroll("contrib", list, static_cast<float>(rows.size()) * lineH);
+        float y = list.y - ui.scrollOffset();
+        for (const Row& r : rows) {
+            if (y + lineH >= list.y && y <= list.bottom()) {
+                if (r.group) {
+                    fit(ui, r.name, {body.x, y + lineH * 0.5f}, 14, body.w - ui.s(14), kGold, FontFace::Bold);
+                } else {
+                    fit(ui, r.name, {body.x + ui.s(14), y + lineH * 0.5f}, 13, nameW - ui.s(20), kText);
+                    for (size_t c = 0; c < r.cells.size(); ++c)
+                        fit(ui, r.cells[c], {body.x + nameW + colW * static_cast<float>(c) + colW * 0.5f, y + lineH * 0.5f}, 13, colW - ui.s(6), kText,
+                            FontFace::Body, Align::Center);
+                }
+            }
+            y += lineH;
+        }
+        ui.endScroll();
+    }
+
+    void drawSimFeed(const Rect& body) {
+        UIContext& ui = g_.ui;
+        const auto& feed = sim_->feed();
+        const float lineH = ui.s(19), timeW = ui.s(64);
+        std::vector<std::vector<std::string>> lines;
+        float total = 0.0f;
+        for (size_t k = feed.size(); k-- > 0;) {
+            lines.push_back(wrap(ui, feed[k].text, FontFace::Body, 14, body.w - timeW - ui.s(20), 3));
+            total += static_cast<float>(lines.back().size()) * lineH + ui.s(6);
+        }
+        if (feed.empty()) {
+            fit(ui, "Rien encore : le raid commence.", {body.x, body.y + ui.s(12)}, 14, body.w, kDim);
+            return;
+        }
+        ui.beginScroll("feed", body, total);
+        float y = body.y - ui.scrollOffset();
+        size_t li = 0;
+        for (size_t k = feed.size(); k-- > 0; ++li) {
+            const auto& e = feed[k];
+            const float h = static_cast<float>(lines[li].size()) * lineH;
+            if (y + h >= body.y && y <= body.bottom()) {
+                using K = raid::RaidSimulation::WorldEvent::Kind;
+                const Color c = e.kind == K::Danger ? kDanger : e.kind == K::World ? kGold : e.kind == K::Branch ? kGreen : kSky;
+                const int sec = static_cast<int>(e.tick / kSimHz);
+                char clockText[24];
+                std::snprintf(clockText, sizeof clockText, "%d:%02d", sec / 60, sec % 60);
+                fit(ui, clockText, {body.x, y + lineH * 0.5f}, 13, timeW - ui.s(6), kDim);
+                drawLines(ui, lines[li], {body.x + timeW, y}, 14, lineH, c);
+            }
+            y += h + ui.s(6);
+        }
+        ui.endScroll();
+    }
+
+    void drawSimTitan(const Rect& body) {
+        UIContext& ui = g_.ui;
+        // The titan (each part in the state of the raid), and at its right each branch's line.
+        const float figW = std::min(body.w * 0.42f, body.h * 0.9f);
+        std::map<std::string, asterion::State> states;
+        using P = raid::RaidSimulation::PartState;
+        auto word = [](P p) {
+            switch (p) {
+                case P::Unknown: return "pas encore découverte";
+                case P::Attacked: return "combat en cours";
+                case P::Weakened: return "affaiblie";
+                case P::Destroyed: return "détruite";
+                default: return "découverte";
+            }
+        };
+        for (size_t b = 0; b < sim_->branches().size(); ++b) {
+            const P p = sim_->partState(static_cast<int>(b));
+            states[sim_->branches()[b]->part] = p == P::Destroyed ? asterion::State::Destroyed : p == P::Weakened ? asterion::State::Weakened
+                                              : p == P::Attacked  ? asterion::State::Attacked  : p == P::Unknown ? asterion::State::Unknown
+                                                                                                                 : asterion::State::Intact;
+        }
+        titanFigure_.draw(g_, "raidgame/simpanel/titan", {body.x, body.y, figW, body.h}, states);
+        const float x = body.x + figW + ui.s(20), w = body.right() - x;
+        const float lineH = ui.s(44);
+        float y = body.y + ui.s(4);
+        for (size_t b = 0; b < sim_->branches().size() && y + lineH <= body.bottom(); ++b) {
+            const raid::Branch& br = *sim_->branches()[b];
+            const P p = sim_->partState(static_cast<int>(b));
+            int groups = 0;
+            for (const auto& g : sim_->groups()) groups += g->branch == static_cast<int>(b) && !g->wiped;
+            int finished = 0;
+            for (const raid::ZoneInfo& z : br.zones) finished += raid::zoneFinished(br, z.id, sim_->mask(static_cast<int>(b)));
+            const Color c = p == P::Destroyed ? kGreen : p == P::Attacked ? kOrange : p == P::Unknown ? kDim : kText;
+            fit(ui, br.name + " · " + br.gigaboss + " · " + word(p), {x, y + ui.s(12)}, 15, w, c, FontFace::Bold);
+            std::string sub = std::to_string(finished) + " / " + std::to_string(br.zones.size()) + " zones terminées · " + std::to_string(groups) +
+                              (groups > 1 ? " groupes" : " groupe") + " sur place";
+            if (static_cast<int>(b) == sim_->heartIndex()) sub = sim_->heartOpen() ? std::to_string(sim_->heartTaken() / 100) + " % de sa vie partagée ôtés · phase " +
+                                                                                        std::to_string(std::min(4, sim_->heartPhase())) + " · " + std::to_string(groups) + " groupes"
+                                                                                  : "fermé tant que les sept Gigaboss ne sont pas tombés (" +
+                                                                                        std::to_string(sim_->gigabossesDown()) + " / 7)";
+            const auto retake = sim_->retake(static_cast<int>(b));
+            if (!retake.empty()) sub += " · " + std::to_string(retake.size()) + " zone(s) à reprendre";
+            fit(ui, sub, {x, y + ui.s(32)}, 13, w, kDim);
+            y += lineH;
+        }
+        titanFigure_.drawTooltip(g_);
+    }
+
+    /// 2.77: in an armory, the name of each power over its tablet (its icon and cost when there is room;
+    /// raidhud::armoryLabels), never over the HUD (display only).
+    void drawArmoryLabels(GameWorld& w, const WorldView& view) {
+        if (!run_ || run_->zone() != 0) return;
+        auto labels = raidhud::armoryLabels(g_.ui, w, view);
+        labels.erase(std::remove_if(labels.begin(), labels.end(),
+                                    [&](const raidhud::ArmoryLabel& l) {
+                                        for (const Rect& o : hudRects_)
+                                            if (o.intersects(l.box)) return true;
+                                        return false;
+                                    }),
+                     labels.end());
+        raidhud::drawArmoryLabels(g_.ui, labels);
     }
 
     // ------------------------------------------------------------------ 2.75: the spectator mode
@@ -898,6 +1347,8 @@ public:
         }
         {
             const Rect r = at(E::Status);
+            statusRect_ = r;  // 2.77: the full raid's banner is drawn there again over the pause
+            statusK_ = k(E::Status);
             Color c = kText;
             const std::string t = statusText(c);
             raidhud::drawLineBox(ui, r, k(E::Status), t, c, test_);
@@ -954,6 +1405,7 @@ public:
         int held = 0;
         for (int i = 0; i < w.teamSize(); ++i) held += w.member(i).presence != P::Vacant;
         g.title = "[" + entry_.clanTag + "]·" + std::to_string(entry_.group) + " · " + std::to_string(held) + " / 8";
+        if (sim_) g.title = sim_->group(sim_->viewed()).name + " · " + std::to_string(held) + " / 8";  // 2.77
         for (int i = 0; i < w.teamSize(); ++i) {
             const GameWorld::TeamMember& mb = w.member(i);
             const Player& p = w.playerAt(i);
@@ -1451,7 +1903,7 @@ public:
         }
         for (int i = 0; i < w.teamSize(); ++i)
             if (w.member(i).presence == GameWorld::Presence::Down) {
-                add("+", "Relever " + seatName(i) + " (" + std::to_string(static_cast<int>(GameWorld::kReviveSeconds)) +
+                add("+", "Relever " + seatName(i) + " (Interagir maintenu " + std::to_string(static_cast<int>(GameWorld::kReviveSeconds)) +
                              " s près de son âme) · réanimations illimitées · si tout le groupe tombe, il est éliminé",
                     Color{255, 138, 138, 255});
                 break;
@@ -1722,6 +2174,11 @@ public:
 
     /// 2.72: the network line, or a test's badge (never counted: said where the network's line is).
     std::string statusText(Color& c) {
+        if (sim_) {
+            // 2.77: always said first (the line is fitted from its start): nothing leaves this computer.
+            c = kGold;
+            return simStatus();
+        }
         if (test_) {
             c = kGold;
             // 2.75: the simulated players counted without the administrator (0 to 7).
@@ -1749,10 +2206,10 @@ public:
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
         const bool tables = run_ && !run_->finishes().empty();  // 2.75: the tables of the zones finished
-        Rect box = centred(ui.s(600), ui.s(380) + (tables ? ui.s(72) : 0.0f));
+        Rect box = centred(ui.s(600), ui.s(380) + (tables ? ui.s(72) : 0.0f) + (sim_ ? ui.s(72) : 0.0f));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
-        fit(ui, test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
+        fit(ui, sim_ ? "Le raid continue pendant la pause : tous les groupes jouent." : test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
             FontFace::Body, Align::Center);
         ui.pushId("pause");
         const float bw = box.w - ui.s(80), bh = ui.s(58);
@@ -1761,6 +2218,14 @@ public:
         bs.primary = true;
         if (ui.button("resume", {box.x + ui.s(40), y, bw, bh}, "Reprendre", bs)) paused_ = false;
         y += bh + ui.s(14);
+        if (sim_) {
+            // 2.77: the groups (join, watch), the contributions, the world's events, the titan's map.
+            if (ui.button("raid", {box.x + ui.s(40), y, bw, bh}, "Groupes, contributions et carte du titan")) {
+                paused_ = false;
+                openSimPanel(0);
+            }
+            y += bh + ui.s(14);
+        }
         if (tables) {
             if (ui.button("tables", {box.x + ui.s(40), y, bw, bh}, "Tableaux des contributions des zones terminées")) {
                 paused_ = false;
@@ -1821,6 +2286,25 @@ public:
 
     GameServices& g_;
     RaidEntry entry_;
+    // 2.77: « Simuler un raid complet » (raid::RaidSimulation): the raid, the instance shown, the budget
+    // of time per image, the speed measured, the world's events already told, the raid's panel.
+    static constexpr double kSimBudgetMs = 10.0;
+    RaidSimSetup simSetup_;
+    bool simMode_ = false;
+    std::unique_ptr<raid::RaidSimulation> sim_;
+    const raid::TestSession* boundSession_ = nullptr;
+    double simSpent_ = 0.0;
+    uint64_t simWanted_ = 0, simDone_ = 0;
+    int speedPct_ = 100;
+    float speedAt_ = 0.0f;
+    uint32_t feedSeen_ = 0;
+    bool feedStarted_ = false;
+    bool victoryPlayed_ = false;
+    int simPanel_ = -1;  // the tab of the raid's panel open, -1 closed
+    bool panelJustClosed_ = false;
+    AsterionFigure titanFigure_;
+    Rect statusRect_;
+    float statusK_ = 1.0f;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     const raid::Branch* branch_ = nullptr;
     std::unique_ptr<NetCoopLink> link_;
@@ -1884,5 +2368,7 @@ public:
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry) { return std::make_unique<RaidGameScene>(g, std::move(entry)); }
 
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup) { return std::make_unique<RaidGameScene>(g, std::move(setup)); }
+
+std::unique_ptr<Scene> makeRaidSim(GameServices& g, RaidSimSetup setup) { return std::make_unique<RaidGameScene>(g, setup); }
 
 }  // namespace cosmic

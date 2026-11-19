@@ -169,7 +169,9 @@ Les niveaux EXTRÊME se jouent aussi à **2 ou 3 joueurs** : **sur un même PC**
 plus du clavier), **en réseau local** (sans compte ni serveur) ou **en ligne** avec vos amis. Une vie
 chacun, pas de coups entre alliés, des joueurs qui **se traversent** (les autres dessinés en
 semi-transparence), **2 réanimations** par tentative — un joueur tombé ne revient qu'une fois relevé, sans
-déplacer les autres —, une caméra commune et des classements **Duo** et **Trio** à part. Architecture :
+déplacer les autres : un allié **maintient « Interagir » 2 s** près de son âme, posée sur son **dernier endroit
+sûr** (même mort dans la lave ou le vide, on peut le rejoindre) —, une caméra commune et des classements **Duo** et
+**Trio** à part. Architecture :
 [docs/COOP.md](docs/COOP.md).
 
 <p align="center">
@@ -326,8 +328,16 @@ leur couleur, légende), panneau du groupe, objectifs, alertes, barre du gigabos
 **chronomètre** (le temps de l'instance et celui de la zone, le même pour tout le groupe). La touche **M**
 (Vue / Retour à la manette) agrandit la **carte** sur presque tout l'écran, sans jamais mettre le jeu en pause.
 Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les niveaux. Les administrateurs testent
-une zone seuls avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui suivent, combattent, tiennent
-les plaques et relèvent les joueurs à terre. Détails : [docs/RAIDS.md](docs/RAIDS.md).
+une zone avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui **jouent la zone eux-mêmes**, même quand
+l'administrateur est AFK : ils lisent ce qu'il reste à faire, se répartissent générateurs, plaques et combats, trouvent
+leur chemin (sauts, échelles, plateformes mobiles), esquivent, fuient le liquide qui monte, battent les Gigaboss et
+relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert. **« Simuler un raid complet »** joue tout le raid
+de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
+carte du titan, contributions, groupes éliminés et renforts ; l'administrateur rejoint ou regarde n'importe quel groupe,
+et **rien n'est envoyé**. Détails : [docs/RAIDS.md §21](docs/RAIDS.md).
+
+Dans le **vestiaire**, les tablettes de pouvoir sont en hauteur sur leurs rebords (deux étages), avec le nom, l'icône et
+le coût d'énergie de chaque pouvoir au-dessus : on n'en prend une qu'en sautant dessus.
 
 Le panneau **« Ce qu'il reste à faire »** (lui aussi placé dans l'onglet « Raids ») liste chaque condition pour terminer
 la zone, cochée dès que le serveur l'a validée, puis ce qu'il manque dans les autres zones de la branche (les **zones à
@@ -618,6 +628,20 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.77.0** :
+* **Tester Asterion** : les joueurs simulés **jouent vraiment** la zone, même si vous êtes AFK (pilote automatique de
+  votre place après 15 s) : objectifs de la zone répartis, chemin sur un graphe du niveau, combats, esquives, fuite du
+  liquide qui monte, Gigaboss (mécanisme quand il est blindé, points faibles à nu), réanimations, choix des pouvoirs au
+  vestiaire ; « Niveau des joueurs simulés » : Débutant, Confirmé, Expert ([docs/RAIDS.md §21](docs/RAIDS.md)).
+* **« Simuler un raid complet »** : tout le raid de clan en local, sept branches puis le Cœur avec tous les groupes,
+  événements du monde, carte du titan, contributions, groupes éliminés et renforts ; rejoindre ou regarder n'importe
+  quel groupe ; **TEST LOCAL — rien n'est envoyé**.
+* **Coopération et raids** (règles de coopération **3**) : l'âme attend sur le **dernier endroit sûr** du joueur, et la
+  réanimation se fait en **maintenant « Interagir »** 2 s (relâcher interrompt) ; replays d'avant rejoués à l'identique
+  ([docs/COOP.md §1](docs/COOP.md)).
+* **Vestiaire** : tablettes **en hauteur** sur leurs rebords, nom, icône et coût de chaque pouvoir au-dessus ; traverser
+  la salle au sol ne prend plus rien. Révision du titan **5**.
 
 **Nouveau dans la version 2.75.2** :
 * **Fiches d'Asterion** : « Où frapper » par **pose**. Chaque attaque d'une phase est jouée sur sa vraie animation (élan

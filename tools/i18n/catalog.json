@@ -694,6 +694,12 @@
    ]
   },
   {
+   "fr": ": réanimer {0}",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": ": vérification manuelle.",
    "where": [
     "server/src/records.ts"
@@ -1867,6 +1873,7 @@
   {
    "fr": "affaiblie",
    "where": [
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -4435,6 +4442,18 @@
    ]
   },
   {
+   "fr": "Attend à la sortie vers ?",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Attend à la sortie vers {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Attendez la fin du téléchargement (ou décochez ce fantôme).",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -6216,6 +6235,12 @@
    "fr": "Autres (temps écoulé…)",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "autres groupes ×{0} (accéléré)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -9012,7 +9037,8 @@
   {
    "fr": "Carte du titan",
    "where": [
-    "ui/screens/RaidEventScene.cpp"
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -9766,6 +9792,12 @@
   },
   {
    "fr": "CE QU'IL RESTE À FAIRE · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qu'ils font : {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -11912,6 +11944,12 @@
    ]
   },
   {
+   "fr": "Cibles du mécanisme : {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Cimes tourmentées",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -12878,6 +12916,7 @@
    "fr": "combat en cours",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -13663,6 +13702,13 @@
    ]
   },
   {
+   "fr": "Confirmé",
+   "where": [
+    "game/raid/RaidBots.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Conflit : le projet est passé à la révision {0} (par {1}). « Récupérer la dernière version » garde vos modifications dans un niveau à part, que vous pourrez reporter.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -14233,7 +14279,8 @@
   {
    "fr": "Contributions",
    "where": [
-    "saves/RaidHudLayout.cpp"
+    "saves/RaidHudLayout.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -14288,6 +14335,18 @@
    "fr": "Coopération",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Coopération et raids : l'âme d'un joueur à terre attend sur son dernier endroit sûr (sol ferme, hors liquide et hors danger) : mort dans le magma, l'acide, sur des pics ou dans le vide, il peut toujours être relevé. Si un liquide monte sur l'âme, elle remonte au-dessus.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Coopération et raids : pour réanimer, maintenez « Interagir » 2 s près de l'âme (la touche affichée est la vôtre, clavier ou manette) ; relâcher interrompt. Les anciens replays d'équipe se rejouent avec leurs règles ; une tentative Duo ou Trio d'une version précédente est refusée, les records sont gardés.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -16346,6 +16405,12 @@
    "fr": "Cœur vaincu",
    "where": [
     "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
+   "fr": "CŒUR · Phase {0} : {1} % de sa vie ôtés par tous les groupes",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -19195,6 +19260,13 @@
    ]
   },
   {
+   "fr": "Débutant",
+   "where": [
+    "game/raid/RaidBots.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Débute sous (% PV)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -19574,6 +19646,7 @@
   {
    "fr": "découverte",
    "where": [
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -20068,7 +20141,8 @@
     "game/levels/ObjectTypes.cpp",
     "game/online/Raids.cpp",
     "game/powers/PowerStats.cpp",
-    "ui/online/RaidHud.cpp"
+    "ui/online/RaidHud.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -20629,6 +20703,7 @@
   {
    "fr": "détruite",
    "where": [
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -20927,6 +21002,7 @@
   {
    "fr": "Embuscade",
    "where": [
+    "game/raid/RaidBots.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -21403,7 +21479,19 @@
    ]
   },
   {
-   "fr": "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense.",
+   "fr": "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense. Les joueurs simulés jouent la zone eux-mêmes (réaction 0,05 s, toujours précis) ; après 15 s sans commande, votre joueur passe en pilote automatique.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense. Les joueurs simulés jouent la zone eux-mêmes (réaction 0,15 s, 85 % de précision) ; après 15 s sans commande, votre joueur passe en pilote automatique.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense. Les joueurs simulés jouent la zone eux-mêmes (réaction 0,3 s, 60 % de précision) ; après 15 s sans commande, votre joueur passe en pilote automatique.",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -22773,6 +22861,13 @@
    ]
   },
   {
+   "fr": "Expert",
+   "where": [
+    "game/raid/RaidBots.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "expirée",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -23313,6 +23408,7 @@
     "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/SegmentsScene.cpp",
     "ui/screens/SocialScene.cpp",
     "ui/studio/StudioImport.cpp"
@@ -23382,6 +23478,12 @@
    "fr": "fermé : une autre branche du titan l'ouvre",
    "where": [
     "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "fermé tant que les sept Gigaboss ne sont pas tombés ({0} / 7)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -24568,6 +24670,12 @@
    ]
   },
   {
+   "fr": "Frapper le Gigaboss",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Frapper le point faible : la carapace est brisée · points faibles {0} / {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -25226,6 +25334,7 @@
   {
    "fr": "Gigaboss",
    "where": [
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
@@ -25270,6 +25379,30 @@
    "fr": "Gigaboss : {0} · vaincu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss blindé",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss tombés : {0} / 7 · Cœur : fermé · Reliques : {1} / 7 · coût d'un pas du raid : {2},{3} ms",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss tombés : {0} / 7 · Cœur : ouvert, {1} % ôtés · Reliques : {2} / 7 · coût d'un pas du raid : {3},{4} ms",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Gigaboss tombés : {0} / 7 · Cœur : tombé · Reliques : {1} / 7 · coût d'un pas du raid : {2},{3} ms",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -26326,6 +26459,12 @@
    ]
   },
   {
+   "fr": "Groupe {0}",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "Groupe {0} · chef {1}",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -26359,6 +26498,12 @@
    "fr": "GROUPE · Côte écartée",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Groupe · joueur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -26465,6 +26610,12 @@
    ]
   },
   {
+   "fr": "groupe éliminé (spectateurs)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Groupe éliminé :",
    "where": [
     "server/src/raidMap.ts"
@@ -26486,6 +26637,12 @@
    "fr": "GROUPE ÉLIMINÉ · Tout le groupe est à terre : mode spectateur. La zone reste à reprendre par un autre groupe.",
    "where": [
     "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ · {0} dans {1} : ses joueurs regardent, la zone est à reprendre",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -26516,6 +26673,8 @@
   {
    "fr": "Groupes",
    "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -26547,6 +26706,12 @@
    "fr": "Groupes présents · {0} groupes requis",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes, contributions et carte du titan",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -29789,7 +29954,13 @@
    ]
   },
   {
-   "fr": "Joueurs solides, sans poussée",
+   "fr": "Joueurs simulés par groupe (sans vous)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs traversables",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
    ]
@@ -32372,6 +32543,12 @@
    ]
   },
   {
+   "fr": "Lancer la simulation",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Lancer le défi",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -33716,6 +33893,12 @@
    ]
   },
   {
+   "fr": "le groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le groupe continue sans vous ; vous le rejoignez dès que la liaison revient.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -34604,6 +34787,12 @@
    ]
   },
   {
+   "fr": "Le raid continue pendant la pause : tous les groupes jouent.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -35446,6 +35635,12 @@
    ]
   },
   {
+   "fr": "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : {0} groupes de {1} joueurs simulés et une place libre ({2} places). Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez ou regardez n'importe quel groupe depuis la pause.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Les administrateurs du jeu ouvriront les inscriptions.",
    "where": [
     "game/online/Raids.cpp"
@@ -35541,6 +35736,12 @@
    "fr": "Les boss gardent leurs blessures quand vous mourez dans leur arène : plus besoin de tout recommencer.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les branches du raid sont introuvables dans les données du jeu : réinstallez le jeu.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -37740,6 +37941,12 @@
    ]
   },
   {
+   "fr": "Maintenir",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
    "fr": "Maintenir pour passer",
    "where": [
     "game/gameplay/Hud.cpp"
@@ -39175,6 +39382,7 @@
     "game/levels/ObjectTypes.cpp",
     "game/online/OnlineCoop.cpp",
     "game/online/OnlineRecord.cpp",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/OnlineMigration.cpp"
    ]
@@ -39625,15 +39833,45 @@
    ]
   },
   {
+   "fr": "MONDE · ASTERION EST TOMBÉ : le Cœur a cédé sous les coups de tous les groupes !",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "MONDE · Asterion est tombé : le Cœur a cédé sous les coups de tous les groupes !",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
   },
   {
+   "fr": "MONDE · Le raid commence : {0} groupe de {1} joueurs simulés (test local)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · Le raid commence : {0} groupes de {1} joueurs simulés (test local)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "MONDE · Les autres groupes arrachent {0} de sa vie au Cœur !",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · Les sept Gigaboss sont tombés : le Cœur d'Asterion est ouvert, tous les groupes y vont !",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · {0} est tombé — {1} détruit ({2} / 7 Gigaboss)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -40173,6 +40411,12 @@
    ]
   },
   {
+   "fr": "Mécanisme du Gigaboss : {0} plaques",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "mécanisme sans nom ou sans texte : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -40189,6 +40433,7 @@
    "fr": "Mécanismes",
    "where": [
     "ui/online/RaidHud.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -40606,6 +40851,12 @@
    "fr": "Niveau de la communauté, version {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Niveau des joueurs simulés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -42524,6 +42775,7 @@
     "game/online/Raids.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -42962,15 +43214,15 @@
    ]
   },
   {
-   "fr": "On ne se traverse pas et on ne se pousse pas : un allié arrête comme un mur, sans bouger. On peut se poser sur sa tête ; s'il s'en va, on tombe.",
-   "where": [
-    "ui/screens/CoopLobbyScene.cpp"
-   ]
-  },
-  {
    "fr": "On peut sauter au travers par dessous et descendre avec Bas + Saut.",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "On se traverse sans se pousser : un allié ne bloque jamais le passage et ne sert pas d'appui (règles de coopération 2 et suivantes).",
+   "where": [
+    "ui/screens/CoopLobbyScene.cpp"
    ]
   },
   {
@@ -44832,6 +45084,7 @@
   {
    "fr": "pas encore découverte",
    "where": [
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -46473,6 +46726,12 @@
    ]
   },
   {
+   "fr": "Place libre (vous)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Place libre : un ami invité la prend en rejoignant le salon.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -47715,6 +47974,7 @@
   {
    "fr": "Points faibles",
    "where": [
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -47722,6 +47982,12 @@
    "fr": "Points faibles {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Points faibles à nu",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -48372,6 +48638,7 @@
     "data/achievements/achievements.json",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/content/AssetCatalog.cpp",
+    "game/raid/RaidBots.cpp",
     "saves/HudLayout.cpp",
     "saves/RaidHudLayout.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -49980,6 +50247,12 @@
    ]
   },
   {
+   "fr": "Q / E (LB / RB) : joueur précédent / suivant · Échap : rejoindre un groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Qatar",
    "where": [
     "data/online/countries.json",
@@ -50446,6 +50719,12 @@
    ]
   },
   {
+   "fr": "RAID COMPLET · TEST LOCAL — rien n'est envoyé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Raid court",
    "where": [
     "game/online/Raids.cpp"
@@ -50536,6 +50815,12 @@
   },
   {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : les règles d'une partie changent (âmes, réanimation, vestiaire), donc une instance ne réunit que des joueurs en 2.77.0 ou plus récent : mettez le jeu à jour pour rejoindre votre groupe.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -51936,6 +52221,7 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/GhostSetupScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -52025,7 +52311,8 @@
    "where": [
     "game/online/Clans.cpp",
     "ui/screens/CoopLobbyScene.cpp",
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -52120,7 +52407,7 @@
    ]
   },
   {
-   "fr": "Relever {0} ({1} s près de son âme) · réanimations illimitées · si tout le groupe tombe, il est éliminé",
+   "fr": "Relever {0} (Interagir maintenu {1} s près de son âme) · réanimations illimitées · si tout le groupe tombe, il est éliminé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -52129,6 +52416,12 @@
    "fr": "relevé dans {0}",
    "where": [
     "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "Relevés",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -52426,6 +52719,24 @@
    "fr": "Renfort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "renfort du Groupe {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Renfort {0}",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "RENFORT · {0} part reprendre {1}",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -53564,6 +53875,12 @@
    ]
   },
   {
+   "fr": "Rien encore : le raid commence.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Rien n'a changé.",
    "where": [
     "ui/screens/AdminClans.cpp"
@@ -54223,6 +54540,12 @@
    "fr": "réanimations incohérentes",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "Réanimer",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -55763,6 +56086,12 @@
    "where": [
     "game/powers/PowerStats.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "sans énergie",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -57366,6 +57695,18 @@
    ]
   },
   {
+   "fr": "simulation à {0} % du temps réel",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Simuler un raid complet",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "simultané",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -58001,6 +58342,18 @@
    "fr": "sortie introuvable",
    "where": [
     "game/levels/LevelAnalyzer.cpp"
+   ]
+  },
+  {
+   "fr": "Sortie vers ?",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Sortie vers {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -61550,6 +61903,18 @@
    ]
   },
   {
+   "fr": "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "TEST LOCAL — rien n'est envoyé · {0} · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Test « Tester Asterion » : « Joueurs simulés : 0 (vous seul) … 7 », sans compter l'administrateur (avant, choisir 2 donnait un seul joueur simulé).",
    "where": [
     "data/news/changelog.json"
@@ -61574,9 +61939,27 @@
    ]
   },
   {
+   "fr": "Tester Asterion : les joueurs simulés jouent vraiment la zone, même si vous êtes AFK. Ils lisent ce qu'il reste à faire (générateurs, leviers, embuscades, gardiens, reliques, plaques à tenir ensemble, Gigaboss, sortie), se répartissent les tâches, trouvent leur chemin (sauts, doubles sauts, échelles, plateformes mobiles, dangers évités), combattent, esquivent les coups annoncés, fuient le liquide qui monte et réaniment les joueurs à terre. Réglage « Niveau des joueurs simulés » : Débutant, Confirmé ou Expert (temps de réaction et précision).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "TESTER ASTERION · ADMINISTRATEURS",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "TESTER ASTERION · SIMULER UN RAID COMPLET",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Tester Asterion › « Simuler un raid complet » : tout le raid de clan en local, les sept branches (vestiaire compris) puis le Cœur d'Asterion avec tous les groupes. Événements du monde, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid ; rejoignez la place libre de n'importe quel groupe ou regardez-le depuis la pause. TEST LOCAL : rien n'est envoyé (aucun appel réseau, aucun résultat, aucune récompense).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -61861,6 +62244,7 @@
    "where": [
     "game/raid/AsterionHeartRoutine.cpp",
     "game/raid/RaidRun.cpp",
+    "game/raid/RaidSimulation.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -64302,7 +64686,7 @@
    ]
   },
   {
-   "fr": "Un joueur à terre laisse son âme : un allié reste 2 s près d'elle pour le relever. 2 réanimations par équipe et par tentative.",
+   "fr": "Un joueur à terre laisse son âme sur son dernier endroit sûr : un allié maintient « Interagir » 2 s près d'elle pour le relever (relâcher l'interrompt). 2 réanimations par équipe et par tentative.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
    ]
@@ -65524,6 +65908,12 @@
    "fr": "Une version s'appelle déjà « {0} » : les versions ne se remplacent pas.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Une zone",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -67000,7 +67390,7 @@
    ]
   },
   {
-   "fr": "Vestiaire : touchez une tablette pour prendre son pouvoir. Quatre au plus : choisissez celui que vous laissez.",
+   "fr": "Vestiaire : sautez sur une tablette pour prendre son pouvoir. Quatre au plus : choisissez celui que vous laissez.",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
     "data/raids/asterion/bras_droit/armory.json",
@@ -67010,6 +67400,12 @@
     "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire des raids : les tablettes de pouvoir sont en hauteur, chacune sur son rebord, sur deux étages, avec le nom du pouvoir, son icône et son coût d'énergie au-dessus. On ne prend un pouvoir qu'en sautant dessus : traverser la salle au sol ne prend plus rien.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -67435,6 +67831,12 @@
    "fr": "Vitesse des braises",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse des groupes non regardés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -68322,6 +68724,12 @@
    ]
   },
   {
+   "fr": "vous : pilote automatique (AFK)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous : {0}",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -68391,6 +68799,12 @@
    "fr": "Vous en serez le propriétaire. Le niveau choisi devient la révision 1 du projet ; votre niveau d'origine n'est pas modifié.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "vous jouez",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -68695,7 +69109,19 @@
    ]
   },
   {
+   "fr": "vous regardez",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous regardez {0} · [{1}]·{2} · zone {3}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "VOUS REGARDEZ · {0} · {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -68771,6 +69197,12 @@
    "fr": "vous êtes déjà propriétaire",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "VOUS ÊTES ICI",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -69262,6 +69694,12 @@
    ]
   },
   {
+   "fr": "ZONE REPRISE · {0} ({1}) : terminée après la chute de {2}",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "ZONE REPRISE · {0} : terminée par le groupe de renfort {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -69670,6 +70108,12 @@
    ]
   },
   {
+   "fr": "{0} % de sa vie partagée ôtés · phase {1} · {2} groupes",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} % fait",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -69856,6 +70300,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} joueurs simulés en jeu",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} membres · {2}",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -69883,6 +70333,18 @@
    "fr": "{0} / {1} suivis",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} zones terminées · {2} groupe sur place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} zones terminées · {2} groupes sur place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -70737,6 +71199,12 @@
    "fr": "{0} d'entraînement",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} d'énergie",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -72121,6 +72589,12 @@
    ]
   },
   {
+   "fr": "{0} rejoint la branche {1} (plus rien à faire dans la sienne)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "{0} relève {1} : {2}",
    "where": [
     "game/gameplay/HudTeam.cpp"
@@ -72641,6 +73115,12 @@
    ]
   },
   {
+   "fr": "{0} zone(s) à reprendre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} zones",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -72899,6 +73379,12 @@
    ]
   },
   {
+   "fr": "{0} · Vestiaire",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · vibration activée",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -72908,6 +73394,12 @@
    "fr": "{0} · vibration coupée",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · Zone terminée : {1}",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
    ]
   },
   {
@@ -73023,6 +73515,12 @@
    "fr": "{0} à s'inscrire.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} à terre : maintenez Interagir 2 s près de son âme",
+   "where": [
+    "game/gameplay/HudTeam.cpp"
    ]
   },
   {
@@ -73647,6 +74145,24 @@
    "fr": "× {0} salves (une toutes les {1})",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "×1 (temps réel)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "×2 (accéléré)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "×4 (accéléré)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -75011,6 +75527,12 @@
    ]
   },
   {
+   "fr": "ÉLIMINÉ · ses joueurs regardent",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "élément inconnu du catalogue (ou élément de départ)",
    "where": [
     "server/src/adminChallenges.ts"
@@ -75697,6 +76219,12 @@
    "fr": "événements",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Événements du monde",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

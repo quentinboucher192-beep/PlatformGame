@@ -223,6 +223,7 @@ public:
         float offFrame = 0.0f;     // Playing: seconds out of the team's frame
         bool inFrame = true;       // part of the group the frame keeps (the camera frames it)
         bool fell = false;         // its last fall was into the void (the soul goes to safe ground)
+        int reviver = -1;          // 2.77: the ally reviving it this step (« Interagir » held near its soul)
         Vec2 safeFeet;             // where it last stood on solid ground (not on an ally)
         bool hasSafeFeet = false;
         LevelEntity* interactable = nullptr;
@@ -574,6 +575,15 @@ private:
     void loadTeam();
     void vacateMember(int i);
     void stepTeamPlayers(float dt);
+    // 2.77 (rules of cooperation 3): a safe place (firm ground out of every liquid and danger), the
+    // dangers of the level (cached), a soul lifted above a liquid rising over it.
+    bool safeStand(const Player& p) const;
+    bool inDanger(const Rect& body, bool whole) const;
+    const std::vector<LevelEntity*>& harmful() const;
+    void liftSoul(TeamMember& m);
+    mutable std::vector<LevelEntity*> harmful_;
+    mutable size_t harmfulFor_ = static_cast<size_t>(-1);
+    size_t entityGen_ = 0;  // 2.77: entities added or removed during the run
     void teamBodies(int self, bool on);
     void updateTeamStandby();
     void updateTeamRules(float dt);

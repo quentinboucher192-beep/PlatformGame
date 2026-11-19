@@ -310,8 +310,25 @@ struct RaidTestSetup {
     bool capture = false;
     std::vector<std::string> scripts;
     std::vector<std::optional<Vec2>> spawns;
+    /// 2.77: « Niveau des joueurs simulés » (0 Débutant, 1 Confirmé, 2 Expert: reaction and precision).
+    int skill = 1;
 };
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
+/// 2.77: « Simuler un raid complet » (ADMINISTRATION › Raids › Tester Asterion, docs/RAIDS.md §21): the
+/// whole clan raid played locally by simulated players (raid::RaidSimulation), the administrator free to
+/// take a place in any group or to watch one; nothing is ever sent (no network, no report, no reward).
+struct RaidSimSetup {
+    int groups = 7;        // 1 to 14
+    int bots = 4;          // simulated players per group, the administrator not counted (1 to 7)
+    int skill = 1;         // 0 Débutant, 1 Confirmé, 2 Expert
+    int background = 1;    // the groups not watched: 1 (as the one watched), 2 or 4 steps each (« accéléré »)
+    bool invincible = true;
+    bool capture = false;  // captures for the documentation (headless only): no account needed
+    int panel = -1;        // captures: the raid's panel open on that tab (0 groups … 3 titan's map)
+};
+std::unique_ptr<Scene> makeRaidSim(GameServices& g, RaidSimSetup setup);
+/// 2.77, captures for the documentation (headless only): the settings of « Simuler un raid complet ».
+std::unique_ptr<Scene> makeRaidSimMenu(GameServices& g);
 /// 2.70, captures for the documentation only (`--coop-test`, never without --headless): a team
 /// of `players` (2 or 3) on one PC playing the EXTRÊME level `levelId`, each seat played by its
 /// script (`scripts[i]`, InputScript's format), appearing at `spawns[i]` when given; never

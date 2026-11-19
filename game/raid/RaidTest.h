@@ -14,9 +14,12 @@
 //   the rising magma and the marked fists). Deterministic: the same steps give the same digest;
 // * a test never reports anything (RaidRun::Test).
 //
-// Two rules of the test only (never in a real raid): a simulated player left far behind the
-// administrator for 5 s comes back next to them, and one sent to a mechanism it cannot reach in
-// 6 s is put on it — so the mechanisms for several players work in a test alone.
+// Two rules of the test only (never in a real raid): a simulated player sent to a mechanism it cannot
+// reach in 6 s is put on it, and (2.77) one that comes no nearer to its goal for 8 s on its path is put
+// on the next place of that path — so a test alone always goes on. 2.77: the simulated players play the
+// zone themselves (raid::TestBots, game/raid/RaidBots.h): they no longer follow the administrator, nobody
+// is brought back to them; the administrator's seat can be free (a group of the full raid's simulation
+// they are not in) and, AFK for 15 s, is played by the same AI until they touch a key again.
 
 #include <cstdint>
 #include <string>
@@ -24,41 +27,10 @@
 #include <vector>
 
 #include "game/gameplay/InputFrame.h"
+#include "game/raid/RaidBots.h"
 #include "game/raid/RaidRun.h"
 
 namespace cosmic::raid {
-
-/// The simulated players of a test: the frames of seats 1 .. players − 1 from the world alone.
-class TestBots {
-public:
-    enum class Task : uint8_t { Follow, Revive, Mechanism, Dodge, Fight };
-    struct Bot {
-        uint32_t prevHeld = 0;
-        int jumpHold = 0;     // steps the jump stays held
-        bool airJump = false; // its air jump used in this flight
-        float lastX = 0.0f;
-        int still = 0;        // steps it wanted to move and did not
-        int attackCool = 0;
-        Task task = Task::Follow;
-        Vec2 goal;
-        Rect mechanism;       // the plate or vent it was sent to (Task::Mechanism)
-        int mechanismSteps = 0;  // steps since it was sent there without standing on it
-    };
-
-    void reset(int players);
-    /// Fills frames[1 .. players − 1] (frames[0]: the administrator's, already there).
-    void think(RaidRun& run, InputFrame* frames, int count);
-    const std::vector<Bot>& bots() const { return bots_; }
-    std::vector<Bot>& bots() { return bots_; }
-    int players() const { return players_; }
-    uint64_t hash() const;
-
-private:
-    InputFrame drive(const GameWorld& w, int seat, Bot& b);
-    int players_ = 1;
-    std::vector<Bot> bots_;   // by seat (0 unused)
-    std::vector<Rect> dangers_;  // of the step: what is announced to strike (fists, jets, a gigaboss's marks)
-};
 
 class TestSession {
 public:
@@ -90,18 +62,36 @@ public:
     /// The digest of the test (the run's and the simulated players').
     uint64_t hash() const;
 
-    static constexpr int kRegroupSteps = 5 * kSimHz;
     static constexpr int kMechanismSteps = 6 * kSimHz;
+    static constexpr int kAfkSteps = 15 * kSimHz;  // 2.77: the administrator's seat on autopilot after this
+
+    // 2.77 (docs/RAIDS.md §21).
+    /// The administrator's seat (0): played by this computer, or free (a group of the full raid they
+    /// are not in: vacant, the group plays without them).
+    void setAdminSeated(bool on) { adminSeated_ = on; }
+    bool adminSeated() const { return adminSeated_; }
+    /// The level of the simulated players (their reaction and precision).
+    void setSkill(BotSkill s) { bots_.setSkill(s); }
+    /// The administrator AFK (no key for 15 s): their seat is played by the AI until they touch one.
+    bool autopilot() const { return adminSeated_ && afk_ >= kAfkSteps; }
+    TestBots& botsMut() { return bots_; }
+    /// The branch's state given with each step (the full raid's simulation: every group's validated work).
+    void setBranchState(uint32_t state) { state_ = state; }
+    void setHeartShared(const HeartShared& h) { heart_ = h; }
+    /// The rescues of the test so far (a simulated player put on its mechanism or further on its path).
+    int rescues() const { return rescues_; }
 
 private:
-    void regroup();
+    void rescue();
     RaidRun run_;
     TestBots bots_;
     int players_ = 1;
     uint32_t state_ = 0;
     HeartShared heart_;  // 2.74: the heart's test (its relics)
     std::vector<InputFrame> frames_;
-    std::vector<int> far_;  // per seat: steps far from the administrator
+    bool adminSeated_ = true;
+    int afk_ = 0;
+    int rescues_ = 0;
 };
 
 }  // namespace cosmic::raid

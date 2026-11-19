@@ -835,6 +835,7 @@
    "game/gameplay/HudTeam.cpp": 1,
    "game/gameplay/entities/PlatformEntities.cpp": 1,
    "packaging/DependencyCollector.cpp": 2,
+   "ui/online/RaidHud.cpp": 1,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/GhostSetupScene.cpp": 2,
    "ui/screens/LevelPowerKeysScene.cpp": 2,

@@ -38,6 +38,8 @@ public:
     /// The cancellation of an event waits for its confirmation.
     bool modal() const { return confirm_; }
     void drawModal();
+    /// 2.77: the settings of « Simuler un raid complet » in `r` (also the capture of the documentation).
+    void drawSim(const Rect& r, bool capture = false);
 
 private:
     void load();
@@ -93,6 +95,9 @@ private:
     int testBranch_ = 0, testZone_ = -1, testPlayers_ = 1, testPhase_ = 0;  // 2.75: testPlayers_ = simulated players (0..7)
     uint32_t testParts_ = 0x7Fu;  // 2.74 (phase 6): the Cœur d'Asterion's test: the parts simulated as fallen
     int testRelics_ = 0;
+    // 2.77: « Une zone » or « Simuler un raid complet » (docs/RAIDS.md §21); the level of the simulated
+    // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
+    int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
 };
 
 }  // namespace cosmic

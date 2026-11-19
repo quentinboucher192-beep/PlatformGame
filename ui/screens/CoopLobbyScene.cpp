@@ -61,10 +61,10 @@ struct Rule {
 
 const Rule kRules[] = {
     {"Pas de coups entre alliés", "Attaques et pouvoirs ne touchent que les ennemis, jamais un coéquipier.", {62, 230, 214, 255}},
-    {"Joueurs solides, sans poussée",
-     "On ne se traverse pas et on ne se pousse pas : un allié arrête comme un mur, sans bouger. On peut se poser sur sa tête ; s'il s'en va, on tombe.",
+    {"Joueurs traversables",
+     "On se traverse sans se pousser : un allié ne bloque jamais le passage et ne sert pas d'appui (règles de coopération 2 et suivantes).",
      {62, 230, 214, 255}},
-    {"Réanimation", "Un joueur à terre laisse son âme : un allié reste 2 s près d'elle pour le relever. 2 réanimations par équipe et par tentative.",
+    {"Réanimation", "Un joueur à terre laisse son âme sur son dernier endroit sûr : un allié maintient « Interagir » 2 s près d'elle pour le relever (relâcher l'interrompt). 2 réanimations par équipe et par tentative.",
      {255, 210, 122, 255}},
     {"Tous à terre en même temps", "La tentative s'arrête, comme en solo ; elle compte dans la course à la vérification.", {255, 143, 163, 255}},
     {"Déconnexion",
