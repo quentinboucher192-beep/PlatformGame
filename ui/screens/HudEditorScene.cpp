@@ -28,6 +28,7 @@
 #include "game/powers/PowerKeys.h"
 #include "ui/screens/GhostRun.h"
 #include "ui/online/RaidHud.h"
+#include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -910,6 +911,23 @@ private:
                                     {{"◆", "Crâne tombé : ses lances stellaires perdent leur précision", kGreen},
                                      {"!", "Torse debout : une cage d'os le garde dès sa 1re phase", Color{255, 176, 74, 255}},
                                      {"◆", "Abdomen tombé : plus d'engeances en renfort", kGreen}});
+        {
+            // 2.75.5: the raid menu's button and two notifications (never hidden: placed and sized here).
+            std::vector<raidmenu::Notice> ex(2);
+            ex[0].title = "ZONE TERMINÉE · Exemple";
+            ex[0].text = "Par votre groupe : son tableau des contributions est dans le menu du raid.";
+            ex[0].color = kGreen;
+            ex[0].section = raidmenu::Section::Zones;
+            ex[0].table = true;
+            ex[1].title = "GROUPE ÉLIMINÉ";
+            ex[1].text = "Exemple : tout le groupe est à terre, la zone attend un groupe de renfort.";
+            ex[1].color = Color{255, 74, 74, 255};
+            ex[1].section = raidmenu::Section::Group;
+            const auto& keys = g_.app.input().bindings().keys[static_cast<int>(Action::RaidMenu)];
+            const SDL_Scancode sc = keys[0] != SDL_SCANCODE_UNKNOWN ? keys[0] : keys[1];
+            const std::string key = sc != SDL_SCANCODE_UNKNOWN ? keyName(sc) : std::string();
+            raidmenu::drawNotices(ui, at(RE::Notices), k(RE::Notices), {&ex[0], &ex[1]}, {1.0f, 1.0f}, key, true);
+        }
     }
 
     raidhud::Minimap minimap_;  // 2.72: the example's minimap (the preview level's terrain)

@@ -280,7 +280,8 @@
   },
   "sounds/checkpoint.wav": {
    "game/gameplay/entities/InteractiveEntities.cpp": 2,
-   "game/gameplay/entities/ZoneEntities.cpp": 1
+   "game/gameplay/entities/ZoneEntities.cpp": 1,
+   "ui/screens/RaidGameScene.cpp": 1
   },
   "sounds/collect_orb.wav": {
    "game/gameplay/entities/PickupEntities.cpp": 4
@@ -317,7 +318,8 @@
   },
   "sounds/enemy_alert.wav": {
    "game/enemies/EnemyDefinition.h": 1,
-   "game/gameplay/entities/ZoneEntities.cpp": 1
+   "game/gameplay/entities/ZoneEntities.cpp": 1,
+   "ui/screens/RaidGameScene.cpp": 1
   },
   "sounds/enemy_death.wav": {
    "game/enemies/EnemyDefinition.h": 1
@@ -437,6 +439,7 @@
   },
   "sounds/medal.wav": {
    "ui/screens/ContentManagerScene.cpp": 1,
+   "ui/screens/RaidGameScene.cpp": 1,
    "ui/screens/ResultsScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1
   },
@@ -455,7 +458,8 @@
   },
   "sounds/portal.wav": {
    "game/gameplay/GameWorld.cpp": 1,
-   "game/gameplay/entities/InteractiveEntities.cpp": 1
+   "game/gameplay/entities/InteractiveEntities.cpp": 1,
+   "ui/screens/RaidGameScene.cpp": 1
   },
   "sounds/pound_dive.wav": {
    "game/enemies/DragonAttacks.cpp": 2,

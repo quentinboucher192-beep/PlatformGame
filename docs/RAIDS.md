@@ -6,7 +6,8 @@
 # phase 6 : le Cœur d'Asterion, combat final (2.74, §17)
 # les fiches d'Asterion et des Gigaboss (2.74.1, §18) ; ce qu'il reste à faire, zones terminées, tableaux des zones,
 # modération, « Où frapper » (2.75, §19) ;
-# réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20)
+# réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
+# notifications et menu du raid : plus aucune carte qui bloque le joueur (2.75.5, §21)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -794,7 +795,7 @@ combat, `Gigaboss`). Le tout est dans l'empreinte de `RaidRun` : le même pas su
 * **Disposition à part** (`GameplaySettings::raidHud`, Paramètres › HUD › onglet « Raids ») : vie et énergie, pouvoirs,
   minimap, panneau du groupe (8), objectifs et progression de la branche, alertes, barre du gigaboss, bandeau de danger,
   contributions, ligne du réseau / badge « TEST ADMIN », **chronomètre du raid** ; chacun déplaçable, redimensionnable (50 à 200 %), masquable (sauf le
-  danger et le réseau). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
+  danger, le réseau et, depuis la 2.75.5, les notifications avec le bouton du menu du raid, §21). L'aperçu de l'éditeur montre un **exemple** de raid à 8 joueurs (dit sur l'aperçu, jamais en jeu) ;
   deux éléments ne peuvent jamais se chevaucher (l'enregistrement est refusé sinon). Chaque élément est dessiné dans sa
   boîte : textes mesurés, coupés, « … et N lignes de plus ».
 * **Chronomètre** (vrais raids et test) : le style du chrono des niveaux (horloge, police des titres, halo), le temps depuis
@@ -1032,9 +1033,9 @@ les jeux (testé à 2 et 8 sièges). La part de chacun est celle des dégâts au
   objectives}]}` : clé `t:<zone>`, valeur canonique reconstruite par le serveur (`zoneCanonical`), même consensus que les
   autres (majorité stricte des joueurs actifs, minorité journalisée), tableaux impossibles refusés avant tout vote
   (`implausibleZone`). Accepté : `raid_zone_contributions` (migration **0160**), attribué au membre qui tenait le siège.
-* **Écrans** : la carte « ZONE TERMINÉE » (tableau mesuré : nom, barre et pourcentage de la part, dégâts, soutien,
-  mécanismes, objectifs ; « Zone précédente / suivante » quand il y en a plusieurs ; elle se ferme seule après 30 s, le
-  groupe continue sous elle), la pause (« Tableaux des contributions des zones terminées »), et **Résultats du raid ›
+* **Écrans** : le tableau mesuré (nom, barre et pourcentage de la part, dégâts, soutien, mécanismes, objectifs) est dans
+  le **menu du raid › « Zones terminées »** depuis la 2.75.5 (§21 : une notification courte annonce la zone terminée ;
+  la carte « ZONE TERMINÉE » de la 2.75, qui prenait les touches du joueur, n'existe plus), et dans **Résultats du raid ›
   « Tableaux des zones »** (`zone_tables` de `GET /raids/events/{id}/results` : les groupes de **mon** clan seulement).
 
 ### Les administrateurs voient tout (modération)
@@ -1150,6 +1151,75 @@ ennemis, et la couronne de tous les autres garde ses rayons : `kSimulationVersio
   joueur simulé sans effet sur les autres, groupe éliminé, coopération à 2 et 3, largeur des liquides, vestiaire
   rejoué, 0 et 7 joueurs simulés), `tests/test_coop.cpp` (règles 1 et 2), `server/test/raidWipe.test.ts`,
   `server/test/coopRace.test.ts`.
+
+## 21. Notifications et menu du raid (2.75.5)
+
+Une portion finie ne doit jamais arrêter un joueur, peut-être au-dessus du vide. Plus **aucune carte ne s'ouvre d'elle-même**
+pendant qu'on joue en raid : une **notification courte** annonce ce qui arrive, et le **menu du raid**, que chaque joueur ouvre
+et ferme lui-même, garde tout le détail (`ui/online/RaidMenu`).
+
+### Ce qui bloquait vraiment (recensement)
+
+| Ce qui s'ouvrait seul | Ce que cela faisait | Depuis la 2.75.5 |
+| --- | --- | --- |
+| Carte « ZONE TERMINÉE » et tableau des contributions (2.75) | 30 s au milieu de l'écran (les plateformes cachées) ; elle prenait le **focus** de l'interface sur « Continuer » : **Espace / A, le saut**, la fermait ou changeait de zone, les **déplacements** (flèches, ZQSD, croix, stick) promenaient le focus entre ses boutons, le pointeur revenait. Les entrées du lockstep n'étaient pas neutres, mais chaque saut agissait aussi sur la carte. | Notification ; le tableau dans le menu › « Zones terminées » |
+| Carte de la chute d'un gigaboss (« PYROCLAST EST VAINCU », 2.68 ; « LE CŒUR D'ASTERION CÈDE ») | Le premier déplacement donnait le focus à « Résultats du raid », le saut suivant ouvrait les résultats **par-dessus le combat** : tant qu'ils étaient ouverts (`topScene() != this`), **entrées neutres envoyées au lockstep**, le personnage figé. | Notification ; « Résultats du raid » dans le menu › « Titan » (bouton, Entrée / A) |
+| Groupe éliminé (2.75.1) | Une alerte et un son ; les entrées sont neutres **par règle** (tout le groupe est à terre : spectateurs, `RaidRun::wiped`). | Notification (section « Groupe ») ; règle inchangée |
+| Zone reprise par un renfort, zone à reprendre | Une alerte (rien ne bloquait). | Notifications (« Zones terminées », « Ce qu'il reste à faire ») |
+| Autre zone de la branche terminée, lien du titan (« TITAN · … »), Asterion tombé (« MONDE · … ») | Des alertes de la simulation (rien ne bloquait ; les notifications en ligne sont retenues pendant un raid, `holdsNotifications`). | Notifications (« Zones terminées », « Titan ») |
+
+Restent tels quels : la **pause** (choix du joueur), le **film de la victoire** et « FIN DE L'INSTANCE » (fin de partie),
+« LIAISON PERDUE » (plus de relais : le monde ne peut plus avancer), le **choix du pouvoir du vestiaire** (une réponse du
+joueur, par `InputFrame::choice`, dans la salle sans danger du début de branche). **Coopération** : aucune carte
+d'information ne s'ouvre en jeu (le choix d'un pouvoir et « MANETTE DÉBRANCHÉE » attendent une réponse) : rien à changer.
+
+### Les notifications (`raidmenu::Notices`, `RaidHudElement::Notices`)
+
+* Une boîte courte : un titre à sa couleur, une ligne (deux au plus, mesurées), et le **rappel de la touche du menu** à
+  droite du titre, mesuré d'abord (« Tableau : Tab », « Groupe : Tab », « Titan : L3 » à la manette). Un son à son arrivée.
+* **3,5 s** à l'écran, puis elle s'efface (fondu sur sa dernière demi-seconde). **Trois** au plus en même temps, l'une sous
+  l'autre ; les suivantes attendent leur tour, et leur temps ne court qu'à partir de leur première image : elles attendent
+  aussi pendant la pause, le menu, la grande carte, une carte de liaison perdue, un grand message du niveau ou le titre
+  de l'arène, pour ne jamais passer dessous.
+* **Aucune entrée prise** : ce n'est pas un widget (pas de focus, pas de touche) ; seul le bouton « MENU DU RAID · Tab »
+  au-dessus d'elles répond à la souris (le pointeur revient quand on bouge la souris). L'`InputFrame` du joueur est le
+  même avec ou sans notification (testé).
+* **Place** : entre les deux colonnes du HUD, sous la minimap (et la vie du Cœur), au-dessus du bandeau de danger, loin du
+  milieu de l'écran. Elle se déplace et se redimensionne dans Paramètres › HUD › « Raids » (« Notifications et menu du
+  raid », jamais masquée), jamais sur un autre élément.
+* Toutes restent dans le **journal**, avec leur heure dans le temps du raid (les pas de la simulation : la même pour tout
+  le groupe).
+
+### Le menu du raid (`raidmenu::Menu`, `Action::RaidMenu`)
+
+* **Ouvert et fermé par le joueur** : **Tab** au clavier, **L3** (clic du stick gauche) à la manette, réglables dans
+  Paramètres › Commandes (« Menu du raid ») ; le bouton du HUD à la souris ; « Menu du raid » dans la pause. **Échap** ou
+  **B** le ferment aussi (sans ouvrir la pause). Il s'ouvre sur la section de la notification affichée, sinon là où le
+  joueur l'avait laissé. L3 est aussi le bouton des fantômes de Ghost Racing : jamais dans la même partie. Un ancien
+  fichier de réglages où Tab ou L3 servaient à une autre commande laisse le menu sans touche (à choisir).
+* **Le jeu continue**, comme la pause en ligne, et le menu le dit en tête : « Le jeu continue : vous pouvez être touché. »
+  Tant qu'il est ouvert, les entrées de ce joueur sont neutres : les touches qui naviguent ne bougent jamais le personnage.
+* **Sections** (Gauche / Droite, Q / E, LB / RB, ou un clic sur l'onglet) : « Ce qu'il reste à faire » (les conditions de la
+  zone et de la branche, §19) ; « Zones terminées » (le tableau de chaque zone finie pendant que l'instance y était, la plus
+  récente d'abord, puis les autres zones terminées de la branche) ; « Journal » (toutes les notifications, horodatées) ;
+  « Groupe » (chaque place : nom, vie, état : en jeu, à terre, absent, parti, **spectateur** une fois le groupe éliminé) ;
+  « Titan » (son gigaboss vaincu ou debout, les parties tombées dans l'arène du Cœur, les liens des autres branches qui
+  agissent ici ou pas encore, ses événements, et « Résultats du raid » après une chute).
+* **Défilement** : Haut / Bas, le stick, la molette ou la barre ; chaque section garde le sien. Tout est mesuré : onglets à
+  la largeur de leur nom, règle et touches sur deux lignes au plus, chaque partie placée après la précédente.
+
+### Tests (`tests/test_raid_menu.cpp`)
+
+Une zone terminée par un autre groupe au pas 100 : l'`InputFrame` du joueur est le même à chaque pas avec ou sans sa
+notification, et les deux parties ont la même empreinte ; la notification s'efface seule, les suivantes attendent leur tour,
+le journal les garde ; Tab ouvre et ferme le menu, Échap le ferme sans pause, les sections suivent les touches ; ouvert, il
+neutralise les entrées comme la pause ; le placement par défaut ne touche aucun autre élément (1280 × 720 à 2560 × 1440), les
+notifications et les parties du menu sont dans leur place, sans chevauchement, et ne prennent pas le focus.
+
+### Versions
+
+Affichage et entrées de cet ordinateur seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et
+les empreintes de référence ne changent pas.
 
 ---
 

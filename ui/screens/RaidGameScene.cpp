@@ -37,6 +37,11 @@
 // back after a group fell), what each zone misses on the large map, and a zone finished: a card with
 // its sound for every player of the instance at the same step, its « Tableau des contributions »
 // (raid::RaidRun::finishes, counted in the simulation), reported to the server like the other tables.
+// 2.75.5 (docs/RAIDS.md §21): no card opens by itself during the game any more. A zone finished, the
+// group eliminated, a zone taken back, a gigaboss fallen, a link of the titan: a short notification
+// under the menu's button (ui/online/RaidMenu, never a key nor the focus taken), and the raid's menu
+// the player opens and closes (Action::RaidMenu) with what is left, the zones' tables, the journal,
+// the group and the titan; this player's inputs neutral while it is open, as in the pause.
 
 #include <algorithm>
 #include <atomic>
@@ -70,6 +75,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "saves/Settings.h"
 #include "ui/online/RaidHud.h"
+#include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/screens/Navigation.h"
@@ -121,10 +127,10 @@ public:
     GameWorld* world() override { return run_ && !catching_ ? &run_->world() : nullptr; }
     const PowerKeyMap& powerKeys() const override { return powerKeys_; }
     void answerPowerOffer(uint8_t choice) override { pendingChoice_ = choice; }
-    // 2.68 (phase 3): the pointer comes back with the card of the gigaboss's fall (« Résultats du raid »).
+    // 2.75.5: the pointer comes back with the raid's menu, and while the mouse moves (the HUD's button).
     bool hidesCursor() const override {
-        return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !fallCard_ && !bigMap_ && !reconnect_.active() && zoneCard_ < 0 &&
-               !spec_.on;
+        return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !overlay_.wantsPointer() && clock_ - pointerAt_ > 2.5f && !bigMap_ &&
+               !reconnect_.active() && !spec_.on;
     }
 
     void onEnter() override {
@@ -237,7 +243,6 @@ public:
             serial_ = -1;
             waiting_ = 0.0f;
             progress_ = 0;
-            fallCard_ = false;
             note("RÉSEAU · Liaison rétablie : retour dans l'instance", kGreen);
         }
         local_ = link_->seat();
@@ -246,6 +251,7 @@ public:
                          g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
         ownRun_ = std::make_unique<raid::RaidRun>(ws, *branch_, go.players);
         run_ = ownRun_.get();
+        watchedRun_ = nullptr;  // 2.75.5: a new run: what it holds once caught up is no news
         run_->setCameraFollow(watchSeat_ >= 0 ? watchSeat_ : local_);  // 2.75: a spectator follows the player watched
         // 2.75: the armory first (each player picks their powers), else a group taking a wiped zone again starts there.
         if (!run_->begin(link_->raidStateAt(0), entry_.startZone > 0 ? entry_.startZone : raid::RaidRun::kArmory)) {
@@ -323,8 +329,8 @@ public:
     /// the pause and the large map), the free seats vacant.
     void stepTest() {
         const PlayerInput in = g_.app.input().consumePlayerInput();
-        InputFrame f = InputFrame::fromPlayerInput(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in);
-        if (paused_ || g_.app.topScene() != this) f = InputFrame{};  // 2.72: a film over the combat holds this player only
+        // 2.72: a film over the combat holds this player only; 2.75.5: the raid's menu too (never a notification).
+        InputFrame f = overlay_.frame(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in, paused_, g_.app.topScene() != this, false);
         const auto& offer = run_->world().powerOffer();
         if (offer && offer->player == 0 && (!scripts_.empty() && scripts_[0].active())) f.choice = InputFrame::kChoiceLeave;  // a capture
         else if (offer && offer->player == 0 && pendingChoice_ != 0) {  // 2.75: the armory's choice window
@@ -343,12 +349,16 @@ public:
         ++tick_;
         if (const int z = run_->zoneFinishedNow()) zoneDone(z);  // 2.75
         if (run_->wipedNow()) groupWiped();  // 2.75.1
+        if (run_->gigaboss().fellNow()) gigabossFell();  // 2.75.5: a notification (no results: a test is never reported)
         if (run_->heartWonNow()) playVictory();  // 2.74: a test's fall is its victory (never reported)
+        watchBranch(true);  // 2.75.5
         if (run_->zoneSerial() != serial_) zoneReady();
     }
 
     /// 2.74 (phase 6): the film of Asterion's fall, over the combat (which keeps running: neutral inputs).
     void playVictory() {
+        // 2.75.5: the world's event in the journal (the film, the end of the raid, stays as it was).
+        notify("MONDE · Asterion est tombé", "Le Cœur a cédé sous les coups de tous les groupes.", kGold, raidmenu::Section::Titan, nullptr);
         if (auto s = asterionfilm::makeVictory(g_, true)) g_.app.pushScene(std::move(s));
     }
 
@@ -440,11 +450,12 @@ public:
             waiting_ = 0.0f;
             run_->step(frame_.data(), static_cast<int>(frame_.size()), link_->raidStateAt(tick_), raid::HeartShared::unpack(link_->raidHeartAt(tick_)));
             ++tick_;
-            if (run_->heartWonNow() && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) playVictory();  // 2.72: the validated victory
-            if (run_->gigaboss().fellNow() && !link_->joinedLate()) fallCard_ = true;  // « Résultats du raid »
-            if (run_->gigaboss().fellNow() && link_->joinedLate() && tick_ >= link_->rejoinAt()) fallCard_ = true;
-            if (const int z = run_->zoneFinishedNow(); z && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) zoneDone(z);  // 2.75
-            if (run_->wipedNow() && (!link_->joinedLate() || tick_ >= link_->rejoinAt())) groupWiped();  // 2.75.1: every computer, this step
+            const bool inPlay = !link_->joinedLate() || tick_ >= link_->rejoinAt();  // what happened before this game came: not told
+            if (run_->heartWonNow() && inPlay) playVictory();  // 2.72: the validated victory
+            if (run_->gigaboss().fellNow() && inPlay) gigabossFell();  // 2.75.5: its notification, « Résultats du raid » in the menu
+            if (const int z = run_->zoneFinishedNow(); z && inPlay) zoneDone(z);  // 2.75
+            if (run_->wipedNow() && inPlay) groupWiped();  // 2.75.1: every computer, this step
+            watchBranch(inPlay);  // 2.75.5: another zone finished, a link of the titan on
             if (run_->zoneSerial() != serial_) zoneReady();
             sendReports();
         }
@@ -455,9 +466,9 @@ public:
         const uint32_t target = tick_ + static_cast<uint32_t>(link_->inputDelay());
         if (sentUpTo_ != UINT32_MAX && target <= sentUpTo_) return;
         sentUpTo_ = target;
-        InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
-        if (paused_ || g_.app.topScene() != this) f = InputFrame{};  // 2.72: a film over the combat holds this player only
-        if (run_->wiped()) f = InputFrame{};  // 2.75: the group wiped: neutral frames (the relay goes on for the others)
+        // 2.72: a film over the combat holds this player only; 2.75: the group wiped: neutral frames (the relay
+        // goes on for the others); 2.75.5: the raid's menu the player opened, as the pause (never a notification).
+        InputFrame f = overlay_.frame(g_.app.input().consumePlayerInput(), paused_, g_.app.topScene() != this, run_->wiped());
         // A power offered to this player (2.75: the armory's tablets): the answer of its choice window,
         // through the frame like every choice (the replays stay exact).
         if (const auto& offer = run_->world().powerOffer(); offer && offer->player == local_ && pendingChoice_ != 0) {
@@ -538,6 +549,8 @@ public:
 
     void update(float dt) override {
         clock_ += dt;
+        overlay_.notices.update(clock_);  // 2.75.5: each notification goes by itself
+        if (g_.app.input().mouseMovedThisFrame()) pointerAt_ = clock_;
         if (test_) {
             updateGame(dt);
             return;
@@ -579,7 +592,13 @@ public:
         if (const auto& offer = w.powerOffer(); offer && offer->player == local_ && pendingChoice_ == 0 && !paused_ && !ended_ &&
                                                 g_.app.topScene() == this && !(test_ && !scripts_.empty() && scripts_[0].active()))
             g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
-        if (!ended_ && g_.app.topScene() == this && g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
+        // 2.75.5: the raid's menu, opened and closed by the player (its key, the HUD's button), as the pause:
+        // the game goes on, this player's inputs are neutral while it is open; Échap or B close it.
+        const bool menuWasOpen = overlay_.menu.isOpen();
+        const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this;
+        const bool menuBack = overlay_.menu.handleKeys(g_.app.input(), menuAllowed, menuSectionNow());
+        if (overlay_.menu.isOpen()) bigMap_ = false;
+        if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
@@ -588,6 +607,7 @@ public:
         if (!ended_ && !paused_ && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
+            if (bigMap_) overlay_.menu.close();
         }
         if (paused_ || ended_) bigMap_ = false;
     }
@@ -604,15 +624,19 @@ public:
                               for (const Json& z : zones)
                                   if (const std::string by = jstr(z, "retake_by"); !by.empty() && !jget<bool>(z, "finished", false))
                                       out[jget<int>(z, "id", 0)] = by;
-                          // 2.75.1: a zone to take back now finished: a reinforcement group took it back (told once).
+                          // 2.75.1: a zone to take back now finished: a reinforcement group took it back (told once);
+                          // 2.75.5: a notification, as a zone newly to take back (not those known at the first reading).
                           if (const Json zones = r.data.value("zones", Json::array()); zones.is_array())
                               for (const Json& z : zones) {
                                   const int id = jget<int>(z, "id", 0);
-                                  if (retake_.count(id) && jget<bool>(z, "finished", false)) {
-                                      note("ZONE REPRISE · " + jstr(z, "name") + " : terminée par le groupe de renfort " + jstr(z, "finished_by", "?"), kGreen);
-                                      g_.app.audio().playSound("sounds/boss_phase_clear.wav", 0.8f);
-                                  }
+                                  if (retake_.count(id) && jget<bool>(z, "finished", false))
+                                      notify("ZONE REPRISE · " + jstr(z, "name"), "Terminée par le groupe de renfort " + jstr(z, "finished_by", "?") + ".", kGreen,
+                                             raidmenu::Section::Zones, "sounds/boss_phase_clear.wav");
+                                  else if (branchRead_ && !retake_.count(id) && out.count(id) && !(run_ && run_->wipedZone() == id))  // own wipe: told already
+                                      notify("ZONE À REPRENDRE · " + jstr(z, "name"), out[id] + " est tombé : un groupe qui a fini sa zone peut la reprendre.", kDanger,
+                                             raidmenu::Section::Remaining, "sounds/enemy_alert.wav");
                               }
+                          branchRead_ = true;
                           retake_ = std::move(out);
                       }),
                       false);
@@ -671,10 +695,9 @@ public:
             drawArrows(w, view);
             if (bigMap_ && !paused_ && !ended_) drawBigMap(w);
             drawArenaIntro();
-            if (fallCard_ && !paused_ && !ended_) drawFall();
-            if (zoneCard_ >= 0 && !fallCard_ && !paused_ && !ended_) drawZoneCard();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
-            if (spec_.on && !paused_ && !ended_ && !bigMap_) drawSpectator();  // 2.75
+            if (spec_.on && !paused_ && !ended_ && !bigMap_ && !overlay_.menu.isOpen()) drawSpectator();  // 2.75
+            if (overlay_.menu.isOpen() && !paused_ && !ended_) drawMenu(w);  // 2.75.5: opened by the player
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
         }
@@ -698,7 +721,7 @@ public:
         }
         if (!test_ && clock_ - spec_.fetchedAt > 10.0f) fetchTargets();
         InputManager& in = g_.app.input();
-        if (paused_ || ended_ || bigMap_ || g_.app.topScene() != this) return;
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || g_.app.topScene() != this) return;  // 2.75.5: its keys are the menu's
         if (in.menuPressed(Action::MenuTabNext)) watchStep(+1);
         if (in.menuPressed(Action::MenuTabPrev)) watchStep(-1);
         if (spec_.free) spec_.move(in, dt, w.level().bounds);
@@ -926,6 +949,7 @@ public:
             }
         // 2.74 (phase 6): the Cœur d'Asterion: its shared health in its arena, what the branches did to
         // it at its door (before it wakes, the first seconds of the zone).
+        drawNoticesHud(w);  // 2.75.5
         if (const raid::AsterionHeartRoutine* hr = run_->heartRoutine()) {
             if (shown(E::Heart)) {
                 const Rect r = at(E::Heart);
@@ -1459,21 +1483,118 @@ public:
     }
 
     /// 2.75.1: the whole group down at this step (every computer of the instance): eliminated from the zone.
+    /// 2.75.5: a notification (the spectator's band says the rest), never a card.
     void groupWiped() {
-        note("GROUPE ÉLIMINÉ · tout le groupe est à terre : la zone attend un groupe de renfort", kDanger);
-        g_.app.audio().playSound("sounds/player_death.wav", 0.9f);
+        notify("GROUPE ÉLIMINÉ", "Tout le groupe est à terre : la zone attend un groupe de renfort. Vous devenez spectateurs.", kDanger,
+               raidmenu::Section::Group, "sounds/player_death.wav");
         branchAt_ = clock_;  // the branch's map again now (« zone à reprendre »)
     }
 
-    /// 2.75: a zone finished while the instance was in it (the same step on every computer): its card
-    /// with the sound, the « Tableau des contributions » of that zone.
+    /// 2.75: a zone finished while the instance was in it (the same step on every computer), with its
+    /// sound; 2.75.5: a short notification (its « Tableau des contributions » in the raid's menu), which
+    /// takes no key: the players keep the controls, over the void too.
     void zoneDone(int zone) {
-        (void)zone;
         if (run_->finishes().empty()) return;
-        zoneCard_ = static_cast<int>(run_->finishes().size()) - 1;
-        zoneCardAt_ = clock_;
-        g_.app.audio().playSound("sounds/boss_phase_clear.wav", 0.9f);
-        g_.ui.setFocus("raidgame/zonecard/close");
+        const raid::ZoneFinish& f = run_->finishes().back();
+        const raid::ZoneInfo* z = branch_->zone(zone);
+        notify("ZONE TERMINÉE · " + std::string(z ? z->name : "?"),
+               f.byUs ? std::string("Par votre groupe : son tableau des contributions est dans le menu du raid.")
+                      : std::string("Par un autre groupe (état validé par le serveur) : son tableau est dans le menu du raid."),
+               kGreen, raidmenu::Section::Zones, "sounds/boss_phase_clear.wav", true);
+    }
+
+    /// 2.75.5: a notification (its sound, the journal with its time in the raid).
+    void notify(std::string title, std::string text, Color c, raidmenu::Section section, const char* sound, bool table = false) {
+        raidmenu::Notice n;
+        n.title = std::move(title);
+        n.text = std::move(text);
+        n.color = c;
+        n.section = section;
+        n.table = table;
+        n.raidSeconds = run_ ? static_cast<float>(run_->tick()) / static_cast<float>(kSimHz) : 0.0f;
+        overlay_.notices.push(std::move(n));
+        if (sound) g_.app.audio().playSound(sound, 0.85f);
+    }
+
+    /// 2.75.5: the gigaboss of the zone fell (a part of the titan): a notification; « Résultats du raid »
+    /// waits in the menu's « Titan » (2.68: it was a card that took the keys).
+    void gigabossFell() {
+        const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
+        const bool heart = run_->heartBranch();
+        const std::string fell = run_->gigaboss().rules() ? run_->gigaboss().rules()->fallText : std::string();
+        fallSeen_ = !test_;
+        // 2.74 (phase 6): the Cœur d'Asterion falls here once its shared health is gone; the victory is the
+        // server's (every group's damage summed): the menu's « Titan » says so (2.68: the card did).
+        fallMore_ = test_ ? std::string()
+                    : !heart ? std::string("Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur.")
+                    : run_->heartWon() ? std::string("Victoire validée par le serveur pour tous les clans : vos récompenses vous attendent dans CLANS › RAIDS.")
+                                       : std::string("La victoire est validée quand le serveur a reçu de tous les groupes de quoi éteindre sa vie partagée : patientez.");
+        notify(heart ? (run_->heartWon() ? std::string("ASTERION EST TOMBÉ") : std::string("LE CŒUR D'ASTERION CÈDE")) : name + " EST VAINCU",
+               fell.empty() ? (test_ ? std::string("Test : rien n'est compté.") : std::string("Résultats du raid : menu du raid, section Titan."))
+                            : fell + (test_ ? "" : " · Résultats du raid : menu du raid, section Titan."),
+               kGold, raidmenu::Section::Titan, "sounds/medal.wav");
+    }
+
+    /// 2.75.5: what changed in the branch at this step, told once: another zone finished (validated), a
+    /// link of the titan on here. What was so when this game came is not news (`tell`: in play).
+    void watchBranch(bool tell) {
+        uint32_t links = 0;
+        for (const raid::EffectInfo& e : branch_->effects)
+            if (raid::Branch::on(run_->mask(), e)) links |= 1u << e.bit;
+        const uint32_t zones = run_->zonesFinished();
+        if (watchedRun_ != run_) {
+            watchedRun_ = run_;
+            seenZones_ = zones;
+            seenLinks_ = links;
+            return;
+        }
+        if (tell) {
+            for (const raid::ZoneInfo& z : branch_->zones)
+                if (z.id > 0 && z.id < 32 && z.id != run_->zone() && ((zones & ~seenZones_) >> z.id) & 1u)
+                    notify("BRANCHE · Zone terminée : " + z.name, "Validée par le serveur pour toute la branche.", kGreen, raidmenu::Section::Zones,
+                           "sounds/checkpoint.wav");
+            for (const raid::EffectInfo& e : branch_->effects)
+                if (raid::Branch::on(links & ~seenLinks_, e)) notify("TITAN", e.label, kViolet, raidmenu::Section::Titan, "sounds/portal.wav");
+        }
+        seenZones_ = zones;
+        seenLinks_ = links;
+    }
+
+    /// 2.75.5: where the menu opens: on the notification shown, else where the player left it.
+    raidmenu::Section menuSectionNow() const { return overlay_.notices.latestSection(); }
+
+    /// 2.75.5: the menu's key as the device in use names it (« Tab », « L3 »), for its hints.
+    std::string menuKeyName() {
+        InputManager& in = g_.app.input();
+        const int a = static_cast<int>(Action::RaidMenu);
+        if (in.lastDevice() == InputDevice::Gamepad)
+            for (const PadBinding& p : in.bindings().pad[a])
+                if (p.kind != PadBinding::Kind::None) return padBindingName(p, in.gamepadStyle());
+        return actionKey(in, Action::RaidMenu);
+    }
+
+    /// 2.75.5: the menu's button and the notifications (RaidHudElement::Notices), never under a card, the
+    /// large map, the menu or a big message of the level (they wait their turn: their time starts when
+    /// they are drawn).
+    void drawNoticesHud(GameWorld& w) {
+        UIContext& ui = g_.ui;
+        bool bigMessage = false;
+        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || g_.app.topScene() != this) return;
+        const RaidHudLayout& l = g_.settings.gameplay.raidHud;
+        const Rect r = raidhud::area(ui, l, RaidHudElement::Notices, hudAreas_);
+        std::vector<const raidmenu::Notice*> list;
+        std::vector<float> alpha;
+        if (!arenaCam_.intro())  // the arena's title over the middle: they wait
+            for (const raidmenu::Notice* n : overlay_.notices.front()) {
+                list.push_back(n);
+                alpha.push_back(raidmenu::Notices::alpha(*n, clock_));
+            }
+        size_t drawn = 0;
+        if (raidmenu::drawNotices(ui, r, raidhud::scaleOf(l, RaidHudElement::Notices), list, alpha, menuKeyName(), true, &drawn))
+            overlay_.menu.open(menuSectionNow());
+        overlay_.notices.drawn(drawn, clock_);
+        hudRects_.push_back(r);
     }
 
     /// 2.75: the table of a zone finished (raid::ZoneFinish) as the HUD draws it.
@@ -1501,54 +1622,80 @@ public:
         return t;
     }
 
-    /// 2.75: the card of a zone finished: « ZONE TERMINÉE », its table, « Continuer » (and the other zones'
-    /// tables when there are several). The group keeps playing under it; it closes by itself after 30 s.
-    void drawZoneCard() {
-        UIContext& ui = g_.ui;
+    /// 2.75.5: the raid's menu over the combat (opened by the player; the game goes on under it).
+    void drawMenu(GameWorld& w) {
+        const raidmenu::MenuAction act = raidmenu::drawMenu(g_.ui, overlay_.menu, menuData(w));
+        if (act.close) overlay_.menu.close();
+        if (act.results && !test_ && !entry_.eventId.empty()) {
+            overlay_.menu.close();
+            g_.app.pushScene(makeRaidResults(g_, entry_.eventId));  // its own choice, as from the pause
+        }
+    }
+
+    /// 2.75.5: what the menu shows, from this screen's data (the simulation's, the server's).
+    raidmenu::MenuData menuData(GameWorld& w) {
+        raidmenu::MenuData d;
+        d.title = "MENU DU RAID · " + std::string(branch_->name);
+        d.keyName = menuKeyName();
+        const raid::ZoneInfo* z = branch_->zone(run_->zone());
+        d.remainingTitle = "CE QU'IL RESTE À FAIRE · " + std::string(z ? z->name : "?");
+        d.remaining = remainingLines(w);
         const auto& list = run_->finishes();
-        if (zoneCard_ >= static_cast<int>(list.size()) || clock_ - zoneCardAt_ > 30.0f) {
-            zoneCard_ = -1;
-            return;
+        for (auto it = list.rbegin(); it != list.rend(); ++it) d.tables.push_back(zoneTable(*it));
+        for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
+            bool here = false;
+            for (const raid::ZoneFinish& f : list) here = here || f.zone == g.zone;
+            if (g.finished && !here) d.otherZones.push_back(g.name);
         }
-        const raid::ZoneFinish& f = list[static_cast<size_t>(zoneCard_)];
-        const raidhud::ZoneTable t = zoneTable(f);
-        const float rows = static_cast<float>(std::max<size_t>(1, t.rows.size()));
-        Rect box = centred(ui.s(780), ui.s(196) + rows * ui.s(28) + ui.s(76));
-        box.y = std::max(ui.s(20), ui.screenH() * 0.12f);
-        box.h = std::min(box.h, ui.screenH() - box.y - ui.s(20));
-        ui.panel(box, true, 16);
-        const raid::ZoneInfo* z = branch_->zone(f.zone);
-        fit(ui, "ZONE TERMINÉE · " + std::string(z ? z->name : "?"), {box.center().x, box.y + ui.s(34)}, 28, box.w - ui.s(48), kGreen, FontFace::Title,
-            Align::Center);
-        const float by = box.bottom() - ui.s(20) - ui.s(48);
-        raidhud::drawZoneTable(ui, {box.x + ui.s(10), box.y + ui.s(58), box.w - ui.s(20), by - ui.s(8) - (box.y + ui.s(58))}, 1.0f, t);
-        ui.pushId("zonecard");
-        const bool several = list.size() > 1;
-        const float gap = ui.s(12), w = box.w - ui.s(56);
-        const float bw = several ? (w - 2 * gap) / 3.0f : w;
-        float bx = box.x + ui.s(28);
-        if (several) {
-            UIContext::ButtonStyle st;
-            st.enabled = zoneCard_ > 0;
-            if (ui.button("prev", {bx, by, bw, ui.s(48)}, "‹ Zone précédente", st)) {
-                --zoneCard_;
-                zoneCardAt_ = clock_;
+        d.journal = &overlay_.notices.journal();
+        // The group: each seat's state, « spectateur » once the group is eliminated.
+        const raidhud::Group g = groupData(w);
+        d.groupTitle = "GROUPE · " + g.title;
+        d.groupFooter = g.footer;
+        for (int i = 0; i < w.teamSize() && i < static_cast<int>(g.rows.size()); ++i) {
+            const raidhud::GroupRow& row = g.rows[static_cast<size_t>(i)];
+            raidmenu::Member m;
+            m.name = row.name;
+            m.color = row.color;
+            m.vacant = row.vacant;
+            m.me = i == local_;
+            m.health = row.health;
+            m.state = row.state;
+            m.stateColor = row.stateColor;
+            const Player& p = w.playerAt(i);
+            if (!row.vacant) m.hearts = std::to_string(std::max(0, p.health)) + " / " + std::to_string(p.maxHealth());
+            if (run_->wiped() && !row.vacant && w.member(i).presence != GameWorld::Presence::Gone) {
+                m.state = "spectateur";
+                m.stateColor = kViolet;
             }
-            bx += bw + gap;
+            d.group.push_back(std::move(m));
         }
-        UIContext::ButtonStyle bs;
-        bs.primary = true;
-        if (ui.button("close", {bx, by, bw, ui.s(48)}, "Continuer", bs)) zoneCard_ = -1;
-        bx += bw + gap;
-        if (several && zoneCard_ >= 0) {
-            UIContext::ButtonStyle st;
-            st.enabled = zoneCard_ + 1 < static_cast<int>(list.size());
-            if (ui.button("next", {bx, by, bw, ui.s(48)}, "Zone suivante ›", st)) {
-                ++zoneCard_;
-                zoneCardAt_ = clock_;
-            }
+        d.titan = titanLines();
+        d.results = fallSeen_ && !test_ && !entry_.eventId.empty();
+        return d;
+    }
+
+    /// 2.75.5: the titan as this branch knows it: its gigaboss (its lair finished or not), its parts
+    /// fallen (in the heart's arena), the links of the other branches that act here (on, or not yet).
+    std::vector<raidhud::Line> titanLines() {
+        std::vector<raidhud::Line> lines;
+        const std::string boss = branch_->gigaboss.empty() ? std::string("Le gigaboss") : branch_->gigaboss;
+        for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
+            if (!g.lair) continue;
+            if (g.finished) lines.push_back({"OK", boss + " est vaincu · " + g.name, kGreen});
+            else lines.push_back({"→", boss + " est debout · " + g.name + (g.missing().empty() ? std::string() : " · " + g.missing()), kOrange});
         }
-        ui.popId();
+        if (const raid::AsterionHeartRoutine* hr = run_->heartRoutine()) {
+            static const char* kParts[] = {"Crâne", "Bras gauche", "Bras droit", "Torse", "Abdomen", "Jambe gauche", "Jambe droite"};
+            for (int p = 0; p < raid::AsterionHeartRoutine::PartCount && p < 7; ++p)
+                lines.push_back(hr->down(p) ? raidhud::Line{"◆", std::string(kParts[p]) + " : tombé", kGreen}
+                                            : raidhud::Line{"!", std::string(kParts[p]) + " : debout", kOrange});
+        }
+        for (const raid::EffectInfo& e : branch_->effects)
+            lines.push_back(raid::Branch::on(run_->mask(), e) ? raidhud::Line{"◊", e.label, kGreen} : raidhud::Line{"·", "Pas encore : " + e.label, kDim});
+        if (!fallMore_.empty()) lines.push_back({"i", fallMore_, kDim});
+        if (lines.empty()) lines.push_back({"·", "Rien du titan n'agit sur cette branche pour l'instant.", kDim});
+        return lines;
     }
 
     /// 2.75: « Ce qu'il reste à faire »: the zone's requirements ticked (from the state the server
@@ -1602,36 +1749,6 @@ public:
         for (auto& l : retake) lines.push_back(std::move(l));
         for (auto& l : branch) lines.push_back(std::move(l));
         return lines;
-    }
-
-    /// The card of the gigaboss's fall: its results (validated by the server) or back to the fight.
-    void drawFall() {
-        UIContext& ui = g_.ui;
-        Rect box = centred(ui.s(600), ui.s(250));
-        box.y = ui.screenH() * 0.18f;
-        ui.panel(box, true, 16);
-        const std::string name = run_->gigaboss().rules() ? run_->gigaboss().rules()->name : "Le gigaboss";
-        // 2.74 (phase 6): the Cœur d'Asterion falls here once its shared health is gone; the victory is
-        // the server's (validated, every group's damage summed): until then the card says so.
-        const bool heart = run_->heartBranch();
-        fit(ui, heart ? (run_->heartWon() ? "ASTERION EST TOMBÉ" : "LE CŒUR D'ASTERION CÈDE") : name + " EST VAINCU", {box.center().x, box.y + ui.s(40)}, 30,
-            box.w - ui.s(48), kGold, FontFace::Title, Align::Center);
-        const std::string fell = run_->gigaboss().rules() ? run_->gigaboss().rules()->fallText : std::string();
-        const std::string more = !heart ? " Les résultats comptent dès que la majorité de votre instance les a confirmés au serveur."
-                                 : run_->heartWon() ? " Victoire validée par le serveur pour tous les clans : vos récompenses vous attendent dans CLANS › RAIDS."
-                                                    : " La victoire est validée quand le serveur a reçu de tous les groupes de quoi éteindre sa vie partagée : patientez.";
-        const auto lines = wrap(ui, fell + more, FontFace::Body, 16, box.w - ui.s(56), 3);
-        drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(70)}, 16, ui.s(22), kDim);
-        ui.pushId("fall");
-        const float gap = ui.s(12), bw = (box.w - ui.s(56) - gap) * 0.5f, by = box.bottom() - ui.s(24) - ui.s(52);
-        UIContext::ButtonStyle bs;
-        bs.primary = true;
-        if (ui.button("results", {box.x + ui.s(28), by, bw, ui.s(52)}, "Résultats du raid", bs)) {
-            fallCard_ = false;
-            g_.app.pushScene(makeRaidResults(g_, entry_.eventId));
-        }
-        if (ui.button("continue", {box.x + ui.s(28) + bw + gap, by, bw, ui.s(52)}, "Continuer")) fallCard_ = false;
-        ui.popId();
     }
 
     /// 2.72: the objectives' lines (the zone's, its locked passages, its mechanisms, the links of the
@@ -1698,11 +1815,18 @@ public:
         return lines;
     }
 
+    /// 2.75.5: the simulation's alerts now told as notifications (a zone finished, the titan, the world,
+    /// the group eliminated): not twice on the screen.
+    static bool toldAsNotice(const std::string& t) {
+        return t.rfind("ZONE TERMINÉE · ", 0) == 0 || t.rfind("BRANCHE · Zone terminée : ", 0) == 0 || t.rfind("TITAN · ", 0) == 0 ||
+               t.rfind("MONDE · ", 0) == 0 || t.rfind("GROUPE ÉLIMINÉ · ", 0) == 0;
+    }
+
     /// 2.72: the simulation's alerts of the last 8 s (group, branch, danger), then the server's answers.
     std::vector<raidhud::Line> alertLines() {
         std::vector<raidhud::Line> show;
         for (const raid::Alert& a : run_->alerts())
-            if (run_->tick() - a.tick < 8 * 120)
+            if (run_->tick() - a.tick < 8 * 120 && !toldAsNotice(a.text))
                 show.push_back({"", a.text, a.kind == raid::Alert::Kind::Branch ? kGreen : a.kind == raid::Alert::Kind::Danger ? kDanger : kGold});
         for (const auto& n : notes_)
             if (clock_ - n.at < 8.0f) show.push_back({"", n.text, n.c});
@@ -1748,8 +1872,7 @@ public:
     void drawPause() {
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
-        const bool tables = run_ && !run_->finishes().empty();  // 2.75: the tables of the zones finished
-        Rect box = centred(ui.s(600), ui.s(380) + (tables ? ui.s(72) : 0.0f));
+        Rect box = centred(ui.s(600), ui.s(470));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
         fit(ui, test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
@@ -1761,12 +1884,14 @@ public:
         bs.primary = true;
         if (ui.button("resume", {box.x + ui.s(40), y, bw, bh}, "Reprendre", bs)) paused_ = false;
         y += bh + ui.s(14);
-        if (tables) {
-            if (ui.button("tables", {box.x + ui.s(40), y, bw, bh}, "Tableaux des contributions des zones terminées")) {
+        {
+            // 2.75.5: the raid's menu (the zones' tables among its sections), the pause closed: its own choice.
+            const std::string label = "Menu du raid · " + menuKeyName();
+            UIContext::ButtonStyle ms;
+            ms.fontSize = ui.fitFont(label, FontFace::Bold, 22, bw - ui.s(24));
+            if (ui.button("menu", {box.x + ui.s(40), y, bw, bh}, label, ms)) {
                 paused_ = false;
-                zoneCard_ = static_cast<int>(run_->finishes().size()) - 1;
-                zoneCardAt_ = clock_;
-                g_.ui.setFocus("raidgame/zonecard/close");
+                overlay_.menu.open(run_ && !run_->finishes().empty() ? raidmenu::Section::Zones : raidmenu::Section::Remaining);
             }
             y += bh + ui.s(14);
         }
@@ -1775,11 +1900,14 @@ public:
         if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
             leave();
         y += bh + ui.s(18);
-        // 2.72: the raid's keys (the large map), measured into the panel.
-        const std::string mapKey = actionKey(g_.app.input(), Action::RaidMap);
+        // 2.72: the raid's keys (the large map; 2.75.5: the menu), measured into the panel.
+        const std::string mapKey = actionKey(g_.app.input(), Action::RaidMap), menuKey = actionKey(g_.app.input(), Action::RaidMenu);
+        const PadBinding& menuPad = g_.app.input().bindings().pad[static_cast<int>(Action::RaidMenu)][0];
         const std::string keys = "Commandes du raid · carte agrandie : " + (mapKey.empty() ? std::string("aucune touche") : mapKey) +
-                                 " (Vue / Retour à la manette) · à changer dans Paramètres › Commandes";
-        const auto lines = wrap(ui, keys, FontFace::Body, 15, box.w - ui.s(80), 2);
+                                 " (Vue / Retour à la manette) · menu du raid : " + (menuKey.empty() ? std::string("aucune touche") : menuKey) + " (" +
+                                 (menuPad.kind == PadBinding::Kind::None ? std::string("aucun bouton") : padBindingName(menuPad, g_.app.input().gamepadStyle())) +
+                                 " à la manette) · à changer dans Paramètres › Commandes";
+        const auto lines = wrap(ui, keys, FontFace::Body, 15, box.w - ui.s(80), 3);
         drawLines(ui, lines, {box.x + ui.s(40), y}, 15, ui.s(20), kDim);
         ui.popId();
         if (!pauseOpenedNow_ && ui.backPressed()) paused_ = false;
@@ -1859,9 +1987,13 @@ public:
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
     std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
-    bool fallCard_ = false;     // 2.68: the gigaboss fell: « Résultats du raid »
-    int zoneCard_ = -1;         // 2.75: the zone finished whose table is shown (run_->finishes()), -1 none
-    float zoneCardAt_ = 0.0f;
+    raidmenu::Overlay overlay_;  // 2.75.5: the notifications and the raid's menu (no card opens by itself)
+    bool fallSeen_ = false;      // 2.75.5: a gigaboss fell here: « Résultats du raid » in the menu
+    std::string fallMore_;       // 2.75.5: when its results count (the menu's « Titan »)
+    float pointerAt_ = -10.0f;   // 2.75.5: when the mouse last moved (the pointer shown, for the HUD's button)
+    const raid::RaidRun* watchedRun_ = nullptr;  // 2.75.5: the run whose branch is watched (its zones, its links)
+    uint32_t seenZones_ = 0, seenLinks_ = 0;
+    bool branchRead_ = false;    // 2.75.5: the branch's map read once (what was so then is no news)
     std::map<int, std::string> retake_;  // 2.75: zones to take back (a group fell there): zone → that group
     float branchAt_ = 0.0f;              // 2.75: when the branch's map is read again
     raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
