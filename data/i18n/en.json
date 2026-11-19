@@ -13107,6 +13107,15 @@
     "Pattes": "Legs",
     "Griffes": "Claws",
     "Frappe au sol": "Ground slam",
-    "Élan · {0}": "Wind-up · {0}"
+    "Élan · {0}": "Wind-up · {0}",
+    "{0} × Lumière du cœur": "{0} × Light of the heart",
+    "{0} × Ventricule du cœur": "{0} × Heart's ventricle",
+    "(facultatif)": "(optional)",
+    "zone à reprendre ({0} est tombé)": "zone to take back ({0} fell)",
+    "Authentification requise.": "Authentication required.",
+    "Copie interrompue.": "Copy interrupted.",
+    "Pseudonyme disponible.": "Username available.",
+    "Service temporairement indisponible.": "Service temporarily unavailable.",
+    "Ses charges ralentissent : Asterion chancelle.": "Its charges slow down: Asterion staggers."
   }
 }

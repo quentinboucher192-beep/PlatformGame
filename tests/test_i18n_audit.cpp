@@ -288,6 +288,8 @@ TEST_CASE("i18n audit: the key screens in English, nothing left in French") {
     t.players = 2;
     t.capture = true;
     rig.show(makeRaidTest(g, t), 60);
+    t.zone = -1;  // the branch's armory (raid::RaidRun::kArmory): « Ce qu'il reste à faire » lists the other zones
+    rig.show(makeRaidTest(g, t), 60);
     const auto found = i18n::auditFindings();
     std::fprintf(stderr, "%s", describe(found, 60).c_str());
     CHECK(found.empty());

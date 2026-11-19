@@ -59,6 +59,12 @@
    ]
   },
   {
+   "fr": "(facultatif)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "(fermé le {0} après une migration)",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -6303,6 +6309,12 @@
    "fr": "auteur parti",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Authentification requise.",
+   "where": [
+    "server/src/http.ts"
    ]
   },
   {
@@ -14817,6 +14829,12 @@
    "fr": "Copie impossible.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "Copie interrompue.",
+   "where": [
+    "server/src/backups.ts"
    ]
   },
   {
@@ -51245,6 +51263,12 @@
    ]
   },
   {
+   "fr": "Pseudonyme disponible.",
+   "where": [
+    "server/src/auth.ts"
+   ]
+  },
+  {
    "fr": "Pseudonyme du compte cible",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -58808,6 +58832,12 @@
    ]
   },
   {
+   "fr": "Service temporairement indisponible.",
+   "where": [
+    "server/src/index.ts"
+   ]
+  },
+  {
    "fr": "Ses ailes arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_01.json",
@@ -58842,6 +58872,12 @@
    "fr": "Ses boutons servent dès qu'il prend une manette.",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ses charges ralentissent : Asterion chancelle.",
+   "where": [
+    "server/src/raidRewards.ts"
    ]
   },
   {
@@ -71839,6 +71875,12 @@
    ]
   },
   {
+   "fr": "zone à reprendre ({0} est tombé)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone à reprendre : {0} est tombé ici, finissez-la à sa place",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -72692,24 +72734,6 @@
    "fr": "{0} : zone {1} « {2} » inatteignable même tout accompli",
    "where": [
     "server/src/raidWorld.ts"
-   ]
-  },
-  {
-   "fr": "{0} : zone à reprendre ({1} est tombé)",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} : zone à reprendre ({1} est tombé) · {2}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "{0} : {1} (facultatif)",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

@@ -638,7 +638,8 @@ def extract_data(words, out):
 SERVER_FRENCH = re.compile(
     r"\b(le|la|les|du|des|une?|est|sont|pas|aucune?|introuvable|invalide|inconnue?|attendue?s?|obligatoire|impossible|interdit|"
     r"absente?|illisible|votre|vos|notre|nos|au|aux|ce|cette|ces|cet|qui|que|dans|avec|sans|pour|sur|ou|et|en|de|quelques|trop|"
-    r"joueurs?|niveaux?|clans?|raids?|zones?|fichiers?|ligne|liste|nom|temps|partie|version)\b", re.I)
+    r"joueurs?|niveaux?|clans?|raids?|zones?|fichiers?|ligne|liste|nom|temps|partie|version|ses|sa|son|requise|disponible|indisponible|"
+    r"interrompue)\b", re.I)
 SQL = re.compile(r"\b(SELECT|INSERT|UPDATE|DELETE FROM|LEFT JOIN|WHERE|CREATE TABLE)\b")
 
 

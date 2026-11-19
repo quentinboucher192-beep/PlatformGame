@@ -802,13 +802,22 @@ void auditEnglish(State& st, std::string_view source, std::string_view french, c
         if (!readsEnglish(a, french)) f.reason = "absent";
     } else if (out == french) {
         if (!st.english.exact(french) && !readsEnglish(a, french)) f.reason = "identique";
-    } else {
-        for (const std::string& p : parts)
-            if (!readsEnglish(a, p)) {
-                f.reason = "inséré";
-                f.part = p;
-                break;
+    } else if (!parts.empty() && !readsEnglish(a, out)) {
+        // A model applied but what it holds stayed French: the words of the translation that are not English.
+        f.reason = "inséré";
+        for (size_t i = 0; i < out.size();) {
+            if (!letterAt(out, i)) {
+                ++i;
+                continue;
             }
+            size_t j = i;
+            while (j < out.size())
+                if (size_t k = letterAt(out, j)) j += k;
+                else break;
+            const std::string_view w = std::string_view(out).substr(i, j - i);
+            if ((letterCount(w) >= 2 || hasAccent(w)) && !readsEnglish(a, w)) f.part += (f.part.empty() ? "" : " ") + std::string(w);
+            i = j;
+        }
     }
     if (f.reason.empty()) return;
     f.text = std::string(source);
