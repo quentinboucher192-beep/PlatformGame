@@ -645,7 +645,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   réanimation se fait en **maintenant « Interagir »** 2 s (relâcher interrompt) ; replays d'avant rejoués à l'identique
   ([docs/COOP.md §1](docs/COOP.md)).
 * **Vestiaire** : tablettes **en hauteur** sur leurs rebords, nom, icône et coût de chaque pouvoir au-dessus ; traverser
-  la salle au sol ne prend plus rien. Révision du titan **5**.
+  la salle au sol ne prend plus rien. Révision du titan **6**.
 
 **Nouveau dans la version 2.76.1** :
 * **Raids : plus aucune carte qui bloque le joueur.** Une zone terminée, le groupe éliminé, une zone reprise par un

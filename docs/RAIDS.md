@@ -1314,9 +1314,9 @@ regardés (×1, ou **×2 / ×4 « accéléré »**, dit dans la ligne du test).
 | Mesure (Release, une machine de 4 cœurs partagée, sans affichage) | Résultat |
 |---|---|
 | Graphe d'une zone, construit une fois par zone et par état de ses portes | Épaule : 169 places, 705 liaisons en **0,4 ms** ; Poignet-verrou (la plus grande) : 1 845 places, 17 960 liaisons en **14 à 19 ms** |
-| Un groupe de 8 places (7 joueurs simulés + la place libre), monde et IA, combat de Pyroclast | 65 675 pas en 2,7 s : **0,04 ms par pas** |
-| 7 groupes de 7, du vestiaire à leur première zone (tous sortis en 15 s de jeu), puis 30 s de combats | pas du raid (les 7 mondes) : **0,24 ms** en moyenne, 9,1 ms au pire ; puis **0,10 ms**, 10,5 ms au pire |
-| Raid complet du test (7 groupes de 8 places, des antres à la chute du Cœur : 998 s de jeu, 838 341 pas de mondes) | **0,35 ms** par pas du raid en moyenne, **126 ms** au pire (plusieurs groupes qui changent de zone au même pas : mondes chargés, graphes construits) |
+| Un groupe de 8 places (7 joueurs simulés + la place libre), monde et IA, combat de Pyroclast | 65 675 pas en 1,6 à 2,7 s : **0,02 à 0,04 ms par pas** |
+| 7 groupes de 7, du vestiaire à leur première zone (tous sortis en 15 s de jeu), puis 30 s de combats | pas du raid (les 7 mondes) : **0,24 à 0,28 ms** en moyenne, 9 ms au pire ; puis **0,10 ms**, 10,5 ms au pire |
+| Raid complet du test (7 groupes de 8 places, des antres à la chute du Cœur : 996 s de jeu, 836 297 pas de mondes) | **0,15 à 0,35 ms** par pas du raid en moyenne, **109 à 126 ms** au pire (plusieurs groupes qui changent de zone au même pas : mondes chargés, graphes construits) |
 
 À 120 pas par seconde, un raid de 7 groupes coûte donc environ **0,7 ms par image** (60 images par seconde) ; en « ×4
 accéléré », les 6 groupes non regardés font 4 pas chacun : environ **2,5 ms par image**. Les pointes (un changement de zone
@@ -1354,7 +1354,7 @@ est déjà prise : elle garde son pouvoir pour tous).
 
 ### Versions
 
-Les règles d'une partie de raid changent (âmes, réanimation, vestiaire) : `TITAN_REVISION` passe à **5** (une instance ne
+Les règles d'une partie de raid changent (âmes, réanimation, vestiaire) : `TITAN_REVISION` passe à **6** (une instance ne
 réunit que des jeux aux mêmes règles), `titan.json` et `server/src/raidTitan.json` régénérés ; les empreintes de référence
 des raids et de la coopération 3 sont mises à jour. Tests : `tests/test_raid_bots.cpp` (graphe, zones finies par les
 joueurs simulés seuls — embuscade, gardien, générateur, plaque du vestiaire, Pyroclast depuis sa phase 2 (joueurs simulés
@@ -1363,7 +1363,7 @@ rapport (configuration réduite : chaque branche depuis son antre, les Gigaboss 
 phase 4 — la vie que ce départ retire n'est pas comptée comme des dégâts : seul ce que les groupes ôtent ensuite est partagé —,
 7 joueurs simulés Experts et invincibles par groupe, Titanus, Skullmaw et Dreadfang donnés comme vaincus par d'autres
 groupes ; les vraies zones, les vrais combats : Heartbreaker, Pyroclast, Voidworm et Graviton tombent sous les joueurs
-simulés, puis le Cœur sous les 7 groupes ensemble, en 998 s de jeu), place libre et spectateur, âme et
+simulés, puis le Cœur sous les groupes ensemble, en 996 s de jeu), place libre et spectateur, âme et
 réanimation tenue, vestiaire traversé sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 
