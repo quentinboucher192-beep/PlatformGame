@@ -199,6 +199,7 @@ std::string prizeConditionText(const ChallengePrize& p) {
 
 std::string wonOriginText(const WonReward& w) {
     if (w.challengeId.rfind("raid:", 0) == 0) return "Raid de clan Asterion";  // 2.68: a raid's reward claimed
+    if (w.challengeId.rfind("gift:", 0) == 0) return "Cadeau d'un administrateur";  // COSMIC ONLINE › CADEAUX, opened
     if (w.challengeKind == "weekly") return "Défi de la semaine " + std::to_string(w.period.size() > 6 ? std::atoi(w.period.c_str() + 6) : 0);
     if (w.challengeKind == "monthly") {
         static const char* const kMonths[12] = {"janvier", "février", "mars",      "avril",   "mai",      "juin",

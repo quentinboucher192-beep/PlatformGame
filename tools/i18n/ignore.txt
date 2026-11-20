@@ -341,3 +341,9 @@ raids
 {0}|s{1}|c{2}|t{3}
 films
 own
+# Identifiants des emballages des cadeaux (server/src/gifts.ts GIFT_WRAPS), jamais montrés
+azur
+braise
+cosmos
+givre
+rouage

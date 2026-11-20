@@ -78,6 +78,7 @@
    "ui/screens/ChallengeRewardsUi.cpp": 1,
    "ui/screens/CollectionScene.cpp": 1,
    "ui/screens/CoopLobbyScene.cpp": 1,
+   "ui/screens/GiftArt.cpp": 1,
    "ui/screens/PlayerProfileScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 1,
@@ -541,8 +542,17 @@
    "game/enemies/PhoenixAttacks.cpp": 1,
    "game/raid/SkullmawRoutine.cpp": 1
   },
+  "sounds/story_egg_crack.wav": {
+   "ui/screens/GiftsScene.cpp": 1
+  },
   "sounds/story_heartbeat.wav": {
    "game/raid/HeartbreakerRoutine.cpp": 1
+  },
+  "sounds/story_sing.wav": {
+   "ui/screens/GiftsScene.cpp": 1
+  },
+  "sounds/story_stone.wav": {
+   "ui/screens/GiftsScene.cpp": 1
   },
   "sounds/summon.wav": {
    "game/enemies/Enemy.cpp": 1,
@@ -582,11 +592,13 @@
    "editors/enemy_editor/EnemyEditorParts.cpp": 1,
    "editors/enemy_editor/EnemyEditorScene.cpp": 2,
    "editors/level_editor/LevelEditorPowerKeys.cpp": 1,
+   "ui/screens/AdminGifts.cpp": 1,
    "ui/screens/BossStoryScene.cpp": 3,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/CollectionScene.cpp": 3,
    "ui/screens/CoopLobbyScene.cpp": 2,
    "ui/screens/GhostSetupScene.cpp": 1,
+   "ui/screens/GiftsScene.cpp": 2,
    "ui/screens/LevelPowerKeysScene.cpp": 4,
    "ui/screens/OnlineRankingScene.cpp": 2,
    "ui/screens/PauseScene.cpp": 1,
@@ -605,6 +617,7 @@
    "ui/screens/ContentManagerScene.cpp": 2,
    "ui/screens/DownloadedReplaysUi.cpp": 1,
    "ui/screens/GhostSetupScene.cpp": 1,
+   "ui/screens/GiftsScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 2
   },
   "sounds/ui_move.wav": {
@@ -834,6 +847,9 @@
   },
   "ui/films/trailer.png": {
    "ui/screens/FilmCatalog.cpp": 1
+  },
+  "ui/gifts/wraps.png": {
+   "game/online/Gifts.h": 1
   },
   "ui/glyphs/generic.png": {
    "packaging/DependencyCollector.cpp": 1,

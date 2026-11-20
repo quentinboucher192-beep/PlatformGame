@@ -1820,6 +1820,26 @@ Récompenses d'un défi (`PUT /admin/challenges/{id}/rewards`) : `kind` `trail`,
 … }`. 2.60 : chaque récompense de `GET /players/me/rewards` dit aussi par quelle règle de son défi
 elle a été gagnée (`condition` `tier` / `top` / `finished`, `value` ; `null` si inconnue). Les classements donnent `player.frame` (`srvframe:<n>` pour un cadre créé) et
 `player.trail` (la traînée, dessinée derrière le fantôme).
+### 8.10 sexies Cadeaux
+
+Un administrateur offre des récompenses du catalogue réel à des joueurs ([COLLECTION.md](../COLLECTION.md#cadeaux),
+`src/gifts.ts`, migration `0205_gifts`). Une récompense est `{kind, id}` : `kind` `suit`, `trail`, `frame`,
+`title` ou `victory` (un élément de `src/cosmeticCatalog.json` dans sa catégorie, jamais l'élément de base), ou
+`badge` (un succès que le serveur accorde : les badges des raids, `RAID_ACHIEVEMENTS`). Emballages : `or`,
+`amethyste`, `azur`, `rubis`, `emeraude`, `nebuleuse`, `givre`, `braise`, `cosmos`, `rouage`, `asterion`.
+
+| Méthode | Route | Rôle |
+|---|---|---|
+| GET | `/admin/gifts/players?filter=online\|all\|clan\|ids&q=&ids=&rewards=kind:id,…` | admin : les joueurs à choisir (en ligne, tous, le clan de l'admin, ceux donnés), chacun avec `owned` et `pending` (les récompenses demandées qu'il possède déjà ou qui l'attendent dans un cadeau) |
+| POST | `/admin/gifts` | admin : `{rewards [{kind, id}] (1 à 12), players [ids] (1 à 100), wrap, message?}` → `201 {send, created, skipped [{player_id, username, reward, reason: owned\|pending}]}` ; un joueur qui possède déjà une récompense (selon ce que le serveur compte : succès déclarés, défis vérifiés, récompenses gagnées, badges récupérés) ou l'a déjà en attente est ignoré ; `409 NOTHING_TO_SEND` si tout l'est ; `404 PLAYER_NOT_FOUND` (compte inconnu ou inactif). Message : caractères de contrôle et de direction retirés, espaces des bords enlevés, 140 caractères au plus. Notification `gift` à chaque destinataire (fusionnée tant qu'elle n'est pas lue : son compte est le nombre de cadeaux). Journal : `admin_gift_sent`. Limites `admin_write` et `gift_send` (20 envois par heure) |
+| GET | `/admin/gifts?limit=&offset=` | admin : les envois, du plus récent : `{sends [{id, at, sender, wrap, message, rewards, recipients, names, total, opened, cancelled, waiting}], has_more}` |
+| POST | `/admin/gifts/{sendId}/cancel` | admin : retire les cadeaux de l'envoi qui ne sont pas encore ouverts (les autres restent) → `{cancelled, send}` ; Journal : `admin_gift_cancelled` |
+| GET | `/gifts/me` | les cadeaux du joueur de la session (jamais les retirés) : `{gifts [{id, from {id, username}, wrap, message, created_at, opened, opened_at, reward}], unopened, total}` ; `reward` (`{kind, id, name}`) vaut `null` tant que le cadeau n'est pas ouvert |
+| POST | `/gifts/{giftId}/open` | ouvre un de ses cadeaux et **accorde** ce qu'il contient : un objet dans `player_won_rewards` (`challenge_id` « gift:<id> », lu par `GET /players/me/rewards` et par la tenue en ligne), un badge comme récompense de raid récupérée (`raid_reward_grants`, événement « gift:<id> » : son succès peut alors être déclaré). Idempotent : `{gift, opened_now, raid_rewards_claimed}` ; un cadeau retiré ou d'un autre joueur : `404 GIFT_NOT_FOUND`. Limite `gift_open` |
+
+Le Journal (`GET /admin/log?kind=gift`) donne pour ces actions `gift: {send_id, rewards [{kind, id, name}], wrap,
+recipients, gifts, skipped?, cancelled?, names?}`.
+
 ### 8.10 ter Entités natives modifiées par un admin (2.46)
 
 Détails et routes : [ENEMY_REVISIONS.md](ENEMY_REVISIONS.md). Admin : `GET /admin/enemies`,

@@ -12,6 +12,7 @@
 #include "game/GameServices.h"
 #include "game/tutorial/Tutorial.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/GiftArt.h"
 #include "ui/screens/BossStoryScene.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/CoopGameScene.h"
@@ -187,6 +188,7 @@ public:
         }
         if (!ui.focused("quit")) confirmQuit_ = false;
         drawUpdateAlert(side);
+        drawGiftAlert(side);
         ui.popId();
 
         // Footer
@@ -285,6 +287,38 @@ private:
         } else {
             g_.updates.download(*it, true);
         }
+    }
+
+    /// Gifts waiting to be opened (COSMIC ONLINE › CADEAUX): an alert above the update's, leading there.
+    void drawGiftAlert(const Rect& side) {
+        const int n = g_.online.giftsUnopened();
+        if (n <= 0) return;
+        UIContext& ui = g_.ui;
+        const float fy = ui.screenH() - ui.s(44), h = ui.s(76);
+        const float left = side.right() + ui.s(40);
+        const float w = std::min(ui.s(640), ui.screenW() - ui.s(40) - left);
+        if (w < ui.s(320)) return;
+        float bottom = fy - ui.s(30);
+        if (g_.updates.offer()) bottom -= ui.s(76) + ui.s(14);  // the update's alert keeps its place
+        const Rect r{left + (ui.screenW() - ui.s(40) - left - w) * 0.5f, bottom - h, w, h};
+        UIContext::ButtonStyle bs;
+        const bool clicked = ui.button("gifts", r, "", bs);
+        std::string wrap = "or";
+        for (const auto& x : g_.online.myGifts())
+            if (!x.opened) {
+                wrap = x.wrap;
+                break;
+            }
+        const Rect icon{r.x + ui.s(12), r.y + ui.s(6), h - ui.s(12), h - ui.s(12)};
+        giftart::drawWrapIcon(g_, wrap, icon, t_, 0.0f);
+        const float tx = icon.right() + ui.s(14), room = r.right() - ui.s(18) - tx;
+        const std::string head = "Vous avez reçu " + std::to_string(n) + (n > 1 ? " cadeaux" : " cadeau");
+        const std::string line = "COSMIC ONLINE › CADEAUX : ouvrez-les quand vous voulez.";
+        ui.label(ui.elide(head, FontFace::Bold, ui.fitFont(head, FontFace::Bold, 22, room, 0.6f), room), {tx, r.y + r.h * 0.32f},
+                 ui.fitFont(head, FontFace::Bold, 22, room, 0.6f), ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
+        const float f2 = ui.fitFont(line, FontFace::Body, 16, room, 0.6f);
+        ui.label(ui.elide(line, FontFace::Body, f2, room), {tx, r.y + r.h * 0.70f}, f2, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (clicked) g_.app.switchScene(makeGifts(g_), 0.3f);
     }
 
     /// « Défis »: the countdown of the challenge of the day, or a short state.

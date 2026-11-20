@@ -448,6 +448,12 @@
    ]
   },
   {
+   "fr": "1 · Les récompenses",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "1 à {0} caractères",
    "where": [
     "server/src/social.ts"
@@ -598,6 +604,12 @@
    ]
   },
   {
+   "fr": "2 · Les joueurs",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "2 à 5 lettres ou chiffres",
    "where": [
     "server/src/clans.ts"
@@ -637,6 +649,12 @@
    "fr": "24 heures",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "3 · Message et envoi",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -1016,6 +1034,42 @@
    ]
   },
   {
+   "fr": "a envoyé {0} cadeau ({1}) à {2}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a envoyé {0} cadeau ({1}) à {2} · {3} ignoré",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a envoyé {0} cadeau ({1}) à {2} · {3} ignorés",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a envoyé {0} cadeaux ({1}) à {2}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a envoyé {0} cadeaux ({1}) à {2} · {3} ignoré",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a envoyé {0} cadeaux ({1}) à {2} · {3} ignorés",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a fait une sauvegarde complète avant une migration ({0})",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -1179,6 +1233,18 @@
   },
   {
    "fr": "a retiré les récompenses du défi {0}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a retiré {0} cadeau non ouvert ({1})",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a retiré {0} cadeaux non ouverts ({1})",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -2195,6 +2261,7 @@
   {
    "fr": "Afficher plus",
    "where": [
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -2680,7 +2747,8 @@
   {
    "fr": "Améthyste",
    "where": [
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -2961,6 +3029,7 @@
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminClans.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -3235,6 +3304,12 @@
    "fr": "Aperçu de l'asset choisi : image sur damier, animation qui défile (clip, images par seconde), son et musique à l'écoute (la musique du menu attend, puis reprend), police et texte ; taille, dimensions, images et clips, durée.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Aperçu de l'ouverture",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -4020,6 +4095,7 @@
    "fr": "Asterion",
    "where": [
     "game/content/AssetCatalog.cpp",
+    "game/online/Gifts.cpp",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
     "ui/screens/AdminRaids.cpp",
@@ -5461,6 +5537,18 @@
    ]
   },
   {
+   "fr": "Aucun cadeau ici pour l'instant.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun cadeau à ouvrir pour l'instant.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun cadre créé pour l'instant : « Nouveau cadre » pour commencer.",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -5630,6 +5718,12 @@
    ]
   },
   {
+   "fr": "Aucun envoi pour l'instant.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "Aucun essai classé pour l'instant : allez le plus loin possible !",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -5708,6 +5802,12 @@
    ]
   },
   {
+   "fr": "Aucun joueur choisi : cochez-en dans « En ligne » ou « Tous ».",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur classé : aucun tableau de contributions n'a encore été validé.",
    "where": [
     "ui/screens/RaidResultsScene.cpp",
@@ -5756,6 +5856,12 @@
    "fr": "Aucun joueur trouvé",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun joueur trouvé.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -7206,6 +7312,7 @@
     "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/CollectionScene.cpp",
+    "ui/screens/GiftArt.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
@@ -7406,7 +7513,8 @@
   {
    "fr": "Azur",
    "where": [
-    "data/enemies/monolithe.json"
+    "data/enemies/monolithe.json",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -7465,6 +7573,12 @@
    "fr": "Badge : {0}",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badge de profil",
+   "where": [
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -7567,6 +7681,12 @@
    "fr": "Badges du profil : dès 100 étoiles, choisissez 2 succès à afficher sur votre profil Cosmic Online (3 dès 250 étoiles), dans Collection › Vestiaire › Badges du profil.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Badges du profil complets",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -8846,7 +8966,8 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/pyrrhax.json",
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -9598,6 +9719,74 @@
    ]
   },
   {
+   "fr": "Cadeau",
+   "where": [
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cadeau d'un administrateur",
+   "where": [
+    "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Cadeau de {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cadeau introuvable (il a peut-être été retiré).",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "Cadeau introuvable.",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "Cadeau reçu d'un administrateur (COSMIC ONLINE › CADEAUX)",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "cadeau suivant",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cadeau suivant ({0})",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cadeau · emballage {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "CADEAUX",
+   "where": [
+    "ui/screens/OnlineNav.cpp"
+   ]
+  },
+  {
+   "fr": "Cadeaux",
+   "where": [
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Cadre",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
@@ -9633,7 +9822,8 @@
   {
    "fr": "Cadre d'avatar",
    "where": [
-    "game/cosmetics/Collection.cpp"
+    "game/cosmetics/Collection.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -11422,6 +11612,12 @@
    ]
   },
   {
+   "fr": "Cent joueurs au plus par envoi.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "Cent phases de boss battues sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -11470,6 +11666,12 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "game/cosmetics/CreationLooks.cpp"
+   ]
+  },
+  {
+   "fr": "Ces cadeaux étaient déjà ouverts.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -12178,6 +12380,12 @@
    ]
   },
   {
+   "fr": "Chaque joueur choisi possède déjà ces récompenses.",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "Chaque joueur debout sur un miroir à l'éclair de son regard compte un mécanisme.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -12571,6 +12779,7 @@
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminEnemies.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -12942,6 +13151,18 @@
    "fr": "choisis",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Choisis ({0})",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez au moins une récompense et un joueur.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -13448,6 +13669,12 @@
    ]
   },
   {
+   "fr": "Clan [{0}]",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "Clan inscrit : ses membres sont prévenus et s'inscrivent eux-mêmes.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -13836,6 +14063,12 @@
    "fr": "Claviers AZERTY et QWERTY : les touches sont gardées par leur place sur le clavier et affichées avec le nom que leur donne votre clavier (ZQSD sur AZERTY, WASD sur QWERTY), partout, y compris dans les aides du mode concentré, de l'entraînement et de l'éditeur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Clic / Entrée : passer l'animation",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -14479,6 +14712,7 @@
    "fr": "Combinaison",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "game/online/Gifts.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaidRecapScene.cpp",
@@ -15249,6 +15483,7 @@
   {
    "fr": "Confirmer",
    "where": [
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp"
    ]
@@ -15478,6 +15713,12 @@
    "fr": "Connectez-vous à Cosmic Online pour préparer une migration.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour recevoir et ouvrir les cadeaux des administrateurs.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -15836,6 +16077,18 @@
    "where": [
     "game/records/PlayStatsRecorder.cpp",
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Contenu : surprise",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Contenu : surprise · {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -16377,6 +16630,7 @@
    "fr": "COSMIC ONLINE",
    "where": [
     "ui/screens/ClanScene.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/ProjectsScene.cpp",
@@ -16387,6 +16641,7 @@
    "fr": "Cosmic Online",
    "where": [
     "data/trailer/trailer.json",
+    "game/online/Gifts.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineSession.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -16491,6 +16746,12 @@
    ]
   },
   {
+   "fr": "COSMIC ONLINE › CADEAUX : ouvrez-les quand vous voulez.",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
    "fr": "Cosmic Platformer",
    "where": [
     "data/levels/glacior_03.json",
@@ -16513,6 +16774,12 @@
     "data/levels/glacior_03.json",
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cosmos",
+   "where": [
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -18816,9 +19083,39 @@
    ]
   },
   {
+   "fr": "De {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "De {0} (En ligne → SOCIAL).",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} · ajouté à votre collection",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} · ce que verront les joueurs",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} · {1}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} · {1} · ajouté à votre collection",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -19235,6 +19532,12 @@
    "fr": "Derniers débris",
    "where": [
     "data/enemies/graviton.json"
+   ]
+  },
+  {
+   "fr": "Derniers envois",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -20371,6 +20674,7 @@
   {
    "fr": "doit être une chaîne",
    "where": [
+    "server/src/gifts.ts",
     "server/src/validate.ts"
    ]
   },
@@ -20652,6 +20956,12 @@
    "fr": "Double saut au-dessus du vide",
    "where": [
     "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Douze récompenses au plus par envoi.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -22892,6 +23202,7 @@
    "fr": "Effet de victoire",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "game/online/Gifts.cpp",
     "ui/screens/RaidRecapScene.cpp",
     "ui/studio/StudioDoc.cpp"
    ]
@@ -23138,6 +23449,18 @@
    "fr": "Ellipse",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Emballage {0} · aucun doublon",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Emballage · 11 au choix",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -23651,6 +23974,7 @@
     "game/content/AssetCatalog.cpp",
     "game/online/OnlineTypes.cpp",
     "ui/online/OnlineWidgets.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
@@ -25034,6 +25358,12 @@
    ]
   },
   {
+   "fr": "Envoi introuvable.",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "Envoi · {0}",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -25066,6 +25396,7 @@
    "fr": "Envoyer",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -25104,6 +25435,18 @@
    "fr": "Envoyer une demande",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyer {0}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyer {0} ?",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -26113,6 +26456,12 @@
    ]
   },
   {
+   "fr": "fermer",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Fermer la valve basse (un autre groupe)",
    "where": [
     "data/raids/asterion/abdomen/branch.json"
@@ -26729,6 +27078,12 @@
    "fr": "Films d'Asterion",
    "where": [
     "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "filtre",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -27795,6 +28150,7 @@
   {
    "fr": "G",
    "where": [
+    "ui/screens/NotificationsScene.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -28833,7 +29189,8 @@
    "fr": "Givre",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "game/gameplay/BeamRenderer.cpp"
+    "game/gameplay/BeamRenderer.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -30659,6 +31016,12 @@
    ]
   },
   {
+   "fr": "Hors ligne : le cadeau vous attend, il s'ouvrira une fois connecté.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Hors ligne : liste en cache",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -30916,6 +31279,7 @@
     "game/online/DeviceIdentity.cpp",
     "game/online/DeviceIdentity.h",
     "game/online/EnemyRevisions.cpp",
+    "game/online/Gifts.cpp",
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
@@ -30937,6 +31301,7 @@
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ChallengeUi.cpp",
@@ -31082,6 +31447,12 @@
    ]
   },
   {
+   "fr": "identifiants de joueurs attendus",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "identifiants de succès attendus",
    "where": [
     "server/src/badges.ts"
@@ -31149,6 +31520,12 @@
    "fr": "Ignorer les cases vides",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Ignoré :",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -33289,6 +33666,12 @@
    ]
   },
   {
+   "fr": "Joueur introuvable ou compte inactif.",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "Joueur introuvable.",
    "where": [
     "server/src/adminRoles.ts",
@@ -33987,6 +34370,12 @@
    "fr": "L'ASTRARQUE",
    "where": [
     "data/enemies/astrarque.json"
+   ]
+  },
+  {
+   "fr": "l'attend déjà : {0}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -36581,6 +36970,12 @@
    "fr": "Le Bras gauche est tombé : plus de balayages des artères dans l'arène du Cœur",
    "where": [
     "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "Le cadeau n'a pas pu être ouvert.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -39392,6 +39787,12 @@
    ]
   },
   {
+   "fr": "Lecture des cadeaux…",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Lecture des chiffres en direct…",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -41603,6 +42004,18 @@
    ]
   },
   {
+   "fr": "liste de 1 à {0} joueurs attendue",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "liste de 1 à {0} récompenses attendue",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "liste de 1000 identifiants au plus",
    "where": [
     "server/src/achievements.ts"
@@ -43280,6 +43693,18 @@
    ]
   },
   {
+   "fr": "MES CADEAUX",
+   "where": [
+    "ui/screens/GiftsUi.cpp"
+   ]
+  },
+  {
+   "fr": "mes cadeaux",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Mes créations",
    "where": [
     "game/content/ContentDatabase.cpp"
@@ -43336,12 +43761,14 @@
     "game/levels/CampaignPipeline.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/Clans.cpp",
+    "game/online/Gifts.cpp",
     "game/online/OnlineService.cpp",
     "game/online/OnlineTypes.cpp",
     "game/raid/RaidBranch.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/ProjectsScene.cpp",
@@ -43364,6 +43791,12 @@
    "fr": "Message introuvable.",
    "where": [
     "server/src/social.ts"
+   ]
+  },
+  {
+   "fr": "Message joint au cadeau (facultatif)",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -47356,7 +47789,8 @@
    "where": [
     "data/cosmetics/cosmetics.json",
     "data/enemies/phenix.json",
-    "game/cosmetics/CreationLooks.cpp"
+    "game/cosmetics/CreationLooks.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -48299,6 +48733,7 @@
     "game/levels/LevelData.cpp",
     "game/online/Clans.cpp",
     "game/online/DailyChallenges.cpp",
+    "game/online/Gifts.cpp",
     "saves/Settings.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
@@ -48308,7 +48743,10 @@
   {
    "fr": "or",
    "where": [
-    "game/progression/NewsCenter.cpp"
+    "game/online/Gifts.cpp",
+    "game/progression/NewsCenter.cpp",
+    "ui/screens/AdminGifts.h",
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -48634,6 +49072,12 @@
    ]
   },
   {
+   "fr": "Ouvert",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "ouvert",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -48683,6 +49127,12 @@
    ]
   },
   {
+   "fr": "Ouverts",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouverture",
    "where": [
     "editors/shared/EditorHistory.h",
@@ -48693,6 +49143,12 @@
    "fr": "Ouverture (°)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Ouverture du cadeau…",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -48729,6 +49185,12 @@
    "fr": "Ouvrez une création d'abord.",
    "where": [
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "ouvrir",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -48777,6 +49239,12 @@
    "fr": "Ouvrir la session",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir le cadeau",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -49904,6 +50372,12 @@
    "fr": "Pas de lieu sûr ici : choisissez sur une ligne verte.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Pas de message.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -52835,6 +53309,7 @@
   {
    "fr": "Plus tard",
    "where": [
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
     "ui/screens/RewardsScene.cpp"
    ]
@@ -52842,6 +53317,7 @@
   {
    "fr": "plus tard",
    "where": [
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/RewardsScene.cpp"
    ]
   },
@@ -53611,6 +54087,18 @@
    "fr": "Positions approximatives : centre du pays, jamais plus précis. Seuls sont comptés les joueurs qui ont choisi d'apparaître sur le globe avec un profil public ; aucun nom n'est transmis.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "possède déjà {0}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "possède déjà {0} (+{1})",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -55749,6 +56237,12 @@
    ]
   },
   {
+   "fr": "Que contient-il ?",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Quelle chaleur ! Le signal vient du fond des forges. Restons loin de la lave.",
    "where": [
     "data/levels/pyralis_01.json"
@@ -57290,6 +57784,7 @@
   {
    "fr": "Rechercher un pseudonyme…",
    "where": [
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
   },
@@ -59320,6 +59815,7 @@
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminAssets.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/SocialScene.cpp"
@@ -59440,6 +59936,12 @@
    ]
   },
   {
+   "fr": "Retirez d'abord un badge du profil (Collection › Badges du profil).",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Retiré de vos favoris.",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -59465,6 +59967,7 @@
     "ui/screens/ClanScene.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
     "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
@@ -59478,6 +59981,12 @@
     "ui/screens/SpectateScene.cpp",
     "ui/screens/StatisticsScene.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "retour",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -59606,6 +60115,12 @@
    "fr": "Retour à l'entraînement",
    "where": [
     "ui/screens/PauseScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retour à l'envoi",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -59759,6 +60274,12 @@
    "where": [
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revoir l'ouverture",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -60125,6 +60646,12 @@
    ]
   },
   {
+   "fr": "Rouage",
+   "where": [
+    "game/online/Gifts.cpp"
+   ]
+  },
+  {
    "fr": "Rouage primordial",
    "where": [
     "data/levels/pyralis_03.json"
@@ -60224,7 +60751,8 @@
   {
    "fr": "Rubis",
    "where": [
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -60691,6 +61219,7 @@
   {
    "fr": "Récompense",
    "where": [
+    "game/online/Gifts.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
   },
@@ -60776,6 +61305,12 @@
    "fr": "Récompense gagnée à un défi",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "récompense inconnue du catalogue : {0}:{1}",
+   "where": [
+    "server/src/gifts.ts"
    ]
   },
   {
@@ -61165,6 +61700,12 @@
    "fr": "Réponse envoyée au serveur…",
    "where": [
     "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réponse inattendue de Cosmic Online.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -62888,6 +63429,7 @@
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/OnlineRankingScene.cpp"
    ]
@@ -69405,6 +69947,7 @@
    "fr": "Titre",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "game/online/Gifts.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
@@ -69683,6 +70226,7 @@
     "game/online/RaidReviews.cpp",
     "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminClans.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
@@ -69922,8 +70466,10 @@
   {
    "fr": "Tous",
    "where": [
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/FilmCatalog.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -70743,6 +71289,7 @@
    "fr": "Traînée",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "game/online/Gifts.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/studio/StudioDoc.cpp"
    ]
@@ -75885,6 +76432,13 @@
    ]
   },
   {
+   "fr": "Voir mes cadeaux",
+   "where": [
+    "ui/screens/GiftsScene.cpp",
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Vol",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
@@ -76631,6 +77185,19 @@
    "fr": "Vous avez quitté le projet.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous avez reçu {0} cadeau",
+   "where": [
+    "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous avez reçu {0} cadeaux",
+   "where": [
+    "server/src/notifications.ts",
+    "ui/screens/MainMenuScene.cpp"
    ]
   },
   {
@@ -77513,7 +78080,8 @@
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
-    "engine/input/InputTypes.cpp"
+    "engine/input/InputTypes.cpp",
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -79342,6 +79910,42 @@
    ]
   },
   {
+   "fr": "{0} cadeau",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cadeau envoyé",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cadeau retiré",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cadeaux",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cadeaux envoyés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} cadeaux retirés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} candidature · {1} invitation envoyée",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -79368,7 +79972,8 @@
   {
    "fr": "{0} caractères au plus",
    "where": [
-    "server/src/clans.ts"
+    "server/src/clans.ts",
+    "server/src/gifts.ts"
    ]
   },
   {
@@ -80125,6 +80730,18 @@
    ]
   },
   {
+   "fr": "{0} ignoré",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ignorés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} images",
    "where": [
     "ui/screens/AdminAssets.cpp",
@@ -80289,7 +80906,9 @@
    "fr": "{0} joueur",
    "where": [
     "game/online/RaidRecap.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminRaids.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -80365,7 +80984,9 @@
    "where": [
     "game/online/RaidRecap.cpp",
     "game/raid/RaidSheets.cpp",
+    "ui/screens/AdminGifts.cpp",
     "ui/screens/AdminRaids.cpp",
+    "ui/screens/AdminScene.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidRecapScene.cpp",
     "ui/screens/SocialScene.cpp",
@@ -80489,6 +81110,12 @@
    "fr": "{0} Ko au plus",
    "where": [
     "server/src/devices.ts"
+   ]
+  },
+  {
+   "fr": "{0} l'attend déjà : {1}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -81025,6 +81652,12 @@
    ]
   },
   {
+   "fr": "{0} possède déjà {1}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} pour tout le niveau, pleins au départ ; les cœurs de cristal du niveau ne donnent rien.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -81175,9 +81808,21 @@
    ]
   },
   {
+   "fr": "{0} retiré",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} retiré de la liste.",
    "where": [
     "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "{0} retirés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -81255,9 +81900,21 @@
    ]
   },
   {
+   "fr": "{0} récompense",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} récompense débloquée",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "{0} récompenses",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -81681,6 +82338,12 @@
    ]
   },
   {
+   "fr": "{0} vous a envoyé un cadeau",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "{0} vous a mentionné dans {1}",
    "where": [
     "server/src/notifications.ts"
@@ -81771,6 +82434,12 @@
    ]
   },
   {
+   "fr": "{0} · aperçu",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · aucune équipe classée",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -81813,6 +82482,18 @@
    ]
   },
   {
+   "fr": "{0} · de {1}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · de {1} · {2}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · difficulté {1} / 10",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -81840,6 +82521,12 @@
    "fr": "{0} · image {1} / {2}",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · inscrit au Journal",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -81882,6 +82569,18 @@
    "fr": "{0} · n°{1} mondial",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · ouverts {1} / {2}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · ouverts {1} / {2} · {3}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -82114,6 +82813,12 @@
    ]
   },
   {
+   "fr": "{0} · {1} · inscrit au Journal",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} · {1} · phase {2} / 3",
    "where": [
     "game/online/Raids.cpp"
@@ -82197,6 +82902,18 @@
    "fr": "{0} × {1} px · {2}",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "{0} à ouvrir · {1} reçu",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} à ouvrir · {1} reçus",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -83142,6 +83859,12 @@
    "fr": "à obtenir",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "À ouvrir",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -84444,7 +85167,8 @@
    "fr": "Émeraude",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "game/online/Clans.cpp"
+    "game/online/Clans.cpp",
+    "game/online/Gifts.cpp"
    ]
   },
   {
@@ -84652,7 +85376,14 @@
    "fr": "Équiper",
    "where": [
     "ui/screens/CollectionScene.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/RewardsScene.cpp"
+   ]
+  },
+  {
+   "fr": "équiper",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -84668,6 +85399,12 @@
    ]
   },
   {
+   "fr": "Équiper maintenant",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Équiper une récompense de la Collection.",
    "where": [
     "data/achievements/achievements.json"
@@ -84676,7 +85413,8 @@
   {
    "fr": "Équipé",
    "where": [
-    "ui/screens/CollectionScene.cpp"
+    "ui/screens/CollectionScene.cpp",
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
