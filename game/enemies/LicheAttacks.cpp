@@ -337,13 +337,13 @@ void Enemy::licheStart(GameWorld& w) {
                 r.glyph = static_cast<int>(k) * 5 + patternIndex_;
                 w.hazards().addRune(r);
             }
-            playClip(a.attackAnim, true);
+            playClip(attackClip(a, false), true);
             w.playSound("sounds/summon.wav", box.center(), 0.7f, 1.3f);
             break;
         }
         case AttackType::Hex:
             // The circle closes during the active time; the curse falls at its end (licheEnd).
-            playClip(a.attackAnim, true);
+            playClip(attackClip(a, false), true);
             w.playSound("sounds/eclipse_ring.wav", markPos_, 0.8f, 0.8f);
             break;
         default: break;

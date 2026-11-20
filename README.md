@@ -655,6 +655,8 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   au contact, avec ses dégâts de contact : la forme précise de son image, plus sa boîte. Ses parties rouges frappent en
   plus pendant leurs attaques, avec les dégâts de l'attaque. Point faible × 2 et blindé × 0,5 ne changent pas. Les
   replays de Pyrrhax de la 2.76.0 gardent leur règle (seules ses parties rouges blessaient).
+* **Pyrrhax pique les ailes repliées** : son piqué tient dans le couloir annoncé, à sa vraie largeur, et s'esquive en
+  courant hors de ce couloir.
 * **Raids** : les 8 Gigaboss d'Asterion se battent **par parties** (version de simulation **17**) : leurs points
   faibles dessinés × 2, leurs parties blindées × 0,5, tout leur corps blesse au contact et leurs griffes, mâchoires ou épines frappent pendant leurs attaques
   ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).

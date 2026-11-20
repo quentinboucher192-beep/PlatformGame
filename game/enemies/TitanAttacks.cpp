@@ -452,7 +452,7 @@ void Enemy::titanBegin(GameWorld& w) {
 void Enemy::titanStart(GameWorld& w) {
     const AttackDef& a = *attack_;
     attackClock_ = 0.0f;
-    playClip(a.attackAnim, true);
+    playClip(attackClip(a, false), true);
     switch (a.type) {
         case AttackType::Press: {
             // Each press of each round shows where it will stamp, then falls.

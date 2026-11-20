@@ -13,6 +13,7 @@
 #include "engine/physics/Collision.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/enemies/Enemy.h"
+#include "game/enemies/HitParts.h"
 #include "game/gameplay/GameWorld.h"
 
 namespace cosmic {
@@ -26,6 +27,7 @@ float clampIn(float v, float lo, float hi) { return lo <= hi ? std::clamp(v, lo,
 
 constexpr float kDiveLock = 0.45f;    // the line holds still this long before the dash (a dodge)
 constexpr float kClimbSpeed = 300.0f; // back up after a dive, or off the ground
+constexpr float kFoldedClimb = 0.5f;  // 2.76.2 (17): its wings stay folded this long as it climbs out of a dive
 constexpr float kPerchBeat = 0.3f;    // landed, before the breath
 constexpr float kPerchSpread = 0.65f; // the breath's cloud reaches its length
 constexpr float kHoverAbove = 190.0f; // its hunting height above the target
@@ -243,7 +245,7 @@ void Enemy::dragonTelegraph(GameWorld& w, float dt) {
             }
             // It draws back along its line, wings raised.
             if (def_.flying) vel = lerpv(vel, diveDir_ * -40.0f, damp(6.0f, dt));
-            face(diveDir_.x);
+            faceDive();
             break;
         case AttackType::Perch: face(markPos_.x - box.center().x); break;
         case AttackType::CloudShot:
@@ -263,9 +265,9 @@ void Enemy::startDash(GameWorld& w) {
     lastCenter_ = box.center();
     attackHit_ = false;
     dropThrough_ = true;
-    face(diveDir_.x);
+    faceDive();
     vel = diveDir_ * diveSpeed();
-    playClip(attack_->attackAnim, true);
+    playClip(attackClip(*attack_, false), true);
     w.playSound("sounds/pound_dive.wav", box.center(), 1.0f, 0.8f);
     w.shake(0.15f);
 }
@@ -497,13 +499,17 @@ void Enemy::dragonActive(GameWorld& w, float dt) {
                         stage_ = divesLeft_ > 0 ? Stage::Climb : Stage::Return;
                         stageTimer_ = 0.0f;
                         climbSpot_ = hoverSpot(w);
-                        playClip("move", true);
+                        // 2.76.2 (rules of 17, its dive clips): its wings stay folded while it climbs off the ground
+                        // (its whole body hurts on contact: no wing spread over the one who dodged it).
+                        if (!(wholeBody_ && PartRules::of(def_.id).clipsFor(a.id))) playClip("move", true);
                     }
                     break;
                 }
                 case Stage::Climb:
                 case Stage::Return: {
                     stageTimer_ += dt;
+                    if (stageTimer_ >= kFoldedClimb && anim_.current() == attackClip(a, false) && wholeBody_ && PartRules::of(def_.id).clipsFor(a.id))
+                        playClip("move", true);
                     Vec2 to = climbSpot_ - c;
                     float dist = to.length();
                     Vec2 want = dist > 2.0f ? to / dist * (kClimbSpeed * phaseSpeed()) : Vec2{};
@@ -519,7 +525,7 @@ void Enemy::dragonActive(GameWorld& w, float dt) {
                         stageTimer_ = std::max(kDiveLock, orDefault(a.burstInterval, 0.55f) * telegraphScale());
                         aimDive(w, stageTimer_);
                         diveLocked_ = true;
-                        playClip(a.telegraphAnim, true);
+                        playClip(attackClip(a, true), true);
                         if (!a.telegraphSound.empty()) w.playSound(a.telegraphSound, c, 0.7f);
                     }
                     break;
@@ -528,7 +534,7 @@ void Enemy::dragonActive(GameWorld& w, float dt) {
                     stageTimer_ -= dt;
                     vel = lerpv(vel, diveDir_ * -40.0f, damp(6.0f, dt));
                     traceDive(w);
-                    face(diveDir_.x);
+                    faceDive();
                     if (stageTimer_ <= 0.0f) startDash(w);
                     break;
                 default: break;
@@ -681,8 +687,12 @@ void Enemy::renderDragon(RenderContext& ctx, float prog) const {
                     float len = d.length();
                     if (len < 1.0f) continue;
                     Vec2 dir = d / len;
-                    ctx.r.drawWorldLine(a0, a1, Color{255, 50, 40, static_cast<uint8_t>(36 + 40 * pulse)}, box.h * 0.9f * ctx.r.view().scale,
-                                        BlendMode::Additive);
+                    // 2.76.2: as wide as the body that sweeps it, on each side of the line (its parts in the pose of
+                    // the dive, rules of 17; before, its box's height).
+                    const Vec2 lane = diveLane(dir);
+                    const Vec2 shift = Vec2{-dir.y, dir.x} * ((lane.x + lane.y) * 0.5f);
+                    ctx.r.drawWorldLine(a0 + shift, a1 + shift, Color{255, 50, 40, static_cast<uint8_t>(36 + 40 * pulse)},
+                                        (lane.y - lane.x) * ctx.r.view().scale, BlendMode::Additive);
                     ctx.r.drawWorldLine(a0, a1, Color{255, 110, 70, 220}, 2.5f * s, BlendMode::Additive);
                     for (; run < len - 8.0f; run += gap)
                         if (run > 0.0f) chevron(ctx.r, a0 + dir * run, dir, 14.0f, Color{255, 220, 160, 230}, 2.5f * s);

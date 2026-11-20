@@ -206,6 +206,7 @@ void Enemy::fixedUpdate(GameWorld& w, float dt) {
     prevBox = box;
     // 2.76.2: whether it fights by its parts in this run, at every step (its shots leave its drawing).
     partsFight_ = fightsByParts(*this, w);
+    wholeBody_ = partsFight_ && w.simulationVersion() >= kWholeBodyContactSimulation;
     auto tick = [dt](float& t) { t = std::max(0.0f, t - dt); };
     tick(hurtFlash_);
     tick(invuln_);

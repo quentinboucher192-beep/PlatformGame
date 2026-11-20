@@ -187,6 +187,14 @@ public:
     const AttackDef* currentAttack() const { return attack_; }
     /// Projectile / beam origin of the current attack (2.76.2: public, its drawing's when it fights by parts).
     Vec2 attackOrigin() const;
+    /// 2.76.2: the clip of an attack's wind-up (`telegraph`) or blow: its own, or, fighting by parts with the rules
+    /// of 17, the one its parts give it (« clips »: Pyrrhax folds its wings to dive).
+    const std::string& attackClip(const AttackDef& a, bool telegraph) const;
+    /// 2.76.2 (display, tests): the width of the lane a dive shows along `dir`: its box's height, or, fighting by parts
+    /// with the rules of 17, the width of its body in the pose of the dive (partsHalfWidth), never narrower.
+    float diveLaneWidth(Vec2 dir) const;
+    /// Its edges on each side of the line (`partsAcross`: {≤ 0, ≥ 0}, along (-dir.y, dir.x)), never inside its box's.
+    Vec2 diveLane(Vec2 dir) const;
 
     bool alive() const { return state_ != EnemyState::Dead; }
     bool dormant() const { return state_ == EnemyState::Dormant; }
@@ -251,6 +259,9 @@ private:
     void contactDamage(GameWorld& w);
     bool groundAhead(const GameWorld& w) const;
     void face(float dir) { if (dir != 0.0f) facing = signf(dir); }
+    /// Faces the way of its dive. 2.76.2 (rules of 17, its dive clips): a dive almost straight down keeps the side it
+    /// faced, so that the lane it shows (its body is not symmetric) is the one its body sweeps.
+    void faceDive();
     float phaseSpeed() const;
     float phaseCooldown() const;
     std::vector<const AttackDef*> availableAttacks() const;
@@ -325,6 +336,7 @@ private:
     size_t finalIndex_ = 0;
     int shownLook_ = -1;      // the phase whose sheet is shown (display; 2.76.2: the fixed step for a boss by parts)
     bool partsFight_ = false; // 2.76.2: it fights by parts in this run (fightsByParts, set each fixed step)
+    bool wholeBody_ = false;  // 2.76.2: and with the rules of 17 (kWholeBodyContactSimulation): its poses by attack (« clips »)
     std::string shownAnim_;
     int burstsLeft_ = 0;
     float burstTimer_ = 0.0f;

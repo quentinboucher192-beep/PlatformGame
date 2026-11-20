@@ -276,9 +276,18 @@ def erode(m, r):
     return ~dilate(~m, r)
 
 
-def dragon(rgba, pivot):
+def extreme(xs, ys, sdir):
+    """The index of the pixel furthest along `sdir` (integers): (1, 0) the rightmost, the highest of them (as
+    before 2.76.2)."""
+    if tuple(sdir) == (1, 0):
+        return np.lexsort((ys, -xs))[0]
+    return np.lexsort((ys, -xs, -(sdir[0] * xs + sdir[1] * ys)))[0]
+
+
+def dragon(rgba, pivot, sdir=(1, 0)):
     """Pyrrhax (a dragon in profile facing right): its parts from the alpha channel, its colours and
-    geodesic distances along the drawing."""
+    geodesic distances along the drawing. `sdir` (2.76.2, « snouts »): where its snout points in this pose
+    (diving: down and to the right), (1, 0) facing right."""
     r, g, b, a = (rgba[:, :, k].astype(int) for k in range(4))
     mask = a > ALPHA
     hot = mask & (((r > 150) & (b < 150) & (r - b > 80)) | ((r >= 245) & (g >= 200) & (b >= 170)) | ((r > 70) & (g * 2 < r) & (b * 3 < r)))
@@ -296,16 +305,19 @@ def dragon(rgba, pivot):
     loose = comps[1:]
     plain = main & ~hot
     ys, xs = np.nonzero(plain)
-    k = np.lexsort((ys, -xs))[0]
+    k = extreme(xs, ys, sdir)
     snout = (int(xs[k]), int(ys[k]))
+    sx, sy = int(sdir[0]), int(sdir[1])
+    s0, unit = sx * snout[0] + sy * snout[1], abs(sx) + abs(sy)
     fire = np.zeros_like(mask)
     for c in components(hot & main) + [c for c in loose if c.sum() > 6 and (c & hot).sum() * 2 > c.sum()]:
         cy, cx = np.nonzero(c)
-        if c.sum() > 10 and cx.max() > snout[0] and int(cx.sum()) > (snout[0] - 20) * int(c.sum()):
+        pr = sx * cx + sy * cy  # (1, 0): its x, as before
+        if c.sum() > 10 and pr.max() > s0 and int(pr.sum()) > (s0 - 20 * unit) * int(c.sum()):
             fire |= c
     body = main & ~fire
     ys, xs = np.nonzero(body & ~hot)
-    k = np.lexsort((ys, -xs))[0]
+    k = extreme(xs, ys, sdir)
     snout = (int(xs[k]), int(ys[k]))
     ys, xs = np.nonzero(body)
     k = np.lexsort((ys, xs))[0]
@@ -659,7 +671,8 @@ def bosses(only=None):
             parts = json.load(open(os.path.join(ROOT, 'data', 'enemies', d['variantOf'] + '.json'), encoding='utf-8')).get('parts')
         parts = parts or {}
         profile = parts.get('profile') or 'silhouette'
-        out.append((d['id'], profile, sheets, parts.get('regions', [])))
+        # The regions of a « regions » profile; for a dragon, the directions of its snout by pose (« snouts », 2.76.2).
+        out.append((d['id'], profile, sheets, parts.get('snouts', []) if profile == 'dragon' else parts.get('regions', [])))
     return out
 
 
@@ -706,7 +719,8 @@ def build(only=None):
                 if base and rc in base[3] and profile == 'dragon':
                     parts = transfer(base[3][rc], masks[rc], names)
                 elif profile == 'dragon':
-                    parts = dragon(rgba, a['pivot'])
+                    sd = next((r['dir'] for r in regs if region_applies(r, sheet_name(rel), tags.get(rc, set()))), (1, 0))
+                    parts = dragon(rgba, a['pivot'], sd)
                 elif profile == 'regions':
                     parts = regions(rgba, [r for r in regs if region_applies(r, sheet_name(rel), tags.get(rc, set()))])
                 elif profile == 'rig':

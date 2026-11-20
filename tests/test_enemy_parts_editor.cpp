@@ -70,6 +70,48 @@ TEST_CASE("enemy editor parts (2.76.2): a boss's file written with its own rules
     CHECK(!savePartRules("../pyrrhax", PartRules{}, &error));
 }
 
+// A Windows checkout has its JSON in « \r\n » (git's autocrlf): the editor keeps the file's line endings. Both kinds of
+// file, written in a temporary folder, come back byte for byte with their own rules, and keep their endings when
+// their rules change (Linux tests the case of Windows too).
+TEST_CASE("enemy editor parts (2.76.2): a file in LF and the same in CRLF come back byte for byte, their endings kept") {
+    std::string lf = enemyFile("pyrrhax");
+    std::string bare;  // the file as LF whatever this checkout gives
+    for (size_t i = 0; i < lf.size(); ++i)
+        if (!(lf[i] == '\r' && i + 1 < lf.size() && lf[i + 1] == '\n')) bare += lf[i];
+    std::string crlf;
+    for (char ch : bare) {
+        if (ch == '\n') crlf += '\r';
+        crlf += ch;
+    }
+    CHECK(bare.find('\r') == std::string::npos && crlf.find("\r\n") != std::string::npos);
+    const PartRules& rules = PartRules::of("pyrrhax");
+    PartRules changed = rules;
+    for (PartRule& r : changed.rules)
+        if (r.name == "queue") r.damage = 0.75f;
+    const fs::path dir = Paths::userDir() / "parts_line_endings";
+    std::error_code ec;
+    fs::create_directories(dir, ec);
+    for (const std::string* text : {&bare, &crlf}) {
+        const bool windows = text == &crlf;
+        CHECK(withPartRules(*text, rules) == *text);
+        const fs::path file = dir / (windows ? "pyrrhax_crlf.json" : "pyrrhax_lf.json");
+        CHECK(FileUtil::writeTextAtomic(file, *text));
+        std::string error;
+        CHECK(savePartRulesTo(file, rules, &error));  // its own rules: not a byte changes
+        CHECK(FileUtil::readText(file).value_or("") == *text);
+        CHECK(savePartRulesTo(file, changed, &error));  // a change: every line ending as the file had them
+        const std::string after = FileUtil::readText(file).value_or("");
+        CHECK(after != *text);
+        CHECK(after.find("\"damage\": 0.75") != std::string::npos);
+        size_t lone = 0, pairs = 0;
+        for (size_t i = 0; i < after.size(); ++i)
+            if (after[i] == '\n') (i > 0 && after[i - 1] == '\r' ? pairs : lone) += 1;
+        if (windows) CHECK(lone == 0 && pairs > 100);
+        else CHECK(pairs == 0 && lone > 100);
+    }
+    fs::remove_all(dir, ec);
+}
+
 TEST_CASE("enemy editor parts (2.76.2): a change touches only the roles; a part that hurts takes no multiplier") {
     const std::string text = enemyFile("pyrrhax");
     PartRules rules = PartRules::of("pyrrhax");
