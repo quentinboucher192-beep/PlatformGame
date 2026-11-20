@@ -8444,6 +8444,12 @@
    ]
   },
   {
+   "fr": "Boutons de la fiche : « Tableau des contributions » (celui du clan, raid entier puis zone par zone), « Carte du titan », « Revoir le film de victoire », « Fiche de l'événement » et « Noter ce raid » quand vous l'avez joué. Tout vient du serveur, des seules données validées par les groupes ; ce qui attend encore sa majorité est dit « en attente de validation ». Seuls les membres du clan voient ses fiches.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Boutons des manettes",
    "where": [
     "game/content/AssetCatalog.cpp"
@@ -12328,7 +12334,7 @@
   {
    "fr": "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -14583,7 +14589,7 @@
   {
    "fr": "Compté par la simulation du groupe, validé par le serveur.",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -28665,7 +28671,7 @@
   {
    "fr": "Groupe {0} · {1}",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -32254,6 +32260,7 @@
   {
    "fr": "Joueur parti",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/RaidResultsScene.cpp"
    ]
   },
@@ -39565,6 +39572,12 @@
    "fr": "les zones des groupes de votre clan, additionnées par joueur",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "les zones des groupes du clan, additionnées par joueur",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -54075,7 +54088,7 @@
   {
    "fr": "Q / E",
    "where": [
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -54639,8 +54652,7 @@
   {
    "fr": "Raid entier",
    "where": [
-    "ui/online/ContribTable.cpp",
-    "ui/screens/RaidResultsScene.cpp"
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -54934,6 +54946,12 @@
   },
   {
    "fr": "Raids et tests de raid : le pointeur de la souris reste caché pendant le jeu. Il revenait à chaque petit mouvement de la souris ; il ne revient plus que quand la souris s'approche du bouton du menu en haut de l'écran, ou en regardant un groupe du raid simulé (ses boutons ◀ ▶). Toujours là avec le menu, la pause, la grande carte et les panneaux.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids, fiche récapitulative : chaque raid terminé du clan, gagné ou non, garde sa fiche dans CLANS › RAIDS (l'historique des raids, la fiche de l'événement et les résultats l'ouvrent). En tête, sur le décor de la chute d'Asterion : « Asterion est tombé » ou « Raid terminé », la date, la durée, le clan, ses joueurs, ses groupes et ses renforts, son rang mondial et la note des joueurs ; puis sept chiffres clés : parties du titan, Cœur, zones terminées, reliques, morts, réanimations, groupes éliminés et repris.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -65102,7 +65120,8 @@
   {
    "fr": "Tableau des contributions",
    "where": [
-    "ui/online/RaidMenu.cpp"
+    "ui/online/RaidMenu.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -75373,6 +75392,7 @@
    "fr": "Zone {0}",
    "where": [
     "game/raid/ZoneGoals.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/screens/RaidResultsScene.cpp"
    ]
   },
@@ -79849,6 +79869,18 @@
   },
   {
    "fr": "« Le Cœur d'une Étoile Mourante » est maintenant le combat seul, comme L'Arène des Échos : le choix des quatre pouvoirs, puis directement Singularis dans son arène géante (une seule vie). Nouvelle version du niveau : son classement repart de zéro.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Les meilleurs du raid » avec leur avatar (dégâts aux Gigaboss et au Cœur, soutien, réanimations, mécanismes, objectifs, le moins de morts), les récompenses obtenues par le clan dessinées avec leur vraie texture (badge, titre, combinaison portée par Nova, cadre, effet de victoire), « Votre raid » (vos groupes, les parties abattues, vos zones, vos morts et réanimations, votre part du Cœur).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Les sept parties et le Cœur » : le portrait animé de chaque Gigaboss, l'heure de sa chute validée sur un axe du temps, le groupe qui l'a abattu (renforts compris) et la relique de sa branche ; à gauche, le titan du raid dessiné partie par partie, les reliques rapportées posées dessus.",
    "where": [
     "data/news/changelog.json"
    ]

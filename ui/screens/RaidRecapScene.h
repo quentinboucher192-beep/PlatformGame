@@ -42,6 +42,7 @@ struct RecapText {
 
 /// What the screen offers beside the server's data (the buttons whose target exists).
 struct RaidRecapOptions {
+    bool contributions = false;  // 2.78: the clan's « Tableau des contributions » has validated tables
     bool victoryFilm = true;   // the film of Asterion's fall can be played (its files are here)
     bool titanMap = true;      // the titan's map of the event can be read by this player
     bool eventSheet = true;    // the sheet of the event (its official results, its world ranking)
@@ -142,7 +143,8 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& recap, const 
 /// The recap screen of `eventId` (empty: the newest) for `clanId`, pushed over the current screen.
 std::unique_ptr<Scene> makeRaidRecap(GameServices& g, const std::string& clanId, const std::string& eventId = {});
 /// The same, drawn from given answers of the server (tests and captures: no request is made).
-std::unique_ptr<Scene> makeRaidRecapFrom(GameServices& g, const Json& list, const Json& recap);
+/// `contributions`: its « Tableau des contributions » open from the start (captures).
+std::unique_ptr<Scene> makeRaidRecapFrom(GameServices& g, const Json& list, const Json& recap, bool contributions = false);
 
 /// What the screen shows now (tests).
 struct RaidRecapView {
@@ -152,6 +154,7 @@ struct RaidRecapView {
     int portraits = 0;  // gigaboss portraits drawn with their sprite
     int previews = 0;   // rewards drawn with their texture (badge, item)
     bool titan = false, backdrop = false;
+    bool contributions = false;  // its « Tableau des contributions » is open (drawn over it)
 };
 RaidRecapView raidRecapView(const Scene* s);
 

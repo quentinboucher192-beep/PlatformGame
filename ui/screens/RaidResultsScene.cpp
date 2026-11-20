@@ -179,46 +179,7 @@ public:
     }
 
     /// 2.78: the server's tables as the detailed « Tableau des contributions » shows them (old ones: « — »).
-    contrib::Row contribRow(const raids::ZoneResultRow& r) const {
-        contrib::Row row;
-        row.name = r.username.empty() ? std::string("Joueur parti") : r.username;
-        row.color = r.me ? Color{110, 190, 255, 255} : Color{200, 206, 230, 255};
-        row.me = r.me;
-        row.bossTenths = static_cast<int64_t>(r.bossDamage) * 10;
-        row.miniTenths = static_cast<int64_t>(r.miniDamage) * 10;
-        row.damageTenths = static_cast<int64_t>(r.damage) * 10;
-        row.support = r.support;
-        row.mechanisms = r.mechanisms;
-        row.objectives = r.objectives;
-        row.deaths = r.deaths;
-        row.revives = r.revives;
-        row.revived = r.revived;
-        row.v2 = r.v2;
-        return row;
-    }
-    contrib::Model contribModel() const {
-        contrib::Model m;
-        m.legend = "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).";
-        m.tooltipNote = "Compté par la simulation du groupe, validé par le serveur.";
-        m.tabKey = "Q / E";
-        for (const raids::ZoneResultTable& z : res_.zoneTables) {
-            contrib::Table t;
-            std::string zoneName = "Zone " + std::to_string(z.zone), branchName;
-            for (const raid::Branch* b : raid::Branch::all())
-                if (b->id == z.branch) {
-                    branchName = b->name;
-                    if (const raid::ZoneInfo* zi = b->zone(z.zone)) zoneName = zi->name;
-                }
-            t.title = zoneName + (branchName.empty() ? "" : " · " + branchName);
-            t.sub = "Groupe " + z.group + " · " + raidmenu::raidTime(static_cast<float>(z.tick) / 120.0f);
-            for (const raids::ZoneResultRow& r : z.rows) t.rows.push_back(contribRow(r));
-            m.zones.push_back(std::move(t));
-        }
-        m.raid.title = "Raid entier";
-        m.raid.sub = "les zones des groupes de votre clan, additionnées par joueur";
-        for (const raids::ZoneResultRow& r : res_.raidTotals) m.raid.rows.push_back(contribRow(r));
-        return m;
-    }
+    contrib::Model contribModel() const { return contrib::modelOfResults(res_, "les zones des groupes de votre clan, additionnées par joueur"); }
 
     /// Four figures: the gigaboss, the clans, the participants, my rank. Returns the bottom.
     float drawSummary(const Rect& r) {

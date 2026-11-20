@@ -62,7 +62,7 @@ Json fixtureWon() {
       "world": {"my_clan_rank": 2, "clans": 23},
       "people": {"registered": 26, "players": 23, "groups": 3, "reinforcements": 2},
       "figures": {"parts_down": 7, "parts_total": 7, "zones_done": 56, "zones_total": 56, "zones_by_clan": 31, "relics": 4, "relics_total": 7,
-                  "revives": 38, "deaths": null, "wiped": 1, "retaken": 1},
+                  "revives": 38, "deaths": 41, "wiped": 1, "retaken": 1},
       "parts": [
         {"part": "crane", "name": "CRÂNE", "boss": "Skullmaw", "fallen": true, "at": "2026-11-20T20:58:00.000Z", "relic": true, "phase": 4,
          "by": {"clan_tag": "ESSAI", "group": 1, "reinforcement": false, "mine": true, "me": true}},
@@ -88,7 +88,7 @@ Json fixtureWon() {
         "revives": {"player": {"id": "p3", "username": "EssaiLyra", "avatar": "avatar_09", "me": false}, "value": 11, "share": 0},
         "mechanisms": {"player": {"id": "p4", "username": "EssaiVegaAuNomTrèsLongDeTest", "avatar": "avatar_11", "me": false}, "value": 27, "share": 0},
         "objectives": {"player": {"id": "p1", "username": "EssaiKaëlis", "avatar": "avatar_03", "me": false}, "value": 19, "share": 0},
-        "fewest_deaths": null},
+        "fewest_deaths": {"player": {"id": "p2", "username": "EssaiOrion", "avatar": "avatar_07", "me": false}, "value": 0, "share": 0}},
       "rewards": [
         {"reward": "coeur_badge", "name": "Badge « Cœur d'Asterion »", "kind": "badge", "ref": "communaute_coeur", "players": 23, "mine": true, "gigaboss": false},
         {"reward": "coeur_clan", "name": "Titre de clan « Briseurs d'étoile »", "kind": "item", "ref": "title_briseurs_etoile", "players": 23, "mine": true, "gigaboss": false},
@@ -105,8 +105,20 @@ Json fixtureWon() {
       "titles": [{"title": "Briseurs d'étoile", "rank": 1}, {"title": "Dévoreurs dévorés", "rank": 2}],
       "me": {"played": true, "groups": [{"clan_tag": "ESSAI", "group": 1, "part": "crane", "reinforcement": false, "wiped": false, "mine": true},
                                          {"clan_tag": "ESSAI", "group": 1, "part": "coeur", "reinforcement": false, "wiped": false, "mine": true}],
-             "parts": ["crane", "torse", "jambe_droite"], "zones": 24, "revives": 5, "deaths": null, "heart_share": 0.09, "heart_rank": 1,
-             "rewards": ["coeur_badge"]}
+             "parts": ["crane", "torse", "jambe_droite"], "zones": 24, "revives": 5, "deaths": 3, "heart_share": 0.09, "heart_rank": 1,
+             "rewards": ["coeur_badge"]},
+      "contributions": {
+        "zone_tables": [{"branch": "asterion_crane", "zone": 8, "group": "[ESSAI]·1", "tick": 120000, "accepted_at": "2026-11-20T20:58:00.000Z",
+                         "share_of": "boss", "rows": [
+          {"username": "EssaiMoi", "seat": 0, "me": true, "share": 0.6, "boss_damage": 900, "damage": 1500, "support": 4, "mechanisms": 3,
+           "objectives": 2, "mini_damage": 100, "deaths": 1, "revives": 2, "revived": 1},
+          {"username": "EssaiKaëlis", "seat": 1, "me": false, "share": 0.4, "boss_damage": 600, "damage": 1100, "support": 1, "mechanisms": 5,
+           "objectives": 1, "mini_damage": 50, "deaths": 0, "revives": 0, "revived": 1}]}],
+        "raid_totals": [
+          {"username": "EssaiMoi", "me": true, "zones": 24, "boss_damage": 5200, "damage": 9100, "support": 40, "mechanisms": 30, "objectives": 12,
+           "mini_damage": 800, "deaths": 3, "revives": 5, "revived": 2},
+          {"username": "EssaiKaëlis", "me": false, "zones": 22, "boss_damage": 7400, "damage": 11000, "support": 12, "mechanisms": 18, "objectives": 19,
+           "mini_damage": 900, "deaths": 5, "revives": 1, "revived": 4}]}
     })");
     return j;
 }
@@ -142,6 +154,10 @@ Json fixtureLost() {
     j["titles"] = Json::array();
     j["best"]["heart_damage"] = {{"player", nullptr}, {"value", 0}, {"share", 0}};
     j["me"] = {{"played", false}, {"groups", Json::array()}, {"parts", Json::array()}, {"zones", 0}, {"revives", 0}, {"deaths", nullptr}, {"heart_share", 0}, {"heart_rank", 0}};
+    // An event of before 2.78: no table counts the deaths (« — », the category not shown), no table of contributions.
+    j["figures"]["deaths"] = nullptr;
+    j["best"]["fewest_deaths"] = nullptr;
+    j["contributions"] = {{"zone_tables", Json::array()}, {"raid_totals", Json::array()}};
     return j;
 }
 
@@ -316,7 +332,8 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(raids::recapPending(r));
     CHECK(r.parts.size() == 7);
     CHECK(r.heart.fallen && r.heart.groups == 12);
-    CHECK(r.deaths == -1 && r.me.deaths == -1);  // not followed by the server: « — », never a guess
+    CHECK(r.deaths == 41 && r.me.deaths == 3);  // 2.78: the deaths the zones' tables count
+    CHECK(r.contributions.zoneTables.size() == 1 && r.contributions.raidTotals.size() == 2 && r.contributions.raidTotals[0].v2);
     CHECK(r.rating.known && r.rating.count == 17 && raidreviews::summaryText(r.rating) == "4,3 · 17 avis");  // 2.77.4: the players' reviews
     CHECK(raids::recapTitle(r) == "ASTERION EST TOMBÉ");
     CHECK(raids::recapClanLine(r) == "Clan [ESSAI] · 23 joueurs · 3 groupes · 2 renforts · 2e sur 23 clans");
@@ -325,7 +342,7 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     const auto figs = raids::recapFigures(r);
     CHECK(figs.size() == 7);
     CHECK(figs[0].value == "7 / 7" && figs[1].value == "Vaincu" && figs[2].value == "56 / 56" && figs[3].value == "4 / 7");
-    CHECK(figs[4].value == "—" && figs[5].value == "38" && figs[6].value == "1 · 1 repris");
+    CHECK(figs[4].value == "41" && figs[5].value == "38" && figs[6].value == "1 · 1 repris");
     // The timeline's labels: my clan's group, another clan's, a group of reinforcement, the heart.
     CHECK(raids::recapPartLabel(r.parts[0], false, 0).second == "Groupe 1");
     CHECK(raids::recapPartLabel(r.parts[0], false, 0).first.size() == 5);  // « 21:58 », in the computer's zone
@@ -336,12 +353,12 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(r.best.size() == raids::recapCategories().size());
     CHECK(raids::recapBestValue(r.best[0]) == "18 %");
     CHECK(raids::recapBestValue(r.best[2]) == "2 340");
-    CHECK(!r.best[6].followed);
+    CHECK(r.best[6].followed && r.best[6].has && raids::recapBestValue(r.best[6]) == "0");
     CHECK(r.titles.size() == 2 && r.titles[1] == "Dévoreurs dévorés");
     const auto mine = raids::recapMyLines(r, {{"crane", "Crâne"}, {"torse", "Torse"}, {"jambe_droite", "Jambe droite"}});
     CHECK(mine.size() == 5);
     CHECK(mine[0].second == "1" && mine[1].second == "Crâne, Torse, Jambe droite");
-    CHECK(mine[3].second == "— / 5" && mine[4].second == "9 % (1er du clan)");
+    CHECK(mine[3].second == "3 / 5" && mine[4].second == "9 % (1er du clan)");
     // A raid that did not win: how far it got; a raid I did not play: no line of mine.
     const raids::Recap lost = raids::parseRecap(fixtureLost());
     CHECK(raids::recapTitle(lost) == "RAID TERMINÉ");
@@ -352,6 +369,7 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(raids::recapPartLabel(lost.heart, true, 0).first == "scellé");
     CHECK(raids::recapFigures(lost)[1].value == "Scellé");
     CHECK(raids::recapMyLines(lost, {}).empty());
+    CHECK(lost.deaths == -1 && raids::recapFigures(lost)[4].value == "—" && !lost.best[6].followed);
     // The list.
     const auto list = raids::parseRecapList(fixtureList());
     CHECK(list.size() == 3);
@@ -378,15 +396,16 @@ TEST_CASE("raid recap: the layout holds its texts at 1280 x 720 and 1920 x 1080,
             for (int page = 0; page < 2; ++page) {
                 RaidRecapOptions opt;
                 opt.rewardPage = page;
+                opt.contributions = true;
                 opt.rateLabel = page == 0 ? "Noter ce raid" : "Modifier mon avis";  // 2.77.4: the server lets this player review it
                 std::snprintf(what, sizeof what, "%dx%d %s gagné p%d", size.first, size.second, lang == Language::French ? "fr" : "en", page);
                 const RaidRecapLayout L = layoutRaidRecap(g.ui, won, list, opt);
                 checkLayout(g.ui, L, what);
                 CHECK(L.cards.size() == 7);
                 CHECK(L.trows.size() == 8);
-                CHECK(L.brows.size() == 6);  // « Le moins de morts » waits for the server to follow the deaths
+                CHECK(L.brows.size() == 7);  // « Le moins de morts » too (2.78: the zones' tables count the deaths)
                 CHECK(L.rewardPages >= 1 && !L.tiles.empty());
-                CHECK(L.buttons.size() == 4);  // the titan's map, the victory film, the event's sheet, « Noter ce raid »
+                CHECK(L.buttons.size() == 5);  // the contributions, the titan's map, the victory film, the event's sheet, « Noter ce raid »
                 CHECK(!L.ratingText.text.empty() && !empty(L.ratingStars));
                 CHECK(L.ticks.size() >= 2);
                 CHECK(L.mlines.size() == 5);
@@ -402,6 +421,7 @@ TEST_CASE("raid recap: the layout holds its texts at 1280 x 720 and 1920 x 1080,
             checkLayout(g.ui, L, what);
             CHECK(L.buttons.size() == 2);  // no victory film for a raid whose heart stood
             CHECK(L.tiles.empty() && !L.rewardsEmpty.text.empty());
+            CHECK(L.brows.size() == 6);  // an event of before 2.78: no « Le moins de morts »
             CHECK(L.mlines.empty() && !L.meNote.empty());
             CHECK(L.trows[3].mark < 0.0f);
         }
@@ -418,17 +438,24 @@ TEST_CASE("raid recap: the screen draws the gigaboss's sprites, the titan, the f
         rig.app.runFrames(3);
         const RaidRecapView v = raidRecapView(rig.app.topScene());
         CHECK(v.valid && v.loaded);
-        CHECK(v.rows == 3 && v.cards == 7 && v.timelineRows == 8 && v.bestRows == 6);
+        CHECK(v.rows == 3 && v.cards == 7 && v.timelineRows == 8 && v.bestRows == 7);
         CHECK(v.portraits == 8);  // the seven gigaboss and the heart, each with its own sprite
         CHECK(v.titan && v.backdrop);
         CHECK(v.tiles >= 4 && v.previews == v.tiles);  // every reward drawn with its texture
-        CHECK(v.buttons == 1);  // a fixture: the titan's map is not offered (no event on a server), the film is
+        CHECK(v.buttons == 2);  // a fixture: the contributions and the film (no titan's map nor sheet: no event on a server)
+        CHECK(!v.contributions);
         rig.app.popScene();
         rig.app.runFrames(1);
         rig.app.pushScene(makeRaidRecapFrom(g, fixtureList(), fixtureLost()));
         rig.app.runFrames(2);
         const RaidRecapView w = raidRecapView(rig.app.topScene());
         CHECK(w.loaded && w.tiles == 0 && w.buttons == 0 && w.portraits == 8);
+        rig.app.popScene();
+        rig.app.runFrames(1);
+        // 2.78: its « Tableau des contributions » over it (the clan's tables, « Raid entier » first).
+        rig.app.pushScene(makeRaidRecapFrom(g, fixtureList(), fixtureWon(), true));
+        rig.app.runFrames(3);
+        CHECK(raidRecapView(rig.app.topScene()).contributions);
         rig.app.popScene();
         rig.app.runFrames(1);
     }

@@ -24,7 +24,7 @@ import { isAdminViewer } from "./friends";
 import { Errors, json, nowIso, type Ctx } from "./http";
 import { CATALOGS, HEART, partOf } from "./raidMap";
 import { HEART_OBJECTIVE, HEART_UNITS, RELICS, phaseOf } from "./raidHeart";
-import { GIGABOSS_BADGES, PARTICIPATION_TICKS, RAID_REWARDS, ZONE_TABLE_COLUMNS, contributionTables, type ZoneTableRow } from "./raidRewards";
+import { GIGABOSS_BADGES, PARTICIPATION_TICKS, RAID_REWARDS, ZONE_TABLE_SELECT, contributionTables, type ZoneTableRow } from "./raidRewards";
 import { RESULTS_GRACE_MS, pendingOf, resultSummaries } from "./raidWorld";
 import { NO_REVIEWS, reviewSummaries } from "./raidReviews";
 
@@ -337,7 +337,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
         // 2.78: the « Tableau des contributions » of the clan's groups (each zone's validated table, the whole raid added up).
         db
             .prepare(
-                `SELECT ${ZONE_TABLE_COLUMNS}
+                `${ZONE_TABLE_SELECT}
                  FROM raid_zone_contributions z JOIN raid_instances i ON i.id = z.instance_id JOIN clans c ON c.id = i.clan_id
                  LEFT JOIN players p ON p.id = z.player_id
                  WHERE z.event_id = ?1 AND i.clan_id = ?3

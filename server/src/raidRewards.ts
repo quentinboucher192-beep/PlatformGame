@@ -480,15 +480,15 @@ export async function bodiesOf(db: D1Database, eventIds: string[]): Promise<Map<
 
 // ------------------------------------------------------------------ results
 
-/** A line of a zone's validated table, as ZONE_TABLE_COLUMNS reads it (`mine`: the reader's own line). */
+/** A line of a zone's validated table, as ZONE_TABLE_SELECT reads it (`mine`: the reader's own line). */
 export type ZoneTableRow = {
     instance_id: string; branch: string; zone: number; seat: number; from_tick: number; boss_damage: number; damage: number; support: number;
     mechanisms: number; objectives: number; tick: number; accepted_at: string; username: string | null; group_no: number; tag: string; mine: number;
     mini_damage: number | null; deaths: number | null; revives: number | null; revived: number | null; player_id: string | null;  // 2.78
 };
 
-/** The columns of ZoneTableRow (the zone's table `z`, its instance `i`, its clan `c`, its player `p`; `?2`: the reader). */
-export const ZONE_TABLE_COLUMNS = `z.instance_id, z.branch, z.zone, z.seat, z.from_tick, z.boss_damage, z.damage, z.support, z.mechanisms, z.objectives, z.tick,
+/** The SELECT of ZoneTableRow (the zone's table `z`, its instance `i`, its clan `c`, its player `p`; `?2`: the reader). */
+export const ZONE_TABLE_SELECT = `SELECT z.instance_id, z.branch, z.zone, z.seat, z.from_tick, z.boss_damage, z.damage, z.support, z.mechanisms, z.objectives, z.tick,
     z.accepted_at, z.mini_damage, z.deaths, z.revives, z.revived, z.player_id, p.username, i.group_no, c.tag, (z.player_id = ?2) AS mine`;
 
 /**
@@ -614,7 +614,7 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
         // (the players' own clan only: another clan's group stays private).
         db
             .prepare(
-                `SELECT ${ZONE_TABLE_COLUMNS}
+                `${ZONE_TABLE_SELECT}
                  FROM raid_zone_contributions z JOIN raid_instances i ON i.id = z.instance_id JOIN clans c ON c.id = i.clan_id
                  LEFT JOIN players p ON p.id = z.player_id
                  WHERE z.event_id = ?1 AND i.clan_id = (SELECT r.clan_id FROM raid_registrations r WHERE r.event_id = ?1 AND r.player_id = ?2)

@@ -20,6 +20,7 @@
 #include "game/online/Raids.h"
 #include "game/raid/RaidSheets.h"
 #include "ui/online/ClanWidgets.h"
+#include "ui/online/ContribTable.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/RaidReviewsPanel.h"
 #include "ui/online/RaidWidgets.h"
@@ -501,6 +502,7 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
     // ------------------------------------------------------------ the buttons
     {
         std::vector<std::pair<std::string, std::string>> want;
+        if (opt.contributions) want.push_back({"contrib", "Tableau des contributions"});
         if (opt.titanMap) want.push_back({"titan", "Carte du titan"});
         if (rc.heartFallen && opt.victoryFilm) want.push_back({"film", "Revoir le film de victoire"});
         if (opt.eventSheet) want.push_back({"event", "Fiche de l'événement"});
@@ -558,13 +560,14 @@ class RaidRecapScene : public Scene {
 public:
     RaidRecapScene(GameServices& g, std::string clanId, std::string eventId)
         : g_(g), net_(g), reviews_(g), clanId_(std::move(clanId)), eventId_(std::move(eventId)) {}
-    RaidRecapScene(GameServices& g, const Json& list, const Json& recap) : g_(g), net_(g), reviews_(g), fixture_(true) {
+    RaidRecapScene(GameServices& g, const Json& list, const Json& recap, bool contributions) : g_(g), net_(g), reviews_(g), fixture_(true) {
         list_ = raids::parseRecapList(list);
         listLoaded_ = true;
         recap_ = raids::parseRecap(recap);
         loaded_ = recap_.valid;
         clanId_ = recap_.clanId;
         eventId_ = recap_.eventId;
+        if (contributions) openContributions();
     }
 
     void onEnter() override {
@@ -600,7 +603,7 @@ public:
         bg_.render(g_, 0.6f);
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{8, 12, 28, 190});
         const bool top = g_.app.topScene() == this;
-        ui.inputEnabled = top && !reviews_.modal();
+        ui.inputEnabled = top && !reviews_.modal() && !contribOpen_;
         ui.pushId("recap");
         view_ = RaidRecapView{};
         view_.valid = true;
@@ -611,6 +614,7 @@ public:
         // The event's own screens read the event as this player may (a clan raid: its clans' members only).
         opt.titanMap = !fixture_ && (recap_.kind == "world" || recap_.member);
         opt.eventSheet = opt.titanMap;
+        opt.contributions = loaded_ && (!recap_.contributions.zoneTables.empty() || !recap_.contributions.raidTotals.empty());
         if (!fixture_ && loaded_ && reviews_.loaded() && reviews_.eventId() == eventId_) opt.rateLabel = raidreviews::offerLabel(reviews_.offer());
         if (!status_.empty() && t_ - statusT_ < 5.0f) opt.status = status_;
         opt.rewardPage = rewardPage_;
@@ -645,8 +649,18 @@ public:
         ui.popId();
         titan_.drawTooltip(g_);
         ui.inputEnabled = top;
-        if (reviews_.modal()) reviews_.drawModal();  // « Noter ce raid »: its window over the recap (Échap / B closes it)
-        else if (!back && ui.backPressed() && !ui.editingText()) back = true;
+        if (reviews_.modal()) {
+            reviews_.drawModal();  // « Noter ce raid »: its window over the recap (Échap / B closes it)
+        } else if (contribOpen_) {
+            // 2.78: the clan's « Tableau des contributions » over the recap (its own keys; Échap / B closes it, not the screen).
+            ui.consumeNavigation(true, true);
+            if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), static_cast<int>(recap_.contributions.zoneTables.size()))) contribOpen_ = false;
+            const float cm = ui.s(24);
+            if (contribOpen_ && contrib::draw(ui, {cm, cm, ui.screenW() - cm * 2, ui.screenH() - cm * 2}, contribModel_, contribView_)) contribOpen_ = false;
+        } else if (!back && ui.backPressed() && !ui.editingText()) {
+            back = true;
+        }
+        view_.contributions = contribOpen_;
         ui.end();
         if (back) g_.app.popScene();
     }
@@ -683,6 +697,13 @@ private:
                           if (loaded_ && reviews_.eventId() != id) reviews_.open(id);
                       }));
     }
+    /// 2.78: the clan's tables, « Raid entier » first (the recap is the whole raid's).
+    void openContributions() {
+        contribModel_ = contrib::modelOfResults(recap_.contributions, "les zones des groupes du clan, additionnées par joueur");
+        contribView_ = contrib::View{};
+        contribView_.tab = 1;
+        contribOpen_ = true;
+    }
     void select(const std::string& id) {
         if (id == eventId_ || fixture_) return;
         eventId_ = id;
@@ -691,7 +712,8 @@ private:
         loadRecap(id);
     }
     void press(const std::string& id) {
-        if (id == "titan") g_.app.pushScene(makeRaidTitan(g_, eventId_));
+        if (id == "contrib") openContributions();
+        else if (id == "titan") g_.app.pushScene(makeRaidTitan(g_, eventId_));
         else if (id == "event") g_.app.pushScene(makeRaidEvent(g_, eventId_));
         else if (id == "rate") reviews_.openEditor();
         else if (id == "film") {
@@ -1014,6 +1036,9 @@ private:
     GameServices& g_;
     OnlineUi net_;
     RaidReviewsPanel reviews_;  // 2.77.4: the rating and « Noter ce raid »
+    contrib::Model contribModel_;  // 2.78: the clan's « Tableau des contributions »
+    contrib::View contribView_;
+    bool contribOpen_ = false;
     std::string status_;
     float statusT_ = -100.0f;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
@@ -1037,7 +1062,9 @@ std::unique_ptr<Scene> makeRaidRecap(GameServices& g, const std::string& clanId,
     return std::make_unique<RaidRecapScene>(g, clanId, eventId);
 }
 
-std::unique_ptr<Scene> makeRaidRecapFrom(GameServices& g, const Json& list, const Json& recap) { return std::make_unique<RaidRecapScene>(g, list, recap); }
+std::unique_ptr<Scene> makeRaidRecapFrom(GameServices& g, const Json& list, const Json& recap, bool contributions) {
+    return std::make_unique<RaidRecapScene>(g, list, recap, contributions);
+}
 
 RaidRecapView raidRecapView(const Scene* s) {
     const auto* r = dynamic_cast<const RaidRecapScene*>(s);

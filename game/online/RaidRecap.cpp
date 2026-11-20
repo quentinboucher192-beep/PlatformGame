@@ -114,6 +114,7 @@ Recap parseRecap(const Json& d) {
     r.durationS = std::max(0, jget<int>(ev, "duration_s", 0));
     r.member = jget<bool>(field(d, "viewer"), "member", true);
     r.rating = raidreviews::parseSummary(field(d, "reviews"));
+    r.contributions = parseResults(field(d, "contributions"));
     const Json& pending = field(d, "pending");
     r.pendingTables = std::max(0, jget<int>(pending, "tables", 0));
     r.pendingObjectives = std::max(0, jget<int>(pending, "objectives", 0));

@@ -12,6 +12,7 @@
 
 #include "engine/core/Json.h"
 #include "game/online/RaidReviews.h"
+#include "game/online/Raids.h"
 
 namespace cosmic::raids {
 
@@ -105,7 +106,8 @@ struct Recap {
     RecapHeart heart;
     std::vector<RecapBest> best;  // in the order of recapCategories()
     std::vector<RecapReward> rewards;
-    std::vector<std::string> titles;  // « Briseurs d'étoile », « Dévoreurs dévorés · 2ᵉ »
+    std::vector<std::string> titles;  // « Briseurs d'étoile », « Dévoreurs dévorés »
+    Results contributions;            // 2.78: the clan's « Tableau des contributions » (zone_tables, raid_totals)
     struct Me {
         bool played = false;
         std::vector<RecapMyGroup> groups;

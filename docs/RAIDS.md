@@ -1802,6 +1802,14 @@ CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris pa
 * Les joueurs du clan sont ceux de son **inscription** à l'événement (un joueur d'un autre clan n'est jamais dans les
   meilleurs du clan, même s'il a joué dans un de ses groupes). Chaque requête lit tout en un lot ; chaque instruction passe
   par un index (`server/test/raidRecap.test.ts`).
+* **Morts** (2.78, §26) : celles que comptent les tableaux des zones (`raid_zone_contributions.deaths`, acceptés par la
+  majorité du groupe) ; un événement d'avant la 2.78 n'en compte aucune : `null`, le jeu écrit « — » et ne montre pas « Le moins
+  de morts » (jamais un 0 inventé). « Le moins de morts » : parmi les joueurs du clan dont les tableaux comptent les morts et
+  qui ont joué 5 minutes au moins, le moins ; puis le plus longtemps en jeu.
+* **Tableau des contributions** (`contributions`) : les tableaux validés des groupes du clan, zone par zone et « Raid entier »
+  (chaque joueur additionné), construits par la même fonction que les résultats de l'événement (`contributionTables`,
+  `raidRewards.ts`) ; une ligne d'avant la 2.78 a ses morts et réanimations à `null`.
+* **Note des joueurs** (`reviews`, §25) : la moyenne et le nombre d'avis de l'événement (`reviewSummaries`).
 
 ### L'écran (`ui/screens/RaidRecapScene`, modèle `game/online/RaidRecap`)
 
@@ -1814,23 +1822,24 @@ CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris pa
   « ASTERION EST TOMBÉ » (ou « RAID TERMINÉ »), l'événement (date, format, début → fin, durée ou « temps écoulé »), le clan,
   ses joueurs, ses groupes, ses renforts et son rang mondial officiel ; à droite, la **note des joueurs** (les avis du §25 :
   cinq étoiles remplies jusqu'à la moyenne, « 4,3 · 17 avis », « Aucun avis »).
-* **Sept chiffres** : parties du titan, Cœur (vaincu, phase, scellé), zones terminées sur 56, reliques sur 7, morts,
-  réanimations, groupes éliminés et repris.
+* **Sept chiffres** : parties du titan, Cœur (vaincu, phase, scellé), zones terminées sur 56, reliques sur 7, morts (« — »
+  avant la 2.78), réanimations, groupes éliminés et repris.
 * **« LES SEPT PARTIES ET LE CŒUR »** : pour chaque partie, le **portrait animé de son Gigaboss** (le sprite de son combat,
   `drawCreature`), son nom, la relique de sa branche, sa barre sur l'axe du temps (de l'heure de début à l'heure pleine
   suivant la fin) jusqu'à sa chute validée, l'heure et le groupe qui l'a abattue (« Groupe 2 (renfort) », « [AUBE] groupe 3 »
   pour un autre clan d'un événement mondial), ou « debout · phase 2 / 3 », « jamais affronté » ; le Cœur et le nombre de
   groupes qui l'ont frappé.
 * **« LES MEILLEURS DU RAID »** : le meilleur joueur du clan dans chaque catégorie, avec son **avatar** : dégâts aux Gigaboss et
-  au Cœur (part des dégâts du clan), soutien (blocages et réanimations), réanimations faites, mécanismes, objectifs ; « Vous »
-  quand c'est vous.
+  au Cœur (part des dégâts du clan), soutien (blocages et réanimations), réanimations faites, mécanismes, objectifs, le moins de
+  morts ; « Vous » quand c'est vous.
 * **« RÉCOMPENSES OBTENUES PAR LE CLAN »** : chaque récompense accordée à ses joueurs, dessinée **avec sa propre texture** (le
   badge par son emblème, le titre par sa puce, la combinaison portée par Nova, le cadre, l'effet de victoire), les badges des
   Gigaboss ensemble ; combien de joueurs l'ont reçue ; les titres du clan. Plus de récompenses que de place : des pages
   (‹ ›).
-* **« VOTRE RAID »** : vos groupes, les parties qu'ils ont abattues, vos zones terminées, vos réanimations, votre part des dégâts
-  du clan au Cœur et votre rang ; « Vous n'avez pas joué ce raid… » sinon.
-* **Boutons** (seulement ceux dont la cible existe) : « Carte du titan » (la carte de l'événement), « Revoir le film de
+* **« VOTRE RAID »** : vos groupes, les parties qu'ils ont abattues, vos zones terminées, vos morts et vos réanimations, votre part
+  des dégâts du clan au Cœur et votre rang ; « Vous n'avez pas joué ce raid… » sinon.
+* **Boutons** (seulement ceux dont la cible existe) : « Tableau des contributions » (le tableau refait du §26, ouvert sur
+  « Raid entier » du clan, puis zone par zone ; ses touches, Échap / B le ferme), « Carte du titan » (la carte de l'événement), « Revoir le film de
   victoire » (le film du §17, seulement si le Cœur est tombé), « Fiche de l'événement » (résultats officiels, classement
   mondial), « Noter ce raid » ou « Modifier mon avis » (la fenêtre d'avis du §25, seulement quand le serveur dit que vous
   avez joué l'événement ; un avis écrit, la note de la fiche est relue) ; Échap / B : retour.
@@ -1841,9 +1850,10 @@ CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris pa
 
 `layoutRaidRecap` place chaque texte dans son rectangle, à la suite du précédent, mesuré (plus petit, puis raccourci, jamais
 sous 11,5 pixels) ; le test vérifie en 1280 × 720, 1600 × 900 et 1920 × 1080, en français et en anglais, sur un raid gagné
-(deux pages de récompenses) et un raid perdu que je n'ai pas joué : chaque texte dans son rectangle et son panneau, aucun
+(deux pages de récompenses, cinq boutons) et un raid perdu d'avant la 2.78 que je n'ai pas joué : chaque texte dans son rectangle et son panneau, aucun
 texte sur un autre ni sous une image (portraits, reliques, avatars, aperçus des récompenses, icônes), aucun panneau sur un
-autre ; l'écran dessine les huit portraits, le titan, le décor et chaque récompense avec sa texture ; l'audit des textes
+autre ; l'écran dessine les huit portraits, le titan, le décor et chaque récompense avec sa texture, et le tableau des
+contributions par-dessus ; l'audit des textes
 (`--i18n-audit`) ne trouve rien resté en français. Les réponses du test sont des **données d'essai** (clan [ESSAI]) : rien
 n'est livré avec le jeu.
 
