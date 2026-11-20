@@ -42,8 +42,15 @@
 // under the menu's button (ui/online/RaidMenu, never a key nor the focus taken), and the raid's menu
 // the player opens and closes (Action::RaidMenu) with what is left, the zones' tables, the journal,
 // the group and the titan; this player's inputs neutral while it is open, as in the pause.
+// 2.80 (docs/RAIDS.md §22): an administrator's test with invited players (one zone or the whole raid):
+// the administrator creates it on the server at the launch (raidTests.ts), starts its relay on seat 0
+// and sends the invitations (ui/online/RaidTestGuests: invited, cancelled, « Invincible » and group
+// changed from the pause); an invited player who accepted joins it (RaidTestJoin), catches up, then
+// plays on the seat of a simulated player. Every computer steps the same test (raid::stepRelayed: the
+// relay's frames and its places at each step, the simulated players computed alike); never reported.
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -67,6 +74,7 @@
 #include "ui/screens/AsterionFilm.h"
 #include "game/raid/RaidTest.h"
 #include "game/raid/RaidSimulation.h"
+#include "game/raid/RaidTestRelay.h"
 #include "game/online/AsterionBody.h"
 #include "ui/widgets/AsterionFigure.h"
 #include "game/raid/ZoneGoals.h"
@@ -79,6 +87,7 @@
 #include "saves/Settings.h"
 #include "ui/online/RaidHud.h"
 #include "ui/online/RaidMenu.h"
+#include "ui/online/RaidTestGuests.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/screens/DownedView.h"
@@ -118,6 +127,7 @@ public:
     RaidGameScene(GameServices& g, RaidTestSetup t) : g_(g), test_(true), testSetup_(std::move(t)) {
         entry_.clanTag = "TEST";
         entry_.group = 1;
+        if (!testSetup_.capture) invited(testSetup_.guests);  // 2.80
     }
     /// 2.77: « Simuler un raid complet » (local, every branch and the heart, never anything sent).
     RaidGameScene(GameServices& g, RaidSimSetup s) : g_(g), test_(true) {
@@ -127,6 +137,44 @@ public:
         entry_.group = 1;
         testSetup_.capture = s.capture;
         testSetup_.invincible = s.invincible;
+        if (!s.capture) invited(s.guests);  // 2.80
+    }
+    /// 2.80: an invited player joins the administrator's test they accepted (its settings, the server's copy).
+    RaidGameScene(GameServices& g, RaidTestJoin j) : g_(g), test_(true) {
+        entry_.clanTag = "TEST";
+        entry_.group = 1;
+        relay_.on = true;
+        relay_.testId = j.testId;
+        relay_.fingerprint = j.fingerprint;
+        relay_.adminName = j.adminName;
+        relay_.shown = std::max(0, j.group);
+        if (auto c = raid::RelayedTestConfig::fromJson(j.mode, j.config)) relay_.config = *c;
+        else relay_.bad = true;
+        simMode_ = relay_.config.fullRaid;
+        const raid::RelayedTestConfig& c = relay_.config;
+        testSetup_.branch = c.branch;
+        testSetup_.zone = c.zone;
+        testSetup_.players = c.players;
+        testSetup_.startPhase = c.startPhase;
+        testSetup_.parts = c.parts;
+        testSetup_.relics = c.relics;
+        testSetup_.skill = c.skill;
+        testSetup_.invincible = false;  // the administrator's, not this player's
+        simSetup_.groups = c.groups;
+        simSetup_.bots = c.bots;
+        simSetup_.skill = c.skill;
+        simSetup_.invincible = c.invincible;
+        simSetup_.botsInvincible = c.botsInvincible;
+        simSetup_.background = 1;
+    }
+
+    /// 2.80: the players chosen in the test's settings: the test goes through the server (else it stays local).
+    void invited(const std::vector<RaidTestGuest>& guests) {
+        if (guests.empty()) return;
+        relay_.on = true;
+        relay_.admin = true;
+        guests_ = std::make_unique<RaidTestGuests>(g_);
+        guests_->setChosen(guests);
     }
 
     ~RaidGameScene() override {
@@ -143,17 +191,19 @@ public:
     // 2.75.5: the pointer comes back with the raid's menu, and while the mouse moves (the HUD's button).
     bool hidesCursor() const override {
         return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !overlay_.wantsPointer() && clock_ - pointerAt_ > 2.5f && !bigMap_ &&
-               !reconnect_.active() && !spec_.on && simPanel_ < 0;
+               !reconnect_.active() && !spec_.on && simPanel_ < 0 && !guestsOpen();
     }
 
     void onEnter() override {
         branch_ = raid::Branch::builtin(entry_.branch);
         if (simMode_) {
             beginSim();
+            if (relay_.on) beginRelay();  // 2.80
             return;
         }
         if (test_) {
             beginTest();
+            if (relay_.on) beginRelay();  // 2.80
             return;
         }
         if (!branch_) {
@@ -295,43 +345,48 @@ public:
         branch_ = nullptr;
         for (const raid::Branch* b : raid::Branch::all())
             if (b->id == testSetup_.branch || (testSetup_.capture && b->part == testSetup_.branch)) branch_ = b;  // 2.70: « bras_droit » too
-        // 2.70: a capture for the documentation (--raid-test, headless only) needs no account.
-        if (!g_.online.isAdmin() && !testSetup_.capture) {
+        // 2.70: a capture for the documentation (--raid-test, headless only) needs no account. 2.80: a player
+        // invited to the test (an administrator or not) joins it.
+        if (!g_.online.isAdmin() && !testSetup_.capture && !(relay_.on && !relay_.admin)) {
             fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
+            return;
+        }
+        if (relay_.bad) {
+            fail_ = "Les réglages de ce test sont illisibles pour cette version du jeu : mettez le jeu à jour.";
             return;
         }
         if (!branch_ || !branch_->zone(testSetup_.zone == raid::RaidRun::kArmory ? 0 : testSetup_.zone)) {  // 2.75: the armory too
             fail_ = "Cette branche ou cette zone est introuvable dans les données du jeu.";
             return;
         }
-        local_ = 0;
+        local_ = relay_.on && !relay_.admin ? -1 : 0;  // 2.80: an invited player has their seat once in the test
         ResourceManager& res = g_.app.resources();
         WorldServices ws{res, g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake,
                          g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
-        raid::RaidRun::Test t;
-        t.on = true;
-        t.invincible = testSetup_.invincible;
-        t.players = testSetup_.players;
-        t.startPhase = testSetup_.startPhase;
-        session_ = std::make_unique<raid::TestSession>(ws, *branch_, t);
-        session_->setSkill(static_cast<raid::BotSkill>(std::clamp(testSetup_.skill, 0, 2)));  // 2.77
-        run_ = &session_->run();
-        run_->setCameraFollow(0);
-        // 2.74 (phase 6): the heart's test: the parts chosen as fallen (their links on), the relics.
-        uint32_t links = 0;
-        for (const raid::EffectInfo& e : branch_->effects)
-            for (int p = 0; p < raid::AsterionHeartRoutine::PartCount; ++p)
-                if ((testSetup_.parts >> p) & 1u && e.id == std::string("coeur_") + raid::AsterionHeartRoutine::partId(p) && e.bit >= 0 && e.bit < 32)
-                    links |= 1u << e.bit;
-        raid::HeartShared heart;
-        heart.relics = static_cast<uint8_t>(std::clamp(testSetup_.relics, 0, 7));
-        session_->setHeart(links, heart);
-        if (!session_->begin(testSetup_.zone)) {
+        // 2.80: built the same way on every computer of a relayed test (raid::buildZoneTest: the heart's parts
+        // simulated as fallen and its relics too).
+        raid::RelayedTestConfig c;
+        if (relay_.on && !relay_.admin) {
+            c = relay_.config;
+        } else {
+            c.branch = branch_->id;
+            c.zone = testSetup_.zone;
+            c.players = testSetup_.players;
+            c.startPhase = testSetup_.startPhase;
+            c.parts = testSetup_.parts;
+            c.relics = testSetup_.relics;
+            c.skill = testSetup_.skill;
+            c.invincible = testSetup_.invincible;
+            relay_.config = c;
+        }
+        session_ = raid::buildZoneTest(ws, c);
+        if (!session_) {
             fail_ = "Impossible de charger la zone du test.";
             run_ = nullptr;
-            session_.reset();
             return;
         }
+        run_ = &session_->run();
+        run_->setCameraFollow(local_ >= 0 ? local_ : 0);
         // 2.70, a capture: each seat's script, and where it appears.
         scripts_.assign(raid::kMaxInstancePlayers, InputScript{});
         for (size_t k = 0; k < testSetup_.scripts.size() && k < scripts_.size(); ++k) scripts_[k].parse(testSetup_.scripts[k]);
@@ -371,6 +426,363 @@ public:
         if (run_->heartWonNow()) playVictory();  // 2.74: a test's fall is its victory (never reported)
         watchBranch(true);  // 2.75.5
         if (run_->zoneSerial() != serial_) zoneReady();
+    }
+
+    // ------------------------------------------------------------------ 2.80: the test relayed to invited players
+
+    bool guestsOpen() const { return guests_ && guests_->isOpen(); }
+
+    /// The administrator's window of the invited players (from the pause): the test's groups, their own group first.
+    void openGuests() {
+        if (!guests_) return;
+        guests_->setShape(groupNames(), relay_.config.seatsPerGroup());
+        guests_->setDefaultGroup(sim_ ? shownGroup() : 0);
+        guests_->open();
+    }
+
+    std::vector<std::string> groupNames() const {
+        std::vector<std::string> out;
+        if (sim_)
+            for (const auto& g : sim_->groups()) out.push_back(g->name);
+        if (out.empty()) out.push_back("Groupe 1");
+        return out;
+    }
+
+    /// The test goes through the server: the administrator opens it there (its relay, then the invitations
+    /// leave); an invited player's game checks that it can play it, then connects to it.
+    void beginRelay() {
+        if (!fail_.empty() || !run_) return;
+        if (!relay_.admin) {
+            if (relay_.fingerprint != raid::testFingerprint()) {
+                fail_ = "Ce test se joue avec une autre version du jeu ou de ses règles : mettez le jeu à jour.";
+                return;
+            }
+            connectRelay();
+            return;
+        }
+        relay_.fingerprint = raid::testFingerprint();
+        guests_->setShape(groupNames(), relay_.config.seatsPerGroup());
+        g_.online.send("POST", "/api/v1/admin/raid-tests",
+                       {{"mode", relay_.config.mode()}, {"config", relay_.config.toJson()}, {"fingerprint", relay_.fingerprint}},
+                       OnlineService::guard(life_, [this](const ApiResult& r) {
+                           const std::string id = r.ok ? jstr(r.data.value("test", Json::object()), "id") : std::string();
+                           if (id.empty()) {
+                               fail_ = "Le test avec joueurs invités n'a pas pu être ouvert sur le serveur : " +
+                                       (r.ok ? std::string("réponse illisible.") : r.message);
+                               return;
+                           }
+                           relay_.testId = id;
+                           connectRelay();
+                       }));
+    }
+
+    void connectRelay() {
+        connecting_ = true;
+        g_.online.freshAccess([this, life = std::weak_ptr<int>(life_)](const std::string& token, const std::string& url) {
+            if (life.expired()) return;
+            connecting_ = false;
+            if (token.empty() || url.empty()) {
+                fail_ = "Connectez-vous à Cosmic Online pour jouer un test avec des joueurs invités.";
+                return;
+            }
+            link_ = std::make_unique<NetCoopLink>(makeWebSocketTransport(url + "/api/v1/raid-tests/" + relay_.testId + "/socket", token), g_.online.username(),
+                                                  255, g_.online.playerId());
+            link_->start();
+        });
+    }
+
+    void updateRelay(float dt) {
+        if (guests_) {
+            guests_->update(dt);
+            if (sim_ && sim_->groups().size() != shapeGroups_) {  // a reinforcement: one more group to choose
+                shapeGroups_ = sim_->groups().size();
+                guests_->setShape(groupNames(), relay_.config.seatsPerGroup());
+            }
+        }
+        if (!link_) return;
+        link_->update(dt);
+        // The administrator starts the test's relay on their seat (0) as soon as it answers; nobody else may.
+        if (relay_.admin && !relay_.startSent && link_->connected() && link_->seat() == 0 && !link_->go() && link_->lobby().is_object()) {
+            link_->startGame(raid::kMaxInstancePlayers);
+            relay_.startSent = true;
+        }
+        if (!relay_.started && fail_.empty() && link_->go()) startRelay();
+        if (!relay_.started && fail_.empty() && !link_->error().empty()) fail_ = link_->error();
+        if (!link_->endReason().empty() && !ended_ && fail_.empty()) {
+            if (catching_ || !relay_.started) {
+                // Over before this game was in it (removed, ended, refused): said on the waiting card.
+                stopWorker_ = true;
+                if (worker_.joinable()) worker_.join();
+                stopWorker_ = false;
+                catching_ = false;
+                relay_.started = false;
+                fail_ = link_->endReason();
+            } else {
+                ended_ = true;
+                endReason_ = link_->endReason();
+                g_.ui.setFocus("raidgame/end/map");
+            }
+        }
+    }
+
+    /// GO: the test's first step (the administrator), or the steps so far to catch up (an invited player).
+    void startRelay() {
+        const coopnet::GoInfo& go = *link_->go();
+        if (go.hash != relay_.fingerprint || go.players != raid::kMaxInstancePlayers) {
+            fail_ = "Ce test se joue avec une autre version du jeu ou de ses règles : mettez le jeu à jour.";
+            link_->close();
+            return;
+        }
+        relay_.started = true;
+        relay_.seat = link_->seat();
+        tick_ = 0;
+        sentUpTo_ = UINT32_MAX;
+        if (!relay_.admin) watchSeat_ = 0;  // the administrator's seat watched until this player has theirs
+        if (relay_.admin) {
+            guests_->attach(relay_.testId);  // the invitations chosen leave now
+            note("TEST EN LIGNE · rien n'est compté : un joueur invité prend la place d'un joueur simulé", kGold);
+        }
+        if (link_->joinedLate()) {
+            // The steps given so far, off the main thread, quiet (as a raid's late join).
+            catching_ = true;
+            setQuietAll(true);
+            stopWorker_ = false;
+            workerDone_ = false;
+            progress_ = 0;
+            worker_ = std::thread([this] { relayCatchUp(); });
+        } else if (sim_) {
+            bindView();
+        } else {
+            zoneReady();
+        }
+    }
+
+    void setQuietAll(bool on) {
+        if (sim_)
+            for (const auto& g : sim_->groups()) g->session->run().setQuiet(on);
+        else if (session_)
+            session_->run().setQuiet(on);
+    }
+
+    /// The whole raid: only the group shown makes its sounds and particles here (display only).
+    void syncQuiet() {
+        for (int i = 0; i < static_cast<int>(sim_->groups().size()); ++i) {
+            raid::RaidRun& r = sim_->group(i).session->run();
+            const bool quiet = i != boundPlace_.first;
+            if (r.quiet() != quiet) r.setQuiet(quiet);
+        }
+    }
+
+    void relayStep(const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats) {
+        if (sim_) raid::stepRelayed(*sim_, frames, seats);
+        else raid::stepRelayed(*session_, frames, seats);
+    }
+
+    void relayCatchUp() {
+        std::vector<InputFrame> team;
+        while (!stopWorker_) {
+            if (link_->frameFor(tick_, team)) {
+                relayStep(team, link_->testSeatsAt(tick_));
+                ++tick_;
+                progress_ = tick_;
+                continue;
+            }
+            if (tick_ + 2 >= link_->available()) break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        workerDone_ = true;
+    }
+
+    void finishRelayCatchUp() {
+        if (worker_.joinable()) worker_.join();
+        catching_ = false;
+        g_.app.resources().finishDeferred();
+        link_->catchupDone(tick_);
+        tableSeen_ = link_->testSeatsAt(tick_ > 0 ? tick_ - 1 : 0);  // who was already there is no news
+        if (sim_) {
+            feedSeen_ = sim_->tick();  // what happened before this game came: not told
+            feedStarted_ = true;
+            bindView();
+        } else {
+            session_->run().setQuiet(false);
+            placeZone();
+            zoneReady();
+        }
+    }
+
+    /// One step of a relayed test, the relay's pace (a few at once when this game is behind).
+    void stepRelay(float dt) {
+        if (catching_) {
+            if (workerDone_) finishRelayCatchUp();
+            return;
+        }
+        if (!relay_.started || ended_ || !run_ || !link_) return;
+        int steps = 1;
+        if (link_->available() > tick_ + static_cast<uint32_t>(link_->inputDelay() + 6)) steps = 4;
+        for (int k = 0; k < steps && !ended_; ++k) {
+            sendRelayLocal();
+            if (!link_->frameFor(tick_, frame_)) {
+                waiting_ += dt;
+                break;
+            }
+            waiting_ = 0.0f;
+            const coopnet::TestSeats seats = link_->testSeatsAt(tick_);
+            relayStep(frame_, seats);
+            ++tick_;
+            watchTable(seats, frame_);
+            if (sim_) {
+                afterSimStep();
+                continue;
+            }
+            placeZone();
+            if (const int z = run_->zoneFinishedNow()) zoneDone(z);
+            if (run_->wipedNow()) groupWiped();
+            if (run_->gigaboss().fellNow()) gigabossFell();
+            if (run_->heartWonNow()) playVictory();
+            watchBranch(true);
+            if (run_->zoneSerial() != serial_) zoneReady();
+        }
+    }
+
+    /// This computer's input for the step its input delay ahead, on its relay seat (neutral while the pause,
+    /// the raid's panel or the invited players' window is open); a power offered: its answer in the frame.
+    void sendRelayLocal() {
+        if (relay_.seat < 0 || link_->watcher()) return;
+        const uint32_t target = tick_ + static_cast<uint32_t>(link_->inputDelay());
+        if (sentUpTo_ != UINT32_MAX && target <= sentUpTo_) return;
+        sentUpTo_ = target;
+        InputFrame f = overlay_.frame(g_.app.input().consumePlayerInput(), paused_ || guestsOpen() || simPanel_ >= 0, g_.app.topScene() != this, run_->wiped());
+        if (const auto& offer = run_->world().powerOffer(); offer && local_ >= 0 && offer->player == local_ && pendingChoice_ != 0) {
+            f.choice = pendingChoice_;
+            pendingChoice_ = 0;
+        }
+        frames_.assign(1, {relay_.seat, f});
+        link_->pushLocal(target, frames_);
+    }
+
+    /// Where the relay places this computer's player at the last step played.
+    coopnet::TestSeat myPlace() const {
+        if (!link_ || relay_.seat < 0 || relay_.seat >= coopnet::kMaxPlayers) return {};
+        return link_->testSeatsAt(tick_ > 0 ? tick_ - 1 : 0)[static_cast<size_t>(relay_.seat)];
+    }
+
+    /// One zone: this computer's seat (the administrator's 0; an invited player's as the relay gives it, -1 before).
+    void placeZone() {
+        int seat = relay_.admin ? 0 : -1;
+        if (!relay_.admin) {
+            const coopnet::TestSeat e = myPlace();
+            if (e.placed() && e.group == 0) seat = e.seat;
+        }
+        if (seat == local_) return;
+        local_ = seat;
+        watchSeat_ = seat >= 0 ? -1 : 0;
+        run_->setCameraFollow(seat >= 0 ? seat : 0);
+        zoneReady();
+    }
+
+    /// The real player of the test on `seat` of `group` (their name), or "".
+    std::string relayName(int group, int seat) const {
+        if (!link_ || !relay_.started) return {};
+        const coopnet::TestSeats t = link_->testSeatsAt(tick_ > 0 ? tick_ - 1 : 0);
+        for (size_t k = 0; k < t.size(); ++k)
+            if (t[k].placed() && t[k].group == group && t[k].seat == seat) {
+                const std::string n = seatPlayer(static_cast<int>(k));
+                return k == 0 ? n + " (admin)" : n;
+            }
+        return {};
+    }
+
+    /// The name of the player holding relay seat k (what the relay says), else « Joueur invité ».
+    std::string seatPlayer(int k) const {
+        if (k == 0 && !relay_.adminName.empty()) return relay_.adminName;
+        if (link_ && link_->lobby().is_object())
+            for (const auto& x : link_->lobby().value("seats", Json::array()))
+                if (jget<int>(x, "seat", -1) == k && !jstr(x, "name").empty()) return jstr(x, "name");
+        return k == 0 ? std::string("Administrateur") : std::string("Joueur invité");
+    }
+
+    /// The places changed at this step, a real player away or back: a note for everyone (each once).
+    void watchTable(const coopnet::TestSeats& t, const std::vector<InputFrame>& frames) {
+        auto groupOf = [this](int g) { return sim_ && g < static_cast<int>(sim_->groups().size()) ? sim_->group(g).name : std::string(); };
+        for (size_t k = 1; k < t.size(); ++k) {
+            const coopnet::TestSeat &now = t[k], &was = tableSeen_[k];
+            if (now.placed()) relay_.names[k] = seatPlayer(static_cast<int>(k));
+            const std::string who = relay_.names[k].empty() ? std::string("Joueur invité") : relay_.names[k];
+            if (now.placed() && !was.placed()) {
+                const std::string where = groupOf(now.group);
+                note("TEST · " + who + " rejoint le test" + (where.empty() ? std::string() : " (" + where + ")") + " à la place de " +
+                         raid::TestSession::botName(now.seat),
+                     kGreen);
+            } else if (!now.placed() && was.placed()) {
+                note("TEST · " + who + " a quitté le test : " + raid::TestSession::botName(was.seat) + " reprend sa place", kGold);
+            } else if (now.placed() && now.group != was.group) {
+                note("TEST · " + who + " passe dans " + groupOf(now.group), kSky);
+            } else if (now.placed() && now.invincible() != was.invincible()) {
+                note(now.invincible() ? "TEST · " + who + " est invincible (choix de l'administrateur)" : "TEST · " + who + " n'est plus invincible", kSky);
+            }
+            const bool away = now.placed() && k < frames.size() && !raid::playedFrame(frames[k]);
+            const bool wasAway = (awayBits_ >> k) & 1u;
+            if (now.placed() && was.placed() && away != wasAway)
+                note(away ? "TEST · " + who + " est absent : " + raid::TestSession::botName(now.seat) + " tient sa place" : "TEST · " + who + " est de retour", kSky);
+            awayBits_ = away ? (awayBits_ | (1u << k)) : (awayBits_ & ~(1u << k));
+        }
+        tableSeen_ = t;
+    }
+
+    /// The status line of a relayed test of one zone: never counted, who plays in it.
+    std::string relayStatus() const {
+        int real = 0, away = 0;
+        const coopnet::TestSeats t = link_ && relay_.started ? link_->testSeatsAt(tick_ > 0 ? tick_ - 1 : 0) : coopnet::TestSeats{};
+        for (size_t k = 1; k < t.size(); ++k)
+            if (t[k].placed()) {
+                ++real;
+                if ((awayBits_ >> k) & 1u) ++away;
+            }
+        std::string s = "TEST EN LIGNE · non classé · " + std::to_string(real) + (real > 1 ? " joueurs invités" : " joueur invité");
+        if (away > 0) s += " (" + std::to_string(away) + " absent" + (away > 1 ? "s)" : ")");
+        if (relay_.admin) {
+            if (testSetup_.invincible) s += " · invincible (vous)";
+        } else {
+            const coopnet::TestSeat e = myPlace();
+            s += e.placed() ? " · vous remplacez " + raid::TestSession::botName(e.seat) : std::string(" · en attente de votre place");
+            if (e.placed() && e.invincible()) s += " · invincible (choix de l'administrateur)";
+            if (!relay_.adminName.empty()) s += " · administrateur : " + relay_.adminName;
+        }
+        if (run_ && run_->wiped()) s += " · GROUPE ÉLIMINÉ — mode spectateur";
+        if (waiting_ > 0.4f) s += " · en attente du réseau…";
+        return s;
+    }
+
+    /// « Rejoindre » a group of the whole raid: at once in a local test; through the relay in a relayed one (the
+    /// administrator's place given to every computer at a step), the group shown meanwhile.
+    void simJoin(int i) {
+        simPanel_ = -1;
+        if (!relay_.on) {
+            if (sim_->join(i)) bindView();
+            return;
+        }
+        if (!relay_.admin) return;
+        relay_.shown = i;
+        g_.online.send("POST", "/api/v1/admin/raid-tests/" + relay_.testId + "/seat", {{"group", i}}, OnlineService::guard(life_, [this](const ApiResult& r) {
+                           if (!r.ok) note("SERVEUR · " + r.message, kDanger);
+                       }));
+        bindView();
+    }
+
+    /// « Regarder » a group: the administrator leaves their place (through the relay in a relayed test).
+    void simWatch(int i) {
+        simPanel_ = -1;
+        if (!relay_.on) {
+            sim_->watch(i);
+            bindView();
+            return;
+        }
+        relay_.shown = i;
+        if (relay_.admin && sim_->seated())
+            g_.online.send("POST", "/api/v1/admin/raid-tests/" + relay_.testId + "/seat", {{"group", -1}}, OnlineService::guard(life_, [this](const ApiResult& r) {
+                               if (!r.ok) note("SERVEUR · " + r.message, kDanger);
+                           }));
+        bindView();
     }
 
     /// 2.74 (phase 6): the film of Asterion's fall, over the combat (which keeps running: neutral inputs).
@@ -434,7 +846,8 @@ public:
         if (test_) {
             // The pause never stops the world, not even in a test: only this player's inputs
             // are held (neutral frame), the boss and the enemies keep going and can still hit.
-            if (sim_) stepSim();
+            if (relay_.on) stepRelay(dt);  // 2.80: the steps come from the test's relay
+            else if (sim_) stepSim();
             else if (run_) stepTest();
             return;
         }
@@ -572,7 +985,8 @@ public:
         overlay_.notices.update(clock_);  // 2.75.5: each notification goes by itself
         if (g_.app.input().mouseMovedThisFrame()) pointerAt_ = clock_;
         if (test_) {
-            if (sim_) updateSim();
+            if (relay_.on) updateRelay(dt);  // 2.80
+            if (sim_ && !catching_) updateSim();
             updateGame(dt);
             return;
         }
@@ -617,17 +1031,17 @@ public:
         // 2.75.5: the raid's menu, opened and closed by the player (its key, the HUD's button), as the pause:
         // the game goes on, this player's inputs are neutral while it is open; Échap or B close it.
         const bool menuWasOpen = overlay_.menu.isOpen();
-        const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0;
+        const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0 && !guestsOpen();
         const bool menuBack = overlay_.menu.handleKeys(g_.app.input(), menuAllowed, menuSectionNow());
         if (overlay_.menu.isOpen()) bigMap_ = false;
-        if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ &&
+        if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && !guestsOpen() &&
             g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
         }
         // 2.72: the large map (display only: the group, and this player, keep playing).
-        if (!ended_ && !paused_ && simPanel_ < 0 && g_.app.input().menuPressed(Action::RaidMap)) {
+        if (!ended_ && !paused_ && simPanel_ < 0 && !guestsOpen() && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
             if (bigMap_) overlay_.menu.close();
@@ -667,6 +1081,12 @@ public:
 
     std::string seatName(int seat) const {
         if (seat == local_) return g_.online.username().empty() ? "Vous" : g_.online.username();
+        if (relay_.on && relay_.started) {
+            // 2.80: a real player of the test on this seat (the relay's places, their names), else as below.
+            const std::string who = relayName(sim_ ? boundPlace_.first : 0, seat);
+            if (!who.empty()) return who;
+            if (seat == 0) return sim_ ? std::string("Place libre (administrateur)") : relay_.admin ? std::string("Vous") : std::string("Administrateur");
+        }
         if (sim_) {
             // 2.77: the free place of every group is the administrator's; the others its simulated players.
             if (seat == 0) return "Place libre (vous)";
@@ -687,7 +1107,7 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);  // first: it gives ui.r() (2.70: also as the first screen)
         Renderer& r = ui.r();
         ui.pushId("raidgame");
-        if (!run_ || catching_) {
+        if (!run_ || catching_ || (relay_.on && !relay_.started)) {  // 2.80: a relayed test before its first step
             r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{11, 10, 28, 255});
             drawWaiting();
         } else {
@@ -738,6 +1158,7 @@ public:
             if (sim_ && simPanel_ >= 0 && !paused_) drawSimPanel();                                                       // 2.77
             if (paused_ && !ended_) drawPause();
             if (ended_) drawEnd();
+            if (guestsOpen() && !ended_) guests_->draw();  // 2.80: the invited players (over the game, which goes on)
             if (sim_) drawSimBanner();  // 2.77: « TEST LOCAL — rien n'est envoyé », over everything
         }
         ui.popId();
@@ -750,24 +1171,32 @@ public:
     /// (raid::RaidSimulation); this computer takes the free place of a group or watches one. Nothing is
     /// ever sent: no network call, no report, no reward.
     void beginSim() {
-        if (!g_.online.isAdmin() && !simSetup_.capture) {
+        if (!g_.online.isAdmin() && !simSetup_.capture && !(relay_.on && !relay_.admin)) {  // 2.80: an invited player too
             fail_ = "Réservé aux administrateurs connectés à Cosmic Online.";
+            return;
+        }
+        if (relay_.bad) {
+            fail_ = "Les réglages de ce test sont illisibles pour cette version du jeu : mettez le jeu à jour.";
             return;
         }
         ResourceManager& res = g_.app.resources();
         WorldServices ws{res, g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake,
                          g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
-        raid::SimSetup s;
-        s.groups = simSetup_.groups;
-        s.bots = simSetup_.bots;
-        s.invincible = simSetup_.invincible;
-        s.botsInvincible = simSetup_.botsInvincible;
-        s.skill = static_cast<raid::BotSkill>(std::clamp(simSetup_.skill, 0, 2));
-        s.background = simSetup_.background;
-        sim_ = std::make_unique<raid::RaidSimulation>(ws, s);
-        if (!sim_->begin()) {
+        // 2.80: built the same way on every computer of a relayed test, every group at the same speed (×1).
+        if (!(relay_.on && !relay_.admin)) {
+            raid::RelayedTestConfig c;
+            c.fullRaid = true;
+            c.groups = simSetup_.groups;
+            c.bots = simSetup_.bots;
+            c.skill = simSetup_.skill;
+            c.invincible = simSetup_.invincible;
+            c.botsInvincible = simSetup_.botsInvincible;
+            relay_.config = c;
+        }
+        if (relay_.on) simSetup_.background = 1;
+        sim_ = raid::buildRaidSimulation(ws, relay_.config, simSetup_.background);
+        if (!sim_) {
             fail_ = "Les branches du raid sont introuvables dans les données du jeu : réinstallez le jeu.";
-            sim_.reset();
             return;
         }
         hud_.setRaidView(true);
@@ -778,18 +1207,36 @@ public:
     /// The group shown: its run, its branch, this computer's seat (0 when it holds the free place, else
     /// -1 and the seat watched).
     void bindView() {
-        const raid::RaidSimulation::Group& g = sim_->group(sim_->viewed());
+        const auto [gi, seat] = simPlace();
+        const raid::RaidSimulation::Group& g = sim_->group(gi);
         boundSession_ = g.session.get();
+        boundPlace_ = {gi, seat};
         run_ = &g.session->run();
         branch_ = &run_->branch();
         entry_.group = g.id;
-        local_ = sim_->seated() ? 0 : -1;
+        local_ = seat;
         GameWorld& w = run_->world();
         if (local_ >= 0) watchSeat_ = -1;
         else if (watchSeat_ < 1 || watchSeat_ >= w.teamSize() || w.member(watchSeat_).presence == GameWorld::Presence::Vacant) watchSeat_ = 1;
-        run_->setCameraFollow(local_ >= 0 ? 0 : watchSeat_);
+        run_->setCameraFollow(local_ >= 0 ? local_ : watchSeat_);
+        if (relay_.on) syncQuiet();
         zoneReady();
     }
+
+    /// The group shown and this computer's seat in it (-1: watching). 2.80: a relayed test — the administrator's
+    /// place as the simulation holds it, an invited player's as the relay gives it; else the group they watch.
+    std::pair<int, int> simPlace() const {
+        const int n = static_cast<int>(sim_->groups().size());
+        if (!relay_.on) return {sim_->viewed(), sim_->seated() ? 0 : -1};
+        if (relay_.admin && sim_->seated()) return {sim_->viewed(), 0};
+        if (!relay_.admin && relay_.started) {
+            const coopnet::TestSeat e = myPlace();
+            if (e.placed() && e.group < n) return {e.group, e.seat};
+        }
+        return {std::clamp(relay_.shown, 0, n - 1), -1};
+    }
+    int shownGroup() const { return relay_.on ? boundPlace_.first : sim_->viewed(); }
+    bool shownSeated() const { return relay_.on ? boundPlace_.second >= 0 : sim_->seated(); }
 
     /// One step of the raid, within the image's budget of time (the main thread never waits on it: past
     /// the budget the raid runs slower than real time, and the screen says so).
@@ -809,11 +1256,20 @@ public:
         simSpent_ += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
         // The group shown went to another branch or to the heart (a new instance), or this player lost
         // their place (the group wiped): shown again.
-        if (sim_->group(sim_->viewed()).session.get() != boundSession_ || (local_ >= 0) != sim_->seated()) {
+        afterSimStep();
+    }
+
+    /// After a step of the whole raid (local or relayed): the group shown went to another branch or to the
+    /// heart (a new instance), or this player's place changed (the group wiped, another group joined): shown
+    /// again; else the notifications of the step.
+    void afterSimStep() {
+        const auto place = simPlace();
+        if (sim_->group(place.first).session.get() != boundSession_ || place != boundPlace_) {
             if (run_->wipedNow()) groupWiped();
             bindView();
             return;
         }
+        if (relay_.on) syncQuiet();
         if (const int z = run_->zoneFinishedNow()) zoneDone(z);
         if (run_->wipedNow()) groupWiped();
         if (run_->heartWonNow() && !victoryPlayed_) {
@@ -842,7 +1298,7 @@ public:
             }
         if (!feed.empty()) feedSeen_ = feed.back().tick;
         feedStarted_ = true;
-        retake_ = sim_->retake(sim_->group(sim_->viewed()).branch);
+        retake_ = sim_->retake(sim_->group(shownGroup()).branch);
         InputManager& in = g_.app.input();
         if (simPanel_ >= 0) {
             if (g_.ui.backPressed() || in.menuPressed(Action::Pause)) {
@@ -880,10 +1336,11 @@ public:
 
     /// « TEST LOCAL — rien n'est envoyé » first, then where this player is (the line is fitted from its start).
     std::string simStatus() const {
-        const raid::RaidSimulation::Group& g = sim_->group(sim_->viewed());
-        std::string t = "TEST LOCAL — rien n'est envoyé · " + g.name + " · " + g.session->run().branch().name;
+        const raid::RaidSimulation::Group& g = sim_->group(shownGroup());
+        std::string t = (relay_.on ? std::string("TEST EN LIGNE — rien n'est compté · ") : std::string("TEST LOCAL — rien n'est envoyé · ")) + g.name + " · " +
+                        g.session->run().branch().name;
         if (g.wiped) t += " · groupe éliminé (spectateurs)";
-        else if (sim_->seated()) t += g.session->autopilot() ? " · vous : pilote automatique (AFK)" : " · vous jouez";
+        else if (shownSeated()) t += local_ == 0 && g.session->autopilot() ? " · vous : pilote automatique (AFK)" : " · vous jouez";
         else t += " · vous regardez";
         if (simSetup_.background > 1) t += " · autres groupes ×" + std::to_string(simSetup_.background) + " (accéléré)";
         if (speedPct_ < 97) t += " · simulation à " + std::to_string(speedPct_) + " % du temps réel";
@@ -912,7 +1369,7 @@ public:
         }
         if (box.y < ui.s(4)) return;
         ui.panel(box, true, 10);
-        const raid::RaidSimulation::Group& g = sim_->group(sim_->viewed());
+        const raid::RaidSimulation::Group& g = sim_->group(shownGroup());
         const std::string who = watchSeat_ >= 0 ? seatName(watchSeat_) : std::string("le groupe");
         const float pad = ui.s(12), bw = ui.s(44), gap = ui.s(6);
         fit(ui, "VOUS REGARDEZ · " + g.name + " · " + who, {box.x + pad, box.y + ui.s(20)}, 15, box.w - pad * 2 - bw * 2 - gap * 2, kGold, FontFace::Bold);
@@ -947,7 +1404,8 @@ public:
             ui.popId();
             return;
         }
-        fit(ui, "RAID COMPLET · TEST LOCAL — rien n'est envoyé", {x, box.y + ui.s(36)}, 20, w - closeW - ui.s(16), kGold, FontFace::Title);
+        fit(ui, relay_.on ? "RAID COMPLET · TEST EN LIGNE — rien n'est compté" : "RAID COMPLET · TEST LOCAL — rien n'est envoyé", {x, box.y + ui.s(36)}, 20,
+            w - closeW - ui.s(16), kGold, FontFace::Title);
         const std::vector<std::string> tabs = {"Groupes", "Contributions", "Événements du monde", "Carte du titan"};
         std::vector<bool> on(tabs.size(), false);
         on[static_cast<size_t>(simPanel_)] = true;
@@ -985,7 +1443,7 @@ public:
         for (size_t i = 0; i < groups.size(); ++i, y += rowH + gap) {
             if (y + rowH < list.y || y > list.bottom()) continue;
             const raid::RaidSimulation::Group& g = *groups[i];
-            const bool here = static_cast<int>(i) == sim_->viewed();
+            const bool here = static_cast<int>(i) == shownGroup();
             const Rect row{list.x, y, list.w - ui.s(14), rowH};
             ui.r().fillRoundedRect(row, ui.s(8), here ? Color{40, 34, 72, 255} : Color{22, 28, 60, 255});
             const float textW = row.w - bw * 2 - bgap * 3;
@@ -998,28 +1456,32 @@ public:
             }
             std::string state = g.wiped ? "ÉLIMINÉ · ses joueurs regardent" : std::to_string(inPlay) + " / " + std::to_string(seats) + " joueurs simulés en jeu";
             if (g.relieves > 0) state += " · renfort du Groupe " + std::to_string(g.relieves);
-            if (here) state += sim_->seated() ? " · VOUS ÊTES ICI" : " · vous regardez";
+            if (here) state += shownSeated() ? " · VOUS ÊTES ICI" : " · vous regardez";
+            if (relay_.on && relay_.started) {
+                // 2.80: the real players of the test in this group.
+                int real = 0;
+                const coopnet::TestSeats t = link_->testSeatsAt(tick_);
+                for (const coopnet::TestSeat& e : t) real += e.placed() && e.group == static_cast<int>(i);
+                if (real > 0) state += " · " + std::to_string(real) + (real > 1 ? " joueurs réels" : " joueur réel");
+            }
             fit(ui, g.name + " · " + groupWhere(g), {row.x + ui.s(12), row.y + ui.s(18)}, 16, textW, here ? kGold : kText, FontFace::Bold);
             fit(ui, state, {row.x + ui.s(12), row.y + ui.s(40)}, 13, textW, g.wiped ? kDanger : kGreen);
             const std::string plan = g.session->bots().plan();
             fit(ui, plan.empty() ? "—" : "Ce qu'ils font : " + plan, {row.x + ui.s(12), row.y + ui.s(60)}, 12, textW, kDim);
-            UIContext::ButtonStyle bs;
-            bs.small = true;
-            bs.enabled = !g.wiped && !(here && sim_->seated());
-            bs.primary = bs.enabled;
             const float by = row.y + (rowH - ui.s(44)) * 0.5f;
-            if (ui.button("join" + std::to_string(g.id), {row.right() - bw * 2 - bgap * 2, by, bw, ui.s(44)}, "Rejoindre", bs) && sim_->join(static_cast<int>(i))) {
-                simPanel_ = -1;
-                bindView();
+            // 2.80: an invited player is placed by the administrator: they only watch another group while not placed.
+            const bool placedHere = relay_.on && !relay_.admin && shownSeated();
+            if (!relay_.on || relay_.admin) {
+                UIContext::ButtonStyle bs;
+                bs.small = true;
+                bs.enabled = !g.wiped && !(here && shownSeated());
+                bs.primary = bs.enabled;
+                if (ui.button("join" + std::to_string(g.id), {row.right() - bw * 2 - bgap * 2, by, bw, ui.s(44)}, "Rejoindre", bs)) simJoin(static_cast<int>(i));
             }
             UIContext::ButtonStyle ws;
             ws.small = true;
-            ws.enabled = !(here && !sim_->seated());
-            if (ui.button("watch" + std::to_string(g.id), {row.right() - bw - bgap, by, bw, ui.s(44)}, "Regarder", ws)) {
-                sim_->watch(static_cast<int>(i));
-                simPanel_ = -1;
-                bindView();
-            }
+            ws.enabled = !(here && !shownSeated()) && !placedHere;
+            if (ui.button("watch" + std::to_string(g.id), {row.right() - bw - bgap, by, bw, ui.s(44)}, "Regarder", ws)) simWatch(static_cast<int>(i));
         }
         ui.endScroll();
     }
@@ -1371,12 +1833,23 @@ public:
         const Rect box{W * 0.5f - std::min(ui.s(330), W * 0.45f), H * 0.5f - ui.s(170), std::min(ui.s(660), W * 0.9f), ui.s(340)};
         ui.panel(box, true, 16);
         const float x = box.x + ui.s(28), w = box.w - ui.s(56);
-        fit(ui, "ASTERION — " + std::string(branch_ ? branch_->name : "BRAS DROIT"), {x, box.y + ui.s(36)}, 26, w, kText, FontFace::Title);
+        fit(ui, "ASTERION — " + std::string(sim_ || simMode_ ? "RAID COMPLET" : branch_ ? branch_->name : "BRAS DROIT"), {x, box.y + ui.s(36)}, 26, w, kText,
+            FontFace::Title);
         const std::string group = "[" + entry_.clanTag + "]·" + std::to_string(entry_.group);
         std::string line, sub;
         bool lobby = false;
         if (!fail_.empty()) {
             line = fail_;
+        } else if (relay_.on && catching_) {
+            // 2.80: an invited player joins a test under way: every step so far, the simulated players computed here.
+            const uint32_t total = std::max<uint32_t>(1, link_ ? link_->available() : 1);
+            line = "Le test a déjà commencé : rattrapage de la partie (" + std::to_string(std::min<uint32_t>(100, progress_ * 100 / total)) + " %)";
+            sub = "Votre ordinateur rejoue chaque pas du test (les joueurs simulés compris) ; vous prenez votre place dès qu'il est à jour.";
+        } else if (relay_.on) {
+            line = relay_.admin ? std::string("Test avec joueurs invités : ouverture sur le serveur…")
+                                : (relay_.adminName.empty() ? std::string("Connexion au test…") : "Connexion au test de " + relay_.adminName + "…");
+            sub = relay_.admin ? "Les invitations partent dès que le test commence ; il ne compte jamais (ni record, ni contribution, ni récompense)."
+                               : "Un test ne compte jamais : ni record, ni contribution, ni récompense, ni progression du raid.";
         } else if (entry_.spectator && !run_ && link_ && link_->watcher() && !link_->go()) {
             // 2.75: back after the group was wiped, its game over: a player of the branch is looked for.
             line = "GROUPE ÉLIMINÉ — mode spectateur";
@@ -1417,12 +1890,21 @@ public:
             ui.r().fillRoundedRect({x, by - ui.s(26), w, ui.s(10)}, ui.s(5), Color{40, 30, 50, 255});
             ui.r().fillRoundedRect({x, by - ui.s(26), w * std::clamp(p, 0.0f, 1.0f), ui.s(10)}, ui.s(5), kOrange);
         }
-        if (!catching_ && (ui.button("leave", {lobby ? x + bw + gap : x, by, bw, bh}, "Retour à la carte") || ui.backPressed())) leave();
+        if ((!catching_ || relay_.on) && (ui.button("leave", {lobby ? x + bw + gap : x, by, bw, bh}, test_ ? "Quitter le test" : "Retour à la carte") || ui.backPressed()))
+            leave();
     }
 
     void leave() {
         if (test_) {
-            g_.app.popScene();  // back to ADMINISTRATION › Raids
+            if (relay_.on) {
+                // 2.80: the administrator leaving ends the test for everyone; an invited player only leaves it
+                // (a simulated player takes their seat back).
+                if (relay_.admin && !relay_.testId.empty())
+                    g_.online.send("POST", "/api/v1/admin/raid-tests/" + relay_.testId + "/end", Json::object(), [](const ApiResult&) {});
+                stopCatchUp();
+                if (link_) link_->close();
+            }
+            g_.app.popScene();  // back to ADMINISTRATION › Raids (an invited player: where they answered)
             return;
         }
         if (link_) link_->close();
@@ -1544,7 +2026,7 @@ public:
         int held = 0;
         for (int i = 0; i < w.teamSize(); ++i) held += w.member(i).presence != P::Vacant;
         g.title = "[" + entry_.clanTag + "]·" + std::to_string(entry_.group) + " · " + std::to_string(held) + " / 8";
-        if (sim_) g.title = sim_->group(sim_->viewed()).name + " · " + std::to_string(held) + " / 8";  // 2.77
+        if (sim_) g.title = sim_->group(shownGroup()).name + " · " + std::to_string(held) + " / 8";  // 2.77
         for (int i = 0; i < w.teamSize(); ++i) {
             const GameWorld::TeamMember& mb = w.member(i);
             const Player& p = w.playerAt(i);
@@ -2452,6 +2934,11 @@ public:
 
     /// 2.72: the network line, or a test's badge (never counted: said where the network's line is).
     std::string statusText(Color& c) {
+        if (relay_.on && !sim_) {
+            // 2.80: a test with invited players: never counted, who plays in it.
+            c = kGold;
+            return relayStatus();
+        }
         if (sim_) {
             // 2.77: always said first (the line is fitted from its start): nothing leaves this computer.
             c = kGold;
@@ -2483,7 +2970,7 @@ public:
     void drawPause() {
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
-        Rect box = centred(ui.s(600), ui.s(470) + (sim_ ? ui.s(72) : 0.0f));
+        Rect box = centred(ui.s(600), ui.s(470) + (sim_ ? ui.s(72) : 0.0f) + (guests_ ? ui.s(72) : 0.0f));
         ui.panel(box, true, 16);
         fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
         fit(ui, sim_ ? "Le raid continue pendant la pause : tous les groupes jouent." : test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
@@ -2503,6 +2990,18 @@ public:
             }
             y += bh + ui.s(14);
         }
+        if (guests_) {
+            // 2.80: the invited players (invite, cancel, « Invincible », group), the pause closed.
+            const std::string n = guests_->summary();
+            const std::string label = n.empty() ? std::string("Inviter des joueurs") : "Joueurs invités · " + n;
+            UIContext::ButtonStyle gs;
+            gs.fontSize = ui.fitFont(label, FontFace::Bold, 22, bw - ui.s(24));
+            if (ui.button("guests", {box.x + ui.s(40), y, bw, bh}, label, gs)) {
+                paused_ = false;
+                openGuests();
+            }
+            y += bh + ui.s(14);
+        }
         {
             // 2.75.5: the raid's menu (the zones' tables among its sections), the pause closed: its own choice.
             const std::string label = "Menu du raid · " + menuKeyName();
@@ -2516,7 +3015,12 @@ public:
         }
         UIContext::ButtonStyle danger;
         danger.danger = true;
-        if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, test_ ? "Quitter le test (retour à l'administration)" : "Quitter le raid (retour à la carte)", danger))
+        const std::string quit = relay_.on && relay_.admin ? "Terminer le test (pour tous les joueurs)"
+                                 : relay_.on                ? "Quitter le test (un joueur simulé reprend votre place)"
+                                 : test_                    ? "Quitter le test (retour à l'administration)"
+                                                            : "Quitter le raid (retour à la carte)";
+        danger.fontSize = ui.fitFont(quit, FontFace::Bold, 26, bw - ui.s(24));
+        if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, quit, danger))
             leave();
         y += bh + ui.s(18);
         // 2.72: the raid's keys (the large map; 2.75.5: the menu), measured into the panel.
@@ -2556,13 +3060,15 @@ public:
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 190});
         Rect box = centred(ui.s(620), ui.s(260));
         ui.panel(box, true, 16);
-        fit(ui, "FIN DE L'INSTANCE", {box.center().x, box.y + ui.s(44)}, 32, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
+        fit(ui, test_ ? "FIN DU TEST" : "FIN DE L'INSTANCE", {box.center().x, box.y + ui.s(44)}, 32, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
         const auto lines = wrap(ui, endReason_, FontFace::Body, 17, box.w - ui.s(56), 3);
         drawLines(ui, lines, {box.x + ui.s(28), box.y + ui.s(80)}, 17, ui.s(24), kDim);
         ui.pushId("end");
         UIContext::ButtonStyle bs;
         bs.primary = true;
-        if (ui.button("map", {box.x + ui.s(40), box.bottom() - ui.s(82), box.w - ui.s(80), ui.s(58)}, "Retour à la carte de la branche", bs)) leave();
+        const std::string back = test_ ? "Quitter le test" : "Retour à la carte de la branche";
+        bs.fontSize = ui.fitFont(back, FontFace::Bold, 26, box.w - ui.s(100));
+        if (ui.button("map", {box.x + ui.s(40), box.bottom() - ui.s(82), box.w - ui.s(80), ui.s(58)}, back, bs)) leave();
         ui.popId();
     }
 
@@ -2629,6 +3135,24 @@ public:
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
+    // 2.80 (docs/RAIDS.md §22): the test relayed to invited players (raid::stepRelayed).
+    struct Relay {
+        bool on = false;         // the test goes through the server (players invited)
+        bool admin = false;      // this computer's administrator opened it (else an invited player)
+        bool bad = false;        // its settings unreadable here
+        bool startSent = false;  // the administrator started its relay
+        bool started = false;    // GO came and was checked: the steps come from the relay
+        std::string testId, fingerprint, adminName;
+        raid::RelayedTestConfig config;
+        int seat = -1;   // this computer's seat on the relay (the administrator: 0)
+        int shown = 0;   // the whole raid: the group watched while not placed in one
+        std::array<std::string, coopnet::kMaxPlayers> names;  // the real player of each relay seat (last known)
+    } relay_;
+    std::unique_ptr<RaidTestGuests> guests_;  // 2.80: the administrator's invited players
+    coopnet::TestSeats tableSeen_;            // 2.80: the places at the last step played
+    uint32_t awayBits_ = 0;                   // 2.80: the relay seats whose player is away (their simulated player plays)
+    std::pair<int, int> boundPlace_{0, 0};    // the whole raid: the group shown and this computer's seat in it
+    size_t shapeGroups_ = 0;
     std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     raidmenu::Overlay overlay_;  // 2.75.5: the notifications and the raid's menu (no card opens by itself)
     bool fallSeen_ = false;      // 2.75.5: a gigaboss fell here: « Résultats du raid » in the menu
@@ -2661,5 +3185,7 @@ std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry) { return s
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup) { return std::make_unique<RaidGameScene>(g, std::move(setup)); }
 
 std::unique_ptr<Scene> makeRaidSim(GameServices& g, RaidSimSetup setup) { return std::make_unique<RaidGameScene>(g, setup); }
+
+std::unique_ptr<Scene> makeRaidTestJoin(GameServices& g, RaidTestJoin join) { return std::make_unique<RaidGameScene>(g, std::move(join)); }
 
 }  // namespace cosmic

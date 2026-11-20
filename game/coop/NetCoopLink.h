@@ -77,6 +77,11 @@ public:
     void result(uint32_t ticks) override;
     uint32_t raidStateAt(uint32_t tick) const override;
     uint32_t raidHeartAt(uint32_t tick) const override;
+    /// 2.80 (an administrator's test with invited players): where each relay seat's player plays at
+    /// step `tick` (the last TEST_SEATS given from a step ≤ tick; nobody placed before the first one).
+    coopnet::TestSeats testSeatsAt(uint32_t tick) const;
+    /// 2.80: the relay ended the link with END « removed » (the administrator cancelled the invitation).
+    bool removed() const { return removed_; }
 
 private:
     void run();
@@ -119,6 +124,8 @@ private:
     uint32_t ticks_ = 0;
     std::vector<std::pair<uint32_t, uint32_t>> raidStates_;  // 2.65: (step, mask), in order (framesMutex_)
     std::vector<uint32_t> raidHearts_;                       // 2.72: the heart's state of each, 0 when none
+    std::vector<std::pair<uint32_t, coopnet::TestSeats>> testSeats_;  // 2.80: (step, places), in order (framesMutex_)
+    bool removed_ = false;                                   // 2.80
 };
 
 }  // namespace cosmic

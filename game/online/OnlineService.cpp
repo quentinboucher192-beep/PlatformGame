@@ -1388,6 +1388,24 @@ void OnlineService::noteUnread(const Json& data) {
         friendNotices_[key] = newest;
         saveFriendNotices();
     }
+    // 2.80: an administrator's invitations to a test (an older server sends none: the list stays as it was).
+    if (auto it = data.find("raid_test_invitations"); it != data.end() && it->is_array()) noteTestInvitations(*it);
+}
+
+void OnlineService::noteTestInvitations(const Json& list) {
+    if (!list.is_array()) return;
+    Json kept = Json::array();
+    for (const Json& j : list)
+        if (j.is_object() && !jstr(j, "test_id").empty()) kept.push_back(j);
+    testInvites_ = std::move(kept);
+    for (const Json& j : testInvites_) {
+        const std::string id = jstr(j, "test_id");
+        if (!testInvitesTold_.insert(id).second) continue;
+        const std::string admin = jstr(j.value("admin", Json::object()), "username");
+        notify(Notification::Kind::Friend, "Invitation à un test d'Asterion",
+               (admin.empty() ? std::string("Un administrateur") : admin) + " vous invite (" + jstr(j, "title", "administration") +
+                   ") : répondez dans NOTIFICATIONS, sous 3 minutes.");
+    }
 }
 
 // ---------------------------------------------------------------- interface

@@ -194,6 +194,7 @@ public:
 
     /// Display / catch-up settings, kept for every world of the run.
     void setQuiet(bool on);
+    bool quiet() const { return quiet_; }
     void setCameraFollow(int index);
 
 private:

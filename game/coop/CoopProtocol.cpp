@@ -194,6 +194,36 @@ std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask) {
     return o;
 }
 
+std::vector<uint8_t> testSeats(uint32_t tick, const TestSeats& seats) {
+    std::vector<uint8_t> o{static_cast<uint8_t>(Msg::TestSeats)};
+    Writer w{o};
+    w.u32(tick);
+    w.u8(static_cast<uint8_t>(seats.size()));
+    for (const TestSeat& s : seats) {
+        w.u8(s.group);
+        w.u8(s.seat);
+        w.u8(s.flags);
+    }
+    return o;
+}
+
+bool readTestSeats(const uint8_t* data, size_t size, uint32_t& tick, TestSeats& out) {
+    Reader r{data, data + size};
+    tick = r.u32();
+    const uint8_t n = r.u8();
+    if (!r.ok || n > kMaxPlayers) return false;
+    out = TestSeats{};
+    for (uint8_t k = 0; k < n; ++k) {
+        TestSeat s;
+        s.group = r.u8();
+        s.seat = r.u8();
+        s.flags = r.u8();
+        if (!r.ok || (s.placed() && s.seat >= kMaxPlayers) || (s.flags & ~1u)) return false;
+        out[k] = s;
+    }
+    return r.done();
+}
+
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart) {
     auto o = raidState(tick, mask);
     Writer{o}.u32(heart);

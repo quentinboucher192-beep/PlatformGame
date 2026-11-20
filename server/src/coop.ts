@@ -675,6 +675,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h)); // before the frames
             for (const [, b] of this.testStates) this.send(ws, b); // 2.80: a test's tables, before the frames too
             for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
+            if (this.info!.test) this.lobby(); // 2.80: the names of the seats (after GO and the history)
         } else {
             this.welcomeAll();
             this.lobby();
@@ -921,6 +922,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         const msg = this.testSeatsMessage(tick, entries);
         this.testStates.push([tick, msg]);
         this.sendAll(msg);
+        this.lobby(); // 2.80: who holds each seat (their names), after GO: never taken for a lobby by a game that joins late
     }
 
     /** The test is over (its administrator ended it, left it for 60 s, or 2 h passed): every game is told. */

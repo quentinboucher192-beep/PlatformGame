@@ -169,6 +169,16 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             raidHearts_.push_back(heart);
             break;
         }
+        case Msg::TestSeats: {
+            // 2.80: an administrator's test: the places from a step on (never one already given).
+            uint32_t tick = 0;
+            coopnet::TestSeats seats;
+            if (!go_ || !readTestSeats(msg.data() + 1, msg.size() - 1, tick, seats)) return;
+            std::lock_guard<std::mutex> lock(framesMutex_);
+            if (tick < ticks_ || (!testSeats_.empty() && tick < testSeats_.back().first)) return;
+            testSeats_.emplace_back(tick, seats);
+            break;
+        }
         case Msg::Pong: {
             const uint32_t clock = r.u32();
             if (r.ok) rttMs_ = static_cast<int>(static_cast<uint32_t>(SDL_GetTicks()) - clock);
@@ -194,7 +204,9 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             endReason_ = reason == EndReason::HostLeft  ? "L'hôte a quitté la partie."
                          : reason == EndReason::TooLong ? "La partie a atteint sa durée maximale (2 h)."
                          : reason == EndReason::Refused ? "Le relais refuse cette connexion (partie complète, ou plus de 60 s d'absence)."
+                         : reason == EndReason::Removed ? "L'administrateur vous a retiré du test."  // 2.80
                                                         : "La partie est terminée.";
+            removed_ = reason == EndReason::Removed;
             break;
         }
         default:
@@ -279,6 +291,16 @@ uint32_t NetCoopLink::raidStateAt(uint32_t tick) const {
         mask = m;
     }
     return mask;
+}
+
+coopnet::TestSeats NetCoopLink::testSeatsAt(uint32_t tick) const {
+    std::lock_guard<std::mutex> lock(framesMutex_);
+    coopnet::TestSeats out;
+    for (const auto& [t, s] : testSeats_) {
+        if (t > tick) break;
+        out = s;
+    }
+    return out;
 }
 
 uint32_t NetCoopLink::raidHeartAt(uint32_t tick) const {

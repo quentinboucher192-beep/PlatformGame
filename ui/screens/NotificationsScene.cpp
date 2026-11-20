@@ -99,6 +99,12 @@ public:
     void onEnter() override {
         g_.ui.setFocus("news/back");
         if (g_.online.usable()) g_.checkForUpdate();
+        // 2.80: an administrator's invitations to a test of Asterion, read now (the strip at the top answers them).
+        if (g_.online.loggedIn())
+            g_.online.get("/api/v1/raid-tests/invitations", OnlineService::guard(life_, [this](const ApiResult& r) {
+                              if (r.ok && !r.fromCache) g_.online.noteTestInvitations(r.data.value("invitations", Json::array()));
+                          }),
+                          false);
         if (tab_ == 1) loadOnline(false);
         if (g_.onlineOpen == "notif-settings") {  // automated screenshots
             g_.onlineOpen.clear();
@@ -142,6 +148,17 @@ public:
             return;
         }
         y += ui.s(72);
+        if (const Json& tests = g_.online.testInvitations(); g_.online.loggedIn() && tests.is_array() && !tests.empty()) {
+            // 2.80: an administrator invites this player to a test of Asterion (3 minutes to answer): the window that answers.
+            const int n = static_cast<int>(tests.size());
+            const std::string t = n > 1 ? std::to_string(n) + " invitations à un test d'Asterion : répondre"
+                                        : std::string("Un administrateur vous invite à un test d'Asterion : répondre");
+            UIContext::ButtonStyle is;
+            is.primary = true;
+            is.fontSize = ui.fitFont(t, FontFace::Bold, 22, std::min(W, ui.s(900)) - ui.s(24));
+            if (ui.button("raidtest", {x0, y, std::min(W, ui.s(900)), ui.s(50)}, t, is)) g_.app.pushScene(makeRaidTestInvites(g_));
+            y += ui.s(64);
+        }
         {
             int localN = g_.news.unread(), onlineN = g_.online.loggedIn() ? g_.online.unreadNotifications() : 0;
             int tab = tab_;
@@ -311,6 +328,13 @@ private:
         if (kind == "challenge_reward") return "Voir la Collection";
         // 2.66: a clan still there (a dissolved one has no page any more).
         if (kind == "clan" && n.contains("data") && jstr(n["data"], "event") != "dissolved" && !jstr(n["data"], "clan_id").empty()) return "Voir le clan";
+        // 2.80: an administrator's invitation to a test, while it waits for an answer.
+        if (kind == "raid" && n.contains("data") && jstr(n["data"], "event") == "test_invite") {
+            const std::string id = jstr(n["data"], "test_id");
+            for (const Json& t : g_.online.testInvitations())
+                if (jstr(t, "test_id") == id) return "Répondre à l'invitation";
+            return {};
+        }
         // Clan raids: the sheet of the event (a cancelled one has nothing more to show).
         if (kind == "raid" && n.contains("data") && !jstr(n["data"], "event_id").empty() && jstr(n["data"], "event") != "cancelled")
             return "Voir l'événement";
@@ -335,6 +359,10 @@ private:
                 else if (g_.migration.available() && securityReason(n) == "migration_in" && jstr(n["data"], "action") == "progress_restore")
                     openRestore();
                 else g_.app.pushScene(makeOnlineSettings(g_, 3));
+                return;
+            }
+            if (kind == "raid" && jstr(n["data"], "event") == "test_invite") {  // 2.80: answered in its window
+                g_.app.pushScene(makeRaidTestInvites(g_));
                 return;
             }
             if (kind == "raid") {  // the sheet of a clan raid event

@@ -259,6 +259,7 @@ export async function get(ctx: Ctx): Promise<Response> {
             });
     }
     return json(ctx, {
+        server_time: now,
         test: testJson(t),
         invitations: rows.map((r) => {
             const where = places.find((p) => p.player_id === r.player_id);
@@ -504,7 +505,7 @@ export async function pendingSummary(db: D1Database, me: string) {
 /** GET /raid-tests/invitations: my invitations to a test still to answer. */
 export async function invitations(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
-    return json(ctx, { invitations: (await pendingFor(ctx.env.DB, auth.player.id, 10)).map(pendingJson) });
+    return json(ctx, { server_time: nowIso(), invitations: (await pendingFor(ctx.env.DB, auth.player.id, 10)).map(pendingJson) });
 }
 
 async function myInvitation(ctx: Ctx, me: string): Promise<{ t: TestRow; inv: InvitationRow }> {

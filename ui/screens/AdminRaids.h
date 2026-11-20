@@ -13,7 +13,9 @@
 // only (players in play, instances with their zone, players and the latency the games measured,
 // gigaboss down, reconnections, refused reports, the journal of the admin actions and anomalies);
 // « Suspendre » / « Reprendre »; a catch-up session after the event. The right column has three tabs:
-// « Événements », « En direct », « Tester Asterion ».
+// « Événements », « En direct », « Tester Asterion ». 2.80 (docs/RAIDS.md §22): « Joueurs invités » in both
+// tests (one zone, the whole raid): real players connected now chosen before the launch (their group,
+// « Invincible »), invited with it — the test then goes through the server (ui/online/RaidTestGuests).
 
 #include <cstdint>
 #include <functional>
@@ -27,16 +29,18 @@
 namespace cosmic {
 
 class GameServices;
+class RaidTestGuests;
 
 class AdminRaids {
 public:
     AdminRaids(GameServices& g, std::function<void(const std::string&, bool)> say, std::function<bool(const ApiResult&)> lostRole);
+    ~AdminRaids();
 
     /// The tab is shown: the events are read (again with `force`).
     void enter(bool force = false);
     void draw(const Rect& inner);
     /// The cancellation of an event waits for its confirmation.
-    bool modal() const { return confirm_; }
+    bool modal() const;
     void drawModal();
     /// 2.77: the settings of « Simuler un raid complet » in `r` (also the capture of the documentation).
     void drawSim(const Rect& r, bool capture = false);
@@ -99,6 +103,9 @@ private:
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
     int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
     bool simBotsInvincible_ = false;
+    // 2.80: the players invited to the next test (its window), and the row that opens it.
+    std::unique_ptr<RaidTestGuests> guests_;
+    void guestsRow(const Rect& r, bool fullRaid);
 };
 
 }  // namespace cosmic
