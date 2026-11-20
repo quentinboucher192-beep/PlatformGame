@@ -138,6 +138,11 @@ public:
     const std::string& openConversation() const { return openConversation_; }
     /// A screen that loaded GET /social/unread itself shares the answer.
     void noteUnread(const Json& data);
+    /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the invitations to an administrator's test of Asterion still to answer
+    /// (read with the unread messages, every 30 s, or by the screen that answers them); each new one is
+    /// told once by a toast. Entries as the server writes them (raidTests.ts pendingJson).
+    const Json& testInvitations() const { return testInvites_; }
+    void noteTestInvitations(const Json& list);
 
     // ---------------------------------------------------------- clans (2.66)
     /// The player's clan as last read (GET /clans/me: {clan, invitations, applications}), from the
@@ -161,6 +166,9 @@ public:
     void refreshNotifications(ApiCallback cb = {});
     /// A screen that loaded GET /notifications (or marked some read) shares the counter.
     void noteNotificationsUnread(int unread) { unreadNotifications_ = std::max(0, unread); }
+    /// 2.81: the events of the « heart_film » notifications read since the last call (Asterion fell: « Après Asterion »,
+    /// watched with the clans of the fall; ui/screens/AsterionFilm reads the event and plays it at the server's time).
+    std::vector<std::string> takeFilmNotices();
 
     // ------------------------------------------------------------ time played
     /// Time played in a level (official id, community level id, or "other"), counted on
@@ -369,6 +377,8 @@ private:
     int unreadRevision_ = 0;
     std::map<std::string, int> unreadByConversation_;
     std::set<std::string> unreadGroupIds_;  // which of them are groups
+    Json testInvites_ = Json::array();       // 2.80
+    std::set<std::string> testInvitesTold_;  // 2.80: the tests whose invitation was told (once each)
     std::string openConversation_;
 
     Json myClan_;  // 2.66: GET /clans/me
@@ -379,6 +389,8 @@ private:
     bool notificationsBusy_ = false;
     int unreadNotifications_ = 0;
     void noteNotifications(const Json& data);
+    std::vector<std::string> filmNotices_;   // 2.81: events of « heart_film » notifications not taken yet
+    std::set<std::string> filmNoticesSeen_;  // each notification once per session
 
     /// {"player": id, "levels": {key: seconds}} (online/playtime.json).
     Json playtime_ = Json::object();

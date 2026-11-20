@@ -74,6 +74,11 @@ struct PlayOptions {
     /// training run (nothing of it counts), Bip by Nova, its explanation cards; its end card
     /// leads to the map of Sylvanox. Left from its pause menu, it is skipped for good.
     bool tutorial = false;
+    /// 2.81: ADMINISTRATION › Films › « Rejouer le didacticiel »: the tutorial again from its start, for an
+    /// administrator, that touches nothing: its state in the progression stays as it was (never « started »,
+    /// « skipped » nor « finished »), no souvenir, no title worn, nothing counted (a training run, as always); left or
+    /// finished, it goes back to ADMINISTRATION › Films.
+    bool tutorialReplay = false;
 };
 
 /// A finished run's segments (results screen → Segments): this run, my best segments, my
@@ -126,6 +131,8 @@ std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 /// then the tutorial itself (nullptr from makeTutorialRun when its level cannot be read).
 std::unique_ptr<Scene> makeTutorialWelcome(GameServices& g);
 std::unique_ptr<Scene> makeTutorialRun(GameServices& g);
+/// 2.81: the tutorial replayed by an administrator (PlayOptions::tutorialReplay): nothing of it is kept.
+std::unique_ptr<Scene> makeTutorialReplay(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
 /// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,
@@ -288,6 +295,14 @@ inline void readRaidEntry(RaidEntry& e, const Json& data) {
 }
 /// The combat of a raid instance (up to 8 players in lockstep), in place of the current screen.
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry);
+/// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): a player the administrator invites to their test (chosen before the launch:
+/// the test then goes through the server, the invitation leaves at once).
+struct RaidTestGuest {
+    std::string id, name;
+    bool admin = false;      // an administrator (allowed like any player)
+    int group = 0;           // the group of the whole raid's simulation (0: a zone)
+    bool invincible = false;
+};
 /// 2.68: an administrator's test of a raid (ADMINISTRATION › Raids › « Tester Asterion »): a
 /// branch of the catalog (raid::Branch::all) and one of its zones, solo and local, never reported
 /// (no consensus, branch state, ranking, contribution nor reward), invincible when asked, the
@@ -315,6 +330,8 @@ struct RaidTestSetup {
     /// 2.78, captures (`--raid-contrib`): the « Tableau des contributions » opens over the raid's menu at the
     /// first zone finished (the real numbers of the test, nothing sent).
     bool openContrib = false;
+    /// 2.80: the players invited (none: the test stays local and offline).
+    std::vector<RaidTestGuest> guests;
 };
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
 /// 2.77: « Simuler un raid complet » (ADMINISTRATION › Raids › Tester Asterion, docs/RAIDS.md §21): the
@@ -330,8 +347,20 @@ struct RaidSimSetup {
     bool botsInvincible = false;  // the simulated players too (a test only: their survival is not what is tested)
     bool capture = false;  // captures for the documentation (headless only): no account needed
     int panel = -1;        // captures: the raid's panel open on that tab (0 groups … 3 titan's map)
+    /// 2.80: the players invited, each in a group (none: the simulation stays local and offline).
+    std::vector<RaidTestGuest> guests;
 };
 std::unique_ptr<Scene> makeRaidSim(GameServices& g, RaidSimSetup setup);
+/// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): an invited player joins an administrator's test they accepted (the server's
+/// answer: the test, its settings and fingerprint, their group and « Invincible »), in place of the current screen.
+struct RaidTestJoin {
+    std::string testId, mode, fingerprint, adminName;
+    Json config;
+    int group = 0;
+};
+std::unique_ptr<Scene> makeRaidTestJoin(GameServices& g, RaidTestJoin join);
+/// 2.80: the invitations to an administrator's test still to answer (accept, decline), over the current screen.
+std::unique_ptr<Scene> makeRaidTestInvites(GameServices& g);
 /// 2.77, captures for the documentation (headless only): the settings of « Simuler un raid complet ».
 std::unique_ptr<Scene> makeRaidSimMenu(GameServices& g);
 /// 2.70, captures for the documentation only (`--coop-test`, never without --headless): a team

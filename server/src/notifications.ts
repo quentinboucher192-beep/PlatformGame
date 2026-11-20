@@ -220,6 +220,9 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
             return `${tag} a refusé votre raid commun : ${raid}`;
         case "leader":
             return `Vous êtes le chef de raid de ${tag} pour ${raid}`;
+        // 2.80 (raidTests.ts): an administrator invites me to a test of Asterion (answered in the game).
+        case "test_invite":
+            return `${who} vous invite à un test d'Asterion (${s("title") || "administration"}) : répondez dans les 3 minutes`;
         case "call":
             return `${who} vous invite à vous inscrire : ${raid}`;
         case "cancelled":
@@ -233,6 +236,9 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
             return `Le Cœur d'Asterion s'ouvre : les sept gigaboss sont tombés, rejoignez le combat final de ${raid}`;
         case "heart_fallen":
             return `Asterion est tombé ! Le Cœur a cédé sous les coups de tous les clans (${raid}) : vos récompenses vous attendent`;
+        // 2.81 (raidHeart.ts): « Après Asterion », watched together by the clans present at the fall.
+        case "heart_film":
+            return `Asterion est tombé — regarder le film avec votre clan : « Après Asterion » (${raid})`;
         // 2.69 (raidWorld.ts): the official result of a world event, a suspension, a catch-up session.
         case "results": {
             const outcome = d.outcome === "vaincu" ? "Asterion est tombé" : "Asterion a survécu";

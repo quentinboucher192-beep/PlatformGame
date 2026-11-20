@@ -56,6 +56,10 @@ enum class Msg : uint8_t {
     PackagePart = 17, // relay → game (2.63.5): u32 total (0: none), u32 offset, 32 bytes SHA-256 of the whole, the bytes
     RaidState = 18,   // relay → game (2.65, raids): u32 step from which it applies, u32 objectives done (bits);
                       // 2.72 (phase 6, the Cœur d'Asterion): + u32 the heart's shared state (raid::HeartShared packed)
+    TestSeats = 19,   // relay → game (2.80, an administrator's test with invited players, docs/RAIDS.md « Tester avec des joueurs invités »): u32 step
+                      // from which it applies, u8 count, then per relay seat u8 group (kTestNone), u8 seat of the test, u8 flags
+    TestOrder = 20,   // 2.80, a test's order to its simulated players (2.79's wheel): game → relay (its administrator only):
+                      // u8 kind (1..6), u16 x, u16 y (4 px each); relay → game: u32 step, then the same
 };
 
 /// 2.63.5: the level of a room. `source` "campaign" (`id`: the level of the game) or
@@ -69,7 +73,21 @@ struct RoomLevel {
     bool operator==(const RoomLevel&) const = default;
 };
 
-enum class EndReason : uint8_t { Finished = 0, HostLeft = 1, TooLong = 2, Refused = 3 };
+/// 2.80: Removed — an administrator's test: its administrator removed this player.
+enum class EndReason : uint8_t { Finished = 0, HostLeft = 1, TooLong = 2, Refused = 3, Removed = 4 };
+
+/// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): where the player of a relay seat plays in an administrator's test with
+/// invited players (TEST_SEATS, decided by the relay alone and given at a step to every computer).
+constexpr uint8_t kTestNone = 0xFF;
+struct TestSeat {
+    uint8_t group = kTestNone;  // the group of the test (an index; kTestNone: nowhere, the seat is vacant or watching)
+    uint8_t seat = 0;           // the seat in that group (0: the administrator's place)
+    uint8_t flags = 0;          // 1: invincible
+    bool placed() const { return group != kTestNone; }
+    bool invincible() const { return (flags & 1u) != 0; }
+    bool operator==(const TestSeat&) const = default;
+};
+using TestSeats = std::array<TestSeat, kMaxPlayers>;
 
 /// Writes `count` frames, each against the previous one (the first against an empty frame).
 void writeFrames(std::vector<uint8_t>& out, const InputFrame* frames, size_t count);
@@ -168,6 +186,15 @@ std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask);
 /// 2.74 (phase 6): the same with the shared state of the Cœur d'Asterion (raid::HeartShared::pack):
 /// only the relays of the heart's instances send it (an older game, which cannot play the heart, never gets one).
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart);
+/// 2.80: TEST_SEATS from step `tick` on; readTestSeats reads its content (after the type byte), false when
+/// malformed (more seats than kMaxPlayers, a seat of the test past them, unknown flags).
+std::vector<uint8_t> testSeats(uint32_t tick, const TestSeats& seats);
+bool readTestSeats(const uint8_t* data, size_t size, uint32_t& tick, TestSeats& out);
+/// 2.80: an order of a test's administrator to the simulated players (raid::bots::OrderKind 1..6, its place in
+/// 4-pixel units: x 0..2047, y 0..1023), sent to the relay, which gives it to every game from a step. `packed`
+/// as raid::bots::withOrder packs it (kind | x << 3 | y << 14).
+std::vector<uint8_t> testOrder(uint8_t kind, uint16_t x, uint16_t y);
+bool readTestOrder(const uint8_t* data, size_t size, uint32_t& tick, uint32_t& packed);
 
 std::vector<uint8_t> packageAsk(uint32_t offset);
 /// `total` 0: this relay has no package to send (the bytes are then empty).

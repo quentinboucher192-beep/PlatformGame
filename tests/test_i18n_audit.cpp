@@ -5,7 +5,9 @@
 // English text); the key screens drawn in English with nothing noted (main menu, settings, raid
 // sheets, wardrobe, notifications, statistics, a raid's HUD with « Ce qu'il reste à faire » and its menu (Tab)); the
 // texts the Cosmic Online server writes (notifications, the titan's alerts, errors) translated by
-// their models; the installer's language and the setting.
+// their models; the installer's language and the setting. 2.80: the invitations to an administrator's
+// test of Asterion (NOTIFICATIONS' strip, the window that answers them) and the invited players' window.
+
 
 #include <SDL3/SDL.h>
 
@@ -24,6 +26,7 @@
 #include "game/online/HttpTransport.h"
 #include "saves/Settings.h"
 #include "tests/TestFramework.h"
+#include "ui/online/RaidTestGuests.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/UIContext.h"
 
@@ -68,6 +71,26 @@ public:
             return ok({{"player", player()}, {"session", session}});
         }
         if (path == "/api/v1/auth/me") return ok({{"player", player()}});
+        if (path.rfind("/api/v1/raid-tests/invitations", 0) == 0) {
+            // 2.80 (raidTests.ts pendingJson): a zone waiting for an answer, a whole raid already accepted.
+            Json list = Json::array();
+            list.push_back({{"test_id", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"}, {"mode", "zone"}, {"title", "une zone"},
+                            {"config", {{"skill", 1}, {"invincible", true}, {"bots_invincible", false}, {"branch", "asterion_bras_droit"}, {"zone", 4},
+                                        {"players", 4}, {"start_phase", 1}, {"parts", 127}, {"relics", 0}}},
+                            {"fingerprint", "x"}, {"group", 0}, {"invincible", true}, {"admin", {{"id", "a1"}, {"username", "Orion"}}},
+                            {"created_at", "2099-01-01T00:00:00.000Z"}, {"expires_at", "2099-01-01T00:03:00.000Z"}, {"status", "pending"}});
+            list.push_back({{"test_id", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"}, {"mode", "raid"}, {"title", "raid complet simulé"},
+                            {"config", {{"skill", 2}, {"invincible", false}, {"bots_invincible", false}, {"groups", 7}, {"bots", 3}, {"full_groups", true}}},
+                            {"fingerprint", "x"}, {"group", 2}, {"invincible", false}, {"admin", {{"id", "a1"}, {"username", "Orion"}}},
+                            {"created_at", "2026-11-19T10:00:00.000Z"}, {"expires_at", "2026-11-19T10:03:00.000Z"}, {"status", "accepted"}});
+            return ok({{"invitations", list}, {"server_time", "2099-01-01T00:00:30.000Z"}});
+        }
+        if (path.rfind("/api/v1/admin/raid-test-players", 0) == 0) {
+            Json players = Json::array();
+            players.push_back({{"id", "c1"}, {"username", "Vega"}, {"role", "admin"}, {"presence", "online"}});
+            players.push_back({{"id", "c2"}, {"username", "Lyra"}, {"role", "player"}, {"presence", "away"}});
+            return ok({{"players", players}, {"total", 2}, {"offset", 0}, {"has_more", true}});
+        }
         if (path.rfind("/api/v1/notifications?", 0) == 0) {
             Json list = Json::array();
             const char* texts[] = {
@@ -364,6 +387,26 @@ TEST_CASE("i18n audit: the online screens in English, with what the server write
     };
     settle(makeNotifications(g, 1));
     settle(makeRaidTitan(g, "evt1"));
+    // 2.80: the invitations to a test (a zone waiting, a whole raid accepted), and the invited players' window.
+    settle(makeRaidTestInvites(g));
+    {
+        struct Guests : Scene {
+            GameServices& g;
+            RaidTestGuests w;
+            explicit Guests(GameServices& gs) : g(gs), w(gs) {
+                w.setShape({"Groupe 1", "Groupe 2", "Renfort 1"}, 4);
+                w.setChosen({RaidTestGuest{"d1", "Alpha", false, 1, true}, RaidTestGuest{"d2", "Deneb", true, 0, false}});
+                w.open();
+            }
+            void update(float dt) override { w.update(dt); }
+            void render(float) override {
+                g.ui.begin(g.app, 1.0f / 30.0f);
+                w.draw();
+                g.ui.end();
+            }
+        };
+        settle(std::make_unique<Guests>(g));
+    }
     std::vector<i18n::AuditFinding> wrong;
     for (const auto& f : i18n::auditFindings()) {
         const bool theirs = f.part.find("Sky") != std::string::npos || f.part.find("STAR") != std::string::npos ||

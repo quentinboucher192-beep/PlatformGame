@@ -1139,6 +1139,14 @@ void OnlineService::noteNotifications(const Json& data) {
     std::string seen = first ? std::string("0") : friendNotices_[key].get<std::string>();
     std::string newest = seen;
     std::vector<std::string> fresh;
+    // 2.81: « Après Asterion » with the clans of the fall (unread, each once per session, even at a first reading:
+    // the film may still be playing).
+    if (auto it = data.find("notifications"); it != data.end() && it->is_array())
+        for (const auto& n : *it) {
+            const Json d = n.is_object() ? n.value("data", Json::object()) : Json::object();
+            if (jstr(n, "kind") != "raid" || !d.is_object() || jstr(d, "event") != "heart_film" || jstr(d, "event_id").empty()) continue;
+            if (filmNoticesSeen_.insert(jstr(n, "id")).second) filmNotices_.push_back(jstr(d, "event_id"));
+        }
     if (auto it = data.find("notifications"); it != data.end() && it->is_array())
         for (const auto& n : *it) {
             std::string at = jstr(n, "created_at");
@@ -1153,6 +1161,12 @@ void OnlineService::noteNotifications(const Json& data) {
     if (fresh.size() == 1) notify(Notification::Kind::Workshop, "Cosmic Online", fresh.front());
     else if (!fresh.empty())
         notify(Notification::Kind::Workshop, std::to_string(unreadNotifications_) + " notifications non lues", fresh.front() + " (et d'autres : NOTIFICATIONS).");
+}
+
+std::vector<std::string> OnlineService::takeFilmNotices() {
+    std::vector<std::string> out;
+    out.swap(filmNotices_);
+    return out;
 }
 
 // ------------------------------------------------------------------ time played
@@ -1387,6 +1401,24 @@ void OnlineService::noteUnread(const Json& data) {
     if (newest != seen) {
         friendNotices_[key] = newest;
         saveFriendNotices();
+    }
+    // 2.80: an administrator's invitations to a test (an older server sends none: the list stays as it was).
+    if (auto it = data.find("raid_test_invitations"); it != data.end() && it->is_array()) noteTestInvitations(*it);
+}
+
+void OnlineService::noteTestInvitations(const Json& list) {
+    if (!list.is_array()) return;
+    Json kept = Json::array();
+    for (const Json& j : list)
+        if (j.is_object() && !jstr(j, "test_id").empty()) kept.push_back(j);
+    testInvites_ = std::move(kept);
+    for (const Json& j : testInvites_) {
+        const std::string id = jstr(j, "test_id");
+        if (jstr(j, "status") == "accepted" || !testInvitesTold_.insert(id).second) continue;  // accepted: only to come back
+        const std::string admin = jstr(j.value("admin", Json::object()), "username");
+        notify(Notification::Kind::Friend, "Invitation à un test d'Asterion",
+               (admin.empty() ? std::string("Un administrateur") : admin) + " vous invite (" + jstr(j, "title", "administration") +
+                   ") : répondez dans NOTIFICATIONS, sous 3 minutes.");
     }
 }
 

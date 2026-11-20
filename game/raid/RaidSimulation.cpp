@@ -281,7 +281,13 @@ bool RaidSimulation::zoneHasWork(const RaidRun& run) {
     return TestBots::chooseExit(run) >= 0;
 }
 
-void RaidSimulation::step(const InputFrame& admin) {
+void RaidSimulation::step(const InputFrame& admin) { step(admin, {}); }
+
+void RaidSimulation::setInvincibleSeats(int group, uint32_t seats) {
+    if (group >= 0) invincible_[group] = seats;
+}
+
+void RaidSimulation::step(const InputFrame& admin, const std::vector<Human>& humans) {
     const auto t0 = std::chrono::steady_clock::now();
     // What the heart's instances give each other (raidHeart.ts heartPackFor): the others' part, the
     // shared phase, the relics validated.
@@ -301,10 +307,20 @@ void RaidSimulation::step(const InputFrame& admin) {
             hs.phase = static_cast<uint8_t>(heartPhase());
             hs.relics = static_cast<uint8_t>(relics());
         }
+        // 2.80: the invited players of this group (their seats and frames), its invincible seats.
+        std::vector<std::pair<int, InputFrame>> own;
+        uint32_t held = 0;
+        for (const Human& h : humans)
+            if (h.group == static_cast<int>(i) && h.seat >= 1 && h.seat < g.session->players() && !((held >> h.seat) & 1u)) {
+                held |= 1u << h.seat;
+                own.push_back({h.seat, h.frame});
+            }
+        g.session->setHumanSeats(held);
+        if (auto it = invincible_.find(static_cast<int>(i)); it != invincible_.end()) g.session->setInvincibleSeats(it->second);
         for (int k = 0; k < times; ++k) {
             g.session->setBranchState(mask(g.branch));
             g.session->setHeartShared(hs);
-            g.session->step(static_cast<int>(i) == viewed_ && seated_ ? admin : InputFrame{});
+            g.session->step(static_cast<int>(i) == viewed_ && seated_ ? admin : InputFrame{}, own);
             ++worldSteps_;
             if (g.session->run().wiped()) break;
         }

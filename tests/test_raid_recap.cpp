@@ -405,7 +405,7 @@ TEST_CASE("raid recap: the layout holds its texts at 1280 x 720 and 1920 x 1080,
                 CHECK(L.trows.size() == 8);
                 CHECK(L.brows.size() == 7);  // « Le moins de morts » too (2.78: the zones' tables count the deaths)
                 CHECK(L.rewardPages >= 1 && !L.tiles.empty());
-                CHECK(L.buttons.size() == 5);  // the contributions, the titan's map, the victory film, the event's sheet, « Noter ce raid »
+                CHECK(L.buttons.size() == 6);  // the contributions, the titan's map, the victory film, « Après Asterion » (2.81), the event's sheet, « Noter ce raid »
                 CHECK(!L.ratingText.text.empty() && !empty(L.ratingStars));
                 CHECK(L.ticks.size() >= 2);
                 CHECK(L.mlines.size() == 5);
@@ -442,7 +442,7 @@ TEST_CASE("raid recap: the screen draws the gigaboss's sprites, the titan, the f
         CHECK(v.portraits == 8);  // the seven gigaboss and the heart, each with its own sprite
         CHECK(v.titan && v.backdrop);
         CHECK(v.tiles >= 4 && v.previews == v.tiles);  // every reward drawn with its texture
-        CHECK(v.buttons == 2);  // a fixture: the contributions and the film (no titan's map nor sheet: no event on a server)
+        CHECK(v.buttons == 3);  // a fixture: the contributions, the film and « Après Asterion » (2.81; no titan's map nor sheet: no event on a server)
         CHECK(!v.contributions);
         rig.app.popScene();
         rig.app.runFrames(1);

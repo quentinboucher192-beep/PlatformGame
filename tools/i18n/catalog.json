@@ -150,6 +150,18 @@
    ]
   },
   {
+   "fr": "({0} absent)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "({0} absents)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "({0} essai)",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -1430,6 +1442,12 @@
    ]
   },
   {
+   "fr": "Accepter et rejoindre",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
    "fr": "Accepter l'invitation",
    "where": [
     "game/online/Clans.cpp"
@@ -1444,7 +1462,26 @@
   {
    "fr": "acceptée",
    "where": [
-    "ui/screens/RaidEventScene.cpp"
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "acceptée · absent",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "acceptée · arrive",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "acceptée · en jeu",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -1800,13 +1837,20 @@
   {
    "fr": "Administrateur",
    "where": [
-    "ui/screens/ProjectsScene.cpp"
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
    "fr": "administrateur",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
+   ]
+  },
+  {
+   "fr": "administrateur : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -1821,6 +1865,12 @@
    "where": [
     "ui/screens/MainMenuScene.cpp",
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "administration",
+   "where": [
+    "game/online/OnlineService.cpp"
    ]
   },
   {
@@ -1921,6 +1971,12 @@
   },
   {
    "fr": "Administration › Ennemis : un admin modifie une entité native et publie une révision ; chaque niveau de la campagne qui l'utilise reçoit une nouvelle révision, avec une case par niveau pour réinitialiser ses records ou les garder.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "ADMINISTRATION › Films : tous les mini-films et présentations du jeu en une liste (histoires des giga-boss, film d'Asterion, chute d'Asterion, « Après Asterion », bande-annonce, didacticiel), avec leur vignette, leur durée et où les joueurs les voient. Une recherche, des filtres, et un bouton pour lancer chacun, verrouillé ou non. « Rejouer le didacticiel » le relance depuis le début sans rien toucher : ni progression, ni souvenir, ni record, ni succès, ni statistique.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -2888,6 +2944,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/online/RaidReviewsPanel.cpp",
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
@@ -2992,7 +3049,8 @@
     "editors/level_editor/LevelEditorTools.cpp",
     "game/online/HttpTransport.cpp",
     "game/online/HttpTransportWinHttp.cpp",
-    "game/online/OnlineClient.cpp"
+    "game/online/OnlineClient.cpp",
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -3325,6 +3383,19 @@
    ]
   },
   {
+   "fr": "APRÈS ASTERION",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
+   "fr": "Après Asterion",
+   "where": [
+    "ui/screens/AsterionFilm.cpp",
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Après la Galerie des forges",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
@@ -3334,6 +3405,12 @@
    "fr": "Après la Tour des tendons",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Après le film de la victoire, en même temps pour les clans de la chute · fiche de l'événement, fiche récapitulative du raid, Collection › Galerie › Films",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -3994,6 +4071,18 @@
    ]
   },
   {
+   "fr": "Asterion est tombé — regarder le film avec votre clan",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé — regarder le film avec votre clan : « Après Asterion » ({0})",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Asterion résiste encore",
    "where": [
     "server/src/raidWorld.ts"
@@ -4462,8 +4551,15 @@
    ]
   },
   {
+   "fr": "ASTERION — RAID COMPLET",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "ASTERION — {0}",
    "where": [
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -5021,6 +5117,12 @@
    ]
   },
   {
+   "fr": "Au cœur du système, l'étoile morte frémit : une étincelle de l'onde s'était posée sur elle.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/noyau_03.json"
@@ -5114,6 +5216,12 @@
    "fr": "Au plus {0} replays et {1} Mo sur ce PC ; un replay n'est jamais supprimé sans vous.",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Au premier lancement du jeu, une seule fois (« Bienvenue, Nova ! »)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -5282,6 +5390,12 @@
    "fr": "Aucun asset ne correspond.",
    "where": [
     "ui/screens/AdminAssets.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun autre joueur connecté pour l'instant.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -5526,6 +5640,12 @@
    ]
   },
   {
+   "fr": "Aucun film ne correspond à la recherche.",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Aucun groupe ici pour l'instant.",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
@@ -5557,6 +5677,12 @@
    ]
   },
   {
+   "fr": "Aucun joueur connecté de ce nom.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Aucun joueur de votre clan n'a encore de résultat validé.",
    "where": [
     "ui/screens/RaidWorldScene.cpp"
@@ -5578,6 +5704,13 @@
    "fr": "Aucun joueur ne s'appelle « {0} ».",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun joueur simulé à remplacer : ajoutez-en au moins un avant d'inviter.",
+   "where": [
+    "server/src/raidTests.ts",
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -6327,6 +6460,12 @@
    ]
   },
   {
+   "fr": "Aucune invitation à un test en attente (elles durent 3 minutes).",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucune invitation.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -6799,7 +6938,8 @@
   {
    "fr": "Autres",
    "where": [
-    "game/content/AssetCatalog.cpp"
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -6855,6 +6995,12 @@
    "fr": "Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets.",
    "where": [
     "data/stories/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Aux Confins, le Phénix vit se lever une aube qu'il n'avait pas allumée. Cette nuit-là, pour la première fois, il dormit.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -6927,6 +7073,12 @@
    "fr": "Avant le premier combat",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avant le premier combat contre ce giga-boss · Collection › Galerie › Gardiens (« Revoir l'histoire »)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -7039,6 +7191,36 @@
    ]
   },
   {
+   "fr": "Avec des invités, le test passe par un relais du serveur : chaque ordinateur calcule les mêmes joueurs simulés, un invité qui arrive rattrape la partie en cours, et s'il s'absente ou part, son joueur simulé reprend sa place. Sans invité, le test reste local et hors ligne comme avant. Un test ne compte jamais : aucun record, aucune contribution, aucune récompense, aucun classement, aucune progression du raid.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Avec des joueurs invités, par le serveur et sans rien compter : aucun rapport, ni classement, ni contribution, ni récompense.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Avec des joueurs invités, par le serveur et sans rien compter : aucun rapport, ni classement, ni contribution, ni récompense. Les joueurs simulés jouent la zone eux-mêmes (réaction 0,05 s, toujours précis) ; après 15 s sans commande, votre joueur passe en pilote automatique.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Avec des joueurs invités, par le serveur et sans rien compter : aucun rapport, ni classement, ni contribution, ni récompense. Les joueurs simulés jouent la zone eux-mêmes (réaction 0,15 s, 85 % de précision) ; après 15 s sans commande, votre joueur passe en pilote automatique.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Avec des joueurs invités, par le serveur et sans rien compter : aucun rapport, ni classement, ni contribution, ni récompense. Les joueurs simulés jouent la zone eux-mêmes (réaction 0,3 s, 60 % de précision) ; après 15 s sans commande, votre joueur passe en pilote automatique.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Avec le Grappin, Interagir à portée (environ 170 px) propulse le joueur jusqu'ici.",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -7048,6 +7230,12 @@
    "fr": "Avec le pont et la porte haute.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avec les clans de la chute, au même moment",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -7430,6 +7618,12 @@
    "fr": "Bande passante",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bande-annonce",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -10367,6 +10561,13 @@
    ]
   },
   {
+   "fr": "Ce groupe n'a plus de joueur simulé à remplacer : choisissez-en un autre.",
+   "where": [
+    "server/src/raidTests.ts",
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Ce groupe n'est plus en jeu.",
    "where": [
     "server/src/raidMap.ts",
@@ -10404,6 +10605,12 @@
    "where": [
     "game/online/Clans.cpp",
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Ce joueur est déjà invité à ce test.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -10485,6 +10692,12 @@
    ]
   },
   {
+   "fr": "Ce joueur n'est plus connecté.",
+   "where": [
+    "server/src/raidTests.ts"
+   ]
+  },
+  {
    "fr": "Ce joueur ne peut pas être ajouté.",
    "where": [
     "server/src/social.ts"
@@ -10493,7 +10706,8 @@
   {
    "fr": "Ce joueur ne peut pas être invité.",
    "where": [
-    "server/src/clans.ts"
+    "server/src/clans.ts",
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -11041,6 +11255,24 @@
    ]
   },
   {
+   "fr": "Ce test est terminé.",
+   "where": [
+    "server/src/raidTests.ts"
+   ]
+  },
+  {
+   "fr": "Ce test se joue avec une autre version du jeu ou de ses règles : mettez le jeu à jour (vous et l'administrateur devez avoir la même version).",
+   "where": [
+    "server/src/raidTests.ts"
+   ]
+  },
+  {
+   "fr": "Ce test se joue avec une autre version du jeu ou de ses règles : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Ce titre existait déjà (Argent) : il est ajouté tel quel. « Enregistrer » pour garder les récompenses.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -11434,6 +11666,12 @@
    "fr": "Cette instance n'existe pas sur cette branche.",
    "where": [
     "server/src/raidMap.ts"
+   ]
+  },
+  {
+   "fr": "Cette invitation a expiré.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -11881,6 +12119,12 @@
    ]
   },
   {
+   "fr": "Chaque joueur invité a sa case « Invincible » (décochée par défaut), que seul l'administrateur coche ou décoche, avant comme pendant le test : le changement s'applique au même instant sur tous les ordinateurs du test.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chaque joueur qui brise une entrave quand elles cèdent ensemble compte un mécanisme.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -12155,6 +12399,18 @@
    "fr": "Chargement des fantômes…",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement des invitations…",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement des joueurs connectés…",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -14348,6 +14604,12 @@
    ]
   },
   {
+   "fr": "Commencer maintenant",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -15110,6 +15372,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous à Cosmic Online pour jouer un test avec des joueurs invités.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous à Cosmic Online pour la gagner.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -15143,6 +15411,12 @@
    "fr": "Connectez-vous à Cosmic Online pour voir le classement du défi et y entrer. Sans compte, le défi se joue quand même : vos résultats restent sur ce PC.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous à Cosmic Online pour voir les joueurs connectés.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -15234,6 +15508,18 @@
    "fr": "Connexion au serveur…",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion au test de {0}…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Connexion au test…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -15348,6 +15634,7 @@
    "fr": "Connexion WebSocket attendue.",
    "where": [
     "server/src/coop.ts",
+    "server/src/raidTests.ts",
     "server/src/raidZones.ts"
    ]
   },
@@ -18687,7 +18974,8 @@
   {
    "fr": "Depuis le début",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -19572,6 +19860,12 @@
    ]
   },
   {
+   "fr": "Didacticiel",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Didacticiel : explication bloquante",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -19593,6 +19887,12 @@
    "fr": "Didacticiel du premier lancement, « Le premier envol de Nova » : au tout premier lancement du jeu (aucune progression), Bip, un petit robot compagnon, propose un vol d'essai d'environ six minutes dans la Pépinière d'étoiles, un petit monde tout doux hors de la campagne (aucune planète sur la carte, aucun classement, aucun record, rien d'envoyé en ligne). « Passer le didacticiel » est proposé au départ, avec confirmation.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Didacticiel rejoué par un administrateur : rien n'a été enregistré, ni progression, ni souvenir, ni record, ni succès.",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -22696,6 +22996,12 @@
    ]
   },
   {
+   "fr": "Elle se souviendra de ses héros",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Elle tire plusieurs salves de suite.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -22971,6 +23277,12 @@
    ]
   },
   {
+   "fr": "en attente de votre place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "en attente de vérification",
    "where": [
     "game/online/AdminView.cpp"
@@ -22994,6 +23306,18 @@
    "where": [
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "en attente du réseau…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "en attente · {0}",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -23105,6 +23429,12 @@
    "fr": "En direct",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "EN DIRECT · avec les clans de la chute",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -23258,6 +23588,12 @@
    "fr": "En ligne → PROJETS : des niveaux construits à plusieurs, avec des rôles (lecteur, testeur, éditeur, administrateur, propriétaire) vérifiés par le serveur.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -24480,6 +24816,12 @@
    ]
   },
   {
+   "fr": "environ 6 min, à jouer",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "environ {0} min à huit joueurs, hors gigaboss",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -24904,6 +25246,18 @@
    ]
   },
   {
+   "fr": "et {0} autre clan",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} autres clans",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "et {0} objectif",
    "where": [
     "game/online/Raids.cpp"
@@ -25074,9 +25428,17 @@
    ]
   },
   {
+   "fr": "expire dans {0}",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
    "fr": "expirée",
    "where": [
-    "ui/screens/ProjectsScene.cpp"
+    "ui/online/RaidTestGuests.cpp",
+    "ui/screens/ProjectsScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
   {
@@ -25604,6 +25966,7 @@
     "game/levels/EventSystem.cpp",
     "ui/online/ContribTable.cpp",
     "ui/online/RaidMenu.cpp",
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminScene.cpp",
@@ -26223,6 +26586,25 @@
    ]
   },
   {
+   "fr": "Film d'Asterion",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Films",
+   "where": [
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Films d'Asterion",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Filtrer : id, type, ennemi, groupe…",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -26330,6 +26712,12 @@
     "server/src/coopRace.ts",
     "server/src/race.ts",
     "server/src/replay.ts"
+   ]
+  },
+  {
+   "fr": "FIN DU TEST",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -28981,6 +29369,14 @@
    ]
   },
   {
+   "fr": "Groupe 1",
+   "where": [
+    "ui/online/RaidTestGuests.cpp",
+    "ui/online/RaidTestGuests.h",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Groupe 1 : bras droit, puis le torse…",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -29014,7 +29410,8 @@
    "fr": "Groupe {0}",
    "where": [
     "game/online/RaidRecap.cpp",
-    "game/raid/RaidSimulation.cpp"
+    "game/raid/RaidSimulation.cpp",
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -29836,6 +30233,12 @@
    ]
   },
   {
+   "fr": "Histoire de giga-boss",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Histoire des giga-boss",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -29845,6 +30248,12 @@
    "fr": "Histoires",
    "where": [
     "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Histoires de giga-boss",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -30371,9 +30780,11 @@
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
+    "game/raid/Aftermath.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
@@ -30406,6 +30817,7 @@
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/ResultsScene.cpp",
@@ -30888,6 +31300,12 @@
    "fr": "Ils vous suivent et combattent près de vous.",
    "where": [
     "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
+   "fr": "ILS ÉTAIENT LÀ",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -31872,6 +32290,20 @@
    ]
   },
   {
+   "fr": "Invincible",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "invincible",
+   "where": [
+    "game/raid/RaidTestRelay.cpp",
+    "ui/online/RaidTestGuests.cpp",
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
    "fr": "Invincible (admin) : activé · non classé",
    "where": [
     "ui/screens/PauseScene.cpp"
@@ -31903,6 +32335,30 @@
    ]
   },
   {
+   "fr": "invincible (choix de l'administrateur)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "invincible (vous)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invincible : non (l'administrateur peut le changer pendant le test)",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invincible : oui (choisi par l'administrateur, qui peut le changer pendant le test)",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
    "fr": "Invincible désactivé",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -31918,6 +32374,12 @@
    "fr": "Invitation annulée.",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invitation de {0} annulée.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -31945,6 +32407,12 @@
    ]
   },
   {
+   "fr": "Invitation envoyée à {0} : réponse attendue sous 3 minutes.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Invitation envoyée à {0}.",
    "where": [
     "ui/screens/ClanScene.cpp",
@@ -31960,7 +32428,8 @@
   {
    "fr": "Invitation introuvable.",
    "where": [
-    "server/src/projects.ts"
+    "server/src/projects.ts",
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -31987,6 +32456,18 @@
    "fr": "Invitation à un projet",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "INVITATION À UN TEST D'ASTERION",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Invitation à un test d'Asterion",
+   "where": [
+    "game/online/OnlineService.cpp"
    ]
   },
   {
@@ -32034,6 +32515,7 @@
   {
    "fr": "Inviter",
    "where": [
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaidEventScene.cpp"
@@ -32043,6 +32525,18 @@
    "fr": "Inviter dans mon clan",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inviter des joueurs",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Inviter des joueurs connectés… (le test passe alors par le serveur)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -32094,6 +32588,12 @@
    ]
   },
   {
+   "fr": "invité au lancement",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Invité par le clan",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -32109,6 +32609,18 @@
    "fr": "Invité par {0}",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "INVITÉS · {0} / {1} · {2} joueur(s) simulé(s) à remplacer",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "INVITÉS · {0} / {1} · {2} joueur(s) simulé(s) à remplacer par groupe",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -32556,6 +33068,7 @@
   {
    "fr": "JOUEUR",
    "where": [
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -32633,8 +33146,15 @@
     "server/src/players.ts",
     "server/src/projects.ts",
     "server/src/race.ts",
+    "server/src/raidTests.ts",
     "server/src/social.ts",
     "server/src/spectate.ts"
+   ]
+  },
+  {
+   "fr": "Joueur invité",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -32724,9 +33244,21 @@
    ]
   },
   {
+   "fr": "JOUEURS CONNECTÉS",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Joueurs connectés",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "JOUEURS CONNECTÉS · {0}",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -32745,6 +33277,19 @@
    "fr": "Joueurs inscrits",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "JOUEURS INVITÉS AU TEST",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs invités · {0}",
+   "where": [
+    "ui/screens/AdminRaids.cpp",
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -33102,6 +33647,24 @@
    "fr": "L'action est inscrite au journal avec votre pseudo.",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'administrateur a terminé le test.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'administrateur n'est plus dans le test depuis 60 s : le test est terminé.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'administrateur vous a retiré du test.",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
    ]
   },
   {
@@ -33529,6 +34092,12 @@
    "fr": "L'inversion de gravité",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "L'invité reçoit une notification et un message : en haut de NOTIFICATIONS, « Répondre » ouvre l'invitation (qui invite, quel test, son groupe, s'il sera invincible, le temps qui reste) pour l'accepter ou la refuser dans les 3 minutes. L'administrateur voit chaque réponse et peut annuler une invitation ou retirer un joueur du test. Un jeu d'une autre version ne peut pas rejoindre (message clair).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -34323,6 +34892,12 @@
    ]
   },
   {
+   "fr": "LA GALAXIE EST LIBRE",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "La galerie de la Collection utilise la même recherche des lieux.",
    "where": [
     "data/news/changelog.json"
@@ -34907,6 +35482,12 @@
    "fr": "La poche gonflée où Voidworm digère un allié avalé : la crever le libère (un sauvetage pour qui la brise).",
    "where": [
     "data/enemies/voidworm_poche.json"
+   ]
+  },
+  {
+   "fr": "La première fois que le titan apparaît (CLANS › RAIDS, fiche d'un événement) · « Revoir la cinématique » sur la carte des raids",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -36633,6 +37214,12 @@
    ]
   },
   {
+   "fr": "Le film commence dans {0}",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "Le Fleuve de Lave",
    "where": [
     "data/levels/pyralis_02.json"
@@ -37471,6 +38058,12 @@
    ]
   },
   {
+   "fr": "Le nom des clans de la chute fut gravé dans la lumière de la nouvelle étoile.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Le nom est définitif : une version ne se modifie pas et ne se remplace pas. Les autres membres sont prévenus.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -37722,7 +38315,8 @@
   {
    "fr": "Le premier envol de Nova",
    "where": [
-    "data/tutorial/premier_envol.json"
+    "data/tutorial/premier_envol.json",
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -37957,6 +38551,12 @@
    "fr": "Le replay ne correspond pas à ce record.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "Le revoir : depuis la fiche de l'événement (« Après Asterion », à côté de « Revoir la victoire »), la fiche récapitulative du raid du clan et Collection › Galerie › Films, avec les films d'Asterion et la bande-annonce. Il est débloqué pour ceux qui ont pris part à un événement où le Cœur est tombé, puis pour tous dès que l'issue « Asterion est tombé » est officielle. Sans connexion, le plan des clans dit « les clans de la galaxie ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -38263,9 +38863,39 @@
    ]
   },
   {
+   "fr": "Le test a déjà commencé : rattrapage de la partie ({0} %)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le test avec joueurs invités n'a pas pu être ouvert sur le serveur : réponse illisible.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le test avec joueurs invités n'a pas pu être ouvert sur le serveur : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le test continue pendant la pause : vous pouvez encore être touché.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le test est terminé.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le test n'a pas encore commencé : réessayez dans un instant.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -39464,6 +40094,18 @@
    ]
   },
   {
+   "fr": "Les invitations partent au lancement : le test passe alors par le serveur (sans invité, il reste local et hors ligne). Un joueur invité prend la place d'un joueur simulé de son groupe. Un test ne compte jamais.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "Les invitations partent dès que le test commence ; il ne compte jamais (ni record, ni contribution, ni récompense).",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Les jeux les téléchargent au démarrage ; les révisions d'avant restent jouables avec leur définition (records archivés, replays, défis déjà commencés). La publication est inscrite au Journal.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
@@ -39625,6 +40267,12 @@
    "fr": "Les parties s'envoient en application/octet-stream.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Les peuples partis vers les étoiles osèrent enfin revenir. Les enfants levèrent les yeux vers une lumière nouvelle.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -39854,6 +40502,12 @@
    "fr": "Les récompenses sont accordées par le serveur, d'après les résultats validés ; elles se récupèrent dans CLANS › RAIDS.",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les réglages de ce test sont illisibles pour cette version du jeu : mettez le jeu à jour.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -41079,6 +41733,12 @@
    "fr": "Lyse chantait de la lumière, et trois petites planètes venaient se réchauffer autour d'elle.",
    "where": [
     "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Là où se dressait Asterion, il ne restait qu'un nuage d'or. Pour la première fois depuis des éons, le vide se taisait.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -42316,6 +42976,12 @@
    ]
   },
   {
+   "fr": "Menu principal, après une minute sans rien toucher (Paramètres › Jeu › « Bande-annonce à l'accueil après 1 min d'inactivité »)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Menus",
    "where": [
     "data/music/tracks.json"
@@ -42881,7 +43547,9 @@
     "game/online/OnlineRecord.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
-    "ui/screens/OnlineMigration.cpp"
+    "ui/screens/OnlineMigration.cpp",
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
   {
@@ -46628,6 +47296,7 @@
     "server/src/devices.ts",
     "server/src/enemyRevisions.ts",
     "server/src/live.ts",
+    "server/src/raidTests.ts",
     "server/src/spectate.ts"
    ]
   },
@@ -48848,6 +49517,7 @@
    "where": [
     "game/online/AsterionBody.cpp",
     "game/online/RaidRecap.cpp",
+    "game/raid/RaidTestRelay.cpp",
     "main.cpp",
     "ui/screens/AdminBackups.cpp"
    ]
@@ -50304,6 +50974,12 @@
    ]
   },
   {
+   "fr": "Personne pour l'instant : choisissez des joueurs connectés dans la liste « Joueurs connectés ».",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Persévérance",
    "where": [
     "data/achievements/achievements.json"
@@ -50913,6 +51589,12 @@
    "where": [
     "game/gameplay/HudTeam.cpp",
     "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Place libre (administrateur)",
+   "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -51723,6 +52405,12 @@
    "fr": "Plus de double trait : le faisceau n'est plus peint dans les sprites d'attaque des boss, il n'est dessiné qu'une fois.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Plus de joueurs",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -54879,7 +55567,19 @@
    ]
   },
   {
+   "fr": "Quitter le test",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Quitter le test (retour à l'administration)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter le test (un joueur simulé reprend votre place)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -55227,6 +55927,36 @@
    "fr": "RAID ASTERION · ses Gigaboss et son Cœur",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "RAID COMPLET",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "raid complet simulé",
+   "where": [
+    "server/src/raidTests.ts"
+   ]
+  },
+  {
+   "fr": "Raid complet simulé : {0} groupe de {1} places · vous jouez dans le Groupe {2} à la place d'un joueur simulé.",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid complet simulé : {0} groupes de {1} places · vous jouez dans le Groupe {2} à la place d'un joueur simulé.",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "RAID COMPLET · TEST EN LIGNE — rien n'est compté",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -56056,6 +56786,12 @@
    ]
   },
   {
+   "fr": "Recherche : lettres, chiffres, « _ », « . » et « - » seulement.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Recherche d'un joueur de la branche à regarder…",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -56169,6 +56905,18 @@
    "fr": "Rechercher un clan",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rechercher un film…",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Rechercher un joueur par son nom",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -56774,6 +57522,7 @@
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -56826,6 +57575,7 @@
   {
    "fr": "refusée",
    "where": [
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/RaidEventScene.cpp"
    ]
   },
@@ -56918,6 +57668,7 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaidGameScene.cpp",
@@ -56940,6 +57691,12 @@
    "fr": "Regarder l'édition en direct",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Regarder le film",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -57085,6 +57842,12 @@
    "fr": "Rejouer en équipe",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejouer le didacticiel",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -58205,6 +58968,7 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminAssets.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/ProjectsScene.cpp",
@@ -58239,6 +59003,12 @@
    "fr": "Retirer du profil",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Retirer du test",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -58351,6 +59121,7 @@
     "ui/screens/PowerGuideScene.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SettingsScene.cpp",
     "ui/screens/SobMontageScene.cpp",
@@ -58469,6 +59240,13 @@
    ]
   },
   {
+   "fr": "Retour à l'administration",
+   "where": [
+    "ui/screens/PauseScene.cpp",
+    "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
    "fr": "Retour à l'Atelier",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -58576,6 +59354,18 @@
    "fr": "Revenir dans la partie",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir dans le test",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir dans le test d'Asterion que vous avez accepté",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -59895,6 +60685,12 @@
    ]
   },
   {
+   "fr": "Réinviter",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "Répartir H",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
@@ -59962,6 +60758,12 @@
    ]
   },
   {
+   "fr": "Répondre à l'invitation",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "Réponse",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -59995,6 +60797,12 @@
    "fr": "Réponse du serveur incomplète : réessayez.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Réponse envoyée au serveur…",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
   {
@@ -61752,6 +62560,18 @@
    ]
   },
   {
+   "fr": "Se débloque quand Asterion tombe : pour ceux qui étaient là, puis pour tous quand le résultat est officiel.",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Se débloque à sa première projection (CLANS › RAIDS).",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Se déconnecter",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -62223,6 +63043,12 @@
   },
   {
    "fr": "SERVEUR · Validé pour la branche : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "SERVEUR · {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -62908,6 +63734,12 @@
    ]
   },
   {
+   "fr": "shot {0}: a roster without its generic text",
+   "where": [
+    "game/content/BossStories.cpp"
+   ]
+  },
+  {
    "fr": "shot {0}: a title without text",
    "where": [
     "game/content/BossStories.cpp"
@@ -63516,6 +64348,12 @@
    "fr": "Son combat se joue sur sa boîte.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Son corps était fait de mondes dévorés. Libérés, leurs éclats se rassemblèrent, et des mondes oubliés se rallumèrent.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -65636,6 +66474,12 @@
    ]
   },
   {
+   "fr": "Sylvanox, Pyralis, Glacior, Aethra et les Confins virent leur ciel s'éclaircir. Le festin promis n'aurait jamais lieu.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Sylvanox, Pyralis, Glacior... Les relais chantent à nouveau. La galaxie n'est plus seule.",
    "where": [
     "data/levels/glacior_03.json"
@@ -67115,6 +67959,12 @@
    ]
   },
   {
+   "fr": "Terminer le test (pour tous les joueurs)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Terminer les 25 niveaux de la campagne sans mourir.",
    "where": [
     "data/achievements/achievements.json"
@@ -67573,9 +68423,51 @@
    ]
   },
   {
+   "fr": "Test avec joueurs invités : ouverture sur le serveur…",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Test depuis l'éditeur : les records ne sont pas enregistrés",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST EN LIGNE · non classé · {0} joueur invité",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST EN LIGNE · non classé · {0} joueurs invités",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST EN LIGNE · rien n'est compté : un joueur invité prend la place d'un joueur simulé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST EN LIGNE — avec les joueurs invités, par le serveur : aucun résultat, aucune récompense.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "TEST EN LIGNE — rien n'est compté · {0} · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Test introuvable.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -67603,6 +68495,54 @@
    ]
   },
   {
+   "fr": "TEST · {0} a quitté le test : {1} reprend sa place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} est absent : {1} tient sa place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} est de retour",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} est invincible (choix de l'administrateur)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} n'est plus invincible",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} passe dans {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} rejoint le test ({1}) à la place de {2}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "TEST · {0} rejoint le test à la place de {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Tester (F5)",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -67618,6 +68558,12 @@
    "fr": "Tester Asterion",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Tester Asterion (administration) : dans le test d'une zone comme dans « Simuler un raid complet », l'administrateur peut inviter de vrais joueurs, administrateurs ou non. « Inviter des joueurs connectés… » ouvre la liste des joueurs connectés, avec une recherche par nom ; chaque invité prend la place d'un joueur simulé de son groupe (jamais un de plus) et l'administrateur choisit son groupe dans le raid complet.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -68362,6 +69308,7 @@
    "where": [
     "game/online/OnlineService.cpp",
     "game/online/RaidReviews.cpp",
+    "ui/online/RaidTestGuests.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
@@ -68603,6 +69550,7 @@
    "fr": "Tous",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -70150,9 +71098,33 @@
    ]
   },
   {
+   "fr": "Un administrateur",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
    "fr": "Un administrateur peut regarder un replay vérifié malgré un profil masqué ou un compte inactif (contrôle du serveur par le rôle de la session) : « Vu en tant qu'admin (profil masqué) » reste affiché pendant la lecture et le Journal le note ; un replay incomplet ou d'une autre version du niveau reste refusé avec sa raison, et les autres joueurs gardent exactement leurs verrous.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Un administrateur teste le raid et vous invite à y jouer. Un test ne compte jamais : ni record, ni contribution, ni récompense, ni progression du raid.",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un administrateur vous invite ({0}) : répondez dans NOTIFICATIONS, sous 3 minutes.",
+   "where": [
+    "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "Un administrateur vous invite à un test d'Asterion : répondre",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -70576,6 +71548,18 @@
    ]
   },
   {
+   "fr": "Un film regardé tous ensemble : le serveur fixe son heure de départ quand la chute est validée. Les joueurs de l'instance du Cœur le voient juste après le film de la victoire, et les membres en ligne des clans présents à la chute au même moment, grâce à une notification « Asterion est tombé — regarder le film avec votre clan ». Il n'est jamais lancé par-dessus un niveau : dans un niveau, la notification l'offre. Arrivé en retard, vous le prenez en cours, ou « Depuis le début » (R, Y, ou le bouton en haut de l'écran).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Un film y entre quand vous l'avez vu ou débloqué.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
    "fr": "Un fleuve de lave traverse les forges de Pyralis. Empruntez les radeaux des passeurs, apprenez le Tir chargé et affrontez Ignivore, le serpent qui règne sur le lac de feu.",
    "where": [
     "data/levels/pyralis_02.json"
@@ -70676,6 +71660,12 @@
    "fr": "Un joueur du groupe (son siège et le moment où il l'a pris). Votre ligne est encadrée.",
    "where": [
     "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Un joueur invité prend la place d'un joueur simulé de son groupe ; il a 3 minutes pour accepter. Vous changez son groupe et « Invincible » pendant le test, pour tous les ordinateurs au même pas. Un test ne compte jamais.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -71033,6 +72023,30 @@
    "fr": "Un test d'administration ne compte jamais : rapport refusé.",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Un test d'Asterion (réglages illisibles pour cette version du jeu : mettez-la à jour).",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un test ne compte jamais : ni record, ni contribution, ni récompense, ni progression du raid.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Un test reçoit 7 joueurs invités au plus.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "Un test reçoit {0} joueurs invités au plus.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -71937,6 +72951,18 @@
    "fr": "Une zone",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "une zone",
+   "where": [
+    "server/src/raidTests.ts"
+   ]
+  },
+  {
+   "fr": "Une zone : {0} · {1} places · vous jouez à la place d'un joueur simulé.",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
   {
@@ -73165,12 +74191,14 @@
     "game/content/CreaturePlaces.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/AchievementsScene.cpp",
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
   {
    "fr": "verrouillé",
    "where": [
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
@@ -74623,7 +75651,8 @@
   {
    "fr": "votre clan",
    "where": [
-    "server/src/notifications.ts"
+    "server/src/notifications.ts",
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -74930,6 +75959,12 @@
    ]
   },
   {
+   "fr": "Votre ordinateur rejoue chaque pas du test (les joueurs simulés compris) ; vous prenez votre place dès qu'il est à jour.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre partie",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -75126,6 +76161,12 @@
    "fr": "Vous avez déjà publié ce commentaire.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Vous avez déjà refusé cette invitation.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -75550,6 +76591,12 @@
    ]
   },
   {
+   "fr": "vous remplacez {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Vous réapparaîtrez près de l'équipe dès que votre jeu sera à jour.",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -75596,6 +76643,12 @@
    "where": [
     "game/online/Clans.cpp",
     "server/src/clans.ts"
+   ]
+  },
+  {
+   "fr": "Vous êtes déjà dans votre test.",
+   "where": [
+    "server/src/raidTests.ts"
    ]
   },
   {
@@ -76071,6 +77124,8 @@
     "game/online/Raids.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidSheets.cpp",
+    "game/raid/RaidTestRelay.cpp",
+    "game/raid/RaidTestRelay.h",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -76711,6 +77766,12 @@
    "fr": "{0} (absente de ce boss)",
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} (admin)",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -77525,6 +78586,12 @@
    ]
   },
   {
+   "fr": "{0} a quitté le test : un joueur simulé reprend sa place.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "{0} a refusé la demande de {1}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -77642,6 +78709,12 @@
    "fr": "{0} abonnés  ·  depuis {1}",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} absent(s)",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -78198,6 +79271,12 @@
    ]
   },
   {
+   "fr": "{0} en attente",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "{0} en attente de validation (majorité de leur instance) : ils ne comptent pas encore.",
    "where": [
     "game/online/Raids.cpp"
@@ -78207,6 +79286,12 @@
    "fr": "{0} en attente de validation (majorité de son instance) : il ne compte pas encore.",
    "where": [
     "game/online/Raids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} en jeu",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -78310,6 +79395,12 @@
    "fr": "{0} est hors des limites du niveau",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
+   ]
+  },
+  {
+   "fr": "{0} est invincible.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -78668,6 +79759,12 @@
    ]
   },
   {
+   "fr": "{0} invitations à un test d'Asterion : répondre",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} invite votre clan à ce raid commun.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -78677,6 +79774,12 @@
    "fr": "{0} invite {1} à un raid commun",
    "where": [
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} invité(s) au lancement",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -78743,9 +79846,21 @@
    ]
   },
   {
+   "fr": "{0} joueur invité",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueur prévenu",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueur réel",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -78797,6 +79912,12 @@
    ]
   },
   {
+   "fr": "{0} joueurs invités",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueurs ont déjà un résultat sur ce défi : il ne change plus.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -78806,6 +79927,12 @@
    "fr": "{0} joueurs prévenus",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs réels",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -78998,7 +80125,8 @@
    "fr": "{0} min {1} s",
    "where": [
     "game/online/Raids.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -79097,6 +80225,12 @@
    "fr": "{0} n'est plus admin.",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} n'est plus invincible.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
    ]
   },
   {
@@ -79537,6 +80671,12 @@
    ]
   },
   {
+   "fr": "{0} retiré de la liste.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "{0} Rien n'a été écrasé sans vous.",
    "where": [
     "editors/level_editor/LevelEditorLive.cpp"
@@ -79784,6 +80924,12 @@
    ]
   },
   {
+   "fr": "{0} sera invité au lancement du test.",
+   "where": [
+    "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
    "fr": "{0} signalement",
    "where": [
     "ui/online/RaidReviewsPanel.cpp"
@@ -80027,6 +81173,12 @@
    ]
   },
   {
+   "fr": "{0} vous invite ({1}) : répondez dans NOTIFICATIONS, sous 3 minutes.",
+   "where": [
+    "game/online/OnlineService.cpp"
+   ]
+  },
+  {
    "fr": "{0} vous invite comme {1}  ·  expire {2}",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -80046,6 +81198,12 @@
   },
   {
    "fr": "{0} vous invite à jouer en équipe : {1}",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} vous invite à un test d'Asterion ({1}) : répondez dans les 3 minutes",
    "where": [
     "server/src/notifications.ts"
    ]
@@ -80353,7 +81511,8 @@
   {
    "fr": "{0} · Vestiaire",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
   {
@@ -80794,6 +81953,24 @@
    "fr": "« Afficher les pseudonymes » désactivé : les autres joueurs apparaissent sous la forme « Joueur n°X » (diffusion en direct). « Économie » limite le nombre de marqueurs et ne télécharge pas les avatars personnalisés.",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "« Après Asterion » : NOTIFICATIONS, ou la fiche de l'événement.",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
+   "fr": "« Après Asterion » : quand Asterion tombe, un second mini-film suit celui de la victoire. Huit plans animés, environ 80 secondes, racontent ce que la victoire change dans la galaxie : les mondes qu'il avait dévorés se rallument, le ciel de Sylvanox, Pyralis, Glacior, Aethra et des Confins s'éclaircit, les peuples partis vers les étoiles reviennent, le Phénix s'endort enfin, l'étoile morte du centre frémit. Un plan écrit le nom des clans présents à la chute, le vôtre en évidence.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Après Asterion » commence bientôt, avec les clans de la chute.",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
    ]
   },
   {
@@ -81342,6 +82519,12 @@
    "where": [
     "game/online/Raids.cpp",
     "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "À la chute validée du Cœur, pour toute l'instance · « Revoir la victoire » sur la fiche de l'événement",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {

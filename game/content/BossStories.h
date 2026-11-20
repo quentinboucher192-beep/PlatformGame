@@ -169,6 +169,20 @@ struct StoryTitle {
     Color color = Color::white();
 };
 
+/// 2.81 (« Après Asterion »): where a film writes the names of the clans present at Asterion's fall (given by
+/// the server when it plays, never by the film's files), from `t` to `to` (seconds of the shot as written),
+/// in `area` (fractions of the picture: x, y, width, height), at most `size` pixels (reference scale), their
+/// glow `color`, the viewer's own clan in `own`; `generic` (French, translated when drawn) when there are no
+/// names (offline, a test, an admin's preview).
+struct StoryRoster {
+    float t = 0.0f, to = 0.0f;
+    Rect area{0.1f, 0.3f, 0.8f, 0.6f};
+    float size = 34.0f;
+    Color color = Color::white();
+    Color own = Color::white();
+    std::string generic;
+};
+
 /// One shot: its painting (a texture under assets/), its line of narration (French: translated
 /// when drawn), the slow zoom towards a point of the painting, the live particles over it.
 /// Version 2: `stage`, the shot played as an animated scene (its painting is the scene's still).
@@ -186,6 +200,7 @@ struct StoryShot {
     float duration = 0.0f;
     std::string subtitle;
     std::vector<StoryTitle> titles;  // 2.68 (a film): its titles in the picture
+    std::optional<StoryRoster> roster;  // 2.81 (a film): the names of the clans of the fall
 };
 
 /// The story of a giga boss.
@@ -240,6 +255,10 @@ std::optional<BossStory> loadAsterionFilm(const std::filesystem::path& dataDir, 
 /// tools/assetgen/environment/story_asterion_victoire.py), from `dataDir` (default: the game's).
 std::optional<BossStory> loadAsterionVictory(std::string* error = nullptr);
 std::optional<BossStory> loadAsterionVictory(const std::filesystem::path& dataDir, std::string* error);
+/// 2.81: « Après Asterion », what the fall changes in the world (data/raids/asterion_apres.json, its scenes
+/// written by tools/assetgen/environment/story_asterion_apres.py), from `dataDir` (default: the game's).
+std::optional<BossStory> loadAsterionAftermath(std::string* error = nullptr);
+std::optional<BossStory> loadAsterionAftermath(const std::filesystem::path& dataDir, std::string* error);
 /// The whole story with its title card (texts as given: the French ones).
 float duration(const BossStory& s);
 constexpr int kVersion = 2;  // the newest format read (1: paintings, 2: animated scenes)

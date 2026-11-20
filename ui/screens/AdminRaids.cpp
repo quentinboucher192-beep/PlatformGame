@@ -12,6 +12,7 @@
 #include "game/raid/RaidRun.h"
 #include "game/online/Clans.h"
 #include "game/online/Raids.h"
+#include "ui/online/RaidTestGuests.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -53,9 +54,29 @@ std::string plural(int n, const std::string& one, const std::string& many) { ret
 }  // namespace
 
 AdminRaids::AdminRaids(GameServices& g, std::function<void(const std::string&, bool)> say, std::function<bool(const ApiResult&)> lostRole)
-    : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), reviews_(g, RaidReviewsPanel::Mode::Admin) {
+    : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), reviews_(g, RaidReviewsPanel::Mode::Admin), guests_(std::make_unique<RaidTestGuests>(g)) {
     clearForm();
     reviews_.say = [this](const std::string& m, bool error) { say_(m, error); };
+}
+
+AdminRaids::~AdminRaids() = default;
+
+bool AdminRaids::modal() const { return confirm_ || guests_->isOpen(); }
+
+void AdminRaids::guestsRow(const Rect& r, bool fullRaid) {
+    // 2.80: who is invited to the next test (chosen now, invited at the launch), and the window that chooses them.
+    UIContext& ui = g_.ui;
+    std::vector<std::string> groups;
+    if (fullRaid)
+        for (int k = 0; k <= simGroups_; ++k) groups.push_back("Groupe " + std::to_string(k + 1));
+    guests_->setShape(groups, fullRaid ? simBots_ + 2 : testPlayers_ + 1);
+    guests_->setDefaultGroup(0);
+    const std::string n = guests_->summary();
+    const std::string label = n.empty() ? std::string("Inviter des joueurs connectés… (le test passe alors par le serveur)") : "Joueurs invités · " + n;
+    UIContext::ButtonStyle bs;
+    bs.selected = !n.empty();
+    bs.fontSize = ui.fitFont(label, FontFace::Bold, 18, r.w - ui.s(24));
+    if (ui.button("guests", r, label, bs)) guests_->open();
 }
 
 void AdminRaids::enter(bool force) {
@@ -534,6 +555,8 @@ void AdminRaids::drawTest(const Rect& r) {
         ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
         y += rowH + gap;
     }
+    guestsRow({x, y, w, rowH}, false);  // 2.80
+    y += rowH + gap;
     bool inv = g_.settings.gameplay.adminInvincible;
     if (ui.toggle("invincible", {x, y, half, rowH}, "Invincible (admin) · non classé", inv)) {
         g_.settings.gameplay.adminInvincible = inv;
@@ -551,15 +574,18 @@ void AdminRaids::drawTest(const Rect& r) {
         t.parts = testParts_;  // 2.74 (phase 6): the heart's test only
         t.relics = testRelics_;
         t.skill = testSkill_;  // 2.77
+        t.guests = guests_->chosen();  // 2.80: invited with the launch (the test then goes through the server)
+        guests_->setChosen({});
         g_.app.pushScene(makeRaidTest(g_, t));
     }
     y += rowH + ui.s(6);
-    drawLines(ui, wrap(ui, std::string("En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense. "
-                                   "Les joueurs simulés jouent la zone eux-mêmes (") +
+    drawLines(ui, wrap(ui, std::string(guests_->active() > 0 ? "Avec des joueurs invités, par le serveur et sans rien compter : aucun rapport, ni classement, ni contribution, ni récompense. "
+                                                            : "En local et seul : aucun rapport, ni consensus, ni état de branche, ni classement, ni contribution, ni récompense. ") +
+                                   "Les joueurs simulés jouent la zone eux-mêmes (" +
                                (testSkill_ == 0 ? "réaction 0,3 s, 60 % de précision" : testSkill_ == 2 ? "réaction 0,05 s, toujours précis" : "réaction 0,15 s, 85 % de précision") +
                                ") ; après 15 s sans commande, votre joueur passe en pilote automatique.",
                        FontFace::Body, 13, w,
-                       std::max(1, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))),
+                       std::max(0, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))  /* 2.80: never past the panel */),
               {x, y}, 13, ui.s(18), kDim);
     ui.popId();
 }
@@ -598,6 +624,10 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     }
     ui.toggle("botsinvincible", {x + half + gap, y, half, rowH}, "Joueurs simulés invincibles", simBotsInvincible_);
     y += rowH + gap;
+    if (!capture) {
+        guestsRow({x, y, w, rowH}, true);  // 2.80
+        y += rowH + gap;
+    }
     UIContext::ButtonStyle bs;
     bs.primary = true;
     bs.fontSize = std::max(ui.fitFont("Lancer la simulation", FontFace::Bold, 17, w - ui.s(20), 0.7f), 12.0f / ui.s(1.0f));
@@ -610,6 +640,8 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
         s.background = simSpeed_ == 2 ? 4 : simSpeed_ == 1 ? 2 : 1;
         s.invincible = g_.settings.gameplay.adminInvincible;
         s.botsInvincible = simBotsInvincible_;
+        s.guests = guests_->chosen();  // 2.80: invited with the launch, each in their group (the raid then ×1, by the server)
+        guests_->setChosen({});
         g_.app.pushScene(makeRaidSim(g_, s));
     }
     y += rowH + ui.s(10);
@@ -620,10 +652,12 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
                              "dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) "
                              "ou regardez-le.";
     const float lineH = ui.s(18);
-    const int lines = std::max(1, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));
+    const int lines = std::max(0, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));  // 2.80: never past the panel
     y += drawLines(ui, wrap(ui, text, FontFace::Body, 13, w, lines), {x, y}, 13, lineH, kDim) + ui.s(6);
     if (y + ui.s(22) <= r.bottom())
-        fit(ui, "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.", {x, y + ui.s(10)}, 13, w, kGold, FontFace::Bold);
+        fit(ui, !capture && guests_->active() > 0 ? "TEST EN LIGNE — avec les joueurs invités, par le serveur : aucun résultat, aucune récompense."
+                                                  : "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.",
+            {x, y + ui.s(10)}, 13, w, kGold, FontFace::Bold);
     ui.popId();
 }
 
@@ -885,7 +919,13 @@ void AdminRaids::drawDetail(const Rect& r) {
 void AdminRaids::drawModal() {
     // The confirmation of an action on the selected event: cancel it, suspend it (2.69), or open a
     // catch-up session after it (2.69). Each one goes to the Journal; the server checks the role.
+    // 2.80: or the window of the players invited to the next test.
     UIContext& ui = g_.ui;
+    if (guests_->isOpen()) {
+        guests_->update(g_.app.frameTime() / 1000.0f);
+        guests_->draw();
+        return;
+    }
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 175});
     const float w = std::min(ui.screenW() - ui.s(40), ui.s(680)), tw = w - ui.s(60);
     const bool cancelKind = confirmKind_ == Confirm::Cancel, suspendKind = confirmKind_ == Confirm::Suspend;

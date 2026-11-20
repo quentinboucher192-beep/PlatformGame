@@ -44,6 +44,7 @@ struct RecapText {
 struct RaidRecapOptions {
     bool contributions = false;  // 2.78: the clan's « Tableau des contributions » has validated tables
     bool victoryFilm = true;   // the film of Asterion's fall can be played (its files are here)
+    bool aftermathFilm = true; // 2.81: « Après Asterion » can be played (its files are here)
     bool titanMap = true;      // the titan's map of the event can be read by this player
     bool eventSheet = true;    // the sheet of the event (its official results, its world ranking)
     std::string rateLabel;     // 2.77.4: « Noter ce raid » / « Modifier mon avis » when the server lets this player review it

@@ -57,6 +57,10 @@ public:
     /// nothing skips) is not due any more. Written only at its end; never lost by a copy or a
     /// migration (ProgressMerge: either side's).
     bool asterionFilmSeen = false;
+    /// 2.81: « Après Asterion » unlocked (ui/screens/AsterionFilm): the server said so once (a player who took part in
+    /// an event whose Heart fell, or anyone once the world outcome « Asterion est tombé » is official). Kept for
+    /// watching it again offline; never lost by a copy or a migration (ProgressMerge: either side's).
+    bool asterionAftermath = false;
     bool unlockAll = false;  // from the settings: every level is playable (testing)
 
     Json toJson() const;

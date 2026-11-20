@@ -282,6 +282,15 @@ droite, ses charges ralentissent. Sa chute validée lance le film **« La chute 
 accorde, une seule fois, le badge « Cœur d'Asterion », l'effet de victoire « Supernova d'Asterion », le cadre de profil
 des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §16](docs/RAIDS.md#17-phase-6-274--le-cœur-dasterion).
 
+**Après Asterion** : juste après le film de la victoire, un second mini-film (81 s) raconte ce que la chute change dans le
+monde — les mondes qu'il avait dévorés se rallument, le ciel de nos planètes s'éclaircit, les peuples partis reviennent,
+le Phénix s'endort enfin, l'étoile morte du centre frémit — et **écrit le nom des clans présents à la chute**, le vôtre en
+évidence. Tout le monde le voit **au même moment**, à l'heure fixée par le serveur : l'instance du Cœur, et les membres en
+ligne de ces clans (une notification « Asterion est tombé — regarder le film avec votre clan » ; jamais lancé par-dessus un
+niveau). Arrivé en retard, on le prend en cours ou « Depuis le début ». Il se revoit depuis la fiche de l'événement, la fiche
+récapitulative du raid et Collection › Galerie › Films, une fois débloqué (pour ceux qui ont pris part, puis pour tous quand « Asterion est tombé »
+est officiel). Détails : [docs/RAIDS.md §31](docs/RAIDS.md#31--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281).
+
 ### Récompenses et événements mondiaux
 
 * **Contributions** calculées par la simulation pour chaque joueur — dégâts, dégâts évités, soutien,
@@ -344,7 +353,10 @@ monte, battent les Gigaboss et relèvent les joueurs à terre, au niveau Débuta
 qu'ils font (« Double saut au-dessus du vide »…). **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
 carte du titan, contributions, groupes éliminés et renforts ; l'administrateur rejoint ou regarde n'importe quel groupe,
-et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md).
+et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md). Dans les deux tests, l'administrateur peut aussi
+**inviter de vrais joueurs** connectés (liste avec recherche, administrateurs ou non) : chacun prend la place d'un joueur
+simulé de son groupe, avec sa case **« Invincible »** que seul l'administrateur change ; le test passe alors par le
+serveur, sans jamais rien compter ([docs/RAIDS.md §30](docs/RAIDS.md#30-tester-avec-des-joueurs-invités-280)).
 
 Dans le **vestiaire**, les tablettes de pouvoir sont en hauteur sur leurs rebords (deux étages), avec le nom, l'icône et
 le coût d'énergie de chaque pouvoir au-dessus : on n'en prend une qu'en sautant dessus.
@@ -639,6 +651,32 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.81.0** :
+* **« Après Asterion »**, le film du monde d'après la chute : huit plans animés, 81 s, sur ce que la victoire change dans
+  la galaxie, ses planètes et ses peuples, avec **le nom des clans présents à la chute** (le vôtre en évidence) ; regardé
+  **ensemble**, à l'heure du serveur, par l'instance du Cœur juste après le film de la victoire et par les membres en ligne
+  de ces clans ; jamais imposé dans un niveau ; « Depuis le début » pour qui arrive en retard
+  ([docs/RAIDS.md §31](docs/RAIDS.md#31--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
+* **Collection › Galerie › Films** : les films d'Asterion et la bande-annonce, à revoir une fois débloqués.
+* **ADMINISTRATION › Films** : tous les films et présentations du jeu (histoires des giga-boss, films d'Asterion,
+  bande-annonce, didacticiel) avec leur vignette, leur durée et où les joueurs les voient, à lancer d'un clic ; **« Rejouer
+  le didacticiel »** sans rien toucher à la progression, aux records, aux succès ni aux statistiques
+  ([docs/RAIDS.md §32](docs/RAIDS.md#32-administration--films--tous-les-films-et-présentations-rejouer-le-didacticiel-281)).
+
+**Nouveau dans la version 2.80.0** :
+* **Tester Asterion avec de vrais joueurs** (administration) : dans le test d'une zone comme dans le raid complet simulé,
+  l'administrateur invite des joueurs connectés (liste avec recherche, administrateurs ou non) ; chacun prend la place d'un
+  joueur simulé de son groupe (jamais un de plus), avec sa case **« Invincible »** (décochée par défaut) que seul
+  l'administrateur change, avant comme pendant le test
+  ([docs/RAIDS.md §30](docs/RAIDS.md#30-tester-avec-des-joueurs-invités-280)).
+* **L'invitation** : une notification et un message ; en haut de NOTIFICATIONS, l'invité l'accepte ou la refuse dans les
+  3 minutes (qui invite, quel test, son groupe, s'il sera invincible). L'administrateur voit chaque réponse, annule une
+  invitation ou retire un joueur. Une autre version du jeu ne peut pas rejoindre.
+* **Un test relayé** : chaque ordinateur calcule les mêmes joueurs simulés, un invité qui arrive rattrape la partie, un
+  invité absent ou parti laisse sa place à son joueur simulé ; « Invincible » change au même instant partout. Sans invité,
+  le test reste local et hors ligne. Rien ne compte jamais : ni record, ni contribution, ni récompense, ni classement, ni
+  progression du raid (le serveur refuse tout rapport d'un test).
 
 **Nouveau dans la version 2.79.0** :
 * **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §28](docs/RAIDS.md)) : ils lisent la zone en **simulant
