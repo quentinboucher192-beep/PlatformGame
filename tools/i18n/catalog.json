@@ -126,6 +126,12 @@
    ]
   },
   {
+   "fr": "(renfort)",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "(sans message)",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -790,6 +796,12 @@
    ]
   },
   {
+   "fr": "[{0}] groupe {1}",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "[{0}] invite {1} à un raid commun : {2}",
    "where": [
     "server/src/notifications.ts"
@@ -1279,7 +1291,8 @@
    "fr": "Abdomen",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -1420,6 +1433,12 @@
    "fr": "Accordée par Cosmic Online à la fin du défi, d'après les parties vérifiées reçues à l'heure. Jamais retirée.",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Accordées par le serveur d'après les résultats validés · à récupérer dans CLANS › RAIDS",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -3854,6 +3873,7 @@
    "fr": "ASTERION EST TOMBÉ",
    "where": [
     "data/raids/asterion_victoire.json",
+    "game/online/RaidRecap.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -3898,6 +3918,12 @@
    "fr": "Asterion résiste encore",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Asterion vaincu · {0}",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -4294,6 +4320,12 @@
    "fr": "Asterion · Torse · Vestiaire",
    "where": [
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · {0} {1}",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -5617,6 +5649,12 @@
    ]
   },
   {
+   "fr": "Aucun raid terminé pour l'instant : la fiche d'un raid apparaît ici dès qu'il est fini.",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun raid terminé pour l'instant.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -5830,6 +5868,7 @@
    "fr": "aucune",
    "where": [
     "game/online/HttpTransport.cpp",
+    "game/online/RaidRecap.cpp",
     "ui/studio/StudioCanvas.cpp"
    ]
   },
@@ -6151,6 +6190,12 @@
    "fr": "Aucune progression à restaurer.",
    "where": [
     "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "Aucune récompense accordée au clan pour ce raid.",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -6690,6 +6735,7 @@
     "game/online/Clans.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineGlobe.cpp",
+    "game/online/RaidRecap.cpp",
     "ui/online/CommentsPanel.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/AdminScene.cpp",
@@ -6877,6 +6923,12 @@
    ]
   },
   {
+   "fr": "Badge",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Badge : {0}",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -6952,6 +7004,12 @@
    "fr": "Badge « {0} »",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Badges",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -7890,6 +7948,7 @@
     "game/levels/DifficultyRating.cpp",
     "game/levels/ObjectTypes.cpp",
     "game/online/AsterionBody.cpp",
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
@@ -8368,7 +8427,8 @@
    "fr": "Bras droit",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -8394,7 +8454,8 @@
    "fr": "Bras gauche",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -8976,6 +9037,12 @@
    ]
   },
   {
+   "fr": "Cadre de profil",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Cadre de profil « Cœur d'Asterion »",
    "where": [
     "server/src/raidHeartRewards.ts"
@@ -9536,7 +9603,8 @@
    "fr": "Carte du titan",
    "where": [
     "ui/screens/RaidEventScene.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -10425,6 +10493,12 @@
    "fr": "Ce raid est terminé.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Ce raid n'est pas terminé, ou le clan n'y a pas pris part.",
+   "where": [
+    "server/src/raidRecap.ts"
    ]
   },
   {
@@ -11509,6 +11583,12 @@
    ]
   },
   {
+   "fr": "Chaque raid terminé du clan garde sa fiche récapitulative, et chaque événement mondial son résultat officiel : ouvrez-le.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "CHAQUE RANGÉE VA DANS…",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -11524,12 +11604,6 @@
    "fr": "Chaque évent ouvert crache à son tour un jet de magma toutes les {0} s, annoncé {1} s avant : une colonne de {2} px de haut qui brûle {3} s.",
    "where": [
     "data/raids/asterion_sheets.json"
-   ]
-  },
-  {
-   "fr": "Chaque événement mondial terminé garde son résultat officiel, figé par le serveur : ouvrez-le pour son classement.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -11626,6 +11700,12 @@
    "fr": "Chargement de la fiche du clan…",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chargement de la fiche du raid…",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -12584,6 +12664,18 @@
    ]
   },
   {
+   "fr": "Clan [{0}] · {1} joueur",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "Clan [{0}] · {1} joueurs",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Clan inscrit : ses membres sont prévenus et s'inscrivent eux-mêmes.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -12593,6 +12685,7 @@
    "fr": "Clan introuvable.",
    "where": [
     "server/src/clans.ts",
+    "server/src/raidRecap.ts",
     "ui/screens/ClanScene.cpp"
    ]
   },
@@ -12662,6 +12755,12 @@
    "fr": "Clans inscrits",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "CLANS › RAIDS › RAIDS TERMINÉS",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -13579,6 +13678,7 @@
     "game/cosmetics/Collection.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/PlayerProfileScene.cpp",
+    "ui/screens/RaidRecapScene.cpp",
     "ui/studio/StudioDoc.cpp",
     "ui/studio/StudioImport.cpp"
    ]
@@ -16495,7 +16595,8 @@
    "fr": "Crâne",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -16985,6 +17086,12 @@
    ]
   },
   {
+   "fr": "Cœur",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "cœur",
    "where": [
     "data/enemies/asterion_coeur.json",
@@ -17017,7 +17124,9 @@
     "data/cosmetics/cosmetics.json",
     "data/enemies/asterion_coeur.json",
     "data/raids/asterion/coeur/zone_2.json",
-    "server/src/raidRewards.ts"
+    "game/online/RaidRecap.cpp",
+    "server/src/raidRewards.ts",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -17180,9 +17289,22 @@
    ]
   },
   {
+   "fr": "Cœur ouvert",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cœur scellé",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Cœur vaincu",
    "where": [
-    "data/raids/asterion/coeur/zone_2.json"
+    "data/raids/asterion/coeur/zone_2.json",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -17764,6 +17886,18 @@
    "where": [
     "game/enemies/Enemy.cpp",
     "game/player/Player.cpp"
+   ]
+  },
+  {
+   "fr": "debout · phase {0} / 3",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "debout · phase {0} / 4",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -19987,6 +20121,12 @@
    ]
   },
   {
+   "fr": "durée {0}",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "durée · temps",
    "where": [
     "ui/screens/SegmentsScene.cpp"
@@ -21039,6 +21179,12 @@
    ]
   },
   {
+   "fr": "Dégâts au Cœur",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "dégâts au Cœur impossibles",
    "where": [
     "server/src/raidZones.ts"
@@ -21055,6 +21201,12 @@
    "where": [
     "server/src/coopRace.ts",
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "Dégâts aux Gigaboss",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -21687,6 +21839,7 @@
    "fr": "Effet de victoire",
    "where": [
     "game/cosmetics/Collection.cpp",
+    "ui/screens/RaidRecapScene.cpp",
     "ui/studio/StudioDoc.cpp"
    ]
   },
@@ -22123,6 +22276,12 @@
    "where": [
     "game/online/DailyChallenges.cpp",
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "en attente de validation",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -24833,6 +24992,12 @@
    ]
   },
   {
+   "fr": "Fiche de l'événement",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Fiche de {0}",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
@@ -24843,6 +25008,19 @@
    "fr": "Fiche du clan indisponible.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche provisoire : en attente de validation",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "Fiche récapitulative",
+   "where": [
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -25828,6 +26006,7 @@
     "game/online/OnlineCache.cpp",
     "game/online/OnlineSession.cpp",
     "game/online/ProgressMerge.cpp",
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/planets/PlanetData.cpp",
     "game/powers/PowerDefinition.cpp",
@@ -26750,6 +26929,7 @@
   {
    "fr": "gigaboss",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/raid/RaidBranch.cpp",
     "ui/screens/AdminRaids.cpp",
@@ -27904,6 +28084,7 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
+    "game/online/RaidRecap.cpp",
     "ui/online/RaidHud.cpp",
     "ui/online/RaidMenu.cpp",
     "ui/screens/RaidWorldScene.cpp"
@@ -27942,6 +28123,7 @@
   {
    "fr": "Groupe {0}",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/raid/RaidSimulation.cpp"
    ]
   },
@@ -28208,6 +28390,12 @@
    "fr": "Groupes présents · {0} groupes requis",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupes éliminés",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -28712,6 +28900,12 @@
    "where": [
     "ui/screens/AdminRaids.cpp",
     "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Heure de chute de chaque Gigaboss · groupe qui l'a abattu · relique rapportée",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -29254,6 +29448,7 @@
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/online/Spectate.cpp",
     "game/planets/PlanetData.cpp",
@@ -29293,6 +29488,7 @@
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
     "ui/screens/ReplayCompareSetupScene.cpp",
     "ui/screens/ReplayScene.cpp",
@@ -31097,6 +31293,12 @@
    ]
   },
   {
+   "fr": "jamais affronté",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Jamaïque",
    "where": [
     "data/online/countries.json",
@@ -31121,7 +31323,8 @@
    "fr": "Jambe droite",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -31141,7 +31344,8 @@
    "fr": "Jambe gauche",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -36033,6 +36237,12 @@
    ]
   },
   {
+   "fr": "Le moins de morts",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Le mollet blindé. Son réacteur alimente le verrou de la cheville ; son levier ouvre le raccourci vers le genou-forge.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_6.json"
@@ -38034,6 +38244,12 @@
    ]
   },
   {
+   "fr": "Les fiches restent dans l'historique du clan.",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Les fichiers R2 listés (replays, avatars, niveaux de la communauté, projets…) sont dans le fichier .cpbk téléchargé ; les installateurs du jeu (releases/) n'en font pas partie.",
    "where": [
     "server/src/backups.ts"
@@ -38260,6 +38476,12 @@
    "fr": "Les lasers des Anciens s'éteignent un instant : passez entre deux tirs.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "LES MEILLEURS DU RAID",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -38645,6 +38867,12 @@
    "fr": "Les sept parties",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "LES SEPT PARTIES ET LE CŒUR",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -41768,6 +41996,12 @@
    ]
   },
   {
+   "fr": "moins d'une minute",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Moins de morts",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -42297,9 +42531,16 @@
   {
    "fr": "Morts",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/screens/ResultsScene.cpp",
     "ui/screens/StatisticsScene.cpp",
     "ui/widgets/Charts.cpp"
+   ]
+  },
+  {
+   "fr": "Morts / réanimations",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -42635,6 +42876,7 @@
   {
    "fr": "Mécanismes",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
@@ -45066,6 +45308,7 @@
   {
    "fr": "Objectifs",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidBranchScene.cpp",
@@ -47247,6 +47490,12 @@
    ]
   },
   {
+   "fr": "Parties abattues",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "PARTIES ARRIVÉES AU BOUT",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -47256,6 +47505,12 @@
    "fr": "Parties du réseau local",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Parties du titan",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -47304,6 +47559,7 @@
    "fr": "parts",
    "where": [
     "game/online/AsterionBody.cpp",
+    "game/online/RaidRecap.cpp",
     "main.cpp",
     "ui/screens/AdminBackups.cpp"
    ]
@@ -48674,6 +48930,12 @@
    ]
   },
   {
+   "fr": "personne",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Personne de votre clan n'est inscrit pour l'instant.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -48797,6 +49059,7 @@
     "game/gameplay/entities/PlatformEntities.cpp",
     "game/levels/EventSystem.cpp",
     "game/levels/ObjectTypes.cpp",
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/planets/PlanetData.cpp",
     "ui/screens/RaidTitanScene.cpp"
@@ -48881,6 +49144,7 @@
     "editors/enemy_editor/EnemyEditorParts.cpp",
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "game/enemies/BossAttackSheet.cpp",
+    "game/online/RaidRecap.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp",
@@ -53544,6 +53808,12 @@
    ]
   },
   {
+   "fr": "Raid du clan du {0}",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "RAID DU CLAN {0}",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -53558,6 +53828,7 @@
   {
    "fr": "Raid introuvable.",
    "where": [
+    "server/src/raidRecap.ts",
     "server/src/raids.ts"
    ]
   },
@@ -53597,6 +53868,12 @@
    "where": [
     "game/online/Raids.cpp",
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "RAID TERMINÉ",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -55435,6 +55712,12 @@
    ]
   },
   {
+   "fr": "Reliques",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "reliques",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
@@ -56763,6 +57046,12 @@
    ]
   },
   {
+   "fr": "Revoir le film de victoire",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Revoir mon meilleur replay",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -57505,6 +57794,12 @@
    ]
   },
   {
+   "fr": "Réanimations",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Réanimations de l'équipe : {0} utilisée sur {1}",
    "where": [
     "game/gameplay/HudTeam.cpp"
@@ -57520,6 +57815,12 @@
    "fr": "Réanimations de la zone : 1 / 2",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimations faites",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -57582,6 +57883,12 @@
    "fr": "Récepteur d'énergie",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Récompense",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -57781,6 +58088,12 @@
     "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "RÉCOMPENSES OBTENUES PAR LE CLAN",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -59496,8 +59809,15 @@
    ]
   },
   {
+   "fr": "Scellé",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "scellé",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
   },
@@ -60457,6 +60777,18 @@
    ]
   },
   {
+   "fr": "Session de rattrapage du",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "Session de rattrapage du {0}",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Session de rattrapage ouverte : tous les clans sont prévenus (inscrit au Journal).",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -60716,6 +61048,12 @@
    "fr": "Seuls les joueurs dont le périphérique est encore branché peuvent choisir. En ligne, chacun gère le sien : la règle des 60 s de reconnexion ne change pas.",
    "where": [
     "ui/screens/DeviceLostUi.cpp"
+   ]
+  },
+  {
+   "fr": "Seuls les membres du clan voient les fiches de ses raids.",
+   "where": [
+    "server/src/raidRecap.ts"
    ]
   },
   {
@@ -61839,6 +62177,7 @@
   {
    "fr": "Soutien",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "ui/online/RaidHud.cpp"
    ]
@@ -64353,6 +64692,12 @@
    ]
   },
   {
+   "fr": "temps écoulé ({0})",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "Temps écoulé : retour au dernier point de sauvegarde (+60 s)",
    "where": [
     "game/gameplay/GameWorld.cpp"
@@ -65658,7 +66003,8 @@
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/CollectionScene.cpp",
     "ui/screens/CommunityPublishScene.cpp",
-    "ui/screens/OnlineLevelsScene.cpp"
+    "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -65677,6 +66023,12 @@
    "fr": "Titre créé et ajouté : « Enregistrer » pour garder les récompenses.",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Titre de clan",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -65755,6 +66107,7 @@
   {
    "fr": "Titres du clan :",
    "where": [
+    "ui/screens/RaidRecapScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -65877,7 +66230,8 @@
    "fr": "Torse",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -70192,6 +70546,12 @@
    ]
   },
   {
+   "fr": "Vaincu",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "vaincu",
    "where": [
     "ui/screens/RaidTitanScene.cpp",
@@ -72143,6 +72503,12 @@
    ]
   },
   {
+   "fr": "VOTRE RAID",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Votre rang",
    "where": [
     "ui/screens/RaidResultsScene.cpp",
@@ -72255,6 +72621,7 @@
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/PauseScene.cpp",
     "ui/screens/RaidGameScene.cpp",
+    "ui/screens/RaidRecapScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -72383,6 +72750,12 @@
    "fr": "Vous n'avez pas encore de clan",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'avez pas joué ce raid : vos chiffres (groupe, parties abattues, zones, réanimations, part du Cœur) apparaissent ici quand vous y prenez part.",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -73530,6 +73903,7 @@
   {
    "fr": "Zones terminées",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/online/RaidMenu.cpp"
    ]
   },
@@ -73897,6 +74271,12 @@
    ]
   },
   {
+   "fr": "{0} ({1} du clan)",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "{0} ({1} gigaboss)",
    "where": [
     "game/online/Raids.cpp"
@@ -74002,6 +74382,24 @@
    "fr": "{0} / {1} niveaux terminés",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} parties tombées",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} parties · temps écoulé",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "{0} / {1} reliques rapportées",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -74709,6 +75107,12 @@
    ]
   },
   {
+   "fr": "{0} badge reçu",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} badges au plus",
    "where": [
     "server/src/badges.ts"
@@ -74718,6 +75122,12 @@
    "fr": "{0} badges au plus avec {1} étoiles.",
    "where": [
     "server/src/badges.ts"
+   ]
+  },
+  {
+   "fr": "{0} badges reçus",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -75482,6 +75892,12 @@
    ]
   },
   {
+   "fr": "{0} Gigaboss",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} Go",
    "where": [
     "ui/screens/AdminBackups.cpp"
@@ -75490,6 +75906,7 @@
   {
    "fr": "{0} groupe",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
@@ -75497,6 +75914,7 @@
   {
    "fr": "{0} groupes",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidTitanScene.cpp"
    ]
@@ -75528,6 +75946,7 @@
   {
    "fr": "{0} h {1} min",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/progression/Progression.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -75693,7 +76112,8 @@
    "fr": "{0} joueur",
    "where": [
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/RaidEventScene.cpp"
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -75750,6 +76170,7 @@
     "game/raid/RaidSheets.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidRecapScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
   },
@@ -75954,6 +76375,7 @@
   {
    "fr": "{0} min",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/online/Raids.cpp",
     "game/progression/Progression.cpp",
     "ui/screens/MainMenuScene.cpp",
@@ -76309,6 +76731,12 @@
    ]
   },
   {
+   "fr": "{0} parties",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} performance(s) à envoyer",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
@@ -76446,6 +76874,18 @@
    ]
   },
   {
+   "fr": "{0} renfort",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "{0} renforts",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "{0} replay",
    "where": [
     "ui/screens/ReplayCompareSetupScene.cpp"
@@ -76467,6 +76907,12 @@
    "fr": "{0} replays · {1} sur {2} Mo",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} repris",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -76588,6 +77034,18 @@
    "fr": "{0} réponses à votre commentaire sur {1}",
    "where": [
     "server/src/notifications.ts"
+   ]
+  },
+  {
+   "fr": "{0} résultat en attente de validation",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "{0} résultats en attente de validation",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -76732,6 +77190,12 @@
    "fr": "{0} sur {1}",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur {1} clans",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -77299,6 +77763,18 @@
    "fr": "{0} · {1} : {2} groupe sur {3}, un renfort est attendu",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} groupe",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · {1} groupes",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -78552,6 +79028,12 @@
    "fr": "Échap",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Échap / B : retour",
+   "where": [
+    "ui/screens/RaidRecapScene.cpp"
    ]
   },
   {
@@ -80079,6 +80561,18 @@
    ]
   },
   {
+   "fr": "Événement mondial du",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
+   "fr": "Événement mondial du {0}",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "ÉVÉNEMENT MONDIAL · {0}",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -80510,6 +81004,7 @@
    "fr": "‹ Retour",
    "where": [
     "ui/screens/RaidBranchScene.cpp",
+    "ui/screens/RaidRecapScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidRosterScene.cpp",
     "ui/screens/RaidSheetsScene.cpp",

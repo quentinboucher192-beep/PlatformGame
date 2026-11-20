@@ -11,6 +11,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/RaidRecapScene.h"
 
 namespace cosmic {
 
@@ -495,7 +496,8 @@ void ClanRaids::drawHistory(const Rect& r, const raids::TabLayout& lay) {
         drawLines(ui, wrap(ui, "Aucun raid terminé pour l'instant.", FontFace::Body, 15, w, 2), {x, y}, 15, ui.s(22), kDim);
     } else {
         // 2.69: each event opens its sheet (its results, its world ranking); a world event closed shows
-        // its official result (frozen by the server) and my clan's rank in it.
+        // its official result (frozen by the server) and my clan's rank in it. 2.78.1: a raid the clan took
+        // part in opens its « fiche récapitulative » (its sheet stays one button away there).
         const float rowH = ui.s(34);
         ui.beginScroll("history", list, static_cast<float>(hist.size()) * rowH);
         float ry = list.y - ui.scrollOffset();
@@ -506,7 +508,10 @@ void ClanRaids::drawHistory(const Rect& r, const raids::TabLayout& lay) {
             ry += rowH;
             if (!e.valid || cy < list.y || cy > list.bottom()) continue;
             bool hover = false;
-            if (ui.hotspot("hist/" + e.id, row, &hover)) openEvent(e.id);
+            if (ui.hotspot("hist/" + e.id, row, &hover)) {
+                if (e.clanRegistered && !e.cancelled && !clanId().empty()) g_.app.pushScene(makeRaidRecap(g_, clanId(), e.id));
+                else openEvent(e.id);
+            }
             if (hover) ui.r().fillRoundedRect(row, ui.s(7), Color{34, 44, 92, 200});
             const std::string result = e.cancelled ? "Annulé"
                                        : e.result.valid ? raids::resultLine(e.result, e.clanRegistered ? clanTag() : std::string())
@@ -520,7 +525,8 @@ void ClanRaids::drawHistory(const Rect& r, const raids::TabLayout& lay) {
         ui.endScroll();
     }
     drawLines(ui,
-              wrap(ui, "Chaque événement mondial terminé garde son résultat officiel, figé par le serveur : ouvrez-le pour son classement.", FontFace::Body, 13, w, 2),
+              wrap(ui, "Chaque raid terminé du clan garde sa fiche récapitulative, et chaque événement mondial son résultat officiel : ouvrez-le.", FontFace::Body,
+                   13, w, 2),
               {x, r.bottom() - ui.s(10) - footH + ui.s(4)}, 13, ui.s(18), kDim);
 }
 

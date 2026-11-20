@@ -24,6 +24,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/RaidRecapScene.h"
 
 namespace cosmic {
 
@@ -118,7 +119,21 @@ public:
         std::string state = !loaded_ ? "" : res_.final ? "Classement final" : "Classement en cours · résultats validés par le serveur";
         const float sw = std::min(textW(ui, state, 14), (page.right() - hx) * 0.45f);
         if (!state.empty()) fit(ui, state, {page.right(), page.y + ui.s(22)}, 14, sw, res_.final ? kGreen : kGold, FontFace::Bold, Align::Right);
-        fit(ui, "Résultats du raid — Asterion", {hx, page.y + ui.s(22)}, 26, page.right() - hx - sw - ui.s(16), kText, FontFace::Title);
+        // 2.78.1: the « fiche récapitulative » of the raid for my clan, once it is finished (or its heart fallen).
+        const std::string recapLabel = "Fiche récapitulative", myClan = jstr(jfield(g_.online.myClan(), "clan"), "id");
+        const bool heartDown = std::find(res_.defeatedBosses.begin(), res_.defeatedBosses.end(), "Cœur d'Asterion") != res_.defeatedBosses.end();
+        bool clanIn = false;
+        for (const raids::ResultClan& c : res_.clans) clanIn = clanIn || c.tag == g_.online.myClanTag();
+        const float cw = loaded_ && (res_.final || heartDown) && clanIn && !myClan.empty()
+                             ? std::min(textW(ui, recapLabel, 15, FontFace::Bold) + ui.s(32), (page.right() - hx - sw) * 0.4f)
+                             : 0.0f;
+        if (cw > ui.s(60)) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            if (ui.button("recap", {page.right() - sw - ui.s(16) - cw, page.y, cw, ui.s(44)}, recapLabel, st)) g_.app.pushScene(makeRaidRecap(g_, myClan, eventId_));
+        }
+        fit(ui, "Résultats du raid — Asterion", {hx, page.y + ui.s(22)}, 26, page.right() - hx - sw - ui.s(16) - (cw > ui.s(60) ? cw + ui.s(16) : 0.0f), kText,
+            FontFace::Title);
         if (!loaded_) {
             fit(ui, error_.empty() ? "Chargement des résultats…" : error_, {page.x, page.y + ui.s(80)}, 17, page.w, error_.empty() ? kDim : ui.theme().danger);
         } else {
