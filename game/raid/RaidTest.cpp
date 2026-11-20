@@ -46,7 +46,7 @@ void TestSession::step(const InputFrame& adminIn, const std::vector<std::pair<in
     else afk_ = 0;
     uint32_t seats = 0;
     for (int s = 1; s < players_; ++s) seats |= 1u << s;
-    if (autopilot()) seats |= 1u;
+    if (seatZeroBot()) seats |= 1u;  // 2.77.3: also the administrator's seat while they are not in the group (freeSeatPlayed_)
     if (names_.empty() || namesFor_ != (adminSeated_ && !autopilot())) {
         // The names in the simulated players' thoughts (« réanime Vous », « réanime Joueur simulé 3 »).
         namesFor_ = adminSeated_ && !autopilot();
@@ -56,7 +56,7 @@ void TestSession::step(const InputFrame& adminIn, const std::vector<std::pair<in
     }
     frames_[0] = admin;
     bots_.think(run_, frames_.data(), static_cast<int>(frames_.size()), seats, adminSeated_ && !autopilot());
-    if (!adminSeated_) {
+    if (!adminSeated_ && !freeSeatPlayed_) {
         frames_[0] = InputFrame{};
         frames_[0].flags = InputFrame::Vacant;  // the free place of a group
     }
@@ -72,7 +72,7 @@ void TestSession::step(const InputFrame& adminIn, const std::vector<std::pair<in
     state_ |= run_.localDone();
     if (botsInvincible_) {
         GameWorld& w = run_.world();
-        for (int s = 1; s < players_ && s < w.teamSize(); ++s)
+        for (int s = seatZeroBot() ? 0 : 1; s < players_ && s < w.teamSize(); ++s)
             if (w.member(s).presence == GameWorld::Presence::Playing && w.playerAt(s).alive()) w.playerAt(s).health = w.playerAt(s).maxHealth();
     }
     // 2.79: the simulated players put down (counted once each time).
@@ -97,7 +97,7 @@ void TestSession::rescue() {
     GameWorld& w = run_.world();
     for (int s = 0; s < players_ && s < w.teamSize(); ++s) {
         TestBots::Bot& b = bots_.bots()[static_cast<size_t>(s)];
-        if (s == 0 && !autopilot()) continue;  // the administrator plays their seat
+        if (s == 0 && !seatZeroBot()) continue;  // the administrator plays their seat (or it is free)
         if (w.member(s).presence != GameWorld::Presence::Playing || !w.playerAt(s).alive() || w.playerAt(s).respawning()) continue;
         if (b.task == TestBots::Task::Mechanism && b.mechanismSteps > kMechanismSteps) {
             b.mechanismSteps = 0;

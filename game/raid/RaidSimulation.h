@@ -38,6 +38,9 @@ namespace cosmic::raid {
 struct SimSetup {
     int groups = 7;                      // 1 to 14
     int bots = 4;                        // per group, the administrator not counted (1 to 7)
+    /// 2.77.3 (« Joueurs par groupe : N »): the administrator's seat of a group they are not in is played by a
+    /// simulated player too: every group has bots + 1 players (theirs: them + bots). Off: that seat stays free.
+    bool fullGroups = false;
     bool invincible = true;              // the administrator's seat
     bool botsInvincible = false;         // the simulated players too (a test only)
     BotSkill skill = BotSkill::Skilled;

@@ -10,6 +10,7 @@
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
 # à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
+# statistiques des Gigaboss, fiche du Cœur, groupes du raid simulé (2.77.3, §24) ;
 # joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §25) ;
 # joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §26)
 
@@ -1482,6 +1483,78 @@ notifications sous le bandeau.
 Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes
 de référence ne changent pas.
 
+## 24. Statistiques des Gigaboss, fiche du Cœur et groupes du raid simulé (2.77.3)
+
+### « Statistiques » dans la fiche de chaque Gigaboss (`raid::SheetStats`, `ui/widgets/GigabossStatsView`)
+
+L'onglet « Combat » de chaque fiche (CLANS › RAIDS › Fiches) commence par un bloc **« Statistiques »**, lu dans les vraies
+données (`game/raid/RaidSheets.cpp`, jamais recopié) :
+
+* **Points de vie selon le groupe**, de 2 à 8 joueurs : `hp` de sa définition × `Gigaboss::healthFactor` (1 + `hpPerPlayer`
+  × (joueurs − 1), les règles de son antre), arrondis comme sa barre ; une barre par taille de groupe.
+* **Phases** : pour chacune, son seuil (`hpThreshold`) en % et en PV à 2 et à 8 joueurs, et ses états, ceux du schéma
+  « Où frapper » (Combat, Blindé, À nu…).
+* **Dégâts reçus, en cœurs** comme l'infobulle « Où frapper » (au moins un cœur, arrondi, facteur de dégâts × 1) : le
+  contact, chaque attaque de sa définition, puis chaque coup de ses règles de raid (un bloc des règles qui a des
+  `damage` : ses poings, ses jets quand il a des évents, les coups de sa routine), nommé par le bloc ou par le mécanisme
+  de sa fiche qui le lit.
+* **Multiplicateurs par partie** (`data/enemies` « parts ») : point faible × 2, blindée × 0,5, partie qui blesse ; à nu
+  (`exposedMult`, `exposed`) et point faible brisé (`weakShare`).
+* **Autres caractéristiques** : vitesse (× poursuite), taille de sa boîte (et l'agrandissement du dessin), limite de temps
+  (`enrageTime` du combat ou de sa dernière phase : 75 à 120 s), rythme selon le groupe (`pressurePerPlayer`), vie de ses cibles
+  (`weakHpPerPlayer`), dernier souffle.
+* Chaque chiffre a son **infobulle** (survol, ou le focus au clavier et à la manette) qui dit d'où il vient. Mesuré
+  d'abord (`gbstats::layoutStats`), chaque texte ajusté à sa ligne, la valeur toujours entière.
+
+### La fiche du Cœur d'Asterion (`RaidSheets::heart`, `ui/widgets/HeartSheetView`)
+
+Le Cœur a désormais sa fiche (entrée `heart` de `data/raids/asterion_sheets.json`, son arène : zone 2 de « coeur »),
+ouverte depuis la liste, depuis le cœur du titan et depuis la fiche d'Asterion. Onglets : « Combat », « Où frapper »,
+« Lieu et récompenses ». « Combat » en trois colonnes (empilées sur un écran étroit) :
+
+* **Ce que le clan a accompli** : le titan (son sprite), chaque partie tombée barrée en vert, ◆ la relique de sa branche.
+  Pendant un événement en cours dont la carte du titan a été reçue (`raids::lastTitan`, gardée par l'écran de la carte),
+  c'est l'**état réel** : les parties tombées (ses liens « modifier » actifs) et le nombre de reliques validées (la carte
+  ne dit pas de quelles branches : la fiche le dit). Sinon, ou dès qu'on change une partie ou une relique (clic, Entrée / A
+  sur le titan ou sur ses boutons « Tombé / Debout », « ◆ Relique »), une **simulation** ; **R** ou « État réel du clan »
+  rétablit l'état réel. Ligne honnête : « En raid, le Cœur s'ouvre quand les 7 Gigaboss sont tombés. »
+* **Statistiques** : la vie de l'instance de 2 à 8 joueurs, `hp` × (1 + `hpPerPlayer` × (joueurs − 1)), puis −`relicShare`
+  par relique (au moins 50 % gardés, `AsterionHeartRoutine`), en gris sans relique ; la vie partagée par tout le clan
+  (10 000 dix-millièmes) ; les phases partagées (100–75, 75–50, 50–25 %, puis Supernova) ; le contact.
+* **Ses attaques selon les parties tombées** : les sept liens « modifier » du titan (`titan.json`, leurs libellés), en vert
+  avec une coche dessinée (affaibli), en rouge avec « ! » (encore actif), « tombé : Partie » ou « si tombé : Partie ».
+
+### STATISTIQUES › Boss › « Raid Asterion »
+
+Les sept Gigaboss et le Cœur ont leur catégorie, après les boss du jeu, avec les mêmes onglets : « Mes statistiques »
+(leurs combats ; « Jamais affronté » tant qu'il n'y en a pas : rien n'est inventé), « Fiche » (leurs statistiques ci-dessus,
+leurs phases et attaques), « Où frapper ». Pas d'entraînement pour un boss de raid ; « Où l'affronter » dit sa branche et
+son antre. Le résumé en haut (« Boss vaincus ») ne compte que les boss du jeu.
+
+### « Simuler un raid complet » : « Joueurs par groupe (vous compris) »
+
+Le réglage « Joueurs simulés par groupe » donnait N joueurs simulés à chaque groupe : le groupe de l'administrateur en
+comptait N + 1. Il devient **« Joueurs par groupe (vous compris) » : N**, de 2 à 8, dit sous lui (« Votre groupe : vous +
+6 joueurs simulés · autres groupes : 7 joueurs simulés ») : la place de l'administrateur, dans un groupe où il n'est pas,
+est jouée par un joueur simulé (`SimSetup::fullGroups`, `TestSession::setFreeSeatPlayed`). En rejoignant un autre groupe,
+il y remplace ce joueur simulé : aucun groupe ne dépasse N. Le test d'une zone garde son réglage, « Joueurs simulés (sans
+vous) : 0 à 7 ». Les captures (`--raid-sim`) et les tests d'avant gardent l'ancienne composition (place libre).
+
+### Tests (`tests/test_gigaboss_stats.cpp`)
+
+Chaque nombre des statistiques des sept Gigaboss et du Cœur comparé à leurs fichiers (PV, mise à l'échelle 2 à 8, seuils et
+PV des phases, contact, chaque attaque, chaque coup des règles, rôles et multiplicateurs des parties, vitesse, taille,
+limite de temps, fenêtre à nu), la vie du Cœur avec 0 à 7 reliques et son plancher, ses sept liens « modifier » ; l'état
+réel lu sur une carte du titan ; la mise en page (statistiques et trois colonnes du Cœur) en 1280 × 720 et 1920 × 1080, en
+français et en anglais : chaque partie dans sa colonne, à la suite, les valeurs entières, les infobulles dans l'écran ;
+« Joueurs par groupe : 7 » : le groupe de l'administrateur a 6 joueurs simulés et lui, chaque autre groupe 7, et rejoindre
+un groupe y remplace un joueur simulé.
+
+### Versions
+
+Affichage, données des fiches et réglage du test seulement : `kSimulationVersion`, `kCoopSimulationVersion`,
+`kRankingGeneration`, `TITAN_REVISION` et les empreintes de référence ne changent pas (sans « Joueurs par groupe », les
+groupes d'un test se jouent comme avant).
 
 ## 25. Joueurs simulés : terrain et anticipation (2.79)
 
