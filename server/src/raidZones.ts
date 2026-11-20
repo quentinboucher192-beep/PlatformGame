@@ -34,6 +34,7 @@ import { RULES, rateLimit } from "./ratelimit";
 import catalogJson from "./raidBranches.json";
 import { Validator } from "./validate";
 import { acceptWipe, spectatorAnswer, spectatorOf } from "./raidWipe";
+import { isTest } from "./raidTests";
 
 export interface BranchZone {
     id: number;
@@ -461,6 +462,9 @@ export async function report(ctx: Ctx): Promise<Response> {
     // 2.68: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion ») never reports:
     // a report flagged as a test is refused whoever sends it (an administrator or not), before anything.
     if (body.test !== undefined) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
+    // 2.80 (raidTests.ts): an administrator's test with invited players is never an instance: a report
+    // naming it is refused whoever sends it (the administrator or an invited player).
+    if (await isTest(db, id)) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
     const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage", "seats"]);
     const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table", "wipe", "zones"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });

@@ -505,6 +505,7 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
         if (opt.contributions) want.push_back({"contrib", "Tableau des contributions"});
         if (opt.titanMap) want.push_back({"titan", "Carte du titan"});
         if (rc.heartFallen && opt.victoryFilm) want.push_back({"film", "Revoir le film de victoire"});
+        if (rc.heartFallen && opt.aftermathFilm) want.push_back({"apres", "Après Asterion"});  // 2.81: the clan took part in the fall
         if (opt.eventSheet) want.push_back({"event", "Fiche de l'événement"});
         if (!opt.rateLabel.empty()) want.push_back({"rate", opt.rateLabel});
         const std::string hint = "Échap / B : retour";
@@ -611,6 +612,7 @@ public:
         view_.eventId = eventId_;
         RaidRecapOptions opt;
         opt.victoryFilm = asterionfilm::victory() != nullptr;
+        opt.aftermathFilm = asterionfilm::aftermath() != nullptr;
         // The event's own screens read the event as this player may (a clan raid: its clans' members only).
         opt.titanMap = !fixture_ && (recap_.kind == "world" || recap_.member);
         opt.eventSheet = opt.titanMap;
@@ -718,6 +720,8 @@ private:
         else if (id == "rate") reviews_.openEditor();
         else if (id == "film") {
             if (auto film = asterionfilm::makeVictory(g_, false)) g_.app.pushScene(std::move(film));
+        } else if (id == "apres") {
+            asterionfilm::watch(g_, fixture_ ? std::string() : eventId_);  // 2.81: with the clans of the fall (together while it plays)
         }
     }
 

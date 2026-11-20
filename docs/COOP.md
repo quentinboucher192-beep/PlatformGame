@@ -203,7 +203,7 @@ tout drapeau autre que `SkipCinematic`/`Standby`, tout choix hors de 1 … 8 et 
 
 | Type | Sens | Contenu |
 |---|---|---|
-| 1 `HELLO` | jeu → relais | `u8 protocole (1)`, `u8 siège voulu (255 : libre ; un retour : le sien)`, chaîne `nom` (u8 longueur + UTF-8, ≤ 24), chaîne `compte` facultative (≤ 64), puis (2.80) `u8 règles` (`kCoopSimulationVersion` ; absent avant 2.80 : 3). Un salon joue les règles de son premier joueur (l'hôte ; sur le réseau local, celles du PC qui héberge) : un jeu d'une autre version est refusé (`END` 4 « règles », « mettez le jeu à jour »). Un raid vérifie lui-même sa version (empreinte de `GO`, `TITAN_REVISION`). |
+| 1 `HELLO` | jeu → relais | `u8 protocole (1)`, `u8 siège voulu (255 : libre ; un retour : le sien)`, chaîne `nom` (u8 longueur + UTF-8, ≤ 24), chaîne `compte` facultative (≤ 64), puis (2.80) `u8 règles` (`kCoopSimulationVersion` ; absent avant 2.80 : 3). Un salon joue les règles de son premier joueur (l'hôte ; sur le réseau local, celles du PC qui héberge) : un jeu d'une autre version est refusé (`END` 5 « règles », « mettez le jeu à jour »). Un raid vérifie lui-même sa version (empreinte de `GO`, `TITAN_REVISION`). |
 | 2 `INPUT` | jeu → relais | `u32 premier pas`, `u8 n (1 … 32)`, `n` entrées |
 | 3 `PING` | jeu → relais | `u32 horloge du jeu (ms)`, `u16 dernier aller-retour mesuré (0xFFFF : aucun)` |
 | 4 `READY` | jeu → relais | `u8 prêt (0/1)` (salon) |
@@ -217,7 +217,7 @@ tout drapeau autre que `SkipCinematic`/`Standby`, tout choix hors de 1 … 8 et 
 | 13 `FRAMES` | relais → jeu | `u32 premier pas`, `u16 n`, puis pour chaque siège ses `n` entrées compactes |
 | 14 `PONG` | relais → jeu | `u32 horloge du jeu renvoyée` |
 | 15 `REJOIN` | relais → jeu | `u8 siège`, `u32 pas de retour` |
-| 16 `END` | relais → jeu | `u8 raison` (0 fin normale, 1 hôte parti, 2 trop long, 3 refusé, 4 autres règles de coopération : 2.80) |
+| 16 `END` | relais → jeu | `u8 raison` (0 fin normale, 1 hôte parti, 2 trop long, 3 refusé, 4 retiré d'un test, 5 autres règles de coopération : 2.80) |
 
 Le relais refuse (et ferme) tout message mal formé : type inconnu, longueur incohérente,
 siège invalide, entrée avec des bits hors des actions enregistrées (21 bits), drapeau autre

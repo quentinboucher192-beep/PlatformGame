@@ -18,6 +18,11 @@
 //   relays give it to every heart instance at a step (their victory film), the fall is journaled, the
 //   registered players are told « Asterion est tombé » once, the rewards are granted (raidHeartRewards.ts,
 //   each once). The phase-5 outcome « Asterion est tombé » (raidWorld.ts) needs it with the seven gigaboss.
+// * 2.81: « Après Asterion », the film of what the fall changes in the world, watched together. At the validated
+//   fall (and only there), the server stamps once its start (`film_at`: the fall plus FILM_DELAY_MS, the victory
+//   film and a margin) and the clans present (`film_clans`: those with a player in a Heart instance at that
+//   moment); their members are told once (« heart_film »). Every game plays it at that server time; the event's
+//   sheet gives it (`aftermath`: its time, the clans' names, whether the viewer may watch it again).
 
 import { ask } from "./coop";
 import { log, nowIso } from "./http";
@@ -27,6 +32,8 @@ import { scoreOf } from "./raidRewards";
 import { insertNotifications, journal, notifData } from "./raidWorld";
 
 export const HEART_UNITS = 10000;
+/** 2.81: « Après Asterion » starts this long after the validated fall (the victory film, ≈ 80 s, and a margin). */
+export const FILM_DELAY_MS = 90000;
 /** The heart's own objective (role « gigaboss »): its fall for the world. */
 export const HEART_OBJECTIVE = HEART?.objectives.find((o) => o.role === "gigaboss")?.id ?? "coeur_asterion";
 /** The relics of the seven branches (their secret zones' optional objectives): each one validated weakens the heart. */
@@ -199,7 +206,117 @@ export async function checkHeartFall(db: D1Database, e: EventLike, instanceId: s
     } catch (err) {
         log("error", "raid_heart_fall_failed", { error: err instanceof Error ? err.message : String(err) });
     }
+    await stampFilm(db, e, now);
     return true;
+}
+
+/**
+ * 2.81: « Après Asterion », stamped once at the validated fall (checkHeartFall only: never a game's claim): its start
+ * from the fall's own time (the same however late this runs), the clans with a player in a Heart instance at that
+ * moment, and their members told once (a « heart_film » notification with the start time; the games online read it
+ * within a minute and play it together).
+ */
+async function stampFilm(db: D1Database, e: EventLike, now: string): Promise<void> {
+    try {
+        const row = await db.prepare("SELECT fallen_at, film_at FROM raid_heart_events WHERE event_id = ?1").bind(e.id).first<{ fallen_at: string | null; film_at: string | null }>();
+        const fell = Date.parse(row?.fallen_at ?? now);
+        const filmAt = new Date((Number.isFinite(fell) ? fell : Date.parse(now)) + FILM_DELAY_MS).toISOString();
+        const present = (
+            await db
+                .prepare(
+                    `SELECT i.clan_id, MIN(m.joined_at) AS first FROM raid_instances i JOIN raid_instance_members m ON m.instance_id = i.id
+                     WHERE i.event_id = ?1 AND i.branch = ?2 AND m.left_at IS NULL AND i.clan_id IS NOT NULL
+                     GROUP BY i.clan_id ORDER BY first, i.clan_id LIMIT 200`,
+                )
+                .bind(e.id, HEART!.id)
+                .all<{ clan_id: string }>()
+        ).results.map((r) => r.clan_id);
+        await db
+            .prepare("UPDATE raid_heart_events SET film_at = COALESCE(film_at, ?2), film_clans = COALESCE(film_clans, ?3) WHERE event_id = ?1")
+            .bind(e.id, filmAt, JSON.stringify(present))
+            .run();
+        const claim = await db.prepare("UPDATE raid_heart_events SET notified_film = ?2 WHERE event_id = ?1 AND notified_film IS NULL").bind(e.id, now).run();
+        if (!claim.meta.changes) return;
+        const stamped = await db.prepare("SELECT film_at, film_clans FROM raid_heart_events WHERE event_id = ?1").bind(e.id).first<{ film_at: string; film_clans: string | null }>();
+        const clans = parseClans(stamped?.film_clans ?? null);
+        if (!clans.length) return;
+        const members = (
+            await db
+                .prepare(`SELECT player_id FROM clan_members WHERE clan_id IN (${clans.map((_, i) => `?${i + 1}`).join(",")})`)
+                .bind(...clans)
+                .all<{ player_id: string }>()
+        ).results.map((r) => r.player_id);
+        await insertNotifications(db, members, notifData(notifEvent(e) as never, "heart_film", { film_at: stamped?.film_at ?? filmAt }), `raid:heart_film:${e.id}`);
+    } catch (err) {
+        log("error", "raid_heart_film_failed", { error: err instanceof Error ? err.message : String(err) }); // before migration 0200
+    }
+}
+
+function parseClans(text: string | null): string[] {
+    if (!text) return [];
+    try {
+        const v = JSON.parse(text) as unknown;
+        return Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, 200) : [];
+    } catch {
+        return [];
+    }
+}
+
+/**
+ * 2.81: the `aftermath` of an event's sheet (GET /raids/events/{id}) once its Heart fell and the film is stamped:
+ * its start (server time), the clans present at the fall (stamped then, with those titled « Briseurs d'étoile »
+ * since), the viewer's clan, and whether the viewer may watch it again: took part (registered for the event, or a
+ * member of a clan present) or the world outcome « Asterion est tombé » official. Null otherwise.
+ */
+export async function aftermathOf(db: D1Database, eventId: string, me: string, myClan: string | null) {
+    if (!HEART) return null;
+    try {
+        const row = await db
+            .prepare("SELECT fallen_at, film_at, film_clans FROM raid_heart_events WHERE event_id = ?1 AND film_at IS NOT NULL")
+            .bind(eventId)
+            .first<{ fallen_at: string | null; film_at: string; film_clans: string | null }>();
+        if (!row) return null;
+        const ids = parseClans(row.film_clans);
+        const titled = (
+            await db
+                .prepare("SELECT clan_id FROM raid_clan_titles WHERE event_id = ?1 AND title = ?2 ORDER BY rank, clan_id LIMIT 200")
+                .bind(eventId, HEART_CLAN_TITLE)
+                .all<{ clan_id: string }>()
+        ).results.map((r) => r.clan_id);
+        for (const t of titled) if (!ids.includes(t)) ids.push(t);
+        const list = ids.slice(0, 200);
+        const named = list.length
+            ? (
+                  await db
+                      .prepare(`SELECT id, tag, name FROM clans WHERE id IN (${list.map((_, i) => `?${i + 1}`).join(",")})`)
+                      .bind(...list)
+                      .all<{ id: string; tag: string; name: string }>()
+              ).results
+            : [];
+        const byId = new Map(named.map((c) => [c.id, c]));
+        const clans = list.map((id) => byId.get(id)).filter((c): c is { id: string; tag: string; name: string } => !!c);
+        const registeredMe = me
+            ? !!(await db.prepare("SELECT 1 AS x FROM raid_registrations WHERE event_id = ?1 AND player_id = ?2").bind(eventId, me).first())
+            : false;
+        const tookPart = registeredMe || (!!myClan && clans.some((c) => c.id === myClan));
+        let official = false;
+        try {
+            official = !!(await db.prepare("SELECT 1 AS x FROM raid_event_results WHERE event_id = ?1 AND outcome = 'vaincu'").bind(eventId).first());
+        } catch {
+            /* before migration 0147 */
+        }
+        return {
+            fallen_at: row.fallen_at,
+            film_at: row.film_at,
+            clans: clans.map((c) => ({ id: c.id, tag: c.tag, name: c.name })),
+            my_clan: myClan && clans.some((c) => c.id === myClan) ? myClan : null,
+            took_part: tookPart,
+            official,
+            unlocked: tookPart || official,
+        };
+    } catch {
+        return null; // before migration 0200
+    }
 }
 
 async function grantMany(db: D1Database, eventId: string, reward: keyof typeof HEART_REWARDS, players: string[], now: string): Promise<number> {

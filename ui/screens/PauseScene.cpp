@@ -453,10 +453,11 @@ void PauseScene::render(float /*alpha*/) {
     danger.danger = true;
     std::string quitLabel = game_.editorTest()        ? "Retour à l'éditeur"
                             : game_.sectionTraining() ? "Retour à l'entraînement"  // its setup, same segment
+                            : game_.tutorialReplay()  ? "Retour à l'administration"  // 2.81: an administrator's replay (nothing kept)
                             : game_.tutorial()        ? (confirmQuit_ ? "Confirmer : passer le didacticiel" : "Passer le didacticiel")  // 2.64
                             : (confirmQuit_ ? "Confirmer : quitter le niveau" : "Retour au menu");
     if (ui.button("quit", {bx, y, bw, bh}, quitLabel, danger)) {
-        if (game_.editorTest() || game_.sectionTraining() || confirmQuit_) {
+        if (game_.editorTest() || game_.sectionTraining() || game_.tutorialReplay() || confirmQuit_) {
             g_.app.popScene();
             game_.quitToMenu();
         } else {

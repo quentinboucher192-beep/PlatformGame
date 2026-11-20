@@ -481,7 +481,7 @@ TEST_CASE("2.80 the relay plays one version of the rules: HELLO says its rules, 
     using namespace coopnet;
     const auto h = hello(255, "Nova");
     CHECK(h.back() == static_cast<uint8_t>(kCoopSimulationVersion));
-    CHECK(static_cast<int>(EndReason::Rules) == 4);
+    CHECK(static_cast<int>(EndReason::Rules) == 5);  // 4: Removed (an administrator's test, 2.80)
     CHECK(kRulesBefore280 == 3);
 }
 

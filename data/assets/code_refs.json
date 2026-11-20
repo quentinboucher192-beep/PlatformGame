@@ -213,7 +213,7 @@
   "music/victory.ogg": {
    "game/GameServices.cpp": 1,
    "packaging/DependencyCollector.cpp": 1,
-   "ui/screens/GameScene.cpp": 3
+   "ui/screens/GameScene.cpp": 4
   },
   "online/avatars.png": {
    "ui/online/OnlineWidgets.cpp": 1
@@ -582,7 +582,7 @@
    "editors/enemy_editor/EnemyEditorParts.cpp": 1,
    "editors/enemy_editor/EnemyEditorScene.cpp": 2,
    "editors/level_editor/LevelEditorPowerKeys.cpp": 1,
-   "ui/screens/BossStoryScene.cpp": 1,
+   "ui/screens/BossStoryScene.cpp": 3,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/CollectionScene.cpp": 3,
    "ui/screens/CoopLobbyScene.cpp": 2,
@@ -821,6 +821,18 @@
   },
   "ui/enemy_arrow.png": {
    "game/gameplay/EnemyArrows.cpp": 1
+  },
+  "ui/films/asterion_apres.png": {
+   "ui/screens/FilmCatalog.cpp": 1
+  },
+  "ui/films/asterion_film.png": {
+   "ui/screens/FilmCatalog.cpp": 1
+  },
+  "ui/films/asterion_victoire.png": {
+   "ui/screens/FilmCatalog.cpp": 1
+  },
+  "ui/films/trailer.png": {
+   "ui/screens/FilmCatalog.cpp": 1
   },
   "ui/glyphs/generic.png": {
    "packaging/DependencyCollector.cpp": 1,

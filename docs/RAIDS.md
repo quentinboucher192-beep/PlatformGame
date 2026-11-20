@@ -15,7 +15,9 @@
 # chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §26) ;
 # la fiche récapitulative d'un raid terminé, dans le clan (2.78.1, §27) ;
 # joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §28) ;
-# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29)
+# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29) ;
+# tester avec des joueurs invités (2.80, §30) ;
+# « Après Asterion », le film du monde d'après regardé ensemble ; ADMINISTRATION › Films (2.81, §31 et §32)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -2250,6 +2252,263 @@ coups du boss lui-même, garder en mémoire les marques d'une pluie ou d'une ér
 Rien ne change pour les vrais joueurs : les joueurs simulés n'existent que dans les tests (l'ordre ne voyage que sur la
 trame d'un administrateur de test). `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les
 empreintes de référence (solo, coopération, raid sans joueurs simulés) ne changent pas.
+
+## 30. Tester avec des joueurs invités (2.80)
+
+ADMINISTRATION › Raids › « Tester Asterion » : dans le test d'**une zone** comme dans **« Simuler un raid complet »**,
+l'administrateur peut **inviter de vrais joueurs**, administrateurs ou joueurs classiques. Chacun prend la place d'un
+joueur simulé, avec sa case **« Invincible »** (décochée par défaut) que seul l'administrateur coche et décoche, avant
+comme pendant le test. **Sans invité, le test reste exactement comme avant : local, hors ligne, rien n'est envoyé.**
+
+### Inviter (`ui/online/RaidTestGuests`)
+
+La ligne **« Inviter des joueurs connectés… »** des réglages du test (puis « Joueurs invités · … » dans la pause du test)
+ouvre une fenêtre en deux colonnes, au clavier, à la manette et à la souris :
+
+* à droite, **les joueurs connectés maintenant** (`GET /admin/raid-test-players` : leur présence récente et montrée — une
+  présence masquée n'est pas proposée), cherchés par leur nom, défilés, page après page ; jamais soi-même, jamais un
+  joueur bloqué dans un sens ou dans l'autre, jamais un joueur déjà invité ; « ADMIN » ou « JOUEUR » à côté du nom ;
+* à gauche, **les joueurs invités** : leur nom, leur rôle, leur **groupe** (le raid complet : un groupe ou un renfort ;
+  par défaut celui de l'administrateur), leur case **« Invincible »**, l'**état de l'invitation** (« invité au
+  lancement », « en attente · 2:31 », « acceptée · en jeu », « acceptée · absent », « refusée », « expirée »,
+  « annulée ») et son action (retirer, annuler, retirer du test, réinviter).
+
+Choisis dans les réglages, les joueurs sont invités **au lancement** : le test passe alors par le serveur. Un joueur
+invité **remplace un joueur simulé de son groupe, jamais un de plus** : un groupe de N places (« Joueurs simulés (sans
+vous) » + 1 pour une zone, « Joueurs par groupe (vous compris) » pour le raid complet) reçoit au plus N − 1 joueurs
+invités, et un test 7 au plus (les places du relais, celle de l'administrateur à part). Il faut donc au moins un joueur
+simulé pour inviter.
+
+### Recevoir une invitation (`ui/screens/RaidTestInviteScene.cpp`)
+
+L'invité est prévenu par une **notification** (NOTIFICATIONS, catégorie Raid) et, en jeu, par un **message** (lu avec les
+messages non lus, toutes les 30 s ; tenu pendant une partie et montré après, comme les autres). En haut de NOTIFICATIONS,
+**« Un administrateur vous invite à un test d'Asterion : répondre »** (et la notification, « Répondre à l'invitation »)
+ouvre la fenêtre qui dit qui invite, quel test (la branche et la zone, ou les groupes du raid complet et le sien), s'il
+sera invincible et le temps qui reste : **« Accepter et rejoindre »** ou **« Refuser »**. Une invitation dure
+**3 minutes**, ou jusqu'à la fin du test ; l'administrateur voit chaque réponse.
+
+**Version** : le test a une **empreinte** (`raid::testFingerprint` : la version du jeu, `kSimulationVersion`,
+`kCoopSimulationVersion` et le titan de chaque branche). Un jeu qui n'a pas la même ne peut pas accepter (« Ce test se
+joue avec une autre version du jeu ou de ses règles : mettez le jeu à jour… ») ; le relais la redit au départ.
+
+### Un test relayé (`server/src/raidTests.ts`, `game/raid/RaidTestRelay`)
+
+Au lancement avec des invités, le jeu de l'administrateur ouvre le test sur le serveur (`POST /admin/raid-tests` :
+ses réglages vérifiés champ par champ et récrits, son empreinte), se connecte à **son relais** — un `CoopRoom` marqué
+comme test, l'administrateur sur la place 0 — et le démarre, puis les invitations partent. Un invité qui accepte reçoit
+les réglages, **construit le même test** (`raid::buildZoneTest`, `raid::buildRaidSimulation`), se connecte, **rattrape**
+les pas déjà joués (hors de l'affichage, avec une barre) puis prend sa place au pas que le relais choisit (REJOIN).
+
+* **Les joueurs simulés sont calculés par chaque ordinateur**, de la même façon (ils sont déterministes) : le relais ne
+  transporte que les entrées des vrais joueurs (8 places au plus). L'administrateur ne fait donc pas attendre les
+  autres pour ses joueurs simulés, le raid complet (jusqu'à 22 groupes) n'a pas à passer par le réseau, et un invité qui
+  arrive rejoue l'histoire comme un retour dans un raid.
+* **Où joue chacun** : le relais seul le décide et le donne **à un pas** (message **TEST_SEATS**, `coopnet::TestSeats`) :
+  pour chaque place du relais, le groupe, la place du test dans ce groupe et « Invincible ». Un invité qui arrive prend
+  la première place d'un joueur simulé de son groupe (il la retrouve s'il revient) ; l'administrateur qui rejoint ou
+  regarde un groupe du raid complet passe aussi par là (`POST /admin/raid-tests/{id}/seat`). Chaque ordinateur
+  l'applique **au même pas** (`raid::stepRelayed`) : la place d'un vrai joueur est la sienne (son joueur simulé ne
+  pense plus, n'est plus replacé, « Joueurs simulés invincibles » ne le touche pas), les sièges invincibles du test
+  (`RaidRun::setInvincibleSeats`, `GameWorld::setInvincibleSeats` : la règle d'« Invincible » de l'administrateur, pour
+  chaque place cochée) changent à ce pas.
+* **Absent ou parti** : un invité absent (liaison coupée, entrées « en attente ») ou parti voit **son joueur simulé
+  reprendre sa place** dès le pas suivant ; revenu dans les 60 s, il la reprend. Annulé par l'administrateur, il est
+  retiré au pas suivant (« L'administrateur vous a retiré du test. »). L'administrateur absent 60 s, ou qui quitte le
+  test, **termine le test pour tous**.
+* **Invincible** : la case de chaque invité, changée par l'administrateur (`PATCH /admin/raid-tests/{id}/invitations/
+  {joueur}`), passe par le relais et s'applique au même pas partout ; le serveur refuse tout autre que l'administrateur
+  de ce test (la session et son rôle, jamais une donnée envoyée par le jeu).
+* **Le raid complet relayé** joue chaque groupe à la même vitesse (×1, quel que soit le groupe regardé) ; chaque
+  ordinateur montre (sons, particules) seulement le groupe qu'il regarde.
+* **Les ordres aux joueurs simulés** (la roue de la 2.79, §29) restent ceux de l'administrateur : son jeu envoie
+  chaque ordre au relais (message **TEST_ORDER**, jamais dans sa trame : le relais ne prend dans une trame que ce
+  qu'un joueur peut y mettre), qui le donne à tous les jeux du test à partir d'un pas ; un invité n'en donne pas (le
+  relais ferme une liaison qui essaierait).
+* Notes pour tous : « TEST · X rejoint le test (Groupe 2) à la place de Joueur simulé 3 », « … est absent », « … est
+  invincible »…
+
+### Rien ne compte
+
+Un test, relayé ou non, ne rapporte **jamais rien** (`RaidRun::Test`) : ni rapport, ni consensus, ni état de branche, ni
+record, contribution, récompense, classement, succès ou progression du titan. Le serveur marque le test comme tel
+(`raid_tests`, migration **0195**) : il n'a pas d'instance de raid ni de membre, son relais n'écrit rien de ce qu'écrit
+une instance, et **tout rapport qui nomme un test est refusé** (`RAID_TEST_REPORT`), quel qu'en soit l'auteur.
+
+### Serveur
+
+| Route | Qui | Quoi |
+|---|---|---|
+| `POST /admin/raid-tests` | administrateur | ouvre un test (mode, réglages, empreinte) ; un test ouvert du même administrateur se termine |
+| `GET /admin/raid-tests/{id}` | son administrateur | le test, ses invitations, où joue chacun |
+| `GET /admin/raid-test-players?q=&test=` | administrateur | les joueurs connectés à inviter |
+| `POST /admin/raid-tests/{id}/invitations` | son administrateur | invite (groupe, « Invincible ») ; limitée en débit |
+| `PATCH …/invitations/{joueur}` | son administrateur | « Invincible », groupe |
+| `DELETE …/invitations/{joueur}` | son administrateur | annule, retire du test |
+| `POST /admin/raid-tests/{id}/seat` | son administrateur | sa propre place dans le raid complet |
+| `POST /admin/raid-tests/{id}/end` | son administrateur | termine le test |
+| `GET /raid-tests/invitations` | joueur | ses invitations à répondre (aussi dans `GET /social/unread`) |
+| `POST /raid-tests/{id}/accept`, `…/decline` | l'invité | répond (accepter : la même empreinte) |
+| `GET /raid-tests/{id}/socket` | l'administrateur, un invité qui a accepté | le relais du test |
+
+### Limites
+
+* Une liaison perdue en cours de test n'est pas reprise automatiquement. L'invité revient par NOTIFICATIONS (« Revenir
+  dans le test d'Asterion que vous avez accepté », tant que le test dure) : il rattrape la partie et retrouve sa place s'il
+  revient dans les 60 s, sinon une place d'un joueur simulé de son groupe. L'administrateur qui perd la sienne plus de
+  60 s termine le test pour tous ; il le relance.
+* Rejoindre tard un long raid complet demande de rejouer tous ses pas (la barre du rattrapage le dit).
+
+### Tests
+
+* `server/test/raidTests.test.ts` : seuls les administrateurs ouvrent, invitent, changent, annulent, terminent (un
+  joueur, un autre administrateur : refusés) ; invitations seulement aux joueurs connectés, jamais deux fois, jamais plus
+  que les joueurs simulés à remplacer ; expiration après 3 minutes ; empreinte différente refusée ; un rapport qui nomme
+  un test refusé ; le relais : la place de l'invité donnée au pas de son arrivée, « Invincible » au premier pas suivant,
+  retiré au pas suivant son annulation, le raid complet (groupe choisi, place de l'administrateur).
+* `tests/test_raid_test_relay.cpp` : deux ordinateurs d'un même test (l'administrateur, et l'invité qui rattrape tout
+  d'un coup, sans son ni particule) donnent la **même empreinte** à chaque point de contrôle — une zone (l'invité arrive,
+  part 2 s puis revient, « Invincible » coché en cours) et le raid complet (un invité dans un autre groupe,
+  l'administrateur qui change de groupe puis regarde) ; la place de l'invité est bien la sienne.
+* `tests/test_raid_test_guests.cpp` : la fenêtre des invités mesurée en 1280 × 720 et 1920 × 1080, en français et en
+  anglais (chaque partie dans la fenêtre, rien ne se chevauche, chaque libellé de bouton ou de case à sa taille).
+
+### Versions
+
+Aucune règle d'une partie ne change : `kSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes de
+référence restent les mêmes (« Invincible » existait pour la place de l'administrateur ; la même règle vaut pour chaque
+place cochée d'un test). Le protocole du relais garde sa version : TEST_SEATS n'est envoyé que par le relais d'un test,
+où seul un jeu 2.80 se connecte.
+
+## 31. « Après Asterion » : le film du monde d'après, regardé ensemble (2.81)
+
+Battre Asterion change le monde : un **mini-film** de 81 s le raconte, que les clans de la chute regardent **ensemble**, au
+même instant. Il suit le film de la victoire (§17), sans le remplacer.
+
+### L'histoire (`data/raids/asterion_apres.json`, légendes et titres écrits à la main, anglais dans `en.json`)
+
+| Plan | Durée | Ce qu'on voit | Légende ou titre |
+|---|---|---|---|
+| 1. `silence` | 9 s | un nuage d'or là où se dressait le titan, ses éclats qui dérivent, la dernière onde qui s'éteint | « Là où se dressait Asterion, il ne restait qu'un nuage d'or. Pour la première fois depuis des éons, le vide se taisait. » |
+| 2. `eclats` | 10 s | les éclats des mondes dont il était fait se rassemblent ; trois mondes oubliés se rallument | « Son corps était fait de mondes dévorés. Libérés, leurs éclats se rassemblèrent, et des mondes oubliés se rallumèrent. » |
+| 3. `systeme` | 10 s | le soleil et nos cinq planètes (le plan du premier film, sans le titan) : la lumière d'or passe, leurs ciels s'éclaircissent | « Sylvanox, Pyralis, Glacior, Aethra et les Confins virent leur ciel s'éclaircir. Le festin promis n'aurait jamais lieu. » |
+| 4. `retour` | 10 s | sur Sylvanox, un vaisseau se pose ; les villageois de l'histoire du Monolithe reviennent et lèvent les yeux | « Les peuples partis vers les étoiles osèrent enfin revenir. Les enfants levèrent les yeux vers une lumière nouvelle. » |
+| 5. `phenix` | 10 s | aux Confins, une aube d'or que le Phénix n'a pas allumée ; ses flammes se calment, il s'endort dans son nid | « Aux Confins, le Phénix vit se lever une aube qu'il n'avait pas allumée. Cette nuit-là, pour la première fois, il dormit. » |
+| 6. `lyse` | 9 s | l'étoile morte du centre (Lyse, l'histoire de Singularis) : une étincelle de l'onde se pose sur elle, elle frémit | « Au cœur du système, l'étoile morte frémit : une étincelle de l'onde s'était posée sur elle. » |
+| 7. `clans` | 13 s | la nouvelle étoile, les bannières des clans autour ; **le jeu écrit le nom des clans de la chute** | « ILS ÉTAIENT LÀ » ; « Le nom des clans de la chute fut gravé dans la lumière de la nouvelle étoile. » |
+| 8. `veille` | 10 s | Nova sur la crête, les balises des clans allumées jusqu'à l'horizon, l'étoile au-dessus | « LA GALAXIE EST LIBRE » — « Elle se souviendra de ses héros » |
+
+Cohérent avec ce que les joueurs connaissent : le titan « se forgea un corps de mondes brisés » (premier film), l'onde de
+la supernova « traversa la galaxie » (film de la victoire), « la nuit où l'étoile du centre s'effondra » ouvre chaque
+histoire des giga-boss ; le Phénix « ne sait plus s'arrêter, de peur que la nuit gagne » ; les gens du Monolithe
+« partirent vers les étoiles ». Rien d'inventé dans l'image : les éclats, Nova, les balises, les bannières et la crête des
+deux premiers films, nos planètes, les décors de Sylvanox, les villageois et le vaisseau du Monolithe, le nid et la planche
+du Phénix, Lyse. Ses images à lui : le nuage d'or (`nuage_or.png`), la nouvelle étoile (`etoile.png`), les mondes qui se
+rallument (planche `renaissance`), le Phénix au repos (l'image de sa propre boucle où ses ailes sont repliées).
+
+### Le générateur (`tools/assetgen/environment/story_asterion_apres.py`)
+
+Il écrit `data/raids/asterion_apres_scenes.json` (le format des histoires, `game/content/BossStories.h`), ses images et les **vignettes des films**
+(`assets/ui/films/` : une image de chaque film d'Asterion et de la bande-annonce, rendue comme le jeu la dessine, pour les
+listes de films). `--check` refait tout deux fois et compare les octets entre eux et aux fichiers ; `--storyboard FICHIER`
+écrit la planche, un plan par case avec sa légende, et la place des noms des clans. Une durée changée dans le script étire
+la scène, rien à régénérer. Les vignettes sont rendues depuis les scènes et les images sur le disque : après un changement
+d'un autre film, lancer son générateur, puis celui-ci.
+
+### Le nom des clans (`StoryRoster`, `layoutFilmRoster`)
+
+Le plan 7 a un `roster` dans le script (sa place dans l'image, ses couleurs, son texte générique). Les noms viennent du
+**serveur** (la fiche de l'événement : `aftermath.clans`), jamais du film : chaque clan qui avait un joueur dans une instance
+du Cœur au moment de la chute, puis ceux qui ont reçu « Briseurs d'étoile » depuis. Ils s'écrivent dans des pastilles
+centrées, sous le titre, aussi grands que la place le permet, puis « et N autres clans » ; **le clan du joueur** est en
+cyan, « · votre clan » après son nom, et toujours montré. Sans données (hors ligne, un test, l'aperçu de l'administration) :
+« les clans de la galaxie ». Tout est mesuré : chaque pastille dans sa zone, aucune sur une autre ni sur le titre.
+
+### « Tous ensemble » : qui, quand, à quelle heure
+
+* **L'heure de départ est celle du serveur.** À la chute **validée** du Cœur (`checkHeartFall`, l'objectif du cœur
+  accepté par le consensus : jamais un rapport seul, jamais une part sous la vie entière, jamais un champ envoyé par un
+  jeu), le serveur écrit une fois (migration **0200**) `raid_heart_events.film_at` = la chute + 90 s (`FILM_DELAY_MS` :
+  le film de la victoire et une marge), `film_clans` (les clans présents à ce moment) et `notified_film`. Un second appel,
+  un rapport rejoué, le cron : rien ne change.
+* **Qui le regarde.** Chaque joueur de l'instance du Cœur, **juste après le film de la victoire** (`asterionfilm::playFall`,
+  appelé là où se lançait le film de la victoire dans `RaidGameScene`), par-dessus le combat qui continue (entrées neutres,
+  comme pour la victoire). Et **chaque membre en ligne des clans présents** : ils reçoivent une notification « raid »
+  (`heart_film`, « Asterion est tombé — regarder le film avec votre clan : « Après Asterion » (…) »), lue par le jeu
+  chaque minute (`OnlineService::takeFilmNotices`).
+* **À la même seconde.** Le jeu lit la fiche de l'événement (`GET /raids/events/{id}` › `aftermath` : `film_at`, les clans,
+  `server_time`) ; l'écart entre son horloge et celle du serveur est mesuré sur cette réponse (`aftermath::skewMs`), et la
+  place dans le film est `positionAt(heure du serveur, film_at)` : **la même heure du serveur donne la même image** sur
+  tous les jeux. Avant l'heure : un compte à rebours (« Le film commence dans 0:07 », « Avec les clans de la chute, au même
+  moment »). Arrivé en retard : le film commence au milieu, et **« Depuis le début »** (R, Ⓨ, ou un clic sur le bouton du
+  bandeau du haut) le reprend au début, pour soi. Le bandeau du haut dit « EN DIRECT · avec les clans de la chute » tant
+  qu'on est au même endroit que les autres (« Passer » ou « Depuis le début » l'en sortent).
+* **Jamais imposé.** Dans un niveau (une partie, une course, une coopération, un autre raid), il n'est **jamais** lancé
+  par-dessus : la notification l'offre (NOTIFICATIONS › « Regarder le film »), et un message l'annonce à la fin de la
+  partie. Il ne se lance de lui-même que **dans les menus** (au plus tôt 15 s avant l'heure, avec son compte à rebours), une
+  seule fois, ou après le film de la victoire dans l'instance du Cœur. Il se quitte (Échap, Ⓑ) comme tout film.
+* **Le test des administrateurs** (« Tester Asterion », le Cœur) : sa chute lance le film de la victoire puis celui-ci,
+  avec le texte générique, depuis le début ; rien n'est demandé au serveur, rien n'est rapporté.
+
+### Le revoir (débloqué)
+
+**Règle** : le film est débloqué pour un joueur qui **a pris part** à un événement dont le Cœur est tombé (inscrit à
+l'événement, ou membre d'un clan présent à la chute), et **pour tous** dès que l'issue mondiale « Asterion est tombé » est
+officielle (le résultat figé, §14). Le serveur le dit (`aftermath.took_part`, `official`, `unlocked`, et l'issue « vaincu »
+des événements de `GET /raids`) ; le jeu le garde dans la progression (`asterionAftermath`, gardé par les copies et la
+migration : le côté qui l'a) pour le revoir hors ligne. Où :
+
+* la **fiche de l'événement**, « Après Asterion » à côté de « Revoir la victoire » (en direct quand il passe encore ; seulement
+  si le bandeau a la place, son texte gardant la sienne) ;
+* la **fiche récapitulative** du raid du clan (2.78.1, §27), « Après Asterion » après « Revoir le film de victoire » ;
+* **Collection › Galerie › Films** : les films d'Asterion et la bande-annonce, chacun avec son verrou (« Se débloque quand
+  Asterion tombe : pour ceux qui étaient là, puis pour tous quand le résultat est officiel. ») ;
+* la notification, tant qu'elle est là.
+
+### Serveur
+
+`server/src/raidHeart.ts` (`stampFilm`, `aftermathOf`, `FILM_DELAY_MS`), `raids.ts` (`aftermath` de la fiche), migration
+**0200** (`film_at`, `film_clans`, `notified_film`), `notifications.ts` (la phrase de `heart_film`). Aucune route nouvelle,
+aucune route d'administration : tout se joue avec les données du jeu.
+
+### Tests
+
+`tests/test_asterion_aftermath.cpp` : le film (8 plans, 60 à 90 s, ses fichiers, ses légendes et titres en anglais, un plan
+des clans et son texte générique traduit) ; la lecture de l'heure du serveur et des clans ; deux ordinateurs dont l'horloge
+diffère de cinq minutes au même endroit du film ; une arrivée en retard au milieu du film, « Depuis le début » ; le compte à
+rebours puis la première image à l'heure ; les noms mesurés (quelques clans, 150 clans, aucun) en 960 × 540, 1280 × 720 et
+1920 × 1080, en français et en anglais ; le test du Cœur : victoire puis « Après Asterion » générique.
+`server/test/raidAftermath.test.ts` : l'heure n'est écrite que par la chute validée (une part partielle, un rapport
+minoritaire, un champ ajouté au rapport : rien), une seule fois, depuis l'heure de la chute ; les clans présents nommés,
+leurs membres prévenus une fois (pas le clan absent) ; qui peut le revoir (pris part, inscrit, puis tous à l'issue
+officielle) ; pas de chute, pas de film.
+
+### Versions
+
+Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION`, le protocole
+du relais (`RAID_STATE`) et les empreintes de référence ne changent pas. L'heure du film passe par la fiche de l'événement
+(HTTP), pas par le relais.
+
+## 32. ADMINISTRATION › Films : tous les films et présentations, rejouer le didacticiel (2.81)
+
+Un onglet **Films** (`ui/screens/FilmCatalog`, aussi la liste de Collection › Galerie › Films) liste tout ce que le jeu
+montre comme un film : **les histoires des giga-boss** (`data/stories`, chacune trouvée dans les données : une nouvelle
+histoire y entre d'elle-même), **le film d'Asterion**, **la chute d'Asterion**, **« Après Asterion »**, **la bande-annonce**
+et **le didacticiel** (« Le premier envol de Nova »). Chaque ligne : sa vignette, son titre, son genre et sa durée, où les
+joueurs le voient ; un bouton le lance, **verrouillé ou non** pour l'administrateur, avec ses commandes habituelles
+(« Passer », « Quitter »). Une recherche et des filtres (« Histoires de giga-boss », « Films d'Asterion », « Autres ») ;
+clavier, manette et souris. Les films qui ont besoin du serveur se jouent avec leur texte générique.
+
+**« Rejouer le didacticiel »** le relance depuis son début (`makeTutorialReplay`, `PlayOptions::tutorialReplay`) **sans rien
+toucher** : son état dans la progression reste ce qu'il était (jamais « commencé », « passé » ni « fini »), aucun souvenir
+(le titre « Premier envol »), aucun titre porté, rien de compté (une partie d'entraînement, comme toujours : ni record, ni
+succès, ni statistique, ni temps de jeu) ; quitté (« Retour à l'administration » dans la pause) ou fini (sa carte de fin
+sans souvenir), il ramène à ADMINISTRATION › Films. Testé pour un joueur qui l'a fini, passé ou jamais vu : la progression,
+la Collection et les succès sont identiques avant et après.
+
+Les vignettes : la première peinture de chaque histoire, les images de `assets/ui/films/` pour les films d'Asterion et la
+bande-annonce, Bip dessiné pour le didacticiel. Tout est mesuré (`layoutFilmRow`) : vignette, titre (ajusté puis raccourci),
+genre et durée, « où » sur deux lignes au plus, le bouton ; testé en 1280 × 720 et 1920 × 1080, en français et en anglais.
 
 ---
 

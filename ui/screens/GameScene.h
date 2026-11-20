@@ -80,6 +80,8 @@ public:
     // « tutorial », in any level): the card due or open ("" none); while it is, the run waits
     // (not a step is simulated, as under the pause menu).
     bool tutorial() const { return opt_.tutorial; }
+    /// 2.81: an administrator's replay of the tutorial (PlayOptions::tutorialReplay): nothing kept.
+    bool tutorialReplay() const { return opt_.tutorial && opt_.tutorialReplay; }
     const std::string& tutorialCard() const { return tutorialCard_; }
     /// A card's rank among the level's cards (1 = the first) and their number (« 3 / 9 »).
     std::pair<int, int> tutorialCardRank(const std::string& id) const;

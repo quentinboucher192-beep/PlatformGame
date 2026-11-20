@@ -198,7 +198,8 @@ RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from, bool eve
     if (test_.on) {
         // An administrator's test: a training run (nothing it does counts), invincible when asked.
         w->setTraining(true);
-        w->setInvincible(test_.invincible);
+        w->setInvincible(invincibleSeats_ != 0);  // 2.80: the seats invincible (the administrator's by default)
+        w->setInvincibleSeats(invincibleSeats_);
     }
     w->setQuiet(quiet_);
     w->setCameraFollow(follow_);
@@ -365,6 +366,23 @@ void RaidRun::setTest(const Test& t) {
     test_.players = std::clamp(t.players, 1, kMaxInstancePlayers);
     test_.startPhase = std::max(1, t.startPhase);
     for (auto& z : zones_) z->gigaboss.setTest(t.on ? test_.players : 0, t.on ? test_.startPhase : 1);
+    invincibleSeats_ = t.on && t.invincible ? 1u : 0u;  // 2.80: the administrator's seat, as before
+    if (t.on)
+        for (auto& z : zones_) {
+            z->world->setInvincible(invincibleSeats_ != 0);
+            z->world->setInvincibleSeats(invincibleSeats_);
+        }
+}
+
+void RaidRun::setInvincibleSeats(uint32_t seats) {
+    // 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): a test only (a real raid never has an invincible
+    // player); every zone loaded, and the next ones (loadZone).
+    if (!test_.on) return;
+    invincibleSeats_ = seats;
+    for (auto& z : zones_) {
+        z->world->setInvincible(seats != 0);
+        z->world->setInvincibleSeats(seats);
+    }
 }
 
 void RaidRun::setQuiet(bool on) {

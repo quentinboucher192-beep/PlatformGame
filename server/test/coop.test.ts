@@ -261,7 +261,7 @@ describe("coop: the relay", () => {
 describe("coop: one version of the rules of cooperation per room (2.80)", () => {
     it("the room plays its host's rules: a game of another version is refused (End « Rules »), the same one is seated", async () => {
         expect(COOP_SIMULATION_VERSION).toBe(4);
-        expect(EndReason.Rules).toBe(4);
+        expect(EndReason.Rules).toBe(5);
         const nova = await registerPlayer("Nova");
         const lyra = await registerPlayer("Lyra");
         const vega = await registerPlayer("Vega");

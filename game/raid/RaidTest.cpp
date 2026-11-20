@@ -75,6 +75,7 @@ void TestSession::step(const InputFrame& adminIn, const std::vector<std::pair<in
     else afk_ = 0;
     uint32_t seats = 0;
     for (int s = 1; s < players_; ++s) seats |= 1u << s;
+    seats &= ~humans_;  // 2.80: the seats real players play (their frames come in `scripted`)
     if (seatZeroBot()) seats |= 1u;  // 2.77.3: also the administrator's seat while they are not in the group (freeSeatPlayed_)
     if (names_.empty() || namesFor_ != (adminSeated_ && !autopilot())) {
         // The names in the simulated players' thoughts (« réanime Vous », « réanime Joueur simulé 3 »).
@@ -99,7 +100,8 @@ void TestSession::step(const InputFrame& adminIn, const std::vector<std::pair<in
     if (botsInvincible_)
         for (int s = seatZeroBot() ? 0 : 1; s < players_; ++s)  // 2.77.3: the free seat played too
             if (GameWorld* w = run_.worldOf(run_.zoneOf(s)); w && s < w->teamSize())
-                if (w->member(s).presence == GameWorld::Presence::Playing && w->playerAt(s).alive()) w->playerAt(s).health = w->playerAt(s).maxHealth();
+                if (!((humans_ >> s) & 1u) && w->member(s).presence == GameWorld::Presence::Playing && w->playerAt(s).alive())  // 2.80: not a real player's
+                    w->playerAt(s).health = w->playerAt(s).maxHealth();
     // 2.79: the simulated players put down (counted once each time; 2.78: each in the world of its zone).
     {
         uint8_t down = 0;
@@ -152,6 +154,7 @@ void TestSession::rescue() {
         GameWorld& w = *wp;
         TestBots::Bot& b = botsFor(run_.zoneOf(s)).bots()[static_cast<size_t>(s)];
         if (s == 0 && !seatZeroBot()) continue;  // the administrator plays their seat (or it is free)
+        if ((humans_ >> s) & 1u) continue;       // 2.80: a real player plays it
         if (w.member(s).presence != GameWorld::Presence::Playing || !w.playerAt(s).alive() || w.playerAt(s).respawning()) continue;
         if (b.task == TestBots::Task::Mechanism && b.mechanismSteps > kMechanismSteps) {
             b.mechanismSteps = 0;

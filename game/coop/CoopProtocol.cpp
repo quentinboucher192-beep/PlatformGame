@@ -196,6 +196,54 @@ std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask) {
     return o;
 }
 
+std::vector<uint8_t> testSeats(uint32_t tick, const TestSeats& seats) {
+    std::vector<uint8_t> o{static_cast<uint8_t>(Msg::TestSeats)};
+    Writer w{o};
+    w.u32(tick);
+    w.u8(static_cast<uint8_t>(seats.size()));
+    for (const TestSeat& s : seats) {
+        w.u8(s.group);
+        w.u8(s.seat);
+        w.u8(s.flags);
+    }
+    return o;
+}
+
+bool readTestSeats(const uint8_t* data, size_t size, uint32_t& tick, TestSeats& out) {
+    Reader r{data, data + size};
+    tick = r.u32();
+    const uint8_t n = r.u8();
+    if (!r.ok || n > kMaxPlayers) return false;
+    out = TestSeats{};
+    for (uint8_t k = 0; k < n; ++k) {
+        TestSeat s;
+        s.group = r.u8();
+        s.seat = r.u8();
+        s.flags = r.u8();
+        if (!r.ok || (s.placed() && s.seat >= kMaxPlayers) || (s.flags & ~1u)) return false;
+        out[k] = s;
+    }
+    return r.done();
+}
+
+std::vector<uint8_t> testOrder(uint8_t kind, uint16_t x, uint16_t y) {
+    std::vector<uint8_t> o{static_cast<uint8_t>(Msg::TestOrder)};
+    Writer w{o};
+    w.u8(kind);
+    w.u16(x);
+    w.u16(y);
+    return o;
+}
+
+bool readTestOrder(const uint8_t* data, size_t size, uint32_t& tick, uint32_t& packed) {
+    Reader r{data, data + size};
+    tick = r.u32();
+    const uint32_t kind = r.u8(), x = r.u16(), y = r.u16();
+    if (!r.done() || kind < 1 || kind > 6 || x > 2047 || y > 1023) return false;
+    packed = kind | (x << 3) | (y << 14);
+    return true;
+}
+
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart) {
     auto o = raidState(tick, mask);
     Writer{o}.u32(heart);
