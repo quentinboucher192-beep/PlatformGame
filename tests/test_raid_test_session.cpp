@@ -170,6 +170,20 @@ TEST_CASE("raid zones (2.72): a zone keeps what was done in it when the group co
         CHECK(run.zone() == 1);
         CHECK(run.memory().count(3) == 1);
         for (int k = 0; k < 30; ++k) step();
+        // Titan 9: the Épaule's ways on wait for its guard (an ambush): the group beats it, wave after wave.
+        GameWorld& e = run.world();
+        CHECK(e.ambushes().size() == 1u);
+        for (CombatZoneEntity* a : e.ambushes()) {
+            a->handleAction(e, "start", Json::object());
+            for (int k = 0; k < 4000 && !a->cleared(); ++k) {
+                for (const auto& x : e.entities())
+                    if (auto* es = dynamic_cast<EnemySpawnEntity*>(x.get()); es && a->lists(es->id()))
+                        if (Enemy* en = es->enemy(e); en && en->alive() && !en->dormant()) en->kill(e);
+                step();
+            }
+            CHECK(a->cleared());
+        }
+        for (int k = 0; k < 4; ++k) step();
         const raid::Passage* back = passageTo(run, 3);
         CHECK(back != nullptr);
         if (!back) continue;

@@ -48,7 +48,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 8  # 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
+TITAN_REVISION = 9  # 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
@@ -133,6 +133,7 @@ class Spec:
         self.objectives = objectives  # [(id, zone, label, label_en, optional, role, pair)]
         self.edges = edges          # [(a, b, lock, secret)]
         self.locks = locks          # {lock: (hint, hint_en, message, message_en, objective, objective_en)}
+        self.gates = set()          # titan 9: the « ambushes » locks that close the way on only (gate_ambushes)
         self.theme = THEMES[part]
         self.zone_names = {z[0]: tr(z[1], z[2]) for z in zones}
         self.zone_en = {z[0]: z[2] for z in zones}
@@ -144,6 +145,11 @@ class Spec:
             if {x, y} == {a, b}:
                 return lock
         raise ValueError("%s: no edge %d-%d" % (self.part, a, b))
+
+    def passage_lock(self, n, to):
+        """The lock of the passage from zone `n` to zone `to`: its edge's, except that a gate of ambushes
+        (gate_ambushes) only closes the way on (toward a zone further on): the way back is never shut."""
+        return passage_lock(self.lock_of(n, to), n, to, self.gates)
 
     def catalog(self, minutes=None):
         minutes = minutes or {}
@@ -165,6 +171,12 @@ class Spec:
                 "name": self.title.upper(), "gigaboss": self.gigaboss, "start_zone": 1,
                 "generators_needed": self.generators, "lock_texts": locks, "zones": zones, "edges": edges,
                 "objectives": objectives}
+
+
+def passage_lock(lock, n, to, gates):
+    """Titan 9: a gate « ambushes:<zone> » (in `gates`) closes the passages that leave its zone toward a zone
+    further on (a higher id: the next zones, the secret one); the way back into it stays open."""
+    return "" if lock in gates and to < n else lock
 
 
 SEALED_SUB = "GIGABOSS · prochaine version"
@@ -451,6 +463,40 @@ def with_ambushes(spec, zone=7, lair=8):
     return spec
 
 
+# Titan 9 (the ambush gates): EVERY zone with an ambush keeps its way on shut until its ambushes are beaten, not only the zone
+# before the lair: the guard of the entry (zone 1, the hub's arena) and the parasite nest of the abdomen
+# (zone 3) were left open (one could walk past their arena to the next zones). Their ambush becomes an
+# objective of role « ambush » (its bit does not move), the passages from the zone toward a zone further
+# on wait for it (lock « ambushes:<zone> », a door that follows it); the way back stays open.
+AMBUSH_ZONES = {"abdomen": {3: ["abd_nid"]}}
+GATE_TEXTS = (("toutes les vagues de l'embuscade de la zone doivent être vaincues", "every wave of the zone's ambush must be beaten"),
+              ("L'embuscade est vaincue : les passages vers la suite s'ouvrent", "The ambush is beaten: the ways on open"),
+              ("vaincre l'embuscade de la zone (toutes ses vagues)", "beat the zone's ambush (all its waves)"))
+
+
+def gate_ambushes(spec):
+    """Titan 9: the ambushes of the entry (zone 1) and of AMBUSH_ZONES gate the passages that leave their zone
+    toward a zone further on (lock « ambushes:<zone> »), as the zone before the lair does (with_ambushes)."""
+    zones = {1: [o[0] for o in spec.objectives if o[1] == 1 and not o[4]]}
+    zones.update(AMBUSH_ZONES.get(spec.part, {}))
+    for zone, ids in sorted(zones.items()):
+        assert len(ids) >= 1, (spec.part, zone)
+        spec.objectives = [o[:5] + ("ambush",) + o[6:] if o[0] in ids else o for o in spec.objectives]
+        lock = "ambushes:%d" % zone
+        edges = []
+        for a, b, l, sec in spec.edges:
+            if zone in (a, b) and max(a, b) > zone:
+                assert l == "", (spec.part, a, b, l)  # one lock per passage: never two to combine
+                l = lock
+            edges.append((a, b, l, sec))
+        spec.edges = edges
+        spec.gates.add(lock)
+        spec.locks[lock] = tuple(t for pair in GATE_TEXTS for t in pair)
+        for fr, en in GATE_TEXTS:
+            tr(fr, en)
+    return spec
+
+
 def via_lair_armory(z, lair):
     """2.78: the passage to the lair goes through the lair's armory (« via »; `to` stays the zone of the
     catalog, the edge the server knows); coming back from it, one arrives where one comes back from the lair."""
@@ -461,7 +507,7 @@ def via_lair_armory(z, lair):
         z.raid["spawns"][str(LAIR_ARMORY)] = z.raid["spawns"][str(lair)]
 
 
-SPECS = [with_ambushes(s) for s in (CRANE, BRAS_GAUCHE, TORSE, ABDOMEN, JAMBE_GAUCHE, JAMBE_DROITE)]
+SPECS = [gate_ambushes(with_ambushes(s)) for s in (CRANE, BRAS_GAUCHE, TORSE, ABDOMEN, JAMBE_GAUCHE, JAMBE_DROITE)]
 # The titan's branches in the order of its body (data/raids/asterion.json).
 ORDER = ["crane", "bras_gauche", "bras_droit", "torse", "abdomen", "jambe_gauche", "jambe_droite"]
 
@@ -641,7 +687,7 @@ class Zone:
         self.raid["spawns"][str(src)] = [[x * T, y * T]]
 
     def lockdoor(self, to, x, y_floor):
-        lock = self.spec.lock_of(self.n, to)
+        lock = self.spec.passage_lock(self.n, to)
         if not lock or self.n == 8:
             return None
         door = self.L.door(x, y_floor - 4, 4)
@@ -651,7 +697,7 @@ class Zone:
     def passage(self, to, x0, y_floor, door=None):
         rect = [x0 * T, (y_floor - 4) * T, 4 * T, 4 * T]
         name, name_en = self.spec.zone_names[to], self.spec.zone_en[to]
-        p = {"id": "p%d_%d" % (self.n, to), "to": to, "rect": rect, "lock": self.spec.lock_of(self.n, to), "door": door or ""}
+        p = {"id": "p%d_%d" % (self.n, to), "to": to, "rect": rect, "lock": self.spec.passage_lock(self.n, to), "door": door or ""}
         self.raid["passages"].append(p)
         self.L.sign(x0 + 2, y_floor, tr("Passage vers : %s" % name, "Way to: %s" % name_en))
         self.L.light(x0 + 2, y_floor - 2, "#9fd8ff", 70, flicker=0.05)
@@ -1734,12 +1780,13 @@ def load_json(path):
         return json.load(f)
 
 
-def check_branch(cat, levels):
-    """Every edge has its two passages (same lock), every passage an edge, every objective one object."""
+def check_branch(cat, levels, gates=()):
+    """Every edge has its two passages (same lock; titan 9: a gate of ambushes, in `gates`, on the way on only),
+    every passage an edge, every objective one object, every ambush a gate of its zone's way on."""
     for e in cat["edges"]:
         for a, b in ((e["a"], e["b"]), (e["b"], e["a"])):
             ps = [p for p in levels[a]["metadata"]["raid"]["passages"] if p["to"] == b]
-            assert len(ps) == 1 and ps[0]["lock"] == e["lock"], (cat["id"], a, b)
+            assert len(ps) == 1 and ps[0]["lock"] == passage_lock(e["lock"], a, b, gates), (cat["id"], a, b)
             assert str(a) in levels[b]["metadata"]["raid"]["spawns"], (cat["id"], "arrival", a, b)
     for n, lv in levels.items():
         for p in lv["metadata"]["raid"]["passages"]:
@@ -1747,6 +1794,29 @@ def check_branch(cat, levels):
     for o in cat["objectives"]:
         found = [x for x in levels[o["zone"]]["metadata"]["raid"]["objectives"] if x["id"] == o["id"]]
         assert len(found) == 1, (cat["id"], o["id"])
+    check_ambush_gates(cat, levels)
+
+
+def check_ambush_gates(cat, levels):
+    """Titan 9: in every zone, every ambush (an arena whose waves hold no boss) is an objective of role « ambush »
+    of the zone, and every passage from it toward a zone further on waits for them (« ambushes:<zone> »)."""
+    roles = {o["id"]: (o["zone"], o["role"]) for o in cat["objectives"]}
+    for n, lv in levels.items():
+        objs = {o["id"]: o for o in lv["objects"]}
+        sources = {o["source"]: o["id"] for o in lv["metadata"]["raid"]["objectives"]}
+        ambushes = []
+        for o in lv["objects"]:
+            if o["type"] != "combat_zone":
+                continue
+            ids = [i for w in o["props"].get("waves", "").split(";") for i in w.split(",") if i]
+            if ids and not any(objs[i]["props"].get("boss") for i in ids if i in objs):
+                ambushes.append(o["id"])
+        for a in ambushes:
+            assert a in sources and roles.get(sources[a]) == (n, "ambush"), (cat["id"], n, "ambush not an objective", a)
+        if ambushes:
+            for p in lv["metadata"]["raid"]["passages"]:
+                if p["to"] > n:
+                    assert p["lock"] == "ambushes:%d" % n, (cat["id"], n, "open way on past an ambush", p["id"], p["lock"])
 
 
 def links(catalogs, levels):
@@ -1808,16 +1878,17 @@ def main():
         assert 18.0 <= route <= 35.0, (s.part, "route", route)
         print("%s : %s min (8 joueurs ; expédition : %.1f min ; branche : %.1f min sans le gigaboss)" % (s.part, minutes, minutes[7], route))
         cat = s.catalog(minutes)
-        check_branch(cat, lv)
+        check_branch(cat, lv, s.gates)
         write_json(os.path.join(RAID_DIR, s.part, "branch.json"), cat)
         catalogs.append(cat)
         levels[s.part] = lv
     # The BRAS DROIT (raid_bras_droit.py): read only.
     bd = load_json(os.path.join(RAID_DIR, "bras_droit", "branch.json"))
     levels["bras_droit"] = {n: load_json(os.path.join(RAID_DIR, "bras_droit", "zone_%d.json" % n)) for n in range(1, 9)}
+    check_ambush_gates(bd, levels["bras_droit"])  # titan 9: its ambushes gate its ways on too
     # 2.72 (phase 6): the heart (raid_coeur.py), opened once the seven gigaboss fell.
     import raid_coeur
-    heart, levels["coeur"] = raid_coeur.build(sys.modules[__name__])
+    heart, levels["coeur"] = raid_coeur.build(sys.modules[__name__])  # check_branch: its ambushes gate the heart
     all_cats = catalogs + [bd]
     lks = links(all_cats + [heart], levels)
     by_part = {c["branch"]: c for c in all_cats}

@@ -88,7 +88,9 @@ describe("raids 2.75: a group wiped, its spectators, its zone taken again", () =
         const ev = await runningEvent(a, b);
         const ia = await instanceOf(ev, a.players);
         const [a1, a2] = a.players as [TestPlayer, TestPlayer];
-        // The group reaches the Biceps (zone 2), then everyone falls there: the wipe needs the majority.
+        // The group beats the Épaule's guard (titan 9: an ambush, the way on waits for it), reaches the Biceps (zone 2),
+        // then everyone falls there: the wipe needs the majority.
+        for (const p of a.players) await report(p, ia, { objective: "epaule_arene", zone: 1, tick: 3000 });
         expect((await report(a.players[0]!, ia, { kind: "zone", zone: 2, tick: 7000 })).body.data.status).toBe("pending");
         expect((await report(a.players[1]!, ia, { kind: "zone", zone: 2, tick: 7000 })).body.data.status).toBe("accepted");
         expect((await report(a1, ia, { kind: "wipe", zone: 2, tick: 9000 })).body.data.status).toBe("pending");
@@ -122,10 +124,13 @@ describe("raids 2.75: a group wiped, its spectators, its zone taken again", () =
         // Another group takes it again only once its own zone is finished.
         const ib = await instanceOf(ev, b.players);
         const b1 = b.players[0]!;
+        // Titan 9: the Épaule is finished (the wiped group beat its guard to go on): the group goes on to the Veine,
+        // which it has not finished yet.
+        expect((await report(b1, ib, { kind: "zone", zone: 3, tick: 4000 })).body.data.status).toBe("accepted");
         const early = await api("POST", `${V}/raids/instances/${ib}/retake`, { token: b1.token, body: { zone: 2 } });
         expect(early.status).toBe(409);
         expect(early.body.error.code).toBe("RAID_ZONE_UNFINISHED");
-        expect((await report(b1, ib, { objective: "epaule_arene", zone: 1 })).body.data.status).toBe("accepted");
+        expect((await report(b1, ib, { objective: "veine_generateur", zone: 3, tick: 5000 })).body.data.status).toBe("accepted");
         const offers = (await branchView(ev, b1)).body.data.my.retake_offers as { zone: number }[];
         expect(offers.map((o) => o.zone)).toEqual([2]);
         const take = await api("POST", `${V}/raids/instances/${ib}/retake`, { token: b1.token, body: { zone: 2 } });

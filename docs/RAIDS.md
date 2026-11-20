@@ -1711,6 +1711,45 @@ Rien ne change dans la simulation : `kSimulationVersion`, `kCoopSimulationVersio
 * **Le serveur** applique le même verrou (`lockOpenIn`, `raidZones.lockOpen`, `ambushesIn`) : aucun rapport de l'antre n'est
   accepté avant que ces quatre objectifs le soient.
 
+#### Toute zone qui a une embuscade la garde (révision du titan 9)
+
+*Signalé en jeu* : « dans certaines zones, je peux accéder à la partie suivante sans avoir fini les embuscades ». L'audit
+(chaque zone de chaque branche et du Cœur, chaque passage, `tests/test_raid_zones.cpp`) a trouvé **deux zones ouvertes** :
+
+| Zone | Embuscade | Ce qui restait ouvert | Pourquoi |
+| --- | --- | --- | --- |
+| Zone 1 des **sept** branches (Mâchoire, Épaule gelée, Épaule, Clavicule, Diaphragme, Hanche, Hanche de fer) | la garde de l'entrée (2 vagues) | les passages vers les zones 2 et 3 | sans verrou ni porte : on passait à côté de l'arène (elle n'a pas de porte) et on sortait |
+| Zone 3 de l'**Abdomen** (Nid des parasites) | la garde du nid (2 vagues) | les passages vers l'Intestin (4) et la Poche oubliée (5, secrète) | même chose |
+| Zone 7 de chaque branche, Aorte du Cœur | 4 embuscades | rien : le passage vers l'antre (ou le Cœur) attendait déjà toutes les vagues (2.78) | — |
+
+S'y ajoutait un cas rare : une embuscade vaincue par **un autre groupe** pendant que la vôtre courait encore dans votre monde ouvrait le
+passage (l'état de la branche) sans arrêter votre embuscade : on passait à côté d'elle.
+
+* **La règle** : dans toute zone qui a une embuscade (une arène sans boss), chaque passage vers une zone **plus loin** (numéro plus
+  grand : les zones suivantes, la zone secrète, l'antre) reste fermé tant qu'**une vague d'une de ses embuscades** reste ; le passage
+  du retour (vers une zone d'avant) reste **ouvert** : personne n'est jamais enfermé. Les passages de zone sont le seul moyen de
+  changer de zone et le verrou est vérifié quand un joueur y entre, d'où qu'il vienne : sauter par-dessus la porte, passer à côté de
+  l'arène, foncer à travers, rien n'y fait.
+* **Généré** (`tools/levelgen`) : la garde de l'entrée et celle du nid deviennent des objectifs de rôle `ambush` (leurs bits ne
+  bougent pas), les arêtes vers l'avant prennent le verrou `ambushes:<zone>` (`gate_ambushes`, `AMBUSH_ZONES` ; le Bras droit :
+  `raid_bras_droit.py`), une **porte** devant chaque passage vers l'avant le montre et s'ouvre avec lui ; le passage du retour n'a
+  ni verrou ni porte (`passage_lock`). Le générateur **vérifie** chaque zone de chaque branche (`check_ambush_gates`) : toute
+  arène sans boss est un objectif « ambush » de sa zone, tout passage vers l'avant attend ses embuscades.
+* **À l'écran** : le passage fermé dit « Passage verrouillé vers Orbite gauche : Embuscades restantes : 1 sur 1. » ; « Ce qu'il
+  reste à faire » écrit « Embuscades restantes : 1 sur 1 » (et la grande carte « Ouvrir l'accès : Embuscades restantes : 1 sur 1 »
+  pour les zones 2 et 3), puis « Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts » ; les portes
+  s'ouvrent avec « L'embuscade est vaincue : les passages vers la suite s'ouvrent » (dit une fois). La distance au passage de
+  l'antre reste celle de la zone d'avant l'antre.
+* **Un autre groupe** : ce que l'état de la branche apporte (RAID_STATE) se voit **aussitôt** dans les zones chargées
+  (`RaidRun::restoreDone`), comme au chargement d'une zone : une embuscade vaincue par un autre groupe l'est aussi chez vous (ses
+  ennemis partent, ses portes s'ouvrent), au pas où le passage s'ouvre.
+* **Le serveur** applique les mêmes verrous (les catalogues régénérés : `raidTitan.json`, `raidBranches.json`) : aucun rapport des
+  zones 2 et 3 (ni 4 et 5 de l'Abdomen par le nid) n'est accepté avant que leur embuscade le soit.
+* **Versions** : `TITAN_REVISION` passe à **9** (les instances ne réunissent que des jeux aux mêmes règles) ; rien ne change en solo
+  ni en coopération (`kSimulationVersion`, `kRankingGeneration` restent). Tests : `tests/test_raid_zones.cpp` (« titan 9 » : chaque
+  zone de chaque branche jouée, chaque passage vers l'avant essayé avant l'embuscade, pendant, et ouvert après ; l'embuscade d'un
+  autre groupe ; le retour ouvert).
+
 ### Le vestiaire de l'antre (`raid_armory.py`, zone 9 du jeu)
 
 * Entre la zone d'avant (7 ; 1 pour le Cœur) et l'antre, un **vestiaire** (`armory_lair.json`, hors du catalogue du serveur, jamais

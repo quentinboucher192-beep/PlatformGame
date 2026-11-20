@@ -101,7 +101,11 @@ describe("raids phase 4: the titan's rules", () => {
         expect(lockOpenIn(crane, "link:bd_poignet", 0)).toBe(false);
         expect(lockOpenIn(crane, "link:bd_poignet", st.get(crane.id)!)).toBe(true);
         expect(reachableIn(crane, 0)[7]).toBe(false);
-        expect(reachableIn(crane, st.get(crane.id)!)[7]).toBe(true);
+        // Titan 9: the Jaw's guard (an ambush) opens the way on from the entry.
+        const jaw = 1 << crane.objectives.find((o) => o.id === "crane_machoire")!.index;
+        expect(crane.objectives.find((o) => o.id === "crane_machoire")!.role).toBe("ambush");
+        expect(reachableIn(crane, st.get(crane.id)!)[7]).toBe(false);
+        expect(reachableIn(crane, (st.get(crane.id)! | jaw) >>> 0)[7]).toBe(true);
         // A link of two objectives is on with both only.
         const eyes = new Map([[crane.id, new Set(["crane_oeil_gauche"])]]);
         expect(statesOf(eyes).get(catalogByPart("bras_gauche")!.id)).toBe(0);
@@ -122,6 +126,8 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
         for (const p of a.players.slice(1)) expect((await join(p, ev, "crane")).body.data.instance.id).toBe(inst);
         await playing(inst, a.players);
         const [p1, p2, p3] = a.players as [TestPlayer, TestPlayer, TestPlayer];
+        // Titan 9: the Jaw's guard first (an ambush: the ways on wait for it).
+        for (const p of a.players) await report(p, inst, { objective: "crane_machoire", zone: 1, tick: 3000 });
         expect((await report(p1, inst, { objective: "crane_oeil_gauche", zone: 2 })).body.data.status).toBe("pending");
         expect((await report(p2, inst, { objective: "crane_oeil_gauche", zone: 2, hash: H2 })).body.data.status).toBe("pending");
         expect((await report(p3, inst, { objective: "crane_oeil_gauche", zone: 2 })).body.data.status).toBe("accepted");
@@ -148,7 +154,9 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
         await playing(ia, a.players);
         await playing(ib, b.players);
         expect((await report(a.players[0]!, ia, { objective: "crane_voute", zone: 7 })).body.data.reason).toBe("zone verrouillée pour la branche");
-        for (const o of [["veine_generateur", 3], ["avantbras_generateur", 6], ["poignet_verrou", 7]] as const)
+        // Titan 9: each branch's entry guard first (an ambush: the ways on wait for it).
+        expect((await report(a.players[0]!, ia, { objective: "crane_machoire", zone: 1, tick: 3000 })).body.data.status).toBe("accepted");
+        for (const o of [["epaule_arene", 1], ["veine_generateur", 3], ["avantbras_generateur", 6], ["poignet_verrou", 7]] as const)
             expect((await report(b.players[0]!, ib, { objective: o[0], zone: o[1], tick: 7000 })).body.data.status).toBe("accepted");
         const crane = catalogByPart("crane")!;
         expect((await stateMaskOf(env.DB, ev, crane.id)) & (1 << 24)).toBe(1 << 24);
@@ -164,7 +172,7 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
         const d = titan.body.data;
         expect(d.branches.length).toBe(7);
         expect(d.totals.zones).toBe(56);
-        expect(d.totals.objectives_done).toBe(4);
+        expect(d.totals.objectives_done).toBe(6); // titan 9: with the two entry guards (the Jaw, the Épaule)
         expect(d.totals.groups).toBe(2);
         expect(d.body.crane).toBe("attaque");
         expect(d.body.torse).toBe("inconnu");

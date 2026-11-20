@@ -32705,6 +32705,18 @@
    ]
   },
   {
+   "fr": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "L'embuscade reprend",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
@@ -67685,6 +67697,12 @@
    ]
   },
   {
+   "fr": "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
    "fr": "Toutes les images",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -67725,6 +67743,18 @@
    "fr": "Toutes les touches de ce niveau reprennent celles du niveau pour J{0}.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -71189,6 +71219,18 @@
    "fr": "Vaincre l'Astrarque, au cœur de l'étoile.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "vaincre l'embuscade de la zone (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {

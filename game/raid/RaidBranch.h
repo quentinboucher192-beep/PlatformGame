@@ -266,6 +266,9 @@ public:
     AmbushCount ambushes(int zone, uint32_t mask) const;
     /// 2.78: « Embuscades restantes : 2 sur 4 » (what the closed passage and « Ce qu'il reste à faire » say).
     static std::string ambushesLeftText(const AmbushCount& c);
+    /// Titan 9 (the ambush gates): whether the ambushes of `zone` open the way to a lair (the zone before a
+    /// gigaboss: « l'antre s'ouvre »), else only the way on to the next zones of the branch (the entry's guard).
+    bool ambushesOpenLair(int zone) const;
     /// Every objective of the zone that is not optional is done (a zone without one: never).
     bool controlled(int zone, uint32_t mask) const;
     /// Zones reachable from the start (by edges whose lock is open), by id (index 0 unused).

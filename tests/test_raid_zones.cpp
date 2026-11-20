@@ -26,7 +26,9 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/enemies/Enemy.h"
 #include "game/raid/RaidBranch.h"
+#include "game/raid/RaidNav.h"
 #include "game/raid/RaidRun.h"
 #include "game/raid/RaidTest.h"
 #include "game/raid/ZoneGoals.h"
@@ -125,6 +127,28 @@ void revive(raid::RaidRun& run, int players, int who, int down) {
     CHECK(w.member(down).presence == GameWorld::Presence::Playing);
 }
 
+/// Titan 9: strikes down the enemies of the wave being fought of an ambush (as the group does, one step).
+void strikeWave(GameWorld& w, const CombatZoneEntity& a) {
+    for (const auto& e : w.entities())
+        if (auto* es = dynamic_cast<EnemySpawnEntity*>(e.get()); es && a.lists(es->id()))
+            if (Enemy* en = es->enemy(w); en && en->alive() && !en->dormant()) en->kill(w);
+}
+
+/// Titan 9: the group beats every ambush of `zone` itself (each one started, its waves struck down one after
+/// the other): the objectives are the instance's own at once, before the server's.
+void beatAmbushes(raid::RaidRun& run, int players, int zone, uint32_t mask = 0) {
+    GameWorld& w = *run.worldOf(zone);
+    for (CombatZoneEntity* a : w.ambushes()) {
+        if (!a->started()) a->handleAction(w, "start", Json::object());
+        for (int t = 0; t < 6000 && !a->cleared(); ++t) {
+            strikeWave(w, *a);
+            stepN(run, players, 1, mask);
+        }
+        CHECK(a->cleared());
+    }
+    stepN(run, players, 2, mask);
+}
+
 const raid::ZoneContribution* line(const std::vector<raid::ZoneContribution>& rows, int seat) {
     for (const raid::ZoneContribution& r : rows)
         if (r.seat == seat) return &r;
@@ -145,6 +169,7 @@ TEST_CASE("raid zones (2.78): a player who takes a passage changes zone alone, t
             raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
             CHECK(run.begin(0, 1));
             stepN(run, players, 120);
+            beatAmbushes(run, players, 1);  // titan 9: the Épaule's ways on wait for its guard
             CHECK(run.zonesLoaded() == std::vector<int>{1});
             GameWorld& w1 = *run.worldOf(1);
             w1.playerAt(0).health = 2;  // what a player carries: their hearts, their powers
@@ -204,6 +229,7 @@ TEST_CASE("raid zones (2.78): the last player out of a zone unloads it (what it 
     raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
     CHECK(run.begin(0, 1));
     stepN(run, 2, 60);
+    beatAmbushes(run, 2, 1);  // titan 9: the Épaule's ways on wait for its guard
     into(run, 0, *passageTo(run, 1, 3));
     stepN(run, 2, 1);
     into(run, 1, *passageTo(run, 1, 3));
@@ -366,6 +392,189 @@ TEST_CASE("raid zones (2.78): the lair's passage stays shut while one ambush wav
     CHECK(run.zoneOf(1) == 7);
 }
 
+// Titan 9 (the ambush gates): « certaines zones … je puisse accéder à la partie suivante sans avoir fini les
+// embuscades ». Only the zone before each lair waited for its ambushes: the entry's guard (zone 1 of every
+// branch) and the abdomen's nest (zone 3) left their ways on open. Every zone of every branch is played here.
+TEST_CASE("raid zones (titan 9): in every branch, every way on of a zone with an ambush stays shut until all its ambushes are beaten (started or not, whatever the way in), then opens") {
+    Svc s;
+    int gated = 0, exits = 0;
+    for (const raid::Branch* b : raid::Branch::all()) {
+        for (const raid::ZoneInfo& zi : b->zones) {
+            const int zone = zi.id;
+            const std::string gate = "ambushes:" + std::to_string(zone);
+            // Everything of the branch but this zone's ambushes (and the gigaboss): the zone reachable, its other locks open.
+            uint32_t others = 0;
+            for (const raid::ObjectiveInfo& o : b->objectives)
+                if (!(o.zone == zone && o.role == "ambush") && o.role != "gigaboss") others |= 1u << o.index;
+            for (const raid::EffectInfo& e : b->effects)
+                if (e.bit >= 0 && e.bit < 32) others |= 1u << e.bit;
+            raid::RaidRun run(s.ws(), *b, raid::kMaxInstancePlayers);
+            run.setQuiet(true);
+            CHECK(run.begin(others, zone));
+            stepN(run, 4, 30, others);
+            GameWorld& w = *run.worldOf(zone);
+            const raid::ZoneRules& rules = *run.rulesOf(zone);
+            // Every ambush of the level (an arena without a boss) is an objective « ambush » of the zone: the gate counts it.
+            for (CombatZoneEntity* a : w.ambushes()) {
+                bool objective = false;
+                for (const raid::ZoneObjective& zo : rules.objectives) {
+                    const raid::ObjectiveInfo* o = b->objective(zo.id);
+                    objective = objective || (zo.source == a->id() && o && o->role == "ambush" && o->zone == zone);
+                }
+                CHECK(objective);
+            }
+            CHECK(static_cast<int>(w.ambushes().size()) == b->ambushes(zone, 0).total);
+            // The way back into a gate that is not a lair's stays open (nobody is ever shut in behind it).
+            if (!b->ambushesOpenLair(zone))
+                for (const raid::ZoneRules& zr : b->rules)
+                    for (const raid::Passage& p : zr.passages)
+                        if (p.to == zone && zr.zone > zone && zr.zone != raid::kLairArmory) CHECK(p.lock != gate);
+            if (w.ambushes().empty()) continue;
+            ++gated;
+            std::vector<const raid::Passage*> ways;  // toward a zone further on: the next zones, the secret one, the lair
+            for (const raid::Passage& p : rules.passages)
+                if (p.to > zone) ways.push_back(&p);
+                else CHECK(p.lock != gate);  // the ways back are never this gate's
+            CHECK(!ways.empty());
+            CHECK(ways.size() < 4u);
+            for (const raid::Passage* p : ways) {
+                CHECK(p->lock == gate);
+                CHECK(!run.passageOpen(*p));
+                if (!p->door.empty()) {
+                    auto* door = dynamic_cast<DoorEntity*>(w.entity(p->door));
+                    CHECK(door != nullptr);
+                    CHECK(door != nullptr && !door->isOpen());
+                }
+            }
+            // Not started, then started and not finished (a player in it, another one at the passage): nobody goes on,
+            // whatever way they came in by (put right into the passage: over its door, past the arena, dashing…).
+            const Vec2 start = w.playerAt(0).feet();
+            auto tryWays = [&](int seat) {
+                for (const raid::Passage* p : ways) {
+                    w.playerAt(seat).teleportTo(start);
+                    stepN(run, 4, 2, others);
+                    into(run, seat, *p);
+                    stepN(run, 4, 2, others);
+                    CHECK(run.zoneOf(seat) == zone);
+                    bool said = false;
+                    for (const WorldMessage& m : w.messages()) said = said || m.text.find("Embuscades restantes") != std::string::npos;
+                    CHECK(said);
+                    ++exits;
+                }
+                w.playerAt(seat).teleportTo(start);
+            };
+            tryWays(0);
+            CombatZoneEntity* first = w.ambushes().front();
+            first->handleAction(w, "start", Json::object());
+            stepN(run, 4, 60, others);
+            CHECK(first->fighting());
+            tryWays(1);
+            // Every wave of every ambush beaten by the group, one after the other: shut until the very last enemy is down.
+            bool shutWhileLeft = true;
+            for (CombatZoneEntity* a : w.ambushes()) {
+                if (!a->started()) a->handleAction(w, "start", Json::object());
+                for (int t = 0; t < 6000 && !a->cleared(); ++t) {
+                    strikeWave(w, *a);
+                    stepN(run, 4, 1, others);
+                    bool left = false;
+                    for (CombatZoneEntity* x : w.ambushes()) left = left || !x->cleared();
+                    if (left)
+                        for (const raid::Passage* p : ways) shutWhileLeft = shutWhileLeft && !run.passageOpen(*p);
+                }
+                CHECK(a->cleared());
+            }
+            CHECK(shutWhileLeft);
+            stepN(run, 4, 2, others);
+            CHECK(b->ambushes(zone, run.mask()).left == 0);
+            // Then every way on opens (its door with it) and takes its player there.
+            for (size_t k = 0; k < ways.size(); ++k) {
+                const raid::Passage& p = *ways[k];
+                CHECK(run.passageOpen(p));
+                if (!p.door.empty()) {
+                    auto* door = dynamic_cast<DoorEntity*>(w.entity(p.door));
+                    CHECK(door != nullptr && door->isOpen());
+                }
+            }
+            // Reachable on foot from the start once open, where the zone has no plate to hold together (the entry, the nest).
+            if (rules.coops.empty()) {
+                std::shared_ptr<const raid::NavGraph> nav = raid::NavGraph::of(w, rules.magma.present ? rules.magma.zone : std::string());
+                const int from = nav->locate(start);
+                CHECK(from >= 0);
+                for (const raid::Passage* p : ways) {
+                    const int to = nav->nearest({p->rect.center().x, p->rect.bottom()}, 48.0f);
+                    std::vector<int> path;
+                    CHECK(to >= 0);
+                    CHECK(from >= 0 && to >= 0 && nav->path(from, to, path));
+                }
+            }
+            for (size_t k = 0; k < ways.size(); ++k) {
+                const int seat = static_cast<int>(k);
+                w.playerAt(seat).teleportTo(start);
+                stepN(run, 4, 2, others);
+                into(run, seat, *ways[k]);
+                stepN(run, 4, 2, others);
+                CHECK(run.zoneOf(seat) == ways[k]->arrival());
+            }
+        }
+    }
+    // The seven branches' entries, the abdomen's nest, the seven zones before the lairs, the Cœur's aorta; each way on
+    // tried twice (the ambush not started, then started): 7 × 2 × 2 + 2 × 2 + 7 × 2 + 2.
+    CHECK(gated == 16);
+    CHECK(exits == 48);
+}
+
+TEST_CASE("raid zones (titan 9): an ambush another group beat is beaten in the zone loaded here too, the way on opens at that step; the way back stays open") {
+    Svc s;
+    const raid::Branch& b = bras();
+    uint32_t guard = 0;
+    for (const raid::ObjectiveInfo& o : b.objectives)
+        if (o.zone == 1 && o.role == "ambush") guard |= 1u << o.index;
+    CHECK(guard != 0);
+    raid::RaidRun run(s.ws(), b, raid::kMaxInstancePlayers);
+    CHECK(run.begin(0, 1));
+    stepN(run, 2, 30);
+    GameWorld& w = *run.worldOf(1);
+    CHECK(w.ambushes().size() == 1u);
+    CombatZoneEntity* a = w.ambushes().front();
+    a->handleAction(w, "start", Json::object());
+    stepN(run, 2, 60);
+    CHECK(a->fighting());
+    const raid::Passage* way = passageTo(run, 1, 2);
+    CHECK(way != nullptr);
+    CHECK(!run.passageOpen(*way));
+    // « Ce qu'il reste à faire » says what is left, the closed passage too.
+    bool said = false;
+    for (const raid::Requirement& r : raid::zoneGoals(b, 1, 0).items) said = said || r.text == "Embuscades restantes : 1 sur 1";
+    CHECK(said);
+    // The server says another group beat it (RAID_STATE, this step): it is beaten here too, at that step.
+    stepN(run, 2, 1, guard);
+    CHECK(a->cleared());
+    int alive = 0;
+    for (const auto& e : w.entities())
+        if (auto* es = dynamic_cast<EnemySpawnEntity*>(e.get()); es && a->lists(es->id()))
+            if (Enemy* en = es->enemy(w); en && en->alive()) ++alive;
+    CHECK(alive == 0);
+    CHECK(run.passageOpen(*way));
+    auto* door = dynamic_cast<DoorEntity*>(w.entity(way->door));
+    CHECK(door != nullptr && door->isOpen());
+    bool open = false;
+    for (const raid::Requirement& r : raid::zoneGoals(b, 1, guard).items)
+        open = open || (r.done && r.text == "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts");
+    CHECK(open);
+    CHECK(b.lockText("ambushes:1").message == "L'embuscade est vaincue : les passages vers la suite s'ouvrent");
+    into(run, 0, *way);
+    stepN(run, 2, 2, guard);
+    CHECK(run.zoneOf(0) == 2);
+    // The way back is never shut.
+    const raid::Passage* back = passageTo(run, 2, 1);
+    CHECK(back != nullptr);
+    CHECK(back->lock.empty());
+    stepN(run, 2, 60, guard);
+    into(run, 0, *back);
+    stepN(run, 2, 2, guard);
+    CHECK(run.zoneOf(0) == 1);
+}
+
 TEST_CASE("raid zones (2.78): each player's deaths, the revivals they did and received, counted exactly in the zone's table") {
     Svc s;
     raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
@@ -416,6 +625,7 @@ TEST_CASE("raid zones (2.78): a zone whose players are all down goes on while ot
     raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
     CHECK(run.begin(0, 1));
     stepN(run, 2, 120);
+    beatAmbushes(run, 2, 1);  // titan 9: the Épaule's ways on wait for its guard
     into(run, 1, *passageTo(run, 1, 3));
     stepN(run, 2, 2);
     CHECK(run.zoneOf(1) == 3);
@@ -656,6 +866,7 @@ TEST_CASE("raid zones (2.78): the cost of several zones at once (8 players in 4 
     raid::RaidRun run(s.ws(), b, raid::kMaxInstancePlayers);
     CHECK(run.begin(0, 1));
     stepN(run, 8, 60);
+    beatAmbushes(run, 8, 1);  // titan 9: the Épaule's ways on wait for its guard
     // Two by two: the Épaule (0, 1), the Biceps (2, 3), the Veine (4, 5), the Coude-forge by the Biceps (6, 7).
     for (int seat : {2, 3, 6, 7}) into(run, seat, *passageTo(run, 1, 2));
     for (int seat : {4, 5}) into(run, seat, *passageTo(run, 1, 3));

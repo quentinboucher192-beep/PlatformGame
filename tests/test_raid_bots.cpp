@@ -91,7 +91,8 @@ TEST_CASE("raid bots (2.77): the zone's graph — places, jumps, ladders; a path
     Svc s;
     for (int zone : {1, 2, 3, 7}) {
         raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
-        CHECK(run.begin(0, zone));
+        // Titan 9: the Épaule's guard beaten (an ambush: its ways on, behind their doors, wait for it).
+        CHECK(run.begin(1u << bras().objectiveIndex("epaule_arene"), zone));
         raid::NavGraph a, b;
         a.build(run.world(), run.rules().magma.present ? run.rules().magma.zone : std::string());
         b.build(run.world(), run.rules().magma.present ? run.rules().magma.zone : std::string());
@@ -103,7 +104,10 @@ TEST_CASE("raid bots (2.77): the zone's graph — places, jumps, ladders; a path
         int reached = 0, passages = 0;
         std::vector<int> path;
         for (const raid::Passage& p : run.rules().passages) {
-            if (p.door.empty() == false) continue;  // a door that opens later (generators, the wrist)
+            if (!p.door.empty()) {  // a door that opens later (generators, the wrist); open (the Épaule's): counted
+                const auto* door = dynamic_cast<const DoorEntity*>(run.world().entity(p.door));
+                if (!door || !door->isOpen()) continue;
+            }
             ++passages;
             const int to = a.nearest(p.rect.bottomCenter(), 96.0f);
             if (to >= 0 && a.path(from, to, path)) ++reached;

@@ -13826,6 +13826,10 @@
     "{0}: {1} m": "{0}: {1} m",
     "Réanimations faites": "Revivals done",
     "Ici, de votre clan": "Here, from your clan",
-    "Aucun allié dans cette zone : un allié d'une autre zone peut revenir vous relever": "No ally in this zone: an ally from another zone can come back to revive you"
+    "Aucun allié dans cette zone : un allié d'une autre zone peut revenir vous relever": "No ally in this zone: an ally from another zone can come back to revive you",
+    "L'embuscade est vaincue : les passages vers la suite s'ouvrent": "The ambush is beaten: the ways on open",
+    "toutes les vagues de l'embuscade de la zone doivent être vaincues": "every wave of the zone's ambush must be beaten",
+    "vaincre l'embuscade de la zone (toutes ses vagues)": "beat the zone's ambush (all its waves)",
+    "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts": "Every ambush is beaten: the ways on are open"
   }
 }

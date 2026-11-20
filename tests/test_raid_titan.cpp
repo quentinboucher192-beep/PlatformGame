@@ -84,6 +84,20 @@ bool walkTo(raid::RaidRun& run, std::vector<InputFrame>& frame, int to, uint32_t
     for (const auto& q : rules->passages)
         if (q.to == to) p = &q;
     if (!p) return false;
+    // Titan 9: a way on gated by the zone's ambushes (the entry's guard; not a lair's): the group beats them first,
+    // wave after wave, as it would to go on.
+    if (GameWorld* w = run.worldOf(from); w && p->lock.rfind("ambushes:", 0) == 0 && !run.passageOpen(*p) && !run.branch().ambushesOpenLair(from)) {
+        for (CombatZoneEntity* a : w->ambushes()) {
+            if (!a->started()) a->handleAction(*w, "start", Json::object());
+            for (int t = 0; t < 6000 && !a->cleared(); ++t) {
+                for (const auto& e : w->entities())
+                    if (auto* es = dynamic_cast<EnemySpawnEntity*>(e.get()); es && a->lists(es->id()))
+                        if (Enemy* en = es->enemy(*w); en && en->alive() && !en->dormant()) en->kill(*w);
+                run.step(frame.data(), static_cast<int>(frame.size()), mask);
+            }
+        }
+        run.step(frame.data(), static_cast<int>(frame.size()), mask);
+    }
     for (int seat = 0; seat < raid::kMaxInstancePlayers; ++seat) {
         if (run.zoneOf(seat) != from || !((run.seatsIn(from) >> seat) & 1u)) continue;
         GameWorld* w = run.worldOf(from);
@@ -143,7 +157,9 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
             for (const raid::Passage& p : z.passages) {
                 bool edge = false;
                 for (const raid::EdgeInfo& e : b.edges)
-                    if ((e.a == z.zone && e.b == p.to) || (e.b == z.zone && e.a == p.to)) edge = e.lock == p.lock;
+                    if ((e.a == z.zone && e.b == p.to) || (e.b == z.zone && e.a == p.to))
+                        // Titan 9: a gate of ambushes (not a lair's) closes only the way on; the way back into it is open.
+                        edge = e.lock.rfind("ambushes:", 0) == 0 && p.to < z.zone && !b.ambushesOpenLair(p.to) ? p.lock.empty() : e.lock == p.lock;
                 CHECK(edge);
                 CHECK(b.zoneRules(p.to)->spawns.count(std::to_string(z.zone)) == 1);
             }
@@ -242,7 +258,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x25cd1f68505ab560ULL;  // reference (2.78: every ambush before the lair an objective, through the lair's armory, the route): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0x0034b4833fdb4476ULL;  // reference (titan 9: the entries' guards and the abdomen's nest gate their ways on, their doors): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

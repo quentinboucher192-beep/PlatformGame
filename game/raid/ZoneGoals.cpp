@@ -89,13 +89,16 @@ ZoneGoals zoneGoals(const Branch& b, int zone, uint32_t validated, uint32_t own)
             g.items.push_back(std::move(r));
         }
     }
-    // 2.78: its ambushes (the zone before a lair): one line, « Embuscades restantes : 2 sur 4 ».
+    // 2.78: its ambushes (the zone before a lair): one line, « Embuscades restantes : 2 sur 4 ». Titan 9: every
+    // zone with an ambush (the entry's guard too): its way on opens with them.
     const Branch::AmbushCount amb = b.ambushes(zone, mask);
     if (amb.total > 0) {
         Requirement r;
         r.done = amb.left == 0;
         r.pending = r.done && b.ambushes(zone, validated).left > 0;
-        r.text = r.done ? std::string("Toutes les embuscades sont vaincues : le passage vers l'antre est ouvert") : Branch::ambushesLeftText(amb);
+        const char* open = b.ambushesOpenLair(zone) ? "Toutes les embuscades sont vaincues : le passage vers l'antre est ouvert"
+                                                    : "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts";
+        r.text = r.done ? std::string(open) : Branch::ambushesLeftText(amb);
         g.items.push_back(std::move(r));
     }
     // Its objectives (the required ones first, the optional ones last).

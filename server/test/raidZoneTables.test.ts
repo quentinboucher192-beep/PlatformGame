@@ -71,6 +71,13 @@ async function instanceOf(event: string, players: TestPlayer[]): Promise<string>
     return id;
 }
 
+/** Titan 9: the Épaule's guard (an ambush: the ways on wait for it) beaten by a group of the event. */
+async function pastTheEntry(event: string) {
+    await env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, 'epaule_arene', NULL, ?3)")
+        .bind(event, BRANCH.id, new Date().toISOString())
+        .run();
+}
+
 const report = (p: TestPlayer, instance: string, body: Record<string, unknown>) =>
     api("POST", `${V}/raids/instances/${instance}/reports`, { token: p.token, body: { kind: "objective", zone: 1, tick: 6000, hash: H1, ...body } });
 
@@ -92,6 +99,7 @@ describe("2.75: a zone finished", () => {
         const a = await clan("AUBE", 2);
         const b = await clan("NEBU", 1);
         const ev = await runningEvent(a, b);
+        await pastTheEntry(ev);
         const ia = await instanceOf(ev, a.players);
         for (const p of a.players) expect((await report(p, ia, { objective: "biceps_gardien", zone: 2 })).status).toBe(200);
         expect((await report(a.players[1]!, ia, { objective: "biceps_gardien", zone: 2 })).body.data.status).toBe("accepted");
@@ -132,6 +140,7 @@ describe("2.75: the « Tableau des contributions » of a zone", () => {
     it("counts once the majority agrees, is kept in the results with each share", async () => {
         const a = await clan("AUBE", 3);
         const ev = await runningEvent(a);
+        await pastTheEntry(ev);
         const ia = await instanceOf(ev, a.players);
         const table = (p: TestPlayer, r: ZoneContribution[]) => report(p, ia, { kind: "zone_table", zone: 2, records: r });
         expect((await table(a.players[0]!, rows)).body.data.status).toBe("pending");
