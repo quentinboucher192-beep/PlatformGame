@@ -114,7 +114,7 @@ comme musique du menu. Le volume est celui de la musique (Paramètres → Audio)
 * **Films** (2.81) : les films d'Asterion et la bande-annonce, chacun avec sa vignette, sa durée et où on le voit, à
   revoir d'un bouton (clavier, manette, souris) : le film d'Asterion une fois vu, « La chute d'Asterion » et « Après
   Asterion » une fois débloqués (pour qui a pris part à un événement où le Cœur est tombé, puis pour tous quand l'issue
-  « Asterion est tombé » est officielle ; [RAIDS.md §27](RAIDS.md#27--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
+  « Asterion est tombé » est officielle ; [RAIDS.md §28](RAIDS.md#28--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
   Un film verrouillé dit comment le débloquer. Les histoires des giga-boss restent dans *Gardiens* (« Revoir l'histoire »).
 
 ## Succès de la Collection (2.24)

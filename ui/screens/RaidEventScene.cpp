@@ -35,6 +35,7 @@
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/AsterionFilm.h"
+#include "ui/screens/RaidRecapScene.h"
 #include "ui/widgets/AsterionFigure.h"
 
 namespace cosmic {
@@ -263,10 +264,20 @@ private:
                 vx -= ui.s(8) + vw;
                 asterionfilm::victoryButton(g_, "victory", {vx, band.y + ui.s(6), vw, band.h - ui.s(12)});
             }
+            // 2.78.1: the « fiche récapitulative » of the raid, once finished (or its heart fallen), for a clan that took part.
+            const std::string recapLabel = "Fiche récapitulative";
+            const bool recap = (!running || heartDown) && e.clanRegistered && !clanId().empty() && !e.cancelled;
+            const float rcw = recap ? std::min(textW(ui, recapLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.22f) : 0.0f;
+            if (recap) {
+                vx -= ui.s(8) + rcw;
+                if (ui.button("recap", {vx, band.y + ui.s(6), rcw, band.h - ui.s(12)}, recapLabel)) g_.app.pushScene(makeRaidRecap(g_, clanId(), id_));
+            }
             // 2.81: « Après Asterion » beside it, once unlocked (took part, or the world outcome official).
             const bool after = heartDown && asterionfilm::aftermath() &&
                                (jget<bool>(at(data_, "aftermath"), "unlocked", false) || asterionfilm::aftermathUnlocked(g_.progression));
-            const float aw = after ? std::min(asterionfilm::aftermathButtonWidth(ui), band.w * 0.2f) : 0.0f;
+            float aw = after ? std::min(asterionfilm::aftermathButtonWidth(ui), band.w * 0.2f) : 0.0f;
+            // Only where it fits: the band's text keeps its room at the left (else it is in the recap and the Collection).
+            if (aw > 0.0f && vx - ui.s(8) - aw < band.x + ui.s(16) + ui.s(160)) aw = 0.0f;
             if (aw > 0.0f) {
                 vx -= ui.s(8) + aw;
                 asterionfilm::aftermathButton(g_, "aftermath", {vx, band.y + ui.s(6), aw, band.h - ui.s(12)}, id_);
@@ -282,7 +293,9 @@ private:
             else if (!running && worldEvent && !e.catchup)
                 text = "Le raid est terminé : le résultat officiel est figé dix minutes après la fin (derniers rapports).";
             fit(ui, text, {band.x + ui.s(16), band.center().y}, 15,
-                band.w - rw - ww - bw - (vw > 0.0f ? vw + ui.s(8) : 0.0f) - (aw > 0.0f ? aw + ui.s(8) : 0.0f) - ui.s(56), kText, FontFace::Bold);
+                band.w - rw - ww - bw - (vw > 0.0f ? vw + ui.s(8) : 0.0f) - (rcw > 0.0f ? rcw + ui.s(8) : 0.0f) - (aw > 0.0f ? aw + ui.s(8) : 0.0f) -
+                    ui.s(56),
+                kText, FontFace::Bold);
             y += ui.s(66);
         }
         // Four figures.

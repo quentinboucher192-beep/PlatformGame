@@ -93,7 +93,7 @@ std::vector<FilmEntry> filmCatalog(GameServices& g, bool forPlayer) {
         e.id = "asterion_apres";
         e.title = f->title;
         e.kind = kKindAsterion;
-        e.where = "Après le film de la victoire, en même temps pour les clans de la chute · fiche de l'événement, Collection › Galerie › Films";
+        e.where = "Après le film de la victoire, en même temps pour les clans de la chute · fiche de l'événement, fiche récapitulative du raid, Collection › Galerie › Films";
         e.seconds = story::duration(*f);
         e.thumb = "ui/films/asterion_apres.png";
         e.unlocked = !forPlayer || asterionfilm::aftermathUnlocked(g.progression);
