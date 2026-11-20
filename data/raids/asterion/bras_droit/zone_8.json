@@ -1855,7 +1855,7 @@
       64,
       64
      ],
-     "lock": "objective:poignet_verrou",
+     "lock": "ambushes:7",
      "door": ""
     },
     {
@@ -1867,7 +1867,7 @@
       64,
       64
      ],
-     "lock": "objective:poignet_verrou",
+     "lock": "ambushes:7",
      "door": ""
     }
    ],

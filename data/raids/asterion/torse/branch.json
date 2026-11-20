@@ -8,6 +8,11 @@
  "start_zone": 1,
  "generators_needed": 4,
  "lock_texts": {
+  "ambushes:7": {
+   "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
+   "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
+   "objective": "vaincre toutes les embuscades de Cage du cœur"
+  },
   "generators": {
    "hint": "il faut briser les quatre plaques du torse",
    "message": "Les quatre plaques sont brisées : la Cage du cœur s'ouvre",
@@ -185,7 +190,7 @@
   {
    "a": 7,
    "b": 8,
-   "lock": "objective:torse_cage",
+   "lock": "ambushes:7",
    "secret": false
   }
  ],
@@ -277,7 +282,7 @@
    "zone": 7,
    "label": "Ouvrir la cage du cœur : vaincre sa garde",
    "optional": false,
-   "role": "",
+   "role": "ambush",
    "pair": ""
   },
   {
@@ -287,6 +292,33 @@
    "label": "Vaincre le gigaboss Heartbreaker",
    "optional": false,
    "role": "gigaboss",
+   "pair": ""
+  },
+  {
+   "id": "torse_embuscade_1",
+   "index": 11,
+   "zone": 7,
+   "label": "Vaincre la première embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "torse_embuscade_2",
+   "index": 12,
+   "zone": 7,
+   "label": "Vaincre la deuxième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "torse_embuscade_3",
+   "index": 13,
+   "zone": 7,
+   "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
    "pair": ""
   }
  ]

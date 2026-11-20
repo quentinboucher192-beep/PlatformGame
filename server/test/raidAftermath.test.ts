@@ -1,4 +1,4 @@
-// 2.81 (docs/RAIDS.md §25): « Après Asterion », the film of what the fall changes in the world, watched together.
+// 2.81 (docs/RAIDS.md §27): « Après Asterion », the film of what the fall changes in the world, watched together.
 // Its start is stamped once by the server at the VALIDATED fall of the Heart (the fall plus FILM_DELAY_MS), never
 // from a game's claim (a minority report, a part below the whole health, a second call: nothing changes); the clans
 // present at the fall are named on the event's sheet (`aftermath`), their members told once (« heart_film »); the

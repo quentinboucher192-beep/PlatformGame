@@ -26,7 +26,7 @@ import { requireAuth } from "./auth";
 import { ask, stub, MAX_TICKS } from "./coop";
 import { ApiError, Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { CONTRIBUTION_FIELDS, canonical, grantFor, results, scoreOf, type Contribution } from "./raidRewards";
-import { catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
+import { ambushesIn, catalogById, doneOf, levelHashOf, maskOfIds, objectiveIn, reachableIn, stateMaskOf, zoneFinishedIn, type Catalog } from "./raidMap";
 import { raidState } from "./raids";
 import { grantWorldFor, journalDuplicate, reportHalt, requireEntry } from "./raidWorld";
 import { HEART_OBJECTIVE, HEART_UNITS, checkHeartFall, checkHeartOpen, grantHeart, heartFallenIn, heartOpenIn, isHeart, storeHeartDamage, wakeHeartRelays } from "./raidHeart";
@@ -107,13 +107,24 @@ export function implausible(records: Contribution[], tick: number, objectives = 
 
 /** 2.75: a line of a zone's « Tableau des contributions » (game/raid/Contributions: ZoneContribution). */
 export const ZONE_FIELDS = ["seat", "from", "boss_damage", "damage", "support", "mechanisms", "objectives"] as const;
-export type ZoneContribution = Record<(typeof ZONE_FIELDS)[number], number>;
+/**
+ * 2.78: what the games of 2.78 count too, per player and per zone: the damage to the zone's mini-bosses
+ * (tenths, part of boss_damage), the deaths (times down), the revivals done for the others and received.
+ * All four or none (a table of before has none: stored NULL, shown « — »).
+ */
+export const ZONE_FIELDS_V2 = ["mini_damage", "deaths", "revives", "revived"] as const;
+export type ZoneContribution = Record<(typeof ZONE_FIELDS)[number], number> & Partial<Record<(typeof ZONE_FIELDS_V2)[number], number>>;
 
-/** 2.75: the zone's table as the games write it (Contributions::zoneCanonical): sorted by seat, then step. */
+/** 2.75: the zone's table as the games write it (Contributions::zoneCanonical): sorted by seat, then step; 2.78: « …,n,x,y,z; ». */
 export function zoneCanonical(rows: ZoneContribution[]): string {
     return [...rows]
         .sort((a, b) => a.seat - b.seat || a.from - b.from)
-        .map((r) => `${r.seat},${r.from},${r.boss_damage},${r.damage},${r.support},${r.mechanisms},${r.objectives};`)
+        .map(
+            (r) =>
+                `${r.seat},${r.from},${r.boss_damage},${r.damage},${r.support},${r.mechanisms},${r.objectives}` +
+                (r.deaths !== undefined ? `,${r.mini_damage},${r.deaths},${r.revives},${r.revived}` : "") +
+                ";",
+        )
         .join("");
 }
 
@@ -132,6 +143,14 @@ export function implausibleZone(rows: ZoneContribution[], tick: number, objectiv
         if (r.support > Math.floor(span / 12) + Math.floor(span / 240) + 7) return "soutien impossible";
         if (r.mechanisms > Math.floor(span / 360) + 3 * (Math.floor(span / 1200) + 1) + 8) return "mécanismes impossibles";
         if (r.objectives > objectives) return "objectifs impossibles";
+        // 2.78: a revival takes 2 s held by the soul (and a player down cannot fall again before it): never more
+        // than one death and one revival every 2 s; never more revivals received than deaths in the zone.
+        if (r.deaths !== undefined) {
+            if ((r.mini_damage ?? 0) > r.boss_damage) return "dégâts aux mini-boss supérieurs aux dégâts au boss";
+            if (r.deaths > Math.floor(span / 240) + 1) return "morts impossibles";
+            if ((r.revives ?? 0) > Math.floor(span / 240) + 1) return "réanimations impossibles";
+            if ((r.revived ?? 0) > r.deaths) return "plus de réanimations reçues que de morts";
+        }
     }
     return "";
 }
@@ -142,8 +161,17 @@ function readZoneRecords(raw: unknown, fail: (m: string) => never): ZoneContribu
         if (!r || typeof r !== "object" || Array.isArray(r)) return fail("records : une ligne n'est pas un objet");
         const o = r as Record<string, unknown>;
         const c = {} as ZoneContribution;
-        for (const k of Object.keys(o)) if (!(ZONE_FIELDS as readonly string[]).includes(k)) return fail(`records : champ inconnu ${k}`);
+        for (const k of Object.keys(o))
+            if (!(ZONE_FIELDS as readonly string[]).includes(k) && !(ZONE_FIELDS_V2 as readonly string[]).includes(k)) return fail(`records : champ inconnu ${k}`);
         for (const k of ZONE_FIELDS) {
+            const v = o[k];
+            if (typeof v !== "number" || !Number.isInteger(v) || v < 0 || v > 2_000_000_000) return fail(`records : ${k} doit être un entier positif`);
+            c[k] = v;
+        }
+        // 2.78: the four new numbers, all of them or none (a game of before 2.78 sends none).
+        const v2 = ZONE_FIELDS_V2.filter((k) => o[k] !== undefined);
+        if (v2.length !== 0 && v2.length !== ZONE_FIELDS_V2.length) return fail("records : mini_damage, deaths, revives et revived vont ensemble");
+        for (const k of v2) {
             const v = o[k];
             if (typeof v !== "number" || !Number.isInteger(v) || v < 0 || v > 2_000_000_000) return fail(`records : ${k} doit être un entier positif`);
             c[k] = v;
@@ -201,6 +229,11 @@ export function lockOpen(lock: string, mask: number): boolean {
     if (lock.startsWith("objective:")) {
         const o = objectiveOf(lock.slice(10));
         return !!o && isDone(mask, o.index);
+    }
+    if (lock.startsWith("ambushes:")) {
+        // 2.78: every ambush of the zone before the lair beaten (raidMap.ambushesIn).
+        const a = ambushesIn(BRANCH as unknown as Catalog, Number(lock.slice(9)), mask);
+        return a.total > 0 && a.left === 0;
     }
     return false;
 }
@@ -428,8 +461,8 @@ export async function report(ctx: Ctx): Promise<Response> {
     // 2.68: an administrator's test (ADMINISTRATION › Raids › « Tester Asterion ») never reports:
     // a report flagged as a test is refused whoever sends it (an administrator or not), before anything.
     if (body.test !== undefined) throw Errors.forbidden("RAID_TEST_REPORT", "Un test d'administration ne compte jamais : rapport refusé.");
-    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage"]);
-    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table", "wipe"] as const)!;
+    const v = new Validator(body, ["kind", "objective", "zone", "tick", "hash", "phase", "records", "damage", "seats"]);
+    const kind = v.oneOf("kind", ["objective", "zone", "boss", "result", "heart", "zone_table", "wipe", "zones"] as const)!;
     const objective = v.str("objective", { min: 1, max: 64, pattern: /^[a-z0-9_]{1,64}$/, optional: kind !== "objective" });
     const zone = v.int("zone", { min: 1, max: BRANCH.zones.length })!;
     const tick = v.int("tick", { min: 0, max: MAX_TICKS })!;
@@ -443,6 +476,14 @@ export async function report(ctx: Ctx): Promise<Response> {
     // 2.75: the « Tableau des contributions » of a zone finished.
     const zoneRows = kind === "zone_table" ? readZoneRecords(body.records, (m) => { v.fail("records", m); return v.done() as never; }) : [];
     if (kind !== "result" && kind !== "zone_table" && body.records !== undefined) v.fail("records", "réservé aux rapports « result » et « zone_table »");
+    // 2.78: where each seat is (« zones »: required; « wipe »: optional): 8 zones, 0 for a free seat or an armory.
+    let seats: number[] = [];
+    if (kind === "zones" || (kind === "wipe" && body.seats !== undefined)) {
+        const raw = body.seats;
+        if (!Array.isArray(raw) || raw.length !== INSTANCE_SIZE || raw.some((z) => typeof z !== "number" || !Number.isInteger(z) || z < 0 || z > 32))
+            v.fail("seats", "8 zones (0 pour un siège libre)");
+        else seats = raw as number[];
+    } else if (body.seats !== undefined) v.fail("seats", "réservé aux rapports « zones » et « wipe »");
     v.done();
     const now = nowIso();
     const inst = await db.prepare("SELECT * FROM raid_instances WHERE id = ?1").bind(id).first<InstanceRow>();
@@ -466,7 +507,9 @@ export async function report(ctx: Ctx): Promise<Response> {
                     ? `t:${zone}`
                     : kind === "wipe"
                       ? `w:${zone}`
-                      : `z:${zone}@${tick}`;
+                      : kind === "zones"
+                        ? `s:${tick}`
+                        : `z:${zone}@${tick}`;
     // A table's value is its canonical text, rebuilt here from the numbers (never the game's text).
     const value =
         kind === "result"
@@ -475,7 +518,9 @@ export async function report(ctx: Ctx): Promise<Response> {
               ? `${zone}:${tick}:${hash}:${zoneCanonical(zoneRows)}`
               : kind === "heart"
                 ? `${zone}:${tick}:${hash}:${damage}`
-                : `${zone}:${tick}:${hash}`;
+                : kind === "zones" || (kind === "wipe" && seats.length)
+                  ? `${zone}:${tick}:${hash}:${seats.join(",")}`
+                  : `${zone}:${tick}:${hash}`;
     const reject = async (reason: string) => {
         await journal(db, id, me, key, value, reason);
         return json(ctx, { status: "rejected", reason });
@@ -532,12 +577,18 @@ export async function report(ctx: Ctx): Promise<Response> {
         if (!obj) return reject("objectif inconnu");
         if (obj.zone !== zone) return reject("objectif d'une autre zone");
     }
-    if (!reachableIn(cat, mask)[zone]) {
+    // 2.78: a report « zones » names the zone entered among its seats' zones, each of them reachable.
+    if (kind === "zones" && !seats.includes(zone)) return reject("zone entrée absente des zones des joueurs");
+    if (seats.some((z) => z > cat.zones.length)) return reject("zone inconnue");
+    const zonesToCheck = [...new Set([zone, ...seats.filter((z) => z > 0)])];
+    const reachNow = reachableIn(cat, mask);
+    if (zonesToCheck.some((z) => !reachNow[z])) {
         // An objective of a zone that opened with this instance's own completions: its locks
         // count what the instance itself accepted too (the generators it switched on itself).
         const own = await db.prepare("SELECT report_key FROM raid_accepted WHERE instance_id = ?1 AND report_key LIKE 'o:%'").bind(id).all<{ report_key: string }>();
         const mine = maskOfIds(cat, own.results.map((r) => r.report_key.slice(2)));
-        if (!reachableIn(cat, (mask | mine) >>> 0)[zone]) return reject("zone verrouillée pour la branche");
+        const reachOwn = reachableIn(cat, (mask | mine) >>> 0);
+        if (zonesToCheck.some((z) => !reachOwn[z])) return reject("zone verrouillée pour la branche");
     }
 
     // The player's report (one per key: a second, different one is refused).
@@ -649,8 +700,23 @@ export async function report(ctx: Ctx): Promise<Response> {
         } else if (kind === "zone_table") {
             await storeZoneTable(db, e.id, inst.branch, id, zone, tick, zoneRows, now);
         } else if (kind === "wipe") {
-            // 2.75: every player of the instance down at once: out of the zone for good, spectators.
-            await acceptWipe(ctx, e.id, inst, zone, now);
+            // 2.75: every player of the instance down at once: out of the zone for good, spectators. 2.78: across
+            // its zones (each one to retake).
+            await acceptWipe(ctx, e.id, inst, zone, now, seats.length ? [...new Set(seats.filter((z) => z > 0))].sort((a, b) => a - b) : [zone]);
+        } else if (kind === "zones") {
+            // 2.78: where each player is (each one changes zone alone). The newest step wins; the instance's zone
+            // (its place on the older maps) is the one of the most players, ties the lowest.
+            const count = new Map<number, number>();
+            for (const z of seats) if (z > 0) count.set(z, (count.get(z) ?? 0) + 1);
+            let main = zone;
+            for (const [z, n] of count) if (n > (count.get(main) ?? 0) || (n === (count.get(main) ?? 0) && z < main)) main = z;
+            await db
+                .prepare(
+                    `UPDATE raid_instances SET seat_zones = ?2, seat_zones_tick = ?4, zone = ?5, zone_tick = ?4, updated_at = ?3
+                     WHERE id = ?1 AND (seat_zones_tick IS NULL OR seat_zones_tick <= ?4) AND (zone_tick IS NULL OR zone_tick <= ?4)`,
+                )
+                .bind(id, seats.join(","), now, tick, main)
+                .run();
         } else if (kind === "result") {
             await storeResult(db, e.id, id, tick, records, now);
             if (isHeart(inst.branch)) await grantHeart(db, e.id, now); // 2.72: its rewards follow the tables after its fall
@@ -694,14 +760,16 @@ async function storeZoneTable(db: D1Database, eventId: string, branch: string, i
         db
             .prepare(
                 `INSERT INTO raid_zone_contributions (instance_id, event_id, branch, zone, seat, from_tick, player_id, boss_damage, damage, support, mechanisms,
-                    objectives, tick, accepted_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)
+                    objectives, tick, accepted_at, mini_damage, deaths, revives, revived)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18)
                  ON CONFLICT (instance_id, zone, seat, from_tick) DO UPDATE SET player_id = COALESCE(excluded.player_id, player_id),
                     boss_damage = excluded.boss_damage, damage = excluded.damage, support = excluded.support, mechanisms = excluded.mechanisms,
-                    objectives = excluded.objectives, tick = excluded.tick, accepted_at = excluded.accepted_at
+                    objectives = excluded.objectives, tick = excluded.tick, accepted_at = excluded.accepted_at, mini_damage = excluded.mini_damage,
+                    deaths = excluded.deaths, revives = excluded.revives, revived = excluded.revived
                  WHERE excluded.tick >= raid_zone_contributions.tick`,
             )
-            .bind(instanceId, eventId, branch, zone, r.seat, r.from, holderOf(members, r.seat, r.from), r.boss_damage, r.damage, r.support, r.mechanisms, r.objectives, tick, now),
+            .bind(instanceId, eventId, branch, zone, r.seat, r.from, holderOf(members, r.seat, r.from), r.boss_damage, r.damage, r.support, r.mechanisms, r.objectives, tick, now,
+                r.mini_damage ?? null, r.deaths ?? null, r.revives ?? null, r.revived ?? null),
     );
     if (stmts.length) await db.batch(stmts);
 }

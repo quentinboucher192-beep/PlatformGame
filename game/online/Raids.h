@@ -231,6 +231,10 @@ struct ZoneResultRow {
     bool me = false;
     double share = 0.0;  // of the boss damage (shareOfBoss) or of the zone's damage
     int bossDamage = 0, damage = 0, support = 0, mechanisms = 0, objectives = 0;
+    // 2.78: the mini-bosses (hearts, part of bossDamage), the deaths, the revivals done and received; a
+    // table of before 2.78 has none of them (`v2` false: « — »).
+    int miniDamage = 0, deaths = 0, revives = 0, revived = 0;
+    bool v2 = false;
 };
 struct ZoneResultTable {
     std::string branch, group, acceptedAt;
@@ -256,6 +260,7 @@ struct Results {
     std::string validatedAt;
     std::vector<Reward> rewards;  // mine to claim for this event
     std::vector<ZoneResultTable> zoneTables;  // 2.75: my clan's groups' zone tables (newest first)
+    std::vector<ZoneResultRow> raidTotals;    // 2.78: « Raid entier »: each player's zones added up
 };
 Results parseResults(const Json& j);
 

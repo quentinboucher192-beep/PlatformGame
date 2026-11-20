@@ -736,6 +736,12 @@
    ]
   },
   {
+   "fr": "8 zones (0 pour un siège libre)",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "8. Disponibilité",
    "where": [
     "data/online/terms_fr.txt"
@@ -2415,6 +2421,12 @@
    ]
   },
   {
+   "fr": "Alliés relevés en maintenant « Interagir » 2 s près de leur âme.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Allumage",
    "where": [
     "data/enemies/echo_forge_core.json",
@@ -4016,6 +4028,12 @@
    ]
   },
   {
+   "fr": "Asterion · Abdomen · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Bras droit · Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/zone_6.json"
@@ -4061,6 +4079,12 @@
    "fr": "Asterion · Bras droit · Vestiaire",
    "where": [
     "data/raids/asterion/bras_droit/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json"
    ]
   },
   {
@@ -4118,6 +4142,12 @@
    ]
   },
   {
+   "fr": "Asterion · Bras gauche · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Bras gauche · Épaule gelée",
    "where": [
     "data/raids/asterion/bras_gauche/zone_1.json"
@@ -4172,6 +4202,12 @@
    ]
   },
   {
+   "fr": "Asterion · Crâne · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Crâne · Voûte crânienne",
    "where": [
     "data/raids/asterion/crane/zone_7.json"
@@ -4193,6 +4229,12 @@
    "fr": "Asterion · Cœur · Vestiaire",
    "where": [
     "data/raids/asterion/coeur/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Cœur · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/coeur/armory_lair.json"
    ]
   },
   {
@@ -4250,6 +4292,12 @@
    ]
   },
   {
+   "fr": "Asterion · Jambe droite · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Jambe gauche · Cheville",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_7.json"
@@ -4304,6 +4352,12 @@
    ]
   },
   {
+   "fr": "Asterion · Jambe gauche · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Torse · Antre de Heartbreaker",
    "where": [
     "data/raids/asterion/torse/zone_8.json"
@@ -4355,6 +4409,12 @@
    "fr": "Asterion · Torse · Vestiaire",
    "where": [
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/torse/armory_lair.json"
    ]
   },
   {
@@ -5097,6 +5157,12 @@
    ]
   },
   {
+   "fr": "Aucun allié dans cette zone : un allié d'une autre zone peut revenir vous relever",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Aucun allié en jeu pour vous relever pour l'instant",
    "where": [
     "ui/screens/DownedView.cpp"
@@ -5172,6 +5238,12 @@
    "fr": "Aucun badge pour l'instant",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun boss dans cette zone : part des dégâts infligés à tous ses ennemis ({0} PV).",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -6377,6 +6449,12 @@
    "fr": "Aucune zone terminée pendant que votre instance y était : le tableau des contributions de chaque zone finie ici s'ajoute ici.",
    "where": [
     "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune zone terminée pour l'instant",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -12242,6 +12320,18 @@
    ]
   },
   {
+   "fr": "Chiffres comptés par la simulation (les mêmes sur tous les jeux du groupe), validés par la majorité.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Chili",
    "where": [
     "data/online/countries.json",
@@ -14482,6 +14572,24 @@
    ]
   },
   {
+   "fr": "Compté par la simulation (test local).",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compté par la simulation du groupe, validé par le serveur.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compté par la simulation, validé par la majorité du groupe.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Comète",
    "where": [
     "data/cosmetics/cosmetics.json",
@@ -16169,6 +16277,12 @@
    "fr": "Coups",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Coups bloqués au bouclier et alliés relevés.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -19523,6 +19637,12 @@
    ]
   },
   {
+   "fr": "Distance au passage de l'antre",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
    "fr": "Distance de fuite max",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -20692,6 +20812,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -20701,6 +20822,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -20710,6 +20832,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -20719,9 +20842,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -20731,6 +20856,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -20740,6 +20866,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -20749,6 +20876,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -20790,6 +20918,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -20799,6 +20928,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -20808,6 +20938,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -20817,9 +20948,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -20829,6 +20962,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -20838,6 +20972,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -20847,6 +20982,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -21382,6 +21518,7 @@
     "game/levels/ObjectTypes.cpp",
     "game/online/Raids.cpp",
     "game/powers/PowerStats.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -21402,6 +21539,12 @@
    "fr": "Dégâts : à tous les ennemis, et au gigaboss avec ses points faibles.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Dégâts au boss",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -21433,6 +21576,12 @@
    "where": [
     "server/src/coopRace.ts",
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "dégâts aux mini-boss supérieurs aux dégâts au boss",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -22402,6 +22551,12 @@
    "fr": "Embuscades : tomber pendant une embuscade ne la fait plus recommencer. Elle attend Nova telle qu'elle l'a laissée (même vague, ennemis vaincus toujours vaincus, les autres à leur place avec leur vie) ; ses portes s'ouvrent pour la laisser revenir et se referment derrière elle. Un ennemi d'une embuscade qui sort de son arène y est ramené : l'embuscade peut toujours être terminée. Records conservés.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Embuscades restantes : {0} sur {1}",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -23836,6 +23991,12 @@
    ]
   },
   {
+   "fr": "Entre dans la zone : {0}",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "Entre deux colonnes (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -23885,6 +24046,12 @@
    ]
   },
   {
+   "fr": "Entrée / A : zone suivante",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "entrée d'archive illisible",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -23912,6 +24079,12 @@
    "fr": "entrée invalide dans le contenu déchiffré",
    "where": [
     "server/src/backupFormat.ts"
+   ]
+  },
+  {
+   "fr": "Entrée ou A : le tableau de chaque zone finie et celui du raid entier (dégâts, soutien, mécanismes, objectifs, morts, réanimations).",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -25117,6 +25290,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "game/levels/EventSystem.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidMenu.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -25203,6 +25377,12 @@
    ]
   },
   {
+   "fr": "fermé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "fermé : une autre branche du titan l'ouvre",
    "where": [
     "game/raid/RaidBranch.cpp"
@@ -25212,6 +25392,12 @@
    "fr": "fermé tant que les sept Gigaboss ne sont pas tombés ({0} / 7)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "fermé — Embuscades restantes : 2 sur 4",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -26147,6 +26333,18 @@
    ]
   },
   {
+   "fr": "Fois relevé par un allié.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Fois à terre dans la zone.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "followers, levels, downloads ou recent",
    "where": [
     "server/src/creators.ts"
@@ -26834,6 +27032,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -26843,6 +27042,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -26852,6 +27052,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -26861,9 +27062,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -26873,6 +27076,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -26882,6 +27086,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -26891,6 +27096,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -28381,6 +28587,7 @@
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/online/RaidHud.cpp",
     "ui/online/RaidMenu.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -28428,6 +28635,12 @@
   },
   {
    "fr": "Groupe {0} · zone terminée à {1} min {2} s du raid · validé par le serveur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupe {0} · {1}",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -28536,7 +28749,7 @@
    ]
   },
   {
-   "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
+   "fr": "GROUPE · Tout le groupe est parti : la zone reprend",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -29679,6 +29892,18 @@
    "fr": "IA",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ici, de votre clan",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
    ]
   },
   {
@@ -31915,6 +32140,7 @@
    "fr": "Joueur",
    "where": [
     "game/coop/CoopRelay.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/AdminScene.cpp",
@@ -33135,12 +33361,6 @@
    ]
   },
   {
-   "fr": "La cage s'ouvre ! L'antre de Heartbreaker est ouvert.",
-   "where": [
-    "data/raids/asterion/torse/zone_7.json"
-   ]
-  },
-  {
    "fr": "La cage thoracique",
    "where": [
     "data/enemies/heartbreaker.json",
@@ -33290,18 +33510,6 @@
    "fr": "La chaîne de coulée avance et recule d'un seul bloc : sautez d'un plateau à l'autre entre deux tirs.",
    "where": [
     "data/levels/pyralis_03.json"
-   ]
-  },
-  {
-   "fr": "La cheville cède ! Le pied de Graviton est ouvert.",
-   "where": [
-    "data/raids/asterion/jambe_gauche/zone_7.json"
-   ]
-  },
-  {
-   "fr": "La cheville d'acier cède ! Le talon de Titanus est ouvert.",
-   "where": [
-    "data/raids/asterion/jambe_droite/zone_7.json"
    ]
   },
   {
@@ -33680,12 +33888,6 @@
    "fr": "La galerie haute",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
-   ]
-  },
-  {
-   "fr": "La garde du cœur est tombée : la porte du Cœur d'Asterion s'ouvre !",
-   "where": [
-    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -34644,12 +34846,6 @@
    ]
   },
   {
-   "fr": "La voûte se tait ! L'antre de Skullmaw est ouvert.",
-   "where": [
-    "data/raids/asterion/crane/zone_7.json"
-   ]
-  },
-  {
    "fr": "LA WYRM HURLANTE",
    "where": [
     "data/enemies/howling_wyrm.json"
@@ -34978,6 +35174,12 @@
    "fr": "LB",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "LB RB",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -36188,12 +36390,6 @@
    ]
   },
   {
-   "fr": "Le gosier s'ouvre ! L'antre de Voidworm est ouvert.",
-   "where": [
-    "data/raids/asterion/abdomen/zone_7.json"
-   ]
-  },
-  {
    "fr": "Le gouffre du gardien : grappin, vent, cristal et triple saut. Tout ce que vous avez appris.",
    "where": [
     "data/levels/glacior_03.json"
@@ -36947,9 +37143,15 @@
    ]
   },
   {
-   "fr": "Le poignet cède ! Les griffes de Dreadfang sont ouvertes.",
+   "fr": "Le plus de la zone : {0} (couronne).",
    "where": [
-    "data/raids/asterion/bras_gauche/zone_7.json"
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Le plus du raid : {0} (couronne).",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -37763,15 +37965,22 @@
    ]
   },
   {
-   "fr": "Le verrou cède : la Main de Pyroclast est ouverte.",
-   "where": [
-    "data/raids/asterion/bras_droit/zone_7.json"
-   ]
-  },
-  {
    "fr": "Le verrouillage des inscriptions est passé : changez l'heure de début avant de publier.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Le vestiaire de l'antre : chacun ajuste ses pouvoirs pour le gigaboss, puis tous les joueurs présents sur la plaque « Prêts ».",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
+    "data/raids/asterion/coeur/armory_lair.json",
+    "data/raids/asterion/crane/armory_lair.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory_lair.json"
    ]
   },
   {
@@ -39337,6 +39546,12 @@
    "fr": "Les yeux du Crâne sont crevés : les tourelles-regards du Tendon glacé (Bras gauche) s'éteignent",
    "where": [
     "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "les zones des groupes de votre clan, additionnées par joueur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -41347,6 +41562,18 @@
    ]
   },
   {
+   "fr": "Meilleurs de la zone",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleurs du raid",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "MEILLEURS RÉSULTATS EXTRÊME",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -41919,7 +42146,8 @@
   {
    "fr": "Mini-boss",
    "where": [
-    "game/enemies/EnemyDefinition.cpp"
+    "game/enemies/EnemyDefinition.cpp",
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -42929,6 +43157,7 @@
   {
    "fr": "Morts",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/ResultsScene.cpp",
     "ui/screens/StatisticsScene.cpp",
     "ui/widgets/Charts.cpp"
@@ -43275,6 +43504,7 @@
   {
    "fr": "Mécanismes",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
@@ -45726,6 +45956,7 @@
    "fr": "Objectifs",
    "where": [
     "game/online/Raids.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp",
@@ -45742,6 +45973,12 @@
    "fr": "Objectifs accomplis : {0} / {1}",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectifs de la branche accomplis : une action à soi, ou un combat gagné avec le groupe présent.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -46859,6 +47096,12 @@
    ]
   },
   {
+   "fr": "ouvert",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouvert aux joueurs le {0} à 00:00 UTC · modifiable jusque-là",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -47690,6 +47933,18 @@
    ]
   },
   {
+   "fr": "Part des dégâts infligés au boss de la zone (gigaboss, boss du bestiaire, points faibles), hors mini-boss : {0} PV.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Part des dégâts infligés aux mini-boss de la zone (les ennemis dont la chute est un objectif) : {0} PV.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "part du parcours de l'Argent (%)",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -48476,18 +48731,21 @@
   {
    "fr": "Passage vers : Antre de Heartbreaker",
    "where": [
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
    "fr": "Passage vers : Antre de Skullmaw",
    "where": [
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_7.json"
    ]
   },
   {
    "fr": "Passage vers : Antre de Voidworm",
    "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_7.json"
    ]
   },
@@ -48682,6 +48940,7 @@
   {
    "fr": "Passage vers : Griffes de Dreadfang",
    "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_7.json"
    ]
   },
@@ -48719,12 +48978,14 @@
   {
    "fr": "Passage vers : Le Cœur d'Asterion",
    "where": [
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
    "fr": "Passage vers : Main de Pyroclast",
    "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json"
    ]
@@ -48795,6 +49056,7 @@
   {
    "fr": "Passage vers : Pied de Graviton",
    "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_7.json"
    ]
   },
@@ -48850,6 +49112,7 @@
   {
    "fr": "Passage vers : Talon de Titanus",
    "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_7.json"
    ]
   },
@@ -48909,6 +49172,18 @@
     "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers l'antre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passage vers l'antre : 124 m · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -49349,6 +49624,12 @@
    "fr": "Personne n'a encore rien compté dans cette zone.",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Personne n'a encore rien compté ici.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -50282,6 +50563,19 @@
    ]
   },
   {
+   "fr": "Plaque « Prêts » : tous les joueurs présents dessus partent ensemble vers l'antre.",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
+    "data/raids/asterion/coeur/armory_lair.json",
+    "data/raids/asterion/crane/armory_lair.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Plaque « Prêts » : tout le groupe dessus ouvre la porte de la route.",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
@@ -50304,6 +50598,12 @@
    "fr": "Plaques brisées",
    "where": [
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Plaques tenues quand elles ont fonctionné, évents fermés, points faibles brisés.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -50790,6 +51090,12 @@
    "fr": "Plus de renforts : les parasites d'Asterion sont chassés.",
    "where": [
     "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "plus de réanimations reçues que de morts",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -53053,13 +53359,21 @@
    "fr": "Prêts",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_gauche/armory.json",
-    "data/raids/asterion/torse/armory.json"
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json"
    ]
   },
   {
@@ -53714,6 +54028,12 @@
    ]
   },
   {
+   "fr": "Q / E",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Q / E (LB / RB) : joueur précédent / suivant · Échap : rejoindre un groupe",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -54266,6 +54586,19 @@
    ]
   },
   {
+   "fr": "Raid entier",
+   "where": [
+    "ui/online/ContribTable.cpp",
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid entier · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "raid inconnu",
    "where": [
     "server/src/raids.ts"
@@ -54320,7 +54653,19 @@
    ]
   },
   {
+   "fr": "Raids : avant chaque antre, et avant le Cœur d'Asterion, il faut vaincre toutes les vagues de toutes les embuscades de la zone : le passage reste fermé tant qu'il en reste une, et le dit (« Embuscades restantes : 2 sur 4 », sur le passage et dans « Ce qu'il reste à faire »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : chaque branche commence par un vestiaire où chacun prend les pouvoirs voulus pour le raid (une tablette par pouvoir, quatre au plus : la fenêtre de choix dit lequel laisser), puis tout le groupe sur la plaque « Prêts » ouvre la route.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : chaque joueur change de zone seul. Marcher dans un passage n'emmène plus que vous : le groupe peut se répartir sur plusieurs zones de la branche, et toutes les zones où se trouve un joueur se jouent en même temps, sur tous les jeux du groupe. Les passages de groupe restent : la plaque « Prêts » d'un vestiaire demande tous les joueurs présents, et seuls ceux qui sont dessus partent ensemble.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -54332,6 +54677,12 @@
    ]
   },
   {
+   "fr": "Raids : la grande carte, « Ce qu'il reste à faire », le menu du raid et le panneau du groupe montrent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
    "where": [
     "data/news/changelog.json"
@@ -54339,6 +54690,12 @@
   },
   {
    "fr": "Raids : les 8 Gigaboss d'Asterion se battent par parties. Leurs points faibles dessinés prennent × 2 : les yeux de Skullmaw, les jointures de Dreadfang, les phalanges de Pyroclast, le cœur de Heartbreaker et du Cœur d'Asterion, la gueule du Voidworm, les orbes de Graviton, le genou de Titanus. Cornes, épaules, côtes, cuisse et racines sont blindées (× 0,5). Tout leur corps blesse au contact, au pixel près ; griffes, mâchoires, doigts, épines, débris et pieds frappent aussi pendant leurs attaques. Leurs fiches montrent leurs parties à la couleur de leur rôle. Une instance ne réunit que des joueurs aux mêmes règles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : les règles d'une partie changent (zones par joueur, embuscades avant l'antre, vestiaire de l'antre), donc une instance ne réunit que des joueurs en 2.78.0 ou plus récent : mettez le jeu à jour pour rejoindre votre groupe.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -54369,6 +54726,18 @@
   },
   {
    "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : un vestiaire de l'antre, entre l'expédition et l'arène du Gigaboss (et avant le Cœur) : ajustez vos pouvoirs pour le boss, puis tous les joueurs présents sur la plaque « Prêts » partent ensemble. Dans la zone d'avant, un indicateur donne la distance jusqu'au passage le long du parcours (« Passage vers l'antre : 124 m »), sa direction et s'il est ouvert ; il se place dans l'éditeur du HUD, onglet « Raids ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : une zone dont tous les joueurs sont à terre continue pendant que le reste du groupe joue ailleurs ; leurs âmes attendent qu'un allié vienne les relever (seul un joueur de la même zone peut réanimer). Le groupe n'est éliminé que si tous ses joueurs sont à terre en même temps, toutes zones confondues.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -55351,6 +55720,12 @@
   },
   {
    "fr": "records : champ inconnu {0}",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "records : mini_damage, deaths, revives et revived vont ensemble",
    "where": [
     "server/src/raidZones.ts"
    ]
@@ -57345,6 +57720,54 @@
    ]
   },
   {
+   "fr": "Retour vers : Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Poignet-verrou",
+   "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Retour à l'administration",
    "where": [
     "ui/screens/PauseScene.cpp",
@@ -58169,6 +58592,18 @@
    ]
   },
   {
+   "fr": "Réa. faites",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Réa. reçues",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "réacteur",
    "where": [
     "data/enemies/titan.json"
@@ -58299,6 +58734,12 @@
    "fr": "Réanimations illimitées ({0}) · tous à terre : groupe éliminé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "réanimations impossibles",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -58979,6 +59420,12 @@
   },
   {
    "fr": "réservé aux rapports « result » et « zone_table »",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "réservé aux rapports « zones » et « wipe »",
    "where": [
     "server/src/raidZones.ts"
    ]
@@ -62737,6 +63184,7 @@
    "fr": "Soutien",
    "where": [
     "game/online/Raids.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
@@ -64569,7 +65017,43 @@
    ]
   },
   {
+   "fr": "Tableau d'avant la 2.78 : les mini-boss n'y étaient pas comptés à part.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau d'avant la 2.78 : les morts n'y étaient pas comptées.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau d'avant la 2.78 : les réanimations n'y étaient pas comptées.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "TABLEAU DES CONTRIBUTIONS",
+   "where": [
+    "ui/online/ContribTable.h"
+   ]
+  },
+  {
+   "fr": "Tableau des contributions",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Tableau des contributions de chaque zone : à la fin d'une zone, la part de chaque joueur des dégâts infligés au boss et aux mini-boss de la zone (gardiens, ennemis dont la chute est un objectif, Gigaboss), ses dégâts, son soutien, ses mécanismes et ses objectifs, comptés par la simulation (les mêmes nombres sur tous les jeux du groupe) ; envoyé au serveur et validé par la majorité du groupe, il reste dans « Résultats du raid » (« Tableaux des zones ») et se revoit depuis la pause.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Tableau des contributions refait : onglets « Zone » et « Raid entier », barres des dégâts au boss et aux mini-boss, une icône et une couleur par catégorie, une couronne pour le meilleur, tri par colonne au clavier, à la manette et à la souris, une infobulle par chiffre, et trois nouveaux chiffres par joueur : morts, réanimations faites et réanimations reçues. Dans le menu du raid (« Zones terminées ») et dans Résultats du raid ; les tableaux d'avant affichent « — » pour ce qu'ils ne comptaient pas.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -64584,6 +65068,12 @@
    "fr": "TABLEAU DES CONTRIBUTIONS · {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau détaillé (zone et raid entier)",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -65895,6 +66385,30 @@
    ]
   },
   {
+   "fr": "terminée par un autre groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée par un autre groupe · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée par votre groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée par votre groupe · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "terminée · vous êtes ici",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -65941,6 +66455,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -65950,6 +66465,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -65959,6 +66475,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -65968,9 +66485,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -65980,6 +66499,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -65989,6 +66509,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -65998,6 +66519,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -66130,6 +66652,12 @@
    "fr": "Test depuis l'éditeur : les records ne sont pas enregistrés",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Test local : chiffres comptés par la simulation, rien n'est envoyé au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -67141,6 +67669,25 @@
    ]
   },
   {
+   "fr": "Tous les joueurs présents sont prêts : en route vers l'antre !",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
+    "data/raids/asterion/coeur/armory_lair.json",
+    "data/raids/asterion/crane/armory_lair.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "tous les joueurs présents sur la plaque « Prêts »",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "Tous les membres non inscrits ont déjà une invitation non lue.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
@@ -67356,6 +67903,7 @@
    "fr": "Toute l'équipe est à terre",
    "where": [
     "game/gameplay/GameWorldTeam.cpp",
+    "game/raid/RaidRun.cpp",
     "ui/screens/CoopGameScene.cpp"
    ]
   },
@@ -67388,6 +67936,25 @@
    "fr": "Toutes les dépendances sont présentes ({0} ennemis, {1} pouvoirs)",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les embuscades sont vaincues : le passage vers l'antre est ouvert",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
    ]
   },
   {
@@ -67431,6 +67998,25 @@
    "fr": "Toutes les touches de ce niveau reprennent celles du niveau pour J{0}.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "toutes les zones de votre instance, additionnées",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -67914,6 +68500,12 @@
    "fr": "Tri",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tri : {0} (clic sur un en-tête, ou flèches gauche / droite, LB RB)",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -69095,6 +69687,12 @@
    "fr": "Un joueur de chaque côté, sur les deux tours des flancs, au même moment.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Un joueur du groupe (son siège et le moment où il l'a pris). Votre ligne est encadrée.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -70879,6 +71477,19 @@
    ]
   },
   {
+   "fr": "Vaincre la deuxième embuscade (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Vaincre la Liche des Catacombes.",
    "where": [
     "data/achievements/achievements.json"
@@ -70888,6 +71499,32 @@
    "fr": "Vaincre la Liche sans être touché.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre la première embuscade (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -71134,6 +71771,54 @@
    "fr": "Vaincre tous les ennemis des 25 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de la zone",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -71905,6 +72590,60 @@
     "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Cœur d'Asterion. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/coeur/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Dreadfang. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Graviton. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Heartbreaker. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Pyroclast. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Skullmaw. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Titanus. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Voidworm. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json"
    ]
   },
   {
@@ -73318,6 +74057,7 @@
    "fr": "Vous",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/HudEditorScene.cpp",
@@ -74282,6 +75022,7 @@
   {
    "fr": "Zone",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/AdminRaids.cpp"
    ]
   },
@@ -74328,15 +75069,8 @@
    ]
   },
   {
-   "fr": "Zone : ?",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
    "fr": "Zone : {0}",
    "where": [
-    "game/raid/RaidRun.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
@@ -74359,9 +75093,45 @@
    ]
   },
   {
+   "fr": "zone de passage",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone de passage : ajuster ses pouvoirs pour le gigaboss, puis tous les joueurs présents sur la plaque « Prêts »",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "Zone de passage : ajuster ses pouvoirs pour {0}, puis tous les joueurs présents sur la plaque « Prêts »",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "zone de passage · pouvoirs pour le gigaboss",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "zone de passage · vous êtes ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone de ralentissement",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "zone entrée absente des zones des joueurs",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -74380,6 +75150,12 @@
    "fr": "Zone morte",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone précédente",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -74429,6 +75205,12 @@
     "data/raids/asterion/jambe_droite/branch.json",
     "data/raids/asterion/jambe_gauche/branch.json",
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Zone suivante",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -74533,6 +75315,18 @@
    "fr": "Zone {0} sur 8 · sélectionnée",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone {0} · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone {0} · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -75019,6 +75813,12 @@
    ]
   },
   {
+   "fr": "{0} / LB RB",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -75362,6 +76162,12 @@
    ]
   },
   {
+   "fr": "{0} : onglets · flèches gauche / droite : trier · survol ou flèches haut / bas : détails",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} : passage verrouillé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -75464,6 +76270,12 @@
    ]
   },
   {
+   "fr": "{0} : vous ({1})",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : zone de départ {1} inconnue",
    "where": [
     "server/src/raidWorld.ts"
@@ -75497,6 +76309,12 @@
    "fr": "{0} : {1} générateur(s) pour {2} demandés",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : {1} m",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -78493,6 +79311,12 @@
    ]
   },
   {
+   "fr": "{0} · Échap / B : fermer",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} × (1 + {1} × (joueurs − 1)) : sa vie grandit avec les places occupées.",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
@@ -78774,6 +79598,12 @@
    "fr": "{0}/{1}/{2} à {3}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}: {1} m",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -81671,12 +82501,14 @@
   {
    "fr": "… et {0} joueur de plus",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
   {
    "fr": "… et {0} joueurs de plus",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },

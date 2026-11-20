@@ -172,13 +172,13 @@
   {
    "a": 6,
    "b": 8,
-   "lock": "objective:poignet_verrou",
+   "lock": "ambushes:7",
    "secret": false
   },
   {
    "a": 7,
    "b": 8,
-   "lock": "objective:poignet_verrou",
+   "lock": "ambushes:7",
    "secret": false
   }
  ],
@@ -270,7 +270,7 @@
    "zone": 7,
    "label": "Briser le verrou du poignet : vaincre sa garde",
    "optional": false,
-   "role": "",
+   "role": "ambush",
    "pair": ""
   },
   {
@@ -280,6 +280,33 @@
    "label": "Vaincre le gigaboss Pyroclast",
    "optional": false,
    "role": "gigaboss",
+   "pair": ""
+  },
+  {
+   "id": "poignet_embuscade_1",
+   "index": 11,
+   "zone": 7,
+   "label": "Vaincre la première embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "poignet_embuscade_2",
+   "index": 12,
+   "zone": 7,
+   "label": "Vaincre la deuxième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "poignet_embuscade_3",
+   "index": 13,
+   "zone": 7,
+   "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
    "pair": ""
   }
  ]

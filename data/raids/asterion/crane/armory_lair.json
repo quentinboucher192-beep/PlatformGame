@@ -1,0 +1,1358 @@
+{
+ "format": "cosmic.level",
+ "formatVersion": 1,
+ "id": "raid_crane_vestiaire_antre",
+ "name": "Asterion · Crâne · Vestiaire de l'antre",
+ "description": "Le vestiaire de l'antre : chacun ajuste ses pouvoirs pour le gigaboss, puis tous les joueurs présents sur la plaque « Prêts ».",
+ "planet": "confins",
+ "author": "Cosmic Studio",
+ "version": "1.0",
+ "difficulty": 1,
+ "music": "music/pyralis_level.ogg",
+ "bossMusic": "music/pyrrhax_boss.ogg",
+ "ambience": "music/pyralis_ambience.ogg",
+ "bounds": [
+  0,
+  0,
+  2176,
+  480
+ ],
+ "ambientLight": "#8a6a8e",
+ "backgroundColor": "#0c0610",
+ "background": [
+  {
+   "texture": "backgrounds/pyralis/sky.png",
+   "factor": [
+    0.0,
+    0.0
+   ],
+   "fill": true,
+   "tint": "#9a7ab0"
+  },
+  {
+   "texture": "backgrounds/pyralis/far.png",
+   "factor": [
+    0.1,
+    0.05
+   ],
+   "offset": [
+    0,
+    -20
+   ],
+   "tint": "#7a5a8a"
+  },
+  {
+   "texture": "backgrounds/pyralis/mid.png",
+   "factor": [
+    0.25,
+    0.12
+   ],
+   "offset": [
+    0,
+    10
+   ],
+   "tint": "#6a4a70"
+  },
+  {
+   "texture": "backgrounds/pyralis/abyss.png",
+   "factor": [
+    0.4,
+    0.3
+   ],
+   "offset": [
+    0,
+    210
+   ],
+   "fillBelow": "#b04a6a",
+   "tint": "#c07a9a"
+  },
+  {
+   "texture": "backgrounds/pyralis/near.png",
+   "factor": [
+    0.5,
+    0.25
+   ],
+   "offset": [
+    0,
+    60
+   ],
+   "tint": "#584058"
+  },
+  {
+   "texture": "backgrounds/pyralis/fg_embers.png",
+   "factor": [
+    1.15,
+    1.0
+   ],
+   "offset": [
+    0,
+    -330
+   ],
+   "foreground": true,
+   "tint": "#ff9ad0c0"
+  }
+ ],
+ "timer": {
+  "mode": "unlimited",
+  "limit": 3600,
+  "onExpire": "continue",
+  "referenceTime": 600,
+  "challengeMaxDeaths": 0
+ },
+ "medals": {
+  "bronze": {},
+  "silver": {
+   "maxTime": 3000
+  },
+  "gold": {
+   "maxTime": 2400
+  },
+  "platinum": {
+   "maxTime": 1800,
+   "maxDeaths": 0
+  }
+ },
+ "startPowers": [
+  "dash",
+  "wave",
+  "shield",
+  "impulse"
+ ],
+ "cameraZoom": 1.0,
+ "layers": [
+  {
+   "id": "bg_decor",
+   "name": "Décor arrière",
+   "order": 0,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "terrain",
+   "name": "Terrain",
+   "order": 10,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "gameplay",
+   "name": "Gameplay",
+   "order": 20,
+   "visible": true,
+   "locked": false
+  },
+  {
+   "id": "fg_decor",
+   "name": "Décor avant",
+   "order": 30,
+   "visible": true,
+   "locked": false,
+   "foreground": true
+  }
+ ],
+ "objects": [
+  {
+   "id": "o1",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    384.0,
+    2176.0,
+    96.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o2",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    0.0,
+    32.0,
+    384.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o3",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    0.0,
+    0.0,
+    2176.0,
+    32.0
+   ],
+   "props": {
+    "material": "sanctum_stone"
+   }
+  },
+  {
+   "id": "o4",
+   "type": "player_start",
+   "layer": "gameplay",
+   "rect": [
+    123.0,
+    362.0,
+    10.0,
+    22.0
+   ]
+  },
+  {
+   "id": "o5",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    164.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Vestiaire de l'antre : ajustez vos pouvoirs pour Skullmaw. Sautez sur une tablette ; quatre au plus.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o6",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    240.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o7",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    244.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "air_dash",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o8",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    248.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o9",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    320.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o10",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    324.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "boomerang",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o11",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    328.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o12",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    400.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o13",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    404.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "boomerang_charge",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o14",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    408.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o15",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    480.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o16",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    484.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "charge_shot",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o17",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    488.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o18",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    560.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o19",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    564.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "dash",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o20",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    568.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o21",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    640.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o22",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    644.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "decoy",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o23",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    648.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o24",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    720.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o25",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    724.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "frost_nova",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o26",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    728.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o27",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    800.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o28",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    804.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "glide",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o29",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    808.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o30",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    880.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o31",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    884.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "grapple",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o32",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    888.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o33",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    960.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o34",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    964.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "ground_pound",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o35",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    968.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o36",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1040.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o37",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1044.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "impulse",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o38",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1048.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o39",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1120.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o40",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1124.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "magnet",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o41",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1128.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o42",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1200.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o43",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1204.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "plasma_bomb",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o44",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1208.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o45",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1280.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o46",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1284.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "recall",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o47",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1288.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o48",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o49",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1364.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "shield",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o50",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1368.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o51",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1440.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o52",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1444.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "teleport",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o53",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1448.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o54",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1520.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o55",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1524.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "time_slow",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o56",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1528.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o57",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1600.0,
+    288.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o58",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1604.0,
+    260.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "triple_jump",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o59",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1608.0,
+    232.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o60",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1680.0,
+    336.0,
+    32.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o61",
+   "type": "power_unlock",
+   "layer": "gameplay",
+   "rect": [
+    1684.0,
+    308.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "power": "wave",
+    "message": "",
+    "armory": true,
+    "station": true
+   }
+  },
+  {
+   "id": "o62",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1688.0,
+    280.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#c9a8ff",
+    "radius": 46,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o63",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    2016.0,
+    320.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o64",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    1812.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Plaque « Prêts » : tous les joueurs présents dessus partent ensemble vers l'antre.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o65",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    1912.0,
+    328.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 80,
+    "flicker": 0.1,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o66",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    2100.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Passage vers : Antre de Skullmaw",
+    "auto": true
+   }
+  },
+  {
+   "id": "o67",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    68.0,
+    360.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Retour vers : Voûte crânienne",
+    "auto": true
+   }
+  },
+  {
+   "id": "o68",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    40.0,
+    344.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 70,
+    "flicker": 0.05,
+    "bloom": true
+   }
+  }
+ ],
+ "events": [],
+ "intro": {},
+ "outro": {},
+ "metadata": {
+  "generator": "tools/levelgen/raid_armory.py",
+  "raid": {
+   "branch": "asterion_crane",
+   "zone": 9,
+   "spawns": {
+    "start": [
+     [
+      128,
+      384
+     ],
+     [
+      160,
+      384
+     ],
+     [
+      192,
+      384
+     ],
+     [
+      224,
+      384
+     ],
+     [
+      256,
+      384
+     ],
+     [
+      288,
+      384
+     ],
+     [
+      320,
+      384
+     ],
+     [
+      352,
+      384
+     ]
+    ],
+    "7": [
+     [
+      128,
+      384
+     ],
+     [
+      160,
+      384
+     ],
+     [
+      192,
+      384
+     ],
+     [
+      224,
+      384
+     ],
+     [
+      256,
+      384
+     ],
+     [
+      288,
+      384
+     ],
+     [
+      320,
+      384
+     ],
+     [
+      352,
+      384
+     ]
+    ]
+   },
+   "passages": [
+    {
+     "id": "p9_8",
+     "to": 8,
+     "rect": [
+      2080,
+      320,
+      64,
+      64
+     ],
+     "lock": "",
+     "door": "",
+     "plate": "vestiaire_prets"
+    },
+    {
+     "id": "p9_7",
+     "to": 7,
+     "rect": [
+      32,
+      320,
+      32,
+      64
+     ],
+     "lock": "",
+     "door": ""
+    }
+   ],
+   "objectives": [],
+   "magma": null,
+   "sealed": null,
+   "coop": [
+    {
+     "id": "vestiaire_prets",
+     "rect": [
+      1856,
+      320,
+      128,
+      64
+     ],
+     "players": 8,
+     "targets": [
+      "o63"
+     ],
+     "action": "open",
+     "label": "Prêts",
+     "message": "Tous les joueurs présents sont prêts : en route vers l'antre !"
+    }
+   ]
+  }
+ },
+ "maxPowers": 4,
+ "killY": 464
+}

@@ -41,6 +41,8 @@ export interface WipeInstanceRow {
     wiped_at: string | null;
     start_zone: number | null;
     relieves: string | null;
+    seat_zones?: string | null;   // 2.78
+    wiped_zones?: string | null;  // 2.78
 }
 
 export interface Spectator {
@@ -76,18 +78,22 @@ export async function zonesToRetake(db: D1Database, eventId: string, c: Catalog,
     const rows = (
         await db
             .prepare(
-                `SELECT i.id, i.wiped_zone, i.wiped_at, i.group_no, c.tag,
+                `SELECT i.id, i.wiped_zone, i.wiped_zones, i.wiped_at, i.group_no, c.tag,
                     (SELECT r.id FROM raid_instances r WHERE r.relieves = i.id AND r.wiped_zone IS NULL ORDER BY r.created_at LIMIT 1) AS relief
                  FROM raid_instances i JOIN clans c ON c.id = i.clan_id
                  WHERE i.event_id = ?1 AND i.branch = ?2 AND i.wiped_zone IS NOT NULL ORDER BY i.wiped_at, i.id LIMIT 200`,
             )
             .bind(eventId, c.id)
-            .all<{ id: string; wiped_zone: number; wiped_at: string; group_no: number; tag: string; relief: string | null }>()
+            .all<{ id: string; wiped_zone: number; wiped_zones: string | null; wiped_at: string; group_no: number; tag: string; relief: string | null }>()
     ).results;
     const out: ZoneToRetake[] = [];
     for (const r of rows) {
-        if (zoneFinished(c, r.wiped_zone, mask) || out.some((z) => z.zone === r.wiped_zone)) continue;
-        out.push({ zone: r.wiped_zone, instance_id: r.id, clan_tag: r.tag, group: r.group_no, since: r.wiped_at, relieved_by: r.relief });
+        // 2.78: a group wiped across several zones (its players spread over them): each one to retake.
+        const zones = r.wiped_zones ? r.wiped_zones.split(",").map((x) => Number(x)).filter((z) => z > 0) : [r.wiped_zone];
+        for (const zone of zones) {
+            if (zoneFinished(c, zone, mask) || out.some((z) => z.zone === zone)) continue;
+            out.push({ zone, instance_id: r.id, clan_tag: r.tag, group: r.group_no, since: r.wiped_at, relieved_by: r.relief });
+        }
     }
     return out;
 }
@@ -96,10 +102,12 @@ export async function zonesToRetake(db: D1Database, eventId: string, c: Catalog,
  * An accepted wipe: the instance is out of `zone` for good (once), the players who held a seat in it
  * become spectators (their placements freed: a join never seats them again), its relay closes its seats.
  */
-export async function acceptWipe(ctx: Ctx, eventId: string, inst: { id: string; branch: string }, zone: number, now: string): Promise<void> {
+export async function acceptWipe(ctx: Ctx, eventId: string, inst: { id: string; branch: string }, zone: number, now: string, zones: number[] = [zone]): Promise<void> {
     const db = ctx.env.DB;
     await db.batch([
-        db.prepare("UPDATE raid_instances SET wiped_zone = ?2, wiped_at = ?3, updated_at = ?3 WHERE id = ?1 AND wiped_zone IS NULL").bind(inst.id, zone, now),
+        db
+            .prepare("UPDATE raid_instances SET wiped_zone = ?2, wiped_zones = ?4, wiped_at = ?3, updated_at = ?3 WHERE id = ?1 AND wiped_zone IS NULL")
+            .bind(inst.id, zone, now, zones.join(",")),
         db
             .prepare(
                 `INSERT OR IGNORE INTO raid_spectators (event_id, player_id, instance_id, branch, zone, created_at)
@@ -165,7 +173,14 @@ export async function retake(ctx: Ctx): Promise<Response> {
     const c = catalogById(inst.branch);
     if (!c) throw Errors.notFound("INSTANCE_NOT_FOUND", "Ce groupe n'est plus en jeu.");
     const mask = await stateMaskOf(db, e.id, c.id);
-    if (!zoneFinished(c, inst.zone, mask))
+    // 2.78: the zone of the player's own seat (each player changes zone alone), else the instance's.
+    let myZone = inst.zone;
+    if (inst.seat_zones) {
+        const own = await db.prepare("SELECT seat FROM raid_instance_members WHERE instance_id = ?1 AND player_id = ?2 AND left_at IS NULL").bind(inst.id, me).first<{ seat: number }>();
+        const z = own ? Number(inst.seat_zones.split(",")[own.seat] ?? 0) : 0;
+        if (z > 0) myZone = z;
+    }
+    if (!zoneFinished(c, myZone, mask))
         throw Errors.conflict("RAID_ZONE_UNFINISHED", "Finissez d'abord la zone de votre groupe : seuls les groupes qui ont fini la leur reprennent une zone.");
     const target = (await zonesToRetake(db, e.id, c, mask)).find((z) => z.zone === zone);
     if (!target) throw Errors.conflict("RAID_NOTHING_TO_RETAKE", "Cette zone n'est pas à reprendre.");
@@ -209,18 +224,27 @@ export async function watchTargets(ctx: Ctx): Promise<Response> {
     const rows = (
         await db
             .prepare(
-                `SELECT m.instance_id, m.seat, p.username AS name, i.group_no, i.zone, i.start_zone, c.tag FROM raid_instance_members m
+                `SELECT m.instance_id, m.seat, p.username AS name, i.group_no, i.zone, i.seat_zones, i.start_zone, c.tag FROM raid_instance_members m
                  JOIN raid_instances i ON i.id = m.instance_id JOIN players p ON p.id = m.player_id JOIN clans c ON c.id = i.clan_id
                  WHERE i.event_id = ?1 AND i.branch = ?2 AND i.wiped_zone IS NULL AND m.active = 1 AND m.left_at IS NULL
                  ORDER BY c.tag, i.group_no, m.seat LIMIT 200`,
             )
             .bind(inst.event_id, inst.branch)
-            .all<{ instance_id: string; seat: number; name: string; group_no: number; zone: number; start_zone: number | null; tag: string }>()
+            .all<{ instance_id: string; seat: number; name: string; group_no: number; zone: number; seat_zones: string | null; start_zone: number | null; tag: string }>()
     ).results;
     const s = await spectatorOf(db, inst.event_id, me);
     return json(ctx, {
         instance: { id: inst.id, wiped_zone: inst.wiped_zone, zone: inst.zone },
         spectator: !!s,
-        targets: rows.map((r) => ({ instance_id: r.instance_id, seat: r.seat, name: r.name, clan_tag: r.tag, group: r.group_no, zone: r.zone, start_zone: r.start_zone ?? 0 })),
+        // 2.78: each player in their own zone (a spectator can watch the other zones).
+        targets: rows.map((r) => ({
+            instance_id: r.instance_id,
+            seat: r.seat,
+            name: r.name,
+            clan_tag: r.tag,
+            group: r.group_no,
+            zone: (r.seat_zones ? Number(r.seat_zones.split(",")[r.seat] ?? 0) : 0) || r.zone,
+            start_zone: r.start_zone ?? 0,
+        })),
     });
 }

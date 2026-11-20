@@ -2390,7 +2390,7 @@
       64,
       64
      ],
-     "lock": "objective:coeur_aorte",
+     "lock": "ambushes:1",
      "door": "o2"
     }
    ],

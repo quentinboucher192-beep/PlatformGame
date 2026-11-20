@@ -145,7 +145,7 @@ int RaidSimulation::realPart(Group& g, int own) const {
     const int start = setup_.heartStartPhase > 0 ? setup_.heartStartPhase : setup_.startPhase;
     if (start <= 1) return own;
     if (g.heartBase < 0) {
-        if (g.session->run().gigaboss().phaseReached() < std::min(start, 4)) return 0;
+        if (g.session->run().lairGigaboss().phaseReached() < std::min(start, 4)) return 0;
         g.heartBase = own;
     }
     return std::max(0, own - g.heartBase);
@@ -252,8 +252,20 @@ void RaidSimulation::watch(int g) {
 }
 
 bool RaidSimulation::hasWork(const Group& g) const {
+    // 2.78: its players may be in several zones: work in any of them.
     const RaidRun& run = g.session->run();
-    if (run.zone() == 0) return true;  // the armory: its powers and its plate
+    bool work = false;
+    for (int z : run.zonesLoaded()) {
+        run.focusZone(z);
+        work = zoneHasWork(run);
+        if (work) break;
+    }
+    run.focusZone(-1);
+    return work;
+}
+
+bool RaidSimulation::zoneHasWork(const RaidRun& run) {
+    if (Branch::isArmory(run.zone())) return true;  // an armory: its powers and its plate
     const Gigaboss& gb = run.gigaboss();
     if (gb.present() && gb.stage() != Gigaboss::Stage::Fallen && gb.boss(run.world())) return true;
     for (size_t k = 0; k < run.rules().coops.size(); ++k)

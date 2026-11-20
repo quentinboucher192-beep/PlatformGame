@@ -1243,7 +1243,8 @@
       64
      ],
      "lock": "",
-     "door": ""
+     "door": "",
+     "plate": "vestiaire_prets"
     }
    ],
    "objectives": [],

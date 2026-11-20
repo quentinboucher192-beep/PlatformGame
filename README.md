@@ -289,7 +289,7 @@ le Phénix s'endort enfin, l'étoile morte du centre frémit — et **écrit le 
 ligne de ces clans (une notification « Asterion est tombé — regarder le film avec votre clan » ; jamais lancé par-dessus un
 niveau). Arrivé en retard, on le prend en cours ou « Depuis le début ». Il se revoit depuis la fiche de l'événement et
 Collection › Galerie › Films, une fois débloqué (pour ceux qui ont pris part, puis pour tous quand « Asterion est tombé »
-est officiel). Détails : [docs/RAIDS.md §26](docs/RAIDS.md#26--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281).
+est officiel). Détails : [docs/RAIDS.md §27](docs/RAIDS.md#27--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281).
 
 ### Récompenses et événements mondiaux
 
@@ -626,7 +626,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
-* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche
+* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8 (chacun sa zone), consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche, tableau des contributions
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 Chaque page renvoie à celle d'où l'on vient (« ← Retour », en tête et en fin) ; `python3 tools/docs/check_links.py`
@@ -647,12 +647,29 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   la galaxie, ses planètes et ses peuples, avec **le nom des clans présents à la chute** (le vôtre en évidence) ; regardé
   **ensemble**, à l'heure du serveur, par l'instance du Cœur juste après le film de la victoire et par les membres en ligne
   de ces clans ; jamais imposé dans un niveau ; « Depuis le début » pour qui arrive en retard
-  ([docs/RAIDS.md §26](docs/RAIDS.md#26--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
+  ([docs/RAIDS.md §27](docs/RAIDS.md#27--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
 * **Collection › Galerie › Films** : les films d'Asterion et la bande-annonce, à revoir une fois débloqués.
 * **ADMINISTRATION › Films** : tous les films et présentations du jeu (histoires des giga-boss, films d'Asterion,
   bande-annonce, didacticiel) avec leur vignette, leur durée et où les joueurs les voient, à lancer d'un clic ; **« Rejouer
   le didacticiel »** sans rien toucher à la progression, aux records, aux succès ni aux statistiques
-  ([docs/RAIDS.md §27](docs/RAIDS.md#27-administration--films--tous-les-films-et-présentations-rejouer-le-didacticiel-281)).
+  ([docs/RAIDS.md §28](docs/RAIDS.md#28-administration--films--tous-les-films-et-présentations-rejouer-le-didacticiel-281)).
+
+**Nouveau dans la version 2.78.0** :
+* **Raids : chacun sa zone** : un passage n'emmène que le joueur qui y entre ; le groupe peut se répartir sur plusieurs
+  zones de la branche, toutes jouées en même temps (un monde par zone occupée, en verrouillage sur tous les jeux du groupe).
+  Les **passages de groupe** restent : la plaque « Prêts » d'un vestiaire demande tous les joueurs présents et seuls ceux
+  qui sont dessus partent ensemble. La grande carte, « Ce qu'il reste à faire », le menu du raid et le panneau du groupe
+  disent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones ([docs/RAIDS.md §26](docs/RAIDS.md#26-chacun-sa-zone-toutes-les-embuscades-avant-lantre-le-vestiaire-de-lantre-et-le-tableau-des-contributions-278)).
+* **Une zone qui se vide continue** : ses âmes attendent qu'un allié de la même zone vienne les relever ; le groupe n'est
+  éliminé que si tous ses joueurs sont à terre, toutes zones confondues (chaque zone touchée est alors à reprendre).
+* **Toutes les embuscades avant l'antre** : le passage vers l'antre de chaque Gigaboss (et vers le Cœur) reste fermé tant
+  qu'une vague d'embuscade de la zone d'avant reste (« Embuscades restantes : 2 sur 4 »).
+* **Vestiaire de l'antre** : entre l'expédition et l'arène, on ajuste ses pouvoirs pour le boss ; un indicateur du HUD
+  (« Passage vers l'antre : 124 m », sa flèche, son état) mesure la distance le long du parcours.
+* **Tableau des contributions refait** : onglets « Zone » / « Raid entier », barres des dégâts au boss et aux mini-boss,
+  icônes et couleurs par catégorie, couronne du meilleur, tri par colonne, infobulles, et trois chiffres de plus par joueur :
+  **morts**, **réanimations faites** et **reçues** (comptés par la simulation, validés par consensus ; « — » dans les
+  tableaux d'avant).
 
 **Nouveau dans la version 2.77.4** :
 * **Les raids sont des événements** : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS.

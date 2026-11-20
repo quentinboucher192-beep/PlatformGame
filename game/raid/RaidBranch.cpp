@@ -1,6 +1,7 @@
 #include "game/raid/RaidBranch.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <deque>
 #include <memory>
 #include <mutex>
@@ -102,6 +103,27 @@ bool Branch::load(const std::filesystem::path& dir, std::string* error) {
             armoryInfo.level = "armory.json";
         }
     }
+    // 2.78: the armory before the lair (zone kLairArmory, between the expedition and the gigaboss's arena).
+    lairArmoryLevel.reset();
+    if (auto j = FileUtil::loadJson(dir / "armory_lair.json")) {
+        std::string e;
+        if (std::optional<LevelData> l = LevelData::fromJson(*j, &e)) {
+            lairArmoryLevel = std::move(*l);
+            lairArmoryRules = parseZoneRules(*lairArmoryLevel, *this);
+            lairArmoryRules.zone = kLairArmory;
+            lairArmoryInfo = ZoneInfo{};
+            lairArmoryInfo.id = kLairArmory;
+            lairArmoryInfo.name = "Vestiaire de l'antre";
+            lairArmoryInfo.level = "armory_lair.json";
+            // On the maps: between the lair and the zone before it.
+            const ZoneInfo* lair = nullptr;
+            for (const ZoneInfo& z : zones)
+                if (z.boss) lair = &z;
+            const ZoneInfo* before = lair ? zone(lair->id - 1) : nullptr;
+            if (lair && before) lairArmoryInfo.mapPos = (lair->mapPos + before->mapPos) * 0.5f;
+            lairArmoryInfo.sub = "zone de passage · pouvoirs pour le gigaboss";
+        }
+    }
     return true;
 }
 
@@ -164,6 +186,20 @@ bool Branch::hazardOff(int zid, uint32_t mask) const {
     return false;
 }
 
+Branch::AmbushCount Branch::ambushes(int zid, uint32_t mask) const {
+    AmbushCount c;
+    for (const ObjectiveInfo& o : objectives) {
+        if (o.zone != zid || o.role != "ambush") continue;
+        ++c.total;
+        if (!done(mask, o.index)) ++c.left;
+    }
+    return c;
+}
+
+std::string Branch::ambushesLeftText(const AmbushCount& c) {
+    return "Embuscades restantes : " + std::to_string(c.left) + " sur " + std::to_string(c.total);
+}
+
 LockText Branch::lockText(const std::string& lock) const {
     if (auto it = lockTexts.find(lock); it != lockTexts.end()) return it->second;
     // The BRAS DROIT (its catalog has no texts): its two generators, the forearm's lever.
@@ -172,6 +208,9 @@ LockText Branch::lockText(const std::string& lock) const {
                 "allumer les deux générateurs (Veine, Avant-bras)"};
     if (lock == "shortcut")
         return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine – Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
+    if (lock.rfind("ambushes:", 0) == 0)  // 2.78: the catalogs say it too (lock_texts)
+        return {"toutes les vagues de toutes les embuscades de la zone doivent être vaincues", "Toutes les embuscades sont vaincues : l'antre s'ouvre",
+                "vaincre toutes les embuscades de la zone"};
     if (lock.rfind("link:", 0) == 0) {
         const EffectInfo* e = effect(lock.substr(5));
         return {"une autre branche du titan l'ouvre", e ? e->label : std::string(), "fermé : une autre branche du titan l'ouvre"};
@@ -233,6 +272,7 @@ const std::vector<const Branch*>& Branch::all() {
 
 const ZoneInfo* Branch::zone(int zid) const {
     if (zid == 0) return armoryLevel ? &armoryInfo : nullptr;  // 2.75: the armory
+    if (zid == kLairArmory) return lairArmoryLevel ? &lairArmoryInfo : nullptr;  // 2.78
     return zid >= 1 && zid <= static_cast<int>(zones.size()) ? &zones[static_cast<size_t>(zid - 1)] : nullptr; }
 
 const ObjectiveInfo* Branch::objective(const std::string& oid) const {
@@ -248,10 +288,12 @@ int Branch::objectiveIndex(const std::string& oid) const {
 
 const LevelData* Branch::level(int zid) const {
     if (zid == 0) return armoryLevel ? &*armoryLevel : nullptr;  // 2.75: the armory
+    if (zid == kLairArmory) return lairArmoryLevel ? &*lairArmoryLevel : nullptr;  // 2.78
     return zid >= 1 && zid <= static_cast<int>(levels.size()) ? &levels[static_cast<size_t>(zid - 1)] : nullptr; }
 
 const ZoneRules* Branch::zoneRules(int zid) const {
     if (zid == 0) return armoryLevel ? &armoryRules : nullptr;  // 2.75: the armory
+    if (zid == kLairArmory) return lairArmoryLevel ? &lairArmoryRules : nullptr;  // 2.78
     return zid >= 1 && zid <= static_cast<int>(rules.size()) ? &rules[static_cast<size_t>(zid - 1)] : nullptr; }
 
 int Branch::generators(uint32_t mask) const {
@@ -272,6 +314,10 @@ bool Branch::lockOpen(const std::string& lock, uint32_t mask) const {
     if (lock == "generators") return generators(mask) >= generatorsNeeded;
     if (lock == "shortcut") return shortcut(mask);
     if (lock.rfind("objective:", 0) == 0) return done(mask, objectiveIndex(lock.substr(10)));
+    if (lock.rfind("ambushes:", 0) == 0) {  // 2.78: every ambush of the zone beaten (all their waves)
+        const AmbushCount c = ambushes(std::atoi(lock.c_str() + 9), mask);
+        return c.total > 0 && c.left == 0;
+    }
     if (lock.rfind("link:", 0) == 0) {  // 2.68: opened from another branch of the titan
         const EffectInfo* e = effect(lock.substr(5));
         return e && e->kind == "open" && on(mask, *e);
@@ -333,7 +379,10 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
             if (p.is_array() && p.size() == 2) list.push_back({p[0].get<float>(), p[1].get<float>()});
     }
     for (const auto& p : raid.value("passages", Json::array()))
-        z.passages.push_back({jstr(p, "id"), jget<int>(p, "to", 0), rectOf(p.value("rect", Json())), jstr(p, "lock"), jstr(p, "door")});
+        z.passages.push_back({jstr(p, "id"), jget<int>(p, "to", 0), rectOf(p.value("rect", Json())), jstr(p, "lock"), jstr(p, "door"), jstr(p, "plate"),
+                              jget<int>(p, "via", -1)});
+    for (const auto& pt : raid.value("route", Json::array()))  // 2.78
+        if (pt.is_array() && pt.size() >= 2) z.route.push_back({pt[0].get<float>(), pt[1].get<float>()});
     for (const auto& o : raid.value("objectives", Json::array())) {
         ZoneObjective zo{jstr(o, "id"), jstr(o, "source"), jstr(o, "trigger"), -1};
         zo.index = b.objectiveIndex(zo.id);
