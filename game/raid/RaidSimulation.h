@@ -52,7 +52,7 @@ struct SimSetup {
     std::vector<std::string> given;
     int maxReinforcements = 8;
     /// 2.79: the test's two rescues (a simulated player put on its mechanism or further on its path); off for the
-    /// measures (docs/RAIDS.md §23: only their inputs).
+    /// measures (docs/RAIDS.md §24: only their inputs).
     bool rescues = true;
 };
 

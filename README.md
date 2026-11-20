@@ -640,7 +640,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   cacher d'un regard), points faibles frappés à nu, mécanismes résolus à plusieurs (évents, miroirs, chaînes,
   générateurs, côtes, artères, ancres ; les deux entraves de Titanus achevées ensemble) ; l'onde **visée** en huit
   directions depuis une place d'où elle atteint sa cible, hors du corps du boss ; bouclier, leurre et énergie au bon
-  moment ([docs/RAIDS.md §23](docs/RAIDS.md)).
+  moment ([docs/RAIDS.md §24](docs/RAIDS.md)).
 * **Rôles** répartis selon le nombre de joueurs : réanimateur, appât, coureurs, frappeurs ; redonnés quand quelqu'un
   tombe ; le groupe se regroupe aux plaques qui demandent plusieurs joueurs.
 * **Ce qu'ils pensent** : une bulle au-dessus de chacun (rôle → intention, et comment il se déplace), mesurée, jamais
@@ -648,8 +648,26 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   raid les écrit aussi.
 * **Ordres** (roue : **C**, clic du stick droit, souris) : Suivez-moi, Attendez ici, Tous sur l'objectif, Réanimez-le,
   Libres, Marquer un endroit ; ils passent par les entrées du test (rejoués à l'identique).
-* **Mesuré sans invincibilité** ni aide du test : chaque Gigaboss et le Cœur battus par 8 joueurs simulés Experts, et
-  « Simuler un raid complet » jusqu'à la chute du Cœur.
+* **Mesuré sans invincibilité** ni aide du test : contre chaque Gigaboss et le Cœur, 8 joueurs simulés Experts (temps,
+  morts, phase atteinte), et « Simuler un raid complet ». Aucun Gigaboss n'est encore battu sans aide : les passages
+  en hauteur et les coups qui s'enchaînent les arrêtent encore (chiffres et limites : [docs/RAIDS.md §24](docs/RAIDS.md)).
+* Correctif : le nom d'un joueur hors de la vue n'est plus poussé au bord de l'écran, où les noms s'empilaient sous les
+  panneaux du HUD (raids et coopération).
+
+**Nouveau dans la version 2.77.2** :
+* **Groupe éliminé : le jeu ne tremble plus.** Son monde ne fait plus de pas, mais il était dessiné avec l'interpolation
+  de l'affichage, qui change à chaque image : la caméra et tout ce qui avait bougé allaient et venaient entre leurs deux
+  derniers états. Il est maintenant dessiné tel qu'il est (aussi pendant le choix d'un pouvoir et, en coopération, à la fin
+  et pendant la pause sur un même PC) ([docs/RAIDS.md §23](docs/RAIDS.md#23-à-terre-ou-groupe-éliminé--deux-états-clairs-une-vue-qui-ne-tremble-plus-2772)).
+* **À terre, un état clair** : un bandeau en haut, « À TERRE — en attente de réanimation », ce qu'il faut (un allié maintient
+  Interagir 2 s près de votre âme), la jauge quand un allié vous relève (« Joueur 2 vous réanime… 60 % »), en coopération
+  les réanimations restantes de l'équipe, où est votre âme (flèche au bord de l'écran quand elle est hors de la vue) et un
+  léger filtre sur l'image.
+* **Raids, à terre : regarder les autres** : joueur précédent / suivant (Q / E, LB / RB), revenir sur mon âme (Entrée, A),
+  ou les boutons du bandeau à la souris ; la caméra commence sur l'âme et chaque changement de vue est un mouvement doux.
+* **Groupe éliminé, un autre bandeau** : « GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement », les mêmes
+  touches et la caméra libre (Entrée, A). Le menu du raid › « Groupe » explique les deux états. Bandeaux mesurés, sous le
+  HUD, les notifications sous eux.
 
 **Nouveau dans la version 2.77.1** :
 * **« Où frapper »** (statistiques des boss, fiches des Gigaboss d'Asterion, éditeur d'ennemis › Parties) : la **boîte

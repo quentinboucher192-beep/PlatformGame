@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §23): HEARTBREAKER, the rib cage of the torso (game/raid/HeartbreakerRoutine):
+// 2.79 (docs/RAIDS.md §24): HEARTBREAKER, the rib cage of the torso (game/raid/HeartbreakerRoutine):
 //
 // * « La cuirasse » (phase 1): its four armour plates (two high, shot from the flank towers or upward from the
 //   floor; two low) struck together, each brought low, then finished within the window after the first broken

@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §23): SKULLMAW, the skull that sees everything (game/raid/SkullmawRoutine). What its
+// 2.79 (docs/RAIDS.md §24): SKULLMAW, the skull that sees everything (game/raid/SkullmawRoutine). What its
 // routine shows a player, read the same way:
 //
 // * « Regards traqueurs »: a beam per player follows it, freezes (brighter), then fires along that line: the

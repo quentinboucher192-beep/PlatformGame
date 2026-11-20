@@ -9,7 +9,8 @@
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
-# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §23)
+# à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
+# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §24)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1415,7 +1416,71 @@ réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va 
 sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 
-## 23. Joueurs simulés : tactiques, rôles, pensées et ordres (2.79)
+## 23. À terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2)
+
+### Le tremblement du groupe éliminé (la cause)
+
+Un groupe éliminé ne joue plus : `RaidRun::step` laisse son monde **tel qu'il est tombé** (le relais donne encore ses pas,
+rien n'avance). Mais l'image était dessinée avec l'**alpha d'interpolation** de l'application (le reste de son accumulateur
+à 120 Hz, différent à chaque image) : la caméra (entre ses deux dernières positions, `prevPos` et `pos`) et chaque corps qui
+avait bougé à ce dernier pas (`prevBox`, `box`) **allaient et venaient à chaque image** entre leurs deux derniers états.
+Avec la caméra du monde (le raid complet en local, un joueur regardé), c'est tout l'écran qui tremblait, d'autant plus fort
+que la caméra courait encore vers l'âme du dernier joueur tombé ; avec la caméra libre, les ennemis et les plateformes.
+
+Correctif (affichage seulement) : un monde qui ne fait plus de pas est dessiné **tel qu'il est** (`downed::drawAlpha` :
+alpha 1 pour un groupe éliminé et pendant le choix d'un pouvoir, qui arrête tout le monde ; en coopération aussi à la fin,
+pendant la pause sur un même PC et quand une manette manque). La simulation ne change pas : empreintes identiques.
+
+### À terre, en attente de réanimation
+
+* Un bandeau en haut, au centre, **sous** le HUD (minimap, vie du Cœur) : « **À TERRE — en attente de réanimation** » (or),
+  puis « Un allié doit maintenir Interagir 2 s près de votre âme », la **jauge** quand un allié s'en occupe (« Joueur 2 vous
+  réanime… 60 % »), en coopération « Réanimations restantes de l'équipe : 1 sur 2 », et **où est l'âme** (dans la vue, ou
+  hors de la vue : une flèche à sa couleur la montre au bord de l'écran, comme celles des alliés à terre).
+* **Ce qu'on peut faire** : « Joueur précédent » (Q, LB), « Revenir sur mon âme » (Entrée, A), « Joueur suivant » (E, RB),
+  les vraies touches de l'appareil utilisé dessinées dans chaque bouton ; les boutons répondent aussi à la souris (sans
+  jamais prendre le focus). La caméra commence **sur l'âme** (`GameWorld::updateTeamCamera` : le joueur suivi à terre, c'est
+  son âme), passe d'un joueur en jeu à l'autre dans l'ordre des places, l'âme entre le dernier et le premier ; un joueur
+  regardé qui tombe à son tour ramène sur l'âme ; relevé, la vue revient sur le joueur. Dans l'arène d'un Gigaboss, sa
+  caméra suit de même l'âme ou le joueur regardé, jamais le corps.
+* Chaque changement de vue est un **mouvement doux** de 0,6 s (`downed::ViewBlend` : centre et zoom, accéléré puis ralenti),
+  jamais une coupure ni un aller-retour ; un nouveau monde (autre zone, autre groupe) coupe.
+* Un **léger filtre** sur l'image (vignette douce, couleurs un peu lavées) dit qu'on ne joue plus ; le HUD est dessiné
+  par-dessus, aussi lisible.
+* Rien de tout cela n'est simulé : la caméra ne fait pas partie de la simulation, et les entrées d'un joueur à terre ne
+  jouent pas.
+
+### Groupe éliminé : un autre état
+
+Bandeau rouge « **GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement** », la ligne de la caméra libre ou du
+joueur regardé, la règle (« Tout le groupe était à terre en même temps : plus de réanimation, la zone attend un groupe de
+renfort ») et les mêmes commandes : joueur précédent / suivant de la branche (Q / E, LB / RB), **Caméra libre** (Entrée,
+A ; flèches, stick, molette pour la déplacer).
+
+### Placement
+
+Les deux bandeaux sont mesurés (`downed::layout` : titre ajusté, lignes coupées sur deux lignes au plus, jauge, boutons, chaque
+partie après la précédente) et placés au centre, sous tout bloc du HUD qu'ils couvriraient (`downed::place`). Les
+**notifications** passent sous le bandeau (`downed::below`), jamais sur un bloc du HUD : sans place, elles attendent leur
+tour. Pas de bandeau sur la pause, le menu du raid, la grande carte, le titre de l'arène ni un grand message du niveau. Le
+**menu du raid › « Groupe »** explique les deux états et leurs touches (celui du joueur en couleur).
+
+### Tests (`tests/test_downed_view.cpp`)
+
+Groupe éliminé : la vue tremblait avec l'alpha de l'application (mesuré), elle ne bouge plus sur 240 images de spectateur
+sans entrée (position et zoom), la caméra libre non plus ; à terre : la caméra se pose sur l'âme et n'en bouge plus, le
+passage à un autre joueur puis le retour sur l'âme se font sans saut ni retour en arrière (zoom compris) ; coopération : la
+caméra de l'équipe reste immobile autour d'un joueur à terre, et pendant une pause ; bandeaux : « À TERRE » pendant
+l'attente (jauge pendant la réanimation), plus rien une fois relevé, « GROUPE ÉLIMINÉ » distinct ; mise en page en
+1280 × 720 et 1920 × 1080, en français et en anglais : chaque partie dans le panneau, à la suite, rien sur le HUD, les
+notifications sous le bandeau.
+
+### Versions
+
+Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes
+de référence ne changent pas.
+
+## 24. Joueurs simulés : tactiques, rôles, pensées et ordres (2.79)
 
 « Les IA sont très mauvaises […] : je veux jouer avec des GOAT. » La 2.79 donne aux joueurs simulés des tests (§22) une
 tactique contre chaque Gigaboss, des rôles dans le groupe, l'usage de leurs pouvoirs, ce qu'ils pensent à l'écran, et
@@ -1486,7 +1551,7 @@ faible à nu ; l'appât et les coureurs : le triple saut).
 ### Ce qu'ils pensent
 
 Au-dessus de chaque joueur simulé, une bulle : **son rôle → son intention** (« Réanimateur → réanime Joueur simulé 3 »,
-« Frappeur → frappe le point faible (× 2) », « Coureur → tient Miroir », « Appât → attire Titanus loin des plaques »,
+« Frappeur → frappe le point faible (× 2) », « Coureur → tient le miroir », « Appât → attire Titanus loin des plaques »,
 ou ce qu'il fait à cet instant : « saute l'onde », « sort de la ligne du rayon », « se cache derrière une colonne »…),
 et dessous **comment il se déplace** (l'intention de la navigation : « saute puis double saut vers le haut »…). Une
 bulle dont l'intention est un ordre est bordée d'or.
@@ -1521,11 +1586,62 @@ un coup inévitable : 35 % / 70 % / toujours ; se cacher d'un regard : Confirmé
 
 ### Mesures (`tests/test_raid_goat.cpp`, sans invincibilité ni sauvetage)
 
-@@MESURES@@
+Chaque Gigaboss dans son antre, depuis sa phase 1, contre **8 joueurs simulés Experts** (la place de
+l'administrateur jouée aussi par l'IA), sans invincibilité ni sauvetage, 15 minutes de jeu au plus ; un test par
+Gigaboss (`raid GOAT (2.79): …`), qui écrit sa mesure. Le jeu est déterministe : la même mesure à chaque lancement.
+
+| Gigaboss | Résultat | Temps de jeu | Morts | Phase atteinte | Vie restante |
+|---|---|---|---|---|---|
+| Pyroclast | groupe éliminé | 661 s | 78 | 2 sur 3 | 66 % |
+| Skullmaw | debout à la limite | 900 s | 2 | 1 sur 3 | 100 % |
+| Dreadfang | debout à la limite | 900 s | 0 | 2 sur 3 | 66 % |
+| Titanus | groupe éliminé | 213 s | 31 | 2 sur 3 | 66 % |
+| Voidworm | debout à la limite | 900 s | 8 | 2 sur 3 | 66 % |
+| Graviton | groupe éliminé | 199 s | 10 | 1 sur 3 | 87 % |
+| Heartbreaker | debout à la limite | 900 s | 94 | 2 sur 3 | 66 % |
+| Cœur d'Asterion (les sept parties tombées) | groupe éliminé | 578 s | 30 | 1 sur 4 | 80 % |
+
+**Aucun Gigaboss n'est battu** par les joueurs simulés sans aide dans la limite : c'est dit tel quel (le test
+l'écrit, « trop dur pour l'instant », et la liste `kBeaten` des Gigaboss battus, vide, deviendra une garantie dès
+qu'un combat sera gagné).
+
+* **Le niveau** (Heartbreaker, 8 joueurs simulés) : Débutant éliminé en 329 s (30 morts, phase 1, 96 % de vie) ;
+  Confirmé debout à 900 s (123 morts, phase 2, 66 %) ; Expert debout à 900 s (94 morts, phase 2, 66 %).
+* **« Simuler un raid complet » sans aucune invincibilité** (7 groupes de 7 joueurs simulés Experts, depuis les
+  antres, sans sauvetage) : pas fini en une heure de jeu — aucun Gigaboss ne tombe, 15 groupes engagés (renforts
+  compris), 992 morts ; les groupes éliminés sont relayés par des renforts, comme dans un vrai raid.
+* Les ordres (rejoués à l'identique), les rôles (redonnés quand le réanimateur tombe) et les bulles (8 sur 8 placées
+  en 1280 × 720, 1920 × 1080 et 800 × 600, sans chevauchement) ont leurs tests dans le même fichier.
 
 ### Ce qui reste
 
-@@RESTE@@
+Ce qui arrête encore les joueurs simulés, lu dans les traces (`COSMIC_GOAT_TRACE=1` : l'état toutes les 20 s et
+les coups reçus ; `=2` : chaque joueur, sa pensée, sa place) :
+
+* **La navigation** (le graphe de `RaidNav`, `NavGraph::kMaxUp`, l'affaire du chantier de la navigation,
+  `game/raid/nav/`) : il ne monte que de 88 px d'un saut, alors que les plates-formes des antres sont à 96 px l'une de
+  l'autre (le saut et le double saut d'un joueur montent à 102 px). Les joueurs simulés restent au sol. Skullmaw : ses
+  colonnes (48 × 192 px) ne se passent que par ces plates-formes ; les huit restent contre la première et ne le
+  touchent jamais (100 % de vie à 15 minutes). Dreadfang et Voidworm volent haut : aucune place du graphe n'atteint leur
+  cible (« place -1 » dans la trace), ils ne sont touchés que quand ils descendent, la phase 1 dure 12 à 14 minutes.
+* **La carapace de la phase 2** : les places à tenir ensemble (évents, chaînes, crochets, côtes, entraves) sont
+  occupées (« 3 sur les plaques »), mais les coups de zone font tomber ceux qui les tiennent — Pyroclast : 91 coups des
+  pièges de son arène, 73 de sa pluie de magma, 44 de ses poings ; Titanus : 44 écrasements, 32 chutes de rochers ;
+  Voidworm : 28 sucs du ventre, 24 pluies d'acide. Sans les sauvetages du test, les morts s'accumulent jusqu'à
+  l'élimination (Pyroclast, Titanus) ou la limite (Voidworm, Heartbreaker) : à 66 % de vie, aucune carapace n'est brisée.
+* **La survie en phase 1** : Graviton (éliminé en 199 s : 21 coups de sa couronne de débris, 16 de ses chutes de
+  débris, 14 de sa spirale du vide) et le Cœur (65 coups de sa couronne solaire, 21 de sa spirale d'étoiles, que les
+  tactiques ne lisent pas encore assez tôt).
+
+Les tactiques disent déjà, à chaque pas, ce qui arrive, quoi tenir et d'où frapper ; quand la navigation saura monter
+les marches de 96 px et suivre une place en hauteur (l'intention de mouvement du chantier de la navigation, déjà
+affichée dans les bulles), elles s'en serviront telles quelles. Les mesures ci-dessus sont à refaire à ce moment.
+
+### Versions
+
+Rien ne change pour les vrais joueurs : les joueurs simulés n'existent que dans les tests (l'ordre ne voyage que sur la
+trame d'un administrateur de test). `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les
+empreintes de référence (solo, coopération, raid sans joueurs simulés) ne changent pas.
 
 ---
 

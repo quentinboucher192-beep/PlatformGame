@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §23): GRAVITON, the left leg (game/raid/GravitonRoutine, read through its marks):
+// 2.79 (docs/RAIDS.md §24): GRAVITON, the left leg (game/raid/GravitonRoutine, read through its marks):
 //
 // * its sectors: announced (« INVERSION »), then gravity turns over (« GRAVITÉ INVERSÉE ») and whoever is in one
 //   falls toward the vault, whose field hurts — unless a slab is over them (a solid ceiling below the vault:

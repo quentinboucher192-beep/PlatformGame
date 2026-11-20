@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.79 (docs/RAIDS.md §23): what a raid test shows of its simulated players and how its administrator talks to
+// 2.79 (docs/RAIDS.md §24): what a raid test shows of its simulated players and how its administrator talks to
 // them. Display and this computer's inputs only: the orders reach the simulated players through the
 // administrator's frame (raid::bots::withOrder, raid::TestSession), never from here.
 //

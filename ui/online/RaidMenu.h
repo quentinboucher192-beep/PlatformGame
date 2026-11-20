@@ -164,6 +164,7 @@ struct MenuData {
     const std::vector<Notice>* journal = nullptr;
     std::string groupTitle, groupFooter;
     std::vector<Member> group;
+    std::vector<raidhud::Line> groupStates;  // 2.77.2: « À TERRE » and « GROUPE ÉLIMINÉ » (mark: the state's name), explained
     std::vector<raidhud::Line> titan;  // its gigaboss, its parts, its links
     bool results = false;              // « Résultats du raid »: a gigaboss fell (never in a test)
 };

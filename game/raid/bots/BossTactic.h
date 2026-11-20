@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.79 (docs/RAIDS.md §23): a tactic per Gigaboss for the simulated players of a raid test. Each one reads
+// 2.79 (docs/RAIDS.md §24): a tactic per Gigaboss for the simulated players of a raid test. Each one reads
 // its boss's real routine (game/raid/*Routine*, the rules of raid::Gigaboss) as a player reads the screen —
 // the marks over the arena, the vents, the enemies of its mechanism, its weak points, its blows announced —
 // and tells the group, at each step:

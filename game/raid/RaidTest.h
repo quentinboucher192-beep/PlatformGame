@@ -85,12 +85,12 @@ public:
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
 
-    // 2.79 (docs/RAIDS.md §23).
+    // 2.79 (docs/RAIDS.md §24).
     /// The administrator's seat played by the AI from the start (a test of 8 simulated players).
     void setAdminBot(bool on) { adminBot_ = on; }
     bool adminBot() const { return adminBot_; }
     /// The two rescues of a test (a simulated player put on its mechanism or further on its path); off: the
-    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §23).
+    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §24).
     void setRescues(bool on) { rescuesOn_ = on; }
     bool rescuesOn() const { return rescuesOn_; }
     /// The last order the administrator gave (from their frame: bots::withOrder), its step.

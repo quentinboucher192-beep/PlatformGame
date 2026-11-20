@@ -83,6 +83,7 @@
 #include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/Glyphs.h"
+#include "ui/screens/DownedView.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/RaidSpectator.h"
@@ -489,6 +490,7 @@ public:
         GameWorld& w = run_->world();
         serial_ = run_->zoneSerial();
         arenaCam_.reset();  // 2.68: the arena's intro plays again in a new world
+        blend_.stop();      // 2.77.2: a new world: no move from the last one
         minimap_.invalidate();  // 2.72: its terrain baked again
         metEnemies_.reset();    // 2.72: nobody met yet in this world (the off-screen arrows)
         mapPan_ = 0.0f;
@@ -686,6 +688,7 @@ public:
         hud_.setTeam(info);
         updateArenaCamera(w, dt);
         if (!sim_) updateSpectator(w, dt);  // 2.75 (the full raid's simulation has its own: updateSim)
+        updateDowned(w);                    // 2.77.2: this player down: their soul, the others, the banner's keys
         // 2.75: a power tablet of the armory with every slot taken: which power to leave (the world goes on).
         if (const auto& offer = w.powerOffer(); offer && offer->player == local_ && pendingChoice_ == 0 && !paused_ && !ended_ &&
                                                 g_.app.topScene() == this && !(test_ && !scripts_.empty() && scripts_[0].active()))
@@ -772,16 +775,23 @@ public:
             GameWorld& w = run_->world();
             // 2.68: in a gigaboss's arena, its own camera (display only): the whole arena first, then a
             // view sized for this player; elsewhere the world's camera.
+            // 2.77.2: a world that no longer steps (the group wiped, everyone waiting for a power's choice) is
+            // drawn as it is: with the app's alpha, which changes at every frame, its camera and every body
+            // that moved at its last step swung between their last two states (« le jeu tremble »).
+            const float shown = downed::drawAlpha(!run_->wiped() && !w.powerOffer(), alpha);
             WorldView view = spec_.on && spec_.free  ? spec_.view(r.width(), r.height())  // 2.75: the spectator's free camera
                              : arenaCam_.active() ? arenaCam_.view(r.width(), r.height())
-                                                  : w.camera().view(r.width(), r.height(), alpha);
+                                                  : w.camera().view(r.width(), r.height(), shown);
+            view = blend_.apply(view, g_.app.frameTime() / 1000.0f);  // 2.77.2: another player watched: eased, never a cut
             view_ = view;
             RenderOptions opt;
             opt.lighting = g_.settings.graphics.dynamicLighting;
             opt.debug = g_.app.debugOverlay;
-            renderer_.render(r, g_.app.resources(), w, view, alpha, opt);
+            renderer_.render(r, g_.app.resources(), w, view, shown, opt);
             drawGigabossWorld(w, view);  // 2.68: its vents, its carapace (over the arena, under the HUD)
             drawSwitches(w, view);      // 2.68: the group's plates
+            // 2.77.2: down or spectating: a light filter over the world (the HUD stays as readable).
+            if (downed::stateOf(w, local_, spec_.on && !sim_) != downed::State::None) downed::drawFilter(r, ui.screenW(), ui.screenH());
             {
                 // The vitals, powers and gigaboss bar of this computer's player, at the raid layout's
                 // places (2.72, Paramètres › HUD › « Raids »; display only).
@@ -804,7 +814,7 @@ public:
             if (bigMap_ && !paused_ && !ended_) drawBigMap(w);
             drawArenaIntro();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
-            if (spec_.on && !sim_ && !paused_ && !ended_ && !bigMap_ && !overlay_.menu.isOpen()) drawSpectator();  // 2.75
+            if (bannerLayout_.panel.w > 0.0f) drawBanner();  // 2.75: the group wiped; 2.77.2: this player down (placed by drawRaidHud)
             if (overlay_.menu.isOpen() && !paused_ && !ended_) drawMenu(w);  // 2.75.5: opened by the player
             if (wheel_.open && !paused_ && !ended_) botsui::drawWheel(ui, wheel_, g_.settings.gameplay.raidHud.thoughts, view, wheelKeys());  // 2.79
             if (sim_ && local_ < 0 && !paused_ && !bigMap_ && simPanel_ < 0 && !overlay_.menu.isOpen()) drawSimWatch();  // 2.77
@@ -938,6 +948,7 @@ public:
         for (int k = 1; k <= n; ++k) {
             const int s = ((watchSeat_ < 0 ? 0 : watchSeat_) + dir * k + n * 4) % n;
             if (w.member(s).presence == GameWorld::Presence::Vacant) continue;
+            if (s != watchSeat_) blend_.start(view_);  // 2.77.2: eased
             watchSeat_ = s;
             run_->setCameraFollow(s);
             renderer_.setOpaquePlayers(1u << s);
@@ -1258,7 +1269,16 @@ public:
         if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || g_.app.topScene() != this) return;  // 2.75.5: its keys are the menu's
         if (in.menuPressed(Action::MenuTabNext)) watchStep(+1);
         if (in.menuPressed(Action::MenuTabPrev)) watchStep(-1);
+        if (in.menuPressed(Action::MenuConfirm) && !spec_.free) freeCamera();  // 2.77.2: Entrée, A (the banner says it)
         if (spec_.free) spec_.move(in, dt, w.level().bounds);
+    }
+
+    /// 2.77.2: the free camera again, from where the view is (eased).
+    void freeCamera() {
+        blend_.start(view_);
+        spec_.index = -1;
+        spec_.free = true;
+        if (run_) spec_.center = run_->world().camera().center();
     }
 
     /// The players still playing in the branch (the server's list, refreshed every 10 s).
@@ -1287,6 +1307,7 @@ public:
     /// The next (+1) or previous (−1) view: the free camera, or a player of the branch (another group:
     /// its game watched through a spectator's socket, its history replayed first).
     void watchStep(int dir) {
+        blend_.start(view_);  // 2.77.2: eased (another group's world, new, cuts: zoneReady)
         const int k = spec_.step(dir);
         if (k < 0) return;  // the free camera over the world shown
         const raidspec::Target t = spec_.targets[static_cast<size_t>(k)];
@@ -1310,41 +1331,120 @@ public:
         connect();
     }
 
-    void drawSpectator() {
-        UIContext& ui = g_.ui;
-        const float W = ui.screenW();
-        const float bw = std::min(ui.s(640), W - ui.s(24)), x = (W - bw) * 0.5f, y = ui.s(64), pad = ui.s(14);
-        const Rect box{x, y, bw, ui.s(132)};
-        ui.panel(box, true, 12);
-        const bool wiped = run_ && run_->wiped();
-        fit(ui, wiped ? "GROUPE ÉLIMINÉ — mode spectateur" : "MODE SPECTATEUR", {box.center().x, y + ui.s(22)}, 20, bw - pad * 2, kDanger, FontFace::Bold,
-            Align::Center);
-        std::string sub;
+    /// The spectator's line of the banner: the free camera, or the player of the branch watched.
+    std::string spectatorLine() const {
         if (spec_.free || spec_.index < 0 || spec_.index >= static_cast<int>(spec_.targets.size()))
-            sub = spec_.targets.empty() ? "Caméra libre (flèches, stick, molette) · plus personne ne joue dans la branche"
-                                        : "Caméra libre (flèches, stick, molette) · " + std::to_string(spec_.targets.size()) + " joueurs à suivre";
-        else {
-            const raidspec::Target& t = spec_.targets[static_cast<size_t>(spec_.index)];
-            sub = "Vous regardez " + t.name + " · [" + t.clan + "]·" + std::to_string(t.group) + " · zone " + std::to_string(t.zone);
+            return spec_.targets.empty() ? "Caméra libre (flèches, stick, molette) · plus personne ne joue dans la branche"
+                                         : "Caméra libre (flèches, stick, molette) · " + std::to_string(spec_.targets.size()) + " joueurs à suivre";
+        const raidspec::Target& t = spec_.targets[static_cast<size_t>(spec_.index)];
+        return "Vous regardez " + t.name + " · [" + t.clan + "]·" + std::to_string(t.group) + " · zone " + std::to_string(t.zone);
+    }
+
+    // ------------------------------------------------------------------ 2.77.2: this player down
+
+    /// This player down, waiting for a revival: the camera on their soul first; the previous / next player
+    /// in play (Q / E, LB / RB), back to the soul (Entrée, A), or the banner's buttons. Display only: the
+    /// camera is not part of the simulation, and nothing a player down sends plays.
+    void updateDowned(GameWorld& w) {
+        const bool down = downed::stateOf(w, local_, spec_.on && !sim_) == downed::State::Down;
+        if (down != wasDown_) {
+            wasDown_ = down;
+            // Revived while watching another player: their own view again (the group wiped: the spectator's; the
+            // full raid's simulation, the seat left: the group's watched seat, bindView).
+            if (downWatch_ >= 0 && local_ >= 0 && !spec_.on) watchSeatDown(-1);
+            downWatch_ = -1;
         }
-        fit(ui, sub, {box.center().x, y + ui.s(50)}, 14, bw - pad * 2, kText, FontFace::Body, Align::Center);
-        const float gap = ui.s(8), bh = ui.s(40), by = box.bottom() - pad - bh;
-        const float each = (bw - pad * 2 - gap * 2) / 3.0f;
-        const char* labels[3] = {"◀ Précédent", "Caméra libre", "Suivant ▶"};
-        for (int k = 0; k < 3; ++k) {
-            UIContext::ButtonStyle bs;
-            bs.small = true;
-            bs.enabled = k == 1 ? !spec_.free : !spec_.targets.empty();
-            bs.fontSize = std::max(ui.fitFont(labels[k], FontFace::Bold, 15, each - ui.s(16), 0.7f), 11.0f / ui.s(1.0f));
-            const Rect br{x + pad + static_cast<float>(k) * (each + gap), by, each, bh};
-            if (!ui.button(std::string("spec") + std::to_string(k), br, labels[k], bs)) continue;
+        if (!down) return;
+        // The player watched left the game (down too, away): back to the soul.
+        if (downWatch_ >= 0 && (downWatch_ >= w.teamSize() || w.member(downWatch_).presence != GameWorld::Presence::Playing)) watchSeatDown(-1);
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || simPanel_ >= 0 || wheel_.open || g_.app.topScene() != this) return;  // their keys (2.79: not the order wheel's)
+        InputManager& in = g_.app.input();
+        if (in.menuPressed(Action::MenuTabNext)) watchDown(+1);
+        if (in.menuPressed(Action::MenuTabPrev)) watchDown(-1);
+        if (in.menuPressed(Action::MenuConfirm)) watchDown(0);
+    }
+
+    /// The next (+1) or previous (−1) player in play, in the seats' order, the soul between the last and
+    /// the first (it wraps); 0: back to the soul.
+    void watchDown(int dir) {
+        GameWorld& w = run_->world();
+        int next = -1;
+        const int n = w.teamSize();
+        if (dir != 0 && n > 0)
+            for (int k = 1; k <= n; ++k) {
+                const int s = (((downWatch_ >= 0 ? downWatch_ : local_) + dir * k) % n + n) % n;
+                if (s == local_) break;  // round the group: the soul
+                if (w.member(s).presence == GameWorld::Presence::Playing) {
+                    next = s;
+                    break;
+                }
+            }
+        watchSeatDown(next);
+    }
+
+    void watchSeatDown(int seat) {
+        if (seat == downWatch_) return;
+        blend_.start(view_);
+        downWatch_ = seat;
+        const int follow = seat >= 0 ? seat : local_;
+        run_->setCameraFollow(follow);
+        renderer_.setOpaquePlayers(follow >= 0 && follow < 32 ? 1u << follow : 0u);
+    }
+
+    /// What this player down is told, from the simulation's state.
+    downed::Banner downBanner(GameWorld& w) {
+        const GameWorld::TeamMember& m = w.member(local_);
+        downed::DownInfo d;
+        d.revive = m.revive;
+        if (m.revive > 0.0f && m.reviver >= 0 && m.reviver < w.teamSize()) d.reviver = seatName(m.reviver);
+        d.others = false;
+        for (int i = 0; i < w.teamSize(); ++i) d.others = d.others || (i != local_ && w.member(i).presence == GameWorld::Presence::Playing);
+        d.canRevive = w.canRevive() && d.others;  // a raid: as many as wanted, while an ally is in play
+        d.revivesLeft = w.revivesUnlimited() ? -1 : w.revivesLeft();
+        d.revivesMax = GameWorld::kTeamRevives;
+        d.soulInView = view_.toScreen(Rect{m.soul.x - 8.0f, m.soul.y - 28.0f, 16.0f, 28.0f}).intersects({0.0f, 0.0f, g_.ui.screenW(), g_.ui.screenH()});
+        if (downWatch_ >= 0) d.watching = seatName(downWatch_);
+        return downed::downBanner(d);
+    }
+
+    /// The banner of this player down, or of the group wiped: its text from the simulation's state, its
+    /// place under the HUD at the top of the screen (the notifications go under it). Not over the pause,
+    /// the menu, the large map, the arena's title nor a big message of the level (it waits).
+    void placeBanner(GameWorld& w) {
+        bannerLayout_ = {};
+        banner_ = {};
+        bool bigMessage = false;
+        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || arenaCam_.intro() || simPanel_ >= 0) return;
+        const downed::State st = downed::stateOf(w, local_, spec_.on && !sim_);
+        if (st == downed::State::None) return;
+        banner_ = st == downed::State::Wiped ? downed::wipedBanner(spectatorLine(), spec_.free, !spec_.targets.empty()) : downBanner(w);
+        bannerLayout_ = downed::placed(g_.ui, banner_, hudTaken());
+        hudRects_.push_back(bannerLayout_.panel);  // the arrows and the armory's names keep off it
+    }
+
+    /// The HUD drawn so far, the heart's bar and briefing (drawn after the notifications) and the danger
+    /// band's place: what the banner and the notifications under it keep off.
+    std::vector<Rect> hudTaken() {
+        std::vector<Rect> taken = hudRects_;
+        const RaidHudLayout& l = g_.settings.gameplay.raidHud;
+        if (run_->heartRoutine())
+            for (const RaidHudElement e : {RaidHudElement::Heart, RaidHudElement::HeartEffects})
+                if (l[e].visible || !RaidHudLayout::canHide(e)) taken.push_back(raidhud::area(g_.ui, l, e, hudAreas_));
+        taken.push_back(raidhud::area(g_.ui, l, RaidHudElement::Danger, hudAreas_));
+        return taken;
+    }
+
+    /// Draws the banner placed this frame; its buttons answer the mouse (their keys: updateSpectator, updateDowned).
+    void drawBanner() {
+        const int k = downed::draw(g_.ui, banner_, bannerLayout_, "banner");
+        if (k < 0) return;
+        if (banner_.state == downed::State::Wiped) {
             if (k == 0) watchStep(-1);
             else if (k == 2) watchStep(+1);
-            else {
-                spec_.index = -1;
-                spec_.free = true;
-                if (run_) spec_.center = run_->world().camera().center();
-            }
+            else freeCamera();
+        } else {
+            watchDown(k == 0 ? -1 : k == 2 ? +1 : 0);
         }
     }
 
@@ -1485,6 +1585,7 @@ public:
             }
         // 2.74 (phase 6): the Cœur d'Asterion: its shared health in its arena, what the branches did to
         // it at its door (before it wakes, the first seconds of the zone).
+        placeBanner(w);     // 2.77.2: this player down / the group wiped (the notifications under it)
         drawNoticesHud(w);  // 2.75.5
         if (const raid::AsterionHeartRoutine* hr = run_->heartRoutine()) {
             if (shown(E::Heart)) {
@@ -1505,6 +1606,19 @@ public:
         const auto& keys = in.bindings().keys[static_cast<int>(a)];
         const SDL_Scancode k = keys[0] != SDL_SCANCODE_UNKNOWN ? keys[0] : keys[1];
         return k != SDL_SCANCODE_UNKNOWN ? keyName(k) : std::string();
+    }
+
+    /// 2.77.2: « Q (LB) »: the key of an action on the keyboard, then its button on the gamepad (the
+    /// style of the pad last seen).
+    std::string keyNames(Action a) const {
+        const InputManager& in = g_.app.input();
+        const int i = static_cast<int>(a);
+        const auto& keys = in.bindings().keys[i];
+        const SDL_Scancode k = keys[0] != SDL_SCANCODE_UNKNOWN ? keys[0] : keys[1];
+        const auto& pads = in.bindings().pad[i];
+        const PadBinding& pb = pads[0].kind != PadBinding::Kind::None ? pads[0] : pads[1];
+        const std::string key = keyName(k);
+        return pb.kind == PadBinding::Kind::None ? key : key + " (" + padBindingName(pb, in.gamepadStyle()) + ")";
     }
 
     /// 2.72: the group panel's data (8 rows).
@@ -1806,10 +1920,13 @@ public:
         const raid::ArenaInfo& arena = run_->rules().arena;
         raid::ArenaCamera::Frame f;
         if (arena.present && arena.rect.w > 0.0f && local_ >= 0 && local_ < w.teamSize()) {
-            const Player& me = w.playerAt(local_);
+            // 2.77.2: this player down: what they watch (their soul, or the player chosen), never their body.
+            const bool down = w.member(local_).presence == GameWorld::Presence::Down;
+            const int focus = down && downWatch_ >= 0 && downWatch_ < w.teamSize() ? downWatch_ : local_;
+            const Player& me = w.playerAt(focus);
             f.arena = arena.rect;
             f.level = w.level().bounds;
-            f.me = me.center();
+            f.me = down && focus == local_ ? w.member(local_).soul + Vec2{0.0f, -14.0f} : me.center();
             f.meInArena = w.member(local_).presence != GameWorld::Presence::Vacant && f.arena.contains(f.me) &&
                           !(gb.present() && gb.stage() == raid::Gigaboss::Stage::Absent);
             if (const Enemy* b = gb.boss(w); b && b->alive()) f.boss = b->box;
@@ -1818,7 +1935,7 @@ public:
             for (int k = 0; k < static_cast<int>(gb.vents().size()); ++k)
                 if (gb.jetWarning(k) || gb.jetting(k)) f.threats.push_back(gb.vents()[static_cast<size_t>(k)].area.center());
             for (int i = 0; i < w.teamSize(); ++i)
-                if (i != local_ && w.member(i).presence == GameWorld::Presence::Playing) f.allies.push_back(w.playerAt(i).center());
+                if (i != focus && w.member(i).presence == GameWorld::Presence::Playing) f.allies.push_back(w.playerAt(i).center());
         }
         arenaCam_.update(f, dt, g_.app.renderer().width(), g_.app.renderer().height());  // 2.70: also before any UI frame
     }
@@ -1932,8 +2049,8 @@ public:
         draw(bossT, *tex, kGold);
         // The allies, each in their colour; 2.77: the soul of an ally down, where to revive them (pulsing).
         for (int i = 0; i < w.teamSize(); ++i) {
-            if (i == local_) continue;
             const GameWorld::TeamMember& m = w.member(i);
+            if (i == local_ && m.presence != GameWorld::Presence::Down) continue;  // 2.77.2: this player down: their own soul too
             if (m.presence == GameWorld::Presence::Down) {
                 const Rect soul{m.soul.x - 8.0f, m.soul.y - 28.0f, 16.0f, 28.0f};
                 if (!off(soul)) continue;
@@ -2130,7 +2247,9 @@ public:
         for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
         if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || g_.app.topScene() != this) return;
         const RaidHudLayout& l = g_.settings.gameplay.raidHud;
-        const Rect r = raidhud::area(ui, l, RaidHudElement::Notices, hudAreas_);
+        Rect r = raidhud::area(ui, l, RaidHudElement::Notices, hudAreas_);
+        // 2.77.2: under the banner of this player down / of the group wiped when they meet, never over it.
+        if (!bannerLayout_.panel.empty()) r = downed::below(r, bannerLayout_.panel, ui.s(10), hudTaken());
         std::vector<const raidmenu::Notice*> list;
         std::vector<float> alpha;
         if (!arenaCam_.intro())  // the arena's title over the middle: they wait
@@ -2200,6 +2319,22 @@ public:
         const raidhud::Group g = groupData(w);
         d.groupTitle = "GROUPE · " + g.title;
         d.groupFooter = g.footer;
+        {
+            // 2.77.2: the two states of a player who no longer plays, and their keys (this player's own state lit).
+            const downed::State st = downed::stateOf(w, local_, run_->wiped());
+            const std::string look = keyNames(Action::MenuTabPrev) + " / " + keyNames(Action::MenuTabNext);
+            const std::string back = keyNames(Action::MenuConfirm);
+            d.groupStates.push_back({"À TERRE — en attente de réanimation",
+                                     "Votre âme attend sur le dernier endroit sûr : un allié en jeu maintient Interagir 2 s près d'elle pour vous relever, "
+                                     "autant de fois qu'il le faut. En attendant, " +
+                                         look + " : regarder le joueur précédent / suivant ; " + back + " : revenir sur votre âme.",
+                                     st == downed::State::Down ? kGold : kDim});
+            d.groupStates.push_back({"GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement",
+                                     "Tout le groupe à terre en même temps : la zone n'est pas validée et attend un groupe de renfort, vous regardez "
+                                     "jusqu'à la fin de l'événement. " +
+                                         look + " : joueur précédent / suivant de la branche ; " + back + " : caméra libre (flèches, stick, molette).",
+                                     st == downed::State::Wiped ? kDanger : kDim});
+        }
         for (int i = 0; i < w.teamSize() && i < static_cast<int>(g.rows.size()); ++i) {
             const raidhud::GroupRow& row = g.rows[static_cast<size_t>(i)];
             raidmenu::Member m;
@@ -2552,6 +2687,11 @@ public:
     const raid::Branch* branch_ = nullptr;
     std::unique_ptr<NetCoopLink> link_;
     raidspec::Spectator spec_;   // 2.75: the spectator mode (a group wiped)
+    downed::Banner banner_;          // 2.77.2: the banner of this player down / of the group wiped, this frame
+    downed::Layout bannerLayout_;    // its places (an empty panel: not shown)
+    downed::ViewBlend blend_;        // 2.77.2: a change of view (the player watched, the soul, the free camera), eased
+    int downWatch_ = -1;             // 2.77.2: this player down: the seat watched (-1: their soul)
+    bool wasDown_ = false;
     std::string ownInstance_;    // 2.75: the instance of this player's group (its spectators' list)
     int watchSeat_ = -1;         // 2.75: the seat watched in the instance shown (-1: none)
     float spectatorWait_ = 0.0f; // 2.75: a spectator waiting for a game to watch

@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §23): « je veux jouer avec des GOAT ». The simulated players' tactics against each
+// 2.79 (docs/RAIDS.md §24): « je veux jouer avec des GOAT ». The simulated players' tactics against each
 // Gigaboss measured WITHOUT any invincibility and without the test's rescues (only their inputs, the same
 // physics): 8 simulated players (Expert) in each lair, from its first phase, must win within a limit of
 // time; the time and the deaths of each fight are printed. The full raid simulated without invincibility to
@@ -111,6 +111,7 @@ struct Fight {
     int deaths = 0;
     int phase = 0;
     int rescues = 0;
+    float hp = 1.0f;  // the health it has left at the end (0 once fallen)
     double ms = 0.0;
 };
 
@@ -215,17 +216,19 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     out.seconds = steps / static_cast<double>(kSimHz);
     out.deaths = session.botDeaths();
     out.phase = gb.phaseReached();
+    const Enemy* left = gb.boss(session.run().world());
+    out.hp = out.won || !left ? 0.0f : left->hpRatio();
     out.rescues = session.rescues();
     CHECK(session.run().takeReports().empty());
     return out;
 }
 
 void print(const Fight& f) {
-    std::printf("  %-16s %s en %6.0f s de jeu · %2d morts · phase %d · %d sauvetages · %.0f ms\n", f.boss.c_str(),
-                f.won ? "VAINCU " : f.wiped ? "ÉLIMINÉ" : "DEBOUT ", f.seconds, f.deaths, f.phase, f.rescues, f.ms);
+    std::printf("  %-16s %s en %6.0f s de jeu · %2d morts · phase %d · vie restante %3.0f %% · %d sauvetages · %.0f ms\n", f.boss.c_str(),
+                f.won ? "VAINCU " : f.wiped ? "ÉLIMINÉ" : "DEBOUT ", f.seconds, f.deaths, f.phase, f.hp * 100.0f, f.rescues, f.ms);
 }
 
-/// The Gigaboss 8 simulated Experts beat as measured (docs/RAIDS.md §23); they must keep doing it.
+/// The Gigaboss 8 simulated Experts beat as measured (docs/RAIDS.md §24); they must keep doing it.
 const std::vector<std::string> kBeaten = {};
 /// The full raid without invincibility (from the lairs), as measured: the Gigaboss fallen, the Cœur's fall.
 constexpr int kRaidGigabossDown = 0;
@@ -241,8 +244,8 @@ void goat(const std::string& part) {
     const Fight f = fightAt(s, part, raid::BotSkill::Expert, 900);
     print(f);
     CHECK(f.rescues == 0);
-    // What they beat as measured (docs/RAIDS.md §23) must keep winning in time; the others are said too hard for now,
-    // honestly, with their measure (what still blocks them: docs/RAIDS.md §23, « Ce qui reste »).
+    // What they beat as measured (docs/RAIDS.md §24) must keep winning in time; the others are said too hard for now,
+    // honestly, with their measure (what still blocks them: docs/RAIDS.md §24, « Ce qui reste »).
     if (std::find(kBeaten.begin(), kBeaten.end(), part) != kBeaten.end()) CHECK(f.won);
     if (!f.won)
         std::printf("  trop dur pour l'instant : %s (%s, phase %d, %d morts)\n", f.boss.c_str(), f.wiped ? "groupe éliminé" : "debout au bout du temps", f.phase,
@@ -490,7 +493,7 @@ TEST_CASE("raid GOAT (2.79): « Simuler un raid complet » without any invincibi
                 sim.heartFallen() ? "Cœur tombé" : "PAS FINI", sim.tick() / static_cast<double>(kSimHz), sim.gigabossesDown(), sim.groups().size(), sim.botDeaths(),
                 sim.rescues(), ms);
     for (const auto& e : sim.feed()) std::printf("    %5.0f s  %s\n", e.tick / static_cast<double>(kSimHz), e.text.c_str());
-    // As measured (docs/RAIDS.md §23): every Gigaboss and the Cœur once the simulated players beat them all alone.
+    // As measured (docs/RAIDS.md §24): every Gigaboss and the Cœur once the simulated players beat them all alone.
     CHECK(sim.gigabossesDown() >= kRaidGigabossDown);
     CHECK(!kRaidHeartFalls || sim.heartFallen());
     CHECK(sim.rescues() == 0);

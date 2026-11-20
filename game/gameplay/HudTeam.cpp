@@ -241,7 +241,11 @@ void Hud::drawTeamLabels(UIContext& ui, GameWorld& w, const WorldView& view) {
         const Player& p = w.playerAt(i);
         const Color c = teamColor(i);
         if (m.presence == Presence::Playing && p.state() != PlayerState::Hidden) {
-            put(teamName(i), view.toScreen({p.center().x, p.box.y - 4.0f}), c, 14, false);
+            // 2.79: only over a player in view — a name pushed to the border for a player out of it piled up there,
+            // under the panels of the HUD (the raids' arrows show where the others are).
+            const Vec2 head = view.toScreen({p.center().x, p.box.y - 4.0f});
+            if (head.x < 0.0f || head.x > ui.screenW() || head.y < 0.0f || head.y > ui.screenH() + ui.s(40)) continue;
+            put(teamName(i), head, c, 14, false);
         } else if (m.presence == Presence::Down) {
             const Vec2 at = view.toScreen(m.soul + Vec2{0.0f, -34.0f});
             // 2.77: its soul out of view: an arrow of its colour on the border toward it, its name beside.

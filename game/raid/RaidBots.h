@@ -17,7 +17,7 @@
 //   through InputFrame::choice) and waits at the exit for the administrator when they are there and
 //   playing (AFK: it goes on alone).
 //
-// 2.79 (docs/RAIDS.md §23), « des GOAT »:
+// 2.79 (docs/RAIDS.md §24), « des GOAT »:
 //
 // * a tactic per Gigaboss (game/raid/bots/BossTactic: its blows announced, its places to hold together,
 //   its targets, its weak points while bare, what to finish together), read every step;

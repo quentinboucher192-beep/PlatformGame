@@ -5103,6 +5103,12 @@
    ]
   },
   {
+   "fr": "Aucun allié en jeu pour vous relever pour l'instant",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Aucun ami n'a encore d'essai classé sur ce défi.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -9447,7 +9453,7 @@
   {
    "fr": "Caméra libre",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -15382,6 +15388,12 @@
    "fr": "Corps à nu : dégâts × {0}",
    "where": [
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Correctif (raids et coopération) : le nom d'un joueur hors de la vue n'est plus poussé au bord de l'écran, où les noms s'empilaient sous les panneaux du HUD ; les flèches des raids montrent où sont les autres.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -28416,9 +28428,21 @@
    ]
   },
   {
+   "fr": "Groupe éliminé : le jeu ne tremble plus. Le monde d'un groupe éliminé ne fait plus de pas, mais il était dessiné avec l'interpolation de l'affichage, qui change à chaque image : la caméra et tout ce qui avait bougé allaient et venaient entre leurs deux derniers états. Il est maintenant dessiné tel qu'il est, comme pendant le choix d'un pouvoir et, en coopération, à la fin et pendant la pause sur un même PC.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "groupe éliminé : ses joueurs ne font plus que regarder",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Groupe éliminé : un bandeau à part, « GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement », avec les mêmes touches et la caméra libre (Entrée, A). Le menu du raid › Groupe explique les deux états. Les bandeaux passent sous le HUD et les notifications sous eux, sans rien recouvrir.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -28448,6 +28472,13 @@
   {
    "fr": "GROUPE ÉLIMINÉ — mode spectateur : caméra libre, ou joueur suivant / précédent de la branche",
    "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement",
+   "where": [
+    "ui/screens/DownedView.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -31833,9 +31864,21 @@
    ]
   },
   {
+   "fr": "Joueur précédent",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Joueur simulé {0}",
    "where": [
     "game/raid/RaidTest.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur suivant",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -32770,6 +32813,12 @@
    ]
   },
   {
+   "fr": "L'équipe n'a plus de réanimation : vous restez à terre jusqu'à la fin de la tentative",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "l'étage {0}",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
@@ -32998,6 +33047,12 @@
    "fr": "La campagne : niveaux, planètes et le Noyau stellaire.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "La caméra suit l'équipe en jeu",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -41563,7 +41618,7 @@
    ]
   },
   {
-   "fr": "Mesuré sans aucune invincibilité ni aide du test : huit joueurs simulés Experts battent chacun des sept Gigaboss et le Cœur d'Asterion, et « Simuler un raid complet » va jusqu'à la chute du Cœur. Le niveau Débutant, Confirmé ou Expert change leur temps de réaction, leur précision et leurs choix, jamais les règles.",
+   "fr": "Mesuré sans aucune invincibilité ni aide du test, contre chaque Gigaboss et le Cœur d'Asterion avec huit joueurs simulés Experts, et pour « Simuler un raid complet » : le temps, les morts et la phase atteinte. Aucun Gigaboss n'est encore battu sans aide : ils tiennent jusqu'à sa deuxième phase, mais les passages en hauteur et les coups qui s'enchaînent les arrêtent encore. Le niveau Débutant, Confirmé ou Expert change leur temps de réaction, leur précision et leurs choix, jamais les règles.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -41976,12 +42031,6 @@
    "fr": "Mode entraînement : un segment depuis un point de sauvegarde, répété automatiquement contre les fantômes ; aucun record, aucune progression, rien n'est envoyé.",
    "where": [
     "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "MODE SPECTATEUR",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -54338,6 +54387,12 @@
    ]
   },
   {
+   "fr": "Raids, à terre : regardez les autres joueurs (joueur précédent / suivant : Q / E, LB / RB) ou revenez sur votre âme (Entrée, A), aussi avec les boutons du bandeau à la souris. La caméra commence sur votre âme et chaque changement de vue est un mouvement doux.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raison",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -57245,6 +57300,12 @@
    ]
   },
   {
+   "fr": "Revenir sur mon âme",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Revenir à cette révision",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -58082,6 +58143,12 @@
    "fr": "réanimations incohérentes",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "Réanimations restantes de l'équipe : {0} sur {1}",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -63395,12 +63462,6 @@
    ]
   },
   {
-   "fr": "Suivant ▶",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Suivants",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -67047,6 +67108,18 @@
    ]
   },
   {
+   "fr": "Tout le groupe à terre en même temps : la zone n'est pas validée et attend un groupe de renfort, vous regardez jusqu'à la fin de l'événement. {0} : joueur précédent / suivant de la branche ; {1} : caméra libre (flèches, stick, molette).",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout le groupe était à terre en même temps : plus de réanimation, la zone attend un groupe de renfort",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Tout le niveau",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
@@ -68324,9 +68397,27 @@
    ]
   },
   {
+   "fr": "Un allié doit maintenir Interagir 2 s près de l'âme de {0}",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Un allié doit maintenir Interagir 2 s près de votre âme",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Un allié est cloué au sol : brisez la griffe qui le tient ({0}).",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Un allié vous réanime… {0} %",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -72972,6 +73063,24 @@
    ]
   },
   {
+   "fr": "Votre âme : dans la vue, sa marque au sol montre où vous serez relevé",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Votre âme : hors de la vue, la flèche à votre couleur la montre au bord de l'écran",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Votre âme attend sur le dernier endroit sûr : un allié en jeu maintient Interagir 2 s près d'elle pour vous relever, autant de fois qu'il le faut. En attendant, {0} : regarder le joueur précédent / suivant ; {1} : revenir sur votre âme.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "votre équipe",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -73398,6 +73507,18 @@
    "fr": "Vous regardez {0} · [{1}]·{2} · zone {3}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous regardez {0} · votre âme est dans la vue",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Vous regardez {0} · votre âme est hors de la vue : suivez la flèche à votre couleur",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -77710,6 +77831,12 @@
    ]
   },
   {
+   "fr": "{0} vous réanime… {1} %",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "{0} zone(s) à reprendre",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -79044,6 +79171,19 @@
    "fr": "à terre · son âme attend",
    "where": [
     "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "À TERRE — en attente de réanimation",
+   "where": [
+    "ui/screens/DownedView.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "À terre, un état clair : un bandeau en haut de l'écran, « À TERRE — en attente de réanimation », dit ce qu'il faut (un allié maintient Interagir 2 s près de votre âme), montre la jauge quand un allié vous relève, en coopération les réanimations restantes de l'équipe, et où est votre âme (une flèche au bord de l'écran quand elle est hors de la vue). Un léger filtre sur l'image montre que vous ne jouez plus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -81360,12 +81500,6 @@
    "fr": "▼ {0} — en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "◀ Précédent",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {

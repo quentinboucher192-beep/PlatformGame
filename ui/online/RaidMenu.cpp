@@ -335,6 +335,11 @@ void sectionBody(Pen& p, const MenuData& d, Section s, bool* results) {
             for (const Member& m : d.group) member(p, m);
             p.y += p.ui.s(6);
             if (!d.groupFooter.empty()) paragraph(p, d.groupFooter, kGold, 3);
+            for (const raidhud::Line& l : d.groupStates) {  // 2.77.2: what each state means, its keys
+                p.y += p.ui.s(4);
+                heading(p, l.mark, l.color);
+                paragraph(p, l.text, kText, 6);
+            }
             break;
         case Section::Titan: {
             if (d.results) {
