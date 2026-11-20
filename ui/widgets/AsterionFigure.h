@@ -38,6 +38,12 @@ public:
     /// 2.73: what the tooltip of an openable part says activating it does (the raid sheets open the
     /// sheet of its gigaboss; by default, the map of its branch).
     void setOpenHint(std::string hint) { openHint_ = std::move(hint); }
+    /// 2.79 (the contributions table): parts lit besides the one hovered or focused, for the next draw()
+    /// only: `chosen` outlined in sky blue (the part shown), `lit` as if hovered (its callout is).
+    void mark(std::string chosen, std::string lit) {
+        chosen_ = std::move(chosen);
+        lit_ = std::move(lit);
+    }
 
 private:
     Rect figure_;
@@ -48,6 +54,7 @@ private:
     Rect tipFigure_;
     Vec2 tipAnchor_;
     std::string openHint_ = "Clic ou validation : carte de la branche";
+    std::string chosen_, lit_;
 };
 
 }  // namespace cosmic

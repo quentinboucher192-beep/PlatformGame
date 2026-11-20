@@ -2,10 +2,18 @@
 
 #include <algorithm>
 #include <cmath>
+#include <map>
 
+#include "engine/core/FileUtil.h"
 #include "engine/core/I18n.h"
+#include "engine/core/Json.h"
+#include "engine/core/Paths.h"
 #include "engine/input/InputManager.h"
+#include "game/GameServices.h"
 #include "ui/online/RaidWidgets.h"
+#include "ui/screens/AsterionFilm.h"
+#include "ui/screens/CreatureArt.h"
+#include "ui/widgets/AsterionFigure.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic::contrib {
@@ -15,6 +23,7 @@ using namespace raidui;
 namespace {
 
 constexpr const char* kIcons = "ui/raids/contrib.png";  // tools/assetgen/environment/raid_contrib_icons.py
+constexpr const char* kRelic = "sprites/objects/relic.png";  // the relic of the levels (8 frames of 16 px)
 constexpr int kIconCell = 32;
 // The icons' order in the sheet (ui/raids/contrib.json): boss, mini, support, mechanisms, objectives,
 // deaths, revives, revived, crown, arrow.
@@ -23,9 +32,13 @@ const Color kPanelFill{18, 26, 54, 255};  // opaque: nothing of the game shows t
 const Color kHeadFill{24, 34, 68, 255};
 const Color kRowA{22, 32, 64, 255};
 const Color kRowB{19, 28, 58, 255};
+const Color kSection{30, 30, 70, 255};
 const Color kMeEdge{110, 190, 255, 255};
 const Color kTrack{34, 44, 82, 255};
 const Color kMuted{140, 152, 186, 255};
+const Color kOn{40, 80, 120, 255};
+const Color kHover{30, 44, 80, 255};
+const Color kFallen{150, 40, 48, 255};
 
 int iconOf(Col c) {
     switch (c) {
@@ -59,20 +72,140 @@ constexpr float kWeight[kCols] = {1.75f, 1.9f, 1.5f, 0.86f, 0.98f, 0.86f, 0.7f, 
 
 bool crowned(Col c) { return c == Col::Boss || c == Col::Mini || c == Col::Support || c == Col::Mechanisms || c == Col::Objectives || c == Col::Revives; }
 
+const Part* partOf(const Model& m, const View& v) { return v.part >= 0 && v.part < static_cast<int>(m.parts.size()) ? &m.parts[static_cast<size_t>(v.part)] : nullptr; }
+
 const Table& tableOf(const Model& m, const View& v) {
     static const Table none;
-    if (v.tab == 1) return m.raid;
-    if (m.zones.empty()) return none;
-    return m.zones[static_cast<size_t>(std::clamp(v.zone, 0, static_cast<int>(m.zones.size()) - 1))];
+    const Part* part = partOf(m, v);
+    if (v.tab == 1) return part ? part->whole : m.raid;
+    const std::vector<Table>& zones = zonesOf(m, v);
+    if (zones.empty()) return none;
+    return zones[static_cast<size_t>(std::clamp(v.zone, 0, static_cast<int>(zones.size()) - 1))];
+}
+
+/// The name of a tab: « Raid entier », or, a part chosen, the whole of that part.
+const char* tabName(const Model& m, const View& v, int i) {
+    if (i == 0) return "Zone";
+    const Part* part = partOf(m, v);
+    if (!part) return "Raid entier";
+    return part->id == "coeur" ? "Tout le Cœur" : "Toute la branche";
 }
 
 void triangleDown(UIContext& ui, Vec2 c, float s, Color col) { ui.r().fillTriangle({c.x - s, c.y - s * 0.55f}, {c.x + s, c.y - s * 0.55f}, {c.x, c.y + s * 0.65f}, col); }
 
-std::string keysLine(const Model& m, bool zones) {
-    const std::string tab = m.tabKey.empty() ? std::string("LB RB") : m.tabKey + " / LB RB";
+std::string keysLine(const Model& m, bool zones, bool parts) {
+    const std::string tab = m.tabKey.empty() ? std::string("LB RB") : parts ? m.tabKey : m.tabKey + " / LB RB";
     std::string s = tab + " : onglets · flèches gauche / droite : trier · survol ou flèches haut / bas : détails";
+    if (parts) s += " · " + m.partKey + " : partie du titan";
+    s += " · molette ou barre : défiler";
     if (zones) s += " · Entrée / A : zone suivante";
+    if (!m.extraKeys.empty()) s += " · " + m.extraKeys;
     return s + " · Échap / B : fermer";
+}
+
+/// The words of a part's state (its pill on its callout).
+const char* stateWord(const Part& p) {
+    if (p.fallen) return "TOMBÉ";
+    switch (p.state) {
+        case asterion::State::Attacked: return "COMBAT EN COURS";
+        case asterion::State::Weakened: return "AFFAIBLI";
+        case asterion::State::Destroyed: return "TOMBÉ";
+        case asterion::State::Unknown: return "PAS DÉCOUVERT";
+        default: return "INTACT";
+    }
+}
+
+Color stateFill(const Part& p) {
+    if (p.fallen || p.state == asterion::State::Destroyed) return kFallen;
+    switch (p.state) {
+        case asterion::State::Attacked: return {122, 74, 26, 255};
+        case asterion::State::Weakened: return {122, 26, 26, 255};
+        case asterion::State::Unknown: return {42, 58, 122, 255};
+        default: return {31, 94, 58, 255};
+    }
+}
+
+std::string groupsLine(const Part& p) {
+    if (p.groups.empty()) return "Aucun groupe";
+    if (p.groups.size() == 1) return "Groupe " + std::to_string(p.groups[0]);
+    std::string s = "Groupes ";
+    for (size_t i = 0; i < p.groups.size(); ++i) s += (i == 0 ? "" : ", ") + std::to_string(p.groups[i]);
+    return s;
+}
+
+/// The line under the titan: what is shown.
+std::string captionText(const Model& m, const View& v) {
+    const Part* p = partOf(m, v);
+    if (!p) return "Raid entier : chaque groupe et ses joueurs. Une partie du titan (clic, ou " + m.partKey + ") : ses groupes et ses zones.";
+    std::string s = p->name + (p->gigaboss.empty() ? std::string() : " · " + p->gigaboss) + " · " + groupsLine(*p);
+    if (p->relic) s += " · relique rapportée";
+    if (!p->open && !p->closed.empty()) s += " · " + p->closed;
+    return s;
+}
+
+/// The titan's manifest (its canvas, each part's point), read once: the layout places the callouts without GameServices.
+const asterion::Sprite& titanSprite() {
+    static asterion::Sprite s;
+    static bool loaded = false;
+    if (!loaded) {
+        loaded = true;
+        if (auto j = FileUtil::loadJson(Paths::assetsDir() / "ui" / "raids" / "asterion.json")) s = asterion::parseSprite(*j);
+    }
+    return s;
+}
+
+/// The titan's column: « Raid entier », the drawing between the callouts (half the parts at its left, half at
+/// its right, each side from the top down as they are on the titan), the caption. False: no room for it.
+bool layoutTitan(UIContext& ui, Layout& L, const Model& m, const View& v) {
+    const Rect c = L.titan;
+    L.overview = {c.x, c.y, c.w, ui.s(42)};
+    L.captionLines = wrap(ui, captionText(m, v), FontFace::Body, 14, c.w, 3);
+    const float capH = static_cast<float>(L.captionLines.size()) * ui.s(19);
+    L.caption = {c.x, c.bottom() - capH, c.w, capH};
+    const float top = L.overview.bottom() + ui.s(12);
+    const Rect area{c.x, top, c.w, L.caption.y - ui.s(10) - top};
+    const size_t n = m.parts.size();
+    const asterion::Sprite& sp = titanSprite();
+    const float cw = sp.valid ? static_cast<float>(sp.canvasW) : 160.0f, ch = sp.valid ? static_cast<float>(sp.canvasH) : 128.0f;
+    std::vector<Vec2> at(n);
+    for (size_t i = 0; i < n; ++i) {
+        at[i] = {cw * 0.5f, ch * static_cast<float>(i + 1) / static_cast<float>(n + 1)};
+        for (const asterion::Layer& l : sp.layers)
+            if (l.id == m.parts[i].id) at[i] = {static_cast<float>(l.anchorX) + 0.5f, static_cast<float>(l.anchorY) + 0.5f};
+    }
+    std::vector<int> byX(n);
+    for (size_t i = 0; i < n; ++i) byX[i] = static_cast<int>(i);
+    std::stable_sort(byX.begin(), byX.end(), [&](int a, int b) { return at[static_cast<size_t>(a)].x < at[static_cast<size_t>(b)].x; });
+    std::vector<int> left(byX.begin(), byX.begin() + static_cast<long>((n + 1) / 2)), right(byX.begin() + static_cast<long>((n + 1) / 2), byX.end());
+    auto byY = [&](int a, int b) { return at[static_cast<size_t>(a)].y < at[static_cast<size_t>(b)].y; };
+    std::stable_sort(left.begin(), left.end(), byY);
+    std::stable_sort(right.begin(), right.end(), byY);
+    const float calW = std::clamp(c.w * 0.3f, ui.s(150), ui.s(200)), cgap = ui.s(10);
+    const size_t perSide = std::max<size_t>(1, std::max(left.size(), right.size()));
+    const float calH = std::min(ui.s(104), (area.h - cgap * static_cast<float>(perSide - 1)) / static_cast<float>(perSide));
+    L.figure = {area.x + calW + ui.s(14), area.y, area.w - calW * 2.0f - ui.s(28), area.h};
+    if (calH < ui.s(48) || L.figure.w < ui.s(80) || area.h <= 0.0f) return false;
+    float k = std::min(L.figure.w / cw, L.figure.h / ch);
+    if (k >= 1.0f) k = std::floor(k);  // as AsterionFigure: whole multiples once enlarged
+    L.titanScale = k;
+    const float ox = std::round(L.figure.x + (L.figure.w - cw * k) * 0.5f), oy = std::round(L.figure.y + (L.figure.h - ch * k) * 0.5f);
+    L.anchors.assign(n, {});
+    L.callouts.assign(n, {});
+    for (size_t i = 0; i < n; ++i) L.anchors[i] = {ox + at[i].x * k, oy + at[i].y * k};
+    auto stack = [&](const std::vector<int>& side, float x) {
+        const float cnt = static_cast<float>(side.size());
+        if (side.empty()) return;
+        const float spread = side.size() > 1 ? std::min(ui.s(60), (area.h - cnt * calH) / (cnt - 1.0f)) : 0.0f;
+        const float total = cnt * calH + (cnt - 1.0f) * spread;
+        float y = area.y + (area.h - total) * 0.5f;
+        for (int i : side) {
+            L.callouts[static_cast<size_t>(i)] = {x, y, calW, calH};
+            y += calH + spread;
+        }
+    };
+    stack(left, area.x);
+    stack(right, area.right() - calW);
+    return true;
 }
 
 }  // namespace
@@ -106,6 +239,33 @@ Color colColor(Col c) {
     }
 }
 
+const std::vector<Table>& zonesOf(const Model& m, const View& v) {
+    const Part* part = partOf(m, v);
+    return part ? part->zones : m.zones;
+}
+
+std::vector<Part> titanParts() {
+    static std::vector<Part> parts;
+    static bool loaded = false;
+    if (!loaded) {
+        loaded = true;
+        std::map<std::string, std::string> enemies;  // part → its gigaboss's enemy
+        if (auto j = FileUtil::loadJson(Paths::dataDir() / "raids" / "asterion_sheets.json"))
+            if (j->contains("gigaboss") && (*j)["gigaboss"].is_array())
+                for (const Json& e : (*j)["gigaboss"]) enemies[jstr(e, "part")] = jstr(e, "enemy");
+        if (auto j = FileUtil::loadJson(Paths::dataDir() / "raids" / "asterion.json"))
+            for (const asterion::Part& a : asterion::parseParts(*j)) {
+                Part p;
+                p.id = a.id;
+                p.name = a.name;
+                p.gigaboss = a.boss;
+                if (auto it = enemies.find(a.id); it != enemies.end()) p.enemy = it->second;
+                parts.push_back(std::move(p));
+            }
+    }
+    return parts;
+}
+
 // ------------------------------------------------------------------------------------- the numbers
 
 Prepared prepare(const Table& t, Col sort) {
@@ -113,12 +273,10 @@ Prepared prepare(const Table& t, Col sort) {
     p.table = &t;
     const size_t n = t.rows.size();
     int64_t bossAll = 0, miniAll = 0, damageAll = 0;
-    bool anyV2 = false;
     for (const Row& r : t.rows) {
         bossAll += std::max<int64_t>(0, r.bossTenths - (r.v2 ? r.miniTenths : 0));
         miniAll += r.v2 ? std::max<int64_t>(0, r.miniTenths) : 0;
         damageAll += std::max<int64_t>(0, r.damageTenths);
-        anyV2 = anyV2 || r.v2;
     }
     p.bossShare = bossAll > 0;
     for (int c = 0; c < kCols; ++c) p.headers[static_cast<size_t>(c)] = colName(static_cast<Col>(c));
@@ -161,7 +319,6 @@ Prepared prepare(const Table& t, Col sort) {
             cell.best = crowned(static_cast<Col>(col)) && cell.known && best > 0.0 && cell.value >= best;
         }
     }
-    (void)anyV2;
     p.order.resize(n);
     for (size_t i = 0; i < n; ++i) p.order[i] = static_cast<int>(i);
     std::stable_sort(p.order.begin(), p.order.end(), [&](int a, int b) {
@@ -178,9 +335,20 @@ Prepared prepare(const Table& t, Col sort) {
 
 // ------------------------------------------------------------------------------------- the keys
 
-bool View::handleKeys(const InputManager& in, int zones) {
+void View::choose(int p) {
+    part = p;
+    zone = 0;
+    selected = -1;
+}
+
+bool View::handleKeys(const InputManager& in, int zones, int parts) {
     if (in.menuPressed(Action::MenuBack)) return true;
-    if (in.menuPressed(Action::MenuTabPrev) || in.menuPressed(Action::MenuTabNext) || in.menuPressed(Action::RaidMenu)) {
+    const bool prev = in.menuPressed(Action::MenuTabPrev), next = in.menuPressed(Action::MenuTabNext);
+    if (parts > 0 && (prev || next)) {
+        // -1 (« Raid entier ») then each part, around.
+        const int n = parts + 1;
+        choose(((part + 1 + (next ? 1 : -1)) % n + n) % n - 1);
+    } else if (prev || next || in.menuPressed(Action::RaidMenu)) {
         tab = 1 - tab;
         selected = -1;
     }
@@ -204,53 +372,106 @@ Layout layout(UIContext& ui, const Rect& r, const Model& m, const View& v) {
     L.panel = r;
     const Table& t = tableOf(m, v);
     const Prepared p = prepare(t, v.sort);
-    const float pad = ui.s(28), x = r.x + pad, iw = r.w - pad * 2;
-    float y = r.y + ui.s(18);
-    // The heading and « Fermer » (measured first, at the right).
-    const float closeW = std::min(iw * 0.3f, textW(ui, "Fermer", 16, FontFace::Bold) + ui.s(36));
-    L.close = {x + iw - closeW, y, closeW, ui.s(40)};
-    L.heading = {x, y, std::max(0.0f, iw - closeW - ui.s(16)), ui.s(40)};
-    L.texts.push_back(L.heading);
-    y += ui.s(46);
+    const bool emb = m.embedded;
+    const float pad = emb ? 0.0f : ui.s(28), x = r.x + pad, iw = r.w - pad * 2;
+    float y = r.y + (emb ? 0.0f : ui.s(18));
+    if (!emb) {
+        // The heading and « Fermer » (measured first, at the right).
+        const float closeW = std::min(iw * 0.3f, textW(ui, "Fermer", 16, FontFace::Bold) + ui.s(36));
+        L.close = {x + iw - closeW, y, closeW, ui.s(40)};
+        L.heading = {x, y, std::max(0.0f, iw - closeW - ui.s(16)), ui.s(40)};
+        L.texts.push_back(L.heading);
+        y += ui.s(46);
+    }
     L.sub = {x, y, iw, ui.s(26)};
     L.texts.push_back(L.sub);
     y += ui.s(34);
+    // The keys, the whole width at the bottom.
+    const bool parts = !m.parts.empty();
+    L.keyLines = wrap(ui, keysLine(m, v.tab == 0 && zonesOf(m, v).size() > 1, parts), FontFace::Body, 15, iw, 2);
+    const float keysH = static_cast<float>(L.keyLines.size()) * ui.s(20);
+    L.keys = {x, r.bottom() - (emb ? 0.0f : ui.s(14)) - keysH, iw, keysH};
+    L.texts.push_back(L.keys);
+    const float bottom = L.keys.y - ui.s(10);
+    // The titan's column (the table keeps at least its readable width; without room, no titan).
+    float tx0 = x, tw = iw;
+    if (parts) {
+        float colW = std::clamp(iw * 0.34f, ui.s(380), ui.s(640));
+        if (iw - colW - ui.s(20) < ui.s(820)) colW = iw - ui.s(20) - ui.s(820);
+        if (colW >= ui.s(380)) {
+            L.titan = {x, y, colW, bottom - y};
+            if (layoutTitan(ui, L, m, v)) {
+                tx0 = x + colW + ui.s(20);
+                tw = iw - colW - ui.s(20);
+                L.texts.push_back(L.overview);
+                if (!L.captionLines.empty()) L.texts.push_back(L.caption);
+                for (const Rect& c : L.callouts) L.texts.push_back(c);
+            } else {
+                L.titan = L.overview = L.figure = L.caption = Rect{};
+                L.callouts.clear();
+                L.anchors.clear();
+                L.captionLines.clear();
+                L.titanScale = 0.0f;
+            }
+        }
+    }
+    L.table = {tx0, y, tw, bottom - y};
     // The tabs, each as wide as its name, then (the « Zone » tab with several zones) the zone buttons, then the sort.
-    float tx = x;
-    const char* names[2] = {"Zone", "Raid entier"};
+    float tx = tx0;
     for (int i = 0; i < 2; ++i) {
-        const float w = textW(ui, names[i], 18, FontFace::Bold) + ui.s(40);
+        const float w = textW(ui, tabName(m, v, i), 18, FontFace::Bold) + ui.s(40);
         L.tabs[static_cast<size_t>(i)] = {tx, y, w, ui.s(42)};
         tx += w + ui.s(10);
     }
-    if (v.tab == 0 && m.zones.size() > 1) {
+    if (v.tab == 0 && zonesOf(m, v).size() > 1) {
         const float pw = textW(ui, "Zone précédente", 14, FontFace::Bold) + ui.s(26), nw = textW(ui, "Zone suivante", 14, FontFace::Bold) + ui.s(26);
         L.prevZone = {tx + ui.s(8), y + ui.s(4), pw, ui.s(34)};
         L.nextZone = {L.prevZone.right() + ui.s(8), y + ui.s(4), nw, ui.s(34)};
         tx = L.nextZone.right() + ui.s(10);
     }
-    L.sortLine = {tx + ui.s(10), y, std::max(0.0f, x + iw - tx - ui.s(10)), ui.s(42)};
+    L.sortLine = {tx + ui.s(10), y, std::max(0.0f, tx0 + tw - tx - ui.s(10)), ui.s(42)};
     L.texts.push_back(L.sortLine);
     y += ui.s(54);
-    // The bottom, from the bottom up: the keys, the legend, the best of the zone.
-    L.keyLines = wrap(ui, keysLine(m, v.tab == 0 && m.zones.size() > 1), FontFace::Body, 15, iw, 2);
-    const float keysH = static_cast<float>(L.keyLines.size()) * ui.s(20);
-    L.keys = {x, r.bottom() - ui.s(14) - keysH, iw, keysH};
-    L.texts.push_back(L.keys);
-    L.legendLines = wrap(ui, m.legend, FontFace::Body, 14, iw - ui.s(40), 2);
+    // The bottom of the table's side: the best of the zone (its legend inside).
+    L.legendLines = wrap(ui, m.legend, FontFace::Body, 14, tw - ui.s(40), 2);
     const float bestH = ui.s(76);
-    L.best = {x, L.keys.y - ui.s(10) - bestH, iw, bestH};
-    // The header and the rows between.
-    const float headH = ui.s(48);
-    L.header = {x, y, iw, headH};
+    L.best = {tx0, bottom - bestH, tw, bestH};
+    // The rows in the order shown: by group (Table::sections) when it has some, each group sorted.
+    struct Item {
+        int section;  // its header (row < 0), or the group of the row
+        int row;
+    };
+    std::vector<Item> items;
+    const int ns = static_cast<int>(t.sections.size());
+    for (int ri : p.order)
+        if (t.rows[static_cast<size_t>(ri)].section < 0 || t.rows[static_cast<size_t>(ri)].section >= ns) items.push_back({-1, ri});
+    for (int s = 0; s < ns; ++s) {
+        items.push_back({s, -1});
+        for (int ri : p.order)
+            if (t.rows[static_cast<size_t>(ri)].section == s) items.push_back({s, ri});
+    }
+    const float headH = ui.s(48), gap = ui.s(6), secH = ui.s(36);
+    const float listTop = y + headH + ui.s(10);
+    L.list = {tx0, listTop, tw, std::max(0.0f, L.best.y - ui.s(12) - listTop)};
+    size_t nRows = 0, nSecs = 0;
+    for (const Item& it : items) (it.row < 0 ? nSecs : nRows) += 1;
+    // As high as the room lets, never lower than readable (the rows scroll past that).
+    float rowH = nRows > 0 ? (L.list.h - static_cast<float>(nSecs) * (secH + gap)) / static_cast<float>(nRows) - gap : ui.s(40);
+    rowH = std::clamp(rowH, ui.s(44), ui.s(66));
+    L.contentH = static_cast<float>(nSecs) * (secH + gap) + static_cast<float>(nRows) * (rowH + gap);
+    if (!items.empty()) L.contentH -= gap;
+    const float lane = L.contentH > L.list.h + 0.5f ? ui.s(16) : 0.0f;  // the scroll bar's lane, kept free
+    const float rw = tw - lane;
+    // The header and its columns.
+    L.header = {tx0, y, rw, headH};
     float total = 0.0f;
     for (float w : kWeight) total += w;
-    const float gap = ui.s(10), room = iw - ui.s(20) - gap * static_cast<float>(kCols - 1);
-    float cx = x + ui.s(14);
+    const float cgap = ui.s(10), room = rw - ui.s(20) - cgap * static_cast<float>(kCols - 1);
+    float cx = tx0 + ui.s(14);
     for (int c = 0; c < kCols; ++c) {
         const float w = room * kWeight[c] / total;
         L.cols[static_cast<size_t>(c)] = {cx, y, w, headH};
-        cx += w + gap;
+        cx += w + cgap;
     }
     // The headers' font: the same for all, as large as the narrowest lets (an icon before each name, ▼ after the sorted one).
     const float iconW = ui.s(22);
@@ -260,22 +481,19 @@ Layout layout(UIContext& ui, const Rect& r, const Model& m, const View& v) {
         L.headFont = std::min(L.headFont, ui.fitFont(p.headers[static_cast<size_t>(c)], FontFace::Bold, 17, std::max(ui.s(10), room2), 0.62f));
     }
     for (int c = 0; c < kCols; ++c) L.texts.push_back(L.cols[static_cast<size_t>(c)]);
-    y += headH + ui.s(10);
-    const float bottom = L.best.y - ui.s(12);
-    const size_t n = p.order.size();
-    float rowH = n > 0 ? (bottom - y) / static_cast<float>(n) - ui.s(6) : ui.s(40);
-    rowH = std::min(rowH, ui.s(66));
-    size_t shown = n;
-    if (rowH < ui.s(30)) {
-        rowH = ui.s(30);
-        shown = static_cast<size_t>(std::max(0.0f, (bottom - y - ui.s(26)) / (rowH + ui.s(6))));
-    }
     L.rowFont = std::clamp(rowH / ui.s(1.0f) * 0.36f, 13.0f, 22.0f);
-    for (size_t i = 0; i < shown && i < n; ++i) {
-        L.rows.push_back({x, y, iw, rowH});
-        y += rowH + ui.s(6);
+    float ry = L.list.y;
+    for (const Item& it : items) {
+        if (it.row < 0) {
+            L.sections.push_back({tx0, ry, rw, secH});
+            L.sectionOf.push_back(it.section);
+            ry += secH + gap;
+        } else {
+            L.rows.push_back({tx0, ry, rw, rowH});
+            L.rowOf.push_back(it.row);
+            ry += rowH + gap;
+        }
     }
-    L.hidden = static_cast<int>(n - std::min(shown, n));
     return L;
 }
 
@@ -338,25 +556,129 @@ Tooltip tooltip(UIContext& ui, const Model& m, const View& v, const Prepared& p,
 
 // ------------------------------------------------------------------------------------- drawing
 
-bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
+namespace {
+
+/// A part's callout: its gigaboss's portrait (the heart's light), its name, its groups, its state, its relic.
+void drawCallout(UIContext& ui, GameServices* g, const Rect& c, const Part& p, bool on, bool hover) {
+    Renderer& rr = ui.r();
+    rr.fillRoundedRect(c, ui.s(10), on ? kOn : hover ? kHover : kHeadFill);
+    rr.drawRoundedRect(c, ui.s(10), on ? kMeEdge : hover ? kGold : kBorder, ui.s(2));
+    const float pad = ui.s(8);
+    const bool twoRows = c.h >= ui.s(84);
+    const float ps = twoRows ? std::min(ui.s(46), c.h - ui.s(44)) : std::min(ui.s(40), c.h - pad * 2);
+    const Rect por{c.x + pad, c.y + pad, ps, ps};
+    rr.fillRoundedRect(por, ui.s(6), Color{10, 14, 32, 255});
+    const float t = ui.time();
+    if (p.enemy.empty()) {  // the heart: its light, beating
+        const float beat = 0.5f + 0.5f * std::sin(t * 3.2f);
+        rr.drawGlow(por.center(), por.w * (0.42f + 0.08f * beat), Color{255, 140, 60, static_cast<uint8_t>(120 + 80 * beat)});
+        rr.fillCircle(por.center(), por.w * 0.16f, Color{255, 190, 120, 255});
+        rr.drawRing(por.center(), por.w * 0.34f, std::max(1.0f, ui.s(2)), kOrange.withAlpha(180));
+    } else if (g) {
+        if (const EnemyDefinition* def = g->content.enemy(p.enemy)) {
+            rr.pushClip(por);
+            drawCreature(*g, *def, por.expanded(-ui.s(3)), t, p.fallen ? Color{120, 120, 140, 255} : Color::white(), "idle");
+            rr.popClip();
+        }
+    }
+    if (p.fallen) {  // a red line across the portrait: fallen
+        rr.drawLine({por.x + ui.s(4), por.bottom() - ui.s(4)}, {por.right() - ui.s(4), por.y + ui.s(4)}, kFallen.withAlpha(230), ui.s(3));
+    }
+    const float tx = por.right() + ui.s(8), room = c.right() - pad - tx;
+    const Color nameC = p.open ? kText : kMuted;
+    if (twoRows) {
+        fit(ui, p.name, {tx, por.y + ps * 0.3f}, 15, room, nameC, FontFace::Bold);
+        fit(ui, groupsLine(p), {tx, por.y + ps * 0.78f}, 13, room, p.groups.empty() ? kMuted : kSky);
+        // The state's pill, the relic after it.
+        const float cy = c.bottom() - pad - ui.s(14);
+        const std::string word = stateWord(p);
+        const float relicS = ui.s(22);
+        const float maxRight = c.right() - pad - (p.relic ? relicS + ui.s(6) : 0.0f);
+        float pw = pill(ui, c.x + pad, cy, word, stateFill(p), kText, maxRight, 12);
+        if (pw == 0.0f) pw = fit(ui, word, {c.x + pad, cy}, 12, maxRight - c.x - pad, kText, FontFace::Bold).x;
+        if (p.relic) ui.icon(kRelic, static_cast<int>(t * 8.0f) % 8, 16, {c.x + pad + pw + ui.s(6), cy - relicS * 0.5f, relicS, relicS});
+    } else {
+        const float relicS = ui.s(18);
+        const float nameRoom = room - (p.relic ? relicS + ui.s(4) : 0.0f);
+        fit(ui, p.name, {tx, c.y + c.h * 0.32f}, 14, nameRoom, nameC, FontFace::Bold);
+        fit(ui, std::string(stateWord(p)) + " · " + groupsLine(p), {tx, c.y + c.h * 0.72f}, 12, room, p.fallen ? Color{255, 140, 140, 255} : kSky);
+        if (p.relic) ui.icon(kRelic, static_cast<int>(t * 8.0f) % 8, 16, {c.right() - pad - relicS, c.y + c.h * 0.32f - relicS * 0.5f, relicS, relicS});
+    }
+}
+
+/// The titan's column: « Raid entier », the drawing (GameServices: the sprite by parts), the lines to the callouts, the callouts.
+void drawTitan(UIContext& ui, GameServices* g, AsterionFigure* fig, const Layout& L, const Model& m, View& v) {
+    if (L.titan.empty()) return;
+    Renderer& rr = ui.r();
+    {
+        bool hov = false;
+        const bool on = v.part < 0;
+        if (ui.mouseClick("overview", L.overview, &hov)) v.choose(-1);
+        rr.fillRoundedRect(L.overview, ui.s(10), on ? kOn : hov ? kHover : kHeadFill);
+        rr.drawRoundedRect(L.overview, ui.s(10), on ? kMeEdge : hov ? kGold : kBorder, ui.s(2));
+        fit(ui, "Raid entier : tous les groupes", L.overview.center(), 17, L.overview.w - ui.s(24), on ? kText : kMuted, FontFace::Bold, Align::Center);
+    }
+    int hoverCard = -1;
+    for (size_t i = 0; i < m.parts.size() && i < L.callouts.size(); ++i) {
+        bool h = false;
+        if (ui.mouseClick("part" + std::to_string(i), L.callouts[i], &h) && m.parts[i].open) v.choose(static_cast<int>(i));
+        if (h) hoverCard = static_cast<int>(i);
+    }
+    std::string figHover;
+    const bool drawn = g && fig && L.titanScale > 0.0f && !asterionfilm::hold(*g);
+    if (drawn) {
+        std::map<std::string, asterion::State> states;
+        std::vector<std::string> openable;
+        for (const Part& p : m.parts) {
+            states[p.id] = p.fallen ? asterion::State::Destroyed : p.state;
+            if (p.open) openable.push_back(p.id);
+        }
+        fig->setOpenHint("Clic ou validation : ses contributions");
+        fig->mark(v.part >= 0 ? m.parts[static_cast<size_t>(v.part)].id : std::string(), hoverCard >= 0 ? m.parts[static_cast<size_t>(hoverCard)].id : std::string());
+        const std::string act = fig->draw(*g, "titan", L.figure, states, openable);
+        for (size_t i = 0; i < m.parts.size(); ++i)
+            if (!act.empty() && m.parts[i].id == act) v.choose(static_cast<int>(i));
+        figHover = fig->shownPart();
+        // Each callout joined to its part (from the callout's edge facing the titan).
+        for (size_t i = 0; i < m.parts.size() && i < L.callouts.size(); ++i) {
+            const Rect& c = L.callouts[i];
+            const bool leftSide = c.center().x < L.figure.center().x;
+            const Vec2 from{leftSide ? c.right() : c.x, c.center().y};
+            const bool lit = static_cast<int>(i) == hoverCard || m.parts[i].id == figHover;
+            const Color lc = static_cast<int>(i) == v.part ? kSky : lit ? kGold : Color{96, 108, 160, 170};
+            rr.drawLine(from, L.anchors[i], lc, std::max(1.0f, ui.s(static_cast<int>(i) == v.part || lit ? 2.0f : 1.2f)));
+            rr.fillCircle(L.anchors[i], ui.s(4), lc);
+        }
+    }
+    for (size_t i = 0; i < m.parts.size() && i < L.callouts.size(); ++i)
+        drawCallout(ui, g, L.callouts[i], m.parts[i], static_cast<int>(i) == v.part, static_cast<int>(i) == hoverCard || (!figHover.empty() && m.parts[i].id == figHover));
+    drawLines(ui, L.captionLines, {L.caption.x, L.caption.y}, 14, ui.s(19), kMuted);
+}
+
+bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r, const Model& m, View& v) {
     bool closed = false;
     ui.pushId("contribtable");
     ui.consumeNavigation(true, true);  // its keys sort and choose rows: the focus never travels to its buttons
+    if (v.part >= static_cast<int>(m.parts.size())) v.choose(-1);
     const Layout L = layout(ui, r, m, v);
     const Table& t = tableOf(m, v);
     const Prepared p = prepare(t, v.sort);
     Renderer& rr = ui.r();
-    rr.fillRect({0.0f, 0.0f, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 150});
-    rr.fillRoundedRect(r, ui.s(18), kPanelFill);
-    rr.drawRoundedRect(r, ui.s(18), kBorder, ui.s(2));
-    fit(ui, m.heading, {L.heading.x, L.heading.center().y}, 32, L.heading.w, kGold, FontFace::Title);
-    UIContext::ButtonStyle cs;
-    cs.small = true;
-    if (ui.button("close", L.close, "Fermer", cs)) closed = true;
+    if (!m.embedded) {
+        rr.fillRect({0.0f, 0.0f, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 150});
+        rr.fillRoundedRect(r, ui.s(18), kPanelFill);
+        rr.drawRoundedRect(r, ui.s(18), kBorder, ui.s(2));
+        fit(ui, m.heading, {L.heading.x, L.heading.center().y}, 32, L.heading.w, kGold, FontFace::Title);
+        UIContext::ButtonStyle cs;
+        cs.small = true;
+        if (ui.button("close", L.close, "Fermer", cs)) closed = true;
+    } else {
+        rr.fillRect(r, kPanelFill);  // opaque inside its panel too
+    }
     const std::string sub = t.title.empty() ? t.sub : t.sub.empty() ? t.title : t.title + " · " + t.sub;
     fit(ui, sub.empty() ? std::string("Aucune zone terminée pour l'instant") : sub, {L.sub.x, L.sub.center().y}, 20, L.sub.w, kMuted);
+    drawTitan(ui, g, fig, L, m, v);
     // The tabs.
-    const char* names[2] = {"Zone", "Raid entier"};
     for (int i = 0; i < 2; ++i) {
         const Rect& tr = L.tabs[static_cast<size_t>(i)];
         const bool on = v.tab == i;
@@ -365,21 +687,22 @@ bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
             v.tab = i;
             v.selected = -1;
         }
-        rr.fillRoundedRect(tr, ui.s(10), on ? Color{40, 80, 120, 255} : hover ? Color{30, 44, 80, 255} : kHeadFill);
+        rr.fillRoundedRect(tr, ui.s(10), on ? kOn : hover ? kHover : kHeadFill);
         rr.drawRoundedRect(tr, ui.s(10), on ? kMeEdge : kBorder, ui.s(2));
-        fit(ui, names[i], tr.center(), 18, tr.w - ui.s(16), on ? kText : kMuted, FontFace::Bold, Align::Center);
+        fit(ui, tabName(m, v, i), tr.center(), 18, tr.w - ui.s(16), on ? kText : kMuted, FontFace::Bold, Align::Center);
     }
     if (!L.prevZone.empty()) {
         UIContext::ButtonStyle zs;
         zs.small = true;
         zs.fontSize = 14;
-        const int n = static_cast<int>(m.zones.size());
+        const int n = static_cast<int>(zonesOf(m, v).size());
         if (ui.button("prevzone", L.prevZone, "Zone précédente", zs)) v.zone = (v.zone + n - 1) % n;
         if (ui.button("nextzone", L.nextZone, "Zone suivante", zs)) v.zone = (v.zone + 1) % n;
     }
     {
         const std::string s = "Tri : " + p.headers[static_cast<size_t>(v.sort)] + " (clic sur un en-tête, ou flèches gauche / droite, LB RB)";
-        fit(ui, s, {L.sortLine.x, L.sortLine.center().y}, 16, L.sortLine.w, kMuted);
+        fit(ui, !m.parts.empty() ? "Tri : " + p.headers[static_cast<size_t>(v.sort)] + " (clic sur un en-tête, ou flèches gauche / droite)" : s,
+            {L.sortLine.x, L.sortLine.center().y}, 16, L.sortLine.w, kMuted);
     }
     // The header: an icon and its name per column, ▼ on the sorted one; a click sorts by it.
     rr.fillRoundedRect(L.header, ui.s(10), kHeadFill);
@@ -401,26 +724,66 @@ bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
         ui.label(shown, {lx, cr.center().y}, L.headFont, on ? kText : hover ? kText : kMuted, Align::Left, FontFace::Bold, VAlign::Middle);
         if (on) triangleDown(ui, {lx + textW(ui, shown, L.headFont, FontFace::Bold) + ui.s(10), cr.center().y}, ui.s(5), kText);
     }
-    // The rows.
+    // The rows (and the groups' headers), scrolled: the wheel, the bar, and the row chosen with the keys kept in view.
     const Vec2 mouse = ui.input().mousePos();
+    const bool overList = L.list.contains(mouse);
     int hoverRow = -1;
     Col hoverCol = Col::Count;
     Rect hoverRect;
     const float f = L.rowFont;
     if (p.order.empty()) fit(ui, "Personne n'a encore rien compté ici.", {L.header.x + ui.s(14), L.header.bottom() + ui.s(30)}, 18, L.header.w, kMuted);
     if (v.selected >= static_cast<int>(L.rows.size())) v.selected = static_cast<int>(L.rows.size()) - 1;
+    const std::string scrollId = "rows" + std::to_string(v.part) + "/" + std::to_string(v.tab) + "/" + std::to_string(v.zone);
+    ui.beginScroll(scrollId, L.list, L.contentH);
+    const float off = ui.scrollOffset();
+    if (v.selected >= 0) {  // the row chosen with the keys: brought into view (the next image)
+        const Rect& sr = L.rows[static_cast<size_t>(v.selected)];
+        if (sr.y - off < L.list.y) ui.setScroll(scrollId, sr.y - L.list.y - ui.s(4));
+        else if (sr.bottom() - off > L.list.bottom()) ui.setScroll(scrollId, sr.bottom() - L.list.bottom() + ui.s(4));
+    }
+    // The groups' totals (their share of the damage to the boss, of all the damage without one).
+    int64_t allDamage = 0;
+    std::vector<int64_t> secDamage(t.sections.size(), 0);
+    std::vector<int> secPlayers(t.sections.size(), 0);
+    for (const Row& row : t.rows) {
+        const int64_t d = p.bossShare ? std::max<int64_t>(0, row.bossTenths - (row.v2 ? row.miniTenths : 0)) : std::max<int64_t>(0, row.damageTenths);
+        allDamage += d;
+        if (row.section >= 0 && row.section < static_cast<int>(secDamage.size())) {
+            secDamage[static_cast<size_t>(row.section)] += d;
+            ++secPlayers[static_cast<size_t>(row.section)];
+        }
+    }
+    for (size_t k = 0; k < L.sections.size(); ++k) {
+        const Rect sr{L.sections[k].x, L.sections[k].y - off, L.sections[k].w, L.sections[k].h};
+        if (sr.bottom() < L.list.y || sr.y > L.list.bottom()) continue;
+        const int s = L.sectionOf[k];
+        rr.fillRoundedRect(sr, ui.s(8), kSection);
+        rr.fillRect({sr.x, sr.y + ui.s(6), ui.s(4), sr.h - ui.s(12)}, kGold);
+        // Its share measured first, at the right; the group's name in what is left.
+        std::string share;
+        if (secPlayers[static_cast<size_t>(s)] == 0) share = "rien de compté pour l'instant";
+        else if (allDamage > 0)
+            share = pct(static_cast<double>(secDamage[static_cast<size_t>(s)]) / static_cast<double>(allDamage)) +
+                    (p.bossShare ? " des dégâts au boss" : " des dégâts");
+        const float shareW = share.empty() ? 0.0f : std::min(sr.w * 0.4f, textW(ui, share, 15, FontFace::Bold));
+        if (!share.empty()) fit(ui, share, {sr.right() - ui.s(14), sr.center().y}, 15, shareW + ui.s(2), kMuted, FontFace::Bold, Align::Right);
+        fit(ui, t.sections[static_cast<size_t>(s)], {sr.x + ui.s(16), sr.center().y}, 16, sr.w - ui.s(46) - shareW, kGold, FontFace::Bold);
+    }
     for (size_t k = 0; k < L.rows.size(); ++k) {
-        const int ri = p.order[k];
+        const int ri = L.rowOf[k];
         const Row& row = t.rows[static_cast<size_t>(ri)];
-        const Rect& rect = L.rows[k];
+        const Rect rect{L.rows[k].x, L.rows[k].y - off, L.rows[k].w, L.rows[k].h};
+        if (rect.bottom() < L.list.y || rect.y > L.list.bottom()) continue;
         rr.fillRoundedRect(rect, ui.s(10), k % 2 == 0 ? kRowA : kRowB);
         if (row.me) rr.drawRoundedRect(rect, ui.s(10), kMeEdge, ui.s(2));
+        if (static_cast<int>(k) == v.selected) rr.drawRoundedRect(rect, ui.s(10), kGold, ui.s(2));
         const float cy = rect.center().y;
-        // Rank, colour, name.
+        // Rank (in its group), colour, name.
         const Rect& pc = L.cols[0];
-        const std::string rank = std::to_string(k + 1);
+        int rank = 1;
+        for (size_t j = 0; j < k; ++j) rank += t.rows[static_cast<size_t>(L.rowOf[j])].section == row.section ? 1 : 0;
         const float rankW = textW(ui, "88", f, FontFace::Bold);
-        fit(ui, rank, {pc.x + rankW * 0.5f, cy}, f, rankW, kMuted, FontFace::Bold, Align::Center, true);
+        fit(ui, std::to_string(rank), {pc.x + rankW * 0.5f, cy}, f, rankW, kMuted, FontFace::Bold, Align::Center, true);
         const float dot = std::min(rect.h * 0.5f, ui.s(30));
         rr.fillCircle({pc.x + rankW + ui.s(8) + dot * 0.5f, cy}, dot * 0.5f, row.color);
         const float nx = pc.x + rankW + ui.s(16) + dot;
@@ -430,7 +793,7 @@ bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
             const Rect& cr = L.cols[static_cast<size_t>(c)];
             const Cell& cell = p.cells[static_cast<size_t>(ri)][static_cast<size_t>(c)];
             const Rect hit{cr.x, rect.y, cr.w, rect.h};
-            if (hit.contains(mouse)) {
+            if (overList && hit.contains(mouse)) {
                 hoverRow = ri;
                 hoverCol = col;
                 hoverRect = hit;
@@ -458,9 +821,7 @@ bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
             }
         }
     }
-    if (L.hidden > 0 && !L.rows.empty())
-        fit(ui, "… et " + std::to_string(L.hidden) + (L.hidden > 1 ? " joueurs de plus" : " joueur de plus"), {L.header.x + ui.s(14), L.rows.back().bottom() + ui.s(14)}, 15,
-            L.header.w, kMuted);
+    ui.endScroll();
     // The best of the zone (or of the raid), each with its icon, one after the other.
     rr.fillRoundedRect(L.best, ui.s(12), kHeadFill);
     {
@@ -501,15 +862,18 @@ bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
     Col tipCol = hoverCol;
     Rect tipAt = hoverRect;
     if (tipRow < 0 && v.selected >= 0 && v.selected < static_cast<int>(L.rows.size())) {
-        tipRow = p.order[static_cast<size_t>(v.selected)];
-        tipCol = v.sort == Col::Player ? Col::Boss : v.sort;
-        const Rect& cr = L.cols[static_cast<size_t>(tipCol)];
-        tipAt = {cr.x, L.rows[static_cast<size_t>(v.selected)].y, cr.w, L.rows[static_cast<size_t>(v.selected)].h};
-        rr.drawRoundedRect(L.rows[static_cast<size_t>(v.selected)], ui.s(10), kGold, ui.s(2));
+        const Rect sr{L.rows[static_cast<size_t>(v.selected)].x, L.rows[static_cast<size_t>(v.selected)].y - off, L.rows[static_cast<size_t>(v.selected)].w,
+                      L.rows[static_cast<size_t>(v.selected)].h};
+        if (sr.y >= L.list.y - 0.5f && sr.bottom() <= L.list.bottom() + 0.5f) {
+            tipRow = L.rowOf[static_cast<size_t>(v.selected)];
+            tipCol = v.sort == Col::Player ? Col::Boss : v.sort;
+            const Rect& cr = L.cols[static_cast<size_t>(tipCol)];
+            tipAt = {cr.x, sr.y, cr.w, sr.h};
+        }
     }
     if (tipRow >= 0 && tipCol != Col::Count) {
         const Tooltip tt = tooltip(ui, m, v, p, tipRow, tipCol, tipAt);
-        rr.fillRoundedRect(tt.box, ui.s(12), Color{12, 18, 40, 250});
+        rr.fillRoundedRect(tt.box, ui.s(12), Color{12, 18, 40, 255});
         rr.drawRoundedRect(tt.box, ui.s(12), colColor(tipCol), ui.s(2));
         float ty = tt.box.y + ui.s(28);
         float tx = tt.box.x + ui.s(18);
@@ -524,9 +888,17 @@ bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
             ui.label(l, {tt.box.x + ui.s(20), ty}, 16, kMuted, Align::Left, FontFace::Body, VAlign::Top);
             ty += ui.s(24);
         }
+    } else if (fig && g) {
+        fig->drawTooltip(*g);  // the titan's part hovered (its name, its gigaboss, its state), over everything
     }
     ui.popId();
     return closed;
 }
+
+}  // namespace
+
+bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) { return drawImpl(ui, nullptr, nullptr, r, m, v); }
+
+bool draw(GameServices& g, AsterionFigure& fig, const Rect& r, const Model& m, View& v) { return drawImpl(g.ui, &g, &fig, r, m, v); }
 
 }  // namespace cosmic::contrib

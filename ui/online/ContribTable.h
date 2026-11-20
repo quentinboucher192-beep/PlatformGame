@@ -18,6 +18,18 @@
 // Everything measured into its place (fitFont, elide, wrap): nothing overlaps, in French and English,
 // from 1280 × 720 up. Display and this computer's inputs only: the numbers come from the simulation (or
 // the server's results), never invented here.
+//
+// 2.79: ONE contributions screen everywhere (the raid's menu, « Simuler un raid complet », the results):
+//
+// * the titan Asterion drawn at its left (ui/widgets/AsterionFigure, its pixel art by parts) when the model
+//   has its parts: each part (a branch, the heart) has a callout beside the drawing (its gigaboss's portrait,
+//   the groups there, fallen or not, its relic brought back) joined to its point on the titan; a part is
+//   chosen by a click (on it or on its callout), by Q / E or LB / RB, and lit when hovered;
+// * « Raid entier » (its button above the titan): every group, a header per group (its share of the damage),
+//   its players under it; a part chosen: that part's groups and their zones;
+// * the rows scroll (the wheel, the bar held with the mouse, Haut / Bas from row to row, at the keyboard or
+//   the gamepad): seven groups of eight players fit at 1280 × 720 without ever getting smaller than readable;
+// * opaque: nothing of the game shows under its texts.
 
 #include <array>
 #include <cstdint>
@@ -26,9 +38,12 @@
 
 #include "engine/core/Math.h"
 #include "engine/rendering/Renderer.h"
+#include "game/online/AsterionBody.h"
 
 namespace cosmic {
 
+class AsterionFigure;
+class GameServices;
 class InputManager;
 class UIContext;
 
@@ -48,12 +63,32 @@ struct Row {
     int support = 0, mechanisms = 0, objectives = 0;
     int deaths = 0, revives = 0, revived = 0;
     bool v2 = true;  // mini-bosses, deaths and revivals known (a table of before 2.78: « — »)
+    int section = -1;  // 2.79: its group's block (Table::sections), -1: none
 };
 
 struct Table {
     std::string title;  // « Zone 7 · Voûte crânienne »
     std::string sub;    // « Groupe 1 · 8 joueurs · terminée à 12:34 »
     std::vector<Row> rows;
+    /// 2.79: a header per group (« Groupe 3 · CRÂNE · Voûte crânienne »): its rows under it, sorted among
+    /// themselves; the shares and the crowns stay those of the whole table.
+    std::vector<std::string> sections;
+};
+
+/// 2.79: a part of the titan (a branch, or the heart) as the drawing shows it, and its tables.
+struct Part {
+    std::string id;        // the titan's layer (« crane », « coeur »: assets/ui/raids/asterion.json)
+    std::string name;      // « CRÂNE »
+    std::string gigaboss;  // its gigaboss's name (« Skullmaw »), empty for the heart
+    std::string enemy;     // its gigaboss's enemy (the portrait), empty: the heart's light
+    asterion::State state = asterion::State::Intact;
+    bool fallen = false;   // its gigaboss down (the heart: the raid won)
+    bool relic = false;    // its relic brought back (the optional objective of its secret zone)
+    bool open = true;      // its numbers are on this computer (else `closed` says where they are)
+    std::string closed;
+    std::vector<int> groups;  // the groups there now (their numbers)
+    std::vector<Table> zones; // its zones' tables (the newest first)
+    Table whole;              // the whole part: its groups, a header each
 };
 
 struct Model {
@@ -63,6 +98,12 @@ struct Model {
     std::string legend;        // where the numbers come from (one line or two)
     std::string tooltipNote;   // the last line of each tooltip
     std::string tabKey;        // the key that changes tab besides LB / RB (« Tab »)
+    /// 2.79: the titan's parts (the seven branches, then the heart); empty: no titan (the tables above alone).
+    std::vector<Part> parts;
+    std::string partKey = "Q / E, LB / RB";  // the keys that choose a part
+    std::string extraKeys;     // a last piece of the keys' line (the panel around it), empty: none
+    /// 2.79: drawn inside another panel (its own title and « Fermer »): no dimming, no heading.
+    bool embedded = false;
 };
 
 /// What one column says of one row.
@@ -90,28 +131,54 @@ struct Layout {
     std::array<Rect, 2> tabs;
     Rect prevZone, nextZone;  // empty when the tab has a single zone
     std::array<Rect, kCols> cols;     // x and width of each column (header row's y and height)
-    std::vector<Rect> rows;           // one per row shown, in sorted order
-    int hidden = 0;                   // rows that did not fit (« … et N de plus »)
+    std::vector<Rect> rows;           // one per row, in the order shown, unscrolled (the content from list.y)
+    int hidden = 0;                   // always 0 since 2.79 (the rows scroll)
     float rowFont = 18.0f, headFont = 15.0f;
     std::vector<std::string> legendLines, keyLines;
     std::vector<Rect> texts;          // every text box drawn (for the overlap tests)
+    // 2.79
+    Rect list;                        // the rows' view (scrolled when contentH is taller)
+    float contentH = 0.0f;
+    std::vector<int> rowOf;           // the row (Table::rows) of each of `rows`
+    std::vector<Rect> sections;       // the group headers, unscrolled like `rows`
+    std::vector<int> sectionOf;       // their index in Table::sections
+    Rect table;                       // the table's side (the whole width without a titan)
+    Rect titan, overview, figure, caption;  // the titan's column, its « Raid entier » button, the drawing, its line
+    std::vector<Rect> callouts;       // one per part (Model::parts)
+    std::vector<Vec2> anchors;        // where each part is on the drawing (its callout's line ends there)
+    std::vector<std::string> captionLines;
+    float titanScale = 0.0f;          // the drawing's scale (whole multiples once enlarged), 0: no drawing
 };
 
 class View {
 public:
-    int tab = 0;        // 0: « Zone », 1: « Raid entier »
-    int zone = 0;       // the zone shown in the « Zone » tab (index in Model::zones)
+    int tab = 0;        // 0: « Zone », 1: « Raid entier » (a part chosen: the whole part)
+    int zone = 0;       // the zone shown in the « Zone » tab (index in its zones)
     Col sort = Col::Boss;
-    int selected = -1;  // the row shown in detail by the keys (sorted order), -1 none
-    /// Its keys: Tab (its tabKey action), Q / E, LB / RB: tabs; Gauche / Droite: the sorted column;
-    /// Haut / Bas: a row's detail; Entrée / A: the next zone; Échap / B: close (true).
-    bool handleKeys(const InputManager& in, int zones);
+    int selected = -1;  // the row shown in detail by the keys (the order shown), -1 none
+    int part = -1;      // 2.79: the titan's part shown (Model::parts), -1: « Raid entier », every group
+    /// Its keys: Tab (its tabKey action): tabs; Q / E, LB / RB: tabs, or (`parts` > 0) the titan's part;
+    /// Gauche / Droite: the sorted column; Haut / Bas: a row's detail (the rows scroll to it); Entrée / A:
+    /// the next zone; Échap / B: close (true).
+    bool handleKeys(const InputManager& in, int zones, int parts = 0);
+    /// 2.79: chooses a part (-1: the whole raid); the zone and the row start again.
+    void choose(int p);
 };
+
+/// 2.79: the zone tables of what the view shows (the part chosen, else the whole raid).
+const std::vector<Table>& zonesOf(const Model& m, const View& v);
 
 /// Lays the table out in `r` (the whole panel).
 Layout layout(UIContext& ui, const Rect& r, const Model& m, const View& v);
-/// Draws it; true when « Fermer » was clicked. `mouse`: where the pointer is (tooltips), when it moves.
+/// Draws it; true when « Fermer » was clicked. Without GameServices the titan's callouts are drawn
+/// without the drawing nor the portraits (tests).
 bool draw(UIContext& ui, const Rect& r, const Model& m, View& v);
+/// 2.79: with the titan drawn by `fig` (its parts lit, its tooltip) and the gigabosses' portraits.
+bool draw(GameServices& g, AsterionFigure& fig, const Rect& r, const Model& m, View& v);
+/// 2.79: the titan's parts as the game's data name them (data/raids/asterion.json: id, name, gigaboss;
+/// data/raids/asterion_sheets.json: its gigaboss's enemy), in the order of its body, the heart last; empty
+/// when the data cannot be read. The callers fill in their state, their groups and their tables.
+std::vector<Part> titanParts();
 /// The tooltip of a cell: its box (inside the screen) and its lines, for `anchor` (the cell).
 struct Tooltip {
     Rect box;

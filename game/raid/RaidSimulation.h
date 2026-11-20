@@ -69,6 +69,14 @@ public:
         int moves = 0;            // branches it went to after the first
         int heartBase = -1;       // tests started at a later phase: its part of the heart's health at that start (no damage)
         uint32_t formed = 0;      // the raid's step it was formed at
+        /// 2.79 (display only, never in the hash): what the group did in each branch it left (moveGroup): its
+        /// players' contributions there and its zones' tables (the contributions table shows each part's groups).
+        struct Stint {
+            int branch = 0;
+            std::vector<ZoneContribution> rows;
+            std::vector<ZoneFinish> finishes;
+        };
+        std::vector<Stint> past;
     };
     struct WorldEvent {
         std::string text;

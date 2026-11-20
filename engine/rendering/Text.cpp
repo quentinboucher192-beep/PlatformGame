@@ -1,9 +1,12 @@
 #include "engine/rendering/Text.h"
 
 #include <cmath>
+#include <unordered_map>
+#include <vector>
 
 #include "engine/core/I18n.h"
 #include "engine/core/Log.h"
+#include "engine/rendering/GlyphCheck.h"
 
 namespace cosmic {
 
@@ -89,11 +92,45 @@ void TextRenderer::endFrame() {
     }
 }
 
+namespace {
+
+std::vector<glyphs::Missing> g_missing;
+std::unordered_map<uint32_t, bool> g_titleHas;  // the title font's characters, looked up once each
+
+/// `face`, or the bold body face when `title` (the titles' font, given for that face only) lacks a character of `text`.
+FontFace faceFor(std::string_view text, FontFace face, TTF_Font* title) {
+    if (face != FontFace::Title || !title || text.empty()) return face;  // the body faces cover every text (tests/test_font_glyphs.cpp)
+    for (size_t i = 0; i < text.size();) {
+        const auto c = static_cast<unsigned char>(text[i]);
+        const int n = c < 0x80 ? 1 : (c >> 5) == 6 ? 2 : (c >> 4) == 14 ? 3 : (c >> 3) == 30 ? 4 : 1;
+        uint32_t cp = n == 1 ? c : n == 2 ? (c & 0x1Fu) : n == 3 ? (c & 0x0Fu) : (c & 0x07u);
+        for (int k = 1; k < n && i + static_cast<size_t>(k) < text.size(); ++k) cp = (cp << 6) | (static_cast<unsigned char>(text[i + static_cast<size_t>(k)]) & 0x3Fu);
+        i += static_cast<size_t>(n);
+        if (cp < 0x80 && cp != '^') continue;  // Orbitron has every printable ASCII character but « ^ »
+        auto it = g_titleHas.find(cp);
+        const bool has = it != g_titleHas.end() ? it->second : (g_titleHas[cp] = TTF_FontHasGlyph(title, cp));
+        if (has) continue;
+        bool known = false;
+        for (const glyphs::Missing& m : g_missing) known = known || (m.codepoint == cp && m.text == text);
+        if (!known && g_missing.size() < 256) g_missing.push_back({static_cast<int>(face), cp, std::string(text.substr(0, 120))});
+        return FontFace::Bold;
+    }
+    return face;
+}
+
+}  // namespace
+
+namespace glyphs {
+const std::vector<Missing>& missing() { return g_missing; }
+void clear() { g_missing.clear(); }
+}  // namespace glyphs
+
 // Every text is measured and drawn in the language in use (i18n::display: French → the
 // language chosen), so that a measure always matches what is drawn.
 
 Vec2 TextRenderer::measure(std::string_view text, FontFace face, float size) {
     text = i18n::display(text);
+    face = faceFor(text, face, face == FontFace::Title ? font(FontFace::Title, 24) : nullptr);
     TTF_Font* f = font(face, static_cast<int>(std::lround(size)));
     if (!f || text.empty()) return {0.0f, size};
     int w = 0, h = 0;
@@ -103,7 +140,7 @@ Vec2 TextRenderer::measure(std::string_view text, FontFace face, float size) {
 
 Vec2 TextRenderer::measureWrapped(std::string_view text, FontFace face, float size, float maxWidth) {
     text = i18n::display(text);
-    const Cached* c = get(text, face, static_cast<int>(std::lround(size)), std::max(1, static_cast<int>(maxWidth)));
+    const Cached* c = get(text, faceFor(text, face, face == FontFace::Title ? font(FontFace::Title, 24) : nullptr), static_cast<int>(std::lround(size)), std::max(1, static_cast<int>(maxWidth)));
     if (!c) return {0.0f, 0.0f};
     return {static_cast<float>(c->texture->width()), static_cast<float>(c->texture->height())};
 }
@@ -119,7 +156,7 @@ Vec2 TextRenderer::place(Vec2 pos, Vec2 size, const TextStyle& style) const {
 
 Vec2 TextRenderer::draw(std::string_view text, Vec2 pos, const TextStyle& style) {
     text = i18n::display(text);
-    const Cached* c = get(text, style.face, static_cast<int>(std::lround(style.size)), 0);
+    const Cached* c = get(text, faceFor(text, style.face, style.face == FontFace::Title ? font(FontFace::Title, 24) : nullptr), static_cast<int>(std::lround(style.size)), 0);
     if (!c) return {0.0f, style.size};
     Vec2 size{static_cast<float>(c->texture->width()), static_cast<float>(c->texture->height())};
     Vec2 p = place(pos, size, style);
@@ -140,7 +177,7 @@ Vec2 TextRenderer::draw(std::string_view text, Vec2 pos, const TextStyle& style)
 Vec2 TextRenderer::drawWrapped(std::string_view text, Vec2 pos, float maxWidth, const TextStyle& style) {
     text = i18n::display(text);
     const Cached* c =
-        get(text, style.face, static_cast<int>(std::lround(style.size)), std::max(1, static_cast<int>(maxWidth)));
+        get(text, faceFor(text, style.face, style.face == FontFace::Title ? font(FontFace::Title, 24) : nullptr), static_cast<int>(std::lround(style.size)), std::max(1, static_cast<int>(maxWidth)));
     if (!c) return {0.0f, 0.0f};
     Vec2 size{static_cast<float>(c->texture->width()), static_cast<float>(c->texture->height())};
     Vec2 p = place(pos, size, style);
