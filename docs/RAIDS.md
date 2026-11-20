@@ -17,8 +17,9 @@
 # joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §28) ;
 # joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29) ;
 # tester avec des joueurs invités (2.80, §30) ;
-# « Après Asterion », le film du monde d'après regardé ensemble ; ADMINISTRATION › Films (2.81, §31 et §32)
-# mécanismes qui attendent les embuscades, monte-charge et murs sans escalade (2.81.2, §33)
+# « Après Asterion », le film du monde d'après regardé ensemble ; ADMINISTRATION › Films (2.81, §31 et §32) ;
+# mécanismes qui attendent les embuscades, monte-charge et murs sans escalade (2.81.2, §33) ;
+# « Le Balancier » et « Encore un tour », les films de transition, avant-premières du raid 2 (2.82, §34)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -2577,6 +2578,154 @@ genre et durée, « où » sur deux lignes au plus, le bouton ; testé en 1280 �
   « PAS DÉCOUVERT » plantait) et dit pourquoi une partie est vide (« Pas encore découvert : aucun groupe n'y est entré. »).
 * **Versions** : `TITAN_REVISION` passe à **11** (les catalogues et `raidTitan.json` régénérés) ; `kSimulationVersion` et
   `kRankingGeneration` restent.
+
+## 34. « Le Balancier » et « Encore un tour » : les films de transition, avant-premières du raid 2 (2.82)
+
+Deux **mini-films de près de deux minutes** racontent ce qui vient après Asterion, l'un si le Cœur tombe, l'autre s'il
+survit ; ils passent tous deux par **l'atelier** (deux plans) et **finissent sur les neuf mêmes plans** : on y découvre le vaisseau du raid 2 sans jamais nommer celui qui le pilote (un
+vieil homme, une silhouette aux yeux de rouages). En 2.82, ce sont des **avant-premières** : ils se regardent depuis
+**Collection › Galerie › Films**, ouverts à tous (aucun verrou), et depuis **ADMINISTRATION › Films**. Rien n'est demandé au
+serveur ; ils se jouent hors ligne.
+
+### Les histoires (`data/raids/asterion_balancier.json`, `asterion_tour.json`, légendes et titres écrits à la main, anglais dans `en.json`)
+
+**« LE BALANCIER »** (122 s), après la chute :
+
+| Plan | Durée | Ce qu'on voit | Légende ou titre |
+|---|---|---|---|
+| 1. `onde` | 8 s | la lueur de la supernova se resserre, son anneau s'éteint, les éclats d'Asterion filent encore | « La lumière de la supernova s'éteignait. Les éclats d'Asterion filaient encore à travers la nuit. » |
+| 2. `tic` | 8 s | un cadran de lumière bat à chaque tic, son aiguille saute ; puis les tics se dérèglent (secousses, éclairs cyan) | « Puis, du fond du silence, monta un battement. Tic. Tac. Tic… Et le battement se dérégla. » |
+| 3. `fige` | 8 s | une vague de temps figé traverse l'image : les éclats, les étincelles, la poussière et le ciel s'arrêtent là où elle passe, le givre les prend, la caméra continue entre eux | « Les éclats s'arrêtèrent en plein vol. La poussière, la lumière : tout se figea. » |
+| 4. `dechirure` | 10 s | près de Lyse, une déchirure cyan s'ouvre ; l'Échappement en sort, aiguilles affolées, balancier brisé (le morceau tombe en tournant) | « Près de Lyse, le vide se déchira. Il en sortit une montre grande comme une lune, aiguilles affolées, balancier brisé. » |
+| 5. `vieil_homme` | 9 s | derrière le verre du dôme, à contre-jour, un vieil homme regarde les éclats figés et pose la main sur la vitre | « Mon balancier… » ; « Derrière le verre, un vieil homme contemplait les éclats immobiles. » |
+| 6. `remonter` | 7 s | plus près : ses yeux s'allument et tournent comme des rouages | « Il faudra tout remonter. » ; « Ses yeux s'allumèrent et se mirent à tourner, comme des rouages. » |
+| 7. `atelier` | 9 s | (commun) dans la montre, un mur de mille horloges arrêtées à la même heure, l'établi sous la lampe, le plan d'Asterion en balancier | « Dans les entrailles de la montre, mille horloges s'étaient arrêtées à la même seconde. Sur l'établi, des plans : Asterion, dessiné en balancier. » |
+| 8. `manipulations` | 9 s | (commun) le vieil homme au travail, fou et génial, à contre-jour, ses yeux de rouages, ses deux mains et quatre bras de laiton à la fois (pince, loupe, tournevis, chalumeau) : il règle un échappement géant dans les étincelles, tord un spiral, fait tourner des rouages à l'envers, l'ancien balancier d'Asterion branché à une machine, une montre ouverte sur une galaxie miniature ; l'image tressaute sur le rythme cassé de la musique | « Ses mains ne s'arrêtaient jamais : pinces, loupe, tournevis, un ressort tordu à mains nues, des rouages qu'il faisait tourner à l'envers. » |
+| 9. `balancier_vide` | 8 s | sous la montre, la tige brisée oscille, vide, parmi des éclats de laiton (rouage, vis, plaque, ressort) | « Sous la montre, la tige brisée oscillait encore, vide, parmi les éclats de laiton. Il lui fallait un nouveau balancier. » |
+
+**« ENCORE UN TOUR »** (121 s), si Asterion survit :
+
+| Plan | Durée | Ce qu'on voit | Légende ou titre |
+|---|---|---|---|
+| 1. `fuite` | 10 s | Asterion blessé fuit, de trois quarts, penché dans sa course, ses fissures rougeoient ; la caméra le suit, les étoiles filent, une traînée d'éclats de mondes derrière lui | « Blessé, Asterion fuyait à travers le vide, semant derrière lui des éclats de mondes. » |
+| 2. `resiste` | 9 s | il se retourne, rugit, tente de s'arracher ; le temps ralentit : chacun de ses élans laisse une image de lui, figée l'une après l'autre | « Asterion se retourna et rugit. Il voulut s'arracher au vide, mais autour de lui, le temps ralentissait. » |
+| 3. `main` | 10 s | une main de laiton immense sort, paume ouverte, d'une faille au bord de l'image ; le titan (le quart de sa taille) y vole ; les doigts se referment, articulation après articulation | « Alors une main immense surgit de l'ombre et se referma sur lui. Une main de laiton, de rouages et de verre. » |
+| 4. `fils` | 10 s | gros plan dans la paume : un fil d'or descend sur chaque plaie, une aiguille de lumière la recoud point par point dans une gerbe d'étincelles, la plaie devient une cicatrice d'or | « Des fils d'or, tissés de temps volé, recousirent ses blessures, une à une. » |
+| 5. `encore` | 8 s | le vieil homme de profil, à contre-jour, tend la main vers le titan tenu, petit, au loin | « Encore un tour, mon vieux. » ; « Une voix lasse, presque tendre, murmura au titan : » |
+| 6. `chaine` | 10 s | près de Lyse, une faille s'ouvre ; l'Échappement en sort et s'en éloigne, Asterion pendu sous sa tige par des chaînes d'or, qui oscille comme un balancier | « Près de Lyse, le vide se déchira. Une montre grande comme une lune en sortit et, sous elle, enchaîné, Asterion battait la mesure. » |
+| 7. `atelier` | 9 s | (commun) le même plan que dans « Le Balancier » | (la même légende) |
+| 8. `manipulations` | 9 s | (commun) le même plan que dans « Le Balancier » | (la même légende) |
+
+**Les neuf derniers plans, communs** (46 s, identiques dans les deux films, comme l'atelier ; `--check` du générateur le
+vérifie) : d'abord les six mondes de la montre, vus à travers le verre du dôme, chacun avec sa loi du temps et la
+silhouette du boss qui le garde, encore une ombre : une créature ou une machine propre à son monde et à l'horlogerie
+(le jardinier aux ressorts et aux cisailles, le colosse de givre au sablier gelé, le forgeron-fourneau au marteau, le pèlerin
+à l'auréole d'aiguilles, le bibliothécaire aux six bras, la sentinelle au visage de cadran), en volume (ombres internes,
+liseré de lumière, coutures et yeux qui luisent), qui respire — et à moitié là : elle ondule comme l'air chaud, ses couleurs
+se dédoublent à ses bords, elle vacille ; 4 s chacun :
+
+| Plan | Durée | Ce qu'on voit | Légende ou titre |
+|---|---|---|---|
+| `monde_serre` | 4 s | des lianes qui poussent trop vite, encore et encore | « Une serre où les lianes poussaient trop vite… » |
+| `monde_glacier` | 4 s | de gros flocons qui tombent au ralenti, la neige presque immobile | « un glacier où la neige tombait au ralenti… » |
+| `monde_forge` | 4 s | le même coup de marteau sur l'enclume, ramené en arrière à chaque fois (un éclair cyan) | « une forge qui recommençait sans fin la même heure… » |
+| `monde_ruines` | 4 s | des pierres tombées qui remontent dans leur colonne | « des ruines qui se relevaient à rebours… » |
+| `monde_archives` | 4 s | des pages et de la poussière figées en l'air | « des archives figées entre deux secondes… » |
+| `monde_cadran` | 4 s | un cadran pour sol, une aiguille longue comme une rue qui tourne lentement | « et, au centre, le cadran. Dans chaque monde, une ombre attendait. » |
+| `cadran` | 9 s | l'Échappement près de Lyse (son balancier sous l'image) : ses six mondes s'allument un à un sous le dôme, ses aiguilles ralentissent puis battent la seconde | « Sous le dôme de verre, six mondes s'allumèrent comme les heures d'un cadran. Et les aiguilles se remirent en marche. » |
+| `regard` | 6 s | les yeux de rouages, en gros plan, le monocle où se reflètent les six mondes ; puis le noir | (aucune légende) |
+| `noir` | 7 s | le noir ; le tic-tac s'accélère, puis s'arrête net | « Tic… tac… Quelque part, quelqu'un remonte le temps. » ; « À SUIVRE » |
+
+Aucune date, aucune promesse : « À SUIVRE ». Le nom du personnage est gardé pour le raid 2.
+
+### L'Échappement et les autres images (`tools/assetgen/environment/story_horloger.py`, `story_horloger_art.py`)
+
+Chaque élément animé a ses planches en pixel art, en couches, dans `assets/stories/horloger/` et
+`assets/animations/stories/horloger_*.json` :
+
+* **l'Échappement**, une montre de gousset grande comme une lune, en parties qui partagent un même point (le centre du
+  cadran) : sa **couronne dentée** et ses quais (les dents tournent), son **dôme de verre** sur **six mondes en quartiers**
+  disposés comme les heures (Serre d'Avant vert, Glacier de Demain bleu glace, Forge en Boucle orange lave, Ruines
+  d'Aethra violettes, Archives Figées gris argent, Cadran Central blanc et or ; éteints, vacillants, s'allumant un à un,
+  allumés) et la Salle du Balancier au centre, les **lumières** au-dessus (dessinées un peu plus près : elles flottent
+  quand la caméra bouge), **deux aiguilles** dessinées en perspective sur le cadran (24 angles : folles, ralentissant,
+  battant la seconde), ses nervures de laiton et son verre (un reflet qui passe), les **engrenages du dos** (une boucle
+  sans saut sur la symétrie de chaque roue), son **balancier** (entier, brisé, le morceau qui tombe) ou **Asterion
+  enchaîné** dessous (fait de ses propres couches, son cœur qui bat, des cicatrices d'or) ;
+* la **déchirure du temps** (ouverture, frémissement, fermeture ; son halo à part, additif) ;
+* la **main mécanique**, vue de côté (paume et doigts du fond derrière, doigts proches et pouce devant ce qu'elle tient ;
+  chaque articulation plie à son tour, ses petits engrenages tournent) et son bras sorti d'une **faille** ;
+* les **fils d'or** (un long fil qui se tisse, les points de couture, une **aiguille de lumière**) et les **plaies**
+  d'Asterion (ouvertes, qui se referment, cicatrices) ;
+* Asterion **en fuite** (ses couches, penché, de trois quarts, ses fissures qui rougeoient), des **étoiles filantes** ;
+* le **vieil homme** (silhouette à contre-jour : de face avec ses yeux, ou de profil, voûté, long manteau, quelques
+  mèches, monocle, sa main qui se tend), ses **yeux de rouages** et le **gros plan** de son regard ;
+* l'**atelier** (un mur de mille horloges arrêtées, de grandes pendules, l'établi, le plan d'Asterion en balancier), les
+  **éclats de laiton** ; les **six mondes** (leur décor, la silhouette de leur gardien, des lianes, des flocons, une
+  enclume, des pages) ; **Lyse** sans visage, une étoile morte ;
+* le **givre** sur les éclats figés, un **cadran fantôme** et son aiguille, des **étoiles proches** et un **voile** pour la
+  parallaxe, la **vague** du temps figé, le noir.
+
+Repris : les couches d'Asterion, ses éclats, son onde et son nuage d'or, le ciel de Lyse (l'histoire de Singularis),
+l'espace des films d'Asterion. Les sons (`tools/assetgen/audio/sfx/stories.py`) : `story_tick`, `story_tock`,
+`story_tick_faux`, `story_gong`, `story_tear`, `story_freeze`, `story_chain`, `story_servo`, `story_thread`.
+
+`--check` refait tout deux fois et compare les octets entre eux et aux fichiers, vérifie que les neuf derniers plans
+et l'atelier sont les mêmes dans les deux films ; `--storyboard balancier|tour FICHIER` écrit la planche ; `--frames DOSSIER` quelques
+images clés. Il écrit aussi les vignettes `assets/ui/films/asterion_balancier.png` et `asterion_tour.png`.
+
+### La musique : « Le Mécanisme » (`tools/assetgen/audio/music/songs/mecanisme.py`)
+
+Une partition par film (`music/mecanisme_balancier.ogg`, `music/mecanisme_tour.ogg`), écrite en secondes, plan par plan :
+tic-tac et échappements, une boîte à musique désaccordée (une berceuse chromatique, un carillon d'horloge faussé), des
+bourdons graves en triton, des cuivres qui grincent en glissant vers le bas, des nappes jouées à l'envers. Le temps n'y
+est jamais stable : le tempo accélère et ralentit (avec un écart à chaque mesure), la mesure change sans cesse (5/8, 7/8,
+3/8, 9/8), une seconde horloge bat décalée de la première, et la machine **s'arrête net** puis repart (les arrêts coupent
+tout, réverbération comprise). Elle suit l'image : calme et inquiétante quand le temps se fige et dans l'atelier, au plus
+fou quand Asterion lutte et sur les six mondes, une seconde régulière quand les aiguilles repartent (avec le gong), puis,
+dans le noir, elle accélère avec le tic-tac du film et s'arrête avec lui. La fin (les 46 dernières secondes) est écrite
+une fois : la même dans les deux films. Mixée sous les sons (−20 LUFS), sans voix. `generate.py --check mecanisme_balancier
+mecanisme_tour` la refait à part et la compare à l'octet près.
+
+### Le moteur des films : le temps figé (`hold`)
+
+Un élément d'une scène peut avoir `"hold": [de, à]` : **son temps s'arrête** à `de` (secondes du plan) — ses clés, sa
+dérive, son clip, sa pulsation, ses particules restent comme ils étaient — jusqu'à `à`, puis reprend (sans `à` : pour
+toujours). C'est ce qui fige les éclats, les étincelles et le ciel du plan `fige` pendant que la caméra continue
+(`StoryElement::localTime`, lu par `BossStoryScene` et le rendu Python des planches). Un élément sans `hold` est dessiné
+exactement comme avant : les films existants ne changent pas (leurs générateurs `--check` restent identiques à l'octet).
+
+### Mode Film (tous les films et histoires)
+
+Dans tout ce que joue le lecteur des films et des histoires (`BossStoryScene` : ces deux films, ceux d'Asterion, les
+histoires des giga-boss, la bande-annonce), **F**, **Ⓨ** (quand il ne sert pas à « Depuis le début ») ou le bouton
+« F · Ⓨ Mode Film » (en haut à droite) passent en **Mode Film** : seule l'image reste, plein écran, avec les sous-titres
+et les titres du film ; ni bandes, ni barre de progression, ni touches, ni bandeau « EN DIRECT ». Une note discrète
+(« Mode Film — F ou Y (manette) pour revenir ») s'efface après deux secondes ; à la souris, « Quitter le mode Film »
+apparaît au même endroit tant qu'elle bouge. Passer et Quitter marchent comme avant ; même un premier visionnage
+verrouillé peut passer en Mode Film (il ne saute rien). Le choix est gardé dans les paramètres (`gameplay.filmMode`) pour
+tous les films. Tout est mesuré (`layoutFilmMode`) : le bouton, la note et le bandeau « EN DIRECT » ne se chevauchent
+jamais (testé en 1280 × 720 et 1920 × 1080, en français et en anglais).
+
+### Où, et pour la suite
+
+ADMINISTRATION › Films et Collection › Galerie › Films (`ui/screens/FilmCatalog`, filtre « Films d'Asterion ») ;
+`--asterion-balancier [<secondes>]` et `--asterion-tour [<secondes>]` les jouent par-dessus le menu (captures). Leur
+lancement par le jeu lui-même (après « Après Asterion » quand le Cœur tombe, à la fin officielle d'un événement sinon,
+regardés ensemble à l'heure du serveur) viendra plus tard.
+
+### Tests
+
+`tests/test_horloger_films.cpp` : les deux films (100 à 125 s, chaque plan animé, tous leurs fichiers, leurs légendes et
+titres en anglais, les neuf mêmes derniers plans et le même atelier, personne n'est nommé) ; le temps figé (un élément tenu reste où il
+était, l'autre continue) ; les deux listes de films (ouverts à tous dans la Collection), joués depuis leur début et depuis
+une seconde donnée. `tests/test_asterion_aftermath.cpp` : les lignes des listes de films mesurées en 1280 × 720 et
+1920 × 1080, en français et en anglais, avec les deux nouveaux films.
+
+### Versions
+
+Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les empreintes de référence
+ne changent pas ; rien côté serveur.
 
 ---
 

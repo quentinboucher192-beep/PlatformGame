@@ -327,6 +327,17 @@ def state(el, t):
     return cur
 
 
+def held(el, t):
+    """2.82: an element's own time (StoryElement::localTime): frozen from `hold[0]` to `hold[1]` (for ever without it)."""
+    h = el.get("hold")
+    if not h or t <= float(h[0]):
+        return t
+    a, b = float(h[0]), float(h[1]) if len(h) > 1 else -1.0
+    if b < a or t < b:
+        return a
+    return t - (b - a)
+
+
 def camera(stage, t):
     keys = stage.get("camera") or [K(0, pos=(W / 2, H / 2), zoom=1.0)]
     el = {"keys": [dict(k, scale=k.get("zoom", 1.0)) for k in keys]}
@@ -427,11 +438,12 @@ def render(stage, t, size=(W, H), particles_on=False):
         def scr(p):
             return (iw / 2 + (p[0] - cdx) * k, ih / 2 + (p[1] - cdy) * k)
 
-        s = state(el, t)
+        te = held(el, t)  # 2.82: its own time (a hold freezes it)
+        s = state(el, te)
         if el.get("pulse"):  # a breathing light
             amt, per = el["pulse"][0], el["pulse"][1]
             ph = el["pulse"][2] if len(el["pulse"]) > 2 else 0.0
-            s["alpha"] *= 1 - amt * (0.5 - 0.5 * math.cos(2 * math.pi * (t / per + ph)))
+            s["alpha"] *= 1 - amt * (0.5 - 0.5 * math.cos(2 * math.pi * (te / per + ph)))
         if s["alpha"] <= 0.003:
             continue
         tint = _hex(el["tint"]) if el.get("tint") else None
@@ -442,7 +454,7 @@ def render(stage, t, size=(W, H), particles_on=False):
             w2, h2 = max(1, int(round(img.width * sc))), max(1, int(round(img.height * sc)))
             im = img.resize((w2, h2), Image.NEAREST)
             dr = el.get("drift", [0, 0])
-            p = (s["pos"][0] + dr[0] * t, s["pos"][1] + dr[1] * t)
+            p = (s["pos"][0] + dr[0] * te, s["pos"][1] + dr[1] * te)
             x, y = scr(p)
             if el.get("repeat"):
                 x = (x % w2) - w2
@@ -470,7 +482,7 @@ def render(stage, t, size=(W, H), particles_on=False):
             w2, h2 = max(1, int(round(fr.width * sc))), max(1, int(round(fr.height * sc)))
             im = fr.resize((w2, h2), Image.NEAREST)
             dr = el.get("drift", [0, 0])
-            x, y = scr((s["pos"][0] + dr[0] * t, s["pos"][1] + dr[1] * t))
+            x, y = scr((s["pos"][0] + dr[0] * te, s["pos"][1] + dr[1] * te))
             sh = el.get("shadow")
             if sh:  # its soft shadow on the ground, pushed away from its light
                 off = 0.0

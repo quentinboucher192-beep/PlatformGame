@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/verre.png",
+  "frameWidth": 272,
+  "frameHeight": 172,
+  "pivot": [136, 86],
+  "clips": {
+    "reflet": {"row": 0, "count": 20, "fps": 10, "loop": true}
+  }
+}

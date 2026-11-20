@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/spiral.png",
+  "frameWidth": 90,
+  "frameHeight": 90,
+  "pivot": [45, 45],
+  "clips": {
+    "tord": {"row": 0, "count": 6, "fps": 9, "loop": true}
+  }
+}

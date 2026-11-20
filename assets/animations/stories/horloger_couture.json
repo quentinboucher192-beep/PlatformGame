@@ -1,0 +1,10 @@
+{
+  "texture": "stories/horloger/couture.png",
+  "frameWidth": 44,
+  "frameHeight": 26,
+  "pivot": [22, 13],
+  "clips": {
+    "coud": {"row": 0, "count": 7, "durations": [0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15], "loop": false, "next": "cousu"},
+    "cousu": {"row": 1, "count": 2, "fps": 3, "loop": true}
+  }
+}

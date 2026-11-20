@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/aiguille_fantome.png",
+  "frameWidth": 16,
+  "frameHeight": 150,
+  "pivot": [8, 130],
+  "clips": {
+    "idle": {"row": 0, "count": 1, "fps": 1, "loop": true}
+  }
+}

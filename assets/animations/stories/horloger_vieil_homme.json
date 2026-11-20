@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/vieil_homme.png",
+  "frameWidth": 156,
+  "frameHeight": 184,
+  "pivot": [78, 183],
+  "clips": {
+    "immobile": {"row": 0, "count": 2, "durations": [1.2, 1.2], "loop": true}
+  }
+}

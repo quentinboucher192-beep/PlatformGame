@@ -92,7 +92,13 @@ struct StoryElement {
         Vec2 size{60.0f, 12.0f};    // units, times the sprite's scale
         std::optional<Vec2> light;  // a light: the shadow is pushed away from it
     } shadow;                       // a sprite's soft shadow on the ground, at its point
+    /// 2.82: frozen time: from `holdFrom` (seconds of the shot) its own time stands still — its keys, its drift, its
+    /// clip, its pulse, its particles stay as they were — until `holdTo`, then goes on (for ever when holdTo < holdFrom).
+    /// None (holdFrom < 0): its time is the shot's.
+    float holdFrom = -1.0f, holdTo = -1.0f;
     std::vector<StoryKey> keys;
+    /// Its own time at the shot's time `t` (`t` itself without a hold).
+    float localTime(float t) const;
     /// Its alpha multiplier at `t` (the pulse).
     float pulseAt(float t) const;
     StoryElementState at(float t) const { return storyStateAt(keys, t); }

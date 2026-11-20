@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/montre_galaxie.png",
+  "frameWidth": 96,
+  "frameHeight": 110,
+  "pivot": [48, 74],
+  "clips": {
+    "galaxie": {"row": 0, "count": 8, "fps": 8, "loop": true}
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "texture": "stories/horloger/regard.png",
+  "frameWidth": 260,
+  "frameHeight": 132,
+  "pivot": [130, 66],
+  "clips": {
+    "clos": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "ouvre": {"row": 1, "count": 6, "durations": [0.12, 0.12, 0.12, 0.12, 0.12, 0.12], "loop": false, "next": "tournent"},
+    "tournent": {"row": 2, "count": 8, "fps": 10, "loop": true}
+  }
+}

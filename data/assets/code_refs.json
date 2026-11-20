@@ -593,7 +593,7 @@
    "editors/enemy_editor/EnemyEditorScene.cpp": 2,
    "editors/level_editor/LevelEditorPowerKeys.cpp": 1,
    "ui/screens/AdminGifts.cpp": 1,
-   "ui/screens/BossStoryScene.cpp": 3,
+   "ui/screens/BossStoryScene.cpp": 4,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/CollectionScene.cpp": 3,
    "ui/screens/CoopLobbyScene.cpp": 2,
@@ -839,7 +839,13 @@
   "ui/films/asterion_apres.png": {
    "ui/screens/FilmCatalog.cpp": 1
   },
+  "ui/films/asterion_balancier.png": {
+   "ui/screens/FilmCatalog.cpp": 1
+  },
   "ui/films/asterion_film.png": {
+   "ui/screens/FilmCatalog.cpp": 1
+  },
+  "ui/films/asterion_tour.png": {
    "ui/screens/FilmCatalog.cpp": 1
   },
   "ui/films/asterion_victoire.png": {

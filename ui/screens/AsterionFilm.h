@@ -93,6 +93,17 @@ void resetParties();
 /// Tests: the party noted for `eventId` (nullptr: none).
 const aftermath::Party* partyOf(const std::string& eventId);
 
+/// 2.82: the two transition films after Asterion, teasers of raid 2 (data/raids/asterion_balancier.json « LE BALANCIER »
+/// and asterion_tour.json « ENCORE UN TOUR », their scenes written by tools/assetgen/environment/story_horloger.py),
+/// both ending on the same three shots. Watched from Collection › Galerie › Films (open to everyone) and ADMINISTRATION ›
+/// Films, from their start, with their normal controls (« Passer », « Quitter »). Local content: offline as online.
+/// Display only. nullptr without their files.
+std::shared_ptr<const BossStory> balancier();
+std::shared_ptr<const BossStory> tour();
+enum class Teaser { Balancier, Tour };
+/// The film from `atSeconds` (negative: its start); nullptr without its files.
+std::unique_ptr<Scene> makeTeaser(GameServices& g, Teaser which, float atSeconds = -1.0f);
+
 }  // namespace asterionfilm
 
 }  // namespace cosmic

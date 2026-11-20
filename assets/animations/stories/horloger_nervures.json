@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/nervures.png",
+  "frameWidth": 272,
+  "frameHeight": 172,
+  "pivot": [136, 86],
+  "clips": {
+    "idle": {"row": 0, "count": 1, "fps": 1, "loop": true}
+  }
+}

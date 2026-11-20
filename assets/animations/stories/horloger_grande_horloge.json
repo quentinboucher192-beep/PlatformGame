@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/grande_horloge.png",
+  "frameWidth": 60,
+  "frameHeight": 112,
+  "pivot": [30, 30],
+  "clips": {
+    "idle": {"row": 0, "count": 1, "fps": 1, "loop": true}
+  }
+}

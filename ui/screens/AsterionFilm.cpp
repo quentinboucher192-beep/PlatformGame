@@ -6,6 +6,7 @@
 #include <set>
 
 #include "engine/core/Log.h"
+#include "engine/core/Paths.h"
 #include "game/GameServices.h"
 #include "game/content/BossStories.h"
 #include "game/online/OnlineService.h"
@@ -102,6 +103,41 @@ std::shared_ptr<const BossStory> aftermath() {
 }
 
 bool aftermathUnlocked(const Progression& p) { return p.asterionAftermath; }
+
+namespace {
+std::shared_ptr<const BossStory> loadTeaser(const char* file) {
+    std::string err;
+    if (auto f = story::loadFilm(Paths::dataDir() / "raids" / file, &err)) return std::make_shared<const BossStory>(std::move(*f));
+    Log::warn("Film {} : {}", file, err);
+    return nullptr;
+}
+}  // namespace
+
+std::shared_ptr<const BossStory> balancier() {
+    static std::shared_ptr<const BossStory> cached;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        cached = loadTeaser("asterion_balancier.json");
+    }
+    return cached;
+}
+
+std::shared_ptr<const BossStory> tour() {
+    static std::shared_ptr<const BossStory> cached;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        cached = loadTeaser("asterion_tour.json");
+    }
+    return cached;
+}
+
+std::unique_ptr<Scene> makeTeaser(GameServices& g, Teaser which, float atSeconds) {
+    FilmPlay play;
+    play.startAt = atSeconds;
+    return makeFilmPlay(g, which == Teaser::Tour ? tour() : balancier(), std::move(play));
+}
 
 namespace {
 

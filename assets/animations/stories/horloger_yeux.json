@@ -1,0 +1,11 @@
+{
+  "texture": "stories/horloger/yeux.png",
+  "frameWidth": 32,
+  "frameHeight": 14,
+  "pivot": [16, 7],
+  "clips": {
+    "allume": {"row": 0, "count": 4, "durations": [0.1, 0.1, 0.1, 0.1], "loop": false, "next": "tournent"},
+    "tournent": {"row": 1, "count": 6, "fps": 10, "loop": true},
+    "lueur": {"row": 2, "count": 2, "durations": [0.5, 0.9], "loop": true}
+  }
+}

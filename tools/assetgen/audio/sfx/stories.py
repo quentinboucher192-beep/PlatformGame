@@ -370,3 +370,97 @@ def story_titan_roar(rng):
     sub = thump(48, 26, 2.4, tau=0.1, decay=0.9, click=0.2, rng=rng, drive=1.4) * 0.8
     stars_ = sparkle(2.6, rng, count=24, fmin=3000, fmax=8000) * 0.12
     return room(mix(body, pad_to(sub, n), pad_to(place([(0.4, stars_)]), n)), rng, t60=2.2, wet=0.3)
+
+
+# =========================================================================== 2.82: « Le Balancier », « Encore un tour »
+@sound('story_tick', -16, 'story', fade_out=0.05)
+def story_tick(rng):
+    """A clock's tick, the size of a moon: a bright brass click and its small ring."""
+    click = bell(2600, 0.16, ratio=3.1, index=1.4, decay=0.025, idx_decay=0.01) * 0.8
+    body = thump(900, 600, 0.05, tau=0.002, decay=0.01, click=0.9, rng=rng, drive=1.1) * 0.35
+    return room(mix(click, pad_to(body, ns(0.16))), rng, t60=0.35, wet=0.18)
+
+
+@sound('story_tock', -16, 'story', fade_out=0.05)
+def story_tock(rng):
+    """Its tock: lower, rounder, a hollow wooden-brass knock."""
+    knock = bell(1450, 0.2, ratio=2.4, index=1.1, decay=0.035, idx_decay=0.015) * 0.75
+    body = thump(420, 260, 0.08, tau=0.004, decay=0.02, click=0.6, rng=rng, drive=1.2) * 0.5
+    return room(mix(knock, pad_to(body, ns(0.2))), rng, t60=0.4, wet=0.2)
+
+
+@sound('story_tick_faux', -15, 'story', fade_out=0.1)
+def story_tick_faux(rng):
+    """A tick gone wrong: two clicks too close, detuned, a spring wobbling after them."""
+    a = bell(2300, 0.14, ratio=3.3, index=1.6, decay=0.03, idx_decay=0.01)
+    b = bell(1980, 0.14, ratio=2.9, index=1.9, decay=0.04, idx_decay=0.012) * 0.8
+    d = 0.5
+    n = ns(d)
+    t = np.arange(n) / SR
+    spring = sine(points(n, [(0, 330), (d, 210)], 'exp'), n) * np.exp(-t * 7.0) * (0.5 + 0.5 * np.sin(2 * np.pi * 23 * t)) * 0.18
+    return room(mix(pad_to(place([(0.0, a), (0.045, b)]), n), spring), rng, t60=0.5, wet=0.22)
+
+
+@sound('story_gong', -11, 'story', fade_out=1.2)
+def story_gong(rng):
+    """A bronze gong as big as the sky: a deep strike, beating partials that bloom and take long to die."""
+    d = 5.0
+    n = ns(d)
+    strike = thump(70, 42, 1.2, tau=0.05, decay=0.5, click=0.5, rng=rng, drive=1.3) * 0.6
+    body = mix(bell(98, d, ratio=2.41, index=2.6, decay=1.9, idx_decay=0.6), bell(147.5, d, ratio=2.9, index=1.8, decay=1.5, idx_decay=0.5) * 0.55,
+               bell(196.8, d, ratio=1.51, index=1.2, decay=1.2, idx_decay=0.4) * 0.35)
+    bloom = svf(noise(d, rng, 'pink'), points(n, [(0, 600), (0.6, 1400), (d, 500)], 'exp'), 1.5, 'bp') * points(n, [(0, 0), (0.4, 0.25), (d, 0)])
+    return room(mix(pad_to(strike, n), body, bloom * 0.3), rng, t60=3.0, wet=0.32)
+
+
+@sound('story_tear', -13, 'story', fade_out=0.5)
+def story_tear(rng):
+    """Time tearing open: a glassy rising rip, electric crackles, a shimmer pouring out."""
+    d = 2.2
+    n = ns(d)
+    rip = whoosh(1.4, rng, (260, 3400, 1800), q=1.6, peak_at=0.7, color='white') * 0.7
+    zz = zap(140, 1600, 1.4, q=6.0, shape='saw') * 0.18
+    shimmer = sparkle(2.0, rng, count=26, fmin=2500, fmax=9000) * 0.3
+    return room(mix(pad_to(rip, n), pad_to(zz, n), pad_to(place([(0.5, shimmer)]), n), crackle(d, rng, rate=60.0) * 0.25), rng, t60=1.4, wet=0.3)
+
+
+@sound('story_freeze', -14, 'story', fade_out=0.6)
+def story_freeze(rng):
+    """Everything stopping at once: a falling whoosh, frost cracking into crystals, a glassy ring."""
+    d = 2.0
+    n = ns(d)
+    fall = whoosh(1.0, rng, (2600, 900, 160), q=1.1, peak_at=0.25, color='pink') * 0.6
+    frost = debris(1.2, rng, count=40, fmin=3000, fmax=9000, grain=(0.002, 0.012)) * 0.35
+    ring = mix(chime(1568, 1.6, decay=0.8, bright=0.7), chime(2093, 1.6, decay=0.7, bright=0.6) * 0.6) * 0.18
+    return room(mix(pad_to(fall, n), pad_to(place([(0.15, frost)]), n), pad_to(place([(0.25, ring)]), n)), rng, t60=1.6, wet=0.3)
+
+
+@sound('story_chain', -15, 'story', fade_out=0.3)
+def story_chain(rng):
+    """Heavy chains pulled taut: links clinking one after another, a creak of strained metal."""
+    links = place([(0.06 * k + float(rng.uniform(0, 0.02)), bell(float(rng.uniform(1700, 2700)), 0.18, ratio=3.2, index=1.5, decay=0.04) * float(rng.uniform(0.4, 0.8)))
+                   for k in range(12)])
+    d = 1.2
+    n = ns(d)
+    creak = svf(saw(points(n, [(0, 90), (d, 70)], 'exp'), n), 600, 4.0, 'bp') * points(n, [(0, 0), (0.5, 0.25), (d, 0)])
+    return room(mix(pad_to(links, n), creak), rng, t60=0.7, wet=0.22)
+
+
+@sound('story_servo', -13, 'story', fade_out=0.4)
+def story_servo(rng):
+    """The great hand closing: servos whining up, the click of a ratchet, a heavy brass clank."""
+    d = 1.6
+    n = ns(d)
+    whine = zap(180, 820, 0.9, q=4.0, shape='saw') * 0.22
+    ratchet = place([(0.1 + 0.07 * k, blip(900 + 40 * k, 0.03)) for k in range(10)]) * 0.25
+    clank = mix(bell(420, 1.0, ratio=2.76, index=3.2, decay=0.22), thump(150, 70, 0.3, tau=0.01, decay=0.08, click=0.8, rng=rng, drive=1.5) * 0.6)
+    return room(mix(pad_to(whine, n), pad_to(ratchet, n), pad_to(place([(0.9, clank)]), n)), rng, t60=1.0, wet=0.25)
+
+
+@sound('story_thread', -16, 'story', fade_out=0.4)
+def story_thread(rng):
+    """A golden thread of stolen time drawn through: a quick rising run of tiny chimes, a shining zip."""
+    notes = ['G5', 'B5', 'D6', 'G6', 'B6']
+    run = arp(notes, 0.07, lambda f, i: chime(f, 0.5, decay=0.25, bright=0.8))
+    zipper = whoosh(0.6, rng, (1800, 5200, 3000), q=2.2, peak_at=0.5, color='white') * 0.2
+    return room(mix(pad_to(run, ns(1.0)), pad_to(zipper, ns(1.0))), rng, t60=1.0, wet=0.3)

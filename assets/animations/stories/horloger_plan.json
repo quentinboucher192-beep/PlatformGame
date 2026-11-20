@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/plan.png",
+  "frameWidth": 180,
+  "frameHeight": 120,
+  "pivot": [90, 60],
+  "clips": {
+    "trace": {"row": 0, "count": 2, "durations": [0.9, 0.3], "loop": true}
+  }
+}
