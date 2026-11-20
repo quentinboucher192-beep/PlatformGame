@@ -159,6 +159,10 @@ struct MenuData {
     std::string remainingTitle;
     std::vector<raidhud::Line> remaining;
     std::vector<raidhud::ZoneTable> tables;  // the zones finished while the instance was in them, newest first
+    /// 2.78: one line per zone finished (« Veine de magma · terminée à 12:34 · meilleur au boss : Lyra (31 %) »),
+    /// the newest first: the full « Tableau des contributions » opens over the menu (Entrée / A, its button).
+    std::vector<std::string> tableLines;
+    bool tableAvailable = false;
     std::vector<std::string> otherZones;     // the branch's zones finished elsewhere (their names)
     const std::vector<Notice>* journal = nullptr;
     std::string groupTitle, groupFooter;
@@ -169,6 +173,7 @@ struct MenuData {
 
 struct MenuAction {
     bool close = false, results = false;
+    bool table = false;  // 2.78: « Tableau des contributions » asked (its button, Entrée / A in « Zones terminées »)
 };
 
 /// Its places on this screen, each measured and after the one before: the panel, the title row and

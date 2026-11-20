@@ -28,6 +28,7 @@ enum class RaidHudElement : int {
     HeartEffects,   // 2.74: what the branches did to the Cœur (at its arena's door)
     Remaining,      // 2.75: « Ce qu'il reste à faire »: the zone's requirements ticked, the branch's zones to finish
     Notices,        // 2.75.5: the raid menu's button and the short notifications under it (ui/online/RaidMenu)
+    LairPassage,    // 2.78: the distance to the lair's passage in the zone before it, its arrow and its state
     Count
 };
 constexpr int kRaidHudElements = static_cast<int>(RaidHudElement::Count);

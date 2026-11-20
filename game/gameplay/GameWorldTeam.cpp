@@ -444,6 +444,7 @@ void GameWorld::liftSoul(TeamMember& m) {
 
 void GameWorld::checkTeamDown() {
     if (state_ == WorldState::Failed || state_ == WorldState::Completed || state_ == WorldState::Outro) return;
+    if (raidMode_ && raidGroupRule_) return;  // 2.78: the raid run judges the group across its zones
     for (const TeamMember& m : team_)
         if (m.presence == Presence::Playing || (raidMode_ && m.presence == Presence::Standby)) return;  // 2.75: a raid waits for its absent
     failLevel("Toute l'équipe est à terre");

@@ -312,6 +312,9 @@ struct RaidTestSetup {
     std::vector<std::optional<Vec2>> spawns;
     /// 2.77: « Niveau des joueurs simulés » (0 Débutant, 1 Confirmé, 2 Expert: reaction and precision).
     int skill = 1;
+    /// 2.78, captures (`--raid-contrib`): the « Tableau des contributions » opens over the raid's menu at the
+    /// first zone finished (the real numbers of the test, nothing sent).
+    bool openContrib = false;
 };
 std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
 /// 2.77: « Simuler un raid complet » (ADMINISTRATION › Raids › Tester Asterion, docs/RAIDS.md §21): the

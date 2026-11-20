@@ -85,9 +85,13 @@ OBJECTIVES = [
     ("grotte_relique", 5, "Facultatif : emporter la relique des scories", True, "", ""),
     ("avantbras_generateur", 6, "Activer le générateur de l'avant-bras (un pouvoir de tir)", False, "generator", ""),
     ("avantbras_raccourci", 6, "Facultatif : ouvrir le raccourci vers la Veine (levier)", True, "shortcut", ""),
-    ("poignet_verrou", 7, "Briser le verrou du poignet : vaincre sa garde", False, "", ""),
+    ("poignet_verrou", 7, "Briser le verrou du poignet : vaincre sa garde", False, "ambush", ""),
     # 2.68 (phase 3): the gigaboss of the branch; accepted once, it destroys the right arm.
     ("main_pyroclast", 8, "Vaincre le gigaboss Pyroclast", False, "gigaboss", ""),
+    # 2.78: every ambush of the Poignet-verrou (the guard's too, above) before the Main.
+    ("poignet_embuscade_1", 7, "Vaincre la première embuscade (toutes ses vagues)", False, "ambush", ""),
+    ("poignet_embuscade_2", 7, "Vaincre la deuxième embuscade (toutes ses vagues)", False, "ambush", ""),
+    ("poignet_embuscade_3", 7, "Vaincre la troisième embuscade (toutes ses vagues)", False, "ambush", ""),
 ]
 
 EDGES = [
@@ -95,8 +99,9 @@ EDGES = [
     (1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True),
     (2, 6, "", False), (3, 6, "shortcut", False), (4, 7, "generators", False),
     # 2.68: the Main only once the wrist is broken (its long level is the way to the gigaboss).
-    (6, 8, "objective:poignet_verrou", False),
-    (7, 8, "objective:poignet_verrou", False),
+    # 2.78: and every ambush of the Poignet-verrou beaten, through the lair's armory (raid_armory.py).
+    (6, 8, "ambushes:7", False),
+    (7, 8, "ambushes:7", False),
 ]
 
 
@@ -411,6 +416,7 @@ def zone_6():
     L.sign(42, 30, "Le magma monte dans l'avant-bras : à l'alerte, sautez sur les corniches.")
     z.rock(90, 27, 130)
     z.passage(8, 124, 27)
+    z.raid["passages"][-1]["via"] = 9  # 2.78: through the lair's armory
     z.arrive(8, 117, 27)
     L.orb("health_orb", 92, 25)
     L.light(64, 26, "#39f0d8", 90, flicker=0.1)
@@ -508,6 +514,7 @@ def zone_7():
     waves1 = [wave_of(["lava_stalker", "lava_stalker", "ember_mite", "ember_mite", "forge_bulwark", "magma_golem", "forge_drone", "fire_wisp",
                        "lava_stalker", "magma_gloop"], 124, 210, 4, s) for s in range(4)]
     arena1, _ = tower(z, 124, 210, floors1, waves1, "La Tour des tendons")
+    z.objective("poignet_embuscade_1", arena1, "cleared")
     z.rock(210, 36, 230)
     z.checkpoint(214, 36, "Après la Tour des tendons")
     L.orb("health_orb", 218, 34)
@@ -541,6 +548,7 @@ def zone_7():
     waves2 = [wave_of(["forge_bulwark", "forge_bulwark", "lava_stalker", "lava_stalker", "lava_burrower", "magma_golem", "forge_bomber", "forge_drone",
                        "ember_mite", "ash_wing", "magma_gloop"], 392, 472, 3, s + 1) for s in range(4)]
     arena2, _ = tower(z, 392, 472, floors2, waves2, "La Galerie des forges")
+    z.objective("poignet_embuscade_2", arena2, "cleared")
     z.rock(472, 36, 490)
     z.checkpoint(478, 36, "Après la Galerie des forges")
     L.orb("health_orb", 484, 34)
@@ -561,6 +569,7 @@ def zone_7():
     waves4 = [wave_of(["lava_burrower", "lava_burrower", "magma_gloop", "magma_gloop", "forge_bulwark", "ash_wing", "ash_wing", "forge_drone",
                        "magma_golem", "ember_mite"], 540, 620, 3, s + 3) for s in range(4)]
     arena4, _ = tower(z, 540, 620, floors4, waves4, "La Fosse des scories")
+    z.objective("poignet_embuscade_3", arena4, "cleared")
     z.rock(620, 36, 632)
     z.checkpoint(626, 36, "Avant la Garde du verrou")
     L.orb("health_orb", 629, 34)
@@ -570,14 +579,16 @@ def zone_7():
                        "ember_mite", "ember_mite", "forge_bomber"], 632, 732, 4, s + 2) for s in range(5)]
     arena3, _ = tower(z, 632, 732, floors3, waves3, "La Garde du verrou")
     z.objective("poignet_verrou", arena3, "cleared")
-    # The end: the door of the Main opens when the guard is beaten.
+    # The end: the door of the Main opens when every ambush of the zone is beaten (2.78: its lock, no event).
     z.rock(732, 36, 752)
     door = L.door(740, 30, 6)
-    L.event(arena3, "cleared", [{"type": "open", "target": door},
-                                {"type": "hint", "params": {"text": "Le verrou cède : la Main de Pyroclast est ouverte.",
-                                                            "duration": 3.5}}], delay=0.5)
     z.passage(8, 745, 36, door=door)
     z.arrive(8, 736, 36)
+    # 2.78: through the lair's armory; the way along the zone for the distance to its passage (pixels).
+    z.raid["passages"][-1]["via"] = 9
+    z.raid["spawns"]["9"] = z.raid["spawns"]["8"]
+    z.raid["route"] = [[x * T, y * T] for x, y in ((9, 36), (124, 36), (230, 36), (300, 36), (304, 14), (320, 14), (390, 16), (390, 36),
+                                                   (472, 36), (540, 36), (632, 36), (732, 36), (747, 36))]
     L.light(120, 30, FORGE_GLOW, 120, flicker=0.2)
     L.light(300, 28, LAVA_GLOW, 140, flicker=0.2)
     L.light(520, 28, FORGE_GLOW, 120, flicker=0.2)

@@ -994,8 +994,9 @@
       64,
       64
      ],
-     "lock": "objective:poignet_verrou",
-     "door": ""
+     "lock": "ambushes:7",
+     "door": "",
+     "via": 9
     }
    ],
    "objectives": [

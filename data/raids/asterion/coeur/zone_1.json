@@ -8085,26 +8085,6 @@
     }
    ],
    "delay": 0.6
-  },
-  {
-   "id": "ev4",
-   "source": "o467",
-   "trigger": "cleared",
-   "once": true,
-   "actions": [
-    {
-     "type": "open",
-     "target": "o475"
-    },
-    {
-     "type": "hint",
-     "params": {
-      "text": "La garde du cœur est tombée : la porte du Cœur d'Asterion s'ouvre !",
-      "duration": 3.5
-     }
-    }
-   ],
-   "delay": 0.5
   }
  ],
  "intro": {},
@@ -8206,6 +8186,12 @@
       16624,
       960
      ]
+    ],
+    "9": [
+     [
+      16624,
+      960
+     ]
     ]
    },
    "passages": [
@@ -8218,11 +8204,27 @@
       64,
       64
      ],
-     "lock": "objective:coeur_aorte",
-     "door": "o475"
+     "lock": "ambushes:1",
+     "door": "o475",
+     "via": 9
     }
    ],
    "objectives": [
+    {
+     "id": "coeur_embuscade_1",
+     "source": "o111",
+     "trigger": "cleared"
+    },
+    {
+     "id": "coeur_embuscade_2",
+     "source": "o223",
+     "trigger": "cleared"
+    },
+    {
+     "id": "coeur_embuscade_3",
+     "source": "o366",
+     "trigger": "cleared"
+    },
     {
      "id": "coeur_aorte",
      "source": "o467",
@@ -8240,6 +8242,96 @@
     "message": "Le cœur pulse ! Restez sur les passerelles hautes"
    },
    "sealed": null,
+   "route": [
+    [
+     96,
+     960
+    ],
+    [
+     1824,
+     960
+    ],
+    [
+     2016,
+     960
+    ],
+    [
+     2496,
+     960
+    ],
+    [
+     4096,
+     960
+    ],
+    [
+     5536,
+     960
+    ],
+    [
+     5936,
+     960
+    ],
+    [
+     5936,
+     288
+    ],
+    [
+     6080,
+     288
+    ],
+    [
+     6112,
+     512
+    ],
+    [
+     6176,
+     512
+    ],
+    [
+     6368,
+     960
+    ],
+    [
+     7968,
+     960
+    ],
+    [
+     9408,
+     960
+    ],
+    [
+     9888,
+     960
+    ],
+    [
+     11328,
+     960
+    ],
+    [
+     11520,
+     960
+    ],
+    [
+     13120,
+     960
+    ],
+    [
+     14560,
+     960
+    ],
+    [
+     14752,
+     960
+    ],
+    [
+     16512,
+     960
+    ],
+    [
+     16768,
+     960
+    ]
+   ],
    "coop": [
     {
      "id": "ecluse_1",

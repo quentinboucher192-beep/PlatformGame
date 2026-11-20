@@ -550,6 +550,19 @@ std::vector<Reward> parseRewards(const Json& list) {
     return out;
 }
 
+namespace {
+/// 2.78: the four numbers of a table of 2.78 (null in a table of before: `v2` stays false, shown « — »).
+void readZoneV2(const Json& x, ZoneResultRow& row) {
+    const Json d = jfield(x, "deaths", Json());
+    if (!d.is_number()) return;
+    row.v2 = true;
+    row.deaths = std::max(0, jget<int>(x, "deaths", 0));
+    row.revives = std::max(0, jget<int>(x, "revives", 0));
+    row.revived = std::max(0, jget<int>(x, "revived", 0));
+    row.miniDamage = std::max(0, jget<int>(x, "mini_damage", 0));
+}
+}  // namespace
+
 Results parseResults(const Json& j) {
     Results r;
     if (!j.is_object()) return r;
@@ -576,9 +589,25 @@ Results parseResults(const Json& j) {
                     row.support = std::max(0, jget<int>(x, "support", 0));
                     row.mechanisms = std::max(0, jget<int>(x, "mechanisms", 0));
                     row.objectives = std::max(0, jget<int>(x, "objectives", 0));
+                    readZoneV2(x, row);
                     z.rows.push_back(std::move(row));
                 }
             r.zoneTables.push_back(std::move(z));
+        }
+    // 2.78: « Raid entier » (each player's zones of my clan's groups added up).
+    if (const Json rt = jfield(j, "raid_totals", Json()); rt.is_array())
+        for (const Json& x : rt) {
+            if (r.raidTotals.size() >= 64) break;
+            ZoneResultRow row;
+            row.username = jstr(x, "username");
+            row.me = jget<bool>(x, "me", false);
+            row.bossDamage = std::max(0, jget<int>(x, "boss_damage", 0));
+            row.damage = std::max(0, jget<int>(x, "damage", 0));
+            row.support = std::max(0, jget<int>(x, "support", 0));
+            row.mechanisms = std::max(0, jget<int>(x, "mechanisms", 0));
+            row.objectives = std::max(0, jget<int>(x, "objectives", 0));
+            readZoneV2(x, row);
+            r.raidTotals.push_back(std::move(row));
         }
     const Json ev = jfield(j, "event", Json());
     r.state = jstr(ev, "state");

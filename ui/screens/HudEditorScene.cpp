@@ -898,6 +898,9 @@ private:
             h.sub = "votre groupe 8,1 % · les autres groupes 28,7 % · parties du titan tombées 5 / 7";
             raidhud::drawHeartBar(ui, at(RE::Heart), k(RE::Heart), h);
         }
+        if (shown(RE::LairPassage))  // 2.78
+            raidhud::drawLairPassage(ui, at(RE::LairPassage), k(RE::LairPassage),
+                                     {"Passage vers l'antre : 124 m · Exemple", "fermé — Embuscades restantes : 2 sur 4", false, {1.0f, 0.0f}});
         if (shown(RE::Remaining))  // 2.75
             raidhud::drawObjectives(ui, at(RE::Remaining), k(RE::Remaining), "CE QU'IL RESTE À FAIRE · Exemple",
                                     {{"OK", "Vaincre le golem gardien", kGreen},

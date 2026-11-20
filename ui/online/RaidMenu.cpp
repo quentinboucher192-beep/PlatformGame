@@ -295,7 +295,7 @@ void member(Pen& p, const Member& m) {
 
 /// A section's content (measured with `p.draw` false, drawn with it true); `results`: set when its
 /// « Résultats du raid » button was clicked.
-void sectionBody(Pen& p, const MenuData& d, Section s, bool* results) {
+void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tableAsked = nullptr) {
     switch (s) {
         case Section::Remaining:
             heading(p, d.remainingTitle, kGold);
@@ -303,10 +303,23 @@ void sectionBody(Pen& p, const MenuData& d, Section s, bool* results) {
             lineList(p, d.remaining);
             break;
         case Section::Zones:
-            if (d.tables.empty())
+            // 2.78: the full table (tabs « Zone » / « Raid entier », sort, tooltips) opens over the menu.
+            if (d.tableAvailable) {
+                const float bw = std::min(p.ui.s(420), p.w), bh = p.ui.s(48);
+                if (p.draw) {
+                    UIContext::ButtonStyle bs;
+                    bs.primary = true;
+                    if (p.ui.button("contribtable", {p.x, p.y, bw, bh}, "Tableau des contributions", bs) && tableAsked) *tableAsked = true;
+                }
+                p.y += bh + p.ui.s(8);
+                paragraph(p, "Entrée ou A : le tableau de chaque zone finie et celui du raid entier (dégâts, soutien, mécanismes, objectifs, morts, réanimations).",
+                          kDim, 3);
+            }
+            if (d.tableLines.empty() && d.tables.empty())
                 paragraph(p, "Aucune zone terminée pendant que votre instance y était : le tableau des contributions de chaque zone finie ici "
                              "s'ajoute ici.",
                           kDim);
+            for (const std::string& l : d.tableLines) paragraph(p, l, kText, 2);
             for (const raidhud::ZoneTable& t : d.tables) table(p, t);
             if (!d.otherZones.empty()) {
                 std::string names;
@@ -445,10 +458,11 @@ MenuAction drawMenu(UIContext& ui, Menu& m, const MenuData& d) {
     if (m.scrollBy != 0.0f) ui.setScroll("content" + std::to_string(si), off + ui.s(m.scrollBy));  // the next frame clamps it
     m.scrollBy = 0.0f;
     Pen p{ui, L.view.x + pad, L.view.y + pad - off, cw, true};
-    bool results = false;
-    sectionBody(p, d, s, &results);
+    bool results = false, table = false;
+    sectionBody(p, d, s, &results, &table);
     ui.endScroll();
     if (results || (m.confirm && s == Section::Titan && d.results)) act.results = true;
+    if (table || (m.confirm && s == Section::Zones && d.tableAvailable)) act.table = true;  // 2.78
     m.confirm = false;
     drawLines(ui, L.keyLines, {L.keys.x, L.keys.y}, 13, ui.s(18), kDim);
     ui.popId();
