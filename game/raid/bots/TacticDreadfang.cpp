@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §26): DREADFANG, the claws of the left arm (game/raid/DreadfangRoutine):
+// 2.79 (docs/RAIDS.md §28): DREADFANG, the claws of the left arm (game/raid/DreadfangRoutine):
 //
 // * « Balayage des griffes »: a blade along one, two, three storeys at once, announced from one wall: a wave
 //   along each storey to jump as it passes (its front and speed are known: from its wall, 1500 px/s);

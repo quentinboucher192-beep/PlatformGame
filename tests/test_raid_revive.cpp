@@ -249,7 +249,8 @@ TEST_CASE("2.75 raid lockstep: 2 and 8 seats, the same digest twice; reference d
         int players;
         const char* digest;
     };
-    const Golden golden[] = {{2, "9d7eed54fb827234"}, {8, "f079efa8afb34d0a"}};
+    // 2.78: the run's digest holds every zone's world, the zone of each seat and the zones' tables (deaths, revivals).
+    const Golden golden[] = {{2, "fb23efc823f409ce"}, {8, "ad2204f5c763b1d0"}};
     int mismatches = 0;
     for (const Golden& g : golden) {
         uint64_t got[2] = {0, 0};

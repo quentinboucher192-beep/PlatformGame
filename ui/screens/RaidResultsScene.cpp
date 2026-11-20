@@ -8,6 +8,9 @@
 // ranking is « en cours », final only once it ended. At the bottom, my rewards of this event with
 // « Tout récupérer » (granted once by the server, POST /raids/rewards/claim).
 //
+// 2.77.4: « Noter ce raid » (or « Modifier mon avis ») beside the rewards, for a player who played
+// the event (the server's verdict, ui/online/RaidReviewsPanel): a button, never a window by itself.
+//
 // Keyboard, gamepad and mouse: the category chips, the pages of the ranking, « Tout récupérer » and
 // « Retour » are buttons (focus, Entrée / A); Échap / B goes back. Every text is measured into its
 // room (raidui::fit, wrap): nothing overlaps.
@@ -20,7 +23,10 @@
 #include "game/GameServices.h"
 #include "game/online/Raids.h"
 #include "game/raid/RaidBranch.h"
+#include "ui/online/ContribTable.h"
 #include "ui/online/RaidHud.h"
+#include "ui/online/RaidMenu.h"
+#include "ui/online/RaidReviewsPanel.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -37,14 +43,19 @@ const Color kPending{255, 196, 92, 255};
 
 class RaidResultsScene : public Scene {
 public:
-    RaidResultsScene(GameServices& g, std::string eventId) : g_(g), eventId_(std::move(eventId)) {}
+    RaidResultsScene(GameServices& g, std::string eventId) : g_(g), eventId_(std::move(eventId)), reviews_(g) {}
 
     void onEnter() override {
         bg_.init(g_);
         g_.ui.setFocus("results/back");
         load();
+        reviews_.say = [this](const std::string& m, bool) { note_ = m; };
+        reviews_.open(eventId_);
     }
-    void onResume() override { load(); }
+    void onResume() override {
+        load();
+        reviews_.reload();
+    }
 
     void update(float dt) override {
         bg_.update(dt);
@@ -106,7 +117,9 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{12, 10, 30, 160});
-        ui.inputEnabled = g_.app.topScene() == this;
+        const bool top = g_.app.topScene() == this;
+        // 2.77.4: the review's editor over it answers alone; 2.78: the detailed table too.
+        ui.inputEnabled = top && !reviews_.modal() && !contribOpen_;
         ui.pushId("results");
         bool back = false;
         const float W = ui.screenW(), H = ui.screenH(), m = ui.s(26);
@@ -134,9 +147,62 @@ public:
             drawRewards(rewards);
         }
         ui.popId();
-        if (!back && ui.backPressed()) back = true;
+        ui.inputEnabled = top;
+        if (reviews_.modal()) {
+            reviews_.drawModal();  // 2.77.4: opened from « Noter ce raid » only
+        } else if (contribOpen_) {
+            // 2.78: the detailed table over the results (its own keys; Échap / B closes it, not the screen).
+            ui.consumeNavigation(true, true);
+            if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), static_cast<int>(res_.zoneTables.size()))) contribOpen_ = false;
+            const float cm = ui.s(24);
+            if (contribOpen_ && contrib::draw(ui, {cm, cm, ui.screenW() - cm * 2, ui.screenH() - cm * 2}, contribModel(), contribView_)) contribOpen_ = false;
+        } else if (!back && ui.backPressed()) {
+            back = true;
+        }
         ui.end();
         if (back) g_.app.popScene();
+    }
+
+    /// 2.78: the server's tables as the detailed « Tableau des contributions » shows them (old ones: « — »).
+    contrib::Row contribRow(const raids::ZoneResultRow& r) const {
+        contrib::Row row;
+        row.name = r.username.empty() ? std::string("Joueur parti") : r.username;
+        row.color = r.me ? Color{110, 190, 255, 255} : Color{200, 206, 230, 255};
+        row.me = r.me;
+        row.bossTenths = static_cast<int64_t>(r.bossDamage) * 10;
+        row.miniTenths = static_cast<int64_t>(r.miniDamage) * 10;
+        row.damageTenths = static_cast<int64_t>(r.damage) * 10;
+        row.support = r.support;
+        row.mechanisms = r.mechanisms;
+        row.objectives = r.objectives;
+        row.deaths = r.deaths;
+        row.revives = r.revives;
+        row.revived = r.revived;
+        row.v2 = r.v2;
+        return row;
+    }
+    contrib::Model contribModel() const {
+        contrib::Model m;
+        m.legend = "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).";
+        m.tooltipNote = "Compté par la simulation du groupe, validé par le serveur.";
+        m.tabKey = "Q / E";
+        for (const raids::ZoneResultTable& z : res_.zoneTables) {
+            contrib::Table t;
+            std::string zoneName = "Zone " + std::to_string(z.zone), branchName;
+            for (const raid::Branch* b : raid::Branch::all())
+                if (b->id == z.branch) {
+                    branchName = b->name;
+                    if (const raid::ZoneInfo* zi = b->zone(z.zone)) zoneName = zi->name;
+                }
+            t.title = zoneName + (branchName.empty() ? "" : " · " + branchName);
+            t.sub = "Groupe " + z.group + " · " + raidmenu::raidTime(static_cast<float>(z.tick) / 120.0f);
+            for (const raids::ZoneResultRow& r : z.rows) t.rows.push_back(contribRow(r));
+            m.zones.push_back(std::move(t));
+        }
+        m.raid.title = "Raid entier";
+        m.raid.sub = "les zones des groupes de votre clan, additionnées par joueur";
+        for (const raids::ZoneResultRow& r : res_.raidTotals) m.raid.rows.push_back(contribRow(r));
+        return m;
     }
 
     /// Four figures: the gigaboss, the clans, the participants, my rank. Returns the bottom.
@@ -327,7 +393,17 @@ public:
             t.rows.push_back(std::move(zr));
         }
         const float navH = ui.s(40);
-        raidhud::drawZoneTable(ui, {x - ui.s(14), r.y, w + ui.s(28), r.h - navH - ui.s(20)}, 1.0f, t);
+        // 2.78: the detailed table (tabs « Zone » / « Raid entier », sort, details, deaths and revivals).
+        const float dw = std::min(w, textW(ui, "Tableau détaillé (zone et raid entier)", 15, FontFace::Bold) + ui.s(40));
+        UIContext::ButtonStyle ds;
+        ds.small = true;
+        ds.primary = true;
+        if (ui.button("contribtable", {x + w - dw, r.y, dw, navH}, "Tableau détaillé (zone et raid entier)", ds)) {
+            contribOpen_ = true;
+            contribView_ = contrib::View{};
+            contribView_.zone = page_;
+        }
+        raidhud::drawZoneTable(ui, {x - ui.s(14), r.y + navH + ui.s(8), w + ui.s(28), r.h - navH * 2 - ui.s(28)}, 1.0f, t);
         if (pages > 1) {
             const float by = r.bottom() - ui.s(12) - navH;
             const std::string label = "Tableau " + std::to_string(page_ + 1) + " / " + std::to_string(pages);
@@ -351,7 +427,11 @@ public:
         // The button at the right (its width first), the rewards and the note in the room left.
         const std::string label = res_.rewards.size() > 1 ? "Tout récupérer" : "Récupérer";
         const float bw = res_.rewards.empty() ? 0.0f : std::min(textW(ui, label, 16, FontFace::Bold) + ui.s(44), r.w * 0.3f);
-        const float room = r.right() - ui.s(16) - (bw > 0.0f ? bw + ui.s(16) : 0.0f) - x;
+        // 2.77.4: « Noter ce raid » / « Modifier mon avis » before it, for a player who played the event.
+        const std::string rateLabel = raidreviews::offerLabel(reviews_.offer());
+        const float rbw = rateLabel.empty() ? 0.0f : std::min(textW(ui, rateLabel, 16, FontFace::Bold) + ui.s(44), r.w * 0.26f);
+        const float buttons = (bw > 0.0f ? bw + ui.s(16) : 0.0f) + (rbw > 0.0f ? rbw + ui.s(16) : 0.0f);
+        const float room = r.right() - ui.s(16) - buttons - x;
         fit(ui, "VOS RÉCOMPENSES", {x, r.y + ui.s(20)}, 15, room, kGold, FontFace::Title);
         float px = x;
         const float cy = r.y + ui.s(52);
@@ -374,10 +454,17 @@ public:
             bs.enabled = !claiming_;
             if (ui.button("claim", {r.right() - ui.s(16) - bw, r.center().y - ui.s(26), bw, ui.s(52)}, label, bs)) claimAll();
         }
+        if (rbw > 0.0f) {
+            UIContext::ButtonStyle rs;
+            rs.fontSize = 16;
+            const float rx = r.right() - ui.s(16) - (bw > 0.0f ? bw + ui.s(16) : 0.0f) - rbw;
+            if (ui.button("rate", {rx, r.center().y - ui.s(26), rbw, ui.s(52)}, rateLabel, rs)) reviews_.openEditor();
+        }
     }
 
     GameServices& g_;
     std::string eventId_;
+    RaidReviewsPanel reviews_;  // 2.77.4: the offer of « Noter ce raid » and its editor
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     MenuBackground bg_;
     raids::Results res_;
@@ -386,6 +473,8 @@ public:
     float timer_ = 0.0f;
     int gen_ = 0;
     int cat_ = 0, page_ = 0;
+    contrib::View contribView_;  // 2.78
+    bool contribOpen_ = false;
 };
 
 }  // namespace

@@ -23,9 +23,7 @@ namespace raids {
 constexpr int kGroupSize = 8;
 constexpr int kMaxInstructions = 600;
 constexpr int kMaxRewardsText = 300;
-/// A clan raid: 2 to 50 places, 15 minutes to 90 days ahead (server: the same limits).
-constexpr int kMinPlaces = 2;
-constexpr int kMaxPlaces = 50;
+/// A world event starts at least 15 minutes ahead (server: MIN_AHEAD_MS).
 constexpr int kMinAheadMinutes = 15;
 
 // ------------------------------------------------------------------ time
@@ -178,9 +176,9 @@ Countdown countdownOf(const Event& e, int64_t now, bool clock);
 struct TabLayout {
     bool hero = false;         // the next world event (else the empty hero, with its explanation)
     std::string heroId;
-    bool clanBoxes = false;    // the clan's raids, invitations and history (a clan is known)
-    bool canOrganize = false;  // « Organiser un raid du clan… » (chief, officers)
-    bool canAnswer = false;    // the invitations get « Accepter » / « Refuser »
+    bool clanBoxes = false;    // the clan's events, invitations and history (a clan is known)
+    // 2.77.4: no « Organiser un raid du clan… » any more (the raids are the team's events).
+    bool canAnswer = false;    // the invitations (to a clan raid scheduled before) get « Accepter » / « Refuser »
     std::string clanNote;      // why the clan's boxes are empty or read only
 };
 TabLayout tabLayout(const Json& overview, bool loggedIn);
@@ -233,6 +231,10 @@ struct ZoneResultRow {
     bool me = false;
     double share = 0.0;  // of the boss damage (shareOfBoss) or of the zone's damage
     int bossDamage = 0, damage = 0, support = 0, mechanisms = 0, objectives = 0;
+    // 2.78: the mini-bosses (hearts, part of bossDamage), the deaths, the revivals done and received; a
+    // table of before 2.78 has none of them (`v2` false: « — »).
+    int miniDamage = 0, deaths = 0, revives = 0, revived = 0;
+    bool v2 = false;
 };
 struct ZoneResultTable {
     std::string branch, group, acceptedAt;
@@ -258,6 +260,7 @@ struct Results {
     std::string validatedAt;
     std::vector<Reward> rewards;  // mine to claim for this event
     std::vector<ZoneResultTable> zoneTables;  // 2.75: my clan's groups' zone tables (newest first)
+    std::vector<ZoneResultRow> raidTotals;    // 2.78: « Raid entier »: each player's zones added up
 };
 Results parseResults(const Json& j);
 

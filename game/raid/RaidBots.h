@@ -17,7 +17,7 @@
 //   through InputFrame::choice) and waits at the exit for the administrator when they are there and
 //   playing (AFK: it goes on alone).
 //
-// 2.79 (docs/RAIDS.md §26), « des GOAT »:
+// 2.79 (docs/RAIDS.md §28), « des GOAT »:
 //
 // * a tactic per Gigaboss (game/raid/bots/BossTactic: its blows announced, its places to hold together,
 //   its targets, its weak points while bare, what to finish together), read every step;
@@ -139,6 +139,8 @@ public:
     int nextNode(int seat) const;
     /// The exit the group takes when its zone has nothing left for it (-1 none), and the zone it leads to.
     static int chooseExit(const RaidRun& run, int* toZone = nullptr);
+    /// 2.78: the way out of an armory (the first one, or the lair's): its « Prêts » passage first.
+    static int armoryExit(const RaidRun& run, int* toZone = nullptr);
     /// The power a seat wishes in the armory (one of the armory's tablets), "" none. 2.79: its role's, from the
     /// tactic of its branch's gigaboss (`routine`).
     static std::string wish(int seat);

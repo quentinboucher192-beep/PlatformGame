@@ -736,6 +736,12 @@
    ]
   },
   {
+   "fr": "8 zones (0 pour un siège libre)",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "8. Disponibilité",
    "where": [
     "data/online/terms_fr.txt"
@@ -1004,6 +1010,12 @@
    ]
   },
   {
+   "fr": "a masqué le commentaire de {0} sur {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a migré les données de {0} vers {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -1149,6 +1161,12 @@
   },
   {
    "fr": "a récupéré les données de {0} avec un code de migration",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a rétabli le commentaire de {0} sur {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1527,6 +1545,7 @@
     "game/levels/Cinematic.cpp",
     "game/online/Spectate.cpp",
     "game/raid/RaidBranch.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -2420,6 +2439,12 @@
    ]
   },
   {
+   "fr": "Alliés relevés en maintenant « Interagir » 2 s près de leur âme.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Allumage",
    "where": [
     "data/enemies/echo_forge_core.json",
@@ -2843,6 +2868,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
@@ -2850,7 +2876,6 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -4009,6 +4034,12 @@
    ]
   },
   {
+   "fr": "Asterion · Abdomen · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Bras droit · Avant-bras",
    "where": [
     "data/raids/asterion/bras_droit/zone_6.json"
@@ -4054,6 +4085,12 @@
    "fr": "Asterion · Bras droit · Vestiaire",
    "where": [
     "data/raids/asterion/bras_droit/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Bras droit · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json"
    ]
   },
   {
@@ -4111,6 +4148,12 @@
    ]
   },
   {
+   "fr": "Asterion · Bras gauche · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Bras gauche · Épaule gelée",
    "where": [
     "data/raids/asterion/bras_gauche/zone_1.json"
@@ -4165,6 +4208,12 @@
    ]
   },
   {
+   "fr": "Asterion · Crâne · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Crâne · Voûte crânienne",
    "where": [
     "data/raids/asterion/crane/zone_7.json"
@@ -4186,6 +4235,12 @@
    "fr": "Asterion · Cœur · Vestiaire",
    "where": [
     "data/raids/asterion/coeur/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Cœur · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/coeur/armory_lair.json"
    ]
   },
   {
@@ -4243,6 +4298,12 @@
    ]
   },
   {
+   "fr": "Asterion · Jambe droite · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Jambe gauche · Cheville",
    "where": [
     "data/raids/asterion/jambe_gauche/zone_7.json"
@@ -4297,6 +4358,12 @@
    ]
   },
   {
+   "fr": "Asterion · Jambe gauche · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Asterion · Torse · Antre de Heartbreaker",
    "where": [
     "data/raids/asterion/torse/zone_8.json"
@@ -4348,6 +4415,12 @@
    "fr": "Asterion · Torse · Vestiaire",
    "where": [
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Asterion · Torse · Vestiaire de l'antre",
+   "where": [
+    "data/raids/asterion/torse/armory_lair.json"
    ]
   },
   {
@@ -4984,14 +5057,7 @@
   {
    "fr": "Au moins {0} minutes à l'avance.",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Au plus 90 jours à l'avance.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -5139,6 +5205,12 @@
    ]
   },
   {
+   "fr": "Aucun allié dans cette zone : un allié d'une autre zone peut revenir vous relever",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Aucun allié en jeu pour vous relever pour l'instant",
    "where": [
     "ui/screens/DownedView.cpp"
@@ -5193,9 +5265,33 @@
    ]
   },
   {
+   "fr": "Aucun autre événement pour votre clan. Les raids sont des événements publiés par l'équipe du jeu : le chef ou un officier y inscrit le clan, puis chaque membre s'inscrit.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun avis",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun avis pour l'instant.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucun badge pour l'instant",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun boss dans cette zone : part des dégâts infligés à tous ses ennemis ({0} PV).",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -5281,6 +5377,12 @@
    "fr": "Aucun combat",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun commentaire : seule votre note sera publiée.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -5732,18 +5834,6 @@
    ]
   },
   {
-   "fr": "Aucun raid du clan à venir. Programmez-en un : les membres sont prévenus et s'inscrivent eux-mêmes.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Aucun raid du clan à venir. {0}",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Aucun raid terminé pour l'instant.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -5860,6 +5950,12 @@
    ]
   },
   {
+   "fr": "Aucun signalement",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucun succès dans le catalogue.",
    "where": [
     "game/achievements/Achievements.cpp"
@@ -5938,7 +6034,7 @@
    ]
   },
   {
-   "fr": "Aucun événement mondial programmé pour l'instant. Les administrateurs du jeu l'annoncent ici et dans vos notifications ; les raids de votre clan se programment juste en dessous.",
+   "fr": "Aucun événement mondial programmé pour l'instant. L'équipe du jeu publie les raids : chaque événement est annoncé ici et dans vos notifications, puis votre clan s'y inscrit.",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -6398,6 +6494,12 @@
    ]
   },
   {
+   "fr": "Aucune zone terminée pour l'instant",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Aucune équipe de deux n'est encore classée sur ce niveau.",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -6595,8 +6697,15 @@
    "where": [
     "game/records/PlayStatsRecorder.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "autre",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -6938,6 +7047,19 @@
    ]
   },
   {
+   "fr": "Avis",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "AVIS DES JOUEURS",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Avis et commentaires",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
@@ -6948,6 +7070,18 @@
    "fr": "Avis et commentaires ({0})",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avis indisponibles.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Avis introuvable.",
+   "where": [
+    "server/src/raidReviews.ts"
    ]
   },
   {
@@ -7694,6 +7828,12 @@
    "fr": "Biceps de givre",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Bien",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -11004,6 +11144,12 @@
    ]
   },
   {
+   "fr": "Cet avis n'a pas de commentaire : il n'y a rien à signaler.",
+   "where": [
+    "server/src/raidReviews.ts"
+   ]
+  },
+  {
    "fr": "Cet essai a déjà été envoyé avec d'autres données.",
    "where": [
     "server/src/challenges.ts"
@@ -11914,6 +12060,12 @@
    ]
   },
   {
+   "fr": "Chargement des avis…",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Chargement des fantômes…",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -11998,6 +12150,7 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/online/RatingWidgets.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -12268,6 +12421,18 @@
    ]
   },
   {
+   "fr": "Chiffres comptés par la simulation (les mêmes sur tous les jeux du groupe), validés par la majorité.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Chili",
    "where": [
     "data/online/countries.json",
@@ -12487,6 +12652,12 @@
    ]
   },
   {
+   "fr": "Choisissez un événement dans l'onglet « Événements » pour lire les avis de ses joueurs.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un événement dans l'onglet « Événements » pour suivre son déroulement en direct.",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -12526,6 +12697,18 @@
    "fr": "Choisissez une image à gauche.",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une note",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une note de 1 à 5 étoiles.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -14100,6 +14283,12 @@
    ]
   },
   {
+   "fr": "Commentaire (facultatif, 500 caractères au plus)",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "commentaire d'un autre fil",
    "where": [
     "server/src/workshop.ts"
@@ -14124,6 +14313,24 @@
    ]
   },
   {
+   "fr": "Commentaire masqué : sa note compte toujours (inscrit au Journal).",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaire masqué après des signalements, en attendant la décision des modérateurs.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaire masqué par la modération.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
    "fr": "Commentaire modifié.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -14136,9 +14343,16 @@
    ]
   },
   {
+   "fr": "Commentaire rétabli (inscrit au Journal).",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Commentaire signalé. Merci.",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -14163,6 +14377,12 @@
    "fr": "Commentaire sur une de mes courses",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaire trop long : {0} caractères pour {1} au plus.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -14234,7 +14454,8 @@
   {
    "fr": "commentaire|Publier",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -14455,6 +14676,24 @@
    "fr": "Comptez les battements et sautez l'onde quand elle passe ; les plateformes sont sûres.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Compté par la simulation (test local).",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compté par la simulation du groupe, validé par le serveur.",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Compté par la simulation, validé par la majorité du groupe.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -14712,6 +14951,12 @@
    "fr": "Connectez-vous pour noter ce niveau.",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Connectez-vous pour noter un raid que vous avez joué.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -15154,8 +15399,15 @@
    "fr": "Contenu inapproprié",
    "where": [
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "contenu inapproprié",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -16141,6 +16393,12 @@
    ]
   },
   {
+   "fr": "Coups bloqués au bouclier et alliés relevés.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Cour d'honneur",
    "where": [
     "data/levels/glacior_03.json"
@@ -16483,8 +16741,7 @@
   {
    "fr": "Court",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -17959,12 +18216,6 @@
    ]
   },
   {
-   "fr": "Date (JJ/MM/AAAA)",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "date AAAA-MM-JJ attendue",
    "where": [
     "server/src/challenges.ts"
@@ -17973,8 +18224,7 @@
   {
    "fr": "Date attendue : JJ/MM/AAAA.",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -19513,6 +19763,12 @@
    ]
   },
   {
+   "fr": "Distance au passage de l'antre",
+   "where": [
+    "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
    "fr": "Distance de fuite max",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -19533,7 +19789,8 @@
   {
    "fr": "Divulgue la solution",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -20468,12 +20725,6 @@
    ]
   },
   {
-   "fr": "Début : {0}",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Début dans",
    "where": [
     "game/online/Raids.cpp"
@@ -20572,6 +20823,12 @@
     "game/online/Raids.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "Décevant",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -20689,6 +20946,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -20698,6 +20956,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -20707,6 +20966,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -20716,9 +20976,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -20728,6 +20990,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -20737,6 +21000,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -20746,6 +21010,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -20787,6 +21052,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -20796,6 +21062,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -20805,6 +21072,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -20814,9 +21082,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -20826,6 +21096,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -20835,6 +21106,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -20844,6 +21116,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -21379,6 +21652,7 @@
     "game/levels/ObjectTypes.cpp",
     "game/online/Raids.cpp",
     "game/powers/PowerStats.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -21399,6 +21673,12 @@
    "fr": "Dégâts : à tous les ennemis, et au gigaboss avec ses points faibles.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Dégâts au boss",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -21430,6 +21710,12 @@
    "where": [
     "server/src/coopRace.ts",
     "server/src/race.ts"
+   ]
+  },
+  {
+   "fr": "dégâts aux mini-boss supérieurs aux dégâts au boss",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -22405,6 +22691,12 @@
    "fr": "Embuscades : tomber pendant une embuscade ne la fait plus recommencer. Elle attend Nova telle qu'elle l'a laissée (même vague, ennemis vaincus toujours vaincus, les autres à leur place avec leur vie) ; ses portes s'ouvrent pour la laisser revenir et se referment derrière elle. Un ennemi d'une embuscade qui sort de son arène y est ramené : l'embuscade peut toujours être terminée. Records conservés.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Embuscades restantes : {0} sur {1}",
+   "where": [
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -23496,6 +23788,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/ClanScene.cpp",
@@ -23856,6 +24149,12 @@
    ]
   },
   {
+   "fr": "Entre dans la zone : {0}",
+   "where": [
+    "game/raid/RaidRun.cpp"
+   ]
+  },
+  {
    "fr": "Entre deux colonnes (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -23905,6 +24204,12 @@
    ]
   },
   {
+   "fr": "Entrée / A : zone suivante",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "entrée d'archive illisible",
    "where": [
     "packaging/ZipArchive.cpp"
@@ -23932,6 +24237,12 @@
    "fr": "entrée invalide dans le contenu déchiffré",
    "where": [
     "server/src/backupFormat.ts"
+   ]
+  },
+  {
+   "fr": "Entrée ou A : le tableau de chaque zone finie et celui du raid entier (dégâts, soutien, mécanismes, objectifs, morts, réanimations).",
+   "where": [
+    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -24484,6 +24795,12 @@
    "fr": "ex. +1,250",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Excellent",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -25137,6 +25454,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPowerKeys.cpp",
     "game/levels/EventSystem.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidMenu.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -25223,6 +25541,12 @@
    ]
   },
   {
+   "fr": "fermé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "fermé : une autre branche du titan l'ouvre",
    "where": [
     "game/raid/RaidBranch.cpp"
@@ -25232,6 +25556,12 @@
    "fr": "fermé tant que les sept Gigaboss ne sont pas tombés ({0} / 7)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "fermé — Embuscades restantes : 2 sur 4",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -26148,6 +26478,18 @@
    ]
   },
   {
+   "fr": "Fois relevé par un allié.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Fois à terre dans la zone.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "followers, levels, downloads ou recent",
    "where": [
     "server/src/creators.ts"
@@ -26277,7 +26619,6 @@
    "where": [
     "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidEventScene.cpp"
    ]
   },
@@ -26317,7 +26658,6 @@
     "saves/SaveFile.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
-    "ui/screens/ClanRaids.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/studio/StudioDoc.cpp"
@@ -26903,6 +27243,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -26912,6 +27253,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -26921,6 +27263,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -26930,9 +27273,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -26942,6 +27287,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -26951,6 +27297,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -26960,6 +27307,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -27008,6 +27356,7 @@
   {
    "fr": "Garder",
    "where": [
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -28457,6 +28806,7 @@
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/online/RaidHud.cpp",
     "ui/online/RaidMenu.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -28504,6 +28854,12 @@
   },
   {
    "fr": "Groupe {0} · zone terminée à {1} min {2} s du raid · validé par le serveur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Groupe {0} · {1}",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
    ]
@@ -28612,7 +28968,7 @@
    ]
   },
   {
-   "fr": "GROUPE · Tout le groupe est à terre : la zone reprend",
+   "fr": "GROUPE · Tout le groupe est parti : la zone reprend",
    "where": [
     "game/raid/RaidRun.cpp"
    ]
@@ -29045,9 +29401,16 @@
    ]
   },
   {
+   "fr": "harcèlement",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Harcèlement ou insultes",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -29254,16 +29617,9 @@
    ]
   },
   {
-   "fr": "Heure (votre heure)",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Heure attendue : HH:MM.",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -29747,6 +30103,18 @@
    ]
   },
   {
+   "fr": "ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ici, de votre clan",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Ici, la lave obéit à un soleil.",
    "where": [
     "data/levels/aethra_03.json"
@@ -29806,6 +30174,7 @@
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
+    "game/online/RaidReviews.cpp",
     "game/online/Raids.cpp",
     "game/online/Spectate.cpp",
     "game/planets/PlanetData.cpp",
@@ -31996,6 +32365,7 @@
    "fr": "Joueur",
    "where": [
     "game/coop/CoopRelay.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/OnlineWidgets.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/AdminScene.cpp",
@@ -33235,12 +33605,6 @@
    ]
   },
   {
-   "fr": "La cage s'ouvre ! L'antre de Heartbreaker est ouvert.",
-   "where": [
-    "data/raids/asterion/torse/zone_7.json"
-   ]
-  },
-  {
    "fr": "La cage thoracique",
    "where": [
     "data/enemies/heartbreaker.json",
@@ -33396,18 +33760,6 @@
    "fr": "La chaîne de coulée avance et recule d'un seul bloc : sautez d'un plateau à l'autre entre deux tirs.",
    "where": [
     "data/levels/pyralis_03.json"
-   ]
-  },
-  {
-   "fr": "La cheville cède ! Le pied de Graviton est ouvert.",
-   "where": [
-    "data/raids/asterion/jambe_gauche/zone_7.json"
-   ]
-  },
-  {
-   "fr": "La cheville d'acier cède ! Le talon de Titanus est ouvert.",
-   "where": [
-    "data/raids/asterion/jambe_droite/zone_7.json"
    ]
   },
   {
@@ -33786,12 +34138,6 @@
    "fr": "La galerie haute",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
-   ]
-  },
-  {
-   "fr": "La garde du cœur est tombée : la porte du Cœur d'Asterion s'ouvre !",
-   "where": [
-    "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
@@ -34750,12 +35096,6 @@
    ]
   },
   {
-   "fr": "La voûte se tait ! L'antre de Skullmaw est ouvert.",
-   "where": [
-    "data/raids/asterion/crane/zone_7.json"
-   ]
-  },
-  {
    "fr": "LA WYRM HURLANTE",
    "where": [
     "data/enemies/howling_wyrm.json"
@@ -35087,6 +35427,12 @@
    ]
   },
   {
+   "fr": "LB RB",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Le 1er de la semaine",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -35325,12 +35671,6 @@
    "fr": "Le chef de raid et les consignes ne sont visibles que par les membres de votre clan.",
    "where": [
     "ui/screens/RaidEventScene.cpp"
-   ]
-  },
-  {
-   "fr": "Le chef et les officiers organisent les raids du clan.",
-   "where": [
-    "game/online/Raids.cpp"
    ]
   },
   {
@@ -36306,12 +36646,6 @@
    ]
   },
   {
-   "fr": "Le gosier s'ouvre ! L'antre de Voidworm est ouvert.",
-   "where": [
-    "data/raids/asterion/abdomen/zone_7.json"
-   ]
-  },
-  {
    "fr": "Le gouffre du gardien : grappin, vent, cristal et triple saut. Tout ce que vous avez appris.",
    "where": [
     "data/levels/glacior_03.json"
@@ -37071,9 +37405,15 @@
    ]
   },
   {
-   "fr": "Le poignet cède ! Les griffes de Dreadfang sont ouvertes.",
+   "fr": "Le plus de la zone : {0} (couronne).",
    "where": [
-    "data/raids/asterion/bras_gauche/zone_7.json"
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Le plus du raid : {0} (couronne).",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -37886,15 +38226,22 @@
    ]
   },
   {
-   "fr": "Le verrou cède : la Main de Pyroclast est ouverte.",
-   "where": [
-    "data/raids/asterion/bras_droit/zone_7.json"
-   ]
-  },
-  {
    "fr": "Le verrouillage des inscriptions est passé : changez l'heure de début avant de publier.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Le vestiaire de l'antre : chacun ajuste ses pouvoirs pour le gigaboss, puis tous les joueurs présents sur la plaque « Prêts ».",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
+    "data/raids/asterion/coeur/armory_lair.json",
+    "data/raids/asterion/crane/armory_lair.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory_lair.json"
    ]
   },
   {
@@ -38214,6 +38561,12 @@
   },
   {
    "fr": "Les arènes des giga-boss (Singularis, Pyrrhax, le Monolithe) offrent tous les pouvoirs du jeu. Aucun classement n'est remis à zéro : vos records restent valables, en ligne comme dans le jeu.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les avis des joueurs : la note moyenne et le nombre d'avis sur les cartes de CLANS › RAIDS et sur la fiche de chaque événement ; la liste des avis (auteur, étoiles, date, texte) défile, le vôtre en tête avec « Modifier ». Les étoiles se choisissent aux flèches, au stick ou à la souris, le commentaire se tape comme ailleurs (Ctrl+C / Ctrl+V).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -38949,12 +39302,6 @@
    ]
   },
   {
-   "fr": "Les membres du clan sont prévenus ; chacun s'inscrit lui-même jusqu'au verrouillage. L'heure est celle de cet ordinateur ({0}) : le jeu l'envoie en UTC.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Les miens",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -39204,6 +39551,18 @@
    "fr": "Les racines se souviennent de chaque pas.",
    "where": [
     "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Les raids sont des événements : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS. L'équipe du jeu crée et publie les événements de raid ; votre clan s'y inscrit (le chef ou un officier), puis chaque membre, et vous y jouez ensemble. Les raids de clan déjà programmés restent lisibles et jouables jusqu'à leur fin.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les raids sont des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -39466,6 +39825,12 @@
    "fr": "Les yeux du Crâne sont crevés : les tourelles-regards du Tendon glacé (Bras gauche) s'éteignent",
    "where": [
     "data/raids/asterion/titan.json"
+   ]
+  },
+  {
+   "fr": "les zones des groupes de votre clan, additionnées par joueur",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -40489,8 +40854,7 @@
   {
    "fr": "Légendaire",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -41090,6 +41454,12 @@
    ]
   },
   {
+   "fr": "Masquer le commentaire",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Masquer les infos",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -41137,6 +41507,12 @@
    ]
   },
   {
+   "fr": "Masqué après des signalements : rétablissez-le ou laissez-le masqué.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "masqué aux autres joueurs",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -41146,6 +41522,12 @@
    "fr": "masqué par le joueur : caché aussi aux administrateurs",
    "where": [
     "game/online/AdminView.cpp"
+   ]
+  },
+  {
+   "fr": "Masqué par un administrateur. Sa note compte toujours.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -41485,6 +41867,18 @@
    ]
   },
   {
+   "fr": "Meilleurs de la zone",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleurs du raid",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "MEILLEURS RÉSULTATS EXTRÊME",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -41695,6 +42089,12 @@
    "fr": "Mer",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Merci : votre avis est publié.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -42051,7 +42451,8 @@
   {
    "fr": "Mini-boss",
    "where": [
-    "game/enemies/EnemyDefinition.cpp"
+    "game/enemies/EnemyDefinition.cpp",
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -42396,6 +42797,7 @@
    "fr": "Modifier",
    "where": [
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/PauseScene.cpp"
    ]
@@ -42443,6 +42845,13 @@
    ]
   },
   {
+   "fr": "Modifier mon avis",
+   "where": [
+    "game/online/RaidReviews.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Modifier mon profil",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -42451,7 +42860,8 @@
   {
    "fr": "modifié",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -42474,6 +42884,12 @@
   },
   {
    "fr": "Modération : un administrateur voit tout du profil d'un joueur, même masqué ou d'un compte inactif : statistiques, temps de jeu, succès, tenue, badges et titre, abonnés et abonnements privés, brouillons et niveaux masqués par les signalements, meilleures progressions. Le serveur en décide depuis le rôle de sa session, jamais depuis un paramètre ; les autres joueurs gardent exactement leurs verrous.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Modération des avis : les règles des commentaires (filtres, limites, signalement : masqué après trois signalements). Dans ADMINISTRATION › Raids, l'onglet « Avis » montre tous les avis d'un événement, avec leurs signalements, et permet de masquer ou de rétablir un commentaire (inscrit au Journal) ; un commentaire masqué garde sa note.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -43052,6 +43468,7 @@
   {
    "fr": "Morts",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/ResultsScene.cpp",
     "ui/screens/StatisticsScene.cpp",
     "ui/widgets/Charts.cpp"
@@ -43110,6 +43527,7 @@
    "where": [
     "game/enemies/BossAttackSheet.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -43136,6 +43554,7 @@
   {
    "fr": "Moyen",
    "where": [
+    "game/online/RaidReviews.cpp",
     "ui/screens/AchievementsScene.cpp"
    ]
   },
@@ -43390,6 +43809,7 @@
   {
    "fr": "Mécanismes",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
@@ -44920,6 +45340,13 @@
    ]
   },
   {
+   "fr": "Noter ce raid",
+   "where": [
+    "game/online/RaidReviews.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Noter les 25 niveaux de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
@@ -44935,6 +45362,12 @@
    "fr": "Noter un niveau de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Noter un raid après l'avoir joué : « Noter ce raid » sur l'écran des résultats et sur la fiche de l'événement, de 1 à 5 étoiles, avec un commentaire facultatif de 500 caractères au plus. Un avis par événement, à modifier ou à supprimer quand vous voulez. Seuls les joueurs qui ont vraiment joué l'événement peuvent le noter : le serveur le vérifie lui-même. Jamais de fenêtre qui s'impose pendant le jeu.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -45834,6 +46267,7 @@
    "fr": "Objectifs",
    "where": [
     "game/online/Raids.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidBranchScene.cpp",
     "ui/screens/RaidGameScene.cpp",
@@ -45850,6 +46284,12 @@
    "fr": "Objectifs accomplis : {0} / {1}",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Objectifs de la branche accomplis : une action à soi, ou un combat gagné avec le groupe présent.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -46940,18 +47380,6 @@
    ]
   },
   {
-   "fr": "Organiser un raid du clan",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Organiser un raid du clan…",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Origine",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -47024,6 +47452,12 @@
    "fr": "Oui, passer",
    "where": [
     "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "ouvert",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -47858,6 +48292,18 @@
    ]
   },
   {
+   "fr": "Part des dégâts infligés au boss de la zone (gigaboss, boss du bestiaire, points faibles), hors mini-boss : {0} PV.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Part des dégâts infligés aux mini-boss de la zone (les ennemis dont la chute est un objectif) : {0} PV.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "part du parcours de l'Argent (%)",
    "where": [
     "server/src/challengeSpec.mjs"
@@ -48644,18 +49090,21 @@
   {
    "fr": "Passage vers : Antre de Heartbreaker",
    "where": [
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_7.json"
    ]
   },
   {
    "fr": "Passage vers : Antre de Skullmaw",
    "where": [
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_7.json"
    ]
   },
   {
    "fr": "Passage vers : Antre de Voidworm",
    "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_7.json"
    ]
   },
@@ -48850,6 +49299,7 @@
   {
    "fr": "Passage vers : Griffes de Dreadfang",
    "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_7.json"
    ]
   },
@@ -48887,12 +49337,14 @@
   {
    "fr": "Passage vers : Le Cœur d'Asterion",
    "where": [
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json"
    ]
   },
   {
    "fr": "Passage vers : Main de Pyroclast",
    "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_6.json",
     "data/raids/asterion/bras_droit/zone_7.json"
    ]
@@ -48963,6 +49415,7 @@
   {
    "fr": "Passage vers : Pied de Graviton",
    "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_7.json"
    ]
   },
@@ -49018,6 +49471,7 @@
   {
    "fr": "Passage vers : Talon de Titanus",
    "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_7.json"
    ]
   },
@@ -49077,6 +49531,18 @@
     "data/raids/asterion/bras_gauche/armory.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json"
+   ]
+  },
+  {
+   "fr": "Passage vers l'antre",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Passage vers l'antre : 124 m · Exemple",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
    ]
   },
   {
@@ -49529,6 +49995,12 @@
    "fr": "Personne n'a encore rien compté dans cette zone.",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Personne n'a encore rien compté ici.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -50207,12 +50679,6 @@
    ]
   },
   {
-   "fr": "Places (2 à 50 joueurs)",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Placez d'abord un départ du joueur",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -50486,6 +50952,19 @@
    ]
   },
   {
+   "fr": "Plaque « Prêts » : tous les joueurs présents dessus partent ensemble vers l'antre.",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
+    "data/raids/asterion/coeur/armory_lair.json",
+    "data/raids/asterion/crane/armory_lair.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Plaque « Prêts » : tout le groupe dessus ouvre la porte de la route.",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
@@ -50508,6 +50987,12 @@
    "fr": "Plaques brisées",
    "where": [
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "Plaques tenues quand elles ont fonctionné, évents fermés, points faibles brisés.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -50917,6 +51402,12 @@
    ]
   },
   {
+   "fr": "Plus d'avis",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "plus d'entrées qu'annoncé",
    "where": [
     "game/online/Spectate.cpp",
@@ -50988,6 +51479,12 @@
    "fr": "Plus de renforts : les parasites d'Asterion sont chassés.",
    "where": [
     "server/src/raidRewards.ts"
+   ]
+  },
+  {
+   "fr": "plus de réanimations reçues que de morts",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -52633,12 +53130,6 @@
    ]
   },
   {
-   "fr": "Programmer",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "PROGRAMMER UN ÉVÉNEMENT MONDIAL",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -53263,13 +53754,21 @@
    "fr": "Prêts",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_gauche/armory.json",
-    "data/raids/asterion/torse/armory.json"
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json"
    ]
   },
   {
@@ -53925,6 +54424,12 @@
    ]
   },
   {
+   "fr": "Q / E",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
    "fr": "Q / E (LB / RB) : joueur précédent / suivant · Échap : rejoindre un groupe",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -54483,6 +54988,19 @@
    ]
   },
   {
+   "fr": "Raid entier",
+   "where": [
+    "ui/online/ContribTable.cpp",
+    "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid entier · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "raid inconnu",
    "where": [
     "server/src/raids.ts"
@@ -54491,6 +55009,7 @@
   {
    "fr": "Raid introuvable.",
    "where": [
+    "server/src/raidReviews.ts",
     "server/src/raids.ts"
    ]
   },
@@ -54505,12 +55024,6 @@
    "where": [
     "game/online/Raids.cpp",
     "server/src/notifications.ts"
-   ]
-  },
-  {
-   "fr": "Raid programmé : les membres du clan sont prévenus.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -54542,7 +55055,19 @@
    ]
   },
   {
+   "fr": "Raids : avant chaque antre, et avant le Cœur d'Asterion, il faut vaincre toutes les vagues de toutes les embuscades de la zone : le passage reste fermé tant qu'il en reste une, et le dit (« Embuscades restantes : 2 sur 4 », sur le passage et dans « Ce qu'il reste à faire »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : chaque branche commence par un vestiaire où chacun prend les pouvoirs voulus pour le raid (une tablette par pouvoir, quatre au plus : la fenêtre de choix dit lequel laisser), puis tout le groupe sur la plaque « Prêts » ouvre la route.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : chaque joueur change de zone seul. Marcher dans un passage n'emmène plus que vous : le groupe peut se répartir sur plusieurs zones de la branche, et toutes les zones où se trouve un joueur se jouent en même temps, sur tous les jeux du groupe. Les passages de groupe restent : la plaque « Prêts » d'un vestiaire demande tous les joueurs présents, et seuls ceux qui sont dessus partent ensemble.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -54554,6 +55079,12 @@
    ]
   },
   {
+   "fr": "Raids : la grande carte, « Ce qu'il reste à faire », le menu du raid et le panneau du groupe montrent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
    "where": [
     "data/news/changelog.json"
@@ -54561,6 +55092,12 @@
   },
   {
    "fr": "Raids : les 8 Gigaboss d'Asterion se battent par parties. Leurs points faibles dessinés prennent × 2 : les yeux de Skullmaw, les jointures de Dreadfang, les phalanges de Pyroclast, le cœur de Heartbreaker et du Cœur d'Asterion, la gueule du Voidworm, les orbes de Graviton, le genou de Titanus. Cornes, épaules, côtes, cuisse et racines sont blindées (× 0,5). Tout leur corps blesse au contact, au pixel près ; griffes, mâchoires, doigts, épines, débris et pieds frappent aussi pendant leurs attaques. Leurs fiches montrent leurs parties à la couleur de leur rôle. Une instance ne réunit que des joueurs aux mêmes règles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : les règles d'une partie changent (zones par joueur, embuscades avant l'antre, vestiaire de l'antre), donc une instance ne réunit que des joueurs en 2.78.0 ou plus récent : mettez le jeu à jour pour rejoindre votre groupe.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -54591,6 +55128,18 @@
   },
   {
    "fr": "Raids : un joueur à terre revient autant de fois qu'un coéquipier le relève (2 s près de son âme). Si TOUT le groupe tombe, il est éliminé de la zone pour de bon : pas de reprise ni de point de contrôle, la zone n'est pas validée et ses joueurs deviennent spectateurs (« GROUPE ÉLIMINÉ — mode spectateur » : caméra libre, joueur suivant / précédent de la branche). Revenir depuis le menu ne redonne jamais de place, seulement la vue de spectateur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : un vestiaire de l'antre, entre l'expédition et l'arène du Gigaboss (et avant le Cœur) : ajustez vos pouvoirs pour le boss, puis tous les joueurs présents sur la plaque « Prêts » partent ensemble. Dans la zone d'avant, un indicateur donne la distance jusqu'au passage le long du parcours (« Passage vers l'antre : 124 m »), sa direction et s'il est ouvert ; il se place dans l'éditeur du HUD, onglet « Raids ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : une zone dont tous les joueurs sont à terre continue pendant que le reste du groupe joue ailleurs ; leurs âmes attendent qu'un allié vienne les relever (seul un joueur de la même zone peut réanimer). Le groupe n'est éliminé que si tous ses joueurs sont à terre en même temps, toutes zones confondues.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -54716,12 +55265,6 @@
    ]
   },
   {
-   "fr": "RAIDS DU CLAN",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Raids et coopération : les joueurs se traversent (plus de joueurs solides ni d'appui sur un allié) et les autres joueurs, réels ou simulés, sont dessinés en semi-transparence avec un liseré de leur couleur ; seul votre personnage reste opaque.",
    "where": [
     "data/news/changelog.json"
@@ -54729,6 +55272,12 @@
   },
   {
    "fr": "Raids et coopération : quand un joueur tombe, personne d'autre ne bouge ni ne réapparaît au dernier point de passage ; il ne revient qu'une fois réanimé, près de son âme. En coopération, les réanimations restent limitées à 2 par tentative. Les tentatives Duo/Trio d'avant se rejouent à l'identique et leurs records sont gardés ; le serveur refuse les tentatives jouées avec d'anciennes règles.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids et tests de raid : le pointeur de la souris reste caché pendant le jeu. Il revenait à chaque petit mouvement de la souris ; il ne revient plus que quand la souris s'approche du bouton du menu en haut de l'écran, ou en regardant un groupe du raid simulé (ses boutons ◀ ▶). Toujours là avec le menu, la pause, la grande carte et les panneaux.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -55572,6 +56121,12 @@
    ]
   },
   {
+   "fr": "records : mini_damage, deaths, revives et revived vont ensemble",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "records : siège de 0 à 7",
    "where": [
     "server/src/raidZones.ts"
@@ -56145,17 +56700,17 @@
    ]
   },
   {
-   "fr": "Rejoignez un clan pour participer aux raids et en organiser.",
-   "where": [
-    "game/online/Raids.cpp"
-   ]
-  },
-  {
    "fr": "Rejoignez un clan pour participer aux raids.",
    "where": [
     "game/online/Raids.cpp",
     "server/src/raids.ts",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoignez un clan pour participer aux événements de raid.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -57567,6 +58122,54 @@
    ]
   },
   {
+   "fr": "Retour vers : Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Poignet-verrou",
+   "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour vers : Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
    "fr": "Retour à l'Atelier",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -58397,6 +59000,18 @@
    ]
   },
   {
+   "fr": "Réa. faites",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Réa. reçues",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "réacteur",
    "where": [
     "data/enemies/titan.json"
@@ -58533,6 +59148,12 @@
    "fr": "Réanimations illimitées ({0}) · tous à terre : groupe éliminé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "réanimations impossibles",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -59231,6 +59852,12 @@
    ]
   },
   {
+   "fr": "réservé aux rapports « zones » et « wipe »",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Résist.",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -59346,6 +59973,12 @@
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp",
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Rétablir le commentaire",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -61895,6 +62528,13 @@
    ]
   },
   {
+   "fr": "Seuls les joueurs qui ont joué cet événement peuvent le noter.",
+   "where": [
+    "game/online/RaidReviews.cpp",
+    "server/src/raidReviews.ts"
+   ]
+  },
+  {
    "fr": "Seuls ses amis peuvent regarder un joueur, et seulement s'il l'autorise dans ses paramètres en ligne.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -61985,6 +62625,7 @@
    "fr": "Signaler",
    "where": [
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -61992,7 +62633,8 @@
   {
    "fr": "Signaler ce commentaire aux modérateurs ? Après plusieurs signalements, il est masqué en attendant leur décision.",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -62010,7 +62652,8 @@
   {
    "fr": "Signalé",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -63084,6 +63727,7 @@
    "fr": "Soutien",
    "where": [
     "game/online/Raids.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
@@ -63138,13 +63782,15 @@
   {
    "fr": "spam",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
    "fr": "Spam ou publicité",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -63346,8 +63992,7 @@
    "fr": "Standard",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -64167,6 +64812,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -64218,6 +64864,12 @@
    ]
   },
   {
+   "fr": "Supprimer mon avis",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Supprimer mon compte",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -64227,6 +64879,12 @@
    "fr": "Supprimer un calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Supprimer votre avis sur cet événement ? Votre note et votre commentaire disparaissent ; vous pourrez en donner un nouveau.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -64921,7 +65579,43 @@
    ]
   },
   {
+   "fr": "Tableau d'avant la 2.78 : les mini-boss n'y étaient pas comptés à part.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau d'avant la 2.78 : les morts n'y étaient pas comptées.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau d'avant la 2.78 : les réanimations n'y étaient pas comptées.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "TABLEAU DES CONTRIBUTIONS",
+   "where": [
+    "ui/online/ContribTable.h"
+   ]
+  },
+  {
+   "fr": "Tableau des contributions",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Tableau des contributions de chaque zone : à la fin d'une zone, la part de chaque joueur des dégâts infligés au boss et aux mini-boss de la zone (gardiens, ennemis dont la chute est un objectif, Gigaboss), ses dégâts, son soutien, ses mécanismes et ses objectifs, comptés par la simulation (les mêmes nombres sur tous les jeux du groupe) ; envoyé au serveur et validé par la majorité du groupe, il reste dans « Résultats du raid » (« Tableaux des zones ») et se revoit depuis la pause.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Tableau des contributions refait : onglets « Zone » et « Raid entier », barres des dégâts au boss et aux mini-boss, une icône et une couleur par catégorie, une couronne pour le meilleur, tri par colonne au clavier, à la manette et à la souris, une infobulle par chiffre, et trois nouveaux chiffres par joueur : morts, réanimations faites et réanimations reçues. Dans le menu du raid (« Zones terminées ») et dans Résultats du raid ; les tableaux d'avant affichent « — » pour ce qu'ils ne comptaient pas.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -64936,6 +65630,12 @@
    "fr": "TABLEAU DES CONTRIBUTIONS · {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau détaillé (zone et raid entier)",
+   "where": [
+    "ui/screens/RaidResultsScene.cpp"
    ]
   },
   {
@@ -66247,6 +66947,30 @@
    ]
   },
   {
+   "fr": "terminée par un autre groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée par un autre groupe · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée par votre groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "terminée par votre groupe · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "terminée · vous êtes ici",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -66293,6 +67017,7 @@
     "data/levels/sylvanox_03.json",
     "data/levels/sylvanox_04.json",
     "data/raids/asterion/abdomen/armory.json",
+    "data/raids/asterion/abdomen/armory_lair.json",
     "data/raids/asterion/abdomen/zone_1.json",
     "data/raids/asterion/abdomen/zone_2.json",
     "data/raids/asterion/abdomen/zone_3.json",
@@ -66302,6 +67027,7 @@
     "data/raids/asterion/abdomen/zone_7.json",
     "data/raids/asterion/abdomen/zone_8.json",
     "data/raids/asterion/bras_droit/armory.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
     "data/raids/asterion/bras_droit/zone_1.json",
     "data/raids/asterion/bras_droit/zone_2.json",
     "data/raids/asterion/bras_droit/zone_3.json",
@@ -66311,6 +67037,7 @@
     "data/raids/asterion/bras_droit/zone_7.json",
     "data/raids/asterion/bras_droit/zone_8.json",
     "data/raids/asterion/bras_gauche/armory.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
     "data/raids/asterion/bras_gauche/zone_1.json",
     "data/raids/asterion/bras_gauche/zone_2.json",
     "data/raids/asterion/bras_gauche/zone_3.json",
@@ -66320,9 +67047,11 @@
     "data/raids/asterion/bras_gauche/zone_7.json",
     "data/raids/asterion/bras_gauche/zone_8.json",
     "data/raids/asterion/coeur/armory.json",
+    "data/raids/asterion/coeur/armory_lair.json",
     "data/raids/asterion/coeur/zone_1.json",
     "data/raids/asterion/coeur/zone_2.json",
     "data/raids/asterion/crane/armory.json",
+    "data/raids/asterion/crane/armory_lair.json",
     "data/raids/asterion/crane/zone_1.json",
     "data/raids/asterion/crane/zone_2.json",
     "data/raids/asterion/crane/zone_3.json",
@@ -66332,6 +67061,7 @@
     "data/raids/asterion/crane/zone_7.json",
     "data/raids/asterion/crane/zone_8.json",
     "data/raids/asterion/jambe_droite/armory.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
     "data/raids/asterion/jambe_droite/zone_1.json",
     "data/raids/asterion/jambe_droite/zone_2.json",
     "data/raids/asterion/jambe_droite/zone_3.json",
@@ -66341,6 +67071,7 @@
     "data/raids/asterion/jambe_droite/zone_7.json",
     "data/raids/asterion/jambe_droite/zone_8.json",
     "data/raids/asterion/jambe_gauche/armory.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
     "data/raids/asterion/jambe_gauche/zone_1.json",
     "data/raids/asterion/jambe_gauche/zone_2.json",
     "data/raids/asterion/jambe_gauche/zone_3.json",
@@ -66350,6 +67081,7 @@
     "data/raids/asterion/jambe_gauche/zone_7.json",
     "data/raids/asterion/jambe_gauche/zone_8.json",
     "data/raids/asterion/torse/armory.json",
+    "data/raids/asterion/torse/armory_lair.json",
     "data/raids/asterion/torse/zone_1.json",
     "data/raids/asterion/torse/zone_2.json",
     "data/raids/asterion/torse/zone_3.json",
@@ -66482,6 +67214,12 @@
    "fr": "Test depuis l'éditeur : les records ne sont pas enregistrés",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Test local : chiffres comptés par la simulation, rien n'est envoyé au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -67252,6 +67990,7 @@
    "fr": "total",
    "where": [
     "game/online/OnlineService.cpp",
+    "game/online/RaidReviews.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
@@ -67510,6 +68249,12 @@
    ]
   },
   {
+   "fr": "Tous les avis de l'événement, masqués compris. Un commentaire masqué garde sa note.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Tous les emplacements sont pris : quel pouvoir laisser ici ?",
    "where": [
     "ui/screens/CoopGameScene.cpp"
@@ -67525,6 +68270,25 @@
    "fr": "Tous les emplacements sont pris : retirez d'abord un pouvoir.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tous les joueurs présents sont prêts : en route vers l'antre !",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json",
+    "data/raids/asterion/bras_droit/armory_lair.json",
+    "data/raids/asterion/bras_gauche/armory_lair.json",
+    "data/raids/asterion/coeur/armory_lair.json",
+    "data/raids/asterion/crane/armory_lair.json",
+    "data/raids/asterion/jambe_droite/armory_lair.json",
+    "data/raids/asterion/jambe_gauche/armory_lair.json",
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "tous les joueurs présents sur la plaque « Prêts »",
+   "where": [
+    "game/raid/RaidRun.cpp"
    ]
   },
   {
@@ -67756,6 +68520,7 @@
    "fr": "Toute l'équipe est à terre",
    "where": [
     "game/gameplay/GameWorldTeam.cpp",
+    "game/raid/RaidRun.cpp",
     "ui/screens/CoopGameScene.cpp"
    ]
   },
@@ -67788,6 +68553,25 @@
    "fr": "Toutes les dépendances sont présentes ({0} ennemis, {1} pouvoirs)",
    "where": [
     "packaging/PackageImporter.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "Toutes les embuscades sont vaincues : le passage vers l'antre est ouvert",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
    ]
   },
   {
@@ -67831,6 +68615,25 @@
    "fr": "Toutes les touches de ce niveau reprennent celles du niveau pour J{0}.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "toutes les zones de votre instance, additionnées",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -68323,6 +69126,12 @@
    ]
   },
   {
+   "fr": "Tri : {0} (clic sur un en-tête, ou flèches gauche / droite, LB RB)",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Triangle",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -68482,6 +69291,12 @@
    "fr": "Trouver une relique.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Très bien",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -69487,6 +70302,12 @@
    ]
   },
   {
+   "fr": "Un joueur du groupe (son siège et le moment où il l'a pris). Votre ligne est encadrée.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Un joueur par ancre, au même moment : deux au sol, une en hauteur. Avec peu de joueurs, une chaîne tient plus longtemps : × {0} à deux, × {1} seul.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -70347,6 +71168,12 @@
    "fr": "Une niche de cristal au sommet des cimes !",
    "where": [
     "data/levels/sylvanox_02.json"
+   ]
+  },
+  {
+   "fr": "Une note de 1 à 5 étoiles et, si vous le voulez, un commentaire. Un seul avis par événement : vous pourrez le modifier ou le supprimer.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -71286,6 +72113,19 @@
    ]
   },
   {
+   "fr": "Vaincre la deuxième embuscade (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
    "fr": "Vaincre la Liche des Catacombes.",
    "where": [
     "data/achievements/achievements.json"
@@ -71295,6 +72135,32 @@
    "fr": "Vaincre la Liche sans être touché.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Vaincre la première embuscade (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_droit/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/coeur/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json"
    ]
   },
   {
@@ -71541,6 +72407,54 @@
    "fr": "Vaincre tous les ennemis des 25 niveaux de la campagne.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Aorte cosmique",
+   "where": [
+    "data/raids/asterion/coeur/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Cage du cœur",
+   "where": [
+    "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Cheville",
+   "where": [
+    "data/raids/asterion/jambe_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Cheville d'acier",
+   "where": [
+    "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Gosier de Voidworm",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de la zone",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Poignet de glace",
+   "where": [
+    "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "vaincre toutes les embuscades de Voûte crânienne",
+   "where": [
+    "data/raids/asterion/crane/branch.json"
    ]
   },
   {
@@ -71847,8 +72761,7 @@
   {
    "fr": "Verrouillage des inscriptions",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -72317,6 +73230,60 @@
     "data/raids/asterion/jambe_droite/armory.json",
     "data/raids/asterion/jambe_gauche/armory.json",
     "data/raids/asterion/torse/armory.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Cœur d'Asterion. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/coeur/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Dreadfang. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/bras_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Graviton. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/jambe_gauche/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Heartbreaker. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/torse/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Pyroclast. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/bras_droit/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Skullmaw. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Titanus. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/jambe_droite/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Vestiaire de l'antre : ajustez vos pouvoirs pour Voidworm. Sautez sur une tablette ; quatre au plus.",
+   "where": [
+    "data/raids/asterion/abdomen/armory_lair.json"
    ]
   },
   {
@@ -73247,6 +74214,24 @@
    ]
   },
   {
+   "fr": "Votre avis",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Votre avis est modifié.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Votre avis est supprimé.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -73278,12 +74263,6 @@
   },
   {
    "fr": "Votre clan a déjà {0} inscrits : c'est complet.",
-   "where": [
-    "server/src/raids.ts"
-   ]
-  },
-  {
-   "fr": "Votre clan a déjà {0} raids à venir : annulez-en un ou attendez la fin d'un raid.",
    "where": [
     "server/src/raids.ts"
    ]
@@ -73360,6 +74339,24 @@
    "fr": "Votre clan {0} : {1} sur {2} · {3}",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre commentaire (facultatif)",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Votre commentaire a été masqué par la modération (vous seul le voyez). Votre note compte toujours.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Votre commentaire est masqué après des signalements, en attendant la décision des modérateurs (vous seul le voyez). Votre note compte toujours.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -73550,6 +74547,12 @@
    ]
   },
   {
+   "fr": "Votre note · ← → ou stick pour choisir, Entrée ou A",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Votre partie",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -73701,6 +74704,7 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "game/raid/RaidTest.cpp",
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/HudEditorScene.cpp",
@@ -73816,6 +74820,12 @@
    "fr": "Vous n'avez encore obtenu aucun succès.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous n'avez pas d'avis sur cet événement.",
+   "where": [
+    "server/src/raidReviews.ts"
    ]
   },
   {
@@ -74009,6 +75019,12 @@
    "fr": "Vous ne pouvez pas répondre à ce commentaire.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas signaler votre propre avis.",
+   "where": [
+    "server/src/raidReviews.ts"
    ]
   },
   {
@@ -74653,6 +75669,7 @@
   {
    "fr": "Zone",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/AdminRaids.cpp"
    ]
   },
@@ -74699,15 +75716,8 @@
    ]
   },
   {
-   "fr": "Zone : ?",
-   "where": [
-    "game/raid/RaidRun.cpp"
-   ]
-  },
-  {
    "fr": "Zone : {0}",
    "where": [
-    "game/raid/RaidRun.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
@@ -74730,9 +75740,45 @@
    ]
   },
   {
+   "fr": "zone de passage",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone de passage : ajuster ses pouvoirs pour le gigaboss, puis tous les joueurs présents sur la plaque « Prêts »",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "Zone de passage : ajuster ses pouvoirs pour {0}, puis tous les joueurs présents sur la plaque « Prêts »",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
+   "fr": "zone de passage · pouvoirs pour le gigaboss",
+   "where": [
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
+   "fr": "zone de passage · vous êtes ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone de ralentissement",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "zone entrée absente des zones des joueurs",
+   "where": [
+    "server/src/raidZones.ts"
    ]
   },
   {
@@ -74751,6 +75797,12 @@
    "fr": "Zone morte",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone précédente",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -74800,6 +75852,12 @@
     "data/raids/asterion/jambe_droite/branch.json",
     "data/raids/asterion/jambe_gauche/branch.json",
     "data/raids/asterion/torse/branch.json"
+   ]
+  },
+  {
+   "fr": "Zone suivante",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -74904,6 +75962,18 @@
    "fr": "Zone {0} sur 8 · sélectionnée",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone {0} · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Zone {0} · {1}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -75390,6 +76460,12 @@
    ]
   },
   {
+   "fr": "{0} / LB RB",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} / Vue : recommencer",
    "where": [
     "ui/screens/GameScene.cpp"
@@ -75733,6 +76809,12 @@
    ]
   },
   {
+   "fr": "{0} : onglets · flèches gauche / droite : trier · survol ou flèches haut / bas : détails",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} : ordres",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -75847,6 +76929,12 @@
    ]
   },
   {
+   "fr": "{0} : vous ({1})",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : zone de départ {1} inconnue",
    "where": [
     "server/src/raidWorld.ts"
@@ -75880,6 +76968,12 @@
    "fr": "{0} : {1} générateur(s) pour {2} demandés",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : {1} m",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -76177,6 +77271,12 @@
    "fr": "{0} avertissements",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "{0} avis",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -77443,8 +78543,7 @@
   {
    "fr": "{0} min avant le début",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -78201,6 +79300,18 @@
    ]
   },
   {
+   "fr": "{0} signalement",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "{0} signalements",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "{0} succès",
    "where": [
     "ui/screens/OnlineComputer.cpp"
@@ -78870,6 +79981,12 @@
    ]
   },
   {
+   "fr": "{0} · Échap / B : fermer",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} × (1 + {1} × (joueurs − 1)) : sa vie grandit avec les places occupées.",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
@@ -79151,6 +80268,12 @@
    "fr": "{0}/{1}/{2} à {3}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}: {1} m",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -81790,6 +82913,12 @@
    ]
   },
   {
+   "fr": "ÉVÉNEMENTS DU CLAN",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
    "fr": "Événements du monde",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -82042,12 +83171,14 @@
   {
    "fr": "… et {0} joueur de plus",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
   {
    "fr": "… et {0} joueurs de plus",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },

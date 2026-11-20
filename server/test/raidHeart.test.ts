@@ -67,7 +67,7 @@ async function accept(ev: string, c: Catalog, objective: string) {
 /** The seven gigaboss fallen (validated): the heart opens; its aorta crossed (its arena reachable). */
 async function openHeart(ev: string) {
     for (const c of CATALOGS) await accept(ev, c, c.objectives.find((o) => o.role === "gigaboss")!.id);
-    await accept(ev, HEART!, "coeur_aorte");
+    for (const o of HEART!.objectives) if (o.role === "ambush") await accept(ev, HEART!, o.id);  // 2.78: every ambush of the aorta
 }
 
 /** A clan's instance in the heart, its players seated and active. */

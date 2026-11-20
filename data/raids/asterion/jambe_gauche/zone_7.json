@@ -8392,26 +8392,6 @@
     }
    ],
    "delay": 0.6
-  },
-  {
-   "id": "ev4",
-   "source": "o498",
-   "trigger": "cleared",
-   "once": true,
-   "actions": [
-    {
-     "type": "open",
-     "target": "o506"
-    },
-    {
-     "type": "hint",
-     "params": {
-      "text": "La cheville cède ! Le pied de Graviton est ouvert.",
-      "duration": 3.5
-     }
-    }
-   ],
-   "delay": 0.5
   }
  ],
  "intro": {},
@@ -8521,6 +8501,12 @@
       16624,
       960
      ]
+    ],
+    "9": [
+     [
+      16624,
+      960
+     ]
     ]
    },
    "passages": [
@@ -8557,11 +8543,27 @@
       64,
       64
      ],
-     "lock": "objective:jg_cheville",
-     "door": "o506"
+     "lock": "ambushes:7",
+     "door": "o506",
+     "via": 9
     }
    ],
    "objectives": [
+    {
+     "id": "jg_embuscade_1",
+     "source": "o124",
+     "trigger": "cleared"
+    },
+    {
+     "id": "jg_embuscade_2",
+     "source": "o240",
+     "trigger": "cleared"
+    },
+    {
+     "id": "jg_embuscade_3",
+     "source": "o398",
+     "trigger": "cleared"
+    },
     {
      "id": "jg_cheville",
      "source": "o498",
@@ -8579,6 +8581,96 @@
     "message": "Puits de gravité ! Restez sur les îlots hauts"
    },
    "sealed": null,
+   "route": [
+    [
+     144,
+     960
+    ],
+    [
+     1824,
+     960
+    ],
+    [
+     2016,
+     960
+    ],
+    [
+     2496,
+     960
+    ],
+    [
+     4096,
+     960
+    ],
+    [
+     5536,
+     960
+    ],
+    [
+     5936,
+     960
+    ],
+    [
+     5936,
+     288
+    ],
+    [
+     6080,
+     288
+    ],
+    [
+     6112,
+     512
+    ],
+    [
+     6176,
+     512
+    ],
+    [
+     6368,
+     960
+    ],
+    [
+     7968,
+     960
+    ],
+    [
+     9408,
+     960
+    ],
+    [
+     9888,
+     960
+    ],
+    [
+     11328,
+     960
+    ],
+    [
+     11520,
+     960
+    ],
+    [
+     13120,
+     960
+    ],
+    [
+     14560,
+     960
+    ],
+    [
+     14752,
+     960
+    ],
+    [
+     16512,
+     960
+    ],
+    [
+     16768,
+     960
+    ]
+   ],
    "coop": [
     {
      "id": "ecluse_1",

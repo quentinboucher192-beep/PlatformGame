@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §26): PYROCLAST, the magma hand of the right arm (raid::Gigaboss's own rules: no
+// 2.79 (docs/RAIDS.md §28): PYROCLAST, the magma hand of the right arm (raid::Gigaboss's own rules: no
 // routine). Its fists fall on marks under each player, its open vents throw their jets in turn; armoured
 // (its carapace, phase 2), its three vents held together (one player on each: the high centre one by the
 // platforms) burst it: its knuckles' weak points bare (× 2) for 10 s, its body × 2 meanwhile. Its own

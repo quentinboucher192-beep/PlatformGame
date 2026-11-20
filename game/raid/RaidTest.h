@@ -22,6 +22,7 @@
 // they are not in) and, AFK for 15 s, is played by the same AI until they touch a key again.
 
 #include <cstdint>
+#include <map>
 #include <string>
 #include <utility>
 #include <vector>
@@ -51,7 +52,9 @@ public:
 
     RaidRun& run() { return run_; }
     const RaidRun& run() const { return run_; }
-    const TestBots& bots() const { return bots_; }
+    /// The simulated players of the zone shown (2.78: each zone where players are has its own, thinking
+    /// for the seats in it: the players of an instance may be spread over several zones).
+    const TestBots& bots() const { return botsOf(run_.zone()); }
     /// The branch's state of the test (the objectives done, RAID_STATE's u32).
     uint32_t branchState() const { return state_; }
     int players() const { return players_; }
@@ -77,10 +80,13 @@ public:
     /// The seats played by the AI now (the administrator's included when it plays it).
     int simulatedPlayers() const { return players_ - 1 + (seatZeroBot() ? 1 : 0); }
     /// The level of the simulated players (their reaction and precision).
-    void setSkill(BotSkill s) { bots_.setSkill(s); }
+    void setSkill(BotSkill s) {
+        skill_ = s;
+        for (auto& [zone, b] : bots_) b.setSkill(s);
+    }
     /// The administrator AFK (no key for 15 s): their seat is played by the AI until they touch one.
     bool autopilot() const { return adminSeated_ && (adminBot_ || afk_ >= kAfkSteps); }
-    TestBots& botsMut() { return bots_; }
+    TestBots& botsMut() { return botsFor(run_.zone()); }
     /// The branch's state given with each step (the full raid's simulation: every group's validated work).
     void setBranchState(uint32_t state) { state_ = state; }
     void setHeartShared(const HeartShared& h) { heart_ = h; }
@@ -93,23 +99,30 @@ public:
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
 
-    // 2.79 (docs/RAIDS.md §26).
+    // 2.79 (docs/RAIDS.md §28).
     /// The administrator's seat played by the AI from the start (a test of 8 simulated players).
     void setAdminBot(bool on) { adminBot_ = on; }
     bool adminBot() const { return adminBot_; }
     /// The two rescues of a test (a simulated player put on its mechanism or further on its path); off: the
-    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §26).
+    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §28).
     void setRescues(bool on) { rescuesOn_ = on; }
     bool rescuesOn() const { return rescuesOn_; }
     /// The last order the administrator gave (from their frame: bots::withOrder), its step.
-    const bots::Order& lastOrder() const { return bots_.currentOrder(); }
+    const bots::Order& lastOrder() const { return lastOrder_; }
     /// The deaths of the simulated players so far (a player of a seat played by the AI put down).
     int botDeaths() const { return botDeaths_; }
 
 private:
     void rescue();
+    /// 2.78: the frames of the simulated players, zone by zone.
+    void thinkByZone(uint32_t seats);
+    /// 2.78: the simulated players thinking in `zone` (made the first time a player is there).
+    TestBots& botsFor(int zone);
+    const TestBots& botsOf(int zone) const;
     RaidRun run_;
-    TestBots bots_;
+    std::map<int, TestBots> bots_;  // 2.78: by zone
+    BotSkill skill_ = BotSkill::Skilled;
+    int lastZone_[kMaxInstancePlayers] = {-2, -2, -2, -2, -2, -2, -2, -2};  // 2.78: the zone of each seat at the last step
     int players_ = 1;
     uint32_t state_ = 0;
     HeartShared heart_;  // 2.74: the heart's test (its relics)
@@ -123,6 +136,7 @@ private:
     int botDeaths_ = 0;        // 2.79
     uint8_t downBefore_ = 0;   // 2.79: the seats down at the last step
     std::vector<std::string> names_;  // 2.79: the seats' names in the thoughts
+    bots::Order lastOrder_;           // 2.79: the administrator's last order (2.78: given to every zone's simulated players)
     bool namesFor_ = false;
     int afk_ = 0;
     int rescues_ = 0;

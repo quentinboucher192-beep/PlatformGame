@@ -1,0 +1,119 @@
+{
+ "texture": "ui/raids/contrib.png",
+ "icon": 32,
+ "cells": {
+  "boss": [
+   0,
+   0,
+   32,
+   32
+  ],
+  "mini": [
+   32,
+   0,
+   32,
+   32
+  ],
+  "support": [
+   64,
+   0,
+   32,
+   32
+  ],
+  "mechanisms": [
+   96,
+   0,
+   32,
+   32
+  ],
+  "objectives": [
+   128,
+   0,
+   32,
+   32
+  ],
+  "deaths": [
+   160,
+   0,
+   32,
+   32
+  ],
+  "revives": [
+   192,
+   0,
+   32,
+   32
+  ],
+  "revived": [
+   224,
+   0,
+   32,
+   32
+  ],
+  "crown": [
+   256,
+   0,
+   32,
+   32
+  ],
+  "arrow": [
+   288,
+   0,
+   32,
+   32
+  ]
+ },
+ "colors": {
+  "boss": [
+   255,
+   96,
+   96
+  ],
+  "mini": [
+   255,
+   160,
+   80
+  ],
+  "support": [
+   96,
+   220,
+   150
+  ],
+  "mechanisms": [
+   255,
+   205,
+   110
+  ],
+  "objectives": [
+   110,
+   170,
+   255
+  ],
+  "deaths": [
+   170,
+   176,
+   196
+  ],
+  "revives": [
+   120,
+   235,
+   170
+  ],
+  "revived": [
+   180,
+   240,
+   210
+  ],
+  "crown": [
+   255,
+   205,
+   110
+  ],
+  "arrow": [
+   255,
+   255,
+   255
+  ]
+ },
+ "comment": "Written by tools/assetgen/environment/raid_contrib_icons.py (2.78): never edit by hand."
+}

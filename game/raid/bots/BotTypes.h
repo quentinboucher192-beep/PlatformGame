@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.79 (docs/RAIDS.md §26): what the simulated players of a raid test share between their senses, their
+// 2.79 (docs/RAIDS.md §28): what the simulated players of a raid test share between their senses, their
 // tactics against each Gigaboss, their roles in the group, their orders and their thoughts.
 //
 // * a Danger is what they see coming (read from the world only: the marks a player sees, the hazards, the
@@ -11,7 +11,7 @@
 //   players it needs and whether it must be held all the time or only when asked;
 // * a Target is what to strike (a weak point, a restraint, a claw, a stomach, a plate…), how many players and
 //   whether those striking it must finish it together with the other targets of its group (a « sync »);
-// * an Order comes from the administrator's frame (InputFrame, docs/RAIDS.md §26), never from the screen:
+// * an Order comes from the administrator's frame (InputFrame, docs/RAIDS.md §28), never from the screen:
 //   the same frames give the same raid.
 //
 // Nothing here reads the clock, the screen or the network.
@@ -76,7 +76,7 @@ struct Target {
     std::string label;       // « Entrave ouest »
 };
 
-/// What the administrator orders (the order wheel of a test, docs/RAIDS.md §26).
+/// What the administrator orders (the order wheel of a test, docs/RAIDS.md §28).
 enum class OrderKind : uint8_t { None = 0, Follow, Wait, Objective, Revive, Free, Mark };
 const char* orderName(OrderKind k);  // « Suivez-moi », « Attendez ici »…
 

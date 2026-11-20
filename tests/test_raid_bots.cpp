@@ -459,9 +459,12 @@ TEST_CASE("cooperation 3 (2.77): a soul never waits in a passage; a revival neve
     w.playerAt(1).teleportTo(w.playerAt(0).feet());
     for (int t = 0; t < 30; ++t) step();
     CHECK(run.zoneSerial() == serial);
+    // Walked into it: it goes (2.78: alone, seat 0 stays where it is; the passage works as before).
+    const int here = run.zoneOf(1);
     w.playerAt(1).teleportTo(passage.center());
-    for (int t = 0; t < 60 && run.zoneSerial() == serial; ++t) step();
-    CHECK(run.zoneSerial() != serial);  // walked into it: the group goes (the passage works as before)
+    for (int t = 0; t < 60 && run.zoneOf(1) == here; ++t) step();
+    CHECK(run.zoneOf(1) != here);
+    CHECK(run.zoneOf(0) == here);
 }
 
 TEST_CASE("cooperation 3 (2.77): killed in mid-jump in a raid — the soul falls under it; over the void, at the last safe place; revived; the same digest (2 and 8 seats)") {

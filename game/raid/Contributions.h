@@ -14,9 +14,15 @@
 // dodged, the blows their shield stopped), support (shield blocks, allies revived), mechanisms
 // (vents closed), weak points broken, objectives of the branch, steps in play, and whether they
 // were in play when the gigaboss fell.
+//
+// 2.78: the players of an instance may be in several zones at once (one world per zone occupied,
+// raid::RaidRun): the records and the zones' tables are the instance's, what follows a world (the
+// owners of its attacks, its gigaboss, its weak points) is kept per world (`attach`, `focus`). The
+// zones' tables count each player's deaths (times down), the revivals they did and those they got.
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -50,50 +56,75 @@ struct Contribution {
 /// the enemies whose fall is an objective, its gigaboss and weak points), the damage dealt in the zone,
 /// support (allies revived, blows blocked), mechanisms (plates held when they worked, vents, weak
 /// points) and objectives. Counted inside the simulation like the records: every game agrees.
+/// 2.78: `miniDamage` (the part of `bossDamage` dealt to the mini-bosses: the enemies whose fall is an
+/// objective of the zone, never its gigaboss nor a boss of the bestiary), `deaths` (times down in the
+/// zone), `revives` (allies revived: the one holding « Interagir » by the soul when it got up) and
+/// `revived` (times revived). Absent from the tables of before 2.78 (`v2` false): shown « — ».
 struct ZoneContribution {
     int seat = 0;
     uint32_t from = 0;
     int64_t bossDamage = 0;  // tenths
     int64_t damage = 0;      // tenths
     int support = 0, mechanisms = 0, objectives = 0;
+    int64_t miniDamage = 0;  // 2.78: tenths (part of bossDamage)
+    int deaths = 0, revives = 0, revived = 0;  // 2.78
+    bool v2 = true;  // 2.78: the four fields above are known (a table of before reads false)
 };
 
 class Contributions : public WorldListener {
 public:
-    /// A new world (a zone loaded): the tags of the players' attacks start again.
-    void attach(GameWorld& w);
-    /// 2.75: the zone of that world and the object ids of its bosses and mini-bosses (the sources of its
-    /// « killed » objectives, its gigaboss): what is counted from now on goes to this zone's table.
-    void setZone(int zone, std::vector<std::string> bosses);
+    /// 2.78: a world of the instance (a zone loaded): its zone, the object ids of its boss and mini-bosses
+    /// (the sources of its « killed » objectives, its gigaboss) and of its mini-bosses alone (the
+    /// « killed » objectives). It becomes the focused one; its attacks' tags start again.
+    void attach(GameWorld& w, int zone, std::vector<std::string> bosses, std::vector<std::string> minis);
+    /// 2.78: a world unloaded (its zone left by every player).
+    void detach(const GameWorld& w);
+    /// 2.78: the world the next calls without a world are about (its gigaboss, its weak points, its zone).
+    void focus(const GameWorld& w);
     /// 2.75: the table of a zone (one line per record that did something there, by seat then step).
     std::vector<ZoneContribution> zoneTable(int zone) const;
-    /// 2.75: « s,f,b,d,u,m,o;… » of zoneTable(zone): what the server's consensus compares.
+    /// 2.78: the whole raid (« Raid entier »): every zone's lines added up, per record.
+    std::vector<ZoneContribution> raidTable() const;
+    /// 2.78: the zones with a table (their ids, in order).
+    std::vector<int> zonesWithTable() const;
+    /// 2.75: « s,f,b,d,u,m,o;… » of zoneTable(zone): what the server's consensus compares; 2.78:
+    /// « s,f,b,d,u,m,o,n,x,y,z;… » (mini-bosses, deaths, revivals done and received).
     static std::string zoneCanonical(const std::vector<ZoneContribution>& rows);
-    /// After each step of the world (step `tick`): new holders of a seat, steps in play, allies
-    /// revived (whoever stood by the soul), the gigaboss's blows dodged.
+    /// 2.78: the seats of the instance after a step, each in its own zone's world: its presence
+    /// there (Vacant when nowhere), its zone and the ally that revived it this step (-1 none). New
+    /// holders of a seat, steps in play, deaths and revivals (done and received).
+    struct SeatView {
+        uint8_t presence = 4;  // GameWorld::Presence (4: Vacant)
+        int zone = 0;
+        int reviver = -1;
+    };
+    void seats(uint32_t tick, const SeatView* views, int n);
+    /// After each step of a world (step `tick`): the allies revived there (whoever stood by the soul),
+    /// the gigaboss's blows dodged. The seats not in that world are Vacant in it (ignored).
     void afterStep(const GameWorld& w, uint32_t tick, const Enemy* boss);
     /// The record of the player in seat `seat` now (nullptr when nobody holds it).
     Contribution* current(int seat);
     const std::vector<Contribution>& records() const { return records_; }
-    /// The seat whose attack `tag` is (-1 unknown).
+    /// The seat whose attack `tag` is (-1 unknown), in the focused world.
     int ownerOf(uint32_t tag) const;
-    /// An objective accomplished: by `seat` when known, else by every player in play.
+    int ownerOf(const GameWorld& w, uint32_t tag) const;
+    /// An objective accomplished: by `seat` when known, else by every player in play in `w`.
     void objective(const GameWorld& w, int seat);
     void vent(int seat);
     void weakPoint(int seat);
     void gigabossDown(const GameWorld& w);
-    /// The uid of the gigaboss (its damage, its blows), and of its weak points.
-    void setBoss(uint32_t uid) { boss_ = uid; }
-    void setWeak(const std::vector<uint32_t>& uids) { weak_ = uids; }
+    /// The uid of the gigaboss (its damage, its blows), and of its weak points (focused world).
+    void setBoss(uint32_t uid);
+    void setWeak(const std::vector<uint32_t>& uids);
     /// 2.69 (phase 4B): other targets of a gigaboss's mechanisms whose breaker counts (Voidworm's
     /// stomach, Titanus's restraints, Graviton's cores): brokeWeak() names who broke them.
-    void setWatched(const std::vector<uint32_t>& uids) { watched_ = uids; }
+    void setWatched(const std::vector<uint32_t>& uids);
     /// 2.69: an ally freed (Voidworm's stomach broken, Dreadfang's claw broken): a rescue for `seat`.
     void rescue(int seat);
     /// 2.69: a blow of the gigaboss aimed at `seat` and dodged (a gaze left in time, a flash hidden
     /// from, a claw stepped away from), `amount` in health.
     void dodged(int seat, float amount);
-    /// The seat that broke weak point `uid` this step (-1 none).
+    /// The seat that broke weak point `uid` this step (-1 none), in the focused world.
     int brokeWeak(uint32_t uid) const;
     uint64_t hash() const;
     /// « s,f,d,b,a,k,r,v,w,o,t,g;… » sorted by seat then step: what the server's consensus compares.
@@ -106,30 +137,38 @@ public:
     void playerHurt(const GameWorld& w, const DamageInfo& d, const HurtSource& src) override;
 
 private:
-    /// 2.75: the line of `seat`'s record in the current zone's table (nullptr when nobody holds it).
-    ZoneContribution* zoneLine(int seat);
+    /// 2.78: what follows one world of the instance.
+    struct Scope {
+        const GameWorld* world = nullptr;
+        int zone = 0;
+        std::vector<std::string> bosses, minis;
+        std::map<uint32_t, int> tagOwner;
+        uint32_t boss = 0;
+        std::vector<uint32_t> weak, watched;
+        // Weak points broken this step, and by whom (2.69: kept until the gigaboss's rules read them,
+        // after Contributions::afterStep; the entries of an older step are dropped at the next one).
+        std::vector<std::pair<uint32_t, int>> broken;
+        size_t brokenSeen = 0;
+        // The gigaboss's attack being followed: its target and whether it was hit.
+        const AttackDef* attack = nullptr;
+        bool prevTelegraph = false;
+        int target = -1;
+        bool targetHit = false;
+        int64_t attackDamage = 0;
+        bool hurtThisStep[8] = {};
+        int revivedSeen[8] = {};
+    };
+    Scope* scopeOf(const GameWorld& w);
+    const Scope* scopeOf(const GameWorld& w) const;
+    /// The line of `seat`'s record in `zone`'s table (nullptr when nobody holds it).
+    ZoneContribution* zoneLine(int zone, int seat);
     std::vector<Contribution> records_;
-    int zone_ = 0;                                      // 2.75
-    std::vector<std::string> zoneBosses_;               // 2.75: object ids
     std::map<int, std::vector<ZoneContribution>> zones_;  // 2.75: by zone, by record index
     int seatRecord_[8] = {-1, -1, -1, -1, -1, -1, -1, -1};
     bool wasVacant_[8] = {true, true, true, true, true, true, true, true};
-    int revivedSeen_[8] = {};
-    std::map<uint32_t, int> tagOwner_;
-    uint32_t boss_ = 0;
-    std::vector<uint32_t> weak_;
-    std::vector<uint32_t> watched_;  // 2.69
-    // Weak points broken this step, and by whom (2.69: kept until the gigaboss's rules read them,
-    // after Contributions::afterStep; the entries of an older step are dropped at the next one).
-    std::vector<std::pair<uint32_t, int>> broken_;
-    size_t brokenSeen_ = 0;
-    // The gigaboss's attack being followed: its target and whether it was hit.
-    const AttackDef* attack_ = nullptr;
-    bool prevTelegraph_ = false;
-    int target_ = -1;
-    bool targetHit_ = false;
-    int64_t attackDamage_ = 0;
-    bool hurtThisStep_[8] = {};
+    uint8_t prevPresence_[8] = {4, 4, 4, 4, 4, 4, 4, 4};  // 2.78: GameWorld::Presence after the last step
+    std::vector<std::unique_ptr<Scope>> scopes_;  // 2.78: by world
+    Scope* focus_ = nullptr;
 };
 
 }  // namespace cosmic::raid

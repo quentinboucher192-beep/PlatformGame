@@ -334,7 +334,7 @@ Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les nivea
 une zone avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui **jouent la zone eux-mêmes**, même quand
 l'administrateur est AFK : ils lisent ce qu'il reste à faire, se répartissent générateurs, plaques et combats, trouvent
 leur chemin en simulant leur propre physique (doubles et triples sauts, ruées, impulsion, sauts muraux, plateformes
-mobiles visées là où elles seront, [§25](docs/RAIDS.md)), esquivent tirs, rayons et coups annoncés, fuient le liquide qui
+mobiles visées là où elles seront, [§27](docs/RAIDS.md)), esquivent tirs, rayons et coups annoncés, fuient le liquide qui
 monte, battent les Gigaboss et relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert, en disant ce
 qu'ils font (« Double saut au-dessus du vide »…). **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
@@ -619,7 +619,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
-* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche
+* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8 (chacun sa zone), consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche, tableau des contributions
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 Chaque page renvoie à celle d'où l'on vient (« ← Retour », en tête et en fin) ; `python3 tools/docs/check_links.py`
@@ -636,7 +636,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.79.0** :
-* **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §25](docs/RAIDS.md)) : ils lisent la zone en **simulant
+* **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §27](docs/RAIDS.md)) : ils lisent la zone en **simulant
   leur propre physique** (une copie exacte de celle du joueur : 0 px d'écart) — chaque saut du graphe est un mouvement
   qui a atterri dans la simulation —, essaient leurs mouvements quelques dizaines de pas à l'avance sur une copie de la
   zone et utilisent **tous** leurs mouvements : double et triple saut, ruée au sol et en l'air, impulsion, sauts muraux,
@@ -653,7 +653,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   cacher d'un regard), points faibles frappés à nu, mécanismes résolus à plusieurs (évents, miroirs, chaînes,
   générateurs, côtes, artères, ancres ; les deux entraves de Titanus achevées ensemble) ; l'onde **visée** en huit
   directions depuis une place d'où elle atteint sa cible, hors du corps du boss ; bouclier, leurre et énergie au bon
-  moment ([docs/RAIDS.md §26](docs/RAIDS.md)).
+  moment ([docs/RAIDS.md §28](docs/RAIDS.md)).
 * **Rôles** répartis selon le nombre de joueurs : réanimateur, appât, coureurs, frappeurs ; redonnés quand quelqu'un
   tombe ; le groupe se regroupe aux plaques qui demandent plusieurs joueurs.
 * **Ce qu'ils pensent** : une bulle au-dessus de chacun (rôle → intention, et comment il se déplace), mesurée, jamais
@@ -665,9 +665,42 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   morts, phase atteinte, vie restante, ce qui a mis chacun à terre), et « Simuler un raid complet ». Aucun Gigaboss
   n'est encore battu sans aide : la carapace de leur deuxième phase, dont les places se tiennent ensemble, les arrête
   (seule celle de Dreadfang tombe). Ce qui tuait le plus est mieux lu : le rayon qui balaie de Skullmaw, la couronne de
-  Graviton et du Cœur à son vrai rayon (chiffres avant et après, limites : [docs/RAIDS.md §26](docs/RAIDS.md)).
+  Graviton et du Cœur à son vrai rayon (chiffres avant et après, limites : [docs/RAIDS.md §28](docs/RAIDS.md)).
 * Correctif : le nom d'un joueur hors de la vue n'est plus poussé au bord de l'écran, où les noms s'empilaient sous les
   panneaux du HUD (raids et coopération).
+
+**Nouveau dans la version 2.78.0** :
+* **Raids : chacun sa zone** : un passage n'emmène que le joueur qui y entre ; le groupe peut se répartir sur plusieurs
+  zones de la branche, toutes jouées en même temps (un monde par zone occupée, en verrouillage sur tous les jeux du groupe).
+  Les **passages de groupe** restent : la plaque « Prêts » d'un vestiaire demande tous les joueurs présents et seuls ceux
+  qui sont dessus partent ensemble. La grande carte, « Ce qu'il reste à faire », le menu du raid et le panneau du groupe
+  disent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones ([docs/RAIDS.md §26](docs/RAIDS.md#26-chacun-sa-zone-toutes-les-embuscades-avant-lantre-le-vestiaire-de-lantre-et-le-tableau-des-contributions-278)).
+* **Une zone qui se vide continue** : ses âmes attendent qu'un allié de la même zone vienne les relever ; le groupe n'est
+  éliminé que si tous ses joueurs sont à terre, toutes zones confondues (chaque zone touchée est alors à reprendre).
+* **Toutes les embuscades avant l'antre** : le passage vers l'antre de chaque Gigaboss (et vers le Cœur) reste fermé tant
+  qu'une vague d'embuscade de la zone d'avant reste (« Embuscades restantes : 2 sur 4 »).
+* **Vestiaire de l'antre** : entre l'expédition et l'arène, on ajuste ses pouvoirs pour le boss ; un indicateur du HUD
+  (« Passage vers l'antre : 124 m », sa flèche, son état) mesure la distance le long du parcours.
+* **Tableau des contributions refait** : onglets « Zone » / « Raid entier », barres des dégâts au boss et aux mini-boss,
+  icônes et couleurs par catégorie, couronne du meilleur, tri par colonne, infobulles, et trois chiffres de plus par joueur :
+  **morts**, **réanimations faites** et **reçues** (comptés par la simulation, validés par consensus ; « — » dans les
+  tableaux d'avant).
+
+**Nouveau dans la version 2.77.4** :
+* **Les raids sont des événements** : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS.
+  Seule l'équipe du jeu crée et publie les événements de raid (ADMINISTRATION › Raids) ; les clans s'y inscrivent et y
+  jouent. Le serveur refuse `POST /raids/events` avec un message clair (« Les raids sont des événements publiés par
+  l'équipe du jeu… ») ; les raids de clan déjà programmés restent lisibles et jouables jusqu'à leur fin, rien n'est
+  effacé ([docs/RAIDS.md §25](docs/RAIDS.md#25-les-raids-sont-des-événements-avis-des-joueurs-2774)).
+* **Noter un raid après l'avoir joué** : 1 à 5 étoiles et un commentaire facultatif (500 caractères au plus), un avis par
+  joueur et par événement, modifiable ou supprimable. Seul un joueur qui a vraiment joué l'événement (une place dans une
+  de ses instances et une contribution validée par le consensus) peut noter : le serveur le vérifie avec ses propres
+  données. « Noter ce raid » sur l'écran des résultats et sur la fiche de l'événement, jamais une fenêtre qui s'impose.
+* **Avis des joueurs** : la note moyenne et le nombre d'avis sur les cartes de CLANS › RAIDS et sur la fiche ; la liste
+  des avis (auteur, étoiles, date, texte) défile, le vôtre en tête avec « Modifier ». La modération des commentaires :
+  mêmes filtres et limites, signalement (masqué après 3), et dans ADMINISTRATION › Raids › « Avis », tous les avis d'un
+  événement, « Masquer » ou « Rétablir » un commentaire (Journal). Serveur : migration **0185** (à appliquer avant de
+  déployer).
 
 **Nouveau dans la version 2.77.3** :
 * **Statistiques des Gigaboss d'Asterion** dans leur fiche (onglet « Combat ») : PV de 2 à 8 joueurs, phases (seuil en %

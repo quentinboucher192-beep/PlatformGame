@@ -8,6 +8,11 @@
  "start_zone": 1,
  "generators_needed": 2,
  "lock_texts": {
+  "ambushes:7": {
+   "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
+   "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
+   "objective": "vaincre toutes les embuscades de Cheville"
+  },
   "generators": {
    "hint": "il faut couper les deux générateurs de gravité",
    "message": "Les deux générateurs de gravité sont coupés : la Cheville s'ouvre",
@@ -191,7 +196,7 @@
   {
    "a": 7,
    "b": 8,
-   "lock": "objective:jg_cheville",
+   "lock": "ambushes:7",
    "secret": false
   }
  ],
@@ -274,7 +279,7 @@
    "zone": 7,
    "label": "Briser la cheville : vaincre sa garde",
    "optional": false,
-   "role": "",
+   "role": "ambush",
    "pair": ""
   },
   {
@@ -284,6 +289,33 @@
    "label": "Vaincre le gigaboss Graviton",
    "optional": false,
    "role": "gigaboss",
+   "pair": ""
+  },
+  {
+   "id": "jg_embuscade_1",
+   "index": 10,
+   "zone": 7,
+   "label": "Vaincre la première embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "jg_embuscade_2",
+   "index": 11,
+   "zone": 7,
+   "label": "Vaincre la deuxième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "jg_embuscade_3",
+   "index": 12,
+   "zone": 7,
+   "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
    "pair": ""
   }
  ]

@@ -11,8 +11,10 @@
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
 # à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
 # statistiques des Gigaboss, fiche du Cœur, groupes du raid simulé (2.77.3, §24) ;
-# joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §25) ;
-# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §26)
+# les raids sont des événements, avis des joueurs (2.77.4, §25) ;
+# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §26) ;
+# joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §27) ;
+# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §28)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -88,7 +90,7 @@ Une instance = un groupe de 8 d'un clan (les groupes de la phase 1) sur la branc
 * **Caméra** : chacun suit son propre joueur (affichage seulement). Pas de « cadre d'équipe » en
   raid : personne n'est ramené. Le groupe entier à terre : la zone reprend là où il y est entré
   (objectifs gardés, tous debout, tous cœurs).
-* **Changer de zone** : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
+* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §26) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
   numéro d'abord) emmène toute l'instance. Chacun garde **ses cœurs, son énergie, ses pouvoirs et
   sa présence** (`GameWorld::carryOf` / `restoreMember`) et apparaît au point de la zone pour
   l'endroit d'où il vient (un joueur à terre revient debout avec la moitié de ses cœurs). Un
@@ -1294,7 +1296,7 @@ l'horloge, l'écran ni le réseau) :
 * Deux règles **du test seulement** (jamais dans un vrai raid) : un joueur simulé envoyé sur un mécanisme qu'il n'atteint
   pas en 6 s y est placé, et un joueur simulé qui ne se rapproche plus de son but pendant 8 s est placé sur la place
   suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît. (2.79 : ces deux
-  règles disparaissent à leur tour, le test ne déplace plus jamais un joueur simulé, §25.)
+  règles disparaissent à leur tour, le test ne déplace plus jamais un joueur simulé, §27.)
 * **Limites mesurées** (à 7 joueurs simulés, niveau Expert) : seuls, ils finissent les zones (l'embuscade de l'Épaule en
   14 s, le gardien du Biceps en 16 s, le générateur de la Veine en 13 s, le vestiaire en 15 s) et, invincibles, battent
   Pyroclast (depuis sa phase 2 : évents tenus ensemble, points faibles et corps à nu ; en 906 s de jeu depuis qu'il se
@@ -1305,7 +1307,7 @@ l'horloge, l'écran ni le réseau) :
   et, mortels, ils tombent face aux Gigaboss en quelques minutes (les attaques propres à chaque boss ne sont lues qu'en
   partie : marques, poings, jets, pluies et tirs annoncés, pas ses coups au contact). Le réglage « Joueurs simulés
   invincibles » permet de voir un raid entier.
-* **Pas encore corrigé : les îlots flottants** (corrigé en 2.79 : la plateforme est visée là où elle sera, §25). Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
+* **Pas encore corrigé : les îlots flottants** (corrigé en 2.79 : la plateforme est visée là où elle sera, §27). Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
   Cuisse flottante, Muscle suspendu…), leurs sauts visent la plateforme où elle est, pas où elle sera : ils tombent
   encore dans le vide. Un groupe de renfort qui reprend une telle zone peut y être éliminé à son tour, et les 8 renforts
   s'épuiser ; « Joueurs simulés invincibles » n'y change rien (une chute dans le vide met encore à terre). Corriger
@@ -1556,7 +1558,226 @@ Affichage, données des fiches et réglage du test seulement : `kSimulationVersi
 `kRankingGeneration`, `TITAN_REVISION` et les empreintes de référence ne changent pas (sans « Joueurs par groupe », les
 groupes d'un test se jouent comme avant).
 
-## 25. Joueurs simulés : terrain et anticipation (2.79)
+## 25. Les raids sont des événements, avis des joueurs (2.77.4)
+
+### Les raids sont des événements
+
+Un raid n'est plus organisé par un clan : **l'équipe du jeu** crée et publie les événements de raid (ADMINISTRATION ›
+Raids, `adminCreate` / `adminPublish`, §14), les clans s'y inscrivent (le chef ou un officier) puis chaque membre, et ils
+y jouent. CLANS › RAIDS n'a plus le bouton « Organiser un raid du clan… » ni sa fenêtre ; la case du milieu s'appelle
+« ÉVÉNEMENTS DU CLAN » (les événements auxquels le clan participe) et dit où s'inscrire quand elle est vide.
+
+Le serveur refuse `POST /raids/events` (`scheduleClanRaid`) à tout le monde : `403 RAID_EVENTS_ONLY`, « Les raids sont
+des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS. » (traduit par le
+jeu ; un jeu plus ancien l'affiche tel quel dans sa fenêtre). **Rien n'est effacé** : un raid de clan programmé avant la
+2.77.4 reste lisible et jouable jusqu'à sa fin, avec ses inscriptions, ses invitations (« Accepter » / « Refuser »), sa
+fiche et son annulation par le clan qui l'organise. La limite `raid_schedule` disparaît.
+
+### Noter un raid après l'avoir joué (`server/src/raidReviews.ts`, migration **0185**)
+
+Une note de **1 à 5 étoiles** et un **commentaire facultatif** (500 caractères au plus, comptés comme le serveur : un par
+lettre, accents compris). **Un avis par joueur et par événement** (clé unique `(event_id, player_id)` : deux envois en même
+temps n'en font qu'un), modifiable (`edited_at`) ou supprimable par son auteur seulement.
+
+**Qui peut noter** : le serveur le décide avec ses propres tables, jamais avec ce que dit le jeu (un champ inconnu est
+refusé) : le joueur a eu **une place dans une instance** de l'événement (`raid_instance_members`, écrit par le relais) **et**
+il y a **joué** (une contribution acceptée par le consensus de l'instance : `raid_contributions` avec des pas en jeu, ou une
+ligne d'un tableau de zone, `raid_zone_contributions`). Être inscrit, ou membre d'un clan qui participe, ne suffit pas ;
+une place sans contribution validée non plus (`403 RAID_NOT_PLAYED`, « Seuls les joueurs qui ont joué cet événement
+peuvent le noter. »).
+
+| Route | Rôle |
+|---|---|
+| `GET /raids/events/{id}/reviews?limit=&offset=` | ceux qui voient la fiche : `summary {average, count}`, `me {played, can_review, review}` (mon avis à part), `reviews` (les autres, du plus récent au plus ancien, sans les auteurs bloqués dans un sens ou dans l'autre), `total` |
+| `PUT /raids/events/{id}/review {stars, body?}` | écrit ou modifie mon avis (`201` puis `200`) |
+| `DELETE /raids/events/{id}/review` | supprime mon avis (et ses signalements) |
+| `POST /raids/reviews/{reviewId}/report {reason}` | signale un commentaire (jamais le sien, une fois par joueur) |
+| `GET /admin/raids/{id}/reviews` | administrateurs : tous les avis, masqués compris, avec leurs signalements |
+| `POST /admin/raids/{id}/reviews/{reviewId}/moderate {action: hide\|restore}` | masque ou rétablit un commentaire (Journal) |
+
+La **moyenne** (une décimale, arrondie au plus proche) et le **nombre d'avis** de chaque événement accompagnent ses vues
+(`reviews` de `GET /raids`, de sa fiche et de `GET /admin/raids`) : tous les avis comptent, commentaire masqué ou non.
+
+### Modération : celle des commentaires
+
+Les avis reprennent la modération des commentaires des niveaux et des courses (`workshop.ts`) : les mêmes **filtres**
+(`cleanCommentText` : pas de caractère de contrôle, deux lignes vides au plus, deux liens au plus), les mêmes **limites de
+débit** (`community_comment` pour écrire, modifier et supprimer, `community_report` pour signaler), les mêmes **motifs**
+et le même seuil : masqué pour tous après **3 signalements**, en attendant un administrateur. Un administrateur
+(ADMINISTRATION › Raids › onglet « **Avis** ») voit tous les avis de l'événement choisi, leurs signalements et leurs motifs,
+et **masque** ou **rétablit** un commentaire (rétabli : ses signalements effacés) ; chaque action va au Journal
+(`admin_raid_review_hidden`, `admin_raid_review_restored`). Un commentaire masqué **garde ses étoiles** : la note vient
+d'un vrai participant, seul son texte est retenu ; son auteur le voit encore, avec la raison.
+
+### Dans le jeu (`game/online/RaidReviews`, `ui/online/RaidReviewsPanel`)
+
+* **Jamais une fenêtre qui s'impose** : « **Noter ce raid** » est un bouton, sur l'écran des **résultats du raid** (à côté
+  des récompenses) et sur la **fiche de l'événement** ; il n'apparaît que si le serveur dit `can_review`. Déjà noté :
+  « **Modifier mon avis** ». Sans compte ou sans avoir joué : pas de bouton, une ligne dit pourquoi.
+* **La fiche de l'événement** (en cours ou terminé) : une colonne « **AVIS DES JOUEURS** » à côté des consignes et des
+  récompenses, la moyenne et le nombre d'avis en tête (★ 4,2 · 12 avis), **mon avis en premier** (encadré, « Modifier »),
+  puis les autres avec leur auteur, leurs étoiles, leur date (« modifié ») et leur texte, qui défilent ; « Signaler » sur
+  un commentaire, « Plus d'avis » au bout de la liste.
+* **Les cartes de CLANS › RAIDS** : la moyenne et le nombre d'avis sur la carte de l'événement mondial, les lignes des
+  événements du clan et l'historique, quand la place le permet (mesurée d'abord, jamais sur un autre texte).
+* **La fenêtre « Noter ce raid »** : cinq étoiles, chacune un arrêt du focus (← → ou le stick choisissent la note, Entrée
+  ou A et le clic aussi), le mot de la note (« 4 / 5 · Très bien »), le commentaire dans un champ de texte (Ctrl+C / Ctrl+V
+  comme ailleurs) avec son compteur « 123 / 500 » et un aperçu sur quatre lignes, « Publier » (ou « Enregistrer »),
+  « Annuler » et « Supprimer mon avis » (avec confirmation). Échap / B la ferme.
+* **Placement** : chaque partie mesurée puis placée après la précédente (`raidreviewsui::layoutItem`, `layoutEditor`,
+  `layoutSummary`) ; les textes des joueurs ne sont jamais traduits (`i18n::Verbatim`).
+
+### Tests
+
+* Serveur (`server/test/raidReviews.test.ts`, `raids.test.ts`) : le bouton de clan est refusé (rien d'écrit) et les raids
+  de clan d'avant restent jouables ; un non-participant ne peut pas noter (inscrit seulement, une place sans contribution,
+  un joueur extérieur, un champ « played » ajouté par le jeu) ; un participant note, modifie et supprime ; un seul avis par
+  joueur, même pour deux envois en même temps ; 501 caractères refusés, 500 lettres accentuées acceptées, liens et
+  caractères de contrôle filtrés ; signalements (masqué au troisième), un administrateur masque puis rétablit (Journal),
+  un joueur bloqué disparaît de la liste ; la moyenne juste (3,75 → 3,8 ; 14 / 3 → 4,7) sur la fiche et les cartes.
+* Jeu (`tests/test_raid_reviews.cpp`) : l'offre (« déjà noté » : « Modifier mon avis » ; aucun bouton pour un
+  non-participant ni sans compte ; jamais dans la liste des administrateurs), la longueur comptée comme le serveur,
+  la moyenne affichée ; la mise en page en 1280 × 720 et 1920 × 1080, en français et en anglais : chaque partie d'une
+  carte dans la carte et à la suite (texte de 500 caractères, commentaire masqué, signalements), la moyenne à côté du titre,
+  la fenêtre dans l'écran, ses étoiles, son champ, son aperçu et ses boutons sans chevauchement.
+
+### Versions
+
+Rien ne change dans la simulation : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`,
+`TITAN_REVISION` et les empreintes de référence restent les mêmes. La migration **0185_raid_reviews.sql** (tables
+`raid_reviews`, `raid_review_reports`) doit être appliquée **avant** de déployer le serveur.
+
+
+## 26. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
+
+### Chaque joueur change de zone seul (`raid::RaidRun`)
+
+* **Un passage n'emmène que celui qui y entre.** Un joueur en jeu qui marche dans un passage ouvert change de zone **seul** :
+  les autres restent où ils sont, et le groupe peut se répartir sur plusieurs zones de la branche. Il garde ses cœurs, son
+  énergie, ses pouvoirs et sa présence, et apparaît au point de la zone pour l'endroit d'où il vient. Plusieurs joueurs qui
+  entrent au même pas partent chacun de leur côté (dans l'ordre fixe : la zone la plus petite, puis le siège le plus petit).
+* **Toutes les zones occupées se jouent en même temps.** `RaidRun` tient **un monde par zone où se trouve un joueur** de
+  l'instance (debout, à terre ou absent), dans l'ordre des numéros de zone (le vestiaire, 0, d'abord ; le vestiaire de l'antre,
+  9, après les autres) : chaque monde avance au même pas sur tous les jeux du groupe, avec les trames de ses joueurs ; les
+  sièges d'une autre zone y sont vides (`InputFrame::Vacant`, invisibles, ignorés). Une zone que son dernier joueur quitte
+  note ce qu'elle garde (§16) et se décharge ; elle revient telle quelle au retour de quelqu'un. Un siège libre repris par un
+  joueur qui arrive le place dans sa zone si elle est encore jouée, sinon dans celle du plus petit siège en jeu.
+* **Chaque joueur a sa caméra dans sa zone.** Le jeu montre le monde du joueur que la caméra suit (le sien ; en spectateur,
+  celui qu'on regarde : Q / E, LB / RB passent d'un joueur à l'autre, donc d'une zone à l'autre). Affichage seulement.
+* **Les mécanismes comptent les joueurs de leur zone.** Une plaque à tenir ensemble, une écluse, le monte-charge demandent leur
+  nombre de joueurs, moins quand moins sont **en jeu dans la zone**. Le Gigaboss se met à l'échelle des joueurs de son arène.
+* **Les passages de groupe restent.** La plaque « Prêts » d'un vestiaire est un **passage de groupe** (`Passage::plate`) : il ne
+  s'ouvre que quand la plaque tient le nombre de joueurs demandé (tous les joueurs en jeu dans la zone), et **seuls les joueurs
+  qui sont dessus** le prennent, ensemble, à ce pas ; les autres restent (un joueur absent, par exemple). La porte reste ensuite
+  ouverte : un retardataire passe seul. Les plaques à tenir ensemble et les portes de groupe des expéditions (écluses, vanne,
+  plaques jumelles, monte-charge) ne changent pas : elles ouvrent des portes dans la zone, jamais un passage.
+* **Le serveur sait où est chacun.** À chaque changement, les jeux envoient un rapport `zones` (`seats` : la zone de chaque siège,
+  0 pour un siège libre ou un vestiaire), même consensus que les autres ; le serveur vérifie que chaque zone existe et est
+  atteignable avec l'état de la branche, garde `raid_instances.seat_zones` (le pas le plus récent gagne) et donne à
+  `raid_instances.zone` la zone du plus grand nombre de joueurs (les anciennes cartes). La carte d'une branche montre les zones
+  de chaque groupe (`zones`) et, pour les groupes de **mon** clan, qui est dans quelle zone (`players_here`, `members`) ; « ma
+  zone » est celle de mon siège (la reprise d'une zone la regarde) ; les cibles d'un spectateur ont la zone de leur siège.
+* **Dans le jeu** : la grande carte (M) écrit sur chaque zone les joueurs qui y sont ; « Ce qu'il reste à faire » commence par
+  « Groupe : Vous, Lyra ici · Orion : Veine de magma » ; le panneau du groupe et le menu du raid (« Groupe ») ajoutent la zone
+  d'un joueur qui n'est pas dans la vôtre ; les alertes d'une autre zone y restent, et « Lyra · Entre dans la zone : … » est dit
+  à tous.
+
+### Une zone dont tous les joueurs sont à terre, le groupe éliminé
+
+* **La réanimation se fait dans la zone.** L'âme reste dans la zone du joueur tombé ; seul un allié **de la même zone** peut la
+  relever (en maintenant « Interagir » près d'elle).
+* **Une zone qui se vide continue.** Quand tous les joueurs d'une zone sont à terre mais que d'autres jouent ailleurs, la zone
+  **n'est pas perdue** : son monde continue (ennemis, dangers, liquide qui monte), les âmes y attendent, et un allié qui vient
+  d'une autre zone peut les relever (`GameWorld::setRaidGroupRule` : le monde ne s'arrête plus seul, la course juge le groupe).
+  *Pourquoi* : un sous-groupe qui tombe ne doit pas faire perdre la zone aux autres, qui jouent ailleurs et n'y peuvent rien ; aller
+  chercher ses alliés est un vrai sauvetage, risqué puisque la zone vit toujours (ses ennemis attendent près des âmes) ; et la règle
+  du groupe éliminé reste celle que tous connaissent.
+* **Groupe éliminé** : toujours **tous les joueurs de l'instance à terre** au même pas, **toutes zones confondues** (personne en jeu
+  ni absent nulle part). Le rapport `wipe` dit la zone du plus grand nombre de joueurs et `seats` ; le serveur garde
+  `raid_instances.wiped_zones`, et **chacune** de ces zones est à reprendre (`zonesToRetake`).
+* **Le bandeau « À TERRE »** (2.77.2, §23) le dit : sans allié en jeu dans sa zone mais avec des alliés ailleurs, « Aucun allié
+  dans cette zone : un allié d'une autre zone peut revenir vous relever ». Q / E (LB / RB) n'y montrent que les joueurs de sa
+  zone ; en spectateur et dans « Simuler un raid complet », le joueur suivant peut être dans une autre zone (la caméra y va).
+
+### Toutes les embuscades avant l'antre (`ambushes:<zone>`, `tools/levelgen`)
+
+* Dans chaque branche, le passage de la zone 7 vers l'antre (zone 8) reste fermé tant que **toutes les vagues de toutes les
+  embuscades** de la zone 7 ne sont pas vaincues. Les trois premières embuscades deviennent des **objectifs** de la branche
+  (rôle `ambush`, ajoutés à la fin du catalogue : les bits ne bougent pas) et la garde de l'antre prend le même rôle ; le verrou
+  des passages de l'antre devient `ambushes:7` (le Bras droit : ceux de l'Avant-bras et du Poignet-verrou). L'**accès au Cœur**
+  suit la même règle : les quatre embuscades de l'Aorte cosmique (`ambushes:1`). Généré : `raid_asterion.py` (`with_ambushes`),
+  `raid_bras_droit.py`, `raid_coeur.py` ; l'événement qui ouvrait la porte à la fin de la dernière embuscade n'existe plus : la
+  porte suit son verrou, au même pas pour tous (ce que le groupe a fait lui-même compte aussitôt, `RaidRun::syncDoors`).
+* **Annonce** : marcher dans le passage fermé affiche « Passage verrouillé vers … : Embuscades restantes : 2 sur 4. » ; chaque
+  embuscade vaincue le dit ; « Ce qu'il reste à faire » écrit « Embuscades restantes : 2 sur 4 » pour la zone 7 (et « Ouvrir l'accès :
+  Embuscades restantes : … » pour l'antre), puis « Toutes les embuscades sont vaincues : le passage vers l'antre est ouvert ».
+* **Le serveur** applique le même verrou (`lockOpenIn`, `raidZones.lockOpen`, `ambushesIn`) : aucun rapport de l'antre n'est
+  accepté avant que ces quatre objectifs le soient.
+
+### Le vestiaire de l'antre (`raid_armory.py`, zone 9 du jeu)
+
+* Entre la zone d'avant (7 ; 1 pour le Cœur) et l'antre, un **vestiaire** (`armory_lair.json`, hors du catalogue du serveur, jamais
+  signalé) : les mêmes tablettes en hauteur avec leur nom, pour **ajuster ses pouvoirs pour le Gigaboss**, et la plaque « Prêts »
+  qui demande **tous les joueurs présents** : ceux qui sont dessus partent ensemble vers l'antre. Un passage ramène à la zone
+  d'avant. Les passages vers l'antre y mènent (`Passage::via` : leur `to` reste la zone du catalogue, l'arête que le serveur
+  connaît). C'est une zone de passage, sans ennemi ni danger : tout son sol est un endroit sûr. La grande carte et « Ce qu'il reste
+  à faire » la montrent (« zone de passage »).
+* **Distance au passage** (`RaidHudElement::LairPassage`, éditeur du HUD › « Raids » › « Distance au passage de l'antre ») : dans
+  la zone d'avant, « Passage vers l'antre : 124 m », une flèche vers où aller et l'état (« fermé — Embuscades restantes : 2 sur 4 »,
+  puis « ouvert »). La distance est mesurée **le long du parcours** de l'expédition (`metadata.raid.route`, écrit par levelgen :
+  le sol bas, les monte-charges par-dessus leur mur) depuis le point le plus proche, plus le chemin jusqu'à lui ; sans parcours,
+  horizontalement. Une tuile (16 px) = 1 m. Mise à jour à chaque image, pour chaque joueur, dans **sa** zone.
+
+### Le tableau des contributions (`ui/online/ContribTable`, maquette de la 2.78)
+
+* **Trois chiffres de plus** par joueur et par zone, comptés par la simulation (`Contributions::seats`) : les **morts** (fois à
+  terre), les **réanimations faites** (l'allié qui maintenait « Interagir » près de l'âme quand elle s'est relevée) et les
+  **réanimations reçues** ; plus les **dégâts aux mini-boss** (la part de `boss_damage` faite aux ennemis dont la chute est un
+  objectif de la zone). Dans l'empreinte de `RaidRun`, dans le texte canonique du rapport `zone_table`
+  (« …,mini,morts,faites,reçues; »), validés par le même consensus ; le serveur refuse les impossibles (plus d'une mort ou d'une
+  réanimation toutes les 2 s, plus de réanimations reçues que de morts) et les garde (migration **0180**).
+* **Présentation** : onglets « Zone » (chaque zone finie, la plus récente d'abord ; Entrée / A ou ses boutons : zone suivante) et
+  « Raid entier » (toutes les zones additionnées par joueur) ; barres horizontales proportionnelles pour les dégâts au boss et aux
+  mini-boss ; une icône et une couleur par catégorie (`ui/raids/contrib.png`, `tools/assetgen/environment/raid_contrib_icons.py`) ;
+  une **couronne** après le chiffre du meilleur de chaque catégorie ; votre ligne encadrée ; **tri** par colonne (flèches gauche /
+  droite, clic sur l'en-tête ; ▼ sur la colonne triée) ; une **infobulle** par chiffre (survol, ou flèches haut / bas sur la colonne
+  triée), toujours dans l'écran ; le bandeau « Meilleurs de la zone » ; une légende (d'où viennent les chiffres) ; la ligne des
+  touches. Tout est mesuré (`contrib::layout`), en français et en anglais, de 1280 × 720 à 1920 × 1080.
+* **Où** : menu du raid › « Zones terminées » › « Tableau des contributions » (Entrée / A), et Résultats du raid › « Tableaux des
+  zones » › « Tableau détaillé » (les tableaux validés des groupes de votre clan ; `raid_totals` pour « Raid entier »). Les tableaux
+  d'avant la 2.78 restent lisibles : leurs chiffres absents s'affichent « — ».
+
+### Coût de plusieurs zones à la fois (mesuré, `tests/test_raid_zones.cpp`, Release, sans affichage)
+
+| Mesure | Résultat |
+| --- | --- |
+| 4 zones simulées à la fois, 8 joueurs (1200 pas) | 0,03 à 0,09 ms par pas en moyenne ; au pire 0,1 à 0,2 ms (8 ms sur une machine chargée par d'autres compilations) |
+| Une seule zone, mêmes joueurs | 0,006 à 0,014 ms par pas |
+| Charger une zone (le Poignet-verrou, au premier joueur qui y entre) | 2 à 2,6 ms, une seule fois (6,5 ms sur une machine chargée) |
+| « Simuler un raid complet » (7 groupes, jusqu'à la chute du Cœur) | 0,34 à 0,49 ms par pas en moyenne (un pas au pire 49 à 97 ms : des zones chargées, plusieurs groupes au même pas) |
+
+Simuler plusieurs zones coûte donc quelques centièmes de milliseconde par pas : un pas en ligne (1/120 s) en laisse
+largement assez à l'affichage. Le thread principal n'attend pas la simulation : en ligne, les pas d'une image s'arrêtent à
+**6 ms** (`kOnlineBudgetMs`, au moins un pas par image ; le retard se rattrape aux images suivantes) et la simulation
+locale à **10 ms** (`kSimBudgetMs`). Seul le chargement d'une zone (lecture et préparation du niveau) tombe dans un
+seul pas, 2 à 3 ms (jusqu'à 6,5 ms sur une machine chargée) ; il n'a lieu qu'à la première entrée d'un joueur dans la
+zone, et la zone est déchargée quand plus personne n'y est. Dans « Simuler un raid complet », plusieurs groupes peuvent
+charger leurs zones au même pas : ce pas-là prend plus d'une image (49 à 97 ms mesurés sur une machine chargée), un
+test local seulement.
+
+### Versions
+
+`TITAN_REVISION` passe à **8** (`titan.json` et `server/src/raidTitan.json` régénérés) : une instance ne réunit que des jeux aux
+mêmes règles ; les empreintes de référence des raids sont recalculées. Rien ne change en solo ni en coopération :
+`kSimulationVersion`, `kCoopSimulationVersion` et `kRankingGeneration` (8) restent les mêmes. Migration **0180**
+(`raid_instances.seat_zones`, `seat_zones_tick`, `wiped_zones` ; `raid_zone_contributions.mini_damage`, `deaths`, `revives`,
+`revived`) à appliquer **avant** de déployer le serveur. Tests : `tests/test_raid_zones.cpp` (passage pris seul à 2 et 8 sièges,
+même empreinte par zone ; zone déchargée et siège repris ; passage de groupe ; les huit antres et leurs vestiaires ; passage de
+l'antre fermé tant qu'une embuscade reste ; morts et réanimations exactes ; zone vidée sans élimination, puis groupe éliminé sur deux
+zones ; joueurs simulés zone par zone ; distance le long du parcours ; mise en page du tableau et de l'indicateur ; icônes ; coût),
+`server/test/raidZonesPerPlayer.test.ts`.
+
+## 27. Joueurs simulés : terrain et anticipation (2.79)
 
 Les joueurs simulés de « Tester Asterion » et de « Simuler un raid complet » se déplacent désormais comme un **très bon
 joueur** : ils lisent le terrain en simulant leur propre physique, essaient leurs mouvements quelques dizaines de pas à
@@ -1742,18 +1963,18 @@ plateforme est visée là où elle sera.
   peut l'attendre une fois, à son pas, en entrant dans une telle zone (dit dans le coût mesuré) ; le construire sur
   plusieurs threads reste à faire.
 
-## 26. Joueurs simulés : tactiques, rôles, pensées et ordres (2.79)
+## 28. Joueurs simulés : tactiques, rôles, pensées et ordres (2.79)
 
 « Les IA sont très mauvaises […] : je veux jouer avec des GOAT. » La 2.79 donne aux joueurs simulés des tests (§22) une
 tactique contre chaque Gigaboss, des rôles dans le groupe, l'usage de leurs pouvoirs, ce qu'ils pensent à l'écran, et
 elle les fait obéir à l'administrateur. Ils **ne trichent jamais** : uniquement des `InputFrame` de joueur, la même
 physique, les mêmes coups ; rien n'est lu que le joueur ne voie (les marques au-dessus de l'arène, les évents, les
 ennemis de son mécanisme, ses points faibles, les coups annoncés, les tirs). Les mesures se font **sans aucune
-invincibilité** ; le test ne déplace jamais un joueur simulé (§25), et `TestSession::setRescues(false)` (`SimSetup::rescues`)
+invincibilité** ; le test ne déplace jamais un joueur simulé (§27), et `TestSession::setRescues(false)` (`SimSetup::rescues`)
 coupe aussi le décompte de ses blocages.
 
 **Qui fait quoi.** La tactique choisit **où** aller et **quoi** faire (la place d'où tirer, la station à tenir, le côté
-par où sortir d'une zone, l'abri, le joueur à relever) ; la navigation du §25 décide **comment** y aller (son chemin, ses
+par où sortir d'une zone, l'abri, le joueur à relever) ; la navigation du §27 décide **comment** y aller (son chemin, ses
 sauts simulés à l'avance, ce qu'elle voit venir sur son chemin : les zones de coups que la tactique lui donne à chaque pas).
 La tactique ne reprend la direction que pour une réaction à elle (s'écarter d'une zone, attendre à son bord, se tenir
 sous une dalle), jamais pendant un mouvement en l'air en cours : il est joué tel qu'il a été simulé. Les ondes qui
@@ -1822,7 +2043,7 @@ faible à nu ; l'appât et les coureurs : le triple saut).
 Au-dessus de chaque joueur simulé, une bulle : **son rôle → son intention** (« Réanimateur → réanime Joueur simulé 3 »,
 « Frappeur → frappe le point faible (× 2) », « Coureur → tient le miroir », « Appât → attire Titanus loin des plaques »,
 ou ce qu'il fait à cet instant : « saute l'onde », « sort de la ligne du rayon », « se cache derrière une colonne »…),
-et dessous **comment il se déplace** (la pensée de sa navigation, §25 : « Double saut au-dessus du vide », « Esquive
+et dessous **comment il se déplace** (la pensée de sa navigation, §27 : « Double saut au-dessus du vide », « Esquive
 du rayon »… ; ou sa réaction du moment : « s'écarte », « attend que ça passe »). Une
 bulle dont l'intention est un ordre est bordée d'or.
 
@@ -1859,7 +2080,7 @@ un coup inévitable : 35 % / 70 % / toujours ; se cacher d'un regard : Confirmé
 Chaque Gigaboss dans son antre, depuis sa phase 1, contre **8 joueurs simulés Experts** (la place de l'administrateur
 jouée aussi par l'IA), 15 minutes de jeu au plus ; un test par Gigaboss (`raid GOAT (2.79): …`), qui écrit sa mesure et
 **ce qui a mis chacun à terre** (le dernier coup reçu et le rôle du joueur : `morts : …`). Le jeu est déterministe : la
-même mesure à chaque lancement. Trois colonnes : avant la navigation du §25 (« avant »), juste après sa fusion
+même mesure à chaque lancement. Trois colonnes : avant la navigation du §27 (« avant »), juste après sa fusion
 (« fusion »), et après le travail sur les causes de mort (« après », la version livrée).
 
 | Gigaboss | avant | fusion | après | morts (après) | vie restante (après) |
@@ -1921,7 +2142,7 @@ coups du boss lui-même, garder en mémoire les marques d'une pluie ou d'une ér
   ne traversent pas : le bras de Pyroclast flotte entre eux et ces évents, ses poings frappent sous chaque joueur, et la
   navigation recommence son chemin à chaque coup esquivé (le chemin reste à ses 10 premiers nœuds sur 165). Le test
   « raid bots (2.77): they defeat Pyroclast by themselves from its phase 2 » (joueurs invincibles, 1 200 s) **échoue
-  depuis la fusion** pour cette raison (la navigation du §25 seule le réussissait en 906 s). Il faut un appât qui
+  depuis la fusion** pour cette raison (la navigation du §27 seule le réussissait en 906 s). Il faut un appât qui
   emmène vraiment le boss hors du chemin des coureurs (il suit le joueur le plus proche), ou une traversée sous lui.
 * **Les pluies et éruptions** : leurs marques disparaissent quand le boss frappe, alors que leurs impacts tombent
   encore pendant une seconde ; les garder demande d'en lire la suite (`Enemy` ne la montre pas encore) — l'essai fait

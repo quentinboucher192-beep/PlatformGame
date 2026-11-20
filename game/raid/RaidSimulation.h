@@ -55,7 +55,7 @@ struct SimSetup {
     std::vector<std::string> given;
     int maxReinforcements = 8;
     /// 2.79: the test's two rescues (a simulated player put on its mechanism or further on its path); off for the
-    /// measures (docs/RAIDS.md §26: only their inputs).
+    /// measures (docs/RAIDS.md §28: only their inputs).
     bool rescues = true;
 };
 
@@ -131,6 +131,7 @@ private:
     Group& form(int branch, int zone, const std::string& name, uint32_t extraMask);
     void aggregate();
     void moveGroup(Group& g, int branch, int zone);
+    static bool zoneHasWork(const RaidRun& run);  // 2.78: in the zone focused
     bool hasWork(const Group& g) const;
     int realPart(Group& g, int own) const;
     void event(std::string text, WorldEvent::Kind kind);

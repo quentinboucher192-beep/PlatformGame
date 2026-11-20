@@ -298,15 +298,7 @@ int TestBots::chooseExit(const RaidRun& run, int* toZone) {
     const uint32_t mask = run.mask();
     const int here = run.zone();
     if (toZone) *toZone = 0;
-    if (here == 0) {
-        // The armory: the way to the start zone.
-        for (size_t k = 0; k < run.rules().passages.size(); ++k)
-            if (run.passageOpen(run.rules().passages[k])) {
-                if (toZone) *toZone = run.rules().passages[k].to;
-                return static_cast<int>(k);
-            }
-        return -1;
-    }
+    if (Branch::isArmory(here)) return armoryExit(run, toZone);  // 2.78: the lair's armory too
     // The zones by the passages open from here (breadth first, the lowest zone first): the first hop.
     const int nz = static_cast<int>(br.zones.size());
     std::vector<int> dist(static_cast<size_t>(nz + 1), -1), first(static_cast<size_t>(nz + 1), 0);
@@ -356,6 +348,18 @@ int TestBots::chooseExit(const RaidRun& run, int* toZone) {
             return static_cast<int>(k);
         }
     return -1;
+}
+
+int TestBots::armoryExit(const RaidRun& run, int* toZone) {
+    // 2.78: an armory (the first one, or the lair's): the way on (the passage of its « Prêts » plate first,
+    // never the way back to the zone before the lair).
+    const std::vector<Passage>& ps = run.rules().passages;
+    int pick = -1;
+    for (int pass = 0; pass < 2 && pick < 0; ++pass)
+        for (size_t k = 0; k < ps.size() && pick < 0; ++k)
+            if ((pass == 1 || !ps[k].plate.empty()) && run.passageOpen(ps[k])) pick = static_cast<int>(k);
+    if (pick >= 0 && toZone) *toZone = ps[static_cast<size_t>(pick)].to;
+    return pick;
 }
 
 void TestBots::ensureNav(const RaidRun& run) {
@@ -987,7 +991,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         said.push_back(view_.phase.empty() ? "Combat de " + bossName : view_.phase);
     }
     // ------------------------------------------------------------------ the armory's tablets
-    if (run.zone() == 0)
+    if (Branch::isArmory(run.zone()))  // 2.78: the lair's armory too
         for (int s : drivers) {
             if (busy[static_cast<size_t>(s)]) continue;
             const std::string want = wishOf(s);
@@ -1142,14 +1146,21 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         if (k < heavy.size()) said.push_back(shortLabel(j.label));
     }
     // ------------------------------------------------------------------ the way out
-    if (!fight_ && !platesLeft && !jobs && freeCount() > 0) {
+    // 2.78 (each player changes zone alone): only once every one of them here is free, and together — they
+    // gather by the passage, then all go in (never one left alone in a zone).
+    if (!fight_ && !platesLeft && !jobs && freeCount() > 0 && freeCount() == static_cast<int>(drivers.size())) {
         int to = 0;
         const int exit = chooseExit(run, &to);
         if (exit >= 0) {
             const Passage& p = run.rules().passages[static_cast<size_t>(exit)];
+            bool gathered = true;
+            for (int s : drivers) {
+                const Vec2 f = w.playerAt(s).feet();
+                if (std::fabs(f.x - p.rect.center().x) > 240.0f || std::fabs(f.y - p.rect.bottom()) > 160.0f) gathered = false;
+            }
             // The administrator there and playing: they lead the way out (the group waits near it);
-            // away or AFK: the simulated players go on alone.
-            const bool wait = adminActive && !((seats >> 0) & 1u) && playing(w, 0);
+            // away or AFK: the simulated players go on alone (all of them at once).
+            const bool wait = (adminActive && !((seats >> 0) & 1u) && playing(w, 0)) || !gathered;
             const ZoneInfo* z = run.branch().zone(to);
             const std::string where = z ? z->name : "?";
             said.push_back((wait ? "Attend à la sortie vers " : "Sortie vers ") + where);
