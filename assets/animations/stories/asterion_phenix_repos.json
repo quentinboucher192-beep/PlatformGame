@@ -1,0 +1,9 @@
+{
+  "texture": "stories/asterion/phenix_repos.png",
+  "frameWidth": 256,
+  "frameHeight": 192,
+  "pivot": [128, 190],
+  "clips": {
+    "dort": {"row": 0, "count": 2, "durations": [1.4, 1.4], "loop": true}
+  }
+}

@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <limits>
 #include <vector>
 
 #include "engine/animation/Animation.h"
@@ -125,6 +127,17 @@ public:
     /// 2.68: a film, owned by the scene (`locked`: its first viewing, nothing skips it).
     BossStoryScene(GameServices& g, std::shared_ptr<const BossStory> film, bool locked, std::function<void()> onEnd, float atSeconds)
         : keep_(std::move(film)), g_(g), story_(*keep_), atSeconds_(atSeconds), film_(true), locked_(locked), onEnd_(std::move(onEnd)) {}
+    /// 2.81: a film with its play options (the names of its roster, a start at the server's time).
+    BossStoryScene(GameServices& g, std::shared_ptr<const BossStory> film, FilmPlay play)
+        : keep_(std::move(film)), g_(g), story_(*keep_), film_(true), play_(std::move(play)) {
+        keepBelow_ = play_.keepBelow;
+        synced_ = play_.synced;
+    }
+
+    /// 2.81: in step with the others (a synced start, never moved since by « Passer » or « Depuis le début »).
+    bool synced() const { return synced_; }
+    const BossStory& story() const { return story_; }
+    float time() const { return t_; }
 
     bool locked() const { return locked_; }
 
@@ -172,6 +185,13 @@ public:
             t_ = std::min(atSeconds_, total_ - 0.01f);
             sinceEnter_ = 10.0f;
         }
+        // 2.81: played with others at the server's time: a countdown before it (negative), or joined late.
+        if (play_.synced) {
+            t_ = std::min(play_.startAt, total_ - 0.01f);
+            lateJoin_ = t_ > kFilmLateJoin;
+        } else if (play_.startAt >= 0.0f) {
+            t_ = std::min(play_.startAt, total_ - 0.01f);
+        }
         roarLen_ = def_ ? creatureClipDuration(g_, *def_, story_.clip) : 0.0f;
         activity_ = g_.app.input().activityCount();
         if (trailer_ && !story_.music.empty()) {
@@ -180,8 +200,7 @@ public:
         }
         if (film_) {  // 2.68: a film's own music, once; the one playing before comes back after it
             prevMusic_ = g_.app.audio().currentMusic();
-            if (const std::string p = g_.app.resources().soundPath(story_.music); !story_.music.empty() && !p.empty())
-                g_.app.audio().playMusic(p, 600, false);
+            if (t_ >= 0.0f) startFilmMusic();  // 2.81: after its countdown otherwise
             baseDuck_ = 1.0f;
         }
         setDuck(baseDuck_);
@@ -226,6 +245,7 @@ public:
             activity_ = act;
         }
         t_ += dt;
+        if (film_ && !musicStarted_ && t_ >= 0.0f) startFilmMusic();  // 2.81: the countdown is over
         if (attract_ && t_ >= total_) {  // attract mode: it starts again, through black
             t_ = 0.0f;
             roared_ = false;
@@ -255,8 +275,24 @@ public:
         InputManager& in = g_.app.input();
         const bool click = in.mousePressed(SDL_BUTTON_LEFT);
         const bool quit = in.menuPressed(Action::MenuBack) || (click && quitRect_.contains(in.mousePos()));
-        const bool skip = !quit && (in.menuPressed(Action::MenuConfirm) || in.keyPressed(SDL_SCANCODE_SPACE) || click);
+        // 2.81: « Depuis le début » (R, Ⓨ, a click on its button) for a late joiner; « Commencer maintenant » in a countdown.
+        const bool padY = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH);
+        const bool padYEdge = padY && !padY_;
+        padY_ = padY;
+        const bool restartAsked = restartOffered() && (in.keyPressed(SDL_SCANCODE_R) || padYEdge || (click && restartRect_.contains(in.mousePos())));
+        const bool skip = !quit && !restartAsked &&
+                          (in.menuPressed(Action::MenuConfirm) || in.keyPressed(SDL_SCANCODE_SPACE) || (click && !restartRect_.contains(in.mousePos())));
         if (sinceEnter_ <= 0.6f) return;
+        if (restartAsked && !quit) {
+            restartFromStart();
+            g_.uiSound("ui_confirm", 0.35f);
+            return;
+        }
+        if (skip && t_ < 0.0f) {  // in the countdown, « Passer » starts it now (on its own)
+            restartFromStart();
+            g_.uiSound("ui_confirm", 0.35f);
+            return;
+        }
         if (quit) {
             closing_ = true;
             g_.uiSound("ui_back", 0.35f);
@@ -346,6 +382,7 @@ private:
         if (done_) return;
         done_ = true;
         g_.app.popScene();
+        if (play_.onClose) play_.onClose(ended_);  // 2.81: pushed after this one is gone (the queue keeps the order)
     }
 
     int currentShot() const {
@@ -362,6 +399,14 @@ private:
         r.fillRect({0, 0, W, H}, Color{0, 0, 0, 255});
         const float band = std::round(H * 0.13f);
         const Rect img{0, band, W, H - 2.0f * band};
+        if (film_ && t_ < 0.0f) {  // 2.81: the countdown of a film played with others
+            drawCountdown(img);
+            drawLiveBand();
+            const StoryNarrationLayout lay = layoutStoryNarration(ui, std::string(), !locked_);
+            drawProgress(lay.bar);
+            if (!locked_) drawSkipHint({lay.hint.right(), lay.hint.center().y});
+            return;
+        }
         r.pushClip(img);
         const bool title = !film_ && t_ >= titleStart_;  // a film has no title card: its last shot stays
         if (!title) {
@@ -377,6 +422,7 @@ private:
         }
         if (trailer_ && !title) drawTrailerTitle(currentShot(), img);
         if (film_) drawFilmTitle(currentShot(), img);
+        if (film_) drawFilmRoster(currentShot(), img);  // 2.81: the clans of the fall
         if (attract_) {  // between two passes: through black
             const float through = std::min(clamp01(t_ / story::kFade), clamp01((total_ - t_) / story::kFade));
             if (passes_ > 0 || t_ > story::kFade) r.fillRect(img, Color{0, 0, 0, 255}.withAlphaF(1.0f - through));
@@ -400,6 +446,171 @@ private:
         drawProgress(lay.bar);
         if (!title) drawNarration(cur, lay, img);
         if (!locked_) drawSkipHint({lay.hint.right(), lay.hint.center().y});  // a first viewing: no hint at all
+        if (film_ && play_.synced) drawLiveBand();  // 2.81: in the top band
+    }
+
+    /// 2.81: the music of a film, once (after its countdown when it has one).
+    void startFilmMusic() {
+        musicStarted_ = true;
+        if (const std::string p = g_.app.resources().soundPath(story_.music); !story_.music.empty() && !p.empty())
+            g_.app.audio().playMusic(p, 600, false);
+    }
+
+    /// 2.81: « Depuis le début » (a late joiner) or « Commencer maintenant » (a countdown).
+    bool restartOffered() const { return film_ && play_.synced && synced_ && (lateJoin_ || t_ < 0.0f) && !closing_; }
+    /// From its first image, on its own (no longer in step with the others).
+    void restartFromStart() {
+        t_ = 0.0f;
+        synced_ = false;
+        sfxShot_ = -1;
+        if (!musicStarted_) startFilmMusic();
+    }
+
+    /// 2.81: the countdown of a film played with others: its title, « Le film commence dans 0:07 », with whom.
+    void drawCountdown(const Rect& img) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        r.fillGradientV(img, Color{8, 8, 18, 255}, Color{3, 3, 8, 255});
+        r.drawGlow(img.center(), img.h * 0.45f, story_.color.withAlphaF(0.12f));
+        drawParticles("stars", Color::lerp(story_.color, Color::white(), 0.5f), img, sinceEnter_, 1.0f, 313U);
+        const int secs = std::max(0, static_cast<int>(std::ceil(-t_)));
+        char clock[16];
+        std::snprintf(clock, sizeof clock, "%d:%02d", secs / 60, secs % 60);
+        const std::string title = i18n::tr(story_.title);
+        const std::string when = i18n::tr(std::string("Le film commence dans ") + clock);
+        const std::string who = i18n::tr("Avec les clans de la chute, au même moment");
+        i18n::Verbatim asShown;  // already translated
+        const float maxW = img.w * 0.8f;
+        const float titlePx = ui.s(ui.fitFont(title, FontFace::Title, 64.0f, maxW, 0.3f));
+        const float whenPx = ui.s(ui.fitFont(when, FontFace::Bold, 30.0f, maxW, 0.4f));
+        const float whoPx = ui.s(ui.fitFont(who, FontFace::Body, 22.0f, maxW, 0.4f));
+        const float gap = ui.s(18);
+        const float blockH = titlePx * 1.2f + gap + whenPx * 1.3f + gap * 0.6f + whoPx * 1.3f;
+        float y = img.center().y - blockH * 0.5f;
+        TextStyle st;
+        st.face = FontFace::Title;
+        st.size = titlePx;
+        st.align = Align::Center;
+        st.color = Color::white();
+        st.glow = ui.s(18);
+        st.glowColor = story_.color.withAlphaF(0.5f);
+        ui.text().draw(title, {img.center().x, y}, st);
+        y += titlePx * 1.2f + gap;
+        TextStyle ws;
+        ws.face = FontFace::Bold;
+        ws.size = whenPx;
+        ws.align = Align::Center;
+        ws.color = story_.color;
+        ui.text().draw(when, {img.center().x, y}, ws);
+        y += whenPx * 1.3f + gap * 0.6f;
+        TextStyle os;
+        os.face = FontFace::Body;
+        os.size = whoPx;
+        os.align = Align::Center;
+        os.color = Color{210, 214, 232, 255};
+        ui.text().draw(who, {img.center().x, y}, os);
+    }
+
+    /// 2.81: the top band of a film played with others (« EN DIRECT », « Depuis le début »), measured.
+    void drawLiveBand() {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const FilmLiveLayout L = layoutFilmLive(ui, t_ < 0.0f, restartOffered());
+        restartRect_ = L.showButton ? L.button : Rect{};
+        if (synced_ && L.label.w > 0.0f) {
+            const float dot = L.labelPx * 0.32f;
+            const float pulse = 0.6f + 0.4f * std::sin(sinceEnter_ * 4.0f);
+            r.fillCircle({L.label.x + dot, L.label.center().y}, dot, Color{255, 90, 90, 255}.withAlphaF(pulse));
+            TextStyle st;
+            st.face = FontFace::Bold;
+            st.size = L.labelPx;
+            st.valign = VAlign::Middle;
+            st.color = Color{236, 238, 248, 255};
+            i18n::Verbatim asShown;  // measured as shown by the layout
+            ui.text().draw(L.labelText, {L.label.x + dot * 2.0f + ui.s(8), L.label.center().y}, st);
+        }
+        if (!L.showButton) return;
+        const bool hover = L.button.contains(g_.app.input().mousePos());
+        r.fillRoundedRect(L.button, L.button.h * 0.3f, Color{255, 255, 255, static_cast<uint8_t>(hover ? 46 : 22)});
+        r.drawRoundedRect(L.button, L.button.h * 0.3f, story_.color.withAlpha(hover ? 220 : 120), std::max(1.0f, ui.s(1.5f)));
+        float x = L.button.x + ui.s(12);
+        const float cy = L.button.center().y;
+        x += Glyphs::drawBinding(ui, SDL_SCANCODE_R, PadBinding{}, false, {x, cy}, L.keyH, true) + ui.s(6);
+        Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), {x, cy}, L.keyH);
+        x += L.keyH + ui.s(10);
+        TextStyle bs;
+        bs.face = FontFace::Bold;
+        bs.size = L.buttonPx;
+        bs.valign = VAlign::Middle;
+        bs.color = hover ? Color::white() : Color{226, 232, 244, 255};
+        i18n::Verbatim asShown;
+        ui.text().draw(L.buttonText, {x, cy}, bs);
+    }
+
+    /// The bottom of the title showing in shot `i` now (its block as drawFilmTitle places it), else the picture's top.
+    float filmTitleBottom(int i, const Rect& img) {
+        if (i < 0 || i >= static_cast<int>(shots_.size())) return img.y;
+        const Shot& s = shots_[static_cast<size_t>(i)];
+        const float tau = (t_ - s.start) * s.stageScale;
+        float bottom = img.y;
+        UIContext& ui = g_.ui;
+        for (const StoryTitle& ti : s.data->titles) {  // every title of the shot (the roster never moves while they change)
+            (void)tau;
+            const std::string text = i18n::tr(ti.text);
+            const std::string sub = ti.subtitle.empty() ? std::string() : i18n::tr(ti.subtitle);
+            i18n::Verbatim asShown;
+            const float maxW = img.w * ti.width;
+            const float titlePx = ui.s(ui.fitFont(text, FontFace::Title, ti.size, maxW / 1.1f, 0.2f)) * 1.1f;
+            const float subPx = sub.empty() ? 0.0f : ui.s(ui.fitFont(sub, FontFace::Body, std::max(18.0f, ti.size * 0.4f), maxW, 0.35f));
+            const float gap = sub.empty() ? 0.0f : ui.s(12);
+            const float blockH = titlePx + gap + subPx * 1.2f;
+            float y = img.y + img.h * ti.pos.y - blockH * 0.5f;
+            y = std::clamp(y, img.y + ui.s(10), std::max(img.y + ui.s(10), img.bottom() - blockH - ui.s(10)));
+            bottom = std::max(bottom, y + blockH);
+        }
+        return bottom;
+    }
+
+    /// 2.81: the names of the clans of the fall (or the roster's generic text) in shot `i`, as layoutFilmRoster places them.
+    void drawFilmRoster(int i, const Rect& img) {
+        if (i < 0 || i >= static_cast<int>(shots_.size())) return;
+        const Shot& s = shots_[static_cast<size_t>(i)];
+        if (!s.data->roster) return;
+        const StoryRoster& ro = *s.data->roster;
+        const float tau = (t_ - s.start) * s.stageScale;
+        if (tau < ro.t || tau > ro.to) return;
+        const float a = smooth((tau - ro.t) / 0.5f) * clamp01((ro.to - tau) / 0.4f) * clamp01((s.start + s.dur - t_) / 0.2f);
+        if (a <= 0.003f) return;
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const FilmRosterLayout L = layoutFilmRoster(ui, img, ro, play_.names, play_.own, filmTitleBottom(i, img));
+        i18n::Verbatim asShown;  // names as their clans wrote them; the other texts already translated
+        for (size_t k = 0; k < L.pills.size(); ++k) {
+            const Rect& p = L.pills[k];
+            const bool own = L.index[k] >= 0 && L.index[k] == play_.own;
+            // each pill appears a little after the one before
+            const float ak = a * smooth((tau - ro.t - 0.12f * static_cast<float>(k)) / 0.4f);
+            if (ak <= 0.003f) continue;
+            const Color c = own ? ro.own : ro.color;
+            TextStyle st;
+            st.face = L.generic ? FontFace::Title : FontFace::Bold;
+            st.size = L.px;
+            st.align = Align::Center;
+            st.valign = VAlign::Middle;
+            st.shadow = true;
+            st.shadowColor = Color{0, 0, 0, static_cast<uint8_t>(200.0f * ak)};
+            if (!L.generic) {
+                r.fillRoundedRect(p, p.h * 0.35f, (own ? c.scaled(0.35f) : Color{10, 10, 24, 255}).withAlphaF(0.78f * ak));
+                r.drawRoundedRect(p, p.h * 0.35f, c.withAlphaF((own ? 1.0f : 0.55f) * ak), std::max(1.0f, ui.s(own ? 2.5f : 1.2f)));
+                if (own) r.drawGlow(p.center(), p.w * 0.6f, c.withAlphaF(0.25f * ak));
+                st.color = (own ? Color::white() : Color::lerp(c, Color::white(), 0.55f)).withAlphaF(ak);
+            } else {
+                st.color = Color::lerp(c, Color::white(), 0.3f).withAlphaF(ak);
+                st.glow = ui.s(16);
+                st.glowColor = c.withAlphaF(0.55f * ak);
+            }
+            ui.text().draw(L.texts[k], p.center(), st);
+        }
     }
 
     /// The painting of shot `i` covering `img`, zooming slowly towards its focus, its particles over it.
@@ -631,6 +842,7 @@ private:
     /// 2.63: « Passer »: on to the next shot (its scene from its start, cross-faded from this
     /// one), or the end of the story from its last shot or its title card.
     void skipShot() {
+        synced_ = false;  // 2.81: no longer in step with the others
         const int cur = currentShot();
         if (t_ >= titleStart_ || cur + 1 >= static_cast<int>(shots_.size())) {
             closing_ = true;
@@ -650,6 +862,7 @@ private:
     /// the music a little while it lasts. All on the « effets » volume (muted with it). Not
     /// refreshed any more (the next shot, the title card, skipped), a loop fades out by itself.
     void playSounds() {
+        if (t_ < 0.0f) return;  // 2.81: a countdown
         if (t_ >= titleStart_ || shots_.empty()) {
             setDuck(baseDuck_);
             return;
@@ -661,7 +874,9 @@ private:
         const float tau = (t_ - s.start) * s.stageScale;
         if (cur != sfxShot_) {
             sfxShot_ = cur;
-            sfxTau_ = -1e-3f;
+            // 2.81: joined in the middle of a shot (a late joiner of a film watched together): only what comes next is
+            // heard, never every sound of the shot at once.
+            sfxTau_ = t_ - s.start > 0.25f ? tau - 1e-3f : -1e-3f;
         }
         ResourceManager& res = g_.app.resources();
         const float end = s.dur * s.stageScale;
@@ -1016,6 +1231,12 @@ private:
     bool keepBelow_ = false;    // 2.72: the screen below keeps running (a raid's combat)
     bool ended_ = false;        // 2.68: played to its end
     std::function<void()> onEnd_;
+    FilmPlay play_;             // 2.81: the names of its roster, a start at the server's time, what follows it
+    bool synced_ = false;       // 2.81: in step with the others (until « Passer » or « Depuis le début »)
+    bool lateJoin_ = false;     // 2.81: started mid-film: « Depuis le début » is offered
+    bool musicStarted_ = false; // 2.81: its music (after a countdown)
+    bool padY_ = false;         // Ⓨ held last frame
+    Rect restartRect_;          // 2.81: « Depuis le début » as drawn last (a click there)
     std::string prevMusic_;     // 2.68: the music before the film (played again after it)
     static constexpr float kFilmFade = 0.9f;  // 2.68: a film's end fades slowly to the screen below
     int passes_ = 0;
@@ -1111,6 +1332,163 @@ std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory
     auto s = std::make_unique<BossStoryScene>(g, std::move(film), locked, std::move(onEnd), std::isfinite(atSeconds) ? atSeconds : -1.0f);
     s->setKeepBelow(keepBelow);
     return s;
+}
+
+std::unique_ptr<Scene> makeFilmPlay(GameServices& g, std::shared_ptr<const BossStory> film, FilmPlay play) {
+    if (!film || film->shots.empty()) return nullptr;
+    if (!std::isfinite(play.startAt)) play.startAt = -1.0f;
+    if (!play.synced) play.startAt = std::max(-1.0f, play.startAt);
+    if (play.own < 0 || play.own >= static_cast<int>(play.names.size())) play.own = -1;
+    return std::make_unique<BossStoryScene>(g, std::move(film), std::move(play));
+}
+
+bool filmSynced(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t && t->synced();
+}
+
+const BossStory* storyOf(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t ? &t->story() : nullptr;
+}
+
+float filmTime(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t ? t->time() : std::numeric_limits<float>::quiet_NaN();
+}
+
+FilmRosterLayout layoutFilmRoster(UIContext& ui, const Rect& img, const StoryRoster& roster, const std::vector<std::string>& names, int own,
+                                  float top) {
+    FilmRosterLayout L;
+    Rect a{img.x + img.w * roster.area.x, img.y + img.h * roster.area.y, img.w * roster.area.w, img.h * roster.area.h};
+    const float floorY = std::max(a.y, top + ui.s(14));  // under the shot's title
+    if (floorY > a.y) {
+        a.h = std::max(0.0f, a.bottom() - floorY);
+        a.y = floorY;
+    }
+    L.area = a;
+    TextRenderer& tr = ui.text();
+    if (names.empty()) {  // offline, a test, a preview: the roster's generic text
+        L.generic = true;
+        const std::string text = i18n::tr(roster.generic);
+        i18n::Verbatim asShown;
+        L.px = ui.s(ui.fitFont(text, FontFace::Title, roster.size * 1.3f, a.w, 0.3f));
+        const Vec2 m = tr.measure(text, FontFace::Title, L.px);
+        L.px = std::min(L.px, std::max(1.0f, a.h * 0.8f));
+        const Vec2 m2 = tr.measure(text, FontFace::Title, L.px);
+        (void)m;
+        L.texts.push_back(text);
+        L.pills.push_back(Rect::fromCenter(a.center(), {std::min(a.w, m2.x), std::min(a.h, m2.y)}));
+        L.index.push_back(-1);
+        return L;
+    }
+    const std::string ownSuffix = i18n::tr("votre clan");
+    std::vector<std::string> shown;
+    {
+        i18n::Verbatim asIs;  // clan names: as their clans wrote them
+        for (size_t k = 0; k < names.size(); ++k) shown.push_back(static_cast<int>(k) == own ? names[k] + " · " + ownSuffix : names[k]);
+    }
+    const float minPx = std::max(12.0f, ui.s(16));
+    const float maxPx = std::max(minPx, ui.s(roster.size));
+    const float step = std::max(1.0f, ui.s(1));
+    // Flows `items` (indices into shown, -1: the « et N autres » pill) into centred rows at `px`; false when they overflow.
+    auto flow = [&](const std::vector<int>& items, const std::string& more, float px, bool place) -> bool {
+        const float padX = px * 0.7f, h = px * 1.7f, gapX = px * 0.5f, gapY = px * 0.45f;
+        std::vector<std::vector<std::pair<int, float>>> rows(1);
+        float rowW = 0.0f;
+        for (int it : items) {
+            const std::string& text = it >= 0 ? shown[static_cast<size_t>(it)] : more;
+            float w = 0.0f;
+            {
+                i18n::Verbatim asIs;
+                w = tr.measure(text, FontFace::Bold, px).x + 2.0f * padX;
+            }
+            if (w > a.w) return false;
+            const float add = rows.back().empty() ? w : gapX + w;
+            if (rowW + add > a.w && !rows.back().empty()) {
+                rows.emplace_back();
+                rowW = w;
+            } else {
+                rowW += add;
+            }
+            rows.back().push_back({it, w});
+        }
+        const float totalH = static_cast<float>(rows.size()) * h + static_cast<float>(rows.size() - 1) * gapY;
+        if (totalH > a.h) return false;
+        if (!place) return true;
+        float y = a.y + (a.h - totalH) * 0.5f;
+        for (const auto& row : rows) {
+            float w = 0.0f;
+            for (size_t k = 0; k < row.size(); ++k) w += row[k].second + (k ? gapX : 0.0f);
+            float x = a.x + (a.w - w) * 0.5f;
+            for (const auto& [it, pw] : row) {
+                L.pills.push_back({x, y, pw, h});
+                L.index.push_back(it);
+                L.texts.push_back(it >= 0 ? shown[static_cast<size_t>(it)] : more);
+                x += pw + gapX;
+            }
+            y += h + gapY;
+        }
+        return true;
+    };
+    std::vector<int> all;
+    for (size_t k = 0; k < names.size(); ++k) all.push_back(static_cast<int>(k));
+    for (float px = maxPx; px >= minPx - 0.01f; px -= step)
+        if (flow(all, std::string(), px, false)) {
+            L.px = px;
+            flow(all, std::string(), px, true);
+            return L;
+        }
+    // Too many at the smallest size: the first ones (the viewer's clan always), then « et N autres clans ».
+    L.px = minPx;
+    for (size_t keep = names.size(); keep-- > 0;) {
+        std::vector<int> items;
+        for (size_t k = 0; k < keep; ++k) items.push_back(static_cast<int>(k));
+        if (own >= static_cast<int>(keep)) {
+            if (!items.empty()) items.back() = own;
+            else items.push_back(own);
+        }
+        const int rest = static_cast<int>(names.size() - items.size());
+        const std::string more = i18n::tr("et " + std::to_string(rest) + (rest == 1 ? " autre clan" : " autres clans"));
+        items.push_back(-1);
+        if (flow(items, more, minPx, false)) {
+            flow(items, more, minPx, true);
+            return L;
+        }
+    }
+    return L;  // not even one: nothing (never a text outside its area)
+}
+
+FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart) {
+    FilmLiveLayout L;
+    const float W = ui.screenW(), H = ui.screenH();
+    const float band = std::round(H * 0.13f);
+    const float margin = std::round(std::max(ui.s(56), 16.0f));
+    L.band = {0, 0, W, band};
+    L.labelText = i18n::tr("EN DIRECT · avec les clans de la chute");
+    L.buttonText = i18n::tr(countdown ? "Commencer maintenant" : "Depuis le début");
+    i18n::Verbatim asShown;
+    TextRenderer& tr = ui.text();
+    const float h = std::min(band * 0.62f, std::max(24.0f, ui.s(46)));
+    L.keyH = h * 0.62f;
+    const float room = W - 2.0f * margin;
+    L.showButton = canRestart;
+    float buttonW = 0.0f;
+    if (L.showButton) {
+        L.buttonPx = std::max(11.0f, std::min(ui.s(20), h * 0.5f));
+        const float keysW = Glyphs::drawBinding(ui, SDL_SCANCODE_R, PadBinding{}, false, {0, 0}, L.keyH, false) + ui.s(6) + L.keyH + ui.s(10);
+        auto widthAt = [&](float px) { return ui.s(12) + keysW + tr.measure(L.buttonText, FontFace::Bold, px).x + ui.s(16); };
+        while (widthAt(L.buttonPx) > room * 0.5f && L.buttonPx > 10.0f) L.buttonPx -= 1.0f;
+        buttonW = std::min(room * 0.5f, widthAt(L.buttonPx));
+        L.button = {W - margin - buttonW, (band - h) * 0.5f, buttonW, h};
+    }
+    const float labelRoom = room - (L.showButton ? buttonW + ui.s(24) : 0.0f);
+    L.labelPx = std::max(10.0f, std::min(ui.s(18), h * 0.45f));
+    const float dotW = L.labelPx * 0.64f + ui.s(8);
+    while (dotW + tr.measure(L.labelText, FontFace::Bold, L.labelPx).x > labelRoom && L.labelPx > 9.0f) L.labelPx -= 1.0f;
+    const float lw = dotW + tr.measure(L.labelText, FontFace::Bold, L.labelPx).x;
+    L.label = lw <= labelRoom ? Rect{margin, (band - h) * 0.5f, lw, h} : Rect{};
+    return L;
 }
 
 bool filmLocked(const Scene* s) {

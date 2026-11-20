@@ -53,6 +53,9 @@
 //   --asterion-film [<seconds>]
 //                           play Asterion's film (2.68) over the main menu as its first viewing
 //                           (nothing skips it), from that moment of it (screenshots)
+//   --asterion-apres [<seconds>]
+//                           play « Après Asterion » (2.81) over the main menu, its clans' shot
+//                           with its generic text, from that moment of it (screenshots)
 //   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout][:frapper[=<clip>]]]
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
@@ -704,6 +707,7 @@ int main(int argc, char** argv) {
         game.updates.update();
         if (sendPresence) game.updatePresence(dt);
         game.spectate.update(dt);
+        asterionfilm::updateParty(game, dt);  // 2.81: « Après Asterion » with the clans of the fall, at its time
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };
@@ -855,6 +859,14 @@ int main(int argc, char** argv) {
         if (auto film = asterionfilm::make(game, true, at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())))))
             app.pushScene(std::move(film));
         else Log::error("Film d'Asterion illisible");
+    } else if (has("--asterion-apres")) {
+        // 2.81, --asterion-apres [<seconds>] (screenshots): « Après Asterion » over the main menu, the generic text of its clans.
+        const std::string at = value("--asterion-apres");
+        app.pushScene(makeMainMenu(game));
+        FilmPlay play;
+        play.startAt = at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())));
+        if (auto film = makeFilmPlay(game, asterionfilm::aftermath(), std::move(play))) app.pushScene(std::move(film));
+        else Log::error("Film « Après Asterion » illisible");
     } else if (has("--raid-sheets")) {
         // --raid-sheets [<sheet>[:<tab>][:frapper=<n>[:pose=<attack>]][:attaque=<id>]] (screenshots): the raid sheets over the menu.
         const std::string v = value("--raid-sheets");

@@ -21,6 +21,7 @@
 #include "packaging/Sha256.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
+#include "ui/screens/AsterionFilm.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/OnlineMigration.h"
 
@@ -337,6 +338,10 @@ private:
                 if (jstr(t, "test_id") == id) return "Répondre à l'invitation";
             return {};
         }
+        // 2.81: Asterion fell: « Après Asterion », watched with the clans of the fall.
+        if (kind == "raid" && n.contains("data") && !jstr(n["data"], "event_id").empty() && jstr(n["data"], "event") == "heart_film" &&
+            asterionfilm::aftermath())
+            return "Regarder le film";
         // Clan raids: the sheet of the event (a cancelled one has nothing more to show).
         if (kind == "raid" && n.contains("data") && !jstr(n["data"], "event_id").empty() && jstr(n["data"], "event") != "cancelled")
             return "Voir l'événement";
@@ -365,6 +370,10 @@ private:
             }
             if (kind == "raid" && jstr(n["data"], "event") == "test_invite") {  // 2.80: answered in its window
                 g_.app.pushScene(makeRaidTestInvites(g_));
+                return;
+            }
+            if (kind == "raid" && jstr(n["data"], "event") == "heart_film" && asterionfilm::aftermath()) {  // 2.81: the film, with the clans
+                asterionfilm::watch(g_, jstr(n["data"], "event_id"));
                 return;
             }
             if (kind == "raid") {  // the sheet of a clan raid event

@@ -26,6 +26,7 @@ namespace cosmic {
 class GameServices;
 class UIContext;
 struct BossStory;
+struct StoryRoster;
 struct AnimationSet;
 struct AnimationClip;
 
@@ -87,6 +88,54 @@ std::unique_ptr<Scene> makeFilm(GameServices& g, std::shared_ptr<const BossStory
                                 float atSeconds = -1.0f, bool keepBelow = false);
 /// 2.68: whether `s` is a film played locked (a first viewing).
 bool filmLocked(const Scene* s);
+
+/// 2.81 (« Après Asterion »): how a film is played beyond makeFilm.
+struct FilmPlay {
+    /// The names its roster shot writes (StoryRoster: the clans present at the fall, as given by the server, each
+    /// « [TAG] Nom »), none: the roster's generic text (offline, a test, an administrator's preview).
+    std::vector<std::string> names;
+    int own = -1;  // the viewer's clan among them (highlighted), -1: none
+    /// Where it starts (seconds of the film). With `synced` (played with others at the server's time), a negative
+    /// value is a countdown before its first image; a late start (more than kFilmLateJoin) offers « Depuis le début ».
+    float startAt = -1.0f;
+    bool synced = false;
+    bool keepBelow = false;  // over a raid's combat (which keeps running)
+    /// Once it is closed (its scene gone): whether it played to its end. A next film is pushed from here.
+    std::function<void(bool ended)> onClose;
+};
+/// A late joiner is offered « Depuis le début » when the film is already this far (seconds).
+constexpr float kFilmLateJoin = 2.0f;
+std::unique_ptr<Scene> makeFilmPlay(GameServices& g, std::shared_ptr<const BossStory> film, FilmPlay play);
+/// Whether `s` is a film played at the server's time with others (and still in step with them).
+bool filmSynced(const Scene* s);
+/// The time a film `s` is at (seconds; negative during a countdown); NaN when `s` is not one.
+float filmTime(const Scene* s);
+/// The story or film `s` plays (nullptr when `s` is not one).
+const BossStory* storyOf(const Scene* s);
+
+/// The names of a roster shot, measured: centred rows of pills (the viewer's clan in its colour, « · votre clan »
+/// after its name), as large as the area allows down to a floor, then « et N autres clans »; or the generic text.
+/// `top`: nothing above it (the bottom of the shot's title). Every rect inside `area`, none overlapping.
+struct FilmRosterLayout {
+    Rect area;
+    float px = 0.0f;
+    bool generic = false;
+    std::vector<std::string> texts;  // as displayed (a name, « … · votre clan », « et N autres clans »)
+    std::vector<Rect> pills;
+    std::vector<int> index;  // the name of each pill (-1: « et N autres clans » or the generic text)
+};
+FilmRosterLayout layoutFilmRoster(UIContext& ui, const Rect& img, const StoryRoster& roster, const std::vector<std::string>& names, int own,
+                                  float top);
+
+/// The top band of a film played with others: « EN DIRECT · avec les clans de la chute » at the left, the
+/// button « Depuis le début » (« Commencer maintenant » during the countdown) at the right, its keys in it; measured.
+struct FilmLiveLayout {
+    Rect band, label, button;
+    float labelPx = 0.0f, buttonPx = 0.0f, keyH = 0.0f;
+    std::string labelText, buttonText;
+    bool showButton = false;
+};
+FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart);
 /// The main menu's attract mode: after this long without any input, the trailer plays.
 constexpr float kAttractDelay = 60.0f;
 /// Whether the attract mode may start now: its setting on (Paramètres › Jeu), a trailer, nothing

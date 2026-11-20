@@ -31,10 +31,31 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
     return std::make_unique<GameScene>(g, levelId, std::move(opt));
 }
 
-GameScene::GameScene(GameServices& g, std::string levelId, PlayOptions opt)
-    : g_(g), levelId_(std::move(levelId)), opt_(std::move(opt)) {}
+namespace {
+/// 2.81: while an administrator replays the tutorial (PlayOptions::tutorialReplay), the music it plays is not
+/// « heard » for the Collection's jukebox (nothing of the replay is kept): the audio's hook is set aside, then given
+/// back when the last such run is gone.
+struct QuietMusic {
+    int depth = 0;
+    std::function<void(const std::string&)> saved;
+};
+QuietMusic g_quietMusic;
+}  // namespace
 
-GameScene::~GameScene() = default;
+GameScene::GameScene(GameServices& g, std::string levelId, PlayOptions opt)
+    : g_(g), levelId_(std::move(levelId)), opt_(std::move(opt)) {
+    if (opt_.tutorial && opt_.tutorialReplay && g_quietMusic.depth++ == 0) {
+        g_quietMusic.saved = std::move(g_.app.audio().onMusicStarted);
+        g_.app.audio().onMusicStarted = nullptr;
+    }
+}
+
+GameScene::~GameScene() {
+    if (opt_.tutorial && opt_.tutorialReplay && --g_quietMusic.depth == 0) {
+        g_.app.audio().onMusicStarted = std::move(g_quietMusic.saved);
+        g_quietMusic.saved = nullptr;
+    }
+}
 
 void GameScene::onEnter() {
     ResourceManager& res = g_.app.resources();
@@ -94,7 +115,8 @@ void GameScene::onEnter() {
     // online); it is started: never offered again.
     if (opt_.tutorial) {
         world_->setTraining(true);
-        if (g_.progression.tutorial != "finished" && g_.progression.tutorial != "skipped") {
+        // 2.81: an administrator's replay leaves the progression as it is.
+        if (!opt_.tutorialReplay && g_.progression.tutorial != "finished" && g_.progression.tutorial != "skipped") {
             g_.progression.tutorial = "started";
             g_.progression.save();
         }
@@ -579,6 +601,10 @@ std::pair<int, int> GameScene::tutorialCardRank(const std::string& id) const {
 }
 
 void GameScene::leaveTutorial() {
+    if (opt_.tutorialReplay) {  // 2.81: an administrator's replay: back to ADMINISTRATION › Films, nothing written
+        g_.app.switchScene(makeAdmin(g_, "films"), 0.4f);
+        return;
+    }
     if (!g_.progression.tutorialFinished()) {
         g_.progression.tutorial = "skipped";
         g_.progression.save();
@@ -588,6 +614,12 @@ void GameScene::leaveTutorial() {
 
 void GameScene::finishTutorial() {
     ended_ = true;
+    if (opt_.tutorialReplay) {  // 2.81: an administrator's replay: its end card, nothing granted nor written
+        std::string victory = g_.app.resources().soundPath("music/victory.ogg");
+        if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
+        g_.app.pushScene(makeTutorialEnd(g_, true));
+        return;
+    }
     // Finished: never again, and its souvenir (a title of the Vestiaire, given on this computer).
     g_.progression.tutorial = "finished";
     g_.progression.save();

@@ -27,6 +27,7 @@ import { adminPresenceOf, countOnline, isAdminViewer, listPresenceOf } from "./f
 import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import type { PlayerRow } from "./model";
 import { notify } from "./notifications";
+import { aftermathOf } from "./raidHeart";
 import { NO_REVIEWS, reviewSummaries } from "./raidReviews";
 import { bodiesOf, rewardsOf } from "./raidRewards";
 import { requireValidMap, resultSummaries } from "./raidWorld";
@@ -500,8 +501,10 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     const body = (await bodiesOf(db, [e.id])).get(e.id) ?? { body: {}, effects: [] };
     const result = (await resultSummaries(db, [e.id], c)).get(e.id) ?? null; // 2.69: the official result once frozen
     const reviews = (await reviewSummaries(db, [e.id])).get(e.id) ?? NO_REVIEWS; // 2.77.4: the players' reviews
+    const aftermath = await aftermathOf(db, e.id, me, clan?.id ?? null); // 2.81: « Après Asterion » (its time, the clans of the fall)
     return json(ctx, {
         server_time: now,
+        ...(aftermath ? { aftermath } : {}),
         event: { ...eventView(e, now), ...body, result, reviews },
         description: def.description,
         rewards_text: e.rewards_text || def.rewards_text,

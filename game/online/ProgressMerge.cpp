@@ -79,6 +79,7 @@ Json mergeProgressJson(const Json& mine, const Json& theirs) {
     out["tutorial"] = Progression::furthestTutorial(jstr(mine, "tutorial", ""), jstr(theirs, "tutorial", ""));
     // 2.68: Asterion's film, seen on either side, is never forced on the player again.
     out["asterionFilmSeen"] = jget<bool>(mine, "asterionFilmSeen", false) || jget<bool>(theirs, "asterionFilmSeen", false);
+    out["asterionAftermath"] = jget<bool>(mine, "asterionAftermath", false) || jget<bool>(theirs, "asterionAftermath", false);  // 2.81
     if (!out.contains("lastPlanet")) out["lastPlanet"] = theirs.value("lastPlanet", Json("sylvanox"));
     if (!out.contains("lastLevel")) out["lastLevel"] = theirs.value("lastLevel", Json(""));
     return out;

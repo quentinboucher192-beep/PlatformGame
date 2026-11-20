@@ -166,6 +166,9 @@ public:
     void refreshNotifications(ApiCallback cb = {});
     /// A screen that loaded GET /notifications (or marked some read) shares the counter.
     void noteNotificationsUnread(int unread) { unreadNotifications_ = std::max(0, unread); }
+    /// 2.81: the events of the « heart_film » notifications read since the last call (Asterion fell: « Après Asterion »,
+    /// watched with the clans of the fall; ui/screens/AsterionFilm reads the event and plays it at the server's time).
+    std::vector<std::string> takeFilmNotices();
 
     // ------------------------------------------------------------ time played
     /// Time played in a level (official id, community level id, or "other"), counted on
@@ -386,6 +389,8 @@ private:
     bool notificationsBusy_ = false;
     int unreadNotifications_ = 0;
     void noteNotifications(const Json& data);
+    std::vector<std::string> filmNotices_;   // 2.81: events of « heart_film » notifications not taken yet
+    std::set<std::string> filmNoticesSeen_;  // each notification once per session
 
     /// {"player": id, "levels": {key: seconds}} (online/playtime.json).
     Json playtime_ = Json::object();

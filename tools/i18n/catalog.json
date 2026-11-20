@@ -1976,6 +1976,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › Films : tous les mini-films et présentations du jeu en une liste (histoires des giga-boss, film d'Asterion, chute d'Asterion, « Après Asterion », bande-annonce, didacticiel), avec leur vignette, leur durée et où les joueurs les voient. Une recherche, des filtres, et un bouton pour lancer chacun, verrouillé ou non. « Rejouer le didacticiel » le relance depuis le début sans rien toucher : ni progression, ni souvenir, ni record, ni succès, ni statistique.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ADMINISTRATION › Joueurs : chaque ligne se déplie (« + » : clic, Entrée ou A) et montre les derniers niveaux joués du joueur, du plus récent au plus ancien : le niveau, la date, son meilleur temps (cristaux, en vérification) ou son temps de jeu, ses tentatives et « Regarder » quand un replay vérifié existe ; pages de dix. Les données sont celles du serveur, données aux administrateurs seulement et écrites au Journal.",
    "where": [
     "data/news/changelog.json"
@@ -3377,6 +3383,19 @@
    ]
   },
   {
+   "fr": "APRÈS ASTERION",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
+   "fr": "Après Asterion",
+   "where": [
+    "ui/screens/AsterionFilm.cpp",
+    "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
    "fr": "Après la Galerie des forges",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
@@ -3386,6 +3405,12 @@
    "fr": "Après la Tour des tendons",
    "where": [
     "data/raids/asterion/bras_droit/zone_7.json"
+   ]
+  },
+  {
+   "fr": "Après le film de la victoire, en même temps pour les clans de la chute · fiche de l'événement, fiche récapitulative du raid, Collection › Galerie › Films",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -4046,6 +4071,18 @@
    ]
   },
   {
+   "fr": "Asterion est tombé — regarder le film avec votre clan",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
+   "fr": "Asterion est tombé — regarder le film avec votre clan : « Après Asterion » ({0})",
+   "where": [
+    "server/src/notifications.ts"
+   ]
+  },
+  {
    "fr": "Asterion résiste encore",
    "where": [
     "server/src/raidWorld.ts"
@@ -4522,6 +4559,7 @@
   {
    "fr": "ASTERION — {0}",
    "where": [
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -5079,6 +5117,12 @@
    ]
   },
   {
+   "fr": "Au cœur du système, l'étoile morte frémit : une étincelle de l'onde s'était posée sur elle.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Au fond de l'étoile, un cœur mort s'est éveillé : Singularis et ses huit phases, dans une arène géante. Une seule vie, aucun checkpoint.",
    "where": [
     "data/levels/noyau_03.json"
@@ -5172,6 +5216,12 @@
    "fr": "Au plus {0} replays et {1} Mo sur ce PC ; un replay n'est jamais supprimé sans vous.",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
+   ]
+  },
+  {
+   "fr": "Au premier lancement du jeu, une seule fois (« Bienvenue, Nova ! »)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -5587,6 +5637,12 @@
    "fr": "Aucun fichier .cplanet trouvé",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun film ne correspond à la recherche.",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -6882,7 +6938,8 @@
   {
    "fr": "Autres",
    "where": [
-    "game/content/AssetCatalog.cpp"
+    "game/content/AssetCatalog.cpp",
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -6938,6 +6995,12 @@
    "fr": "Aux Confins, dans un nid de cendres tièdes, éclot le plus petit d'une couvée de dragonnets.",
    "where": [
     "data/stories/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Aux Confins, le Phénix vit se lever une aube qu'il n'avait pas allumée. Cette nuit-là, pour la première fois, il dormit.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -7010,6 +7073,12 @@
    "fr": "Avant le premier combat",
    "where": [
     "ui/screens/SettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avant le premier combat contre ce giga-boss · Collection › Galerie › Gardiens (« Revoir l'histoire »)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -7161,6 +7230,12 @@
    "fr": "Avec le pont et la porte haute.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avec les clans de la chute, au même moment",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -7543,6 +7618,12 @@
    "fr": "Bande passante",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Bande-annonce",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -14523,6 +14604,12 @@
    ]
   },
   {
+   "fr": "Commencer maintenant",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "Comment c'est calculé : seuls comptent les segments complets (d'un point de passage au suivant, ou jusqu'à l'arrivée) des parties de la campagne jouées depuis le début d'un niveau classique (hors EXTRÊME), ni entraînement, ni replay, ni mode Invincible. Les temps viennent du chronomètre du niveau (les mêmes que la course aux fantômes). Somme des meilleurs (SOB) = meilleur temps de chaque segment du parcours de votre record, parties complètes et entraînement par segment (même version du niveau) confondus, additionnés ; l'entraînement ne compte que là : jamais dans le record, les temps des segments ni la régularité. Temps gagnable = record − SOB. Temps perdu = médiane des 50 derniers temps du segment − son meilleur temps. Dispersion = écart interquartile ÷ médiane. Régularité : écart type des 20 dernières parties complètes, comparé à celui des 20 parties d'avant il y a 30 jours (plus de 10 % d'écart pour parler d'un changement). Une nouvelle version du niveau repart de zéro.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -18887,7 +18974,8 @@
   {
    "fr": "Depuis le début",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -19772,6 +19860,12 @@
    ]
   },
   {
+   "fr": "Didacticiel",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Didacticiel : explication bloquante",
    "where": [
     "game/levels/EventSystem.cpp"
@@ -19793,6 +19887,12 @@
    "fr": "Didacticiel du premier lancement, « Le premier envol de Nova » : au tout premier lancement du jeu (aucune progression), Bip, un petit robot compagnon, propose un vol d'essai d'environ six minutes dans la Pépinière d'étoiles, un petit monde tout doux hors de la campagne (aucune planète sur la carte, aucun classement, aucun record, rien d'envoyé en ligne). « Passer le didacticiel » est proposé au départ, avec confirmation.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Didacticiel rejoué par un administrateur : rien n'a été enregistré, ni progression, ni souvenir, ni record, ni succès.",
+   "where": [
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -22896,6 +22996,12 @@
    ]
   },
   {
+   "fr": "Elle se souviendra de ses héros",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Elle tire plusieurs salves de suite.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -23323,6 +23429,12 @@
    "fr": "En direct",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "EN DIRECT · avec les clans de la chute",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -24704,6 +24816,12 @@
    ]
   },
   {
+   "fr": "environ 6 min, à jouer",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "environ {0} min à huit joueurs, hors gigaboss",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -25125,6 +25243,18 @@
    "where": [
     "game/raid/DreadfangRoutine.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} autre clan",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
+   "fr": "et {0} autres clans",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -26453,6 +26583,25 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Film d'Asterion",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Films",
+   "where": [
+    "ui/screens/AdminScene.cpp",
+    "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Films d'Asterion",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -30084,6 +30233,12 @@
    ]
   },
   {
+   "fr": "Histoire de giga-boss",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Histoire des giga-boss",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -30093,6 +30248,12 @@
    "fr": "Histoires",
    "where": [
     "game/content/AssetCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Histoires de giga-boss",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -30619,6 +30780,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/progression/NewsCenter.cpp",
     "game/race/Race.cpp",
+    "game/raid/Aftermath.cpp",
     "game/raid/RaidBranch.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/online/CommentsPanel.cpp",
@@ -31138,6 +31300,12 @@
    "fr": "Ils vous suivent et combattent près de vous.",
    "where": [
     "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
+   "fr": "ILS ÉTAIENT LÀ",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -34724,6 +34892,12 @@
    ]
   },
   {
+   "fr": "LA GALAXIE EST LIBRE",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "La galerie de la Collection utilise la même recherche des lieux.",
    "where": [
     "data/news/changelog.json"
@@ -35308,6 +35482,12 @@
    "fr": "La poche gonflée où Voidworm digère un allié avalé : la crever le libère (un sauvetage pour qui la brise).",
    "where": [
     "data/enemies/voidworm_poche.json"
+   ]
+  },
+  {
+   "fr": "La première fois que le titan apparaît (CLANS › RAIDS, fiche d'un événement) · « Revoir la cinématique » sur la carte des raids",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -37034,6 +37214,12 @@
    ]
   },
   {
+   "fr": "Le film commence dans {0}",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "Le Fleuve de Lave",
    "where": [
     "data/levels/pyralis_02.json"
@@ -37872,6 +38058,12 @@
    ]
   },
   {
+   "fr": "Le nom des clans de la chute fut gravé dans la lumière de la nouvelle étoile.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Le nom est définitif : une version ne se modifie pas et ne se remplace pas. Les autres membres sont prévenus.",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -38123,7 +38315,8 @@
   {
    "fr": "Le premier envol de Nova",
    "where": [
-    "data/tutorial/premier_envol.json"
+    "data/tutorial/premier_envol.json",
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -38358,6 +38551,12 @@
    "fr": "Le replay ne correspond pas à ce record.",
    "where": [
     "game/ghost/GhostStore.cpp"
+   ]
+  },
+  {
+   "fr": "Le revoir : depuis la fiche de l'événement (« Après Asterion », à côté de « Revoir la victoire »), la fiche récapitulative du raid du clan et Collection › Galerie › Films, avec les films d'Asterion et la bande-annonce. Il est débloqué pour ceux qui ont pris part à un événement où le Cœur est tombé, puis pour tous dès que l'issue « Asterion est tombé » est officielle. Sans connexion, le plan des clans dit « les clans de la galaxie ».",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -40071,6 +40270,12 @@
    ]
   },
   {
+   "fr": "Les peuples partis vers les étoiles osèrent enfin revenir. Les enfants levèrent les yeux vers une lumière nouvelle.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "Les pistons montent et descendent : sautez au sommet de leur course.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_2.json"
@@ -41531,6 +41736,12 @@
    ]
   },
   {
+   "fr": "Là où se dressait Asterion, il ne restait qu'un nuage d'or. Pour la première fois depuis des éons, le vide se taisait.",
+   "where": [
+    "data/raids/asterion_apres.json"
+   ]
+  },
+  {
    "fr": "lève son bouclier",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -42762,6 +42973,12 @@
    "fr": "Menu principal → Défis : seules les parties vérifiées par Cosmic Online comptent.",
    "where": [
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Menu principal, après une minute sans rien toucher (Paramètres › Jeu › « Bande-annonce à l'accueil après 1 min d'inactivité »)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -56691,6 +56908,12 @@
    ]
   },
   {
+   "fr": "Rechercher un film…",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Rechercher un joueur par son nom",
    "where": [
     "ui/online/RaidTestGuests.cpp"
@@ -57445,6 +57668,7 @@
    "where": [
     "ui/screens/AdminScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaidGameScene.cpp",
@@ -57467,6 +57691,12 @@
    "fr": "Regarder l'édition en direct",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Regarder le film",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {
@@ -57612,6 +57842,12 @@
    "fr": "Rejouer en équipe",
    "where": [
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejouer le didacticiel",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -59001,6 +59237,13 @@
    "fr": "Retour vers : Voûte crânienne",
    "where": [
     "data/raids/asterion/crane/armory_lair.json"
+   ]
+  },
+  {
+   "fr": "Retour à l'administration",
+   "where": [
+    "ui/screens/PauseScene.cpp",
+    "ui/screens/TutorialScenes.cpp"
    ]
   },
   {
@@ -62317,6 +62560,18 @@
    ]
   },
   {
+   "fr": "Se débloque quand Asterion tombe : pour ceux qui étaient là, puis pour tous quand le résultat est officiel.",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Se débloque à sa première projection (CLANS › RAIDS).",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
    "fr": "Se déconnecter",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -63479,6 +63734,12 @@
    ]
   },
   {
+   "fr": "shot {0}: a roster without its generic text",
+   "where": [
+    "game/content/BossStories.cpp"
+   ]
+  },
+  {
    "fr": "shot {0}: a title without text",
    "where": [
     "game/content/BossStories.cpp"
@@ -64087,6 +64348,12 @@
    "fr": "Son combat se joue sur sa boîte.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Son corps était fait de mondes dévorés. Libérés, leurs éclats se rassemblèrent, et des mondes oubliés se rallumèrent.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -66204,6 +66471,12 @@
    "fr": "Sylvanox — Les Ruines Suspendues",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Sylvanox, Pyralis, Glacior, Aethra et les Confins virent leur ciel s'éclaircir. Le festin promis n'aurait jamais lieu.",
+   "where": [
+    "data/raids/asterion_apres.json"
    ]
   },
   {
@@ -69277,6 +69550,7 @@
    "fr": "Tous",
    "where": [
     "ui/screens/AdminScene.cpp",
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/OnlineLevelsScene.cpp"
    ]
   },
@@ -71271,6 +71545,18 @@
    "fr": "Un feu vert monte de son cœur de magma !",
    "where": [
     "data/enemies/pyrrhax.json"
+   ]
+  },
+  {
+   "fr": "Un film regardé tous ensemble : le serveur fixe son heure de départ quand la chute est validée. Les joueurs de l'instance du Cœur le voient juste après le film de la victoire, et les membres en ligne des clans présents à la chute au même moment, grâce à une notification « Asterion est tombé — regarder le film avec votre clan ». Il n'est jamais lancé par-dessus un niveau : dans un niveau, la notification l'offre. Arrivé en retard, vous le prenez en cours, ou « Depuis le début » (R, Y, ou le bouton en haut de l'écran).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Un film y entre quand vous l'avez vu ou débloqué.",
+   "where": [
+    "ui/screens/CollectionScene.cpp"
    ]
   },
   {
@@ -73905,12 +74191,14 @@
     "game/content/CreaturePlaces.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/AchievementsScene.cpp",
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/PlanetMapScene.cpp"
    ]
   },
   {
    "fr": "verrouillé",
    "where": [
+    "ui/screens/FilmCatalog.cpp",
     "ui/screens/RaidBranchScene.cpp"
    ]
   },
@@ -75363,7 +75651,8 @@
   {
    "fr": "votre clan",
    "where": [
-    "server/src/notifications.ts"
+    "server/src/notifications.ts",
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {
@@ -79836,7 +80125,8 @@
    "fr": "{0} min {1} s",
    "where": [
     "game/online/Raids.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -81666,6 +81956,24 @@
    ]
   },
   {
+   "fr": "« Après Asterion » : NOTIFICATIONS, ou la fiche de l'événement.",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
+   "fr": "« Après Asterion » : quand Asterion tombe, un second mini-film suit celui de la victoire. Huit plans animés, environ 80 secondes, racontent ce que la victoire change dans la galaxie : les mondes qu'il avait dévorés se rallument, le ciel de Sylvanox, Pyralis, Glacior, Aethra et des Confins s'éclaircit, les peuples partis vers les étoiles reviennent, le Phénix s'endort enfin, l'étoile morte du centre frémit. Un plan écrit le nom des clans présents à la chute, le vôtre en évidence.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Après Asterion » commence bientôt, avec les clans de la chute.",
+   "where": [
+    "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
    "fr": "« Changer de périphérique » ou A sur une manette libre",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -82211,6 +82519,12 @@
    "where": [
     "game/online/Raids.cpp",
     "ui/online/OnlineWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "À la chute validée du Cœur, pour toute l'instance · « Revoir la victoire » sur la fiche de l'événement",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {

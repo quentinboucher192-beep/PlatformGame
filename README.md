@@ -282,6 +282,15 @@ droite, ses charges ralentissent. Sa chute validée lance le film **« La chute 
 accorde, une seule fois, le badge « Cœur d'Asterion », l'effet de victoire « Supernova d'Asterion », le cadre de profil
 des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». Détails : [docs/RAIDS.md §16](docs/RAIDS.md#17-phase-6-274--le-cœur-dasterion).
 
+**Après Asterion** : juste après le film de la victoire, un second mini-film (81 s) raconte ce que la chute change dans le
+monde — les mondes qu'il avait dévorés se rallument, le ciel de nos planètes s'éclaircit, les peuples partis reviennent,
+le Phénix s'endort enfin, l'étoile morte du centre frémit — et **écrit le nom des clans présents à la chute**, le vôtre en
+évidence. Tout le monde le voit **au même moment**, à l'heure fixée par le serveur : l'instance du Cœur, et les membres en
+ligne de ces clans (une notification « Asterion est tombé — regarder le film avec votre clan » ; jamais lancé par-dessus un
+niveau). Arrivé en retard, on le prend en cours ou « Depuis le début ». Il se revoit depuis la fiche de l'événement, la fiche
+récapitulative du raid et Collection › Galerie › Films, une fois débloqué (pour ceux qui ont pris part, puis pour tous quand « Asterion est tombé »
+est officiel). Détails : [docs/RAIDS.md §31](docs/RAIDS.md#31--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281).
+
 ### Récompenses et événements mondiaux
 
 * **Contributions** calculées par la simulation pour chaque joueur — dégâts, dégâts évités, soutien,
@@ -642,6 +651,18 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.81.0** :
+* **« Après Asterion »**, le film du monde d'après la chute : huit plans animés, 81 s, sur ce que la victoire change dans
+  la galaxie, ses planètes et ses peuples, avec **le nom des clans présents à la chute** (le vôtre en évidence) ; regardé
+  **ensemble**, à l'heure du serveur, par l'instance du Cœur juste après le film de la victoire et par les membres en ligne
+  de ces clans ; jamais imposé dans un niveau ; « Depuis le début » pour qui arrive en retard
+  ([docs/RAIDS.md §31](docs/RAIDS.md#31--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
+* **Collection › Galerie › Films** : les films d'Asterion et la bande-annonce, à revoir une fois débloqués.
+* **ADMINISTRATION › Films** : tous les films et présentations du jeu (histoires des giga-boss, films d'Asterion,
+  bande-annonce, didacticiel) avec leur vignette, leur durée et où les joueurs les voient, à lancer d'un clic ; **« Rejouer
+  le didacticiel »** sans rien toucher à la progression, aux records, aux succès ni aux statistiques
+  ([docs/RAIDS.md §32](docs/RAIDS.md#32-administration--films--tous-les-films-et-présentations-rejouer-le-didacticiel-281)).
 
 **Nouveau dans la version 2.80.0** :
 * **Tester Asterion avec de vrais joueurs** (administration) : dans le test d'une zone comme dans le raid complet simulé,

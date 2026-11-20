@@ -16,7 +16,8 @@
 # la fiche récapitulative d'un raid terminé, dans le clan (2.78.1, §27) ;
 # joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §28) ;
 # joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29) ;
-# tester avec des joueurs invités (2.80, §30)
+# tester avec des joueurs invités (2.80, §30) ;
+# « Après Asterion », le film du monde d'après regardé ensemble ; ADMINISTRATION › Films (2.81, §31 et §32)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -2378,6 +2379,136 @@ Aucune règle d'une partie ne change : `kSimulationVersion`, `kRankingGeneration
 référence restent les mêmes (« Invincible » existait pour la place de l'administrateur ; la même règle vaut pour chaque
 place cochée d'un test). Le protocole du relais garde sa version : TEST_SEATS n'est envoyé que par le relais d'un test,
 où seul un jeu 2.80 se connecte.
+
+## 31. « Après Asterion » : le film du monde d'après, regardé ensemble (2.81)
+
+Battre Asterion change le monde : un **mini-film** de 81 s le raconte, que les clans de la chute regardent **ensemble**, au
+même instant. Il suit le film de la victoire (§17), sans le remplacer.
+
+### L'histoire (`data/raids/asterion_apres.json`, légendes et titres écrits à la main, anglais dans `en.json`)
+
+| Plan | Durée | Ce qu'on voit | Légende ou titre |
+|---|---|---|---|
+| 1. `silence` | 9 s | un nuage d'or là où se dressait le titan, ses éclats qui dérivent, la dernière onde qui s'éteint | « Là où se dressait Asterion, il ne restait qu'un nuage d'or. Pour la première fois depuis des éons, le vide se taisait. » |
+| 2. `eclats` | 10 s | les éclats des mondes dont il était fait se rassemblent ; trois mondes oubliés se rallument | « Son corps était fait de mondes dévorés. Libérés, leurs éclats se rassemblèrent, et des mondes oubliés se rallumèrent. » |
+| 3. `systeme` | 10 s | le soleil et nos cinq planètes (le plan du premier film, sans le titan) : la lumière d'or passe, leurs ciels s'éclaircissent | « Sylvanox, Pyralis, Glacior, Aethra et les Confins virent leur ciel s'éclaircir. Le festin promis n'aurait jamais lieu. » |
+| 4. `retour` | 10 s | sur Sylvanox, un vaisseau se pose ; les villageois de l'histoire du Monolithe reviennent et lèvent les yeux | « Les peuples partis vers les étoiles osèrent enfin revenir. Les enfants levèrent les yeux vers une lumière nouvelle. » |
+| 5. `phenix` | 10 s | aux Confins, une aube d'or que le Phénix n'a pas allumée ; ses flammes se calment, il s'endort dans son nid | « Aux Confins, le Phénix vit se lever une aube qu'il n'avait pas allumée. Cette nuit-là, pour la première fois, il dormit. » |
+| 6. `lyse` | 9 s | l'étoile morte du centre (Lyse, l'histoire de Singularis) : une étincelle de l'onde se pose sur elle, elle frémit | « Au cœur du système, l'étoile morte frémit : une étincelle de l'onde s'était posée sur elle. » |
+| 7. `clans` | 13 s | la nouvelle étoile, les bannières des clans autour ; **le jeu écrit le nom des clans de la chute** | « ILS ÉTAIENT LÀ » ; « Le nom des clans de la chute fut gravé dans la lumière de la nouvelle étoile. » |
+| 8. `veille` | 10 s | Nova sur la crête, les balises des clans allumées jusqu'à l'horizon, l'étoile au-dessus | « LA GALAXIE EST LIBRE » — « Elle se souviendra de ses héros » |
+
+Cohérent avec ce que les joueurs connaissent : le titan « se forgea un corps de mondes brisés » (premier film), l'onde de
+la supernova « traversa la galaxie » (film de la victoire), « la nuit où l'étoile du centre s'effondra » ouvre chaque
+histoire des giga-boss ; le Phénix « ne sait plus s'arrêter, de peur que la nuit gagne » ; les gens du Monolithe
+« partirent vers les étoiles ». Rien d'inventé dans l'image : les éclats, Nova, les balises, les bannières et la crête des
+deux premiers films, nos planètes, les décors de Sylvanox, les villageois et le vaisseau du Monolithe, le nid et la planche
+du Phénix, Lyse. Ses images à lui : le nuage d'or (`nuage_or.png`), la nouvelle étoile (`etoile.png`), les mondes qui se
+rallument (planche `renaissance`), le Phénix au repos (l'image de sa propre boucle où ses ailes sont repliées).
+
+### Le générateur (`tools/assetgen/environment/story_asterion_apres.py`)
+
+Il écrit `data/raids/asterion_apres_scenes.json` (le format des histoires, `game/content/BossStories.h`), ses images et les **vignettes des films**
+(`assets/ui/films/` : une image de chaque film d'Asterion et de la bande-annonce, rendue comme le jeu la dessine, pour les
+listes de films). `--check` refait tout deux fois et compare les octets entre eux et aux fichiers ; `--storyboard FICHIER`
+écrit la planche, un plan par case avec sa légende, et la place des noms des clans. Une durée changée dans le script étire
+la scène, rien à régénérer. Les vignettes sont rendues depuis les scènes et les images sur le disque : après un changement
+d'un autre film, lancer son générateur, puis celui-ci.
+
+### Le nom des clans (`StoryRoster`, `layoutFilmRoster`)
+
+Le plan 7 a un `roster` dans le script (sa place dans l'image, ses couleurs, son texte générique). Les noms viennent du
+**serveur** (la fiche de l'événement : `aftermath.clans`), jamais du film : chaque clan qui avait un joueur dans une instance
+du Cœur au moment de la chute, puis ceux qui ont reçu « Briseurs d'étoile » depuis. Ils s'écrivent dans des pastilles
+centrées, sous le titre, aussi grands que la place le permet, puis « et N autres clans » ; **le clan du joueur** est en
+cyan, « · votre clan » après son nom, et toujours montré. Sans données (hors ligne, un test, l'aperçu de l'administration) :
+« les clans de la galaxie ». Tout est mesuré : chaque pastille dans sa zone, aucune sur une autre ni sur le titre.
+
+### « Tous ensemble » : qui, quand, à quelle heure
+
+* **L'heure de départ est celle du serveur.** À la chute **validée** du Cœur (`checkHeartFall`, l'objectif du cœur
+  accepté par le consensus : jamais un rapport seul, jamais une part sous la vie entière, jamais un champ envoyé par un
+  jeu), le serveur écrit une fois (migration **0200**) `raid_heart_events.film_at` = la chute + 90 s (`FILM_DELAY_MS` :
+  le film de la victoire et une marge), `film_clans` (les clans présents à ce moment) et `notified_film`. Un second appel,
+  un rapport rejoué, le cron : rien ne change.
+* **Qui le regarde.** Chaque joueur de l'instance du Cœur, **juste après le film de la victoire** (`asterionfilm::playFall`,
+  appelé là où se lançait le film de la victoire dans `RaidGameScene`), par-dessus le combat qui continue (entrées neutres,
+  comme pour la victoire). Et **chaque membre en ligne des clans présents** : ils reçoivent une notification « raid »
+  (`heart_film`, « Asterion est tombé — regarder le film avec votre clan : « Après Asterion » (…) »), lue par le jeu
+  chaque minute (`OnlineService::takeFilmNotices`).
+* **À la même seconde.** Le jeu lit la fiche de l'événement (`GET /raids/events/{id}` › `aftermath` : `film_at`, les clans,
+  `server_time`) ; l'écart entre son horloge et celle du serveur est mesuré sur cette réponse (`aftermath::skewMs`), et la
+  place dans le film est `positionAt(heure du serveur, film_at)` : **la même heure du serveur donne la même image** sur
+  tous les jeux. Avant l'heure : un compte à rebours (« Le film commence dans 0:07 », « Avec les clans de la chute, au même
+  moment »). Arrivé en retard : le film commence au milieu, et **« Depuis le début »** (R, Ⓨ, ou un clic sur le bouton du
+  bandeau du haut) le reprend au début, pour soi. Le bandeau du haut dit « EN DIRECT · avec les clans de la chute » tant
+  qu'on est au même endroit que les autres (« Passer » ou « Depuis le début » l'en sortent).
+* **Jamais imposé.** Dans un niveau (une partie, une course, une coopération, un autre raid), il n'est **jamais** lancé
+  par-dessus : la notification l'offre (NOTIFICATIONS › « Regarder le film »), et un message l'annonce à la fin de la
+  partie. Il ne se lance de lui-même que **dans les menus** (au plus tôt 15 s avant l'heure, avec son compte à rebours), une
+  seule fois, ou après le film de la victoire dans l'instance du Cœur. Il se quitte (Échap, Ⓑ) comme tout film.
+* **Le test des administrateurs** (« Tester Asterion », le Cœur) : sa chute lance le film de la victoire puis celui-ci,
+  avec le texte générique, depuis le début ; rien n'est demandé au serveur, rien n'est rapporté.
+
+### Le revoir (débloqué)
+
+**Règle** : le film est débloqué pour un joueur qui **a pris part** à un événement dont le Cœur est tombé (inscrit à
+l'événement, ou membre d'un clan présent à la chute), et **pour tous** dès que l'issue mondiale « Asterion est tombé » est
+officielle (le résultat figé, §14). Le serveur le dit (`aftermath.took_part`, `official`, `unlocked`, et l'issue « vaincu »
+des événements de `GET /raids`) ; le jeu le garde dans la progression (`asterionAftermath`, gardé par les copies et la
+migration : le côté qui l'a) pour le revoir hors ligne. Où :
+
+* la **fiche de l'événement**, « Après Asterion » à côté de « Revoir la victoire » (en direct quand il passe encore ; seulement
+  si le bandeau a la place, son texte gardant la sienne) ;
+* la **fiche récapitulative** du raid du clan (2.78.1, §27), « Après Asterion » après « Revoir le film de victoire » ;
+* **Collection › Galerie › Films** : les films d'Asterion et la bande-annonce, chacun avec son verrou (« Se débloque quand
+  Asterion tombe : pour ceux qui étaient là, puis pour tous quand le résultat est officiel. ») ;
+* la notification, tant qu'elle est là.
+
+### Serveur
+
+`server/src/raidHeart.ts` (`stampFilm`, `aftermathOf`, `FILM_DELAY_MS`), `raids.ts` (`aftermath` de la fiche), migration
+**0200** (`film_at`, `film_clans`, `notified_film`), `notifications.ts` (la phrase de `heart_film`). Aucune route nouvelle,
+aucune route d'administration : tout se joue avec les données du jeu.
+
+### Tests
+
+`tests/test_asterion_aftermath.cpp` : le film (8 plans, 60 à 90 s, ses fichiers, ses légendes et titres en anglais, un plan
+des clans et son texte générique traduit) ; la lecture de l'heure du serveur et des clans ; deux ordinateurs dont l'horloge
+diffère de cinq minutes au même endroit du film ; une arrivée en retard au milieu du film, « Depuis le début » ; le compte à
+rebours puis la première image à l'heure ; les noms mesurés (quelques clans, 150 clans, aucun) en 960 × 540, 1280 × 720 et
+1920 × 1080, en français et en anglais ; le test du Cœur : victoire puis « Après Asterion » générique.
+`server/test/raidAftermath.test.ts` : l'heure n'est écrite que par la chute validée (une part partielle, un rapport
+minoritaire, un champ ajouté au rapport : rien), une seule fois, depuis l'heure de la chute ; les clans présents nommés,
+leurs membres prévenus une fois (pas le clan absent) ; qui peut le revoir (pris part, inscrit, puis tous à l'issue
+officielle) ; pas de chute, pas de film.
+
+### Versions
+
+Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION`, le protocole
+du relais (`RAID_STATE`) et les empreintes de référence ne changent pas. L'heure du film passe par la fiche de l'événement
+(HTTP), pas par le relais.
+
+## 32. ADMINISTRATION › Films : tous les films et présentations, rejouer le didacticiel (2.81)
+
+Un onglet **Films** (`ui/screens/FilmCatalog`, aussi la liste de Collection › Galerie › Films) liste tout ce que le jeu
+montre comme un film : **les histoires des giga-boss** (`data/stories`, chacune trouvée dans les données : une nouvelle
+histoire y entre d'elle-même), **le film d'Asterion**, **la chute d'Asterion**, **« Après Asterion »**, **la bande-annonce**
+et **le didacticiel** (« Le premier envol de Nova »). Chaque ligne : sa vignette, son titre, son genre et sa durée, où les
+joueurs le voient ; un bouton le lance, **verrouillé ou non** pour l'administrateur, avec ses commandes habituelles
+(« Passer », « Quitter »). Une recherche et des filtres (« Histoires de giga-boss », « Films d'Asterion », « Autres ») ;
+clavier, manette et souris. Les films qui ont besoin du serveur se jouent avec leur texte générique.
+
+**« Rejouer le didacticiel »** le relance depuis son début (`makeTutorialReplay`, `PlayOptions::tutorialReplay`) **sans rien
+toucher** : son état dans la progression reste ce qu'il était (jamais « commencé », « passé » ni « fini »), aucun souvenir
+(le titre « Premier envol »), aucun titre porté, rien de compté (une partie d'entraînement, comme toujours : ni record, ni
+succès, ni statistique, ni temps de jeu) ; quitté (« Retour à l'administration » dans la pause) ou fini (sa carte de fin
+sans souvenir), il ramène à ADMINISTRATION › Films. Testé pour un joueur qui l'a fini, passé ou jamais vu : la progression,
+la Collection et les succès sont identiques avant et après.
+
+Les vignettes : la première peinture de chaque histoire, les images de `assets/ui/films/` pour les films d'Asterion et la
+bande-annonce, Bip dessiné pour le didacticiel. Tout est mesuré (`layoutFilmRow`) : vignette, titre (ajusté puis raccourci),
+genre et durée, « où » sur deux lignes au plus, le bouton ; testé en 1280 × 720 et 1920 × 1080, en français et en anglais.
 
 ---
 
