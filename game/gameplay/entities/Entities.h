@@ -34,8 +34,17 @@ public:
     Vec2 lastDelta() const { return delta_; }
     uint32_t colliderId() const { return collider_; }
     std::string debugInfo() const override;
+    /// 2.79 (raids: the simulated players aim where it WILL be, game/raid/nav): the top-left of its box
+    /// at each of the next `steps` steps if nothing changes its course — the very arithmetic of
+    /// fixedUpdate (advanceRoute, routePos), so the prediction is exact; `rider`: someone stands on it (a
+    /// platform that waits for a rider leaves). An orbit or a bubble: where it is. Reads only.
+    void predict(int steps, float dt, bool rider, std::vector<Vec2>& out) const;
+    bool predictable() const;
+    bool waitsForRider() const { return triggered_ && !moving_; }
 
 private:
+    void advanceRoute(float& t, float& dir, float& wait, bool moving, float dt, float speed, float waitTime) const;
+    Vec2 routePos(float t) const;
     uint32_t collider_ = 0;
     Vec2 start_, end_, delta_, prevPos_;
     float t_ = 0.0f, dir_ = 1.0f, wait_ = 0.0f, length_ = 1.0f;
@@ -74,6 +83,11 @@ public:
     void onPlayerRespawn(GameWorld& w) override;
     /// 2.33: "break" (or "activate", "open"): it gives way at once, by an event.
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
+    /// 2.79 (raids, game/raid/nav): read only — its collider, its phase (0 firm, 1 shaking, 2 fallen) and
+    /// the seconds left in it (a shaking platform falls when they run out; a fallen one comes back).
+    uint32_t colliderId() const { return collider_; }
+    int crumblePhase() const { return static_cast<int>(phase_); }
+    float crumbleTimer() const { return timer_; }
 
 private:
     void giveWay(GameWorld& w);
@@ -296,6 +310,11 @@ public:
     void render(RenderContext& ctx) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     std::string debugInfo() const override;
+    /// 2.79 (raids, game/raid/nav): read only — whether it fires `seconds` from now (its cycle: on, then
+    /// off, the same arithmetic as fixedUpdate) and the segment it burns (from its emitter to the wall).
+    bool firesIn(float seconds) const;
+    Vec2 beamFrom() const { return origin(); }
+    Vec2 beamTo() const;
 
 private:
     Vec2 origin() const;
@@ -677,6 +696,7 @@ public:
     bool wantsPlayerOverlap() const override { return true; }
     void onPlayerStay(GameWorld& w, float dt) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
+    bool blowing() const { return on_; }  // 2.79 (raids, game/raid/nav): read only
 
 private:
     AnimatedSprite vent_;
