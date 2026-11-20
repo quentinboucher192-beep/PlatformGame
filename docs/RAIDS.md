@@ -1682,7 +1682,8 @@ CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris pa
 * **L'en-tête**, sur le décor du film de la chute d'Asterion (le ciel, la nébuleuse, la supernova et son onde
   d'`assets/stories/asterion`, assombris sous les textes ; sans supernova quand le Cœur a tenu) : l'emblème du clan,
   « ASTERION EST TOMBÉ » (ou « RAID TERMINÉ »), l'événement (date, format, début → fin, durée ou « temps écoulé »), le clan,
-  ses joueurs, ses groupes, ses renforts et son rang mondial officiel.
+  ses joueurs, ses groupes, ses renforts et son rang mondial officiel ; à droite, la **note des joueurs** (les avis du §25 :
+  cinq étoiles remplies jusqu'à la moyenne, « 4,3 · 17 avis », « Aucun avis »).
 * **Sept chiffres** : parties du titan, Cœur (vaincu, phase, scellé), zones terminées sur 56, reliques sur 7, morts,
   réanimations, groupes éliminés et repris.
 * **« LES SEPT PARTIES ET LE CŒUR »** : pour chaque partie, le **portrait animé de son Gigaboss** (le sprite de son combat,
@@ -1701,7 +1702,8 @@ CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris pa
   du clan au Cœur et votre rang ; « Vous n'avez pas joué ce raid… » sinon.
 * **Boutons** (seulement ceux dont la cible existe) : « Carte du titan » (la carte de l'événement), « Revoir le film de
   victoire » (le film du §17, seulement si le Cœur est tombé), « Fiche de l'événement » (résultats officiels, classement
-  mondial) ; Échap / B : retour.
+  mondial), « Noter ce raid » ou « Modifier mon avis » (la fenêtre d'avis du §25, seulement quand le serveur dit que vous
+  avez joué l'événement ; un avis écrit, la note de la fiche est relue) ; Échap / B : retour.
 * Clavier, manette, souris : les lignes de la liste, les parties du titan (leur infobulle), les pages des récompenses et les
   boutons sont des arrêts du focus.
 
