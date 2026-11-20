@@ -711,7 +711,15 @@ Vec2 LaserEntity::origin() const {
     return box.center() - dir * (box.w * 0.5f - 8.0f);
 }
 
+Rect LaserEntity::reach() const {
+    const float a = degToRad(obj_.rotation);
+    const Vec2 o = origin();
+    const Vec2 far = o + Vec2{dmath::cos(a), dmath::sin(a)} * (box.w - 8.0f);
+    return Rect{std::min(o.x, far.x), std::min(o.y, far.y), std::abs(far.x - o.x), std::abs(far.y - o.y)}.expanded(4.0f);
+}
+
 void LaserEntity::fixedUpdate(GameWorld& w, float dt) {
+    if (closing_.waiting && closing_.ready(w)) enabled_ = true;  // 2.80: the whole team is through
     emitter_.anim.update(dt);
     hitTimer_ = std::max(0.0f, hitTimer_ - dt);
     float onT = obj_.prop<float>("onTime", 1.5f), offT = obj_.prop<float>("offTime", 1.5f);
@@ -759,11 +767,20 @@ void LaserEntity::fixedUpdate(GameWorld& w, float dt) {
     }
 }
 
-bool LaserEntity::handleAction(GameWorld&, const std::string& action, const Json&) {
-    if (action == "enable" || action == "activate" || action == "close") enabled_ = true;
+bool LaserEntity::handleAction(GameWorld& w, const std::string& action, const Json& params) {
+    if (action == "close") {
+        // 2.80 (rules of cooperation 4): a beam that closes a way behind a team waits for the whole team.
+        if (enabled_ || closing_.ask(w, reach(), params)) {
+            closing_.waiting = false;
+            enabled_ = true;
+        }
+        return true;
+    }
+    if (action == "enable" || action == "activate") enabled_ = true;
     else if (action == "disable" || action == "open") enabled_ = false;
     else if (action == "toggle") enabled_ = !enabled_;
     else return false;
+    closing_.waiting = false;
     return true;
 }
 

@@ -147,6 +147,7 @@ void DoorEntity::init(GameWorld& w) {
 void DoorEntity::update(GameWorld& /*w*/, float dt) { sprite_.anim.update(dt); }
 
 void DoorEntity::setOpen(GameWorld& w, bool open, bool silent) {
+    if (open) closing_.waiting = false;  // 2.80: opened again, it no longer waits to close
     if (open == open_) return;
     open_ = open;
     w.physics().setEnabled(collider_, !open_);
@@ -166,11 +167,28 @@ void DoorEntity::setOpen(GameWorld& w, bool open, bool silent) {
         });
 }
 
-bool DoorEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
+// 2.80 (rules of cooperation 4, docs/COOP.md « Passages qui se ferment »): alone, it closes at once, as it
+// always did. In a team (or a raid zone), it stays open until every player still there is through it, on the
+// side of what closed it (an arena, the object of an event), and closes then: never on a player left behind.
+void DoorEntity::close(GameWorld& w, const Json& params) {
+    if (!open_) {
+        closing_.waiting = false;
+        return;
+    }
+    if (closing_.ask(w, box, params)) setOpen(w, false);
+}
+
+void DoorEntity::fixedUpdate(GameWorld& w, float /*dt*/) {
+    if (closing_.waiting && closing_.ready(w)) setOpen(w, false);
+}
+
+bool DoorEntity::handleAction(GameWorld& w, const std::string& action, const Json& params) {
     if (action == "open") setOpen(w, true);
-    else if (action == "close") setOpen(w, false);
-    else if (action == "toggle" || action == "activate") setOpen(w, !open_);
-    else return false;
+    else if (action == "close") close(w, params);
+    else if (action == "toggle" || action == "activate") {
+        if (open_ && !closing_.waiting) close(w, params);
+        else setOpen(w, true);  // closed, or waiting to close: open (again)
+    } else return false;
     return true;
 }
 

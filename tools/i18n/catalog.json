@@ -7720,6 +7720,12 @@
    ]
   },
   {
+   "fr": "Barrière : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "Barrière d'énergie (Onde)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -11186,6 +11192,12 @@
    "fr": "Ce replay vient d'une autre version du niveau : il ne peut pas être rejoué ici.",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce salon joue avec une autre version des règles de coopération : mettez le jeu à jour pour jouer ensemble.",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
    ]
   },
   {
@@ -33873,6 +33885,18 @@
    ]
   },
   {
+   "fr": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
+   ]
+  },
+  {
    "fr": "L'embuscade reprend",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
@@ -36169,6 +36193,12 @@
     "game/levels/ObjectTypes.cpp",
     "ui/screens/CreatureArt.cpp",
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Laser : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
    ]
   },
   {
@@ -49998,6 +50028,12 @@
    ]
   },
   {
+   "fr": "Passage : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "passage fermé (le levier est dans la Tempe)",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -53092,6 +53128,12 @@
    "fr": "Porte",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Porte : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
    ]
   },
   {
@@ -69894,6 +69936,12 @@
    ]
   },
   {
+   "fr": "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts",
+   "where": [
+    "game/raid/ZoneGoals.cpp"
+   ]
+  },
+  {
    "fr": "Toutes les images",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -69934,6 +69982,18 @@
    "fr": "Toutes les touches de ce niveau reprennent celles du niveau pour J{0}.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
+   ]
+  },
+  {
+   "fr": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -73507,6 +73567,18 @@
    "fr": "Vaincre l'Astrarque, au cœur de l'étoile.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "vaincre l'embuscade de la zone (toutes ses vagues)",
+   "where": [
+    "data/raids/asterion/abdomen/branch.json",
+    "data/raids/asterion/bras_gauche/branch.json",
+    "data/raids/asterion/crane/branch.json",
+    "data/raids/asterion/jambe_droite/branch.json",
+    "data/raids/asterion/jambe_gauche/branch.json",
+    "data/raids/asterion/torse/branch.json",
+    "game/raid/RaidBranch.cpp"
    ]
   },
   {
@@ -80025,6 +80097,12 @@
    ]
   },
   {
+   "fr": "{0} m)",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "{0} meilleur temps · empreinte {1}",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -82629,6 +82707,7 @@
    "where": [
     "game/gameplay/HudTeam.cpp",
     "ui/screens/HudEditorScene.cpp",
+    "ui/screens/PassageWaitView.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },

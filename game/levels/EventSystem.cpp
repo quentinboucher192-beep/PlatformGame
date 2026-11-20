@@ -95,10 +95,11 @@ void EventSystem::signal(GameWorld& w, const std::string& source, const std::str
             if (!zone || !zone->box.contains(at)) continue;
         }
         fired_[i] = true;
-        if (e.delay > 0.0f)
-            pending_.push_back({e.delay, e.actions});
-        else
-            for (const auto& a : e.actions) runAction(w, a);
+        if (e.delay > 0.0f) {
+            pending_.push_back({e.delay, e.actions, e.source});
+        } else {
+            for (const auto& a : e.actions) runAction(w, a, e.source);  // 2.80: its object (« from »)
+        }
     }
 }
 
@@ -108,7 +109,7 @@ void EventSystem::fixedUpdate(GameWorld& w, float dt, float levelTime) {
         if (e.trigger != "time" || fired_[i]) continue;
         if (levelTime >= jget<float>(e.params, "seconds", 0.0f)) {
             fired_[i] = true;
-            pending_.push_back({e.delay, e.actions});
+            pending_.push_back({e.delay, e.actions, e.source});
         }
     }
     for (auto& p : pending_) p.timer -= dt;
@@ -122,7 +123,7 @@ void EventSystem::fixedUpdate(GameWorld& w, float dt, float levelTime) {
         }
     }
     for (const auto& p : ready)
-        for (const auto& a : p.actions) runAction(w, a);
+        for (const auto& a : p.actions) runAction(w, a, p.source);  // 2.80: its object (« from »)
 }
 
 namespace {
@@ -142,9 +143,20 @@ std::vector<std::string> ids(const std::string& s) {
 }
 }  // namespace
 
-void EventSystem::runAction(GameWorld& w, const EventAction& a) {
+void EventSystem::runAction(GameWorld& w, const EventAction& a) { runAction(w, a, {}); }
+
+void EventSystem::runAction(GameWorld& w, const EventAction& a, const std::string& source) {
     const std::string& t = a.type;
-    const Json& p = a.params;
+    // 2.80 (rules of cooperation 4): a passage closed by an event waits for the team on the side of the
+    // event's object (« from »); every other action reads its params as written.
+    Json withFrom;
+    const bool closing = (t == "close" || t == "toggle" || t == "activate" || t == "enable") && !source.empty() &&
+                         (a.params.is_object() || a.params.is_null()) && !a.params.contains("from");
+    if (closing) {
+        withFrom = a.params.is_object() ? a.params : Json::object();
+        withFrom["from"] = source;
+    }
+    const Json& p = closing ? withFrom : a.params;
     if (t == "open" || t == "close" || t == "toggle" || t == "activate" || t == "disable" || t == "enable" ||
         t == "spawn" || t == "break" || t == "startBoss" || t == "kill") {
         for (const auto& id : ids(a.target)) {

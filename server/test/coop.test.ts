@@ -5,7 +5,8 @@
 
 import { env, SELF } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
-import { ACTION_MASK, FLAG_STANDBY, Msg, canonical, emptyFrame, readFrames, writeFrames, type Frame } from "../src/coop";
+import { ACTION_MASK, EndReason, FLAG_STANDBY, Msg, canonical, emptyFrame, readFrames, writeFrames, type Frame } from "../src/coop";
+import { COOP_SIMULATION_VERSION } from "../src/coopRace";
 import { EXIT, LEVEL_HASH, SPAWN, api, freshIp, registerPlayer, seedAll, type TestPlayer } from "./helpers";
 import { LH, PNG, octet, publish, zip } from "./publish";
 
@@ -45,6 +46,8 @@ class Bytes {
 }
 
 const hello = () => new Bytes().u8(Msg.Hello).u8(1).u8(255).str("Test").done();
+/** 2.80: a game that says its rules of cooperation (after its account, empty here). */
+const helloRules = (rules: number) => new Bytes().u8(Msg.Hello).u8(1).u8(255).str("Test").str("").u8(rules).done();
 const ping = (rtt: number) => new Bytes().u8(Msg.Ping).u32(1234).u16(rtt).done();
 const ready = () => new Bytes().u8(Msg.Ready).u8(1).done();
 const start = () => new Bytes().u8(Msg.Start).u8(2).done();
@@ -252,6 +255,52 @@ describe("coop: the relay", () => {
         const row = await env.DB.prepare("SELECT players, size FROM coop_sessions").first<{ players: string; size: number }>();
         expect(row?.size).toBe(2);
         expect(JSON.parse(row!.players)).toEqual([nova.id, lyra.id]);
+    });
+});
+
+describe("coop: one version of the rules of cooperation per room (2.80)", () => {
+    it("the room plays its host's rules: a game of another version is refused (End « Rules »), the same one is seated", async () => {
+        expect(COOP_SIMULATION_VERSION).toBe(4);
+        expect(EndReason.Rules).toBe(5);
+        const nova = await registerPlayer("Nova");
+        const lyra = await registerPlayer("Lyra");
+        const vega = await registerPlayer("Vega");
+        await befriend(nova, lyra);
+        await befriend(nova, vega);
+        const room = await roomOf(nova);
+        await api("POST", `${V}/coop/rooms/${room}/invite`, { token: nova.token, body: { player_id: lyra.id } });
+        await api("POST", `${V}/coop/rooms/${room}/invite`, { token: nova.token, body: { player_id: vega.id } });
+        const a = await connect(nova, room);
+        a.send(helloRules(COOP_SIMULATION_VERSION));
+        await settle();
+        expect(a.of(Msg.Welcome)[0]![1]).toBe(0);
+        // A game before 2.80 (no rules in its HELLO: 3 at most): refused, told why.
+        const b = await connect(lyra, room);
+        b.send(hello());
+        await settle();
+        expect(b.of(Msg.Welcome)).toHaveLength(0);
+        expect(b.of(Msg.End)[0]![1]).toBe(EndReason.Rules);
+        // A game of the same rules: seated.
+        const c = await connect(vega, room);
+        c.send(helloRules(COOP_SIMULATION_VERSION));
+        await settle();
+        expect(c.of(Msg.Welcome).at(-1)![1]).toBe(1);
+    });
+
+    it("a room of a game before 2.80 (rules 3) refuses a game of rules 4", async () => {
+        const nova = await registerPlayer("Nova");
+        const lyra = await registerPlayer("Lyra");
+        await befriend(nova, lyra);
+        const room = await roomOf(nova);
+        await api("POST", `${V}/coop/rooms/${room}/invite`, { token: nova.token, body: { player_id: lyra.id } });
+        const a = await connect(nova, room);
+        a.send(hello());
+        await settle();
+        expect(a.of(Msg.Welcome)[0]![1]).toBe(0);
+        const b = await connect(lyra, room);
+        b.send(helloRules(4));
+        await settle();
+        expect(b.of(Msg.End)[0]![1]).toBe(EndReason.Rules);
     });
 });
 

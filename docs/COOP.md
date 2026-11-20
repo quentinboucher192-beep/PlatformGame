@@ -30,6 +30,7 @@ clan facultatif (`clan_tag`, toujours vide pour l'instant).
 | Tous à terre | Quand plus aucun joueur n'est en jeu (tous à terre, en veille ou partis), la tentative s'arrête : elle compte dans la course à la vérification comme une tentative solo qui tombe. |
 | Déconnexion (veille) | Un joueur déconnecté passe **en veille** : il est intouchable, n'est plus solide, ne déclenche rien, et les ennemis l'ignorent. Il a **60 s** pour revenir : son jeu rattrape la partie puis il **réapparaît près de l'équipe** (endroit libre près de l'allié en jeu le plus proche). Après 60 s, il est **parti** : l'équipe continue et la tentative est classée **incomplète**. Un joueur à terre qui se déconnecte reste à terre ; s'il est relevé pendant sa veille, il revient en veille. |
 | Caméra commune | La caméra cadre toute l'équipe (zoom jusqu'à `Camera::kMinFitZoom`). Un joueur **hors du cadre depuis 3 s** revient près de l'allié le plus proche (sur le dernier sol ferme de cet allié, à un endroit libre), avec 1 s d'invulnérabilité. |
+| Passages qui se ferment (2.80, règles 4) | Un passage qui se ferme derrière les joueurs — les portes d'une arène (boss ou embuscade), une porte, une barrière de pouvoir ou un laser qu'un événement ferme — **attend toute l'équipe** : il reste ouvert tant qu'un joueur encore là n'est pas passé, puis se ferme comme avant. Son côté intérieur est celui de ce qui l'a fermé (l'arène, le déclencheur, le levier, l'ennemi…) ; sans objet (le chrono du niveau), le côté où se trouve toute l'équipe. Comptent : les joueurs en jeu (par leur corps : dans l'embrasure, pas encore passés) et les joueurs **à terre** (par leur âme, tant qu'une réanimation peut encore les relever) ; ne comptent pas : un joueur déconnecté (en veille : à son retour il revient près d'un allié en jeu, donc du bon côté), parti, ou ailleurs (une autre zone d'un raid). Un joueur qui ne vient jamais ne piège personne : le passage reste ouvert (le combat a commencé, rien d'autre n'attend) ; un joueur resté loin revient de toute façon près de l'équipe au bout de 3 s hors du cadre (règle du cadre), et un joueur à terre sans réanimation restante ne compte plus. Le HUD dit qui il attend et à quelle distance : « Porte : en attente de MVP (12 m) », « … de Nova (à terre, 30 m) » (sous le HUD et le bandeau « À TERRE », `ui/screens/PassageWaitView`). Seul, rien ne change : le passage se ferme aussitôt. |
 | Sortie | Le premier joueur qui atteint la sortie termine le niveau pour toute l'équipe. |
 | Pouvoirs | Chaque joueur porte ses propres pouvoirs. Une tablette de pouvoir offerte à un joueur dont les emplacements sont pleins arrête le monde (comme en solo) jusqu'au choix **de ce joueur** (`InputFrame::choice` de ses propres entrées). Un joueur en veille laisse le pouvoir sur sa tablette. |
 | Cinématiques | Une cinématique passable est passée dès qu'un joueur la passe (drapeau `SkipCinematic` de ses entrées). |
@@ -103,7 +104,8 @@ voulu.
   de coopération. Elle fait partie de l'empreinte des tentatives d'équipe ; toute règle de
   coopération qui change le déroulement la fait passer, avec les empreintes de référence de
   `tests/test_coop.cpp`. **1** (2.62) : joueurs solides ; **2** (2.75) : ils se traversent ; **3** (2.77) : âme qui tombe
-  sous le point de la mort (ou sur le dernier endroit sûr), réanimation en maintenant « Interagir ». Un replay d'équipe se rejoue avec la version qu'il a
+  sous le point de la mort (ou sur le dernier endroit sûr), réanimation en maintenant « Interagir » ; **4** (2.80) : un passage qui se ferme
+  derrière les joueurs attend toute l'équipe (`GameWorld::teamThrough`). Un replay d'équipe se rejoue avec la version qu'il a
   enregistrée (`GameWorld::setCoopVersion`) : mêmes empreintes. Le serveur refuse une tentative d'une autre version
   (`COOP_SIMULATION_VERSION`, `server/src/coopRace.ts`) ; les records Duo/Trio sont gardés.
 * `simulationStateHash` ajoute, **seulement quand l'équipe a plus d'un joueur**, l'état de
@@ -201,7 +203,7 @@ tout drapeau autre que `SkipCinematic`/`Standby`, tout choix hors de 1 … 8 et 
 
 | Type | Sens | Contenu |
 |---|---|---|
-| 1 `HELLO` | jeu → relais | `u8 protocole (1)`, `u8 siège voulu (255 : libre ; un retour : le sien)`, chaîne `nom` (u8 longueur + UTF-8, ≤ 24), chaîne `compte` facultative (≤ 64) |
+| 1 `HELLO` | jeu → relais | `u8 protocole (1)`, `u8 siège voulu (255 : libre ; un retour : le sien)`, chaîne `nom` (u8 longueur + UTF-8, ≤ 24), chaîne `compte` facultative (≤ 64), puis (2.80) `u8 règles` (`kCoopSimulationVersion` ; absent avant 2.80 : 3). Un salon joue les règles de son premier joueur (l'hôte ; sur le réseau local, celles du PC qui héberge) : un jeu d'une autre version est refusé (`END` 5 « règles », « mettez le jeu à jour »). Un raid vérifie lui-même sa version (empreinte de `GO`, `TITAN_REVISION`). |
 | 2 `INPUT` | jeu → relais | `u32 premier pas`, `u8 n (1 … 32)`, `n` entrées |
 | 3 `PING` | jeu → relais | `u32 horloge du jeu (ms)`, `u16 dernier aller-retour mesuré (0xFFFF : aucun)` |
 | 4 `READY` | jeu → relais | `u8 prêt (0/1)` (salon) |
@@ -215,7 +217,7 @@ tout drapeau autre que `SkipCinematic`/`Standby`, tout choix hors de 1 … 8 et 
 | 13 `FRAMES` | relais → jeu | `u32 premier pas`, `u16 n`, puis pour chaque siège ses `n` entrées compactes |
 | 14 `PONG` | relais → jeu | `u32 horloge du jeu renvoyée` |
 | 15 `REJOIN` | relais → jeu | `u8 siège`, `u32 pas de retour` |
-| 16 `END` | relais → jeu | `u8 raison` (0 fin normale, 1 hôte parti, 2 trop long) |
+| 16 `END` | relais → jeu | `u8 raison` (0 fin normale, 1 hôte parti, 2 trop long, 3 refusé, 4 retiré d'un test, 5 autres règles de coopération : 2.80) |
 
 Le relais refuse (et ferme) tout message mal formé : type inconnu, longueur incohérente,
 siège invalide, entrée avec des bits hors des actions enregistrées (21 bits), drapeau autre

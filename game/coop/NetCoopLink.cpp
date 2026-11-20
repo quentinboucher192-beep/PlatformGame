@@ -214,6 +214,7 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
                          : reason == EndReason::TooLong ? "La partie a atteint sa durée maximale (2 h)."
                          : reason == EndReason::Refused ? "Le relais refuse cette connexion (partie complète, ou plus de 60 s d'absence)."
                          : reason == EndReason::Removed ? "L'administrateur vous a retiré du test."  // 2.80
+                         : reason == EndReason::Rules   ? "Ce salon joue avec une autre version des règles de coopération : mettez le jeu à jour pour jouer ensemble."
                                                         : "La partie est terminée.";
             endCode_ = static_cast<int>(reason);
             break;

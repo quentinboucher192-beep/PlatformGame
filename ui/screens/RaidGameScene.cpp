@@ -95,6 +95,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/screens/DownedView.h"
+#include "ui/screens/PassageWaitView.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/RaidSpectator.h"
@@ -1295,6 +1296,7 @@ public:
             drawArenaIntro();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
             if (bannerLayout_.panel.w > 0.0f) drawBanner();  // 2.75: the group wiped; 2.77.2: this player down (placed by drawRaidHud)
+            if (passageLayout_.panel.w > 0.0f) passagewait::draw(ui, passageLayout_);  // 2.80 (placed by drawRaidHud)
             if (overlay_.menu.isOpen() && !paused_ && !ended_) drawMenu(w);  // 2.75.5: opened by the player
             if (wheel_.open && !paused_ && !ended_) botsui::drawWheel(ui, wheel_, g_.settings.gameplay.raidHud.thoughts, view, wheelKeys());  // 2.79
             if (sim_ && local_ < 0 && !paused_ && !bigMap_ && simPanel_ < 0 && !overlay_.menu.isOpen()) drawSimWatch();  // 2.77
@@ -1967,6 +1969,20 @@ public:
         return taken;
     }
 
+    /// 2.80 (rules of cooperation 4): a passage of this zone waiting for its players before it closes — who
+    /// it waits for and how far (« Porte : en attente de MVP (12 m) »): under the HUD and the banner, the
+    /// notifications under it. Not over the pause, the menu, the large map, the arena's title nor a big message.
+    void placePassageWait(GameWorld& w) {
+        passageLayout_ = {};
+        bool bigMessage = false;
+        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || arenaCam_.intro() || simPanel_ >= 0) return;
+        const std::vector<std::string> lines = passagewait::lines(w, [this](int i) { return seatName(i); });
+        if (lines.empty()) return;
+        passageLayout_ = passagewait::placed(g_.ui, lines, hudTaken());
+        hudRects_.push_back(passageLayout_.panel);  // the arrows, the armory's names and the notifications keep off it
+    }
+
     /// Draws the banner placed this frame; its buttons answer the mouse (their keys: updateSpectator, updateDowned).
     void drawBanner() {
         const int k = downed::draw(g_.ui, banner_, bannerLayout_, "banner");
@@ -2144,8 +2160,9 @@ public:
             }
         // 2.74 (phase 6): the Cœur d'Asterion: its shared health in its arena, what the branches did to
         // it at its door (before it wakes, the first seconds of the zone).
-        placeBanner(w);     // 2.77.2: this player down / the group wiped (the notifications under it)
-        drawNoticesHud(w);  // 2.75.5
+        placeBanner(w);       // 2.77.2: this player down / the group wiped (the notifications under it)
+        placePassageWait(w);  // 2.80: a passage waiting for the players of this zone (under the banner)
+        drawNoticesHud(w);    // 2.75.5
         if (const raid::AsterionHeartRoutine* hr = run_->heartRoutine()) {
             if (shown(E::Heart)) {
                 const Rect r = at(E::Heart);
@@ -2881,6 +2898,7 @@ public:
         Rect r = raidhud::area(ui, l, RaidHudElement::Notices, hudAreas_);
         // 2.77.2: under the banner of this player down / of the group wiped when they meet, never over it.
         if (!bannerLayout_.panel.empty()) r = downed::below(r, bannerLayout_.panel, ui.s(10), hudTaken());
+        if (!passageLayout_.panel.empty()) r = downed::below(r, passageLayout_.panel, ui.s(10), hudTaken());  // 2.80
         std::vector<const raidmenu::Notice*> list;
         std::vector<float> alpha;
         if (!arenaCam_.intro())  // the arena's title over the middle: they wait
@@ -3429,6 +3447,7 @@ public:
     raidspec::Spectator spec_;   // 2.75: the spectator mode (a group wiped)
     downed::Banner banner_;          // 2.77.2: the banner of this player down / of the group wiped, this frame
     downed::Layout bannerLayout_;    // its places (an empty panel: not shown)
+    passagewait::Layout passageLayout_;  // 2.80: a passage waiting for the zone's players (empty: none)
     downed::ViewBlend blend_;        // 2.77.2: a change of view (the player watched, the soul, the free camera), eased
     int downWatch_ = -1;             // 2.77.2: this player down: the seat watched (-1: their soul)
     bool wasDown_ = false;

@@ -265,6 +265,22 @@ public:
     void setCoopVersion(int version) { coopVersion_ = version; }
     int coopVersion() const { return coopVersion_; }
     bool solidTeammates() const { return !raidMode_ && coopVersion_ < 2; }
+    /// 2.80 (rules of cooperation 4, docs/COOP.md « Passages qui se ferment »): a passage that closes
+    /// behind the players (an arena's doors, a door, a gate or a laser an event closes) waits, open,
+    /// for the whole team: a team or a raid zone from rules 4; never alone (the solo game is unchanged).
+    bool passagesWait() const { return !team_.empty() && coopVersion_ >= 4; }
+    /// A player a passage waits for: its number, how far from the passage (pixels), down (its soul).
+    struct Straggler {
+        int player = 0;
+        float distance = 0.0f;
+        bool down = false;
+    };
+    /// Whether every player of the team still there is through `passage`: on the side of `inner` (its
+    /// inner side) or, without one, all on the same side. A player in play counts by its body (in the
+    /// passage: not through), a player down by its soul while a revival can still raise them; a player
+    /// in standby (disconnected), gone or elsewhere (a raid's other zones) does not count. `behind`: the
+    /// players it waits for (nearest first). Alone: always true.
+    bool teamThrough(const Rect& passage, const Vec2* inner, std::vector<Straggler>* behind = nullptr) const;
     /// A player was gone for good (60 s of standby): the attempt is ranked « incomplète ».
     bool teamIncomplete() const;
     /// Players in play (not down, in standby or gone), in order; each one is the current

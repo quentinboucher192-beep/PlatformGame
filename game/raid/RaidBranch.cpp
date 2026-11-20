@@ -200,6 +200,17 @@ std::string Branch::ambushesLeftText(const AmbushCount& c) {
     return "Embuscades restantes : " + std::to_string(c.left) + " sur " + std::to_string(c.total);
 }
 
+bool Branch::ambushesOpenLair(int zid) const {
+    const std::string lock = "ambushes:" + std::to_string(zid);
+    for (const EdgeInfo& e : edges) {
+        if (e.lock != lock) continue;
+        const ZoneInfo* a = zone(e.a);
+        const ZoneInfo* b = zone(e.b);
+        if ((a && a->boss) || (b && b->boss)) return true;
+    }
+    return false;
+}
+
 LockText Branch::lockText(const std::string& lock) const {
     if (auto it = lockTexts.find(lock); it != lockTexts.end()) return it->second;
     // The BRAS DROIT (its catalog has no texts): its two generators, the forearm's lever.
@@ -208,9 +219,14 @@ LockText Branch::lockText(const std::string& lock) const {
                 "allumer les deux générateurs (Veine, Avant-bras)"};
     if (lock == "shortcut")
         return {"le levier de l'avant-bras l'ouvre", "Le raccourci Veine – Avant-bras est ouvert", "raccourci fermé (le levier est dans l'Avant-bras)"};
-    if (lock.rfind("ambushes:", 0) == 0)  // 2.78: the catalogs say it too (lock_texts)
+    if (lock.rfind("ambushes:", 0) == 0) {  // 2.78: the catalogs say it too (lock_texts)
+        // Titan 9: the gate of a zone that does not lead to a lair (the entry's guard) opens the way on.
+        if (!ambushesOpenLair(std::atoi(lock.c_str() + 9)))
+            return {"toutes les vagues de l'embuscade de la zone doivent être vaincues", "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+                    "vaincre l'embuscade de la zone (toutes ses vagues)"};
         return {"toutes les vagues de toutes les embuscades de la zone doivent être vaincues", "Toutes les embuscades sont vaincues : l'antre s'ouvre",
                 "vaincre toutes les embuscades de la zone"};
+    }
     if (lock.rfind("link:", 0) == 0) {
         const EffectInfo* e = effect(lock.substr(5));
         return {"une autre branche du titan l'ouvre", e ? e->label : std::string(), "fermé : une autre branche du titan l'ouvre"};

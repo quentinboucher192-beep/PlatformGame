@@ -619,6 +619,7 @@ void PowerGateEntity::init(GameWorld& w) {
 
 void PowerGateEntity::fixedUpdate(GameWorld& w, float dt) {
     hintCooldown_ = std::max(0.0f, hintCooldown_ - dt);
+    if (closing_.waiting && closing_.ready(w)) form(w);  // 2.80: the whole team is through
     if (broken_) return;
     sprite_.anim.update(dt);
     // Plasma curtains hurt when crossed without the shield.
@@ -678,14 +679,21 @@ bool PowerGateEntity::onPowerHit(GameWorld& w, const std::string& power, const R
     return false;
 }
 
-bool PowerGateEntity::handleAction(GameWorld& w, const std::string& action, const Json&) {
+void PowerGateEntity::form(GameWorld& w) {
+    closing_.waiting = false;
+    broken_ = false;
+    w.physics().setEnabled(collider_, true);
+}
+
+bool PowerGateEntity::handleAction(GameWorld& w, const std::string& action, const Json& params) {
     if (action == "break" || action == "open" || action == "disable") {
+        closing_.waiting = false;
         if (!broken_) destroy(w);
         return true;
     }
     if (action == "close" || action == "enable") {
-        broken_ = false;
-        w.physics().setEnabled(collider_, true);
+        // 2.80 (rules of cooperation 4): formed again behind a team once the whole team is through it.
+        if (!broken_ || closing_.ask(w, box, params)) form(w);
         return true;
     }
     return false;

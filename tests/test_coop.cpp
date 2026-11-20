@@ -456,8 +456,10 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
     // 2.75: version 1 (solid players: the replays of 2.62 to 2.74) keeps its digests exactly;
     // version 2 (they pass through each other) has its own.
     // 2.77: version 3 (a soul on the last safe place, a revival held) has its own; 1 and 2 keep theirs.
+    // 2.80: version 4 (a passage that closes behind the team waits for every player): the same as 3 here (no
+    // door closes in these 40 s of sylvanox_01); its own digests where a door waits: tests/test_coop_passages.cpp.
     const Golden golden[] = {{2, "bb2676ab728f2c52", 1}, {3, "2ac42252542c66bd", 1}, {2, "91d4357955571446", 2}, {3, "c965b1d603d7a5d0", 2},
-                             {2, "f7e9af3feb027a98", 3},  {3, "ccb9426b84949f0b", 3}};
+                             {2, "f7e9af3feb027a98", 3},  {3, "ccb9426b84949f0b", 3},  {2, "f7e9af3feb027a98", 4}, {3, "ccb9426b84949f0b", 4}};
     int mismatches = 0;
     for (const auto& g : golden) {
         auto script = teamScript(g.players, 31, 120 * 40);
@@ -478,5 +480,5 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
         CHECK(runScript(c, other) != ra);
     }
     CHECK(mismatches == 0);
-    CHECK(kCoopSimulationVersion == 3);
+    CHECK(kCoopSimulationVersion == 4);
 }

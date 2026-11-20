@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cmath>
 
+#include "game/online/LevelFingerprint.h"
 #include "packaging/Sha256.h"
 
 namespace cosmic::coopnet {
@@ -76,13 +77,14 @@ namespace {
 std::vector<uint8_t> msg(Msg t) { return {static_cast<uint8_t>(t)}; }
 }  // namespace
 
-std::vector<uint8_t> hello(uint8_t wantedSeat, const std::string& name, const std::string& account) {
+std::vector<uint8_t> hello(uint8_t wantedSeat, const std::string& name, const std::string& account, int rules) {
     auto o = msg(Msg::Hello);
     Writer w{o};
     w.u8(kProtocol);
     w.u8(wantedSeat);
     w.str(name, 24);
-    if (!account.empty()) w.str(account, 64);
+    w.str(account, 64);  // 2.80: always (empty: none), the rules after it
+    w.u8(static_cast<uint8_t>(rules < 0 ? kCoopSimulationVersion : rules));
     return o;
 }
 
