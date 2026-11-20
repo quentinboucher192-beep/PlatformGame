@@ -15979,6 +15979,12 @@
    ]
   },
   {
+   "fr": "Coopération et raids : les autres joueurs (alliés en ligne, sièges 2 et 3 sur un même PC, joueurs simulés) s'animent comme votre personnage : ils ne restent plus figés sur une seule image (Nova réduite à un mince trait de lumière après une réanimation), leurs images rémanentes de dash s'effacent au lieu de s'accumuler en rangées de silhouettes cyan, et le liseré de leur couleur entoure leur combinaison au lieu de la recouvrir.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Coopération et raids : pour réanimer, maintenez « Interagir » 2 s près de l'âme (la touche affichée est la vôtre, clavier ou manette) ; relâcher interrompt. Les anciens replays d'équipe se rejouent avec leurs règles ; une tentative Duo ou Trio d'une version précédente est refusée, les records sont gardés.",
    "where": [
     "data/news/changelog.json"
