@@ -174,7 +174,17 @@ std::string shortLabel(const std::string& s) { return s.substr(0, s.find(" ("));
 
 Rect bodyAt(Vec2 feet) { return {feet.x - 5.0f, feet.y - 22.0f, 10.0f, 22.0f}; }
 
-bool hitsLine(const Danger& d, const Rect& box) { return Collision::segmentIntersectsRect(d.from, d.to, box.expanded(d.width * 0.5f)); }
+bool hitsLine(const Danger& d, const Rect& box) {
+    if (d.gapHalf > 0.0f) {
+        // A sweeping beam: the sector it turns through (as far as it reaches).
+        const Vec2 c = box.center() - d.from;
+        if (c.length() > d.reach) return false;
+        float diff = std::fabs(std::atan2(c.y, c.x) - d.gap);
+        while (diff > 3.14159265f) diff = std::fabs(diff - 6.2831853f);
+        return diff <= d.gapHalf;
+    }
+    return Collision::segmentIntersectsRect(d.from, d.to, box.expanded(d.width * 0.5f));
+}
 
 }  // namespace
 
@@ -685,10 +695,12 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
     const NavGraph* nav = navi_.graph();
     const int n = std::min(kMaxInstancePlayers, w.teamSize());
     std::vector<int> drivers;
+    std::vector<Rect> wasPlate(static_cast<size_t>(kMaxInstancePlayers));  // the place each one was sent to hold
     for (int s = 0; s < n; ++s)
         if ((seats >> s) & 1u) {
             Bot& b = bots_[static_cast<size_t>(s)];
             const Task was = b.task;
+            if (was == Task::Mechanism) wasPlate[static_cast<size_t>(s)] = b.mechanism;
             const uint32_t wasTarget = b.target;
             b.task = Task::Follow;
             b.target = 0;
@@ -891,7 +903,11 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         for (const bots::Station* st : stations) {
             int need = std::max(0, st->need - heldByOthers(st->plate));
             while (need-- > 0) {
-                int s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Runner; });
+                // The one already on its way there keeps it (a place given again to another each plan is never reached).
+                int s = nearestFree(st->plate.bottomCenter(), [&](int seat) {
+                    return wasPlate[static_cast<size_t>(seat)].intersects(st->plate) && bots_[static_cast<size_t>(seat)].role != Role::Reviver;
+                });
+                if (s < 0) s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Runner; });
                 if (s < 0) s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role != Role::Reviver; });
                 if (s < 0) s = nearestFree(st->plate.bottomCenter());
                 if (s < 0) break;
@@ -1236,6 +1252,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     const bool shieldReady = shield && keyBit(shield) >= 0 && shield->ready(me) && !(b.prevHeld & (1u << keyBit(shield))) && !me.shieldActive();
     bool raiseShield = false;
     const bool holding = b.task == Task::Mechanism && b.mechanism.w > 0.0f && b.mechanism.intersects(me.box);
+    // Sent to a place to hold: what strikes that place (its own jet, a mark on it) is taken under the shield, never a
+    // reason to leave it or to wait beside it — a vent or a hook left while its jet comes is never closed.
+    const Rect station = b.task == Task::Mechanism && b.mechanism.w > 0.0f ? b.mechanism.expanded(10.0f) : Rect{};
     b.onStation = holding;
     // ------------------------------------------------------------ rising liquids: above their top
     bool fleeing = false;
@@ -1376,6 +1395,16 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     bool dodging = forced != 0;
     const bool staysPut = b.task == Task::Revive && std::fabs(b.goal.x - feet.x) <= GameWorld::kReviveReachX - 6.0f &&
                           std::fabs(b.goal.y - feet.y) <= GameWorld::kReviveReachY - 6.0f;
+    // A sweeping beam on it (announced or lit): no step gets out of it — the shield as soon as it is seen, whatever
+    // else it dodges (its 2,2 s outlast the sweep).
+    for (const Danger& d : dangers_)
+        if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f && d.in <= kSimHz / 2 && hitsLine(d, me.box)) {
+            if (shieldReady || me.shieldActive()) {
+                raiseShield = raiseShield || shieldReady;
+                react = "bouclier contre le rayon";
+            }
+            break;
+        }
     if (!fleeing && !forced) {
         // The most pressing blow on it: the one whose time left is the shortest against the time it needs to get
         // out (its way out at a run, its level's reaction), the blows still far off left for later.
@@ -1384,6 +1413,15 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         const Rect mine = me.box.expanded(5.0f);
         for (const Danger& d : dangers_) {
             if ((d.seat >= 0 && d.seat != seat) || d.in > 3 * kSimHz) continue;
+            if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f) continue;  // a sweep: its shield (above)
+            if (station.w > 0.0f && d.kind == Danger::Kind::Area && !d.body && d.area.intersects(station) && !d.shot) {
+                if (d.in <= 14 && d.area.intersects(mine)) {
+                    raiseShield = true;
+                    react = "tient sous son bouclier";
+                }
+                continue;
+            }
+            if (me.shieldActive() && !d.body && d.kind != Danger::Kind::Pull) continue;  // under its shield: nothing gets through
             float need = 0.0f;
             if (d.kind == Danger::Kind::Area || d.kind == Danger::Kind::Pull) {
                 if (!d.area.intersects(mine)) continue;
@@ -1563,7 +1601,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (stay && !navi_.pilot(seat).committed()) dir = 0;
         // Never into what is coming (a mark, a cloud, a column, the boss's body): it waits at its edge, the way
         // it was going, until it has passed — out of a danger it may cross (it is getting out).
-        if (dir != 0 && me.grounded() && !holding) {
+        if (dir != 0 && me.grounded() && !holding && !(station.w > 0.0f && me.box.expanded(48.0f).intersects(station))) {
             const Rect next = me.box.translated({static_cast<float>(dir) * 10.0f, 0.0f}).expanded(3.0f);
             if (threatened(w, seat, next, 100) && !threatened(w, seat, me.box.expanded(3.0f), 100)) {
                 dir = 0;

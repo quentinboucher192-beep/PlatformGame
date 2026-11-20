@@ -5,6 +5,7 @@
 
 #include "game/enemies/BossHazards.h"
 #include "game/enemies/Enemy.h"
+#include "game/enemies/EnemyDefinition.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/Projectile.h"
 #include "game/raid/Gigaboss.h"
@@ -82,14 +83,24 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
     d.in = striking ? 0 : kSimHz / 4;
     const Rect box = b.box;
     switch (a->type) {
+        case AttackType::Orbit: {
+            // Its crown (« Couronne de débris », « Couronne solaire »): fires turning around its centre, their circle
+            // widening up to its full radius, then closing — out of that circle, or under the shield as it passes.
+            const std::pair<float, float> orb = orbitRadii(*a, box.size(), b.def().scale);
+            const float fr = a->projectileRadius > 0.0f ? a->projectileRadius : 8.0f;
+            const float r = orb.second + fr + 18.0f;
+            const Vec2 c = box.center();
+            d.area = {c.x - r, c.y - r, r * 2.0f, r * 2.0f};
+            v.dangers.push_back(d);
+            break;
+        }
         case AttackType::Slam:
         case AttackType::Melee:
         case AttackType::Contact:
-        case AttackType::Orbit:
         case AttackType::Vortex: {
             // Around it: as far as its reach (a slam's shockwave runs further along the floor: a band).
             // (its orbit of flames: close around it; the shots of a spiral are read as they fly, not as an area)
-            const float reach = a->type == AttackType::Orbit ? 100.0f : std::clamp(a->range, 40.0f, 220.0f);
+            const float reach = std::clamp(a->range, 40.0f, 220.0f);
             d.area = box.expanded(reach * 0.6f);
             v.dangers.push_back(d);
             if (a->type == AttackType::Slam) {
@@ -177,8 +188,16 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
             l.kind = Danger::Kind::Line;
             l.from = o;
             l.to = o + dir * std::max(a->laserLength, len + 60.0f);
-            l.width = 26.0f + std::fabs(a->sweepDegrees) * 2.0f;
+            l.width = 26.0f;
             l.in = striking ? 0 : kSimHz / 4;
+            if (a->sweepDegrees != 0.0f) {
+                // A sweeping beam (Skullmaw's « Regard balayant »): it turns through its whole angle, centred on its
+                // target, as long as it is lit — a sector no step aside gets out of. Its shield (2,2 s) raised while it
+                // is announced (0,9 s) outlasts its sweep (1,3 s): what a player does.
+                l.gap = std::atan2(dir.y, dir.x);
+                l.gapHalf = std::fabs(a->sweepDegrees) * 0.5f * 0.0174533f + 0.21f;
+                l.reach = a->laserLength + 20.0f;
+            }
             l.area = {std::min(l.from.x, l.to.x) - l.width, std::min(l.from.y, l.to.y) - l.width, std::fabs(l.to.x - l.from.x) + l.width * 2.0f,
                       std::fabs(l.to.y - l.from.y) + l.width * 2.0f};
             v.dangers.push_back(l);
@@ -257,6 +276,24 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         if (!pr.safe && !pr.done()) v.dangers.push_back({Danger::Kind::Area, pr.column().expanded(4.0f)});
     for (const auto& r : hz.runes())
         if (r.armed() || r.bursting()) v.dangers.push_back({Danger::Kind::Area, r.pillar().expanded(4.0f)});
+    // Its missiles (a reticle that follows a player, locks, then the missile lands): once locked, where it lands.
+    for (const auto& m : hz.missiles()) {
+        if (!m.locked() || m.done()) continue;
+        Danger d;
+        d.kind = Danger::Kind::Area;
+        d.area = {m.at.x - m.radius - 10.0f, m.at.y - m.radius - 10.0f, m.radius * 2.0f + 20.0f, m.radius * 2.0f + 20.0f};
+        d.in = std::max(0, static_cast<int>((m.track + m.flight - m.age) * static_cast<float>(kSimHz)));
+        v.dangers.push_back(d);
+    }
+    // Its jets of steam low along the ground (they hiss, then blast).
+    for (const auto& st : hz.steams()) {
+        if (st.done() || st.age >= st.warn + st.time) continue;
+        Danger d;
+        d.kind = Danger::Kind::Area;
+        d.area = st.area().expanded(6.0f);
+        d.in = st.blasting() ? 0 : std::max(0, static_cast<int>((st.warn - st.age) * static_cast<float>(kSimHz)));
+        v.dangers.push_back(d);
+    }
     for (const auto& p : hz.pulls()) {
         Danger d;
         d.kind = Danger::Kind::Pull;
@@ -267,7 +304,11 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
         v.dangers.push_back(d);
     }
     readShots(w, v);
-    if (boss && boss->alive()) readBossAttack(w, *boss, v);
+    if (boss && boss->alive()) {
+        const size_t first = v.dangers.size();
+        readBossAttack(w, *boss, v);
+        for (size_t k = first; k < v.dangers.size(); ++k) v.dangers[k].attack = true;
+    }
     // Armoured: its vents (the rules' plates), one player on each, held together.
     if (vents && gb.stage() == Gigaboss::Stage::Carapace)
         for (size_t k = 0; k < gb.vents().size(); ++k) {

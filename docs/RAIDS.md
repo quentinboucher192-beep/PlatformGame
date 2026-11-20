@@ -1749,8 +1749,15 @@ tactique contre chaque Gigaboss, des rôles dans le groupe, l'usage de leurs pou
 elle les fait obéir à l'administrateur. Ils **ne trichent jamais** : uniquement des `InputFrame` de joueur, la même
 physique, les mêmes coups ; rien n'est lu que le joueur ne voie (les marques au-dessus de l'arène, les évents, les
 ennemis de son mécanisme, ses points faibles, les coups annoncés, les tirs). Les mesures se font **sans aucune
-invincibilité** et **sans les deux sauvetages du test** (§22 : un joueur simulé placé sur son mécanisme ou plus loin sur
-son chemin), coupés par `TestSession::setRescues(false)` et `SimSetup::rescues`.
+invincibilité** ; le test ne déplace jamais un joueur simulé (§25), et `TestSession::setRescues(false)` (`SimSetup::rescues`)
+coupe aussi le décompte de ses blocages.
+
+**Qui fait quoi.** La tactique choisit **où** aller et **quoi** faire (la place d'où tirer, la station à tenir, le côté
+par où sortir d'une zone, l'abri, le joueur à relever) ; la navigation du §25 décide **comment** y aller (son chemin, ses
+sauts simulés à l'avance, ce qu'elle voit venir sur son chemin : les zones de coups que la tactique lui donne à chaque pas).
+La tactique ne reprend la direction que pour une réaction à elle (s'écarter d'une zone, attendre à son bord, se tenir
+sous une dalle), jamais pendant un mouvement en l'air en cours : il est joué tel qu'il a été simulé. Les ondes qui
+courent sur un sol, elle les fait sauter elle-même (leur vitesse et leur hauteur : le bon moment).
 
 ### Une tactique par Gigaboss (`game/raid/bots/`)
 
@@ -1815,7 +1822,8 @@ faible à nu ; l'appât et les coureurs : le triple saut).
 Au-dessus de chaque joueur simulé, une bulle : **son rôle → son intention** (« Réanimateur → réanime Joueur simulé 3 »,
 « Frappeur → frappe le point faible (× 2) », « Coureur → tient le miroir », « Appât → attire Titanus loin des plaques »,
 ou ce qu'il fait à cet instant : « saute l'onde », « sort de la ligne du rayon », « se cache derrière une colonne »…),
-et dessous **comment il se déplace** (l'intention de la navigation : « saute puis double saut vers le haut »…). Une
+et dessous **comment il se déplace** (la pensée de sa navigation, §25 : « Double saut au-dessus du vide », « Esquive
+du rayon »… ; ou sa réaction du moment : « s'écarte », « attend que ça passe »). Une
 bulle dont l'intention est un ordre est bordée d'or.
 
 * Mesurées (`botsui::layoutThoughts`) : police ajustée, intention raccourcie avec « … » quand il le faut ; posées
@@ -1846,58 +1854,83 @@ jamais (son relais ne pose pas ce bit, et il n'y a de joueurs simulés que dans 
 leurs coups et tirs, une visée qui glisse d'un cran, le moment de leurs sauts d'onde) et leurs choix (le bouclier contre
 un coup inévitable : 35 % / 70 % / toujours ; se cacher d'un regard : Confirmé et Expert). Rien d'autre.
 
-### Mesures (`tests/test_raid_goat.cpp`, sans invincibilité ni sauvetage)
+### Mesures (`tests/test_raid_goat.cpp`, sans invincibilité, le test ne déplaçant jamais personne)
 
-Chaque Gigaboss dans son antre, depuis sa phase 1, contre **8 joueurs simulés Experts** (la place de
-l'administrateur jouée aussi par l'IA), sans invincibilité ni sauvetage, 15 minutes de jeu au plus ; un test par
-Gigaboss (`raid GOAT (2.79): …`), qui écrit sa mesure. Le jeu est déterministe : la même mesure à chaque lancement.
+Chaque Gigaboss dans son antre, depuis sa phase 1, contre **8 joueurs simulés Experts** (la place de l'administrateur
+jouée aussi par l'IA), 15 minutes de jeu au plus ; un test par Gigaboss (`raid GOAT (2.79): …`), qui écrit sa mesure et
+**ce qui a mis chacun à terre** (le dernier coup reçu et le rôle du joueur : `morts : …`). Le jeu est déterministe : la
+même mesure à chaque lancement. Trois colonnes : avant la navigation du §25 (« avant »), juste après sa fusion
+(« fusion »), et après le travail sur les causes de mort (« après », la version livrée).
 
-| Gigaboss | Résultat | Temps de jeu | Morts | Phase atteinte | Vie restante |
+| Gigaboss | avant | fusion | après | morts (après) | vie restante (après) |
 |---|---|---|---|---|---|
-| Pyroclast | groupe éliminé | 661 s | 78 | 2 sur 3 | 66 % |
-| Skullmaw | debout à la limite | 900 s | 2 | 1 sur 3 | 100 % |
-| Dreadfang | debout à la limite | 900 s | 0 | 2 sur 3 | 66 % |
-| Titanus | groupe éliminé | 213 s | 31 | 2 sur 3 | 66 % |
-| Voidworm | debout à la limite | 900 s | 8 | 2 sur 3 | 66 % |
-| Graviton | groupe éliminé | 199 s | 10 | 1 sur 3 | 87 % |
-| Heartbreaker | debout à la limite | 900 s | 94 | 2 sur 3 | 66 % |
-| Cœur d'Asterion (les sept parties tombées) | groupe éliminé | 578 s | 30 | 1 sur 4 | 80 % |
+| Pyroclast | éliminé, 661 s, phase 2 | éliminé, 537 s, phase 2 | éliminé, 484 s, phase 2 | 32 | 66 % |
+| Skullmaw | debout, 900 s, phase 1 | debout, 900 s, phase 2 | debout, 900 s, phase 2 | 56 | 66 % |
+| Dreadfang | debout, 900 s, phase 2 | éliminé, 295 s, phase 2 | **debout, 900 s, phase 2** | 50 | **52 %** |
+| Titanus | éliminé, 213 s, phase 2 | éliminé, 255 s, phase 1 | éliminé, 200 s, phase 1 | 15 | 76 % |
+| Voidworm | debout, 900 s, phase 2 | debout, 900 s, phase 2 | debout, 900 s, phase 2 | 18 | 66 % |
+| Graviton | éliminé, 199 s, phase 1 | éliminé, 140 s, phase 1 | **éliminé, 513 s, phase 1** | 25 | **68 %** |
+| Heartbreaker | debout, 900 s, phase 2 | debout, 900 s, phase 2 | éliminé, 757 s, phase 1 | 72 | 74 % |
+| Cœur d'Asterion (les sept parties tombées) | éliminé, 578 s, phase 1 | éliminé, 356 s, phase 1 | **debout, 900 s, phase 2** | 29 | 74 % |
 
-**Aucun Gigaboss n'est battu** par les joueurs simulés sans aide dans la limite : c'est dit tel quel (le test
-l'écrit, « trop dur pour l'instant », et la liste `kBeaten` des Gigaboss battus, vide, deviendra une garantie dès
-qu'un combat sera gagné).
+**Aucun Gigaboss n'est battu** par huit joueurs simulés Experts sans aide dans la limite : c'est dit tel quel (le test
+l'écrit, « trop dur pour l'instant » ; la liste `kBeaten` des Gigaboss battus, vide, deviendra une garantie dès qu'un
+combat sera gagné). Les combats sont chaotiques : un petit changement de comportement déplace beaucoup un combat
+(Heartbreaker tenait 900 s juste après la fusion, il tombe maintenant en phase 1 à 757 s ; Graviton et le Cœur ont
+gagné beaucoup).
 
-* **Le niveau** (Heartbreaker, 8 joueurs simulés) : Débutant éliminé en 329 s (30 morts, phase 1, 96 % de vie) ;
-  Confirmé debout à 900 s (123 morts, phase 2, 66 %) ; Expert debout à 900 s (94 morts, phase 2, 66 %).
+Ce qui met les joueurs à terre, avant et après (les plus fréquents, rôle du joueur touché) :
+
+* **Skullmaw** — fusion : son « Regard balayant » (29 morts : un rayon qui tourne de 80°, lu comme un rayon droit dont on
+  s'écarte d'un pas) et ses « Regards traqueurs » (21). Après : le balayage est lu comme le **secteur** qu'il parcourt,
+  et le bouclier (2,2 s) levé dès son annonce dure plus que lui (0,9 + 1,3 s) ; il en reste (au moins 18 morts du
+  balayage : bouclier pas encore rechargé, 5 s ; au moins 12 des regards traqueurs).
+* **Graviton** et **le Cœur** — fusion : leur couronne (« Couronne de débris », « Couronne solaire » : des tirs qui
+  tournent autour d'eux jusqu'à 330 px) lue comme une zone de 100 px. Après : lue à son vrai rayon (on en sort, ou le
+  bouclier) ; Graviton tient 513 s au lieu de 140 s, le Cœur 900 s jusqu'à sa phase 2 au lieu de 356 s.
+* **Pyroclast** — fusion : pluie de magma (réanimateurs), poings, lave ; après : lave et coups au contact (« ? »),
+  pluie de magma ; ses trois évents ne sont jamais tenus ensemble (voir plus bas).
+* **Dreadfang** — après : balayages des griffes (coureurs, réanimateurs), éclats de givre, griffes du sol ; sa
+  carapace tombe enfin (52 % de vie).
+* **Titanus** — fusion : charge du colosse (appâts, frappeurs), écrasements, chutes de rochers ; après : effets
+  persistants (lave, fissures), séisme du talon.
+* **Voidworm** — après : crachats d'acide, sucs du ventre (coureurs, réanimateurs).
+* **Heartbreaker** — fusion et après : éruptions du cœur (coureurs, appât), ondes du battement (frappeurs), côtes-pièges.
+
+* **Le niveau** (Heartbreaker, 8 joueurs simulés) : Débutant éliminé en 415 s (50 morts, 88 % de vie) ; Confirmé
+  éliminé en 623 s (62 morts, 82 %) ; Expert éliminé en 757 s (72 morts, 74 %) : chaque niveau tient plus longtemps et
+  frappe plus que le précédent.
 * **« Simuler un raid complet » sans aucune invincibilité** (7 groupes de 7 joueurs simulés Experts, depuis les
-  antres, sans sauvetage) : pas fini en une heure de jeu — aucun Gigaboss ne tombe, 15 groupes engagés (renforts
-  compris), 992 morts ; les groupes éliminés sont relayés par des renforts, comme dans un vrai raid.
+  antres) : pas fini en une heure de jeu — aucun Gigaboss ne tombe, 15 groupes engagés (renforts compris), 688 morts.
 * Les ordres (rejoués à l'identique), les rôles (redonnés quand le réanimateur tombe) et les bulles (8 sur 8 placées
   en 1280 × 720, 1920 × 1080 et 800 × 600, sans chevauchement) ont leurs tests dans le même fichier.
 
+**Ce qui a changé pour les causes de mort** (2.79, après la fusion) : le rayon qui balaie (secteur, bouclier dès
+l'annonce) ; la couronne à son vrai rayon ; les missiles et les jets de vapeur des Gigaboss lus ; un joueur envoyé
+tenir une place prend sous son bouclier ce qui frappe cette place (son jet, une marque) au lieu de la quitter ; une
+place donnée reste au même joueur d'un plan à l'autre (avant, deux coureurs échangeaient sans fin l'évent de l'est et
+celui du centre). Essayés puis retirés, parce qu'ils faisaient plus de morts : laisser la navigation seule esquiver
+(la tactique réagissant plus tard), ne plus attendre au bord d'un coup qui dure, ne pas donner à la navigation les
+coups du boss lui-même, garder en mémoire les marques d'une pluie ou d'une éruption après leur annonce.
+
 ### Ce qui reste
 
-Ce qui arrête encore les joueurs simulés, lu dans les traces (`COSMIC_GOAT_TRACE=1` : l'état toutes les 20 s et
-les coups reçus ; `=2` : chaque joueur, sa pensée, sa place) :
-
-* **La navigation** (le graphe de `RaidNav`, `NavGraph::kMaxUp`, l'affaire du chantier de la navigation,
-  `game/raid/nav/`) : il ne monte que de 88 px d'un saut, alors que les plates-formes des antres sont à 96 px l'une de
-  l'autre (le saut et le double saut d'un joueur montent à 102 px). Les joueurs simulés restent au sol. Skullmaw : ses
-  colonnes (48 × 192 px) ne se passent que par ces plates-formes ; les huit restent contre la première et ne le
-  touchent jamais (100 % de vie à 15 minutes). Dreadfang et Voidworm volent haut : aucune place du graphe n'atteint leur
-  cible (« place -1 » dans la trace), ils ne sont touchés que quand ils descendent, la phase 1 dure 12 à 14 minutes.
-* **La carapace de la phase 2** : les places à tenir ensemble (évents, chaînes, crochets, côtes, entraves) sont
-  occupées (« 3 sur les plaques »), mais les coups de zone font tomber ceux qui les tiennent — Pyroclast : 91 coups des
-  pièges de son arène, 73 de sa pluie de magma, 44 de ses poings ; Titanus : 44 écrasements, 32 chutes de rochers ;
-  Voidworm : 28 sucs du ventre, 24 pluies d'acide. Sans les sauvetages du test, les morts s'accumulent jusqu'à
-  l'élimination (Pyroclast, Titanus) ou la limite (Voidworm, Heartbreaker) : à 66 % de vie, aucune carapace n'est brisée.
-* **La survie en phase 1** : Graviton (éliminé en 199 s : 21 coups de sa couronne de débris, 16 de ses chutes de
-  débris, 14 de sa spirale du vide) et le Cœur (65 coups de sa couronne solaire, 21 de sa spirale d'étoiles, que les
-  tactiques ne lisent pas encore assez tôt).
-
-Les tactiques disent déjà, à chaque pas, ce qui arrive, quoi tenir et d'où frapper ; quand la navigation saura monter
-les marches de 96 px et suivre une place en hauteur (l'intention de mouvement du chantier de la navigation, déjà
-affichée dans les bulles), elles s'en serviront telles quelles. Les mesures ci-dessus sont à refaire à ce moment.
+* **La carapace de la phase 2** est le premier mur : à 66 % de vie, ses places doivent être tenues ensemble. Pyroclast
+  en est le cas net, mesuré aussi avec des joueurs simulés invincibles depuis sa phase 2 (`COSMIC_GOAT_PHASE=2
+  COSMIC_GOAT_INVINCIBLE=1`) : l'évent de l'ouest est fermé, mais les coureurs de l'évent du centre et de celui de l'est
+  ne traversent pas : le bras de Pyroclast flotte entre eux et ces évents, ses poings frappent sous chaque joueur, et la
+  navigation recommence son chemin à chaque coup esquivé (le chemin reste à ses 10 premiers nœuds sur 165). Le test
+  « raid bots (2.77): they defeat Pyroclast by themselves from its phase 2 » (joueurs invincibles, 1 200 s) **échoue
+  depuis la fusion** pour cette raison (la navigation du §25 seule le réussissait en 906 s). Il faut un appât qui
+  emmène vraiment le boss hors du chemin des coureurs (il suit le joueur le plus proche), ou une traversée sous lui.
+* **Les pluies et éruptions** : leurs marques disparaissent quand le boss frappe, alors que leurs impacts tombent
+  encore pendant une seconde ; les garder demande d'en lire la suite (`Enemy` ne la montre pas encore) — l'essai fait
+  avec une mémoire des marques a déplacé les morts sans en ôter.
+* **Skullmaw** : le bouclier ne couvre qu'un balayage sur deux (5 s de recharge) ; il faut aussi se mettre à l'abri
+  derrière ses colonnes pendant le balayage, comme pour son regard de mort.
+* **Survivre longtemps** : sans soin ni sauvetage, la vie baisse coup après coup ; les orbes de vie de l'arène sont
+  pris, mais ne suffisent pas sur 15 minutes. Plus de 15 minutes de jeu par combat, ou un groupe de plus de 8, n'ont pas
+  été mesurés.
 
 ### Versions
 

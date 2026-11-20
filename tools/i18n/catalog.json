@@ -8290,6 +8290,12 @@
    ]
   },
   {
+   "fr": "bouclier contre le rayon",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Boule de feu",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -41866,7 +41872,7 @@
    ]
   },
   {
-   "fr": "Mesuré sans aucune invincibilité ni aide du test, contre chaque Gigaboss et le Cœur d'Asterion avec huit joueurs simulés Experts, et pour « Simuler un raid complet » : le temps, les morts et la phase atteinte. Aucun Gigaboss n'est encore battu sans aide : ils tiennent jusqu'à sa deuxième phase, mais les passages en hauteur et les coups qui s'enchaînent les arrêtent encore. Le niveau Débutant, Confirmé ou Expert change leur temps de réaction, leur précision et leurs choix, jamais les règles.",
+   "fr": "Mesuré sans aucune invincibilité ni aide du test, contre chaque Gigaboss et le Cœur d'Asterion avec huit joueurs simulés Experts, et pour « Simuler un raid complet » : le temps, les morts, la phase atteinte, la vie qui reste au boss et ce qui a mis chaque joueur à terre (le coup et son rôle). Aucun Gigaboss n'est encore battu sans aide : la carapace de leur deuxième phase, dont les places doivent être tenues ensemble, les arrête (seule celle de Dreadfang tombe). Ce qui tuait le plus est mieux lu : le rayon qui balaie de Skullmaw (le bouclier dès l'annonce), la couronne de Graviton et du Cœur à son vrai rayon, ce qui frappe une place tenue (pris sous le bouclier). Le niveau Débutant, Confirmé ou Expert change leur temps de réaction, leur précision et leurs choix, jamais les règles.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -66673,6 +66679,12 @@
   },
   {
    "fr": "tient la plaque",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "tient sous son bouclier",
    "where": [
     "game/raid/RaidBots.cpp"
    ]

@@ -74,9 +74,12 @@ struct HurtLog : WorldListener {
     std::map<std::string, int> blows;
     const raid::TestSession* session = nullptr;
     std::string watch;  // COSMIC_GOAT_HIT: print each blow of this attack with the state of the player hit
+    std::string last[8];  // the last blow on each seat (what put it down, when it falls)
     void playerHurt(const GameWorld& w, const DamageInfo& d, const HurtSource& src) override {
         static const char* kOrigin[] = {"tir", "attaque", "boss", "contact", "piège", "chute", "autre"};
-        ++blows[std::string(kOrigin[std::min<int>(static_cast<int>(src.origin), 6)]) + " · " + (src.attack.empty() ? "?" : src.attack)];
+        const std::string what = std::string(kOrigin[std::min<int>(static_cast<int>(src.origin), 6)]) + " · " + (src.attack.empty() ? "?" : src.attack);
+        ++blows[what];
+        if (const int k = w.currentPlayer(); k >= 0 && k < 8) last[k] = what;
         if (session && !watch.empty() && src.attack.find(watch) != std::string::npos) {
             const int k = w.currentPlayer();
             const Player& p = w.playerAt(k);
@@ -87,6 +90,9 @@ struct HurtLog : WorldListener {
     }
     void playerKilled(const GameWorld& w, const HurtSource& src) override {
         ++blows["MORT sans coup · " + std::to_string(static_cast<int>(src.origin))];
+        static const char* kOrigin[] = {"tir", "attaque", "boss", "contact", "piège", "chute", "autre"};
+        if (const int k = w.currentPlayer(); k >= 0 && k < 8)
+            last[k] = std::string(kOrigin[std::min<int>(static_cast<int>(src.origin), 6)]) + " · " + (src.attack.empty() ? "?" : src.attack);
         if (next) next->playerKilled(w, src);
     }
     void attackStarted(const GameWorld& w, uint32_t tag, const std::string& power) override {
@@ -111,6 +117,7 @@ struct Fight {
     int deaths = 0;
     int phase = 0;
     int rescues = 0;
+    std::vector<std::pair<int, std::string>> causes;  // what put the players down (the last blow · the role), most first
     float hp = 1.0f;  // the health it has left at the end (0 once fallen)
     double ms = 0.0;
 };
@@ -127,12 +134,13 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     t.on = true;
     t.invincible = false;
     t.players = players;
-    t.startPhase = 1;
+    // Tuning runs only: another first phase (COSMIC_GOAT_PHASE), the simulated players invincible (COSMIC_GOAT_INVINCIBLE).
+    t.startPhase = std::getenv("COSMIC_GOAT_PHASE") ? std::atoi(std::getenv("COSMIC_GOAT_PHASE")) : 1;
     raid::TestSession session(s.ws(), *b, t);
     session.setAdminSeated(true);
     session.setAdminBot(true);
     session.setRescues(false);
-    session.setBotsInvincible(false);
+    session.setBotsInvincible(std::getenv("COSMIC_GOAT_INVINCIBLE") != nullptr);
     session.setSkill(skill);
     uint32_t state = 0;
     for (const raid::ObjectiveInfo& o : b->objectives)
@@ -149,12 +157,25 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     hurts.session = &session;
     if (const char* h = std::getenv("COSMIC_GOAT_HIT")) hurts.watch = h;
     int steps = 0;
+    uint8_t downBefore = 0;
+    std::map<std::string, int> deaths;
     for (; steps < limit; ++steps) {
-        if (trace && session.run().world().listener != &hurts) {
+        if (session.run().world().listener != &hurts) {
             hurts.next = session.run().world().listener;
             session.run().world().listener = &hurts;
         }
         session.step(InputFrame{});
+        {
+            // Who fell this step: the last blow on them and their role (the causes of the deaths).
+            const GameWorld& w = session.run().world();
+            uint8_t down = 0;
+            for (int k = 0; k < w.teamSize() && k < 8; ++k)
+                if (w.member(k).presence == GameWorld::Presence::Down) down |= static_cast<uint8_t>(1u << k);
+            for (int k = 0; k < 8; ++k)
+                if (((down >> k) & 1u) && !((downBefore >> k) & 1u))
+                    ++deaths[(hurts.last[k].empty() ? std::string("?") : hurts.last[k]) + " · " + raid::bots::roleName(session.bots().thought(k).role)];
+            downBefore = down;
+        }
         if (trace && std::getenv("COSMIC_GOAT_TRACE")[0] == '3') {
             // Each mark about to strike a simulated player: where it stands, what it thinks (tuning runs).
             const GameWorld& w = session.run().world();
@@ -190,6 +211,14 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                 for (const auto& d : session.bots().view().dangers)
                     if (d.body) std::printf(" · corps (%.0f, %.0f, %.0f × %.0f)", d.area.x, d.area.y, d.area.w, d.area.h);
                 std::printf(" · %zu dangers, %zu cibles\n", session.bots().view().dangers.size(), session.bots().view().targets.size());
+                for (const auto& vt : gb.vents())
+                    std::printf("        évent (%.0f, %.0f) %s tenu %d par %u\n", vt.area.x, vt.area.y, vt.closed ? "FERMÉ" : "ouvert", vt.hold, vt.holders);
+                for (int k = 0; k < w.teamSize(); ++k) {
+                    const auto& bt = session.bots().bots()[static_cast<size_t>(k)];
+                    if (bt.task == raid::TestBots::Task::Mechanism)
+                        std::printf("        %d → plaque (%.0f, %.0f) · but (%.0f, %.0f) nœud %d chemin %zu à %zu · intention %d\n", k + 1, bt.mechanism.x, bt.mechanism.y,
+                                    bt.goal.x, bt.goal.y, bt.goalNode, bt.path.size(), bt.at, static_cast<int>(session.bots().moveThought(k).intent));
+                }
                 int wide = 0;
                 for (const auto& d : session.bots().view().dangers)
                     if (!d.body && d.area.w > 400.0f && wide++ < 4)
@@ -219,6 +248,8 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     const Enemy* left = gb.boss(session.run().world());
     out.hp = out.won || !left ? 0.0f : left->hpRatio();
     out.rescues = session.rescues();
+    for (const auto& [k, n] : deaths) out.causes.push_back({n, k});
+    std::sort(out.causes.rbegin(), out.causes.rend());
     CHECK(session.run().takeReports().empty());
     return out;
 }
@@ -226,6 +257,9 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
 void print(const Fight& f) {
     std::printf("  %-16s %s en %6.0f s de jeu · %2d morts · phase %d · vie restante %3.0f %% · %d sauvetages · %.0f ms\n", f.boss.c_str(),
                 f.won ? "VAINCU " : f.wiped ? "ÉLIMINÉ" : "DEBOUT ", f.seconds, f.deaths, f.phase, f.hp * 100.0f, f.rescues, f.ms);
+    std::string c;
+    for (size_t k = 0; k < f.causes.size() && k < 5; ++k) c += (k ? " ; " : "") + std::to_string(f.causes[k].first) + " × " + f.causes[k].second;
+    if (!c.empty()) std::printf("      morts : %s\n", c.c_str());
 }
 
 /// The Gigaboss 8 simulated Experts beat as measured (docs/RAIDS.md §26); they must keep doing it.

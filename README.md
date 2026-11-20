@@ -662,8 +662,10 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * **Ordres** (roue : **C**, clic du stick droit, souris) : Suivez-moi, Attendez ici, Tous sur l'objectif, Réanimez-le,
   Libres, Marquer un endroit ; ils passent par les entrées du test (rejoués à l'identique).
 * **Mesuré sans invincibilité** ni aide du test : contre chaque Gigaboss et le Cœur, 8 joueurs simulés Experts (temps,
-  morts, phase atteinte), et « Simuler un raid complet ». Aucun Gigaboss n'est encore battu sans aide : les passages
-  en hauteur et les coups qui s'enchaînent les arrêtent encore (chiffres et limites : [docs/RAIDS.md §26](docs/RAIDS.md)).
+  morts, phase atteinte, vie restante, ce qui a mis chacun à terre), et « Simuler un raid complet ». Aucun Gigaboss
+  n'est encore battu sans aide : la carapace de leur deuxième phase, dont les places se tiennent ensemble, les arrête
+  (seule celle de Dreadfang tombe). Ce qui tuait le plus est mieux lu : le rayon qui balaie de Skullmaw, la couronne de
+  Graviton et du Cœur à son vrai rayon (chiffres avant et après, limites : [docs/RAIDS.md §26](docs/RAIDS.md)).
 * Correctif : le nom d'un joueur hors de la vue n'est plus poussé au bord de l'écran, où les noms s'empilaient sous les
   panneaux du HUD (raids et coopération).
 
