@@ -40,9 +40,11 @@ namespace {
 /// The commands whose keys stay theirs in a level: every command of the settings (moves with
 /// their fixed alternates, jump, attack, interact, pause, focus mode, ghosts).
 /// 2.72: the raid's large map is not one of them (it exists in the raids only: the powers of the other
-/// levels keep their keys, M for the decoy among them).
+/// levels keep their keys, M for the decoy among them). 2.79: nor the order wheel and the thoughts of a raid
+/// test's simulated players (C, V, R3: an administrator's test only).
 bool isBaseCommand(int a) {
-    return a < kFirstMenuAction && actionIsRebindable(static_cast<Action>(a)) && static_cast<Action>(a) != Action::RaidMap;
+    const Action act = static_cast<Action>(a);
+    return a < kFirstMenuAction && actionIsRebindable(act) && act != Action::RaidMap && act != Action::BotOrders && act != Action::BotThoughts;
 }
 
 const char* const kRestart = "Recommencer";

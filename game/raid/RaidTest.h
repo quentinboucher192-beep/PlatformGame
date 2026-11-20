@@ -85,17 +85,32 @@ public:
         for (auto& [zone, b] : bots_) b.setSkill(s);
     }
     /// The administrator AFK (no key for 15 s): their seat is played by the AI until they touch one.
-    bool autopilot() const { return adminSeated_ && afk_ >= kAfkSteps; }
+    bool autopilot() const { return adminSeated_ && (adminBot_ || afk_ >= kAfkSteps); }
     TestBots& botsMut() { return botsFor(run_.zone()); }
     /// The branch's state given with each step (the full raid's simulation: every group's validated work).
     void setBranchState(uint32_t state) { state_ = state; }
     void setHeartShared(const HeartShared& h) { heart_ = h; }
-    /// The rescues of the test so far (a simulated player put on its mechanism or further on its path).
+    /// The times a simulated player stayed stuck so far (sent to a mechanism it did not reach in 6 s, or no
+    /// nearer to its goal for 8 s). 2.79: it is never moved for it (only its inputs move it): its path is
+    /// made again.
     int rescues() const { return rescues_; }
     /// « Joueurs simulés invincibles » (a test's setting, never a real raid): their hearts come back
     /// after each step (a fall into the void still puts them down, to be revived).
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
+
+    // 2.79 (docs/RAIDS.md §28).
+    /// The administrator's seat played by the AI from the start (a test of 8 simulated players).
+    void setAdminBot(bool on) { adminBot_ = on; }
+    bool adminBot() const { return adminBot_; }
+    /// The two rescues of a test (a simulated player put on its mechanism or further on its path); off: the
+    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §28).
+    void setRescues(bool on) { rescuesOn_ = on; }
+    bool rescuesOn() const { return rescuesOn_; }
+    /// The last order the administrator gave (from their frame: bots::withOrder), its step.
+    const bots::Order& lastOrder() const { return lastOrder_; }
+    /// The deaths of the simulated players so far (a player of a seat played by the AI put down).
+    int botDeaths() const { return botDeaths_; }
 
 private:
     void rescue();
@@ -116,6 +131,13 @@ private:
     bool adminSeated_ = true;
     bool freeSeatPlayed_ = false;
     bool botsInvincible_ = false;
+    bool adminBot_ = false;    // 2.79
+    bool rescuesOn_ = true;    // 2.79
+    int botDeaths_ = 0;        // 2.79
+    uint8_t downBefore_ = 0;   // 2.79: the seats down at the last step
+    std::vector<std::string> names_;  // 2.79: the seats' names in the thoughts
+    bots::Order lastOrder_;           // 2.79: the administrator's last order (2.78: given to every zone's simulated players)
+    bool namesFor_ = false;
     int afk_ = 0;
     int rescues_ = 0;
 };

@@ -172,22 +172,8 @@ void MovingPlatformEntity::fixedUpdate(GameWorld& w, float dt) {
         w.physics().setDynamicBox(collider_, col, delta_ / std::max(dt, 1e-4f));
         return;
     }
-    if (moving_) {
-        if (wait_ > 0.0f) {
-            wait_ -= dt;
-        } else {
-            float speed = obj_.prop<float>("speed", 60.0f);
-            t_ += dir_ * speed * dt / length_;
-            if (t_ >= 1.0f || t_ <= 0.0f) {
-                t_ = std::clamp(t_, 0.0f, 1.0f);
-                dir_ = -dir_;
-                wait_ = obj_.prop<float>("wait", 0.6f);
-            }
-        }
-    }
-    // Smooth start / stop at the ends.
-    float e = applyEase(Ease::InOutSine, t_);
-    Vec2 p{lerpf(start_.x, end_.x, e), lerpf(start_.y, end_.y, e)};
+    advanceRoute(t_, dir_, wait_, moving_, dt, obj_.prop<float>("speed", 60.0f), obj_.prop<float>("wait", 0.6f));
+    Vec2 p = routePos(t_);
     delta_ = p - box.pos();
     box.x = p.x;
     box.y = p.y;
@@ -222,6 +208,46 @@ void MovingPlatformEntity::render(RenderContext& ctx) {
         Vec2 a = obj_.rect.center(), b = a + Vec2{obj_.prop<float>("dx", 0), obj_.prop<float>("dy", 0)};
         ctx.r.drawWorldLine(a, b, {255, 179, 71, 160}, 1.0f);
         ctx.r.drawWorldRect(Rect::fromCenter(b, box.size()), {255, 179, 71, 90});
+    }
+}
+
+void MovingPlatformEntity::advanceRoute(float& t, float& dir, float& wait, bool moving, float dt, float speed, float waitTime) const {
+    if (!moving) return;
+    if (wait > 0.0f) {
+        wait -= dt;
+    } else {
+        t += dir * speed * dt / length_;
+        if (t >= 1.0f || t <= 0.0f) {
+            t = std::clamp(t, 0.0f, 1.0f);
+            dir = -dir;
+            wait = waitTime;
+        }
+    }
+}
+
+Vec2 MovingPlatformEntity::routePos(float t) const {
+    // Smooth start / stop at the ends.
+    float e = applyEase(Ease::InOutSine, t);
+    return {lerpf(start_.x, end_.x, e), lerpf(start_.y, end_.y, e)};
+}
+
+bool MovingPlatformEntity::predictable() const { return !bubble_ && !orbit_; }
+
+void MovingPlatformEntity::predict(int steps, float dt, bool rider, std::vector<Vec2>& out) const {
+    out.clear();
+    float t = t_, dir = dir_, wait = wait_;
+    bool moving = moving_;
+    const float speed = obj_.prop<float>("speed", 60.0f), waitTime = obj_.prop<float>("wait", 0.6f);
+    out.reserve(static_cast<size_t>(std::max(0, steps)));
+    for (int k = 0; k < steps; ++k) {
+        if (!predictable()) {
+            out.push_back(box.pos());
+            continue;
+        }
+        // A platform that waits for a rider leaves the step it stands on it (fixedUpdate).
+        if (triggered_ && !moving && rider) moving = true;
+        advanceRoute(t, dir, wait, moving, dt, speed, waitTime);
+        out.push_back(routePos(t));
     }
 }
 

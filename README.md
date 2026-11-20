@@ -289,7 +289,7 @@ le Phénix s'endort enfin, l'étoile morte du centre frémit — et **écrit le 
 ligne de ces clans (une notification « Asterion est tombé — regarder le film avec votre clan » ; jamais lancé par-dessus un
 niveau). Arrivé en retard, on le prend en cours ou « Depuis le début ». Il se revoit depuis la fiche de l'événement, la fiche
 récapitulative du raid et Collection › Galerie › Films, une fois débloqué (pour ceux qui ont pris part, puis pour tous quand « Asterion est tombé »
-est officiel). Détails : [docs/RAIDS.md §28](docs/RAIDS.md#28--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281).
+est officiel). Détails : [docs/RAIDS.md §30](docs/RAIDS.md#30--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281).
 
 ### Récompenses et événements mondiaux
 
@@ -347,8 +347,10 @@ prend jamais les touches.
 Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les niveaux. Les administrateurs testent
 une zone avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui **jouent la zone eux-mêmes**, même quand
 l'administrateur est AFK : ils lisent ce qu'il reste à faire, se répartissent générateurs, plaques et combats, trouvent
-leur chemin (sauts, échelles, plateformes mobiles), esquivent, fuient le liquide qui monte, battent les Gigaboss et
-relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert. **« Simuler un raid complet »** joue tout le raid
+leur chemin en simulant leur propre physique (doubles et triples sauts, ruées, impulsion, sauts muraux, plateformes
+mobiles visées là où elles seront, [§27](docs/RAIDS.md)), esquivent tirs, rayons et coups annoncés, fuient le liquide qui
+monte, battent les Gigaboss et relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert, en disant ce
+qu'ils font (« Double saut au-dessus du vide »…). **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
 carte du titan, contributions, groupes éliminés et renforts ; l'administrateur rejoint ou regarde n'importe quel groupe,
 et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md).
@@ -652,12 +654,46 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   la galaxie, ses planètes et ses peuples, avec **le nom des clans présents à la chute** (le vôtre en évidence) ; regardé
   **ensemble**, à l'heure du serveur, par l'instance du Cœur juste après le film de la victoire et par les membres en ligne
   de ces clans ; jamais imposé dans un niveau ; « Depuis le début » pour qui arrive en retard
-  ([docs/RAIDS.md §28](docs/RAIDS.md#28--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
+  ([docs/RAIDS.md §30](docs/RAIDS.md#30--après-asterion---le-film-du-monde-daprès-regardé-ensemble-281)).
 * **Collection › Galerie › Films** : les films d'Asterion et la bande-annonce, à revoir une fois débloqués.
 * **ADMINISTRATION › Films** : tous les films et présentations du jeu (histoires des giga-boss, films d'Asterion,
   bande-annonce, didacticiel) avec leur vignette, leur durée et où les joueurs les voient, à lancer d'un clic ; **« Rejouer
   le didacticiel »** sans rien toucher à la progression, aux records, aux succès ni aux statistiques
-  ([docs/RAIDS.md §29](docs/RAIDS.md#29-administration--films--tous-les-films-et-présentations-rejouer-le-didacticiel-281)).
+  ([docs/RAIDS.md §31](docs/RAIDS.md#31-administration--films--tous-les-films-et-présentations-rejouer-le-didacticiel-281)).
+
+**Nouveau dans la version 2.79.0** :
+* **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §28](docs/RAIDS.md)) : ils lisent la zone en **simulant
+  leur propre physique** (une copie exacte de celle du joueur : 0 px d'écart) — chaque saut du graphe est un mouvement
+  qui a atterri dans la simulation —, essaient leurs mouvements quelques dizaines de pas à l'avance sur une copie de la
+  zone et utilisent **tous** leurs mouvements : double et triple saut, ruée au sol et en l'air, impulsion, sauts muraux,
+  traversée d'une plateforme vers le bas. Ils visent une **plateforme mobile là où elle sera**, se rattrapent en l'air,
+  esquivent tirs, rayons et coups annoncés, remontent au-dessus du liquide qui monte, sautent par-dessus un passage qui
+  les emmènerait ailleurs et ne tombent plus dans le vide. Chacun **dit ce qu'il fait** (« Double saut au-dessus du
+  vide », « Esquive du rayon »…, français et anglais). Prouvé dans les **66 zones** d'Asterion (vestiaire compris) : un
+  Expert seul va à chaque objectif puis à la sortie sans que le terrain le tue.
+* Débutant, Confirmé, Expert : temps de réaction, profondeur d'anticipation et précision du geste, **jamais de triche** ;
+  le test ne déplace plus jamais un joueur simulé bloqué.
+* **Des joueurs simulés « GOAT »** : une **tactique par Gigaboss** (Pyroclast, Skullmaw, Dreadfang, Titanus, Voidworm,
+  Graviton, Heartbreaker, le Cœur) qui lit sa vraie routine : coups annoncés esquivés (sortir d'une zone ou d'un rayon,
+  sauter une onde au bon moment, monter au-dessus d'un liquide, quitter un secteur ou s'abriter sous une dalle, se
+  cacher d'un regard), points faibles frappés à nu, mécanismes résolus à plusieurs (évents, miroirs, chaînes,
+  générateurs, côtes, artères, ancres ; les deux entraves de Titanus achevées ensemble) ; l'onde **visée** en huit
+  directions depuis une place d'où elle atteint sa cible, hors du corps du boss ; bouclier, leurre et énergie au bon
+  moment ([docs/RAIDS.md §29](docs/RAIDS.md)).
+* **Rôles** répartis selon le nombre de joueurs : réanimateur, appât, coureurs, frappeurs ; redonnés quand quelqu'un
+  tombe ; le groupe se regroupe aux plaques qui demandent plusieurs joueurs.
+* **Ce qu'ils pensent** : une bulle au-dessus de chacun (rôle → intention, et comment il se déplace), mesurée, jamais
+  sur une autre ni sur un personnage ; **V**, la roue ou Paramètres › HUD › « Raids » ; la section « Groupe » du menu du
+  raid les écrit aussi.
+* **Ordres** (roue : **C**, clic du stick droit, souris) : Suivez-moi, Attendez ici, Tous sur l'objectif, Réanimez-le,
+  Libres, Marquer un endroit ; ils passent par les entrées du test (rejoués à l'identique).
+* **Mesuré sans invincibilité** ni aide du test : contre chaque Gigaboss et le Cœur, 8 joueurs simulés Experts (temps,
+  morts, phase atteinte, vie restante, ce qui a mis chacun à terre), et « Simuler un raid complet ». Aucun Gigaboss
+  n'est encore battu sans aide : la carapace de leur deuxième phase, dont les places se tiennent ensemble, les arrête
+  (seule celle de Dreadfang tombe). Ce qui tuait le plus est mieux lu : le rayon qui balaie de Skullmaw, la couronne de
+  Graviton et du Cœur à son vrai rayon (chiffres avant et après, limites : [docs/RAIDS.md §29](docs/RAIDS.md)).
+* Correctif : le nom d'un joueur hors de la vue n'est plus poussé au bord de l'écran, où les noms s'empilaient sous les
+  panneaux du HUD (raids et coopération).
 
 **Nouveau dans la version 2.78.1** :
 * **Fiche récapitulative d'un raid terminé**, dans CLANS › RAIDS (l'historique des raids, la fiche de l'événement et les

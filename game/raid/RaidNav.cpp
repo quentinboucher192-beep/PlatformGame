@@ -10,8 +10,11 @@
 #include <utility>
 
 #include "engine/physics/PhysicsWorld.h"
+#include "game/content/ContentDatabase.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/InputFrame.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/powers/PowerDefinition.h"
 
 namespace cosmic::raid {
 
@@ -25,6 +28,8 @@ constexpr float kBucket = 64.0f;
 constexpr uint32_t kIgnore = ColliderTag::Moving | ColliderTag::Teammate | ColliderTag::Crumble | ColliderTag::EnemyOnly;
 // What opens or breaks during a zone: the graph is built again when one of them changes.
 constexpr uint32_t kChanging = ColliderTag::Door | ColliderTag::Breakable | ColliderTag::Gate | ColliderTag::ShieldPass;
+// The most a build simulates (a bound on its cost whatever the zone).
+constexpr int kMaxSimulations = 60000;
 
 uint64_t mix(uint64_t h, uint64_t v) {
     for (int i = 0; i < 8; ++i) {
@@ -40,12 +45,33 @@ bool blocking(const Collider& c) {
     return c.enabled && !c.dynamic && c.kind == ColliderKind::Solid && (c.tags & kIgnore) == 0 && (c.tags & ColliderTag::Teammate) == 0;
 }
 
+}  // namespace
+
+struct NavGraph::Snapshot {
+    std::string level;
+    PhysicsWorld physics;  // the moving platforms and the players' bodies off, the crumbling platforms on
+    Rect bounds;
+    float killY = 0.0f;
+    std::vector<Rect> hazards;  // the lasting dangers (spikes, deadly liquids, damage zones), a little wider
+    struct Env {
+        Rect box;
+        int kind = 0;  // 0 ladder, 1 water, 2 updraft
+        float strength = 0.0f;
+    };
+    std::vector<Env> env;
+    std::vector<Mover> movers;
+    std::vector<Rect> keepOut;
+    PlayerConfig cfg;
+    nav::Kit kit;
+    uint64_t key = 0;
+};
+
+namespace {
+
 struct Builder {
-    const GameWorld& w;
+    const NavGraph::Snapshot& s;
     const PhysicsWorld& ph;
-    std::vector<Rect> hazards;
-    // The walls that block a body (static solids only: the graph is a pure function of the level and
-    // its doors), in columns of 64 px (no allocation per query: a graph checks many thousands of bodies).
+    // The walls that block a body (static solids only), in columns of 64 px.
     std::vector<Rect> solids;
     std::vector<std::vector<int>> cols;
     float x0 = 0.0f;
@@ -53,7 +79,7 @@ struct Builder {
     void index() {
         for (const Collider& c : ph.colliders())
             if (blocking(c)) solids.push_back(c.box);
-        const Rect b = w.level().bounds;
+        const Rect b = s.bounds;
         x0 = b.x - 256.0f;
         cols.assign(static_cast<size_t>(std::max(1.0f, (b.w + 512.0f) / 64.0f) + 1), {});
         for (size_t i = 0; i < solids.size(); ++i) {
@@ -71,16 +97,14 @@ struct Builder {
         return false;
     }
     bool hazard(const Rect& box) const {
-        for (const Rect& h : hazards)
+        for (const Rect& h : s.hazards)
             if (h.intersects(box)) return true;
         return false;
     }
-    /// A body can be at `feet` (no wall, no lasting danger).
     bool free(Vec2 feet) const {
         const Rect b = bodyAt(feet);
         return !blocked(b) && !hazard(b);
     }
-    /// Something to stand on right under `feet` (a floor, a one-way platform), within 3 px.
     bool supported(Vec2 feet) const {
         const Rect probe{feet.x - kHalfW + 1.0f, feet.y - 1.0f, kHalfW * 2.0f - 2.0f, 4.0f};
         bool any = false;
@@ -91,15 +115,6 @@ struct Builder {
         });
         return any;
     }
-    /// A body can follow the quadratic curve a → b over control point c (12 bodies along it).
-    bool curveFree(Vec2 a, Vec2 c, Vec2 b) const {
-        for (int k = 1; k < 12; ++k) {
-            const float t = static_cast<float>(k) / 12.0f, u = 1.0f - t;
-            const Vec2 p{u * u * a.x + 2.0f * u * t * c.x + t * t * b.x, u * u * a.y + 2.0f * u * t * c.y + t * t * b.y};
-            if (!free(p)) return false;
-        }
-        return true;
-    }
     bool lineFree(Vec2 a, Vec2 b) const {
         const float len = std::max(std::fabs(b.x - a.x), std::fabs(b.y - a.y));
         const int n = std::max(1, static_cast<int>(len / 8.0f));
@@ -109,34 +124,54 @@ struct Builder {
         }
         return true;
     }
-    /// Whether a jump (or a drop) from a to b is possible: within reach, nothing on its way.
-    bool jump(Vec2 a, Vec2 b) const {
-        const float dx = b.x - a.x, up = a.y - b.y, adx = std::fabs(dx);
-        if (up > NavGraph::kMaxUp) return false;
-        const float reach = up > 0.0f ? 140.0f - up * 0.6f : 150.0f + std::min(120.0f, -up * 0.4f);
-        if (adx > reach) return false;
-        const float top = std::min(a.y, b.y) - (up > 0.0f ? 18.0f : 14.0f);
-        // A curve over both ends (its middle at `top`).
-        const Vec2 c{(a.x + b.x) * 0.5f, 2.0f * top - 0.5f * (a.y + b.y)};
-        if (curveFree(a, c, b)) return true;
-        if (up > 0.0f && adx < 48.0f) {
-            // Straight up, then across (a platform just above).
-            const Vec2 m{a.x, b.y - 4.0f};
-            return lineFree(a, m) && lineFree(m, b);
+};
+
+/// The build's arena: the snapshot's physics (one moving platform put where its place is), the body's
+/// surroundings, the lasting dangers and the void.
+class BuildArena : public nav::Arena {
+public:
+    BuildArena(PhysicsWorld& ph, const NavGraph::Snapshot& s) : ph_(ph), s_(s) {}
+    const PhysicsWorld& physics() const override { return ph_; }
+    void begin() override {}
+    void end() override {}
+    void advance(nav::Body& b, const nav::BodySim& /*sim*/, int /*k*/) override {
+        b.onLadder = false;
+        b.inWater = false;
+        b.updraft = 0.0f;
+        b.speedMultiplier = 1.0f;
+        for (const auto& e : s_.env) {
+            if (!e.box.intersects(b.box)) continue;
+            if (e.kind == 0) {
+                b.onLadder = true;
+                b.ladderRect = e.box;
+            } else if (e.kind == 1) {
+                b.inWater = true;
+            } else {
+                b.updraft = std::max(b.updraft, e.strength);
+            }
         }
-        if (up <= 0.0f) {
-            // Off the ledge, then down.
-            const float side = dx >= 0.0f ? 1.0f : -1.0f;
-            const Vec2 m{a.x + side * std::min(adx, 14.0f), a.y};
-            return lineFree(a, m) && lineFree(m, b);
-        }
-        return false;
+        ++steps;
     }
+    nav::Harm harm(const Rect& box, int /*k*/) const override {
+        if (box.y > s_.killY || box.y > floorY) return nav::Harm::Void;
+        for (size_t k = 0; k < s_.keepOut.size(); ++k)
+            if (static_cast<int>(k) + 1 != allowed && s_.keepOut[k].intersects(box)) return nav::Harm::Void;  // another zone
+        for (const Rect& h : s_.hazards)
+            if (h.intersects(box)) return nav::Harm::Hazard;
+        return nav::Harm::None;
+    }
+    float floorY = 1e9f;  // below this the move is lost (far under both ends)
+    int allowed = 0;      // the place to keep out of it may enter (its target is in it), 1-based
+    int64_t steps = 0;
+
+private:
+    PhysicsWorld& ph_;
+    const NavGraph::Snapshot& s_;
 };
 
 struct CacheEntry {
     uint64_t key = 0;
-    std::shared_ptr<const NavGraph> graph;
+    std::shared_future<std::shared_ptr<const NavGraph>> graph;
 };
 std::mutex& cacheMutex() {
     static std::mutex m;
@@ -149,10 +184,81 @@ std::list<CacheEntry>& cache() {
 
 }  // namespace
 
-uint64_t NavGraph::signature(const GameWorld& w, const std::string& periodic) {
+// ----------------------------------------------------------------------------- the snapshot
+
+std::shared_ptr<NavGraph::Snapshot> NavGraph::snapshot(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) {
+    auto s = std::make_shared<Snapshot>();
+    s->level = w.level().id;
+    s->physics = w.physics();
+    // The moving platforms move (their routes are nodes of their own), the players' bodies too; a crumbling
+    // platform always counts as a floor (it comes back).
+    for (const Collider& c : w.physics().colliders()) {
+        Collider* mine = s->physics.get(c.id);
+        if (!mine) continue;
+        if (c.tags & (ColliderTag::Moving | ColliderTag::Teammate)) mine->enabled = false;
+        if (c.tags & ColliderTag::Crumble) mine->enabled = true;
+    }
+    s->bounds = w.level().bounds;
+    s->killY = w.level().effectiveKillY();
+    for (const auto& e : w.entities()) {
+        if (e->removed) continue;
+        if (auto* sp = dynamic_cast<const SpikesEntity*>(e.get())) s->hazards.push_back(sp->overlapBox().expanded(2.0f));
+        else if (auto* l = dynamic_cast<const LiquidEntity*>(e.get()); l && !l->swimmable()) s->hazards.push_back(l->overlapBox().expanded(1.0f));
+        else if (auto* d = dynamic_cast<const DamageZoneEntity*>(e.get()); d && e->id() != periodic && e->active) {
+            // A damage zone that is on (a curtain of magma switched off is no danger; a pool, its body now).
+            const Rect r = d->overlapBox();
+            if (r.h > 0.5f) s->hazards.push_back(r.expanded(2.0f));
+        }
+        if (!e->active) continue;
+        if (dynamic_cast<const LadderEntity*>(e.get())) s->env.push_back({e->overlapBox(), 0, 0.0f});
+        else if (auto* lq = dynamic_cast<const LiquidEntity*>(e.get()); lq && lq->swimmable()) s->env.push_back({e->overlapBox(), 1, 0.0f});
+        else if (auto* u = dynamic_cast<const UpdraftEntity*>(e.get()); u && u->blowing())
+            s->env.push_back({e->overlapBox(), 2, e->object().prop<float>("strength", 230.0f)});
+    }
+    for (const LevelObject& o : w.level().objects) {
+        if ((o.type != "moving_platform" && o.type != "bubble") || o.prop<bool>("orbit", false)) continue;
+        auto* mp = dynamic_cast<const MovingPlatformEntity*>(const_cast<GameWorld&>(w).entity(o.id));
+        if (!mp) continue;
+        Mover m;
+        m.collider = mp->colliderId();
+        m.a = o.rect.pos();
+        m.b = m.a + Vec2{o.prop<float>("dx", 128.0f), o.prop<float>("dy", 0.0f)};
+        m.w = o.rect.w;
+        m.h = o.rect.h;
+        m.oneway = o.prop<bool>("oneway", false) || o.type == "bubble";
+        s->movers.push_back(m);
+    }
+    // The player's physics and the kit of the zone (its start powers: the dash, the impulse; the graph
+    // also tries a third jump, kept on the edges that need it).
+    s->cfg = w.teamSize() > 0 ? w.playerAt(0).config() : PlayerConfig{};
+    s->kit.airJumps = s->cfg.airJumps + 1;
+    s->kit.dashKey = static_cast<int>(Action::PowerSlot1);
+    s->kit.impulseKey = static_cast<int>(Action::PowerSlot2);
+    if (const PowerDefinition* d = w.content().power("dash")) {
+        s->kit.dashCost = d->energyCost;
+        s->kit.dashCooldown = d->cooldown;
+        s->kit.dashSpeed = d->param("speed", 430.0f);
+        s->kit.dashDuration = d->param("duration", 0.16f);
+        s->kit.dashAirUses = static_cast<int>(d->param("airUses", 1));
+    }
+    if (const PowerDefinition* d = w.content().power("impulse")) {
+        s->kit.impulseCost = d->energyCost;
+        s->kit.impulseCooldown = d->cooldown;
+        s->kit.impulseVelocity = d->param("velocity", 380.0f);
+        s->kit.impulseAirUses = static_cast<int>(d->param("airUses", 1));
+    }
+    s->keepOut.assign(keepOut.begin(), keepOut.begin() + static_cast<std::ptrdiff_t>(std::min<size_t>(keepOut.size(), 250)));
+    s->key = signature(w, periodic, keepOut);
+    return s;
+}
+
+uint64_t NavGraph::signature(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) {
     uint64_t h = 1469598103934665603ULL;
     for (unsigned char c : w.level().id) h = mix(h, c);
     for (unsigned char c : periodic) h = mix(h, c);
+    for (const Rect& r : keepOut)
+        h = mix(mix(h, static_cast<uint64_t>(std::lround(r.x)) | (static_cast<uint64_t>(std::lround(r.y)) << 32)),
+                static_cast<uint64_t>(std::lround(r.w)) | (static_cast<uint64_t>(std::lround(r.h)) << 32));
     h = mix(h, static_cast<uint64_t>(w.level().objects.size()));
     uint64_t statics = 0;
     for (const Collider& c : w.physics().colliders()) {
@@ -163,60 +269,85 @@ uint64_t NavGraph::signature(const GameWorld& w, const std::string& periodic) {
         if ((c.tags & kChanging) || (c.kind == ColliderKind::Solid && !(c.tags & kIgnore) && !c.enabled))
             h = mix(h, (static_cast<uint64_t>(c.id) << 1) | (c.enabled ? 1u : 0u));
     }
+    // The damage zones switched on or off (a curtain of magma that seals an arena).
+    for (const auto& e : w.entities())
+        if (!e->removed && e->id() != periodic && dynamic_cast<const DamageZoneEntity*>(e.get())) h = mix(h, e->active ? 1u : 2u);
     return mix(h, statics);
 }
 
-std::shared_ptr<const NavGraph> NavGraph::of(const GameWorld& w, const std::string& periodic) {
-    const uint64_t key = signature(w, periodic);
+int NavGraph::delayFor(const GameWorld& w) {
+    // A zone's width says how long its graph may take: 0.2 s, plus 1 step per 120 px (the longest
+    // routes, 16 832 px: 1.3 s). The same on every computer, cached or not.
+    return std::clamp(24 + static_cast<int>(w.level().bounds.w / 120.0f), 24, 160);
+}
+
+bool NavGraph::Ticket::finished() const {
+    return future.valid() && future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
+}
+
+NavGraph::Ticket NavGraph::request(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) {
+    Ticket t;
+    t.key = signature(w, periodic, keepOut);
+    t.delay = delayFor(w);
     {
         std::lock_guard<std::mutex> lock(cacheMutex());
         auto& c = cache();
         for (auto it = c.begin(); it != c.end(); ++it)
-            if (it->key == key) {
+            if (it->key == t.key) {
                 c.splice(c.begin(), c, it);  // most recent first
-                return c.front().graph;
+                t.future = c.front().graph;
+                return t;
             }
     }
-    auto g = std::make_shared<NavGraph>();
-    g->build(w, periodic);
+    std::shared_ptr<Snapshot> snap = snapshot(w, periodic, keepOut);
+    t.future = std::async(std::launch::async, [snap]() -> std::shared_ptr<const NavGraph> {
+                   auto g = std::make_shared<NavGraph>();
+                   g->build(*snap);
+                   return g;
+               }).share();
     std::lock_guard<std::mutex> lock(cacheMutex());
     auto& c = cache();
-    c.push_front({key, g});
+    c.push_front({t.key, t.future});
     while (c.size() > 48) c.pop_back();
-    return g;
+    return t;
 }
 
-void NavGraph::addEdge(int a, int b, Move m, float cost) {
+std::shared_ptr<const NavGraph> NavGraph::of(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) {
+    return request(w, periodic, keepOut).get();
+}
+
+void NavGraph::build(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) { build(*snapshot(w, periodic, keepOut)); }
+
+// ----------------------------------------------------------------------------- the build
+
+void NavGraph::addEdge(int a, int b, Move m, float cost, uint8_t needs, int32_t program) {
     if (a == b) return;
     for (Edge& e : edges_[static_cast<size_t>(a)])
-        if (e.to == b) {
+        if (e.to == b && e.needs == needs) {
             if (cost < e.cost) {
                 e.cost = cost;
                 e.move = m;
+                e.program = program;
             }
             return;
         }
-    edges_[static_cast<size_t>(a)].push_back({b, cost, m});
+    edges_[static_cast<size_t>(a)].push_back({b, cost, m, needs, program});
 }
 
-void NavGraph::build(const GameWorld& w, const std::string& periodic) {
+void NavGraph::build(const Snapshot& s) {
     const auto t0 = std::chrono::steady_clock::now();
     nodes_.clear();
     edges_.clear();
-    movers_.clear();
+    movers_ = s.movers;
+    programs_.clear();
+    segment_.clear();
     buckets_.clear();
-    Builder B{w, w.physics(), {}, {}, {}, 0.0f};
+    stats_ = {};
+    PhysicsWorld ph = s.physics;  // its own copy: a move onto a moving platform puts it there
+    Builder B{s, ph, {}, {}, 0.0f};
     B.index();
-    // The lasting dangers: spikes, a liquid one cannot swim in, a damage zone that is not the zone's
-    // periodic liquid (the rising magma comes and goes: the players flee it when it is announced).
-    for (const auto& e : w.entities()) {
-        if (e->removed) continue;
-        if (auto* s = dynamic_cast<const SpikesEntity*>(e.get())) B.hazards.push_back(s->overlapBox().expanded(2.0f));
-        else if (auto* l = dynamic_cast<const LiquidEntity*>(e.get()); l && !l->swimmable()) B.hazards.push_back(l->overlapBox().expanded(1.0f));
-        else if (auto* d = dynamic_cast<const DamageZoneEntity*>(e.get()); d && e->id() != periodic) B.hazards.push_back(e->box.expanded(2.0f));
-    }
-    const float killY = w.level().effectiveKillY();
-    const Rect bounds = w.level().bounds;
+    const float killY = s.killY;
+    const Rect bounds = s.bounds;
     std::map<std::pair<int, int>, int> seen;  // (x / 8, y) → node: two tiles side by side give one place
     auto addNode = [&](Vec2 feet, uint32_t surface, int mover, bool ladder) -> int {
         const std::pair<int, int> key{static_cast<int>(std::lround(feet.x / 8.0f)), static_cast<int>(std::lround(feet.y))};
@@ -233,8 +364,8 @@ void NavGraph::build(const GameWorld& w, const std::string& periodic) {
         if (mover < 0 && !ladder) seen[key] = id;
         return id;
     };
-    // 1. Every top of a floor or a one-way platform (sorted by collider id: the same order every time).
-    for (const Collider& c : w.physics().colliders()) {
+    // 1. Every top of a floor or a one-way platform (by collider id: the same order every time).
+    for (const Collider& c : ph.colliders()) {
         if (c.dynamic || (c.tags & (ColliderTag::Teammate | ColliderTag::EnemyOnly | ColliderTag::Moving))) continue;
         if (!c.enabled && !(c.tags & ColliderTag::Crumble)) continue;
         const float top = c.box.y;
@@ -251,10 +382,9 @@ void NavGraph::build(const GameWorld& w, const std::string& periodic) {
     // 2. The ladders, every 16 px.
     uint32_t ladderSurface = 0x40000000u;
     std::vector<std::pair<int, int>> ladders;  // first, last node of each
-    for (const auto& e : w.entities()) {
-        auto* l = dynamic_cast<const LadderEntity*>(e.get());
-        if (!l || e->removed) continue;
-        const Rect r = e->box;
+    for (const auto& e : s.env) {
+        if (e.kind != 0) continue;
+        const Rect r = e.box;
         const int first = static_cast<int>(nodes_.size());
         ++ladderSurface;
         for (float y = r.y + 6.0f; y <= r.bottom() + 0.5f; y += kStep) {
@@ -264,19 +394,10 @@ void NavGraph::build(const GameWorld& w, const std::string& periodic) {
         const int last = static_cast<int>(nodes_.size()) - 1;
         if (last >= first) ladders.push_back({first, last});
     }
-    // 3. The route of each moving platform (from the level: its box and its offset), every 32 px.
-    for (const LevelObject& o : w.level().objects) {
-        if ((o.type != "moving_platform" && o.type != "bubble") || o.prop<bool>("orbit", false)) continue;
-        auto* mp = dynamic_cast<const MovingPlatformEntity*>(const_cast<GameWorld&>(w).entity(o.id));
-        if (!mp) continue;
-        Mover m;
-        m.collider = mp->colliderId();
-        m.a = o.rect.pos();
-        m.b = m.a + Vec2{o.prop<float>("dx", 128.0f), o.prop<float>("dy", 0.0f)};
-        m.w = o.rect.w;
-        m.h = o.rect.h;
-        movers_.push_back(m);
-        const int mi = static_cast<int>(movers_.size()) - 1;
+    edges_.resize(nodes_.size());
+    // 3. The route of each moving platform, every 32 px.
+    for (size_t mi = 0; mi < movers_.size(); ++mi) {
+        const Mover& m = movers_[mi];
         const float len = std::max(1.0f, (m.b - m.a).length());
         const int steps = std::max(1, static_cast<int>(len / 32.0f));
         int prev = -1;
@@ -287,17 +408,26 @@ void NavGraph::build(const GameWorld& w, const std::string& periodic) {
                 prev = -1;
                 continue;
             }
-            const int id = addNode(feet, 0x20000000u + static_cast<uint32_t>(mi), mi, false);
+            const int id = addNode(feet, 0x20000000u + static_cast<uint32_t>(mi), static_cast<int>(mi), false);
             if (edges_.size() < nodes_.size()) edges_.resize(nodes_.size());
             if (prev >= 0) {
                 const float d = (nodes_[static_cast<size_t>(prev)].feet - feet).length();
                 addEdge(prev, id, Move::Ride, d * 1.5f + 4.0f);
-                if (o.type != "bubble") addEdge(id, prev, Move::Ride, d * 1.5f + 4.0f);
+                addEdge(id, prev, Move::Ride, d * 1.5f + 4.0f);
             }
             prev = id;
         }
     }
     edges_.resize(nodes_.size());
+    keepOut_ = s.keepOut;
+    for (Node& n : nodes_) {
+        const Rect body = bodyAt(n.feet);
+        for (size_t k = 0; k < keepOut_.size(); ++k)
+            if (keepOut_[k].intersects(body)) {
+                n.out = static_cast<uint8_t>(k + 1);
+                break;
+            }
+    }
     // The buckets (columns of 64 px), each sorted by node index.
     bucketX0_ = bounds.x - kBucket;
     const int columns = std::max(1, static_cast<int>((bounds.w + 2.0f * kBucket) / kBucket) + 1);
@@ -346,52 +476,235 @@ void NavGraph::build(const GameWorld& w, const std::string& periodic) {
                 }
         }
     }
-    // 6. Jumps and drops: to each surface within reach, its two nearest places only (the graph stays
-    // small), each checked on its way.
-    struct Cand {
-        uint32_t surface;
-        float d;
-        int j;
-    };
-    std::vector<Cand> cands;
-    for (int i = 0; i < size(); ++i) {
-        const Node& a = nodes_[static_cast<size_t>(i)];
-        cands.clear();
-        const int bi = std::clamp(static_cast<int>((a.feet.x - bucketX0_) / kBucket), 0, columns - 1);
-        for (int bb = std::max(0, bi - 5); bb <= std::min(columns - 1, bi + 5); ++bb)
-            for (int j : buckets_[static_cast<size_t>(bb)]) {
-                if (j == i) continue;
-                const Node& b = nodes_[static_cast<size_t>(j)];
-                if (b.surface == a.surface && (a.mover >= 0 || std::fabs(b.feet.y - a.feet.y) < 1.5f)) continue;
-                if (a.mover >= 0 && b.mover == a.mover) continue;
-                const float up = a.feet.y - b.feet.y, dx = std::fabs(b.feet.x - a.feet.x);
-                if (up > kMaxUp || up < -420.0f || dx > 280.0f) continue;
-                if (std::fabs(up) < 1.5f && dx <= 20.0f) continue;  // walking does it
-                cands.push_back({b.surface, dx + std::fabs(up) * 0.25f, j});
+    // 6. Segments: the places joined by walking or climbing (a moving platform's places: each its own).
+    segment_.assign(nodes_.size(), -1);
+    {
+        int next = 0;
+        std::vector<int> stack;
+        for (int i = 0; i < size(); ++i) {
+            if (segment_[static_cast<size_t>(i)] >= 0) continue;
+            const int id = next++;
+            segment_[static_cast<size_t>(i)] = id;
+            if (nodes_[static_cast<size_t>(i)].mover >= 0) continue;
+            stack.assign(1, i);
+            while (!stack.empty()) {
+                const int u = stack.back();
+                stack.pop_back();
+                for (const Edge& e : edges_[static_cast<size_t>(u)]) {
+                    if (e.move != Move::Walk && e.move != Move::Climb) continue;
+                    if (segment_[static_cast<size_t>(e.to)] >= 0) continue;
+                    // A passage cuts its floor: the places in it are a segment of their own.
+                    if (nodes_[static_cast<size_t>(e.to)].out != nodes_[static_cast<size_t>(u)].out) continue;
+                    segment_[static_cast<size_t>(e.to)] = id;
+                    stack.push_back(e.to);
+                }
             }
-        std::sort(cands.begin(), cands.end(), [](const Cand& x, const Cand& y) {
-            if (x.surface != y.surface) return x.surface < y.surface;
-            if (x.d != y.d) return x.d < y.d;
-            return x.j < y.j;
-        });
-        uint32_t cur = 0xFFFFFFFFu;
-        int taken = 0;
-        for (const Cand& c : cands) {
-            if (c.surface != cur) {
-                cur = c.surface;
-                taken = 0;
-            }
-            if (taken >= 2) continue;
-            const Node& b = nodes_[static_cast<size_t>(c.j)];
-            if (!B.jump(a.feet, b.feet)) continue;
-            ++taken;
-            const float d = (b.feet - a.feet).length();
-            const bool drop = b.feet.y > a.feet.y + 4.0f;
-            addEdge(i, c.j, drop ? Move::Drop : Move::Jump, drop ? d * 1.1f + 6.0f : d * 1.3f + 12.0f);
         }
     }
+    // 7. The moves through the air, found by simulating the player's physics: for each pair of segments
+    // within reach, the two best places to take off (the nearest to the other one), the simplest move
+    // that lands on it.
+    struct Cand {
+        int from, to;
+        float d;
+    };
+    std::map<std::pair<int, int>, std::vector<Cand>> pairs;  // (segment from, segment to) → the best takeoffs
+    {
+        std::map<int, Cand> best;  // per target segment, for one node
+        for (int i = 0; i < size(); ++i) {
+            const Node& a = nodes_[static_cast<size_t>(i)];
+            if (a.ladder) continue;
+            best.clear();
+            const int bi = std::clamp(static_cast<int>((a.feet.x - bucketX0_) / kBucket), 0, columns - 1);
+            const int reachCols = static_cast<int>(kReachAcross / kBucket) + 1;
+            for (int bb = std::max(0, bi - reachCols); bb <= std::min(columns - 1, bi + reachCols); ++bb)
+                for (int j : buckets_[static_cast<size_t>(bb)]) {
+                    const Node& b = nodes_[static_cast<size_t>(j)];
+                    if (b.ladder || j == i || segment_[static_cast<size_t>(j)] == segment_[static_cast<size_t>(i)]) continue;
+                    if (a.mover >= 0 && b.mover == a.mover) continue;
+                    const float up = a.feet.y - b.feet.y, dx = std::fabs(b.feet.x - a.feet.x);
+                    if (up > kReachUp || up < -kReachDown || dx > kReachAcross) continue;
+                    const float d = dx + std::max(0.0f, up) * 1.5f + std::max(0.0f, -up) * 0.25f;
+                    const int seg = segment_[static_cast<size_t>(j)];
+                    auto it = best.find(seg);
+                    if (it == best.end() || d < it->second.d || (d == it->second.d && j < it->second.to)) best[seg] = {i, j, d};
+                }
+            for (const auto& [seg, c] : best) {
+                auto& list = pairs[{segment_[static_cast<size_t>(i)], seg}];
+                list.push_back(c);
+            }
+        }
+    }
+    {
+        BuildArena arena(ph, s);
+        nav::BodySim sim(s.cfg, s.kit);
+        std::vector<nav::Program> lib;
+        MoveOptions opt;
+        opt.ignoreTags = ColliderTag::Teammate;
+        // The reach of each move in the open (no wall, nothing but the ledge it leaves): a move that cannot get
+        // there even in the open is never simulated toward a place (most pairs out of reach cost nothing).
+        struct Envelope {
+            nav::Program p;
+            std::vector<Vec2> at;
+            std::vector<uint8_t> down;
+        };
+        std::vector<Envelope> envelopes;
+        PhysicsWorld open;
+        const uint32_t ledge = open.add({-40.0f, 0.0f, 46.0f, 16.0f}, ColliderKind::OneWay);
+        auto envelope = [&](const nav::Program& p0) -> const Envelope& {
+            nav::Program p = p0;
+            p.dir = p.dir < 0 ? 1 : p.dir;
+            p.steer = false;
+            for (const Envelope& e : envelopes)
+                if (e.p == p) return e;
+            Envelope e;
+            e.p = p;
+            nav::Body b;
+            b.box = Rect::fromBottomCenter({0.0f, 0.0f}, s.cfg.size);
+            b.grounded = b.wasGrounded = true;
+            b.groundId = ledge;
+            b.airJumpsLeft = s.kit.airJumps;
+            b.energy = s.cfg.maxEnergy;
+            b.dashAir = s.kit.dashAirUses;
+            b.impulseUses = s.kit.impulseAirUses;
+            nav::Exec ex;
+            bool left = false;
+            for (int k = 1; k <= 180; ++k) {
+                const nav::Pad pad = nav::padAt(p, k - 1, b, 1e9f, ex, s.kit, s.cfg);
+                sim.step(b, open, pad);
+                ++stats_.bodySteps;
+                e.at.push_back(b.feet());
+                e.down.push_back(b.vel.y > 0.0f ? 1 : 0);
+                if (!b.grounded) left = true;
+                if (left && b.grounded) break;
+            }
+            envelopes.push_back(std::move(e));
+            return envelopes.back();
+        };
+        auto plausible = [&](const nav::Program& p, float dx, float up) {
+            if (p.wall) return true;
+            const Envelope& e = envelope(p);
+            const float need = std::fabs(dx) - 14.0f, ty = -up;
+            float prevY = 0.0f;
+            for (size_t k = 0; k < e.at.size(); ++k) {
+                const Vec2 q = e.at[k];
+                if (e.down[k] && prevY <= ty + 2.0f && q.y >= ty - 2.0f && q.x >= need) return true;
+                prevY = q.y;
+            }
+            return false;
+        };
+        for (auto& [key, list] : pairs) {
+            std::sort(list.begin(), list.end(), [](const Cand& x, const Cand& y) {
+                if (x.d != y.d) return x.d < y.d;
+                return x.from < y.from;
+            });
+            int tried = 0;
+            bool found = false;
+            for (const Cand& c : list) {
+                if (tried >= 2 || found || stats_.simulations >= kMaxSimulations) break;
+                // Two takeoffs side by side are the same move: the next one (only when the first found nothing)
+                // at least 32 px away.
+                if (tried == 1 && std::fabs(nodes_[static_cast<size_t>(c.from)].feet.x - nodes_[static_cast<size_t>(list.front().from)].feet.x) < 32.0f)
+                    continue;
+                const Node& A = nodes_[static_cast<size_t>(c.from)];
+                const Node& T = nodes_[static_cast<size_t>(c.to)];
+                // A moving platform at either end: put where that place of its route is.
+                auto place = [&](const Node& n, bool on) {
+                    if (n.mover < 0) return;
+                    const Mover& m = movers_[static_cast<size_t>(n.mover)];
+                    if (Collider* col = ph.get(m.collider)) {
+                        col->enabled = on;
+                        const Vec2 tl{n.feet.x - m.w * 0.5f, n.feet.y};
+                        col->box = m.oneway ? Rect{tl.x, tl.y, m.w, 4.0f} : Rect{tl.x, tl.y, m.w, m.h};
+                        col->velocity = {};
+                    }
+                };
+                place(A, true);
+                place(T, true);
+                nav::Body body;
+                body.box = Rect::fromBottomCenter(A.feet, s.cfg.size);
+                if (ph.overlapsSolid(body.box, opt)) {
+                    // A place the platform covers when it is there (a goods lift at rest on the floor): not a takeoff.
+                    place(A, false);
+                    place(T, false);
+                    continue;
+                }
+                ++tried;
+                ++stats_.pairs;
+                const Collider* ground = ph.groundBelow(body.box, opt);
+                if (ground) {
+                    body.grounded = body.wasGrounded = true;
+                    body.groundId = ground->id;
+                    const float dxT = T.feet.x - A.feet.x;
+                    body.facing = dxT < 0.0f ? -1.0f : 1.0f;
+                    body.aim = {body.facing, 0.0f};
+                    body.airJumpsLeft = s.kit.airJumps;
+                    body.energy = s.cfg.maxEnergy;
+                    body.dashAir = s.kit.dashAirUses;
+                    body.impulseUses = s.kit.impulseAirUses;
+                    const float up = A.feet.y - T.feet.y;
+                    int wallSide = 0;
+                    for (int side : {-1, 1}) {
+                        const Rect probe{A.feet.x + static_cast<float>(side) * 30.0f - 8.0f, A.feet.y - 60.0f, 16.0f, 50.0f};
+                        if (B.blocked(probe) && static_cast<float>(side) * dxT <= 0.0f && up > 40.0f) wallSide = side;
+                    }
+                    nav::library(lib, dxT, up, s.kit, ground->kind == ColliderKind::OneWay, wallSide);
+                    arena.floorY = std::max(A.feet.y, T.feet.y) + 200.0f;
+                    arena.allowed = T.out != 0 ? T.out : A.out;
+                    const int targetSeg = segment_[static_cast<size_t>(c.to)];
+                    const uint32_t moverCol = T.mover >= 0 ? movers_[static_cast<size_t>(T.mover)].collider : 0;
+                    int landNode = -1;
+                    auto accept = [&](const nav::Body& b, int) {
+                        landNode = -1;
+                        if (!b.grounded) return false;
+                        if (moverCol) {
+                            if (b.groundId != moverCol) return false;
+                            landNode = c.to;
+                            return true;
+                        }
+                        const Vec2 f = b.feet();
+                        const int n = nearest(f, 12.0f, [&](const Node& nd) { return nd.mover < 0 && !nd.ladder && std::fabs(nd.feet.y - f.y) < 1.5f; });
+                        if (n < 0 || segment_[static_cast<size_t>(n)] != targetSeg) return false;
+                        landNode = n;
+                        return true;
+                    };
+                    const float tx = T.feet.x;
+                    // The simplest move that lands there, and for the players who lack what it needs (the
+                    // triple jump, the impulse, the dash), the simplest they can do: one edge per need.
+                    std::vector<uint8_t> got;
+                    for (const nav::Program& p : lib) {
+                        if (stats_.simulations >= kMaxSimulations) break;
+                        const uint8_t needs = p.needs();
+                        bool covered = false;
+                        for (uint8_t g : got) covered = covered || (g & ~needs) == 0;
+                        if (covered || !plausible(p, dxT, up)) continue;
+                        ++stats_.simulations;
+                        const nav::Outcome o = nav::simulate(p, body, 0, sim, arena, [&](int) { return tx; }, accept, p.wall > 0 ? 240 : 180);
+                        if (!o.accepted || landNode < 0) continue;
+                        programs_.push_back(p);
+                        const bool drop = T.feet.y > A.feet.y + 4.0f;
+                        addEdge(c.from, landNode, drop ? Move::Drop : Move::Jump, static_cast<float>(o.steps) * 1.25f + 8.0f, needs,
+                                static_cast<int32_t>(programs_.size()) - 1);
+                        ++stats_.byStyle[static_cast<int>(p.style())];
+                        found = true;
+                        got.push_back(needs);
+                        if (needs == 0) break;
+                    }
+                }
+                place(A, false);
+                place(T, false);
+            }
+        }
+        stats_.bodySteps += arena.steps;
+    }
+    stats_.bytes = sizeof(NavGraph) + nodes_.capacity() * sizeof(Node) + programs_.capacity() * sizeof(nav::Program) +
+                   segment_.capacity() * sizeof(int) + movers_.capacity() * sizeof(Mover);
+    for (const auto& e : edges_) stats_.bytes += e.capacity() * sizeof(Edge) + sizeof(e);
+    for (const auto& b : buckets_) stats_.bytes += b.capacity() * sizeof(int) + sizeof(b);
     buildMs_ = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
 }
+
+// ----------------------------------------------------------------------------- queries
 
 size_t NavGraph::edgeCount() const {
     size_t n = 0;
@@ -400,10 +713,16 @@ size_t NavGraph::edgeCount() const {
 }
 
 NavGraph::Move NavGraph::moveBetween(int a, int b) const {
-    if (a < 0 || a >= size()) return Move::Walk;
+    const Edge* e = edgeBetween(a, b);
+    return e ? e->move : Move::Walk;
+}
+
+const NavGraph::Edge* NavGraph::edgeBetween(int a, int b, uint8_t can) const {
+    if (a < 0 || a >= size()) return nullptr;
+    const Edge* best = nullptr;
     for (const Edge& e : edges_[static_cast<size_t>(a)])
-        if (e.to == b) return e.move;
-    return Move::Walk;
+        if (e.to == b && (e.needs & ~can) == 0 && (!best || e.cost < best->cost)) best = &e;
+    return best;
 }
 
 int NavGraph::nearest(Vec2 p, float reach, const std::function<bool(const Node&)>& ok) const {
@@ -434,7 +753,7 @@ int NavGraph::locate(Vec2 feet, float reach) const {
     return nearest(feet, reach, [](const Node& n) { return n.mover < 0; });
 }
 
-bool NavGraph::path(int from, int to, std::vector<int>& out, int budget) const {
+bool NavGraph::path(int from, int to, std::vector<int>& out, int budget, uint8_t can, const std::function<bool(int, int)>& avoid) const {
     out.clear();
     if (from < 0 || to < 0 || from >= size() || to >= size()) return false;
     if (from == to) {
@@ -449,7 +768,7 @@ bool NavGraph::path(int from, int to, std::vector<int>& out, int budget) const {
     std::priority_queue<Item, std::vector<Item>, std::greater<Item>> open;
     const Vec2 goal = nodes_[static_cast<size_t>(to)].feet;
     g[static_cast<size_t>(from)] = 0.0f;
-    open.push({(goal - nodes_[static_cast<size_t>(from)].feet).length(), from});
+    open.push({(goal - nodes_[static_cast<size_t>(from)].feet).length() * 0.8f, from});
     int expanded = 0;
     while (!open.empty()) {
         const int u = open.top().second;
@@ -459,11 +778,13 @@ bool NavGraph::path(int from, int to, std::vector<int>& out, int budget) const {
         if (u == to) break;
         if (++expanded > budget) return false;
         for (const Edge& e : edges_[static_cast<size_t>(u)]) {
+            if (e.needs & ~can) continue;
+            if (avoid && avoid(u, e.to)) continue;
             const float ng = g[static_cast<size_t>(u)] + e.cost;
             if (ng >= g[static_cast<size_t>(e.to)]) continue;
             g[static_cast<size_t>(e.to)] = ng;
             parent[static_cast<size_t>(e.to)] = u;
-            open.push({ng + (goal - nodes_[static_cast<size_t>(e.to)].feet).length(), e.to});
+            open.push({ng + (goal - nodes_[static_cast<size_t>(e.to)].feet).length() * 0.8f, e.to});
         }
     }
     if (parent[static_cast<size_t>(to)] < 0) return false;
@@ -475,7 +796,7 @@ bool NavGraph::path(int from, int to, std::vector<int>& out, int budget) const {
     return !out.empty() && out.front() == from;
 }
 
-int NavGraph::search(int from, const std::function<bool(int)>& ok, float maxCost, std::vector<int>* out) const {
+int NavGraph::search(int from, const std::function<bool(int)>& ok, float maxCost, std::vector<int>* out, uint8_t can) const {
     if (out) out->clear();
     if (from < 0 || from >= size()) return -1;
     const size_t n = nodes_.size();
@@ -496,6 +817,7 @@ int NavGraph::search(int from, const std::function<bool(int)>& ok, float maxCost
             break;
         }
         for (const Edge& e : edges_[static_cast<size_t>(u)]) {
+            if (e.needs & ~can) continue;
             const float ng = d + e.cost;
             if (ng >= g[static_cast<size_t>(e.to)]) continue;
             g[static_cast<size_t>(e.to)] = ng;
@@ -513,6 +835,48 @@ int NavGraph::search(int from, const std::function<bool(int)>& ok, float maxCost
     return found;
 }
 
+int NavGraph::closest(int from, Vec2 goal, float maxCost, std::vector<int>* out, uint8_t can, const std::function<bool(int, int)>& avoid) const {
+    if (out) out->clear();
+    if (from < 0 || from >= size()) return -1;
+    const size_t n = nodes_.size();
+    std::vector<float> g(n, 1e30f);
+    std::vector<int> parent(n, -1);
+    using Item = std::pair<float, int>;
+    std::priority_queue<Item, std::vector<Item>, std::greater<Item>> open;
+    g[static_cast<size_t>(from)] = 0.0f;
+    open.push({0.0f, from});
+    int best = from;
+    float bestD = (nodes_[static_cast<size_t>(from)].feet - goal).lengthSq();
+    while (!open.empty()) {
+        const auto [d, u] = open.top();
+        open.pop();
+        if (d > g[static_cast<size_t>(u)]) continue;
+        if (d > maxCost) break;
+        const float gd = (nodes_[static_cast<size_t>(u)].feet - goal).lengthSq();
+        if (gd < bestD || (gd == bestD && u < best)) {
+            bestD = gd;
+            best = u;
+        }
+        for (const Edge& e : edges_[static_cast<size_t>(u)]) {
+            if (e.needs & ~can) continue;
+            if (avoid && avoid(u, e.to)) continue;
+            const float ng = d + e.cost;
+            if (ng >= g[static_cast<size_t>(e.to)]) continue;
+            g[static_cast<size_t>(e.to)] = ng;
+            parent[static_cast<size_t>(e.to)] = u;
+            open.push({ng, e.to});
+        }
+    }
+    if (out) {
+        for (int v = best; v >= 0; v = parent[static_cast<size_t>(v)]) {
+            out->push_back(v);
+            if (v == from) break;
+        }
+        std::reverse(out->begin(), out->end());
+    }
+    return best;
+}
+
 Vec2 NavGraph::moverFeet(const GameWorld& w, int m) const {
     if (m < 0 || m >= static_cast<int>(movers_.size())) return {};
     const Collider* c = w.physics().get(movers_[static_cast<size_t>(m)].collider);
@@ -524,8 +888,11 @@ uint64_t NavGraph::hash() const {
     uint64_t h = 1469598103934665603ULL;
     for (size_t i = 0; i < nodes_.size(); ++i) {
         h = mix(h, static_cast<uint64_t>(std::lround(nodes_[i].feet.x * 4.0f)) ^ (static_cast<uint64_t>(std::lround(nodes_[i].feet.y * 4.0f)) << 32));
-        for (const Edge& e : edges_[i]) h = mix(h, (static_cast<uint64_t>(e.to) << 8) | static_cast<uint64_t>(e.move));
+        for (const Edge& e : edges_[i]) h = mix(h, (static_cast<uint64_t>(e.to) << 16) | (static_cast<uint64_t>(e.move) << 8) | e.needs);
     }
+    for (const nav::Program& p : programs_)
+        h = mix(h, static_cast<uint64_t>(p.jump) | (static_cast<uint64_t>(p.air1) << 8) | (static_cast<uint64_t>(p.dash) << 16) |
+                       (static_cast<uint64_t>(p.impulse) << 24) | (static_cast<uint64_t>(static_cast<uint8_t>(p.dir)) << 32));
     return h;
 }
 

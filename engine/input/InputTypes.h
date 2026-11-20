@@ -47,6 +47,8 @@ enum class Action : int {
     FocusToggle,  // 2.18: « mode concentré », the reduced HUD (display only, never recorded)
     RaidMap,      // 2.72: the raid's large map, opened and closed (display only, never recorded)
     RaidMenu,     // 2.75.5: the raid's menu (what is left, zones finished, journal, group, titan), never recorded
+    BotOrders,    // 2.79: a raid test's order wheel for the simulated players (the order rides on the frame, not this key)
+    BotThoughts,  // 2.79: show / hide what the simulated players think (display only, never recorded)
     MenuUp,
     MenuDown,
     MenuLeft,

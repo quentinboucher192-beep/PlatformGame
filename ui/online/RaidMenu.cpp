@@ -292,6 +292,13 @@ void member(Pen& p, const Member& m) {
         fit(ui, m.state, {stateX, cy}, 14, std::max(0.0f, stateW), m.stateColor, FontFace::Body, Align::Right);
     }
     p.y += h;
+    // 2.79: what a test's simulated player thinks, under its row (wrapped to the width, measured as drawn).
+    if (!m.thought.empty()) {
+        const float indent = p.ui.s(18);
+        const auto lines = wrap(p.ui, m.thought, FontFace::Body, 13, p.w - indent, 3);
+        if (p.draw) drawLines(p.ui, lines, {p.x + indent, p.y}, 13, p.ui.s(18), kDim);
+        p.y += static_cast<float>(lines.size()) * p.ui.s(18) + p.ui.s(4);
+    }
 }
 
 /// A section's content (measured with `p.draw` false, drawn with it true); `results`: set when its
