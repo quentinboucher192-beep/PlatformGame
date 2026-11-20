@@ -78,19 +78,21 @@ public:
     /// The branch's state given with each step (the full raid's simulation: every group's validated work).
     void setBranchState(uint32_t state) { state_ = state; }
     void setHeartShared(const HeartShared& h) { heart_ = h; }
-    /// The rescues of the test so far (a simulated player put on its mechanism or further on its path).
+    /// The times a simulated player stayed stuck so far (sent to a mechanism it did not reach in 6 s, or no
+    /// nearer to its goal for 8 s). 2.79: it is never moved for it (only its inputs move it): its path is
+    /// made again.
     int rescues() const { return rescues_; }
     /// « Joueurs simulés invincibles » (a test's setting, never a real raid): their hearts come back
     /// after each step (a fall into the void still puts them down, to be revived).
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
 
-    // 2.79 (docs/RAIDS.md §24).
+    // 2.79 (docs/RAIDS.md §26).
     /// The administrator's seat played by the AI from the start (a test of 8 simulated players).
     void setAdminBot(bool on) { adminBot_ = on; }
     bool adminBot() const { return adminBot_; }
     /// The two rescues of a test (a simulated player put on its mechanism or further on its path); off: the
-    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §24).
+    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §26).
     void setRescues(bool on) { rescuesOn_ = on; }
     bool rescuesOn() const { return rescuesOn_; }
     /// The last order the administrator gave (from their frame: bots::withOrder), its step.

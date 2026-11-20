@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §24): LE CŒUR D'ASTERION, the last fight (game/raid/AsterionHeartRoutine):
+// 2.79 (docs/RAIDS.md §26): LE CŒUR D'ASTERION, the last fight (game/raid/AsterionHeartRoutine):
 //
 // * « Lances stellaires »: a mark follows each player, locks, then the lance falls: left once locked;
 // * « Balayage des artères » and « Charge stellaire »: a blade or a comet along a storey (760 / 900 px/s,

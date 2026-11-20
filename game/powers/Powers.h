@@ -21,6 +21,10 @@ public:
     bool active() const override { return dashing_; }
     void onLand() override { refill_ = true; }
     void cancel(Player& p, GameWorld& w) override;
+    /// 2.79 (raids: the simulated players' lookahead, game/raid/nav): read only.
+    int airUsesLeft() const { return airUses_; }
+    bool refillPending() const { return refill_; }
+    bool dashFlag() const { return dashing_; }
 
 protected:
     void onActivate(Player& p, GameWorld& w) override;
@@ -65,6 +69,7 @@ public:
     using Power::Power;
     bool canActivate(const Player& p, const GameWorld& w) const override;
     void onLand() override { uses_ = static_cast<int>(def_.param("airUses", 1)); }
+    int usesLeft() const { return uses_; }  // 2.79 (raids, game/raid/nav): read only
 
 protected:
     void onActivate(Player& p, GameWorld& w) override;

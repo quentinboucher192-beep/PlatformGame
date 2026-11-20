@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §24): TITANUS, the right leg (game/raid/TitanusRoutine: read through its marks, as a
+// 2.79 (docs/RAIDS.md §26): TITANUS, the right leg (game/raid/TitanusRoutine: read through its marks, as a
 // player reads them):
 //
 // * its stomps: the heel raised (« ONDE DE CHOC »), then two shockwaves run along the floor from its feet to the

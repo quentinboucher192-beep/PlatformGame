@@ -189,8 +189,8 @@ const char* botSkillName(BotSkill s) {
 void TestBots::reset(int players) {
     players_ = std::clamp(players, 1, kMaxInstancePlayers);
     bots_.assign(static_cast<size_t>(kMaxInstancePlayers), Bot{});
-    nav_.reset();
-    navSig_ = 0;
+    navi_.reset();
+    navi_.setSkill(static_cast<int>(skill_));
     navZone_ = -1;
     tick_ = 0;
     order_ = {};
@@ -212,6 +212,7 @@ uint64_t TestBots::hash() const {
     }
     h = mix(h, (static_cast<uint64_t>(order_.kind) << 56) ^ (static_cast<uint64_t>(std::lround(order_.at.x)) << 24) ^
                    static_cast<uint64_t>(std::lround(order_.at.y)) ^ (static_cast<uint64_t>(order_.tick) << 32));
+    h = mix(h, navi_.hash());
     return mix(h, static_cast<uint64_t>(skill_));
 }
 
@@ -348,23 +349,30 @@ int TestBots::chooseExit(const RaidRun& run, int* toZone) {
 }
 
 void TestBots::ensureNav(const RaidRun& run) {
-    const GameWorld& w = run.world();
-    // The graph of the zone: made again when another world is loaded, or a door opened or closed
-    // (checked every half second: the signature only reads the colliders).
-    if (navZone_ != run.zoneSerial() || !nav_ || tick_ % 60 == 0) {
-        const std::string periodic = run.rules().magma.present ? run.rules().magma.zone : std::string();
-        const uint64_t sig = NavGraph::signature(w, periodic);
-        if (navZone_ != run.zoneSerial() || sig != navSig_ || !nav_) {
-            nav_ = NavGraph::of(w, periodic);
-            navSig_ = sig;
-            navZone_ = run.zoneSerial();
-            for (Bot& b : bots_) {
-                b.path.clear();
-                b.goalNode = -1;
-                b.fleeNode = -1;
-                b.spot = -1;
-                b.hideNode = -1;
-            }
+    // 2.79: the graph of the zone (game/raid/nav): asked for when another world is loaded or a door opened
+    // or closed, built in the background, used from a step fixed by the zone; the copy of the zone and the
+    // blows announced this step, as its tactic reads them (the shots and the beams are read by the
+    // navigation itself, with their paths; the waves along a floor are jumped by drive()).
+    std::vector<Rect> blows;
+    for (const bots::Danger& d : dangers_) {
+        if (d.shot || d.body) continue;
+        switch (d.kind) {
+            case bots::Danger::Kind::Area:
+            case bots::Danger::Kind::Pull:
+            case bots::Danger::Kind::Flood:
+            case bots::Danger::Kind::Sector: blows.push_back(d.area); break;
+            default: break;
+        }
+    }
+    navi_.update(run, tick_, blows);
+    if (navi_.graphChanged() || navZone_ != run.zoneSerial()) {
+        navZone_ = run.zoneSerial();
+        for (Bot& b : bots_) {
+            b.path.clear();
+            b.goalNode = -1;
+            b.fleeNode = -1;
+            b.spot = -1;
+            b.hideNode = -1;
         }
     }
 }
@@ -481,7 +489,7 @@ int TestBots::shotFrom(const GameWorld& w, Vec2 center, const Rect& target, bool
 }
 
 bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& target, const Enemy* body) {
-    const NavGraph* nav = nav_.get();
+    const NavGraph* nav = navi_.graph();
     b.spotAt = static_cast<int>(tick_);
     if (!nav) return false;
     const Player& me = w.playerAt(seat);
@@ -567,9 +575,10 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count, uint32_t seats
     GameWorld& w = run.world();
     const int n = std::min({kMaxInstancePlayers, count, w.teamSize()});
     seats_ = seats;
-    ensureNav(run);
+    const bool newZone = navZone_ != run.zoneSerial();
     sense(run);
-    if (tick_ % 15 == 0) plan(run, seats, adminActive);
+    ensureNav(run);
+    if (tick_ % 15 == 0 || newZone || navi_.graphChanged()) plan(run, seats, adminActive);
     for (int s = 0; s < n; ++s) {
         Bot& b = bots_[static_cast<size_t>(s)];
         if (!((seats >> s) & 1u)) continue;
@@ -673,7 +682,7 @@ void TestBots::assignRoles(const RaidRun& run, const std::vector<int>& drivers, 
 
 void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
     GameWorld& w = run.world();
-    const NavGraph* nav = nav_.get();
+    const NavGraph* nav = navi_.graph();
     const int n = std::min(kMaxInstancePlayers, w.teamSize());
     std::vector<int> drivers;
     for (int s = 0; s < n; ++s)
@@ -1176,169 +1185,27 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
 // ----------------------------------------------------------------------- one seat's frame
 
 void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32_t& held, int& dir, float& stop) {
-    const Player& me = w.playerAt(seat);
-    const Vec2 feet = me.feet();
-    const NavGraph* nav = nav_.get();
-    const bool footed = me.grounded() || me.onLadder;
-    const int now = static_cast<int>(tick_);
-    // A path to its goal on the graph (again when the goal changed, every 2 s, or when it stalls).
-    if (nav && b.goalNode >= 0 && footed) {
-        const bool stale = b.path.empty() || b.path.back() != b.goalNode || now - b.planned > 240 || b.noProgress > 360;
-        if (stale && now - b.planned > 30) {
-            const int here = nav->locate(feet);
-            b.planned = now;
-            b.best = 1e30f;
-            b.noProgress = 0;
-            b.at = 0;
-            if (here < 0 || !nav->path(here, b.goalNode, b.path, 20000)) b.path.clear();
-        }
-    }
-    auto reached = [&](int i) {
-        const NavGraph::Node& nd = nav->node(i);
-        if (nd.mover >= 0) {
-            const NavGraph::Mover& m = nav->movers()[static_cast<size_t>(nd.mover)];
-            return me.grounded() && me.groundCollider() == m.collider && (nav->moverFeet(w, nd.mover) - nd.feet).length() < 24.0f;
-        }
-        return std::fabs(feet.x - nd.feet.x) < 7.0f && std::fabs(feet.y - nd.feet.y) < 10.0f && footed;
-    };
-    if (!nav || b.path.size() < 2) {
-        // No path: straight toward the goal, jumping the walls and the gaps (as before 2.77).
-        const float dx = b.goal.x - feet.x;
-        dir = std::fabs(dx) > stop ? (dx > 0.0f ? 1 : -1) : 0;
-        b.moveText = dir != 0 ? "marche vers son but" : "";
-        if (dir != 0 && me.grounded()) {
-            Rect ahead = me.box;
-            ahead.x += static_cast<float>(dir) * 6.0f;
-            ahead.y -= 2.0f;
-            MoveOptions opt;
-            const bool wall = w.physics().overlapsSolid(ahead, opt);
-            const Vec2 probe{feet.x + static_cast<float>(dir) * 16.0f, feet.y - 2.0f};
-            const bool gap = !w.physics().raycast(probe, {probe.x, probe.y + 120.0f}, true).has_value();
-            if ((wall || gap || b.still > 18) && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump))) {
-                b.jumpHold = 18;
-                b.moveText = wall ? "saute l'obstacle" : "saute le trou";
-            }
-        }
-        if (me.grounded() && feet.y - b.goal.y > 28.0f && std::fabs(dx) < 150.0f && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump))) {
-            b.jumpHold = 18;
-            b.moveText = "saute vers le haut";
-        }
-        if (!me.grounded() && me.vel.y > -40.0f && !b.airJump && (feet.y - b.goal.y > 20.0f || b.still > 6)) {
-            b.airJump = true;
-            if (!(b.prevHeld & (1u << kJump))) {
-                held |= 1u << kJump;
-                b.jumpHold = 14;
-                b.moveText = "double saut";
-            }
-        }
-        return;
-    }
-    // Along the path: past the nodes reached (a few ahead: it may have gone further).
-    for (size_t k = std::min(b.path.size() - 1, b.at + 6); k > b.at; --k)
-        if (reached(b.path[k])) {
-            b.at = k;
-            b.best = 1e30f;
-            b.noProgress = 0;
-            break;
-        }
-    if (b.at + 1 >= b.path.size()) {
-        // At its goal node: the last pixels toward the goal itself.
-        const float dx = b.goal.x - feet.x;
-        dir = std::fabs(dx) > stop && std::fabs(dx) < 40.0f ? (dx > 0.0f ? 1 : -1) : 0;
-        b.moveText = "";
-        return;
-    }
-    const int src = b.path[b.at], dst = b.path[b.at + 1];
-    const NavGraph::Node& S = nav->node(src);
-    const NavGraph::Node& T = nav->node(dst);
-    const NavGraph::Move move = nav->moveBetween(src, dst);
-    Vec2 to = T.mover >= 0 ? nav->moverFeet(w, T.mover) : T.feet;
-    const float dx = to.x - feet.x, up = feet.y - to.y;
-    const float dist = std::fabs(dx) + std::fabs(up);
-    if (dist < b.best - 2.0f) {
-        b.best = dist;
-        b.noProgress = 0;
-    } else {
-        ++b.noProgress;
-    }
-    const bool onMover = S.mover >= 0 && me.grounded() && me.groundCollider() == nav->movers()[static_cast<size_t>(S.mover)].collider;
-    switch (move) {
-        case NavGraph::Move::Walk:
-            dir = std::fabs(dx) > 2.0f ? (dx > 0.0f ? 1 : -1) : 0;
-            b.moveText = "marche";
-            break;
-        case NavGraph::Move::Climb:
-            dir = std::fabs(dx) > 3.0f ? (dx > 0.0f ? 1 : -1) : 0;
-            b.moveText = "grimpe à l'échelle";
-            if (std::fabs(up) > 4.0f && (me.onLadder || S.ladder || T.ladder)) {
-                held |= 1u << (up > 0.0f ? kUp : kDown);
-                f.moveY = static_cast<int8_t>(up > 0.0f ? -127 : 127);
-                if (!me.onLadder && up > 4.0f && me.grounded() && std::fabs(dx) < 8.0f) held |= 1u << kUp;
-            }
-            break;
-        case NavGraph::Move::Ride:
-            b.moveText = "monte sur la plateforme mobile";
-            if (onMover) {
-                const float mx = nav->moverFeet(w, S.mover).x - feet.x;
-                dir = std::fabs(mx) > 6.0f ? (mx > 0.0f ? 1 : -1) : 0;
-            } else {
-                dir = std::fabs(dx) > 4.0f ? (dx > 0.0f ? 1 : -1) : 0;
-            }
-            break;
-        case NavGraph::Move::Drop: {
-            b.moveText = "descend";
-            const Collider* ground = me.grounded() ? w.physics().get(me.groundCollider()) : nullptr;
-            if (me.grounded() && std::fabs(dx) < 12.0f && ground && ground->kind == ColliderKind::OneWay) {
-                held |= 1u << kDown;
-                f.moveY = 127;
-                if (!(b.prevHeld & (1u << kJump))) held |= 1u << kJump;
-                dir = 0;
-                b.moveText = "passe à travers la plateforme";
-                break;
-            }
-            if (std::fabs(dx) < 28.0f || !me.grounded()) {
-                dir = std::fabs(dx) > 2.0f ? (dx > 0.0f ? 1 : -1) : 0;
-                if (!me.grounded() && me.vel.y > 20.0f && !b.airJump && std::fabs(dx) > 16.0f && feet.y > to.y - 30.0f) {
-                    b.airJump = true;  // short of the far side: the air jump
-                    if (!(b.prevHeld & (1u << kJump))) {
-                        held |= 1u << kJump;
-                        b.jumpHold = 12;
-                    }
-                }
-                break;
-            }
-            [[fallthrough]];  // across a gap to a lower floor: a jump, not a walk off the edge
-        }
-        case NavGraph::Move::Jump: {
-            dir = std::fabs(dx) > 2.0f ? (dx > 0.0f ? 1 : -1) : 0;
-            b.moveText = up > 30.0f ? "saute puis double saut vers le haut" : "saute vers la plateforme";
-            if (me.grounded() || onMover) {
-                // A moving platform: when it is at that place of its route, not before.
-                bool go = true;
-                if (T.mover >= 0) go = (nav->moverFeet(w, T.mover) - T.feet).length() < 28.0f && std::fabs(dx) < 120.0f;
-                if (S.mover >= 0 && !onMover) go = true;
-                const float fromSrc = std::fabs(feet.x - S.feet.x);
-                if (!go) {
-                    dir = std::fabs(S.feet.x - feet.x) > 4.0f && S.mover < 0 ? (S.feet.x > feet.x ? 1 : -1) : 0;
-                    b.moveText = "attend la plateforme mobile";
-                } else if (fromSrc < 18.0f || std::fabs(dx) < 90.0f || b.noProgress > 40) {
-                    // A full jump for a gap (its airtime carries it across), a short one for a step.
-                    if (b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump)))
-                        b.jumpHold = up > 30.0f ? 24 : up > 8.0f ? 18 : std::fabs(dx) > 36.0f ? 20 : 10;
-                }
-            } else if (me.vel.y > -40.0f && !b.airJump && (up > 6.0f || (std::fabs(dx) > 12.0f && me.vel.y > 20.0f && up > -24.0f))) {
-                b.airJump = true;
-                if (!(b.prevHeld & (1u << kJump))) {
-                    held |= 1u << kJump;
-                    b.jumpHold = 14;
-                }
-            }
-            break;
-        }
-    }
-    // Stalled on the way: a hop, then a new path.
-    if (b.noProgress > 120 && me.grounded() && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump)) && b.noProgress % 60 == 0) b.jumpHold = 18;
-    if (me.grounded()) b.airJump = false;
+    // 2.79: the navigation (game/raid/nav/Pilot): its path on the graph, each move through the air chosen by
+    // simulating the player's own physics ahead (the moving platforms where they will be, the dangers on
+    // the way), played with the inputs of a player only.
+    nav::SeatPlan plan;
+    plan.goal = b.goal;
+    plan.goalNode = b.goalNode;
+    plan.stop = stop;
+    plan.flee = b.task == Task::Flee;
+    plan.hold = b.task == Task::Revive || b.task == Task::Mechanism;
+    plan.mayLeave = b.task == Task::Exit && b.act == Enter;
+    plan.path = &b.path;
+    plan.at = &b.at;
+    plan.planned = &b.planned;
+    plan.best = &b.best;
+    plan.noProgress = &b.noProgress;
+    const nav::Pad pad = navi_.steer(w, seat, plan, b.prevHeld);
+    held |= pad.held & ~((1u << kLeft) | (1u << kRight));
+    dir = pad.mx > 0 ? 1 : pad.mx < 0 ? -1 : 0;
+    if (pad.my != 0) f.moveY = pad.my;
+    // A move through the air under way is the navigation's own (no jump of the tactic's over it).
+    if (navi_.pilot(seat).committed()) b.jumpHold = 0;
 }
 
 InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
@@ -1359,7 +1226,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     const Player& me = w.playerAt(seat);
     const Vec2 feet = me.feet();
     const Level lv = levelOf(skill_);
-    const NavGraph* nav = nav_.get();
+    const NavGraph* nav = navi_.graph();
     float stop = b.task == Task::Follow ? 14.0f : 6.0f;
     uint32_t held = 0;
     std::string react;  // what it does about what is coming this step (its thought)
@@ -1683,13 +1550,17 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         b.jumpHold = 14;
     }
     // ------------------------------------------------------------ moving
+    // The navigation moves it (game/raid/nav: its path, its moves through the air, what it sees coming on its
+    // way); the tactic chooses where (its goal), and overrides the direction for a reaction of its own — never
+    // during a move through the air under way (it is played as it was simulated).
     int dir = 0;
-    if (forced != 0) {
+    steer(w, seat, b, f, held, dir, stop);
+    const int pilotDir = dir;
+    if (forced != 0 && !navi_.pilot(seat).committed()) {
         dir = forced;
         b.moveText = "s'écarte";
     } else {
-        steer(w, seat, b, f, held, dir, stop);
-        if (stay) dir = 0;
+        if (stay && !navi_.pilot(seat).committed()) dir = 0;
         // Never into what is coming (a mark, a cloud, a column, the boss's body): it waits at its edge, the way
         // it was going, until it has passed — out of a danger it may cross (it is getting out).
         if (dir != 0 && me.grounded() && !holding) {
@@ -1829,6 +1700,19 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         held |= 1u << keyBit(shield);
         b.shieldCool = 30;
         if (react.empty() || react == "esquive") react = "lève son bouclier";
+    }
+    // 2.79: a move through the air under way is played as it was simulated (nothing changes its direction).
+    if (navi_.pilot(seat).committed()) dir = pilotDir;
+    // 2.79: never into a passage (it takes the whole group away) unless it is leaving the zone: it stops in
+    // time (braking against its run).
+    if (!(b.task == Task::Exit && b.act == Enter)) {
+        const float stopDist = me.vel.x * std::fabs(me.vel.x) / (2.0f * me.config().turnAcceleration);
+        const float reach = static_cast<float>(dir) * 3.0f + stopDist + (me.vel.x > 1.0f ? 3.0f : me.vel.x < -1.0f ? -3.0f : 0.0f);
+        for (const Passage& p : run.rules().passages)
+            if (!p.rect.intersects(me.box) && p.rect.intersects(me.box.translated({reach, 0.0f}))) {
+                dir = me.vel.x > 1.0f ? -1 : me.vel.x < -1.0f ? 1 : 0;
+                break;
+            }
     }
     // Lost on the way (no nearer to its goal): counted for the rescue of a test (TestSession).
     const float gd = (b.goal - feet).length();

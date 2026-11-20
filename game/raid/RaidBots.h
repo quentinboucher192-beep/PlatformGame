@@ -17,7 +17,7 @@
 //   through InputFrame::choice) and waits at the exit for the administrator when they are there and
 //   playing (AFK: it goes on alone).
 //
-// 2.79 (docs/RAIDS.md §24), « des GOAT »:
+// 2.79 (docs/RAIDS.md §26), « des GOAT »:
 //
 // * a tactic per Gigaboss (game/raid/bots/BossTactic: its blows announced, its places to hold together,
 //   its targets, its weak points while bare, what to finish together), read every step;
@@ -46,6 +46,7 @@
 #include "game/gameplay/InputFrame.h"
 #include "game/raid/RaidNav.h"
 #include "game/raid/RaidRun.h"
+#include "game/raid/nav/Pilot.h"
 #include "game/raid/bots/BossTactic.h"
 #include "game/raid/bots/BotTypes.h"
 
@@ -107,7 +108,10 @@ public:
     };
 
     void reset(int players);
-    void setSkill(BotSkill s) { skill_ = s; }
+    void setSkill(BotSkill s) {
+        skill_ = s;
+        navi_.setSkill(static_cast<int>(s));
+    }
     BotSkill skill() const { return skill_; }
     /// Fills the frames of the seats in `seats` (bit k = seat k) from the world.
     void think(RaidRun& run, InputFrame* frames, int count, uint32_t seats, bool adminActive);
@@ -123,8 +127,12 @@ public:
     std::vector<Bot>& bots() { return bots_; }
     int players() const { return players_; }
     uint64_t hash() const;
-    /// The graph of the zone now (null before the first step).
-    const NavGraph* nav() const { return nav_.get(); }
+    /// The graph of the zone now (null before the first step, and while a new zone's is not due yet).
+    const NavGraph* nav() const { return navi_.graph(); }
+    /// 2.79: how the seats move (game/raid/nav: the graph, the lookahead, the cost measured).
+    const nav::Navigator& navigation() const { return navi_; }
+    /// 2.79: what a seat thinks of its moves (« Double saut au-dessus du vide »…), for the screen.
+    const nav::Thought& moveThought(int seat) const { return navi_.pilot(seat).thought(); }
     /// What the group does now, for the screen (« Générateur ouest : 2 joueurs », …).
     const std::string& plan() const { return plan_; }
     /// The next node of a seat's path (the rescue of a test puts it there), -1.
@@ -176,8 +184,7 @@ private:
     BotSkill skill_ = BotSkill::Skilled;
     std::vector<Bot> bots_;   // by seat
     std::vector<bots::Danger> dangers_;  // of the step: what is coming (the tactic's reading, else the world's)
-    std::shared_ptr<const NavGraph> nav_;
-    uint64_t navSig_ = 0;
+    nav::Navigator navi_;  // 2.79: the graph, the copy of the zone, a pilot per seat (game/raid/nav)
     int navZone_ = -1;
     uint32_t tick_ = 0;
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach

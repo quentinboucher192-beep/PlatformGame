@@ -1,4 +1,4 @@
-// 2.79 (docs/RAIDS.md §24): VOIDWORM, the worm of the abdomen (game/raid/VoidwormRoutine, read through its
+// 2.79 (docs/RAIDS.md §26): VOIDWORM, the worm of the abdomen (game/raid/VoidwormRoutine, read through its
 // marks):
 //
 // * its « Fouissement »: a mark under each player (the gigaboss's fists): left before it bursts;
