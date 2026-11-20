@@ -9805,6 +9805,12 @@
    ]
   },
   {
+   "fr": "Cadeaux : un administrateur offre des récompenses du catalogue (combinaisons, traînées, cadres, titres, effets de victoire, badges de profil) à un ou plusieurs joueurs, dans l'un des onze emballages, avec un message ; COSMIC ONLINE › CADEAUX les garde (contenu surprise jusqu'à l'ouverture) et les ouvre dans une scène animée (la boîte tremble, le couvercle s'envole, l'objet monte dans son halo), puis « Équiper maintenant », « Cadeau suivant » ou « Plus tard » ; ADMINISTRATION › Cadeaux pour choisir, prévisualiser, envoyer et retirer, chaque envoi inscrit au Journal.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Cadre",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
@@ -14017,6 +14023,12 @@
    "fr": "Classements mondiaux, records vérifiés et globe interactif",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "CLASSEMENTS › NIVEAU : sur un niveau EXTRÊME, le panneau de droite montre la course à la vérification (Solo, Duo, Trio : rang, joueurs, meilleure progression, temps et date) tant que le niveau n'est pas vérifié ; ensuite ses records reviennent, la course restant au choix.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -38745,6 +38757,12 @@
    "fr": "Le niveau reçu est vide ou trop volumineux : il n'est pas installé.",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le nom de chaque pouvoir s'affiche au-dessus de ses tablettes et stations dans tous les niveaux, en solo et en coopération (avec son icône et son coût quand il y a la place), jamais sur le HUD.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
