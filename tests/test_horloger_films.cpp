@@ -115,14 +115,16 @@ TEST_CASE("transition films: both load with their files, 100 to 125 s, in French
     for (size_t k = 1; k <= 9; ++k) same(bal->shots[nb - k], tour->shots[nt - k]);
     const char* last[] = {"monde_serre", "monde_glacier", "monde_forge", "monde_ruines", "monde_archives", "monde_cadran", "cadran", "regard", "noir"};
     for (size_t k = 0; k < 9; ++k) CHECK(bal->shots[nb - 9 + k].scene == last[k]);
-    const StoryShot* wa = nullptr;
-    const StoryShot* wt = nullptr;
-    for (const StoryShot& s : bal->shots)
-        if (s.scene == "atelier") wa = &s;
-    for (const StoryShot& s : tour->shots)
-        if (s.scene == "atelier") wt = &s;
-    CHECK(wa != nullptr && wt != nullptr);
-    if (wa && wt) same(*wa, *wt);
+    for (const std::string shared : {"atelier", "manipulations"}) {  // the workshop and the clockmaker at work: in both films
+        const StoryShot* wa = nullptr;
+        const StoryShot* wt = nullptr;
+        for (const StoryShot& s : bal->shots)
+            if (s.scene == shared) wa = &s;
+        for (const StoryShot& s : tour->shots)
+            if (s.scene == shared) wt = &s;
+        CHECK(wa != nullptr && wt != nullptr);
+        if (wa && wt) same(*wa, *wt);
+    }
     CHECK(!bal->shots.back().titles.empty() && bal->shots.back().titles.front().text == "À SUIVRE");
 }
 

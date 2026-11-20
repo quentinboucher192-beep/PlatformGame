@@ -63603,6 +63603,13 @@
    ]
   },
   {
+   "fr": "Ses mains ne s'arrêtaient jamais : pinces, loupe, tournevis, un ressort tordu à mains nues, des rouages qu'il faisait tourner à l'envers.",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Ses modifications ne sont pas enregistrées. « Enregistrer et fermer » garde le brouillon sur ce PC ; « Fermer sans enregistrer » les perd.",
    "where": [
     "ui/studio/StudioImport.cpp"

@@ -229,10 +229,25 @@ def build_assets():
     for kind in ("rouage", "vis", "plaque", "ressort"):
         sh.add(kind, [P.brass_bits(kind)], fps=1, loop=True)
     save("laiton", sh)
-    sh = Sheet("", P.GUARD_W, P.GUARD_H, [P.GUARD_W // 2, P.GUARD_H - 1])
+    sh = Sheet("", P.GW2, P.GH2, [P.GW2 // 2, P.GH2 - 1])
     for b in P.BIOMES:
-        sh.add(b[0], [P.guardian(b[0], 0), P.guardian(b[0], 1)], durations=[1.6, 0.2], loop=True)
+        sh.add(b[0], [P.guardian2(b[0], f) for f in range(P.GUARD_FRAMES)], fps=10, loop=True)
     save("gardien", sh)
+    sh = Sheet("", P.HW2, P.HH2, [P.HW2 // 2, P.HH2 - 1])
+    sh.add("travaille", [P.tinker(f) for f in range(10)], durations=[0.08, 0.12, 0.06, 0.1, 0.07, 0.15, 0.06, 0.09, 0.11, 0.07], loop=True)
+    save("manipule", sh)
+    sh = Sheet("", 150, 130, [75, 65])
+    sh.add("regle", [P.escapement(f) for f in range(8)], durations=[0.21, 0.21, 0.32, 0.15, 0.15, 0.22, 0.11, 0.11], loop=True)
+    save("echappement", sh)
+    sh = Sheet("", 90, 90, [45, 45])
+    sh.add("tord", [P.hairspring(f) for f in range(6)], fps=9, loop=True)
+    save("spiral", sh)
+    sh = Sheet("", 96, 110, [48, 74])
+    sh.add("galaxie", [P.galaxy_watch(f) for f in range(8)], fps=8, loop=True)
+    save("montre_galaxie", sh)
+    sh = Sheet("", 130, 80, [65, 79])
+    sh.add("pulse", [P.socket(f) for f in range(6)], fps=10, loop=True)
+    save("prise", sh)
     sh = Sheet("", 140, 180, [70, 179])
     sh.add("pousse", [P.vines(k) for k in range(8)], durations=[0.09] * 8, loop=True)
     save("lianes", sh)
@@ -413,7 +428,7 @@ def frost_on(frozen, start=0.0):
 
 
 def black(t0, t1, a0=0.0, a1=1.0, id_="noir"):
-    tr = Track(pos=(-40, -40), scale=66, alpha=a0).to(t0, alpha=a0).to(t1, "linear", alpha=a1)
+    tr = Track(pos=(-64, -42), scale=6.8, alpha=a0)  # the engine clamps a scale to 20: a texture big enough instead.to(t0, alpha=a0).to(t1, "linear", alpha=a1)
     return lay(id_, "noir", 0.0, tr)
 
 
@@ -1036,8 +1051,13 @@ def world(kind, D, els_mid, cam=None, flashes=None):
     els = [lay("monde", "monde_" + kind, 0.4, [K(0, pos=(-60, -40), scale=2.2)], drift=(-4.0, 0))]
     gx, gs = WORLD_GUARD[kind]
     gy = 540 + 40
-    guard = Track(pos=(gx, gy), scale=gs, alpha=0.0).to(0.6, alpha=0.0).to(2.0, alpha=0.92).clip(0, kind)
-    els.append(spr("gardien", "gardien", guard, depth=0.6))
+    i = [b[0] for b in P.BIOMES].index(kind)
+    els.append(glo("distorsion", P.BIOMES[i][4], 260, Track(pos=(gx, gy - 260), alpha=0.0).to(0.6, alpha=0.0).to(2.0, alpha=0.3), depth=0.6,
+                   pulse=(0.5, 0.37)))
+    guard = Track(pos=(gx, gy), scale=gs * 0.85, alpha=0.0).to(0.6, alpha=0.0).to(2.0, alpha=0.92)
+    for t in (2.35, 2.9, 3.45):  # it flickers, not quite there
+        guard.to(t, "step", alpha=0.3).to(t + 0.07, "step", alpha=0.92)
+    els.append(spr("gardien", "gardien", guard.clip(0, kind), depth=0.6, pulse=(0.15, 0.13)))
     els += els_mid
     els.append(spr("vitre_nervures", "nervures", Track(pos=(480, 330), scale=4.3, alpha=0.45), depth=1.2))
     els.append(spr("vitre", "verre", Track(pos=(480, 330), scale=4.3, alpha=0.4).clip(0, "reflet", 0.8), depth=1.2, add=True))
@@ -1118,11 +1138,51 @@ def scene_monde_cadran(D, shot):
     return world("cadran", D, mid)
 
 
+MANIP_TICKS = [0.3, 0.72, 1.14, 1.77, 2.07, 2.37, 2.82, 3.03, 3.24, 3.45, 3.77, 4.32, 4.5, 4.68, 4.95, 5.55, 5.7, 5.85, 6.0, 6.35, 6.95, 7.1,
+               7.25, 7.4, 7.55, 7.7, 8.4]  # the score's irregular beat (tools/assetgen/audio/music/songs/mecanisme.py)
+
+
+def scene_manipulations(D, shot):
+    """The old man at work, mad and brilliant: four arms of brass and his own two hands busy at once — tweezers, loupe,
+    screwdriver, a torch spitting sparks — over a giant escapement he regulates, a hairspring he bends, gears he makes
+    turn backwards, Asterion's old balance wheel plugged into a machine, a pocket watch opened onto a galaxy in
+    miniature; the picture jolts on the music's broken beat. (The same shot in both films.)"""
+    els = [lay("mur", "horloges", 0.35, [K(0, pos=(-80, -60), scale=1.3, alpha=0.5)])]
+    els.append(glo("contre_jour", "#ffd8a0", 520, Track(pos=(480, 300), alpha=0.7), depth=0.4, pulse=(0.1, 0.43)))
+    els.append(glo("froid", CYAN, 300, Track(pos=(800, 200), alpha=0.25), depth=0.5))
+    MS = 1.6
+    MP = (480, 532)
+    els.append(spr("horloger", "manipule", Track(pos=MP, scale=MS).clip(0, "travaille"), depth=0.8))
+    eye = (MP[0] + (139 - P.HW2 // 2) * PIX * MS, MP[1] + (90 - (P.HH2 - 1)) * PIX * MS)
+    els.append(spr("yeux", "yeux", Track(pos=eye, scale=MS).clip(0, "tournent"), depth=0.8, add=True))
+    for side in (-1, 1):
+        els.append(glo(f"oeil{side}", GOLD, 40, Track(pos=(eye[0] + side * 11, eye[1]), alpha=0.8), depth=0.8, pulse=(0.4, 0.21)))
+    els.append(particles("chalumeau", "sparks", "#fff2c0", (560, 160, 200, 200), [K(0, alpha=0.9)], depth=0.85))
+    els.append(lay("etabli", "etabli", 1.0, [K(0, pos=(-60, 444), scale=1.15)]))
+    els.append(spr("prise", "prise", Track(pos=(104, 512), scale=1.1).clip(0, "pulse"), depth=1.05))
+    els.append(spr("ancien_balancier", "tige_morceau", Track(pos=(104, 496), scale=0.5, rot=90), depth=1.05))
+    els.append(spr("echappement", "echappement", Track(pos=(226, 392), scale=0.95).clip(0, "regle"), depth=1.05))
+    for k, t in enumerate(MANIP_TICKS):  # a spark at each blow of the escapement
+        els.append(glo(f"etincelle{k + 1}", "#fff2c0" if k % 2 else CYAN, 40, Track(pos=(226 + (k % 3 - 1) * 10, 330), alpha=0.0).to(t - 0.01, alpha=0.0)
+                       .to(t, alpha=0.9).to(t + 0.18, alpha=0.0), depth=1.05))
+    els.append(spr("rouage_envers1", "engrenage_moyen", Track(pos=(372, 488), scale=0.5).to(D, "linear", rot=-620).clip(0, "arret"), depth=1.05))
+    els.append(spr("rouage_envers2", "engrenage_petit", Track(pos=(440, 480), scale=0.65).to(D, "linear", rot=-900).clip(0, "arret"), depth=1.05))
+    els.append(spr("ressort_spiral", "spiral", Track(pos=(620, 462), scale=1.0).clip(0, "tord"), depth=1.05))
+    els.append(spr("montre", "montre_galaxie", Track(pos=(800, 452), scale=1.05).clip(0, "galaxie"), depth=1.05))
+    els.append(glo("galaxie", "#bff6ff", 90, Track(pos=(800, 452), alpha=0.6), depth=1.05, pulse=(0.3, 1.1)))
+    els.append(particles("poussiere", "dust", "#ffe6b0", (200, 160, 560, 300), [K(0, alpha=0.5)], depth=0.95))
+    shakes = [A.shake(t, t + 0.08, 3.5 + (k % 3)) for k, t in enumerate(MANIP_TICKS)]
+    cam = A.camera((0, (480, 300), 1.0, "linear"), (D, (480, 292), 1.06, "inout"))
+    return dict(backdrop="#0c0806", camera=cam, elements=els, shake=shakes, flash=[flash(t, CYAN, 0.08, 0.01, 0.12) for t in MANIP_TICKS[::4]],
+                still=4.4)
+
+
 SCENES = {"onde": scene_onde, "tic": scene_tic, "fige": scene_fige, "dechirure": scene_dechirure, "vieil_homme": scene_vieil_homme,
           "remonter": scene_remonter, "fuite": scene_fuite, "main": scene_main, "fils": scene_fils, "encore": scene_encore,
           "chaine": scene_chaine, "cadran": scene_cadran, "regard": scene_regard, "noir": scene_noir, "atelier": scene_atelier,
           "balancier_vide": scene_balancier_vide, "resiste": scene_resiste, "monde_serre": scene_monde_serre, "monde_glacier": scene_monde_glacier,
-          "monde_forge": scene_monde_forge, "monde_ruines": scene_monde_ruines, "monde_archives": scene_monde_archives, "monde_cadran": scene_monde_cadran}
+          "monde_forge": scene_monde_forge, "monde_ruines": scene_monde_ruines, "monde_archives": scene_monde_archives, "monde_cadran": scene_monde_cadran,
+          "manipulations": scene_manipulations}
 
 
 # =================================================================== sounds
@@ -1183,6 +1243,10 @@ def sounds(name, D):
         if kind == "archives":
             return [sfx("story_tick_faux", 0.3, 0.3, pitch=0.6), sfx("story_glow", 1.0, 0.3, pitch=0.7)]
         return base + [sfx("story_sing", 0.5, 0.35, pitch=0.8)]
+    if name == "manipulations":
+        return [amb("story_amb_deep", 0.2), sfx("story_servo", 1.8, 0.35, pitch=1.4), sfx("story_thread", 5.4, 0.35, pitch=0.8)] + [
+            sfx(("story_tick", "story_tick_faux", "story_tock")[k % 3], t, 0.32, pitch=1.0 + 0.04 * (k % 5)) for k, t in enumerate(MANIP_TICKS)] + [
+            sfx("story_clang", t, 0.18, pitch=1.6) for t in MANIP_TICKS[2::5]]
     if name == "fuite":
         return [amb("story_amb_space", 0.35), sfx("story_titan_roar", 1.0, 0.55, pitch=0.8), sfx("story_heartbeat", 4.0, 0.4, pitch=0.8),
                 sfx("story_stone", 2.5, 0.35, pan=0.5), sfx("story_heartbeat", 7.0, 0.35, pitch=0.75)]
@@ -1217,6 +1281,9 @@ def build_scenes(film):
         st = SCENES[name](D, shot)
         stills[name] = st.pop("still")
         st["sfx"] = [x for x in sounds(name, D) if x["t"] < D]
+        for e in st["elements"]:  # the engine clamps a key's scale to 0.01 .. 20 (BossStories.cpp)
+            if any(not 0.01 <= k.get("scale", 1.0) <= 20.0 for k in e["keys"]):
+                raise ValueError(f"{name}/{e['id']}: a scale outside 0.01 .. 20")
         stage = {"size": [W, H], "length": round(D, 3)}
         stage.update(st)
         scenes[name] = stage
@@ -1290,11 +1357,12 @@ def check():
             errs.append(f"{film}: its last {n} shots must be {', '.join(COMMON)}")
     if read_script("balancier")["shots"][-n:] != read_script("tour")["shots"][-n:]:
         errs.append(f"the last {n} shots differ between the two films (captions, titles, lengths)")
-    ab = [s for s in read_script("balancier")["shots"] if s["scene"] == "atelier"]
-    at = [s for s in read_script("tour")["shots"] if s["scene"] == "atelier"]
-    if len(ab) != 1 or ab != at:
-        errs.append("the workshop (atelier) must be the same shot in both films")
-    if any(scenes["balancier"][x] != scenes["tour"][x] for x in COMMON + ("atelier",)):
+    for shared in ("atelier", "manipulations"):
+        ab = [s for s in read_script("balancier")["shots"] if s["scene"] == shared]
+        at = [s for s in read_script("tour")["shots"] if s["scene"] == shared]
+        if len(ab) != 1 or ab != at:
+            errs.append(f"{shared} must be the same shot in both films")
+    if any(scenes["balancier"][x] != scenes["tour"][x] for x in COMMON + ("atelier", "manipulations")):
         errs.append("the shared scenes differ between the two films")
     return errs
 

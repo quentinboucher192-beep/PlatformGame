@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/prise.png",
+  "frameWidth": 130,
+  "frameHeight": 80,
+  "pivot": [65, 79],
+  "clips": {
+    "pulse": {"row": 0, "count": 6, "fps": 10, "loop": true}
+  }
+}

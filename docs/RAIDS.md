@@ -2553,14 +2553,14 @@ genre et durée, « où » sur deux lignes au plus, le bouton ; testé en 1280 �
 ## 33. « Le Balancier » et « Encore un tour » : les films de transition, avant-premières du raid 2 (2.82)
 
 Deux **mini-films de près de deux minutes** racontent ce qui vient après Asterion, l'un si le Cœur tombe, l'autre s'il
-survit ; ils passent tous deux par **l'atelier** et **finissent sur les neuf mêmes plans** : on y découvre le vaisseau du raid 2 sans jamais nommer celui qui le pilote (un
+survit ; ils passent tous deux par **l'atelier** (deux plans) et **finissent sur les neuf mêmes plans** : on y découvre le vaisseau du raid 2 sans jamais nommer celui qui le pilote (un
 vieil homme, une silhouette aux yeux de rouages). En 2.82, ce sont des **avant-premières** : ils se regardent depuis
 **Collection › Galerie › Films**, ouverts à tous (aucun verrou), et depuis **ADMINISTRATION › Films**. Rien n'est demandé au
 serveur ; ils se jouent hors ligne.
 
 ### Les histoires (`data/raids/asterion_balancier.json`, `asterion_tour.json`, légendes et titres écrits à la main, anglais dans `en.json`)
 
-**« LE BALANCIER »** (113 s), après la chute :
+**« LE BALANCIER »** (122 s), après la chute :
 
 | Plan | Durée | Ce qu'on voit | Légende ou titre |
 |---|---|---|---|
@@ -2571,9 +2571,10 @@ serveur ; ils se jouent hors ligne.
 | 5. `vieil_homme` | 9 s | derrière le verre du dôme, à contre-jour, un vieil homme regarde les éclats figés et pose la main sur la vitre | « Mon balancier… » ; « Derrière le verre, un vieil homme contemplait les éclats immobiles. » |
 | 6. `remonter` | 7 s | plus près : ses yeux s'allument et tournent comme des rouages | « Il faudra tout remonter. » ; « Ses yeux s'allumèrent et se mirent à tourner, comme des rouages. » |
 | 7. `atelier` | 9 s | (commun) dans la montre, un mur de mille horloges arrêtées à la même heure, l'établi sous la lampe, le plan d'Asterion en balancier | « Dans les entrailles de la montre, mille horloges s'étaient arrêtées à la même seconde. Sur l'établi, des plans : Asterion, dessiné en balancier. » |
-| 8. `balancier_vide` | 8 s | sous la montre, la tige brisée oscille, vide, parmi des éclats de laiton (rouage, vis, plaque, ressort) | « Sous la montre, la tige brisée oscillait encore, vide, parmi les éclats de laiton. Il lui fallait un nouveau balancier. » |
+| 8. `manipulations` | 9 s | (commun) le vieil homme au travail, fou et génial, à contre-jour, ses yeux de rouages, ses deux mains et quatre bras de laiton à la fois (pince, loupe, tournevis, chalumeau) : il règle un échappement géant dans les étincelles, tord un spiral, fait tourner des rouages à l'envers, l'ancien balancier d'Asterion branché à une machine, une montre ouverte sur une galaxie miniature ; l'image tressaute sur le rythme cassé de la musique | « Ses mains ne s'arrêtaient jamais : pinces, loupe, tournevis, un ressort tordu à mains nues, des rouages qu'il faisait tourner à l'envers. » |
+| 9. `balancier_vide` | 8 s | sous la montre, la tige brisée oscille, vide, parmi des éclats de laiton (rouage, vis, plaque, ressort) | « Sous la montre, la tige brisée oscillait encore, vide, parmi les éclats de laiton. Il lui fallait un nouveau balancier. » |
 
-**« ENCORE UN TOUR »** (112 s), si Asterion survit :
+**« ENCORE UN TOUR »** (121 s), si Asterion survit :
 
 | Plan | Durée | Ce qu'on voit | Légende ou titre |
 |---|---|---|---|
@@ -2584,10 +2585,15 @@ serveur ; ils se jouent hors ligne.
 | 5. `encore` | 8 s | le vieil homme de profil, à contre-jour, tend la main vers le titan tenu, petit, au loin | « Encore un tour, mon vieux. » ; « Une voix lasse, presque tendre, murmura au titan : » |
 | 6. `chaine` | 10 s | près de Lyse, une faille s'ouvre ; l'Échappement en sort et s'en éloigne, Asterion pendu sous sa tige par des chaînes d'or, qui oscille comme un balancier | « Près de Lyse, le vide se déchira. Une montre grande comme une lune en sortit et, sous elle, enchaîné, Asterion battait la mesure. » |
 | 7. `atelier` | 9 s | (commun) le même plan que dans « Le Balancier » | (la même légende) |
+| 8. `manipulations` | 9 s | (commun) le même plan que dans « Le Balancier » | (la même légende) |
 
 **Les neuf derniers plans, communs** (46 s, identiques dans les deux films, comme l'atelier ; `--check` du générateur le
 vérifie) : d'abord les six mondes de la montre, vus à travers le verre du dôme, chacun avec sa loi du temps et la
-silhouette sombre qui le garde (deux yeux, rien de plus : ni nom, ni détail), 4 s chacun :
+silhouette du boss qui le garde, encore une ombre : une créature ou une machine propre à son monde et à l'horlogerie
+(le jardinier aux ressorts et aux cisailles, le colosse de givre au sablier gelé, le forgeron-fourneau au marteau, le pèlerin
+à l'auréole d'aiguilles, le bibliothécaire aux six bras, la sentinelle au visage de cadran), en volume (ombres internes,
+liseré de lumière, coutures et yeux qui luisent), qui respire — et à moitié là : elle ondule comme l'air chaud, ses couleurs
+se dédoublent à ses bords, elle vacille ; 4 s chacun :
 
 | Plan | Durée | Ce qu'on voit | Légende ou titre |
 |---|---|---|---|

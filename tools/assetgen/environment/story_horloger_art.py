@@ -970,7 +970,7 @@ def wave(w=40, h=270):
 
 
 def black():
-    img = np.zeros((8, 8, 4), np.uint8)
+    img = np.zeros((46, 80, 4), np.uint8)
     img[..., 3] = 255
     return img
 
@@ -1393,57 +1393,6 @@ def world_backdrop(kind, w=480, h=270):
     return u8(img)
 
 
-GUARD_W, GUARD_H = 120, 150
-
-
-def guardian(kind, k=0):
-    """The shadow that keeps a world: a dark silhouette, its outline barely lit by its world, two eyes of its light
-    (`k`: they glow, then dim). Nothing more: no name, no detail."""
-    i = [b[0] for b in BIOMES].index(kind)
-    lamp = BIOMES[i][4]
-    w, h = GUARD_W, GUARD_H
-    img = blank(w, h)
-    m = np.zeros((h, w), bool)
-    eyes = []
-    if kind == "serre":  # a hulking shape with antlers of branches
-        m |= ell_mask(w, h, 60, 100, 34, 48) | ell_mask(w, h, 60, 52, 18, 16)
-        for side in (-1, 1):
-            m |= line_mask(w, h, [(60 + side * 10, 40), (60 + side * 22, 18), (60 + side * 34, 10)], 3)
-            m |= line_mask(w, h, [(60 + side * 22, 18), (60 + side * 20, 4)], 2)
-        eyes = [(53, 52), (67, 52)]
-    elif kind == "glacier":  # tall, horned, hunched
-        m |= poly_mask(w, h, [(28, h), (34, 80), (50, 50), (72, 48), (88, 80), (94, h)]) | ell_mask(w, h, 62, 44, 14, 14)
-        for side in (-1, 1):
-            m |= line_mask(w, h, [(62 + side * 10, 36), (62 + side * 24, 22), (62 + side * 26, 6)], 3)
-        eyes = [(56, 44), (68, 44)]
-    elif kind == "forge":  # broad, armoured, a hammer for an arm
-        m |= poly_mask(w, h, [(20, h), (22, 70), (40, 48), (82, 48), (100, 70), (98, h)]) | ell_mask(w, h, 60, 40, 15, 13)
-        m |= poly_mask(w, h, [(96, 70), (112, 40), (118, 44), (104, 76)]) | poly_mask(w, h, [(104, 26), (120, 30), (118, 46), (102, 42)])
-        eyes = [(54, 40), (66, 40)]
-    elif kind == "ruines":  # robed, a ring of light above its head
-        m |= poly_mask(w, h, [(30, h), (44, 70), (52, 46), (68, 46), (76, 70), (90, h)]) | ell_mask(w, h, 60, 38, 11, 13)
-        ring = ell_mask(w, h, 60, 20, 16, 4) & ~ell_mask(w, h, 60, 20, 13, 2.5)
-        img[ring] = C(lamp, 200)
-        eyes = [(56, 38), (64, 38)]
-    elif kind == "archives":  # tall and thin, many arms, a long cloak
-        m |= poly_mask(w, h, [(36, h), (50, 60), (56, 34), (64, 34), (70, 60), (84, h)]) | ell_mask(w, h, 60, 28, 9, 11)
-        for j in range(3):
-            for side in (-1, 1):
-                m |= line_mask(w, h, [(60 + side * 6, 60 + j * 14), (60 + side * (26 + j * 4), 50 + j * 18)], 2)
-        eyes = [(57, 28), (63, 28)]
-    else:  # a sentinel with a round head like a dial, a hand of a clock for a spear
-        m |= poly_mask(w, h, [(34, h), (40, 74), (50, 56), (70, 56), (80, 74), (86, h)]) | ell_mask(w, h, 60, 38, 17, 17)
-        m |= line_mask(w, h, [(96, h - 4), (96, 6)], 3) | poly_mask(w, h, [(90, 14), (102, 14), (96, 0)])
-        eyes = [(54, 38), (66, 38)]
-    img[m] = C("#05050a")
-    rim = m & ~np.roll(m, 1, 0)
-    img[rim] = C(lamp, 150)
-    lv = (1.0, 0.45)[k % 2]
-    for ex, ey in eyes:
-        img[ell_mask(w, h, ex, ey, 1.6, 1.2)] = C(lamp, int(255 * lv))
-    return u8(img)
-
-
 def vines(k, n=8):
     """Vines growing too fast (`k` of `n`): stems spiralling up from the ground, leaves popping out, flowers at the end."""
     w, h = 140, 180
@@ -1528,4 +1477,370 @@ def page(k):
     if k % 2:
         img[3, 17] = C("#ffffff")
     outline(img, m, "#2a2e3a")
+    return u8(img)
+
+
+# =================================================================== 2.82, after review: the guardians of the six worlds, half there
+SHADE = ["#030306", "#07070d", "#0c0c16", "#13131f", "#1b1b2a"]
+GW2, GH2 = 150, 180
+GUARD_FRAMES = 12
+
+
+def _shade_part(img, m, top=None, bot=None, bias=0.0):
+    """A dark part with its own volume: a vertical gradient and a lighter core (several parts read as one body with
+    inner contours)."""
+    h, w = m.shape
+    if not m.any():
+        return
+    X, Y = grid(w, h)
+    ys = np.where(m.any(1))[0]
+    top = ys.min() if top is None else top
+    bot = ys.max() if bot is None else bot
+    core = m.copy()
+    depth = np.zeros((h, w), np.float32)
+    for _ in range(4):
+        core = core & np.roll(core, 1, 0) & np.roll(core, -1, 0) & np.roll(core, 1, 1) & np.roll(core, -1, 1)
+        depth += core
+    val = 0.5 + bias - 0.4 * (Y - top) / max(1, bot - top) + 0.06 * depth / 4
+    ramp(img, m, val, SHADE)
+    img[edge(m) & ~np.roll(m, 1, 0)] = C(SHADE[4])
+
+
+def _gear_mask(w, h, cx, cy, R, teeth, turn):
+    X, Y = grid(w, h)
+    r = np.hypot(X - cx, Y - cy)
+    th = np.arctan2(Y - cy, X - cx) - turn
+    tooth = ((th * teeth / TAU) % 1.0) < 0.5
+    return ((r <= R - 2) | ((r <= R) & tooth)) & (r > R * 0.35)
+
+
+def _guard_parts(kind, w, h, b, f):
+    """The parts of a guardian at breath `b` (pixels) and frame `f`: [(mask, role)] back to front (role: body, detail,
+    glow) and its eyes. Shapes only: the renderer gives them volume, light and the shimmer of a half-materialised thing."""
+    P_ = []
+    turn = f * TAU / GUARD_FRAMES / 3
+    cap = lambda p, q, r: _capsule(w, h, p, q, r)  # noqa: E731
+    if kind == "serre":  # the gardener: a body of coiled springs, roots for legs, shears for a hand, branches for antlers
+        P_ += [(cap((60, 120), (42, 176), 6) | cap((90, 120), (110, 176), 6), "body")]
+        P_ += [(line_mask(w, h, [(42, 176), (30, 178)], 2) | line_mask(w, h, [(110, 176), (124, 178)], 2), "body")]
+        torso = poly_mask(w, h, [(52, 66 + b), (98, 66 + b), (104, 128), (46, 128)])
+        P_ += [(torso, "body")]
+        P_ += [(ell_mask(w, h, 75, 70 + 8 * k + b, 24 - k, 3) & ~ell_mask(w, h, 75, 70 + 8 * k + b, 22 - k, 1.5), "detail") for k in range(7)]
+        P_ += [(cap((52, 74 + b), (24, 100 + b), 4) | line_mask(w, h, [(24, 100 + b), (14, 118 + b), (22, 128 + b), (30, 120 + b)], 2), "body")]
+        P_ += [(cap((98, 74 + b), (120, 98 + b), 4) | poly_mask(w, h, [(118, 94 + b), (140, 84 + b), (124, 100 + b)])
+                | poly_mask(w, h, [(118, 100 + b), (142, 108 + b), (122, 104 + b)]), "body")]
+        head = ell_mask(w, h, 75, 46 + b, 15, 19)
+        P_ += [(head, "body")]
+        for side in (-1, 1):
+            br = line_mask(w, h, [(75 + side * 8, 30 + b), (75 + side * 22, 12 + b), (75 + side * 30, 4 + b)], 3)
+            br |= line_mask(w, h, [(75 + side * 22, 12 + b), (75 + side * 16, 2 + b)], 2)
+            br |= ell_mask(w, h, 75 + side * 30, 4 + b, 4, 2.5) | ell_mask(w, h, 75 + side * 16, 2 + b, 3, 2)
+            P_ += [(br, "body")]
+        P_ += [(ell_mask(w, h, 75, 54 + b, 6, 6) & ~ell_mask(w, h, 75, 54 + b, 4.5, 4.5), "glow")]
+        eyes = [(69, 44 + b), (81, 44 + b)]
+    elif kind == "glacier":  # the frost keeper: a hunched mass, horns of ice, an hourglass of frozen sand in its chest
+        P_ += [(cap((56, 140), (50, 176), 9) | cap((96, 140), (104, 176), 9), "body")]
+        torso = ell_mask(w, h, 76, 112 + b, 40, 42)
+        P_ += [(torso, "body")]
+        for side in (-1, 1):
+            P_ += [(cap((76 + side * 34, 90 + b), (76 + side * 48, 160), 10), "body")]
+            P_ += [(_gear_mask(w, h, 76 + side * 34, 88 + b, 10, 10, turn * side), "detail")]
+            for k in range(3):
+                x = 76 + side * (22 + 8 * k)
+                P_ += [(poly_mask(w, h, [(x - 4, 76 + b), (x + 4, 76 + b), (x + side * 3, 58 - 6 * k + b)]), "body")]
+        head = ell_mask(w, h, 76, 72 + b, 13, 12)
+        P_ += [(head, "body")]
+        for side in (-1, 1):
+            P_ += [(line_mask(w, h, [(76 + side * 9, 64 + b), (76 + side * 22, 48 + b), (76 + side * 26, 24 + b)], 4), "body")]
+        hg = poly_mask(w, h, [(64, 98 + b), (88, 98 + b), (77, 112 + b)]) | poly_mask(w, h, [(64, 126 + b), (88, 126 + b), (77, 112 + b)])
+        P_ += [(hg & ~poly_mask(w, h, [(67, 100 + b), (85, 100 + b), (77, 110 + b)]) & ~poly_mask(w, h, [(67, 124 + b), (85, 124 + b), (77, 114 + b)]), "detail")]
+        P_ += [(poly_mask(w, h, [(70, 118 + b), (84, 118 + b), (84, 124 + b), (70, 124 + b)]), "glow")]
+        eyes = [(71, 72 + b), (81, 72 + b)]
+    elif kind == "forge":  # the looping smith: a furnace for a body, a hammer for an arm, an escape wheel glowing in its chest
+        P_ += [(cap((58, 140), (58, 176), 7) | cap((92, 140), (92, 176), 7), "body")]
+        P_ += [(ell_mask(w, h, 58, 152, 9, 3) | ell_mask(w, h, 92, 152, 9, 3), "detail")]
+        P_ += [(poly_mask(w, h, [(104, 50 + b), (116, 50 + b), (118, 96), (102, 96)]), "body")]  # its chimney
+        body = poly_mask(w, h, [(40, 70 + b), (110, 70 + b), (116, 140), (34, 140)])
+        P_ += [(body, "body")]
+        for k in range(4):
+            P_ += [(poly_mask(w, h, [(52, 120 + 4 * k), (98, 120 + 4 * k), (98, 121.5 + 4 * k), (52, 121.5 + 4 * k)]), "glow")]
+        P_ += [(_gear_mask(w, h, 75, 96 + b, 13, 12, -turn * 2), "glow")]
+        P_ += [(cap((112, 82 + b), (132, 112 + b), 6), "body")]
+        P_ += [(cap((132, 112 + b), (132, 140 + b), 3) | poly_mask(w, h, [(120, 138 + b), (146, 138 + b), (146, 156 + b), (120, 156 + b)]), "body")]
+        P_ += [(cap((38, 82 + b), (20, 116 + b), 6) | line_mask(w, h, [(20, 116 + b), (10, 132 + b)], 2) | line_mask(w, h, [(20, 116 + b), (24, 134 + b)], 2), "body")]
+        head = poly_mask(w, h, [(60, 44 + b), (90, 44 + b), (94, 72 + b), (56, 72 + b)])
+        P_ += [(head, "body")]
+        P_ += [(poly_mask(w, h, [(62, 56 + b), (88, 56 + b), (88, 59 + b), (62, 59 + b)]), "glow")]
+        eyes = [(68, 57 + b), (82, 57 + b)]
+    elif kind == "ruines":  # the pilgrim in reverse: a hooded robe, a halo of clock hands, a staff with its pendulum, stones that float
+        robe = poly_mask(w, h, [(50, 70 + b), (100, 70 + b), (114, 178), (36, 178)])
+        P_ += [(robe, "body")]
+        P_ += [(line_mask(w, h, [(75, 80 + b), (66, 176)], 1) | line_mask(w, h, [(75, 80 + b), (86, 176)], 1), "glow")]
+        P_ += [(cap((100, 84 + b), (118, 112 + b), 5), "body")]
+        P_ += [(line_mask(w, h, [(122, 16), (122, 176)], 3), "body")]
+        sw = math.sin(f * TAU / GUARD_FRAMES) * 6
+        P_ += [(line_mask(w, h, [(122, 20), (122 + sw, 52)], 1) | ell_mask(w, h, 122 + sw, 56, 4, 4), "detail")]
+        hood = ell_mask(w, h, 75, 56 + b, 16, 19) | poly_mask(w, h, [(58, 60 + b), (92, 60 + b), (100, 78 + b), (50, 78 + b)])
+        P_ += [(hood, "body")]
+        P_ += [(ell_mask(w, h, 75, 60 + b, 9, 11), "detail")]
+        halo = ell_mask(w, h, 75, 26 + b, 22, 7) & ~ell_mask(w, h, 75, 26 + b, 19, 5)
+        a = -f * TAU / GUARD_FRAMES
+        halo |= line_mask(w, h, [(75, 26 + b), (75 + math.cos(a) * 16, 26 + b + math.sin(a) * 5)], 1)
+        P_ += [(halo, "glow")]
+        for k, (x, y) in enumerate(((24, 120), (16, 92), (34, 70), (132, 150))):
+            y2 = y - (f + 3 * k) % GUARD_FRAMES * 0.5
+            P_ += [(poly_mask(w, h, [(x - 5, y2), (x + 4, y2 - 3), (x + 6, y2 + 4), (x - 3, y2 + 6)]), "body")]
+        eyes = [(71, 60 + b), (79, 60 + b)]
+    elif kind == "archives":  # the librarian: a tall ribbed body, a lantern clock for a head, six thin arms holding books
+        P_ += [(cap((66, 130), (60, 176), 3) | cap((84, 130), (90, 176), 3), "body")]
+        body = poly_mask(w, h, [(62, 58 + b), (88, 58 + b), (94, 136), (56, 136)])
+        P_ += [(body, "body")]
+        P_ += [(line_mask(w, h, [(x, 62 + b), (x + (x - 75) * 0.2, 134)], 1), "detail") for x in (66, 72, 78, 84)]
+        for j in range(3):
+            for side in (-1, 1):
+                y0 = 70 + 18 * j + b
+                ang = math.radians(-30 + 25 * j + 10 * math.sin((f + 4 * j) * TAU / GUARD_FRAMES)) if side > 0 else math.radians(210 - 25 * j - 10 * math.sin((f + 2 * j) * TAU / GUARD_FRAMES))
+                q = (75 + side * 12 + math.cos(ang) * 34, y0 + math.sin(ang) * 34)
+                P_ += [(cap((75 + side * 12, y0), q, 2), "body")]
+                P_ += [(poly_mask(w, h, [(q[0] - 6, q[1] - 4), (q[0] + 6, q[1] - 4), (q[0] + 6, q[1] + 4), (q[0] - 6, q[1] + 4)]), "body")]
+        head = poly_mask(w, h, [(63, 28 + b), (87, 28 + b), (87, 56 + b), (63, 56 + b)]) | poly_mask(w, h, [(60, 28 + b), (90, 28 + b), (75, 16 + b)])
+        P_ += [(head, "body")]
+        P_ += [(ell_mask(w, h, 75, 42 + b, 9, 9) & ~ell_mask(w, h, 75, 42 + b, 7.5, 7.5), "glow")]
+        eyes = [(71, 42 + b), (79, 42 + b)]
+    else:  # the sentinel of the dial: a face that is a clock, a balance wheel for wings, two hands of a clock for spears
+        wheel = ell_mask(w, h, 75, 70 + b, 52, 52) & ~ell_mask(w, h, 75, 70 + b, 48, 48)
+        for k in range(4):
+            a = k * TAU / 4 + math.sin(f * TAU / GUARD_FRAMES) * 0.5
+            wheel |= line_mask(w, h, [(75, 70 + b), (75 + math.cos(a) * 50, 70 + b + math.sin(a) * 50)], 2)
+        P_ += [(wheel, "detail")]
+        P_ += [(poly_mask(w, h, [(54, 92 + b), (96, 92 + b), (110, 178), (40, 178)]), "body")]
+        P_ += [(poly_mask(w, h, [(58, 86 + b), (92, 86 + b), (98, 132), (52, 132)]), "body")]
+        for side in (-1, 1):
+            P_ += [(line_mask(w, h, [(75 + side * 30, 176), (75 + side * 40, 20)], 3) | poly_mask(w, h, [(75 + side * 40 - 5, 26), (75 + side * 40 + 5, 26), (75 + side * 41, 10)]),
+                    "body")]
+        face = ell_mask(w, h, 75, 66 + b, 17, 17)
+        P_ += [(face, "body")]
+        marks = np.zeros((h, w), bool)
+        for k in range(12):
+            a = k * TAU / 12
+            marks |= ell_mask(w, h, 75 + math.cos(a) * 13, 66 + b + math.sin(a) * 13, 0.9, 0.9)
+        a = f * TAU / GUARD_FRAMES
+        marks |= line_mask(w, h, [(75, 66 + b), (75 + math.cos(a) * 10, 66 + b + math.sin(a) * 10)], 1)
+        P_ += [(marks, "glow")]
+        eyes = [(70, 63 + b), (80, 63 + b)]
+    return P_, eyes
+
+
+def guardian2(kind, f):
+    """A guardian of the dial (`kind`), frame `f` of its loop: a silhouette with volume (inner shading, the contours of
+    its parts), rim-lit by its world, its seams and eyes glowing — and half there: rippling like heat over time, its
+    colours split at its edges, flickering."""
+    i = [bb[0] for bb in BIOMES].index(kind)
+    lamp = C(BIOMES[i][4])
+    w, h = GW2, GH2
+    b = int(round(math.sin(f * TAU / GUARD_FRAMES) * 1.5))
+    parts, eyes = _guard_parts(kind, w, h, b, f)
+    img = blank(w, h)
+    allm = np.zeros((h, w), bool)
+    for m, role in parts:
+        if role == "body":
+            _shade_part(img, m, bias=0.05 * (m & allm).any())
+            img[edge(m) & allm & ~np.roll(m, 1, 0)] = C(SHADE[0])  # where it overlaps: a contour
+            allm |= m
+    for m, role in parts:
+        if role == "detail":
+            img[m & ~edge(m)] = C(SHADE[3])
+            img[edge(m)] = C(SHADE[4])
+            allm |= m
+    rim_up = allm & ~np.roll(allm, 1, 0)
+    rim_side = allm & (~np.roll(allm, 1, 1) | ~np.roll(allm, -1, 1)) & ~rim_up
+    img[rim_side] = np.concatenate([np.broadcast_to(lamp[:3] * 0.6, (int(rim_side.sum()), 3)), np.full((int(rim_side.sum()), 1), 255.0)], 1)
+    img[rim_up] = np.concatenate([np.broadcast_to(lamp[:3], (int(rim_up.sum()), 3)), np.full((int(rim_up.sum()), 1), 255.0)], 1)
+    pulse = 0.55 + 0.45 * math.sin(f * TAU / GUARD_FRAMES * 2)
+    for m, role in parts:
+        if role == "glow":
+            img[m] = np.concatenate([np.broadcast_to(lamp[:3] * (0.6 + 0.4 * pulse), (int(m.sum()), 3)), np.full((int(m.sum()), 1), 255.0)], 1)
+            allm |= m
+    for ex, ey in eyes:
+        img[ell_mask(w, h, ex, ey, 1.8, 1.3)] = C("#ffffff")
+        img[ell_mask(w, h, ex, ey, 2.8, 2.0) & ~ell_mask(w, h, ex, ey, 1.8, 1.3)] = lamp
+    # half there: each row slides with a ripple of time, the colours split at the edges
+    out = np.zeros_like(img)
+    for y in range(h):
+        dx = int(round(1.6 * math.sin(y * 0.19 + f * TAU / GUARD_FRAMES) + 0.8 * math.sin(y * 0.07 - f * TAU / GUARD_FRAMES * 2)))
+        out[y] = np.roll(img[y], dx, 0)
+    a = out[..., 3] > 0
+    sp = 1 + (f % 3 == 0)
+    red = np.roll(a, -sp, 1) & ~a
+    cyan = np.roll(a, sp, 1) & ~a
+    out[red] = C("#ff3a5a", 120)
+    out[cyan] = C("#3af0ff", 120)
+    if f % 5 == 2:  # a band where it is not quite there
+        y0 = 30 + (f * 37) % (h - 60)
+        band = (np.arange(h)[:, None] >= y0) & (np.arange(h)[:, None] < y0 + 4)
+        out[band[:, 0], :, 3] *= 0.35
+    return u8(out)
+
+
+# =================================================================== 2.82: the clockmaker at work (both films)
+HW2, HH2 = 280, 210
+
+
+def tinker(f):
+    """The old man at his bench, mad and brilliant: his silhouette (front, backlit), his own two hands and four arms of
+    brass bolted to his shoulders, each with its tool — tweezers, a loupe, a screwdriver, a torch spitting sparks —
+    all moving at once, jerkily (`f` of 10)."""
+    w, h = HW2, HH2
+    img = blank(w, h)
+    rng = np.random.default_rng(900 + f)
+    man = old_man(f % 2)
+    mh, mw = man.shape[:2]
+    x0, y0 = (w - mw) // 2, h - mh
+    sub = img[y0:y0 + mh, x0:x0 + mw]
+    sub[man[..., 3] > 0] = man[man[..., 3] > 0]
+    sh = [(x0 + 30, y0 + 116), (x0 + 126, y0 + 116), (x0 + 44, y0 + 108), (x0 + 112, y0 + 108)]
+    tools = ["pince", "loupe", "tournevis", "chalumeau"]
+    jerk = [(math.sin(f * 2.1 + k) * 0.5 + float(rng.uniform(-0.25, 0.25))) for k in range(6)]
+    for k, (sp, tool) in enumerate(zip(sh, tools)):
+        side = -1 if sp[0] < w / 2 else 1
+        a1 = math.radians((-150 if side < 0 else -30) + 35 * jerk[k])
+        el = (sp[0] + math.cos(a1) * 42, sp[1] + math.sin(a1) * 30)
+        a2 = math.radians((60 if side < 0 else 120) + 50 * jerk[(k + 2) % 6])
+        hd = (el[0] + math.cos(a2) * 38, el[1] + math.sin(a2) * 38)
+        arm = _capsule(w, h, sp, el, 3.2) | _capsule(w, h, el, hd, 2.6)
+        _metal(img, arm, (sp[0] + hd[0]) / 2, (sp[1] + hd[1]) / 2, 6, 1, 7)
+        img[ell_mask(w, h, el[0], el[1], 3.5, 3.5)] = C(VERDI[2])
+        img[ell_mask(w, h, el[0], el[1], 1.2, 1.2)] = C(CYAN[4])
+        tx, ty = hd
+        if tool == "pince":
+            img[line_mask(w, h, [(tx, ty), (tx + 9, ty + 12)], 1) | line_mask(w, h, [(tx + 2, ty), (tx + 12, ty + 10)], 1)] = C(BRASS[6])
+        elif tool == "loupe":
+            lo = ell_mask(w, h, tx, ty + 6, 7, 7) & ~ell_mask(w, h, tx, ty + 6, 5, 5)
+            img[lo] = C(BRASS[5])
+            img[ell_mask(w, h, tx, ty + 6, 5, 5)] = C(CYAN[3], 150)
+            img[ell_mask(w, h, tx - 2, ty + 4, 1.2, 1.2)] = C("#ffffff")
+        elif tool == "tournevis":
+            img[line_mask(w, h, [(tx, ty), (tx + 4, ty + 16)], 2)] = C("#b8bcc8")
+            img[ell_mask(w, h, tx, ty, 3, 3)] = C("#8a3a2a")
+        else:
+            img[line_mask(w, h, [(tx, ty), (tx - 6, ty + 14)], 2)] = C(BRASS[3])
+            if f % 2 == 0:
+                for _ in range(8):
+                    sx, sy = tx - 6 + float(rng.uniform(-8, 8)), ty + 14 + float(rng.uniform(-6, 8))
+                    if 0 <= sx < w and 0 <= sy < h:
+                        img[int(sy), int(sx)] = C("#fff2c0" if rng.random() < 0.5 else CYAN[5])
+        outline(img, arm, INK, 200)
+    # his own hands, quick and thin, at the work
+    for k, base in enumerate(((x0 + 58, y0 + 150), (x0 + 98, y0 + 150))):
+        a = math.radians(-90 + (k * 2 - 1) * 30 + 40 * jerk[4 + k])
+        hd = (base[0] + math.cos(a) * 26, base[1] + math.sin(a) * 22)
+        m = _capsule(w, h, base, hd, 3.5)
+        for fa in (-30, 0, 30):
+            aa = a + math.radians(fa)
+            m |= line_mask(w, h, [hd, (hd[0] + math.cos(aa) * 9, hd[1] + math.sin(aa) * 9)], 1)
+        img[m] = C("#0b0a14")
+        img[m & ~np.roll(m, 1, 0)] = C("#c08a32")
+    return u8(img)
+
+
+def escapement(f):
+    """A giant escapement being regulated: an escape wheel with hooked teeth that steps on, its anchor rocking (`f` of 8)."""
+    w, h = 150, 130
+    img = blank(w, h)
+    X, Y = grid(w, h)
+    cx, cy, R = 75, 82, 40
+    r = np.hypot(X - cx, Y - cy)
+    th = np.arctan2(Y - cy, X - cx) - (f // 2) * TAU / 15
+    u = (th * 15 / TAU) % 1.0
+    teeth = (r <= R) & (r > R - 9) & (u < 0.35 + 0.5 * (R - r) / 9)
+    wheel = ((r <= R - 8) & (r > R - 13)) | teeth | (r < 6)
+    for k in range(5):
+        a = k * TAU / 5 - (f // 2) * TAU / 15
+        wheel |= line_mask(w, h, [(cx, cy), (cx + math.cos(a) * (R - 10), cy + math.sin(a) * (R - 10))], 2)
+    _metal(img, wheel, cx, cy, R, 1, 8)
+    outline(img, wheel)
+    rock = (1 if f % 2 == 0 else -1) * 0.22
+    piv = (cx, cy - R - 16)
+    arms = np.zeros((h, w), bool)
+    for side in (-1, 1):
+        a = math.pi / 2 + side * 0.62 + rock
+        q = (piv[0] + math.cos(a) * 38, piv[1] + math.sin(a) * 38)
+        arms |= _capsule(w, h, piv, q, 2.6)
+        img[ell_mask(w, h, q[0], q[1], 2.4, 2.4)] = C("#e0405a")  # the pallet stones, ruby
+    arms |= _capsule(w, h, piv, (piv[0] + math.sin(rock) * 6, piv[1] - 14), 2)
+    _metal(img, arms, piv[0], piv[1], 20, 2, 8)
+    img[ell_mask(w, h, piv[0], piv[1], 3, 3)] = C(CYAN[4])
+    return u8(img)
+
+
+def hairspring(f):
+    """A hairspring bent by hand: a spiral of fine brass wire, its outer end pulled out of shape (`f` of 6), glinting."""
+    w, h = 90, 90
+    img = blank(w, h)
+    pull = math.sin(f * TAU / 6) * 10
+    pts = []
+    for j in range(240):
+        t = j / 240 * 5 * TAU
+        r = 3 + t * 1.15
+        k = max(0.0, (r - 24) / 12)
+        pts.append((45 + math.cos(t) * r + pull * k, 45 + math.sin(t) * r * 0.9 - pull * k * 0.4))
+    img[line_mask(w, h, pts, 1)] = C(BRASS[5])
+    gl = int((f * 40) % len(pts))
+    for p in pts[gl:gl + 6]:
+        img[int(p[1]) % h, int(p[0]) % w] = C("#fff6cc")
+    img[ell_mask(w, h, 45, 45, 3, 3)] = C(CYAN[4])
+    return u8(img)
+
+
+def galaxy_watch(f):
+    """A pocket watch opened onto a galaxy in miniature: its lid thrown back, inside a spiral of stars turning (`f` of 8)."""
+    w, h = 96, 110
+    img = blank(w, h)
+    X, Y = grid(w, h)
+    lid = ell_mask(w, h, 48, 28, 30, 22) & ~ell_mask(w, h, 48, 28, 26, 18)
+    ramp(img, lid, 0.6 - (Y - 6) / 44, BRASS, 2, 8)
+    img[ell_mask(w, h, 48, 28, 26, 18)] = C("#2a1a10")
+    case = ell_mask(w, h, 48, 74, 32, 32)
+    ramp(img, case & ~ell_mask(w, h, 48, 74, 27, 27), 0.6 - (Y - 42) / 64 - (X - 48) / 128, BRASS, 1, 8)
+    inside = ell_mask(w, h, 48, 74, 27, 27)
+    img[inside] = C("#05030c")
+    rng = np.random.default_rng(47)
+    rot = f * TAU / 8 / 2
+    for k in range(150):
+        arm = k % 2
+        t = float(rng.uniform(0, 1))
+        a = t * 3.4 + arm * math.pi + rot + float(rng.normal(0, 0.18))
+        rr = 3 + t * 22
+        x, y = 48 + math.cos(a) * rr, 74 + math.sin(a) * rr * 0.8
+        if inside[int(y), int(x)]:
+            img[int(y), int(x)] = C(["#ffffff", "#bff6ff", "#f0c8ff", "#ffd27a"][k % 4], int(150 + 100 * (1 - t)))
+    img[ell_mask(w, h, 48, 74, 3, 2.5)] = C("#fff2c0")
+    img[ell_mask(w, h, 48, 42, 4, 3)] = C(BRASS[6])
+    outline(img, lid | case)
+    return u8(img)
+
+
+def socket(f):
+    """The machine Asterion's old balance wheel is plugged into: a brass cradle, cables, pulses of cyan running along them (`f` of 6)."""
+    w, h = 130, 80
+    img = blank(w, h)
+    X, Y = grid(w, h)
+    base = poly_mask(w, h, [(10, 78), (16, 46), (114, 46), (120, 78)])
+    ramp(img, base, 0.6 - (Y - 46) / 40, BRASS, 1, 7)
+    for x in range(22, 112, 18):
+        img[ell_mask(w, h, x, 52, 1.5, 1.5)] = C(BRASS[7])
+    cables = np.zeros((h, w), bool)
+    paths = [[(20, 50), (8, 30), (30, 10), (60, 20)], [(110, 50), (124, 26), (96, 8), (66, 18)]]
+    for p in paths:
+        cables |= line_mask(w, h, p, 3)
+    img[cables] = C("#1a2a30")
+    for k, p in enumerate(paths):
+        t = ((f + 3 * k) % 6) / 6
+        seg = int(t * (len(p) - 1))
+        u = t * (len(p) - 1) - seg
+        q = (p[seg][0] + (p[seg + 1][0] - p[seg][0]) * u, p[seg][1] + (p[seg + 1][1] - p[seg][1]) * u)
+        img[ell_mask(w, h, q[0], q[1], 2.5, 2.5)] = C(CYAN[4])
+    win = (np.abs(X - 65) < 22) & (np.abs(Y - 64) < 6)
+    img[win] = C(CYAN[2] if f % 2 else CYAN[3])
+    outline(img, base | cables)
     return u8(img)

@@ -1,14 +1,14 @@
 {
   "texture": "stories/horloger/gardien.png",
-  "frameWidth": 120,
-  "frameHeight": 150,
-  "pivot": [60, 149],
+  "frameWidth": 150,
+  "frameHeight": 180,
+  "pivot": [75, 179],
   "clips": {
-    "serre": {"row": 0, "count": 2, "durations": [1.6, 0.2], "loop": true},
-    "glacier": {"row": 1, "count": 2, "durations": [1.6, 0.2], "loop": true},
-    "forge": {"row": 2, "count": 2, "durations": [1.6, 0.2], "loop": true},
-    "ruines": {"row": 3, "count": 2, "durations": [1.6, 0.2], "loop": true},
-    "archives": {"row": 4, "count": 2, "durations": [1.6, 0.2], "loop": true},
-    "cadran": {"row": 5, "count": 2, "durations": [1.6, 0.2], "loop": true}
+    "serre": {"row": 0, "count": 12, "fps": 10, "loop": true},
+    "glacier": {"row": 1, "count": 12, "fps": 10, "loop": true},
+    "forge": {"row": 2, "count": 12, "fps": 10, "loop": true},
+    "ruines": {"row": 3, "count": 12, "fps": 10, "loop": true},
+    "archives": {"row": 4, "count": 12, "fps": 10, "loop": true},
+    "cadran": {"row": 5, "count": 12, "fps": 10, "loop": true}
   }
 }

@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/echappement.png",
+  "frameWidth": 150,
+  "frameHeight": 130,
+  "pivot": [75, 65],
+  "clips": {
+    "regle": {"row": 0, "count": 8, "durations": [0.21, 0.21, 0.32, 0.15, 0.15, 0.22, 0.11, 0.11], "loop": true}
+  }
+}

@@ -27,12 +27,12 @@ from synth import SR, ns
 
 # The films' timelines (seconds), from their scripts.
 FILMS = {
-    "balancier": {"length": 113.0, "montage": 67.0,
+    "balancier": {"length": 122.0, "montage": 76.0,
                   "sections": [("onde", 0, 8), ("tic", 8, 16), ("fige", 16, 24), ("dechirure", 24, 34), ("vieil_homme", 34, 43),
-                               ("remonter", 43, 50), ("atelier", 50, 59), ("balancier_vide", 59, 67)]},
-    "tour": {"length": 112.0, "montage": 66.0,
+                               ("remonter", 43, 50), ("atelier", 50, 59), ("manipulations", 59, 68), ("balancier_vide", 68, 76)]},
+    "tour": {"length": 121.0, "montage": 75.0,
              "sections": [("fuite", 0, 10), ("resiste", 10, 19), ("main", 19, 29), ("fils", 29, 39), ("encore", 39, 47),
-                          ("chaine", 47, 57), ("atelier", 57, 66)]},
+                          ("chaine", 47, 57), ("atelier", 57, 66), ("manipulations", 66, 75)]},
 }
 GROUPS = {3: (3,), 4: (2, 2), 5: (2, 3), 7: (2, 2, 3), 9: (2, 2, 2, 3)}
 LULLABY = [74, 77, 81, 80, 77, 76, 74, 73]       # D5 F5 A5 G#5 F5 E5 D5 C#5: a music box, chromatic dread
@@ -296,6 +296,24 @@ def sec_atelier(s, a, b):  # the same in both films
     for k, nt in enumerate(CHIME[:4]):
         box(s, a + 4.0 + 0.9 * k, nt, cents=-30 + 12 * k, vel=0.4)
     swell(s, b, 2.0, 7, 0.7)
+
+
+MANIP_TICKS = [0.3, 0.72, 1.14, 1.77, 2.07, 2.37, 2.82, 3.03, 3.24, 3.45, 3.77, 4.32, 4.5, 4.68, 4.95, 5.55, 5.7, 5.85, 6.0, 6.35, 6.95, 7.1,
+               7.25, 7.4, 7.55, 7.7, 8.4]  # the picture jolts on these (story_horloger.py)
+
+
+def sec_manipulations(s, a, b):  # the same in both films: the clockmaker at work, frantic
+    drone(s, a, b, notes=(39, 45), vel=0.4)
+    clockwork(s, a, a + 3.5, "manip", meters=(7, 5, 3, 9), bpm=(150, 210), jitter=0.18, motif=LULLABY, motif_every=2, second=1.33, drift=50,
+              tick_gain=0.5)
+    s.stops.append((a + 3.5, a + 3.72))
+    clockwork(s, a + 3.72, b - 0.4, "manip2", meters=(5, 3, 7, 5), bpm=(230, 160), jitter=0.2, motif=CHIME, motif_every=3, second=1.5, drift=60,
+              tick_gain=0.5)
+    for k, t in enumerate(MANIP_TICKS):
+        s.put(s.tock, D.rim(variant=k % 4), a + t, 1.0)
+        s.put(s.low, D.tom(64.0 + 6 * (k % 3), decay=0.15), a + t, 0.6)
+    groan(s, a + 5.5, 37, 2.5, 0.45, -110)
+    swell(s, b, 1.6, 9, 0.6)
 
 
 # =================================================================== the shared ending (the six worlds, the watch, the eyes, black)
