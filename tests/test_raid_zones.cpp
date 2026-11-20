@@ -1,4 +1,4 @@
-// 2.78 (docs/RAIDS.md §24): each player of a raid changes zone ALONE (the instance simulates every zone
+// 2.78 (docs/RAIDS.md §25): each player of a raid changes zone ALONE (the instance simulates every zone
 // where one of its players is, one world each, in lockstep), the passages of the group (the armory's
 // « Prêts ») take only the players on their plate, the lair's passage waits for every ambush of the zone
 // before it, a zone whose players are all down goes on (the others come to revive them), the deaths and

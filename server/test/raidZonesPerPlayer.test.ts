@@ -1,4 +1,4 @@
-// 2.78 (docs/RAIDS.md §24): each player of an instance changes zone alone. The games report where each
+// 2.78 (docs/RAIDS.md §25): each player of an instance changes zone alone. The games report where each
 // seat is (« zones », the same consensus as every report; every zone checked reachable), the server keeps
 // it for its maps (who is in which zone) and the retakes; a group wiped across several zones leaves each
 // of them to retake; the lair's passage waits for every ambush of the zone before it (« ambushes:7 »);

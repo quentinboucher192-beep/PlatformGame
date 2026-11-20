@@ -638,7 +638,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   zones de la branche, toutes jouées en même temps (un monde par zone occupée, en verrouillage sur tous les jeux du groupe).
   Les **passages de groupe** restent : la plaque « Prêts » d'un vestiaire demande tous les joueurs présents et seuls ceux
   qui sont dessus partent ensemble. La grande carte, « Ce qu'il reste à faire », le menu du raid et le panneau du groupe
-  disent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones ([docs/RAIDS.md §24](docs/RAIDS.md#24-chacun-sa-zone-toutes-les-embuscades-avant-lantre-le-vestiaire-de-lantre-et-le-tableau-des-contributions-278)).
+  disent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones ([docs/RAIDS.md §25](docs/RAIDS.md#25-chacun-sa-zone-toutes-les-embuscades-avant-lantre-le-vestiaire-de-lantre-et-le-tableau-des-contributions-278)).
 * **Une zone qui se vide continue** : ses âmes attendent qu'un allié de la même zone vienne les relever ; le groupe n'est
   éliminé que si tous ses joueurs sont à terre, toutes zones confondues (chaque zone touchée est alors à reprendre).
 * **Toutes les embuscades avant l'antre** : le passage vers l'antre de chaque Gigaboss (et vers le Cœur) reste fermé tant
@@ -649,6 +649,17 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   icônes et couleurs par catégorie, couronne du meilleur, tri par colonne, infobulles, et trois chiffres de plus par joueur :
   **morts**, **réanimations faites** et **reçues** (comptés par la simulation, validés par consensus ; « — » dans les
   tableaux d'avant).
+
+**Nouveau dans la version 2.77.3** :
+* **Statistiques des Gigaboss d'Asterion** dans leur fiche (onglet « Combat ») : PV de 2 à 8 joueurs, phases (seuil en %
+  et en PV, états), dégâts du contact et de chaque coup en cœurs, multiplicateurs des parties, vitesse, taille, limite de
+  temps, rythme selon le groupe ; une infobulle par chiffre, tout lu dans les données
+  ([docs/RAIDS.md §24](docs/RAIDS.md#24-statistiques-des-gigaboss-fiche-du-cœur-et-groupes-du-raid-simulé-2773)).
+* **Fiche du Cœur d'Asterion** en trois colonnes : ce que le clan a accompli (l'état réel pendant un raid, sinon une
+  simulation), sa vie de 2 à 8 joueurs avec les reliques, ses phases partagées, ses attaques selon les parties tombées.
+* **STATISTIQUES › Boss › « Raid Asterion »** : les sept Gigaboss et le Cœur, avec les mêmes onglets que les autres boss.
+* **Raid simulé : « Joueurs par groupe (vous compris) »** : tous les groupes ont la même taille (le vôtre : vous et
+  N − 1 joueurs simulés).
 
 **Nouveau dans la version 2.77.2** :
 * **Groupe éliminé : le jeu ne tremble plus.** Son monde ne fait plus de pas, mais il était dessiné avec l'interpolation

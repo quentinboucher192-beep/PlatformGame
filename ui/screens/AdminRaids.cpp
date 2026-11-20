@@ -485,7 +485,7 @@ void AdminRaids::drawTest(const Rect& r) {
     static const std::vector<std::string> kPhases = {"1", "2", "3"};
     static const std::vector<std::string> kHeartPhases = {"1", "2", "3", "4"};
     if (!heart) testPhase_ = std::min(testPhase_, 2);
-    ui.cycle("players", {x, y, half, rowH}, "Joueurs simulés", testPlayers_, kPlayers);
+    ui.cycle("players", {x, y, half, rowH}, "Joueurs simulés (sans vous)", testPlayers_, kPlayers);  // 2.77.3: said whom it counts
     const bool ro = ui.readOnly;
     ui.readOnly = !giga;
     ui.cycle("phase", {x + half + gap, y, half, rowH}, giga ? "Phase de départ" : "Phase (sans gigaboss)", testPhase_, heart ? kHeartPhases : kPhases);
@@ -554,14 +554,20 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     const float half = (w - gap) * 0.5f;
     float y = r.y;
     static const std::vector<std::string> kGroups = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"};
-    static const std::vector<std::string> kBots = {"1", "2", "3", "4", "5", "6", "7"};
+    static const std::vector<std::string> kBots = {"2", "3", "4", "5", "6", "7", "8"};  // 2.77.3: players per group, the administrator counted
     static const std::vector<std::string> kSkills = {"Débutant", "Confirmé", "Expert"};
     static const std::vector<std::string> kSpeeds = {"×1 (temps réel)", "×2 (accéléré)", "×4 (accéléré)"};
     // Each setting on the whole width (its caption has room).
     ui.cycle("groups", {x, y, w, rowH}, "Groupes", simGroups_, kGroups);
     y += rowH + gap;
-    ui.cycle("bots", {x, y, w, rowH}, "Joueurs simulés par groupe (sans vous)", simBots_, kBots);
-    y += rowH + gap;
+    // 2.77.3: « Joueurs par groupe : N »: every group the same size (yours: you + N − 1 simulated players).
+    const int perGroup = simBots_ + 2;
+    ui.cycle("bots", {x, y, w, rowH}, "Joueurs par groupe (vous compris)", simBots_, kBots);
+    y += rowH + ui.s(4);
+    fit(ui, "Votre groupe : vous + " + std::to_string(perGroup - 1) + (perGroup - 1 > 1 ? " joueurs simulés" : " joueur simulé") + " · autres groupes : " +
+                std::to_string(perGroup) + " joueurs simulés",
+        {x, y + ui.s(10)}, 14, w, kGold, FontFace::Bold);
+    y += ui.s(20) + gap;
     ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
     y += rowH + gap;
     ui.cycle("speed", {x, y, w, rowH}, "Vitesse des groupes non regardés", simSpeed_, kSpeeds);
@@ -579,7 +585,8 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     if (ui.button("launch", {x, y, w, rowH}, "Lancer la simulation", bs) && !capture) {
         RaidSimSetup s;
         s.groups = simGroups_ + 1;
-        s.bots = simBots_ + 1;
+        s.bots = simBots_ + 1;  // N − 1: the administrator's place, then N − 1 simulated players
+        s.fullGroups = true;
         s.skill = testSkill_;
         s.background = simSpeed_ == 2 ? 4 : simSpeed_ == 1 ? 2 : 1;
         s.invincible = g_.settings.gameplay.adminInvincible;
@@ -588,11 +595,11 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     }
     y += rowH + ui.s(10);
     // What it is, measured into what is left of the panel.
-    const int seats = (simBots_ + 1) + 1;  // the simulated players and the free place
     const std::string text = "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : " +
-                             std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(simBots_ + 1) + " joueurs simulés et une place libre (" +
-                             std::to_string(seats) + " places). Événements mondiaux, carte du titan, zones terminées, contributions, groupes "
-                             "éliminés et renforts comme dans un vrai raid. Rejoignez ou regardez n'importe quel groupe depuis la pause.";
+                             std::to_string(simGroups_ + 1) + " groupes de " + std::to_string(perGroup) +
+                             " joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme "
+                             "dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) "
+                             "ou regardez-le.";
     const float lineH = ui.s(18);
     const int lines = std::max(1, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));
     y += drawLines(ui, wrap(ui, text, FontFace::Body, 13, w, lines), {x, y}, 13, lineH, kDim) + ui.s(6);

@@ -321,6 +321,7 @@ seconds
 # 2.75.5 : identifiants (puces de RaidWorldScene, clé JSON de main.cpp) que « Tab » et « sections » des textes du menu du raid rendaient « français »
 tab
 sections
+heart.relicShare
 # 2.78 : clés JSON (rapports des raids, vestiaire, dégâts), jamais montrées
 armory
 at

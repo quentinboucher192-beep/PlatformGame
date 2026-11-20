@@ -73,6 +73,12 @@ public:
     /// are not in: vacant, the group plays without them).
     void setAdminSeated(bool on) { adminSeated_ = on; }
     bool adminSeated() const { return adminSeated_; }
+    /// 2.77.3 (« Simuler un raid complet », « Joueurs par groupe »): the administrator's seat, while they are
+    /// not in this group, played by a simulated player (every group the same size; taking it back, they
+    /// replace that player). Off: the seat stays free (the zone's test, the captures).
+    void setFreeSeatPlayed(bool on) { freeSeatPlayed_ = on; }
+    /// The seats played by the AI now (the administrator's included when it plays it).
+    int simulatedPlayers() const { return players_ - 1 + (seatZeroBot() ? 1 : 0); }
     /// The level of the simulated players (their reaction and precision).
     void setSkill(BotSkill s) {
         skill_ = s;
@@ -106,7 +112,9 @@ private:
     uint32_t state_ = 0;
     HeartShared heart_;  // 2.74: the heart's test (its relics)
     std::vector<InputFrame> frames_;
+    bool seatZeroBot() const { return autopilot() || (!adminSeated_ && freeSeatPlayed_); }
     bool adminSeated_ = true;
+    bool freeSeatPlayed_ = false;
     bool botsInvincible_ = false;
     int afk_ = 0;
     int rescues_ = 0;

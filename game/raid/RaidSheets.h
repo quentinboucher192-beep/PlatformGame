@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "engine/core/Json.h"
+#include "game/enemies/HitParts.h"
 #include "game/raid/BossHitboxes.h"
 
 namespace cosmic {
@@ -106,6 +107,55 @@ struct SheetReward {
     int stars = 0;     // a badge: its achievement's stars
 };
 
+/// 2.77.3: its numbers (« Statistiques », the tab « Combat » of its sheet and STATISTIQUES › Boss), read
+/// from its definition (data/enemies), its lair's rules (metadata.raid.gigaboss) and its parts' rules —
+/// never estimated. Health: hp × Gigaboss::healthFactor (1 + hpPerPlayer × (players − 1)), the seats taken.
+struct SheetStats {
+    static constexpr int kMinPlayers = 2, kMaxPlayers = 8;
+    float hp = 0.0f;                // its definition's health (one player)
+    float hpPerPlayer = 0.0f;       // its lair's rules
+    std::vector<int> health;        // 2 to 8 players (kMinPlayers + i), rounded as its bar shows it
+    /// The Cœur d'Asterion: each relic of the branches validated takes this share of its health (at
+    /// least relicFloor kept: AsterionHeartRoutine), 0 for a gigaboss.
+    float relicShare = 0.0f;
+    float relicFloor = 0.5f;
+    struct Phase {
+        int number = 1;
+        std::string name;
+        float from = 1.0f;                // its share of health when it begins (BossPhase::hpThreshold)
+        std::vector<int> health;          // its health then, 2 to 8 players
+        std::vector<std::string> states;  // « Combat », « Blindé », « À nu »… (its diagram's states)
+        float speed = 1.0f;               // BossPhase::speedMultiplier
+        float enrage = 0.0f;              // BossPhase::enrageTime (0: none)
+    };
+    std::vector<Phase> phases;
+    float contact = 0.0f;           // EnemyDefinition::contactDamage (hearts at the level's factor × 1)
+    struct Blow {
+        std::string name;
+        float damage = 0.0f;
+        bool mechanism = false;     // one of its raid's rules (its fists, its jets), not of its definition
+    };
+    std::vector<Blow> blows;        // its attacks (each name once, in its definition's order), then its rules' blows
+    std::vector<PartRule> parts;    // its parts' roles and multipliers (data/enemies « parts »)
+    bool byParts = false;           // its fight uses them (« partsFromVersion »)
+    float exposed = 0.0f, exposedMult = 1.0f, weakShare = 0.0f;  // bare: seconds, the damage it takes; a weak point broken
+    float weakHpPerPlayer = 0.0f, pressurePerPlayer = 0.0f;
+    float speed = 0.0f, chase = 1.0f;
+    Vec2 size;                      // its box (px)
+    float scale = 1.0f;             // its drawing
+    float enrage = 0.0f;            // EnemyDefinition::enrageTime (0: none)
+    int lastStand = 0;              // attacks of its last stand
+};
+/// The health of `stats` at `players` seated (1 to 8) and `relics` validated (the heart only).
+int sheetHealth(const SheetStats& stats, int players, int relics = 0);
+
+/// 2.77.3: a link « modifier » of the titan on the Cœur d'Asterion (data/raids/asterion/titan.json): the part
+/// whose gigaboss's fall weakens it, and what it does (its label, as the titan's map writes it).
+struct HeartModifier {
+    std::string id, part, partName, boss, label;
+    int bit = -1;
+};
+
 struct GigabossSheet {
     std::string id, enemy, part, partName;
     const EnemyDefinition* def = nullptr;  // null when the content has no such enemy (yet)
@@ -131,6 +181,8 @@ struct GigabossSheet {
     std::vector<SheetReward> rewards;  // its badge first
     /// 2.75: where to hit it, by phase and state (game/raid/BossHitboxes: from its fight's rules).
     BossHitboxes hitboxes;
+    /// 2.77.3: its numbers.
+    SheetStats stats;
     /// What could not be read (a value, a phase, its enemy, its lair…): empty for a sound sheet.
     std::vector<std::string> problems;
 };
@@ -157,10 +209,17 @@ struct AsterionSheet {
 struct RaidSheets {
     AsterionSheet asterion;
     std::vector<GigabossSheet> gigaboss;  // in the order of the titan's body
+    /// 2.77.3: the Cœur d'Asterion's own sheet (data: « heart » of asterion_sheets.json; its lair, zone 2 of
+    /// « coeur »), found by find() as the seven are; its links « modifier » (one per part of the body).
+    GigabossSheet heart;
+    std::vector<HeartModifier> heartModifiers;
     std::vector<std::pair<std::string, std::string>> avoid;  // attack type id → how to avoid it
     std::vector<std::string> problems;
 
+    /// A gigaboss's sheet, or the heart's (its id).
     const GigabossSheet* find(const std::string& id) const;
+    /// The sheet of an enemy (its definition's id: « titanus », « asterion_coeur »), null when none.
+    const GigabossSheet* ofEnemy(const std::string& enemy) const;
     const GigabossSheet* ofPart(const std::string& part) const;
     /// How to avoid an attack of type `type` (its id in data/enemies, « laser »…); "" when unknown.
     std::string avoidOf(const std::string& type) const;

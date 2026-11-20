@@ -323,6 +323,7 @@ std::unique_ptr<Scene> makeRaidTest(GameServices& g, RaidTestSetup setup);
 struct RaidSimSetup {
     int groups = 7;        // 1 to 14
     int bots = 4;          // simulated players per group, the administrator not counted (1 to 7)
+    bool fullGroups = false;  // 2.77.3: « Joueurs par groupe »: the administrator's seat of the other groups played too
     int skill = 1;         // 0 Débutant, 1 Confirmé, 2 Expert
     int background = 1;    // the groups not watched: 1 (as the one watched), 2 or 4 steps each (« accéléré »)
     bool invincible = true;

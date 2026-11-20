@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.78 (docs/RAIDS.md §24): the « Tableau des contributions » of the raids, redrawn (maquette of 2.78):
+// 2.78 (docs/RAIDS.md §25): the « Tableau des contributions » of the raids, redrawn (maquette of 2.78):
 //
 // * two tabs, « Zone » (one finished zone's table; Entrée / A, or its buttons, go to the next zone) and
 //   « Raid entier » (every zone added up per player);

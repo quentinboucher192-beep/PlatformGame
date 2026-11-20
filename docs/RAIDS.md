@@ -10,7 +10,8 @@
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
 # à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
-# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §24)
+# statistiques des Gigaboss, fiche du Cœur, groupes du raid simulé (2.77.3, §24) ;
+# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §25)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -86,7 +87,7 @@ Une instance = un groupe de 8 d'un clan (les groupes de la phase 1) sur la branc
 * **Caméra** : chacun suit son propre joueur (affichage seulement). Pas de « cadre d'équipe » en
   raid : personne n'est ramené. Le groupe entier à terre : la zone reprend là où il y est entré
   (objectifs gardés, tous debout, tous cœurs).
-* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §24) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
+* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §25) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
   numéro d'abord) emmène toute l'instance. Chacun garde **ses cœurs, son énergie, ses pouvoirs et
   sa présence** (`GameWorld::carryOf` / `restoreMember`) et apparaît au point de la zone pour
   l'endroit d'où il vient (un joueur à terre revient debout avec la moitié de ses cœurs). Un
@@ -1480,7 +1481,80 @@ notifications sous le bandeau.
 Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes
 de référence ne changent pas.
 
-## 24. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
+## 24. Statistiques des Gigaboss, fiche du Cœur et groupes du raid simulé (2.77.3)
+
+### « Statistiques » dans la fiche de chaque Gigaboss (`raid::SheetStats`, `ui/widgets/GigabossStatsView`)
+
+L'onglet « Combat » de chaque fiche (CLANS › RAIDS › Fiches) commence par un bloc **« Statistiques »**, lu dans les vraies
+données (`game/raid/RaidSheets.cpp`, jamais recopié) :
+
+* **Points de vie selon le groupe**, de 2 à 8 joueurs : `hp` de sa définition × `Gigaboss::healthFactor` (1 + `hpPerPlayer`
+  × (joueurs − 1), les règles de son antre), arrondis comme sa barre ; une barre par taille de groupe.
+* **Phases** : pour chacune, son seuil (`hpThreshold`) en % et en PV à 2 et à 8 joueurs, et ses états, ceux du schéma
+  « Où frapper » (Combat, Blindé, À nu…).
+* **Dégâts reçus, en cœurs** comme l'infobulle « Où frapper » (au moins un cœur, arrondi, facteur de dégâts × 1) : le
+  contact, chaque attaque de sa définition, puis chaque coup de ses règles de raid (un bloc des règles qui a des
+  `damage` : ses poings, ses jets quand il a des évents, les coups de sa routine), nommé par le bloc ou par le mécanisme
+  de sa fiche qui le lit.
+* **Multiplicateurs par partie** (`data/enemies` « parts ») : point faible × 2, blindée × 0,5, partie qui blesse ; à nu
+  (`exposedMult`, `exposed`) et point faible brisé (`weakShare`).
+* **Autres caractéristiques** : vitesse (× poursuite), taille de sa boîte (et l'agrandissement du dessin), limite de temps
+  (`enrageTime` du combat ou de sa dernière phase : 75 à 120 s), rythme selon le groupe (`pressurePerPlayer`), vie de ses cibles
+  (`weakHpPerPlayer`), dernier souffle.
+* Chaque chiffre a son **infobulle** (survol, ou le focus au clavier et à la manette) qui dit d'où il vient. Mesuré
+  d'abord (`gbstats::layoutStats`), chaque texte ajusté à sa ligne, la valeur toujours entière.
+
+### La fiche du Cœur d'Asterion (`RaidSheets::heart`, `ui/widgets/HeartSheetView`)
+
+Le Cœur a désormais sa fiche (entrée `heart` de `data/raids/asterion_sheets.json`, son arène : zone 2 de « coeur »),
+ouverte depuis la liste, depuis le cœur du titan et depuis la fiche d'Asterion. Onglets : « Combat », « Où frapper »,
+« Lieu et récompenses ». « Combat » en trois colonnes (empilées sur un écran étroit) :
+
+* **Ce que le clan a accompli** : le titan (son sprite), chaque partie tombée barrée en vert, ◆ la relique de sa branche.
+  Pendant un événement en cours dont la carte du titan a été reçue (`raids::lastTitan`, gardée par l'écran de la carte),
+  c'est l'**état réel** : les parties tombées (ses liens « modifier » actifs) et le nombre de reliques validées (la carte
+  ne dit pas de quelles branches : la fiche le dit). Sinon, ou dès qu'on change une partie ou une relique (clic, Entrée / A
+  sur le titan ou sur ses boutons « Tombé / Debout », « ◆ Relique »), une **simulation** ; **R** ou « État réel du clan »
+  rétablit l'état réel. Ligne honnête : « En raid, le Cœur s'ouvre quand les 7 Gigaboss sont tombés. »
+* **Statistiques** : la vie de l'instance de 2 à 8 joueurs, `hp` × (1 + `hpPerPlayer` × (joueurs − 1)), puis −`relicShare`
+  par relique (au moins 50 % gardés, `AsterionHeartRoutine`), en gris sans relique ; la vie partagée par tout le clan
+  (10 000 dix-millièmes) ; les phases partagées (100–75, 75–50, 50–25 %, puis Supernova) ; le contact.
+* **Ses attaques selon les parties tombées** : les sept liens « modifier » du titan (`titan.json`, leurs libellés), en vert
+  avec une coche dessinée (affaibli), en rouge avec « ! » (encore actif), « tombé : Partie » ou « si tombé : Partie ».
+
+### STATISTIQUES › Boss › « Raid Asterion »
+
+Les sept Gigaboss et le Cœur ont leur catégorie, après les boss du jeu, avec les mêmes onglets : « Mes statistiques »
+(leurs combats ; « Jamais affronté » tant qu'il n'y en a pas : rien n'est inventé), « Fiche » (leurs statistiques ci-dessus,
+leurs phases et attaques), « Où frapper ». Pas d'entraînement pour un boss de raid ; « Où l'affronter » dit sa branche et
+son antre. Le résumé en haut (« Boss vaincus ») ne compte que les boss du jeu.
+
+### « Simuler un raid complet » : « Joueurs par groupe (vous compris) »
+
+Le réglage « Joueurs simulés par groupe » donnait N joueurs simulés à chaque groupe : le groupe de l'administrateur en
+comptait N + 1. Il devient **« Joueurs par groupe (vous compris) » : N**, de 2 à 8, dit sous lui (« Votre groupe : vous +
+6 joueurs simulés · autres groupes : 7 joueurs simulés ») : la place de l'administrateur, dans un groupe où il n'est pas,
+est jouée par un joueur simulé (`SimSetup::fullGroups`, `TestSession::setFreeSeatPlayed`). En rejoignant un autre groupe,
+il y remplace ce joueur simulé : aucun groupe ne dépasse N. Le test d'une zone garde son réglage, « Joueurs simulés (sans
+vous) : 0 à 7 ». Les captures (`--raid-sim`) et les tests d'avant gardent l'ancienne composition (place libre).
+
+### Tests (`tests/test_gigaboss_stats.cpp`)
+
+Chaque nombre des statistiques des sept Gigaboss et du Cœur comparé à leurs fichiers (PV, mise à l'échelle 2 à 8, seuils et
+PV des phases, contact, chaque attaque, chaque coup des règles, rôles et multiplicateurs des parties, vitesse, taille,
+limite de temps, fenêtre à nu), la vie du Cœur avec 0 à 7 reliques et son plancher, ses sept liens « modifier » ; l'état
+réel lu sur une carte du titan ; la mise en page (statistiques et trois colonnes du Cœur) en 1280 × 720 et 1920 × 1080, en
+français et en anglais : chaque partie dans sa colonne, à la suite, les valeurs entières, les infobulles dans l'écran ;
+« Joueurs par groupe : 7 » : le groupe de l'administrateur a 6 joueurs simulés et lui, chaque autre groupe 7, et rejoindre
+un groupe y remplace un joueur simulé.
+
+### Versions
+
+Affichage, données des fiches et réglage du test seulement : `kSimulationVersion`, `kCoopSimulationVersion`,
+`kRankingGeneration`, `TITAN_REVISION` et les empreintes de référence ne changent pas (sans « Joueurs par groupe », les
+groupes d'un test se jouent comme avant).
+
+## 25. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
 
 ### Chaque joueur change de zone seul (`raid::RaidRun`)
 
@@ -1583,17 +1657,19 @@ de référence ne changent pas.
 
 | Mesure | Résultat |
 | --- | --- |
-| 4 zones simulées à la fois, 8 joueurs (1200 pas) | 0,03 ms par pas en moyenne, 0,1 à 0,2 ms au pire |
-| Une seule zone, mêmes joueurs | 0,006 à 0,012 ms par pas |
-| Charger une zone (le Poignet-verrou, au premier joueur qui y entre) | 2 à 2,6 ms, une seule fois |
-| « Simuler un raid complet » (7 groupes, jusqu'à la chute du Cœur) | 0,34 à 0,42 ms par pas en moyenne |
+| 4 zones simulées à la fois, 8 joueurs (1200 pas) | 0,03 à 0,09 ms par pas en moyenne ; au pire 0,1 à 0,2 ms (8 ms sur une machine chargée par d'autres compilations) |
+| Une seule zone, mêmes joueurs | 0,006 à 0,014 ms par pas |
+| Charger une zone (le Poignet-verrou, au premier joueur qui y entre) | 2 à 2,6 ms, une seule fois (6,5 ms sur une machine chargée) |
+| « Simuler un raid complet » (7 groupes, jusqu'à la chute du Cœur) | 0,34 à 0,49 ms par pas en moyenne (un pas au pire 49 à 97 ms : des zones chargées, plusieurs groupes au même pas) |
 
 Simuler plusieurs zones coûte donc quelques centièmes de milliseconde par pas : un pas en ligne (1/120 s) en laisse
-largement assez à l'affichage. Le thread principal n'attend jamais : en ligne, les pas d'une image s'arrêtent à
+largement assez à l'affichage. Le thread principal n'attend pas la simulation : en ligne, les pas d'une image s'arrêtent à
 **6 ms** (`kOnlineBudgetMs`, au moins un pas par image ; le retard se rattrape aux images suivantes) et la simulation
 locale à **10 ms** (`kSimBudgetMs`). Seul le chargement d'une zone (lecture et préparation du niveau) tombe dans un
-seul pas, 2 à 3 ms ; il n'a lieu qu'à la première entrée d'un joueur dans la zone, et la zone est déchargée quand
-plus personne n'y est.
+seul pas, 2 à 3 ms (jusqu'à 6,5 ms sur une machine chargée) ; il n'a lieu qu'à la première entrée d'un joueur dans la
+zone, et la zone est déchargée quand plus personne n'y est. Dans « Simuler un raid complet », plusieurs groupes peuvent
+charger leurs zones au même pas : ce pas-là prend plus d'une image (49 à 97 ms mesurés sur une machine chargée), un
+test local seulement.
 
 ### Versions
 

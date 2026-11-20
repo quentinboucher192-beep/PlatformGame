@@ -65,10 +65,10 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     else afk_ = 0;
     uint32_t seats = 0;
     for (int s = 1; s < players_; ++s) seats |= 1u << s;
-    if (autopilot()) seats |= 1u;
+    if (seatZeroBot()) seats |= 1u;  // 2.77.3: also the administrator's seat while they are not in the group (freeSeatPlayed_)
     frames_[0] = admin;
     thinkByZone(seats);
-    if (!adminSeated_) {
+    if (!adminSeated_ && !freeSeatPlayed_) {  // 2.77.3: or played by a simulated player
         frames_[0] = InputFrame{};
         frames_[0].flags = InputFrame::Vacant;  // the free place of a group
     }
@@ -80,7 +80,7 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     // instance: given back with the next step (RAID_STATE's structure, the objectives' bits).
     state_ |= run_.localDone();
     if (botsInvincible_)
-        for (int s = 1; s < players_; ++s)
+        for (int s = seatZeroBot() ? 0 : 1; s < players_; ++s)  // 2.77.3: the free seat played too
             if (GameWorld* w = run_.worldOf(run_.zoneOf(s)); w && s < w->teamSize())
                 if (w->member(s).presence == GameWorld::Presence::Playing && w->playerAt(s).alive()) w->playerAt(s).health = w->playerAt(s).maxHealth();
     // 2.78: the simulated players of the zones nobody is in any more go with them.
@@ -121,7 +121,7 @@ void TestSession::rescue() {
         TestBots& bots = botsFor(run_.zoneOf(s));
         const NavGraph* nav = bots.nav();
         TestBots::Bot& b = bots.bots()[static_cast<size_t>(s)];
-        if (s == 0 && !autopilot()) continue;  // the administrator plays their seat
+        if (s == 0 && !seatZeroBot()) continue;  // the administrator plays their seat (or it is free)
         if (w.member(s).presence != GameWorld::Presence::Playing || !w.playerAt(s).alive() || w.playerAt(s).respawning()) continue;
         // Sent to a mechanism it cannot reach: put on it (a test alone needs its helpers there).
         if (b.task == TestBots::Task::Mechanism && b.mechanismSteps > kMechanismSteps) {
