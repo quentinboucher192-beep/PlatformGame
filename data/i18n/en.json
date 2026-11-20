@@ -3,6 +3,7 @@
   "language": "en",
   "name": "English",
   "strings": {
+    "Les rangs s'écrivent « 2e », « 3e »… : le « ᵉ » d'avant n'existe pas dans les polices du jeu et s'affichait comme un carré vide (historique des raids, titres de clan, notifications des résultats).": "Ranks are written \"2e\", \"3e\"… in French: the former \"ᵉ\" is not in the game's fonts and showed as an empty box (raid history, clan titles, results notifications).",
     "Raids et tests de raid : le pointeur de la souris reste caché pendant le jeu. Il revenait à chaque petit mouvement de la souris ; il ne revient plus que quand la souris s'approche du bouton du menu en haut de l'écran, ou en regardant un groupe du raid simulé (ses boutons ◀ ▶). Toujours là avec le menu, la pause, la grande carte et les panneaux.": "Raids and raid tests: the mouse pointer stays hidden while playing. It came back with every small move of the mouse; now it only comes back when the mouse nears the menu button at the top of the screen, or while watching a group of the simulated raid (its ◀ ▶ buttons). Still there with the menu, the pause, the large map and the panels.",
     "%Y-%m-%d %H:%M": "%Y-%m-%d %H:%M",
     "(-1 morts = illimité)": "(-1 deaths = unlimited)",
@@ -12965,6 +12966,7 @@
     "{0} trop volumineux": "{0} too large",
     "{0} 1er sur {1} clans": "{0} 1st of {1} clans",
     "{0} {1}ᵉ sur {2} clans": "{0} #{1} of {2} clans",
+    "{0} {1}e sur {2} clans": "{0} #{1} of {2} clans",
     "{0} h": "{0} h",
     "Langues : en anglais, plus aucun texte français à l'écran, et inversement. Une vérification faite par le jeu lui-même relève chaque texte dessiné resté dans l'autre langue (absent du dictionnaire, inchangé, partie insérée restée en français, texte traduit deux fois) ; elle a parcouru plus de cent écrans sans écran ni compte (menus, paramètres, fiches, « Où frapper », vestiaire et HUD des raids d'Asterion, coopération, administration, profils, replays, histoires) et chaque fuite trouvée est corrigée.": "Languages: in English, no French text left on screen, and the other way round. A check made by the game itself notes every text drawn that stayed in the other language (missing from the dictionary, unchanged, an inserted part left in French, a text translated twice); it went through more than a hundred screens without a window or an account (menus, settings, Asterion raid sheets, \"Where to strike\", wardrobe and HUD, co-op, administration, profiles, replays, stories) and every leak found is fixed.",
     "Textes du serveur traduits : messages d'erreur (« Pseudonyme ou mot de passe incorrect. »), notifications des raids, des clans et de sécurité (« Rappel : … commence dans … », « … participe au raid commun … »), alertes du titan. Près de deux cents messages que la traduction ne voyait pas ont maintenant leur anglais.": "Server texts translated: error messages (\"Incorrect username or password.\"), raid, clan and security notifications (\"Reminder: … starts in …\", \"… joins the joint raid …\"), the titan's alerts. Nearly two hundred messages the translation did not see now have their English.",

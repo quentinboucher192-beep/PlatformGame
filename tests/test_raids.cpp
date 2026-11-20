@@ -350,9 +350,9 @@ TEST_CASE("raids: a world event's catch-up session, its late arrivals and its of
     e = raids::parseEvent(j);
     CHECK(raids::lateRuleText(e) == "Arrivée en retard : jusqu'à 30 min après le début");
     CHECK(e.result.valid);
-    CHECK(raids::resultLine(e.result, "AUBE") == "Asterion a survécu · 42 % · [AUBE] 2ᵉ / 23");
+    CHECK(raids::resultLine(e.result, "AUBE") == "Asterion a survécu · 42 % · [AUBE] 2e / 23");
     CHECK(raids::ordinal(1) == "1er");
-    CHECK(raids::ordinal(10) == "10ᵉ");
+    CHECK(raids::ordinal(10) == "10e");
     j["result"] = Json{{"outcome", "?"}, {"text", "x"}};
     CHECK(!raids::parseEvent(j).result.valid);  // never a result the server did not freeze
 }
@@ -395,7 +395,7 @@ TEST_CASE("raids: the world rankings, pending apart from validated, the official
     CHECK(w.players.size() == 2);
     CHECK(w.myClanRank == 2);
     CHECK(w.myClanTitles.size() == 1);
-    CHECK(w.myClanTitles[0] == "« Dévoreurs dévorés » · 2ᵉ mondial");
+    CHECK(w.myClanTitles[0] == "« Dévoreurs dévorés » · 2e mondial");
     CHECK(w.rewards.size() == 1);
     CHECK(raids::worldProgressLine(w) == "Progression mondiale 42 % · 18 / 43 objectifs · 1 / 7 gigaboss");
     // What waits for its majority is said apart, never as final.
