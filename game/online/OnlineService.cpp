@@ -1139,6 +1139,14 @@ void OnlineService::noteNotifications(const Json& data) {
     std::string seen = first ? std::string("0") : friendNotices_[key].get<std::string>();
     std::string newest = seen;
     std::vector<std::string> fresh;
+    // 2.81: « Après Asterion » with the clans of the fall (unread, each once per session, even at a first reading:
+    // the film may still be playing).
+    if (auto it = data.find("notifications"); it != data.end() && it->is_array())
+        for (const auto& n : *it) {
+            const Json d = n.is_object() ? n.value("data", Json::object()) : Json::object();
+            if (jstr(n, "kind") != "raid" || !d.is_object() || jstr(d, "event") != "heart_film" || jstr(d, "event_id").empty()) continue;
+            if (filmNoticesSeen_.insert(jstr(n, "id")).second) filmNotices_.push_back(jstr(d, "event_id"));
+        }
     if (auto it = data.find("notifications"); it != data.end() && it->is_array())
         for (const auto& n : *it) {
             std::string at = jstr(n, "created_at");
@@ -1153,6 +1161,12 @@ void OnlineService::noteNotifications(const Json& data) {
     if (fresh.size() == 1) notify(Notification::Kind::Workshop, "Cosmic Online", fresh.front());
     else if (!fresh.empty())
         notify(Notification::Kind::Workshop, std::to_string(unreadNotifications_) + " notifications non lues", fresh.front() + " (et d'autres : NOTIFICATIONS).");
+}
+
+std::vector<std::string> OnlineService::takeFilmNotices() {
+    std::vector<std::string> out;
+    out.swap(filmNotices_);
+    return out;
 }
 
 // ------------------------------------------------------------------ time played

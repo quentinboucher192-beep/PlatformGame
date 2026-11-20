@@ -20,6 +20,7 @@
 #include "game/GameServices.h"
 #include "game/content/CreaturePlaces.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/screens/FilmCatalog.h"
 #include "ui/screens/BossStoryScene.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
@@ -128,7 +129,7 @@ public:
             selItem_ = o.substr(8);
             showItem(selItem_);  // its category too
         }
-        if (o.rfind("col-gal:", 0) == 0) galTab_ = std::clamp(std::atoi(o.c_str() + 8), 0, 2);
+        if (o.rfind("col-gal:", 0) == 0) galTab_ = std::clamp(std::atoi(o.c_str() + 8), 0, 3);  // 2.81: 3, the films
         if (o.rfind("col-track:", 0) == 0) selTrack_ = o.substr(10);
         routeEnd_ = o == "col-end";  // the route scrolled to its end
         g_.ui.setFocus("col/tab" + std::to_string(tab_));
@@ -1478,32 +1479,54 @@ private:
         float dw = std::min(ui.s(470), area.w * 0.32f);
         Rect left{area.x, area.y, area.w - dw - ui.s(22), area.h};
         Rect det{left.right() + ui.s(22), area.y, dw, area.h};
-        static const char* kSub[3] = {"Planètes", "Gardiens", "Bestiaire"};
+        static const char* kSub[4] = {"Planètes", "Gardiens", "Bestiaire", "Films"};
         float x = left.x;
-        for (int i = 0; i < 3; ++i) {
-            auto items = galleryItems(i);
-            int known = 0;
-            for (const auto& it : items) known += it.known ? 1 : 0;
-            std::string lbl = std::string(kSub[i]) + "  " + std::to_string(known) + " / " + std::to_string(items.size());
-            float w = ui.text().measure(lbl, FontFace::Bold, ui.s(16)).x + ui.s(36);
+        // 2.81: four buttons now: measured first, their size lowered together if they would pass the list's width.
+        std::string lbls[4];
+        float subPx = 16.0f, sum = 0.0f;
+        for (int i = 0; i < 4; ++i) {
+            int known = 0, total = 0;
+            if (i < 3) {
+                auto items = galleryItems(i);
+                for (const auto& it : items) known += it.known ? 1 : 0;
+                total = static_cast<int>(items.size());
+            } else {  // Asterion's films and the trailer, those unlocked for this player
+                for (const FilmEntry& e : filmCatalog(g_, true)) known += e.unlocked ? 1 : 0, ++total;
+            }
+            lbls[i] = std::string(kSub[i]) + "  " + std::to_string(known) + " / " + std::to_string(total);
+            sum += ui.text().measure(lbls[i], FontFace::Bold, ui.s(subPx)).x + ui.s(36) + ui.s(10);
+        }
+        while (sum > left.w && subPx > 11.0f) {
+            subPx -= 0.5f;
+            sum = 0.0f;
+            for (const std::string& l : lbls) sum += ui.text().measure(l, FontFace::Bold, ui.s(subPx)).x + ui.s(36) + ui.s(10);
+        }
+        for (int i = 0; i < 4; ++i) {
+            const std::string& lbl = lbls[i];
+            float w = ui.text().measure(lbl, FontFace::Bold, ui.s(subPx)).x + ui.s(36);
             UIContext::ButtonStyle st;
             st.small = true;
             st.selected = galTab_ == i;
-            st.fontSize = 16;
+            st.fontSize = subPx;
             if (ui.button("gal" + std::to_string(i), {x, left.y, w, ui.s(40)}, lbl, st)) {
                 galTab_ = i;
                 galSel_.clear();
                 animClip_ = 0;
             }
-            static const char* const kGalFeatures[3] = {"gallery.tab.planets", "gallery.tab.bosses", "gallery.tab.creatures"};
+            static const char* const kGalFeatures[4] = {"gallery.tab.planets", "gallery.tab.bosses", "gallery.tab.creatures", "gallery.tab.films"};
             ui.newBadge("gal" + std::to_string(i), {x, left.y, w, ui.s(40)}, kGalFeatures[i], true, true);
             x += w + ui.s(10);
         }
-        static const char* kHint[3] = {"Une planète s'ouvre quand vous y arrivez.", "Un gardien entre dans la galerie quand vous le battez.",
-                                       "Une créature y entre dès que vous la rencontrez."};
+        static const char* kHint[4] = {"Une planète s'ouvre quand vous y arrivez.", "Un gardien entre dans la galerie quand vous le battez.",
+                                       "Une créature y entre dès que vous la rencontrez.", "Un film y entre quand vous l'avez vu ou débloqué."};
         if (x + ui.s(20) < left.right())
             ui.label(ui.elide(kHint[galTab_], FontFace::Body, fz(ui, 14), left.right() - x - ui.s(20)), {left.right(), left.y + ui.s(20)}, fz(ui, 14),
                      ui.theme().textDim, Align::Right, FontFace::Body, VAlign::Middle);
+        if (galTab_ == 3) {  // 2.81: the films (their list: FilmCatalog), on the whole width
+            if (ui.featureSeen && ui.isNew("gallery.tab.films")) ui.featureSeen("gallery.tab.films");
+            films_.draw({area.x, left.y + ui.s(56), area.w, area.bottom() - left.y - ui.s(56)});
+            return;
+        }
         auto items = galleryItems(galTab_);
         if (galTab_ > 0 && planetsOf_.empty()) {
             ui.label("Lecture des niveaux…", {left.x, left.y + ui.s(70)}, fz(ui, 16), ui.theme().textDim);
@@ -1672,6 +1695,7 @@ private:
     float exportedTimer_ = 0.0f;
     // Replays (2.45)
     DownloadedReplaysPanel replays_;
+    FilmList films_{g_, true};  // 2.81: Galerie › Films
 };
 
 }  // namespace

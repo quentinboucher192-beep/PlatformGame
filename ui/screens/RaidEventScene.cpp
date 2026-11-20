@@ -129,6 +129,7 @@ private:
                           loaded_ = true;
                           error_.clear();
                           if (!r.fromCache) skew_ = skewOf(r.data);
+                          asterionfilm::noteEvent(g_, r.data, id_, !r.fromCache);  // 2.81: « Après Asterion » (its time, its clans)
                       }));
     }
 
@@ -243,9 +244,18 @@ private:
             // 2.74 (phase 6): the Cœur d'Asterion fell (validated): its film again.
             const bool heartDown = jstr(at(at(data_, "event"), "body"), "coeur") == "detruit";
             const float vw = heartDown && asterionfilm::victory() ? std::min(asterionfilm::victoryButtonWidth(ui), band.w * 0.24f) : 0.0f;
+            float vx = (running ? wr.x - ui.s(8) - bw : wr.x);
             if (vw > 0.0f) {
-                const float vx = (running ? wr.x - ui.s(8) - bw : wr.x) - ui.s(8) - vw;
+                vx -= ui.s(8) + vw;
                 asterionfilm::victoryButton(g_, "victory", {vx, band.y + ui.s(6), vw, band.h - ui.s(12)});
+            }
+            // 2.81: « Après Asterion » beside it, once unlocked (took part, or the world outcome official).
+            const bool after = heartDown && asterionfilm::aftermath() &&
+                               (jget<bool>(at(data_, "aftermath"), "unlocked", false) || asterionfilm::aftermathUnlocked(g_.progression));
+            const float aw = after ? std::min(asterionfilm::aftermathButtonWidth(ui), band.w * 0.2f) : 0.0f;
+            if (aw > 0.0f) {
+                vx -= ui.s(8) + aw;
+                asterionfilm::aftermathButton(g_, "aftermath", {vx, band.y + ui.s(6), aw, band.h - ui.s(12)}, id_);
             }
             std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune."
                                        : "Le raid est terminé : ses résultats validés et vos récompenses.";
@@ -257,7 +267,8 @@ private:
                 text = "Résultat officiel : " + raids::resultLine(e.result, clanTag()) + ".";  // 2.69: frozen by the server
             else if (!running && worldEvent && !e.catchup)
                 text = "Le raid est terminé : le résultat officiel est figé dix minutes après la fin (derniers rapports).";
-            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - ww - bw - (vw > 0.0f ? vw + ui.s(8) : 0.0f) - ui.s(56), kText, FontFace::Bold);
+            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15,
+                band.w - rw - ww - bw - (vw > 0.0f ? vw + ui.s(8) : 0.0f) - (aw > 0.0f ? aw + ui.s(8) : 0.0f) - ui.s(56), kText, FontFace::Bold);
             y += ui.s(66);
         }
         // Four figures.

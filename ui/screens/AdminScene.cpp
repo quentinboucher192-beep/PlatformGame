@@ -14,7 +14,11 @@
 //                colours, a live preview), given as rewards of the challenges; 2.59, the
 //                trails, avatar frames and victory effects (a style, two colours);
 //   « Assets » (2.63, AdminAssets.cpp): every file of assets/ sorted in a tree, searched,
-//                previewed, with who uses it (read only).
+//                previewed, with who uses it (read only);
+//   « Films » (2.81, FilmCatalog.cpp): every mini-film and presentation of the game (the gigaboss stories, Asterion's
+//                three films, the trailer, the tutorial), each with its thumbnail, its length and where players see
+//                it, played whatever its lock; « Rejouer le didacticiel » replays it without touching anything.
+//                Local content: nothing is asked of the server.
 // The country, the last activity and the presence of a player appear only as they share them; 2.75: for moderation,
 // the presence and last activity with their real state when the player hides them (marked « masquée »), and a profile
 // that is not public (« profil masqué »): the server sends them to administrators only.
@@ -47,6 +51,7 @@
 #include "ui/screens/AdminEnemies.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
+#include "ui/screens/FilmCatalog.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 
@@ -109,9 +114,9 @@ const char* kFilters[] = {"all", "admins", "online"};
 const char* kKinds[] = {"all", "role", "challenge", "campaign", "creation", "enemy", "clan", "raid", "refused"};
 
 /// The tabs: Joueurs, Calendrier des défis (2.41), Journal, Sauvegardes, Campagne (2.44), Créations (2.45), Ennemis (2.46),
-/// Clans (2.66), Assets (2.63), Raids (the world events of the clan raids, phase 1).
+/// Clans (2.66), Assets (2.63), Raids (the world events of the clan raids, phase 1), Films (2.81).
 constexpr int kTabPlayers = 0, kTabCalendar = 1, kTabLog = 2, kTabBackups = 3, kTabCampaign = 4, kTabCreations = 5, kTabEnemies = 6,
-              kTabClans = 7, kTabAssets = 8, kTabRaids = 9;
+              kTabClans = 7, kTabAssets = 8, kTabRaids = 9, kTabFilms = 10;
 
 /// "20/11" of "2026-11-20".
 std::string shortDate(const std::string& date) { return date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) : date; }
@@ -137,8 +142,10 @@ public:
           enemies_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           clans_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
           assets_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const std::string& id) { showEnemy(id); }),
-          raids_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }) {
+          raids_(g, [this](const std::string& m, bool e) { say(m, e); }, [this](const ApiResult& r) { return lostRole(r); }),
+          films_(g, false) {
         if (open.rfind("raids", 0) == 0) tab_ = kTabRaids;
+        if (open.rfind("films", 0) == 0) tab_ = kTabFilms;  // 2.81 (the way back from the tutorial's replay)
         if (open.rfind("clans", 0) == 0) tab_ = kTabClans;  // 2.66
         if (open.rfind("backups", 0) == 0) tab_ = kTabBackups;
         // "creations[:new]" (the editor opened on a new suit); 2.59 "creations:<kind>[:new|:<id>]".
@@ -230,7 +237,7 @@ public:
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
         static const std::vector<std::string> kTabs = {"Joueurs", "Calendrier des défis", "Journal", "Sauvegardes", "Campagne", "Créations", "Ennemis",
-                                                       "Clans", "Assets", "Raids"};
+                                                       "Clans", "Assets", "Raids", "Films"};
         float tabW = 0.0f;
         for (const std::string& t : kTabs) tabW = std::max(tabW, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(44));
         float tabsW = tabW * static_cast<float>(kTabs.size()), tabsX = x0_ + titleW + ui.s(28);
@@ -262,6 +269,8 @@ public:
         ui.newBadge("tabassets", assetsTab, "admin.tab.assets", true, true);
         Rect raidsTab{tabsR.x + kTabRaids * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabraids", raidsTab, "admin.tab.raids", true, true);
+        Rect filmsTab{tabsR.x + kTabFilms * tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
+        ui.newBadge("tabfilms", filmsTab, "admin.tab.films", true, true);  // 2.81
         if (tab != tab_) {
             if (tab_ == kTabAssets) assets_.leave();  // its sound stops
             tab_ = tab;
@@ -298,6 +307,7 @@ public:
                 if (ui.featureSeen && ui.isNew("admin.tab.raids")) ui.featureSeen("admin.tab.raids");
                 raids_.enter();
             }
+            if (tab_ == kTabFilms && ui.featureSeen && ui.isNew("admin.tab.films")) ui.featureSeen("admin.tab.films");
         }
         Rect body{x0_, bodyY, W_, ui.screenH() - bodyY - ui.s(64)};
         if (tab_ == kTabCalendar) {
@@ -315,6 +325,7 @@ public:
             else if (tab_ == kTabClans) clans_.draw(inner);
             else if (tab_ == kTabAssets) assets_.draw(inner);
             else if (tab_ == kTabRaids) raids_.draw(inner);
+            else if (tab_ == kTabFilms) films_.draw(inner);  // 2.81
             else drawLog(inner);
         }
         drawStatus();
@@ -1492,6 +1503,7 @@ private:
     AdminClans clans_;      // « Clans » (2.66)
     AdminAssets assets_;    // « Assets » (2.63)
     AdminRaids raids_;      // « Raids » (clan raids, phase 1)
+    FilmList films_;  // 2.81: ADMINISTRATION › Films
     MenuBackground bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;

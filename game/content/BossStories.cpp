@@ -338,6 +338,25 @@ std::optional<BossStory> BossStory::fromJson(const Json& j, std::string* error) 
                 t.color = hexOr(ti, "color", s.color);
                 shot.titles.push_back(std::move(t));
             }
+        if (x.contains("roster") && x["roster"].is_object()) {  // 2.81: where the names of the clans of the fall go
+            const Json& ro = x["roster"];
+            StoryRoster r;
+            r.t = std::max(0.0f, finiteOr(jget<float>(ro, "t", 0.0f), 0.0f));
+            r.to = std::max(r.t, finiteOr(jget<float>(ro, "to", r.t + 5.0f), r.t + 5.0f));
+            if (ro.contains("area") && ro["area"].is_array() && ro["area"].size() == 4) {
+                float v[4];
+                for (size_t k = 0; k < 4; ++k) v[k] = ro["area"][k].is_number() ? finiteOr(ro["area"][k].get<float>(), 0.0f) : 0.0f;
+                v[0] = std::clamp(v[0], 0.0f, 0.9f);
+                v[1] = std::clamp(v[1], 0.0f, 0.9f);
+                r.area = {v[0], v[1], std::clamp(v[2], 0.1f, 1.0f - v[0]), std::clamp(v[3], 0.1f, 1.0f - v[1])};
+            }
+            r.size = std::clamp(finiteOr(jget<float>(ro, "size", r.size), r.size), 8.0f, 120.0f);
+            r.color = hexOr(ro, "color", s.color);
+            r.own = hexOr(ro, "own", s.accent);
+            r.generic = jstr(ro, "generic");
+            if (r.generic.empty()) return fail("shot " + std::to_string(s.shots.size() + 1) + ": a roster without its generic text");
+            shot.roster = std::move(r);
+        }
         if (s.version >= 2 && x.contains("stage")) {
             std::string why;
             shot.stage = StoryStage::fromJson(x["stage"], &why);
@@ -422,6 +441,12 @@ std::optional<BossStory> loadAsterionVictory(const std::filesystem::path& dataDi
 }
 
 std::optional<BossStory> loadAsterionVictory(std::string* error) { return loadAsterionVictory(Paths::dataDir(), error); }
+
+std::optional<BossStory> loadAsterionAftermath(const std::filesystem::path& dataDir, std::string* error) {
+    return loadFilm(dataDir / "raids" / "asterion_apres.json", error);
+}
+
+std::optional<BossStory> loadAsterionAftermath(std::string* error) { return loadAsterionAftermath(Paths::dataDir(), error); }
 
 StageAssets stageAssets(const BossStory& s) {
     StageAssets a;

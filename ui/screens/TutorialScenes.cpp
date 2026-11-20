@@ -470,7 +470,16 @@ std::unique_ptr<Scene> makeTutorialCard(GameServices& g, GameScene& game, const 
 
 // ====================================================================== the end card
 
-TutorialEndLayout layoutTutorialEnd(UIContext& ui) {
+namespace {
+/// 2.81: the end card's texts for the player, or for an administrator's replay.
+const char* endStartText(bool replay) { return replay ? "Retour à l'administration" : "Commencer l'aventure"; }
+const char* endReminder(bool replay) {
+    return replay ? "Didacticiel rejoué par un administrateur : rien n'a été enregistré, ni progression, ni souvenir, ni record, ni succès."
+                  : "Le didacticiel ne se rejoue pas. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause).";
+}
+}  // namespace
+
+TutorialEndLayout layoutTutorialEnd(UIContext& ui, bool replay) {
     TutorialEndLayout L;
     const float W = ui.screenW(), H = ui.screenH();
     const float pad = ui.s(44), gap = ui.s(22);
@@ -494,23 +503,24 @@ TutorialEndLayout layoutTutorialEnd(UIContext& ui) {
     const float gridH = learntTitleH + ui.s(12) + rows * itemH + (rows - 1) * ui.s(10);
     // The souvenir: « Souvenir », the title's pill, where it is.
     L.souvenirPx = px(ui, 20, 12.5f);
-    const float souvenirH = std::max(ui.s(64), L.souvenirPx * 2.6f);
+    const float souvenirH = replay ? 0.0f : std::max(ui.s(64), L.souvenirPx * 2.6f);  // 2.81: a replay gives none
     // Footer: the reminder (wrapped, left), the buttons (right).
     L.reminderPx = px(ui, 18, 12.0f);
     L.buttonPx = px(ui, 24, 13.0f);
     const float btnH = std::max(ui.s(70), L.buttonPx * 2.4f);
-    const float startW = std::min(inner, ui.text().measure("Commencer l'aventure", FontFace::Bold, L.buttonPx).x + ui.s(64));
-    const float wearW = std::min(inner, std::max(ui.text().measure("Porter ce titre", FontFace::Bold, L.buttonPx).x,
-                                                 ui.text().measure("Titre porté", FontFace::Bold, L.buttonPx).x) +
-                                            ui.s(56));
-    const std::string reminder = "Le didacticiel ne se rejoue pas. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause).";
-    const float buttonsW = startW + ui.s(16) + wearW;
+    const float startW = std::min(inner, ui.text().measure(endStartText(replay), FontFace::Bold, L.buttonPx).x + ui.s(64));
+    const float wearW = replay ? 0.0f
+                               : std::min(inner, std::max(ui.text().measure("Porter ce titre", FontFace::Bold, L.buttonPx).x,
+                                                          ui.text().measure("Titre porté", FontFace::Bold, L.buttonPx).x) +
+                                                     ui.s(56));
+    const std::string reminder = endReminder(replay);
+    const float buttonsW = startW + (replay ? 0.0f : ui.s(16)) + wearW;
     const float remRoom = inner - buttonsW - ui.s(28);
     const bool side = remRoom >= ui.s(420);
     const float remW = side ? remRoom : inner;
     const float remH = ui.text().measureWrapped(reminder, FontFace::Body, L.reminderPx, remW).y;
     const float footH = side ? std::max(btnH, remH) : remH + ui.s(14) + btnH;
-    const float panelH = pad + headH + gap + gridH + gap + souvenirH + gap + footH + pad;
+    const float panelH = pad + headH + gap + gridH + gap + (replay ? 0.0f : souvenirH + gap) + footH + pad;
     L.panel = {(W - panelW) * 0.5f, std::max(ui.s(10), (H - panelH) * 0.5f), panelW, panelH};
     const float x0 = L.panel.x + pad;
     float y = L.panel.y + pad;
@@ -528,7 +538,7 @@ TutorialEndLayout layoutTutorialEnd(UIContext& ui) {
     }
     y += rows * itemH + (rows - 1) * ui.s(10) + gap;
     L.souvenirBox = {x0, y, inner, souvenirH};
-    {
+    if (!replay) {
         const float sx = x0 + ui.s(20), cy = y + souvenirH * 0.5f;
         const float lw = ui.text().measure("Souvenir", FontFace::Bold, L.souvenirPx).x;
         const float lh = ui.text().measure("Souvenir", FontFace::Bold, L.souvenirPx).y;
@@ -540,7 +550,7 @@ TutorialEndLayout layoutTutorialEnd(UIContext& ui) {
         const float wx = L.souvenirPill.right() + ui.s(16);
         L.souvenirWhere = {wx, cy - lh * 0.5f, std::max(0.0f, x0 + inner - ui.s(20) - wx), lh};
     }
-    y += souvenirH + gap;
+    if (!replay) y += souvenirH + gap;
     if (side) {
         L.reminder = {x0, y + (footH - remH) * 0.5f, remW, remH};
         L.start = {x0 + inner - startW, y + (footH - btnH) * 0.5f, startW, btnH};
@@ -602,7 +612,7 @@ namespace {
 
 class TutorialEndScene : public Scene {
 public:
-    explicit TutorialEndScene(GameServices& g) : g_(g) {}
+    explicit TutorialEndScene(GameServices& g, bool replay = false) : g_(g), replay_(replay) {}
     void onEnter() override { g_.ui.setFocus("tend/start"); }
     void update(float dt) override { t_ += dt; }
     bool isOverlay() const override { return true; }
@@ -613,7 +623,7 @@ public:
         Renderer& r = ui.r();
         r.fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{27, 35, 80, 255}.withAlphaF(0.85f * k));
         r.drawGlow({ui.screenW() * 0.5f, ui.screenH() * 0.3f}, ui.screenH() * 0.7f, Color{90, 74, 176, 255}.withAlphaF(0.5f * k));
-        const TutorialEndLayout L = layoutTutorialEnd(ui);
+        const TutorialEndLayout L = layoutTutorialEnd(ui, replay_);
         r.fillRoundedRect(L.panel.expanded(ui.s(4)), ui.s(34), kGold);
         r.fillRoundedRect(L.panel, ui.s(30), kCream);
         drawBip(r, L.bip.center(), L.bip.w * 0.72f, t_);
@@ -636,36 +646,40 @@ public:
             const float fs = ui.fitFont(items[i], FontFace::Body, L.itemPx / ui.scale(), room, 0.7f);
             ui.label(ui.elide(items[i], FontFace::Body, fs, room), {tx, c.center().y}, fs, kInk, Align::Left, FontFace::Body, VAlign::Middle);
         }
-        r.fillRoundedRect(L.souvenirBox, ui.s(16), Color{255, 241, 201, 255});
-        r.drawRoundedRect(L.souvenirBox, ui.s(16), kGold, std::max(1.0f, ui.s(2)));
-        ui.label("Souvenir", L.souvenirLabel.pos(), L.souvenirPx / ui.scale(), kInk, Align::Left, FontFace::Bold);
-        r.drawGlow(L.souvenirPill.center(), L.souvenirPill.w * 0.6f, Color{255, 180, 84, 90});
-        r.fillRoundedRect(L.souvenirPill, ui.s(12), Color::white());
-        r.drawRoundedRect(L.souvenirPill, ui.s(12), Color{255, 180, 84, 255}, std::max(1.0f, ui.s(2)));
-        ui.label("Titre « Premier envol »", L.souvenirPill.center(), L.souvenirPx / ui.scale(), kInk, Align::Center, FontFace::Bold, VAlign::Middle);
-        if (L.souvenirWhere.w > ui.s(40)) {
-            const std::string where = "dans le Vestiaire de la Collection";
-            const float fs = ui.fitFont(where, FontFace::Body, L.souvenirPx / ui.scale(), L.souvenirWhere.w, 0.7f);
-            ui.label(ui.elide(where, FontFace::Body, fs, L.souvenirWhere.w), {L.souvenirWhere.x, L.souvenirWhere.center().y}, fs, kInkDim, Align::Left,
-                     FontFace::Body, VAlign::Middle);
+        if (!replay_) {  // 2.81: an administrator's replay gives no souvenir
+            r.fillRoundedRect(L.souvenirBox, ui.s(16), Color{255, 241, 201, 255});
+            r.drawRoundedRect(L.souvenirBox, ui.s(16), kGold, std::max(1.0f, ui.s(2)));
+            ui.label("Souvenir", L.souvenirLabel.pos(), L.souvenirPx / ui.scale(), kInk, Align::Left, FontFace::Bold);
+            r.drawGlow(L.souvenirPill.center(), L.souvenirPill.w * 0.6f, Color{255, 180, 84, 90});
+            r.fillRoundedRect(L.souvenirPill, ui.s(12), Color::white());
+            r.drawRoundedRect(L.souvenirPill, ui.s(12), Color{255, 180, 84, 255}, std::max(1.0f, ui.s(2)));
+            ui.label("Titre « Premier envol »", L.souvenirPill.center(), L.souvenirPx / ui.scale(), kInk, Align::Center, FontFace::Bold, VAlign::Middle);
+            if (L.souvenirWhere.w > ui.s(40)) {
+                const std::string where = "dans le Vestiaire de la Collection";
+                const float fs = ui.fitFont(where, FontFace::Body, L.souvenirPx / ui.scale(), L.souvenirWhere.w, 0.7f);
+                ui.label(ui.elide(where, FontFace::Body, fs, L.souvenirWhere.w), {L.souvenirWhere.x, L.souvenirWhere.center().y}, fs, kInkDim, Align::Left,
+                         FontFace::Body, VAlign::Middle);
+            }
         }
         TextStyle rs;
         rs.size = L.reminderPx;
         rs.color = kInkDim;
-        ui.text().drawWrapped("Le didacticiel ne se rejoue pas. Les pouvoirs restent expliqués dans le Guide des pouvoirs (menu Pause).",
-                              L.reminder.pos(), L.reminder.w, rs);
+        ui.text().drawWrapped(endReminder(replay_), L.reminder.pos(), L.reminder.w, rs);
         const bool ready = t_ > 0.8f;
         ui.pushId("tend");
         const bool worn = g_.collection.equippedId("title") == tutorial::kSouvenirTitle;
-        if (softButton(ui, "wear", L.wear, worn ? "Titre porté" : "Porter ce titre", L.buttonPx, false, ready) && !worn) {
+        if (!replay_ && softButton(ui, "wear", L.wear, worn ? "Titre porté" : "Porter ce titre", L.buttonPx, false, ready) && !worn) {
             g_.collection.equip("title", tutorial::kSouvenirTitle);
             g_.collection.save();
             g_.syncCosmetics();
             g_.uiSound("ui_confirm", 0.6f);
         }
-        const bool start = softButton(ui, "start", L.start, "Commencer l'aventure", L.buttonPx, true, ready);
+        const bool start = softButton(ui, "start", L.start, endStartText(replay_), L.buttonPx, true, ready);
         ui.popId();
-        if (start && !leaving_) {
+        if (start && !leaving_ && replay_) {  // 2.81: back to ADMINISTRATION › Films
+            leaving_ = true;
+            g_.app.switchScene(makeAdmin(g_, "films"), 0.6f);
+        } else if (start && !leaving_) {
             // The adventure starts on Sylvanox, its levels' map.
             leaving_ = true;
             g_.app.switchScene(makeLevelSelect(g_, "sylvanox"), 0.6f);
@@ -675,6 +689,7 @@ public:
 
 private:
     GameServices& g_;
+    bool replay_ = false;
     float t_ = 0.0f;
     bool leaving_ = false;
 };
@@ -764,7 +779,7 @@ private:
 
 }  // namespace
 
-std::unique_ptr<Scene> makeTutorialEnd(GameServices& g) { return std::make_unique<TutorialEndScene>(g); }
+std::unique_ptr<Scene> makeTutorialEnd(GameServices& g, bool replay) { return std::make_unique<TutorialEndScene>(g, replay); }
 
 std::unique_ptr<Scene> makeTutorialWelcome(GameServices& g) { return std::make_unique<TutorialWelcomeScene>(g); }
 
@@ -778,6 +793,21 @@ std::unique_ptr<Scene> makeTutorialRun(GameServices& g) {
     PlayOptions opt;
     opt.level = std::move(*level);
     opt.tutorial = true;
+    const std::string id = opt.level->id;
+    return makeGameScene(g, id, std::move(opt));
+}
+
+std::unique_ptr<Scene> makeTutorialReplay(GameServices& g) {
+    std::string error;
+    auto level = tutorial::loadLevel(&error);
+    if (!level) {
+        Log::error("Didacticiel illisible : {}", error);
+        return nullptr;
+    }
+    PlayOptions opt;
+    opt.level = std::move(*level);
+    opt.tutorial = true;
+    opt.tutorialReplay = true;  // nothing of it is kept (GameScene)
     const std::string id = opt.level->id;
     return makeGameScene(g, id, std::move(opt));
 }

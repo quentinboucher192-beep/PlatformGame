@@ -702,6 +702,7 @@ int main(int argc, char** argv) {
         game.updates.update();
         if (sendPresence) game.updatePresence(dt);
         game.spectate.update(dt);
+        asterionfilm::updateParty(game, dt);  // 2.81: « Après Asterion » with the clans of the fall, at its time
         toasts.update(game, dt);
     };
     app.onOverlay = [&game, &toasts] { toasts.render(game); };

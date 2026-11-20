@@ -21,6 +21,7 @@
 #include "packaging/Sha256.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/MenuBackground.h"
+#include "ui/screens/AsterionFilm.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/OnlineMigration.h"
 
@@ -311,6 +312,10 @@ private:
         if (kind == "challenge_reward") return "Voir la Collection";
         // 2.66: a clan still there (a dissolved one has no page any more).
         if (kind == "clan" && n.contains("data") && jstr(n["data"], "event") != "dissolved" && !jstr(n["data"], "clan_id").empty()) return "Voir le clan";
+        // 2.81: Asterion fell: « Après Asterion », watched with the clans of the fall.
+        if (kind == "raid" && n.contains("data") && !jstr(n["data"], "event_id").empty() && jstr(n["data"], "event") == "heart_film" &&
+            asterionfilm::aftermath())
+            return "Regarder le film";
         // Clan raids: the sheet of the event (a cancelled one has nothing more to show).
         if (kind == "raid" && n.contains("data") && !jstr(n["data"], "event_id").empty() && jstr(n["data"], "event") != "cancelled")
             return "Voir l'événement";
@@ -335,6 +340,10 @@ private:
                 else if (g_.migration.available() && securityReason(n) == "migration_in" && jstr(n["data"], "action") == "progress_restore")
                     openRestore();
                 else g_.app.pushScene(makeOnlineSettings(g_, 3));
+                return;
+            }
+            if (kind == "raid" && jstr(n["data"], "event") == "heart_film" && asterionfilm::aftermath()) {  // 2.81: the film, with the clans
+                asterionfilm::watch(g_, jstr(n["data"], "event_id"));
                 return;
             }
             if (kind == "raid") {  // the sheet of a clan raid event

@@ -46,7 +46,8 @@ struct TutorialEndLayout {
     std::vector<Rect> learnt;
     float titlePx = 0, subtitlePx = 0, itemPx = 0, souvenirPx = 0, reminderPx = 0, buttonPx = 0;
 };
-TutorialEndLayout layoutTutorialEnd(UIContext& ui);
+/// 2.81 `replay` (an administrator's): no souvenir, no « Porter ce titre », « Retour à l'administration ».
+TutorialEndLayout layoutTutorialEnd(UIContext& ui, bool replay = false);
 
 /// The welcome of the first launch (`confirm`: « Passer le didacticiel ? »), the same checks.
 struct TutorialWelcomeLayout {
@@ -57,6 +58,6 @@ struct TutorialWelcomeLayout {
 TutorialWelcomeLayout layoutTutorialWelcome(UIContext& ui, bool confirm);
 
 std::unique_ptr<Scene> makeTutorialCard(GameServices& g, GameScene& game, const std::string& card);
-std::unique_ptr<Scene> makeTutorialEnd(GameServices& g);
+std::unique_ptr<Scene> makeTutorialEnd(GameServices& g, bool replay = false);
 
 }  // namespace cosmic

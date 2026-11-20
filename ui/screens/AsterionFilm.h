@@ -14,7 +14,9 @@
 #include <string>
 
 #include "engine/core/Math.h"
+#include "engine/core/Json.h"
 #include "engine/core/Scene.h"
+#include "game/raid/Aftermath.h"
 
 namespace cosmic {
 
@@ -52,6 +54,44 @@ std::shared_ptr<const BossStory> victory();
 std::unique_ptr<Scene> makeVictory(GameServices& g, bool overRaid);
 float victoryButtonWidth(UIContext& ui);
 bool victoryButton(GameServices& g, const std::string& id, const Rect& r);
+
+/// 2.81: « Après Asterion » (data/raids/asterion_apres.json, game/raid/Aftermath.h): what the fall changes in the world,
+/// watched together. Who: every player of a Heart instance (right after the victory film: playFall) and, at the same
+/// server time, the online members of the clans present at the fall (their « heart_film » notification, read every
+/// minute: updateParty). Never over a level: there, a notification offers it (NOTIFICATIONS › « Regarder le film »); it
+/// plays by itself only in the menus or after the raid's victory film. A late joiner starts mid-film (« Depuis le
+/// début » offered). Watched again from the sheet of the event, the clan's raid recap and the Collection, once unlocked:
+/// for a player who took part in an event whose Heart fell, or for everyone once the world outcome « Asterion est
+/// tombé » is official (the server says which; kept in the progression for offline viewing). nullptr without its files.
+std::shared_ptr<const BossStory> aftermath();
+bool aftermathUnlocked(const Progression& p);
+/// What an answer of the server says (GET /raids/events/{id}: its `aftermath`; `eventId` its id): unlocks it, and
+/// notes the start time and the clans of the fall (played by updateParty while it is live). `answerFresh`: not from
+/// the cache (its server_time measures this computer's clock).
+void noteEvent(GameServices& g, const Json& answer, const std::string& eventId, bool answerFresh = true);
+/// 2.81: the overview of the raids (its events and their official results): an outcome « vaincu » unlocks it.
+void noteOverview(GameServices& g, const Json& answer);
+/// The film with the clans of event `eventId` when known (else the generic text), played at the server's time when it
+/// is live and `together`, else from its start. `overRaid`: over a raid's combat. nullptr without its files.
+std::unique_ptr<Scene> makeAftermath(GameServices& g, const std::string& eventId, bool together, bool overRaid = false);
+/// An administrator's preview (ADMINISTRATION › Films) or a test: the generic text, from its start.
+std::unique_ptr<Scene> makeAftermathPreview(GameServices& g, bool overRaid = false);
+/// The validated fall (or a test's: `eventId` empty, nothing asked of the server): the victory film, then « Après
+/// Asterion » at the server's time (a test: the generic text, from its start).
+void playFall(GameServices& g, const std::string& eventId, bool overRaid);
+/// From a notification or a button: plays it (together while it is live), reading the event first when needed.
+void watch(GameServices& g, const std::string& eventId);
+/// « Après Asterion » (sheet of the event, raid recap): its width, then the button (keyboard, gamepad, mouse); pressed,
+/// watch(). False without the film.
+float aftermathButtonWidth(UIContext& ui);
+bool aftermathButton(GameServices& g, const std::string& id, const Rect& r, const std::string& eventId);
+/// The watch party, once an image (main loop): the « heart_film » notifications read, the film pushed in the menus at
+/// its time, a toast in a level (never pushed over one).
+void updateParty(GameServices& g, float dt);
+/// Tests: forgets every party noted.
+void resetParties();
+/// Tests: the party noted for `eventId` (nullptr: none).
+const aftermath::Party* partyOf(const std::string& eventId);
 
 }  // namespace asterionfilm
 

@@ -74,6 +74,11 @@ struct PlayOptions {
     /// training run (nothing of it counts), Bip by Nova, its explanation cards; its end card
     /// leads to the map of Sylvanox. Left from its pause menu, it is skipped for good.
     bool tutorial = false;
+    /// 2.81: ADMINISTRATION › Films › « Rejouer le didacticiel »: the tutorial again from its start, for an
+    /// administrator, that touches nothing: its state in the progression stays as it was (never « started »,
+    /// « skipped » nor « finished »), no souvenir, no title worn, nothing counted (a training run, as always); left or
+    /// finished, it goes back to ADMINISTRATION › Films.
+    bool tutorialReplay = false;
 };
 
 /// A finished run's segments (results screen → Segments): this run, my best segments, my
@@ -126,6 +131,8 @@ std::unique_ptr<Scene> makeSplashScene(GameServices& g);
 /// then the tutorial itself (nullptr from makeTutorialRun when its level cannot be read).
 std::unique_ptr<Scene> makeTutorialWelcome(GameServices& g);
 std::unique_ptr<Scene> makeTutorialRun(GameServices& g);
+/// 2.81: the tutorial replayed by an administrator (PlayOptions::tutorialReplay): nothing of it is kept.
+std::unique_ptr<Scene> makeTutorialReplay(GameServices& g);
 std::unique_ptr<Scene> makeMainMenu(GameServices& g);
 /// ADMINISTRATION (2.40, accounts with the admin role only). `open`: "log" for the Journal,
 /// "players:<search>[:confirm]", "calendar[:<YYYY-MM>[:<challenge id>[:objectif]]]" (2.41,

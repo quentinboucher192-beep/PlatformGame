@@ -2661,6 +2661,20 @@
    "parents": [
     "raids.sheets"
    ]
+  },
+  {
+   "id": "admin.tab.films",
+   "version": "2.81.0",
+   "parents": [
+    "menu.admin"
+   ]
+  },
+  {
+   "id": "gallery.tab.films",
+   "version": "2.81.0",
+   "parents": [
+    "collection.tab.gallery"
+   ]
   }
  ]
 }

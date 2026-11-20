@@ -377,7 +377,8 @@ public:
     void playVictory() {
         // 2.75.5: the world's event in the journal (the film, the end of the raid, stays as it was).
         notify("MONDE · Asterion est tombé", "Le Cœur a cédé sous les coups de tous les groupes.", kGold, raidmenu::Section::Titan, nullptr);
-        if (auto s = asterionfilm::makeVictory(g_, true)) g_.app.pushScene(std::move(s));
+        // 2.81: then « Après Asterion », with the clans of the fall at the server's time (a test: the generic text)
+        asterionfilm::playFall(g_, test_ ? std::string() : entry_.eventId, true);
     }
 
     void catchUp() {

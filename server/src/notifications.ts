@@ -233,6 +233,9 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
             return `Le Cœur d'Asterion s'ouvre : les sept gigaboss sont tombés, rejoignez le combat final de ${raid}`;
         case "heart_fallen":
             return `Asterion est tombé ! Le Cœur a cédé sous les coups de tous les clans (${raid}) : vos récompenses vous attendent`;
+        // 2.81 (raidHeart.ts): « Après Asterion », watched together by the clans present at the fall.
+        case "heart_film":
+            return `Asterion est tombé — regarder le film avec votre clan : « Après Asterion » (${raid})`;
         // 2.69 (raidWorld.ts): the official result of a world event, a suspension, a catch-up session.
         case "results": {
             const outcome = d.outcome === "vaincu" ? "Asterion est tombé" : "Asterion a survécu";

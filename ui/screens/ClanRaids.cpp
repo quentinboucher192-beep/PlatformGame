@@ -73,6 +73,7 @@ void ClanRaids::load() {
                       error_.clear();
                       if (!r.fromCache) skew_ = skewOf(r.data);
                       unread_ = jget<int>(r.data, "unread", 0);
+                      asterionfilm::noteOverview(g_, r.data);  // 2.81: an official « Asterion est tombé » unlocks « Après Asterion »
                       if (!r.fromCache && g_.online.loggedIn()) rememberClaimed(r.data.value("rewards_claimed", Json::array()));
                   }));
 }

@@ -94,7 +94,8 @@ void GameScene::onEnter() {
     // online); it is started: never offered again.
     if (opt_.tutorial) {
         world_->setTraining(true);
-        if (g_.progression.tutorial != "finished" && g_.progression.tutorial != "skipped") {
+        // 2.81: an administrator's replay leaves the progression as it is.
+        if (!opt_.tutorialReplay && g_.progression.tutorial != "finished" && g_.progression.tutorial != "skipped") {
             g_.progression.tutorial = "started";
             g_.progression.save();
         }
@@ -579,6 +580,10 @@ std::pair<int, int> GameScene::tutorialCardRank(const std::string& id) const {
 }
 
 void GameScene::leaveTutorial() {
+    if (opt_.tutorialReplay) {  // 2.81: an administrator's replay: back to ADMINISTRATION › Films, nothing written
+        g_.app.switchScene(makeAdmin(g_, "films"), 0.4f);
+        return;
+    }
     if (!g_.progression.tutorialFinished()) {
         g_.progression.tutorial = "skipped";
         g_.progression.save();
@@ -588,6 +593,12 @@ void GameScene::leaveTutorial() {
 
 void GameScene::finishTutorial() {
     ended_ = true;
+    if (opt_.tutorialReplay) {  // 2.81: an administrator's replay: its end card, nothing granted nor written
+        std::string victory = g_.app.resources().soundPath("music/victory.ogg");
+        if (!victory.empty()) g_.app.audio().playSound(victory, 0.9f, 1.0f, 0.0f, AudioBus::Music);
+        g_.app.pushScene(makeTutorialEnd(g_, true));
+        return;
+    }
     // Finished: never again, and its souvenir (a title of the Vestiaire, given on this computer).
     g_.progression.tutorial = "finished";
     g_.progression.save();

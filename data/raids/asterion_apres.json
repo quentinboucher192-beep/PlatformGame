@@ -1,0 +1,61 @@
+{
+ "format": "cosmic.film",
+ "version": 1,
+ "comment": "The aftermath film of Asterion (2.81, docs/RAIDS.md §25): what the fall of Asterion changes in the world, played for every player of a Heart instance right after the victory film and, at the same moment, for the online members of the clans present at the fall (the start time stamped by the server), then from the sheet of the event, the clan's raid recap and the Collection. Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`), its titles in the picture (`titles`, as in asterion_victoire.json) and, for one shot, `roster`: where the game writes the names of the clans present at the fall (given by the server, the viewer's own clan highlighted; `generic` when there are none: offline, a test), `t` and `to` in seconds of the shot as written, `area` its rectangle in fractions of the picture (x, y, width, height), `size` its largest size, `color` the names' glow, `own` the colour of the viewer's clan. The animated scene of each shot (`scene`) is in asterion_apres_scenes.json, written by tools/assetgen/environment/story_asterion_apres.py: a length changed here stretches the scene and its titles, nothing to regenerate. The English is in data/i18n/en.json.",
+ "boss": "asterion",
+ "kind": "film",
+ "title": "APRÈS ASTERION",
+ "color": "#ffd27a",
+ "accent": "#39f0d8",
+ "music": "music/aethra_ambience.ogg",
+ "scenes": "raids/asterion_apres_scenes.json",
+ "shots": [
+  {
+   "scene": "silence",
+   "duration": 9.0,
+   "text": "Là où se dressait Asterion, il ne restait qu'un nuage d'or. Pour la première fois depuis des éons, le vide se taisait."
+  },
+  {
+   "scene": "eclats",
+   "duration": 10.0,
+   "text": "Son corps était fait de mondes dévorés. Libérés, leurs éclats se rassemblèrent, et des mondes oubliés se rallumèrent."
+  },
+  {
+   "scene": "systeme",
+   "duration": 10.0,
+   "text": "Sylvanox, Pyralis, Glacior, Aethra et les Confins virent leur ciel s'éclaircir. Le festin promis n'aurait jamais lieu."
+  },
+  {
+   "scene": "retour",
+   "duration": 10.0,
+   "text": "Les peuples partis vers les étoiles osèrent enfin revenir. Les enfants levèrent les yeux vers une lumière nouvelle."
+  },
+  {
+   "scene": "phenix",
+   "duration": 10.0,
+   "text": "Aux Confins, le Phénix vit se lever une aube qu'il n'avait pas allumée. Cette nuit-là, pour la première fois, il dormit."
+  },
+  {
+   "scene": "lyse",
+   "duration": 9.0,
+   "text": "Au cœur du système, l'étoile morte frémit : une étincelle de l'onde s'était posée sur elle."
+  },
+  {
+   "scene": "clans",
+   "duration": 13.0,
+   "text": "Le nom des clans de la chute fut gravé dans la lumière de la nouvelle étoile.",
+   "titles": [
+    {"t": 0.8, "to": 12.6, "text": "ILS ÉTAIENT LÀ", "pos": [0.5, 0.16], "width": 0.62, "size": 58, "color": "#ffd27a"}
+   ],
+   "roster": {"t": 2.0, "to": 12.6, "area": [0.08, 0.34, 0.84, 0.58], "size": 34, "color": "#ffd27a", "own": "#39f0d8", "generic": "les clans de la galaxie"}
+  },
+  {
+   "scene": "veille",
+   "duration": 10.0,
+   "text": "",
+   "titles": [
+    {"t": 1.2, "to": 9.4, "text": "LA GALAXIE EST LIBRE", "subtitle": "Elle se souviendra de ses héros", "pos": [0.5, 0.34], "width": 0.8, "size": 70, "color": "#ffd27a"}
+   ]
+  }
+ ]
+}
