@@ -24,7 +24,7 @@ import { isAdminViewer } from "./friends";
 import { Errors, json, nowIso, type Ctx } from "./http";
 import { CATALOGS, HEART, partOf } from "./raidMap";
 import { HEART_OBJECTIVE, HEART_UNITS, RELICS, phaseOf } from "./raidHeart";
-import { RAID_REWARDS, GIGABOSS_BADGES } from "./raidRewards";
+import { GIGABOSS_BADGES, PARTICIPATION_TICKS, RAID_REWARDS, ZONE_TABLE_COLUMNS, contributionTables, type ZoneTableRow } from "./raidRewards";
 import { RESULTS_GRACE_MS, pendingOf, resultSummaries } from "./raidWorld";
 import { NO_REVIEWS, reviewSummaries } from "./raidReviews";
 
@@ -214,6 +214,9 @@ interface ZoneContribRow {
     mechanisms: number;
     support: number;
     zones: number;
+    deaths: number | null; // 2.78: null over tables of before (the games did not count them)
+    revived: number | null;
+    counted: number; // the tables that count the deaths
 }
 interface MyInstanceRow {
     id: string;
@@ -238,6 +241,7 @@ interface PlayerTotals {
     objectives: number;
     ticks: number;
     zones: number; // zones whose table names them
+    deaths: number | null; // 2.78: times down in the zones' tables (null: no table of theirs counts them)
 }
 
 const byName = (a: PlayerTotals, b: PlayerTotals) => (a.username < b.username ? -1 : a.username > b.username ? 1 : a.id < b.id ? -1 : 1);
@@ -255,6 +259,20 @@ function bestOf(players: PlayerTotals[], value: (p: PlayerTotals) => number, me:
     };
 }
 
+/**
+ * « Le moins de morts » (2.78): among the clan's players whose tables count the deaths and who played 5 minutes at least
+ * (never a player who barely came), the fewest; then the longest in play, then the name. null when no table counts them.
+ */
+function fewestDeaths(players: PlayerTotals[], me: string) {
+    const counted = players.filter((p) => p.deaths !== null);
+    if (!counted.length) return null;
+    const top = counted
+        .filter((p) => p.ticks >= PARTICIPATION_TICKS)
+        .sort((a, b) => a.deaths! - b.deaths! || b.ticks - a.ticks || byName(a, b))[0];
+    if (!top) return { player: null, value: 0, share: 0 };
+    return { player: { id: top.id, username: top.username, avatar: top.avatar, me: top.id === me }, value: top.deaths!, share: 0 };
+}
+
 /** GET /clans/{clanId}/raids/{eventId}/recap: the « fiche récapitulative » of one finished raid of the clan. */
 export async function raidRecap(ctx: Ctx): Promise<Response> {
     const { me, clan } = await clanOf(ctx);
@@ -265,7 +283,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
     if (!ID_RE.test(eventId)) throw Errors.notFound("RAID_NOT_FOUND", "Raid introuvable.");
     const e = await db.prepare(`${FINISHED_SQL} AND e.id = ?5`).bind(clan.id, now, HEART_BRANCH, HEART_OBJECTIVE, eventId).first<EventRow>();
     if (!e) throw Errors.notFound("RAID_NOT_FOUND", "Ce raid n'est pas terminé, ou le clan n'y a pas pris part.");
-    const [objR, instR, heartR, fightsR, zonesR, contribR, zoneContribR, rewardsR, titlesR, regR, mineR] = await db.batch([
+    const [objR, instR, heartR, fightsR, zonesR, contribR, zoneContribR, rewardsR, titlesR, regR, mineR, tablesR] = await db.batch([
         db
             .prepare(
                 `SELECT o.branch, o.objective_id, o.instance_id, o.accepted_at, i.clan_id, i.group_no, i.relieves, c.tag FROM raid_branch_objectives o
@@ -293,7 +311,8 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
             .bind(e.id, clan.id, HEART_BRANCH),
         db
             .prepare(
-                `SELECT z.player_id, SUM(z.mechanisms) AS mechanisms, SUM(z.support) AS support, COUNT(DISTINCT z.branch || ':' || z.zone) AS zones
+                `SELECT z.player_id, SUM(z.mechanisms) AS mechanisms, SUM(z.support) AS support, COUNT(DISTINCT z.branch || ':' || z.zone) AS zones,
+                        SUM(z.deaths) AS deaths, SUM(z.revived) AS revived, COUNT(z.deaths) AS counted
                  FROM raid_zone_contributions z JOIN raid_registrations r ON r.event_id = z.event_id AND r.player_id = z.player_id
                  WHERE z.event_id = ?1 AND r.clan_id = ?2 GROUP BY z.player_id`,
             )
@@ -315,6 +334,16 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
                  ORDER BY i.created_at, i.id`,
             )
             .bind(e.id, me),
+        // 2.78: the « Tableau des contributions » of the clan's groups (each zone's validated table, the whole raid added up).
+        db
+            .prepare(
+                `SELECT ${ZONE_TABLE_COLUMNS}
+                 FROM raid_zone_contributions z JOIN raid_instances i ON i.id = z.instance_id JOIN clans c ON c.id = i.clan_id
+                 LEFT JOIN players p ON p.id = z.player_id
+                 WHERE z.event_id = ?1 AND i.clan_id = ?3
+                 ORDER BY z.accepted_at DESC, z.instance_id, z.zone, z.seat, z.from_tick LIMIT 400`,
+            )
+            .bind(e.id, me, clan.id),
     ]);
     const objectives = objR!.results as ObjectiveRow[];
     const clanInstances = (instR!.results as ClanInstanceRow[]).filter((i) => i.members > 0);
@@ -382,6 +411,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
             objectives: 0,
             ticks: 0,
             zones: 0,
+            deaths: null,
         };
         if (r.heart) t.heartDamage += r.boss_damage;
         else t.gigabossDamage += r.boss_damage;
@@ -396,6 +426,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
         if (!t) continue; // a zone's table without the player's contributions: counted with them only
         t.mechanisms += z.mechanisms;
         t.zones = z.zones;
+        if (z.counted > 0) t.deaths = z.deaths ?? 0;
     }
     const players = [...totals.values()].filter((t) => t.ticks > 0);
     const best = {
@@ -405,8 +436,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
         revives: bestOf(players, (p) => p.revives, me, false),
         mechanisms: bestOf(players, (p) => p.mechanisms, me, false),
         objectives: bestOf(players, (p) => p.objectives, me, false),
-        // 2.78.0 brings each player's deaths in the contributions: until then, nothing is said.
-        fewest_deaths: null,
+        fewest_deaths: fewestDeaths(players, me),
     };
 
     // The clan's groups: the groups of its roster that played, its groups of reinforcement, the wiped ones.
@@ -440,6 +470,9 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
     const heartRank = meTotals && meTotals.heartDamage > 0 ? players.filter((p) => p.heartDamage > meTotals.heartDamage).length + 1 : 0;
     const myParts = parts.filter((p) => p.by?.me).map((p) => p.part);
     const pending = await pendingOf(db, e.id, clan.id);
+    // 2.78: the deaths, from the zones' tables that count them (an event of before: none, « — »).
+    const counted = players.filter((p) => p.deaths !== null);
+    const tables = contributionTables((tablesR?.results ?? []) as ZoneTableRow[]);
     const world = e.kind === "world" ? ((await resultSummaries(db, [e.id], clan.id)).get(e.id) ?? null) : null;
     // 2.77.4: the players' reviews of the event (only those who played it may write one): its average and count.
     const reviews = (await reviewSummaries(db, [e.id])).get(e.id) ?? NO_REVIEWS;
@@ -467,7 +500,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
             relics: parts.filter((p) => p.relic).length,
             relics_total: RECAP_PARTS.filter((p) => p.relic).length,
             revives: players.reduce((n, p) => n + p.revives, 0),
-            deaths: null, // 2.78.0
+            deaths: counted.length ? counted.reduce((n, p) => n + (p.deaths ?? 0), 0) : null,
             wiped: wiped.length,
             retaken: wiped.filter((i) => zoneDone(i.branch, i.wiped_zone!)).length,
         },
@@ -476,6 +509,8 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
         best,
         rewards,
         titles: (titlesR!.results as { title: string; rank: number }[]).map((t) => ({ title: t.title, rank: t.rank })),
+        // 2.78: the « Tableau des contributions » of the clan (as GET /raids/events/{id}/results gives a player's own clan).
+        contributions: { zone_tables: tables.zoneTables, raid_totals: tables.raidTotals },
         me: {
             played: mine.length > 0 || !!meTotals,
             groups: mine.map((i) => ({
@@ -489,7 +524,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
             parts: myParts,
             zones: meTotals?.zones ?? 0,
             revives: meTotals?.revives ?? 0,
-            deaths: null, // 2.78.0
+            deaths: meTotals?.deaths ?? null,
             heart_share: meTotals && clanHeartDamage > 0 ? meTotals.heartDamage / clanHeartDamage : 0,
             heart_rank: heartRank,
             rewards: rewards.filter((r) => r.mine).map((r) => r.reward),

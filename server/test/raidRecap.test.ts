@@ -90,12 +90,14 @@ async function contribution(ev: string, inst: string, seat: number, p: TestPlaye
         .run();
 }
 
-async function zoneTable(ev: string, inst: string, branch: string, zone: number, seat: number, p: TestPlayer, mechanisms: number) {
+/** A zone's validated table line; `deaths` (2.78: times down, the revivals done and received) null for a table of before. */
+async function zoneTable(ev: string, inst: string, branch: string, zone: number, seat: number, p: TestPlayer, mechanisms: number, deaths: number | null = null) {
     await env.DB.prepare(
-        `INSERT INTO raid_zone_contributions (instance_id, event_id, branch, zone, seat, from_tick, player_id, mechanisms, tick, accepted_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 1000, ?8)`,
+        `INSERT INTO raid_zone_contributions (instance_id, event_id, branch, zone, seat, from_tick, player_id, mechanisms, tick, accepted_at,
+           boss_damage, damage, mini_damage, deaths, revives, revived)
+         VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7, 1000, ?8, 500, 900, ?9, ?10, ?11, ?12)`,
     )
-        .bind(inst, ev, branch, zone, seat, p.id, mechanisms, iso(-20))
+        .bind(inst, ev, branch, zone, seat, p.id, mechanisms, iso(-20), deaths === null ? null : 100, deaths, deaths === null ? null : 1, deaths === null ? null : 2)
         .run();
 }
 
@@ -137,9 +139,9 @@ async function wonRaid() {
     await contribution(ev, h1, 0, p0, { boss: 1000 });
     await contribution(ev, h1, 1, p1, { boss: 5000 });
     await contribution(ev, h1, 2, p2, { boss: 2000, rescues: 1 });
-    await zoneTable(ev, g1, CATALOGS[0]!.id, 1, 0, p0, 3);
-    await zoneTable(ev, g1, CATALOGS[0]!.id, 2, 0, p0, 4);
-    await zoneTable(ev, relief, CATALOGS[1]!.id, 3, 1, p3, 9);
+    await zoneTable(ev, g1, CATALOGS[0]!.id, 1, 0, p0, 3, 2);
+    await zoneTable(ev, g1, CATALOGS[0]!.id, 2, 0, p0, 4, 1);
+    await zoneTable(ev, relief, CATALOGS[1]!.id, 3, 1, p3, 9, 0);
     // The other clan's player: more than anyone, never among our bests.
     await contribution(ev, other, 0, b.players[0]!, { boss: 90000, rescues: 50, objectives: 50 });
     // Rewards granted by the server: the heart's badge to three of ours, a gigaboss badge, the clan's title.
@@ -205,7 +207,8 @@ describe("raids 2.78.1: the « fiche récapitulative » of a finished raid", () 
         expect(d.event.final).toBe(false); // ended 5 min ago: within the grace of the last reports
         expect(d.people).toEqual({ registered: 4, players: 4, groups: 2, reinforcements: 1 });
         expect(d.figures).toMatchObject({ parts_down: 7, parts_total: 7, zones_done: 3, zones_total: 56, zones_by_clan: 3, relics: 4, relics_total: 7, revives: 6, wiped: 1, retaken: 1 });
-        expect(d.figures.deaths).toBeNull();
+        // 2.78: the deaths of the zones' tables that count them (p0: 2 + 1, p3: 0; p1 and p2 have no table).
+        expect(d.figures.deaths).toBe(3);
         expect(d.parts.map((p: { part: string }) => p.part)).toEqual(RECAP_PARTS.map((p) => p.part));
         expect(d.parts[0]).toMatchObject({ fallen: true, relic: true, by: { clan_tag: "NOVA", group: 1, reinforcement: false, mine: true, me: true } });
         expect(d.parts[1].by).toMatchObject({ clan_tag: "NOVA", group: 3, reinforcement: true, mine: true, me: false });
@@ -221,7 +224,13 @@ describe("raids 2.78.1: the « fiche récapitulative » of a finished raid", () 
         expect(d.best.support.player.username).toBe("NOVAMem2");
         expect(d.best.mechanisms).toMatchObject({ player: { username: "NOVAMem3" }, value: 9 });
         expect(d.best.objectives).toMatchObject({ player: { username: "NOVAMem3" }, value: 7 });
-        expect(d.best.fewest_deaths).toBeNull();
+        expect(d.best.fewest_deaths).toMatchObject({ player: { username: "NOVAMem3" }, value: 0 });
+        expect(d.me.deaths).toBeNull(); // my tables do not count them: « — », never 0
+        // The clan's « Tableau des contributions »: each zone's table, the whole raid added up per player.
+        expect(d.contributions.zone_tables.length).toBe(3);
+        expect(d.contributions.zone_tables[0].rows[0]).toMatchObject({ mini_damage: 10, revives: 1, revived: 2 });
+        expect(d.contributions.raid_totals.map((t: { username: string }) => t.username).sort()).toEqual(["NOVAChef", "NOVAMem3"]);
+        expect(d.contributions.raid_totals.find((t: { username: string }) => t.username === "NOVAChef")).toMatchObject({ zones: 2, deaths: 3 });
         // The clan's rewards: who of the clan got each (the other clan's player not counted), the gigaboss badges last.
         expect(d.rewards.map((x: { reward: string }) => x.reward)).toEqual(["coeur_badge", "coeur_clan", "skullmaw_badge"]);
         expect(d.rewards[0]).toMatchObject({ players: 3, kind: "badge", ref: "communaute_coeur", mine: true, gigaboss: false });
@@ -257,6 +266,9 @@ describe("raids 2.78.1: the « fiche récapitulative » of a finished raid", () 
         expect(d.heart).toMatchObject({ fallen: false, open: false, phase: 0 });
         expect(d.parts[3]).toMatchObject({ fallen: false, phase: 2, by: null });
         expect(d.best.gigaboss_damage.player).toBeNull();
+        expect(d.best.fewest_deaths).toBeNull(); // no table counts the deaths: the category is not shown
+        expect(d.figures.deaths).toBeNull();
+        expect(d.contributions).toEqual({ zone_tables: [], raid_totals: [] });
     });
 
     it("what waits for its majority is counted apart, never in a figure; a cancelled raid is never listed", async () => {
