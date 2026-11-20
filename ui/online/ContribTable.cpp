@@ -19,7 +19,7 @@ constexpr int kIconCell = 32;
 // The icons' order in the sheet (ui/raids/contrib.json): boss, mini, support, mechanisms, objectives,
 // deaths, revives, revived, crown, arrow.
 constexpr int kCrownIcon = 8;
-const Color kPanelFill{18, 26, 54, 248};
+const Color kPanelFill{18, 26, 54, 255};  // opaque: nothing of the game shows through
 const Color kHeadFill{24, 34, 68, 255};
 const Color kRowA{22, 32, 64, 255};
 const Color kRowB{19, 28, 58, 255};
