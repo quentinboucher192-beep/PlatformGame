@@ -154,7 +154,6 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `clan_apply` | 30 | 1 h | joueur | `POST /clans/{id}/join`, `POST /clans/{id}/invites` |
 | `clan_write` | 120 | 1 h | joueur | les autres changements d'un clan (réglages, rôles, réponses, exclusions, départ, dissolution) |
 | `raid_write` | 120 | 1 h | joueur | inscriptions aux raids (joueur, clan), réponses aux invitations, consignes, rappels |
-| `raid_schedule` | 10 | 1 h | joueur | `POST /raids/events` (raid du clan) |
 | `raid_call` | 6 | 1 h | joueur | `POST /raids/events/{id}/call` (« Inviter des membres… ») |
 | `community_publish` | 10 | 1 h | joueur | `POST /community/levels` |
 | `community_upload` | 40 | 1 h | joueur | `PUT …/versions/{v}/package` et `…/replay` |
@@ -1059,13 +1058,13 @@ propre requête SQL. Formats : `court` 25 à 30 min, `standard` 45 à 60 min, `l
 display_name, display_title, format, format_min, format_max, starts_at, lock_at, ends_at, lock_minutes,
 registration_open, capacity (0 : illimité), clan_capacity, difficulty, state, published, cancelled,
 organizer: {id, tag, name}|null, clans, players, my_clan: {registered, players, groups, leader},
-registered }`.
+registered }` ; 2.77.4 : `reviews: {average, count}` (les avis des joueurs, sur les vues de `GET /raids`, de la fiche et de `GET /admin/raids`).
 
 | Méthode | Route | Rôle / corps / réponse |
 |---|---|---|
 | GET | `/raids` | session facultative : `{ server_time, raids, clan, world (5 prochains événements mondiaux publiés), clan_events (raids de mon clan et ceux où il participe), invitations [{event, by, created_at}], rewards: [] (rien avant les combats), history (10 derniers terminés ou annulés), unread (notifications « raid » non lues), prefs }` |
 | GET | `/raids/events/{id}` | session facultative : `{ server_time, event, description, rewards_text, my: {clan, entry: {leader, instructions, registered_by}, registered, can_manage, can_call, is_organizer}, roster (les inscrits de mon clan ; 2.72 : `presence` `online`/`away`/`offline` de chacun encore membre du clan, une présence masquée se lit `offline`), roster_online (2.72 : combien d'inscrits sont `online`, seulement avec le `roster` de mon clan), groups [{number, leader, members}] (groupes de 8 : le chef de raid mène le groupe 1), participants, invitations (organisateur), invitation (clan invité) }` ; un raid de clan n'existe (`404 RAID_NOT_FOUND`) que pour son clan, les clans qui y participent et ceux invités |
-| POST | `/raids/events` | chef ou officier : `{ format, starts_at, capacity (2-50), lock_minutes? (0-120), instructions?, leader_id? }` → `201 {event}` ; 15 min à 90 jours d'avance ; `403 NOT_CLAN_OFFICER`, `409 TOO_MANY_RAIDS` (10 à venir) |
+| POST | `/raids/events` | 2.77.4 : **refusé** à tous, `403 RAID_EVENTS_ONLY` (« Les raids sont des événements publiés par l'équipe du jeu… ») : seuls les administrateurs créent et publient les événements (`/admin/raids`). Les raids de clan programmés avant restent lisibles et jouables jusqu'à leur fin |
 | DELETE | `/raids/events/{id}` | chef ou officier du clan organisateur : annule (inscrits et clans invités prévenus) ; `403 NOT_ORGANIZER` |
 | POST | `/raids/events/{id}/clan` | chef ou officier : inscrit son clan à un événement mondial → `201`, `200 {already}` ; deux officiers en même temps : une seule inscription ; `409 NOT_WORLD_EVENT` / `REGISTRATION_CLOSED` / `RAID_LOCKED` |
 | PATCH | `/raids/events/{id}/clan` | chef ou officier : `{ leader_id? (membre du clan, null), instructions? (600) }` |
@@ -1076,6 +1075,14 @@ registered }`.
 | POST | `/raids/events/{id}/invitation` | chef ou officier du clan invité : `{ accept }` ; accepté : le clan participe ; `409 ALREADY_ANSWERED` |
 | POST | `/raids/events/{id}/call` | chef, officier ou chef de raid : prévient les membres non inscrits (une fois tant que non lue) → `{ notified }` |
 | GET / PUT | `/raids/prefs` | `{ reminders: [1440, 60, 10] (sous-ensemble), member_updates: bool }` |
+| GET | `/raids/events/{id}/reviews?limit=&offset=` | 2.77.4, session facultative (ceux qui voient la fiche) : `{ summary: {average (une décimale, null sans avis), count}, me: {played, can_review, review} \| null, reviews [{id, author, stars, body, has_body, hidden, hidden_reason, created_at, edited_at, mine, reported, can_report}], total }` ; mon avis à part, les auteurs bloqués exclus ; un commentaire masqué n'a pas de texte sauf pour son auteur |
+| PUT | `/raids/events/{id}/review` | 2.77.4 : `{ stars (1-5), body? (500 caractères) }` → `201` (écrit) ou `200` (modifié) `{ review, summary, created }` ; un avis par joueur et par événement ; `403 RAID_NOT_PLAYED` sans place dans une instance de l'événement **et** contribution validée (données du serveur) ; filtres et limite `community_comment` des commentaires |
+| DELETE | `/raids/events/{id}/review` | 2.77.4 : supprime mon avis → `{ deleted, summary }` ; `404 REVIEW_NOT_FOUND` |
+| POST | `/raids/reviews/{reviewId}/report` | 2.77.4 : `{ reason }` (motifs des commentaires) ; jamais le sien (`403 OWN_REVIEW`) ; masqué après 3 signalements ; limite `community_report` |
+| GET | `/clans/{id}/raids` | 2.78.1, membres du clan (session) et administrateurs : les 20 derniers raids **terminés** du clan (Cœur tombé ou événement fini, jamais annulés) `{ clan, raids [{id, kind, format, starts_at, ends_at, end_at, duration_s, heart_fallen, fallen_at, final, parts_down, parts_total}] }` ; `403 NOT_CLAN_MEMBER`, `404 CLAN_NOT_FOUND` |
+| GET | `/clans/{id}/raids/{eventId}/recap` | 2.78.1, fiche récapitulative (mêmes lecteurs) : `{ clan (emblème), event, viewer {member}, pending {tables, objectives}, reviews {average, count}, world (résultat officiel, rang du clan), people {registered, players, groups, reinforcements}, figures {parts_down, zones_done, zones_by_clan, relics, revives, deaths, wiped, retaken…}, parts [{part, boss, fallen, at, by {clan_tag, group, reinforcement, mine, me}, relic, phase}], heart {…, groups, clan_groups, clan_share}, best {catégorie: {player {id, username, avatar, me}, value, share}}, rewards [{reward, name, kind, ref, players, mine, gigaboss}], titles, me {played, groups, parts, zones, revives, deaths, heart_share, heart_rank, rewards} }` — seulement des données acceptées par le serveur ; `404 RAID_NOT_FOUND` pour un raid pas terminé ou sans le clan |
+| GET | `/admin/raids/{id}/reviews` | 2.77.4, admin : tous les avis, masqués compris, avec `report_count`, `reasons`, `hidden_by_reports` |
+| POST | `/admin/raids/{id}/reviews/{reviewId}/moderate` | 2.77.4, admin : `{ action: hide \| restore }` masque (la note compte toujours) ou rétablit un commentaire (signalements effacés) ; Journal `admin_raid_review_hidden` / `admin_raid_review_restored` |
 | GET | `/admin/raids` | admin : les événements mondiaux (brouillons compris) avec leurs inscriptions |
 | POST | `/admin/raids` | admin : `{ format, starts_at, lock_minutes? (0-240), registration_open?, capacity? (0 : illimité), clan_capacity? (1-50), difficulty? (1-5), rewards_text? (300) }` → brouillon (Journal `admin_raid_created`) |
 | GET | `/admin/raids/{id}` | admin : l'événement et ses clans inscrits (chef de raid, inscrits) |

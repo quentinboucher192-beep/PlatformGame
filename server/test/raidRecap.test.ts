@@ -1,4 +1,4 @@
-// Clan raids « Asterion », 2.78.1 (docs/RAIDS.md §25): the « fiche récapitulative » of a finished raid, in the
+// Clan raids « Asterion », 2.78.1 (docs/RAIDS.md §26): the « fiche récapitulative » of a finished raid, in the
 // clan. Only its members (the session's player) and the administrators read it; only finished raids (the heart
 // fallen, or the event over) the clan took part in; every figure from what the server accepted (objectives,
 // zones, the heart's shared health, the contributions tables, the wipes, the rewards), what still waits for
@@ -149,6 +149,11 @@ async function wonRaid() {
     await env.DB.prepare("INSERT INTO raid_reward_grants (player_id, reward, event_id, reason, granted_at) VALUES (?1, 'coeur_clan', ?2, 'x', ?3)").bind(p1.id, ev, iso(-20)).run();
     await env.DB.prepare("INSERT INTO raid_reward_grants (player_id, reward, event_id, reason, granted_at) VALUES (?1, 'coeur_badge', ?2, 'x', ?3)").bind(b.players[0]!.id, ev, iso(-20)).run();
     await env.DB.prepare("INSERT INTO raid_clan_titles (clan_id, event_id, title, rank, granted_at) VALUES (?1, ?2, 'Briseurs d''étoile', 1, ?3)").bind(a.id, ev, iso(-20)).run();
+    // 2.77.4: the players' reviews (written by those who played; 5 and 4 stars).
+    for (const [p, stars] of [[p0, 5], [p1, 4]] as const)
+        await env.DB.prepare("INSERT INTO raid_reviews (id, event_id, player_id, stars, body, created_at) VALUES (?1, ?2, ?3, ?4, '', ?5)")
+            .bind(crypto.randomUUID(), ev, p.id, stars, iso(-10))
+            .run();
     return { a, b, ev, g1, g2, relief, other, h1 };
 }
 
@@ -222,6 +227,7 @@ describe("raids 2.78.1: the « fiche récapitulative » of a finished raid", () 
         expect(d.rewards[0]).toMatchObject({ players: 3, kind: "badge", ref: "communaute_coeur", mine: true, gigaboss: false });
         expect(d.rewards[2]).toMatchObject({ players: 1, gigaboss: true, mine: false });
         expect(d.titles).toEqual([{ title: "Briseurs d'étoile", rank: 1 }]);
+        expect(d.reviews).toEqual({ average: 4.5, count: 2 });
         // Mine: my groups, the parts they downed, my share of the clan's damage to the heart and my rank.
         expect(d.me.played).toBe(true);
         expect(d.me.groups.map((g: { part: string }) => g.part)).toEqual(["crane", "coeur"]);

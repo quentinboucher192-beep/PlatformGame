@@ -300,7 +300,7 @@ des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». D�
   « Asterion est tombé » ou jusqu'où il est allé, sept chiffres clés, la frise des sept parties et du Cœur (le portrait
   animé de chaque Gigaboss, l'heure de sa chute, le groupe qui l'a abattu, la relique de sa branche), le titan par parties,
   les meilleurs du clan avec leur avatar, les récompenses dessinées avec leur texture et votre raid ; seulement ce que le
-  serveur a validé ([docs/RAIDS.md §25](docs/RAIDS.md#25-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
+  serveur a validé ([docs/RAIDS.md §26](docs/RAIDS.md#26-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
 
 ### Fiabilité, charge et anti-triche
 
@@ -637,6 +637,22 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.77.4** :
+* **Les raids sont des événements** : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS.
+  Seule l'équipe du jeu crée et publie les événements de raid (ADMINISTRATION › Raids) ; les clans s'y inscrivent et y
+  jouent. Le serveur refuse `POST /raids/events` avec un message clair (« Les raids sont des événements publiés par
+  l'équipe du jeu… ») ; les raids de clan déjà programmés restent lisibles et jouables jusqu'à leur fin, rien n'est
+  effacé ([docs/RAIDS.md §25](docs/RAIDS.md#25-les-raids-sont-des-événements-avis-des-joueurs-2774)).
+* **Noter un raid après l'avoir joué** : 1 à 5 étoiles et un commentaire facultatif (500 caractères au plus), un avis par
+  joueur et par événement, modifiable ou supprimable. Seul un joueur qui a vraiment joué l'événement (une place dans une
+  de ses instances et une contribution validée par le consensus) peut noter : le serveur le vérifie avec ses propres
+  données. « Noter ce raid » sur l'écran des résultats et sur la fiche de l'événement, jamais une fenêtre qui s'impose.
+* **Avis des joueurs** : la note moyenne et le nombre d'avis sur les cartes de CLANS › RAIDS et sur la fiche ; la liste
+  des avis (auteur, étoiles, date, texte) défile, le vôtre en tête avec « Modifier ». La modération des commentaires :
+  mêmes filtres et limites, signalement (masqué après 3), et dans ADMINISTRATION › Raids › « Avis », tous les avis d'un
+  événement, « Masquer » ou « Rétablir » un commentaire (Journal). Serveur : migration **0185** (à appliquer avant de
+  déployer).
 
 **Nouveau dans la version 2.77.3** :
 * **Statistiques des Gigaboss d'Asterion** dans leur fiche (onglet « Combat ») : PV de 2 à 8 joueurs, phases (seuil en %

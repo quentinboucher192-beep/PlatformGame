@@ -1,6 +1,6 @@
 #pragma once
 // 2.78.1: CLANS › RAIDS › « Raids terminés »: the « fiche récapitulative » of a finished raid of the clan
-// (docs/RAIDS.md §25, maquette « Récapitulatif d'un raid »). At the left, the clan's finished raids (won
+// (docs/RAIDS.md §26, maquette « Récapitulatif d'un raid »). At the left, the clan's finished raids (won
 // or not) and the titan of the one shown, its fallen parts and the relics carried back; at the right, its
 // header over a backdrop of Asterion's fall (the victory film's art, dimmed), seven key figures, « LES
 // SEPT PARTIES ET LE CŒUR » (each Gigaboss's animated portrait, the time of its fall and the group that
@@ -45,6 +45,8 @@ struct RaidRecapOptions {
     bool victoryFilm = true;   // the film of Asterion's fall can be played (its files are here)
     bool titanMap = true;      // the titan's map of the event can be read by this player
     bool eventSheet = true;    // the sheet of the event (its official results, its world ranking)
+    std::string rateLabel;     // 2.77.4: « Noter ce raid » / « Modifier mon avis » when the server lets this player review it
+    std::string status;        // a message of the reviews (sent, refused…), shown in the place of the hint for a moment
     int rewardPage = 0;
 };
 
@@ -65,6 +67,10 @@ struct RaidRecapLayout {
     // The header and its backdrop.
     Rect header, emblem, aside;
     RecapText title, eventLine, clanLine, pending;
+    // 2.77.4: « Note des joueurs », its five stars and « 4,3 · 17 avis » (only when the server sent the reviews).
+    RecapText ratingCaption, ratingText;
+    Rect ratingStars;
+    float ratingStarSize = 0.0f;  // unscaled, as raidreviewsui::drawStars takes it
     // The seven key figures.
     struct Card {
         Rect r, icon;  // icon: empty when the value needs the whole card

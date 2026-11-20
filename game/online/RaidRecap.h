@@ -1,6 +1,6 @@
 #pragma once
 // 2.78.1: the « fiche récapitulative » of a finished clan raid (CLANS › RAIDS › Raids terminés,
-// docs/RAIDS.md §25), as the server sends it (server/src/raidRecap.ts): the clan's finished raids
+// docs/RAIDS.md §26), as the server sends it (server/src/raidRecap.ts): the clan's finished raids
 // (GET /clans/{id}/raids) and one of them whole (GET /clans/{id}/raids/{event}/recap). Every figure
 // is the server's, from what its consensus accepted; nothing here computes a result. The texts are
 // French (translated where they are drawn), the times shown in the computer's own zone.
@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "engine/core/Json.h"
+#include "game/online/RaidReviews.h"
 
 namespace cosmic::raids {
 
@@ -94,6 +95,7 @@ struct Recap {
     int64_t startsAt = 0, endsAt = 0, endAt = 0;
     int durationS = 0;
     int pendingTables = 0, pendingObjectives = 0;
+    raidreviews::Summary rating;        // 2.77.4: the players' reviews of the event (average, count)
     int worldRank = 0, worldClans = 0;  // a world event's official ranking (0: not ranked)
     int registered = 0, players = 0, groups = 0, reinforcements = 0;
     int partsDown = 0, partsTotal = 7, zonesDone = 0, zonesTotal = 56, zonesByClan = 0, relics = 0, relicsTotal = 7, revives = 0;

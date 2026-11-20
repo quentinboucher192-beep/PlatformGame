@@ -1,4 +1,4 @@
-// Clan raids « Asterion », 2.78.1 (docs/RAIDS.md §25): the « fiche récapitulative » of a finished raid, in
+// Clan raids « Asterion », 2.78.1 (docs/RAIDS.md §26): the « fiche récapitulative » of a finished raid, in
 // CLANS › RAIDS. Read by the members of a clan that took part (the session's player: never a player id from
 // the request) and by the administrators (moderation: any clan).
 //
@@ -26,6 +26,7 @@ import { CATALOGS, HEART, partOf } from "./raidMap";
 import { HEART_OBJECTIVE, HEART_UNITS, RELICS, phaseOf } from "./raidHeart";
 import { RAID_REWARDS, GIGABOSS_BADGES } from "./raidRewards";
 import { RESULTS_GRACE_MS, pendingOf, resultSummaries } from "./raidWorld";
+import { NO_REVIEWS, reviewSummaries } from "./raidReviews";
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 /** The finished raids listed (newest first). */
@@ -440,6 +441,8 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
     const myParts = parts.filter((p) => p.by?.me).map((p) => p.part);
     const pending = await pendingOf(db, e.id, clan.id);
     const world = e.kind === "world" ? ((await resultSummaries(db, [e.id], clan.id)).get(e.id) ?? null) : null;
+    // 2.77.4: the players' reviews of the event (only those who played it may write one): its average and count.
+    const reviews = (await reviewSummaries(db, [e.id])).get(e.id) ?? NO_REVIEWS;
     return json(ctx, {
         server_time: now,
         clan: { id: clan.id, tag: clan.tag, name: clan.name, emblem: { shape: clan.emblem_shape, primary: clan.emblem_primary, secondary: clan.emblem_secondary } },
@@ -447,6 +450,7 @@ export async function raidRecap(ctx: Ctx): Promise<Response> {
         // An administrator who is not a member reads the recap; the event's own screens stay the clan's.
         viewer: { member: clan.member === 1 },
         pending: { tables: pending.tables, objectives: pending.objectives },
+        reviews,
         world,
         people: {
             registered: (regR!.results[0] as { n: number } | undefined)?.n ?? 0,

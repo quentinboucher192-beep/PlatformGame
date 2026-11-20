@@ -8,6 +8,7 @@
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/online/Clans.h"
+#include "ui/online/RaidReviewsPanel.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/Navigation.h"
@@ -25,8 +26,6 @@ using namespace raidui;
 namespace {
 
 constexpr float kPoll = 60.0f;  // the tab is read again every minute while it is shown
-const char* const kFormats[] = {"court", "standard", "legendaire"};
-const int kLocks[] = {10, 15, 30, 60};
 
 std::string plural(int n, const std::string& one, const std::string& many) { return std::to_string(n) + " " + (n > 1 ? many : one); }
 
@@ -44,6 +43,13 @@ ClanRaids::ClanRaids(GameServices& g, std::function<void(const std::string&, boo
 std::string ClanRaids::clanId() const { return jstr(at(data_, "clan"), "id"); }
 std::string ClanRaids::clanRole() const { return jstr(at(data_, "clan"), "role"); }
 std::string ClanRaids::clanTag() const { return jstr(at(data_, "clan"), "tag"); }
+
+raidreviews::Summary ClanRaids::reviewsOf(const std::string& eventId) const {
+    for (const char* list : {"world", "clan_events", "history"})
+        for (const Json& j : at(data_, list))
+            if (jstr(j, "id") == eventId) return raidreviews::parseSummary(at(j, "reviews"));
+    return {};
+}
 
 void ClanRaids::enter(bool force) {
     if (loaded_ && !force) return;
@@ -283,8 +289,8 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
         const int lines = static_cast<int>((r.bottom() - ui.s(20) - y) / ui.s(24));
         drawLines(ui,
                   wrap(ui,
-                       "Aucun événement mondial programmé pour l'instant. Les administrateurs du jeu l'annoncent ici et dans vos notifications ; "
-                       "les raids de votre clan se programment juste en dessous.",
+                       "Aucun événement mondial programmé pour l'instant. L'équipe du jeu publie les raids : chaque événement est annoncé ici et "
+                       "dans vos notifications, puis votre clan s'y inscrit.",
                        FontFace::Body, 16, room, lines),
                   {x, y}, 16, ui.s(24), kDim);
         return;
@@ -328,6 +334,15 @@ void ClanRaids::drawHero(const Rect& r, const raids::TabLayout& lay) {
             ui.label(p, {px, y + ui.s(12)}, 15, Color{216, 219, 245, 255}, Align::Left, FontFace::Body, VAlign::Middle);
             px += w + ui.s(22);
         }
+        // 2.77.4: the players' reviews of the event (★ average · count), once there are some, in the room left.
+        Json heroJson;
+        for (const Json& w : at(data_, "world"))
+            if (jstr(w, "id") == e.id) heroJson = w;
+        const raidreviews::Summary rs = raidreviews::parseSummary(at(heroJson, "reviews"));
+        if (rs.count > 0) {
+            const raidreviewsui::SummaryLayout L = raidreviewsui::layoutSummary(ui, px, y + ui.s(12), rs, 15, right - px, false);
+            raidreviewsui::drawSummary(ui, L, kGold, Color{216, 219, 245, 255});
+        }
         y += ui.s(28);
     }
     UIContext::ButtonStyle open;
@@ -365,16 +380,17 @@ void ClanRaids::sheetsButton(const std::string& id, const Rect& r) {
 
 void ClanRaids::drawClanRaids(const Rect& r, const raids::TabLayout& lay) {
     UIContext& ui = g_.ui;
-    float y = section(ui, r, "RAIDS DU CLAN", kSky);
+    // 2.77.4: the events my clan takes part in (the raids are the team's events; the clan raids
+    // scheduled before stay here until their end). No « Organiser un raid du clan… » any more.
+    float y = section(ui, r, "ÉVÉNEMENTS DU CLAN", kSky);
     const float x = r.x + ui.s(14), w = r.w - ui.s(28);
-    const float footH = lay.canOrganize ? ui.s(58) : 0.0f;
-    const Rect list{x, y, w, r.bottom() - ui.s(14) - footH - y};
+    const Rect list{x, y, w, r.bottom() - ui.s(14) - y};
     const int64_t now = nowUtc(skew_);
     const auto evs = raids::clanRaidList(data_, lay.heroId);
     if (!lay.clanBoxes || evs.empty()) {
         std::string t = !lay.clanBoxes ? lay.clanNote
-                                       : (lay.canOrganize ? "Aucun raid du clan à venir. Programmez-en un : les membres sont prévenus et s'inscrivent eux-mêmes."
-                                                          : "Aucun raid du clan à venir. " + lay.clanNote);
+                                       : "Aucun autre événement pour votre clan. Les raids sont des événements publiés par l'équipe du jeu : le chef ou un "
+                                         "officier y inscrit le clan, puis chaque membre s'inscrit.";
         drawLines(ui, wrap(ui, t, FontFace::Body, 15, w, static_cast<int>(list.h / ui.s(22))), {x, y}, 15, ui.s(22), kDim);
     } else {
         const float rowH = ui.s(70), gap = ui.s(8);
@@ -398,14 +414,15 @@ void ClanRaids::drawClanRaids(const Rect& r, const raids::TabLayout& lay) {
             std::string info = whenShort(e.startsAt) + " · " +
                                (e.capacity > 0 ? std::to_string(e.players) + " / " + std::to_string(e.capacity) + " inscrits" : plural(e.clanPlayers, "inscrit", "inscrits"));
             if (!e.clanLeader.empty()) info += " · chef : " + e.clanLeader;
-            fit(ui, info, {row.x + ui.s(12), row.y + ui.s(50)}, 13, row.w - ui.s(24), kDim);
+            // 2.77.4: its reviews (★ average · count) at the right of the line, measured first.
+            const raidreviews::Summary rs = reviewsOf(e.id);
+            raidreviewsui::SummaryLayout L;
+            if (rs.count > 0) L = raidreviewsui::layoutSummary(ui, row.right() - ui.s(12), row.y + ui.s(50), rs, 13, (row.w - ui.s(24)) * 0.45f, true);
+            const float sumW = L.shown.empty() ? 0.0f : L.width() + ui.s(12);
+            fit(ui, info, {row.x + ui.s(12), row.y + ui.s(50)}, 13, row.w - ui.s(24) - sumW, kDim);
+            raidreviewsui::drawSummary(ui, L, kGold, kDim);
         }
         ui.endScroll();
-    }
-    if (lay.canOrganize) {
-        UIContext::ButtonStyle st;
-        st.small = true;
-        if (ui.button("organize", {x, r.bottom() - ui.s(14) - ui.s(44), w, ui.s(44)}, "Organiser un raid du clan…", st)) openOrganize();
     }
 }
 
@@ -520,7 +537,15 @@ void ClanRaids::drawHistory(const Rect& r, const raids::TabLayout& lay) {
             fit(ui, result, {x + w - ui.s(12), cy}, 14, resW, e.cancelled ? Color{255, 138, 138, 255} : kGold, FontFace::Bold, Align::Right);
             const float dw = ui.s(56);
             fit(ui, raids::dayMonth(raids::toSystemLocal(e.startsAt)), {x + ui.s(4), cy}, 14, dw, kDim);
-            fit(ui, raids::eventName(e), {x + dw + ui.s(10), cy}, 14, w - ui.s(12) - resW - dw - ui.s(22), kText);
+            // 2.77.4: its reviews (★ average · count) before the result, when the row has the room.
+            const float nameRoom = w - ui.s(12) - resW - dw - ui.s(22);
+            const raidreviews::Summary rs = raidreviews::parseSummary(at(j, "reviews"));
+            raidreviewsui::SummaryLayout L;
+            if (rs.count > 0 && nameRoom > ui.s(200))
+                L = raidreviewsui::layoutSummary(ui, x + w - ui.s(12) - resW - ui.s(12), cy, rs, 13, nameRoom * 0.45f, true);
+            const float sumW = L.shown.empty() ? 0.0f : L.width() + ui.s(10);
+            raidreviewsui::drawSummary(ui, L, kGold, kDim);
+            fit(ui, raids::eventName(e), {x + dw + ui.s(10), cy}, 14, nameRoom - sumW, kText);
         }
         ui.endScroll();
     }
@@ -633,131 +658,6 @@ void ClanRaids::drawNotes(const Rect& r) {
         fit(ui, when, {row.x + textX, row.bottom() - ui.s(14)}, 12, row.w - textX - ui.s(10), kDim);
     }
     ui.endScroll();
-}
-
-// ------------------------------------------------------------------ « Organiser un raid du clan… »
-
-void ClanRaids::openOrganize() {
-    organizing_ = true;
-    formatIdx_ = 1;
-    lockIdx_ = 2;
-    places_ = 8.0f;
-    formError_.clear();
-    const raids::Civil tomorrow = raids::toSystemLocal(nowUtc(skew_) + 86400);
-    date_ = raids::dateField(tomorrow);
-    clock_ = "21:00";
-}
-
-void ClanRaids::drawModal() {
-    UIContext& ui = g_.ui;
-    ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 175});
-    const int64_t now = nowUtc(skew_);
-    const raids::Civil here = raids::toSystemLocal(now);
-    const float w = std::min(ui.screenW() - ui.s(40), ui.s(720)), tw = w - ui.s(60);
-    const auto intro = wrap(ui,
-                            "Les membres du clan sont prévenus ; chacun s'inscrit lui-même jusqu'au verrouillage. L'heure est celle de cet ordinateur (" +
-                                raids::offsetLabel(here.offsetMinutes) + ") : le jeu l'envoie en UTC.",
-                            FontFace::Body, 16, tw, 4);
-    const float introH = static_cast<float>(intro.size()) * ui.s(22);
-    const float h = ui.s(70) + introH + ui.s(14) + ui.s(104) + 3 * ui.s(78) + ui.s(70) + ui.s(80);
-    const Rect box{(ui.screenW() - w) * 0.5f, std::max(ui.s(10), (ui.screenH() - h) * 0.5f), w, h};
-    ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
-    ui.r().drawRoundedRect(box, ui.s(18), kOrange.withAlphaF(0.7f), ui.s(1.5f));
-    ui.pushId("raids/organize");
-    const float x = box.x + ui.s(30);
-    fit(ui, "Organiser un raid du clan", {x, box.y + ui.s(38)}, 26, tw, kText, FontFace::Title);
-    drawLines(ui, intro, {x, box.y + ui.s(64)}, 16, ui.s(22), ui.theme().textDim);
-    float y = box.y + ui.s(70) + introH + ui.s(14);
-    auto caption = [&](const std::string& t) { fit(ui, t, {x, y + ui.s(10)}, 15, tw, ui.theme().textDim); };
-    // The format: three choices, then its duration.
-    caption("Format");
-    static const char* kNames[] = {"Court", "Standard", "Légendaire"};
-    const float fw = (tw - 2 * ui.s(10)) / 3.0f;
-    for (int i = 0; i < 3; ++i) {
-        UIContext::ButtonStyle st;
-        st.small = true;
-        st.selected = formatIdx_ == i;
-        if (ui.button(std::string("format/") + kFormats[i], {x + static_cast<float>(i) * (fw + ui.s(10)), y + ui.s(24), fw, ui.s(44)}, kNames[i], st))
-            formatIdx_ = i;
-    }
-    raids::Event shape;
-    shape.format = kFormats[formatIdx_];
-    shape.formatMin = formatIdx_ == 0 ? 25 : formatIdx_ == 1 ? 45 : 75;
-    shape.formatMax = formatIdx_ == 0 ? 30 : formatIdx_ == 1 ? 60 : 90;
-    fit(ui, raids::formatLine(shape), {x, y + ui.s(86)}, 14, tw, kDim);
-    y += ui.s(104);
-    // The date and the time, in this computer's zone.
-    const float dw = std::min(ui.s(240), tw * 0.5f);
-    fit(ui, "Date (JJ/MM/AAAA)", {x, y + ui.s(10)}, 15, dw - ui.s(10), ui.theme().textDim);
-    fit(ui, "Heure (votre heure)", {x + dw + ui.s(16), y + ui.s(10)}, 15, tw - dw - ui.s(16), ui.theme().textDim);
-    ui.textField("date", {x, y + ui.s(24), dw, ui.s(44)}, date_, "21/11/2026", 10);
-    ui.textField("clock", {x + dw + ui.s(16), y + ui.s(24), std::min(ui.s(140), tw - dw - ui.s(16)), ui.s(44)}, clock_, "21:00", 5);
-    y += ui.s(78);
-    caption("Places (2 à 50 joueurs)");
-    ui.numberField("places", {x, y + ui.s(24), std::min(tw, ui.s(260)), ui.s(44)}, places_, 1.0f, static_cast<float>(raids::kMinPlaces),
-                   static_cast<float>(raids::kMaxPlaces), "%.0f");
-    y += ui.s(78);
-    std::vector<std::string> locks;
-    for (int m : kLocks) locks.push_back(std::to_string(m) + " min avant le début");
-    ui.cycle("lock", {x, y + ui.s(18), tw, ui.s(48)}, "Verrouillage des inscriptions", lockIdx_, locks);
-    lockIdx_ = std::clamp(lockIdx_, 0, 3);
-    y += ui.s(78);
-    // The start, read in this computer's zone (daylight saving time included), then in UTC.
-    std::string problem;
-    int64_t utc = 0;
-    int yy = 0, mo = 0, dd = 0, hh = 0, mi = 0;
-    if (!raids::parseDate(date_, yy, mo, dd)) problem = "Date attendue : JJ/MM/AAAA.";
-    else if (!raids::parseClock(clock_, hh, mi)) problem = "Heure attendue : HH:MM.";
-    else {
-        raids::Civil wall;
-        wall.year = yy;
-        wall.month = mo;
-        wall.day = dd;
-        wall.hour = hh;
-        wall.minute = mi;
-        utc = raids::fromSystemLocal(wall);
-        const int lock = kLocks[lockIdx_];
-        if (utc < now + 60LL * std::max(raids::kMinAheadMinutes, lock + 5))
-            problem = "Au moins " + std::to_string(std::max(raids::kMinAheadMinutes, lock + 5)) + " minutes à l'avance.";
-        else if (utc > now + 90LL * 86400) problem = "Au plus 90 jours à l'avance.";
-    }
-    if (problem.empty()) {
-        drawLines(ui, wrap(ui, "Début : " + whenLine(utc), FontFace::Body, 15, tw, 2), {x, y}, 15, ui.s(22), kGold);
-    }
-    const std::string shown = !formError_.empty() ? formError_ : problem;
-    fit(ui, shown, {x, y + ui.s(56)}, 15, tw, ui.theme().danger);
-    const float by = box.bottom() - ui.s(66);
-    UIContext::ButtonStyle ok;
-    ok.primary = true;
-    ok.enabled = !sending_ && problem.empty();
-    const float okW = textW(ui, "Programmer", 17, FontFace::Bold) + ui.s(44);
-    const float cW = textW(ui, "Annuler", 17, FontFace::Bold) + ui.s(44);
-    const bool go = ui.button("ok", {box.right() - ui.s(30) - okW, by, okW, ui.s(48)}, "Programmer", ok);
-    const bool cancel = ui.button("cancel", {box.right() - ui.s(30) - okW - ui.s(12) - cW, by, cW, ui.s(48)}, "Annuler") ||
-                        (ui.backPressed() && !ui.editingText());
-    ui.popId();
-    if (cancel) {
-        organizing_ = false;
-        return;
-    }
-    if (!go || !ok.enabled) return;
-    sending_ = true;
-    formError_.clear();
-    const Json body = {{"format", kFormats[formatIdx_]},
-                       {"starts_at", raids::isoUtc(utc)},
-                       {"capacity", static_cast<int>(std::lround(places_))},
-                       {"lock_minutes", kLocks[lockIdx_]}};
-    g_.online.send("POST", "/api/v1/raids/events", body, OnlineService::guard(life_, [this](const ApiResult& r) {
-                       sending_ = false;
-                       if (!r.ok) {
-                           formError_ = r.message;
-                           return;
-                       }
-                       organizing_ = false;
-                       say_("Raid programmé : les membres du clan sont prévenus.", false);
-                       load();
-                       openEvent(jstr(at(r.data, "event"), "id"));
-                   }));
 }
 
 }  // namespace cosmic

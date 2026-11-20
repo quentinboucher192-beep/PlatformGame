@@ -7,6 +7,9 @@
 // 2.65: « en cours », the map of the branch « Bras droit » opens the combat (phase 2).
 // 2.72: the registrants of my clan with the pill of their presence (en ligne, absent, hors ligne)
 // and « X/Y en ligne » over the groups (ui/online/PresenceList: the server's answer only).
+// 2.77.4: « AVIS DES JOUEURS » once the raid is under way (ui/online/RaidReviewsPanel): the average
+// and the count, my review first with « Modifier », the others scrolled, and « Noter ce raid » for a
+// player who played it (the server's verdict). Never a window by itself: always from that button.
 //
 // Every rule is the server's (server/src/raids.ts): the screen offers what the player's role
 // allows and shows what the server answers. Placement: each text is measured into the room left
@@ -27,6 +30,7 @@
 #include "game/online/Raids.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/PresenceList.h"
+#include "ui/online/RaidReviewsPanel.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
@@ -51,21 +55,30 @@ std::string plural(int n, const std::string& one, const std::string& many) { ret
 
 class RaidEventScene : public Scene {
 public:
-    RaidEventScene(GameServices& g, std::string id) : g_(g), id_(std::move(id)) {}
+    RaidEventScene(GameServices& g, std::string id) : g_(g), id_(std::move(id)), reviews_(g) {}
 
     void onEnter() override {
         bg_.init(g_);
         g_.ui.setFocus("raid/back");
         load();
         loadPrefs();
+        reviews_.say = [this](const std::string& m, bool error) { say(m, error); };
+        reviews_.changed = [this] { load(); };
+        reviews_.open(id_);
         asterionfilm::hold(g_);  // 2.68: Asterion's film first (its first viewing), over the sheet from its first frame
     }
-    void onResume() override { load(); }
+    void onResume() override {
+        load();
+        reviews_.reload();  // 2.77.4: back from a game or the results, the offer may have changed
+    }
 
     void update(float dt) override {
         bg_.update(dt);
         timer_ += dt;
-        if (g_.app.topScene() == this && timer_ >= 30.0f) load();
+        if (g_.app.topScene() == this && timer_ >= 30.0f && !reviews_.modal()) {
+            load();
+            reviews_.reload();
+        }
     }
 
     void render(float) override {
@@ -73,7 +86,7 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
         const bool top = g_.app.topScene() == this;
-        ui.inputEnabled = top && modal_ == Modal::None;
+        ui.inputEnabled = top && modal_ == Modal::None && !reviews_.modal();
         ui.pushId("raid");
         bool back = false;
         const float W = ui.screenW(), H = ui.screenH(), m = ui.s(28);
@@ -100,6 +113,7 @@ public:
         ui.popId();
         ui.inputEnabled = top;
         if (modal_ != Modal::None) drawModal();
+        else if (reviews_.modal()) reviews_.drawModal();  // 2.77.4: « Noter ce raid », opened from its button
         else if (!back && ui.backPressed() && !ui.editingText()) back = true;
         ui.end();
         if (back) g_.app.popScene();
@@ -299,10 +313,14 @@ private:
             }
             y += ch + ui.s(14);
         }
-        // The instructions and the rewards.
-        const float gap = ui.s(12), sw = (left.w - gap) * 0.5f, sh = left.bottom() - y;
+        // The instructions and the rewards; 2.77.4: the players' reviews beside them once the raid is under way.
+        const float gap = ui.s(12), sh = left.bottom() - y;
         if (sh < ui.s(120)) return;
+        const bool reviews = st == raids::State::Running || st == raids::State::Finished || raidreviews::parseSummary(at(at(data_, "event"), "reviews")).count > 0;
+        const float rvw = reviews ? (left.w - 2 * gap) * 0.4f : 0.0f;
+        const float sw = reviews ? (left.w - 2 * gap - rvw) * 0.5f : (left.w - gap) * 0.5f;
         const Rect s1{left.x, y, sw, sh}, s2{left.x + sw + gap, y, sw, sh};
+        if (reviews) reviews_.draw({s2.right() + gap, y, rvw, sh});
         const Json& entry = at(my(), "entry");
         const std::string leader = jstr(at(entry, "leader"), "username");
         float ty = section(ui, s1, leader.empty() ? "CONSIGNES DU CLAN" : "CONSIGNES DU CHEF DE RAID · " + leader, kSky);
@@ -716,6 +734,7 @@ private:
 
     GameServices& g_;
     std::string id_;
+    RaidReviewsPanel reviews_;  // 2.77.4: « AVIS DES JOUEURS » and « Noter ce raid »
     MenuBackground bg_;
     AsterionFigure titan_;  // beside the title and the story, its tooltip drawn last
     std::shared_ptr<int> life_ = std::make_shared<int>(0);

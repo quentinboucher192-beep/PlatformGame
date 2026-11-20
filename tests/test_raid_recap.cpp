@@ -58,6 +58,7 @@ Json fixtureWon() {
                 "starts_at": "2026-11-20T20:00:00.000Z", "ends_at": "2026-11-20T23:00:00.000Z", "end_at": "2026-11-20T22:47:00.000Z",
                 "duration_s": 10020, "heart_fallen": true, "fallen_at": "2026-11-20T22:47:00.000Z", "final": false},
       "pending": {"tables": 2, "objectives": 0},
+      "reviews": {"average": 4.3, "count": 17},
       "world": {"my_clan_rank": 2, "clans": 23},
       "people": {"registered": 26, "players": 23, "groups": 3, "reinforcements": 2},
       "figures": {"parts_down": 7, "parts_total": 7, "zones_done": 56, "zones_total": 56, "zones_by_clan": 31, "relics": 4, "relics_total": 7,
@@ -122,6 +123,7 @@ Json fixtureLost() {
     j["event"]["end_at"] = "2026-11-20T23:00:00.000Z";
     j["event"]["duration_s"] = 10800;
     j["pending"] = {{"tables", 0}, {"objectives", 0}};
+    j["reviews"] = {{"average", nullptr}, {"count", 0}};
     j["world"] = nullptr;
     j["figures"]["parts_down"] = 3;
     j["figures"]["zones_done"] = 29;
@@ -217,6 +219,12 @@ void checkLayout(UIContext& ui, const RaidRecapLayout& L, const char* what) {
     in(L.eventLine, L.header);
     in(L.clanLine, L.header);
     in(L.pending, L.header);
+    if (!empty(L.ratingStars)) {
+        CHECK(inside(L.ratingStars, L.aside) && inside(L.ratingStars, L.header));
+        art.push_back(L.ratingStars);
+    }
+    in(L.ratingCaption, L.aside);
+    in(L.ratingText, L.aside);
     CHECK(inside(L.emblem, L.header));
     for (const RecapText& t : L.titanCaption) in(t, L.titanCard);
     CHECK(inside(L.titanBox, L.titanCard));
@@ -309,6 +317,7 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(r.parts.size() == 7);
     CHECK(r.heart.fallen && r.heart.groups == 12);
     CHECK(r.deaths == -1 && r.me.deaths == -1);  // not followed by the server: « — », never a guess
+    CHECK(r.rating.known && r.rating.count == 17 && raidreviews::summaryText(r.rating) == "4,3 · 17 avis");  // 2.77.4: the players' reviews
     CHECK(raids::recapTitle(r) == "ASTERION EST TOMBÉ");
     CHECK(raids::recapClanLine(r) == "Clan [ESSAI] · 23 joueurs · 3 groupes · 2 renforts · 2e sur 23 clans");
     CHECK(raids::recapPendingText(r) == "2 résultats en attente de validation");
@@ -369,6 +378,7 @@ TEST_CASE("raid recap: the layout holds its texts at 1280 x 720 and 1920 x 1080,
             for (int page = 0; page < 2; ++page) {
                 RaidRecapOptions opt;
                 opt.rewardPage = page;
+                opt.rateLabel = page == 0 ? "Noter ce raid" : "Modifier mon avis";  // 2.77.4: the server lets this player review it
                 std::snprintf(what, sizeof what, "%dx%d %s gagné p%d", size.first, size.second, lang == Language::French ? "fr" : "en", page);
                 const RaidRecapLayout L = layoutRaidRecap(g.ui, won, list, opt);
                 checkLayout(g.ui, L, what);
@@ -376,7 +386,8 @@ TEST_CASE("raid recap: the layout holds its texts at 1280 x 720 and 1920 x 1080,
                 CHECK(L.trows.size() == 8);
                 CHECK(L.brows.size() == 6);  // « Le moins de morts » waits for the server to follow the deaths
                 CHECK(L.rewardPages >= 1 && !L.tiles.empty());
-                CHECK(L.buttons.size() == 3);  // the titan's map, the victory film, the event's sheet
+                CHECK(L.buttons.size() == 4);  // the titan's map, the victory film, the event's sheet, « Noter ce raid »
+                CHECK(!L.ratingText.text.empty() && !empty(L.ratingStars));
                 CHECK(L.ticks.size() >= 2);
                 CHECK(L.mlines.size() == 5);
                 // A clan's tag is the players' word: never translated (« ESSAI » is a French word too).

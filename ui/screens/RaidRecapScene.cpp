@@ -21,6 +21,7 @@
 #include "game/raid/RaidSheets.h"
 #include "ui/online/ClanWidgets.h"
 #include "ui/online/OnlineWidgets.h"
+#include "ui/online/RaidReviewsPanel.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/ChallengeRewardsUi.h"
@@ -148,7 +149,7 @@ std::string playersText(int n) { return std::to_string(n) + (n > 1 ? " joueurs" 
 }  // namespace
 
 std::vector<const RecapText*> RaidRecapLayout::texts() const {
-    std::vector<const RecapText*> out = {&crumb, &listNote, &title, &eventLine, &clanLine, &pending, &timelineTitle, &timelineSub, &bestTitle, &bestPending,
+    std::vector<const RecapText*> out = {&crumb, &listNote, &title, &eventLine, &clanLine, &pending, &ratingCaption, &ratingText, &timelineTitle, &timelineSub, &bestTitle, &bestPending,
                                          &bestEmpty, &rewardsTitle, &rewardsPage, &rewardsNote, &rewardsEmpty, &meTitle, &mePending, &hint};
     for (const Row& r : rows)
         if (r.r.bottom() <= list.bottom() + 0.5f) {
@@ -243,6 +244,18 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
         L.eventLine = fitted(ui, raids::recapEventLine(rc), {tx, L.header.y + ui.s(68), tw, ui.s(26)}, FontFace::Body, 17);
         L.clanLine = fittedPieces(ui, raids::recapClanPieces(rc), {tx, L.header.y + ui.s(98), tw, ui.s(26)}, FontFace::Body, 18);
         L.pending = fitted(ui, raids::recapPendingText(rc), {L.aside.x, L.aside.y, L.aside.w, ui.s(28)}, FontFace::Bold, 14, 0.75f, Align::Right);
+        // 2.77.4: the players' rating (their reviews of the event), under it: the caption, then the stars and the figures.
+        if (rc.rating.known) {
+            L.ratingCaption = fitted(ui, "Note des joueurs", {L.aside.x, L.aside.y + ui.s(36), L.aside.w, ui.s(22)}, FontFace::Body, 14, 0.8f, Align::Right);
+            L.ratingStarSize = 20.0f;
+            const float sw = raidreviewsui::starsWidth(ui, L.ratingStarSize), ry = L.aside.y + ui.s(64);
+            const float textRoom = L.aside.w - sw - ui.s(10);
+            L.ratingText = fitted(ui, raidreviews::summaryText(rc.rating), {L.aside.right() - textRoom, ry, textRoom, ui.s(28)}, FontFace::Bold, 16, 0.75f,
+                                  Align::Right);
+            const float tw = std::min(textRoom, ui.text().measure(L.ratingText.text, L.ratingText.face, L.ratingText.px).x);
+            L.ratingText.r = {L.aside.right() - tw, ry, tw, ui.s(28)};
+            L.ratingStars = {L.ratingText.r.x - ui.s(10) - sw, ry + (ui.s(28) - ui.s(L.ratingStarSize)) * 0.5f, sw, ui.s(L.ratingStarSize)};
+        }
     }
     // The seven key figures.
     {
@@ -491,6 +504,7 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
         if (opt.titanMap) want.push_back({"titan", "Carte du titan"});
         if (rc.heartFallen && opt.victoryFilm) want.push_back({"film", "Revoir le film de victoire"});
         if (opt.eventSheet) want.push_back({"event", "Fiche de l'événement"});
+        if (!opt.rateLabel.empty()) want.push_back({"rate", opt.rateLabel});
         const std::string hint = "Échap / B : retour";
         const float hintW = std::min(measureW(ui, hint, FontFace::Body, 15) + ui.s(8), rw * 0.25f);
         const float gap = ui.s(12), avail = rw - hintW - ui.s(16);
@@ -511,7 +525,7 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
             x = b.r.right() + gap * k;
             L.buttons.push_back(std::move(b));
         }
-        L.hint = fitted(ui, hint, {rx + rw - hintW, btnY, hintW, btnH}, FontFace::Body, 15, 0.75f, Align::Right);
+        L.hint = fitted(ui, opt.status.empty() ? hint : opt.status, {rx + rw - hintW, btnY, hintW, btnH}, FontFace::Body, 15, 0.75f, Align::Right);
     }
     return L;
 }
@@ -542,8 +556,9 @@ struct ArtSprite {
 
 class RaidRecapScene : public Scene {
 public:
-    RaidRecapScene(GameServices& g, std::string clanId, std::string eventId) : g_(g), net_(g), clanId_(std::move(clanId)), eventId_(std::move(eventId)) {}
-    RaidRecapScene(GameServices& g, const Json& list, const Json& recap) : g_(g), net_(g), fixture_(true) {
+    RaidRecapScene(GameServices& g, std::string clanId, std::string eventId)
+        : g_(g), net_(g), reviews_(g), clanId_(std::move(clanId)), eventId_(std::move(eventId)) {}
+    RaidRecapScene(GameServices& g, const Json& list, const Json& recap) : g_(g), net_(g), reviews_(g), fixture_(true) {
         list_ = raids::parseRecapList(list);
         listLoaded_ = true;
         recap_ = raids::parseRecap(recap);
@@ -557,6 +572,14 @@ public:
         sheets_ = raid::loadRaidSheets(g_.content, g_.achievementCatalog, g_.cosmetics);
         relic_.load(g_.app.resources(), "animations/relic.json", "idle");
         g_.ui.setFocus("recap/back");
+        // 2.77.4: « Noter ce raid » (the server says who may: those who played it); a review written, the rating again.
+        reviews_.say = [this](const std::string& m, bool) {
+            status_ = m;
+            statusT_ = t_;
+        };
+        reviews_.changed = [this] {
+            if (!fixture_ && loaded_) loadRecap(eventId_);
+        };
         if (!fixture_) loadList();
     }
     void onResume() override {
@@ -576,7 +599,8 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{8, 12, 28, 190});
-        ui.inputEnabled = g_.app.topScene() == this;
+        const bool top = g_.app.topScene() == this;
+        ui.inputEnabled = top && !reviews_.modal();
         ui.pushId("recap");
         view_ = RaidRecapView{};
         view_.valid = true;
@@ -587,6 +611,8 @@ public:
         // The event's own screens read the event as this player may (a clan raid: its clans' members only).
         opt.titanMap = !fixture_ && (recap_.kind == "world" || recap_.member);
         opt.eventSheet = opt.titanMap;
+        if (!fixture_ && loaded_ && reviews_.loaded() && reviews_.eventId() == eventId_) opt.rateLabel = raidreviews::offerLabel(reviews_.offer());
+        if (!status_.empty() && t_ - statusT_ < 5.0f) opt.status = status_;
         opt.rewardPage = rewardPage_;
         const RaidRecapLayout L = layoutRaidRecap(ui, recap_, list_, opt);
         rewardPage_ = L.rewardPage;
@@ -618,7 +644,9 @@ public:
         view_.buttons = static_cast<int>(L.buttons.size());
         ui.popId();
         titan_.drawTooltip(g_);
-        if (!back && ui.backPressed()) back = true;
+        ui.inputEnabled = top;
+        if (reviews_.modal()) reviews_.drawModal();  // « Noter ce raid »: its window over the recap (Échap / B closes it)
+        else if (!back && ui.backPressed() && !ui.editingText()) back = true;
         ui.end();
         if (back) g_.app.popScene();
     }
@@ -652,6 +680,7 @@ private:
                           loaded_ = recap_.valid;
                           eventId_ = id;
                           error_.clear();
+                          if (loaded_ && reviews_.eventId() != id) reviews_.open(id);
                       }));
     }
     void select(const std::string& id) {
@@ -664,6 +693,7 @@ private:
     void press(const std::string& id) {
         if (id == "titan") g_.app.pushScene(makeRaidTitan(g_, eventId_));
         else if (id == "event") g_.app.pushScene(makeRaidEvent(g_, eventId_));
+        else if (id == "rate") reviews_.openEditor();
         else if (id == "film") {
             if (auto film = asterionfilm::makeVictory(g_, false)) g_.app.pushScene(std::move(film));
         }
@@ -784,13 +814,23 @@ private:
         text(L.title, recap_.heartFallen ? kGold : kText);
         text(L.eventLine, kDim);
         text(L.clanLine, kText);
-        if (!L.pending.text.empty()) {
-            // Readable over the supernova: a dark backing under the texts of the right.
-            const float tw = std::min(L.pending.r.w, ui.text().measure(L.pending.text, L.pending.face, L.pending.px).x);
-            r.fillRoundedRect({L.pending.r.right() - tw - ui.s(10), L.pending.r.y - ui.s(2), tw + ui.s(16), L.pending.r.h + ui.s(4)}, ui.s(8),
-                              Color{10, 14, 34, 210});
-            text(L.pending, kGold);
+        // Readable over the supernova: a dark backing under the texts of the right (as wide as the widest).
+        float left = L.aside.right();
+        float bottom = L.aside.y;
+        for (const RecapText* t : {&L.pending, &L.ratingCaption, &L.ratingText}) {
+            if (t->text.empty()) continue;
+            left = std::min(left, t->r.right() - std::min(t->r.w, ui.text().measure(t->text, t->face, t->px).x));
+            bottom = std::max(bottom, t->r.bottom());
         }
+        if (L.ratingStars.w > 0.0f) left = std::min(left, L.ratingStars.x);
+        if (bottom > L.aside.y)
+            r.fillRoundedRect({left - ui.s(10), L.aside.y - ui.s(4), L.aside.right() - left + ui.s(16), bottom - L.aside.y + ui.s(8)}, ui.s(8),
+                              Color{10, 14, 34, 200});
+        text(L.pending, kGold);
+        text(L.ratingCaption, kDim);
+        if (L.ratingStars.w > 0.0f)
+            raidreviewsui::drawStars(ui, L.ratingStars.x, L.ratingStars.center().y, L.ratingStarSize, recap_.rating.average, kGold, Color{90, 96, 130, 255});
+        text(L.ratingText, kText);
     }
 
     void drawCards(const RaidRecapLayout& L) {
@@ -973,6 +1013,9 @@ private:
 
     GameServices& g_;
     OnlineUi net_;
+    RaidReviewsPanel reviews_;  // 2.77.4: the rating and « Noter ce raid »
+    std::string status_;
+    float statusT_ = -100.0f;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     MenuBackground bg_;
     raid::RaidSheets sheets_;
