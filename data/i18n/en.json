@@ -3,6 +3,7 @@
   "language": "en",
   "name": "English",
   "strings": {
+    "Raids et tests de raid : le pointeur de la souris reste caché pendant le jeu. Il revenait à chaque petit mouvement de la souris ; il ne revient plus que quand la souris s'approche du bouton du menu en haut de l'écran, ou en regardant un groupe du raid simulé (ses boutons ◀ ▶). Toujours là avec le menu, la pause, la grande carte et les panneaux.": "Raids and raid tests: the mouse pointer stays hidden while playing. It came back with every small move of the mouse; now it only comes back when the mouse nears the menu button at the top of the screen, or while watching a group of the simulated raid (its ◀ ▶ buttons). Still there with the menu, the pause, the large map and the panels.",
     "%Y-%m-%d %H:%M": "%Y-%m-%d %H:%M",
     "(-1 morts = illimité)": "(-1 deaths = unlimited)",
     "(aucun niveau de la campagne ne l'utilise)": "(no campaign level uses it)",
