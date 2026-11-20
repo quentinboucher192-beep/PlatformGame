@@ -1,0 +1,14 @@
+{
+  "texture": "stories/horloger/dechirure_lueur.png",
+  "frameWidth": 128,
+  "frameHeight": 232,
+  "pivot": [64, 116],
+  "clips": {
+    "ouverture": {"row": 0, "count": 8, "durations": [0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11], "loop": false, "next": "vibre"},
+    "vibre": {"row": 1, "count": 6, "fps": 12, "loop": true},
+    "fermeture": {"row": 2, "count": 7, "durations": [0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08], "loop": false},
+    "faille_ouverture": {"row": 3, "count": 8, "durations": [0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11, 0.11], "loop": false, "next": "faille"},
+    "faille": {"row": 4, "count": 6, "fps": 12, "loop": true},
+    "faille_fermeture": {"row": 5, "count": 7, "durations": [0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08], "loop": false}
+  }
+}

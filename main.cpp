@@ -56,6 +56,9 @@
 //   --asterion-apres [<seconds>]
 //                           play « Après Asterion » (2.81) over the main menu, its clans' shot
 //                           with its generic text, from that moment of it (screenshots)
+//   --asterion-balancier [<seconds>] / --asterion-tour [<seconds>]
+//                           play « Le Balancier » / « Encore un tour » (2.82, the teasers of raid 2)
+//                           over the main menu, from that moment of it (screenshots)
 //   --boss-stats [<boss>[:<clip>][:fiche][:attaques][:attaque=<attack>|:tout][:frapper[=<clip>]]]
 //                           open the boss statistics (that boss, that clip of its animation;
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
@@ -867,6 +870,15 @@ int main(int argc, char** argv) {
         play.startAt = at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())));
         if (auto film = makeFilmPlay(game, asterionfilm::aftermath(), std::move(play))) app.pushScene(std::move(film));
         else Log::error("Film « Après Asterion » illisible");
+    } else if (has("--asterion-balancier") || has("--asterion-tour")) {
+        // 2.82, --asterion-balancier / --asterion-tour [<seconds>] (screenshots): a transition film over the main menu.
+        const bool tourFilm = has("--asterion-tour");
+        const std::string at = value(tourFilm ? "--asterion-tour" : "--asterion-balancier");
+        app.pushScene(makeMainMenu(game));
+        if (auto film = asterionfilm::makeTeaser(game, tourFilm ? asterionfilm::Teaser::Tour : asterionfilm::Teaser::Balancier,
+                                                 at.empty() ? -1.0f : std::max(0.0f, static_cast<float>(std::atof(at.c_str())))))
+            app.pushScene(std::move(film));
+        else Log::error("Film de transition illisible");
     } else if (has("--raid-sheets")) {
         // --raid-sheets [<sheet>[:<tab>][:frapper=<n>[:pose=<attack>]][:attaque=<id>]] (screenshots): the raid sheets over the menu.
         const std::string v = value("--raid-sheets");

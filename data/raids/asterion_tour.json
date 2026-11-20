@@ -1,0 +1,122 @@
+{
+ "format": "cosmic.film",
+ "version": 1,
+ "comment": "The transition film after an event Asterion survived (ENCORE UN TOUR) (2.82, docs/RAIDS.md §33): a teaser of raid 2, watched from Collection › Galerie › Films (everyone) and ADMINISTRATION › Films. Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`, as in asterion_victoire.json). The animated scene of each shot (`scene`) is in asterion_tour_scenes.json, written by tools/assetgen/environment/story_horloger.py: a length changed here stretches the scene and its titles, nothing to regenerate. Its last three shots (cadran, regard, noir) are the same in asterion_balancier.json and asterion_tour.json (the generator's --check says so). The English is in data/i18n/en.json.",
+ "boss": "asterion",
+ "kind": "film",
+ "title": "ENCORE UN TOUR",
+ "color": "#ffd27a",
+ "accent": "#39f0d8",
+ "music": "music/mecanisme_tour.ogg",
+ "scenes": "raids/asterion_tour_scenes.json",
+ "shots": [
+  {
+   "scene": "fuite",
+   "duration": 10.0,
+   "text": "Blessé, Asterion fuyait à travers le vide, semant derrière lui des éclats de mondes."
+  },
+  {
+   "scene": "resiste",
+   "duration": 9.0,
+   "text": "Asterion se retourna et rugit. Il voulut s'arracher au vide, mais autour de lui, le temps ralentissait."
+  },
+  {
+   "scene": "main",
+   "duration": 10.0,
+   "text": "Alors une main immense surgit de l'ombre et se referma sur lui. Une main de laiton, de rouages et de verre."
+  },
+  {
+   "scene": "fils",
+   "duration": 10.0,
+   "text": "Des fils d'or, tissés de temps volé, recousirent ses blessures, une à une."
+  },
+  {
+   "scene": "encore",
+   "duration": 8.0,
+   "text": "Une voix lasse, presque tendre, murmura au titan :",
+   "titles": [
+    {
+     "t": 2.0,
+     "to": 7.6,
+     "text": "Encore un tour, mon vieux.",
+     "pos": [
+      0.5,
+      0.14
+     ],
+     "width": 0.8,
+     "size": 48,
+     "color": "#ffd27a"
+    }
+   ]
+  },
+  {
+   "scene": "chaine",
+   "duration": 10.0,
+   "text": "Près de Lyse, le vide se déchira. Une montre grande comme une lune en sortit et, sous elle, enchaîné, Asterion battait la mesure."
+  },
+  {
+   "scene": "atelier",
+   "duration": 9.0,
+   "text": "Dans les entrailles de la montre, mille horloges s'étaient arrêtées à la même seconde. Sur l'établi, des plans : Asterion, dessiné en balancier."
+  },
+  {
+   "scene": "monde_serre",
+   "duration": 4.0,
+   "text": "Une serre où les lianes poussaient trop vite…"
+  },
+  {
+   "scene": "monde_glacier",
+   "duration": 4.0,
+   "text": "un glacier où la neige tombait au ralenti…"
+  },
+  {
+   "scene": "monde_forge",
+   "duration": 4.0,
+   "text": "une forge qui recommençait sans fin la même heure…"
+  },
+  {
+   "scene": "monde_ruines",
+   "duration": 4.0,
+   "text": "des ruines qui se relevaient à rebours…"
+  },
+  {
+   "scene": "monde_archives",
+   "duration": 4.0,
+   "text": "des archives figées entre deux secondes…"
+  },
+  {
+   "scene": "monde_cadran",
+   "duration": 4.0,
+   "text": "et, au centre, le cadran. Dans chaque monde, une ombre attendait."
+  },
+  {
+   "scene": "cadran",
+   "duration": 9.0,
+   "text": "Sous le dôme de verre, six mondes s'allumèrent comme les heures d'un cadran. Et les aiguilles se remirent en marche."
+  },
+  {
+   "scene": "regard",
+   "duration": 6.0,
+   "text": ""
+  },
+  {
+   "scene": "noir",
+   "duration": 7.0,
+   "text": "Tic… tac… Quelque part, quelqu'un remonte le temps.",
+   "titles": [
+    {
+     "t": 4.5,
+     "to": 6.9,
+     "text": "À SUIVRE",
+     "pos": [
+      0.5,
+      0.42
+     ],
+     "width": 0.6,
+     "size": 64,
+     "color": "#ffd27a"
+    }
+   ]
+  }
+ ]
+}

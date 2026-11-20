@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/flocon.png",
+  "frameWidth": 20,
+  "frameHeight": 20,
+  "pivot": [10, 10],
+  "clips": {
+    "idle": {"row": 0, "count": 2, "durations": [0.8, 0.2], "loop": true}
+  }
+}

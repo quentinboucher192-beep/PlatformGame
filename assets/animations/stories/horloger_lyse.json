@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/lyse.png",
+  "frameWidth": 72,
+  "frameHeight": 72,
+  "pivot": [36, 36],
+  "clips": {
+    "frisson": {"row": 0, "count": 4, "durations": [0.4, 0.3, 0.5, 0.3], "loop": true}
+  }
+}

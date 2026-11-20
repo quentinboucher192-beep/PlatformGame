@@ -1,0 +1,12 @@
+{
+  "texture": "stories/horloger/laiton.png",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "pivot": [12, 12],
+  "clips": {
+    "rouage": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "vis": {"row": 1, "count": 1, "fps": 1, "loop": true},
+    "plaque": {"row": 2, "count": 1, "fps": 1, "loop": true},
+    "ressort": {"row": 3, "count": 1, "fps": 1, "loop": true}
+  }
+}

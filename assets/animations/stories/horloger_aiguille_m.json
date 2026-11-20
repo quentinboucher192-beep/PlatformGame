@@ -1,0 +1,13 @@
+{
+  "texture": "stories/horloger/aiguille_m.png",
+  "frameWidth": 236,
+  "frameHeight": 124,
+  "pivot": [118, 64],
+  "clips": {
+    "avance": {"row": 0, "count": 24, "fps": 24, "loop": true},
+    "recule": {"row": 1, "count": 24, "fps": 18, "loop": true},
+    "folle": {"row": 0, "count": 24, "fps": 40, "loop": true},
+    "ralentit": {"row": 0, "count": 24, "durations": [0.035, 0.039, 0.044, 0.049, 0.055, 0.062, 0.069, 0.077, 0.087, 0.097, 0.109, 0.122, 0.136, 0.153, 0.171, 0.192, 0.215, 0.24, 0.269, 0.301, 0.338, 0.378, 0.424, 0.474], "loop": false, "next": "tic"},
+    "tic": {"row": 0, "count": 24, "durations": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "loop": true}
+  }
+}

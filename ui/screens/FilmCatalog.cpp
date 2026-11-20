@@ -4,6 +4,7 @@
 #include <cctype>
 #include <cmath>
 #include <filesystem>
+#include <tuple>
 
 #include "engine/core/I18n.h"
 #include "engine/core/Paths.h"
@@ -100,6 +101,21 @@ std::vector<FilmEntry> filmCatalog(GameServices& g, bool forPlayer) {
         e.lock = "Se débloque quand Asterion tombe : pour ceux qui étaient là, puis pour tous quand le résultat est officiel.";
         out.push_back(std::move(e));
     }
+    // 2.82: the transition films after Asterion, teasers of raid 2: open to everyone in the Collection.
+    for (const auto& [id, film, where] : {std::tuple{"asterion_balancier", asterionfilm::balancier(),
+                                                     "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (après la chute d'Asterion)"},
+                                          std::tuple{"asterion_tour", asterionfilm::tour(),
+                                                     "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (si Asterion survit)"}}) {
+        if (!film) continue;
+        FilmEntry e;
+        e.id = id;
+        e.title = film->title;
+        e.kind = kKindAsterion;
+        e.where = where;
+        e.seconds = story::duration(*film);
+        e.thumb = std::string("ui/films/") + id + ".png";
+        out.push_back(std::move(e));
+    }
     if (g.trailer && !g.trailer->shots.empty()) {
         FilmEntry e;
         e.id = "trailer";
@@ -134,6 +150,8 @@ std::unique_ptr<Scene> makeFilmScene(GameServices& g, const FilmEntry& e) {
     if (e.id == "asterion_film") return asterionfilm::make(g, false);           // a replay: « vu » is not written
     if (e.id == "asterion_victoire") return asterionfilm::makeVictory(g, false);
     if (e.id == "asterion_apres") return asterionfilm::makeAftermathPreview(g);  // the generic text: no server data here
+    if (e.id == "asterion_balancier") return asterionfilm::makeTeaser(g, asterionfilm::Teaser::Balancier);  // 2.82
+    if (e.id == "asterion_tour") return asterionfilm::makeTeaser(g, asterionfilm::Teaser::Tour);
     if (e.id == "trailer") return makeTrailer(g, false);
     if (e.id == "tutorial") return makeTutorialReplay(g);  // nothing of it is kept (PlayOptions::tutorialReplay)
     return nullptr;

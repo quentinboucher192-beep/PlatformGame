@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/aiguille_lumiere.png",
+  "frameWidth": 28,
+  "frameHeight": 9,
+  "pivot": [14, 4],
+  "clips": {
+    "brille": {"row": 0, "count": 2, "fps": 12, "loop": true}
+  }
+}

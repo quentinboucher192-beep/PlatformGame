@@ -679,8 +679,9 @@ private:
         r.fillRect(img, st.backdrop.withAlphaF(alpha));
         for (size_t k = 0; k < st.elements.size(); ++k) {
             const StoryElement& e = st.elements[k];
-            const StoryElementState es = e.at(tau);
-            const float a = es.alpha * alpha * e.pulseAt(tau);
+            const float te = e.localTime(tau);  // 2.82: its own time (frozen by a hold)
+            const StoryElementState es = e.at(te);
+            const float a = es.alpha * alpha * e.pulseAt(te);
             if (a <= 0.003f) continue;
             const float kd = base * (1.0f + (zoom - 1.0f) * e.depth);  // far layers zoom less
             const Vec2 cd = c0 + (cam - c0) * e.depth;                   // and move less
@@ -693,7 +694,7 @@ private:
                     if (!tex) break;
                     const float sc = kStoryPixel * es.scale * kd;
                     const Vec2 size{static_cast<float>(tex->width()) * sc, static_cast<float>(tex->height()) * sc};
-                    const Vec2 tl = scr(es.pos + e.drift * tau);
+                    const Vec2 tl = scr(es.pos + e.drift * te);
                     if (e.repeat && size.x >= 1.0f) {
                         float x = img.x + std::fmod(tl.x - img.x, size.x);
                         if (x > img.x) x -= size.x;
@@ -712,7 +713,7 @@ private:
                     const float sc = kStoryPixel * es.scale * kd;
                     Vec2 pv = set->pivot;
                     if (es.flip) pv.x = static_cast<float>(set->frameWidth) - pv.x;
-                    const Vec2 at = scr(es.pos + e.drift * tau);
+                    const Vec2 at = scr(es.pos + e.drift * te);
                     const Vec2 pivot = pv * sc;
                     if (e.shadow.on && r.glowTexture()) {
                         // its shadow on the ground, pushed away from its light
@@ -738,7 +739,7 @@ private:
                     break;
                 case StoryElementKind::Particles: {
                     const Vec2 tl = scr({e.area.x, e.area.y});
-                    drawParticles(e.source, e.color, {tl.x, tl.y, e.area.w * kd, e.area.h * kd}, tau + static_cast<float>(k) * 1.7f, a,
+                    drawParticles(e.source, e.color, {tl.x, tl.y, e.area.w * kd, e.area.h * kd}, te + static_cast<float>(k) * 1.7f, a,
                                   static_cast<uint32_t>(i) * 977U + static_cast<uint32_t>(k) * 131U + 7U);
                     break;
                 }

@@ -1,0 +1,11 @@
+{
+  "texture": "stories/horloger/debris.png",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "pivot": [12, 12],
+  "clips": {
+    "roche": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "magma": {"row": 1, "count": 1, "fps": 1, "loop": true},
+    "glace": {"row": 2, "count": 1, "fps": 1, "loop": true}
+  }
+}

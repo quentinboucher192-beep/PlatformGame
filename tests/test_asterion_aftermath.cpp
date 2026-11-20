@@ -347,8 +347,9 @@ TEST_CASE("films list: every film of the game found and played; nothing overlaps
     for (const FilmEntry& e : all) ids.insert(e.id);
     CHECK(!r.g->stories.all().empty());
     for (const auto& [boss, s] : r.g->stories.all()) CHECK(ids.count("story:" + boss) == 1);  // every gigaboss story
-    for (const char* id : {"asterion_film", "asterion_victoire", "asterion_apres", "trailer", "tutorial"}) CHECK(ids.count(id) == 1);
-    CHECK(all.size() == r.g->stories.all().size() + 5);
+    for (const char* id : {"asterion_film", "asterion_victoire", "asterion_apres", "asterion_balancier", "asterion_tour", "trailer", "tutorial"})
+        CHECK(ids.count(id) == 1);
+    CHECK(all.size() == r.g->stories.all().size() + 7);  // 2.82: the two transition films
     for (const FilmEntry& e : all) {
         CHECK(!e.title.empty() && !e.kind.empty() && !e.where.empty());
         CHECK(e.tutorial || e.seconds > 4.0f);
@@ -367,7 +368,7 @@ TEST_CASE("films list: every film of the game found and played; nothing overlaps
     CHECK(list.shown().size() == 1);
     list.search.clear();
     list.filter = 2;
-    CHECK(list.shown().size() == 3);
+    CHECK(list.shown().size() == 5);  // 2.82: with « Le Balancier » and « Encore un tour »
     list.filter = 0;
     // Each row measured: inside, nothing overlapping, every text in its place.
     for (Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}}) {

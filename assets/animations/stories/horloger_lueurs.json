@@ -1,0 +1,11 @@
+{
+  "texture": "stories/horloger/lueurs.png",
+  "frameWidth": 272,
+  "frameHeight": 172,
+  "pivot": [136, 86],
+  "clips": {
+    "eteint": {"row": 0, "count": 1, "fps": 1, "loop": true},
+    "eveil": {"row": 1, "count": 7, "durations": [0.32, 0.32, 0.32, 0.32, 0.32, 0.32, 0.32], "loop": false, "next": "allume"},
+    "allume": {"row": 2, "count": 4, "fps": 3, "loop": true}
+  }
+}

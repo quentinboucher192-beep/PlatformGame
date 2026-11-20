@@ -2563,6 +2563,12 @@
    ]
   },
   {
+   "fr": "Alors une main immense surgit de l'ombre et se referma sur lui. Une main de laiton, de rouages et de verre.",
+   "where": [
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Alors, pour que l'aube revienne, il alluma ses propres plumes. Il brûla, brûla… et tomba en cendres.",
    "where": [
     "data/stories/phenix.json"
@@ -4099,6 +4105,12 @@
    "fr": "Asterion résiste encore",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "Asterion se retourna et rugit. Il voulut s'arracher au vide, mais autour de lui, le temps ralentissait.",
+   "where": [
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -8218,6 +8230,12 @@
    ]
   },
   {
+   "fr": "Blessé, Asterion fuyait à travers le vide, semant derrière lui des éclats de mondes.",
+   "where": [
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Bleu",
    "where": [
     "ui/screens/AdminCreations.cpp"
@@ -12295,6 +12313,12 @@
    ]
   },
   {
+   "fr": "Chaque élément de ces films est animé en pixel art : la couronne dentée, le dôme de verre et ses six mondes qui s'allument comme les heures d'un cadran, les aiguilles, les engrenages, la déchirure, la main mécanique, les fils d'or, le regard du vieil homme, avec leurs sons (tic-tac, gong, déchirure, chaînes). À regarder dès maintenant dans Collection › Galerie › Films, ouverts à tous, et dans ADMINISTRATION › Films.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Chaque évent ouvert crache un jet de magma à son tour",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -14156,6 +14180,18 @@
    "fr": "Collection en ligne : le cadre d'avatar et le titre équipés vous suivent dans les CLASSEMENTS et sur votre profil public, qui montre aussi votre tenue (combinaison, traînée, cadre, effet de victoire).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (après la chute d'Asterion)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
+   ]
+  },
+  {
+   "fr": "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (si Asterion survit)",
+   "where": [
+    "ui/screens/FilmCatalog.cpp"
    ]
   },
   {
@@ -18552,6 +18588,13 @@
    ]
   },
   {
+   "fr": "Dans les entrailles de la montre, mille horloges s'étaient arrêtées à la même seconde. Sur l'établi, des plans : Asterion, dessiné en balancier.",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Dans mon record",
    "where": [
     "ui/screens/GameScene.cpp",
@@ -19406,9 +19449,22 @@
    ]
   },
   {
+   "fr": "Derrière le verre, un vieil homme contemplait les éclats immobiles.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
    "fr": "Derrière Nova quand elle court ou fonce, et derrière ses fantômes. À donner en récompense : Calendrier des défis › Récompenses.",
    "where": [
     "ui/screens/AdminCreations.cpp"
+   ]
+  },
+  {
+   "fr": "des archives figées entre deux secondes…",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -19487,6 +19543,12 @@
    "fr": "des fichiers manquent dans la sauvegarde",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Des fils d'or, tissés de temps volé, recousirent ses blessures, une à une.",
+   "where": [
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -19601,6 +19663,13 @@
    "fr": "Des rochers tombent sur toute l'arène",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "des ruines qui se relevaient à rebours…",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -23881,6 +23950,18 @@
    ]
   },
   {
+   "fr": "ENCORE UN TOUR",
+   "where": [
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
+   "fr": "Encore un tour, mon vieux.",
+   "where": [
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "encore {0}",
    "where": [
     "ui/screens/CollectionScene.cpp",
@@ -25387,6 +25468,13 @@
    "fr": "et {0} sont publiées ensemble. Records réinitialisés : {1} niveaux ; records gardés : {2} niveaux.",
    "where": [
     "editors/enemy_editor/EnemyEditorPublish.cpp"
+   ]
+  },
+  {
+   "fr": "et, au centre, le cadran. Dans chaque monde, une ombre attendait.",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -31174,6 +31262,12 @@
    ]
   },
   {
+   "fr": "Il faudra tout remonter.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
    "fr": "il faut briser les deux cœurs de givre",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -35291,6 +35385,12 @@
    ]
   },
   {
+   "fr": "La lumière de la supernova s'éteignait. Les éclats d'Asterion filaient encore à travers la nuit.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
    "fr": "La lumière du cœur d'Asterion, entre les côtes écartées : la frapper arrache à Heartbreaker une large part de sa vie.",
    "where": [
     "data/enemies/heartbreaker_coeur.json"
@@ -36368,6 +36468,12 @@
    "fr": "Le 1er du mois",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "LE BALANCIER",
+   "where": [
+    "data/raids/asterion_balancier.json"
    ]
   },
   {
@@ -40941,6 +41047,12 @@
    ]
   },
   {
+   "fr": "Les éclats s'arrêtèrent en plein vol. La poussière, la lumière : tout se figea.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
    "fr": "Les éclats, reliques et orbes proches filent vers vous (passif).",
    "where": [
     "data/powers/magnet.json"
@@ -44127,6 +44239,12 @@
    "fr": "Mollet blindé",
    "where": [
     "data/raids/asterion/jambe_droite/branch.json"
+   ]
+  },
+  {
+   "fr": "Mon balancier…",
+   "where": [
+    "data/raids/asterion_balancier.json"
    ]
   },
   {
@@ -54672,6 +54790,18 @@
    ]
   },
   {
+   "fr": "Près de Lyse, le vide se déchira. Il en sortit une montre grande comme une lune, aiguilles affolées, balancier brisé.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
+   "fr": "Près de Lyse, le vide se déchira. Une montre grande comme une lune en sortit et, sous elle, enchaîné, Asterion battait la mesure.",
+   "where": [
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "PRÉCISION",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -55257,6 +55387,12 @@
    "fr": "Puis les gens partirent vers les étoiles. Personne ne pensa à effacer la rune.",
    "where": [
     "data/stories/monolithe.json"
+   ]
+  },
+  {
+   "fr": "Puis, du fond du silence, monta un battement. Tic. Tac. Tic… Et le battement se dérégla.",
+   "where": [
+    "data/raids/asterion_balancier.json"
    ]
   },
   {
@@ -63617,6 +63753,12 @@
    ]
   },
   {
+   "fr": "Ses yeux s'allumèrent et se mirent à tourner, comme des rouages.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
    "fr": "Ses {0} chaînes tenues ensemble le plaquent au sol",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -65085,6 +65227,19 @@
    "fr": "Sous la glace, la lumière du cristal ne s'éteint jamais.",
    "where": [
     "data/levels/glacior_02.json"
+   ]
+  },
+  {
+   "fr": "Sous la montre, la tige brisée oscillait encore, vide, parmi les éclats de laiton. Il lui fallait un nouveau balancier.",
+   "where": [
+    "data/raids/asterion_balancier.json"
+   ]
+  },
+  {
+   "fr": "Sous le dôme de verre, six mondes s'allumèrent comme les heures d'un cadran. Et les aiguilles se remirent en marche.",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -68999,6 +69154,13 @@
    ]
   },
   {
+   "fr": "Tic… tac… Quelque part, quelqu'un remonte le temps.",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "tient la plaque",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -71890,6 +72052,13 @@
    ]
   },
   {
+   "fr": "un glacier où la neige tombait au ralenti…",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Un golem de granit gravé de runes, plus ancien que les planètes, qui garde le cœur des Confins. Huit phases, huit lumières : sa cuirasse éclate, le magma monte, et son dernier séisme doit être survécu.",
    "where": [
     "data/enemies/monolithe.json"
@@ -72730,6 +72899,13 @@
    ]
   },
   {
+   "fr": "une forge qui recommençait sans fin la même heure…",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Une graine cachée sous le pont de racines !",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -73043,6 +73219,13 @@
    ]
   },
   {
+   "fr": "Une serre où les lianes poussaient trop vite…",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
+   ]
+  },
+  {
    "fr": "Une session de rattrapage est déjà ouverte pour cet événement.",
    "where": [
     "server/src/raidWorld.ts"
@@ -73263,6 +73446,12 @@
    "fr": "Une version s'appelle déjà « {0} » : les versions ne se remplacent pas.",
    "where": [
     "server/src/projects.ts"
+   ]
+  },
+  {
+   "fr": "Une voix lasse, presque tendre, murmura au titan :",
+   "where": [
+    "data/raids/asterion_tour.json"
    ]
   },
   {
@@ -82425,7 +82614,19 @@
    ]
   },
   {
+   "fr": "« Le Balancier » et « Encore un tour » : deux films de transition de près de deux minutes, avant-premières du raid 2. Le premier raconte ce qui suit la chute d'Asterion : le tic-tac qui se dérègle, ses éclats figés en plein vol, une montre grande comme une lune qui sort d'une déchirure du temps près de Lyse, et derrière son verre un vieil homme. Le second, ce qui arrive s'il survit : une main de laiton qui l'attrape, des fils d'or qui recousent ses blessures, et le titan enchaîné sous la montre. Les deux passent par l'atelier aux mille horloges arrêtées, puis par les six mondes de la montre, chacun avec sa loi du temps et l'ombre qui le garde, et finissent sur les mêmes plans, et « À SUIVRE ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "« Le Cœur d'une Étoile Mourante » est maintenant le combat seul, comme L'Arène des Échos : le choix des quatre pouvoirs, puis directement Singularis dans son arène géante (une seule vie). Nouvelle version du niveau : son classement repart de zéro.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Le Mécanisme », la musique de ces deux films : tic-tac, boîte à musique désaccordée, cuivres qui grincent, un tempo qui accélère et ralentit, des mesures qui changent sans cesse, deux horloges décalées et des arrêts net.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -83037,6 +83238,13 @@
    "fr": "À sa mort",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "À SUIVRE",
+   "where": [
+    "data/raids/asterion_balancier.json",
+    "data/raids/asterion_tour.json"
    ]
   },
   {

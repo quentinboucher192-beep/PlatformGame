@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/tige_morceau.png",
+  "frameWidth": 48,
+  "frameHeight": 164,
+  "pivot": [24, 90],
+  "clips": {
+    "idle": {"row": 0, "count": 1, "fps": 1, "loop": true}
+  }
+}

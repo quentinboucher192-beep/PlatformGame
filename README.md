@@ -652,6 +652,16 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.82.0** :
+* **« Le Balancier » et « Encore un tour »**, deux films de transition de près de deux minutes, avant-premières du raid 2 :
+  ce qui vient après Asterion, s'il tombe (le temps se fige, une montre grande comme une lune sort d'une déchirure près de
+  Lyse, balancier brisé) ou s'il survit (une main de laiton l'attrape, des fils d'or le recousent, il devient le balancier
+  de la montre) ; les deux passent par l'atelier aux mille horloges et les six mondes de la montre, puis finissent sur les
+  mêmes plans et « À SUIVRE » ; leur musique, « Le Mécanisme », est une horlogerie qui se dérègle. Ouverts à tous dans **Collection › Galerie ›
+  Films** et dans ADMINISTRATION › Films
+  ([docs/RAIDS.md §33](docs/RAIDS.md#33--le-balancier--et--encore-un-tour---les-films-de-transition-avant-premières-du-raid-2-282)).
+* Films : un élément d'une scène peut **figer son temps** (`hold`), sans rien changer aux films existants.
+
 **Nouveau dans la version 2.81.0** :
 * **« Après Asterion »**, le film du monde d'après la chute : huit plans animés, 81 s, sur ce que la victoire change dans
   la galaxie, ses planètes et ses peuples, avec **le nom des clans présents à la chute** (le vôtre en évidence) ; regardé

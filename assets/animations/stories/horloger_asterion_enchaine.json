@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/asterion_enchaine.png",
+  "frameWidth": 208,
+  "frameHeight": 280,
+  "pivot": [104, 3],
+  "clips": {
+    "balance": {"row": 0, "count": 4, "durations": [0.17, 0.17, 0.17, 0.5], "loop": true}
+  }
+}

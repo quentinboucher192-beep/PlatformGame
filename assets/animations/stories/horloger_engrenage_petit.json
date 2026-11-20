@@ -1,0 +1,12 @@
+{
+  "texture": "stories/horloger/engrenage_petit.png",
+  "frameWidth": 42,
+  "frameHeight": 42,
+  "pivot": [21, 21],
+  "clips": {
+    "tourne": {"row": 0, "count": 16, "fps": 10, "loop": true},
+    "folle": {"row": 0, "count": 16, "fps": 60, "loop": true},
+    "lent": {"row": 0, "count": 16, "fps": 4, "loop": true},
+    "arret": {"row": 0, "count": 1, "fps": 1, "loop": true}
+  }
+}

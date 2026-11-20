@@ -1,0 +1,9 @@
+{
+  "texture": "stories/horloger/page.png",
+  "frameWidth": 22,
+  "frameHeight": 18,
+  "pivot": [11, 9],
+  "clips": {
+    "idle": {"row": 0, "count": 2, "durations": [1.2, 0.2], "loop": true}
+  }
+}

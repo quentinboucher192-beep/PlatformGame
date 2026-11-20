@@ -1,0 +1,10 @@
+{
+  "texture": "stories/horloger/givre.png",
+  "frameWidth": 22,
+  "frameHeight": 22,
+  "pivot": [11, 11],
+  "clips": {
+    "prend": {"row": 0, "count": 5, "durations": [0.09, 0.09, 0.09, 0.09, 0.09], "loop": false, "next": "fige"},
+    "fige": {"row": 1, "count": 2, "durations": [0.15, 1.4], "loop": true}
+  }
+}

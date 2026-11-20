@@ -210,6 +210,10 @@ std::optional<StoryStage> StoryStage::fromJson(const Json& j, std::string* error
         if (e.contains("drift")) el.drift = vec2FromJson(e["drift"]);
         if (!std::isfinite(el.drift.x) || !std::isfinite(el.drift.y)) el.drift = {};
         el.repeat = jget<bool>(e, "repeat", false);
+        if (e.contains("hold") && e["hold"].is_array() && !e["hold"].empty() && e["hold"][0].is_number()) {  // 2.82
+            el.holdFrom = std::max(0.0f, finiteOr(e["hold"][0].get<float>(), 0.0f));
+            el.holdTo = e["hold"].size() >= 2 && e["hold"][1].is_number() ? finiteOr(e["hold"][1].get<float>(), -1.0f) : -1.0f;
+        }
         if (e.contains("pulse") && e["pulse"].is_array() && e["pulse"].size() >= 2 && e["pulse"][0].is_number() &&
             e["pulse"][1].is_number()) {
             el.pulse = std::clamp(finiteOr(e["pulse"][0].get<float>(), 0.0f), 0.0f, 1.0f);
@@ -231,6 +235,12 @@ std::optional<StoryStage> StoryStage::fromJson(const Json& j, std::string* error
     }
     if (st.elements.empty()) return fail("a stage without elements");
     return st;
+}
+
+float StoryElement::localTime(float t) const {
+    if (holdFrom < 0.0f || t <= holdFrom) return t;
+    if (holdTo < holdFrom || t < holdTo) return holdFrom;
+    return t - (holdTo - holdFrom);
 }
 
 float StoryElement::pulseAt(float t) const {

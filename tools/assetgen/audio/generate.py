@@ -6,6 +6,7 @@ Usage (from the repo root):
     python3 tools/assetgen/audio/generate.py --sfx        # sound effects only
     python3 tools/assetgen/audio/generate.py --music      # music only
     python3 tools/assetgen/audio/generate.py jump menu_theme   # just these names
+    python3 tools/assetgen/audio/generate.py --check mecanisme_tour story_tick   # 2.82: rebuilt apart, compared byte for byte
 
 Deterministic (fixed seeds) and offline: needs only numpy and ffmpeg (libvorbis).
 Fonts are fetched separately by fetch_fonts.py; validate.py checks the results.
@@ -30,15 +31,16 @@ MUSIC_DIR = os.path.join(ROOT, 'assets', 'music')
 VORBIS_QUALITY = 5
 
 
-def generate_music(names=None, log=print):
-    os.makedirs(MUSIC_DIR, exist_ok=True)
+def generate_music(names=None, log=print, out_dir=None):
+    out_dir = out_dir or MUSIC_DIR
+    os.makedirs(out_dir, exist_ok=True)
     for mod in SONGS:
         if names and mod.NAME not in names:
             continue
         t0 = time.time()
         song = mod.build()
         stereo, info = song.render(log=log)
-        path = os.path.join(MUSIC_DIR, mod.NAME + '.ogg')
+        path = os.path.join(out_dir, mod.NAME + '.ogg')
         pk, gain = encode_ogg(path, stereo, quality=VORBIS_QUALITY, title=mod.NAME)
         kind = 'loop' if song.loop else 'one-shot'
         log(f'  music/{mod.NAME}.ogg  {stereo.shape[1] / 44100:6.2f}s ({kind}, {stereo.shape[1]} samples)'
@@ -53,6 +55,7 @@ def main():
     ap.add_argument('names', nargs='*', help='only generate these sounds / songs')
     ap.add_argument('--sfx', action='store_true', help='sound effects only')
     ap.add_argument('--music', action='store_true', help='music only')
+    ap.add_argument('--check', action='store_true', help='rebuild the given names in a temporary folder and compare them with the files')
     args = ap.parse_args()
     do_sfx = args.sfx or not args.music
     do_music = args.music or not args.sfx
@@ -62,6 +65,25 @@ def main():
         unknown = names - known
         if unknown:
             ap.error('unknown name(s): ' + ', '.join(sorted(unknown)))
+    if args.check:
+        import filecmp
+        import tempfile
+        if not names:
+            ap.error('--check needs the names to check')
+        with tempfile.TemporaryDirectory() as tmp:
+            quiet = lambda *a, **k: None  # noqa: E731
+            if names & set(REGISTRY):
+                render_all(os.path.join(tmp, 'sounds'), names, log=quiet)
+            if names & {m.NAME for m in SONGS}:
+                generate_music(names, log=quiet, out_dir=os.path.join(tmp, 'music'))
+            bad = []
+            for name in sorted(names):
+                rel = os.path.join('sounds', name + '.wav') if name in REGISTRY else os.path.join('music', name + '.ogg')
+                ref = os.path.join(ROOT, 'assets', rel)
+                if not os.path.exists(ref) or not filecmp.cmp(ref, os.path.join(tmp, rel), shallow=False):
+                    bad.append(rel)
+            print('\n'.join(f'{b}: not the generator\'s output (regenerate)' for b in bad) or 'OK')
+            sys.exit(1 if bad else 0)
     t0 = time.time()
     if do_sfx and (not names or names & set(REGISTRY)):
         print(f'== sound effects -> {os.path.relpath(SOUNDS_DIR, ROOT)}', flush=True)
