@@ -56,8 +56,9 @@ async function worldEvent(clans: { id: string; players: TestPlayer[] }[], regist
 }
 
 async function openHeart(ev: string) {
+    // The seven gigaboss fallen; 2.78: every ambush of the aorta done (the arena reachable).
     for (const c of [...CATALOGS, HEART!])
-        for (const o of c === HEART ? ["coeur_aorte"] : [c.objectives.find((x) => x.role === "gigaboss")!.id])
+        for (const o of c === HEART ? HEART!.objectives.filter((x) => x.role === "ambush").map((x) => x.id) : [c.objectives.find((x) => x.role === "gigaboss")!.id])
             await env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, ?2, ?3, NULL, ?4)")
                 .bind(ev, c.id, o, new Date().toISOString())
                 .run();
