@@ -32,6 +32,7 @@
 #include "ui/screens/DeviceLostUi.h"
 #include "ui/screens/DownedView.h"
 #include "ui/screens/PassageWaitView.h"
+#include "ui/widgets/PowerLabels.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -726,9 +727,16 @@ public:
         const int down = downSeat();
         if (down >= 0 && !ended_ && !playingHere()) downed::drawFilter(r, ui.screenW(), ui.screenH());
         hud_.render(ui, *world_, view, nullptr, g_.settings.gameplay);
-        Rect banner;
+        Rect banner, waitPanel;
         if (down >= 0 && !ended_ && !paused_ && !choosing_ && !unplug_.paused()) banner = drawDowned(down);
-        if (!ended_ && !paused_ && !choosing_ && !unplug_.paused()) drawPassageWait(banner);
+        if (!ended_ && !paused_ && !choosing_ && !unplug_.paused()) waitPanel = drawPassageWait(banner);
+        // 2.81.2: the names of the powers over their tablets and stations, never over the HUD nor the banners.
+        if (!ended_ && !paused_ && !choosing_ && !unplug_.paused() && !world_->cinematic().active() && world_->state() != WorldState::Intro) {
+            std::vector<Rect> keepOut = hudTaken();
+            keepOut.push_back(banner);
+            keepOut.push_back(waitPanel);
+            if (powerLabelsAllowed(ui, *world_, keepOut)) drawPowerLabels(ui, powerLabels(ui, *world_, view, false), keepOut);
+        }
         if (unplug_.paused() && !ended_) {
             drawUnplug();
             return;
@@ -795,16 +803,18 @@ public:
     /// 2.80 (rules of cooperation 4): a passage waiting for the team before it closes — who it waits for
     /// and how far (« Porte : en attente de MVP (12 m) »), under the HUD and the banner of a player down.
     /// Not over a big message of the level (it waits).
-    void drawPassageWait(const Rect& banner) {
+    Rect drawPassageWait(const Rect& banner) {
         for (const WorldMessage& m : world_->messages())
-            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return;
+            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return {};
         const std::vector<std::string> lines = passagewait::lines(*world_, [this](int i) {
             return i >= 0 && i < static_cast<int>(setup_.seats.size()) ? setup_.seats[static_cast<size_t>(i)].name : "Joueur " + std::to_string(i + 1);
         });
-        if (lines.empty()) return;
+        if (lines.empty()) return {};
         std::vector<Rect> taken = hudTaken();
         if (!banner.empty()) taken.push_back(banner);
-        passagewait::draw(g_.ui, passagewait::placed(g_.ui, lines, taken));
+        const passagewait::Layout l = passagewait::placed(g_.ui, lines, taken);
+        passagewait::draw(g_.ui, l);
+        return l.panel;
     }
 
     /// A centred panel of `w` × `h`.

@@ -693,3 +693,58 @@ TEST_CASE("raid armory (2.77): a name over every tablet, measured; two names nev
     }
     app.shutdown();
 }
+
+TEST_CASE("power names (2.81.2): every station of a campaign level named, measured; never over another name, a tablet or a ledge") {
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+    Application app;
+    AppConfig cfg;
+    cfg.headless = true;
+    cfg.width = 1280;
+    cfg.height = 720;
+    cfg.vsync = false;
+    CHECK(app.init(cfg));
+    {
+        GameServices g(app);
+        g.loadAll();
+        for (const char* id : {"pyralis_03", "glacior_03"}) {
+            auto level = g.content.loadLevel(id);
+            CHECK(level.has_value());
+            if (!level) continue;
+            WorldServices ws{app.resources(), app.audio(), g.content, nullptr, 0.0f, 1.0f};
+            GameWorld w(ws, WorldMode::Play);
+            w.load(*level);
+            size_t tablets = 0;
+            for (const auto& e : w.entities())
+                if (auto* t = dynamic_cast<const PowerUnlockEntity*>(e.get()); t && !e->removed && !t->power().empty() && !t->disabledByChallenge(w)) ++tablets;
+            CHECK(tablets >= 5u);
+            UIContext& ui = g.ui;
+            ui.begin(app, 1.0f / 60.0f);
+            WorldView play = w.camera().view(static_cast<int>(ui.screenW()), static_cast<int>(ui.screenH()), 1.0f);
+            WorldView all;  // the whole level at once: the names at their smallest
+            all.scale = ui.screenW() / w.level().bounds.w;
+            all.screenW = static_cast<int>(ui.screenW());
+            all.screenH = static_cast<int>(ui.screenH());
+            all.topLeft = {w.level().bounds.x, w.level().bounds.y};
+            for (const WorldView& v : {play, all}) {
+                const auto labels = powerLabels(ui, w, v, false);
+                if (&v == &play) CHECK(labels.size() == tablets);  // at play scale, every one has its name
+                CHECK(raidhud::armoryLabels(ui, w, v).empty());     // no armory here
+                std::vector<Rect> solid;
+                for (const auto& e : w.entities())
+                    if (dynamic_cast<const PowerUnlockEntity*>(e.get())) solid.push_back(v.toScreen(e->box));
+                for (const Collider& c : w.physics().colliders())
+                    if (c.enabled && !c.dynamic && c.kind == ColliderKind::OneWay) solid.push_back(v.toScreen(c.box));
+                for (size_t i = 0; i < labels.size(); ++i) {
+                    CHECK(!labels[i].name.empty());
+                    for (size_t j = i + 1; j < labels.size(); ++j) CHECK(!labels[i].box.intersects(labels[j].box));
+                    if (!labels[i].cost.empty())  // the second line only where it is clear
+                        for (const Rect& r : solid) CHECK(!labels[i].box.intersects(r));
+                    const float nameW = ui.text().measure(labels[i].name, FontFace::Bold, ui.s(labels[i].size)).x;
+                    CHECK(nameW <= labels[i].box.w + 0.5f);
+                }
+            }
+            ui.end();
+        }
+    }
+    app.shutdown();
+}

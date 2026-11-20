@@ -23,6 +23,7 @@
 #include "ui/screens/PowerChoiceScene.h"
 #include "ui/screens/ResultsScene.h"
 #include "ui/screens/TutorialScenes.h"
+#include "ui/widgets/PowerLabels.h"
 #include "game/tutorial/Tutorial.h"
 
 namespace cosmic {
@@ -926,6 +927,25 @@ void GameScene::checkBossStory() {
     g_.bossStats.save();
 }
 
+void GameScene::drawPowerNames(const WorldView& view) {
+    if (world_->cinematic().active() || world_->state() == WorldState::Intro) return;
+    UIContext& ui = g_.ui;
+    std::vector<PowerLabel> labels = powerLabels(ui, *world_, view, false);
+    if (labels.empty()) return;
+    // Kept clear: the HUD as drawn this frame (the ghosts' box among its blocks), the arrows, the
+    // training's references and banners, the challenge's line and the frame counter (bottom left).
+    std::vector<Rect> keepOut;
+    for (int k = 0; k < Hud::kFadeBlocks; ++k) keepOut.push_back(hud_.drawn(k));
+    keepOut.push_back(bossArrowRect_);
+    keepOut.insert(keepOut.end(), enemyArrowAreas_.begin(), enemyArrowAreas_.end());
+    if (ghostRun_.active()) keepOut.push_back(ghostRun_.hudRect());
+    keepOut.push_back(trainingRefsRect_);  // empty when never drawn
+    keepOut.push_back(trainingTagRect_);
+    if (segmentBanner_ > 0.0f) keepOut.push_back(trainingBannerRect_);
+    if (opt_.challenge || g_.settings.graphics.showFps) keepOut.push_back({0.0f, ui.screenH() - ui.s(48), ui.screenW() * 0.5f + ui.s(30), ui.s(48)});
+    if (powerLabelsAllowed(ui, *world_, keepOut)) drawPowerLabels(ui, std::move(labels), keepOut);
+}
+
 void GameScene::drawEnemyArrows(const WorldView& view) {
     enemyArrowAreas_.clear();
     // Only what the player saw while playing (not the camera of a cinematic or of the intro).
@@ -1496,6 +1516,7 @@ void GameScene::render(float alpha) {
     }
     drawBossArrow(view);
     drawEnemyArrows(view);
+    drawPowerNames(view);  // 2.81.2: the names of the powers over their tablets
     if (opt_.training || opt_.bossTraining || (world_ && world_->practiceRespawn())) drawTrainingBanner();
     else if (opt_.challenge && !ended_) drawChallengeBanner();
     if (g_.settings.graphics.showFps) {

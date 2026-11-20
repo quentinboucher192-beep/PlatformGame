@@ -5716,6 +5716,7 @@
   {
    "fr": "Aucun joueur ne correspond à la recherche.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/PlayerProfileScene.cpp"
    ]
   },
@@ -5736,6 +5737,12 @@
    "where": [
     "server/src/raidTests.ts",
     "ui/online/RaidTestGuests.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun joueur trouvé",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -6717,12 +6724,14 @@
   {
    "fr": "Aucune équipe de deux n'est encore classée sur ce niveau.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
   {
    "fr": "Aucune équipe de trois n'est encore classée sur ce niveau.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -13655,6 +13664,7 @@
   {
    "fr": "Classement indisponible.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -15422,6 +15432,7 @@
   {
    "fr": "Connectez-vous à Cosmic Online pour entrer dans la course.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp",
     "ui/screens/ResultsScene.cpp"
    ]
@@ -20851,6 +20862,7 @@
     "game/online/OnlineCoop.cpp",
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -26837,7 +26849,8 @@
   {
    "fr": "Fini",
    "where": [
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -42932,6 +42945,18 @@
    ]
   },
   {
+   "fr": "Meilleure progression de chaque joueur, sur une seule vie",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleure progression de chaque équipe, sur une seule vie",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Meilleure série : {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -49472,6 +49497,7 @@
   {
    "fr": "participants",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp",
     "ui/screens/RaidEventScene.cpp"
@@ -51168,6 +51194,12 @@
    "fr": "Personne n'a encore rien compté ici.",
    "where": [
     "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Personne n'est encore classé",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -54338,6 +54370,7 @@
   {
    "fr": "PROGRESSION",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -62317,7 +62350,7 @@
   {
    "fr": "sans énergie",
    "where": [
-    "ui/online/RaidHud.cpp"
+    "ui/widgets/PowerLabels.cpp"
    ]
   },
   {
@@ -62753,6 +62786,7 @@
     "ui/screens/ClanScene.cpp",
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -64431,6 +64465,7 @@
    "fr": "Solo",
    "where": [
     "game/online/Clans.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -67783,6 +67818,7 @@
   {
    "fr": "temps {0}",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -70138,6 +70174,12 @@
    ]
   },
   {
+   "fr": "Toute tentative compte, même sans arriver au bout : jouez ce niveau connecté à Cosmic Online.",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "Toute tentative de triche (modification du jeu, de ses fichiers ou des données envoyées, automatisation) est interdite. Les records sont vérifiés par le serveur (cohérence, temps minimum, analyse du replay) et peuvent rester « en attente » d'une vérification manuelle. Un record peut être refusé et un compte suspendu en cas de triche avérée. La vérification automatique ne garantit pas l'absence totale de triche : les signalements sont examinés.",
    "where": [
     "data/online/terms_fr.txt"
@@ -70782,6 +70824,7 @@
     "game/online/OnlineCoop.cpp",
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -77202,7 +77245,8 @@
   {
    "fr": "Vérificateur",
    "where": [
-    "data/achievements/achievements.json"
+    "data/achievements/achievements.json",
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -79421,7 +79465,7 @@
   {
    "fr": "{0} d'énergie",
    "where": [
-    "ui/online/RaidHud.cpp"
+    "ui/widgets/PowerLabels.cpp"
    ]
   },
   {
@@ -79457,12 +79501,14 @@
   {
    "fr": "{0} de vos tentatives est en cours de vérification.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
   {
    "fr": "{0} de vos tentatives sont en cours de vérification.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -80248,6 +80294,12 @@
    ]
   },
   {
+   "fr": "{0} joueur · meilleure progression de chacun",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} joueurs",
    "where": [
     "game/online/RaidRecap.cpp",
@@ -80323,6 +80375,12 @@
    "fr": "{0} joueurs veulent devenir vos amis (En ligne → SOCIAL → Amis).",
    "where": [
     "game/online/OnlineService.cpp"
+   ]
+  },
+  {
+   "fr": "{0} joueurs · meilleure progression de chacun",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -81100,6 +81158,7 @@
   {
    "fr": "{0} réanimation",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -81118,6 +81177,7 @@
   {
    "fr": "{0} réanimations",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -81413,6 +81473,7 @@
   {
    "fr": "{0} tentative d'équipe en cours de vérification.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -81425,6 +81486,7 @@
   {
    "fr": "{0} tentatives d'équipe en cours de vérification.",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -82123,6 +82185,18 @@
    "where": [
     "game/powers/PowerStats.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} équipe · meilleure progression de chacune",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} équipes · meilleure progression de chacune",
+   "where": [
+    "ui/screens/OnlineRankingScene.cpp"
    ]
   },
   {
@@ -84490,6 +84564,7 @@
    "fr": "ÉQUIPE",
    "where": [
     "ui/screens/CoopLobbyScene.cpp",
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -84508,6 +84583,7 @@
   {
    "fr": "équipe incomplète",
    "where": [
+    "ui/screens/OnlineRankingScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },

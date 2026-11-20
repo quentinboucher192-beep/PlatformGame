@@ -4,7 +4,9 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <map>
+#include <set>
 
 #include "engine/core/Easing.h"
 #include "engine/core/FileUtil.h"
@@ -52,6 +54,20 @@ struct BoardState {
     Json me;
     int total = 0;
     int nextOffset = -1;
+    int generation = 0;
+};
+
+/// The « Course à la vérification » of the selected EXTRÊME level (GET /races/board, as its
+/// own screen reads it): shown in place of the records on the NIVEAU tab (2.81.2).
+struct RaceBoardState {
+    bool loading = false;
+    bool loaded = false;
+    bool fromCache = false;
+    double age = 0.0;
+    std::string levelId;
+    int size = 1;  // 1 Solo (GET /races/board), 2 Duo or 3 Trio (GET /coop/board, 2.62)
+    std::string error;
+    Json data;
     int generation = 0;
 };
 
@@ -202,6 +218,7 @@ private:
 
     void requestAll() {
         requestBoard(false);
+        requestRace();
         requestGlobe();
         if (!g_.online.usable()) return;
         // The players' rating of the selected level and its number of comments (2.19).
@@ -230,7 +247,9 @@ private:
             return;
         }
         std::string boardKey = (level() ? level()->id : std::string()) + "|" + categoryId(category()) + "|" + std::to_string(tab_);
-        g_.online.get(boardPath(offset), OnlineService::guard(life_, [this, gen, more, boardKey](const ApiResult& r) {
+        // A level whose board holds a verified record is verified (its race is no longer the default view).
+        std::string levelOfBoard = tab_ == TabLevel && level() ? level()->id : std::string();
+        g_.online.get(boardPath(offset), OnlineService::guard(life_, [this, gen, more, boardKey, levelOfBoard](const ApiResult& r) {
             if (gen != board_.generation) return;  // an older request
             board_.loading = false;
             board_.loaded = true;
@@ -253,6 +272,7 @@ private:
             else
                 board_.entries = entries;
             board_.me = r.data.value("me", Json());
+            if (!levelOfBoard.empty() && !board_.entries.empty()) verifiedLevels_.insert(levelOfBoard);
             board_.total = jget<int>(r.meta, "total", static_cast<int>(board_.entries.size()));
             board_.nextOffset = r.meta.contains("next_offset") && r.meta["next_offset"].is_number() ? r.meta["next_offset"].get<int>() : -1;
             if (!r.fromCache && !more && board_.me.is_object() && board_.me.contains("entry") && board_.me["entry"].is_object())
@@ -659,19 +679,37 @@ private:
             tab_ = tab;
             selectedRow_ = -1;
             requestBoard(false);
+            requestRace();
         }
         float y = zoneC_.y + ui.s(60);
         float x = zoneC_.x + ui.s(12), w = zoneC_.w - ui.s(24);
-        // Filters
+        // Filters. An EXTRÊME level (NIVEAU tab) offers its race first, as one more category:
+        // the race has no period, its place holds Solo / Duo / Trio (coop EXTRÊME: 2 or 3 players).
+        const bool raceLvl = raceLevel(), race = showRace();
         std::vector<std::string> cats;
+        if (raceLvl) cats.push_back("Course à la vérification");
         for (RunCategory c : kAllCategories) cats.push_back(categoryLabel(c));
-        int cat = category_;
+        const int first = raceLvl ? 1 : 0;
+        int cat = race ? 0 : category_ + first;
         float half = levelBoard() ? w * 0.6f : w;
-        if (ui.cycle("category", {x, y, half - ui.s(6), ui.s(36)}, "", cat, cats) && cat != category_) {
-            category_ = cat;
-            refreshAfterChange();
+        if (ui.cycle("category", {x, y, half - ui.s(6), ui.s(36)}, "", cat, cats) && cat != (race ? 0 : category_ + first)) {
+            if (raceLvl) {
+                raceView_[level()->id] = cat == 0;
+                selectedRow_ = -1;
+            }
+            if (cat >= first && cat - first != category_) {
+                category_ = cat - first;
+                refreshAfterChange();
+            }
         }
-        if (levelBoard()) {
+        if (race) {
+            int sz = raceSize_ - 1;
+            if (ui.cycle("racesize", {x + half, y, w - half, ui.s(36)}, "", sz, {"Solo", "Duo", "Trio"}) && sz + 1 != raceSize_) {
+                raceSize_ = sz + 1;
+                selectedRow_ = -1;
+                requestRace();
+            }
+        } else if (levelBoard()) {
             int per = period_;
             if (ui.cycle("period", {x + half, y, w - half, ui.s(36)}, "", per, {"Historique", "Semaine"}) && per != period_) {
                 period_ = per;
@@ -679,7 +717,13 @@ private:
             }
         }
         y += ui.s(42);
-        ui.label(categoryRule(category()), {x, y + ui.s(8)}, 14, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        if (race) {
+            const std::string rule = raceSize_ > 1 ? "Meilleure progression de chaque équipe, sur une seule vie"
+                                                   : "Meilleure progression de chaque joueur, sur une seule vie";
+            ui.label(rule, {x, y + ui.s(8)}, ui.fitFont(rule, FontFace::Body, 14, w), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        } else {
+            ui.label(categoryRule(category()), {x, y + ui.s(8)}, 14, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        }
         y += ui.s(22);
         if (tab_ == TabLevel) {
             std::string before = search_;
@@ -705,15 +749,333 @@ private:
         }
         // Column headers
         ui.label("#", {x + ui.s(14), y + ui.s(8)}, 14, ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
-        ui.label("JOUEUR", {x + ui.s(84), y + ui.s(8)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
-        ui.label(tab_ == TabGlobal ? "POINTS" : "TEMPS", {x + w - ui.s(8), y + ui.s(8)}, 14, ui.theme().textDim, Align::Right, FontFace::Bold,
-                 VAlign::Middle);
+        ui.label(race && raceSize_ > 1 ? "ÉQUIPE" : "JOUEUR", {x + ui.s(84), y + ui.s(8)}, 14, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+        ui.label(race ? "PROGRESSION" : tab_ == TabGlobal ? "POINTS" : "TEMPS", {x + w - ui.s(8), y + ui.s(8)}, 14, ui.theme().textDim, Align::Right,
+                 FontFace::Bold, VAlign::Middle);
         y += ui.s(18);
         float footerH = ui.s(84);
         Rect list{x, y, w, zoneC_.bottom() - footerH - y};
-        drawEntries(list);
-        drawBoardFooter({zoneC_.x, zoneC_.bottom() - footerH, zoneC_.w, footerH});
+        if (race) {
+            drawRaceEntries(list);
+            drawRaceFooter({zoneC_.x, zoneC_.bottom() - footerH, zoneC_.w, footerH});
+        } else {
+            drawEntries(list);
+            drawBoardFooter({zoneC_.x, zoneC_.bottom() - footerH, zoneC_.w, footerH});
+        }
         ui.popId();
+    }
+
+    // ------------------------------------------------- the race of an EXTRÊME level
+    /// The NIVEAU tab on an EXTRÊME level: its « Course à la vérification » can replace the records.
+    bool raceLevel() {
+        const RankedLevel* l = level();
+        return tab_ == TabLevel && l && isExtreme(*l);
+    }
+
+    /// The race is shown: the player's choice for this level, else while the level is not
+    /// verified (no verifier and no verified record seen); a verified level shows its records.
+    bool showRace() {
+        if (!raceLevel()) return false;
+        const std::string& id = level()->id;
+        if (auto it = raceView_.find(id); it != raceView_.end()) return it->second;
+        return verifiedLevels_.count(id) == 0;
+    }
+
+    /// The same request as the race's own screen (official board of this game's version of the level).
+    void requestRace() {
+        const RankedLevel* l = level();
+        if (!l || tab_ != TabLevel || !isExtreme(*l) || !g_.online.usable()) return;
+        if (race_.levelId != l->id || race_.size != raceSize_) {
+            const int keep = race_.generation;
+            race_ = RaceBoardState{};
+            race_.generation = keep;
+            race_.levelId = l->id;
+            race_.size = raceSize_;
+        }
+        int gen = ++race_.generation;
+        race_.loading = true;
+        std::string q = raceSize_ > 1 ? "/api/v1/coop/board?size=" + std::to_string(raceSize_) + "&kind=official&level_id=" + l->id
+                                      : "/api/v1/races/board?kind=official&level_id=" + l->id;
+        if (const LevelFingerprint* fp = g_.online.fingerprints().get(g_.content, l->id); fp && !fp->hash.empty()) q += "&level_hash=" + fp->hash;
+        g_.online.get(q, OnlineService::guard(life_, [this, gen, id = l->id](const ApiResult& r) {
+            if (gen != race_.generation) return;
+            race_.loading = false;
+            race_.loaded = true;
+            if (!r.ok) {
+                race_.error = r.message;
+                return;
+            }
+            race_.error.clear();
+            race_.fromCache = r.fromCache;
+            race_.age = r.cacheAgeSeconds;
+            race_.data = r.data;
+            if (jfield(r.data, "verifier").is_object()) verifiedLevels_.insert(id);
+        }));
+    }
+
+    void drawRaceEntries(const Rect& list) {
+        UIContext& ui = g_.ui;
+        if (drawUnusable(list)) return;
+        const bool current = raceCurrent();
+        if (!current) requestRace();  // never asked for this level yet (asked once: it records the level)
+        if (!current || (race_.loading && !race_.data.is_object())) {
+            drawSkeleton(list);
+            return;
+        }
+        if (!race_.data.is_object()) {
+            drawEmpty(list, "Classement indisponible", race_.error.empty() ? std::string("Classement indisponible.") : race_.error);
+            UIContext::ButtonStyle st;
+            st.small = true;
+            if (ui.button("raceretry", {list.center().x - ui.s(90), list.center().y + ui.s(60), ui.s(180), ui.s(38)}, "Réessayer", st)) requestRace();
+            return;
+        }
+        // Every ranked player (the server's best attempt of each); the search filters them here.
+        std::vector<const Json*> rows;
+        const auto rk = race_.data.find("ranking");
+        const bool any = rk != race_.data.end() && rk->is_array() && !rk->empty();
+        if (any)
+            for (const auto& e : *rk)
+                if (raceSize_ > 1 ? teamMatchesSearch(e) : matchesSearch(jstr(jfield(e, "player", Json::object()), "username"))) rows.push_back(&e);
+        if (!any) {
+            drawEmpty(list, "Personne n'est encore classé",
+                      raceSize_ == 2   ? "Aucune équipe de deux n'est encore classée sur ce niveau."
+                      : raceSize_ == 3 ? "Aucune équipe de trois n'est encore classée sur ce niveau."
+                                       : "Toute tentative compte, même sans arriver au bout : jouez ce niveau connecté à Cosmic Online.");
+            return;
+        }
+        if (rows.empty()) {
+            drawEmpty(list, "Aucun joueur trouvé", "Aucun joueur ne correspond à la recherche.");
+            return;
+        }
+        float rowH = ui.s(46), gap = ui.s(5);
+        ui.beginScroll("race", list, static_cast<float>(rows.size()) * (rowH + gap));
+        float y = list.y - ui.scrollOffset();
+        for (size_t i = 0; i < rows.size(); ++i) {
+            Rect row{list.x, y, list.w - ui.s(10), rowH};
+            if (row.bottom() >= list.y - rowH && row.y <= list.bottom() + rowH) {
+                if (raceSize_ > 1) drawTeamEntry(*rows[i], row, static_cast<int>(i));
+                else drawRaceEntry(*rows[i], row, static_cast<int>(i));
+            }
+            y += rowH + gap;
+        }
+        ui.endScroll();
+    }
+
+    /// Search of a pseudonym in the race (case ignored for the Latin letters).
+    bool matchesSearch(const std::string& name) const {
+        if (search_.empty()) return true;
+        auto lower = [](std::string t) {
+            for (char& c : t)
+                if (c >= 'A' && c <= 'Z') c = static_cast<char>(c - 'A' + 'a');
+            return t;
+        };
+        return lower(name).find(lower(search_)) != std::string::npos;
+    }
+
+    /// A ranked player of the race: rank, avatar, name, then (dimmed) the verifier or a
+    /// finished attempt, its time and its date; their best progression at the right.
+    void drawRaceEntry(const Json& e, const Rect& row, int index) {
+        UIContext& ui = g_.ui;
+        const int rank = jget<int>(e, "rank", 0);
+        const bool me = jget<bool>(e, "me", false), finished = jget<bool>(e, "finished", false);
+        const Json p = jfield(e, "player", Json::object());
+        const std::string pid = jstr(p, "id");
+        Color accent = rank >= 1 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : (me ? ui.theme().violet : Color{0, 0, 0, 0});
+        if (ui.listItem("race" + std::to_string(index), row, "", selectedRow_ == index || me, "", accent) && !pid.empty()) {
+            selectedRow_ = index;
+            openProfile(pid);
+        }
+        float nx = drawRankAndAvatar(p, rank, row);
+        const float rx = row.right() - ui.s(10);
+        const std::string value = progressText(e);
+        const float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
+        const float room = std::max(ui.s(40), right - nx);
+        const Json ver = jfield(race_.data, "verifier");
+        const bool verifier = !pid.empty() && ver.is_object() && jstr(jfield(ver, "player", Json::object()), "id") == pid;
+        std::string sub = verifier ? "Vérificateur" : finished ? "Fini" : "";
+        appendTimeAndDate(sub, e);
+        const float nameY = sub.empty() ? row.center().y : row.center().y - ui.s(8);
+        std::string name = ui_.displayName(p, rank, me);
+        {
+            i18n::Verbatim playerWords(me || g_.settings.online.showPseudonyms);
+            float nf = std::max(11.5f / ui.s(1.0f), ui.fitFont(name, FontFace::Bold, sub.empty() ? 18 : 17, room, 0.75f));
+            ui.label(ui.elide(name, FontFace::Bold, nf, room), {nx, nameY}, nf, me ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold,
+                     VAlign::Middle);
+            ui_.clanTagLink("rc" + std::to_string(index), p, name, {nx, nameY}, nf, FontFace::Bold, room);
+        }
+        if (!sub.empty()) {
+            float sf = std::max(12.5f, 11.5f / ui.s(1.0f));
+            ui.label(ui.elide(sub, FontFace::Body, sf, room), {nx, row.center().y + ui.s(10)}, sf, verifier ? ui.theme().warm : ui.theme().textDim,
+                     Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        ui.label(value, {rx, row.center().y}, 18,
+                 finished ? ui.theme().success : rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right, FontFace::Bold,
+                 VAlign::Middle);
+    }
+
+    /// The board in memory is the selected level's, at the size chosen.
+    bool raceCurrent() const { return level() && race_.levelId == level()->id && race_.size == raceSize_; }
+
+    /// A team is found by any of its players.
+    bool teamMatchesSearch(const Json& e) const {
+        if (search_.empty()) return true;
+        const Json players = jfield(e, "players", Json::array());
+        if (!players.is_array()) return false;
+        return std::any_of(players.begin(), players.end(), [&](const Json& p) { return matchesSearch(jstr(p, "username")); });
+    }
+
+    /// « 87,5 % »: the server's score of the attempt.
+    static std::string progressText(const Json& e) {
+        char pct[32];
+        std::snprintf(pct, sizeof pct, "%.1f", jget<double>(e, "score", 0.0));
+        std::string value = pct;
+        if (auto d = value.find('.'); d != std::string::npos) value[d] = ',';
+        return value + " %";
+    }
+
+    /// The attempt's time and the day it was verified, when the board has them.
+    static void appendTimeAndDate(std::string& sub, const Json& e) {
+        if (const int64_t ms = jget<int64_t>(e, "time_ms", 0); ms > 0) sub += (sub.empty() ? "" : " · ") + std::string("temps ") + formatRunTime(ms);
+        if (const std::string at = jstr(e, "at"); at.size() >= 10)
+            sub += (sub.empty() ? "" : " · ") + at.substr(8, 2) + "/" + at.substr(5, 2) + "/" + at.substr(0, 4);
+    }
+
+    /// A team of the Duo or Trio race: rank, its players' names (each one opens that player's profile,
+    /// with the mouse, the keyboard or the gamepad), then (dimmed) a finished attempt, the revivals, an
+    /// incomplete team, its time and its date; its best progression at the right.
+    void drawTeamEntry(const Json& e, const Rect& row, int index) {
+        UIContext& ui = g_.ui;
+        const int rank = jget<int>(e, "rank", 0);
+        const bool me = jget<bool>(e, "me", false), finished = jget<bool>(e, "finished", false);
+        // The row is drawn here: its players' names are its buttons.
+        const Color accent = rank >= 1 && rank <= 3 ? GlobeRenderer::tierColor(markerTier(rank)) : (me ? ui.theme().violet : Color{0, 0, 0, 0});
+        ui.r().fillRoundedRect(row, ui.s(6), me ? Color{18, 48, 74, 230} : Color{14, 22, 44, 200});
+        if (accent.a > 0) ui.r().fillRoundedRect({row.x, row.y + ui.s(4), ui.s(4), row.h - ui.s(8)}, ui.s(2), accent);
+        drawRankBadge(rank, row);
+        const std::string value = progressText(e);
+        const float rx = row.right() - ui.s(10);
+        const float nx = row.x + ui.s(84);
+        const float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
+        const float room = std::max(ui.s(40), right - nx);
+        const float nameY = row.center().y - ui.s(8);
+        // The names: their size at most, else smaller (down to 80 %), else each one shortened to its share.
+        struct Name {
+            std::string id, shown;
+            bool mine = false;
+            float w = 0.0f;
+        };
+        std::vector<Name> names;
+        const std::string myId = g_.online.playerId();
+        const Json players = jfield(e, "players", Json::array());
+        if (players.is_array())
+            for (const auto& p : players) {
+                Name n;
+                n.id = jstr(p, "id");
+                n.mine = !myId.empty() && n.id == myId;
+                n.shown = ui_.displayName(jstr(p, "username"), 0, n.mine);
+                names.push_back(std::move(n));
+            }
+        float x = nx, left = room;
+        const std::string tag = jstr(e, "clan_tag");  // the clan of all its players (else empty)
+        if (!tag.empty()) {
+            i18n::Verbatim words;  // a tag is never translated
+            const std::string t = "[" + tag + "] ";
+            const float tw = ui.text().measure(t, FontFace::Bold, ui.s(16)).x;
+            if (tw <= room * 0.3f) {
+                ui.label(t, {x, nameY}, 16, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+                x += tw;
+                left -= tw;
+            }
+        }
+        const std::string sep = " · ";
+        const float sepW = ui.text().measure(sep, FontFace::Bold, ui.s(16)).x;
+        auto widthOf = [&](const Name& n, float size) {
+            i18n::Verbatim words(n.mine || g_.settings.online.showPseudonyms);
+            return ui.text().measure(n.shown, FontFace::Bold, ui.s(size)).x;
+        };
+        float total = sepW * static_cast<float>(std::max<size_t>(names.size(), 1) - 1);
+        for (const Name& n : names) total += widthOf(n, 16.0f);
+        const float size = total <= left ? 16.0f : std::max(12.8f, 16.0f * left / total);
+        const float sepAt = ui.text().measure(sep, FontFace::Bold, ui.s(size)).x;
+        const float share = names.empty() ? left : (left - sepAt * static_cast<float>(names.size() - 1)) / static_cast<float>(names.size());
+        for (size_t k = 0; k < names.size(); ++k) {
+            Name& n = names[k];
+            i18n::Verbatim words(n.mine || g_.settings.online.showPseudonyms);
+            n.w = widthOf(n, size);
+            if (n.w > share) {
+                n.shown = ui.elide(n.shown, FontFace::Bold, size, share);
+                n.w = std::min(share, ui.text().measure(n.shown, FontFace::Bold, ui.s(size)).x);
+            }
+            const std::string key = "team" + std::to_string(index) + "/" + std::to_string(k);
+            const Rect hit{x, nameY - ui.s(11), std::max(n.w, ui.s(8)), ui.s(22)};
+            bool hovered = false;
+            if (ui.hotspot(key, hit, &hovered) && !n.id.empty()) {
+                selectedRow_ = index;
+                openProfile(n.id);
+            }
+            if (hovered || ui.focused(key)) ui.r().fillRect({hit.x, hit.bottom() - ui.s(2), hit.w, ui.s(2)}, ui.theme().accent);
+            ui.label(n.shown, {x, nameY}, size, n.mine ? ui.theme().accent : ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+            x += n.w;
+            if (k + 1 < names.size()) {
+                ui.label(sep, {x, nameY}, size, ui.theme().textDim, Align::Left, FontFace::Bold, VAlign::Middle);
+                x += sepAt;
+            }
+        }
+        const int revives = jget<int>(e, "revives", 0);
+        std::string sub = finished ? "Fini" : "";
+        sub += (sub.empty() ? "" : " · ") + std::to_string(revives) + (revives > 1 ? " réanimations" : " réanimation");
+        if (jget<bool>(e, "incomplete", false)) sub += " · équipe incomplète";
+        appendTimeAndDate(sub, e);
+        const float sf = std::max(12.5f, 11.5f / ui.s(1.0f));
+        ui.label(ui.elide(sub, FontFace::Body, sf, room), {nx, row.center().y + ui.s(10)}, sf,
+                 jget<bool>(e, "incomplete", false) ? ui.theme().warm : ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+        ui.label(value, {rx, row.center().y}, 18,
+                 finished ? ui.theme().success : rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right, FontFace::Bold,
+                 VAlign::Middle);
+    }
+
+    void drawRaceFooter(const Rect& f) {
+        UIContext& ui = g_.ui;
+        ui.separator({f.x + ui.s(12), f.y + ui.s(4)}, f.w - ui.s(24));
+        const bool current = raceCurrent();
+        std::string info;
+        Color c = ui.theme().textDim;
+        if (current && race_.fromCache) {
+            info = "Hors ligne · classement " + OnlineUi::ageText(race_.age) + " (peut être ancien)";
+            c = ui.theme().warm;
+        } else if (current && race_.data.is_object()) {
+            if (raceSize_ > 1) {
+                const Json rk = jfield(race_.data, "ranking", Json::array());
+                const int n = rk.is_array() ? static_cast<int>(rk.size()) : 0;
+                info = std::to_string(n) + (n > 1 ? " équipes" : " équipe") + " · meilleure progression de chacune";
+            } else {
+                const int n = jget<int>(jfield(race_.data, "race", Json::object()), "participants", 0);
+                info = std::to_string(n) + (n > 1 ? " joueurs" : " joueur") + " · meilleure progression de chacun";
+            }
+        }
+        const float room = f.w - ui.s(28);
+        if (!info.empty()) {
+            float fs = ui.fitFont(info, FontFace::Body, 15, room);
+            ui.label(ui.elide(info, FontFace::Body, fs, room), {f.x + ui.s(14), f.y + ui.s(26)}, fs, c, Align::Left, FontFace::Body, VAlign::Middle);
+        }
+        // Second line, before « Actualiser »: one's attempts still being checked, or how to enter.
+        const Rect refresh{f.right() - ui.s(132), f.y + ui.s(40), ui.s(118), ui.s(32)};
+        const int pending = current ? jget<int>(race_.data, "my_pending", 0) : 0;
+        std::string note;
+        if (!g_.online.loggedIn()) note = "Connectez-vous à Cosmic Online pour entrer dans la course.";
+        else if (pending > 0 && raceSize_ > 1)
+            note = std::to_string(pending) + (pending > 1 ? " tentatives d'équipe en cours de vérification." : " tentative d'équipe en cours de vérification.");
+        else if (pending > 0)
+            note = std::to_string(pending) + (pending > 1 ? " de vos tentatives sont en cours de vérification." : " de vos tentatives est en cours de vérification.");
+        if (!note.empty()) {
+            const float nr = refresh.x - ui.s(12) - (f.x + ui.s(14));
+            float fs = ui.fitFont(note, FontFace::Body, 15, nr);
+            ui.label(ui.elide(note, FontFace::Body, fs, nr), {f.x + ui.s(14), f.y + ui.s(56)}, fs, ui.theme().text, Align::Left, FontFace::Body,
+                     VAlign::Middle);
+        }
+        UIContext::ButtonStyle st;
+        st.small = true;
+        if (ui.button("refresh", refresh, "Actualiser", st)) requestAll();
     }
 
     /// A leaderboard player's title (2.23): the name of the catalogue's item, the server's
@@ -748,22 +1110,7 @@ private:
             openProfile(pid);
         }
         if (row.bottom() < 0) return;
-        // Top 3 get a medal-coloured badge.
-        Vec2 badge{row.x + ui.s(26), row.center().y};
-        if (rank >= 1 && rank <= 3) {
-            Color c = GlobeRenderer::tierColor(markerTier(rank));
-            ui.r().drawGlow(badge, ui.s(18), c.withAlphaF(0.35f));
-            ui.r().fillCircle(badge, ui.s(13), c.withAlphaF(0.9f));
-            ui.label(std::to_string(rank), badge, 16, Color{20, 20, 30, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
-        } else {
-            ui.label(std::to_string(rank), badge, 16, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
-        }
-        // The avatar in the player's frame (2.21; the simple one for a hidden profile).
-        float avs = row.h - ui.s(14);
-        Vec2 avc{row.x + ui.s(46) + (row.h - ui.s(10)) * 0.5f, row.center().y};
-        ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), pid, Rect::fromCenter(avc, {avs, avs}));
-        drawAvatarFrame(ui.r(), avc, avs * 0.5f, g_.cosmetics.lookOr("frame", jstr(p, "frame")), ui.s(0.5f), t_);
-        float nx = avc.x + avs * 0.5f + ui.s(kAvatarFrameMargin * 0.5f + 6);
+        float nx = drawRankAndAvatar(p, rank, row);
         std::string cc = jstr(p, "country_code");
         if (!cc.empty()) {
             ui_.drawFlag(cc, {nx, row.center().y - ui.s(8), ui.s(22), ui.s(16)});
@@ -836,21 +1183,58 @@ private:
                  FontFace::Bold, VAlign::Middle);
     }
 
+    void drawRankBadge(int rank, const Rect& row) {
+        UIContext& ui = g_.ui;
+        Vec2 badge{row.x + ui.s(26), row.center().y};
+        if (rank >= 1 && rank <= 3) {
+            Color c = GlobeRenderer::tierColor(markerTier(rank));
+            ui.r().drawGlow(badge, ui.s(18), c.withAlphaF(0.35f));
+            ui.r().fillCircle(badge, ui.s(13), c.withAlphaF(0.9f));
+            ui.label(std::to_string(rank), badge, 16, Color{20, 20, 30, 255}, Align::Center, FontFace::Bold, VAlign::Middle);
+        } else {
+            ui.label(std::to_string(rank), badge, 16, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
+        }
+    }
+
+    /// A ranking row's start: the rank (a medal-coloured badge for the top 3), then the
+    /// avatar in the player's frame. Returns where the name starts.
+    float drawRankAndAvatar(const Json& p, int rank, const Rect& row) {
+        UIContext& ui = g_.ui;
+        drawRankBadge(rank, row);
+        // The avatar in the player's frame (2.21; the simple one for a hidden profile).
+        float avs = row.h - ui.s(14);
+        Vec2 avc{row.x + ui.s(46) + (row.h - ui.s(10)) * 0.5f, row.center().y};
+        ui_.drawAvatar(jstr(p, "avatar", "avatar_01"), jstr(p, "id"), Rect::fromCenter(avc, {avs, avs}));
+        drawAvatarFrame(ui.r(), avc, avs * 0.5f, g_.cosmetics.lookOr("frame", jstr(p, "frame")), ui.s(0.5f), t_);
+        return avc.x + avs * 0.5f + ui.s(kAvatarFrameMargin * 0.5f + 6);
+    }
+
+    /// Online unusable (no server, disabled, no network): said in place of a ranking.
+    bool drawUnusable(const Rect& list) {
+        if (g_.online.usable()) return false;
+        drawEmpty(list, onlineStateLabel(g_.online.state()),
+                  g_.online.state() == OnlineState::NotConfigured
+                      ? "Aucun serveur Cosmic Online n'est configuré pour cette version. Vos records restent enregistrés localement."
+                      : g_.online.state() == OnlineState::Disabled ? "Activez Cosmic Online dans les paramètres en ligne pour voir les classements."
+                                                                   : "Cette version du jeu ne peut pas accéder au réseau.");
+        return true;
+    }
+
+    /// Rows pulsing while a ranking loads.
+    void drawSkeleton(const Rect& list) {
+        UIContext& ui = g_.ui;
+        float rowH = ui.s(46), gap = ui.s(5);
+        float a = 0.5f + 0.5f * std::sin(t_ * 5.0f);
+        for (int i = 0; i < 6; ++i)
+            ui.r().fillRoundedRect({list.x, list.y + i * (rowH + gap), list.w, rowH}, ui.s(6), Color{20, 30, 56, static_cast<uint8_t>(80 + 60 * a)});
+    }
+
     void drawEntries(const Rect& list) {
         UIContext& ui = g_.ui;
         float rowH = ui.s(46), gap = ui.s(5);
-        if (!g_.online.usable()) {
-            drawEmpty(list, onlineStateLabel(g_.online.state()),
-                      g_.online.state() == OnlineState::NotConfigured
-                          ? "Aucun serveur Cosmic Online n'est configuré pour cette version. Vos records restent enregistrés localement."
-                          : g_.online.state() == OnlineState::Disabled ? "Activez Cosmic Online dans les paramètres en ligne pour voir les classements."
-                                                                       : "Cette version du jeu ne peut pas accéder au réseau.");
-            return;
-        }
+        if (drawUnusable(list)) return;
         if (board_.loading && board_.entries.empty()) {
-            float a = 0.5f + 0.5f * std::sin(t_ * 5.0f);
-            for (int i = 0; i < 6; ++i)
-                ui.r().fillRoundedRect({list.x, list.y + i * (rowH + gap), list.w, rowH}, ui.s(6), Color{20, 30, 56, static_cast<uint8_t>(80 + 60 * a)});
+            drawSkeleton(list);
             return;
         }
         if (!board_.error.empty() && board_.entries.empty()) {
@@ -1283,6 +1667,10 @@ private:
     float shockT_ = 2.0f;
     std::map<std::string, TexturePtr> thumbs_;
     std::map<std::string, bool> extreme_;  // EXTRÊME levels (one life): they have a race
+    RaceBoardState race_;                   // the race of the selected EXTRÊME level (NIVEAU tab)
+    std::set<std::string> verifiedLevels_;  // levels seen with a verified record or a verifier
+    std::map<std::string, bool> raceView_;  // the player's choice per EXTRÊME level: true = its race
+    int raceSize_ = 1;                      // the race shown: 1 Solo, 2 Duo, 3 Trio
 };
 
 }  // namespace
