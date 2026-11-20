@@ -332,5 +332,9 @@ jump
 revived
 revives
 wipe
+# 2.78.1: identifiers of the recap's buttons (ui/screens/RaidRecapScene.cpp) and a piece of its request's path
+film
+titan
+raids
 # 2.80 : l'empreinte d'un test relayé (raid::testFingerprint : version, règles, titan), jamais affichée
 {0}|s{1}|c{2}|t{3}
