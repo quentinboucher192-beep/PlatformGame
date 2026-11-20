@@ -37,6 +37,7 @@
 #include "ui/online/ContribTable.h"
 #include "ui/online/RaidHud.h"
 #include "ui/screens/DownedView.h"
+#include "ui/widgets/AsterionFigure.h"
 #include "ui/widgets/UIContext.h"
 
 using namespace cosmic;
@@ -158,6 +159,29 @@ const raid::ZoneContribution* line(const std::vector<raid::ZoneContribution>& ro
 struct Blank : Scene {
     void render(float) override {}
 };
+
+/// 2.79: a column's header shown whole: its lines are its translated name (nothing cut, no « … »), at most two,
+/// each inside its column after its icon, and they fit the header's height.
+void checkHeader(UIContext& ui, const contrib::Layout& L, const contrib::Prepared& p, int c) {
+    const auto& lines = L.headLines[static_cast<size_t>(c)];
+    const Rect& cr = L.cols[static_cast<size_t>(c)];
+    std::string joined;
+    for (const std::string& l : lines) joined += (joined.empty() ? "" : " ") + l;
+    const std::string whole = i18n::tr(p.headers[static_cast<size_t>(c)]);
+    if (joined != whole) std::printf("  en-tête « %s » coupé : « %s »\n", whole.c_str(), joined.c_str());
+    CHECK(joined == whole);
+    CHECK(joined.find("…") == std::string::npos);
+    CHECK(!lines.empty() && lines.size() <= 2);
+    const float iconW = c == 0 ? 0.0f : ui.s(28);
+    for (const std::string& l : lines) {
+        i18n::Verbatim shown(true);
+        const float w = ui.text().measure(l, FontFace::Bold, ui.s(L.headFont)).x;
+        if (iconW + w > cr.w + 0.5f) std::printf("  en-tête « %s » trop large (%.0f > %.0f)\n", l.c_str(), iconW + w, cr.w);
+        CHECK(iconW + w <= cr.w + 0.5f);
+    }
+    CHECK(static_cast<float>(lines.size()) * ui.s(L.headFont + 2.0f) <= cr.h - ui.s(8) + 0.5f);
+    CHECK(L.headFont >= 12.0f);
+}
 
 }  // namespace
 
@@ -808,11 +832,8 @@ TEST_CASE("raid zones (2.78): the « Tableau des contributions » and the distan
                             const Rect& cr = L.cols[static_cast<size_t>(c)];
                             CHECK(cr.right() <= L.header.right() + 0.5f);
                             if (c + 1 < contrib::kCols) CHECK(cr.right() <= L.cols[static_cast<size_t>(c + 1)].x + 0.5f);
-                            const float iconW = c == 0 ? 0.0f : ui.s(28);
-                            const float tw = ui.text().measure(p.headers[static_cast<size_t>(c)], FontFace::Bold, ui.s(L.headFont)).x;
-                            if (iconW + tw + ui.s(16) > cr.w + 0.5f)
-                                std::printf("  en-tête « %s » serré (%.0f > %.0f) : abrégé avec « … »\n", p.headers[static_cast<size_t>(c)].c_str(),
-                                            iconW + tw + ui.s(16), cr.w);
+                            // 2.79: each header whole (never « … »), on one line or two, each line inside its column.
+                            checkHeader(ui, L, p, c);
                         }
                         CHECK(L.headFont >= 17.0f * 0.62f - 0.01f);
                         // Each number's tooltip inside the screen, whatever the cell.
@@ -856,6 +877,206 @@ TEST_CASE("raid zones (2.78): the « Tableau des contributions » and the distan
                 CHECK(!pl.title.intersects(pl.state));
                 CHECK(!pl.arrow.intersects(pl.title));
                 raidhud::drawLairPassage(ui, lp, 1.0f, {"Passage vers l'antre : 124 m", "fermé — Embuscades restantes : 2 sur 4", false, {1.0f, 0.0f}});
+                ui.end();
+            }
+        }
+        i18n::setLanguage(Language::French);
+    }
+    app.shutdown();
+}
+
+TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven groups of eight scrolled, callouts and rows over nothing, French and English") {
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+    Application app;
+    AppConfig cfg;
+    cfg.headless = true;
+    cfg.width = 1280;
+    cfg.height = 720;
+    cfg.vsync = false;
+    CHECK(app.init(cfg));
+    {
+        GameServices g(app);
+        g.loadAll();
+        g.progression.asterionFilmSeen = true;
+        app.pushScene(std::make_unique<Blank>());
+        // The model of a whole raid: seven groups of eight (the longest names), each in its part, the heart.
+        contrib::Model m;
+        m.legend = "Test local : chiffres comptés par la simulation de chaque groupe, rien n'est envoyé au serveur.";
+        m.tooltipNote = "Compté par la simulation (test local).";
+        m.tabKey = "Tab";
+        m.partKey = "Q / E";
+        m.extraKeys = "M : onglet suivant du panneau";
+        m.parts = contrib::titanParts();
+        CHECK(m.parts.size() == 8);
+        m.raid.title = "Raid entier · tous les groupes";
+        m.raid.sub = "chaque groupe et ses joueurs, toutes leurs branches additionnées";
+        for (int gi = 0; gi < 7; ++gi) {
+            for (int i = 0; i < 8; ++i) {
+                contrib::Row r;
+                r.name = i == 1 ? "Kaëlis-de-la-Nébuleuse-Infinie" : "Joueur simulé " + std::to_string(i + 1);
+                r.me = gi == 2 && i == 0;
+                r.bossTenths = 31000 - 300 * i - 100 * gi;
+                r.miniTenths = 4000 + 50 * i;
+                r.damageTenths = 90000 - 700 * i;
+                r.support = 12 * (i % 3);
+                r.mechanisms = i;
+                r.objectives = 3 - i % 4;
+                r.deaths = i % 3;
+                r.revives = (7 - i) % 4;
+                r.revived = i % 2;
+                r.tag = "G" + std::to_string(gi + 1);
+                r.zoneDamage = {{"1. Mâchoire", 4000}, {"2. Orbite gauche", 2500 + 10 * i}, {"Antre · Skullmaw", 9000}};
+                m.raid.rows.push_back(r);
+            }
+            contrib::GroupCard c;
+            c.name = "Groupe " + std::to_string(gi + 1) + " · " + m.parts[static_cast<size_t>(gi)].name;
+            c.state = gi % 2 == 0 ? "Skullmaw tombé" : "en combat · Voûte crânienne de l'Abîme";
+            c.enemy = m.parts[static_cast<size_t>(gi)].enemy;
+            c.fallen = gi % 2 == 0;
+            c.dots = {2, 2, 2, 1, 0, 0, 0, 0};
+            c.deaths = 40;
+            c.revives = 32;
+            c.objectives = 38;
+            c.best = "Kaëlis-de-la-Nébuleuse-Infinie";
+            c.part = gi;
+            m.groups.push_back(c);
+        }
+        for (size_t pi = 0; pi < m.parts.size(); ++pi) {
+            contrib::Part& p = m.parts[pi];
+            p.groups = {static_cast<int>(pi) + 1, static_cast<int>(pi) + 8};
+            p.fallen = pi % 3 == 0;
+            p.relic = pi % 2 == 0;
+            p.state = pi == 4 ? asterion::State::Attacked : asterion::State::Intact;
+            p.open = pi != 6;
+            p.closed = "les chiffres des autres groupes : Résultats du raid, une fois validés par le serveur";
+            p.whole = m.raid;
+            for (size_t k = 0; k < p.whole.rows.size(); ++k) p.whole.rows[k].section = static_cast<int>(k / 8 % 2);  // two groups in each part
+            p.whole.sections = {"Groupe " + std::to_string(pi + 1) + " · " + p.name + " · Voûte crânienne de l'Abîme · sur place", "Renfort 1 · parti ailleurs"};
+            p.zones = {m.raid, m.raid};
+            const char* zoneNames[7] = {"Mâchoire", "Orbite gauche", "Orbite droite", "Nerfs optiques", "Ossuaire oublié", "Tempe", "Voûte crânienne"};
+            for (int z = 0; z < 8; ++z) {
+                contrib::ZoneTab tab;
+                tab.name = z == 7 ? "Antre · " + p.gigaboss : std::to_string(z + 1) + ". " + zoneNames[z];
+                tab.progress = z < 3 ? 1.0f : z == 3 ? 0.5f : 0.0f;
+                tab.reached = z < 4;
+                tab.table = z < 2 ? z : -1;
+                p.tabs.push_back(tab);
+            }
+        }
+        m.zones = {m.raid};
+        AsterionFigure fig;
+        for (Language lang : {Language::French, Language::English}) {
+            i18n::setLanguage(lang);
+            for (const Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}}) {
+                app.setWindowSize(static_cast<int>(size.x), static_cast<int>(size.y));
+                app.renderer().refreshOutputSize();
+                app.runFrames(1);
+                app.renderer().refreshOutputSize();
+                UIContext& ui = g.ui;
+                ui.begin(app, 1.0f / 60.0f);
+                const float W = ui.screenW(), H = ui.screenH();
+                for (bool embedded : {false, true}) {
+                    m.embedded = embedded;
+                    // The sim's panel body (its title and tabs above), or the whole screen over the raid's menu.
+                    const Rect panel = embedded ? Rect{ui.s(36), ui.s(130), W - ui.s(72), H - ui.s(200)} : Rect{ui.s(24), ui.s(24), W - ui.s(48), H - ui.s(48)};
+                    for (int part : {-1, 0, 6, 7})
+                        for (int tab : {0, 1, 3}) {
+                            contrib::View v;
+                            v.part = part;
+                            v.tab = tab;
+                            v.expanded = tab == 1 ? 3 : -1;  // a row opened: its zones under it
+                            const contrib::Layout L = contrib::layout(ui, panel, m, v);
+                            // The titan beside the table, everything inside the panel, nothing over anything.
+                            CHECK(!L.titan.empty());
+                            CHECK(L.titanScale >= 0.75f);  // smaller than its pixels only on a small screen
+                            if (H >= 1079.0f) CHECK(L.titanScale >= 2.0f);
+                            CHECK(!L.titan.intersects(L.table));
+                            CHECK(L.titan.right() <= L.table.x + 0.5f);
+                            for (const Rect& r : L.texts) CHECK(panel.containsRect(r));
+                            CHECK(L.callouts.size() == m.parts.size());
+                            for (size_t i = 0; i < L.callouts.size(); ++i) {
+                                CHECK(L.titan.expanded(0.5f).containsRect(L.callouts[i]));
+                                CHECK(!L.callouts[i].intersects(L.figure));
+                                CHECK(!L.callouts[i].intersects(L.overview));
+                                CHECK(!L.callouts[i].intersects(L.caption));
+                                CHECK(L.figure.contains(L.anchors[i]));
+                                for (size_t j = i + 1; j < L.callouts.size(); ++j) CHECK(!L.callouts[i].intersects(L.callouts[j]));
+                            }
+                            CHECK(L.callouts[0].h >= ui.s(48));
+                            // A part: its tabs (« Toute la branche », its zones) one after the other, inside the table's side.
+                            if (part >= 0) {
+                                CHECK(L.partTabs.size() == 9);
+                                for (size_t i = 0; i < L.partTabs.size(); ++i) {
+                                    CHECK(L.table.expanded(0.5f).containsRect(L.partTabs[i]));
+                                    for (size_t j = i + 1; j < L.partTabs.size(); ++j) CHECK(!L.partTabs[i].intersects(L.partTabs[j]));
+                                    CHECK(L.partTabs[i].bottom() <= L.header.y + 0.5f || L.header.empty());
+                                }
+                                CHECK(L.cards.empty());
+                            } else {
+                                // « Raid entier »: a card per group, side by side, above the rows.
+                                CHECK(L.cards.size() == 7);
+                                CHECK(L.table.expanded(0.5f).containsRect(L.cardsView));
+                                CHECK(L.cardsView.bottom() <= L.header.y + 0.5f);
+                                for (size_t i = 0; i < L.cards.size(); ++i) {
+                                    CHECK(L.cards[i].x >= L.cardsView.x - 0.5f && L.cards[i].right() <= L.cardsView.right() + 0.5f);
+                                    CHECK(L.cards[i].h >= ui.s(84) - 0.5f);
+                                    for (size_t j = i + 1; j < L.cards.size(); ++j) CHECK(!L.cards[i].intersects(L.cards[j]));
+                                }
+                            }
+                            if (part == 6) {  // a closed part: why, instead of the rows
+                                CHECK(!L.message.empty());
+                                CHECK(L.rows.empty());
+                                CHECK(L.table.containsRect(L.message));
+                                CHECK(!L.message.intersects(L.best));
+                                contrib::draw(g, fig, panel, m, v);
+                                continue;
+                            }
+                            // The rows: never lower than readable, the groups' headers between them, scrolled past the view.
+                            const contrib::Table& t = part < 0 ? m.raid : tab == 0 ? m.parts[static_cast<size_t>(part)].whole : tab == 1 ? m.raid : m.raid;
+                            if (part >= 0 && tab == 3) {  // a zone reached but not counted yet: no rows
+                                CHECK(L.rows.empty());
+                                contrib::draw(g, fig, panel, m, v);
+                                continue;
+                            }
+                            CHECK(L.rows.size() == t.rows.size());
+                            CHECK(L.hidden == 0);
+                            if (part >= 0 && tab == 0) CHECK(L.sections.size() == 2);
+                            if (part < 0) CHECK(L.sections.empty());
+                            CHECK(L.contentH > L.list.h);  // 56 players do not fit: they scroll
+                            if (v.expanded >= 0) {
+                                CHECK(!L.expand.empty());
+                                for (const Rect& r : L.rows) CHECK(!r.intersects(L.expand));
+                            }
+                            for (const Rect& r : L.rows) {
+                                CHECK(r.h >= ui.s(44) - 0.5f);
+                                CHECK(r.right() <= L.list.right() - ui.s(12) + 0.5f);  // the scroll bar's lane kept free
+                            }
+                            std::vector<Rect> all = L.rows;
+                            all.insert(all.end(), L.sections.begin(), L.sections.end());
+                            std::sort(all.begin(), all.end(), [](const Rect& a, const Rect& b) { return a.y < b.y; });
+                            for (size_t i = 0; i + 1 < all.size(); ++i) CHECK(all[i].bottom() <= all[i + 1].y + 0.5f);
+                            CHECK(!L.list.intersects(L.header));
+                            CHECK(!L.list.intersects(L.best));
+                            CHECK(!L.best.intersects(L.keys));
+                            CHECK(!L.titan.intersects(L.keys));
+                            CHECK(L.headFont >= 17.0f * 0.62f - 0.01f);
+                            {
+                                const contrib::Prepared pr = contrib::prepare(t, v.sort);
+                                for (int c = 0; c < contrib::kCols; ++c) checkHeader(ui, L, pr, c);  // whole, never « … »
+                            }
+                            contrib::draw(g, fig, panel, m, v);
+                        }
+                }
+                // Choosing a part starts on « Toute la branche », nothing selected nor opened.
+                contrib::View v;
+                CHECK(v.part == -1);
+                v.tab = 3;
+                v.expanded = 2;
+                v.choose(7);
+                CHECK(v.part == 7);
+                CHECK(v.tab == 0);
+                CHECK(v.selected == -1);
+                CHECK(v.expanded == -1);
                 ui.end();
             }
         }

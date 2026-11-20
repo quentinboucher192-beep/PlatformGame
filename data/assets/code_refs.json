@@ -713,7 +713,8 @@
    "game/levels/ObjectTypes.cpp": 1
   },
   "sprites/objects/relic.png": {
-   "game/levels/ObjectTypes.cpp": 1
+   "game/levels/ObjectTypes.cpp": 1,
+   "ui/online/ContribTable.cpp": 1
   },
   "sprites/objects/shard.png": {
    "game/levels/ObjectTypes.cpp": 1
@@ -880,6 +881,7 @@
   },
   "ui/raids/asterion.json": {
    "game/raid/RaidSheets.cpp": 1,
+   "ui/online/ContribTable.cpp": 2,
    "ui/widgets/AsterionFigure.cpp": 2
   },
   "ui/raids/asterion.png": {

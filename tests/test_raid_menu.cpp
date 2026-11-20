@@ -279,7 +279,8 @@ TEST_CASE("raid notices and menu (2.75.5): measured into their places, inside th
         t.title = "TABLEAU DES CONTRIBUTIONS · Biceps";
         t.sub = "Zone terminée par votre groupe";
         for (int i = 0; i < 8; ++i) t.rows.push_back({"Joueur " + std::to_string(i + 1), Color::white(), i == 0, 10 * i, 20 * i, i, 1, 0});
-        data.tables = {t, t};
+        data.tableAvailable = true;  // 2.79: the zones' tables are in the one contributions table (ContribTable)
+        data.tableLines = {"Zone 3 · Biceps · terminée par votre groupe · 12:34 · Dégâts au boss : vous (31 %)"};
         data.otherZones = {"Veine de magma"};
         data.journal = &ex;
         data.groupTitle = "GROUPE · [AUBE]·1 · 8 / 8";

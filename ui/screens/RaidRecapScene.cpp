@@ -656,9 +656,9 @@ public:
         } else if (contribOpen_) {
             // 2.78: the clan's « Tableau des contributions » over the recap (its own keys; Échap / B closes it, not the screen).
             ui.consumeNavigation(true, true);
-            if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), static_cast<int>(recap_.contributions.zoneTables.size()))) contribOpen_ = false;
+            if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), contribModel_)) contribOpen_ = false;
             const float cm = ui.s(24);
-            if (contribOpen_ && contrib::draw(ui, {cm, cm, ui.screenW() - cm * 2, ui.screenH() - cm * 2}, contribModel_, contribView_)) contribOpen_ = false;
+            if (contribOpen_ && contrib::draw(g_, contribFigure_, {cm, cm, ui.screenW() - cm * 2, ui.screenH() - cm * 2}, contribModel_, contribView_)) contribOpen_ = false;
         } else if (!back && ui.backPressed() && !ui.editingText()) {
             back = true;
         }
@@ -1042,6 +1042,7 @@ private:
     RaidReviewsPanel reviews_;  // 2.77.4: the rating and « Noter ce raid »
     contrib::Model contribModel_;  // 2.78: the clan's « Tableau des contributions »
     contrib::View contribView_;
+    AsterionFigure contribFigure_;  // 2.79: the titan of the contributions table
     bool contribOpen_ = false;
     std::string status_;
     float statusT_ = -100.0f;

@@ -120,11 +120,16 @@ std::string AsterionFigure::draw(GameServices& g, const std::string& id, const R
         const asterion::Cell* rim = isPart ? l.cellAt("contour", 0.0f) : nullptr;
         const Rect rimSrc = rim ? Rect{static_cast<float>(rim->x), static_cast<float>(rim->y), src.w, src.h} : Rect{};
         if (rim && v.attackRim) rr.drawTexture(*tex, &rimSrc, dst, kOrange.withAlphaF(0.35f + 0.65f * pulse));
-        if (rim && static_cast<int>(i) == shown) {
+        if (rim && (static_cast<int>(i) == shown || (!lit_.empty() && l.id == lit_))) {
             rr.drawTexture(*tex, &src, dst, Color{255, 255, 255, 70}, BlendMode::Additive);
             rr.drawTexture(*tex, &rimSrc, dst, kGold);
+        } else if (rim && !chosen_.empty() && l.id == chosen_) {
+            rr.drawTexture(*tex, &src, dst, Color{120, 200, 255, static_cast<uint8_t>(40.0f + 30.0f * pulse)}, BlendMode::Additive);
+            rr.drawTexture(*tex, &rimSrc, dst, kSky);
         }
     }
+    chosen_.clear();
+    lit_.clear();
     if (shown >= 0) {
         const asterion::Layer& l = layers[static_cast<size_t>(shown)];
         tip_ = l.id;

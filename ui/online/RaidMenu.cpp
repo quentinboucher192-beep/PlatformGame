@@ -252,16 +252,6 @@ void lineList(Pen& p, const std::vector<raidhud::Line>& ls) {
     }
 }
 
-void table(Pen& p, const raidhud::ZoneTable& t) {
-    const float h = raidhud::zoneTableHeight(p.ui, t, p.w, 1.0f);
-    if (p.draw) {
-        const Rect r{p.x, p.y, p.w, h};
-        p.ui.r().fillRoundedRect(r, p.ui.s(10), kCard);
-        raidhud::drawZoneTable(p.ui, r, 1.0f, t);
-    }
-    p.y += h + p.ui.s(12);
-}
-
 void entry(Pen& p, const Notice& n) {
     const float timeW = p.ui.s(84), tx = p.x + timeW, tw = p.w - timeW;
     const auto lines = wrap(p.ui, n.text, FontFace::Body, 14, tw, 3);
@@ -323,12 +313,11 @@ void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tabl
                 paragraph(p, "Entrée ou A : le tableau de chaque zone finie et celui du raid entier (dégâts, soutien, mécanismes, objectifs, morts, réanimations).",
                           kDim, 3);
             }
-            if (d.tableLines.empty() && d.tables.empty())
+            if (d.tableLines.empty())
                 paragraph(p, "Aucune zone terminée pendant que votre instance y était : le tableau des contributions de chaque zone finie ici "
                              "s'ajoute ici.",
                           kDim);
             for (const std::string& l : d.tableLines) paragraph(p, l, kText, 2);
-            for (const raidhud::ZoneTable& t : d.tables) table(p, t);
             if (!d.otherZones.empty()) {
                 std::string names;
                 for (const std::string& n : d.otherZones) names += (names.empty() ? "" : " · ") + n;
@@ -443,7 +432,9 @@ MenuAction drawMenu(UIContext& ui, Menu& m, const MenuData& d) {
     ui.consumeNavigation(true, true);
     const MenuLayout L = layoutMenu(ui, d.keyName);
     ui.r().fillRect({0.0f, 0.0f, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 110});
-    ui.panel(L.panel, true, 16);
+    // 2.79: opaque (the game goes on under it: nothing of it shows under its texts).
+    ui.r().fillRoundedRect(L.panel, ui.s(16), Color{16, 22, 46, 255});
+    ui.r().drawRoundedRect(L.panel, ui.s(16), ui.theme().accent.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
     // The body faces (« · » is not in the titles' font).
     fit(ui, d.title, {L.title.x, L.title.center().y}, 22, L.title.w, kText, FontFace::Bold);
     UIContext::ButtonStyle cs;
