@@ -659,7 +659,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   de la montre) ; les deux passent par l'atelier aux mille horloges et les six mondes de la montre, puis finissent sur les
   mêmes plans et « À SUIVRE » ; leur musique, « Le Mécanisme », est une horlogerie qui se dérègle. Ouverts à tous dans **Collection › Galerie ›
   Films** et dans ADMINISTRATION › Films
-  ([docs/RAIDS.md §33](docs/RAIDS.md#33--le-balancier--et--encore-un-tour---les-films-de-transition-avant-premières-du-raid-2-282)).
+  ([docs/RAIDS.md §34](docs/RAIDS.md#34--le-balancier--et--encore-un-tour---les-films-de-transition-avant-premières-du-raid-2-282)).
 * **Mode Film** dans tous les films et histoires : F, Y (manette) ou le bouton « Mode Film » ne laissent que l'image et ses
   sous-titres (ni bandes, ni barre de progression, ni touches) ; le choix est gardé, Passer et Quitter marchent toujours.
 * Films : un élément d'une scène peut **figer son temps** (`hold`), sans rien changer aux films existants.

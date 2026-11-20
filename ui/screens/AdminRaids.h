@@ -106,6 +106,9 @@ private:
     // 2.77: « Une zone » or « Simuler un raid complet » (docs/RAIDS.md §21); the level of the simulated
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
     int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
+    // 2.81.2: « Raid à tester » (its list: Asterion alone for now) and whether its list is open.
+    int testRaid_ = 0;
+    bool testRaidOpen_ = false;
     bool simBotsInvincible_ = false;
     // 2.77.4: « Avis » (the players' reviews of the selected event, administrators' view).
     RaidReviewsPanel reviews_;

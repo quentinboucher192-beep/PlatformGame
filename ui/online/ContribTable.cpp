@@ -75,6 +75,17 @@ bool crowned(Col c) { return c == Col::Boss || c == Col::Mini || c == Col::Suppo
 
 const Part* partOf(const Model& m, const View& v) { return v.part >= 0 && v.part < static_cast<int>(m.parts.size()) ? &m.parts[static_cast<size_t>(v.part)] : nullptr; }
 
+/// 2.81.2: a part nobody entered (no group there now or before, nothing counted): its message, not an empty table.
+bool unvisited(const Part& p) { return p.groups.empty() && p.whole.rows.empty() && p.whole.sections.empty() && p.zones.empty(); }
+
+/// 2.81.2: why a part shows no table (closed: the caller's reason; never entered: not discovered, or the heart shut).
+std::string emptyText(const Part& p) {
+    if (!p.closed.empty()) return p.closed;
+    if (p.id == "coeur") return "Le Cœur s'ouvre quand les sept Gigaboss sont tombés : aucun groupe n'y est entré.";
+    if (p.state == asterion::State::Unknown) return "Pas encore découvert : aucun groupe n'y est entré.";
+    return "Aucun groupe n'y est entré pour l'instant : rien de compté.";
+}
+
 /// 2.79: where the crowns are the best of: « du raid », « de la branche », « de la zone ».
 const char* bestOf(const Model& m, const View& v, bool title) {
     const Part* part = v.part >= 0 && v.part < static_cast<int>(m.parts.size()) ? &m.parts[static_cast<size_t>(v.part)] : nullptr;
@@ -563,7 +574,9 @@ Layout layout(UIContext& ui, const Rect& r, const Model& m, const View& v) {
     const float headH = ui.s(48), gap = ui.s(6), secH = ui.s(36);
     const float listTop = y + headH + ui.s(10);
     L.list = {tx0, listTop, tw, std::max(0.0f, L.best.y - ui.s(12) - listTop)};
-    if (part && !part->open) {  // a closed part: why, where the rows would be
+    // A closed part: why, where the rows would be. 2.81.2: a part nobody entered yet (not discovered, no group: the
+    // heart before the seven fell) says so too, instead of an empty table.
+    if (part && (!part->open || unvisited(*part))) {
         L.message = {tx0, y, tw, std::max(0.0f, L.best.y - ui.s(12) - y)};
         items.clear();
     }
@@ -772,14 +785,19 @@ void drawCallout(UIContext& ui, GameServices* g, const Rect& c, const Part& p, b
     }
 }
 
+/// 2.81.2: no part asked for in this image (a click asks for one: applied once the image is drawn).
+constexpr int kNoPick = -1000;
+
 /// The titan's column: « Raid entier », the drawing (GameServices: the sprite by parts), the lines to the callouts, the callouts.
-void drawTitan(UIContext& ui, GameServices* g, AsterionFigure* fig, const Layout& L, const Model& m, View& v) {
+/// 2.81.2: a part clicked (a callout, the drawing, « Raid entier ») goes to `pick`, never to `v` while the image is drawn:
+/// the rest of the image was laid out for the part shown (choosing a part without tabs read past its tabs: the crash).
+void drawTitan(UIContext& ui, GameServices* g, AsterionFigure* fig, const Layout& L, const Model& m, const View& v, int& pick) {
     if (L.titan.empty()) return;
     Renderer& rr = ui.r();
     {
         bool hov = false;
         const bool on = v.part < 0;
-        if (ui.mouseClick("overview", L.overview, &hov)) v.choose(-1);
+        if (ui.mouseClick("overview", L.overview, &hov)) pick = -1;
         rr.fillRoundedRect(L.overview, ui.s(10), on ? kOn : hov ? kHover : kHeadFill);
         rr.drawRoundedRect(L.overview, ui.s(10), on ? kMeEdge : hov ? kGold : kBorder, ui.s(2));
         fit(ui, "Raid entier : tous les groupes", L.overview.center(), 17, L.overview.w - ui.s(24), on ? kText : kMuted, FontFace::Bold, Align::Center);
@@ -787,7 +805,7 @@ void drawTitan(UIContext& ui, GameServices* g, AsterionFigure* fig, const Layout
     int hoverCard = -1;
     for (size_t i = 0; i < m.parts.size() && i < L.callouts.size(); ++i) {
         bool h = false;
-        if (ui.mouseClick("part" + std::to_string(i), L.callouts[i], &h)) v.choose(static_cast<int>(i));
+        if (ui.mouseClick("part" + std::to_string(i), L.callouts[i], &h)) pick = static_cast<int>(i);
         if (h) hoverCard = static_cast<int>(i);
     }
     std::string figHover;
@@ -803,7 +821,7 @@ void drawTitan(UIContext& ui, GameServices* g, AsterionFigure* fig, const Layout
         fig->mark(v.part >= 0 ? m.parts[static_cast<size_t>(v.part)].id : std::string(), hoverCard >= 0 ? m.parts[static_cast<size_t>(hoverCard)].id : std::string());
         const std::string act = fig->draw(*g, "titan", L.figure, states, openable);
         for (size_t i = 0; i < m.parts.size(); ++i)
-            if (!act.empty() && m.parts[i].id == act) v.choose(static_cast<int>(i));
+            if (!act.empty() && m.parts[i].id == act) pick = static_cast<int>(i);
         figHover = fig->shownPart();
         // Each callout joined to its part (from the callout's edge facing the titan).
         for (size_t i = 0; i < m.parts.size() && i < L.callouts.size(); ++i) {
@@ -843,19 +861,17 @@ bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r
     }
     const std::string sub = t.title.empty() ? t.sub : t.sub.empty() ? t.title : t.title + " · " + t.sub;
     fit(ui, sub.empty() ? std::string("Aucune zone terminée pour l'instant") : sub, {L.sub.x, L.sub.center().y}, 20, L.sub.w, kMuted);
-    drawTitan(ui, g, fig, L, m, v);
+    int pick = kNoPick, pickTab = -1;  // 2.81.2: what a click asks for, applied at the end of the image
+    drawTitan(ui, g, fig, L, m, v, pick);
     const Part* part = partOf(m, v);
     // 2.79: a part's tabs (« Toute la branche », then its zones, each with its progress; greyed while not reached).
     for (size_t i = 0; part && i < L.partTabs.size(); ++i) {
         const Rect& tr = L.partTabs[i];
+        if (i > part->tabs.size()) break;  // 2.81.2: laid out for this part only (never past its tabs)
         const bool usable = i == 0 || part->tabs[i - 1].reached;
         const bool on = v.tab == static_cast<int>(i);
         bool hover = false;
-        if (ui.mouseClick("ztab" + std::to_string(i), tr, &hover) && usable) {
-            v.tab = static_cast<int>(i);
-            v.selected = -1;
-            v.expanded = -1;
-        }
+        if (ui.mouseClick("ztab" + std::to_string(i), tr, &hover) && usable) pickTab = static_cast<int>(i);
         rr.fillRoundedRect(tr, ui.s(9), on ? kOn : hover && usable ? kHover : kHeadFill);
         rr.drawRoundedRect(tr, ui.s(9), on ? kMeEdge : kBorder, ui.s(2));
         const std::string name = i == 0 ? std::string(tabName(m, v, 1)) : part->tabs[i - 1].name;
@@ -877,7 +893,9 @@ bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r
         const Rect c{L.cards[i].x, L.cards[i].y - cardsOff, L.cards[i].w, L.cards[i].h};
         if (c.bottom() < L.cardsView.y || c.y > L.cardsView.bottom()) continue;
         bool hover = false;
-        if (L.cardsView.contains(ui.input().mousePos()) && ui.mouseClick("card" + std::to_string(i), c, &hover) && gc.part >= 0) v.choose(gc.part);
+        if (L.cardsView.contains(ui.input().mousePos()) && ui.mouseClick("card" + std::to_string(i), c, &hover) && gc.part >= 0 &&
+            gc.part < static_cast<int>(m.parts.size()))
+            pick = gc.part;
         rr.fillRoundedRect(c, ui.s(10), hover ? kHover : kHeadFill);
         rr.drawRoundedRect(c, ui.s(10), hover ? kGold : kBorder, ui.s(2));
         const float pad = ui.s(10), ps = std::min(ui.s(44), c.h * 0.4f);
@@ -914,7 +932,7 @@ bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r
     // 2.79: a closed part: why (no rows).
     if (!L.message.empty() && part) {
         rr.fillRoundedRect(L.message, ui.s(12), kHeadFill);
-        const auto lines = wrap(ui, part->closed.empty() ? std::string("Rien de compté pour cette partie sur ce jeu.") : part->closed, FontFace::Body, 18,
+        const auto lines = wrap(ui, !part->open && part->closed.empty() ? std::string("Rien de compté pour cette partie sur ce jeu.") : emptyText(*part), FontFace::Body, 18,
                                 L.message.w - ui.s(60), 6);
         drawLines(ui, lines, {L.message.x + ui.s(30), L.message.y + ui.s(30)}, 18, ui.s(26), kText);
     }
@@ -1192,6 +1210,13 @@ bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r
     } else if (fig && g) {
         fig->drawTooltip(*g);  // the titan's part hovered (its name, its gigaboss, its state), over everything
     }
+    // 2.81.2: the clicks of this image, now that it is drawn (the next one is laid out for them).
+    if (pickTab >= 0 && pick == kNoPick) {
+        v.tab = pickTab;
+        v.selected = -1;
+        v.expanded = -1;
+    }
+    if (pick != kNoPick) v.choose(pick >= static_cast<int>(m.parts.size()) ? -1 : pick);
     ui.popId();
     return closed;
 }

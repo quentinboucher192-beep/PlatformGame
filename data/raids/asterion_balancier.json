@@ -1,7 +1,7 @@
 {
  "format": "cosmic.film",
  "version": 1,
- "comment": "The transition film after Asterion's fall (LE BALANCIER) (2.82, docs/RAIDS.md §33): a teaser of raid 2, watched from Collection › Galerie › Films (everyone) and ADMINISTRATION › Films. Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`, as in asterion_victoire.json). The animated scene of each shot (`scene`) is in asterion_balancier_scenes.json, written by tools/assetgen/environment/story_horloger.py: a length changed here stretches the scene and its titles, nothing to regenerate. Its last three shots (cadran, regard, noir) are the same in asterion_balancier.json and asterion_tour.json (the generator's --check says so). The English is in data/i18n/en.json.",
+ "comment": "The transition film after Asterion's fall (LE BALANCIER) (2.82, docs/RAIDS.md §34): a teaser of raid 2, watched from Collection › Galerie › Films (everyone) and ADMINISTRATION › Films. Edit this file by hand: each shot's caption at the bottom (`text`; empty: none), its length in seconds (`duration`) and its titles in the picture (`titles`, as in asterion_victoire.json). The animated scene of each shot (`scene`) is in asterion_balancier_scenes.json, written by tools/assetgen/environment/story_horloger.py: a length changed here stretches the scene and its titles, nothing to regenerate. Its workshop shots (atelier, manipulations) and its last nine shots (the six worlds, cadran, regard, noir) are the same in asterion_balancier.json and asterion_tour.json (the generator's --check says so). The English is in data/i18n/en.json.",
  "boss": "asterion",
  "kind": "film",
  "title": "LE BALANCIER",

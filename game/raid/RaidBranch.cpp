@@ -427,6 +427,11 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
         for (const auto& t : c.value("targets", Json::array()))
             if (t.is_string()) p.targets.push_back(t.get<std::string>());
         p.group = jstr(c, "group");  // 2.68 (phase 3): plates held together
+        for (const auto& a : c.value("ambushes", Json::array()))  // 2.81.2: the ambushes before it
+            if (a.is_string()) {
+                p.ambushes.push_back(a.get<std::string>());
+                p.ambushIndex.push_back(b.objectiveIndex(p.ambushes.back()));
+            }
         z.coops.push_back(std::move(p));
     }
     for (const auto& c : raid.value("checkpoints", Json::array()))

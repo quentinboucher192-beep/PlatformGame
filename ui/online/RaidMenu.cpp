@@ -86,7 +86,8 @@ std::string raidTime(float raidSeconds) {
     return b;
 }
 
-std::string buttonText(const std::string& key) { return key.empty() ? std::string("MENU DU RAID") : "MENU DU RAID · " + key; }
+// 2.81.2: the key alone (« Tab », the gamepad's button): « MENU DU RAID » no more (the user's wish); « Menu » when unbound.
+std::string buttonText(const std::string& key) { return key.empty() ? std::string("Menu") : key; }
 
 std::string reminder(const Notice& n, const std::string& key) {
     const std::string k = key.empty() ? std::string("menu du raid") : key;
@@ -105,7 +106,8 @@ NoticeLayout layoutNotices(UIContext& ui, const Rect& area, float k, const std::
     float y = area.y;
     if (button) {
         const float bh = ui.s(28) * k;
-        const float bw = std::min(area.w, textW(ui, text, 13 * k, FontFace::Bold) + ui.s(28) * k);
+        // 2.81.2: the key alone, never narrower than a comfortable click zone.
+        const float bw = std::min(area.w, std::max(ui.s(72) * k, textW(ui, text, 13 * k, FontFace::Bold) + ui.s(28) * k));
         if (bh <= area.h) {
             out.button = {area.center().x - bw * 0.5f, area.y, bw, bh};
             y = out.button.bottom() + gap;
@@ -392,24 +394,15 @@ MenuLayout layoutMenu(UIContext& ui, const std::string& keyName) {
     L.rule = wrap(ui, kRule, FontFace::Bold, 15, iw, 2);
     L.ruleY = y;
     y += static_cast<float>(L.rule.size()) * ui.s(20) + ui.s(10);
-    // The tabs, each as wide as its name needs (the room left shared), smaller when they do not fit.
+    // 2.81.2: the tabs all of ONE width (the row shared), their font smaller when the widest name (measured in the
+    // language shown) does not fit: a section chosen never resizes them.
     const float th = ui.s(40), gap = ui.s(6), room = iw - gap * static_cast<float>(kSections - 1);
-    std::vector<float> natural(kSections);
-    float total = 0.0f;
-    for (int i = 0; i < kSections; ++i) {
-        natural[static_cast<size_t>(i)] = textW(ui, sectionLabel(static_cast<Section>(i)), 16, FontFace::Bold) + ui.s(28);
-        total += natural[static_cast<size_t>(i)];
-    }
-    L.tabFont = total <= room ? 16.0f : std::max(10.0f, 16.0f * room / total);
+    float widest = 0.0f;
+    for (int i = 0; i < kSections; ++i) widest = std::max(widest, textW(ui, sectionLabel(static_cast<Section>(i)), 16, FontFace::Bold) + ui.s(28));
+    const float each = std::floor(room / static_cast<float>(kSections));
+    L.tabFont = widest <= each ? 16.0f : std::max(10.0f, 16.0f * each / widest);
     L.tabsRow = {x, y, iw, th};
-    float tx = x;
-    for (int i = 0; i < kSections; ++i) {
-        const float nw = natural[static_cast<size_t>(i)];
-        float w = total <= room ? nw + (room - total) / static_cast<float>(kSections) : nw * room / total;
-        if (i + 1 == kSections) w = std::max(0.0f, x + iw - tx);  // the last one ends with the row (no rounding past it)
-        L.tabs.push_back({tx, y, w, th});
-        tx += w + gap;
-    }
+    for (int i = 0; i < kSections; ++i) L.tabs.push_back({x + static_cast<float>(i) * (each + gap), y, each, th});
     y += th + ui.s(10);
     // The keys at the bottom, then the section's view between the tabs and them.
     L.keyLines = wrap(ui, keysText(keyName), FontFace::Body, 13, iw, 2);

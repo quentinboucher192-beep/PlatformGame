@@ -119,6 +119,11 @@ struct CoopPlate {
     /// 2.68 (phase 3): plates of one group must all be held at the same step (the twin plates of
     /// the Poignet-verrou); "" = alone. Alone in the instance, the first plate of a group suffices.
     std::string group;
+    /// 2.81.2 (titan 11): the ambushes of its zone laid before it (their objectives, `ambushIndex` their bits in
+    /// the branch's state): it waits for every one of them beaten, besides its players (« Embuscade à vaincre
+    /// d'abord »); never one only it leads to (tools/levelgen: check_mechanisms).
+    std::vector<std::string> ambushes;
+    std::vector<int> ambushIndex;
 };
 
 /// 2.68: the arena of a gigaboss (metadata.raid.arena, the same format for the seven branches):

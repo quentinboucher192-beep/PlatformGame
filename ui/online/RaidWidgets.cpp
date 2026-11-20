@@ -140,6 +140,72 @@ int chips(UIContext& ui, const std::string& id, float x, float y, float right, c
     return clicked;
 }
 
+std::vector<Rect> tabRects(UIContext& ui, float x, float y, float right, const std::vector<std::string>& labels, float& bottom) {
+    const float h = ui.s(36), gap = ui.s(8);
+    float w = 0.0f;
+    for (const std::string& t : labels) w = std::max(w, textW(ui, t, 14, FontFace::Bold) + ui.s(26));
+    w = std::min(w, std::max(0.0f, right - x));
+    std::vector<Rect> out;
+    float cx = x, cy = y;
+    for (size_t i = 0; i < labels.size(); ++i) {
+        if (cx > x && cx + w > right + 0.5f) {
+            cx = x;
+            cy += h + gap;
+        }
+        out.push_back({cx, cy, w, h});
+        cx += w + gap;
+    }
+    bottom = labels.empty() ? y : cy + h;
+    return out;
+}
+
+float dropdown(UIContext& ui, const std::string& id, const Rect& r, const std::string& caption, const std::vector<std::string>& options, int& index,
+               bool& open) {
+    const int n = static_cast<int>(options.size());
+    index = n > 0 ? std::clamp(index, 0, n - 1) : 0;
+    const std::string shown = i18n::keep(i18n::tr(caption) + (i18n::language() == Language::English ? ": " : " : ") +
+                                         (n > 0 ? i18n::tr(options[static_cast<size_t>(index)]) : std::string("—")));
+    UIContext::ButtonStyle st;
+    st.small = true;
+    if (ui.button(id + "/head", r, "", st) && n > 0) open = !open;
+    // The text at the left, measured into what the arrow leaves; the arrow drawn at the right.
+    const float arrowW = ui.s(14), pad = ui.s(14);
+    fit(ui, shown, {r.x + pad, r.center().y}, 15, std::max(0.0f, r.w - pad * 3.0f - arrowW), kText, FontFace::Bold, Align::Left);
+    const Vec2 c{r.right() - pad - arrowW * 0.5f, r.center().y};
+    const float hw = arrowW * 0.5f, hh = ui.s(4);
+    if (open) ui.r().fillTriangle({c.x - hw, c.y + hh}, {c.x + hw, c.y + hh}, {c.x, c.y - hh}, kGold);
+    else ui.r().fillTriangle({c.x - hw, c.y - hh}, {c.x + hw, c.y - hh}, {c.x, c.y + hh}, kGold);
+    float y = r.bottom();
+    if (!open) return y;
+    const float rowH = std::max(ui.s(36), r.h - ui.s(8)), gap = ui.s(4);
+    for (int i = 0; i < n; ++i) {
+        y += gap;
+        UIContext::ButtonStyle os;
+        os.small = true;
+        os.selected = i == index;
+        os.fontSize = ui.fitFont(options[static_cast<size_t>(i)], FontFace::Bold, 15, std::max(ui.s(20), r.w - ui.s(40)));
+        if (ui.button(id + "/opt" + std::to_string(i), {r.x + ui.s(12), y, r.w - ui.s(12), rowH}, options[static_cast<size_t>(i)], os)) {
+            index = i;
+            open = false;
+        }
+        y += rowH;
+    }
+    return y;
+}
+
+int tabs(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, int selected, float& bottom) {
+    int clicked = -1;
+    const std::vector<Rect> rects = tabRects(ui, x, y, right, labels, bottom);
+    for (size_t i = 0; i < labels.size(); ++i) {
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = ui.fitFont(labels[i], FontFace::Bold, 14, std::max(ui.s(20), rects[i].w - ui.s(16)));
+        st.selected = static_cast<int>(i) == selected;
+        if (ui.button(id + "/" + std::to_string(i), rects[i], labels[i], st)) clicked = static_cast<int>(i);
+    }
+    return clicked;
+}
+
 int64_t nowUtc(int64_t skew) {
     return static_cast<int64_t>(std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count()) + skew;
 }

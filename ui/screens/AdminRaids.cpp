@@ -478,7 +478,17 @@ void AdminRaids::drawTest(const Rect& r) {
     // of its zones, then « Lancer le test »: solo, local, never reported.
     UIContext& ui = g_.ui;
     ui.pushId("test");
+    // 2.81.2: « Raid à tester », above the setup it drives: the raids that can be tested (Asterion alone for now:
+    // every branch of the catalog is one of its parts). Open, its list pushes the setup down.
+    static const std::vector<std::string> kRaids = {"Asterion"};
     float top = section(ui, r, "TESTER ASTERION · ADMINISTRATEURS", kGold);
+    {
+        top = dropdown(ui, "raid", {r.x + ui.s(14), top, r.w - ui.s(28), ui.s(44)}, "Raid à tester", kRaids, testRaid_, testRaidOpen_) + ui.s(10);
+        if (testRaidOpen_) {
+            ui.popId();
+            return;  // the list open: its choice first (nothing under it to click by mistake)
+        }
+    }
     {
         // 2.77: one zone of a branch, or the whole clan raid simulated (every branch, then the heart).
         std::vector<bool> on{testMode_ == 0, testMode_ == 1};

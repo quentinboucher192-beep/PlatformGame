@@ -49,6 +49,16 @@ Color stateText(raids::State s);
 /// clicked (-1 when none) and sets `bottom` under the last row.
 int chips(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, const std::vector<bool>& on,
           float& bottom, bool enabled = true);
+/// 2.81.2: tabs of ONE width (the widest label, measured in the language shown, plus its padding), wrapped from
+/// (x, y) to `right`: choosing one never resizes the row. Their rectangles (and `bottom` under the last row).
+std::vector<Rect> tabRects(UIContext& ui, float x, float y, float right, const std::vector<std::string>& labels, float& bottom);
+/// 2.81.2: a drop-down list. Its button (« caption : choice », its arrow drawn: « ▼ » is not in every font) opens
+/// it; open, its options are rows under it (each a button: keyboard, gamepad and mouse), pushing what follows down
+/// (nothing drawn over anything); a choice closes it. Returns the y under it (the options included when open).
+float dropdown(UIContext& ui, const std::string& id, const Rect& r, const std::string& caption, const std::vector<std::string>& options, int& index,
+               bool& open);
+/// Draws them (`selected` lit); the index clicked, -1 none.
+int tabs(UIContext& ui, const std::string& id, float x, float y, float right, const std::vector<std::string>& labels, int selected, float& bottom);
 
 /// The UTC now (seconds) of this computer, corrected by the server's clock (`skew`).
 int64_t nowUtc(int64_t skew);

@@ -490,6 +490,9 @@ RaidRun::CoopView RaidRun::coopOf(const ZoneWorld& z, size_t index) const {
         v.need = rank >= std::max(1, playing) ? 0 : std::clamp(c.players, 1, std::max(1, playing / size));
     }
     v.done = index < z.coopDone.size() && z.coopDone[index] != 0;
+    // 2.81.2: the ambushes before it, beaten (here or by another group: the branch's state); an unknown one never blocks.
+    const uint32_t m = mask();
+    for (int a : c.ambushIndex) v.ambush = v.ambush || (a >= 0 && !Branch::done(m, a));
     return v;
 }
 
@@ -506,7 +509,7 @@ void RaidRun::updateCoops(ZoneWorld& z, std::vector<std::pair<int, int>>& moves)
         bool on = true;
         for (size_t g : group) {
             const CoopView v = coopOf(z, g);
-            if (v.on < v.need) on = false;
+            if (v.on < v.need || v.ambush) on = false;  // 2.81.2: and the ambushes before it beaten
         }
         if (!on) continue;
         for (size_t g : group) {

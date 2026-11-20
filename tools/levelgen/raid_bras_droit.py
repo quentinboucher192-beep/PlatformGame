@@ -176,13 +176,14 @@ class Zone:
         self.raid["magma"] = {"zone": dz, "period": period, "first": first, "warn": warn, "duration": duration}
         return dz
 
-    def coop(self, cid, x0, x1, y, players, targets, action, label, message, group=""):
+    def coop(self, cid, x0, x1, y, players, targets, action, label, message, group="", ambushes=()):
         """2.68 (phase 3): a co-op plate (metadata.raid.coop, the format of raid_asterion.py): from
         x0 to x1 standing on y (tiles), `players` together on it (fewer when fewer are in play:
         game/raid/RaidRun) send `action` to each of `targets` (« open » a door, « activate » a lift).
-        The plates of one `group` must be held at the same time (the players in play shared)."""
+        The plates of one `group` must be held at the same time (the players in play shared). 2.81.2: it also
+        waits for `ambushes` (the objectives of the zone's ambushes laid before it)."""
         c = {"id": cid, "rect": [x0 * T, (y - 4) * T, (x1 - x0) * T, 4 * T], "players": players, "targets": targets,
-             "action": action, "label": label, "message": message}
+             "action": action, "ambushes": list(ambushes), "label": label, "message": message}
         if group:
             c["group"] = group
         self.raid.setdefault("coop", []).append(c)
@@ -537,7 +538,8 @@ def zone_7():
     # 230-290 · La Vanne double: a door held shut until 4 players stand on its plate together.
     z.rock(230, 36, 290)
     door1 = L.door(278, 30, 6)
-    z.coop("vanne_double", 248, 260, 36, 4, [door1], "open", "La vanne double", "La vanne double cède : la porte s'ouvre")
+    z.coop("vanne_double", 248, 260, 36, 4, [door1], "open", "La vanne double", "La vanne double cède : la porte s'ouvre",
+           ambushes=["poignet_embuscade_1"])
     L.sign(244, 36, "La vanne double : 4 joueurs ensemble sur la plaque ouvrent la porte.")
     L.enemy("forge_drone", 254, 28, 4)
     L.enemy("forge_drone", 266, 27, 4, True)
@@ -546,7 +548,7 @@ def zone_7():
     z.rock(290, 36, 330)
     lift = L.moving(300, 35, 8, 0, -20, speed=55, wait=1.6, active=False, oneway=False)
     z.coop("monte_charge", 300, 308, 35, 3, [lift], "activate", "Le monte-charge",
-           "Le monte-charge démarre : il fait ensuite la navette tout seul")
+           "Le monte-charge démarre : il fait ensuite la navette tout seul", ambushes=["poignet_embuscade_1"])
     L.sign(296, 36, "Le monte-charge : il monte quand 3 joueurs sont dessus.")
     L.solid(312, 14, 330, 16, "basalt")
     z.checkpoint(320, 14, "La galerie haute")
@@ -576,7 +578,7 @@ def zone_7():
     for cid, x0, x1, y, label in (("jumelle_basse", 492, 500, 36, "La plaque jumelle basse"),
                                   ("jumelle_haute", 506, 516, 28, "La plaque jumelle haute")):
         z.coop(cid, x0, x1, y, 2, [door2], "open", label, "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
-               group="jumelles")
+               group="jumelles", ambushes=["poignet_embuscade_1", "poignet_embuscade_2"])
     L.sign(518, 36, "Les plaques jumelles : 2 joueurs sur chacune, en même temps.")
     L.enemy("lava_stalker", 522, 36, 4, True)
     L.enemy("forge_drone", 512, 22, 4)
@@ -609,6 +611,10 @@ def zone_7():
     L.light(300, 28, LAVA_GLOW, 140, flicker=0.2)
     L.light(520, 28, FORGE_GLOW, 120, flicker=0.2)
     P.scatter(2, 38, 36, 0.25, forge=True)
+    # 2.81.2: the walls over the doors of the Vanne double and of the Plaques jumelles, up to the top of the level
+    # (GameWorld carries them to the ceiling): one jumped or climbed (wall jumps) over the lone doors. Added last.
+    L.solid(278, 0, 279, 30, "basalt")
+    L.solid(534, 0, 535, 30, "basalt")
     z.save()
 
 

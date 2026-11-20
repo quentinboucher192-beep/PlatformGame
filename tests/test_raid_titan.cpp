@@ -265,7 +265,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x0034b4833fdb4476ULL;  // reference (titan 9: the entries' guards and the abdomen's nest gate their ways on, their doors): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0x104c7138c0b11024ULL;  // reference (titan 11: each mechanism after an ambush, the walls up to the top, the lift's door): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }
@@ -481,7 +481,8 @@ TEST_CASE("raid titan: the expedition before each lair (three floors, ambushes, 
 TEST_CASE("raid titan: a lock opens for everyone when enough players stand on its plate; a checkpoint is kept") {
     Services s;
     const raid::Branch& b = branchOf("crane");
-    const uint32_t eyes = (1u << b.objectiveIndex("crane_oeil_gauche")) | (1u << b.objectiveIndex("crane_oeil_droit"));
+    uint32_t eyes = (1u << b.objectiveIndex("crane_oeil_gauche")) | (1u << b.objectiveIndex("crane_oeil_droit"));
+    eyes |= 1u << b.objectiveIndex("crane_embuscade_1");  // 2.81.2 (titan 11): the first lock waits for the ambush before it
     std::vector<InputFrame> frame(raid::kMaxInstancePlayers);
     for (int k = 2; k < raid::kMaxInstancePlayers; ++k) frame[static_cast<size_t>(k)].flags = InputFrame::Vacant;  // 2 players
     raid::RaidRun x(s.ws(), b, raid::kMaxInstancePlayers), y(s.ws(), b, raid::kMaxInstancePlayers);

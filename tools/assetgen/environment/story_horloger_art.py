@@ -37,7 +37,7 @@ BAND = 14                 # the crown's side
 TEETH = 48
 HD = 40                   # the dome's height (projected)
 RS = math.sqrt(RYI ** 2 + HD ** 2)  # the dome's silhouette above the dial
-# The six worlds of the dial, clockwise from twelve o'clock (docs/RAIDS.md §33).
+# The six worlds of the dial, clockwise from twelve o'clock (docs/RAIDS.md §34).
 BIOMES = [  # name, dark, base, light, its lights
     ("serre", "#1a5a30", "#3fa85a", "#8fe8a0", "#c8ffb0"),
     ("glacier", "#2f6aa8", "#80c8f2", "#e0f6ff", "#e6fffb"),

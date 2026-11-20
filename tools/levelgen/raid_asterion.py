@@ -48,7 +48,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 10  # 10 (2.80): a passage that closes behind the group (an arena's doors) waits for every player of the zone (rules of cooperation 4); 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
+TITAN_REVISION = 11  # 11 (2.81.2): every co-op mechanism waits for the ambushes before it too (each one after an ambush in the expeditions), the goods lift started by its plate only, the walls of the locks, of the lift and over the doors of the plates up to the top of the level (no wall jumps over them); 10 (2.80): a passage that closes behind the group (an arena's doors) waits for every player of the zone (rules of cooperation 4); 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
@@ -924,6 +924,9 @@ class Expedition:
         # 2.78: the way through (tiles): the low floor, the goods lifts over their walls. The game measures
         # the distance left to the lair's passage along it (« Passage vers l'antre : 124 m »).
         self.route = []
+        # 2.81.2: the ambushes met so far along the route (their objectives): a mechanism laid after them waits
+        # for them too (« ambushes » of its plate: game/raid/RaidRun::updateCoops), never for one behind it.
+        self.ambushes = []
 
     def walk(self, x, y=None):
         """2.78: a point of the route (tiles), on the low floor unless `y`."""
@@ -977,7 +980,8 @@ class Expedition:
         z.rock(x + 78, LOW, x + w)
         if hazard:
             z.y = LOW
-            z.hazard(x, x + w, period=75.0, first=40.0)
+            # 2.81.2: first at 50 s (40 before): the lock now after the first ambush, the group reaches this hall later.
+            z.hazard(x, x + w, period=75.0, first=50.0)
         self.enemy("small", x + 10, LOW)
         self.enemy("small", x + 50, LOW, flip=True)
         self.enemy("mid", x + 84, LOW)
@@ -1019,6 +1023,7 @@ class Expedition:
         a = self.L.combat(x + 2, HIGH - 12, x + w - 2, LOW, waves=";".join(",".join(v) for v in waves), lock=False)
         if objective:
             z.objective(objective, a, "cleared")
+            self.ambushes.append(objective)
         if text:
             self.L.event(a, "cleared", [{"type": "hint", "params": {"text": tr(*text), "duration": 3.5}}], delay=0.6)
         self.L.orb("health_orb", x + w // 2, LOW - 2)
@@ -1034,12 +1039,14 @@ class Expedition:
         z.rock(x, LOW, x + w)
         self.slabs(x, x + w)
         wx = x + 20
-        for y0, y1 in ((18, HIGH - 4), (HIGH, MID - 4), (MID, LOW - 4)):
+        # 2.81.2: the wall goes up to the top of the level (from row 0: GameWorld carries it to the ceiling): before,
+        # it started at row 18 and one climbed over it by chaining wall jumps up the high door and the wall.
+        for y0, y1 in ((0, HIGH - 4), (HIGH, MID - 4), (MID, LOW - 4)):
             z.slab(wx, y0, wx + 1, y1)
         doors = [self.L.door(wx, f - 4, 4) for f in (HIGH, MID, LOW)]
         rect = [(x + 6) * T, (LOW - 4) * T, 10 * T, 4 * T]
         self.coops.append({"id": "ecluse_%d" % n, "rect": rect, "players": need, "targets": doors, "action": "open",
-                           "label": tr("Écluse", "Lock"),
+                           "ambushes": list(self.ambushes), "label": tr("Écluse", "Lock"),
                            "message": tr("L'écluse s'ouvre : ses portes cèdent à tous les étages", "The lock opens: its doors give way on every floor")})
         self.L.sign(x + 3, LOW, tr("Écluse : il faut %d joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages." % need,
                                     "Lock: %d players must stand together on the plate to open its doors on every floor." % need))
@@ -1048,24 +1055,30 @@ class Expedition:
         return x + w
 
     def lift(self, x, need):
-        """A goods lift up a wall that bars the three floors: it starts with `need` players on it,
-        then goes up and down by itself for the others."""
+        """A goods lift up a wall that bars the three floors: it starts with `need` players on it (2.81.2: and
+        the ambushes before it beaten), opens the door at its top, then goes up and down by itself for the others."""
         z, w = self.z, 40
         # Up the lift, over its wall, down the ledges to the high floor, then down a well to the low one.
-        for px, py in ((x + 25, LOW), (x + 25, 18), (x + 34, 18), (x + 36, HIGH), (x + w, HIGH)):
+        for px, py in ((x + 25, LOW), (x + 25, 16), (x + 33, 16), (x + 36, HIGH), (x + w, HIGH)):
             self.walk(px, py)
         z.rock(x, LOW, x + 21)
         z.rock(x + 21, LOW + 3, x + 31)  # a shallow pit under the lift
         z.rock(x + 31, LOW, x + w)
         self.slabs(x, x + 18)
-        z.slab(x + 31, 18, x + 33, LOW)  # the wall
+        # 2.81.2: the wall goes up to the top of the level, a door at the lift's top (rows 12-16) that opens with it:
+        # before, the wall stopped at row 18 and one climbed it by chaining wall jumps (the lift became useless).
+        z.slab(x + 31, 0, x + 33, 12)
+        z.slab(x + 31, 16, x + 33, LOW)  # the wall
         self.slabs(x + 33, x + w)
-        lift = self.L.moving(x + 21, LOW, 9, 0, -(LOW - 16), speed=60, wait=2.0, active=False, triggered=True)
+        # 2.81.2: started by its plate only (not « triggered »: the first player on it started it, « 1 / 4 » shown).
+        lift = self.L.moving(x + 21, LOW, 9, 0, -(LOW - 16), speed=60, wait=2.0, active=False)
+        door = self.L.door(x + 31, 12, 4)
         for i, y in enumerate((21, 24, 27, 30)):  # down from the wall's top to the high floor
             a = x + 33 if i % 2 == 0 else x + 36
             z.ledge(a, a + 4, y)
         rect = [(x + 21) * T, (LOW - 4) * T, 9 * T, 4 * T]
-        self.coops.append({"id": "monte_charge", "rect": rect, "players": need, "targets": [lift], "action": "activate",
+        self.coops.append({"id": "monte_charge", "rect": rect, "players": need, "targets": [lift, door], "action": "open",
+                           "ambushes": list(self.ambushes),
                            "label": tr("Monte-charge", "Goods lift"),
                            "message": tr("Le monte-charge démarre : il fait ensuite la navette tout seul",
                                          "The goods lift starts: it then shuttles up and down by itself")})
@@ -1110,20 +1123,20 @@ def lock_arena(spec, west_low, west_high, objective, waves_kinds, desc, desc_en,
     amb = ambush_ids(objective)
     e.route = [[9, LOW]]
     x = 24
+    # 2.81.2: each mechanism after an ambush (it waits for every ambush before it: never one only it leads to).
     x = e.hall(x)
     x = e.checkpoint(x, 1)
-    x = e.lock(x, 3, 1)
     x, _ = e.ambush(x, 4, objective=amb[0], text=("Première embuscade repoussée !", "First ambush driven back!"))
+    x = e.lock(x, 3, 1)
     x = e.hall(x, hazard=True)
-    x = e.lift(x, 4)
     x = e.checkpoint(x, 2)
     x, _ = e.ambush(x, 4, objective=amb[1], text=("Deuxième embuscade repoussée !", "Second ambush driven back!"))
-    x = e.hall(x)
-    x = e.lock(x, 3, 2)
+    x = e.lift(x, 4)
     x = e.hall(x)
     x = e.checkpoint(x, 3)
     x, _ = e.ambush(x, 4, objective=amb[2], text=("Troisième embuscade repoussée : la garde de l'antre approche !",
                                                   "Third ambush driven back: the lair's guard draws near!"))
+    x = e.lock(x, 3, 2)
     x = e.hall(x)
     x = e.checkpoint(x, 4)
     x, _ = e.ambush(x, 4, objective=objective, w=110)
@@ -1817,6 +1830,34 @@ def check_ambush_gates(cat, levels):
             for p in lv["metadata"]["raid"]["passages"]:
                 if p["to"] > n:
                     assert p["lock"] == "ambushes:%d" % n, (cat["id"], n, "open way on past an ambush", p["id"], p["lock"])
+        check_mechanisms(cat["id"], n, lv, ambushes, sources)
+
+
+def check_mechanisms(cid, n, lv, ambushes, sources):
+    """2.81.2: a co-op mechanism of a zone with ambushes waits for EVERY ambush laid before it along the zone (west of its
+    plate: reached without it) and for none after it (only it leads there: a deadlock); a lever or a receptor never stands in
+    such a zone (it would not wait). Each door a plate opens closes its wall up to the top of the level (a solid or that door
+    on every row of its column: GameWorld carries a wall from row 0 to the ceiling), never a door to jump or climb over; a lift
+    a plate starts is not « triggered » (its first rider would start it)."""
+    objs = {o["id"]: o for o in lv["objects"]}
+    before = lambda plate, a: objs[a]["rect"][0] + objs[a]["rect"][2] <= plate["rect"][0]
+    if ambushes:
+        assert not any(o["type"] in ("lever", "receptor") for o in lv["objects"]), (cid, n, "a lever in a zone with an ambush")
+    for c in lv["metadata"]["raid"].get("coop", []):
+        want = sorted(sources[a] for a in ambushes if before(c, a))
+        assert sorted(c.get("ambushes", [])) == want, (cid, n, c["id"], "its ambushes", c.get("ambushes"), want)
+        for t in c["targets"]:
+            o = objs[t]
+            if o["type"] == "moving_platform":
+                assert not o["props"].get("triggered"), (cid, n, c["id"], "a lift started by its first rider")
+            if o["type"] != "door":
+                continue
+            col = o["rect"][0] + 1
+            for row in range(int((o["rect"][1] + o["rect"][3]) // T)):
+                y = row * T + T // 2
+                assert any(w["type"] in ("solid", "door") and w["rect"][0] <= col < w["rect"][0] + w["rect"][2] and
+                           w["rect"][1] <= y < w["rect"][1] + w["rect"][3] for w in lv["objects"]), \
+                    (cid, n, c["id"], "a way over its door", t, row)
 
 
 def links(catalogs, levels):

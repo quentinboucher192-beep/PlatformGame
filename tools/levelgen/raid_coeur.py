@@ -88,19 +88,19 @@ def aorta(A, s):
     amb = A.ambush_ids("coeur_aorte")
     e.route = [[6, LOW]]
     x = 24
+    # 2.81.2: each mechanism after an ambush (it waits for every ambush before it), as in the lairs' expeditions.
     x = e.hall(x)
     x = e.checkpoint(x, 1)
-    x = e.lock(x, 3, 1)
     x, _ = e.ambush(x, 4, objective=amb[0], text=("Première vague du cœur repoussée !", "First wave of the heart driven back!"))
+    x = e.lock(x, 3, 1)
     x = e.hall(x, hazard=True)
-    x = e.lift(x, 4)
     x = e.checkpoint(x, 2)
     x, _ = e.ambush(x, 4, objective=amb[1], text=("Deuxième vague repoussée : le cœur bat plus fort !", "Second wave driven back: the heart beats louder!"))
-    x = e.hall(x)
-    x = e.lock(x, 3, 2)
+    x = e.lift(x, 4)
     x = e.hall(x)
     x = e.checkpoint(x, 3)
     x, _ = e.ambush(x, 4, objective=amb[2], text=("Troisième vague repoussée : la garde du cœur approche !", "Third wave driven back: the heart's guard draws near!"))
+    x = e.lock(x, 3, 2)
     x = e.hall(x)
     x = e.checkpoint(x, 4)
     x, _ = e.ambush(x, 5, objective="coeur_aorte", w=110)

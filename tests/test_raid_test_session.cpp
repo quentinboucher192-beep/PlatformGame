@@ -272,6 +272,9 @@ TEST_CASE("raid test (2.72): the simulated players stand on a co-op plate with t
     setup.invincible = true;
     setup.players = 4;
     raid::TestSession session(s.ws(), bras(), setup);
+    // 2.81.2 (titan 11): the plate also waits for the ambush before it (the Tour des tendons): beaten here (the branch's
+    // state), what is tested is the simulated players coming to the plate (tests/test_raid_mechanisms.cpp: the ambush's rule).
+    session.setBranchState(1u << bras().objectiveIndex("poignet_embuscade_1"));
     CHECK(session.begin(7));
     CHECK(!session.run().rules().coops.empty());
     if (session.run().rules().coops.empty()) return;

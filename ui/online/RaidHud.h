@@ -68,6 +68,16 @@ struct Line {
     std::string mark, text;
     Color color;
 };
+/// 2.81.2: what a co-op mechanism says while an ambush of its zone before it is still to beat.
+inline constexpr const char* kAmbushFirst = "Embuscade à vaincre d'abord";
+/// 2.81.2: the pill over a co-op plate (`plate`: its rectangle on the screen): « 1 / 3 », or kAmbushFirst while
+/// `ambush`; measured (its font smaller when the screen is narrow), above the plate, inside [0, screenW].
+struct Pill {
+    Rect box;
+    std::string text;
+    float font = 13.0f;
+};
+Pill coopPill(UIContext& ui, const Rect& plate, int on, int need, bool ambush, float screenW);
 /// The objectives: each line wrapped (3 lines at most), what does not fit counted in a last line.
 void drawObjectives(UIContext& ui, const Rect& r, float k, const std::string& title, const std::vector<Line>& lines);
 /// The alerts from the top of `r` (2 lines each); the boxes drawn (for the arrows to keep clear).

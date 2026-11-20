@@ -18,7 +18,8 @@
 # joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29) ;
 # tester avec des joueurs invités (2.80, §30) ;
 # « Après Asterion », le film du monde d'après regardé ensemble ; ADMINISTRATION › Films (2.81, §31 et §32) ;
-# « Le Balancier » et « Encore un tour », les films de transition, avant-premières du raid 2 (2.82, §33)
+# mécanismes qui attendent les embuscades, monte-charge et murs sans escalade (2.81.2, §33) ;
+# « Le Balancier » et « Encore un tour », les films de transition, avant-premières du raid 2 (2.82, §34)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -2550,7 +2551,35 @@ Les vignettes : la première peinture de chaque histoire, les images de `assets/
 bande-annonce, Bip dessiné pour le didacticiel. Tout est mesuré (`layoutFilmRow`) : vignette, titre (ajusté puis raccourci),
 genre et durée, « où » sur deux lignes au plus, le bouton ; testé en 1280 × 720 et 1920 × 1080, en français et en anglais.
 
-## 33. « Le Balancier » et « Encore un tour » : les films de transition, avant-premières du raid 2 (2.82)
+## 33. Mécanismes et embuscades (2.81.2, titan 11)
+
+* **Deux conditions** : chaque mécanisme de groupe (écluses, monte-charge, vanne double, plaques jumelles : `metadata.raid.coop`)
+  attend ses joueurs **et** les embuscades de sa zone posées **avant lui** (liste `ambushes` de sa plaque, objectifs de rôle
+  `ambush` ; `CoopPlate::ambushIndex`, `RaidRun::updateCoops`). Jamais une embuscade qu'il est seul à ouvrir : pas d'impasse.
+  Tant qu'il en reste une, la pastille au-dessus de la plaque (`raidhud::coopPill`, mesurée, gardée dans l'écran) et « Ce qu'il
+  reste à faire » disent « Embuscade à vaincre d'abord ». Une embuscade vaincue par un autre groupe compte aussi (l'état de la branche).
+* **Expéditions** (zone 7 de chaque branche, aorte du Cœur) : chaque mécanisme vient désormais **après** une embuscade (point de
+  contrôle, embuscade, écluse ; … ; embuscade, monte-charge ; … ; embuscade, écluse) ; le Poignet-verrou du Bras droit l'était déjà.
+  Le danger périodique de la galerie basse vient d'abord à 50 s (40 avant) : le groupe y arrive plus tard.
+* **Le monte-charge** ne démarre plus avec son premier passager (il était « triggered ») : seulement quand sa plaque a ses joueurs
+  et ses embuscades ; il ouvre alors la porte en haut de son mur.
+* **Pas d'escalade** : les murs des écluses et du monte-charge montent jusqu'en haut de la zone (le jeu les prolonge jusqu'au
+  plafond), la vanne double et les plaques jumelles du Poignet-verrou ont un mur au-dessus de leur porte : on ne les passe plus à
+  coups de sauts muraux. Le générateur le vérifie (`check_mechanisms` : la liste d'embuscades de chaque plaque, un mur ou sa porte sur
+  chaque rangée au-dessus de chaque porte, aucun monte-charge « triggered », aucun levier ni récepteur dans une zone à embuscade).
+* **Tests** (`tests/test_raid_mechanisms.cpp`) : les listes d'embuscades de toutes les zones ; une plaque tenue ne fait rien tant
+  qu'une embuscade reste ; un monte-charge à 1 sur 2 reste immobile ; pour chaque mécanisme inactif (ceux d'avant en marche), le
+  graphe des joueurs simulés (`raid::NavGraph` : sauts, double et triple saut, ruée, impulsion, sauts muraux) n'atteint pas ce qu'il
+  ouvre, et l'atteint une fois en marche ; `COSMIC_MECH_AUDIT=1` affiche chaque défaut sans s'arrêter.
+* **Interface** : le bouton du HUD ne montre plus que la touche (« Tab », ou le bouton de la manette) ; les onglets du panneau du
+  raid simulé et du menu du raid ont une seule largeur (le plus long nom mesuré) et le panneau garde sa taille d'un onglet à
+  l'autre (`raidui::tabs`) ; ADMINISTRATION › Raids › Tester Asterion commence par une liste « Raid à tester » (`raidui::dropdown`,
+  Asterion pour l'instant). Le tableau des contributions applique les clics sur une partie après l'image (choisir une partie
+  « PAS DÉCOUVERT » plantait) et dit pourquoi une partie est vide (« Pas encore découvert : aucun groupe n'y est entré. »).
+* **Versions** : `TITAN_REVISION` passe à **11** (les catalogues et `raidTitan.json` régénérés) ; `kSimulationVersion` et
+  `kRankingGeneration` restent.
+
+## 34. « Le Balancier » et « Encore un tour » : les films de transition, avant-premières du raid 2 (2.82)
 
 Deux **mini-films de près de deux minutes** racontent ce qui vient après Asterion, l'un si le Cœur tombe, l'autre s'il
 survit ; ils passent tous deux par **l'atelier** (deux plans) et **finissent sur les neuf mêmes plans** : on y découvre le vaisseau du raid 2 sans jamais nommer celui qui le pilote (un

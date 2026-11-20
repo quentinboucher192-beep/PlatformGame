@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  16832,
+  15392,
   1056
  ],
  "ambientLight": "#a294c8",
@@ -1093,175 +1093,170 @@
   },
   {
    "id": "o64",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
     2016.0,
-    960.0,
-    480.0,
-    96.0
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o65",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2016.0,
-    736.0,
-    480.0,
-    32.0
+    2080.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o66",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
     2016.0,
-    512.0,
-    480.0,
-    32.0
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o67",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2336.0,
-    288.0,
-    16.0,
-    160.0
+    2080.0,
+    768.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o68",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2336.0,
-    512.0,
-    16.0,
-    160.0
+    2016.0,
+    688.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o69",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2336.0,
-    736.0,
-    16.0,
-    160.0
+    2080.0,
+    640.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o70",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2336.0,
-    448.0,
-    16.0,
-    64.0
+    2016.0,
+    592.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o71",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2336.0,
-    672.0,
-    16.0,
-    64.0
+    2080.0,
+    544.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o72",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2336.0,
-    896.0,
-    16.0,
-    64.0
+    2752.0,
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o73",
-   "type": "sign",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2052.0,
-    936.0,
-    24.0,
-    24.0
+    2816.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
-    "auto": true
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o74",
-   "type": "emitter",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2112.0,
-    928.0,
-    160.0,
-    32.0
+    2752.0,
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "effect": "fireflies",
-    "rate": 3
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o75",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2184.0,
-    920.0,
-    16.0,
+    2816.0,
+    768.0,
+    64.0,
     16.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 90,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "ruin_bridge"
    }
   },
   {
@@ -1269,8 +1264,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    912.0,
+    2752.0,
+    688.0,
     64.0,
     16.0
    ],
@@ -1283,8 +1278,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    864.0,
+    2816.0,
+    640.0,
     64.0,
     16.0
    ],
@@ -1297,8 +1292,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    816.0,
+    2752.0,
+    592.0,
     64.0,
     16.0
    ],
@@ -1311,8 +1306,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    768.0,
+    2816.0,
+    544.0,
     64.0,
     16.0
    ],
@@ -1322,234 +1317,66 @@
   },
   {
    "id": "o80",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    688.0,
-    64.0,
-    16.0
+    2144.0,
+    736.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o81",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    640.0,
-    64.0,
-    16.0
+    2144.0,
+    512.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o82",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    592.0,
-    64.0,
-    16.0
+    2880.0,
+    736.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o83",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    544.0,
-    64.0,
-    16.0
+    2880.0,
+    512.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o84",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o85",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o86",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o87",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o88",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o89",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o90",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o91",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o92",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    2624.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o93",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    2624.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o94",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    3360.0,
-    736.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o95",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    3360.0,
-    512.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o96",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    2496.0,
+    2016.0,
     960.0,
     1600.0,
     96.0
@@ -1559,11 +1386,11 @@
    }
   },
   {
-   "id": "o97",
+   "id": "o85",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2681.0,
+    2201.0,
     950.0,
     14.0,
     10.0
@@ -1577,11 +1404,11 @@
    }
   },
   {
-   "id": "o98",
+   "id": "o86",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3401.0,
+    2921.0,
     950.0,
     14.0,
     10.0
@@ -1595,11 +1422,11 @@
    }
   },
   {
-   "id": "o99",
+   "id": "o87",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2823.0,
+    2343.0,
     948.0,
     18.0,
     12.0
@@ -1613,11 +1440,11 @@
    }
   },
   {
-   "id": "o100",
+   "id": "o88",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3113.0,
+    2633.0,
     726.0,
     14.0,
     10.0
@@ -1631,11 +1458,11 @@
    }
   },
   {
-   "id": "o101",
+   "id": "o89",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2679.0,
+    2199.0,
     724.0,
     18.0,
     12.0
@@ -1649,11 +1476,11 @@
    }
   },
   {
-   "id": "o102",
+   "id": "o90",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3690.0,
+    3210.0,
     404.0,
     12.0,
     12.0
@@ -1667,11 +1494,11 @@
    }
   },
   {
-   "id": "o103",
+   "id": "o91",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3113.0,
+    2633.0,
     502.0,
     14.0,
     10.0
@@ -1685,11 +1512,11 @@
    }
   },
   {
-   "id": "o104",
+   "id": "o92",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3543.0,
+    3063.0,
     948.0,
     18.0,
     12.0
@@ -1703,11 +1530,11 @@
    }
   },
   {
-   "id": "o105",
+   "id": "o93",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2967.0,
+    2487.0,
     948.0,
     18.0,
     12.0
@@ -1721,11 +1548,11 @@
    }
   },
   {
-   "id": "o106",
+   "id": "o94",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3689.0,
+    3209.0,
     950.0,
     14.0,
     10.0
@@ -1739,11 +1566,11 @@
    }
   },
   {
-   "id": "o107",
+   "id": "o95",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2824.0,
+    2344.0,
     712.0,
     16.0,
     24.0
@@ -1757,11 +1584,11 @@
    }
   },
   {
-   "id": "o108",
+   "id": "o96",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3545.0,
+    3065.0,
     726.0,
     14.0,
     10.0
@@ -1775,11 +1602,11 @@
    }
   },
   {
-   "id": "o109",
+   "id": "o97",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3401.0,
+    2921.0,
     406.0,
     14.0,
     10.0
@@ -1793,11 +1620,11 @@
    }
   },
   {
-   "id": "o110",
+   "id": "o98",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2823.0,
+    2343.0,
     500.0,
     18.0,
     12.0
@@ -1811,11 +1638,11 @@
    }
   },
   {
-   "id": "o111",
+   "id": "o99",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3112.0,
+    2632.0,
     936.0,
     16.0,
     24.0
@@ -1829,11 +1656,11 @@
    }
   },
   {
-   "id": "o112",
+   "id": "o100",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2679.0,
+    2199.0,
     948.0,
     18.0,
     12.0
@@ -1847,11 +1674,11 @@
    }
   },
   {
-   "id": "o113",
+   "id": "o101",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3401.0,
+    2921.0,
     950.0,
     14.0,
     10.0
@@ -1865,11 +1692,11 @@
    }
   },
   {
-   "id": "o114",
+   "id": "o102",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3687.0,
+    3207.0,
     724.0,
     18.0,
     12.0
@@ -1883,11 +1710,11 @@
    }
   },
   {
-   "id": "o115",
+   "id": "o103",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3111.0,
+    2631.0,
     724.0,
     18.0,
     12.0
@@ -1901,11 +1728,11 @@
    }
   },
   {
-   "id": "o116",
+   "id": "o104",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2970.0,
+    2490.0,
     404.0,
     12.0,
     12.0
@@ -1919,11 +1746,11 @@
    }
   },
   {
-   "id": "o117",
+   "id": "o105",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3689.0,
+    3209.0,
     406.0,
     14.0,
     10.0
@@ -1937,11 +1764,11 @@
    }
   },
   {
-   "id": "o118",
+   "id": "o106",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2819.0,
+    2339.0,
     926.0,
     26.0,
     34.0
@@ -1955,11 +1782,11 @@
    }
   },
   {
-   "id": "o119",
+   "id": "o107",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3545.0,
+    3065.0,
     950.0,
     14.0,
     10.0
@@ -1973,11 +1800,11 @@
    }
   },
   {
-   "id": "o120",
+   "id": "o108",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3400.0,
+    2920.0,
     712.0,
     16.0,
     24.0
@@ -1991,11 +1818,11 @@
    }
   },
   {
-   "id": "o121",
+   "id": "o109",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2823.0,
+    2343.0,
     724.0,
     18.0,
     12.0
@@ -2009,11 +1836,11 @@
    }
   },
   {
-   "id": "o122",
+   "id": "o110",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2682.0,
+    2202.0,
     404.0,
     12.0,
     12.0
@@ -2027,11 +1854,11 @@
    }
   },
   {
-   "id": "o123",
+   "id": "o111",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3400.0,
+    2920.0,
     488.0,
     16.0,
     24.0
@@ -2045,28 +1872,28 @@
    }
   },
   {
-   "id": "o124",
+   "id": "o112",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
-    2528.0,
+    2048.0,
     320.0,
     1536.0,
     640.0
    ],
    "props": {
     "doors": "",
-    "waves": "o97,o98,o99,o100,o101,o102,o103;o104,o105,o106,o107,o108,o109,o110;o111,o112,o113,o114,o115,o116,o117;o118,o119,o120,o121,o122,o123",
+    "waves": "o85,o86,o87,o88,o89,o90,o91;o92,o93,o94,o95,o96,o97,o98;o99,o100,o101,o102,o103,o104,o105;o106,o107,o108,o109,o110,o111",
     "lockCamera": false,
     "music": ""
    }
   },
   {
-   "id": "o125",
+   "id": "o113",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    3290.0,
+    2810.0,
     922.0,
     12.0,
     12.0
@@ -2076,11 +1903,11 @@
    }
   },
   {
-   "id": "o126",
+   "id": "o114",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    2970.0,
+    2490.0,
     698.0,
     12.0,
     12.0
@@ -2090,11 +1917,11 @@
    }
   },
   {
-   "id": "o127",
+   "id": "o115",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3288.0,
+    2808.0,
     888.0,
     16.0,
     16.0
@@ -2107,11 +1934,11 @@
    }
   },
   {
-   "id": "o128",
+   "id": "o116",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3288.0,
+    2808.0,
     664.0,
     16.0,
     16.0
@@ -2124,11 +1951,11 @@
    }
   },
   {
-   "id": "o129",
+   "id": "o117",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3288.0,
+    2808.0,
     440.0,
     16.0,
     16.0
@@ -2137,6 +1964,179 @@
     "color": "#9fd8ff",
     "radius": 120,
     "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o118",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3616.0,
+    960.0,
+    480.0,
+    96.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o119",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3616.0,
+    736.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o120",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3616.0,
+    512.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o121",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    0.0,
+    16.0,
+    448.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o122",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    512.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o123",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o124",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3936.0,
+    448.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o125",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3936.0,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o126",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3936.0,
+    896.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o127",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    3652.0,
+    936.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o128",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3712.0,
+    928.0,
+    160.0,
+    32.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o129",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3784.0,
+    920.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 90,
+    "flicker": 0.2,
     "bloom": true
    }
   },
@@ -2797,7 +2797,7 @@
    "rect": [
     5536.0,
     960.0,
-    336.0,
+    192.0,
     96.0
    ],
    "props": {
@@ -2809,13 +2809,13 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    5872.0,
-    1008.0,
-    160.0,
-    48.0
+    5536.0,
+    736.0,
+    192.0,
+    32.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "crystal"
    }
   },
   {
@@ -2823,104 +2823,97 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    6032.0,
-    960.0,
-    144.0,
-    96.0
+    5536.0,
+    512.0,
+    192.0,
+    32.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "material": "crystal"
    }
   },
   {
    "id": "o174",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    5536.0,
-    736.0,
-    288.0,
-    32.0
+    5620.0,
+    912.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "crystal"
+    "label": "Expédition, étape 2"
    }
   },
   {
    "id": "o175",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    5536.0,
-    512.0,
-    288.0,
-    32.0
+    5620.0,
+    688.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "crystal"
+    "label": "Expédition, étape 2"
    }
   },
   {
    "id": "o176",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    6032.0,
-    288.0,
-    32.0,
-    672.0
+    5620.0,
+    464.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "crystal"
+    "label": "Expédition, étape 2"
    }
   },
   {
    "id": "o177",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    736.0,
-    112.0,
-    32.0
+    5728.0,
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o178",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    512.0,
-    112.0,
-    32.0
+    5792.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o179",
-   "type": "moving_platform",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    5872.0,
-    960.0,
-    144.0,
+    5728.0,
+    816.0,
+    64.0,
     16.0
    ],
    "props": {
-    "dx": 0,
-    "dy": -704,
-    "speed": 60,
-    "wait": 2.0,
-    "phase": 0.0,
-    "active": false,
-    "triggered": true,
-    "oneway": false
+    "style": "ruin_bridge"
    }
   },
   {
@@ -2928,8 +2921,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    336.0,
+    5792.0,
+    768.0,
     64.0,
     16.0
    ],
@@ -2942,8 +2935,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6112.0,
-    384.0,
+    5728.0,
+    688.0,
     64.0,
     16.0
    ],
@@ -2956,8 +2949,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    432.0,
+    5792.0,
+    640.0,
     64.0,
     16.0
    ],
@@ -2970,8 +2963,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6112.0,
-    480.0,
+    5728.0,
+    592.0,
     64.0,
     16.0
    ],
@@ -2981,118 +2974,114 @@
   },
   {
    "id": "o184",
-   "type": "sign",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    5748.0,
-    936.0,
-    24.0,
-    24.0
+    5792.0,
+    544.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "text": "Monte-charge : il démarre quand 4 joueurs sont dessus, puis fait la navette tout seul.",
-    "auto": true
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o185",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    5928.0,
-    904.0,
-    16.0,
+    6464.0,
+    912.0,
+    64.0,
     16.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 100,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o186",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6176.0,
-    960.0,
-    192.0,
-    96.0
+    6528.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "ruin_stone"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o187",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6176.0,
-    736.0,
-    192.0,
-    32.0
+    6464.0,
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o188",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6176.0,
-    512.0,
-    192.0,
-    32.0
+    6528.0,
+    768.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o189",
-   "type": "checkpoint",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    6260.0,
-    912.0,
-    24.0,
-    48.0
+    6464.0,
+    688.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "label": "Expédition, étape 2"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o190",
-   "type": "checkpoint",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    6260.0,
-    688.0,
-    24.0,
-    48.0
+    6528.0,
+    640.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "label": "Expédition, étape 2"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o191",
-   "type": "checkpoint",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    6260.0,
-    464.0,
-    24.0,
-    48.0
+    6464.0,
+    592.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "label": "Expédition, étape 2"
+    "style": "ruin_bridge"
    }
   },
   {
@@ -3100,8 +3089,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6368.0,
-    912.0,
+    6528.0,
+    544.0,
     64.0,
     16.0
    ],
@@ -3111,276 +3100,66 @@
   },
   {
    "id": "o193",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6432.0,
-    864.0,
-    64.0,
-    16.0
+    5856.0,
+    736.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o194",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6368.0,
-    816.0,
-    64.0,
-    16.0
+    5856.0,
+    512.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o195",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6432.0,
-    768.0,
-    64.0,
-    16.0
+    6592.0,
+    736.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o196",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6368.0,
-    688.0,
-    64.0,
-    16.0
+    6592.0,
+    512.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ruin_bridge"
+    "material": "crystal"
    }
   },
   {
    "id": "o197",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    6432.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o198",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    6368.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o199",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    6432.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o200",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o201",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o202",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o203",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o204",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o205",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o206",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o207",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o208",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    6496.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o209",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    6496.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o210",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    7232.0,
-    736.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o211",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    7232.0,
-    512.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o212",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    6368.0,
+    5728.0,
     960.0,
     1600.0,
     96.0
@@ -3390,11 +3169,11 @@
    }
   },
   {
-   "id": "o213",
+   "id": "o198",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6553.0,
+    5913.0,
     950.0,
     14.0,
     10.0
@@ -3408,11 +3187,11 @@
    }
   },
   {
-   "id": "o214",
+   "id": "o199",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7273.0,
+    6633.0,
     950.0,
     14.0,
     10.0
@@ -3426,12 +3205,282 @@
    }
   },
   {
+   "id": "o200",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6055.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o201",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6345.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o202",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5911.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o203",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6922.0,
+    404.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "dragonnet",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o204",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6345.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o205",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6775.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o206",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6199.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o207",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6921.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o208",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6056.0,
+    712.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "bulwark",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o209",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6777.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o210",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6633.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "nightwing",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o211",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6055.0,
+    500.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o212",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6344.0,
+    936.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "bulwark",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o213",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5911.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o214",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6633.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
    "id": "o215",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6695.0,
-    948.0,
+    6919.0,
+    724.0,
     18.0,
     12.0
    ],
@@ -3448,14 +3497,14 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6985.0,
-    726.0,
-    14.0,
-    10.0
+    6343.0,
+    724.0,
+    18.0,
+    12.0
    ],
    "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
+    "enemy": "stalker",
+    "faceLeft": true,
     "patrol": 80,
     "dormant": true,
     "boss": false
@@ -3466,14 +3515,14 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6551.0,
-    724.0,
-    18.0,
+    6202.0,
+    404.0,
+    12.0,
     12.0
    ],
    "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
+    "enemy": "dragonnet",
+    "faceLeft": false,
     "patrol": 80,
     "dormant": true,
     "boss": false
@@ -3484,14 +3533,14 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7562.0,
-    404.0,
-    12.0,
-    12.0
+    6921.0,
+    406.0,
+    14.0,
+    10.0
    ],
    "props": {
-    "enemy": "dragonnet",
-    "faceLeft": false,
+    "enemy": "nightwing",
+    "faceLeft": true,
     "patrol": 80,
     "dormant": true,
     "boss": false
@@ -3502,277 +3551,7 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6985.0,
-    502.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o220",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7415.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o221",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6839.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o222",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7561.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o223",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6696.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o224",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7417.0,
-    726.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o225",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7273.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "nightwing",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o226",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6695.0,
-    500.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o227",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6984.0,
-    936.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o228",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6551.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o229",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7273.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o230",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7559.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o231",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6983.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o232",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6842.0,
-    404.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "dragonnet",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o233",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7561.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "nightwing",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o234",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6691.0,
+    6051.0,
     926.0,
     26.0,
     34.0
@@ -3786,11 +3565,11 @@
    }
   },
   {
-   "id": "o235",
+   "id": "o220",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7417.0,
+    6777.0,
     950.0,
     14.0,
     10.0
@@ -3804,11 +3583,11 @@
    }
   },
   {
-   "id": "o236",
+   "id": "o221",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7272.0,
+    6632.0,
     712.0,
     16.0,
     24.0
@@ -3822,11 +3601,11 @@
    }
   },
   {
-   "id": "o237",
+   "id": "o222",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6695.0,
+    6055.0,
     724.0,
     18.0,
     12.0
@@ -3840,11 +3619,11 @@
    }
   },
   {
-   "id": "o238",
+   "id": "o223",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6554.0,
+    5914.0,
     404.0,
     12.0,
     12.0
@@ -3858,11 +3637,11 @@
    }
   },
   {
-   "id": "o239",
+   "id": "o224",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7272.0,
+    6632.0,
     488.0,
     16.0,
     24.0
@@ -3876,28 +3655,28 @@
    }
   },
   {
-   "id": "o240",
+   "id": "o225",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
-    6400.0,
+    5760.0,
     320.0,
     1536.0,
     640.0
    ],
    "props": {
     "doors": "",
-    "waves": "o213,o214,o215,o216,o217,o218,o219;o220,o221,o222,o223,o224,o225,o226;o227,o228,o229,o230,o231,o232,o233;o234,o235,o236,o237,o238,o239",
+    "waves": "o198,o199,o200,o201,o202,o203,o204;o205,o206,o207,o208,o209,o210,o211;o212,o213,o214,o215,o216,o217,o218;o219,o220,o221,o222,o223,o224",
     "lockCamera": false,
     "music": ""
    }
   },
   {
-   "id": "o241",
+   "id": "o226",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    7162.0,
+    6522.0,
     922.0,
     12.0,
     12.0
@@ -3907,11 +3686,11 @@
    }
   },
   {
-   "id": "o242",
+   "id": "o227",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    6842.0,
+    6202.0,
     698.0,
     12.0,
     12.0
@@ -3921,11 +3700,11 @@
    }
   },
   {
-   "id": "o243",
+   "id": "o228",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7160.0,
+    6520.0,
     888.0,
     16.0,
     16.0
@@ -3938,11 +3717,11 @@
    }
   },
   {
-   "id": "o244",
+   "id": "o229",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7160.0,
+    6520.0,
     664.0,
     16.0,
     16.0
@@ -3955,11 +3734,11 @@
    }
   },
   {
-   "id": "o245",
+   "id": "o230",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7160.0,
+    6520.0,
     440.0,
     16.0,
     16.0
@@ -3972,7 +3751,256 @@
    }
   },
   {
+   "id": "o231",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7328.0,
+    960.0,
+    336.0,
+    96.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o232",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7664.0,
+    1008.0,
+    160.0,
+    48.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o233",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7824.0,
+    960.0,
+    144.0,
+    96.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o234",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7328.0,
+    736.0,
+    288.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o235",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7328.0,
+    512.0,
+    288.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o236",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7824.0,
+    0.0,
+    32.0,
+    192.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o237",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7824.0,
+    256.0,
+    32.0,
+    704.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o238",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    736.0,
+    112.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o239",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    512.0,
+    112.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o240",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    7664.0,
+    960.0,
+    144.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -704,
+    "speed": 60,
+    "wait": 2.0,
+    "phase": 0.0,
+    "active": false,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o241",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    7824.0,
+    192.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o242",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    336.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o243",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7904.0,
+    384.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o244",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    432.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o245",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7904.0,
+    480.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
    "id": "o246",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    7540.0,
+    936.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Monte-charge : il démarre quand 4 joueurs sont dessus, puis fait la navette tout seul.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o247",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7720.0,
+    904.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 100,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o248",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3986,7 +4014,7 @@
    }
   },
   {
-   "id": "o247",
+   "id": "o249",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4000,7 +4028,7 @@
    }
   },
   {
-   "id": "o248",
+   "id": "o250",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4014,7 +4042,7 @@
    }
   },
   {
-   "id": "o249",
+   "id": "o251",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4028,7 +4056,7 @@
    }
   },
   {
-   "id": "o250",
+   "id": "o252",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4042,7 +4070,7 @@
    }
   },
   {
-   "id": "o251",
+   "id": "o253",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4056,7 +4084,7 @@
    }
   },
   {
-   "id": "o252",
+   "id": "o254",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4070,7 +4098,7 @@
    }
   },
   {
-   "id": "o253",
+   "id": "o255",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4084,7 +4112,7 @@
    }
   },
   {
-   "id": "o254",
+   "id": "o256",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4098,7 +4126,7 @@
    }
   },
   {
-   "id": "o255",
+   "id": "o257",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4112,7 +4140,7 @@
    }
   },
   {
-   "id": "o256",
+   "id": "o258",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4126,7 +4154,7 @@
    }
   },
   {
-   "id": "o257",
+   "id": "o259",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4140,7 +4168,7 @@
    }
   },
   {
-   "id": "o258",
+   "id": "o260",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4154,7 +4182,7 @@
    }
   },
   {
-   "id": "o259",
+   "id": "o261",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4169,7 +4197,7 @@
    }
   },
   {
-   "id": "o260",
+   "id": "o262",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4184,7 +4212,7 @@
    }
   },
   {
-   "id": "o261",
+   "id": "o263",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4198,7 +4226,7 @@
    }
   },
   {
-   "id": "o262",
+   "id": "o264",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4212,7 +4240,7 @@
    }
   },
   {
-   "id": "o263",
+   "id": "o265",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4226,7 +4254,7 @@
    }
   },
   {
-   "id": "o264",
+   "id": "o266",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4241,7 +4269,7 @@
    }
   },
   {
-   "id": "o265",
+   "id": "o267",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4256,7 +4284,7 @@
    }
   },
   {
-   "id": "o266",
+   "id": "o268",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4271,7 +4299,7 @@
    }
   },
   {
-   "id": "o267",
+   "id": "o269",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4285,7 +4313,7 @@
    }
   },
   {
-   "id": "o268",
+   "id": "o270",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4299,7 +4327,7 @@
    }
   },
   {
-   "id": "o269",
+   "id": "o271",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -4313,7 +4341,7 @@
    }
   },
   {
-   "id": "o270",
+   "id": "o272",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4328,7 +4356,7 @@
    }
   },
   {
-   "id": "o271",
+   "id": "o273",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4343,7 +4371,7 @@
    }
   },
   {
-   "id": "o272",
+   "id": "o274",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
@@ -4358,7 +4386,7 @@
    }
   },
   {
-   "id": "o273",
+   "id": "o275",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4372,7 +4400,7 @@
    }
   },
   {
-   "id": "o274",
+   "id": "o276",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4390,7 +4418,7 @@
    }
   },
   {
-   "id": "o275",
+   "id": "o277",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4408,7 +4436,7 @@
    }
   },
   {
-   "id": "o276",
+   "id": "o278",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4426,7 +4454,7 @@
    }
   },
   {
-   "id": "o277",
+   "id": "o279",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4444,7 +4472,7 @@
    }
   },
   {
-   "id": "o278",
+   "id": "o280",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4462,7 +4490,7 @@
    }
   },
   {
-   "id": "o279",
+   "id": "o281",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4480,7 +4508,7 @@
    }
   },
   {
-   "id": "o280",
+   "id": "o282",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4498,7 +4526,7 @@
    }
   },
   {
-   "id": "o281",
+   "id": "o283",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -4512,7 +4540,7 @@
    }
   },
   {
-   "id": "o282",
+   "id": "o284",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4532,7 +4560,7 @@
    }
   },
   {
-   "id": "o283",
+   "id": "o285",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4552,7 +4580,7 @@
    }
   },
   {
-   "id": "o284",
+   "id": "o286",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4572,7 +4600,7 @@
    }
   },
   {
-   "id": "o285",
+   "id": "o287",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4592,7 +4620,7 @@
    }
   },
   {
-   "id": "o286",
+   "id": "o288",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4609,7 +4637,7 @@
    }
   },
   {
-   "id": "o287",
+   "id": "o289",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4626,7 +4654,7 @@
    }
   },
   {
-   "id": "o288",
+   "id": "o290",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4643,13 +4671,13 @@
    }
   },
   {
-   "id": "o289",
+   "id": "o291",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     9408.0,
     960.0,
-    480.0,
+    192.0,
     96.0
    ],
    "props": {
@@ -4657,42 +4685,14 @@
    }
   },
   {
-   "id": "o290",
+   "id": "o292",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     9408.0,
     736.0,
-    480.0,
+    192.0,
     32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o291",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    9408.0,
-    512.0,
-    480.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o292",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    9728.0,
-    288.0,
-    16.0,
-    160.0
    ],
    "props": {
     "material": "crystal"
@@ -4703,10 +4703,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    9728.0,
+    9408.0,
     512.0,
-    16.0,
-    160.0
+    192.0,
+    32.0
    ],
    "props": {
     "material": "crystal"
@@ -4714,105 +4714,100 @@
   },
   {
    "id": "o294",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    9728.0,
-    736.0,
-    16.0,
-    160.0
+    9492.0,
+    912.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "crystal"
+    "label": "Expédition, étape 3"
    }
   },
   {
    "id": "o295",
-   "type": "door",
+   "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    9728.0,
-    448.0,
-    16.0,
-    64.0
+    9492.0,
+    688.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "open": false
+    "label": "Expédition, étape 3"
    }
   },
   {
    "id": "o296",
-   "type": "door",
+   "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    9728.0,
-    672.0,
-    16.0,
-    64.0
+    9492.0,
+    464.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "open": false
+    "label": "Expédition, étape 3"
    }
   },
   {
    "id": "o297",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9728.0,
-    896.0,
-    16.0,
-    64.0
+    9600.0,
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o298",
-   "type": "sign",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9444.0,
-    936.0,
-    24.0,
-    24.0
+    9664.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
-    "auto": true
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o299",
-   "type": "emitter",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9504.0,
-    928.0,
-    160.0,
-    32.0
+    9600.0,
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "effect": "fireflies",
-    "rate": 3
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o300",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9576.0,
-    920.0,
-    16.0,
+    9664.0,
+    768.0,
+    64.0,
     16.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 90,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "ruin_bridge"
    }
   },
   {
@@ -4820,8 +4815,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    912.0,
+    9600.0,
+    688.0,
     64.0,
     16.0
    ],
@@ -4834,8 +4829,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    864.0,
+    9664.0,
+    640.0,
     64.0,
     16.0
    ],
@@ -4848,8 +4843,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    816.0,
+    9600.0,
+    592.0,
     64.0,
     16.0
    ],
@@ -4862,8 +4857,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    768.0,
+    9664.0,
+    544.0,
     64.0,
     16.0
    ],
@@ -4876,8 +4871,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    688.0,
+    10336.0,
+    912.0,
     64.0,
     16.0
    ],
@@ -4890,8 +4885,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    640.0,
+    10400.0,
+    864.0,
     64.0,
     16.0
    ],
@@ -4904,8 +4899,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    592.0,
+    10336.0,
+    816.0,
     64.0,
     16.0
    ],
@@ -4918,8 +4913,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    544.0,
+    10400.0,
+    768.0,
     64.0,
     16.0
    ],
@@ -4929,58 +4924,58 @@
   },
   {
    "id": "o309",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10016.0,
-    736.0,
-    512.0,
-    32.0
+    10336.0,
+    688.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o310",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10016.0,
-    512.0,
-    512.0,
-    32.0
+    10400.0,
+    640.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o311",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10528.0,
-    736.0,
-    192.0,
-    32.0
+    10336.0,
+    592.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
    "id": "o312",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10720.0,
-    736.0,
-    608.0,
-    32.0
+    10400.0,
+    544.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "crystal"
+    "style": "ruin_bridge"
    }
   },
   {
@@ -4988,8 +4983,8 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    10720.0,
-    512.0,
+    9728.0,
+    736.0,
     608.0,
     32.0
    ],
@@ -4999,32 +4994,30 @@
   },
   {
    "id": "o314",
-   "type": "crumble_platform",
-   "layer": "gameplay",
+   "type": "solid",
+   "layer": "terrain",
    "rect": [
-    10560.0,
+    9728.0,
     512.0,
-    48.0,
-    16.0
+    608.0,
+    32.0
    ],
    "props": {
-    "delay": 0.45,
-    "respawn": 3.0
+    "material": "crystal"
    }
   },
   {
    "id": "o315",
-   "type": "crumble_platform",
-   "layer": "gameplay",
+   "type": "solid",
+   "layer": "terrain",
    "rect": [
-    10640.0,
-    512.0,
-    48.0,
-    16.0
+    10464.0,
+    736.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "delay": 0.45,
-    "respawn": 3.0
+    "material": "crystal"
    }
   },
   {
@@ -5032,7 +5025,1002 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    9888.0,
+    10464.0,
+    512.0,
+    736.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o317",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    9600.0,
+    960.0,
+    1600.0,
+    96.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o318",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9785.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o319",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10505.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o320",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9927.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o321",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10217.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o322",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9783.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o323",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10794.0,
+    404.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "dragonnet",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o324",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10217.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o325",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10647.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o326",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10071.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o327",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10793.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o328",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9928.0,
+    712.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "bulwark",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o329",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10649.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o330",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10505.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "nightwing",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o331",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9927.0,
+    500.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o332",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10216.0,
+    936.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "bulwark",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o333",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9783.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o334",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10505.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o335",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10791.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o336",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10215.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o337",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10074.0,
+    404.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "dragonnet",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o338",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10793.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "nightwing",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o339",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9923.0,
+    926.0,
+    26.0,
+    34.0
+   ],
+   "props": {
+    "enemy": "eclat_de_roche",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o340",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10649.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "glowmite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o341",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10504.0,
+    712.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "bulwark",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o342",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9927.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o343",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9786.0,
+    404.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "dragonnet",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o344",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10504.0,
+    488.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "bulwark",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o345",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    9632.0,
+    320.0,
+    1536.0,
+    640.0
+   ],
+   "props": {
+    "doors": "",
+    "waves": "o318,o319,o320,o321,o322,o323,o324;o325,o326,o327,o328,o329,o330,o331;o332,o333,o334,o335,o336,o337,o338;o339,o340,o341,o342,o343,o344",
+    "lockCamera": false,
+    "music": ""
+   }
+  },
+  {
+   "id": "o346",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    10394.0,
+    922.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o347",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    10074.0,
+    698.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o348",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    10392.0,
+    888.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 120,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o349",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    10392.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 120,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o350",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    10392.0,
+    440.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#9fd8ff",
+    "radius": 120,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o351",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11200.0,
+    960.0,
+    480.0,
+    96.0
+   ],
+   "props": {
+    "material": "ruin_stone"
+   }
+  },
+  {
+   "id": "o352",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11200.0,
+    736.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o353",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11200.0,
+    512.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o354",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11520.0,
+    0.0,
+    16.0,
+    448.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o355",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11520.0,
+    512.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o356",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11520.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o357",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    11520.0,
+    448.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o358",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    11520.0,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o359",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    11520.0,
+    896.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o360",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    11236.0,
+    936.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o361",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    11296.0,
+    928.0,
+    160.0,
+    32.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o362",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    11368.0,
+    920.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 90,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o363",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    912.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o364",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    864.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o365",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    816.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o366",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    768.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o367",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    688.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o368",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    640.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o369",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    592.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o370",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    544.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o371",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11808.0,
+    736.0,
+    512.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o372",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11808.0,
+    512.0,
+    512.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o373",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    12320.0,
+    736.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o374",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    12512.0,
+    736.0,
+    608.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o375",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    12512.0,
+    512.0,
+    608.0,
+    32.0
+   ],
+   "props": {
+    "material": "crystal"
+   }
+  },
+  {
+   "id": "o376",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    12352.0,
+    512.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.45,
+    "respawn": 3.0
+   }
+  },
+  {
+   "id": "o377",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    12432.0,
+    512.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.45,
+    "respawn": 3.0
+   }
+  },
+  {
+   "id": "o378",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
     960.0,
     320.0,
     96.0
@@ -5042,11 +6030,11 @@
    }
   },
   {
-   "id": "o317",
+   "id": "o379",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10272.0,
+    12064.0,
     944.0,
     64.0,
     16.0
@@ -5056,11 +6044,11 @@
    }
   },
   {
-   "id": "o318",
+   "id": "o380",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10416.0,
+    12208.0,
     944.0,
     64.0,
     16.0
@@ -5070,11 +6058,11 @@
    }
   },
   {
-   "id": "o319",
+   "id": "o381",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
-    10208.0,
+    12000.0,
     832.0,
     64.0,
     224.0
@@ -5085,11 +6073,11 @@
    }
   },
   {
-   "id": "o320",
+   "id": "o382",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
-    10336.0,
+    12128.0,
     832.0,
     64.0,
     224.0
@@ -5100,11 +6088,11 @@
    }
   },
   {
-   "id": "o321",
+   "id": "o383",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
-    10480.0,
+    12272.0,
     832.0,
     64.0,
     224.0
@@ -5115,11 +6103,11 @@
    }
   },
   {
-   "id": "o322",
+   "id": "o384",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    10560.0,
+    12352.0,
     960.0,
     256.0,
     96.0
@@ -5129,11 +6117,11 @@
    }
   },
   {
-   "id": "o323",
+   "id": "o385",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10880.0,
+    12672.0,
     944.0,
     64.0,
     16.0
@@ -5143,11 +6131,11 @@
    }
   },
   {
-   "id": "o324",
+   "id": "o386",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    11008.0,
+    12800.0,
     944.0,
     64.0,
     16.0
@@ -5157,11 +6145,11 @@
    }
   },
   {
-   "id": "o325",
+   "id": "o387",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
-    10816.0,
+    12608.0,
     832.0,
     64.0,
     224.0
@@ -5172,11 +6160,11 @@
    }
   },
   {
-   "id": "o326",
+   "id": "o388",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
-    10944.0,
+    12736.0,
     832.0,
     64.0,
     224.0
@@ -5187,11 +6175,11 @@
    }
   },
   {
-   "id": "o327",
+   "id": "o389",
    "type": "updraft",
    "layer": "gameplay",
    "rect": [
-    11072.0,
+    12864.0,
     832.0,
     64.0,
     224.0
@@ -5202,11 +6190,11 @@
    }
   },
   {
-   "id": "o328",
+   "id": "o390",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    11136.0,
+    12928.0,
     960.0,
     192.0,
     96.0
@@ -5216,11 +6204,11 @@
    }
   },
   {
-   "id": "o329",
+   "id": "o391",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10041.0,
+    11833.0,
     950.0,
     14.0,
     10.0
@@ -5234,11 +6222,11 @@
    }
   },
   {
-   "id": "o330",
+   "id": "o392",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10681.0,
+    12473.0,
     950.0,
     14.0,
     10.0
@@ -5252,11 +6240,11 @@
    }
   },
   {
-   "id": "o331",
+   "id": "o393",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    11223.0,
+    13015.0,
     948.0,
     18.0,
     12.0
@@ -5270,11 +6258,11 @@
    }
   },
   {
-   "id": "o332",
+   "id": "o394",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10359.0,
+    12151.0,
     724.0,
     18.0,
     12.0
@@ -5288,11 +6276,11 @@
    }
   },
   {
-   "id": "o333",
+   "id": "o395",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10936.0,
+    12728.0,
     712.0,
     16.0,
     24.0
@@ -5306,11 +6294,11 @@
    }
   },
   {
-   "id": "o334",
+   "id": "o396",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10266.0,
+    12058.0,
     404.0,
     12.0,
     12.0
@@ -5324,11 +6312,11 @@
    }
   },
   {
-   "id": "o335",
+   "id": "o397",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    11001.0,
+    12793.0,
     406.0,
     14.0,
     10.0
@@ -5342,11 +6330,11 @@
    }
   },
   {
-   "id": "o336",
+   "id": "o398",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    10602.0,
+    12394.0,
     698.0,
     12.0,
     12.0
@@ -5356,11 +6344,11 @@
    }
   },
   {
-   "id": "o337",
+   "id": "o399",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    9928.0,
+    11720.0,
     944.0,
     16.0,
     16.0
@@ -5375,11 +6363,11 @@
    }
   },
   {
-   "id": "o338",
+   "id": "o400",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    9992.0,
+    11784.0,
     896.0,
     80.0,
     64.0
@@ -5395,11 +6383,11 @@
    }
   },
   {
-   "id": "o339",
+   "id": "o401",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    10116.0,
+    11908.0,
     912.0,
     24.0,
     48.0
@@ -5414,11 +6402,11 @@
    }
   },
   {
-   "id": "o340",
+   "id": "o402",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    10164.0,
+    11956.0,
     896.0,
     24.0,
     64.0
@@ -5433,1006 +6421,12 @@
    }
   },
   {
-   "id": "o341",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    10600.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o342",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    10600.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o343",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    10600.0,
-    440.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o344",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11328.0,
-    960.0,
-    192.0,
-    96.0
-   ],
-   "props": {
-    "material": "ruin_stone"
-   }
-  },
-  {
-   "id": "o345",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11328.0,
-    736.0,
-    192.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o346",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11328.0,
-    512.0,
-    192.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o347",
-   "type": "checkpoint",
-   "layer": "gameplay",
-   "rect": [
-    11412.0,
-    912.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "label": "Expédition, étape 3"
-   }
-  },
-  {
-   "id": "o348",
-   "type": "checkpoint",
-   "layer": "gameplay",
-   "rect": [
-    11412.0,
-    688.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "label": "Expédition, étape 3"
-   }
-  },
-  {
-   "id": "o349",
-   "type": "checkpoint",
-   "layer": "gameplay",
-   "rect": [
-    11412.0,
-    464.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "label": "Expédition, étape 3"
-   }
-  },
-  {
-   "id": "o350",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o351",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o352",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o353",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o354",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o355",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o356",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o357",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o358",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o359",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o360",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o361",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o362",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o363",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o364",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o365",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o366",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11648.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o367",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11648.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o368",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    12384.0,
-    736.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o369",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    12384.0,
-    512.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o370",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    960.0,
-    1600.0,
-    96.0
-   ],
-   "props": {
-    "material": "ruin_stone"
-   }
-  },
-  {
-   "id": "o371",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11705.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o372",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12425.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o373",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11847.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o374",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12137.0,
-    726.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o375",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11703.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o376",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12714.0,
-    404.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "dragonnet",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o377",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12137.0,
-    502.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o378",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12567.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o379",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11991.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o380",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12713.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o381",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11848.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o382",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12569.0,
-    726.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o383",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12425.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "nightwing",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o384",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11847.0,
-    500.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o385",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12136.0,
-    936.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o386",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11703.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o387",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12425.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o388",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12711.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o389",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12135.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o390",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11994.0,
-    404.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "dragonnet",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o391",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12713.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "nightwing",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o392",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11843.0,
-    926.0,
-    26.0,
-    34.0
-   ],
-   "props": {
-    "enemy": "eclat_de_roche",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o393",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12569.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o394",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12424.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o395",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11847.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o396",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11706.0,
-    404.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "dragonnet",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o397",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12424.0,
-    488.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o398",
-   "type": "combat_zone",
-   "layer": "gameplay",
-   "rect": [
-    11552.0,
-    320.0,
-    1536.0,
-    640.0
-   ],
-   "props": {
-    "doors": "",
-    "waves": "o371,o372,o373,o374,o375,o376,o377;o378,o379,o380,o381,o382,o383,o384;o385,o386,o387,o388,o389,o390,o391;o392,o393,o394,o395,o396,o397",
-    "lockCamera": false,
-    "music": ""
-   }
-  },
-  {
-   "id": "o399",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    12314.0,
-    922.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o400",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    11994.0,
-    698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o401",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    12312.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o402",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    12312.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
    "id": "o403",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    12312.0,
-    440.0,
+    12392.0,
+    888.0,
     16.0,
     16.0
    ],
@@ -6445,587 +6439,10 @@
   },
   {
    "id": "o404",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o405",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o406",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o407",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o408",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o409",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o410",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o411",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o412",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13248.0,
-    736.0,
-    512.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o413",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13248.0,
-    512.0,
-    512.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o414",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13760.0,
-    736.0,
-    192.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o415",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13952.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o416",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13952.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "crystal"
-   }
-  },
-  {
-   "id": "o417",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13792.0,
-    512.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.45,
-    "respawn": 3.0
-   }
-  },
-  {
-   "id": "o418",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13872.0,
-    512.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.45,
-    "respawn": 3.0
-   }
-  },
-  {
-   "id": "o419",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    960.0,
-    320.0,
-    96.0
-   ],
-   "props": {
-    "material": "ruin_stone"
-   }
-  },
-  {
-   "id": "o420",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13504.0,
-    944.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o421",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13648.0,
-    944.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o422",
-   "type": "updraft",
-   "layer": "gameplay",
-   "rect": [
-    13440.0,
-    832.0,
-    64.0,
-    224.0
-   ],
-   "props": {
-    "strength": 240,
-    "vent": false
-   }
-  },
-  {
-   "id": "o423",
-   "type": "updraft",
-   "layer": "gameplay",
-   "rect": [
-    13568.0,
-    832.0,
-    64.0,
-    224.0
-   ],
-   "props": {
-    "strength": 240,
-    "vent": false
-   }
-  },
-  {
-   "id": "o424",
-   "type": "updraft",
-   "layer": "gameplay",
-   "rect": [
-    13712.0,
-    832.0,
-    64.0,
-    224.0
-   ],
-   "props": {
-    "strength": 240,
-    "vent": false
-   }
-  },
-  {
-   "id": "o425",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13792.0,
-    960.0,
-    256.0,
-    96.0
-   ],
-   "props": {
-    "material": "ruin_stone"
-   }
-  },
-  {
-   "id": "o426",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    14112.0,
-    944.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o427",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    14240.0,
-    944.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ruin_bridge"
-   }
-  },
-  {
-   "id": "o428",
-   "type": "updraft",
-   "layer": "gameplay",
-   "rect": [
-    14048.0,
-    832.0,
-    64.0,
-    224.0
-   ],
-   "props": {
-    "strength": 240,
-    "vent": false
-   }
-  },
-  {
-   "id": "o429",
-   "type": "updraft",
-   "layer": "gameplay",
-   "rect": [
-    14176.0,
-    832.0,
-    64.0,
-    224.0
-   ],
-   "props": {
-    "strength": 240,
-    "vent": false
-   }
-  },
-  {
-   "id": "o430",
-   "type": "updraft",
-   "layer": "gameplay",
-   "rect": [
-    14304.0,
-    832.0,
-    64.0,
-    224.0
-   ],
-   "props": {
-    "strength": 240,
-    "vent": false
-   }
-  },
-  {
-   "id": "o431",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    14368.0,
-    960.0,
-    192.0,
-    96.0
-   ],
-   "props": {
-    "material": "ruin_stone"
-   }
-  },
-  {
-   "id": "o432",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13273.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o433",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13913.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "glowmite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o434",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    14455.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o435",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13591.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o436",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    14168.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o437",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13498.0,
-    404.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "dragonnet",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o438",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    14233.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "nightwing",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o439",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    13834.0,
-    698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o440",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    13208.0,
-    948.0,
-    16.0,
-    12.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "rock_small",
-    "alpha": 0.9,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o441",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    13832.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#9fd8ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o442",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    13832.0,
+    12392.0,
     664.0,
     16.0,
     16.0
@@ -7038,11 +6455,11 @@
    }
   },
   {
-   "id": "o443",
+   "id": "o405",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    13832.0,
+    12392.0,
     440.0,
     16.0,
     16.0
@@ -7055,11 +6472,11 @@
    }
   },
   {
-   "id": "o444",
+   "id": "o406",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14560.0,
+    13120.0,
     960.0,
     192.0,
     96.0
@@ -7069,11 +6486,11 @@
    }
   },
   {
-   "id": "o445",
+   "id": "o407",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14560.0,
+    13120.0,
     736.0,
     192.0,
     32.0
@@ -7083,11 +6500,11 @@
    }
   },
   {
-   "id": "o446",
+   "id": "o408",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14560.0,
+    13120.0,
     512.0,
     192.0,
     32.0
@@ -7097,11 +6514,11 @@
    }
   },
   {
-   "id": "o447",
+   "id": "o409",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    14644.0,
+    13204.0,
     912.0,
     24.0,
     48.0
@@ -7111,11 +6528,11 @@
    }
   },
   {
-   "id": "o448",
+   "id": "o410",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    14644.0,
+    13204.0,
     688.0,
     24.0,
     48.0
@@ -7125,11 +6542,11 @@
    }
   },
   {
-   "id": "o449",
+   "id": "o411",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    14644.0,
+    13204.0,
     464.0,
     24.0,
     48.0
@@ -7139,11 +6556,11 @@
    }
   },
   {
-   "id": "o450",
+   "id": "o412",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     912.0,
     64.0,
     16.0
@@ -7153,11 +6570,11 @@
    }
   },
   {
-   "id": "o451",
+   "id": "o413",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     864.0,
     64.0,
     16.0
@@ -7167,11 +6584,11 @@
    }
   },
   {
-   "id": "o452",
+   "id": "o414",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     816.0,
     64.0,
     16.0
@@ -7181,11 +6598,11 @@
    }
   },
   {
-   "id": "o453",
+   "id": "o415",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     768.0,
     64.0,
     16.0
@@ -7195,11 +6612,11 @@
    }
   },
   {
-   "id": "o454",
+   "id": "o416",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     688.0,
     64.0,
     16.0
@@ -7209,11 +6626,11 @@
    }
   },
   {
-   "id": "o455",
+   "id": "o417",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     640.0,
     64.0,
     16.0
@@ -7223,11 +6640,11 @@
    }
   },
   {
-   "id": "o456",
+   "id": "o418",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     592.0,
     64.0,
     16.0
@@ -7237,11 +6654,11 @@
    }
   },
   {
-   "id": "o457",
+   "id": "o419",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     544.0,
     64.0,
     16.0
@@ -7251,11 +6668,11 @@
    }
   },
   {
-   "id": "o458",
+   "id": "o420",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     912.0,
     64.0,
     16.0
@@ -7265,11 +6682,11 @@
    }
   },
   {
-   "id": "o459",
+   "id": "o421",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     864.0,
     64.0,
     16.0
@@ -7279,11 +6696,11 @@
    }
   },
   {
-   "id": "o460",
+   "id": "o422",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     816.0,
     64.0,
     16.0
@@ -7293,11 +6710,11 @@
    }
   },
   {
-   "id": "o461",
+   "id": "o423",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     768.0,
     64.0,
     16.0
@@ -7307,11 +6724,11 @@
    }
   },
   {
-   "id": "o462",
+   "id": "o424",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     688.0,
     64.0,
     16.0
@@ -7321,11 +6738,11 @@
    }
   },
   {
-   "id": "o463",
+   "id": "o425",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     640.0,
     64.0,
     16.0
@@ -7335,11 +6752,11 @@
    }
   },
   {
-   "id": "o464",
+   "id": "o426",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     592.0,
     64.0,
     16.0
@@ -7349,11 +6766,11 @@
    }
   },
   {
-   "id": "o465",
+   "id": "o427",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     544.0,
     64.0,
     16.0
@@ -7363,11 +6780,11 @@
    }
   },
   {
-   "id": "o466",
+   "id": "o428",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14880.0,
+    13440.0,
     736.0,
     688.0,
     32.0
@@ -7377,11 +6794,11 @@
    }
   },
   {
-   "id": "o467",
+   "id": "o429",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14880.0,
+    13440.0,
     512.0,
     688.0,
     32.0
@@ -7391,11 +6808,11 @@
    }
   },
   {
-   "id": "o468",
+   "id": "o430",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    15696.0,
+    14256.0,
     736.0,
     816.0,
     32.0
@@ -7405,11 +6822,11 @@
    }
   },
   {
-   "id": "o469",
+   "id": "o431",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    15696.0,
+    14256.0,
     512.0,
     816.0,
     32.0
@@ -7419,11 +6836,11 @@
    }
   },
   {
-   "id": "o470",
+   "id": "o432",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     960.0,
     1760.0,
     96.0
@@ -7433,11 +6850,11 @@
    }
   },
   {
-   "id": "o471",
+   "id": "o433",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14937.0,
+    13497.0,
     950.0,
     14.0,
     10.0
@@ -7451,11 +6868,11 @@
    }
   },
   {
-   "id": "o472",
+   "id": "o434",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15513.0,
+    14073.0,
     950.0,
     14.0,
     10.0
@@ -7469,11 +6886,11 @@
    }
   },
   {
-   "id": "o473",
+   "id": "o435",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16231.0,
+    14791.0,
     948.0,
     18.0,
     12.0
@@ -7487,11 +6904,11 @@
    }
   },
   {
-   "id": "o474",
+   "id": "o436",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15369.0,
+    13929.0,
     726.0,
     14.0,
     10.0
@@ -7505,11 +6922,11 @@
    }
   },
   {
-   "id": "o475",
+   "id": "o437",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16087.0,
+    14647.0,
     724.0,
     18.0,
     12.0
@@ -7523,11 +6940,11 @@
    }
   },
   {
-   "id": "o476",
+   "id": "o438",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15946.0,
+    14506.0,
     404.0,
     12.0,
     12.0
@@ -7541,11 +6958,11 @@
    }
   },
   {
-   "id": "o477",
+   "id": "o439",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15081.0,
+    13641.0,
     502.0,
     14.0,
     10.0
@@ -7559,11 +6976,11 @@
    }
   },
   {
-   "id": "o478",
+   "id": "o440",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15799.0,
+    14359.0,
     948.0,
     18.0,
     12.0
@@ -7577,11 +6994,11 @@
    }
   },
   {
-   "id": "o479",
+   "id": "o441",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14935.0,
+    13495.0,
     948.0,
     18.0,
     12.0
@@ -7595,11 +7012,11 @@
    }
   },
   {
-   "id": "o480",
+   "id": "o442",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15513.0,
+    14073.0,
     950.0,
     14.0,
     10.0
@@ -7613,11 +7030,11 @@
    }
   },
   {
-   "id": "o481",
+   "id": "o443",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16232.0,
+    14792.0,
     712.0,
     16.0,
     24.0
@@ -7631,11 +7048,11 @@
    }
   },
   {
-   "id": "o482",
+   "id": "o444",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15369.0,
+    13929.0,
     726.0,
     14.0,
     10.0
@@ -7649,11 +7066,11 @@
    }
   },
   {
-   "id": "o483",
+   "id": "o445",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15225.0,
+    13785.0,
     406.0,
     14.0,
     10.0
@@ -7667,11 +7084,11 @@
    }
   },
   {
-   "id": "o484",
+   "id": "o446",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15943.0,
+    14503.0,
     500.0,
     18.0,
     12.0
@@ -7685,11 +7102,11 @@
    }
   },
   {
-   "id": "o485",
+   "id": "o447",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15080.0,
+    13640.0,
     936.0,
     16.0,
     24.0
@@ -7703,11 +7120,11 @@
    }
   },
   {
-   "id": "o486",
+   "id": "o448",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15799.0,
+    14359.0,
     948.0,
     18.0,
     12.0
@@ -7721,11 +7138,11 @@
    }
   },
   {
-   "id": "o487",
+   "id": "o449",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14937.0,
+    13497.0,
     950.0,
     14.0,
     10.0
@@ -7739,11 +7156,11 @@
    }
   },
   {
-   "id": "o488",
+   "id": "o450",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15511.0,
+    14071.0,
     724.0,
     18.0,
     12.0
@@ -7757,11 +7174,11 @@
    }
   },
   {
-   "id": "o489",
+   "id": "o451",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16231.0,
+    14791.0,
     724.0,
     18.0,
     12.0
@@ -7775,11 +7192,11 @@
    }
   },
   {
-   "id": "o490",
+   "id": "o452",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16090.0,
+    14650.0,
     404.0,
     12.0,
     12.0
@@ -7793,11 +7210,11 @@
    }
   },
   {
-   "id": "o491",
+   "id": "o453",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15225.0,
+    13785.0,
     406.0,
     14.0,
     10.0
@@ -7811,11 +7228,11 @@
    }
   },
   {
-   "id": "o492",
+   "id": "o454",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15939.0,
+    14499.0,
     926.0,
     26.0,
     34.0
@@ -7829,11 +7246,11 @@
    }
   },
   {
-   "id": "o493",
+   "id": "o455",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15081.0,
+    13641.0,
     950.0,
     14.0,
     10.0
@@ -7847,11 +7264,11 @@
    }
   },
   {
-   "id": "o494",
+   "id": "o456",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14936.0,
+    13496.0,
     712.0,
     16.0,
     24.0
@@ -7865,11 +7282,11 @@
    }
   },
   {
-   "id": "o495",
+   "id": "o457",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15511.0,
+    14071.0,
     724.0,
     18.0,
     12.0
@@ -7883,11 +7300,11 @@
    }
   },
   {
-   "id": "o496",
+   "id": "o458",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15370.0,
+    13930.0,
     404.0,
     12.0,
     12.0
@@ -7901,11 +7318,11 @@
    }
   },
   {
-   "id": "o497",
+   "id": "o459",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16088.0,
+    14648.0,
     488.0,
     16.0,
     24.0
@@ -7919,28 +7336,28 @@
    }
   },
   {
-   "id": "o498",
+   "id": "o460",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
-    14784.0,
+    13344.0,
     320.0,
     1696.0,
     640.0
    ],
    "props": {
     "doors": "",
-    "waves": "o471,o472,o473,o474,o475,o476,o477;o478,o479,o480,o481,o482,o483,o484;o485,o486,o487,o488,o489,o490,o491;o492,o493,o494,o495,o496,o497",
+    "waves": "o433,o434,o435,o436,o437,o438,o439;o440,o441,o442,o443,o444,o445,o446;o447,o448,o449,o450,o451,o452,o453;o454,o455,o456,o457,o458,o459",
     "lockCamera": false,
     "music": ""
    }
   },
   {
-   "id": "o499",
+   "id": "o461",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    15626.0,
+    14186.0,
     922.0,
     12.0,
     12.0
@@ -7950,11 +7367,11 @@
    }
   },
   {
-   "id": "o500",
+   "id": "o462",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    15306.0,
+    13866.0,
     698.0,
     12.0,
     12.0
@@ -7964,11 +7381,11 @@
    }
   },
   {
-   "id": "o501",
+   "id": "o463",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    15624.0,
+    14184.0,
     888.0,
     16.0,
     16.0
@@ -7981,11 +7398,11 @@
    }
   },
   {
-   "id": "o502",
+   "id": "o464",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    15624.0,
+    14184.0,
     664.0,
     16.0,
     16.0
@@ -7998,11 +7415,11 @@
    }
   },
   {
-   "id": "o503",
+   "id": "o465",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    15624.0,
+    14184.0,
     440.0,
     16.0,
     16.0
@@ -8015,11 +7432,11 @@
    }
   },
   {
-   "id": "o504",
+   "id": "o466",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    16512.0,
+    15072.0,
     960.0,
     64.0,
     96.0
@@ -8029,11 +7446,11 @@
    }
   },
   {
-   "id": "o505",
+   "id": "o467",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    16576.0,
+    15136.0,
     960.0,
     256.0,
     96.0
@@ -8043,11 +7460,11 @@
    }
   },
   {
-   "id": "o506",
+   "id": "o468",
    "type": "door",
    "layer": "gameplay",
    "rect": [
-    16688.0,
+    15248.0,
     896.0,
     16.0,
     64.0
@@ -8057,11 +7474,11 @@
    }
   },
   {
-   "id": "o507",
+   "id": "o469",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    16756.0,
+    15316.0,
     936.0,
     24.0,
     24.0
@@ -8072,11 +7489,11 @@
    }
   },
   {
-   "id": "o508",
+   "id": "o470",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    16760.0,
+    15320.0,
     920.0,
     16.0,
     16.0
@@ -8089,11 +7506,11 @@
    }
   },
   {
-   "id": "o509",
+   "id": "o471",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    16736.0,
+    15296.0,
     896.0,
     64.0,
     64.0
@@ -8104,7 +7521,7 @@
    }
   },
   {
-   "id": "o510",
+   "id": "o472",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8119,7 +7536,7 @@
    }
   },
   {
-   "id": "o511",
+   "id": "o473",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8134,7 +7551,7 @@
    }
   },
   {
-   "id": "o512",
+   "id": "o474",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8149,7 +7566,7 @@
    }
   },
   {
-   "id": "o513",
+   "id": "o475",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8164,7 +7581,7 @@
    }
   },
   {
-   "id": "o514",
+   "id": "o476",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8179,7 +7596,7 @@
    }
   },
   {
-   "id": "o515",
+   "id": "o477",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8194,7 +7611,7 @@
    }
   },
   {
-   "id": "o516",
+   "id": "o478",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8209,7 +7626,7 @@
    }
   },
   {
-   "id": "o517",
+   "id": "o479",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8224,7 +7641,7 @@
    }
   },
   {
-   "id": "o518",
+   "id": "o480",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8239,7 +7656,7 @@
    }
   },
   {
-   "id": "o519",
+   "id": "o481",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8254,7 +7671,7 @@
    }
   },
   {
-   "id": "o520",
+   "id": "o482",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8269,7 +7686,7 @@
    }
   },
   {
-   "id": "o521",
+   "id": "o483",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8284,7 +7701,7 @@
    }
   },
   {
-   "id": "o522",
+   "id": "o484",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8299,43 +7716,13 @@
    }
   },
   {
-   "id": "o523",
+   "id": "o485",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     14560.0,
     64.0,
-    1120.0,
-    352.0
-   ],
-   "props": {
-    "effect": "aurora_motes",
-    "rate": 1.2
-   }
-  },
-  {
-   "id": "o524",
-   "type": "emitter",
-   "layer": "gameplay",
-   "rect": [
-    15680.0,
-    64.0,
-    1120.0,
-    352.0
-   ],
-   "props": {
-    "effect": "aurora_motes",
-    "rate": 1.2
-   }
-  },
-  {
-   "id": "o525",
-   "type": "emitter",
-   "layer": "gameplay",
-   "rect": [
-    16800.0,
-    64.0,
-    32.0,
+    832.0,
     352.0
    ],
    "props": {
@@ -8347,7 +7734,7 @@
  "events": [
   {
    "id": "ev1",
-   "source": "o124",
+   "source": "o112",
    "trigger": "cleared",
    "once": true,
    "actions": [
@@ -8363,7 +7750,7 @@
   },
   {
    "id": "ev2",
-   "source": "o240",
+   "source": "o225",
    "trigger": "cleared",
    "once": true,
    "actions": [
@@ -8379,7 +7766,7 @@
   },
   {
    "id": "ev3",
-   "source": "o398",
+   "source": "o345",
    "trigger": "cleared",
    "once": true,
    "actions": [
@@ -8442,69 +7829,69 @@
       512
      ]
     ],
-    "cp:o189": [
+    "cp:o174": [
      [
-      6272,
+      5632,
       960
      ]
     ],
-    "cp:o190": [
+    "cp:o175": [
      [
-      6272,
+      5632,
       736
      ]
     ],
-    "cp:o191": [
+    "cp:o176": [
      [
-      6272,
+      5632,
       512
      ]
     ],
-    "cp:o347": [
+    "cp:o294": [
      [
-      11424,
+      9504,
       960
      ]
     ],
-    "cp:o348": [
+    "cp:o295": [
      [
-      11424,
+      9504,
       736
      ]
     ],
-    "cp:o349": [
+    "cp:o296": [
      [
-      11424,
+      9504,
       512
      ]
     ],
-    "cp:o447": [
+    "cp:o409": [
      [
-      14656,
+      13216,
       960
      ]
     ],
-    "cp:o448": [
+    "cp:o410": [
      [
-      14656,
+      13216,
       736
      ]
     ],
-    "cp:o449": [
+    "cp:o411": [
      [
-      14656,
+      13216,
       512
      ]
     ],
     "8": [
      [
-      16624,
+      15184,
       960
      ]
     ],
     "9": [
      [
-      16624,
+      15184,
       960
      ]
     ]
@@ -8538,42 +7925,42 @@
      "id": "p7_8",
      "to": 8,
      "rect": [
-      16736,
+      15296,
       896,
       64,
       64
      ],
      "lock": "ambushes:7",
-     "door": "o506",
+     "door": "o468",
      "via": 9
     }
    ],
    "objectives": [
     {
      "id": "jg_embuscade_1",
-     "source": "o124",
+     "source": "o112",
      "trigger": "cleared"
     },
     {
      "id": "jg_embuscade_2",
-     "source": "o240",
+     "source": "o225",
      "trigger": "cleared"
     },
     {
      "id": "jg_embuscade_3",
-     "source": "o398",
+     "source": "o345",
      "trigger": "cleared"
     },
     {
      "id": "jg_cheville",
-     "source": "o498",
+     "source": "o460",
      "trigger": "cleared"
     }
    ],
    "magma": {
     "zone": "magma_flow",
     "period": 75.0,
-    "first": 40.0,
+    "first": 50.0,
     "warn": 3.0,
     "duration": 6.0,
     "name": "Puits de gravité",
@@ -8595,7 +7982,7 @@
      960
     ],
     [
-     2496,
+     3616,
      960
     ],
     [
@@ -8607,47 +7994,47 @@
      960
     ],
     [
-     5936,
+     5728,
      960
     ],
     [
-     5936,
-     288
-    ],
-    [
-     6080,
-     288
-    ],
-    [
-     6112,
-     512
-    ],
-    [
-     6176,
-     512
-    ],
-    [
-     6368,
+     7328,
      960
+    ],
+    [
+     7728,
+     960
+    ],
+    [
+     7728,
+     256
+    ],
+    [
+     7856,
+     256
+    ],
+    [
+     7904,
+     512
     ],
     [
      7968,
-     960
+     512
     ],
     [
      9408,
      960
     ],
     [
-     9888,
+     9600,
      960
     ],
     [
-     11328,
+     11200,
      960
     ],
     [
-     11520,
+     11680,
      960
     ],
     [
@@ -8655,19 +8042,15 @@
      960
     ],
     [
-     14560,
+     13312,
      960
     ],
     [
-     14752,
+     15072,
      960
     ],
     [
-     16512,
-     960
-    ],
-    [
-     16768,
+     15328,
      960
     ]
    ],
@@ -8675,52 +8058,65 @@
     {
      "id": "ecluse_1",
      "rect": [
-      2112,
+      3712,
       896,
       160,
       64
      ],
      "players": 3,
      "targets": [
-      "o70",
-      "o71",
-      "o72"
+      "o124",
+      "o125",
+      "o126"
      ],
      "action": "open",
+     "ambushes": [
+      "jg_embuscade_1"
+     ],
      "label": "Écluse",
      "message": "L'écluse s'ouvre : ses portes cèdent à tous les étages"
     },
     {
      "id": "monte_charge",
      "rect": [
-      5872,
+      7664,
       896,
       144,
       64
      ],
      "players": 4,
      "targets": [
-      "o179"
+      "o240",
+      "o241"
      ],
-     "action": "activate",
+     "action": "open",
+     "ambushes": [
+      "jg_embuscade_1",
+      "jg_embuscade_2"
+     ],
      "label": "Monte-charge",
      "message": "Le monte-charge démarre : il fait ensuite la navette tout seul"
     },
     {
      "id": "ecluse_2",
      "rect": [
-      9504,
+      11296,
       896,
       160,
       64
      ],
      "players": 3,
      "targets": [
-      "o295",
-      "o296",
-      "o297"
+      "o357",
+      "o358",
+      "o359"
      ],
      "action": "open",
+     "ambushes": [
+      "jg_embuscade_1",
+      "jg_embuscade_2",
+      "jg_embuscade_3"
+     ],
      "label": "Écluse",
      "message": "L'écluse s'ouvre : ses portes cèdent à tous les étages"
     }
@@ -8729,15 +8125,15 @@
     "o61",
     "o62",
     "o63",
-    "o189",
-    "o190",
-    "o191",
-    "o347",
-    "o348",
-    "o349",
-    "o447",
-    "o448",
-    "o449"
+    "o174",
+    "o175",
+    "o176",
+    "o294",
+    "o295",
+    "o296",
+    "o409",
+    "o410",
+    "o411"
    ]
   }
  },

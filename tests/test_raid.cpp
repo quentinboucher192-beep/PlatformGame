@@ -253,7 +253,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0x4e5d59a3096c4bb3ULL;  // reference (titan 9: the Épaule's guard gates its ways on, two doors): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0x7d600474be5d6c56ULL;  // reference (titan 11: the Poignet-verrou's plates wait for its ambushes, walls over their doors): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -871,11 +871,13 @@ TEST_CASE("raid long route: the Poignet-verrou takes a group of 8 about 15 minut
 TEST_CASE("raid long route: a door of the group opens with enough players on its plate; twin plates are held together") {
     Services s;
     const uint32_t gens = 1u << branch().objectiveIndex("veine_generateur") | 1u << branch().objectiveIndex("avantbras_generateur");
+    // 2.81.2 (titan 11): the plates also wait for the ambushes before them (beaten here: their objectives in the state).
+    const uint32_t amb = 1u << branch().objectiveIndex("poignet_embuscade_1") | 1u << branch().objectiveIndex("poignet_embuscade_2");
     for (int players : {8, 1}) {
         raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
-        CHECK(run.begin(gens, 7));
+        CHECK(run.begin(gens | amb, 7));
         const auto f = still(players);
-        run.step(f.data(), static_cast<int>(f.size()), 0);
+        run.step(f.data(), static_cast<int>(f.size()), amb);
         size_t k = run.rules().coops.size();
         for (size_t i = 0; i < run.rules().coops.size(); ++i)
             if (run.rules().coops[i].id == "vanne_double") k = i;
@@ -893,12 +895,12 @@ TEST_CASE("raid long route: a door of the group opens with enough players on its
         // One player short of the need: nothing (with 8).
         for (int t = 0; t < 30 && players > 1; ++t) {
             stand(valve, 0, need - 1);
-            run.step(f.data(), static_cast<int>(f.size()), 0);
+            run.step(f.data(), static_cast<int>(f.size()), amb);
         }
         CHECK(!run.coop(k).done);
         for (int t = 0; t < 30 && !run.coop(k).done; ++t) {
             stand(valve, 0, need);
-            run.step(f.data(), static_cast<int>(f.size()), 0);
+            run.step(f.data(), static_cast<int>(f.size()), amb);
         }
         CHECK(run.coop(k).done);
         if (door) CHECK(door->isOpen());
@@ -914,7 +916,7 @@ TEST_CASE("raid long route: a door of the group opens with enough players on its
             CHECK(run.coop(twins[1]).need == 0);
             for (int t = 0; t < 30 && !run.coop(twins[0]).done; ++t) {
                 stand(low, 0, 1);
-                run.step(f.data(), static_cast<int>(f.size()), 0);
+                run.step(f.data(), static_cast<int>(f.size()), amb);
             }
             CHECK(run.coop(twins[0]).done);
             continue;
@@ -923,13 +925,13 @@ TEST_CASE("raid long route: a door of the group opens with enough players on its
         CHECK(run.coop(twins[1]).need == 2);
         for (int t = 0; t < 30; ++t) {  // the low plate alone: nothing
             stand(low, 0, 2);
-            run.step(f.data(), static_cast<int>(f.size()), 0);
+            run.step(f.data(), static_cast<int>(f.size()), amb);
         }
         CHECK(!run.coop(twins[0]).done);
         for (int t = 0; t < 30 && !run.coop(twins[0]).done; ++t) {
             stand(low, 0, 2);
             stand(high, 2, 2);
-            run.step(f.data(), static_cast<int>(f.size()), 0);
+            run.step(f.data(), static_cast<int>(f.size()), amb);
         }
         CHECK(run.coop(twins[0]).done);
         CHECK(run.coop(twins[1]).done);
