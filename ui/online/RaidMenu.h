@@ -147,6 +147,7 @@ struct Overlay {
 
 struct Member {
     std::string name, state, hearts;  // « 3 / 5 »
+    std::string thought;  // 2.79: a test's simulated player: its role, what it does, how it moves (« Réanimateur → … »)
     Color color = Color::white(), stateColor = Color::white();
     float health = 0.0f;  // 0..1
     bool vacant = false, me = false;

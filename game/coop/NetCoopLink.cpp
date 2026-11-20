@@ -179,6 +179,15 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
             testSeats_.emplace_back(tick, seats);
             break;
         }
+        case Msg::TestOrder: {
+            // 2.80: a test's order from a step on (never one already given; the last one of a step counts).
+            uint32_t tick = 0, packed = 0;
+            if (!go_ || !readTestOrder(msg.data() + 1, msg.size() - 1, tick, packed)) return;
+            std::lock_guard<std::mutex> lock(framesMutex_);
+            if (tick < ticks_ || (!testOrders_.empty() && tick < testOrders_.back().first)) return;
+            testOrders_.emplace_back(tick, packed);
+            break;
+        }
         case Msg::Pong: {
             const uint32_t clock = r.u32();
             if (r.ok) rttMs_ = static_cast<int>(static_cast<uint32_t>(SDL_GetTicks()) - clock);
@@ -291,6 +300,18 @@ uint32_t NetCoopLink::raidStateAt(uint32_t tick) const {
         mask = m;
     }
     return mask;
+}
+
+uint32_t NetCoopLink::testOrderAt(uint32_t tick) const {
+    std::lock_guard<std::mutex> lock(framesMutex_);
+    uint32_t out = 0;
+    for (auto it = testOrders_.rbegin(); it != testOrders_.rend() && it->first >= tick; ++it)
+        if (it->first == tick) return it->second;  // the last one given at that step
+    return out;
+}
+
+void NetCoopLink::sendTestOrder(uint8_t kind, uint16_t x, uint16_t y) {
+    if (seat_ == 0 && go_) post(coopnet::testOrder(kind, x, y));
 }
 
 coopnet::TestSeats NetCoopLink::testSeatsAt(uint32_t tick) const {

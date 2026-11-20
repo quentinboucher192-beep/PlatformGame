@@ -58,6 +58,8 @@ enum class Msg : uint8_t {
                       // 2.72 (phase 6, the Cœur d'Asterion): + u32 the heart's shared state (raid::HeartShared packed)
     TestSeats = 19,   // relay → game (2.80, an administrator's test with invited players, docs/RAIDS.md « Tester avec des joueurs invités »): u32 step
                       // from which it applies, u8 count, then per relay seat u8 group (kTestNone), u8 seat of the test, u8 flags
+    TestOrder = 20,   // 2.80, a test's order to its simulated players (2.79's wheel): game → relay (its administrator only):
+                      // u8 kind (1..6), u16 x, u16 y (4 px each); relay → game: u32 step, then the same
 };
 
 /// 2.63.5: the level of a room. `source` "campaign" (`id`: the level of the game) or
@@ -188,6 +190,11 @@ std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart);
 /// malformed (more seats than kMaxPlayers, a seat of the test past them, unknown flags).
 std::vector<uint8_t> testSeats(uint32_t tick, const TestSeats& seats);
 bool readTestSeats(const uint8_t* data, size_t size, uint32_t& tick, TestSeats& out);
+/// 2.80: an order of a test's administrator to the simulated players (raid::bots::OrderKind 1..6, its place in
+/// 4-pixel units: x 0..2047, y 0..1023), sent to the relay, which gives it to every game from a step. `packed`
+/// as raid::bots::withOrder packs it (kind | x << 3 | y << 14).
+std::vector<uint8_t> testOrder(uint8_t kind, uint16_t x, uint16_t y);
+bool readTestOrder(const uint8_t* data, size_t size, uint32_t& tick, uint32_t& packed);
 
 std::vector<uint8_t> packageAsk(uint32_t offset);
 /// `total` 0: this relay has no package to send (the bytes are then empty).

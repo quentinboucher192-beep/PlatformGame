@@ -19,6 +19,7 @@ constexpr ActionInfo kActions[kActionCount] = {
     {"pause", "Pause"},               {"ghost_toggle", "Afficher / masquer les fantômes"},
     {"focus_toggle", "Mode concentré"}, {"raid_map", "Carte du raid (agrandir)"},
     {"raid_menu", "Menu du raid"},
+    {"bot_orders", "Ordres aux joueurs simulés"}, {"bot_thoughts", "Pensées des joueurs simulés"},
     {"menu_up", "Menu haut"},        {"menu_down", "Menu bas"},
     {"menu_left", "Menu gauche"},     {"menu_right", "Menu droite"},   {"menu_confirm", "Valider"},
     {"menu_back", "Retour"},          {"menu_tab_prev", "Onglet précédent"}, {"menu_tab_next", "Onglet suivant"},
@@ -68,6 +69,8 @@ void InputBindings::resetKeyboard() {
     set(Action::FocusToggle, SDL_SCANCODE_T);
     set(Action::RaidMap, SDL_SCANCODE_M);  // 2.72: the raid's large map
     set(Action::RaidMenu, SDL_SCANCODE_TAB);  // 2.75.5: the raid's menu
+    set(Action::BotOrders, SDL_SCANCODE_C);    // 2.79: a raid test's order wheel
+    set(Action::BotThoughts, SDL_SCANCODE_V);  // 2.79: the simulated players' thoughts
     set(Action::MenuUp, SDL_SCANCODE_UP, SDL_SCANCODE_W);
     set(Action::MenuDown, SDL_SCANCODE_DOWN, SDL_SCANCODE_S);
     set(Action::MenuLeft, SDL_SCANCODE_LEFT, SDL_SCANCODE_A);
@@ -100,6 +103,9 @@ void InputBindings::resetGamepad() {
     // 2.75.5: the raid's menu on the left stick's click (L3), the button of the ghosts of Ghost
     // Racing: never in the same game (no ghost in a raid, no raid menu out of one).
     set(Action::RaidMenu, B::button(SDL_GAMEPAD_BUTTON_LEFT_STICK));
+    // 2.79: a raid test's order wheel on the right stick's click (R3); the thoughts are shown or hidden from the
+    // wheel itself (and Paramètres › HUD › « Raids »), no button of their own by default.
+    set(Action::BotOrders, B::button(SDL_GAMEPAD_BUTTON_RIGHT_STICK));
     set(Action::MenuUp, B::button(SDL_GAMEPAD_BUTTON_DPAD_UP), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuDown, B::button(SDL_GAMEPAD_BUTTON_DPAD_DOWN), B::axisPos(SDL_GAMEPAD_AXIS_LEFTY));
     set(Action::MenuLeft, B::button(SDL_GAMEPAD_BUTTON_DPAD_LEFT), B::axisNeg(SDL_GAMEPAD_AXIS_LEFTX));
@@ -320,15 +326,19 @@ InputBindings InputBindings::fromJson(const Json& j) {
         }
     // 2.75.5: a file written before the raid's menu (no « raid_menu »): its key (Tab) and its button
     // (L3) only when no command of that file has them (L3 stays shared with the ghosts' toggle).
-    const int menu = static_cast<int>(Action::RaidMenu);
-    auto lacksMenu = [&](const char* device) { return !j.contains(device) || !j[device].is_object() || !j[device].contains(actionId(Action::RaidMenu)); };
-    if (lacksMenu("keyboard"))
-        for (int o = 0; o < kFirstMenuAction; ++o)
-            if (o != menu && (b.keys[o][0] == d.keys[menu][0] || b.keys[o][1] == d.keys[menu][0])) b.keys[menu] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
-    if (lacksMenu("gamepad"))
-        for (int o = 0; o < kFirstMenuAction; ++o)
-            if (o != menu && o != static_cast<int>(Action::GhostToggle) && (b.pad[o][0] == d.pad[menu][0] || b.pad[o][1] == d.pad[menu][0]))
-                b.pad[menu] = {PadBinding{}, PadBinding{}};
+    // 2.79: the same for the order wheel and the thoughts of a raid test's simulated players (C, V, R3).
+    for (Action added : {Action::RaidMenu, Action::BotOrders, Action::BotThoughts}) {
+        const int menu = static_cast<int>(added);
+        auto lacksMenu = [&](const char* device) { return !j.contains(device) || !j[device].is_object() || !j[device].contains(actionId(added)); };
+        if (lacksMenu("keyboard") && d.keys[menu][0] != SDL_SCANCODE_UNKNOWN)
+            for (int o = 0; o < kFirstMenuAction; ++o)
+                if (o != menu && (b.keys[o][0] == d.keys[menu][0] || b.keys[o][1] == d.keys[menu][0])) b.keys[menu] = {SDL_SCANCODE_UNKNOWN, SDL_SCANCODE_UNKNOWN};
+        if (lacksMenu("gamepad") && d.pad[menu][0].kind != PadBinding::Kind::None)
+            for (int o = 0; o < kFirstMenuAction; ++o)
+                if (o != menu && !(added == Action::RaidMenu && o == static_cast<int>(Action::GhostToggle)) &&
+                    (b.pad[o][0] == d.pad[menu][0] || b.pad[o][1] == d.pad[menu][0]))
+                    b.pad[menu] = {PadBinding{}, PadBinding{}};
+    }
     b.keepOneBinding();
     return b;
 }

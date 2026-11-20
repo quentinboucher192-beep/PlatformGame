@@ -27,6 +27,7 @@
 #include "game/raid/RaidSimulation.h"
 #include "game/raid/RaidTest.h"
 #include "game/raid/RaidTestRelay.h"
+#include "game/raid/bots/BotTypes.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -162,9 +163,13 @@ TEST_CASE("raid test relay (2.80): one zone — the invited player's seat, away 
     auto b = raid::buildZoneTest(svc.ws(), c);
     CHECK(a && b);
     b->run().setQuiet(true);
+    // 2.79's orders: « Suivez-moi » given by the administrator at step 1000, by the relay (TEST_ORDER).
+    const uint32_t follow = static_cast<uint32_t>(raid::bots::OrderKind::Follow) | (300u << 3) | (100u << 14);
+    auto orderAt = [&](int t) { return t == 1000 ? follow : 0u; };
     std::vector<uint64_t> digests;
     for (int t = 0; t < steps; ++t) {
-        raid::stepRelayed(*a, s.frames[static_cast<size_t>(t)], s.at(static_cast<uint32_t>(t)));
+        raid::stepRelayed(*a, s.frames[static_cast<size_t>(t)], s.at(static_cast<uint32_t>(t)), orderAt(t));
+        if (t == 1000) CHECK(a->lastOrder().kind == raid::bots::OrderKind::Follow);
         if (t == 300) CHECK(a->humanSeats() == 0x2u);  // the seat is the invited player's
         if (t == 300) CHECK(a->run().invincibleSeats() == 0x1u);
         if (t == 600) CHECK(a->run().invincibleSeats() == 0x3u);  // and now invincible
@@ -174,10 +179,11 @@ TEST_CASE("raid test relay (2.80): one zone — the invited player's seat, away 
     }
     CHECK(a->humanSeats() == 0x2u);  // back
     for (int t = 0, d = 0; t < steps; ++t) {
-        raid::stepRelayed(*b, s.frames[static_cast<size_t>(t)], s.at(static_cast<uint32_t>(t)));
+        raid::stepRelayed(*b, s.frames[static_cast<size_t>(t)], s.at(static_cast<uint32_t>(t)), orderAt(t));
         if (t % 100 == 99) CHECK(b->hash() == digests[static_cast<size_t>(d++)]);
     }
     CHECK(a->hash() == b->hash());
+    CHECK(b->lastOrder().kind == raid::bots::OrderKind::Follow);
     CHECK(a->run().takeReports().empty());  // a test never reports anything
     // Without the invited player (their seat left to its simulated player), another game: the seat was theirs.
     Stream alone = s;
@@ -280,6 +286,8 @@ TEST_CASE("raid test relay (2.80): an invited game reads the relay of a test —
     std::vector<InputFrame> frames(static_cast<size_t>(5 * raid::kMaxInstancePlayers));
     script.push_back(coopnet::framesMsg(0, frames.data(), 5, raid::kMaxInstancePlayers));
     script.push_back(serverTable(5, {{0, 0, 1}, {0, 1, 1}, none, none, none, none, none, none}));
+    // TEST_ORDER as coop.ts writes it: type 20, u32 step, u8 kind, u16 x, u16 y (« Attendez ici » at 1200 × 400 px).
+    script.push_back({20, 6, 0, 0, 0, 2, 44, 1, 100, 0});
     script.push_back(coopnet::lobby(R"({"seats":[{"seat":0,"name":"Orion"},{"seat":1,"name":"Lyra"}]})"));
     script.push_back(coopnet::end(coopnet::EndReason::Removed));
     NetCoopLink link(std::make_unique<ScriptedRelay>(std::move(script)), "Lyra");
@@ -298,6 +306,9 @@ TEST_CASE("raid test relay (2.80): an invited game reads the relay of a test —
     CHECK(link.testSeatsAt(3)[1].placed() && link.testSeatsAt(3)[1].seat == 1 && !link.testSeatsAt(3)[1].invincible());
     CHECK(link.testSeatsAt(4)[1].seat == 1);  // the malformed table changed nothing
     CHECK(link.testSeatsAt(99)[1].invincible());  // « Invincible » from step 5 on
+    CHECK(link.testOrderAt(5) == 0u);
+    CHECK(link.testOrderAt(6) == (2u | (300u << 3) | (100u << 14)));
+    CHECK(raid::withPackedOrder(InputFrame{}, link.testOrderAt(6)) == raid::bots::withOrder(InputFrame{}, raid::bots::OrderKind::Wait, {1200.0f, 400.0f}));
     CHECK(link.endCode() == static_cast<int>(coopnet::EndReason::Removed));
     CHECK(link.endReason() == "L'administrateur vous a retiré du test.");
     link.close();

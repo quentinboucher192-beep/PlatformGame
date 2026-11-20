@@ -292,6 +292,14 @@ describe("2.80: the relay of a test", () => {
         expect(gp.tables()[2]).toEqual(inv);
         // The player cannot do it themselves.
         expect((await api("PATCH", `${V}/admin/raid-tests/${test}/invitations/${p.id}`, { token: p.token, body: { invincible: false } })).status).toBe(404);
+        // 2.79's orders (the wheel): the administrator's, given from a step to every game; an order out of bounds closes
+        // nothing here, the administrator's is checked (kind 1..6, place in 4 px units).
+        const before = ga.count();
+        ga.send(Uint8Array.from([Msg.TestOrder, 2, 44, 1, 100, 0]));
+        await until(() => gp.of(Msg.TestOrder).length === 1 && ga.of(Msg.TestOrder).length === 1);
+        const order = gp.of(Msg.TestOrder)[0]!;
+        expect(new DataView(order.buffer, order.byteOffset).getUint32(1, true)).toBeGreaterThanOrEqual(before);
+        expect(Array.from(order.subarray(5))).toEqual([2, 44, 1, 100, 0]);
         // Where they play, as the administrator's list shows it.
         const got = await api("GET", `${V}/admin/raid-tests/${test}`, { token: a.token });
         expect(got.body.data.invitations[0]).toMatchObject({ status: "accepted", invincible: true, playing: { group: 0, seat: 1, connected: true } });
@@ -341,5 +349,8 @@ describe("2.80: the relay of a test", () => {
         expect((await api("POST", `${V}/admin/raid-tests/${test}/seat`, { token: a.token, body: { group: 1 } })).status).toBe(200);
         await until(() => gp.tables().length === 4);
         expect(gp.tables()[3]!.seats[0]).toEqual([1, 0, 0]);
+        // An invited player never gives an order (2.79's wheel is the administrator's): their link is closed.
+        gp.send(Uint8Array.from([Msg.TestOrder, 1, 0, 0, 0, 0]));
+        await until(() => gp.closed);
     });
 });

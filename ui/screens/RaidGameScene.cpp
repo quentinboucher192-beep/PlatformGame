@@ -58,6 +58,7 @@
 #include <map>
 #include <optional>
 #include <memory>
+#include <optional>
 #include <thread>
 
 #include "engine/input/InputScript.h"
@@ -86,6 +87,7 @@
 #include "game/gameplay/entities/Entities.h"
 #include "engine/resources/ResourceManager.h"
 #include "saves/Settings.h"
+#include "ui/online/RaidBotsUi.h"
 #include "ui/online/RaidHud.h"
 #include "ui/online/ContribTable.h"
 #include "ui/online/RaidMenu.h"
@@ -400,13 +402,90 @@ public:
         zoneReady();
     }
 
+    /// 2.79: the order chosen on the wheel, on this player's frame of the step (raid::TestSession takes it there:
+    /// the same frames give the same test), once.
+    void withPendingOrder(InputFrame& f) {
+        if (!pendingOrder_) return;
+        f = raid::bots::withOrder(f, pendingOrder_->first, pendingOrder_->second);
+        pendingOrder_.reset();
+    }
+
+    /// 2.79: the test session this computer gives orders to (its own test, or the group it plays in the full raid).
+    raid::TestSession* orderedSession() {
+        if (relay_.on && !relay_.admin) return nullptr;  // 2.80: only the administrator of a test gives orders
+        if (session_) return session_.get();
+        if (sim_ && sim_->seated()) return sim_->group(sim_->viewed()).session.get();
+        return nullptr;
+    }
+    const raid::TestSession* shownSession() const {
+        if (session_) return session_.get();
+        if (sim_) return sim_->group(shownGroup()).session.get();  // 2.80: the group this computer shows
+        return nullptr;
+    }
+
+    /// 2.79: the wheel's keys this frame (open, choose, act), the thoughts' key.
+    void updateWheel(float dt) {
+        if (!test_ || !run_) return;
+        GameWorld& w = run_->world();
+        const bool allowed = !ended_ && !paused_ && !overlay_.menu.isOpen() && !bigMap_ && g_.app.topScene() == this && simPanel_ < 0 &&
+                             orderedSession() != nullptr && !(!scripts_.empty() && scripts_[0].active());
+        const Vec2 me = local_ >= 0 && local_ < w.teamSize() ? w.playerAt(local_).feet() : w.level().bounds.center();
+        const botsui::WheelResult r = botsui::handleWheel(g_.ui, g_.app.input(), wheel_, allowed, g_.settings.gameplay.raidHud.thoughts, view_, me, dt);
+        // The thoughts' key: in a test, watching a group of the full raid too (no order then: no place in it).
+        const bool thoughtsKey = !wheel_.open && !ended_ && !paused_ && g_.app.topScene() == this && shownSession() != nullptr &&
+                                 g_.app.input().menuPressed(Action::BotThoughts);
+        if (r.toggleThoughts || thoughtsKey) {
+            g_.settings.gameplay.raidHud.thoughts = !g_.settings.gameplay.raidHud.thoughts;
+            g_.saveSettings();
+        }
+        if (r.order) pendingOrder_ = std::make_pair(r.kind, r.markAt ? r.at : me);
+    }
+
+    /// 2.79: the bubbles over the simulated players in view (their role, what they do, how they move), out of the
+    /// names over the players, of the HUD and of every character.
+    void drawBotThoughts(GameWorld& w, const WorldView& view) {
+        const raid::TestSession* ts = shownSession();
+        if (!ts || !g_.settings.gameplay.raidHud.thoughts || bigMap_) return;
+        UIContext& ui = g_.ui;
+        const Rect screen{0.0f, 0.0f, ui.screenW(), ui.screenH()};
+        std::vector<botsui::ThoughtView> in;
+        std::vector<Rect> bodies;
+        const uint32_t seats = ts->bots().seats();
+        for (int i = 0; i < w.teamSize(); ++i) {
+            if (w.member(i).presence != GameWorld::Presence::Playing || !w.playerAt(i).alive()) continue;
+            const Rect body = view.toScreen(w.playerAt(i).box);
+            bodies.push_back(body);
+            if (!((seats >> i) & 1u) || !body.intersects(screen)) continue;
+            const raid::bots::Thought& t = ts->bots().thought(i);
+            botsui::ThoughtView v;
+            v.seat = i;
+            v.body = body;
+            v.color = seatColor(i, local_);
+            v.role = raid::bots::roleName(t.role);
+            v.intent = t.intent;
+            v.move = t.move;
+            v.order = t.order;
+            in.push_back(std::move(v));
+        }
+        std::vector<Rect> avoid = hud_.teamLabelRects();
+        for (const Rect& r : hudRects_) avoid.push_back(r);
+        botsui::drawThoughts(ui, botsui::layoutThoughts(ui, in, avoid, bodies, screen));
+    }
+
+    /// 2.79: the keys of the wheel, under it.
+    std::string wheelKeys() {
+        const std::string key = actionKey(g_.app.input(), Action::BotOrders);
+        return "Stick, flèches ou souris : choisir · Valider ou clic : donner l'ordre · " + std::string(key.empty() ? "Retour" : key + " ou Retour") +
+               " : fermer · Le jeu continue.";
+    }
+
     /// 2.68: one step of a test: this computer's input on seat 0 (neutral while paused: the pause
     /// never stops the world); 2.72: the simulated players on theirs (TestSession, playing on during
     /// the pause and the large map), the free seats vacant.
     void stepTest() {
         const PlayerInput in = g_.app.input().consumePlayerInput();
         // 2.72: a film over the combat holds this player only; 2.75.5: the raid's menu too (never a notification).
-        InputFrame f = overlay_.frame(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in, paused_, g_.app.topScene() != this, false);
+        InputFrame f = overlay_.frame(!scripts_.empty() && scripts_[0].active() ? scripts_[0].next() : in, paused_ || wheel_.open, g_.app.topScene() != this, false);
         const auto& offer = run_->world().powerOffer();
         if (offer && offer->player == 0 && (!scripts_.empty() && scripts_[0].active())) f.choice = InputFrame::kChoiceLeave;  // a capture
         else if (offer && offer->player == 0 && pendingChoice_ != 0) {  // 2.75: the armory's choice window
@@ -421,6 +500,7 @@ public:
                 if (offer && offer->player == static_cast<int>(k)) sf.choice = InputFrame::kChoiceLeave;
                 scripted.push_back({static_cast<int>(k), sf});
             }
+        withPendingOrder(f);  // 2.79: an order of the wheel rides on this frame
         session_->step(f, scripted);  // never reports anything
         ++tick_;
         if (const int z = run_->zoneFinishedNow()) zoneDone(z);  // 2.75
@@ -589,16 +669,16 @@ public:
         }
     }
 
-    void relayStep(const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats) {
-        if (sim_) raid::stepRelayed(*sim_, frames, seats);
-        else raid::stepRelayed(*session_, frames, seats);
+    void relayStep(const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats, uint32_t order) {
+        if (sim_) raid::stepRelayed(*sim_, frames, seats, order);
+        else raid::stepRelayed(*session_, frames, seats, order);
     }
 
     void relayCatchUp() {
         std::vector<InputFrame> team;
         while (!stopWorker_) {
             if (link_->frameFor(tick_, team)) {
-                relayStep(team, link_->testSeatsAt(tick_));
+                relayStep(team, link_->testSeatsAt(tick_), link_->testOrderAt(tick_));
                 ++tick_;
                 progress_ = tick_;
                 continue;
@@ -646,7 +726,7 @@ public:
             }
             waiting_ = 0.0f;
             const coopnet::TestSeats seats = link_->testSeatsAt(tick_);
-            relayStep(frame_, seats);
+            relayStep(frame_, seats, link_->testOrderAt(tick_));
             ++tick_;
             watchTable(seats, frame_);
             if (sim_) {
@@ -674,6 +754,18 @@ public:
         if (const auto& offer = run_->world().powerOffer(); offer && local_ >= 0 && offer->player == local_ && pendingChoice_ != 0) {
             f.choice = pendingChoice_;
             pendingChoice_ = 0;
+        }
+        // 2.79's orders (the administrator's wheel): the relay gives each one to every game from a step (TEST_ORDER),
+        // never in the frame itself (the relay takes only what a player's frame may hold).
+        if (relay_.admin) {
+            withPendingOrder(f);
+            if (raid::bots::Order o; raid::bots::orderOf(f, o)) {
+                const InputFrame packed = raid::bots::withOrder(InputFrame{}, o.kind, o.at);
+                const uint32_t p = static_cast<uint32_t>(packed.choice) | (static_cast<uint32_t>(static_cast<uint8_t>(packed.moveX)) << 8) |
+                                   (static_cast<uint32_t>(static_cast<uint8_t>(packed.moveY)) << 16);
+                link_->sendTestOrder(static_cast<uint8_t>(p & 7u), static_cast<uint16_t>((p >> 3) & 2047u), static_cast<uint16_t>((p >> 14) & 1023u));
+                f = raid::bots::withoutOrder(f);
+            }
         }
         frames_.assign(1, {relay_.seat, f});
         link_->pushLocal(target, frames_);
@@ -1064,9 +1156,12 @@ public:
             g_.app.pushScene(std::make_unique<PowerChoiceScene>(g_, *this));
         // 2.75.5: the raid's menu, opened and closed by the player (its key, the HUD's button), as the pause:
         // the game goes on, this player's inputs are neutral while it is open; Échap or B close it.
+        const bool wheelWasOpen = wheel_.open;  // its « Retour » never pauses with the same press
+        updateWheel(dt);  // 2.79: a test's order wheel and the thoughts' key
         const bool menuWasOpen = overlay_.menu.isOpen();
         const bool waitingRelay = relay_.on && !relay_.started;  // 2.80: the waiting card is shown, not the game
-        const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0 && !guestsOpen() && !waitingRelay;
+        const bool menuAllowed = !ended_ && !paused_ && !wheel_.open && !wheelWasOpen && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0 &&
+                                 !guestsOpen() && !waitingRelay;
         bool menuBack = false;
         if (contribOpen_ && overlay_.menu.isOpen() && menuAllowed) {
             // 2.78: the table's keys while it is open over the menu (Échap / B back to the menu, never the pause).
@@ -1077,7 +1172,8 @@ public:
             menuBack = overlay_.menu.handleKeys(g_.app.input(), menuAllowed, menuSectionNow());
         }
         if (overlay_.menu.isOpen()) bigMap_ = false;
-        if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && !guestsOpen() && !waitingRelay &&
+        if (!menuWasOpen && !menuBack && !wheelWasOpen && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && !guestsOpen() &&
+            !waitingRelay &&
             g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
@@ -1192,12 +1288,14 @@ public:
             }
             drawRaidHud(w);
             drawArmoryLabels(w, view);  // 2.77: the names of the armory's powers
+            if (test_ && !paused_ && !ended_ && !overlay_.menu.isOpen()) drawBotThoughts(w, view);  // 2.79
             drawArrows(w, view);
             if (bigMap_ && !paused_ && !ended_) drawBigMap(w);
             drawArenaIntro();
             if (reconnect_.active() && !paused_ && !ended_) drawReconnect();
             if (bannerLayout_.panel.w > 0.0f) drawBanner();  // 2.75: the group wiped; 2.77.2: this player down (placed by drawRaidHud)
             if (overlay_.menu.isOpen() && !paused_ && !ended_) drawMenu(w);  // 2.75.5: opened by the player
+            if (wheel_.open && !paused_ && !ended_) botsui::drawWheel(ui, wheel_, g_.settings.gameplay.raidHud.thoughts, view, wheelKeys());  // 2.79
             if (sim_ && local_ < 0 && !paused_ && !bigMap_ && simPanel_ < 0 && !overlay_.menu.isOpen()) drawSimWatch();  // 2.77
             if (sim_ && simPanel_ >= 0 && !paused_) drawSimPanel();                                                       // 2.77
             if (paused_ && !ended_) drawPause();
@@ -1290,7 +1388,8 @@ public:
         if (simSpent_ > kSimBudgetMs) return;
         const auto t0 = std::chrono::steady_clock::now();
         InputFrame f = InputFrame::fromPlayerInput(g_.app.input().consumePlayerInput());
-        if (paused_ || simPanel_ >= 0 || g_.app.topScene() != this || !sim_->seated()) f = InputFrame{};
+        if (paused_ || wheel_.open || simPanel_ >= 0 || g_.app.topScene() != this || !sim_->seated()) f = InputFrame{};
+        if (sim_->seated()) withPendingOrder(f);  // 2.79: an order of the wheel rides on this frame (the group played)
         if (const auto& offer = run_->world().powerOffer(); offer && offer->player == 0 && sim_->seated() && pendingChoice_ != 0) {
             f.choice = pendingChoice_;  // the armory's choice window, through the frame
             pendingChoice_ = 0;
@@ -1784,7 +1883,7 @@ public:
         if (!down) return;
         // The player watched left the game (down too, away): back to the soul.
         if (downWatch_ >= 0 && (downWatch_ >= w.teamSize() || w.member(downWatch_).presence != GameWorld::Presence::Playing)) watchSeatDown(-1);
-        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || simPanel_ >= 0 || g_.app.topScene() != this) return;  // their keys
+        if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || simPanel_ >= 0 || wheel_.open || g_.app.topScene() != this) return;  // their keys (2.79: not the order wheel's)
         InputManager& in = g_.app.input();
         if (in.menuPressed(Action::MenuTabNext)) watchDown(+1);
         if (in.menuPressed(Action::MenuTabPrev)) watchDown(-1);
@@ -2953,6 +3052,14 @@ public:
                 m.state = "spectateur";
                 m.stateColor = kViolet;
             }
+            // 2.79: what each simulated player thinks (its role, what it does, how it moves).
+            if (const raid::TestSession* ts = shownSession(); ts && ((ts->bots().seats() >> i) & 1u) && !row.vacant) {
+                const raid::bots::Thought& t = ts->bots().thought(i);
+                if (!t.intent.empty()) {
+                    m.thought = std::string(raid::bots::roleName(t.role)) + " · " + t.intent;
+                    if (!t.move.empty()) m.thought += " · en mouvement : " + t.move;
+                }
+            }
             d.group.push_back(std::move(m));
         }
         d.titan = titanLines();
@@ -3165,8 +3272,12 @@ public:
             c = kGold;
             // 2.75: the simulated players counted without the administrator (0 to 7).
             const int bots = std::max(0, testSetup_.players - 1);
-            return "TEST ADMIN · non classé · vous + " + std::to_string(bots) + (bots > 1 ? " joueurs simulés" : " joueur simulé") +
-                   (run_ && run_->wiped() ? " · GROUPE ÉLIMINÉ — mode spectateur" : "") + (testSetup_.invincible ? " · invincible (vous)" : "");
+            std::string t = "TEST ADMIN · non classé · vous + " + std::to_string(bots) + (bots > 1 ? " joueurs simulés" : " joueur simulé") +
+                            (run_ && run_->wiped() ? " · GROUPE ÉLIMINÉ — mode spectateur" : "") + (testSetup_.invincible ? " · invincible (vous)" : "");
+            // 2.79: the keys of the order wheel and of the thoughts (said, each one its own part of the line).
+            if (const std::string k = actionKey(g_.app.input(), Action::BotOrders); !k.empty()) t += " · " + k + " : ordres";
+            if (const std::string k = actionKey(g_.app.input(), Action::BotThoughts); !k.empty()) t += " · " + k + " : pensées";
+            return t;
         }
         if (waiting_ > 0.4f) {
             c = kGold;
@@ -3373,6 +3484,8 @@ public:
     size_t shapeGroups_ = 0;
     std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     raidmenu::Overlay overlay_;  // 2.75.5: the notifications and the raid's menu (no card opens by itself)
+    botsui::OrderWheel wheel_;   // 2.79: the order wheel of a test (its orders ride on this player's frame)
+    std::optional<std::pair<raid::bots::OrderKind, Vec2>> pendingOrder_;  // 2.79: given with the next frame
     contrib::View contribView_;  // 2.78: the « Tableau des contributions » over the menu (tabs, sort, details)
     bool contribOpen_ = false;
     bool contribShown_ = false;  // 2.78: a capture opened it already

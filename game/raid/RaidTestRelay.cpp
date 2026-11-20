@@ -8,6 +8,7 @@
 #include "game/raid/RaidBranch.h"
 #include "game/raid/RaidSimulation.h"
 #include "game/raid/RaidTest.h"
+#include "game/raid/bots/BotTypes.h"
 
 namespace cosmic::raid {
 
@@ -149,9 +150,16 @@ std::string testFingerprint() {
     return buf;
 }
 
+InputFrame withPackedOrder(const InputFrame& f, uint32_t order) {
+    const uint32_t kind = order & 7u;
+    if (kind == 0) return f;
+    const Vec2 at{static_cast<float>((order >> 3) & 2047u) * 4.0f, static_cast<float>((order >> 14) & 1023u) * 4.0f};
+    return bots::withOrder(f, static_cast<bots::OrderKind>(kind), at);
+}
+
 bool playedFrame(const InputFrame& f) { return (f.flags & (InputFrame::Vacant | InputFrame::Standby)) == 0; }
 
-void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats) {
+void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats, uint32_t order) {
     const auto frameOf = [&frames](size_t k) { return k < frames.size() ? frames[k] : vacantFrame(); };
     const coopnet::TestSeat& a = seats[0];
     // The administrator: their frame on seat 0 (away: neutral, their autopilot takes over after 15 s).
@@ -159,6 +167,7 @@ void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const co
     s.setAdminSeated(adminHere);
     InputFrame admin = playedFrame(frameOf(0)) ? frameOf(0) : InputFrame{};
     admin.flags &= InputFrame::SkipCinematic;  // the relay's own flags never reach the simulation
+    admin = withPackedOrder(admin, order);  // 2.79's orders: given by the relay at this step
     uint32_t invincible = adminHere && a.invincible() ? 1u : 0u;
     uint32_t humans = 0;
     std::vector<std::pair<int, InputFrame>> played;
@@ -178,7 +187,7 @@ void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const co
     s.step(admin, played);
 }
 
-void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats) {
+void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats, uint32_t order) {
     const auto frameOf = [&frames](size_t k) { return k < frames.size() ? frames[k] : vacantFrame(); };
     // The administrator's place, as the relay gave it: a group's free place, or watching.
     const coopnet::TestSeat& a = seats[0];
@@ -191,6 +200,7 @@ void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, con
     }
     InputFrame admin = playedFrame(frameOf(0)) ? frameOf(0) : InputFrame{};
     admin.flags &= InputFrame::SkipCinematic;  // the relay's own flags never reach the simulation
+    admin = withPackedOrder(admin, order);  // 2.79's orders: given by the relay at this step
     // Each group's invincible seats: its free place as the test says (SimSetup::invincible), the invited players ticked.
     std::vector<uint32_t> invincible(static_cast<size_t>(groups), sim.setup().invincible ? 1u : 0u);
     std::vector<RaidSimulation::Human> humans;

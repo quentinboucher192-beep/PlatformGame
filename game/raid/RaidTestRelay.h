@@ -81,10 +81,14 @@ std::string testFingerprint();
 /// One step of a relayed test of one zone: the relay's frames (one per relay seat), the places at
 /// this step. The administrator's frame on seat 0 (neutral while away: their autopilot after 15 s),
 /// each invited player's on their seat (away: their simulated player's), the invincible seats.
-void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats);
+/// 2.80 (2.79's orders): `order`, the administrator's order given at this step by the relay (TEST_ORDER, packed as
+/// raid::bots::withOrder packs it; 0: none), on their frame as a test alone carries it.
+void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats, uint32_t order = 0);
 /// The same for the whole raid's simulation: the administrator's place (a group's free place, or
 /// watching) and the invited players in their groups.
-void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats);
+void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, const coopnet::TestSeats& seats, uint32_t order = 0);
+/// The frame `f` carrying the packed order (0: as it is).
+InputFrame withPackedOrder(const InputFrame& f, uint32_t order);
 
 /// Whether a relay seat's frame is a player's (not vacant, not away).
 bool playedFrame(const InputFrame& f);

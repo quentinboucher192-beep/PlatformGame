@@ -75,7 +75,10 @@ export const Msg = {
     End: 16,
     RaidState: 18,
     TestSeats: 19,
+    TestOrder: 20,
 } as const;
+/** 2.80 (2.79's orders to the simulated players): the kinds of an order (raid::bots::OrderKind, Follow .. Mark). */
+export const ORDER_KINDS = 6;
 /** 2.80: Removed — an administrator's test: the administrator removed this player (raidTests.ts). */
 export const EndReason = { Finished: 0, HostLeft: 1, TooLong: 2, Refused: 3, Removed: 4 } as const;
 
@@ -358,6 +361,8 @@ export class CoopRoom extends DurableObject<Bindings> {
     private testSeatOf = new Map<string, { group: number; seat: number }>();
     private testStates: [number, Uint8Array][] = [];
     private testLast = "";
+    // 2.80: the administrator's orders to the simulated players (2.79), each given from a step (in order).
+    private testOrders: Uint8Array[] = [];
     // 2.74 (raids): the parts of the history already stored, the restarts survived, the member
     // writes in order (an « absent » never overtakes the « back » that follows it).
     private savedChunks = 0;
@@ -570,6 +575,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.send(ws, this.goMessage());
         for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h));
         for (const [, b] of this.testStates) this.send(ws, b); // 2.80
+        for (const b of this.testOrders) this.send(ws, b);
         for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
     }
     private drop(ws: WebSocket, seat: number) {
@@ -674,6 +680,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.flush();
             for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h)); // before the frames
             for (const [, b] of this.testStates) this.send(ws, b); // 2.80: a test's tables, before the frames too
+            for (const b of this.testOrders) this.send(ws, b); // 2.80: and its orders
             for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
             if (this.info!.test) this.lobby(); // 2.80: the names of the seats (after GO and the history)
         } else {
@@ -786,6 +793,26 @@ export class CoopRoom extends DurableObject<Bindings> {
                 const ticks = r.u32();
                 if (!r.end() || !this.started || ticks === 0 || ticks > this.next) return this.drop(ws, seat);
                 void this.writeResult(ticks);
+                return;
+            }
+            case Msg.TestOrder: {
+                // 2.80: an order of the administrator of a test to its simulated players (2.79: the order wheel), never
+                // from anyone else: u8 kind (1..6), u16 x, u16 y (4 px each). Given from the first step not given yet,
+                // to every game of the test (the same step everywhere: the same test).
+                const kind = r.u8();
+                const x = r.u16();
+                const y = r.u16();
+                if (!r.end() || !this.info?.test || !this.started || seat !== 0 || s.playerId !== this.info.host) return this.drop(ws, seat);
+                if (kind < 1 || kind > ORDER_KINDS || x > 2047 || y > 1023) return this.drop(ws, seat);
+                const o = new Out();
+                o.u8(Msg.TestOrder);
+                o.u32(this.next);
+                o.u8(kind);
+                o.u16(x);
+                o.u16(y);
+                const msg = o.done();
+                if (this.testOrders.length < 20000) this.testOrders.push(msg);
+                this.sendAll(msg);
                 return;
             }
             case Msg.Leave:
@@ -1201,6 +1228,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.raidStates = [];
         this.testStates = []; // 2.80
         this.testLast = "";
+        this.testOrders = [];
     }
 
     /** 2.74 (raids): the instance's game is over (every seat free, nobody connected): memory and storage. */

@@ -224,6 +224,24 @@ bool readTestSeats(const uint8_t* data, size_t size, uint32_t& tick, TestSeats& 
     return r.done();
 }
 
+std::vector<uint8_t> testOrder(uint8_t kind, uint16_t x, uint16_t y) {
+    std::vector<uint8_t> o{static_cast<uint8_t>(Msg::TestOrder)};
+    Writer w{o};
+    w.u8(kind);
+    w.u16(x);
+    w.u16(y);
+    return o;
+}
+
+bool readTestOrder(const uint8_t* data, size_t size, uint32_t& tick, uint32_t& packed) {
+    Reader r{data, data + size};
+    tick = r.u32();
+    const uint32_t kind = r.u8(), x = r.u16(), y = r.u16();
+    if (!r.done() || kind < 1 || kind > 6 || x > 2047 || y > 1023) return false;
+    packed = kind | (x << 3) | (y << 14);
+    return true;
+}
+
 std::vector<uint8_t> raidState(uint32_t tick, uint32_t mask, uint32_t heart) {
     auto o = raidState(tick, mask);
     Writer{o}.u32(heart);

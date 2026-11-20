@@ -89,6 +89,37 @@ bool Player::invulnerable() const {
            state_ == PlayerState::Dead || state_ == PlayerState::Hidden || phasedTimer_ > 0.0f;
 }
 
+Player::Motion Player::motion() const {
+    Motion m;
+    m.state = state_;
+    m.grounded = grounded_;
+    m.jumpCut = jumpCutAvailable_;
+    m.crouchBox = crouchBox_;
+    m.groundId = groundId_;
+    m.airJumpsLeft = airJumpsLeft_;
+    m.extraAirJumps = extraAirJumps_;
+    m.wallDir = wallDir_;
+    m.coyote = coyoteTimer_;
+    m.jumpBuffer = jumpBufferTimer_;
+    m.wallJumpLock = wallJumpLockTimer_;
+    m.slideTimer = slideTimer_;
+    m.dropThrough = dropThroughTimer_;
+    m.attackTimer = attackTimer_;
+    m.attackCooldown = attackCooldown_;
+    m.invuln = invulnTimer_;
+    m.hurtTimer = hurtTimer_;
+    m.phased = phasedTimer_;
+    m.slowTimer = slowTimer_;
+    m.slowMultiplier = slowMultiplier_;
+    m.curseTimer = curseTimer_;
+    m.curseRatio = curseRatio_;
+    m.energyRegenTimer = energyRegenTimer_;
+    m.dashDir = dashDir_;
+    m.dashSpeed = dashSpeed_;
+    m.dashTimer = dashTimer_;
+    return m;
+}
+
 bool Player::spendEnergy(float amount) {
     if (energy + 0.001f < amount) return false;
     energy -= amount;

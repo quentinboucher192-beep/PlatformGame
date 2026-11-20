@@ -80,6 +80,10 @@ public:
     /// 2.80 (an administrator's test with invited players): where each relay seat's player plays at
     /// step `tick` (the last TEST_SEATS given from a step ≤ tick; nobody placed before the first one).
     coopnet::TestSeats testSeatsAt(uint32_t tick) const;
+    /// 2.80: a test's order at step `tick` (packed as raid::bots::withOrder packs it; 0: none at that step), and
+    /// the administrator's order sent to the relay (it gives it to every game of the test from a step).
+    uint32_t testOrderAt(uint32_t tick) const;
+    void sendTestOrder(uint8_t kind, uint16_t x, uint16_t y);
     /// 2.80: the reason the relay gave with END (coopnet::EndReason; -1: none yet). Removed: the
     /// administrator of a test cancelled this player's invitation.
     int endCode() const { return endCode_; }
@@ -127,6 +131,7 @@ private:
     std::vector<uint32_t> raidHearts_;                       // 2.72: the heart's state of each, 0 when none
     std::vector<std::pair<uint32_t, coopnet::TestSeats>> testSeats_;  // 2.80: (step, places), in order (framesMutex_)
     int endCode_ = -1;                                       // 2.80
+    std::vector<std::pair<uint32_t, uint32_t>> testOrders_;  // 2.80: (step, order), in order (framesMutex_)
 };
 
 }  // namespace cosmic

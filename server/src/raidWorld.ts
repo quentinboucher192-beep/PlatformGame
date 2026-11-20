@@ -762,8 +762,8 @@ async function grantFinal(db: D1Database, e: WorldEventRow, data: FrozenData, no
     await db.prepare("UPDATE raid_event_results SET rewards_at = ?2 WHERE event_id = ?1 AND rewards_at IS NULL").bind(e.id, now).run();
 }
 
-/** « 1er », « 2ᵉ »… */
-export const ordinal = (n: number) => (n === 1 ? "1er" : `${n}ᵉ`);
+/** « 1er », « 2e »… (2.78.1: no « ᵉ », not in the game's fonts) */
+export const ordinal = (n: number) => (n === 1 ? "1er" : `${n}e`);
 
 /**
  * Every player registered and the chief and officers of each clan, each with their clan's rank: told

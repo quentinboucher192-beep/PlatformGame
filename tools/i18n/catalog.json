@@ -1652,6 +1652,12 @@
    ]
   },
   {
+   "fr": "actionne {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Actionner",
    "where": [
     "game/gameplay/entities/Entities.h"
@@ -1684,6 +1690,12 @@
    "fr": "Active au départ",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "active {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -2145,6 +2157,12 @@
    ]
   },
   {
+   "fr": "Afficher les pensées",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Afficher les pseudonymes",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -2211,6 +2229,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "aide : {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -3341,6 +3365,12 @@
    ]
   },
   {
+   "fr": "Appât",
+   "where": [
+    "game/raid/bots/BotTypes.cpp"
+   ]
+  },
+  {
    "fr": "Après (s)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
@@ -3645,6 +3675,12 @@
    ]
   },
   {
+   "fr": "Armure de givre : tenir ses {0} chaînes ensemble",
+   "where": [
+    "game/raid/bots/TacticDreadfang.cpp"
+   ]
+  },
+  {
    "fr": "Armée après (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -3817,6 +3853,12 @@
    "fr": "Artères ({0}) : un joueur sur chacune des quatre artères, ensemble · tenues {1} / {2}",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Artères : tenir ses {0} plaques ensemble",
+   "where": [
+    "game/raid/bots/TacticHeart.cpp"
    ]
   },
   {
@@ -4776,21 +4818,64 @@
    ]
   },
   {
+   "fr": "attend",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Attend la plateforme mobile",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "attend Nova",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
    ]
   },
   {
-   "fr": "Attend à la sortie vers ?",
+   "fr": "attend que ce soit sûr pour réanimer",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "attend que ça passe",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Attend un objectif",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
    "fr": "Attend à la sortie vers {0}",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "attend à la sortie vers {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Attend à son poste",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Attendez ici",
+   "where": [
+    "game/raid/bots/BotTypes.cpp",
+    "ui/online/RaidBotsUi.cpp"
    ]
   },
   {
@@ -4889,6 +4974,18 @@
    "fr": "Atterrissage et souffle au sol",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "attire {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "attire {0} loin des plaques",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -6862,6 +6959,12 @@
    ]
   },
   {
+   "fr": "Avance vers son objectif",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Avancez quand le faisceau éclaire votre chemin, et ne sautez jamais dans le noir.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -7094,6 +7197,12 @@
    "fr": "Aveuglé",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Aveuglé : ses yeux et son cristal (× 2)",
+   "where": [
+    "game/raid/bots/TacticSkullmaw.cpp"
    ]
   },
   {
@@ -8033,6 +8142,12 @@
    ]
   },
   {
+   "fr": "Blindé : briser ses {0} entraves ensemble",
+   "where": [
+    "game/raid/bots/TacticTitanus.cpp"
+   ]
+  },
+  {
    "fr": "Blindée",
    "where": [
     "game/enemies/HitParts.cpp"
@@ -8472,6 +8587,24 @@
    "fr": "Bouclier (rideau de plasma)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "bouclier contre l'anneau",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "bouclier contre l'onde",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "bouclier contre le rayon",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -9313,6 +9446,12 @@
    ]
   },
   {
+   "fr": "caché du regard",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Cachée jusqu'à un événement",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -9515,6 +9654,12 @@
    "fr": "Cage thoracique ({0}) : un joueur sur chaque côte, des deux côtés à la fois · côtes tenues {1} / {2}",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Cage thoracique : tenir ses 2 côtes ensemble",
+   "where": [
+    "game/raid/bots/TacticHeartbreaker.cpp"
    ]
   },
   {
@@ -9865,6 +10010,12 @@
    ]
   },
   {
+   "fr": "Carapace : tenir ses {0} évents ensemble",
+   "where": [
+    "game/raid/bots/TacticPyroclast.cpp"
+   ]
+  },
+  {
    "fr": "Carapace brisée",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -9887,6 +10038,12 @@
    "where": [
     "data/enemies/monolithe.json",
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Carapace éclatée : ses points faibles (× 2)",
+   "where": [
+    "game/raid/bots/TacticPyroclast.cpp"
    ]
   },
   {
@@ -10732,6 +10889,12 @@
    "fr": "Ce qu'ils font : {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce qu'ils pensent : au-dessus de chaque joueur simulé, une bulle dit son rôle, son intention et comment il se déplace (« Réanimateur → réanime Joueur simulé 3 »). Les bulles sont mesurées, ne se chevauchent jamais, ne cachent ni les noms, ni les personnages, ni le HUD. Touche V, la roue d'ordres ou Paramètres › HUD › Raids pour les afficher ou les masquer ; la section « Groupe » du menu du raid les écrit aussi.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -11681,6 +11844,12 @@
    ]
   },
   {
+   "fr": "Champ de gravité : tenir ses {0} générateurs en même temps",
+   "where": [
+    "game/raid/bots/TacticGraviton.cpp"
+   ]
+  },
+  {
    "fr": "champ inconnu",
    "where": [
     "server/src/challenges.ts",
@@ -12064,6 +12233,12 @@
    "fr": "Charge max",
    "where": [
     "game/powers/PowerStats.cpp"
+   ]
+  },
+  {
+   "fr": "charge son tir sur le point faible",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -12459,6 +12634,12 @@
    ]
   },
   {
+   "fr": "Cherche un autre chemin",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Chercher dans les messages",
    "where": [
     "ui/screens/ProjectsScene.cpp"
@@ -12524,6 +12705,12 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "Chitine : tenir ses {0} crochets ensemble",
+   "where": [
+    "game/raid/bots/TacticVoidworm.cpp"
    ]
   },
   {
@@ -13040,12 +13227,6 @@
    "fr": "Cibles (ids)",
    "where": [
     "game/levels/ObjectTypes.cpp"
-   ]
-  },
-  {
-   "fr": "Cibles du mécanisme : {0}",
-   "where": [
-    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -13948,6 +14129,12 @@
    ]
   },
   {
+   "fr": "combat : {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Combat contre Aurorax",
    "where": [
     "data/music/tracks.json"
@@ -14023,6 +14210,12 @@
    "fr": "Combat de boss commencé",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "Combat de {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -15868,6 +16061,12 @@
    ]
   },
   {
+   "fr": "Correctif (raids et coopération) : le nom d'un joueur hors de la vue n'est plus poussé au bord de l'écran, où les noms s'empilaient sous les panneaux du HUD ; les flèches des raids montrent où sont les autres.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Correctif (test « Tester Asterion ») : la chute d'un joueur simulé renvoyait l'administrateur au départ ; seul l'administrateur est invincible, les joueurs simulés tombent, se relèvent entre eux et peuvent être éliminés comme un vrai groupe.",
    "where": [
     "data/news/changelog.json"
@@ -16528,6 +16727,12 @@
    "fr": "Courbe (inOutCubic, linear, outBack…)",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
+   ]
+  },
+  {
+   "fr": "Coureur",
+   "where": [
+    "game/raid/bots/BotTypes.cpp"
    ]
   },
   {
@@ -17541,6 +17746,12 @@
    ]
   },
   {
+   "fr": "Cuirasse : ses {0} plaques ensemble",
+   "where": [
+    "game/raid/bots/TacticHeartbreaker.cpp"
+   ]
+  },
+  {
    "fr": "Cuirassé de givre, rien ne le blesse. Un joueur {0} s sur une des {1} ancres verrouille sa chaîne ; une chaîne verrouillée se détend au bout de {2} s. Les {1} chaînes tenues ensemble, il est plaqué au sol {3} s, prend × {4} dégâts et ses jointures sont à nu.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -17630,6 +17841,12 @@
    ]
   },
   {
+   "fr": "Côtes écartées : la lumière de son cœur (× 2,5)",
+   "where": [
+    "game/raid/bots/TacticHeartbreaker.cpp"
+   ]
+  },
+  {
    "fr": "Côtes-pièges",
    "where": [
     "data/raids/asterion/torse/zone_8.json",
@@ -17688,6 +17905,7 @@
     "data/enemies/asterion_coeur.json",
     "data/raids/asterion/coeur/zone_2.json",
     "game/online/RaidRecap.cpp",
+    "game/raid/bots/TacticHeart.cpp",
     "server/src/raidRewards.ts",
     "ui/screens/RaidRecapScene.cpp"
    ]
@@ -18274,6 +18492,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/powers/PowerDemos.cpp",
     "game/powers/Powers.cpp",
+    "game/raid/RaidNav.cpp",
     "game/tutorial/Tutorial.cpp",
     "packaging/DependencyCollector.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -19245,6 +19464,12 @@
    "fr": "Des réticules se posent sur vous et vous suivent, puis se verrouillent ; un missile tombe sur chacun. Bouger suffit.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Des rôles dans le groupe, répartis selon le nombre de joueurs et redonnés quand quelqu'un tombe : un réanimateur, un appât qui attire le boss, des coureurs pour les plaques et les objectifs, des frappeurs pour les points faibles. Le groupe se regroupe aux plaques qui demandent plusieurs joueurs ; au vestiaire, chacun prend le pouvoir de son rôle.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -20222,7 +20447,14 @@
   {
    "fr": "Double saut",
    "where": [
+    "game/raid/nav/Intent.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Double saut au-dessus du vide",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -20247,7 +20479,8 @@
    "fr": "Dreadfang",
    "where": [
     "data/enemies/dreadfang.json",
-    "data/raids/asterion/bras_gauche/zone_8.json"
+    "data/raids/asterion/bras_gauche/zone_8.json",
+    "game/raid/bots/TacticDreadfang.cpp"
    ]
   },
   {
@@ -22596,6 +22829,12 @@
    ]
   },
   {
+   "fr": "Effondré : ses cœurs de gravité (× 2)",
+   "where": [
+    "game/raid/bots/TacticGraviton.cpp"
+   ]
+  },
+  {
    "fr": "Effondrée",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -22733,6 +22972,12 @@
    "fr": "Embuscade : ennemis restants",
    "where": [
     "saves/HudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "embuscade : frappe {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -23282,6 +23527,12 @@
    ]
   },
   {
+   "fr": "en mouvement : {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "en Or",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -23419,6 +23670,12 @@
    "fr": "Enchaînez les ancrages : chaque traction rend vos sauts aériens.",
    "where": [
     "data/levels/sylvanox_03.json"
+   ]
+  },
+  {
+   "fr": "Enchaîné : ses jointures (× 2)",
+   "where": [
+    "game/raid/bots/TacticDreadfang.cpp"
    ]
   },
   {
@@ -24106,6 +24363,18 @@
    ]
   },
   {
+   "fr": "Entrave est",
+   "where": [
+    "game/raid/bots/TacticTitanus.cpp"
+   ]
+  },
+  {
+   "fr": "Entrave ouest",
+   "where": [
+    "game/raid/bots/TacticTitanus.cpp"
+   ]
+  },
+  {
    "fr": "ENTRAÎNEMENT",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -24728,9 +24997,33 @@
    ]
   },
   {
+   "fr": "esquive",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Esquive : un tir ennemi, ou une attaque portée par le corps d'un ennemi ou d'un boss (coup, charge, bond, piqué…), vous menace quand sa zone de dégâts passe à moins d'une tuile et demie de vous pendant qu'elle est dangereuse ; elle est esquivée si elle repart sans vous blesser. Chaque attaque compte une seule fois. Taux = esquivées ÷ menaces. Les attaques à distance sans tir (lasers, pluies, marées…) comptent dans « Ce qui vous touche », pas dans l'esquive.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Esquive du coup annoncé",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Esquive du rayon",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Esquive du tir",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -27003,15 +27296,81 @@
    ]
   },
   {
-   "fr": "Frapper le Gigaboss",
+   "fr": "frappe {0}",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "frappe {0} (ensemble)",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "frappe {0} à nu (× 2)",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper la cage, sauter ses ondes",
+   "where": [
+    "game/raid/bots/TacticHeartbreaker.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper la jambe, quitter les secteurs",
+   "where": [
+    "game/raid/bots/TacticGraviton.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper la tête, sortir des anneaux verts",
+   "where": [
+    "game/raid/bots/TacticVoidworm.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper le bras, sauter ses lames",
+   "where": [
+    "game/raid/bots/TacticDreadfang.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper le crâne, quitter ses regards",
+   "where": [
+    "game/raid/bots/TacticSkullmaw.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper le Cœur, quitter ses lances",
+   "where": [
+    "game/raid/bots/TacticHeart.cpp"
    ]
   },
   {
    "fr": "Frapper le point faible : la carapace est brisée · points faibles {0} / {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper ses jambes, sauter ses ondes",
+   "where": [
+    "game/raid/bots/TacticTitanus.cpp"
+   ]
+  },
+  {
+   "fr": "Frapper ses phalanges et son bras",
+   "where": [
+    "game/raid/bots/TacticPyroclast.cpp"
+   ]
+  },
+  {
+   "fr": "Frappeur",
+   "where": [
+    "game/raid/bots/BotTypes.cpp"
    ]
   },
   {
@@ -27383,6 +27742,12 @@
    ]
   },
   {
+   "fr": "garde son énergie pour les points faibles",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Garde éternelle",
    "where": [
     "data/enemies/echo_glaciarch.json",
@@ -27728,12 +28093,6 @@
    "fr": "Gigaboss : {0} · vaincu",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
-   ]
-  },
-  {
-   "fr": "Gigaboss blindé",
-   "where": [
-    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -28615,7 +28974,8 @@
    "fr": "Graviton",
    "where": [
     "data/enemies/graviton.json",
-    "data/raids/asterion/jambe_gauche/zone_8.json"
+    "data/raids/asterion/jambe_gauche/zone_8.json",
+    "game/raid/bots/TacticGraviton.cpp"
    ]
   },
   {
@@ -28722,7 +29082,8 @@
    "where": [
     "data/enemies/dreadfang_griffe.json",
     "data/raids/asterion_sheets.json",
-    "game/raid/DreadfangRoutine.cpp"
+    "game/raid/DreadfangRoutine.cpp",
+    "game/raid/bots/TacticDreadfang.cpp"
    ]
   },
   {
@@ -28787,6 +29148,12 @@
    "fr": "Grille · Ctrl+G",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "Grimpe à l'échelle",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -29640,7 +30007,8 @@
    "fr": "Heartbreaker",
    "where": [
     "data/enemies/heartbreaker.json",
-    "data/raids/asterion/torse/zone_8.json"
+    "data/raids/asterion/torse/zone_8.json",
+    "game/raid/bots/TacticHeartbreaker.cpp"
    ]
   },
   {
@@ -30743,6 +31111,18 @@
    ]
   },
   {
+   "fr": "Ils reprennent leurs rôles et leur tactique.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Ils restent là où vous êtes et frappent ce qui passe à leur portée.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Ils vous emportent loin de lui.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -30752,6 +31132,12 @@
    "fr": "Ils vous emportent vers lui.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Ils vous suivent et combattent près de vous.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
    ]
   },
   {
@@ -31202,6 +31588,12 @@
    "fr": "Impulsion (rocher fissuré)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Impulsion vers le haut",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -32662,6 +33054,7 @@
    "fr": "Joueur {0}",
    "where": [
     "game/gameplay/HudTeam.cpp",
+    "game/raid/RaidBots.cpp",
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/HudEditorScene.cpp",
@@ -33131,6 +33524,12 @@
    ]
   },
   {
+   "fr": "l'ancre",
+   "where": [
+    "game/raid/bots/TacticHeart.cpp"
+   ]
+  },
+  {
    "fr": "L'animation au rythme où le jeu la joue.",
    "where": [
     "ui/studio/StudioFrise.cpp"
@@ -33194,6 +33593,12 @@
    "fr": "L'arrivée habituelle au portail.",
    "where": [
     "data/cosmetics/cosmetics.json"
+   ]
+  },
+  {
+   "fr": "l'artère",
+   "where": [
+    "game/raid/bots/BossTactic.cpp"
    ]
   },
   {
@@ -33668,6 +34073,12 @@
    ]
   },
   {
+   "fr": "l'évent",
+   "where": [
+    "game/raid/bots/BossTactic.cpp"
+   ]
+  },
+  {
    "fr": "L'événement a commencé : son heure ne change plus.",
    "where": [
     "server/src/raids.ts"
@@ -33875,7 +34286,7 @@
    ]
   },
   {
-   "fr": "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, groupe, titan), pendant un raid : le groupe continue à jouer.",
+   "fr": "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, groupe, titan), pendant un raid : le groupe continue à jouer. Dans un test : la roue d'ordres aux joueurs simulés et leurs pensées.",
    "where": [
     "ui/screens/SettingsScene.cpp"
    ]
@@ -33938,6 +34349,12 @@
    "fr": "La chasse commence.",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "la chaîne",
+   "where": [
+    "game/raid/bots/BossTactic.cpp"
    ]
   },
   {
@@ -34125,6 +34542,12 @@
    "fr": "La cuisse-piston : des pistons géants montent et descendent au-dessus de la lave. Un golem de magma garde le muscle.",
    "where": [
     "data/raids/asterion/jambe_droite/zone_2.json"
+   ]
+  },
+  {
+   "fr": "la côte",
+   "where": [
+    "game/raid/bots/BossTactic.cpp"
    ]
   },
   {
@@ -34861,6 +35284,12 @@
    "fr": "La planète des sanctuaires",
    "where": [
     "data/planets/aethra.json"
+   ]
+  },
+  {
+   "fr": "la plaque",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -36079,6 +36508,12 @@
    ]
   },
   {
+   "fr": "le crochet",
+   "where": [
+    "game/raid/bots/BossTactic.cpp"
+   ]
+  },
+  {
    "fr": "Le Cryowyrm s'effondre. Le sanctuaire de l'aurore est ouvert.",
    "where": [
     "data/levels/glacior_01.json"
@@ -36700,6 +37135,12 @@
    ]
   },
   {
+   "fr": "le Gigaboss",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Le gigaboss Dreadfang : balayages d'étages entiers, griffes du sol, un joueur cloué à libérer, trois chaînes à tenir ensemble",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
@@ -36857,6 +37298,12 @@
    "fr": "Le groupe qui reprend cette zone a déjà 8 joueurs.",
    "where": [
     "server/src/raidWipe.ts"
+   ]
+  },
+  {
+   "fr": "le générateur",
+   "where": [
+    "game/raid/bots/TacticGraviton.cpp"
    ]
   },
   {
@@ -37156,6 +37603,12 @@
    "fr": "Le mini-film d'Asterion : la première fois que vous allez voir le titan (CLANS › RAIDS, la fiche d'un événement), une cinématique d'environ deux minutes raconte qui il est, en dix plans animés : le Cœur cosmique qui bat seul dans le vide, son corps forgé de mondes brisés, une planète dévorée dont les lumières s'éteignent une à une, ses sept parties et leurs Gigaboss révélés un par un (Skullmaw, Dreadfang, Pyroclast, Heartbreaker, Voidworm, Graviton, Titanus), notre galaxie dans sa ligne de mire, Nova balayée d'un revers, les balises des clans qui s'allument, l'hologramme de ses branches à abattre, son rugissement et le titre « ASTERION — LE DÉVOREUR DE MONDES », puis l'appel : « Rassemblez votre clan. La chasse commence. » Avec sa propre musique et ses bruitages. Cette première projection ne se passe pas ; elle n'est comptée comme vue qu'une fois allée jusqu'au bout (fermer le jeu au milieu la rejoue la prochaine fois), et cela vous suit sur un autre ordinateur avec votre progression. Le bouton « Revoir la cinématique » de la carte de l'événement la rejoue quand vous voulez, et celle-là se quitte.",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "le miroir",
+   "where": [
+    "game/raid/bots/TacticSkullmaw.cpp"
    ]
   },
   {
@@ -37598,6 +38051,12 @@
    "fr": "Le poing de magma",
    "where": [
     "data/raids/asterion_film.json"
+   ]
+  },
+  {
+   "fr": "le point faible (× 2)",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -38786,6 +39245,12 @@
    ]
   },
   {
+   "fr": "Les bulles au-dessus d'eux : leur rôle, ce qu'ils font, comment ils se déplacent.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Les bulles porteuses",
    "where": [
     "game/tutorial/Tutorial.cpp"
@@ -39090,6 +39555,12 @@
    "fr": "Les deux phrases sont différentes.",
    "where": [
     "ui/screens/AdminBackups.cpp"
+   ]
+  },
+  {
+   "fr": "Les deux plus proches relèvent le joueur à terre le plus près de vous.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
    ]
   },
   {
@@ -39448,6 +39919,12 @@
    ]
   },
   {
+   "fr": "Les joueurs simulés frappent de loin avec l'onde visée dans huit directions, comme au stick, depuis une place d'où elle atteint sa cible, hors du corps du boss qui blesse au contact ; une cible trop haute, au sommet d'un double saut. Ils gardent de l'énergie pour leur bouclier et pour les points faibles, lâchent leur tir chargé sur un point faible à nu, lèvent le bouclier quand un coup ne peut plus être évité, posent leur leurre quand ils réaniment un allié et ne réaniment que lorsque c'est sûr.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les lames de Dreadfang sont brisées : les spectres en renfort du Crâne se dissipent",
    "where": [
     "data/raids/asterion/titan.json"
@@ -39547,6 +40024,12 @@
   },
   {
    "fr": "Les onglets d'une même barre et les boutons de la fiche d'un niveau EN LIGNE ont une seule taille de texte, sans texte coupé.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les ordres aux joueurs simulés : une roue (touche C, clic du stick droit, souris) avec Suivez-moi, Attendez ici, Tous sur l'objectif, Réanimez-le, Libres et Marquer un endroit (un signal posé au stick, aux flèches ou à la souris). Les ordres passent par les entrées du test : rejoué avec les mêmes entrées, le test se déroule à l'identique.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -39741,6 +40224,12 @@
    "fr": "Les raids sont des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS.",
    "where": [
     "server/src/raids.ts"
+   ]
+  },
+  {
+   "fr": "Les rangs s'écrivent « 2e », « 3e »… : le « ᵉ » d'avant n'existe pas dans les polices du jeu et s'affichait comme un carré vide (historique des raids, titres de clan, notifications des résultats).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -40289,7 +40778,8 @@
   {
    "fr": "Libre",
    "where": [
-    "editors/level_editor/LevelEditorLayout.cpp"
+    "editors/level_editor/LevelEditorLayout.cpp",
+    "game/raid/bots/BotTypes.cpp"
    ]
   },
   {
@@ -40299,10 +40789,23 @@
    ]
   },
   {
+   "fr": "Libres",
+   "where": [
+    "game/raid/bots/BotTypes.cpp",
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Libye",
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
+   ]
+  },
+  {
+   "fr": "libère : frappe {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -41028,6 +41531,12 @@
    ]
   },
   {
+   "fr": "lève son bouclier",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Légendaire",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -41541,6 +42050,12 @@
    ]
   },
   {
+   "fr": "Marquer un endroit",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Marquée",
    "where": [
     "ui/screens/GhostOptionsScene.cpp"
@@ -41633,6 +42148,12 @@
    "fr": "Masquer les infos",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Masquer les pensées",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
    ]
   },
   {
@@ -42433,6 +42954,12 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mesuré sans aucune invincibilité ni aide du test, contre chaque Gigaboss et le Cœur d'Asterion avec huit joueurs simulés Experts, et pour « Simuler un raid complet » : le temps, les morts, la phase atteinte, la vie qui reste au boss et ce qui a mis chaque joueur à terre (le coup et son rôle). Aucun Gigaboss n'est encore battu sans aide : la carapace de leur deuxième phase, dont les places doivent être tenues ensemble, les arrête (seule celle de Dreadfang tombe). Ce qui tuait le plus est mieux lu : le rayon qui balaie de Skullmaw (le bouclier dès l'annonce), la couronne de Graviton et du Cœur à son vrai rayon, ce qui frappe une place tenue (pris sous le bouclier). Le niveau Débutant, Confirmé ou Expert change leur temps de réaction, leur précision et leurs choix, jamais les règles.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -43398,6 +43925,12 @@
    ]
   },
   {
+   "fr": "monte au-dessus du liquide",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Monte-charge",
    "where": [
     "data/raids/asterion/abdomen/zone_7.json",
@@ -43961,12 +44494,6 @@
    ]
   },
   {
-   "fr": "Mécanisme du Gigaboss : {0} plaques",
-   "where": [
-    "game/raid/RaidBots.cpp"
-   ]
-  },
-  {
    "fr": "mécanisme sans nom ou sans texte : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -44233,6 +44760,12 @@
    "fr": "Nerfs optiques",
    "where": [
     "data/raids/asterion/crane/branch.json"
+   ]
+  },
+  {
+   "fr": "nettoie : {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -46656,6 +47189,12 @@
    ]
   },
   {
+   "fr": "Observe la zone",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Obsession du chrono",
    "where": [
     "data/achievements/achievements.json"
@@ -47493,6 +48032,48 @@
    "fr": "Ordre (z)",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Ordre : attend ici",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Ordre : attendez ici",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Ordre : réanime {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Ordre : suit {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Ordre : suivez-moi",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "ORDRES AUX JOUEURS SIMULÉS",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Ordres aux joueurs simulés",
+   "where": [
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -50055,6 +50636,18 @@
    ]
   },
   {
+   "fr": "Pensées des joueurs simulés",
+   "where": [
+    "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Pensées des joueurs simulés (tests)",
+   "where": [
+    "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
    "fr": "Perchoir de braise",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -50837,6 +51430,12 @@
    ]
   },
   {
+   "fr": "Placez le signal : stick, flèches ou souris · Valider / clic : le poser · Retour : la roue",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Placez un départ du joueur et une sortie dans l'éditeur.",
    "where": [
     "ui/screens/CommunityPublishScene.cpp"
@@ -51068,6 +51667,12 @@
    ]
   },
   {
+   "fr": "Plaque basse",
+   "where": [
+    "game/raid/bots/TacticHeartbreaker.cpp"
+   ]
+  },
+  {
    "fr": "Plaque d'armure de Heartbreaker",
    "where": [
     "data/enemies/heartbreaker_plaque.json"
@@ -51083,6 +51688,12 @@
    "fr": "Plaque faite",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Plaque haute",
+   "where": [
+    "game/raid/bots/TacticHeartbreaker.cpp"
    ]
   },
   {
@@ -51782,6 +52393,12 @@
    ]
   },
   {
+   "fr": "Poche de l'estomac",
+   "where": [
+    "game/raid/bots/TacticVoidworm.cpp"
+   ]
+  },
+  {
    "fr": "Poche de Voidworm",
    "where": [
     "data/enemies/voidworm_poche.json"
@@ -52151,12 +52768,6 @@
    "fr": "Points faibles {0}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Points faibles à nu",
-   "where": [
-    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -53045,6 +53656,12 @@
    "fr": "Prend la couleur d'un pixel · clic droit : pour la couleur 2",
    "where": [
     "ui/studio/StudioCanvas.cpp"
+   ]
+  },
+  {
+   "fr": "prend son pouvoir : {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -54391,7 +55008,8 @@
    "fr": "Pyroclast",
    "where": [
     "data/enemies/pyroclast.json",
-    "data/raids/asterion/bras_droit/zone_8.json"
+    "data/raids/asterion/bras_droit/zone_8.json",
+    "game/raid/bots/TacticPyroclast.cpp"
    ]
   },
   {
@@ -54645,6 +55263,12 @@
    "fr": "Qui est en ligne dans votre clan : dans CLANS › Membres, chaque membre porte la pastille de présence de SOCIAL (en ligne, absent, hors ligne), les membres en ligne passent en tête, et l'en-tête de la liste annonce « X/Y en ligne ».",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "quitte le secteur qui s'inverse",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -56775,6 +57399,12 @@
    ]
   },
   {
+   "fr": "Regard de mort : miroirs ou derrière une colonne",
+   "where": [
+    "game/raid/bots/TacticSkullmaw.cpp"
+   ]
+  },
+  {
    "fr": "Regard de Skullmaw",
    "where": [
     "data/achievements/achievements.json"
@@ -57176,6 +57806,12 @@
    "fr": "Remise en ligne par",
    "where": [
     "ui/screens/AdminCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "Remonte au-dessus du magma",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -58053,6 +58689,12 @@
    ]
   },
   {
+   "fr": "reste avec {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Reste en bas (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
@@ -58242,6 +58884,7 @@
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/PowerGuideScene.cpp",
     "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidTestInviteScene.cpp",
     "ui/screens/ReplayScene.cpp",
     "ui/screens/SettingsScene.cpp",
@@ -59086,10 +59729,17 @@
    ]
   },
   {
+   "fr": "Ruée au-dessus du vide",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Ruée aérienne",
    "where": [
     "data/powers/air_dash.json",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -59105,6 +59755,12 @@
    "fr": "Ruée des griffes",
    "where": [
     "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Ruée puis saut allongé",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -59293,6 +59949,12 @@
    ]
   },
   {
+   "fr": "Réanimateur",
+   "where": [
+    "game/raid/bots/BotTypes.cpp"
+   ]
+  },
+  {
    "fr": "Réanimation",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -59371,9 +60033,22 @@
    ]
   },
   {
+   "fr": "réanime {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Réanimer",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Réanimez-le",
+   "where": [
+    "game/raid/bots/BotTypes.cpp",
+    "ui/online/RaidBotsUi.cpp"
    ]
   },
   {
@@ -60450,9 +61125,21 @@
    ]
   },
   {
+   "fr": "s'abrite sous une dalle",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "S'accroupir : Bas seul au sol, même sur place, baisse le personnage pour laisser passer les attaques (Bas en courant reste une glissade).",
    "where": [
     "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "S'accroupit sous le coup",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -60519,6 +61206,24 @@
    "fr": "S'ouvre quand les sept gigaboss sont tombés",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "s'écarte",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "s'écarte du corps de {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "s'éloigne du puits",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -61139,6 +61844,12 @@
    ]
   },
   {
+   "fr": "Saut mural",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Saut quantique",
    "where": [
     "data/enemies/singularis.json"
@@ -61148,6 +61859,12 @@
    "fr": "Saut sur le joueur",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Saut vers la plateforme mobile",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -61172,9 +61889,27 @@
    ]
   },
   {
+   "fr": "saute l'onde",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "saute par-dessus le tir",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Saute sur un champignon : il te renvoie très haut, tout seul. Profites-en pour atteindre la corniche et les éclats qui flottent en l'air !",
    "where": [
     "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Saute vers la plateforme suivante",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -61535,6 +62270,12 @@
    ]
   },
   {
+   "fr": "se cache derrière une colonne",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Se connecter",
    "where": [
     "game/online/Raids.cpp",
@@ -61600,15 +62341,51 @@
    ]
   },
   {
+   "fr": "Se laisse porter par la plateforme mobile",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Se laisse tomber plus bas",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Se met à l'abri en hauteur",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Se rattrape en l'air",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Se reforme au checkpoint",
    "where": [
     "game/levels/ObjectTypes.cpp"
    ]
   },
   {
+   "fr": "se regroupe à {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Se termine dans {0}",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "se tient prêt à réanimer",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -62727,6 +63504,43 @@
    ]
   },
   {
+   "fr": "Signal",
+   "where": [
+    "game/raid/RaidBots.cpp",
+    "game/raid/bots/BotTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Signal : actionne le levier",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Signal : active le générateur",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Signal : frappe {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Signal : tient la plaque",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Signal : va voir",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Signal inconnu",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -62927,7 +63741,8 @@
    "fr": "Skullmaw",
    "where": [
     "data/enemies/skullmaw.json",
-    "data/raids/asterion/crane/zone_8.json"
+    "data/raids/asterion/crane/zone_8.json",
+    "game/raid/bots/TacticSkullmaw.cpp"
    ]
   },
   {
@@ -63475,6 +64290,12 @@
    ]
   },
   {
+   "fr": "sort de la ligne du rayon",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "sorte de défi inconnue",
    "where": [
     "game/online/DailyChallenges.cpp"
@@ -63550,12 +64371,6 @@
    "fr": "sortie introuvable",
    "where": [
     "game/levels/LevelAnalyzer.cpp"
-   ]
-  },
-  {
-   "fr": "Sortie vers ?",
-   "where": [
-    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -64491,6 +65306,18 @@
    ]
   },
   {
+   "fr": "Stick, flèches ou souris : choisir · Valider ou clic : donner l'ordre · Retour : fermer · Le jeu continue.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Stick, flèches ou souris : choisir · Valider ou clic : donner l'ordre · {0} ou Retour : fermer · Le jeu continue.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "structure PNG invalide",
    "where": [
     "server/src/players.ts"
@@ -64749,6 +65576,13 @@
    ]
   },
   {
+   "fr": "Suivez-moi",
+   "where": [
+    "game/raid/bots/BotTypes.cpp",
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "SUIVI",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp",
@@ -64853,6 +65687,12 @@
    "fr": "SUPERNOVA : le cœur s'effondre ! Contenez-la sur les ancres, tous ensemble !",
    "where": [
     "data/raids/asterion/coeur/zone_2.json"
+   ]
+  },
+  {
+   "fr": "Supernova : {0} ancres à tenir",
+   "where": [
+    "game/raid/bots/TacticHeart.cpp"
    ]
   },
   {
@@ -67454,7 +68294,25 @@
    ]
   },
   {
+   "fr": "Tester Asterion : Débutant, Confirmé et Expert diffèrent par le temps de réaction, la profondeur d'anticipation et la précision du geste, jamais par de la triche : rien que les entrées d'un joueur. Le test ne déplace plus jamais un joueur simulé bloqué : il cherche lui-même un autre chemin.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Tester Asterion : les joueurs simulés deviennent des « GOAT ». Une tactique par Gigaboss (Pyroclast, Skullmaw, Dreadfang, Titanus, Voidworm, Graviton, Heartbreaker et le Cœur d'Asterion) lit sa vraie routine : ses coups annoncés sont esquivés (sortir d'une zone ou d'un rayon, sauter une onde au bon moment, monter au-dessus d'un liquide, quitter un secteur dont la gravité s'inverse ou s'abriter sous une dalle, se cacher de son regard derrière une colonne), ses points faibles sont frappés quand ils sont à nu, ses mécanismes résolus à plusieurs (évents, miroirs, chaînes, générateurs, côtes, artères, ancres ; les deux entraves de Titanus amenées bas puis achevées ensemble).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Tester Asterion : les joueurs simulés jouent vraiment la zone, même si vous êtes AFK. Ils lisent ce qu'il reste à faire (générateurs, leviers, embuscades, gardiens, reliques, plaques à tenir ensemble, Gigaboss, sortie), se répartissent les tâches, trouvent leur chemin (sauts, doubles sauts, échelles, plateformes mobiles, dangers évités), combattent, esquivent les coups annoncés, fuient le liquide qui monte et réaniment les joueurs à terre. Contre un boss qui se bat par parties, ils frappent là où un coup compte (points faibles et parties normales), jamais une partie qui ne fait que blesser. Réglage « Niveau des joueurs simulés » : Débutant, Confirmé ou Expert (temps de réaction et précision).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Tester Asterion : les joueurs simulés se déplacent comme de très bons joueurs. Ils lisent le terrain en simulant leur propre physique (sauts tenus, doubles et triples sauts, ruées au sol et en l'air, impulsion, sauts muraux), visent une plateforme mobile là où elle sera, se rattrapent en l'air, esquivent les tirs, les rayons et les coups annoncés, remontent au-dessus du magma avant qu'il monte et ne tombent plus dans le vide. Chacun dit ce qu'il fait : « Double saut au-dessus du vide », « Saut vers la plateforme mobile », « Esquive du rayon »… Vérifié dans chaque zone de chaque branche d'Asterion, vestiaire compris.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -67593,6 +68451,24 @@
    ]
   },
   {
+   "fr": "tient la plaque",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "tient sous son bouclier",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "tient {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "tige",
    "where": [
     "data/enemies/skullmaw.json"
@@ -67618,6 +68494,12 @@
     "data/powers/charge_shot.json",
     "game/gameplay/Damage.cpp",
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "tir chargé sur le point faible (× 2)",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -67822,7 +68704,8 @@
    "fr": "Titanus",
    "where": [
     "data/enemies/titanus.json",
-    "data/raids/asterion/jambe_droite/zone_8.json"
+    "data/raids/asterion/jambe_droite/zone_8.json",
+    "game/raid/bots/TacticTitanus.cpp"
    ]
   },
   {
@@ -68496,6 +69379,19 @@
    ]
   },
   {
+   "fr": "Tous sur l'objectif",
+   "where": [
+    "game/raid/bots/BotTypes.cpp",
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
+   "fr": "Tous sur le mécanisme ou la cible du moment, sans garder de rôle.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Tous vos amis sont déjà dans le groupe.",
    "where": [
     "ui/screens/SocialScene.cpp"
@@ -69119,6 +70015,12 @@
    ]
   },
   {
+   "fr": "Traverse la plateforme vers le bas",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Traversez la canopée jusqu'à sa couronne.",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -69301,7 +70203,8 @@
    "fr": "Triple saut",
    "where": [
     "data/powers/triple_jump.json",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -70807,6 +71710,12 @@
    ]
   },
   {
+   "fr": "Un signal : ils vont frapper, tenir ou actionner ce qui s'y trouve.",
+   "where": [
+    "ui/online/RaidBotsUi.cpp"
+   ]
+  },
+  {
    "fr": "Un soir, il ne lui resta qu'une étincelle. Elle eut froid. Elle eut peur d'être seule dans le noir.",
    "where": [
     "data/stories/singularis.json"
@@ -72086,6 +72995,24 @@
    ]
   },
   {
+   "fr": "va chercher {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "va prendre un orbe de vie",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "va vers {0}",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "vague {0}",
    "where": [
     "game/gameplay/entities/ZoneEntities.cpp"
@@ -72898,6 +73825,12 @@
    "fr": "Ventricules à nu ({0}) : brisez-les !",
    "where": [
     "game/raid/AsterionHeartRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Ventricules à nu (× 2)",
+   "where": [
+    "game/raid/bots/TacticHeart.cpp"
    ]
   },
   {
@@ -74033,7 +74966,8 @@
    "fr": "Voidworm",
    "where": [
     "data/enemies/voidworm.json",
-    "data/raids/asterion/abdomen/zone_8.json"
+    "data/raids/asterion/abdomen/zone_8.json",
+    "game/raid/bots/TacticVoidworm.cpp"
    ]
   },
   {
@@ -74088,6 +75022,12 @@
    "fr": "Voile psychique ({0}) : rien ne le blesse. À son flash, {1} miroirs tenus lui renvoient son regard et l'aveuglent.",
    "where": [
     "game/raid/SkullmawRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Voile psychique : {0} miroirs à tenir",
+   "where": [
+    "game/raid/bots/TacticSkullmaw.cpp"
    ]
   },
   {
@@ -74892,6 +75832,7 @@
    "fr": "Vous",
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
+    "game/raid/RaidTest.cpp",
     "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/ChallengesScene.cpp",
@@ -77068,6 +78009,12 @@
    ]
   },
   {
+   "fr": "{0} : ordres",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : passage verrouillé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -77083,6 +78030,12 @@
    "fr": "{0} : pause · croix : image (en pause) · {1} / {2} : zoom · stick gauche : déplacer · {3} : partie suivante",
    "where": [
     "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : pensées",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -79213,6 +80166,12 @@
    ]
   },
   {
+   "fr": "{0} ou Retour",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} participe au raid commun {1} : inscrivez-vous",
    "where": [
     "server/src/notifications.ts"
@@ -79708,6 +80667,12 @@
    "fr": "{0} sur le fantôme",
    "where": [
     "ui/screens/GameScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} sur les plaques",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -81200,6 +82165,12 @@
    ]
   },
   {
+   "fr": "À genou : sa rotule et ses coutures (× 2)",
+   "where": [
+    "game/raid/bots/TacticTitanus.cpp"
+   ]
+  },
+  {
    "fr": "À jouer depuis la carte des planètes.",
    "where": [
     "game/progression/NewsCenter.cpp"
@@ -81345,6 +82316,12 @@
     "game/gameplay/HudTeam.cpp",
     "ui/screens/HudEditorScene.cpp",
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "à terre : attend d'être réanimé",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -82717,6 +83694,12 @@
    ]
   },
   {
+   "fr": "Épinglé : ses anneaux (× 2)",
+   "where": [
+    "game/raid/bots/TacticVoidworm.cpp"
+   ]
+  },
+  {
    "fr": "ÉPREUVE RÉUSSIE",
    "where": [
     "data/levels/glacior_04.json",
@@ -83099,6 +84082,12 @@
    "fr": "évents impossibles",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Évite le danger",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
