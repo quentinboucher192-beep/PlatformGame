@@ -199,7 +199,7 @@ public:
         layout();
         bg_.render(g_, 0.5f);
         const bool top = g_.app.topScene() == this;
-        ui.inputEnabled = top && modal_ == Modal::None && !raids_.modal();
+        ui.inputEnabled = top && modal_ == Modal::None;
         drawHeader();
         const float navH = drawOnlineNav(g_, zoneA_, OnlineSection::Clans);
         drawInfoCard(navH);
@@ -208,7 +208,6 @@ public:
         ui.popId();
         ui.inputEnabled = top;
         if (modal_ != Modal::None) drawModal();
-        else if (raids_.modal()) raids_.drawModal();  // « Organiser un raid du clan… »
         else if (ui.backPressed() && !ui.editingText()) back();
         ui.end();
     }

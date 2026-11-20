@@ -81,9 +81,9 @@ export const RULES = {
     clanCreate: { name: "clan_create", limit: 5, windowSeconds: 3600 },
     clanApply: { name: "clan_apply", limit: 30, windowSeconds: 3600 },
     clanWrite: { name: "clan_write", limit: 120, windowSeconds: 3600 },
-    // Clan raids (raids.ts): registrations and answers, the raids scheduled by a clan, the calls to its members.
+    // Clan raids (raids.ts): registrations and answers, the calls to its members. 2.77.4: a clan no longer
+    // schedules raids (raid_schedule removed); the reviews of the raids share community_comment / community_report.
     raidWrite: { name: "raid_write", limit: 120, windowSeconds: 3600 },
-    raidSchedule: { name: "raid_schedule", limit: 10, windowSeconds: 3600 },
     // 2.65: the reports of a raid instance (objectives, zones): a few per minute in a real game.
     raidReport: { name: "raid_report", limit: 600, windowSeconds: 600 },
     raidCall: { name: "raid_call", limit: 6, windowSeconds: 3600 },

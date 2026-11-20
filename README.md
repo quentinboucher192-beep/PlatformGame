@@ -340,7 +340,7 @@ carte du titan, contributions, groupes éliminés et renforts ; l'administrateur
 et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md). Dans les deux tests, l'administrateur peut aussi
 **inviter de vrais joueurs** connectés (liste avec recherche, administrateurs ou non) : chacun prend la place d'un joueur
 simulé de son groupe, avec sa case **« Invincible »** que seul l'administrateur change ; le test passe alors par le
-serveur, sans jamais rien compter ([docs/RAIDS.md §25](docs/RAIDS.md#25-tester-avec-des-joueurs-invités-280)).
+serveur, sans jamais rien compter ([docs/RAIDS.md §26](docs/RAIDS.md#26-tester-avec-des-joueurs-invités-280)).
 
 Dans le **vestiaire**, les tablettes de pouvoir sont en hauteur sur leurs rebords (deux étages), avec le nom, l'icône et
 le coût d'énergie de chaque pouvoir au-dessus : on n'en prend une qu'en sautant dessus.
@@ -641,7 +641,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   l'administrateur invite des joueurs connectés (liste avec recherche, administrateurs ou non) ; chacun prend la place d'un
   joueur simulé de son groupe (jamais un de plus), avec sa case **« Invincible »** (décochée par défaut) que seul
   l'administrateur change, avant comme pendant le test
-  ([docs/RAIDS.md §25](docs/RAIDS.md#25-tester-avec-des-joueurs-invités-280)).
+  ([docs/RAIDS.md §26](docs/RAIDS.md#26-tester-avec-des-joueurs-invités-280)).
 * **L'invitation** : une notification et un message ; en haut de NOTIFICATIONS, l'invité l'accepte ou la refuse dans les
   3 minutes (qui invite, quel test, son groupe, s'il sera invincible). L'administrateur voit chaque réponse, annule une
   invitation ou retire un joueur. Une autre version du jeu ne peut pas rejoindre.
@@ -649,6 +649,22 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   invité absent ou parti laisse sa place à son joueur simulé ; « Invincible » change au même instant partout. Sans invité,
   le test reste local et hors ligne. Rien ne compte jamais : ni record, ni contribution, ni récompense, ni classement, ni
   progression du raid (le serveur refuse tout rapport d'un test).
+
+**Nouveau dans la version 2.77.4** :
+* **Les raids sont des événements** : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS.
+  Seule l'équipe du jeu crée et publie les événements de raid (ADMINISTRATION › Raids) ; les clans s'y inscrivent et y
+  jouent. Le serveur refuse `POST /raids/events` avec un message clair (« Les raids sont des événements publiés par
+  l'équipe du jeu… ») ; les raids de clan déjà programmés restent lisibles et jouables jusqu'à leur fin, rien n'est
+  effacé ([docs/RAIDS.md §25](docs/RAIDS.md#25-les-raids-sont-des-événements-avis-des-joueurs-2774)).
+* **Noter un raid après l'avoir joué** : 1 à 5 étoiles et un commentaire facultatif (500 caractères au plus), un avis par
+  joueur et par événement, modifiable ou supprimable. Seul un joueur qui a vraiment joué l'événement (une place dans une
+  de ses instances et une contribution validée par le consensus) peut noter : le serveur le vérifie avec ses propres
+  données. « Noter ce raid » sur l'écran des résultats et sur la fiche de l'événement, jamais une fenêtre qui s'impose.
+* **Avis des joueurs** : la note moyenne et le nombre d'avis sur les cartes de CLANS › RAIDS et sur la fiche ; la liste
+  des avis (auteur, étoiles, date, texte) défile, le vôtre en tête avec « Modifier ». La modération des commentaires :
+  mêmes filtres et limites, signalement (masqué après 3), et dans ADMINISTRATION › Raids › « Avis », tous les avis d'un
+  événement, « Masquer » ou « Rétablir » un commentaire (Journal). Serveur : migration **0185** (à appliquer avant de
+  déployer).
 
 **Nouveau dans la version 2.77.3** :
 * **Statistiques des Gigaboss d'Asterion** dans leur fiche (onglet « Combat ») : PV de 2 à 8 joueurs, phases (seuil en %

@@ -24,6 +24,7 @@ import * as raidMap from "./raidMap";
 import * as raidWipe from "./raidWipe";
 import * as raidWorld from "./raidWorld";
 import * as raidTests from "./raidTests";
+import * as raidReviews from "./raidReviews";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -305,6 +306,11 @@ route("POST", `${V}/raids/events/{eventId}/placements`, (ctx) => raidMap.move(ct
 route("POST", `${V}/raids/events/{eventId}/placements/rebalance`, (ctx) => raidMap.rebalance(ctx));
 // Phase 5 (raidWorld.ts, 2.69): the world events: rankings of every clan, group and player (validated results only).
 route("GET", `${V}/raids/events/{eventId}/world`, (ctx) => raidWorld.worldView(ctx));
+// 2.77.4 (raidReviews.ts): the players' reviews of an event, only by those who played it (the server checks).
+route("GET", `${V}/raids/events/{eventId}/reviews`, raidReviews.listReviews, { viewer: true });
+route("PUT", `${V}/raids/events/{eventId}/review`, (ctx) => raidReviews.putReview(ctx));
+route("DELETE", `${V}/raids/events/{eventId}/review`, (ctx) => raidReviews.deleteReview(ctx));
+route("POST", `${V}/raids/reviews/{reviewId}/report`, (ctx) => raidReviews.reportReview(ctx));
 
 // Community levels: publish, browse, download, rate, report, per-level leaderboards
 route("GET", `${V}/community/levels`, (ctx) => community.listLevels(ctx));
@@ -484,6 +490,9 @@ route("PATCH", `${V}/admin/raid-tests/{testId}/invitations/{playerId}`, (ctx) =>
 route("DELETE", `${V}/admin/raid-tests/{testId}/invitations/{playerId}`, (ctx) => raidTests.cancel(ctx));
 route("POST", `${V}/admin/raid-tests/{testId}/seat`, (ctx) => raidTests.seat(ctx));
 route("POST", `${V}/admin/raid-tests/{testId}/end`, (ctx) => raidTests.end(ctx));
+// 2.77.4 (raidReviews.ts): every review of an event, a comment masked or restored (Journal).
+route("GET", `${V}/admin/raids/{eventId}/reviews`, (ctx) => raidReviews.adminListReviews(ctx));
+route("POST", `${V}/admin/raids/{eventId}/reviews/{reviewId}/moderate`, (ctx) => raidReviews.adminModerateReview(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));

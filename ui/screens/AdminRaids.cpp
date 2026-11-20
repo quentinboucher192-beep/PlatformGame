@@ -54,8 +54,9 @@ std::string plural(int n, const std::string& one, const std::string& many) { ret
 }  // namespace
 
 AdminRaids::AdminRaids(GameServices& g, std::function<void(const std::string&, bool)> say, std::function<bool(const ApiResult&)> lostRole)
-    : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), guests_(std::make_unique<RaidTestGuests>(g)) {
+    : g_(g), say_(std::move(say)), lostRole_(std::move(lostRole)), reviews_(g, RaidReviewsPanel::Mode::Admin), guests_(std::make_unique<RaidTestGuests>(g)) {
     clearForm();
+    reviews_.say = [this](const std::string& m, bool error) { say_(m, error); };
 }
 
 AdminRaids::~AdminRaids() = default;
@@ -192,7 +193,10 @@ void AdminRaids::draw(const Rect& in) {
     Rect right{in.x + formW + ui.s(18), in.y, in.w - formW - ui.s(18), in.h};
     // 2.69: three tabs in the right column: the events, the live panel, « Tester Asterion » (2.68).
     std::vector<std::string> tabs = {"Événements", "En direct"};
-    if (g_.online.isAdmin() && !raid::Branch::all().empty()) tabs.push_back("Tester Asterion");
+    const int testTab = g_.online.isAdmin() && !raid::Branch::all().empty() ? static_cast<int>(tabs.size()) : -1;
+    if (testTab >= 0) tabs.push_back("Tester Asterion");
+    const int reviewsTab = static_cast<int>(tabs.size());  // 2.77.4: the players' reviews
+    tabs.push_back("Avis");
     sideTab_ = std::clamp(sideTab_, 0, static_cast<int>(tabs.size()) - 1);
     std::vector<bool> on(tabs.size(), false);
     on[static_cast<size_t>(sideTab_)] = true;
@@ -205,13 +209,28 @@ void AdminRaids::draw(const Rect& in) {
     right.h -= bottom + ui.s(12) - right.y;
     right.y = bottom + ui.s(12);
     if (sideTab_ == 1) drawLive(right);
-    else if (sideTab_ == 2) drawTest(right);
+    else if (sideTab_ == testTab) drawTest(right);
+    else if (sideTab_ == reviewsTab) drawReviews(right);
     else {
         const float listH = std::max(ui.s(160), right.h * 0.46f);
         drawList({right.x, right.y, right.w, listH});
         drawDetail({right.x, right.y + listH + ui.s(14), right.w, right.h - listH - ui.s(14)});
     }
     ui.popId();
+}
+
+void AdminRaids::drawReviews(const Rect& r) {
+    // 2.77.4: every review of the selected event (masked ones and their reports included): « Masquer le
+    // commentaire » keeps its stars, « Rétablir » clears its reports; each action goes to the Journal.
+    UIContext& ui = g_.ui;
+    if (selected_.empty()) {
+        const float top = section(ui, r, "AVIS DES JOUEURS", kSky);
+        drawLines(ui, wrap(ui, "Choisissez un événement dans l'onglet « Événements » pour lire les avis de ses joueurs.", FontFace::Body, 15, r.w - ui.s(28), 3),
+                  {r.x + ui.s(14), top}, 15, ui.s(22), kDim);
+        return;
+    }
+    reviews_.open(selected_);
+    reviews_.draw(r);
 }
 
 void AdminRaids::loadLive() {

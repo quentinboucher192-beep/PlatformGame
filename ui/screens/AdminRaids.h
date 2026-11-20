@@ -13,9 +13,11 @@
 // only (players in play, instances with their zone, players and the latency the games measured,
 // gigaboss down, reconnections, refused reports, the journal of the admin actions and anomalies);
 // « Suspendre » / « Reprendre »; a catch-up session after the event. The right column has three tabs:
-// « Événements », « En direct », « Tester Asterion ». 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): « Joueurs invités » in both
-// tests (one zone, the whole raid): real players connected now chosen before the launch (their group,
-// « Invincible »), invited with it — the test then goes through the server (ui/online/RaidTestGuests).
+// « Événements », « En direct », « Tester Asterion ». 2.77.4: a fourth, « Avis »: every review of the
+// selected event (masked ones and reports included), each comment masked or restored (Journal). 2.80 (docs/RAIDS.md
+// « Tester avec des joueurs invités »): « Joueurs invités » in both tests (one zone, the whole raid): real players
+// connected now chosen before the launch (their group, « Invincible »), invited with it — the test then goes through
+// the server (ui/online/RaidTestGuests).
 
 #include <cstdint>
 #include <functional>
@@ -25,6 +27,7 @@
 #include "engine/core/Json.h"
 #include "engine/core/Math.h"
 #include "game/online/OnlineTypes.h"
+#include "ui/online/RaidReviewsPanel.h"
 
 namespace cosmic {
 
@@ -61,6 +64,7 @@ private:
     void loadLive();
     void drawLive(const Rect& r);
     void action(const std::string& path, const Json& body, const std::string& done);
+    void drawReviews(const Rect& r);  // 2.77.4
 
     GameServices& g_;
     std::function<void(const std::string&, bool)> say_;
@@ -103,6 +107,8 @@ private:
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
     int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
     bool simBotsInvincible_ = false;
+    // 2.77.4: « Avis » (the players' reviews of the selected event, administrators' view).
+    RaidReviewsPanel reviews_;
     // 2.80: the players invited to the next test (its window), and the row that opens it.
     std::unique_ptr<RaidTestGuests> guests_;
     void guestsRow(const Rect& r, bool fullRaid);

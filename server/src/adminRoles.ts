@@ -45,6 +45,7 @@ export const ADMIN_ACTIONS = {
     clan: ["admin_clan_renamed", "admin_clan_dissolved"],
     // ADMINISTRATION › Raids (raids.ts): a world event created, edited, published or cancelled.
     // 2.69 (raidWorld.ts): suspended, resumed, its map checked, a catch-up session opened.
+    // 2.77.4 (raidReviews.ts): a player's review of an event masked or restored.
     raid: [
         "admin_raid_created",
         "admin_raid_updated",
@@ -54,6 +55,8 @@ export const ADMIN_ACTIONS = {
         "admin_raid_resumed",
         "admin_raid_map_validated",
         "admin_raid_catchup",
+        "admin_raid_review_hidden",
+        "admin_raid_review_restored",
     ],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
