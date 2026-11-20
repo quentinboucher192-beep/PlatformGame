@@ -572,10 +572,21 @@ void GameWorld::updateTeamCamera(float dt) {
         grounded = grounded && p.grounded();
         ++n;
     };
-    // 2.65 (raids, display only): this computer's player alone, while in play.
+    // 2.65 (raids, display only): this computer's player alone, while in play; 2.77.2: down, its soul (where
+    // it waits to be revived; « Revenir sur mon âme »), never the whole group's frame.
     const bool follow = raidMode_ && cameraFollow_ >= 0 && cameraFollow_ < static_cast<int>(team_.size()) &&
-                        team_[static_cast<size_t>(cameraFollow_)].presence == Presence::Playing;
-    if (follow) add(*team_[static_cast<size_t>(cameraFollow_)].player);
+                        (team_[static_cast<size_t>(cameraFollow_)].presence == Presence::Playing ||
+                         team_[static_cast<size_t>(cameraFollow_)].presence == Presence::Down);
+    if (follow) {
+        const TeamMember& f = team_[static_cast<size_t>(cameraFollow_)];
+        if (f.presence == Presence::Down) {
+            bb = {f.soul.x - 8.0f, f.soul.y - 28.0f, 16.0f, 28.0f};
+            any = true;
+            n = 1;
+        } else {
+            add(*f.player);
+        }
+    }
     for (const TeamMember& m : team_)
         if (!follow && m.presence == Presence::Playing && m.inFrame && m.player->state() != PlayerState::Hidden) add(*m.player);
     if (!any)

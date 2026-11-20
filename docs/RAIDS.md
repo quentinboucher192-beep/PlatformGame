@@ -8,7 +8,8 @@
 # modération, « Où frapper » (2.75, §19) ;
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
-# joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22)
+# joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
+# à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1413,6 +1414,70 @@ réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va 
 (même empreinte à 2 et 8 places), âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé
 sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
+
+## 23. À terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2)
+
+### Le tremblement du groupe éliminé (la cause)
+
+Un groupe éliminé ne joue plus : `RaidRun::step` laisse son monde **tel qu'il est tombé** (le relais donne encore ses pas,
+rien n'avance). Mais l'image était dessinée avec l'**alpha d'interpolation** de l'application (le reste de son accumulateur
+à 120 Hz, différent à chaque image) : la caméra (entre ses deux dernières positions, `prevPos` et `pos`) et chaque corps qui
+avait bougé à ce dernier pas (`prevBox`, `box`) **allaient et venaient à chaque image** entre leurs deux derniers états.
+Avec la caméra du monde (le raid complet en local, un joueur regardé), c'est tout l'écran qui tremblait, d'autant plus fort
+que la caméra courait encore vers l'âme du dernier joueur tombé ; avec la caméra libre, les ennemis et les plateformes.
+
+Correctif (affichage seulement) : un monde qui ne fait plus de pas est dessiné **tel qu'il est** (`downed::drawAlpha` :
+alpha 1 pour un groupe éliminé et pendant le choix d'un pouvoir, qui arrête tout le monde ; en coopération aussi à la fin,
+pendant la pause sur un même PC et quand une manette manque). La simulation ne change pas : empreintes identiques.
+
+### À terre, en attente de réanimation
+
+* Un bandeau en haut, au centre, **sous** le HUD (minimap, vie du Cœur) : « **À TERRE — en attente de réanimation** » (or),
+  puis « Un allié doit maintenir Interagir 2 s près de votre âme », la **jauge** quand un allié s'en occupe (« Joueur 2 vous
+  réanime… 60 % »), en coopération « Réanimations restantes de l'équipe : 1 sur 2 », et **où est l'âme** (dans la vue, ou
+  hors de la vue : une flèche à sa couleur la montre au bord de l'écran, comme celles des alliés à terre).
+* **Ce qu'on peut faire** : « Joueur précédent » (Q, LB), « Revenir sur mon âme » (Entrée, A), « Joueur suivant » (E, RB),
+  les vraies touches de l'appareil utilisé dessinées dans chaque bouton ; les boutons répondent aussi à la souris (sans
+  jamais prendre le focus). La caméra commence **sur l'âme** (`GameWorld::updateTeamCamera` : le joueur suivi à terre, c'est
+  son âme), passe d'un joueur en jeu à l'autre dans l'ordre des places, l'âme entre le dernier et le premier ; un joueur
+  regardé qui tombe à son tour ramène sur l'âme ; relevé, la vue revient sur le joueur. Dans l'arène d'un Gigaboss, sa
+  caméra suit de même l'âme ou le joueur regardé, jamais le corps.
+* Chaque changement de vue est un **mouvement doux** de 0,6 s (`downed::ViewBlend` : centre et zoom, accéléré puis ralenti),
+  jamais une coupure ni un aller-retour ; un nouveau monde (autre zone, autre groupe) coupe.
+* Un **léger filtre** sur l'image (vignette douce, couleurs un peu lavées) dit qu'on ne joue plus ; le HUD est dessiné
+  par-dessus, aussi lisible.
+* Rien de tout cela n'est simulé : la caméra ne fait pas partie de la simulation, et les entrées d'un joueur à terre ne
+  jouent pas.
+
+### Groupe éliminé : un autre état
+
+Bandeau rouge « **GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement** », la ligne de la caméra libre ou du
+joueur regardé, la règle (« Tout le groupe était à terre en même temps : plus de réanimation, la zone attend un groupe de
+renfort ») et les mêmes commandes : joueur précédent / suivant de la branche (Q / E, LB / RB), **Caméra libre** (Entrée,
+A ; flèches, stick, molette pour la déplacer).
+
+### Placement
+
+Les deux bandeaux sont mesurés (`downed::layout` : titre ajusté, lignes coupées sur deux lignes au plus, jauge, boutons, chaque
+partie après la précédente) et placés au centre, sous tout bloc du HUD qu'ils couvriraient (`downed::place`). Les
+**notifications** passent sous le bandeau (`downed::below`), jamais sur un bloc du HUD : sans place, elles attendent leur
+tour. Pas de bandeau sur la pause, le menu du raid, la grande carte, le titre de l'arène ni un grand message du niveau. Le
+**menu du raid › « Groupe »** explique les deux états et leurs touches (celui du joueur en couleur).
+
+### Tests (`tests/test_downed_view.cpp`)
+
+Groupe éliminé : la vue tremblait avec l'alpha de l'application (mesuré), elle ne bouge plus sur 240 images de spectateur
+sans entrée (position et zoom), la caméra libre non plus ; à terre : la caméra se pose sur l'âme et n'en bouge plus, le
+passage à un autre joueur puis le retour sur l'âme se font sans saut ni retour en arrière (zoom compris) ; coopération : la
+caméra de l'équipe reste immobile autour d'un joueur à terre, et pendant une pause ; bandeaux : « À TERRE » pendant
+l'attente (jauge pendant la réanimation), plus rien une fois relevé, « GROUPE ÉLIMINÉ » distinct ; mise en page en
+1280 × 720 et 1920 × 1080, en français et en anglais : chaque partie dans le panneau, à la suite, rien sur le HUD, les
+notifications sous le bandeau.
+
+### Versions
+
+Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes
+de référence ne changent pas.
 
 ---
 
