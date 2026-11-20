@@ -1452,9 +1452,11 @@ anneau, rayon vers sa cible…) et les tirs ennemis où ils seront dans la demi-
 
 * **De loin, l'onde visée** : comme le stick d'une manette, huit directions (droite, diagonale, haut…). Chacun choisit
   une place du graphe de la zone d'où une onde atteint sa cible (portée 300 px, rien de solide entre), hors du corps du
-  boss et de ce qui arrive, pas sur la place d'un autre ; l'appât près du boss, les autres à bonne distance. Arrivé, il
-  vise et tire ; en chemin, il tire dès qu'une direction l'atteint. Les cibles sans contact (griffes, poches, plaques)
-  se frappent aussi à la lame.
+  boss et de ce qui arrive, pas sur la place d'un autre ; l'appât près du boss, les autres à bonne distance. La place
+  est la plus proche qu'il **peut atteindre** sur le graphe (jamais de l'autre côté d'un mur ou du corps du boss). Arrivé,
+  il vise et tire ; en chemin, il tire dès qu'une direction l'atteint ; une cible trop haute pour le sol, il saute, double
+  saut, et tire au sommet. Les cibles sans contact (griffes, poches, plaques) se frappent aussi à la lame ; un point
+  faible à nu reçoit le **tir chargé** de ceux qui le portent (tenu immobile 0,9 s, lâché visé).
 * **L'énergie** : 22 gardés pour le bouclier ; hors des points faibles, une réserve de 30 pour eux ; à nu, tout part.
 * **Ce qui arrive** : sortir d'une zone par le côté sûr le plus proche (l'autre côté quand celui-ci mène à un autre coup
   ou à un mur), sortir d'un rayon perpendiculairement, sauter une onde au bon moment (sa vitesse et sa hauteur : la
@@ -1478,7 +1480,8 @@ qu'il est valable (pas d'échanges inutiles) :
 
 Quand quelqu'un tombe, les rôles sont redonnés au plan suivant (le réanimateur à terre : un autre le devient). Aux
 plaques de coopération qui demandent plusieurs joueurs, ceux qui ne la tiennent pas **se regroupent** à côté.
-Au vestiaire, chacun prend le pouvoir de son rôle (le réanimateur : le leurre ; les autres : le triple saut).
+Au vestiaire, chacun prend le pouvoir de son rôle (le réanimateur : le leurre ; les frappeurs : le tir chargé, lâché sur un point
+faible à nu ; l'appât et les coureurs : le triple saut).
 
 ### Ce qu'ils pensent
 
@@ -1515,6 +1518,14 @@ jamais (son relais ne pose pas ce bit, et il n'y a de joueurs simulés que dans 
 **Débutant**, **Confirmé**, **Expert** agissent sur le temps de réaction (0,3 / 0,15 / 0,05 s), la précision (moment de
 leurs coups et tirs, une visée qui glisse d'un cran, le moment de leurs sauts d'onde) et leurs choix (le bouclier contre
 un coup inévitable : 35 % / 70 % / toujours ; se cacher d'un regard : Confirmé et Expert). Rien d'autre.
+
+### Mesures (`tests/test_raid_goat.cpp`, sans invincibilité ni sauvetage)
+
+@@MESURES@@
+
+### Ce qui reste
+
+@@RESTE@@
 
 ---
 

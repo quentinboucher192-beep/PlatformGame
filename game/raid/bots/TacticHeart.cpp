@@ -83,7 +83,7 @@ public:
                 s.plate = anchors[static_cast<size_t>(k)];
                 s.need = 1;
                 s.priority = 30;
-                s.label = "Ancre";
+                s.label = "l'ancre";
                 v.stations.push_back(s);
             }
             v.phase = "Supernova : " + std::to_string(need) + " ancres à tenir";

@@ -62,7 +62,7 @@ public:
                 s.plate = order[static_cast<size_t>(k)]->area;
                 s.need = 1;
                 s.priority = 15;
-                s.label = "Miroir";
+                s.label = "le miroir";
                 v.stations.push_back(s);
             }
             v.phase = "Voile psychique : " + std::to_string(need) + " miroirs à tenir";

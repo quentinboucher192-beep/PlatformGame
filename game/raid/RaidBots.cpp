@@ -1022,7 +1022,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                                                     [&](const NavGraph::Node& nd) { return nd.mover < 0 && r.contains({nd.feet.x, nd.feet.y - 4.0f}); })
                                      : -1;
                     if (b.goalNode < 0) b.goalNode = standNode(r);
-                    think(b, "tient " + shortLabel(c.label));
+                    think(b, "tient " + c.label);
                     --need;
                     ++sent;
                 }
@@ -1036,7 +1036,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                 if ((w.playerAt(s).feet() - at).lengthSq() > 900.0f * 900.0f) continue;  // too far: its own task
                 give(s, Task::Wait, at, Stand);
                 bots_[static_cast<size_t>(s)].goalNode = nav ? nav->locate(at, 96.0f) : -1;
-                think(bots_[static_cast<size_t>(s)], "se regroupe à " + shortLabel(c.label));
+                think(bots_[static_cast<size_t>(s)], "se regroupe à " + c.label);
             }
             said.push_back(shortLabel(c.label) + " : " + std::to_string(sent));
             break;  // the first plate of the zone not done (the order of the route)
@@ -1058,7 +1058,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         if (Branch::done(run.mask(), info.index) || !br.pairDone(info, run.localDone()).empty()) continue;
         LevelEntity* e = w.entity(zo.source);
         if (!e || e->removed) continue;
-        const std::string label = shortLabel(info.label);
+        const std::string label = info.label;  // whole (its translation); shortened for the plan's line
         if (zo.trigger == "cleared") {
             auto* cz = dynamic_cast<CombatZoneEntity*>(e);
             if (!cz || cz->cleared()) continue;
@@ -1104,7 +1104,7 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             }
             ++sent;
         }
-        if (sent > 0) said.push_back(j.label + " : " + std::to_string(sent));
+        if (sent > 0) said.push_back(shortLabel(j.label) + " : " + std::to_string(sent));
     }
     for (size_t k = 0; !heavy.empty() && freeCount() > 0; ++k) {
         const Job& j = heavy[k % heavy.size()];
@@ -1113,8 +1113,8 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         give(s, j.act == Strike ? Task::Fight : Task::Objective, j.at, j.act, j.target, j.thing);
         Bot& b = bots_[static_cast<size_t>(s)];
         b.goalNode = nav ? (j.act == Strike ? nav->locate(j.at, 120.0f) : standNode(j.area.expanded(-16.0f))) : -1;
-        think(b, (j.act == Strike ? "combat : " : "nettoie ") + j.label);
-        if (k < heavy.size()) said.push_back(j.label);
+        think(b, j.act == Strike ? "combat : " + j.label : "nettoie : " + j.label);
+        if (k < heavy.size()) said.push_back(shortLabel(j.label));
     }
     // ------------------------------------------------------------------ the way out
     if (!fight_ && !platesLeft && !jobs && freeCount() > 0) {
@@ -1582,6 +1582,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                             if (w.physics().raycast(me.center(), {at.x, me.center().y}).has_value()) break;  // a wall
                             if (!w.physics().raycast({at.x, at.y - 4.0f}, {at.x, at.y + 24.0f}, true).has_value()) break;  // the edge
                             if (!safeSpot(w, seat, at, hit->in + 40)) continue;
+                            if (nav && nav->locate(at, 12.0f) < 0) continue;  // a lasting danger there (lava, spikes): no place
                             dist[sgn > 0 ? 1 : 0] = dx + 12.0f;  // a little beyond its edge
                             break;
                         }
@@ -1605,6 +1606,8 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             } else if (hit->in <= 10) {
                 raiseShield = true;
             }
+            // About to land on it and not out yet: the shield (it takes everything for 2,2 s), whatever its way out.
+            if (hit->in <= 10 && !hit->body && hit->kind != Danger::Kind::Pull) raiseShield = true;
         } else {
             b.react = 0;
         }
@@ -1641,6 +1644,11 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             const float pass = (d.area.w + me.box.w) / std::fabs(d.speed);
             const float err = lv.timing * (noise(seat, tick_ / 20 + 101) - 0.5f) * 2.0f;
             const float lo = up + 0.03f, hi = std::max(lo + 0.02f, down - pass - 0.03f);
+            if (t + err < lo && t < 0.18f && shieldReady) {
+                raiseShield = true;  // too late for a jump: the shield
+                react = "bouclier contre l'onde";
+                break;
+            }
             if (t + err < lo || t + err > std::min(hi, lo + 0.25f)) continue;
             if ((holding || staysPut) && shieldReady) {
                 raiseShield = true;  // on its plate: the shield, not a jump off it
@@ -1743,7 +1751,29 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             // The energy kept: its shield (20), and outside the weak points a reserve for them.
             const bool burst = view_.exposed || b.syncGroup > 0 || !fight_;
             const float reserve = (shield ? 22.0f : 0.0f) + (burst ? 0.0f : 10.0f);
-            if (aim >= 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) && noise(seat, tick_ + 7) < lv.precision + 0.1f) {
+            // Its charged shot (the armory's), on a weak point bare: held still at its place, then let go aimed (4 damage,
+            // through three targets) — the wave meanwhile waits.
+            const Power* charge = powerOf(me, "charge_shot");
+            const bool weakBare = view_.exposed && foe != boss;
+            if (charge && weakBare && atSpot && me.grounded() && aim >= 0 && me.energy - 20.0f >= reserve) {
+                dir = 0;
+                if (b.chargeHold < static_cast<int>(0.9f * static_cast<float>(kSimHz))) {
+                    held |= 1u << kAttack;  // charging (Attack held)
+                    ++b.chargeHold;
+                    react = "charge son tir sur le point faible";
+                } else {
+                    // Let go, aimed: the shot leaves with the stick's direction of this step.
+                    f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
+                    f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
+                    b.chargeHold = 0;
+                    fired = true;
+                    react = "tir chargé sur le point faible (× 2)";
+                }
+            } else {
+                b.chargeHold = 0;
+            }
+            if (!fired && b.chargeHold == 0 && aim >= 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) &&
+                noise(seat, tick_ + 7) < lv.precision + 0.1f) {
                 // A Beginner's aim slips a notch now and then (its precision).
                 if (noise(seat, tick_ + 53) > lv.precision + 0.25f) aim = (aim + 1) % 8;
                 held |= 1u << keyBit(sh);

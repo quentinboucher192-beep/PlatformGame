@@ -65,7 +65,7 @@ public:
                 s.plate = m.area;
                 s.need = 1;
                 s.priority = 15;
-                s.label = "Générateur";
+                s.label = "le générateur";
                 v.stations.push_back(s);
                 ++gens;
             }

@@ -144,7 +144,8 @@ TEST_CASE("raid bots (2.77): the armory — each takes its power by jumping onto
     CHECK(took > 0);
     CHECK(session->run().zone() == bras().startZone);
     const GameWorld& w = session->run().world();
-    // 2.79: each one its role's power (the reviver: the decoy; the others: the triple jump), chosen through InputFrame.
+    // 2.79: each one its role's power (the reviver: the decoy; the strikers: the charged shot; the others: the triple jump),
+    // chosen through InputFrame.
     for (int seat = 1; seat <= 4; ++seat) CHECK(w.playerAt(seat).hasPower(session->bots().wishOf(seat)));
 }
 

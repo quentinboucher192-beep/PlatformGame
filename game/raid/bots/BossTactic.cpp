@@ -25,9 +25,11 @@ std::unique_ptr<BossTactic> BossTactic::make(const std::string& routine) {
 
 std::string BossTactic::wish(Role r) const {
     // The armory (2.75): one power in place of the impulse. The reviver covers its allies down with the
-    // decoy; the others the triple jump (the high plates, the restraints, the flank towers).
+    // decoy; the strikers take the charged shot (the weak points bare); the lure and the runners the triple jump
+    // (the high plates, the flank towers).
     switch (r) {
         case Role::Reviver: return "decoy";
+        case Role::Striker: return "charge_shot";
         default: return "triple_jump";
     }
 }
@@ -141,6 +143,18 @@ void BossTactic::readBossAttack(const GameWorld& w, const Enemy& b, BossView& v)
             break;
         }
         case AttackType::Spiral: break;  // its shots, read as they fly
+        case AttackType::Rain:
+        case AttackType::Eruption:
+            // Its impact points marked during its wind-up (a column over each, the shots fall or burst there).
+            if (!striking)
+                for (const Vec2& t : b.telegraphTargets()) {
+                    Danger e;
+                    e.kind = Danger::Kind::Area;
+                    e.area = {t.x - 26.0f, t.y - 80.0f, 52.0f, 84.0f};
+                    e.in = kSimHz / 3;
+                    v.dangers.push_back(e);
+                }
+            break;
         case AttackType::Laser: {
             // A beam from its eye toward the player nearest to it (its target), as long as its reach.
             const Vec2 o = b.attackOrigin();
@@ -263,7 +277,13 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
             s.plate = vt.area;
             s.need = 1;
             s.priority = 10;
-            s.label = gb.rules() && k < gb.rules()->ventIds.size() ? gb.rules()->ventIds[k] : std::string("évent");
+            // What it is, as a player names it (its rules' id is not a name).
+            const std::string routine = gb.rules() ? gb.rules()->routine : std::string();
+            s.label = routine == "dreadfang"      ? "la chaîne"
+                      : routine == "voidworm"     ? "le crochet"
+                      : routine == "heartbreaker" ? "la côte"
+                      : routine == "coeur"        ? "l'artère"
+                                                  : "l'évent";
             v.stations.push_back(s);
         }
     // Bare: its weak points first (× 2).
