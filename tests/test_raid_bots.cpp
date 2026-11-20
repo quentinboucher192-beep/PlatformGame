@@ -139,14 +139,20 @@ TEST_CASE("raid bots (2.77): the armory — each takes its power by jumping onto
     Svc s;
     auto session = botsOnly(s, raid::RaidRun::kArmory, 4);
     CHECK(session->run().zone() == 0);
-    const int took = until(*session, 120 * kSimHz, [&] { return session->run().zone() != 0; });
+    // 2.78: each zone has its own simulated players: what each one wished is read in the armory, before they leave it.
+    std::string wanted[5];
+    const int took = until(*session, 120 * kSimHz, [&] {
+        if (session->run().zone() == 0)
+            for (int seat = 1; seat <= 4; ++seat) wanted[seat] = session->bots().wishOf(seat);
+        return session->run().zone() != 0;
+    });
     std::printf("  vestiaire : sortie en %d pas\n", took);
     CHECK(took > 0);
     CHECK(session->run().zone() == bras().startZone);
     const GameWorld& w = session->run().world();
     // 2.79: each one its role's power (the reviver: the decoy; the strikers: the charged shot; the others: the triple jump),
     // chosen through InputFrame.
-    for (int seat = 1; seat <= 4; ++seat) CHECK(w.playerAt(seat).hasPower(session->bots().wishOf(seat)));
+    for (int seat = 1; seat <= 4; ++seat) CHECK(w.playerAt(seat).hasPower(wanted[seat]));
 }
 
 TEST_CASE("raid bots (2.77): they defeat Pyroclast by themselves from its phase 2 (its vents together, its weak points bare), within a limit of steps") {
