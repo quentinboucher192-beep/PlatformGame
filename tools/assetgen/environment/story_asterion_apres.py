@@ -2,7 +2,7 @@
 """« Après Asterion » (2.81): what the fall of Asterion changes in the world, in eight animated shots, played by
 the stories' scene (BossStoryScene, kind « film ») right after the victory film for every player of a Heart
 instance and, at the same moment (a start time stamped by the server), for the online members of the clans
-present at the fall; then from the sheet of the event, the clan's raid recap and the Collection.
+present at the fall; then from the sheet of the event and the Collection.
 
 The script — each shot's caption, its titles, the place of the clans' names and its length — is hand-written
 in data/raids/asterion_apres.json (a length changed there stretches the scene, nothing to regenerate). This

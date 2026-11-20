@@ -60,7 +60,7 @@ bool victoryButton(GameServices& g, const std::string& id, const Rect& r);
 /// server time, the online members of the clans present at the fall (their « heart_film » notification, read every
 /// minute: updateParty). Never over a level: there, a notification offers it (NOTIFICATIONS › « Regarder le film »); it
 /// plays by itself only in the menus or after the raid's victory film. A late joiner starts mid-film (« Depuis le
-/// début » offered). Watched again from the sheet of the event, the clan's raid recap and the Collection, once unlocked:
+/// début » offered). Watched again from the sheet of the event and the Collection (Galerie › Films), once unlocked:
 /// for a player who took part in an event whose Heart fell, or for everyone once the world outcome « Asterion est
 /// tombé » is official (the server says which; kept in the progression for offline viewing). nullptr without its files.
 std::shared_ptr<const BossStory> aftermath();
@@ -81,7 +81,7 @@ std::unique_ptr<Scene> makeAftermathPreview(GameServices& g, bool overRaid = fal
 void playFall(GameServices& g, const std::string& eventId, bool overRaid);
 /// From a notification or a button: plays it (together while it is live), reading the event first when needed.
 void watch(GameServices& g, const std::string& eventId);
-/// « Après Asterion » (sheet of the event, raid recap): its width, then the button (keyboard, gamepad, mouse); pressed,
+/// « Après Asterion » (sheet of the event): its width, then the button (keyboard, gamepad, mouse); pressed,
 /// watch(). False without the film.
 float aftermathButtonWidth(UIContext& ui);
 bool aftermathButton(GameServices& g, const std::string& id, const Rect& r, const std::string& eventId);

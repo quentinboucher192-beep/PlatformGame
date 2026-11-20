@@ -11,6 +11,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdio>
+#include <ctime>
 #include <filesystem>
 #include <memory>
 #include <set>
@@ -228,6 +229,7 @@ TEST_CASE("après asterion: the server's time and clans read, the same server ti
         CHECK(filmSynced(scene));
         times[k] = filmTime(scene);
         CHECK(std::fabs(times[k] - 30.1f) < 0.6f);  // joined 30 s in: mid-film
+        r.app.runFrames(16);                          // its first instant never takes a key
         if (k == 1) {
             // « Depuis le début » (R): from its first image, on its own.
             pressKey(r.app, SDL_SCANCODE_R, SDLK_R);
@@ -248,7 +250,7 @@ TEST_CASE("après asterion: the server's time and clans read, the same server ti
     r.app.runFrames(2);
     CHECK(filmSynced(scene) && filmTime(scene) < -2.5f && filmTime(scene) > -3.2f);
     r.app.runFrames(80);  // four seconds
-    CHECK(filmTime(scene) > 0.5f && filmTime(scene) < 1.3f);
+    CHECK(filmSynced(scene) && filmTime(scene) > 0.5f && filmTime(scene) < 1.3f);
     pressKey(r.app, SDL_SCANCODE_ESCAPE, SDLK_ESCAPE);
     r.app.runFrames(20);
     // Over: never pushed by itself, but watched again from its start.
@@ -324,13 +326,14 @@ TEST_CASE("après asterion: the administrators' test of the Heart plays the vict
     Rig r;
     CHECK(r.ok);
     asterionfilm::playFall(*r.g, "", false);  // a test: no event, nothing asked of the server
-    r.app.runFrames(3);
+    r.app.runFrames(10);
     CHECK(storyOf(r.app.topScene()) == asterionfilm::victory().get());
     pressKey(r.app, SDL_SCANCODE_ESCAPE, SDLK_ESCAPE);  // the victory film left (or played to its end)
-    r.app.runFrames(20);
+    r.app.runFrames(10);
     CHECK(storyOf(r.app.topScene()) == asterionfilm::aftermath().get());
     CHECK(!filmSynced(r.app.topScene()));
     CHECK(filmTime(r.app.topScene()) < 3.0f);  // from its start
+    r.app.runFrames(10);
     pressKey(r.app, SDL_SCANCODE_ESCAPE, SDLK_ESCAPE);
     r.app.runFrames(20);
     CHECK(r.app.sceneCount() == 1);

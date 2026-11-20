@@ -1889,6 +1889,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › Films : tous les mini-films et présentations du jeu en une liste (histoires des giga-boss, film d'Asterion, chute d'Asterion, « Après Asterion », bande-annonce, didacticiel), avec leur vignette, leur durée et où les joueurs les voient. Une recherche, des filtres, et un bouton pour lancer chacun, verrouillé ou non. « Rejouer le didacticiel » le relance depuis le début sans rien toucher : ni progression, ni souvenir, ni record, ni succès, ni statistique.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ADMINISTRATION › Joueurs : chaque ligne se déplie (« + » : clic, Entrée ou A) et montre les derniers niveaux joués du joueur, du plus récent au plus ancien : le niveau, la date, son meilleur temps (cristaux, en vérification) ou son temps de jeu, ses tentatives et « Regarder » quand un replay vérifié existe ; pages de dix. Les données sont celles du serveur, données aux administrateurs seulement et écrites au Journal.",
    "where": [
     "data/news/changelog.json"
@@ -3288,7 +3294,7 @@
    ]
   },
   {
-   "fr": "Après le film de la victoire, en même temps pour les clans de la chute · fiche de l'événement, bilan du raid, Collection",
+   "fr": "Après le film de la victoire, en même temps pour les clans de la chute · fiche de l'événement, Collection › Galerie › Films",
    "where": [
     "ui/screens/FilmCatalog.cpp"
    ]
@@ -37279,6 +37285,12 @@
    ]
   },
   {
+   "fr": "Le revoir : depuis la fiche de l'événement (« Après Asterion », à côté de « Revoir la victoire ») et dans Collection › Galerie › Films, avec les films d'Asterion et la bande-annonce. Il est débloqué pour ceux qui ont pris part à un événement où le Cœur est tombé, puis pour tous dès que l'issue « Asterion est tombé » est officielle. Sans connexion, le plan des clans dit « les clans de la galaxie ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Le rouage caché au sommet des cheminées !",
    "where": [
     "data/levels/pyralis_03.json"
@@ -68977,6 +68989,12 @@
    ]
   },
   {
+   "fr": "Un film regardé tous ensemble : le serveur fixe son heure de départ quand la chute est validée. Les joueurs de l'instance du Cœur le voient juste après le film de la victoire, et les membres en ligne des clans présents à la chute au même moment, grâce à une notification « Asterion est tombé — regarder le film avec votre clan ». Il n'est jamais lancé par-dessus un niveau : dans un niveau, la notification l'offre. Arrivé en retard, vous le prenez en cours, ou « Depuis le début » (R, Y, ou le bouton en haut de l'écran).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Un film y entre quand vous l'avez vu ou débloqué.",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -78792,6 +78810,12 @@
    "fr": "« Après Asterion » : NOTIFICATIONS, ou la fiche de l'événement.",
    "where": [
     "ui/screens/AsterionFilm.cpp"
+   ]
+  },
+  {
+   "fr": "« Après Asterion » : quand Asterion tombe, un second mini-film suit celui de la victoire. Huit plans animés, environ 80 secondes, racontent ce que la victoire change dans la galaxie : les mondes qu'il avait dévorés se rallument, le ciel de Sylvanox, Pyralis, Glacior, Aethra et des Confins s'éclaircit, les peuples partis vers les étoiles reviennent, le Phénix s'endort enfin, l'étoile morte du centre frémit. Un plan écrit le nom des clans présents à la chute, le vôtre en évidence.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

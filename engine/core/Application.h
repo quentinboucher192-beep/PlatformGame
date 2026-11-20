@@ -55,6 +55,13 @@ public:
     void replaceTop(std::unique_ptr<Scene> scene, float fade = 0.35f);
     Scene* topScene() const { return scenes_.empty() ? nullptr : scenes_.back().get(); }
     size_t sceneCount() const { return scenes_.size(); }
+    /// 2.81: a scene of the stack holds the notifications (a run, a raid, a story: the player is in a level, even
+    /// under its pause menu).
+    bool anySceneHoldsNotifications() const {
+        for (const auto& s : scenes_)
+            if (s && s->holdsNotifications()) return true;
+        return false;
+    }
     bool transitioning() const { return fadeState_ != Fade::None; }
     /// The screen shown when a « Retour » takes away the last scene (the main menu): only
     /// quit() closes the game, never an empty stack.

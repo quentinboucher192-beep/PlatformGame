@@ -288,8 +288,9 @@ void updateParty(GameServices& g, float) {
             continue;
         }
         if (storyShot(top) >= 0) continue;  // a film or a story already on the screen
-        if (top->holdsNotifications()) {
-            // In a level (a run, a raid, coop): never pushed over it; a notification offers it (shown after the run).
+        if (g.app.anySceneHoldsNotifications()) {
+            // In a level (a run, a raid, coop, even under its pause menu): never pushed over it; a notification offers it
+            // (shown after the run).
             if (!k.announced) {
                 k.announced = true;
                 g.online.notify(OnlineService::Notification::Kind::Info, "Asterion est tombé — regarder le film avec votre clan",
@@ -297,6 +298,7 @@ void updateParty(GameServices& g, float) {
             }
             continue;
         }
+        if (g.app.input().textInputActive() || g.app.transitioning()) continue;  // never while something is typed
         if (at < -kAhead) {  // in the menus, before its time: said once, then its countdown
             if (!k.announced) {
                 k.announced = true;
