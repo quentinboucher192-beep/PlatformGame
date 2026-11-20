@@ -31,10 +31,31 @@ std::unique_ptr<Scene> makeGameScene(GameServices& g, const std::string& levelId
     return std::make_unique<GameScene>(g, levelId, std::move(opt));
 }
 
-GameScene::GameScene(GameServices& g, std::string levelId, PlayOptions opt)
-    : g_(g), levelId_(std::move(levelId)), opt_(std::move(opt)) {}
+namespace {
+/// 2.81: while an administrator replays the tutorial (PlayOptions::tutorialReplay), the music it plays is not
+/// « heard » for the Collection's jukebox (nothing of the replay is kept): the audio's hook is set aside, then given
+/// back when the last such run is gone.
+struct QuietMusic {
+    int depth = 0;
+    std::function<void(const std::string&)> saved;
+};
+QuietMusic g_quietMusic;
+}  // namespace
 
-GameScene::~GameScene() = default;
+GameScene::GameScene(GameServices& g, std::string levelId, PlayOptions opt)
+    : g_(g), levelId_(std::move(levelId)), opt_(std::move(opt)) {
+    if (opt_.tutorial && opt_.tutorialReplay && g_quietMusic.depth++ == 0) {
+        g_quietMusic.saved = std::move(g_.app.audio().onMusicStarted);
+        g_.app.audio().onMusicStarted = nullptr;
+    }
+}
+
+GameScene::~GameScene() {
+    if (opt_.tutorial && opt_.tutorialReplay && --g_quietMusic.depth == 0) {
+        g_.app.audio().onMusicStarted = std::move(g_quietMusic.saved);
+        g_quietMusic.saved = nullptr;
+    }
+}
 
 void GameScene::onEnter() {
     ResourceManager& res = g_.app.resources();

@@ -171,7 +171,7 @@ FilmRowLayout layoutFilmRow(UIContext& ui, const Rect& row, const FilmEntry& e, 
     const float top = row.y + pad, bottom = row.bottom() - pad;
     const float whereRoom = std::max(0.0f, bottom - (top + titleH + metaH + ui.s(4)));
     const float minPx = std::max(10.0f, ui.s(12));
-    for (float px = ui.s(14); px >= minPx - 0.01f; px -= std::max(0.5f, ui.s(1))) {
+    for (float px = std::max(minPx, ui.s(14)); px >= minPx - 0.01f; px -= std::max(0.5f, ui.s(1))) {
         L.wherePx = px;
         L.whereLines.clear();
         std::string cur;

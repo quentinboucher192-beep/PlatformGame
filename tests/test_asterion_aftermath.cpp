@@ -397,6 +397,9 @@ TEST_CASE("films list: every film of the game found and played; nothing overlaps
                     CHECK(ui.text().measure(L.metaShown, FontFace::Body, L.metaPx).x <= L.meta.w + 0.5f);
                     for (const std::string& l : L.whereLines) CHECK(ui.text().measure(l, FontFace::Body, L.wherePx).x <= L.where.w + 0.5f);
                     CHECK(static_cast<float>(L.whereLines.size()) * L.wherePx * 1.3f <= L.where.h + 0.5f);
+                    if (L.whereLines.empty())
+                        std::printf("  %s (%gx%g) : « où » sans place (ligne %g, titre %g, genre %g, taille %g)\n", e.id.c_str(), size.x, size.y, row.h,
+                                    L.title.h, L.meta.h, L.wherePx);
                     CHECK(!L.whereLines.empty());  // where players see it is always shown
                     CHECK(ui.text().measure(i18n::tr(L.buttonText), FontFace::Bold, ui.s(16)).x <= L.button.w);
                 }
@@ -447,6 +450,17 @@ TEST_CASE("films list: the tutorial replayed by an administrator grants nothing 
                 }
         for (int i = 0; i < 300; ++i) r.app.runFrames(1);
         CHECK(g.progression.tutorial == state);  // never « finished »
+        {
+            const Json after = g.progressCopyBody();
+            for (auto it = before["files"].begin(); it != before["files"].end(); ++it)
+                if (after["files"][it.key()] != it.value()) {
+                    std::printf("  « %s » : %s a changé\n", state, it.key().c_str());
+                    for (auto f = it.value().begin(); it.value().is_object() && f != it.value().end(); ++f)
+                        if (after["files"][it.key()][f.key()] != f.value())
+                            std::printf("    %s : %s -> %s\n", f.key().c_str(), f.value().dump().substr(0, 200).c_str(),
+                                        after["files"][it.key()][f.key()].dump().substr(0, 200).c_str());
+                }
+        }
         CHECK(g.collection.announced(tutorial::kSouvenirTitle) == announced);
         CHECK(g.collection.equippedId("title") == worn);
         CHECK(g.progressCopyBody() == before);

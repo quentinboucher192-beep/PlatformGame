@@ -195,13 +195,13 @@ def star(id_, pos, scale, track=None, depth=1.0, alpha=1.0, pulse=None):
     return e
 
 
-def chunks(rng, n, area, depth, prefix="eclat", tint=None, spin=(-60, 60)):
+def chunks(rng, n, area, depth, D, prefix="eclat", tint=None, spin=(-60, 60)):
     els = []
     for i in range(n):
         kind = ("roche", "magma", "glace")[i % 3]
         x0, y0 = float(rng.uniform(area[0], area[0] + area[2])), float(rng.uniform(area[1], area[1] + area[3]))
         tr = Track(pos=(x0, y0), scale=float(rng.uniform(1.0, 2.2)), rot=float(rng.uniform(0, 360)))
-        tr.to(20.0, "linear", pos=(x0 + float(rng.uniform(-30, 30)), y0 + float(rng.uniform(-12, 12))), rot=float(rng.uniform(*spin)) * 3)
+        tr.to(D, "linear", pos=(x0 + float(rng.uniform(-14, 14)), y0 + float(rng.uniform(-6, 6))), rot=float(rng.uniform(*spin)) * 1.4)
         tr.clip(0, kind)
         els.append(sprite(f"{prefix}{i + 1}", "eclat", tr, depth=depth, tint=tint))
     return els
@@ -220,7 +220,7 @@ def scene_silence(D, script):
     ring.to(D, "out", pos=(O[0] - HALF * 5.0, O[1] - HALF * 5.0), scale=5.0, alpha=0.0)
     els.append({"id": "onde", "layer": A.TEX + "onde.png", "depth": 0.6, "blend": "add", "tint": GOLD, "keys": ring.keys()})
     rng = np.random.default_rng(8101)
-    els += chunks(rng, 22, (80, 60, 800, 420), 0.8, tint="#9a8aa8")
+    els += chunks(rng, 22, (80, 60, 800, 420), 0.8, D, tint="#9a8aa8")
     els.append(glo("dernier_battement", "#fff2c0", 60, Track(pos=O, alpha=0.6).to(2.0, alpha=0.6).to(4.0, alpha=0.0)))
     els.append(particles("poussiere", "dust", "#ffe6b0", (120, 80, 720, 380), [K(0, alpha=0.6)]))
     cam = A.camera((0, O, 1.45, "linear"), (D, O, 1.05, "out"))
