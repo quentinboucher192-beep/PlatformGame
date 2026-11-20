@@ -5,7 +5,13 @@
 // moving between the groups of the whole raid) and get the same digest at every checkpoint; the seat
 // of an invited player is theirs (never their simulated player's) and their invincibility is applied.
 
+#include <algorithm>
+#include <array>
+#include <chrono>
+#include <deque>
+#include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "engine/audio/AudioSystem.h"
@@ -13,6 +19,8 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/content/ContentDatabase.h"
 #include "game/coop/CoopProtocol.h"
+#include "game/coop/CoopTransport.h"
+#include "game/coop/NetCoopLink.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/raid/RaidBranch.h"
@@ -220,4 +228,77 @@ TEST_CASE("raid test relay (2.80): the whole raid — an invited player in anoth
     }
     CHECK(a->hash() == b->hash());
     for (const auto& g : a->groups()) CHECK(g->session->run().takeReports().empty());
+}
+
+namespace {
+
+/// The relay of a test as the server writes it (server/src/coop.ts), scripted: what it sends once connected.
+class ScriptedRelay final : public CoopTransport {
+public:
+    explicit ScriptedRelay(std::deque<std::vector<uint8_t>> script) : script_(std::move(script)) {}
+    bool connect(std::string&) override { return true; }
+    bool send(const std::vector<uint8_t>&) override { return true; }
+    bool receive(std::deque<std::vector<uint8_t>>& out, int waitMs) override {
+        if (!script_.empty()) {
+            out.push_back(std::move(script_.front()));
+            script_.pop_front();
+        } else {
+            std::this_thread::sleep_for(std::chrono::milliseconds(std::min(waitMs, 2)));
+        }
+        return true;
+    }
+    void close() override {}
+
+private:
+    std::deque<std::vector<uint8_t>> script_;
+};
+
+/// TEST_SEATS byte for byte as coop.ts testSeatsMessage writes it (type, u32 step, u8 count, then group, seat, flags).
+std::vector<uint8_t> serverTable(uint32_t step, const std::vector<std::array<uint8_t, 3>>& seats) {
+    std::vector<uint8_t> o{19, static_cast<uint8_t>(step), static_cast<uint8_t>(step >> 8), static_cast<uint8_t>(step >> 16), static_cast<uint8_t>(step >> 24),
+                           static_cast<uint8_t>(seats.size())};
+    for (const auto& s : seats) o.insert(o.end(), s.begin(), s.end());
+    return o;
+}
+
+}  // namespace
+
+TEST_CASE("raid test relay (2.80): an invited game reads the relay of a test — GO after its start, the places from their steps, « removed »") {
+    const std::array<uint8_t, 3> none{0xFF, 0, 0};
+    std::deque<std::vector<uint8_t>> script;
+    script.push_back(coopnet::welcome(1));  // a late join: no lobby before GO, so the history is caught up
+    coopnet::GoInfo go;
+    go.players = raid::kMaxInstancePlayers;
+    go.delay = 4;
+    go.level = "raid_test";
+    go.hash = raid::testFingerprint();
+    go.attempt = "a";
+    script.push_back(coopnet::go(go));
+    script.push_back(serverTable(0, {{0, 0, 1}, none, none, none, none, none, none, none}));
+    script.push_back(serverTable(3, {{0, 0, 1}, {0, 1, 0}, none, none, none, none, none, none}));
+    script.push_back(serverTable(3, {{0, 0, 1}, {0, 9, 0}, none, none, none, none, none, none}));  // a seat past the 8: ignored
+    std::vector<InputFrame> frames(static_cast<size_t>(5 * raid::kMaxInstancePlayers));
+    script.push_back(coopnet::framesMsg(0, frames.data(), 5, raid::kMaxInstancePlayers));
+    script.push_back(serverTable(5, {{0, 0, 1}, {0, 1, 1}, none, none, none, none, none, none}));
+    script.push_back(coopnet::lobby(R"({"seats":[{"seat":0,"name":"Orion"},{"seat":1,"name":"Lyra"}]})"));
+    script.push_back(coopnet::end(coopnet::EndReason::Removed));
+    NetCoopLink link(std::make_unique<ScriptedRelay>(std::move(script)), "Lyra");
+    link.start();
+    for (int i = 0; i < 400 && link.endCode() < 0; ++i) {
+        link.update(0.01f);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+    }
+    CHECK(link.go().has_value());
+    CHECK(link.go()->hash == raid::testFingerprint());
+    CHECK(link.joinedLate());
+    CHECK(link.seat() == 1);
+    CHECK(link.available() == 5u);
+    CHECK(!link.testSeatsAt(0)[1].placed());
+    CHECK(link.testSeatsAt(2)[0].placed() && link.testSeatsAt(2)[0].invincible());
+    CHECK(link.testSeatsAt(3)[1].placed() && link.testSeatsAt(3)[1].seat == 1 && !link.testSeatsAt(3)[1].invincible());
+    CHECK(link.testSeatsAt(4)[1].seat == 1);  // the malformed table changed nothing
+    CHECK(link.testSeatsAt(99)[1].invincible());  // « Invincible » from step 5 on
+    CHECK(link.endCode() == static_cast<int>(coopnet::EndReason::Removed));
+    CHECK(link.endReason() == "L'administrateur vous a retiré du test.");
+    link.close();
 }
