@@ -442,7 +442,7 @@ TEST_CASE("raid recap: the screen draws the gigaboss's sprites, the titan, the f
         CHECK(v.portraits == 8);  // the seven gigaboss and the heart, each with its own sprite
         CHECK(v.titan && v.backdrop);
         CHECK(v.tiles >= 4 && v.previews == v.tiles);  // every reward drawn with its texture
-        CHECK(v.buttons == 2);  // a fixture: the contributions and the film (no titan's map nor sheet: no event on a server)
+        CHECK(v.buttons == 3);  // a fixture: the contributions, the film and « Après Asterion » (2.81; no titan's map nor sheet: no event on a server)
         CHECK(!v.contributions);
         rig.app.popScene();
         rig.app.runFrames(1);
