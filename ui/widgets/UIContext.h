@@ -126,6 +126,10 @@ public:
     float scrollOffset() const { return scrollStack_.empty() ? 0.0f : scrollStack_.back().offset; }
     /// Moves a scroll region (clamped by the next beginScroll; a huge value = the end).
     void setScroll(const std::string& name, float offset) { scrolls_[id(name)] = offset; }
+    /// 2.77.1: a widget that uses the wheel itself over `r` (a diagram's zoom, a legend scrolled in a scrolled
+    /// page): from the next frame on, a larger scroll region under it does not scroll with the wheel there (the
+    /// regions begin before the widgets inside them are drawn). Call each frame the pointer is over it.
+    void claimWheel(const Rect& r) { wheelClaims_.push_back(r); }
 
     // --------------------------------------------------------------- state
     bool focused(const std::string& name) const { return focus_ == id(name); }
@@ -229,6 +233,7 @@ private:
     float newPillFont(bool small) const;
     std::unordered_map<WidgetId, float> scrolls_;
     std::vector<Scroll> scrollStack_;
+    std::vector<Rect> wheelClaims_, wheelClaimed_;  // 2.77.1: this frame's, the previous frame's (claimWheel)
     WidgetId scrollToFocus_ = 0;
     // The scroll bar held by the mouse (2.39): its region, and where the thumb was grabbed.
     WidgetId scrollDrag_ = 0;

@@ -651,6 +651,17 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 * **Mesuré sans invincibilité** ni aide du test : chaque Gigaboss et le Cœur battus par 8 joueurs simulés Experts, et
   « Simuler un raid complet » jusqu'à la chute du Cœur.
 
+**Nouveau dans la version 2.77.1** :
+* **« Où frapper »** (statistiques des boss, fiches des Gigaboss d'Asterion, éditeur d'ennemis › Parties) : la **boîte
+  d'avant n'est plus dessinée**, seule compte la forme précise de chaque image ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Pause et image par image** (bouton, Espace, A ; ← →, croix), **zoom de 0,5× à 6×** (+ −, molette autour du pointeur,
+  gâchettes ou stick droit), déplacement (glisser, stick gauche, Maj + flèches) et « Recentrer » ; le dessin reste dans
+  son cadre.
+* **Infobulle sur chaque partie** (survol ; Tab ou Y au clavier et à la manette) : son rôle, les dégâts infligés au boss,
+  les dégâts reçus à son contact et pendant chacune de ses attaques, lus dans les données du boss.
+* **Légende propre** : une entrée par rôle (couleur, motif, parties nommées), la règle du combat en entier, défilement
+  quand elle est longue, accords justes (« Jointures blessent aussi pendant… »).
+
 **Nouveau dans la version 2.77.0** :
 * **Tester Asterion** : les joueurs simulés **jouent vraiment** la zone, même si vous êtes AFK (pilote automatique de
   votre place après 15 s) : objectifs de la zone répartis, chemin sur un graphe du niveau, combats, esquives, fuite du

@@ -17,6 +17,7 @@
 #include "game/gameplay/GameWorld.h"
 #include "game/online/EnemyPublication.h"
 #include "game/powers/PowerKeys.h"
+#include "ui/widgets/HitPartsView.h"
 
 namespace cosmic {
 
@@ -160,9 +161,8 @@ private:
     std::string partsFor_;        // the enemy partsWork_ was read for
     PartRules partsWork_;         // its rules as edited
     bool partsDirty_ = false;     // changed, not written yet
-    int partsSheet_ = 0, partsPose_ = 0, partsFrame_ = 0;
-    bool partsPlay_ = false;      // the pose animated (else the frame chosen)
-    float partsTime_ = 0.0f;
+    int partsSheet_ = 0, partsPose_ = 0;
+    HitStage partsStage_;         // 2.77.1: its clock (pause, frame by frame), zoom, pan, the tooltip of a part
     std::string partsChosen_;     // the part whose rules are shown
     float contentH_ = 0.0f;       // the height of the tab drawn last (its scroll)
     PartsLayout partsLayout_;
