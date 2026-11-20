@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -28,6 +29,12 @@ struct RenderOptions {
     CoverageProbe* threats = nullptr;
 };
 
+/// Display only: the outline of a sheet's silhouettes — each transparent pixel touching an opaque one
+/// (left, right, above or below) in the same frame of `frameW` × `frameH` — opaque white, every other
+/// pixel transparent (RGBA8 rows, the sheet's size). The liseré of the other players of a team
+/// (GameRenderer::drawTeam): around their body, never over it.
+std::vector<uint8_t> silhouetteOutline(const std::vector<uint8_t>& rgba, int w, int h, int frameW, int frameH);
+
 /// Draws a GameWorld: parallax planes, layered terrain and entities, enemies, player,
 /// projectiles, particles, dynamic lighting and screen-space effects.
 class GameRenderer {
@@ -51,6 +58,9 @@ public:
     uint32_t opaquePlayers() const { return opaquePlayers_; }
     /// The opacity of another player's body (display only; tests).
     static constexpr float kOtherPlayerOpacity = 0.5f;
+    /// The opacity of the outline of its colour around it (display only; tests): only around its body
+    /// (silhouetteOutline), never over it, so that its suit keeps its colours.
+    static constexpr uint8_t kOtherPlayerOutlineAlpha = 210;
     /// 2.77, display only: where the soul of player `i` is drawn (its feet): it glides from where its
     /// player died to where it waits (GameWorld::TeamMember::soul), and again when it is moved (a liquid
     /// rising over it, a passage). `fallback` when it is not down.
@@ -70,8 +80,12 @@ private:
     /// 2.62: the players of a team: in play as usual, a soul for a player down (its revival
     /// as a ring filling up), a grey ghost for a player in standby.
     void drawTeam(RenderContext& ctx, GameWorld& world);
+    /// The outline of a sheet's silhouettes (silhouetteOutline), made once per sheet file; nullptr when
+    /// it cannot be (no renderer, an unreadable file).
+    const Texture* outlineOf(Renderer& r, const AnimationSet& set);
     std::vector<Color> teamColors_;
     uint32_t opaquePlayers_ = 0xFFFFFFFFu;
+    std::unordered_map<std::string, TexturePtr> outlines_;  // display: by sheet file (TexturePtr null: none)
     struct SoulGlide {
         bool seen = false;  // drawn once on its feet: its next soul glides from where it died
         bool down = false;

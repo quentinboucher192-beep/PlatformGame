@@ -1,7 +1,10 @@
 #include "game/gameplay/GameRenderer.h"
 
+#include <SDL3_image/SDL_image.h>
+
 #include <algorithm>
 #include <cmath>
+#include <cstring>
 
 #include "engine/resources/ResourceManager.h"
 #include "game/enemies/Enemy.h"
@@ -135,6 +138,52 @@ void GameRenderer::render(Renderer& r, ResourceManager& res, GameWorld& world, c
     if (opt.debug) drawDebug(r, world);
 }
 
+std::vector<uint8_t> silhouetteOutline(const std::vector<uint8_t>& rgba, int w, int h, int frameW, int frameH) {
+    std::vector<uint8_t> out;
+    if (w <= 0 || h <= 0 || frameW <= 0 || frameH <= 0 || rgba.size() < static_cast<size_t>(w) * static_cast<size_t>(h) * 4) return out;
+    out.assign(static_cast<size_t>(w) * static_cast<size_t>(h) * 4, 0);
+    // Seen as the game's other measures of the art do (ResourceManager::visibleCells): the faintest edges do not count.
+    auto solid = [&](int x, int y) { return rgba[(static_cast<size_t>(y) * static_cast<size_t>(w) + static_cast<size_t>(x)) * 4 + 3] > 24; };
+    for (int y = 0; y < h; ++y)
+        for (int x = 0; x < w; ++x) {
+            if (solid(x, y)) continue;
+            // Its neighbours in its own frame only (a neighbouring frame's pose is not around it).
+            const int fx = x % frameW, fy = y % frameH;
+            const bool near = (fx > 0 && solid(x - 1, y)) || (fx + 1 < frameW && x + 1 < w && solid(x + 1, y)) ||
+                              (fy > 0 && solid(x, y - 1)) || (fy + 1 < frameH && y + 1 < h && solid(x, y + 1));
+            if (!near) continue;
+            uint8_t* q = out.data() + (static_cast<size_t>(y) * static_cast<size_t>(w) + static_cast<size_t>(x)) * 4;
+            q[0] = q[1] = q[2] = q[3] = 255;
+        }
+    return out;
+}
+
+const Texture* GameRenderer::outlineOf(Renderer& r, const AnimationSet& set) {
+    if (set.textureFile.empty() || !r.sdl()) return nullptr;
+    auto it = outlines_.find(set.textureFile);
+    if (it == outlines_.end()) {
+        TexturePtr made;
+        SDL_Surface* loaded = IMG_Load(set.textureFile.c_str());
+        SDL_Surface* s = loaded ? SDL_ConvertSurface(loaded, SDL_PIXELFORMAT_RGBA32) : nullptr;
+        if (loaded) SDL_DestroySurface(loaded);
+        if (s && SDL_LockSurface(s)) {
+            std::vector<uint8_t> px(static_cast<size_t>(s->w) * static_cast<size_t>(s->h) * 4);
+            for (int y = 0; y < s->h; ++y)
+                std::memcpy(px.data() + static_cast<size_t>(y) * static_cast<size_t>(s->w) * 4,
+                            static_cast<const uint8_t*>(s->pixels) + static_cast<size_t>(y) * static_cast<size_t>(s->pitch), static_cast<size_t>(s->w) * 4);
+            SDL_UnlockSurface(s);
+            std::vector<uint8_t> o = silhouetteOutline(px, s->w, s->h, set.frameWidth, set.frameHeight);
+            if (SDL_Surface* os = o.empty() ? nullptr : SDL_CreateSurfaceFrom(s->w, s->h, SDL_PIXELFORMAT_RGBA32, o.data(), s->w * 4)) {
+                made = r.textureFromSurface(os, set.textureFile + "#outline", true);
+                SDL_DestroySurface(os);
+            }
+        }
+        if (s) SDL_DestroySurface(s);
+        it = outlines_.emplace(set.textureFile, made).first;
+    }
+    return it->second.get();
+}
+
 Color GameRenderer::teamColor(int i) const {
     static const Color kDefault[3] = {{62, 230, 214, 255}, {255, 122, 184, 255}, {255, 210, 122, 255}};
     if (i >= 0 && i < static_cast<int>(teamColors_.size())) return teamColors_[static_cast<size_t>(i)];
@@ -180,14 +229,16 @@ void GameRenderer::drawTeam(RenderContext& ctx, GameWorld& world) {
                 continue;
             }
             // 2.75: another computer's player (or a simulated one): an outline of its colour, then its
-            // body semi-transparent (this computer's player is never hidden behind it).
+            // body semi-transparent (this computer's player is never hidden behind it). The outline goes
+            // AROUND its silhouette only: four copies of its sprite added in its colour (before) covered
+            // the whole body, a figure of light of the colour of its seat where its suit could not be seen.
             if (p.state() != PlayerState::Hidden && p.anim.set() && p.anim.set()->texture) {
-                const Texture& tex = p.skin ? *p.skin : *p.anim.set()->texture;
-                const Rect src = p.anim.sourceRect();
-                const Rect dst = p.anim.destRect(p.renderFeet(ctx.alpha), p.facing < 0.0f);
-                static const Vec2 kRim[4] = {{-1.5f, 0.0f}, {1.5f, 0.0f}, {0.0f, -1.5f}, {0.0f, 1.5f}};
-                for (const Vec2& d : kRim)
-                    ctx.r.drawWorldTexture(tex, &src, dst.translated(d), Color{c.r, c.g, c.b, 150}, BlendMode::Additive, p.facing < 0.0f);
+                if (const Texture* outline = outlineOf(ctx.r, *p.anim.set())) {
+                    const Rect src = p.anim.sourceRect();
+                    const Rect dst = p.anim.destRect(p.renderFeet(ctx.alpha), p.facing < 0.0f);
+                    ctx.r.drawWorldTexture(*outline, &src, dst, Color{c.r, c.g, c.b, kOtherPlayerOutlineAlpha}, BlendMode::Alpha,
+                                           p.facing < 0.0f);
+                }
             }
             DrawGroup ghost(ctx.r, kOtherPlayerOpacity);
             p.render(ctx);

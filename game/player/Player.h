@@ -56,8 +56,15 @@ public:
     void spawn(GameWorld& w, Vec2 feet, bool faceLeft, bool materialize);
 
     void fixedUpdate(GameWorld& w, const PlayerInput& in, float dt);
+    /// Display only (each image): the clip of its state, its frames advancing. Every player drawn needs
+    /// it, a team's other players included (GameWorld::update).
     void update(GameWorld& w, float dt);
     void render(RenderContext& ctx) const;
+    /// The dash afterimages alive (display only): each fades in kAfterimageLife seconds of the game's
+    /// time (fixedUpdate), never more than kMaxAfterimages of them.
+    static constexpr float kAfterimageLife = 0.25f;
+    static constexpr size_t kMaxAfterimages = 10;
+    size_t afterimageCount() const { return afterimages_.size(); }
 
     // ----------------------------------------------------------- state
     PlayerState state() const { return state_; }

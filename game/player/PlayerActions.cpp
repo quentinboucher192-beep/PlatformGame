@@ -407,8 +407,6 @@ void Player::onAnimEvent(GameWorld& w, const std::string& e) {
 void Player::update(GameWorld& w, float dt) {
     chooseAnimation();
     anim.update(dt, [&](const std::string& e) { onAnimEvent(w, e); });
-    for (auto& a : afterimages_) a.life -= dt;
-    while (!afterimages_.empty() && afterimages_.front().life <= 0.0f) afterimages_.pop_front();
 }
 
 void Player::render(RenderContext& ctx) const {
@@ -419,7 +417,7 @@ void Player::render(RenderContext& ctx) const {
 
     // Dash afterimages (additive, cyan)
     for (const auto& a : afterimages_) {
-        float k = std::clamp(a.life / 0.25f, 0.0f, 1.0f);
+        float k = std::clamp(a.life / kAfterimageLife, 0.0f, 1.0f);
         Rect dst = anim.destRect(a.feet, a.flip);
         ctx.r.drawWorldTexture(tex, &a.src, dst, Color{57, 240, 216, static_cast<uint8_t>(150 * k)}, BlendMode::Additive,
                                a.flip);
