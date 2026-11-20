@@ -220,6 +220,9 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
             return `${tag} a refusé votre raid commun : ${raid}`;
         case "leader":
             return `Vous êtes le chef de raid de ${tag} pour ${raid}`;
+        // 2.80 (raidTests.ts): an administrator invites me to a test of Asterion (answered in the game).
+        case "test_invite":
+            return `${who} vous invite à un test d'Asterion (${s("title") || "administration"}) : répondez dans les 3 minutes`;
         case "call":
             return `${who} vous invite à vous inscrire : ${raid}`;
         case "cancelled":

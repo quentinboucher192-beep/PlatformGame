@@ -5,6 +5,7 @@
 import { audit, requireAuth } from "./auth";
 import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { playerSummary, type PlayerRow } from "./model";
+import { pendingSummary } from "./raidTests";
 import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 
@@ -202,6 +203,8 @@ export async function unread(ctx: Ctx): Promise<Response> {
         groups,
         conversations: perConversation.results,
         latest: latest.results,
+        // 2.80 (raidTests.ts): an administrator's invitations to a test of Asterion, to answer now.
+        raid_test_invitations: await pendingSummary(ctx.env.DB, me),
     });
 }
 

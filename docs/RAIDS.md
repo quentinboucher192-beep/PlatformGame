@@ -15,7 +15,8 @@
 # chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §26) ;
 # la fiche récapitulative d'un raid terminé, dans le clan (2.78.1, §27) ;
 # joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §28) ;
-# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29)
+# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29) ;
+# tester avec des joueurs invités (2.80, §30)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -2250,6 +2251,133 @@ coups du boss lui-même, garder en mémoire les marques d'une pluie ou d'une ér
 Rien ne change pour les vrais joueurs : les joueurs simulés n'existent que dans les tests (l'ordre ne voyage que sur la
 trame d'un administrateur de test). `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les
 empreintes de référence (solo, coopération, raid sans joueurs simulés) ne changent pas.
+
+## 30. Tester avec des joueurs invités (2.80)
+
+ADMINISTRATION › Raids › « Tester Asterion » : dans le test d'**une zone** comme dans **« Simuler un raid complet »**,
+l'administrateur peut **inviter de vrais joueurs**, administrateurs ou joueurs classiques. Chacun prend la place d'un
+joueur simulé, avec sa case **« Invincible »** (décochée par défaut) que seul l'administrateur coche et décoche, avant
+comme pendant le test. **Sans invité, le test reste exactement comme avant : local, hors ligne, rien n'est envoyé.**
+
+### Inviter (`ui/online/RaidTestGuests`)
+
+La ligne **« Inviter des joueurs connectés… »** des réglages du test (puis « Joueurs invités · … » dans la pause du test)
+ouvre une fenêtre en deux colonnes, au clavier, à la manette et à la souris :
+
+* à droite, **les joueurs connectés maintenant** (`GET /admin/raid-test-players` : leur présence récente et montrée — une
+  présence masquée n'est pas proposée), cherchés par leur nom, défilés, page après page ; jamais soi-même, jamais un
+  joueur bloqué dans un sens ou dans l'autre, jamais un joueur déjà invité ; « ADMIN » ou « JOUEUR » à côté du nom ;
+* à gauche, **les joueurs invités** : leur nom, leur rôle, leur **groupe** (le raid complet : un groupe ou un renfort ;
+  par défaut celui de l'administrateur), leur case **« Invincible »**, l'**état de l'invitation** (« invité au
+  lancement », « en attente · 2:31 », « acceptée · en jeu », « acceptée · absent », « refusée », « expirée »,
+  « annulée ») et son action (retirer, annuler, retirer du test, réinviter).
+
+Choisis dans les réglages, les joueurs sont invités **au lancement** : le test passe alors par le serveur. Un joueur
+invité **remplace un joueur simulé de son groupe, jamais un de plus** : un groupe de N places (« Joueurs simulés (sans
+vous) » + 1 pour une zone, « Joueurs par groupe (vous compris) » pour le raid complet) reçoit au plus N − 1 joueurs
+invités, et un test 7 au plus (les places du relais, celle de l'administrateur à part). Il faut donc au moins un joueur
+simulé pour inviter.
+
+### Recevoir une invitation (`ui/screens/RaidTestInviteScene.cpp`)
+
+L'invité est prévenu par une **notification** (NOTIFICATIONS, catégorie Raid) et, en jeu, par un **message** (lu avec les
+messages non lus, toutes les 30 s ; tenu pendant une partie et montré après, comme les autres). En haut de NOTIFICATIONS,
+**« Un administrateur vous invite à un test d'Asterion : répondre »** (et la notification, « Répondre à l'invitation »)
+ouvre la fenêtre qui dit qui invite, quel test (la branche et la zone, ou les groupes du raid complet et le sien), s'il
+sera invincible et le temps qui reste : **« Accepter et rejoindre »** ou **« Refuser »**. Une invitation dure
+**3 minutes**, ou jusqu'à la fin du test ; l'administrateur voit chaque réponse.
+
+**Version** : le test a une **empreinte** (`raid::testFingerprint` : la version du jeu, `kSimulationVersion`,
+`kCoopSimulationVersion` et le titan de chaque branche). Un jeu qui n'a pas la même ne peut pas accepter (« Ce test se
+joue avec une autre version du jeu ou de ses règles : mettez le jeu à jour… ») ; le relais la redit au départ.
+
+### Un test relayé (`server/src/raidTests.ts`, `game/raid/RaidTestRelay`)
+
+Au lancement avec des invités, le jeu de l'administrateur ouvre le test sur le serveur (`POST /admin/raid-tests` :
+ses réglages vérifiés champ par champ et récrits, son empreinte), se connecte à **son relais** — un `CoopRoom` marqué
+comme test, l'administrateur sur la place 0 — et le démarre, puis les invitations partent. Un invité qui accepte reçoit
+les réglages, **construit le même test** (`raid::buildZoneTest`, `raid::buildRaidSimulation`), se connecte, **rattrape**
+les pas déjà joués (hors de l'affichage, avec une barre) puis prend sa place au pas que le relais choisit (REJOIN).
+
+* **Les joueurs simulés sont calculés par chaque ordinateur**, de la même façon (ils sont déterministes) : le relais ne
+  transporte que les entrées des vrais joueurs (8 places au plus). L'administrateur ne fait donc pas attendre les
+  autres pour ses joueurs simulés, le raid complet (jusqu'à 22 groupes) n'a pas à passer par le réseau, et un invité qui
+  arrive rejoue l'histoire comme un retour dans un raid.
+* **Où joue chacun** : le relais seul le décide et le donne **à un pas** (message **TEST_SEATS**, `coopnet::TestSeats`) :
+  pour chaque place du relais, le groupe, la place du test dans ce groupe et « Invincible ». Un invité qui arrive prend
+  la première place d'un joueur simulé de son groupe (il la retrouve s'il revient) ; l'administrateur qui rejoint ou
+  regarde un groupe du raid complet passe aussi par là (`POST /admin/raid-tests/{id}/seat`). Chaque ordinateur
+  l'applique **au même pas** (`raid::stepRelayed`) : la place d'un vrai joueur est la sienne (son joueur simulé ne
+  pense plus, n'est plus replacé, « Joueurs simulés invincibles » ne le touche pas), les sièges invincibles du test
+  (`RaidRun::setInvincibleSeats`, `GameWorld::setInvincibleSeats` : la règle d'« Invincible » de l'administrateur, pour
+  chaque place cochée) changent à ce pas.
+* **Absent ou parti** : un invité absent (liaison coupée, entrées « en attente ») ou parti voit **son joueur simulé
+  reprendre sa place** dès le pas suivant ; revenu dans les 60 s, il la reprend. Annulé par l'administrateur, il est
+  retiré au pas suivant (« L'administrateur vous a retiré du test. »). L'administrateur absent 60 s, ou qui quitte le
+  test, **termine le test pour tous**.
+* **Invincible** : la case de chaque invité, changée par l'administrateur (`PATCH /admin/raid-tests/{id}/invitations/
+  {joueur}`), passe par le relais et s'applique au même pas partout ; le serveur refuse tout autre que l'administrateur
+  de ce test (la session et son rôle, jamais une donnée envoyée par le jeu).
+* **Le raid complet relayé** joue chaque groupe à la même vitesse (×1, quel que soit le groupe regardé) ; chaque
+  ordinateur montre (sons, particules) seulement le groupe qu'il regarde.
+* **Les ordres aux joueurs simulés** (la roue de la 2.79, §29) restent ceux de l'administrateur : son jeu envoie
+  chaque ordre au relais (message **TEST_ORDER**, jamais dans sa trame : le relais ne prend dans une trame que ce
+  qu'un joueur peut y mettre), qui le donne à tous les jeux du test à partir d'un pas ; un invité n'en donne pas (le
+  relais ferme une liaison qui essaierait).
+* Notes pour tous : « TEST · X rejoint le test (Groupe 2) à la place de Joueur simulé 3 », « … est absent », « … est
+  invincible »…
+
+### Rien ne compte
+
+Un test, relayé ou non, ne rapporte **jamais rien** (`RaidRun::Test`) : ni rapport, ni consensus, ni état de branche, ni
+record, contribution, récompense, classement, succès ou progression du titan. Le serveur marque le test comme tel
+(`raid_tests`, migration **0195**) : il n'a pas d'instance de raid ni de membre, son relais n'écrit rien de ce qu'écrit
+une instance, et **tout rapport qui nomme un test est refusé** (`RAID_TEST_REPORT`), quel qu'en soit l'auteur.
+
+### Serveur
+
+| Route | Qui | Quoi |
+|---|---|---|
+| `POST /admin/raid-tests` | administrateur | ouvre un test (mode, réglages, empreinte) ; un test ouvert du même administrateur se termine |
+| `GET /admin/raid-tests/{id}` | son administrateur | le test, ses invitations, où joue chacun |
+| `GET /admin/raid-test-players?q=&test=` | administrateur | les joueurs connectés à inviter |
+| `POST /admin/raid-tests/{id}/invitations` | son administrateur | invite (groupe, « Invincible ») ; limitée en débit |
+| `PATCH …/invitations/{joueur}` | son administrateur | « Invincible », groupe |
+| `DELETE …/invitations/{joueur}` | son administrateur | annule, retire du test |
+| `POST /admin/raid-tests/{id}/seat` | son administrateur | sa propre place dans le raid complet |
+| `POST /admin/raid-tests/{id}/end` | son administrateur | termine le test |
+| `GET /raid-tests/invitations` | joueur | ses invitations à répondre (aussi dans `GET /social/unread`) |
+| `POST /raid-tests/{id}/accept`, `…/decline` | l'invité | répond (accepter : la même empreinte) |
+| `GET /raid-tests/{id}/socket` | l'administrateur, un invité qui a accepté | le relais du test |
+
+### Limites
+
+* Une liaison perdue en cours de test n'est pas reprise automatiquement. L'invité revient par NOTIFICATIONS (« Revenir
+  dans le test d'Asterion que vous avez accepté », tant que le test dure) : il rattrape la partie et retrouve sa place s'il
+  revient dans les 60 s, sinon une place d'un joueur simulé de son groupe. L'administrateur qui perd la sienne plus de
+  60 s termine le test pour tous ; il le relance.
+* Rejoindre tard un long raid complet demande de rejouer tous ses pas (la barre du rattrapage le dit).
+
+### Tests
+
+* `server/test/raidTests.test.ts` : seuls les administrateurs ouvrent, invitent, changent, annulent, terminent (un
+  joueur, un autre administrateur : refusés) ; invitations seulement aux joueurs connectés, jamais deux fois, jamais plus
+  que les joueurs simulés à remplacer ; expiration après 3 minutes ; empreinte différente refusée ; un rapport qui nomme
+  un test refusé ; le relais : la place de l'invité donnée au pas de son arrivée, « Invincible » au premier pas suivant,
+  retiré au pas suivant son annulation, le raid complet (groupe choisi, place de l'administrateur).
+* `tests/test_raid_test_relay.cpp` : deux ordinateurs d'un même test (l'administrateur, et l'invité qui rattrape tout
+  d'un coup, sans son ni particule) donnent la **même empreinte** à chaque point de contrôle — une zone (l'invité arrive,
+  part 2 s puis revient, « Invincible » coché en cours) et le raid complet (un invité dans un autre groupe,
+  l'administrateur qui change de groupe puis regarde) ; la place de l'invité est bien la sienne.
+* `tests/test_raid_test_guests.cpp` : la fenêtre des invités mesurée en 1280 × 720 et 1920 × 1080, en français et en
+  anglais (chaque partie dans la fenêtre, rien ne se chevauche, chaque libellé de bouton ou de case à sa taille).
+
+### Versions
+
+Aucune règle d'une partie ne change : `kSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes de
+référence restent les mêmes (« Invincible » existait pour la place de l'administrateur ; la même règle vaut pour chaque
+place cochée d'un test). Le protocole du relais garde sa version : TEST_SEATS n'est envoyé que par le relais d'un test,
+où seul un jeu 2.80 se connecte.
 
 ---
 

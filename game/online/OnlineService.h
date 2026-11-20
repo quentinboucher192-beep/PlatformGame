@@ -138,6 +138,11 @@ public:
     const std::string& openConversation() const { return openConversation_; }
     /// A screen that loaded GET /social/unread itself shares the answer.
     void noteUnread(const Json& data);
+    /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the invitations to an administrator's test of Asterion still to answer
+    /// (read with the unread messages, every 30 s, or by the screen that answers them); each new one is
+    /// told once by a toast. Entries as the server writes them (raidTests.ts pendingJson).
+    const Json& testInvitations() const { return testInvites_; }
+    void noteTestInvitations(const Json& list);
 
     // ---------------------------------------------------------- clans (2.66)
     /// The player's clan as last read (GET /clans/me: {clan, invitations, applications}), from the
@@ -369,6 +374,8 @@ private:
     int unreadRevision_ = 0;
     std::map<std::string, int> unreadByConversation_;
     std::set<std::string> unreadGroupIds_;  // which of them are groups
+    Json testInvites_ = Json::array();       // 2.80
+    std::set<std::string> testInvitesTold_;  // 2.80: the tests whose invitation was told (once each)
     std::string openConversation_;
 
     Json myClan_;  // 2.66: GET /clans/me

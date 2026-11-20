@@ -85,6 +85,20 @@ public:
     bool begin();
     /// One step of the raid: the administrator's frame on their seat (when they hold one).
     void step(const InputFrame& admin);
+    /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): a real player invited by the administrator on a seat (1 and up) of a
+    /// group (an index in groups()), with the frame they played at this step.
+    struct Human {
+        int group = 0;
+        int seat = 1;
+        InputFrame frame;
+    };
+    /// The same step with the invited players' frames: their seats are theirs (their simulated players
+    /// neither think nor are rescued); a seat absent from `humans` is its simulated player's again.
+    /// The test relayed to every computer gives every one of them the same steps (the same digest).
+    void step(const InputFrame& admin, const std::vector<Human>& humans);
+    /// 2.80: the invincible seats of a group (bit = seat): the administrator's seat 0 (SimSetup::invincible)
+    /// and the invited players ticked « Invincible »; applied from the next step on.
+    void setInvincibleSeats(int group, uint32_t seats);
 
     const SimSetup& setup() const { return setup_; }
     const std::vector<std::unique_ptr<Group>>& groups() const { return groups_; }
@@ -154,6 +168,7 @@ private:
     bool seated_ = true;
     uint32_t tick_ = 0;
     std::vector<WorldEvent> feed_;
+    std::map<int, uint32_t> invincible_;  // 2.80: per group (index), when set
     double lastMs_ = 0.0, avgMs_ = 0.0, maxMs_ = 0.0;
     uint64_t worldSteps_ = 0;
 };

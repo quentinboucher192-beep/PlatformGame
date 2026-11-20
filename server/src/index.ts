@@ -23,6 +23,7 @@ import * as raidRewards from "./raidRewards";
 import * as raidMap from "./raidMap";
 import * as raidWipe from "./raidWipe";
 import * as raidWorld from "./raidWorld";
+import * as raidTests from "./raidTests";
 import * as raidReviews from "./raidReviews";
 import * as raidRecap from "./raidRecap";
 import * as campaignRevisions from "./campaignRevisions";
@@ -290,6 +291,11 @@ route("POST", `${V}/raids/instances/{instanceId}/reports`, (ctx) => raidZones.re
 // 2.75 (raidWipe.ts): a wiped group's spectators (what they can watch) and the zones taken again.
 route("GET", `${V}/raids/instances/{instanceId}/watch`, (ctx) => raidWipe.watchTargets(ctx));
 route("POST", `${V}/raids/instances/{instanceId}/retake`, (ctx) => raidWipe.retake(ctx));
+// 2.80 (raidTests.ts): an administrator's test with invited players — the invited players' side.
+route("GET", `${V}/raid-tests/invitations`, (ctx) => raidTests.invitations(ctx));
+route("POST", `${V}/raid-tests/{testId}/accept`, (ctx) => raidTests.accept(ctx));
+route("POST", `${V}/raid-tests/{testId}/decline`, (ctx) => raidTests.decline(ctx));
+route("GET", `${V}/raid-tests/{testId}/socket`, (ctx) => raidTests.socket(ctx));
 // 2.68 (phase 3): the results of an event (validated tables only) and the rewards to claim.
 route("GET", `${V}/raids/events/{eventId}/results`, (ctx) => raidZones.eventResults(ctx));
 route("POST", `${V}/raids/rewards/claim`, (ctx) => raidRewards.claim(ctx));
@@ -479,6 +485,15 @@ route("POST", `${V}/admin/raids/{eventId}/suspend`, (ctx) => raidWorld.adminSusp
 route("POST", `${V}/admin/raids/{eventId}/resume`, (ctx) => raidWorld.adminResume(ctx));
 route("POST", `${V}/admin/raids/{eventId}/validate-map`, (ctx) => raidWorld.adminValidateMap(ctx));
 route("POST", `${V}/admin/raids/{eventId}/catchup`, (ctx) => raidWorld.adminCatchup(ctx));
+// 2.80 (raidTests.ts): « Tester Asterion » with invited players (administrators only).
+route("GET", `${V}/admin/raid-test-players`, (ctx) => raidTests.players(ctx));
+route("POST", `${V}/admin/raid-tests`, (ctx) => raidTests.create(ctx));
+route("GET", `${V}/admin/raid-tests/{testId}`, (ctx) => raidTests.get(ctx));
+route("POST", `${V}/admin/raid-tests/{testId}/invitations`, (ctx) => raidTests.invite(ctx));
+route("PATCH", `${V}/admin/raid-tests/{testId}/invitations/{playerId}`, (ctx) => raidTests.update(ctx));
+route("DELETE", `${V}/admin/raid-tests/{testId}/invitations/{playerId}`, (ctx) => raidTests.cancel(ctx));
+route("POST", `${V}/admin/raid-tests/{testId}/seat`, (ctx) => raidTests.seat(ctx));
+route("POST", `${V}/admin/raid-tests/{testId}/end`, (ctx) => raidTests.end(ctx));
 // 2.77.4 (raidReviews.ts): every review of an event, a comment masked or restored (Journal).
 route("GET", `${V}/admin/raids/{eventId}/reviews`, (ctx) => raidReviews.adminListReviews(ctx));
 route("POST", `${V}/admin/raids/{eventId}/reviews/{reviewId}/moderate`, (ctx) => raidReviews.adminModerateReview(ctx));

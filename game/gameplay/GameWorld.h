@@ -156,7 +156,11 @@ public:
     bool invincible() const { return invincible_ && training_ && !challenge_.has_value(); }
     /// 2.75: whether the current player is invincible: in a raid (an administrator's test) only seat 0,
     /// the administrator — the simulated players fall, go down and are revived like real players.
-    bool invinciblePlayer() const { return invincible() && (!raidMode_ || curIndex_ == 0); }
+    /// 2.80: the seats invincible in a raid's test (bit = seat; 1, the administrator, unless told
+    /// otherwise): a player the administrator invited and ticked « Invincible » (docs/RAIDS.md « Tester avec des joueurs invités »).
+    bool invinciblePlayer() const { return invincible() && (!raidMode_ || ((invincibleSeats_ >> (curIndex_ & 31)) & 1u)); }
+    void setInvincibleSeats(uint32_t seats) { invincibleSeats_ = seats; }
+    uint32_t invincibleSeats() const { return invincibleSeats_; }
     /// Puts an invincible Nova back on her last solid ground (instead of a fall); false when not invincible.
     bool rescueInvincible();
     /// 2.64, the tutorial (LevelData::tutorial): a fall never kills; Nova comes back at once on
@@ -642,6 +646,7 @@ private:
     uint64_t seed_ = 0xC0FFEE;
     bool training_ = false;
     bool invincible_ = false;
+    uint32_t invincibleSeats_ = 1u;  // 2.80: in a raid's test (the administrator's seat by default)
     bool quiet_ = false;
     std::optional<ChallengeRules> challenge_;
     /// Challenge without checkpoints: a death goes back to the start with its start state,

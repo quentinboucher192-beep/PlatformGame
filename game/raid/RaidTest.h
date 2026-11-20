@@ -99,6 +99,16 @@ public:
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
 
+    // 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): real players invited by the administrator, the test relayed to every
+    // computer (the same steps, the same frames, the same digest).
+    /// The seats a real player plays at the next steps (bit = seat, never 0): their frames come with
+    /// step() (`scripted`), their simulated player neither thinks nor is rescued, and « Joueurs simulés
+    /// invincibles » leaves them alone. A seat left (the player gone) is its simulated player's again.
+    void setHumanSeats(uint32_t seats) { humans_ = seats & ~1u; }
+    uint32_t humanSeats() const { return humans_; }
+    /// The invincible seats (bit = seat): the administrator's (seat 0) and those of the invited players
+    /// the administrator ticked « Invincible ».
+    void setInvincibleSeats(uint32_t seats) { run_.setInvincibleSeats(seats); }
     // 2.79 (docs/RAIDS.md §28).
     /// The administrator's seat played by the AI from the start (a test of 8 simulated players).
     void setAdminBot(bool on) { adminBot_ = on; }
@@ -131,6 +141,7 @@ private:
     bool adminSeated_ = true;
     bool freeSeatPlayed_ = false;
     bool botsInvincible_ = false;
+    uint32_t humans_ = 0;  // 2.80: the seats real players play
     bool adminBot_ = false;    // 2.79
     bool rescuesOn_ = true;    // 2.79
     int botDeaths_ = 0;        // 2.79
