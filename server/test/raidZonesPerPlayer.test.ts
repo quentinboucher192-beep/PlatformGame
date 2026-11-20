@@ -84,7 +84,8 @@ describe("2.78: the lair waits for every ambush of the zone before it", () => {
         // The lair is reachable only then (the generators open the Poignet-verrou).
         const gens = ["veine_generateur", "avantbras_generateur"];
         expect(reachableIn(c, maskOf([...gens, "poignet_verrou"]))[8]).toBe(false);
-        expect(reachableIn(c, maskOf([...gens, ...ids]))[8]).toBe(true);
+        expect(reachableIn(c, maskOf([...gens, ...ids]))[8]).toBe(false); // titan 9: not even past the Épaule's guard
+        expect(reachableIn(c, maskOf(["epaule_arene", ...gens, ...ids]))[8]).toBe(true);
     });
 
     it("refuses a report from the lair before its ambushes are accepted", async () => {
@@ -102,6 +103,9 @@ describe("2.78: where each player is (report « zones »)", () => {
         const ev = await runningEvent(a);
         const ia = await instanceOf(ev, a.players);
         const seats = seatsOf(3, 1, 1);
+        // Titan 9: the Veine only once the Épaule's guard (an ambush) is beaten.
+        expect((await report(a.players[0]!, ia, { kind: "zones", zone: 3, tick: 900, seats })).body.data.reason).toBe("zone verrouillée pour la branche");
+        for (const p of a.players) await report(p, ia, { kind: "objective", objective: "epaule_arene", zone: 1, tick: 800 });
         expect((await report(a.players[0]!, ia, { kind: "zones", zone: 3, tick: 900, seats })).body.data.status).toBe("pending");
         // A liar (all in the Veine): a minority.
         expect((await report(a.players[2]!, ia, { kind: "zones", zone: 3, tick: 900, seats: seatsOf(3, 3, 3) })).body.data.status).toBe("pending");
@@ -137,11 +141,12 @@ describe("2.78: where each player is (report « zones »)", () => {
         const a = await clanOf("ORBE", 2);
         const ev = await runningEvent(a);
         const ia = await instanceOf(ev, a.players);
-        for (const p of a.players) await report(p, ia, { kind: "wipe", zone: 3, tick: 3000, seats: seatsOf(3, 1) });
+        for (const p of a.players) await report(p, ia, { kind: "objective", objective: "epaule_arene", zone: 1, tick: 2000 });  // titan 9
+        for (const p of a.players) await report(p, ia, { kind: "wipe", zone: 3, tick: 3000, seats: seatsOf(3, 2) });  // titan 9: the Épaule is finished once anyone is past it
         const inst = await env.DB.prepare("SELECT wiped_zone, wiped_zones FROM raid_instances WHERE id = ?1").bind(ia).first<{ wiped_zone: number; wiped_zones: string }>();
-        expect(inst).toEqual({ wiped_zone: 3, wiped_zones: "1,3" });
+        expect(inst).toEqual({ wiped_zone: 3, wiped_zones: "2,3" });
         const map = await api("GET", `${V}/raids/events/${ev}/branches/bras_droit`, { token: a.players[0]!.token });
-        expect(map.body.data.to_retake.map((z: { zone: number }) => z.zone).sort()).toEqual([1, 3]);
+        expect(map.body.data.to_retake.map((z: { zone: number }) => z.zone).sort()).toEqual([2, 3]);
     });
 });
 
@@ -166,6 +171,7 @@ describe("2.78: deaths and revivals in the zones' tables", () => {
         const a = await clanOf("AUBE", 2);
         const ev = await runningEvent(a);
         const ia = await instanceOf(ev, a.players);
+        for (const p of a.players) await report(p, ia, { kind: "objective", objective: "epaule_arene", zone: 1, tick: 2000 });  // titan 9
         // All four or none.
         const partial = [{ seat: 0, from: 0, boss_damage: 0, damage: 0, support: 0, mechanisms: 0, objectives: 0, deaths: 1 }];
         expect((await report(a.players[0]!, ia, { kind: "zone_table", zone: 2, records: partial })).status).toBe(400);

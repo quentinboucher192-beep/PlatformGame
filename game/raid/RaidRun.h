@@ -42,6 +42,9 @@
 //   same way: a guardian another group killed is not there, its generator is on;
 // * 2.78, the lair's door (« ambushes:<zone> »): the passage to a gigaboss's lair stays shut while one
 //   wave of one ambush of the zone before it is not beaten (its ambushes are objectives of the branch).
+//   Titan 9: EVERY zone with an ambush (the entry's guard, the abdomen's nest too) keeps its ways on shut
+//   the same way (the way back stays open), and an objective another group did (the branch's state) is
+//   seen at once in the zones loaded here (restoreDone): an ambush it beat no longer runs in them.
 //
 // Nothing here reads the clock, the camera or the network: only the frames and the state given
 // with them. Each completion (objective, zone entered) is a report the game sends to the server
@@ -284,6 +287,8 @@ private:
     void remember(ZoneWorld& z);
     /// 2.72: gives a zone just loaded what it kept and what the branch's state says is done there.
     void restoreZone(ZoneWorld& z);
+    /// Titan 9: the objects of the objectives of the zone done in the branch's state and not in `before`.
+    void restoreDone(ZoneWorld& z, uint32_t before);
     void applyMask(uint32_t mask, bool initial);
     /// 2.78: the doors of a zone's passages follow their locks (the same step on every computer).
     void syncDoors(ZoneWorld& z, bool initial);

@@ -87,18 +87,27 @@ InputFrame walker(uint32_t t, uint32_t& prev) {
 
 TEST_CASE("raid zone goals (2.75): each zone's requirements, ticked from the validated state, pending when only this group did it") {
     const raid::Branch& b = bras();
-    // The Biceps: its guardian.
+    // Titan 9: the Biceps opens with the Épaule's guard (an ambush: the Épaule's ways on wait for it).
     raid::ZoneGoals z2 = raid::zoneGoals(b, 2, 0);
+    CHECK(!z2.reachable);
+    const raid::Requirement* gate = findReq(z2, "Ouvrir l'accès : Embuscades restantes : 1 sur 1");
+    CHECK(gate != nullptr && gate->access);
+    const raid::ZoneGoals z1 = raid::zoneGoals(b, 1, 0);
+    CHECK(findReq(z1, "Embuscades restantes : 1 sur 1") != nullptr);
+    CHECK(findReq(raid::zoneGoals(b, 1, bit("epaule_arene")), "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts") != nullptr);
+    const uint32_t entry = bit("epaule_arene");
+    // The Biceps: its guardian.
+    z2 = raid::zoneGoals(b, 2, entry);
     CHECK(z2.reachable);
     CHECK(!z2.finished);
     CHECK(z2.items.size() == 1);
     CHECK(!z2.items.front().done);
     CHECK(!z2.missing().empty());
-    z2 = raid::zoneGoals(b, 2, 0, bit("biceps_gardien"));  // this group only: done, waiting for the server
+    z2 = raid::zoneGoals(b, 2, entry, bit("biceps_gardien"));  // this group only: done, waiting for the server
     CHECK(z2.finished);
     CHECK(z2.items.front().done);
     CHECK(z2.items.front().pending);
-    z2 = raid::zoneGoals(b, 2, bit("biceps_gardien"));
+    z2 = raid::zoneGoals(b, 2, entry | bit("biceps_gardien"));
     CHECK(!z2.items.front().pending);
     CHECK(z2.missing().empty());
     // The Coude-forge: its pair (one per group), its optional anvil never required.
@@ -110,13 +119,13 @@ TEST_CASE("raid zone goals (2.75): each zone's requirements, ticked from the val
     CHECK(z4.missing().find("Facultatif") == std::string::npos);
     CHECK(raid::zoneFinished(b, 4, bit("forge_soufflet_ouest") | bit("forge_soufflet_est")));
     // The Poignet-verrou: locked by the two generators (« 1 / 2 » once one is on), then its last ambush.
-    raid::ZoneGoals z7 = raid::zoneGoals(b, 7, bit("veine_generateur"));
+    raid::ZoneGoals z7 = raid::zoneGoals(b, 7, entry | bit("veine_generateur"));
     CHECK(!z7.reachable);
     CHECK(!z7.items.empty());
     CHECK(z7.items.front().access);
     CHECK(z7.items.front().progress == "1 / 2");
     CHECK(z7.missing().find("1 / 2") != std::string::npos);
-    z7 = raid::zoneGoals(b, 7, bit("veine_generateur") | bit("avantbras_generateur"));
+    z7 = raid::zoneGoals(b, 7, entry | bit("veine_generateur") | bit("avantbras_generateur"));
     CHECK(z7.reachable);
     CHECK(!z7.items.front().access);
     // The generators say « k générateur(s) sur N ».

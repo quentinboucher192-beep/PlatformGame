@@ -85,16 +85,23 @@ async function rejections(instance: string) {
 describe("raids phase 2: the branch's rules", () => {
     it("generators, shortcut and arena open the locked passages; zones reachable and controlled", () => {
         expect(BRANCH.zones.length).toBe(8);
-        expect(reachable(0).filter(Boolean).length).toBe(6); // 2.68: all but the wrist and the hand (behind the wrist's long level)
-        expect(reachable(0)[7]).toBe(false);
-        expect(reachable(0)[8]).toBe(false);
+        // Titan 9: the Épaule's guard is an ambush: its ways on wait for it (lock « ambushes:1 »).
+        expect(reachable(0).filter(Boolean).length).toBe(1);
+        expect(lockOpen("ambushes:1", 0)).toBe(false);
+        const entry = maskOf(["epaule_arene"]);
+        expect(lockOpen("ambushes:1", entry)).toBe(true);
+        expect(reachable(entry).filter(Boolean).length).toBe(6); // 2.68: all but the wrist and the hand (behind the wrist's long level)
+        expect(reachable(entry)[7]).toBe(false);
+        expect(reachable(entry)[8]).toBe(false);
         // 2.78: the hand once every ambush of the wrist is beaten (the guard's alone no longer opens it).
-        expect(reachable(maskOf(["poignet_verrou"]))[8]).toBe(false);
-        expect(reachable(maskOf(["poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"]))[8]).toBe(true);
+        expect(reachable(maskOf(["epaule_arene", "poignet_verrou"]))[8]).toBe(false);
+        expect(reachable(maskOf(["epaule_arene", "poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"]))[8]).toBe(true);
+        expect(reachable(maskOf(["poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"]))[8]).toBe(false);
         const gens = maskOf(["veine_generateur", "avantbras_generateur"]);
         expect(lockOpen("generators", maskOf(["veine_generateur"]))).toBe(false);
         expect(lockOpen("generators", gens)).toBe(true);
-        expect(reachable(gens)[7]).toBe(true);
+        expect(reachable(gens | entry)[7]).toBe(true);
+        expect(reachable(gens)[7]).toBe(false);
         expect(lockOpen("shortcut", maskOf(["avantbras_raccourci"]))).toBe(true);
         expect(controlled(4, maskOf(["forge_soufflet_ouest"]))).toBe(false);
         expect(controlled(4, maskOf(["forge_soufflet_ouest", "forge_soufflet_est"]))).toBe(true); // the anvil is optional
@@ -187,11 +194,14 @@ describe("raids phase 2: instances and consensus", () => {
         expect((await report(p, inst, { objective: "epaule_arene", tick: 120 * 3600 })).body.data.status).toBe("rejected");
         const stranger = await registerPlayer("Intrus");
         expect((await report(stranger, inst, { objective: "epaule_arene" })).status).toBe(403);
+        // Titan 9: nothing beyond the Épaule before its guard (an ambush) is beaten.
+        expect((await report(p, inst, { objective: "veine_generateur", zone: 3 })).body.data.reason).toBe("zone verrouillée pour la branche");
+        expect((await report(p, inst, { objective: "epaule_arene", zone: 1, tick: 3000 })).body.data.status).toBe("accepted");
         // Both generators on: the wrist opens, its lock is accepted.
         expect((await report(p, inst, { objective: "veine_generateur", zone: 3 })).body.data.status).toBe("accepted");
         expect((await report(p, inst, { objective: "avantbras_generateur", zone: 6 })).body.data.status).toBe("accepted");
         expect((await report(p, inst, { objective: "poignet_verrou", zone: 7 })).body.data.status).toBe("accepted");
-        expect((await rejections(inst)).length).toBe(3);
+        expect((await rejections(inst)).length).toBe(4);
     });
 
     it("the two bellows come from two groups; a zone report moves the group on the map", async () => {
@@ -200,6 +210,8 @@ describe("raids phase 2: instances and consensus", () => {
         const ev = await runningEvent(a, b);
         const ia = await instanceOf(ev, a, a.players);
         const ib = await instanceOf(ev, b, b.players);
+        // Titan 9: the Épaule's guard first (an ambush: the ways on wait for it); the branch's state, for both groups.
+        expect((await report(a.players[0]!, ia, { objective: "epaule_arene", zone: 1, tick: 3000 })).body.data.status).toBe("accepted");
         expect((await report(a.players[0]!, ia, { objective: "forge_soufflet_ouest", zone: 4 })).body.data.status).toBe("accepted");
         expect((await report(a.players[0]!, ia, { objective: "forge_soufflet_est", zone: 4 })).body.data.status).toBe("rejected");
         expect((await report(b.players[0]!, ib, { objective: "forge_soufflet_est", zone: 4 })).body.data.status).toBe("accepted");

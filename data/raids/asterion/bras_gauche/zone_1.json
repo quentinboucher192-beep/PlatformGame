@@ -508,6 +508,20 @@
   },
   {
    "id": "o23",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1792.0,
+    496.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o24",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -522,7 +536,7 @@
    }
   },
   {
-   "id": "o24",
+   "id": "o25",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -539,7 +553,7 @@
    }
   },
   {
-   "id": "o25",
+   "id": "o26",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -554,7 +568,7 @@
    }
   },
   {
-   "id": "o26",
+   "id": "o27",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -568,7 +582,7 @@
    }
   },
   {
-   "id": "o27",
+   "id": "o28",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -582,7 +596,7 @@
    }
   },
   {
-   "id": "o28",
+   "id": "o29",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -596,7 +610,7 @@
    }
   },
   {
-   "id": "o29",
+   "id": "o30",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -610,7 +624,21 @@
    }
   },
   {
-   "id": "o30",
+   "id": "o31",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1792.0,
+    304.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o32",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
@@ -625,7 +653,7 @@
    }
   },
   {
-   "id": "o31",
+   "id": "o33",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -642,7 +670,7 @@
    }
   },
   {
-   "id": "o32",
+   "id": "o34",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -657,7 +685,7 @@
    }
   },
   {
-   "id": "o33",
+   "id": "o35",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -674,7 +702,7 @@
    }
   },
   {
-   "id": "o34",
+   "id": "o36",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -691,7 +719,7 @@
    }
   },
   {
-   "id": "o35",
+   "id": "o37",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -708,7 +736,7 @@
    }
   },
   {
-   "id": "o36",
+   "id": "o38",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -725,7 +753,7 @@
    }
   },
   {
-   "id": "o37",
+   "id": "o39",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -742,7 +770,7 @@
    }
   },
   {
-   "id": "o38",
+   "id": "o40",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -757,7 +785,7 @@
    }
   },
   {
-   "id": "o39",
+   "id": "o41",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -835,8 +863,8 @@
       64,
       64
      ],
-     "lock": "",
-     "door": ""
+     "lock": "ambushes:1",
+     "door": "o23"
     },
     {
      "id": "p1_2",
@@ -847,8 +875,8 @@
       64,
       64
      ],
-     "lock": "",
-     "door": ""
+     "lock": "ambushes:1",
+     "door": "o31"
     }
    ],
    "objectives": [

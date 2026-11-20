@@ -428,6 +428,11 @@
    "start_zone": 1,
    "generators_needed": 2,
    "lock_texts": {
+    "ambushes:1": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
     "ambushes:7": {
      "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
      "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
@@ -562,13 +567,13 @@
     {
      "a": 1,
      "b": 2,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
      "a": 1,
      "b": 3,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
@@ -627,7 +632,7 @@
      "zone": 1,
      "label": "Briser la garde de la mâchoire : vaincre l'arène",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {
@@ -750,6 +755,11 @@
    "start_zone": 1,
    "generators_needed": 2,
    "lock_texts": {
+    "ambushes:1": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
     "ambushes:7": {
      "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
      "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
@@ -884,13 +894,13 @@
     {
      "a": 1,
      "b": 2,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
      "a": 1,
      "b": 3,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
@@ -949,7 +959,7 @@
      "zone": 1,
      "label": "Reprendre l'épaule gelée : vaincre sa garde",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {
@@ -1072,6 +1082,11 @@
    "start_zone": 1,
    "generators_needed": 4,
    "lock_texts": {
+    "ambushes:1": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
     "ambushes:7": {
      "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
      "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
@@ -1206,13 +1221,13 @@
     {
      "a": 1,
      "b": 2,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
      "a": 1,
      "b": 3,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
@@ -1265,7 +1280,7 @@
      "zone": 1,
      "label": "Reprendre la clavicule : vaincre sa garde",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {
@@ -1397,6 +1412,16 @@
    "start_zone": 1,
    "generators_needed": 2,
    "lock_texts": {
+    "ambushes:1": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
+    "ambushes:3": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
     "ambushes:7": {
      "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
      "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
@@ -1531,13 +1556,13 @@
     {
      "a": 1,
      "b": 2,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
      "a": 1,
      "b": 3,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
@@ -1549,13 +1574,13 @@
     {
      "a": 3,
      "b": 4,
-     "lock": "",
+     "lock": "ambushes:3",
      "secret": false
     },
     {
      "a": 3,
      "b": 5,
-     "lock": "",
+     "lock": "ambushes:3",
      "secret": true
     },
     {
@@ -1596,7 +1621,7 @@
      "zone": 1,
      "label": "Reprendre le diaphragme : vaincre sa garde",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {
@@ -1614,7 +1639,7 @@
      "zone": 3,
      "label": "Détruire le nid des parasites : vaincre ses gardes",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {
@@ -1719,6 +1744,11 @@
    "start_zone": 1,
    "generators_needed": 2,
    "lock_texts": {
+    "ambushes:1": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
     "ambushes:7": {
      "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
      "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
@@ -1853,13 +1883,13 @@
     {
      "a": 1,
      "b": 2,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
      "a": 1,
      "b": 3,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
@@ -1918,7 +1948,7 @@
      "zone": 1,
      "label": "Reprendre la hanche : vaincre sa garde",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {
@@ -2041,6 +2071,11 @@
    "start_zone": 1,
    "generators_needed": 2,
    "lock_texts": {
+    "ambushes:1": {
+     "hint": "toutes les vagues de l'embuscade de la zone doivent être vaincues",
+     "message": "L'embuscade est vaincue : les passages vers la suite s'ouvrent",
+     "objective": "vaincre l'embuscade de la zone (toutes ses vagues)"
+    },
     "ambushes:7": {
      "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
      "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
@@ -2175,13 +2210,13 @@
     {
      "a": 1,
      "b": 2,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
      "a": 1,
      "b": 3,
-     "lock": "",
+     "lock": "ambushes:1",
      "secret": false
     },
     {
@@ -2240,7 +2275,7 @@
      "zone": 1,
      "label": "Reprendre la hanche de fer : vaincre sa garde",
      "optional": false,
-     "role": "",
+     "role": "ambush",
      "pair": ""
     },
     {

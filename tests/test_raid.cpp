@@ -174,7 +174,9 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
         for (const raid::Passage& p : z.passages) {
             bool edge = false;
             for (const raid::EdgeInfo& e : b.edges)
-                if ((e.a == z.zone && e.b == p.to) || (e.b == z.zone && e.a == p.to)) edge = e.lock == p.lock;
+                if ((e.a == z.zone && e.b == p.to) || (e.b == z.zone && e.a == p.to))
+                    // Titan 9: a gate of ambushes (not a lair's) closes only the way on; the way back into it is open.
+                    edge = e.lock == "ambushes:" + std::to_string(p.to) && p.to < z.zone && !b.ambushesOpenLair(p.to) ? p.lock.empty() : e.lock == p.lock;
             CHECK(edge);
             // Arriving from the neighbour: a place of its own, out of every passage.
             const auto it = b.zoneRules(p.to)->spawns.find(std::to_string(z.zone));
@@ -200,18 +202,21 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
     }
     // The rules of the map: two paths, the secret grotto, the wrist locked by 2 generators,
     // the shortcut; 2.68: the hand is the gigaboss's arena.
-    auto reach = b.reachable(0);
+    // Titan 9: nothing past the Épaule before its guard (an ambush) is beaten.
+    CHECK(!b.reachable(0)[2] && !b.reachable(0)[3]);
+    const uint32_t entry = 1u << b.objectiveIndex("epaule_arene");
+    auto reach = b.reachable(entry);
     CHECK(reach[2] && reach[3] && reach[4] && reach[5] && reach[6]);
     CHECK(!reach[7] && !reach[8]);  // 2.68: the hand only once the wrist is broken (its long level)
     const uint32_t gens = (1u << b.objectiveIndex("veine_generateur")) | (1u << b.objectiveIndex("avantbras_generateur"));
     CHECK(b.generators(gens) == 2);
-    CHECK(b.reachable(gens)[7]);
+    CHECK(b.reachable(entry | gens)[7]);
     // 2.78: the hand once every ambush of the wrist is beaten (then by the forearm too); the guard alone no longer.
     CHECK(!b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);
     uint32_t ambushes = 0;
     for (const raid::ObjectiveInfo& o : b.objectives)
         if (o.zone == 7 && o.role == "ambush") ambushes |= 1u << o.index;
-    CHECK(b.reachable(ambushes)[8]);
+    CHECK(b.reachable(entry | ambushes)[8]);
     CHECK(!b.lockOpen("shortcut", 0));
     CHECK(b.lockOpen("shortcut", 1u << b.objectiveIndex("avantbras_raccourci")));
     CHECK(b.zoneRules(8)->sealedLabel.empty());
@@ -248,7 +253,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xc10b72ff3ce46cbaULL;  // reference (2.78: every ambush of the wrist an objective, through the lair's armory): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0x4e5d59a3096c4bb3ULL;  // reference (titan 9: the Épaule's guard gates its ways on, two doors): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -310,11 +315,13 @@ TEST_CASE("raid lockstep: through the relay in raid mode, 2 and 8 games get the 
 TEST_CASE("raid zones: a passage takes the player who walks into it to the neighbour (2.78: alone), keeping hearts and powers") {
     Services s;
     raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
-    CHECK(run.begin(0));
+    // Titan 9: the Épaule's guard beaten (an ambush: its ways on wait for it), in the branch's state.
+    const uint32_t entry = 1u << branch().objectiveIndex("epaule_arene");
+    CHECK(run.begin(entry));
     CHECK(run.zone() == 1);
     std::vector<InputFrame> frame(raid::kMaxInstancePlayers);
     for (int k = 3; k < raid::kMaxInstancePlayers; ++k) frame[static_cast<size_t>(k)].flags = InputFrame::Vacant;
-    for (int t = 0; t < 120; ++t) run.step(frame.data(), static_cast<int>(frame.size()), 0);
+    for (int t = 0; t < 120; ++t) run.step(frame.data(), static_cast<int>(frame.size()), entry);
     GameWorld& w = run.world();
     // Before the passage: player 2 hurt, player 3 without its shield.
     w.playerAt(1).health = 2;
@@ -329,7 +336,7 @@ TEST_CASE("raid zones: a passage takes the player who walks into it to the neigh
     // 2.78: each player walks in on their own; each one changes zone alone.
     for (int k = 0; k < 3; ++k) {
         run.worldOf(1)->playerAt(k).teleportTo({gate.center().x, gate.bottom()});
-        run.step(frame.data(), static_cast<int>(frame.size()), 0);
+        run.step(frame.data(), static_cast<int>(frame.size()), entry);
         CHECK(run.zoneOf(k) == 3);
         for (int o = k + 1; o < 3; ++o) CHECK(run.zoneOf(o) == 1);
     }
@@ -350,7 +357,7 @@ TEST_CASE("raid zones: a passage takes the player who walks into it to the neigh
     bool zoneReport = false;
     for (const auto& r : run.takeReports()) zoneReport = zoneReport || (r.kind == raid::Report::Kind::Zones && r.zone == 3);
     CHECK(zoneReport);
-    for (int t = 0; t < 30; ++t) run.step(frame.data(), static_cast<int>(frame.size()), 0);
+    for (int t = 0; t < 30; ++t) run.step(frame.data(), static_cast<int>(frame.size()), entry);
     CHECK(run.zone() == 3);
     // A locked passage (the shortcut to the forearm) refuses them until the branch opens it.
     const raid::Passage* shortcut = nullptr;
@@ -359,7 +366,7 @@ TEST_CASE("raid zones: a passage takes the player who walks into it to the neigh
     CHECK(shortcut != nullptr);
     if (!shortcut) return;
     CHECK(!run.passageOpen(*shortcut));
-    const uint32_t open = 1u << branch().objectiveIndex("avantbras_raccourci");
+    const uint32_t open = entry | (1u << branch().objectiveIndex("avantbras_raccourci"));
     run.step(frame.data(), static_cast<int>(frame.size()), open);
     CHECK(run.passageOpen(*shortcut));
     run.world().playerAt(0).teleportTo({shortcut->rect.center().x, shortcut->rect.bottom()});

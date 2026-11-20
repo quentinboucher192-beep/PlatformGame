@@ -420,19 +420,25 @@ void RaidRun::applyMask(uint32_t mask, bool initial) {
             for (auto& z : zones_)
                 if (e.inZone(z->zone)) applyEffect(*z, e);
         }
+        // Titan 9: what another group did in a zone that is loaded here is seen in it at once, as when the zone
+        // loads (restoreZone): an ambush it beat is beaten here too (its enemies gone, its doors open). Before,
+        // the passage it opened let the group by while the ambush still ran in its world.
+        for (auto& z : zones_) restoreDone(*z, before);
     }
     for (auto& z : zones_) syncDoors(*z, initial);
 }
 
 void RaidRun::syncDoors(ZoneWorld& z, bool initial) {
     // The doors of the passages follow their locks (the same step on every computer).
+    std::vector<std::string> told;  // titan 9: a gate with two doors (the entry's two ways on) told once
     for (const Passage& p : z.rules->passages) {
         if (p.door.empty()) continue;
         auto* door = dynamic_cast<DoorEntity*>(z.world->entity(p.door));
         if (!door || door->isOpen() || !branch_.lockOpen(p.lock, mask())) continue;
         door->setOpen(*z.world, true, initial);
         // 2.78: the lair's door opens with the last ambush of the zone beaten: told in the zone.
-        if (!initial && p.lock.rfind("ambushes:", 0) == 0) {
+        if (!initial && p.lock.rfind("ambushes:", 0) == 0 && std::find(told.begin(), told.end(), p.lock) == told.end()) {
+            told.push_back(p.lock);
             const std::string text = branch_.lockText(p.lock).message;
             z.world->hint(text, 4.0f);
             alert("GROUPE · " + text, Alert::Kind::Group, z.zone);
@@ -1073,12 +1079,13 @@ void RaidRun::remember(ZoneWorld& z) {
     m.checkpoint = z.lastCheckpoint;
 }
 
-void RaidRun::restoreZone(ZoneWorld& z) {
+void RaidRun::restoreDone(ZoneWorld& z, uint32_t before) {
     GameWorld& w = *z.world;
-    // The objectives of the branch's state done in this zone (by this group or another): their
-    // objects as their completion left them (the gigaboss's own is its fight's: Gigaboss).
+    // The objectives of the branch's state done in this zone (by this group or another) and not in `before`:
+    // their objects as their completion left them (the gigaboss's own is its fight's: Gigaboss).
     for (const ZoneObjective& zo : z.rules->objectives) {
-        if (!Branch::done(mask(), zo.index) || (z.rules->gigaboss.present && zo.source == z.rules->gigaboss.boss)) continue;
+        if (!Branch::done(mask(), zo.index) || Branch::done(before, zo.index) || (z.rules->gigaboss.present && zo.source == z.rules->gigaboss.boss))
+            continue;
         LevelEntity* e = w.entity(zo.source);
         if (!e) continue;
         if (zo.trigger == "cleared") e->restoreKept(w, Json{{"cleared", true}});
@@ -1086,6 +1093,11 @@ void RaidRun::restoreZone(ZoneWorld& z) {
         else if (zo.trigger == "activate") e->restoreKept(w, Json{{"on", true}});
         else if (zo.trigger == "collected") e->restoreKept(w, Json{{"taken", true}});
     }
+}
+
+void RaidRun::restoreZone(ZoneWorld& z) {
+    GameWorld& w = *z.world;
+    restoreDone(z, 0);
     const auto kept = memory_.find(z.zone);
     if (kept == memory_.end()) return;
     for (const auto& [id, st] : kept->second.objects)

@@ -76,7 +76,8 @@ NAMES = {z[0]: z[1] for z in ZONES}
 # (game and server). Never reorder; add at the end.
 OBJECTIVES = [
     # id, zone, label, optional, role, pair
-    ("epaule_arene", 1, "Reprendre l'épaule : vaincre la garde de l'arène", False, "", ""),
+    # Titan 9 (the ambush gates): the guard of the Épaule is an ambush: its role « ambush » gates the ways on.
+    ("epaule_arene", 1, "Reprendre l'épaule : vaincre la garde de l'arène", False, "ambush", ""),
     ("biceps_gardien", 2, "Abattre le golem gardien du biceps", False, "", ""),
     ("veine_generateur", 3, "Activer le générateur de la Veine (un pouvoir de tir)", False, "generator", ""),
     ("forge_soufflet_ouest", 4, "Détruire le soufflet ouest (un groupe)", False, "", "soufflets"),
@@ -96,7 +97,8 @@ OBJECTIVES = [
 
 EDGES = [
     # a, b, lock ("", "generators", "shortcut", "objective:<id>"), secret
-    (1, 2, "", False), (1, 3, "", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True),
+    # Titan 9 (the ambush gates): the Épaule's ways on wait for its guard (an ambush), the ways back stay open.
+    (1, 2, "ambushes:1", False), (1, 3, "ambushes:1", False), (2, 4, "", False), (3, 4, "", False), (3, 5, "", True),
     (2, 6, "", False), (3, 6, "shortcut", False), (4, 7, "generators", False),
     # 2.68: the Main only once the wrist is broken (its long level is the way to the gigaboss).
     # 2.78: and every ambush of the Poignet-verrou beaten, through the lair's armory (raid_armory.py).
@@ -110,6 +112,16 @@ def lock_of(a, b):
         if {x, y} == {a, b}:
             return lock
     raise ValueError("no edge %d-%d" % (a, b))
+
+
+# Titan 9 (the ambush gates): the locks that close the way on only (toward a zone further on); the way back
+# into their zone stays open (as raid_asterion.passage_lock).
+GATES = {"ambushes:1"}
+
+
+def passage_lock(a, b):
+    lock = lock_of(a, b)
+    return "" if lock in GATES and b < a else lock
 
 
 class Zone:
@@ -143,7 +155,7 @@ class Zone:
     def passage(self, to, x0, y_floor, door=None):
         """A way to zone `to`: 4 tiles wide, 4 high, standing on y_floor; a sign and a light."""
         rect = [x0 * T, (y_floor - 4) * T, 4 * T, 4 * T]
-        p = {"id": "p%d_%d" % (self.n, to), "to": to, "rect": rect, "lock": lock_of(self.n, to), "door": door or ""}
+        p = {"id": "p%d_%d" % (self.n, to), "to": to, "rect": rect, "lock": passage_lock(self.n, to), "door": door or ""}
         self.raid["passages"].append(p)
         self.L.sign(x0 + 2, y_floor, "Passage vers : %s" % NAMES[to])
         self.L.light(x0 + 2, y_floor - 2, "#9fd8ff", 70, flicker=0.05)
@@ -225,12 +237,16 @@ def zone_1():
     L.oneway(92, 98, 32, "basalt_ledge")
     L.oneway(99, 104, 29, "basalt_ledge")
     L.oneway(100, 105, 26, "basalt_ledge")
-    z.passage(2, 115, 25)
-    z.passage(3, 115, 35)
+    high = z.passage(2, 115, 25)
+    low = z.passage(3, 115, 35)
     z.arrive(2, 109, 25)
     z.arrive(3, 108, 35)
     L.orb("health_orb", 90, 33)
     L.light(65, 30, FORGE_GLOW, 120, flicker=0.2)
+    # Titan 9 (the ambush gates): both ways on wait for the guard (lock « ambushes:1 »): a door before each
+    # passage shows it, and opens with the lock (game/raid/RaidRun::syncDoors). Added last: no id moves.
+    high["door"] = L.door(112, 21, 4)
+    low["door"] = L.door(112, 31, 4)
     z.save()
 
 

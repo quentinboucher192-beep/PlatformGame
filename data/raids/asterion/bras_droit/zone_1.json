@@ -916,6 +916,34 @@
     "flicker": 0.2,
     "bloom": true
    }
+  },
+  {
+   "id": "o48",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1792.0,
+    336.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o49",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    1792.0,
+    496.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
   }
  ],
  "events": [
@@ -981,8 +1009,8 @@
       64,
       64
      ],
-     "lock": "",
-     "door": ""
+     "lock": "ambushes:1",
+     "door": "o48"
     },
     {
      "id": "p1_3",
@@ -993,8 +1021,8 @@
       64,
       64
      ],
-     "lock": "",
-     "door": ""
+     "lock": "ambushes:1",
+     "door": "o49"
     }
    ],
    "objectives": [

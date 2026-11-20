@@ -14302,6 +14302,10 @@
     "Laser : en attente de": "Laser: waiting for",
     "Passage : en attente de": "Passage: waiting for",
     "Porte : en attente de": "Door: waiting for",
-    "{0} m)": "{0} m)"
+    "{0} m)": "{0} m)",
+    "L'embuscade est vaincue : les passages vers la suite s'ouvrent": "The ambush is beaten: the ways on open",
+    "toutes les vagues de l'embuscade de la zone doivent être vaincues": "every wave of the zone's ambush must be beaten",
+    "vaincre l'embuscade de la zone (toutes ses vagues)": "beat the zone's ambush (all its waves)",
+    "Toutes les embuscades sont vaincues : les passages vers la suite sont ouverts": "Every ambush is beaten: the ways on are open"
   }
 }
