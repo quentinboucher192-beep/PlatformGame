@@ -633,6 +633,24 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
 
+**Nouveau dans la version 2.79.0** :
+* **Des joueurs simulés « GOAT »** : une **tactique par Gigaboss** (Pyroclast, Skullmaw, Dreadfang, Titanus, Voidworm,
+  Graviton, Heartbreaker, le Cœur) qui lit sa vraie routine : coups annoncés esquivés (sortir d'une zone ou d'un rayon,
+  sauter une onde au bon moment, monter au-dessus d'un liquide, quitter un secteur ou s'abriter sous une dalle, se
+  cacher d'un regard), points faibles frappés à nu, mécanismes résolus à plusieurs (évents, miroirs, chaînes,
+  générateurs, côtes, artères, ancres ; les deux entraves de Titanus achevées ensemble) ; l'onde **visée** en huit
+  directions depuis une place d'où elle atteint sa cible, hors du corps du boss ; bouclier, leurre et énergie au bon
+  moment ([docs/RAIDS.md §23](docs/RAIDS.md)).
+* **Rôles** répartis selon le nombre de joueurs : réanimateur, appât, coureurs, frappeurs ; redonnés quand quelqu'un
+  tombe ; le groupe se regroupe aux plaques qui demandent plusieurs joueurs.
+* **Ce qu'ils pensent** : une bulle au-dessus de chacun (rôle → intention, et comment il se déplace), mesurée, jamais
+  sur une autre ni sur un personnage ; **V**, la roue ou Paramètres › HUD › « Raids » ; la section « Groupe » du menu du
+  raid les écrit aussi.
+* **Ordres** (roue : **C**, clic du stick droit, souris) : Suivez-moi, Attendez ici, Tous sur l'objectif, Réanimez-le,
+  Libres, Marquer un endroit ; ils passent par les entrées du test (rejoués à l'identique).
+* **Mesuré sans invincibilité** ni aide du test : chaque Gigaboss et le Cœur battus par 8 joueurs simulés Experts, et
+  « Simuler un raid complet » jusqu'à la chute du Cœur.
+
 **Nouveau dans la version 2.77.0** :
 * **Tester Asterion** : les joueurs simulés **jouent vraiment** la zone, même si vous êtes AFK (pilote automatique de
   votre place après 15 s) : objectifs de la zone répartis, chemin sur un graphe du niveau, combats, esquives, fuite du

@@ -332,6 +332,7 @@ void Hud::drawTeamLabels(UIContext& ui, GameWorld& w, const WorldView& view) {
             put(teamName(i) + " en veille", view.toScreen({p.center().x, p.box.y - 4.0f}), Color{201, 179, 255, 255}, 14, true);
         }
     }
+    teamLabels_ = taken;  // 2.79: what is written over the world keeps out of them
 }
 
 }  // namespace cosmic

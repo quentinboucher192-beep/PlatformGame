@@ -34,14 +34,26 @@ std::string TestSession::botName(int seat) { return "Joueur simulé " + std::to_
 
 uint64_t TestSession::hash() const { return mix(mix(run_.hash(), bots_.hash()), state_); }
 
-void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int, InputFrame>>& scripted) {
+void TestSession::step(const InputFrame& adminIn, const std::vector<std::pair<int, InputFrame>>& scripted) {
     frames_.assign(static_cast<size_t>(kMaxInstancePlayers), InputFrame{});
+    // 2.79: an order to the simulated players rides on the administrator's frame (the order wheel): taken
+    // here, at this step, and the world gets the frame without it — the same frames, the same test.
+    bots::Order order;
+    if (bots::orderOf(adminIn, order) && adminSeated_) bots_.order(order);
+    const InputFrame admin = bots::withoutOrder(adminIn);
     // 2.77: the administrator AFK (no key held for 15 s): the AI plays their seat until they touch one.
     if (adminSeated_) afk_ = admin.held != 0 || admin.pressed != 0 || admin.moveX != 0 || admin.moveY != 0 || admin.choice != 0 ? 0 : std::min(afk_ + 1, kAfkSteps + 1);
     else afk_ = 0;
     uint32_t seats = 0;
     for (int s = 1; s < players_; ++s) seats |= 1u << s;
     if (autopilot()) seats |= 1u;
+    if (names_.empty() || namesFor_ != (adminSeated_ && !autopilot())) {
+        // The names in the simulated players' thoughts (« réanime Vous », « réanime Joueur simulé 3 »).
+        namesFor_ = adminSeated_ && !autopilot();
+        names_.clear();
+        for (int s = 0; s < kMaxInstancePlayers; ++s) names_.push_back(s == 0 && namesFor_ ? std::string("Vous") : botName(s));
+        bots_.setNames(names_);
+    }
     frames_[0] = admin;
     bots_.think(run_, frames_.data(), static_cast<int>(frames_.size()), seats, adminSeated_ && !autopilot());
     if (!adminSeated_) {
@@ -63,7 +75,17 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
         for (int s = 1; s < players_ && s < w.teamSize(); ++s)
             if (w.member(s).presence == GameWorld::Presence::Playing && w.playerAt(s).alive()) w.playerAt(s).health = w.playerAt(s).maxHealth();
     }
-    rescue();
+    // 2.79: the simulated players put down (counted once each time).
+    {
+        GameWorld& w = run_.world();
+        uint8_t down = 0;
+        for (int s = 0; s < players_ && s < w.teamSize() && s < 8; ++s)
+            if (w.member(s).presence == GameWorld::Presence::Down && ((seats >> s) & 1u)) down |= static_cast<uint8_t>(1u << s);
+        for (int s = 0; s < 8; ++s)
+            if (((down >> s) & 1u) && !((downBefore_ >> s) & 1u)) ++botDeaths_;
+        downBefore_ = down;
+    }
+    if (rescuesOn_) rescue();
     run_.takeReports();  // empty: a test never reports anything
 }
 

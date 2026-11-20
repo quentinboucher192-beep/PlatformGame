@@ -73,7 +73,7 @@ public:
     /// The level of the simulated players (their reaction and precision).
     void setSkill(BotSkill s) { bots_.setSkill(s); }
     /// The administrator AFK (no key for 15 s): their seat is played by the AI until they touch one.
-    bool autopilot() const { return adminSeated_ && afk_ >= kAfkSteps; }
+    bool autopilot() const { return adminSeated_ && (adminBot_ || afk_ >= kAfkSteps); }
     TestBots& botsMut() { return bots_; }
     /// The branch's state given with each step (the full raid's simulation: every group's validated work).
     void setBranchState(uint32_t state) { state_ = state; }
@@ -85,6 +85,19 @@ public:
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
 
+    // 2.79 (docs/RAIDS.md §23).
+    /// The administrator's seat played by the AI from the start (a test of 8 simulated players).
+    void setAdminBot(bool on) { adminBot_ = on; }
+    bool adminBot() const { return adminBot_; }
+    /// The two rescues of a test (a simulated player put on its mechanism or further on its path); off: the
+    /// simulated players only ever play with their inputs (the measures of docs/RAIDS.md §23).
+    void setRescues(bool on) { rescuesOn_ = on; }
+    bool rescuesOn() const { return rescuesOn_; }
+    /// The last order the administrator gave (from their frame: bots::withOrder), its step.
+    const bots::Order& lastOrder() const { return bots_.currentOrder(); }
+    /// The deaths of the simulated players so far (a player of a seat played by the AI put down).
+    int botDeaths() const { return botDeaths_; }
+
 private:
     void rescue();
     RaidRun run_;
@@ -95,6 +108,12 @@ private:
     std::vector<InputFrame> frames_;
     bool adminSeated_ = true;
     bool botsInvincible_ = false;
+    bool adminBot_ = false;    // 2.79
+    bool rescuesOn_ = true;    // 2.79
+    int botDeaths_ = 0;        // 2.79
+    uint8_t downBefore_ = 0;   // 2.79: the seats down at the last step
+    std::vector<std::string> names_;  // 2.79: the seats' names in the thoughts
+    bool namesFor_ = false;
     int afk_ = 0;
     int rescues_ = 0;
 };

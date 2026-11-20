@@ -369,9 +369,10 @@ private:
 
     void resetAll() {
         if (mode_ == 2) {
-            const bool arrows = work_.raidHud.arrows;
+            const bool arrows = work_.raidHud.arrows, thoughts = work_.raidHud.thoughts;
             work_.raidHud = RaidHudLayout{};
             work_.raidHud.arrows = arrows;
+            work_.raidHud.thoughts = thoughts;
             status_ = "Disposition des raids par défaut rétablie.";
             statusTimer_ = 2.0f;
             return;
@@ -767,7 +768,7 @@ private:
         ui.label(head, {c.x, y}, ui.fitFont(head, FontFace::Bold, 22, c.w), ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(38);
         const float gap = ui.s(6);
-        const float below = ui.s(48) + gap + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);
+        const float below = 2.0f * (ui.s(48) + gap) + ui.s(14) + ui.s(38) + ui.s(50) + 4.0f * ui.s(58);  // 2.79: two toggles
         // 2.74: in two columns when one does not leave rows of 40 px at least (13 elements since the
         // Cœur d'Asterion's two), so that the settings under them stay on the screen.
         const float room = c.bottom() - y - below;
@@ -794,6 +795,8 @@ private:
         }
         y = listY + static_cast<float>(perCol) * (rowH + gap);
         ui.toggle("raidarrows", {c.x, y, c.w, ui.s(48)}, "Flèches hors écran (ennemis, embuscade, boss, alliés)", work_.raidHud.arrows);
+        y += ui.s(48) + gap;
+        ui.toggle("raidthoughts", {c.x, y, c.w, ui.s(48)}, "Pensées des joueurs simulés (tests)", work_.raidHud.thoughts);  // 2.79
         y += ui.s(48) + gap + ui.s(14);
         const auto e = static_cast<RE>(selected_);
         const std::string title = std::string("Réglages : ") + RaidHudLayout::label(e);

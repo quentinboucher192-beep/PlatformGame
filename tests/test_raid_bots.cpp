@@ -144,7 +144,8 @@ TEST_CASE("raid bots (2.77): the armory — each takes its power by jumping onto
     CHECK(took > 0);
     CHECK(session->run().zone() == bras().startZone);
     const GameWorld& w = session->run().world();
-    for (int seat = 1; seat <= 4; ++seat) CHECK(w.playerAt(seat).hasPower(raid::TestBots::wish(seat)));  // chosen through InputFrame
+    // 2.79: each one its role's power (the reviver: the decoy; the others: the triple jump), chosen through InputFrame.
+    for (int seat = 1; seat <= 4; ++seat) CHECK(w.playerAt(seat).hasPower(session->bots().wishOf(seat)));
 }
 
 TEST_CASE("raid bots (2.77): they defeat Pyroclast by themselves from its phase 2 (its vents together, its weak points bare), within a limit of steps") {

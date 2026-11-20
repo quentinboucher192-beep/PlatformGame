@@ -165,6 +165,7 @@ RaidSimulation::Group& RaidSimulation::form(int branch, int zone, const std::str
     g->session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g->session->setSkill(setup_.skill);
     g->session->setBotsInvincible(setup_.botsInvincible);
+    g->session->setRescues(setup_.rescues);
     g->session->setAdminSeated(false);
     g->session->setBranchState(mask(branch) | extraMask);
     g->session->begin(zone);
@@ -184,6 +185,7 @@ void RaidSimulation::moveGroup(Group& g, int branch, int zone) {
     g.session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g.session->setSkill(setup_.skill);
     g.session->setBotsInvincible(setup_.botsInvincible);
+    g.session->setRescues(setup_.rescues);
     g.session->setAdminSeated(seatedHere);
     g.session->setBranchState(mask(branch));
     g.session->begin(zone);
@@ -437,6 +439,18 @@ uint64_t RaidSimulation::hash() const {
     for (uint32_t d : done_) h = mix(h, d);
     h = mix(h, static_cast<uint64_t>(heartTaken_));
     return mix(h, tick_);
+}
+
+int RaidSimulation::botDeaths() const {
+    int k = 0;
+    for (const auto& g : groups_) k += g->session ? g->session->botDeaths() : 0;
+    return k;
+}
+
+int RaidSimulation::rescues() const {
+    int k = 0;
+    for (const auto& g : groups_) k += g->session ? g->session->rescues() : 0;
+    return k;
 }
 
 }  // namespace cosmic::raid

@@ -13,14 +13,30 @@
 //   fight;
 // * it moves on the zone's graph (raid::NavGraph: jumps, double jumps, drops, ladders, moving
 //   platforms, the lasting dangers avoided), A* to its goal, a new path when the world changes;
-// * it fights (melee, the wave from afar when it has energy to spare), keeps out of the blows
-//   announced and flees the rising liquid to a place above its level; a gigaboss: its plates or vents
-//   when it is armoured, its weak points when it is bare, its body otherwise — the states of the
-//   sheets' « Où frapper »; the targets of its mechanism (restraints…) struck together;
 // * it revives the players down (the administrator too), takes its powers in the armory (its wish,
 //   through InputFrame::choice) and waits at the exit for the administrator when they are there and
-//   playing (AFK: it goes on alone);
-// * its level (Débutant, Confirmé, Expert) is its reaction time and its precision, nothing else.
+//   playing (AFK: it goes on alone).
+//
+// 2.79 (docs/RAIDS.md §23), « des GOAT »:
+//
+// * a tactic per Gigaboss (game/raid/bots/BossTactic: its blows announced, its places to hold together,
+//   its targets, its weak points while bare, what to finish together), read every step;
+// * roles in the group, given by the plan and changed when someone falls: the lure (the nearest to the
+//   boss, keeps its attention), the strikers (the weak points first), the reviver (the nearest soul,
+//   when it is safe, its decoy over it), the runner(s) (the mechanisms, the objectives); the group
+//   gathers at the plates that need several players;
+// * how it fights: from afar with the wave aimed (eight directions, as a pad's stick) from a place of
+//   the graph that sees its target, out of the boss's body (it hurts on contact) and of what is coming;
+//   its energy kept for the shield and the weak points; it steps out of beams, jumps the waves running
+//   along its floor, leaves the marks, climbs above liquids, leaves a sector whose gravity turns over or
+//   stands under a slab, hides from a flash behind a column; its shield when a blow cannot be avoided
+//   (or while it holds a plate); its decoy over an ally it revives;
+// * the administrator's orders (« Suivez-moi », « Attendez ici », « Tous sur l'objectif », « Réanimez-le »,
+//   « Libres », a place marked) ride on their frame of a step (bots::withOrder): replayed, the same raid;
+// * what each one thinks (its role, its intention, how it moves) for the bubbles over it and the raid's
+//   menu (display only: never in the digest);
+// * its level (Débutant, Confirmé, Expert) is its reaction time, its precision (its timing, its aim) and its
+//   choices (its shield, its reading of the beams), never anything a player cannot do.
 
 #include <cstdint>
 #include <memory>
@@ -30,6 +46,8 @@
 #include "game/gameplay/InputFrame.h"
 #include "game/raid/RaidNav.h"
 #include "game/raid/RaidRun.h"
+#include "game/raid/bots/BossTactic.h"
+#include "game/raid/bots/BotTypes.h"
 
 namespace cosmic::raid {
 
@@ -67,6 +85,25 @@ public:
         bool sync = false;    // strikes only together with the others on the same mechanism
         int fleeNode = -1;    // where it shelters from the rising liquid
         int chargeHold = 0;   // a charged shot held
+        // 2.79
+        bots::Role role = bots::Role::None;
+        int syncGroup = 0;    // the sync group of its target (0 none)
+        float holdAt = 0.0f;  // its target's share of health to hold at until the group is ready
+        bool ranged = false;  // strikes its target from afar
+        int spot = -1;        // the node it shoots from
+        int spotDir = 0;      // the direction it shoots in from there (0..7, kDirs)
+        int spotAt = -100000; // the step the spot was chosen
+        bool jumpShot = false; // its target is out of reach from the ground there: it fires at the top of a double jump
+        int hideNode = -1;    // where it hides from a flash
+        int escapeDir = 0;    // the side it leaves a danger by (sticky while it lasts)
+        int escapeSteps = 0;
+        int waveJumpCool = 0; // steps before it jumps a wave again
+        bool onStation = false;
+        int shieldCool = 0;
+        uint32_t revivee = 0; // the seat it revives + 1 (0 none)
+        bots::Thought thought;
+        std::string intent;   // its task's intention (the plan's), shown unless it reacts to something
+        std::string moveText; // how it moves now (the navigation's intention)
     };
 
     void reset(int players);
@@ -94,28 +131,68 @@ public:
     int nextNode(int seat) const;
     /// The exit the group takes when its zone has nothing left for it (-1 none), and the zone it leads to.
     static int chooseExit(const RaidRun& run, int* toZone = nullptr);
-    /// The power a seat wishes in the armory (one of the armory's tablets), "" none.
+    /// The power a seat wishes in the armory (one of the armory's tablets), "" none. 2.79: its role's, from the
+    /// tactic of its branch's gigaboss (`routine`).
     static std::string wish(int seat);
+    std::string wishOf(int seat) const;
+
+    // ------------------------------------------------------------------ 2.79
+    /// The administrator's order (from their frame, TestSession): applied from this step.
+    void order(const bots::Order& o);
+    const bots::Order& currentOrder() const { return order_; }
+    /// What a seat thinks now (display only).
+    const bots::Thought& thought(int seat) const;
+    /// The seats it plays (the last step's).
+    uint32_t seats() const { return seats_; }
+    /// What its tactic reads now (display, tests): the boss's view of the last step.
+    const bots::BossView& view() const { return view_; }
+    const bots::BossTactic* tactic() const { return tactic_.get(); }
+    /// The names of the seats in the thoughts (« Joueur simulé 3 », « Vous »): given by the session.
+    void setNames(std::vector<std::string> names) { names_ = std::move(names); }
 
     static constexpr int kStuckSteps = 8 * kSimHz;  // the rescue of a test (TestSession)
 
 private:
     enum Act { None = 0, Strike, Shoot, Interact, Stand, Enter };
+    void sense(RaidRun& run);
     void plan(RaidRun& run, uint32_t seats, bool adminActive);
+    void assignRoles(const RaidRun& run, const std::vector<int>& drivers, bool fight);
     InputFrame drive(RaidRun& run, int seat, Bot& b);
     void steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32_t& held, int& dir, float& stop);
     void ensureNav(const RaidRun& run);
+    /// 2.79: the place it shoots `target` from (a node of the graph) and the direction; false: none.
+    bool chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& target, const Enemy* body);
+    /// Whether a wave from `center` in direction `d` (0..7) reaches `target` (in range, nothing solid between).
+    bool shotReaches(const GameWorld& w, Vec2 center, int d, const Rect& target) const;
+    /// The direction from `center` that reaches `target` now (-1 none).
+    int shotFrom(const GameWorld& w, Vec2 center, const Rect& target, bool grounded) const;
+    /// A danger of the step on this seat within `horizon` steps (its box, a line, a wave on its floor).
+    bool threatened(const GameWorld& w, int seat, const Rect& box, int horizon, const bots::Danger** out = nullptr) const;
+    bool safeSpot(const GameWorld& w, int seat, Vec2 feet, int horizon) const;
+    std::string nameOf(int seat) const;
+    void think(Bot& b, const std::string& intent);
+
     int players_ = 1;
     BotSkill skill_ = BotSkill::Skilled;
     std::vector<Bot> bots_;   // by seat
-    std::vector<Rect> dangers_;  // of the step: what is announced to strike (fists, jets, a gigaboss's marks)
+    std::vector<bots::Danger> dangers_;  // of the step: what is coming (the tactic's reading, else the world's)
     std::shared_ptr<const NavGraph> nav_;
     uint64_t navSig_ = 0;
     int navZone_ = -1;
     uint32_t tick_ = 0;
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
-    size_t projectiles_ = 0;  // dangers_ from here on: the enemies' shots of the step
     std::string plan_;
+    // 2.79
+    std::unique_ptr<bots::BossTactic> tactic_;
+    std::string tacticFor_ = "-";
+    bots::BossView view_;
+    bool fight_ = false;
+    bots::Order order_;
+    uint32_t seats_ = 0;
+    std::vector<std::string> names_;
+    std::vector<uint8_t> syncLow_;  // per sync group: all its targets at or under their hold share
+    uint32_t bossUid_ = 0;
+    Rect bossBody_;  // its whole shape this step (every part, its box): kept out of
 };
 
 }  // namespace cosmic::raid

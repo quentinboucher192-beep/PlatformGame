@@ -37,6 +37,9 @@ struct RaidHudLayout {
     /// The arrows on the screen's border toward what is out of view (enemies already met, the
     /// ambush's, the gigaboss, the allies), as in the solo levels.
     bool arrows = true;
+    /// 2.79: the thoughts of a raid test's simulated players over them (their role, what they do, how they
+    /// move); also shown or hidden with its key (Action::BotThoughts) and the order wheel.
+    bool thoughts = true;
 
     HudPlace& operator[](RaidHudElement e) { return items[static_cast<size_t>(e)]; }
     const HudPlace& operator[](RaidHudElement e) const { return items[static_cast<size_t>(e)]; }

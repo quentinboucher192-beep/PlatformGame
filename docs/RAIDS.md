@@ -8,7 +8,8 @@
 # modération, « Où frapper » (2.75, §19) ;
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
-# joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22)
+# joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
+# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §23)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1413,6 +1414,107 @@ réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va 
 (même empreinte à 2 et 8 places), âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé
 sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
+
+## 23. Joueurs simulés : tactiques, rôles, pensées et ordres (2.79)
+
+« Les IA sont très mauvaises […] : je veux jouer avec des GOAT. » La 2.79 donne aux joueurs simulés des tests (§22) une
+tactique contre chaque Gigaboss, des rôles dans le groupe, l'usage de leurs pouvoirs, ce qu'ils pensent à l'écran, et
+elle les fait obéir à l'administrateur. Ils **ne trichent jamais** : uniquement des `InputFrame` de joueur, la même
+physique, les mêmes coups ; rien n'est lu que le joueur ne voie (les marques au-dessus de l'arène, les évents, les
+ennemis de son mécanisme, ses points faibles, les coups annoncés, les tirs). Les mesures se font **sans aucune
+invincibilité** et **sans les deux sauvetages du test** (§22 : un joueur simulé placé sur son mécanisme ou plus loin sur
+son chemin), coupés par `TestSession::setRescues(false)` et `SimSetup::rescues`.
+
+### Une tactique par Gigaboss (`game/raid/bots/`)
+
+`bots::BossTactic` lit, à chaque pas, la vraie routine de son Gigaboss et dit au groupe ce qui arrive (`Danger` :
+une zone à quitter, une ligne d'où sortir, une onde qui court sur un sol à sauter, un liquide au-dessus duquel monter,
+un secteur dont la gravité s'inverse, un puits qui aspire), les places à tenir ensemble (`Station`, avec le nombre de
+joueurs) et quoi frapper (`Target` : les points faibles d'abord quand ils sont à nu, les cibles de son mécanisme
+achevées **ensemble** quand ses règles le demandent). Son corps blesse au contact ([HITBOX_PARTS.md](HITBOX_PARTS.md)) : il est
+toujours une zone à éviter.
+
+| Gigaboss | Ce que lit sa tactique (`game/raid/bots/Tactic*.cpp`) |
+|---|---|
+| Pyroclast | poings marqués, jets des évents ouverts ; blindé : ses 3 évents tenus (celui du centre par les plateformes) ; à nu : ses phalanges (× 2) depuis les plateformes |
+| Skullmaw | chaque regard figé puis tiré : une ligne d'où sortir ; voilé : les miroirs qu'il demande (4 à 8 joueurs) tenus **en permanence**, ceux du sol d'abord ; quand son regard se charge, les autres se cachent derrière une colonne (rien de solide entre ses yeux et eux), le bouclier en secours ; aveuglé : ses yeux et son cristal |
+| Dreadfang | chaque balayage : une onde par étage balayé (1 500 px/s, depuis son mur) à sauter ; la marque de la griffe clouante (seul le joueur visé la quitte) ; un joueur cloué : sa griffe, première cible (un sauvetage) ; blindé : ses 3 chaînes ; enchaîné au sol : ses jointures, depuis le sol à côté de lui |
+| Titanus | ses ondes de choc (le talon levé : deux ondes dans 0,9 s ; puis 430 px/s) à sauter ; rochers et écrasements marqués ; blindé : ses **2 entraves**, à 150 px sur ses jambes, frappées avec l'onde **visée vers le haut** (en diagonale depuis le sol, ou depuis les plateformes), chacune amenée bas puis achevées ensemble (moins de 1,5 s d'écart) ; à genou : sa rotule et ses coutures |
+| Voidworm | sa gueule : l'anneau vert qui suit un joueur, à quitter une fois figé ; un joueur avalé : la poche de l'estomac (un sauvetage) ; l'acide annoncé, son niveau connu : tout le monde au-dessus ; blindé : ses 3 crochets ; ses parasites |
+| Graviton | un secteur annoncé : en sortir, ou se mettre sous une de ses dalles (un plafond solide sous la voûte, où un joueur qui monte s'arrête) ; ses puits ; blindé : ses générateurs tenus **en même temps** |
+| Heartbreaker | ses ondes de battement (520 px/s) à sauter ; phase 1 : ses 4 plaques amenées bas puis brisées ensemble (avant qu'elles repoussent) ; blindé : ses 2 côtes, tenues ensemble ; à nu : la lumière de son cœur |
+| Cœur d'Asterion | ses lances une fois figées ; ses balayages et ses comètes (la comète, 64 px de haut, demande le double saut) ; pluie, puits ; la marée de plasma : sur les plateformes avant qu'elle monte ; blindé : ses 4 artères ; sa supernova : ses ancres tenues par autant de joueurs qu'il en demande |
+
+Pour tous, les coups propres du boss sont lus pendant leur annonce (`Enemy::currentAttack` : poing, charge, ruée,
+anneau, rayon vers sa cible…) et les tirs ennemis où ils seront dans la demi-seconde.
+
+### Comment ils se battent
+
+* **De loin, l'onde visée** : comme le stick d'une manette, huit directions (droite, diagonale, haut…). Chacun choisit
+  une place du graphe de la zone d'où une onde atteint sa cible (portée 300 px, rien de solide entre), hors du corps du
+  boss et de ce qui arrive, pas sur la place d'un autre ; l'appât près du boss, les autres à bonne distance. Arrivé, il
+  vise et tire ; en chemin, il tire dès qu'une direction l'atteint. Les cibles sans contact (griffes, poches, plaques)
+  se frappent aussi à la lame.
+* **L'énergie** : 22 gardés pour le bouclier ; hors des points faibles, une réserve de 30 pour eux ; à nu, tout part.
+* **Ce qui arrive** : sortir d'une zone par le côté sûr le plus proche (l'autre côté quand celui-ci mène à un autre coup
+  ou à un mur), sortir d'un rayon perpendiculairement, sauter une onde au bon moment (sa vitesse et sa hauteur : la
+  comète, saut puis double saut), monter au-dessus d'un liquide, quitter un secteur ou se mettre sous une dalle, fuir
+  un puits, se cacher d'un regard ; le **bouclier** (2,2 s, rien ne passe) quand un coup ne peut plus être évité,
+  quand un tir arrive (il le renvoie), ou sur une plaque (le bouclier plutôt qu'un saut qui la ferait lâcher).
+* **Réanimer** quand c'est sûr : rien ne doit arriver sur lui ni sur l'âme pendant les 2 s (sinon il attend à côté,
+  bouclier levé) ; en combat, le **leurre** posé au début de la réanimation détourne les coups du boss.
+
+### Des rôles dans le groupe (`TestBots::assignRoles`)
+
+Donnés à chaque plan (tous les quarts de seconde) parmi les joueurs simulés en jeu ; celui qui a un rôle le garde tant
+qu'il est valable (pas d'échanges inutiles) :
+
+* **Réanimateur** (dès 3 joueurs ; 2 à partir de 6 quand 2 âmes attendent) : celui qui porte le leurre, sinon le plus
+  proche des âmes ; il relève l'âme la plus proche, sinon se tient prêt près du groupe ;
+* **Appât** (en combat, dès 4) : le plus proche du boss (ses coups suivent le joueur le plus proche) ; il le frappe de
+  près, ou l'attire loin des plaques quand il est blindé ;
+* **Coureur** : autant que de places à tenir (au moins un dès 5) ; les plaques, les évents, les objectifs d'abord ;
+* **Frappeur** : tous les autres ; les points faibles, les cibles du mécanisme, puis le corps.
+
+Quand quelqu'un tombe, les rôles sont redonnés au plan suivant (le réanimateur à terre : un autre le devient). Aux
+plaques de coopération qui demandent plusieurs joueurs, ceux qui ne la tiennent pas **se regroupent** à côté.
+Au vestiaire, chacun prend le pouvoir de son rôle (le réanimateur : le leurre ; les autres : le triple saut).
+
+### Ce qu'ils pensent
+
+Au-dessus de chaque joueur simulé, une bulle : **son rôle → son intention** (« Réanimateur → réanime Joueur simulé 3 »,
+« Frappeur → frappe le point faible (× 2) », « Coureur → tient Miroir », « Appât → attire Titanus loin des plaques »,
+ou ce qu'il fait à cet instant : « saute l'onde », « sort de la ligne du rayon », « se cache derrière une colonne »…),
+et dessous **comment il se déplace** (l'intention de la navigation : « saute puis double saut vers le haut »…). Une
+bulle dont l'intention est un ordre est bordée d'or.
+
+* Mesurées (`botsui::layoutThoughts`) : police ajustée, intention raccourcie avec « … » quand il le faut ; posées
+  au-dessus du nom du joueur, sinon plus haut, sinon à côté ; jamais l'une sur l'autre, ni sur un nom, ni sur un
+  personnage, ni sur un panneau du HUD, toujours dans l'écran ; une bulle sans place n'est pas dessinée.
+* **V** (`Pensées des joueurs simulés`, réglable dans Paramètres › Commandes), la roue d'ordres, ou Paramètres › HUD ›
+  « Raids » › « Pensées des joueurs simulés (tests) » les affichent ou les masquent.
+* Le menu du raid, section **« Groupe »**, écrit sous chaque joueur simulé son rôle, son intention et son mouvement.
+
+### Les ordres (la roue)
+
+**C** (manette : clic du stick droit ; `Ordres aux joueurs simulés`, réglable) ouvre la roue : **Suivez-moi**,
+**Attendez ici**, **Tous sur l'objectif** (sans rôle : tout le monde sur le mécanisme ou la cible du moment),
+**Réanimez-le** (les deux plus proches relèvent le joueur à terre le plus près de vous), **Libres** (retour aux rôles et à
+la tactique), **Marquer un endroit** (un viseur déplacé au stick, aux flèches ou à la souris, posé avec Valider ou un
+clic : les deux plus proches y frappent l'ennemi, tiennent la plaque, actionnent le levier ou le générateur, sinon
+vont voir) et **Afficher / masquer les pensées**. Le stick, les flèches ou la souris choisissent, Valider ou un clic
+donne l'ordre, Retour ferme ; le jeu continue dessous (vos entrées sont neutres tant qu'elle est ouverte).
+
+L'ordre **passe par les entrées** : il voyage sur la trame de l'administrateur de ce pas (`bots::withOrder` : un bit de
+`InputFrame::flags`, l'ordre et sa place dans `choice`, `moveX`, `moveY`), `TestSession::step` le prend à ce pas et
+donne au monde la trame sans lui. Les mêmes trames redonnent le même test (même empreinte) ; un vrai raid n'en voit
+jamais (son relais ne pose pas ce bit, et il n'y a de joueurs simulés que dans un test).
+
+### Le niveau
+
+**Débutant**, **Confirmé**, **Expert** agissent sur le temps de réaction (0,3 / 0,15 / 0,05 s), la précision (moment de
+leurs coups et tirs, une visée qui glisse d'un cran, le moment de leurs sauts d'onde) et leurs choix (le bouclier contre
+un coup inévitable : 35 % / 70 % / toujours ; se cacher d'un regard : Confirmé et Expert). Rien d'autre.
 
 ---
 

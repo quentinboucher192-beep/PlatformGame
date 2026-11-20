@@ -68,6 +68,7 @@ Json RaidHudLayout::toJson() const {
         j[id(static_cast<RaidHudElement>(i))] = e;
     }
     j["arrows"] = arrows;
+    j["thoughts"] = thoughts;
     return j;
 }
 
@@ -90,6 +91,7 @@ RaidHudLayout RaidHudLayout::fromJson(const Json& j) {
         }
     }
     l.arrows = jget<bool>(j, "arrows", true);
+    l.thoughts = jget<bool>(j, "thoughts", true);
     return l;
 }
 
