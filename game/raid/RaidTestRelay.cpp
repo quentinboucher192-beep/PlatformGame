@@ -158,7 +158,7 @@ void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const co
     const bool adminHere = a.placed() && a.group == 0;
     s.setAdminSeated(adminHere);
     InputFrame admin = playedFrame(frameOf(0)) ? frameOf(0) : InputFrame{};
-    admin.flags = 0;
+    admin.flags &= InputFrame::SkipCinematic;  // the relay's own flags never reach the simulation
     uint32_t invincible = adminHere && a.invincible() ? 1u : 0u;
     uint32_t humans = 0;
     std::vector<std::pair<int, InputFrame>> played;
@@ -170,7 +170,7 @@ void stepRelayed(TestSession& s, const std::vector<InputFrame>& frames, const co
         if (!playedFrame(f) || ((humans >> e.seat) & 1u)) continue;  // away: their simulated player plays the seat
         humans |= 1u << e.seat;
         InputFrame clean = f;
-        clean.flags = 0;
+        clean.flags &= InputFrame::SkipCinematic;
         played.push_back({e.seat, clean});
     }
     s.setInvincibleSeats(invincible);
@@ -190,7 +190,7 @@ void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, con
         else sim.join(want);  // refused for a wiped group: the administrator stays where they are
     }
     InputFrame admin = playedFrame(frameOf(0)) ? frameOf(0) : InputFrame{};
-    admin.flags = 0;
+    admin.flags &= InputFrame::SkipCinematic;  // the relay's own flags never reach the simulation
     // Each group's invincible seats: its free place as the test says (SimSetup::invincible), the invited players ticked.
     std::vector<uint32_t> invincible(static_cast<size_t>(groups), sim.setup().invincible ? 1u : 0u);
     std::vector<RaidSimulation::Human> humans;
@@ -204,7 +204,7 @@ void stepRelayed(RaidSimulation& sim, const std::vector<InputFrame>& frames, con
         h.group = e.group;
         h.seat = e.seat;
         h.frame = f;
-        h.frame.flags = 0;
+        h.frame.flags &= InputFrame::SkipCinematic;
         humans.push_back(h);
     }
     for (int g = 0; g < groups; ++g) sim.setInvincibleSeats(g, invincible[static_cast<size_t>(g)]);
