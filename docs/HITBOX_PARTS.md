@@ -43,7 +43,8 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   modèle de `dragon()`, et nommez ses parties dans une liste comme `DRAGON`. Elle doit rester déterministe : des
   entiers seulement pour les décisions, aucun hasard, des ordres fixes.
 * **Contrôle visuel** : vérifiez sur quelques images (repos, élan, attaque) que les formes suivent le dessin.
-  `CosmicPlatformer --headless --boss-stats <id>:frapper=<clip> --shot …` montre l'onglet « Où frapper ».
+  `CosmicPlatformer --headless --boss-stats <id>:frapper=<clip> --shot …` montre l'onglet « Où frapper » ; ajoutez
+  `--hit-view <zoom>[:<partie>[:<image>]]` pour le zoom, l'infobulle d'une partie et une image en pause (section 7).
 
 ## 2. Ses règles : `data/enemies/<id>.json`
 
@@ -95,9 +96,10 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
 ### Les régler dans l'éditeur d'ennemis (2.76.2)
 
 * **Où** : `Éditeur d'ennemis › Boss › Parties (où frapper)` (`editors/enemy_editor/EnemyEditorParts.cpp`). Le
-  panneau montre le sprite du boss avec la planche, la pose et l'image choisies (ou la pose animée), et ses parties
-  à la couleur et au motif de leur rôle. La partie choisie est cerclée de blanc ; on la choisit d'un clic sur le
-  sprite, ou dans la liste au clavier et à la manette.
+  panneau montre le sprite du boss avec la planche et la pose choisies, sur la scène commune des schémas (section 7 :
+  pause, image par image, zoom, infobulle), et ses parties à la couleur et au motif de leur rôle. La partie choisie
+  est cerclée de blanc ; on la choisit d'un clic sur le sprite, avec Tab ou Y, ou dans la liste au clavier et à la
+  manette. La croix blanche marque ses pieds, d'où se mesurent les origines des attaques.
 * **Ce qui se règle**, pour la partie choisie :
   * son rôle (point faible, partie normale, blindée, qui blesse) ;
   * son multiplicateur de dégâts (0 à 4, par quarts) ;
@@ -178,6 +180,47 @@ le canon.
   ils rejouent avec leurs propres règles.
 * **Journal** : sous la clé de la version (`"2.76.2"`) ; les autres agents écrivent sous la même clé, gardez les
   deux côtés à la fusion.
+
+## 7. Le schéma « Où frapper » (2.77.1)
+
+Les trois schémas (STATISTIQUES › boss › « Où frapper », `ui/screens/BossStatsScene.cpp` ; les fiches des Gigaboss
+d'Asterion, « Mécanismes » › « Où frapper », `ui/screens/RaidSheetsScene.cpp` ; l'éditeur d'ennemis, ci-dessus)
+partagent la scène `HitStage` de `ui/widgets/HitPartsView.h`.
+
+* **Plus de boîte** : la boîte du boss n'est dessinée nulle part, ni cadre blanc ni ligne de légende. Un boss qui se
+  bat par parties prend et donne les coups par la forme précise de chaque image. Les cibles posées sur un Gigaboss
+  (points faibles, plaques à briser, regards) gardent leur rectangle : ce ne sont pas sa boîte.
+* **Animation** : le bouton pause / lecture, Espace ou Entrée, A à la manette (le schéma a le focus). En pause,
+  ← → (la croix à la manette) ou les boutons donnent l'image précédente ou suivante ; la barre affiche « image n / N ».
+  Les sprites des points faibles d'un Gigaboss suivent la même horloge.
+* **Zoom** : de 0,5× à 6× (`HitStage::kMinZoom`, `kMaxZoom`), avec + et −, la molette autour du pointeur, les gâchettes
+  ou le stick droit autour du centre. Quand on est zoomé, on se déplace en glissant à la souris, au stick gauche ou avec
+  Maj + flèches ; le centre du cadre reste sur le dessin. « Recentrer » revient à 1×. Le dessin est découpé au cadre
+  (`pushClip`) et ne passe jamais sur la légende. La molette sur le schéma ne fait pas défiler la page
+  (`UIContext::claimWheel`).
+* **Infobulle** : au survol d'une partie (la plus petite pièce sous le pointeur) ; au clavier et à la manette, Tab
+  (Maj + Tab) ou Y (X) passe de partie en partie et l'infobulle suit la partie. Ses valeurs viennent de `partFacts`,
+  qui lit les règles de la partie et la définition du boss :
+  * le rôle, puis « Dégâts infligés au boss : × 2 » (le `damage` de la règle ; « aucun » pour une partie qui ne fait
+    que blesser) ;
+  * « Dégâts reçus au contact : 2 cœurs » (`contactDamage`, arrondi comme `Player::hurt`, au facteur de dégâts × 1 du
+    niveau) ;
+  * « Pendant Ruée des griffes : 2 cœurs » pour chaque attaque où la partie frappe (`Enemy::performAttackActive`) :
+    toutes celles qui ont des dégâts pour une partie qui blesse, sa ruée quels que soient ses dégâts, celles de son
+    `hurtDuring` sinon. Au-delà de huit attaques, elles sont regroupées par dégâts.
+  * Un boss qui se bat encore par sa boîte le dit, avec × 1 sur toute sa boîte.
+  L'infobulle est mesurée et découpée en lignes, placée à côté du pointeur (jamais dessus) et dans l'écran.
+* **Légende** (`partsLegend`, `drawHitLegend`) : une entrée par rôle avec sa couleur et son motif, son multiplicateur
+  quand ses parties le partagent, ses parties nommées dessous ; les parties qui blessent aussi pendant une attaque,
+  avec l'accord du verbe (`partIsPlural` : « Jointures blessent », « Tête blesse ») ; la règle du combat en entier.
+  Rien n'est raccourci : la légende défile à la molette, à sa barre, ou avec ↑ ↓ quand elle a le focus.
+* **Capture** : `--hit-view <zoom>[:<partie>[:<image>]]` règle le prochain schéma dessiné : le zoom autour de la
+  partie, son infobulle et l'image en pause (1 pour la première). Par exemple, la fiche de Dreadfang :
+  `CosmicPlatformer --headless --raid-sheets dreadfang:1 --hit-view 2.5:jointures:1 --shot 40:dreadfang.png`.
+* **Tests** : `tests/test_hit_stage.cpp`. Ils vérifient le zoom borné, la pause et l'image par image, et les valeurs de
+  l'infobulle face aux fichiers des boss. Ils vérifient aussi que la boîte n'est jamais dessinée et qu'aucun texte
+  ne chevauche ni ne déborde, en 1280 × 720 et 1920 × 1080, en français et en anglais.
+* Rien de tout cela ne touche la simulation : ni `kSimulationVersion`, ni les empreintes ne changent.
 
 ---
 

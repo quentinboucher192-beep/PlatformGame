@@ -334,7 +334,7 @@ Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les nivea
 une zone avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui **jouent la zone eux-mêmes**, même quand
 l'administrateur est AFK : ils lisent ce qu'il reste à faire, se répartissent générateurs, plaques et combats, trouvent
 leur chemin en simulant leur propre physique (doubles et triples sauts, ruées, impulsion, sauts muraux, plateformes
-mobiles visées là où elles seront, [§23](docs/RAIDS.md)), esquivent tirs, rayons et coups annoncés, fuient le liquide qui
+mobiles visées là où elles seront, [§24](docs/RAIDS.md)), esquivent tirs, rayons et coups annoncés, fuient le liquide qui
 monte, battent les Gigaboss et relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert, en disant ce
 qu'ils font (« Double saut au-dessus du vide »…). **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
@@ -636,7 +636,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 ## Historique des versions
 
 **Nouveau dans la version 2.79.0** :
-* **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §23](docs/RAIDS.md)) : ils lisent la zone en **simulant
+* **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §24](docs/RAIDS.md)) : ils lisent la zone en **simulant
   leur propre physique** (une copie exacte de celle du joueur : 0 px d'écart) — chaque saut du graphe est un mouvement
   qui a atterri dans la simulation —, essaient leurs mouvements quelques dizaines de pas à l'avance sur une copie de la
   zone et utilisent **tous** leurs mouvements : double et triple saut, ruée au sol et en l'air, impulsion, sauts muraux,
@@ -647,6 +647,32 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   Expert seul va à chaque objectif puis à la sortie sans que le terrain le tue.
 * Débutant, Confirmé, Expert : temps de réaction, profondeur d'anticipation et précision du geste, **jamais de triche** ;
   le test ne déplace plus jamais un joueur simulé bloqué.
+
+**Nouveau dans la version 2.77.2** :
+* **Groupe éliminé : le jeu ne tremble plus.** Son monde ne fait plus de pas, mais il était dessiné avec l'interpolation
+  de l'affichage, qui change à chaque image : la caméra et tout ce qui avait bougé allaient et venaient entre leurs deux
+  derniers états. Il est maintenant dessiné tel qu'il est (aussi pendant le choix d'un pouvoir et, en coopération, à la fin
+  et pendant la pause sur un même PC) ([docs/RAIDS.md §23](docs/RAIDS.md#23-à-terre-ou-groupe-éliminé--deux-états-clairs-une-vue-qui-ne-tremble-plus-2772)).
+* **À terre, un état clair** : un bandeau en haut, « À TERRE — en attente de réanimation », ce qu'il faut (un allié maintient
+  Interagir 2 s près de votre âme), la jauge quand un allié vous relève (« Joueur 2 vous réanime… 60 % »), en coopération
+  les réanimations restantes de l'équipe, où est votre âme (flèche au bord de l'écran quand elle est hors de la vue) et un
+  léger filtre sur l'image.
+* **Raids, à terre : regarder les autres** : joueur précédent / suivant (Q / E, LB / RB), revenir sur mon âme (Entrée, A),
+  ou les boutons du bandeau à la souris ; la caméra commence sur l'âme et chaque changement de vue est un mouvement doux.
+* **Groupe éliminé, un autre bandeau** : « GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement », les mêmes
+  touches et la caméra libre (Entrée, A). Le menu du raid › « Groupe » explique les deux états. Bandeaux mesurés, sous le
+  HUD, les notifications sous eux.
+
+**Nouveau dans la version 2.77.1** :
+* **« Où frapper »** (statistiques des boss, fiches des Gigaboss d'Asterion, éditeur d'ennemis › Parties) : la **boîte
+  d'avant n'est plus dessinée**, seule compte la forme précise de chaque image ([docs/HITBOX_PARTS.md](docs/HITBOX_PARTS.md)).
+* **Pause et image par image** (bouton, Espace, A ; ← →, croix), **zoom de 0,5× à 6×** (+ −, molette autour du pointeur,
+  gâchettes ou stick droit), déplacement (glisser, stick gauche, Maj + flèches) et « Recentrer » ; le dessin reste dans
+  son cadre.
+* **Infobulle sur chaque partie** (survol ; Tab ou Y au clavier et à la manette) : son rôle, les dégâts infligés au boss,
+  les dégâts reçus à son contact et pendant chacune de ses attaques, lus dans les données du boss.
+* **Légende propre** : une entrée par rôle (couleur, motif, parties nommées), la règle du combat en entier, défilement
+  quand elle est longue, accords justes (« Jointures blessent aussi pendant… »).
 
 **Nouveau dans la version 2.77.0** :
 * **Tester Asterion** : les joueurs simulés **jouent vraiment** la zone, même si vous êtes AFK (pilote automatique de

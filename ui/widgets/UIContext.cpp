@@ -53,6 +53,8 @@ void UIContext::begin(Application& app, float dt) {
     time_ += dt;
     scale_ = std::max(0.5f, std::min(screenW() / 1920.0f, screenH() / 1080.0f));
     focusables_.clear();
+    wheelClaimed_.swap(wheelClaims_);  // 2.77.1: the previous frame's claims of the wheel
+    wheelClaims_.clear();
     focusSeen_ = false;
     changed_ = false;
     navConsumedH_ = false;
@@ -935,7 +937,11 @@ void UIContext::beginScroll(const std::string& name, const Rect& view, float con
     float& off = scrolls_[wid];
     float maxOff = std::max(0.0f, contentHeight - view.h);
     InputManager& in = input();
-    if (acceptsInput() && view.contains(in.mousePos()) && in.wheel() != 0.0f) off -= in.wheel() * s(60);
+    // 2.77.1: not under a smaller widget that uses the wheel itself (a diagram's zoom, a legend scrolled inside).
+    bool claimed = false;
+    for (const Rect& c : wheelClaimed_)
+        claimed = claimed || (c.contains(in.mousePos()) && c.w * c.h < view.w * view.h - 1.0f);
+    if (acceptsInput() && view.contains(in.mousePos()) && in.wheel() != 0.0f && !claimed) off -= in.wheel() * s(60);
     off = std::clamp(off, 0.0f, maxOff);
     scrollStack_.push_back({wid, view, off, contentHeight});
     r().pushClip(view);

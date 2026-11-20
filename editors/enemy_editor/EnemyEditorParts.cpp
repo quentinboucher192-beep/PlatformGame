@@ -49,16 +49,6 @@ float defaultDamage(PartRole role) {
     return 1.0f;
 }
 
-/// Twice the area of a convex polygon (the smallest piece under the pointer is the one chosen).
-float area2(const std::vector<Vec2>& p) {
-    float a = 0.0f;
-    for (size_t i = 0; i < p.size(); ++i) {
-        const Vec2 u = p[i], v = p[(i + 1) % p.size()];
-        a += u.x * v.y - v.x * u.y;
-    }
-    return std::abs(a);
-}
-
 }  // namespace
 
 bool EnemyEditorScene::hasHitParts() const { return !partSheets(work_).empty(); }
@@ -173,7 +163,10 @@ void EnemyEditorScene::tabParts(float x, float& y, float w) {
     if (sheets.size() > 1) {
         std::vector<std::string> names;
         for (const auto& s : sheets) names.push_back("Phase " + std::to_string(s.second));
-        if (ui.cycle("parts_sheet", widget({x, y, w, ui.s(44)}), "Planche", partsSheet_, names)) partsPose_ = partsFrame_ = 0;
+        if (ui.cycle("parts_sheet", widget({x, y, w, ui.s(44)}), "Planche", partsSheet_, names)) {
+            partsPose_ = 0;
+            partsStage_.restart();
+        }
         y += ui.s(44) + gap;
     }
     const std::string& sheetPath = sheets[static_cast<size_t>(partsSheet_)].first;
@@ -193,86 +186,69 @@ void EnemyEditorScene::tabParts(float x, float& y, float w) {
     {
         std::vector<std::string> labels;
         for (const std::string& p : poses) labels.push_back(poseLabel(p));
-        if (ui.cycle("parts_pose", widget({x, y, w, ui.s(44)}), "Pose", partsPose_, labels)) {
-            partsFrame_ = 0;
-            partsTime_ = 0.0f;
-        }
+        if (ui.cycle("parts_pose", widget({x, y, w, ui.s(44)}), "Pose", partsPose_, labels)) partsStage_.restart();
         y += ui.s(44) + gap;
     }
     const AnimationClip* clip = set->clip(poses[static_cast<size_t>(partsPose_)]);
     const int frames = clip ? clip->frameCount() : 0;
-    if (partsPlay_ && clip && frames > 0) {
-        float tc = std::fmod(partsTime_, std::max(0.05f, clip->totalDuration()));
-        int f = 0;
-        while (f + 1 < frames && tc >= clip->durations[static_cast<size_t>(f)]) tc -= clip->durations[static_cast<size_t>(f++)];
-        partsFrame_ = f;
-    }
-    partsFrame_ = frames > 0 ? std::clamp(partsFrame_, 0, frames - 1) : 0;
-    if (frames > 1) {
-        std::vector<std::string> labels;
-        for (int i = 0; i < frames; ++i) labels.push_back(std::to_string(i + 1) + " / " + std::to_string(frames));
-        if (ui.cycle("parts_frame", widget({x, y, w, ui.s(44)}), "Image", partsFrame_, labels)) partsPlay_ = false;
-        y += ui.s(44) + gap;
-        ui.toggle("parts_play", widget({x, y, w, ui.s(44)}), ui.elide("Animer la pose", FontFace::Body, 22.0f * 0.6f, w - ui.s(116)), partsPlay_);
-        y += ui.s(44) + gap;
-    }
+    // 2.77.1: the stage of the diagrams (ui/widgets/HitPartsView): its bar (pause, frame by frame, zoom, « Recentrer »),
+    // its drawing clipped to its frame, the tooltip of the part under the mouse or chosen with Tab.
+    const float dt = g_.app.frameTime() / 1000.0f;
+    partsStage_.advance(dt);
+    std::vector<float> durations;
+    for (int i = 0; i < frames; ++i) durations.push_back(clip->durations[static_cast<size_t>(i)]);
+    const int frame = partsStage_.frame(durations);
+    size_t mark = 0, markText = 0;
+    auto takeStage = [&]() {  // what the stage drew since the last time: the panel's elements and texts
+        const HitStageLayout& sl = partsStage_.layout();
+        for (size_t i = mark; i < sl.boxes.size(); ++i) L.boxes.push_back(sl.boxes[i]);
+        for (size_t i = markText; i < sl.texts.size(); ++i) L.texts.push_back({sl.texts[i].text, sl.texts[i].r, sl.texts[i].px, sl.texts[i].face});
+        mark = sl.boxes.size();
+        markText = sl.texts.size();
+    };
+    y += partsStage_.controls(ui, "parts_stage", x, y, w) + gap;
+    takeStage();
 
     // The stage: its sprite as the game places it (its feet at (0, 0), its pivot × its scale), its parts on
-    // that very frame, the chosen one outlined in white, its box a thin frame, its feet a cross.
+    // that very frame, the chosen one outlined in white, its feet a cross (where the origins are measured from).
     const Rect stage = widget({x, y, w, ui.s(300)});
-    r.fillRoundedRect(stage, ui.s(10), Color{11, 18, 38, 255});
-    const Rect box = Rect::fromBottomCenter({0.0f, 0.0f}, work_.size);
     const Rect sprite{-set->pivot.x * work_.scale, -set->pivot.y * work_.scale, static_cast<float>(set->frameWidth) * work_.scale,
                       static_cast<float>(set->frameHeight) * work_.scale};
-    Rect win = box.united(sprite);
+    Rect win = sprite;
     const float margin = std::max(win.w, win.h) * 0.05f;
     win = {win.x - margin, win.y - margin, win.w + 2 * margin, win.h + 2 * margin};
-    const float capH = ui.s(24);
-    const Rect view{stage.x + ui.s(8), stage.y + capH, stage.w - ui.s(16), stage.h - capH - ui.s(8)};
-    const float k = std::min(view.w / std::max(1.0f, win.w), view.h / std::max(1.0f, win.h));
-    const Vec2 o{view.center().x - win.center().x * k, view.center().y - win.center().y * k};
-    auto at = [&](Vec2 p) { return Vec2{o.x + p.x * k, o.y + p.y * k}; };
-    const std::vector<HitPartPiece>* pieces = clip && frames > 0 ? hp->frame(*set, *clip, partsFrame_) : nullptr;
+    partsStage_.place(stage, win, ui.s(8));
+    const bool click = partsStage_.input(ui, "parts_stage", dt);
+    const std::vector<HitPartPiece>* pieces = clip && frames > 0 ? hp->frame(*set, *clip, frame) : nullptr;
     if (partsChosen_.empty() && !hp->parts.empty()) partsChosen_ = hp->parts.front();
-    r.pushClip(view);
-    if (set->texture && clip && frames > 0) {
-        const Rect src = set->frameRect(*clip, partsFrame_);
-        r.drawTexture(*set->texture, &src, {o.x + sprite.x * k, o.y + sprite.y * k, sprite.w * k, sprite.h * k}, work_.tint);
-    }
     const Vec2 pivot = set->pivot;
     const float sc = work_.scale;
-    auto toScreen = [&](Vec2 v) { return at({(v.x - pivot.x) * sc, (v.y - pivot.y) * sc}); };
+    auto toScreen = [&](Vec2 v) { return partsStage_.toScreen(Vec2{(v.x - pivot.x) * sc, (v.y - pivot.y) * sc}); };
+    // Tab / Y go from part to part (the list follows); a click chooses the part under the mouse (the smallest piece there).
+    partsStage_.choose(partsChosen_);
+    if (pieces) partsStage_.parts(ui, *hp, *pieces, toScreen);
+    partsChosen_ = partsStage_.chosen();
+    if (click && !partsStage_.shownPart().empty()) partsChosen_ = partsStage_.shownPart();
+    r.fillRoundedRect(stage, ui.s(10), Color{11, 18, 38, 255});
+    r.pushClip(stage);
+    if (set->texture && clip && frames > 0) {
+        const Rect src = set->frameRect(*clip, frame);
+        r.drawTexture(*set->texture, &src, partsStage_.toScreen(sprite), work_.tint);
+    }
     if (pieces) drawHitPieces(r, std::max(1.5f, ui.s(2.0f)), *hp, *pieces, partsWork_, toScreen, 80, partsChosen_);
-    const Vec2 b0 = at({box.x, box.y}), b1 = at({box.right(), box.bottom()});
-    r.drawRect({b0.x, b0.y, b1.x - b0.x, b1.y - b0.y}, Color{255, 255, 255, 150}, std::max(1.0f, ui.s(1.5f)));
-    const Vec2 f0 = at({0.0f, 0.0f});
+    const Vec2 f0 = partsStage_.toScreen(Vec2{0.0f, 0.0f});
     const float arm = ui.s(8), th = std::max(1.5f, ui.s(2.0f));
     r.drawLine({f0.x - arm, f0.y}, {f0.x + arm, f0.y}, Color{255, 255, 255, 220}, th);
     r.drawLine({f0.x, f0.y - arm}, {f0.x, f0.y + arm}, Color{255, 255, 255, 220}, th);
     r.popClip();
-    if (clip && frames > 0) {
-        const std::string cap = poseLabel(poses[static_cast<size_t>(partsPose_)]) + " · image " + std::to_string(partsFrame_ + 1) + " / " +
-                                std::to_string(frames) + " · cliquez sur une partie pour la choisir";
-        line(cap, {stage.x + ui.s(10), stage.y + ui.s(2), stage.w - ui.s(20), capH - ui.s(2)}, 14.0f, ui.theme().textDim, FontFace::Body, false);
-    }
-    // The mouse chooses the part under it (the smallest piece there); the list below does it with the keys.
-    if (pieces && ui.mouseClick("parts_pick", view)) {
-        const Vec2 m = g_.app.input().mousePos();
-        float best = 0.0f;
-        std::vector<Vec2> pts;
-        for (const HitPartPiece& p : *pieces) {
-            if (p.part < 0 || p.part >= static_cast<int>(hp->parts.size())) continue;
-            pts.clear();
-            for (const Vec2& v : p.pts) pts.push_back(toScreen(v));
-            if (pts.size() < 3 || !convexContains(pts, m)) continue;
-            const float a = area2(pts);
-            if (best == 0.0f || a < best) {
-                best = a;
-                partsChosen_ = hp->parts[static_cast<size_t>(p.part)];
-            }
-        }
-    }
+    partsStage_.drawFocus(ui);
+    if (!partsStage_.shownPart().empty()) partsStage_.setTip(partTip(partFacts(partsStage_.shownPart(), partsWork_, work_)));
+    partsStage_.layout().boxes.push_back(stage);
+    mark = partsStage_.layout().boxes.size();
+    partsStage_.layout().body = partsStage_.toScreen(Rect::fromBottomCenter({0.0f, 0.0f}, work_.size));  // never drawn (tests)
     y = stage.bottom() + gap;
+    y += partsStage_.help(ui, x, y, w, true) + gap;
+    takeStage();
 
     // The legend: each role, its colour and its pattern (the same in the sheets « Où frapper »).
     {

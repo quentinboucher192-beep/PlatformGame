@@ -2707,12 +2707,6 @@
    ]
   },
   {
-   "fr": "Animer la pose",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Anneau",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -5031,13 +5025,20 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlanetMapScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
    "fr": "Aucun (non affiché)",
    "where": [
     "ui/screens/OnlineAccountScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun allié en jeu pour vous relever pour l'instant",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -8987,24 +8988,6 @@
    ]
   },
   {
-   "fr": "Cadre blanc : sa boîte d'avant (les replays d'avant)",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Cadre blanc : sa boîte, qui prend et donne les coups",
-   "where": [
-    "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "Cadre blanc : son ancienne boîte (les replays d'avant)",
-   "where": [
-    "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
    "fr": "Cadre bronze.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -9373,7 +9356,7 @@
   {
    "fr": "Caméra libre",
    "where": [
-    "ui/screens/RaidGameScene.cpp"
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -16447,12 +16430,6 @@
    ]
   },
   {
-   "fr": "Croix blanche : ses pieds",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
    "fr": "Croix droite",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -21137,6 +21114,24 @@
    ]
   },
   {
+   "fr": "Dégâts infligés au boss : aucun",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts infligés au boss : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts infligés au boss : × 1 (sur toute sa boîte)",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts infligés au simple contact du corps du boss.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -21176,6 +21171,18 @@
    "fr": "Dégâts reçus : ×{0}   —   Vies : {1} (EXTRÊME : course à la vérification)",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus au contact : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus au contact : {0} (au contact de sa boîte)",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -22272,6 +22279,12 @@
    "fr": "en cours, sans résultat",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "En cœurs perdus, pour un niveau aux dégâts × 1.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -23834,6 +23847,12 @@
    "fr": "Espace",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Espace : pause · ← → : image (en pause) · + − : zoom · Maj + flèches : déplacer · Tab : partie suivante",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -28148,9 +28167,21 @@
    ]
   },
   {
+   "fr": "Groupe éliminé : le jeu ne tremble plus. Le monde d'un groupe éliminé ne fait plus de pas, mais il était dessiné avec l'interpolation de l'affichage, qui change à chaque image : la caméra et tout ce qui avait bougé allaient et venaient entre leurs deux derniers états. Il est maintenant dessiné tel qu'il est, comme pendant le choix d'un pouvoir et, en coopération, à la fin et pendant la pause sur un même PC.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "groupe éliminé : ses joueurs ne font plus que regarder",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Groupe éliminé : un bandeau à part, « GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement », avec les mêmes touches et la caméra libre (Entrée, A). Le menu du raid › Groupe explique les deux états. Les bandeaux passent sous le HUD et les notifications sous eux, sans rien recouvrir.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -28180,6 +28211,13 @@
   {
    "fr": "GROUPE ÉLIMINÉ — mode spectateur : caméra libre, ou joueur suivant / précédent de la branche",
    "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement",
+   "where": [
+    "ui/screens/DownedView.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -29703,6 +29741,12 @@
    ]
   },
   {
+   "fr": "Il se battra par ses parties avec une prochaine version : son combat se joue encore sur sa boîte.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Il se battra par ses parties à partir des règles de simulation {0}.",
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp"
@@ -29780,7 +29824,6 @@
   {
    "fr": "Image",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "game/content/AssetCatalog.cpp"
    ]
   },
@@ -29883,6 +29926,12 @@
    "fr": "Image {0} / {1}",
    "where": [
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "image {0} / {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -31541,9 +31590,21 @@
    ]
   },
   {
+   "fr": "Joueur précédent",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Joueur simulé {0}",
    "where": [
     "game/raid/RaidTest.cpp"
+   ]
+  },
+  {
+   "fr": "Joueur suivant",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -32465,6 +32526,12 @@
    ]
   },
   {
+   "fr": "L'équipe n'a plus de réanimation : vous restez à terre jusqu'à la fin de la tentative",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "l'étage {0}",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
@@ -32687,6 +32754,12 @@
    "fr": "La campagne : niveaux, planètes et le Noyau stellaire.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "La caméra suit l'équipe en jeu",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -41546,12 +41619,6 @@
    ]
   },
   {
-   "fr": "MODE SPECTATEUR",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "modifiable",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -47254,12 +47321,6 @@
    ]
   },
   {
-   "fr": "Parties : {0}",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
    "fr": "PARTIES ARRIVÉES AU BOUT",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -48617,6 +48678,12 @@
    "fr": "pendant {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Pendant {0} : {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -53808,6 +53875,12 @@
    ]
   },
   {
+   "fr": "Raids, à terre : regardez les autres joueurs (joueur précédent / suivant : Q / E, LB / RB) ou revenez sur votre âme (Entrée, A), aussi avec les boutons du bandeau à la souris. La caméra commence sur votre âme et chaque changement de vue est un mouvement doux.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raison",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -54253,7 +54326,8 @@
   {
    "fr": "Recentrer",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -56707,6 +56781,12 @@
    ]
   },
   {
+   "fr": "Revenir sur mon âme",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Revenir à cette révision",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -57551,6 +57631,12 @@
    "fr": "réanimations incohérentes",
    "where": [
     "server/src/coopRace.ts"
+   ]
+  },
+  {
+   "fr": "Réanimations restantes de l'équipe : {0} sur {1}",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -58546,6 +58632,12 @@
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp",
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rôle : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -61321,6 +61413,12 @@
    ]
   },
   {
+   "fr": "Son combat se joue encore sur sa boîte : cette partie est montrée, elle ne change ni vos coups ni son contact.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Son combat se joue sur sa boîte.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
@@ -62753,12 +62851,6 @@
    ]
   },
   {
-   "fr": "Suivant ▶",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Suivants",
    "where": [
     "ui/screens/AdminCalendar.cpp",
@@ -63253,6 +63345,18 @@
    "fr": "Survolez un point, ou parcourez les pays avec les boutons à droite du globe, pour voir leur nombre de joueurs.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Survolez une partie : ce qu'elle fait · clic : la choisir · molette : zoom · glisser : déplacer",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Survolez une partie : ce qu'elle fait · molette : zoom · glisser : déplacer",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -66329,12 +66433,6 @@
    ]
   },
   {
-   "fr": "Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
    "fr": "Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques.",
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp"
@@ -66357,6 +66455,18 @@
    "fr": "Tout le groupe est à terre : la zone attend un groupe de renfort. Vous devenez spectateurs.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout le groupe à terre en même temps : la zone n'est pas validée et attend un groupe de renfort, vous regardez jusqu'à la fin de l'événement. {0} : joueur précédent / suivant de la branche ; {1} : caméra libre (flèches, stick, molette).",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tout le groupe était à terre en même temps : plus de réanimation, la zone attend un groupe de renfort",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -67644,9 +67754,27 @@
    ]
   },
   {
+   "fr": "Un allié doit maintenir Interagir 2 s près de l'âme de {0}",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Un allié doit maintenir Interagir 2 s près de votre âme",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "Un allié est cloué au sol : brisez la griffe qui le tient ({0}).",
    "where": [
     "game/raid/DreadfangRoutine.cpp"
+   ]
+  },
+  {
+   "fr": "Un allié vous réanime… {0} %",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -72255,6 +72383,24 @@
    ]
   },
   {
+   "fr": "Votre âme : dans la vue, sa marque au sol montre où vous serez relevé",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Votre âme : hors de la vue, la flèche à votre couleur la montre au bord de l'écran",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Votre âme attend sur le dernier endroit sûr : un allié en jeu maintient Interagir 2 s près d'elle pour vous relever, autant de fois qu'il le faut. En attendant, {0} : regarder le joueur précédent / suivant ; {1} : revenir sur votre âme.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "votre équipe",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -72680,6 +72826,18 @@
    "fr": "Vous regardez {0} · [{1}]·{2} · zone {3}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vous regardez {0} · votre âme est dans la vue",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
+   "fr": "Vous regardez {0} · votre âme est hors de la vue : suivez la flèche à votre couleur",
+   "where": [
+    "ui/screens/DownedView.cpp"
    ]
   },
   {
@@ -73320,6 +73478,12 @@
    "fr": "ZONE REPRISE · {0} ({1}) : terminée après la chute de {2}",
    "where": [
     "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "Zone rouge : ce que l'attaque de la pose blesse",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -74284,6 +74448,12 @@
    ]
   },
   {
+   "fr": "{0} : pause · croix : image (en pause) · {1} / {2} : zoom · stick gauche : déplacer · {3} : partie suivante",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "{0} : performance gardée en local.",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -74717,6 +74887,18 @@
    ]
   },
   {
+   "fr": "{0} blesse aussi pendant : {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} blessent aussi pendant : {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "{0} blocages · {1} sauv. · {2} mécanismes",
    "where": [
     "game/online/Raids.cpp"
@@ -74931,7 +75113,8 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/GameScene.cpp"
+    "ui/screens/GameScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -74941,7 +75124,8 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/GameScene.cpp"
+    "ui/screens/GameScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -76942,6 +77126,12 @@
    ]
   },
   {
+   "fr": "{0} vous réanime… {1} %",
+   "where": [
+    "ui/screens/DownedView.cpp"
+   ]
+  },
+  {
    "fr": "{0} zone(s) à reprendre",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -77046,14 +77236,7 @@
   {
    "fr": "{0} · image {1} / {2}",
    "where": [
-    "ui/studio/StudioCanvas.cpp",
-    "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "{0} · image {1} / {2} · cliquez sur une partie pour la choisir",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -77700,6 +77883,30 @@
    ]
   },
   {
+   "fr": "« Où frapper » (statistiques des boss, fiches des Gigaboss d'Asterion, éditeur d'ennemis › Parties) : la boîte d'avant n'est plus dessinée. Seule compte la forme précise de chaque image : ce sont ses parties qui prennent et donnent les coups.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » : pause et lecture de l'animation (bouton, Espace, A à la manette), image précédente ou suivante en pause (← →, croix, boutons) et « image n / N ». Zoom de 0,5× à 6× (boutons + et −, molette autour du pointeur, gâchettes ou stick droit), déplacement quand on est zoomé (glisser, stick gauche, Maj + flèches) et « Recentrer ». Le dessin reste toujours dans son cadre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » : une infobulle sur chaque partie, au survol de la souris ; au clavier et à la manette, Tab ou Y passe de partie en partie. Elle donne son nom, son rôle, les dégâts infligés au boss (× 2, × 1, × 0,5 ou aucun), les dégâts reçus à son contact et, pour chaque attaque pendant laquelle elle blesse, son nom et ses dégâts, tout lu dans les données du boss. Elle ne sort jamais de l'écran et ne recouvre jamais le pointeur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » : une légende propre, avec une seule entrée par rôle (sa couleur, son motif, ses parties nommées). La règle du combat est écrite en entier, la légende défile quand elle est longue et l'accord est juste (« Jointures blessent aussi pendant… »). La croix des pieds et le cadre blanc ont disparu des fiches.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "« Où l'affronter » : tous les lieux où combattre chaque boss — son niveau de la campagne (planète, niveau, dernier point de sauvegarde avant lui, pouvoirs trouvés en route) et son écho dans L'Arène des Échos ; un lieu ouvre la page du niveau, un lieu verrouillé dit pourquoi.",
    "where": [
     "data/news/changelog.json"
@@ -78247,6 +78454,19 @@
    "fr": "à terre · son âme attend",
    "where": [
     "game/gameplay/HudTeam.cpp"
+   ]
+  },
+  {
+   "fr": "À TERRE — en attente de réanimation",
+   "where": [
+    "ui/screens/DownedView.cpp",
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "À terre, un état clair : un bandeau en haut de l'écran, « À TERRE — en attente de réanimation », dit ce qu'il faut (un allié maintient Interagir 2 s près de votre âme), montre la jauge quand un allié vous relève, en coopération les réanimations restantes de l'équipe, et où est votre âme (une flèche au bord de l'écran quand elle est hors de la vue). Un léger filtre sur l'image montre que vous ne jouez plus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -80404,13 +80624,6 @@
    ]
   },
   {
-   "fr": "… et {0} de plus",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp",
-    "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
    "fr": "… et {0} joueur de plus",
    "where": [
     "ui/online/RaidHud.cpp"
@@ -80570,12 +80783,6 @@
    "fr": "▼ {0} — en recul",
    "where": [
     "ui/screens/StatisticsScene.cpp"
-   ]
-  },
-  {
-   "fr": "◀ Précédent",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
