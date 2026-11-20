@@ -58,6 +58,9 @@
 //                           « fiche »: its sheet; « attaques »: its list of attacks; that attack
 //                           unfolded with its example, or every attack unfolded; 2.76.0
 //                           « frapper »: its « Où frapper » tab, its parts on that pose)
+//   --hit-view <zoom>[:<part>[:<frame>]]
+//                           2.77.1: the next « Où frapper » diagram at that zoom (0,5 to 6), around that
+//                           part with its tooltip shown, paused on that frame (1-based; screenshots)
 //   --raid-sheets [<sheet>[:<tab>][:frapper=<n>[:pose=<attack>]][:attaque=<id>]]
 //                           2.73: the raid sheets (asterion, skullmaw…) over the main menu, on
 //                           that tab (0, 1, 2), that attack (or mechanism « m:<id> ») unfolded
@@ -125,6 +128,7 @@
 #include "packaging/PackageExporter.h"
 #include "ui/online/OnlineToasts.h"
 #include "ui/screens/Navigation.h"
+#include "ui/widgets/HitPartsView.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/CosmeticFx.h"
@@ -706,6 +710,15 @@ int main(int argc, char** argv) {
     app.onSceneRender = [&game](bool covered) { game.ui.sceneInput = !covered; };
 
     if (std::string f = value("--frames"); !f.empty()) app.maxFrames = std::atoi(f.c_str());
+    // 2.77.1 (captures): --hit-view <zoom>[:<part>[:<frame>]]: the next « Où frapper » diagram drawn at that zoom
+    // (around that part, its tooltip shown), paused on that frame (1-based).
+    if (std::string hv = value("--hit-view"); !hv.empty()) {
+        const size_t c1 = hv.find(':');
+        const size_t c2 = c1 == std::string::npos ? std::string::npos : hv.find(':', c1 + 1);
+        const std::string part = c1 == std::string::npos ? std::string() : hv.substr(c1 + 1, c2 == std::string::npos ? std::string::npos : c2 - c1 - 1);
+        HitStage::requestCapture(static_cast<float>(std::atof(hv.substr(0, c1).c_str())), part,
+                                 c2 == std::string::npos ? 0 : std::atoi(hv.substr(c2 + 1).c_str()));
+    }
     app.headlessRealtime = has("--realtime");  // headless at 60 frames per second (server checks)
     for (size_t i = 0; i + 1 < args.size(); ++i) {
         if (args[i] != "--shot") continue;

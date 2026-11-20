@@ -122,8 +122,8 @@ void EnemyEditorScene::select(const std::string& id) {
     confirmDelete_ = false;
     // Its parts read again (Boss › Parties), from its first sheet, its first pose (2.76.2).
     partsFor_.clear();
-    partsSheet_ = partsPose_ = partsFrame_ = 0;
-    partsPlay_ = false;
+    partsSheet_ = partsPose_ = 0;
+    partsStage_.reset();
     partsChosen_.clear();
     history_.reset(work_.toJson());
     loadAnimation();
@@ -339,7 +339,6 @@ void EnemyEditorScene::update(float dt) {
     if (arenaDirty_) resetArena();
     if (arena_) arena_->update(dt);
     if (previewPlaying_) previewAnim_.update(dt * previewSpeed_);
-    if (partsPlay_) partsTime_ += dt;
     InputManager& in = g_.app.input();
     if (controlPlayer_ && (in.keyPressed(SDL_SCANCODE_ESCAPE) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK))) controlPlayer_ = false;
     updatePublish();
@@ -455,6 +454,7 @@ void EnemyEditorScene::render(float alpha) {
     arenaRect_ = {center.x + ui.s(16), center.y + center.h * 0.36f + ui.s(70), center.w - ui.s(32), center.h * 0.64f - ui.s(86)};
     drawArena(arenaRect_, alpha);
     drawProperties({W - propW, top, propW, H - top});
+    partsStage_.drawTip(ui);  // 2.77.1: the tooltip of a part (Boss › Parties), over everything (only when drawn this frame)
     ui.inputEnabled = !modal;
     if (messageTimer_ > 0) {
         TextStyle st;

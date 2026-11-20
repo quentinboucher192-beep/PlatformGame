@@ -2719,12 +2719,6 @@
    ]
   },
   {
-   "fr": "Animer la pose",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
-   ]
-  },
-  {
    "fr": "Anneau",
    "where": [
     "ui/studio/StudioImport.cpp"
@@ -5073,7 +5067,8 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
     "ui/screens/PlanetMapScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -9032,24 +9027,6 @@
    "fr": "Cadre argent.",
    "where": [
     "data/cosmetics/cosmetics.json"
-   ]
-  },
-  {
-   "fr": "Cadre blanc : sa boîte d'avant (les replays d'avant)",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
-   "fr": "Cadre blanc : sa boîte, qui prend et donne les coups",
-   "where": [
-    "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "Cadre blanc : son ancienne boîte (les replays d'avant)",
-   "where": [
-    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -16525,12 +16502,6 @@
    ]
   },
   {
-   "fr": "Croix blanche : ses pieds",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
    "fr": "Croix droite",
    "where": [
     "engine/input/InputTypes.cpp"
@@ -21242,6 +21213,24 @@
    ]
   },
   {
+   "fr": "Dégâts infligés au boss : aucun",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts infligés au boss : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts infligés au boss : × 1 (sur toute sa boîte)",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts infligés au simple contact du corps du boss.",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -21281,6 +21270,18 @@
    "fr": "Dégâts reçus : ×{0}   —   Vies : {1} (EXTRÊME : course à la vérification)",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus au contact : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dégâts reçus au contact : {0} (au contact de sa boîte)",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -22383,6 +22384,12 @@
    "fr": "en cours, sans résultat",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "En cœurs perdus, pour un niveau aux dégâts × 1.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -23963,6 +23970,12 @@
    "fr": "Espace",
    "where": [
     "engine/input/InputTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Espace : pause · ← → : image (en pause) · + − : zoom · Maj + flèches : déplacer · Tab : partie suivante",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -29854,6 +29867,12 @@
    ]
   },
   {
+   "fr": "Il se battra par ses parties avec une prochaine version : son combat se joue encore sur sa boîte.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Il se battra par ses parties à partir des règles de simulation {0}.",
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp"
@@ -29931,7 +29950,6 @@
   {
    "fr": "Image",
    "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp",
     "game/content/AssetCatalog.cpp"
    ]
   },
@@ -30034,6 +30052,12 @@
    "fr": "Image {0} / {1}",
    "where": [
     "ui/studio/StudioFrise.cpp"
+   ]
+  },
+  {
+   "fr": "image {0} / {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -47423,12 +47447,6 @@
    ]
   },
   {
-   "fr": "Parties : {0}",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
-   ]
-  },
-  {
    "fr": "PARTIES ARRIVÉES AU BOUT",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -48806,6 +48824,12 @@
    "fr": "pendant {0}",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Pendant {0} : {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -54536,7 +54560,8 @@
   {
    "fr": "Recentrer",
    "where": [
-    "ui/screens/AchievementsScene.cpp"
+    "ui/screens/AchievementsScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -58891,6 +58916,12 @@
    ]
   },
   {
+   "fr": "Rôle : {0}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Rôle administrateur : les comptes admin ont un écran Administration (absent pour tous les autres comptes) — liste des joueurs avec recherche et filtres, rôle admin donné ou retiré après confirmation (jamais le sien, jamais le dernier admin), et un journal de chaque action, sans adresse IP ni e-mail. Le serveur vérifie le rôle à chaque demande.",
    "where": [
     "data/news/changelog.json"
@@ -61615,6 +61646,12 @@
    ]
   },
   {
+   "fr": "Son combat se joue encore sur sa boîte : cette partie est montrée, elle ne change ni vos coups ni son contact.",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "Son combat se joue sur sa boîte.",
    "where": [
     "ui/widgets/HitPartsView.cpp"
@@ -63548,6 +63585,18 @@
    "fr": "Survolez un point, ou parcourez les pays avec les boutons à droite du globe, pour voir leur nombre de joueurs.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Survolez une partie : ce qu'elle fait · clic : la choisir · molette : zoom · glisser : déplacer",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "Survolez une partie : ce qu'elle fait · molette : zoom · glisser : déplacer",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -66708,12 +66757,6 @@
    "fr": "Tout est synchronisé",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
-   ]
-  },
-  {
-   "fr": "Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -73927,6 +73970,12 @@
    ]
   },
   {
+   "fr": "Zone rouge : ce que l'attaque de la pose blesse",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone secrète",
    "where": [
     "game/levels/ObjectTypes.cpp",
@@ -74918,6 +74967,12 @@
    ]
   },
   {
+   "fr": "{0} : pause · croix : image (en pause) · {1} / {2} : zoom · stick gauche : déplacer · {3} : partie suivante",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "{0} : performance gardée en local.",
    "where": [
     "ui/screens/ResultsScene.cpp"
@@ -75363,6 +75418,18 @@
    ]
   },
   {
+   "fr": "{0} blesse aussi pendant : {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} blessent aussi pendant : {1}",
+   "where": [
+    "ui/widgets/HitPartsView.cpp"
+   ]
+  },
+  {
    "fr": "{0} blocages · {1} sauv. · {2} mécanismes",
    "where": [
     "game/online/Raids.cpp"
@@ -75577,7 +75644,8 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/GameScene.cpp"
+    "ui/screens/GameScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -75587,7 +75655,8 @@
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/GameScene.cpp"
+    "ui/screens/GameScene.cpp",
+    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {
@@ -77692,14 +77761,7 @@
   {
    "fr": "{0} · image {1} / {2}",
    "where": [
-    "ui/studio/StudioCanvas.cpp",
-    "ui/widgets/HitPartsView.cpp"
-   ]
-  },
-  {
-   "fr": "{0} · image {1} / {2} · cliquez sur une partie pour la choisir",
-   "where": [
-    "editors/enemy_editor/EnemyEditorParts.cpp"
+    "ui/studio/StudioCanvas.cpp"
    ]
   },
   {
@@ -78353,6 +78415,30 @@
   },
   {
    "fr": "« Mode concentré » : nom raccourci dans la pause et les touches.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » (statistiques des boss, fiches des Gigaboss d'Asterion, éditeur d'ennemis › Parties) : la boîte d'avant n'est plus dessinée. Seule compte la forme précise de chaque image : ce sont ses parties qui prennent et donnent les coups.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » : pause et lecture de l'animation (bouton, Espace, A à la manette), image précédente ou suivante en pause (← →, croix, boutons) et « image n / N ». Zoom de 0,5× à 6× (boutons + et −, molette autour du pointeur, gâchettes ou stick droit), déplacement quand on est zoomé (glisser, stick gauche, Maj + flèches) et « Recentrer ». Le dessin reste toujours dans son cadre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » : une infobulle sur chaque partie, au survol de la souris ; au clavier et à la manette, Tab ou Y passe de partie en partie. Elle donne son nom, son rôle, les dégâts infligés au boss (× 2, × 1, × 0,5 ou aucun), les dégâts reçus à son contact et, pour chaque attaque pendant laquelle elle blesse, son nom et ses dégâts, tout lu dans les données du boss. Elle ne sort jamais de l'écran et ne recouvre jamais le pointeur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "« Où frapper » : une légende propre, avec une seule entrée par rôle (sa couleur, son motif, ses parties nommées). La règle du combat est écrite en entier, la légende défile quand elle est longue et l'accord est juste (« Jointures blessent aussi pendant… »). La croix des pieds et le cadre blanc ont disparu des fiches.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -81053,13 +81139,6 @@
    "fr": "Œil de Skullmaw",
    "where": [
     "data/enemies/skullmaw_oeil.json"
-   ]
-  },
-  {
-   "fr": "… et {0} de plus",
-   "where": [
-    "ui/screens/RaidSheetsScene.cpp",
-    "ui/widgets/HitPartsView.cpp"
    ]
   },
   {

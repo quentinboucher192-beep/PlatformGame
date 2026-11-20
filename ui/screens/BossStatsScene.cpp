@@ -208,6 +208,7 @@ public:
             if (!fromAsset_.empty()) g_.app.switchScene(makeAdmin(g_, "assets:" + fromAsset_), 0.3f);  // 2.63: back to Administration › Assets
             else g_.app.switchScene(makeStatistics(g_, 2), 0.3f);                                      // 2.54: back to Statistiques › Boss
         }
+        hitView_.drawOverlay(g_);  // 2.77.1: the tooltip of a part of « Où frapper », over everything (when drawn this frame)
         ui.popId();
         ui.end();
     }
