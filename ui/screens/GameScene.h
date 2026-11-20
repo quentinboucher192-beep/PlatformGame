@@ -196,6 +196,9 @@ private:
     /// each frame; one arrow per pack on the border (« ×N »), clear of the HUD, of the boss arrow,
     /// of the ghosts' box and of the banners.
     void drawEnemyArrows(const WorldView& view);
+    /// 2.81.2: the name of each power over its tablet or station (its icon and cost when there is
+    /// room), never over the HUD, the arrows, the ghosts' box or the banners (display only).
+    void drawPowerNames(const WorldView& view);
     EnemyArrows::Tracker metEnemies_;    // a new attempt is a new scene: nobody met yet
     std::vector<Rect> enemyArrowAreas_;  // where they were drawn last (the ghosts' names keep clear)
     std::future<std::vector<Vec2>> raceRouteFuture_;

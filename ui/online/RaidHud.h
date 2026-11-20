@@ -22,6 +22,7 @@
 #include "engine/rendering/Renderer.h"
 #include "engine/rendering/Texture.h"
 #include "saves/RaidHudLayout.h"
+#include "ui/widgets/PowerLabels.h"
 
 namespace cosmic {
 
@@ -205,19 +206,11 @@ private:
 };
 
 /// 2.77: in a raid's armory, the name of each power over its tablet (read in data/powers), its icon and
-/// its energy cost under it when there is room: screen boxes, measured and fitted (fitFont, else shortened),
-/// never over another name, a tablet or a ledge, whatever the tablet's state (an armory's tablet keeps its
-/// power for everyone). Display only.
-struct ArmoryLabel {
-    std::string power;
-    Rect box;            // the whole label (screen)
-    std::string name;    // fitted, shortened when it had to be
-    float size = 13.0f;  // its font size (unscaled)
-    int icon = -1;       // in ui/icons_powers.png, -1 when there is no room
-    std::string cost;    // « 10 d'énergie », "" when there is no room
-};
-std::vector<ArmoryLabel> armoryLabels(UIContext& ui, const GameWorld& w, const WorldView& view);
-void drawArmoryLabels(UIContext& ui, const std::vector<ArmoryLabel>& labels);
+/// its energy cost under it when there is room, whatever the tablet's state (an armory's tablet keeps its
+/// power for everyone). Display only. 2.81.2: shared with every level (ui/widgets/PowerLabels.h).
+using ArmoryLabel = PowerLabel;
+inline std::vector<ArmoryLabel> armoryLabels(UIContext& ui, const GameWorld& w, const WorldView& view) { return powerLabels(ui, w, view, true); }
+inline void drawArmoryLabels(UIContext& ui, const std::vector<ArmoryLabel>& labels) { drawPowerLabels(ui, labels); }
 
 }  // namespace raidhud
 
