@@ -91,6 +91,7 @@ public:
                               return;
                           }
                           data_ = r.data;
+                          raids::rememberTitan(data_);  // 2.77.3: the heart's sheet reads the clan's state there
                           loaded_ = true;
                           error_.clear();
                       }),
