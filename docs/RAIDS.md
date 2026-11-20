@@ -2140,10 +2140,14 @@ coups du boss lui-même, garder en mémoire les marques d'une pluie ou d'une ér
   en est le cas net, mesuré aussi avec des joueurs simulés invincibles depuis sa phase 2 (`COSMIC_GOAT_PHASE=2
   COSMIC_GOAT_INVINCIBLE=1`) : l'évent de l'ouest est fermé, mais les coureurs de l'évent du centre et de celui de l'est
   ne traversent pas : le bras de Pyroclast flotte entre eux et ces évents, ses poings frappent sous chaque joueur, et la
-  navigation recommence son chemin à chaque coup esquivé (le chemin reste à ses 10 premiers nœuds sur 165). Le test
-  « raid bots (2.77): they defeat Pyroclast by themselves from its phase 2 » (joueurs invincibles, 1 200 s) **échoue
-  depuis la fusion** pour cette raison (la navigation du §27 seule le réussissait en 906 s). Il faut un appât qui
-  emmène vraiment le boss hors du chemin des coureurs (il suit le joueur le plus proche), ou une traversée sous lui.
+  navigation recommence son chemin à chaque coup esquivé (le chemin reste à ses 10 premiers nœuds sur 165). Pour cette
+  raison, le test de la 2.77 sur Pyroclast depuis sa phase 2 (joueurs invincibles, 1 200 s ; la navigation du §27 seule
+  le battait en 906 s) **ne demande plus sa chute** : il vérifie que ses évents sont tenus et fermés, et mesure et dit
+  sa chute (« raid bots (2.77): Pyroclast from its phase 2 … its fall measured »). Il faut un appât qui emmène
+  vraiment le boss hors du chemin des coureurs (il suit le joueur le plus proche), ou une traversée sous lui.
+* **Les passages de groupe** (2.78, « Prêts ») : la navigation garde ses joueurs hors de leur plaque, sauf ceux envoyés
+  la tenir — en traversant le vestiaire pour une tablette, un joueur simulé emmenait sinon tout le monde hors de la
+  zone ; un groupe ne quitte une zone qu'ensemble (tous libres, réunis près du passage).
 * **Les pluies et éruptions** : leurs marques disparaissent quand le boss frappe, alors que leurs impacts tombent
   encore pendant une seconde ; les garder demande d'en lire la suite (`Enemy` ne la montre pas encore) — l'essai fait
   avec une mémoire des marques a déplacé les morts sans en ôter.

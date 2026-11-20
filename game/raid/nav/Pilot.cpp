@@ -129,7 +129,14 @@ void Navigator::reset() {
 
 void Navigator::update(const RaidRun& run, uint32_t tick, const std::vector<Rect>& blows) {
     std::vector<Rect> passages;
-    for (const Passage& pa : run.rules().passages) passages.push_back(pa.rect);
+    for (const Passage& pa : run.rules().passages) {
+        passages.push_back(pa.rect);
+        // 2.78: a passage of the group is taken by standing on its plate (the armory's « Prêts »): that plate is
+        // kept out of too, but by the players sent to hold it (SeatPlan::mayLeave).
+        if (!pa.plate.empty())
+            for (const CoopPlate& c : run.rules().coops)
+                if (c.id == pa.plate) passages.push_back(c.rect);
+    }
     update(run.world(), run.zoneSerial(), tick, blows, passages, &run);
 }
 

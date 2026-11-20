@@ -174,6 +174,9 @@ std::string shortLabel(const std::string& s) { return s.substr(0, s.find(" ("));
 
 Rect bodyAt(Vec2 feet) { return {feet.x - 5.0f, feet.y - 22.0f, 10.0f, 22.0f}; }
 
+/// 2.78: the « thing » of a player sent to hold the plate of a passage of the group (it may step onto it).
+const char* const kGroupPlate = "group_plate";
+
 bool hitsLine(const Danger& d, const Rect& box) {
     if (d.gapHalf > 0.0f) {
         // A sweeping beam: the sector it turns through (as far as it reaches).
@@ -1047,6 +1050,9 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                     give(s, Task::Mechanism, {r.center().x + off, r.bottom()}, Stand);
                     Bot& b = bots_[static_cast<size_t>(s)];
                     b.mechanism = r;
+                    // 2.78: the plate of a passage of the group (« Prêts »): held, it takes them all away together.
+                    for (const Passage& pa : run.rules().passages)
+                        if (pa.plate == run.rules().coops[g].id) b.thing = kGroupPlate;
                     b.goalNode = nav ? nav->nearest({r.center().x + off, r.bottom()}, std::max(40.0f, r.w),
                                                     [&](const NavGraph::Node& nd) { return nd.mover < 0 && r.contains({nd.feet.x, nd.feet.y - 4.0f}); })
                                      : -1;
@@ -1221,7 +1227,7 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     plan.stop = stop;
     plan.flee = b.task == Task::Flee;
     plan.hold = b.task == Task::Revive || b.task == Task::Mechanism;
-    plan.mayLeave = b.task == Task::Exit && b.act == Enter;
+    plan.mayLeave = (b.task == Task::Exit && b.act == Enter) || (b.task == Task::Mechanism && b.thing == kGroupPlate);
     plan.path = &b.path;
     plan.at = &b.at;
     plan.planned = &b.planned;

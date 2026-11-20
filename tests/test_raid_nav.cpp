@@ -317,7 +317,12 @@ ZoneResult runZone(Svc& s, const Branch& br, int zone, int level = 2) {
     if (zone == 0)
         for (const auto& e : run->world().entities())
             if (auto* t = dynamic_cast<const PowerUnlockEntity*>(e.get()); t && !e->removed) todo.push_back({"tablette " + t->power(), e->box, 0, 0});
-    for (size_t k = 0; k < rules.coops.size(); ++k) todo.push_back({rules.coops[k].label, rules.coops[k].rect, 1, k});
+    for (size_t k = 0; k < rules.coops.size(); ++k) {
+        // 2.78: the plate of a passage of the group (« Prêts ») is the way out itself (below), not a plate to hold first.
+        bool groupPlate = false;
+        for (const Passage& p : rules.passages) groupPlate = groupPlate || p.plate == rules.coops[k].id;
+        if (!groupPlate) todo.push_back({rules.coops[k].label, rules.coops[k].rect, 1, k});
+    }
     // The order of a player: always the nearest next (from the start).
     {
         Vec2 from = run->world().playerAt(kSeat).feet();
@@ -348,7 +353,13 @@ ZoneResult runZone(Svc& s, const Branch& br, int zone, int level = 2) {
         const bool curSecret = curTo && curTo->secret;
         if ((curSecret && !secret) || (curSecret == secret && p.to > cur.to)) exit = static_cast<int>(k);
     }
-    if (exit >= 0) todo.push_back({"sortie", rules.passages[static_cast<size_t>(exit)].rect, 2, static_cast<size_t>(exit)});
+    if (exit >= 0) {
+        // 2.78: a passage of the group (the armory's « Prêts ») is taken from its plate, held (nobody walks into it).
+        Rect out = rules.passages[static_cast<size_t>(exit)].rect;
+        for (const CoopPlate& c : rules.coops)
+            if (c.id == rules.passages[static_cast<size_t>(exit)].plate) out = c.rect;
+        todo.push_back({"sortie", out, 2, static_cast<size_t>(exit)});
+    }
     res.targets = static_cast<int>(todo.size());
     Driver d(level);
     const auto t0 = std::chrono::steady_clock::now();
