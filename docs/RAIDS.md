@@ -9,6 +9,7 @@
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22)
+# joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §23)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1289,7 +1290,8 @@ l'horloge, l'écran ni le réseau) :
   qu'il touche une touche (dit dans la ligne du test). Les entrées restent celles de la session : mêmes trames, même partie.
 * Deux règles **du test seulement** (jamais dans un vrai raid) : un joueur simulé envoyé sur un mécanisme qu'il n'atteint
   pas en 6 s y est placé, et un joueur simulé qui ne se rapproche plus de son but pendant 8 s est placé sur la place
-  suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît.
+  suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît. (2.79 : ces deux
+  règles disparaissent à leur tour, le test ne déplace plus jamais un joueur simulé, §23.)
 * **Limites mesurées** (à 7 joueurs simulés, niveau Expert) : seuls, ils finissent les zones (l'embuscade de l'Épaule en
   14 s, le gardien du Biceps en 16 s, le générateur de la Veine en 13 s, le vestiaire en 15 s) et, invincibles, battent
   Pyroclast (depuis sa phase 2 : évents tenus ensemble, points faibles et corps à nu ; en 906 s de jeu depuis qu'il se
@@ -1300,7 +1302,7 @@ l'horloge, l'écran ni le réseau) :
   et, mortels, ils tombent face aux Gigaboss en quelques minutes (les attaques propres à chaque boss ne sont lues qu'en
   partie : marques, poings, jets, pluies et tirs annoncés, pas ses coups au contact). Le réglage « Joueurs simulés
   invincibles » permet de voir un raid entier.
-* **Pas encore corrigé : les îlots flottants.** Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
+* **Pas encore corrigé : les îlots flottants** (corrigé en 2.79 : la plateforme est visée là où elle sera, §23). Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
   Cuisse flottante, Muscle suspendu…), leurs sauts visent la plateforme où elle est, pas où elle sera : ils tombent
   encore dans le vide. Un groupe de renfort qui reprend une telle zone peut y être éliminé à son tour, et les 8 renforts
   s'épuiser ; « Joueurs simulés invincibles » n'y change rien (une chute dans le vide met encore à terre). Corriger
@@ -1413,6 +1415,190 @@ réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va 
 (même empreinte à 2 et 8 places), âme jamais dans un passage et réanimation sans changement de zone, vestiaire traversé
 sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
+
+
+## 23. Joueurs simulés : terrain et anticipation (2.79)
+
+Les joueurs simulés de « Tester Asterion » et de « Simuler un raid complet » se déplacent désormais comme un **très bon
+joueur** : ils lisent le terrain en simulant leur propre physique, essaient leurs mouvements quelques dizaines de pas à
+l'avance sur une copie légère de la zone, utilisent **tous** leurs mouvements (double et triple saut, ruée au sol et en
+l'air, impulsion, saut mural, traversée d'une plateforme vers le bas) et disent ce qu'ils font. Leurs décisions de
+combat, de rôle et de tâche restent celles de `game/raid/RaidBots` ; ce qui suit est leur façon de **se déplacer**
+(`game/raid/nav/`, `game/raid/RaidNav`). **Aucune règle de jeu ne change** : les joueurs simulés n'envoient que des
+`InputFrame` de joueur, les empreintes solo, coopération et raid sans joueurs simulés sont identiques.
+
+### La copie de la physique (`game/raid/nav/BodySim`)
+
+Un **corps** (`nav::Body`) avance exactement comme `Player::fixedUpdate` : même `PlayerConfig`, mêmes opérations dans le
+même ordre, même `PhysicsWorld::move`. Course, saut tenu plus ou moins longtemps (hauteur variable), temps de grâce et
+saut mémorisé, double et triple saut, glissade le long d'un mur et saut mural, accroupi et glissade au sol, traversée
+d'une plateforme à sens unique (Bas + Saut), échelles, eau, courants ascendants, ruée (au sol, en l'air, en diagonale ;
+ruée au sol puis saut), impulsion (une fois par saut), énergie et temps de recharge de ces pouvoirs. Ce qu'il ne fait
+jamais : être blessé, frapper, tirer — le jeu le décide ; un écart avec la prédiction est vu et le mouvement est choisi
+de nouveau.
+
+Pour lire l'état sans le changer, le jeu expose quelques accesseurs **en lecture seule** : `Player::motion()` (minuteurs
+du saut et de la ruée, sauts en l'air restants…), les usages restants de la ruée et de l'impulsion,
+`MovingPlatformEntity::predict` (où une plateforme mobile **sera** à chacun des prochains pas : la même arithmétique
+que son `fixedUpdate`, mise en commun dans `advanceRoute` / `routePos`), la phase et le minuteur d'une plateforme qui
+s'effrite, le cycle d'un laser (`LaserEntity::firesIn`), un courant allumé ou non.
+
+**Fidélité mesurée** (`tests/test_raid_nav.cpp`) : sur des suites d'entrées jouées à la fois par le vrai joueur et par la
+copie (course, saut tenu, double saut, ruée en diagonale, impulsion, accroupi, glissade, saut court, ruée au sol puis
+saut, chute rapide, sauts muraux d'un mur à l'autre), l'écart est de **0,00000 px** à chaque pas.
+
+### Le graphe de la zone : ses sauts trouvés en simulant (`game/raid/RaidNav`)
+
+* **Places** (comme en 2.77) : le dessus de chaque sol et plateforme traversable tous les 16 px, les échelles, la route
+  de chaque plateforme mobile tous les 32 px. Les places reliées en marchant forment un **segment** (un sol). Les
+  **passages** de la zone le coupent : entrer dans un passage fait changer tout le groupe de zone, donc une place dedans
+  est un segment à part et un chemin n'y entre que si c'est son but — un passage posé en travers d'un sol (le raccourci
+  de l'Avant-bras) se **saute** par-dessus.
+* **Liaisons dans les airs** : pour chaque paire de segments à portée (210 px plus haut, 300 px de côté, 460 px plus
+  bas), depuis les deux meilleures places d'envol, le jeu **simule** une bibliothèque de mouvements (`nav::Program`),
+  du plus simple au plus riche : se laisser tomber (puis double saut), saut court, moyen ou complet, monter puis
+  avancer, double saut tôt ou tard, triple saut, ruée en l'air (de niveau, en diagonale, après le double saut), ruée au
+  sol puis saut, impulsion (puis double saut), sauts muraux d'un mur à l'autre. Le premier qui **atterrit** sur le
+  segment visé, hors de tout danger durable, devient la liaison et garde son programme. Une liaison dit ce qu'elle
+  demande (la ruée, l'impulsion, un troisième saut) : un joueur qui ne l'a pas ne la prend jamais, et pour lui le graphe
+  garde aussi le mouvement le plus simple qu'il sait faire (une liaison par besoin). Une plateforme mobile est posée à
+  la place de sa route que vise la liaison.
+* **Calcul borné** : un mouvement qui n'atteint pas une place même à l'air libre (sa portée, simulée une fois par
+  programme) n'est jamais essayé vers elle ; 60 000 simulations au plus par zone.
+* **En arrière-plan, au même pas partout** : le graphe est construit sur un autre thread à partir d'un instantané de la
+  zone pris au pas où il est demandé (sa physique copiée, ses dangers, ses échelles, ses courants, ses plateformes, ses
+  passages) — une fonction pure de cet instantané. Il sert à partir d'un pas fixé par la largeur de la zone (24 pas plus
+  un par 120 px, 160 au plus : 0,2 s à 1,3 s), qu'il vienne du cache ou non : le déroulement est le même sur chaque
+  ordinateur et à chaque exécution. Pendant ce temps les joueurs simulés **observent la zone** ; si la construction est
+  en retard, le thread principal attend à ce pas-là seulement (compté). Mis en cache par niveau, état de ses portes et
+  de ses zones de dégâts (un rideau de magma qui ferme une arène), passages : 48 graphes au plus, partagés par les
+  groupes.
+
+| Zone (graphe complet) | Places | Liaisons | Paires essayées | Simulations | Temps | Mémoire |
+|---|---|---|---|---|---|---|
+| Bras droit · Épaule | 169 | 359 | 53 | 105 (17303 pas du corps) | 6,5 ms | 20 Ko |
+| Jambe gauche · Muscle suspendu | 125 | 285 | 73 | 92 (16899 pas du corps) | 7,7 ms | 14 Ko |
+| Crâne · Orbite gauche | 234 | 572 | 198 | 295 (37467 pas du corps) | 9,5 ms | 30 Ko |
+| Bras droit · Poignet-verrou | 1845 | 4438 | 1241 | 3344 (362581 pas du corps) | 125,6 ms | 208 Ko |
+| Crâne · Voûte crânienne (16 832 px) | 3400 | 7962 | 3875 | 15389 (1646688 pas du corps) | 439,4 ms | 386 Ko |
+| Jambe gauche · Cheville (16 832 px) | 3375 | 7932 | 3780 | 15314 (1635493 pas du corps) | 511,9 ms | 385 Ko |
+
+### L'anticipation (`game/raid/nav/Terrain`, `Maneuver`, `Pilot`)
+
+* **Une copie légère de la zone** (`nav::Terrain`) : sa physique copiée et suivie pas à pas (portes, plateformes qui
+  s'effritent, murs d'un boss), dans laquelle chaque essai **déplace les plateformes mobiles là où elles seront**, porte
+  le corps qui s'y tient, fait céder une plateforme qui s'effrite sous lui puis la fait revenir ; elle est remise comme
+  le monde après chaque essai. Ce qui blesse, avec son heure : le vide, les liquides mortels, les pics, les zones de
+  dégâts, le **liquide qui monte** de la zone (son calendrier de `RaidRun` : quand, jusqu'où), les **lasers** (leur
+  cycle), les **tirs** ennemis (leur trajectoire, gravité comprise) et les **coups annoncés** (poings, jets des évents,
+  marques d'un Gigaboss, dangers des boss). Elle ne lit que le monde et n'écrit que dans sa copie.
+* **Un mouvement = un programme d'entrées** (`nav::Program`, `padAt`) avec une boucle fermée pour l'atterrissage : en
+  l'air, il pousse vers l'endroit visé et freine à temps. La même fonction donne l'entrée de chaque pas dans l'essai et
+  dans le jeu : les entrées jouées sont celles qui ont été simulées.
+* **Le pilote** (`nav::Pilot`, un par place) suit son chemin (A* du graphe), marche, grimpe ; avant chaque mouvement
+  dans les airs il essaie sur la copie le programme de la liaison puis les autres, et garde le plus sûr et le plus
+  rapide ; une plateforme mobile, il **attend qu'elle soit là où il atterrira** (jusqu'à 3 s, porté s'il est déjà
+  dessus) et vise sa position **future**. Il vérifie à chaque pas que le jeu suit la simulation : sinon (un coup, un
+  ennemi, une plateforme qui part), il choisit de nouveau ; **en l'air, il se rattrape** avec ce qui lui reste (double
+  saut, ruée, impulsion) sur le sol sûr le plus proche. Une liaison qui échoue est laissée de côté quelques secondes et
+  un autre chemin est cherché ; pousser contre quelque chose sans avancer (un monte-charge posé au sol, une porte) aussi.
+* **Ce qui arrive sur son chemin** : quelques pas devant lui (24, 32 ou 48 selon son niveau), il simule sa marche ; un
+  tir, un rayon, un coup annoncé, le liquide qui monte vu pendant **son temps de réaction**, il **esquive** : rester,
+  s'accroupir, reculer, sauter, double saut, ruée (invulnérable pendant la ruée : il passe à travers), chacun simulé
+  sur 110 pas, le premier sans aucun mal et le plus proche de son chemin. Un mouvement en cours est revérifié tous les 3
+  pas contre ce qui est apparu depuis. Six secondes avant que le liquide de la zone monte, s'il est dessous ou que son
+  but l'est, il **remonte** sur la place sûre la plus proche et y attend qu'il redescende. Il n'entre jamais dans un
+  liquide mortel ni dans le vide : ce sont des échecs pour tout essai.
+* **Coût borné par pas** : chaque groupe a 8 000 pas simulés pour commencer des choix dans un pas de jeu ; au-delà, le
+  choix d'un joueur attend le pas suivant (déterministe : par ordre des places, compté). Un choix coûte au plus 2 000,
+  4 000 ou 6 000 pas simulés selon le niveau (un choix commencé va à son terme : au pire 8 000 + 6 000 pas en un pas de
+  jeu). Un pas du corps simulé coûte environ 0,25 µs (1,6 million en 0,44 s pour le plus grand graphe) : 14 000 pas,
+  environ 3,5 ms. Rien ne tourne sur un autre thread que la construction du graphe.
+
+**Niveau des joueurs simulés** (jamais de triche : les mêmes entrées, la même physique) :
+
+| Niveau | Temps de réaction | Profondeur (pas simulés par choix) | Regard devant lui | Précision du geste |
+|---|---|---|---|---|
+| Débutant | 0,3 s | 2 000 | 24 pas | ± 2 pas sur ses doubles sauts, ruées, impulsions, attentes |
+| Confirmé | 0,15 s | 4 000 | 32 pas | ± 1 pas |
+| Expert | 0,05 s | 6 000 | 48 pas | exacte |
+
+Tous ont les mêmes mouvements ; la profondeur seule fait qu'un Débutant trouve moins souvent le mouvement riche (les
+programmes sont essayés du plus simple au plus riche), et son geste imprécis le fait se rattraper en l'air plus souvent.
+
+### Ce qu'ils pensent (`game/raid/nav/Intent.h`)
+
+`raid::nav::Intent` et `intentText()` : la pensée de déplacement d'un joueur simulé, en français (traduite à
+l'affichage, `data/i18n/en.json`) ; `TestBots::moveThought(place)` la donne avec le pas où elle a commencé
+(`nav::Thought`). Affichage seulement, jamais lu par la simulation. Les pensées :
+
+| Pensée | Anglais |
+|---|---|
+| Observe la zone | Looking over the zone |
+| Avance vers son objectif · Attend à son poste | Heading for its objective · Holding its position |
+| Saute vers la plateforme suivante · Double saut · Triple saut | Jumping to the next platform · Double jump · Triple Jump |
+| Double saut au-dessus du vide | Double jump over the void |
+| Saut vers la plateforme mobile · Attend la plateforme mobile · Se laisse porter par la plateforme mobile | Jump to the moving platform · Waiting for the moving platform · Riding the moving platform |
+| Ruée aérienne · Ruée au-dessus du vide · Ruée puis saut allongé · Impulsion vers le haut · Saut mural | Air Dash · Dash over the void · Dash into a long jump · Impulse upward · Wall jump |
+| Se laisse tomber plus bas · Traverse la plateforme vers le bas · Grimpe à l'échelle | Dropping to a lower floor · Dropping through the platform · Climbing the ladder |
+| Se rattrape en l'air | Catching itself in mid-air |
+| Esquive du tir · Esquive du rayon · Esquive du coup annoncé · S'accroupit sous le coup | Dodging the shot · Dodging the beam · Dodging the announced blow · Ducking under the blow |
+| Remonte au-dessus du magma · Se met à l'abri en hauteur · Évite le danger | Climbing above the magma · Taking shelter up high · Keeping clear of the danger |
+| Cherche un autre chemin | Looking for another way |
+
+### Ils ne trichent jamais
+
+Seulement les entrées d'un joueur (`InputFrame` : touches, stick, choix), la même physique ; l'anticipation lit l'état du
+jeu (permis pour une IA de test) et n'écrit que dans sa propre copie. Les deux « sauvetages » du test de la 2.77 (un
+joueur simulé **placé** sur son mécanisme après 6 s, ou sur la place suivante de son chemin après 8 s sans progrès)
+**disparaissent** : le test ne déplace plus jamais un joueur simulé ; il compte seulement les fois où l'un d'eux est
+resté bloqué, et son chemin est refait. Les îlots flottants de la 2.77 (§22, « pas encore corrigé ») sont corrigés : la
+plateforme est visée là où elle sera.
+
+### Tests (`tests/test_raid_nav.cpp`) et mesures
+
+* La copie de la physique contre le vrai joueur : 0,00000 px d'écart (ci-dessus), sauts muraux compris.
+* **Chaque zone de chaque branche d'Asterion, vestiaire compris** (7 branches et le Cœur : 66 zones) : un joueur simulé
+  **Expert** seul part du départ, va à chaque objectif (un générateur, un levier, un gardien, une arène, une relique, le
+  Gigaboss : à portée, ou sur la meilleure place pour le combattre ; au vestiaire, il **touche** chacune des 19
+  tablettes), tient chaque plaque d'un verrou jusqu'à ce qu'elle s'ouvre (les écluses, le monte-charge, les plaques
+  jumelles), puis entre dans la sortie. Les objectifs de la branche sont donnés comme faits (portes ouvertes, arènes
+  vidées : seul le terrain se dresse devant lui) et les coups des ennemis ne le blessent pas (seul le terrain compte).
+  Compté : ses morts (le vide, un liquide mortel) et chaque contact avec un danger du terrain (pics, zone de dégâts,
+  liquide qui monte). **Résultat : **66 / 66 zones réussies**, aucune mort due au terrain, aucun danger touché ; 1891 s de jeu en tout (les plus longues : les routes de 16 832 px, environ 2 minutes) ; 161 doubles sauts, 303 ruées, 66 impulsions**
+
+| Branche | Zones (objectifs atteints · temps de jeu) | Morts (terrain) | Dangers touchés |
+|---|---|---|---|
+| Crâne | Vestiaire 21/21 16,4 s · Mâchoire 2/2 11,8 s · Orbite gauche 2/2 14,7 s · Orbite droite 2/2 13,2 s · Nerfs optiques 3/3 13,9 s · Ossuaire oublié 2/2 11,4 s · Tempe 3/3 15,0 s · Voûte crânienne 5/5 121,4 s · Antre de Skullmaw 2/2 33,6 s | 0 | 0 |
+| Bras gauche | Vestiaire 21/21 16,4 s · Épaule gelée 2/2 11,8 s · Biceps de givre 2/2 13,5 s · Tendon glacé 2/2 20,3 s · Coude des lames 3/3 12,3 s · Crevasse cachée 2/2 7,6 s · Avant-bras de givre 3/3 21,7 s · Poignet de glace 5/5 117,5 s · Griffes de Dreadfang 2/2 41,7 s | 0 | 0 |
+| Bras droit | Vestiaire 21/21 16,4 s · Épaule 2/2 10,8 s · Biceps de basalte 2/2 11,5 s · Veine de magma 2/2 16,8 s · Coude-forge 4/4 14,0 s · Grotte des scories 2/2 12,4 s · Avant-bras 3/3 13,3 s · Poignet-verrou 6/6 89,2 s · Main de Pyroclast 2/2 28,1 s | 0 | 0 |
+| Torse | Vestiaire 21/21 16,4 s · Clavicule 2/2 11,8 s · Côtes hautes 2/2 11,4 s · Poumon gauche 3/3 16,2 s · Sternum 3/3 12,5 s · Reliquaire du cœur 2/2 11,7 s · Côtes basses 3/3 13,0 s · Cage du cœur 5/5 117,3 s · Antre de Heartbreaker 2/2 26,9 s | 0 | 0 |
+| Abdomen | Vestiaire 21/21 16,4 s · Diaphragme 2/2 11,8 s · Estomac 2/2 22,0 s · Nid des parasites 2/2 9,5 s · Intestin 3/3 15,5 s · Poche oubliée 2/2 10,9 s · Foie noir 3/3 13,6 s · Gosier de Voidworm 5/5 120,4 s · Antre de Voidworm 2/2 25,4 s | 0 | 0 |
+| Jambe gauche | Vestiaire 21/21 16,4 s · Hanche 2/2 11,8 s · Cuisse flottante 2/2 16,8 s · Muscle suspendu 2/2 11,2 s · Genou 3/3 14,7 s · Sanctuaire des poids 2/2 11,6 s · Tibia 3/3 15,1 s · Cheville 5/5 120,9 s · Pied de Graviton 2/2 35,7 s | 0 | 0 |
+| Jambe droite | Vestiaire 21/21 16,4 s · Hanche de fer 2/2 11,8 s · Cuisse-piston 2/2 11,4 s · Fémur fendu 2/2 15,7 s · Genou-forge 3/3 14,4 s · Forge oubliée 2/2 11,0 s · Mollet blindé 3/3 14,5 s · Cheville d'acier 5/5 121,9 s · Talon de Titanus 2/2 34,1 s | 0 | 0 |
+| Cœur | Vestiaire 21/21 16,4 s · Aorte cosmique 5/5 117,3 s · Le Cœur d'Asterion 2/2 42,0 s | 0 | 0 |
+
+* Ciblés : un vide de 170 px qu'un saut seul ne franchit pas (la copie le dit : il tombe) est franchi par un **double
+  saut** (le graphe n'a que lui, le joueur simulé le joue et pense « Double saut au-dessus du vide ») ; les quatre îlots
+  mouvants du Muscle suspendu : **4 sauts sur une plateforme mobile, dont 2 où elle a bougé d'au moins 8 px pendant le vol (visée où elle sera), 4 posés au pixel près où la simulation l'annonçait, jamais dans le vide** ; le magma de la Veine de magma (monte à 16 s pendant 7 s) : il remonte avant,
+  jamais touché, redescend ensuite (« Remonte au-dessus du magma ») ; huit tirs à hauteur de tête et des pieds : aucun
+  ne le touche (accroupi, saut) ; un rayon en travers du chemin : il attend qu'il s'éteigne et passe, jamais touché ; une
+  cheminée de 200 px (hors de portée du double saut) : il la monte d'un mur à l'autre (« Saut mural »).
+* Débutant, Confirmé, Expert sur le Muscle suspendu et le Poignet-verrou : tous arrivent, sans mort ; l'Expert ne se
+  rattrape presque jamais en l'air (0 et 3 fois), le Débutant souvent (6 et 16 fois : son geste imprécis).
+* « Simuler un raid complet » (le test du §22 : 7 groupes de 7 Experts invincibles, chaque branche depuis son antre) : les
+  sept Gigaboss puis le **Cœur** tombent en **598 s de jeu** (2 226 s en 2.77), sans aucun déplacement par le test ; pas
+  moyen du raid 1,74 ms, au pire 1 016 ms — un graphe de 16 832 px attendu au pas où il sert, dans un test sans
+  affichage qui enchaîne les pas sans attendre l'horloge (en jeu, il a 1,3 s pour se construire et il en faut 0,5).
+* La même empreinte à chaque exécution, à 2 et 8 places (îlots mouvants, joueurs simulés Experts, 30 s) : la même empreinte deux fois à 2 et à 8 places ; à 8 places (7 Experts, 30 s), **0,0147 ms** en moyenne par joueur simulé et par pas (2,41 ms au pire), 220 choix de mouvement, au plus 18224 pas simulés en un pas de jeu pour tout le groupe
+
+### Limites
+
+* Le graphe ne tente pas les sauts depuis une échelle ; ses places sur une plateforme mobile sont celles de sa route
+  (une plateforme en orbite ou une bulle n'en a pas) : on y monte seulement si elle passe à une place.
+* Les autres joueurs ne sont pas dans la copie (dans un raid, ils se traversent) ; un ennemi qui pousse un joueur simulé
+  le fait seulement choisir de nouveau.
+* Le test des zones donne les objectifs comme faits : il prouve le terrain, pas le combat (les tests de `RaidBots`).
 
 ---
 

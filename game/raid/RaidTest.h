@@ -78,7 +78,9 @@ public:
     /// The branch's state given with each step (the full raid's simulation: every group's validated work).
     void setBranchState(uint32_t state) { state_ = state; }
     void setHeartShared(const HeartShared& h) { heart_ = h; }
-    /// The rescues of the test so far (a simulated player put on its mechanism or further on its path).
+    /// The times a simulated player stayed stuck so far (sent to a mechanism it did not reach in 6 s, or no
+    /// nearer to its goal for 8 s). 2.79: it is never moved for it (only its inputs move it): its path is
+    /// made again.
     int rescues() const { return rescues_; }
     /// « Joueurs simulés invincibles » (a test's setting, never a real raid): their hearts come back
     /// after each step (a fall into the void still puts them down, to be revived).

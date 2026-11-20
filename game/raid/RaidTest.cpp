@@ -68,27 +68,24 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
 }
 
 void TestSession::rescue() {
+    // 2.79: a simulated player is never moved by the test any more (it would be a cheat: only a player's
+    // inputs move it, docs/RAIDS.md « Joueurs simulés : terrain et anticipation »). What is counted is how
+    // often one stayed stuck — sent to a mechanism it has not reached in 6 s, or no nearer to its goal for
+    // 8 s —; its navigation looks for another way meanwhile (an edge it failed is left for a while).
     GameWorld& w = run_.world();
-    const NavGraph* nav = bots_.nav();
     for (int s = 0; s < players_ && s < w.teamSize(); ++s) {
         TestBots::Bot& b = bots_.bots()[static_cast<size_t>(s)];
         if (s == 0 && !autopilot()) continue;  // the administrator plays their seat
         if (w.member(s).presence != GameWorld::Presence::Playing || !w.playerAt(s).alive() || w.playerAt(s).respawning()) continue;
-        // Sent to a mechanism it cannot reach: put on it (a test alone needs its helpers there).
         if (b.task == TestBots::Task::Mechanism && b.mechanismSteps > kMechanismSteps) {
-            w.restoreMember(s, w.carryOf(s), w.freeSpot({b.mechanism.center().x, b.mechanism.bottom()}, s));
             b.mechanismSteps = 0;
             b.path.clear();
             ++rescues_;
             continue;
         }
-        // 2.77: no nearer to its goal for 8 s on its path: on the next place of that path.
-        if (b.lost > TestBots::kStuckSteps && nav) {
-            const int next = bots_.nextNode(s);
+        if (b.lost > TestBots::kStuckSteps) {
             b.lost = 0;
             b.goalBest = 1e30f;
-            if (next < 0 || nav->node(next).mover >= 0) continue;
-            w.restoreMember(s, w.carryOf(s), w.freeSpot(nav->node(next).feet, s));
             b.path.clear();
             ++rescues_;
         }

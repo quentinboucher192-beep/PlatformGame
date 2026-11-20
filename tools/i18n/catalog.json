@@ -4595,9 +4595,21 @@
    ]
   },
   {
+   "fr": "Attend la plateforme mobile",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "attend Nova",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
+   ]
+  },
+  {
+   "fr": "Attend un objectif",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -4610,6 +4622,12 @@
    "fr": "Attend à la sortie vers {0}",
    "where": [
     "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
+   "fr": "Attend à son poste",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -6572,6 +6590,12 @@
    "fr": "avance",
    "where": [
     "ui/screens/GhostRun.cpp"
+   ]
+  },
+  {
+   "fr": "Avance vers son objectif",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -11973,6 +11997,12 @@
    "fr": "Cheminées ardentes",
    "where": [
     "data/levels/pyralis_03.json"
+   ]
+  },
+  {
+   "fr": "Cherche un autre chemin",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -17612,6 +17642,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/powers/PowerDemos.cpp",
     "game/powers/Powers.cpp",
+    "game/raid/RaidNav.cpp",
     "game/tutorial/Tutorial.cpp",
     "packaging/DependencyCollector.cpp",
     "ui/screens/AdminCreations.cpp",
@@ -19535,7 +19566,14 @@
   {
    "fr": "Double saut",
    "where": [
+    "game/raid/nav/Intent.cpp",
     "ui/studio/StudioDoc.cpp"
+   ]
+  },
+  {
+   "fr": "Double saut au-dessus du vide",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -23854,6 +23892,24 @@
    ]
   },
   {
+   "fr": "Esquive du coup annoncé",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Esquive du rayon",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Esquive du tir",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Esquive parfaite",
    "where": [
     "data/achievements/achievements.json"
@@ -27830,6 +27886,12 @@
    ]
   },
   {
+   "fr": "Grimpe à l'échelle",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Grimpez aux lianes (Haut) ou rebondissez entre les murs avec le saut mural.",
    "where": [
     "data/levels/sylvanox_01.json"
@@ -30158,6 +30220,12 @@
    "fr": "Impulsion (rocher fissuré)",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Impulsion vers le haut",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -45206,6 +45274,12 @@
    ]
   },
   {
+   "fr": "Observe la zone",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Obsession du chrono",
    "where": [
     "data/achievements/achievements.json"
@@ -55391,6 +55465,12 @@
    ]
   },
   {
+   "fr": "Remonte au-dessus du magma",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Remontez par la cheminée.",
    "where": [
     "data/levels/pyralis_03.json"
@@ -57218,10 +57298,17 @@
    ]
   },
   {
+   "fr": "Ruée au-dessus du vide",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Ruée aérienne",
    "where": [
     "data/powers/air_dash.json",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -57237,6 +57324,12 @@
    "fr": "Ruée des griffes",
    "where": [
     "data/enemies/dreadfang.json"
+   ]
+  },
+  {
+   "fr": "Ruée puis saut allongé",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -58498,6 +58591,12 @@
    ]
   },
   {
+   "fr": "S'accroupit sous le coup",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "S'entraîner (hors classement)",
    "where": [
     "ui/screens/ChallengesScene.cpp"
@@ -59145,6 +59244,12 @@
    ]
   },
   {
+   "fr": "Saut mural",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Saut quantique",
    "where": [
     "data/enemies/singularis.json"
@@ -59154,6 +59259,12 @@
    "fr": "Saut sur le joueur",
    "where": [
     "game/enemies/EnemyDefinition.cpp"
+   ]
+  },
+  {
+   "fr": "Saut vers la plateforme mobile",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -59181,6 +59292,12 @@
    "fr": "Saute sur un champignon : il te renvoie très haut, tout seul. Profites-en pour atteindre la corniche et les éclats qui flottent en l'air !",
    "where": [
     "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Saute vers la plateforme suivante",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -59596,6 +59713,30 @@
    "fr": "Se déplacer et sauter",
    "where": [
     "game/tutorial/Tutorial.cpp"
+   ]
+  },
+  {
+   "fr": "Se laisse porter par la plateforme mobile",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Se laisse tomber plus bas",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Se met à l'abri en hauteur",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "Se rattrape en l'air",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -65134,7 +65275,19 @@
    ]
   },
   {
+   "fr": "Tester Asterion : Débutant, Confirmé et Expert diffèrent par le temps de réaction, la profondeur d'anticipation et la précision du geste, jamais par de la triche : rien que les entrées d'un joueur. Le test ne déplace plus jamais un joueur simulé bloqué : il cherche lui-même un autre chemin.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Tester Asterion : les joueurs simulés jouent vraiment la zone, même si vous êtes AFK. Ils lisent ce qu'il reste à faire (générateurs, leviers, embuscades, gardiens, reliques, plaques à tenir ensemble, Gigaboss, sortie), se répartissent les tâches, trouvent leur chemin (sauts, doubles sauts, échelles, plateformes mobiles, dangers évités), combattent, esquivent les coups annoncés, fuient le liquide qui monte et réaniment les joueurs à terre. Contre un boss qui se bat par parties, ils frappent là où un coup compte (points faibles et parties normales), jamais une partie qui ne fait que blesser. Réglage « Niveau des joueurs simulés » : Débutant, Confirmé ou Expert (temps de réaction et précision).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Tester Asterion : les joueurs simulés se déplacent comme de très bons joueurs. Ils lisent le terrain en simulant leur propre physique (sauts tenus, doubles et triples sauts, ruées au sol et en l'air, impulsion, sauts muraux), visent une plateforme mobile là où elle sera, se rattrapent en l'air, esquivent les tirs, les rayons et les coups annoncés, remontent au-dessus du magma avant qu'il monte et ne tombent plus dans le vide. Chacun dit ce qu'il fait : « Double saut au-dessus du vide », « Saut vers la plateforme mobile », « Esquive du rayon »… Vérifié dans chaque zone de chaque branche d'Asterion, vestiaire compris.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -66688,6 +66841,12 @@
    ]
   },
   {
+   "fr": "Traverse la plateforme vers le bas",
+   "where": [
+    "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
    "fr": "Traversez la canopée jusqu'à sa couronne.",
    "where": [
     "data/levels/sylvanox_02.json"
@@ -66864,7 +67023,8 @@
    "fr": "Triple saut",
    "where": [
     "data/powers/triple_jump.json",
-    "game/levels/ObjectTypes.cpp"
+    "game/levels/ObjectTypes.cpp",
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {
@@ -79792,6 +79952,12 @@
    "fr": "évents impossibles",
    "where": [
     "server/src/raidZones.ts"
+   ]
+  },
+  {
+   "fr": "Évite le danger",
+   "where": [
+    "game/raid/nav/Intent.cpp"
    ]
   },
   {

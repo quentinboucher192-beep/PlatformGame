@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <vector>
 
@@ -261,16 +262,19 @@ TEST_CASE("raid test (2.72): the simulated players stand on a co-op plate with t
     CHECK(!session.run().rules().coops.empty());
     if (session.run().rules().coops.empty()) return;
     session.step(InputFrame{});
-    // The administrator on the first plate: the simulated players needed come (or, unable to reach
-    // it, are put on it after 6 s: a test alone needs its helpers there).
+    // The administrator on the first plate: the simulated players needed come by themselves (2.79: the test
+    // never puts them there any more) — across the zone, its ambush and its doors on the way.
     const raid::CoopPlate& plate = session.run().rules().coops.front();
     bool done = false;
-    for (int t = 0; t < raid::TestSession::kMechanismSteps + 8 * kSimHz && !done; ++t) {
+    int t = 0;
+    for (; t < 300 * kSimHz && !done; ++t) {
         GameWorld& w = session.run().world();
         if (!plate.rect.intersects(w.playerAt(0).box)) w.playerAt(0).teleportTo({plate.rect.center().x, plate.rect.bottom()});
         session.step(InputFrame{});
         done = session.run().coop(0).done;
     }
+    std::printf("  plaque « %s » tenue en %.1f s (jamais placés : %d blocages comptés)\n", plate.label.c_str(), t / static_cast<double>(kSimHz),
+                session.rescues());
     CHECK(done);
 }
 

@@ -767,6 +767,15 @@ bool LaserEntity::handleAction(GameWorld&, const std::string& action, const Json
     return true;
 }
 
+bool LaserEntity::firesIn(float seconds) const {
+    if (!enabled_) return false;
+    const float onT = obj_.prop<float>("onTime", 1.5f), offT = obj_.prop<float>("offTime", 1.5f);
+    if (offT <= 0.0f) return true;
+    return std::fmod(cycle_ + seconds, onT + offT) < onT;
+}
+
+Vec2 LaserEntity::beamTo() const { return end_; }
+
 std::string LaserEntity::debugInfo() const { return enabled_ ? (on_ ? "actif" : "en attente") : "désactivé"; }
 
 void LaserEntity::render(RenderContext& ctx) {

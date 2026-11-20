@@ -333,8 +333,10 @@ prend jamais les touches.
 Les flèches vers les ennemis hors de l'écran fonctionnent comme dans les niveaux. Les administrateurs testent
 une zone avec des **joueurs simulés** visibles (« Joueur simulé 2 »…) qui **jouent la zone eux-mêmes**, même quand
 l'administrateur est AFK : ils lisent ce qu'il reste à faire, se répartissent générateurs, plaques et combats, trouvent
-leur chemin (sauts, échelles, plateformes mobiles), esquivent, fuient le liquide qui monte, battent les Gigaboss et
-relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert. **« Simuler un raid complet »** joue tout le raid
+leur chemin en simulant leur propre physique (doubles et triples sauts, ruées, impulsion, sauts muraux, plateformes
+mobiles visées là où elles seront, [§23](docs/RAIDS.md)), esquivent tirs, rayons et coups annoncés, fuient le liquide qui
+monte, battent les Gigaboss et relèvent les joueurs à terre, au niveau Débutant, Confirmé ou Expert, en disant ce
+qu'ils font (« Double saut au-dessus du vide »…). **« Simuler un raid complet »** joue tout le raid
 de clan **en local** (les sept branches, leurs vestiaires, puis le Cœur avec tous les groupes) : événements du monde,
 carte du titan, contributions, groupes éliminés et renforts ; l'administrateur rejoint ou regarde n'importe quel groupe,
 et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md).
@@ -632,6 +634,19 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.79.0** :
+* **Joueurs simulés : terrain et anticipation** ([docs/RAIDS.md §23](docs/RAIDS.md)) : ils lisent la zone en **simulant
+  leur propre physique** (une copie exacte de celle du joueur : 0 px d'écart) — chaque saut du graphe est un mouvement
+  qui a atterri dans la simulation —, essaient leurs mouvements quelques dizaines de pas à l'avance sur une copie de la
+  zone et utilisent **tous** leurs mouvements : double et triple saut, ruée au sol et en l'air, impulsion, sauts muraux,
+  traversée d'une plateforme vers le bas. Ils visent une **plateforme mobile là où elle sera**, se rattrapent en l'air,
+  esquivent tirs, rayons et coups annoncés, remontent au-dessus du liquide qui monte, sautent par-dessus un passage qui
+  les emmènerait ailleurs et ne tombent plus dans le vide. Chacun **dit ce qu'il fait** (« Double saut au-dessus du
+  vide », « Esquive du rayon »…, français et anglais). Prouvé dans les **66 zones** d'Asterion (vestiaire compris) : un
+  Expert seul va à chaque objectif puis à la sortie sans que le terrain le tue.
+* Débutant, Confirmé, Expert : temps de réaction, profondeur d'anticipation et précision du geste, **jamais de triche** ;
+  le test ne déplace plus jamais un joueur simulé bloqué.
 
 **Nouveau dans la version 2.77.0** :
 * **Tester Asterion** : les joueurs simulés **jouent vraiment** la zone, même si vous êtes AFK (pilote automatique de
