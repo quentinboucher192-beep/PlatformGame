@@ -4,6 +4,7 @@
 // routines (their marks: « OK », « + », « ◊ », « ■ », « ◀▶ » instead of ✓ ✚ ✦ ▮ ⇄). Checked against the
 // body fonts (ChakraPetch Regular and SemiBold) with SDL_ttf's own cmap lookup (TTF_FontHasGlyph).
 
+#include <SDL3/SDL.h>
 #include <SDL3_ttf/SDL_ttf.h>
 
 #include <cstdio>
@@ -12,10 +13,18 @@
 #include <string>
 #include <vector>
 
+#include "engine/core/Application.h"
 #include "engine/core/FileUtil.h"
+#include "engine/core/I18n.h"
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
+#include "engine/rendering/GlyphCheck.h"
+#include "game/GameServices.h"
 #include "tests/TestFramework.h"
+#include "ui/online/ContribTable.h"
+#include "ui/screens/Navigation.h"
+#include "ui/widgets/AsterionFigure.h"
+#include "ui/widgets/UIContext.h"
 
 using namespace cosmic;
 
@@ -140,7 +149,7 @@ TEST_CASE("fonts (2.72): the raid screens and the gigabosses' routines only writ
                            "game/raid/RaidRun.cpp",          "game/raid/Gigaboss.cpp",         "game/raid/RaidTest.cpp",
                            "game/raid/VoidwormRoutine.cpp",  "game/raid/GravitonRoutine.cpp",  "game/raid/TitanusRoutine.cpp",
                            "game/raid/SkullmawRoutine.cpp",  "game/raid/DreadfangRoutine.cpp", "game/raid/HeartbreakerRoutine.cpp",
-                           "saves/RaidHudLayout.cpp",        "ui/online/RaidMenu.cpp"};
+                           "saves/RaidHudLayout.cpp",        "ui/online/RaidMenu.cpp",         "ui/online/ContribTable.cpp"};
     int read = 0;
     std::set<std::string> bad;
     for (const char* f : files) {
@@ -154,4 +163,68 @@ TEST_CASE("fonts (2.72): the raid screens and the gigabosses' routines only writ
     for (const std::string& b : bad) std::printf("  %s\n", b.c_str());
     CHECK(read >= 15);
     CHECK(bad.empty());
+}
+
+TEST_CASE("fonts (2.79): the raid's panel, its menu and the contributions table draw no character their font lacks, texts composed while the game runs included") {
+    // What is composed at run time (a group's name, a zone's, the keys…) is not a literal: the panels are drawn,
+    // French then English, and the text engine says which character a face lacked (engine/rendering/GlyphCheck.h).
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+    Application app;
+    AppConfig cfg;
+    cfg.headless = true;
+    cfg.width = 1280;
+    cfg.height = 720;
+    cfg.vsync = false;
+    CHECK(app.init(cfg));
+    {
+        GameServices g(app);
+        g.loadAll();
+        app.onSceneRender = [&g](bool covered) { g.ui.sceneInput = !covered; };
+        g.progression.tutorial = "finished";
+        g.settings.gameplay.attractTrailer = false;
+        g.progression.asterionFilmSeen = true;
+        glyphs::clear();
+        for (Language lang : {Language::French, Language::English}) {
+            g.settings.language = i18n::code(lang);
+            g.applySettings();
+            // « Simuler un raid complet »: each tab of its panel (groups, contributions, the world's events, the titan's map).
+            for (int panel = 0; panel < 4; ++panel) {
+                RaidSimSetup s;
+                s.groups = 7;
+                s.bots = 7;
+                s.capture = true;
+                s.panel = panel;
+                const size_t before = app.sceneCount();
+                app.pushScene(makeRaidSim(g, s));
+                app.runFrames(4);
+                for (size_t n = app.sceneCount(); n > before; --n) app.popScene();
+                app.runFrames(1);
+            }
+            // The one contributions table: its heading in the titles' face, the titan's parts, every tab.
+            contrib::Model m;
+            m.parts = contrib::titanParts();
+            for (contrib::Part& p : m.parts) {
+                contrib::ZoneTab tab;
+                tab.name = "Antre · " + p.gigaboss;
+                tab.reached = true;
+                p.tabs = {tab};
+            }
+            AsterionFigure fig;
+            for (int part = -1; part < static_cast<int>(m.parts.size()); ++part) {
+                contrib::View v;
+                v.part = part;
+                g.ui.begin(app, 1.0f / 60.0f);
+                contrib::draw(g, fig, {g.ui.s(24), g.ui.s(24), g.ui.screenW() - g.ui.s(48), g.ui.screenH() - g.ui.s(48)}, m, v);
+                g.ui.end();
+            }
+        }
+        for (const glyphs::Missing& mg : glyphs::missing())
+            std::printf("  glyphe absent de la police (face %d) : %s dans « %s »\n", mg.face, hexOf(mg.codepoint).c_str(), mg.text.c_str());
+        CHECK(glyphs::missing().empty());
+        g.settings.language = i18n::code(Language::French);
+        g.applySettings();
+        app.onSceneRender = nullptr;
+    }
+    i18n::setLanguage(Language::French);
+    app.shutdown();
 }

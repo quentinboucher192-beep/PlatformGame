@@ -136,6 +136,29 @@ struct Blank : Scene {
     void render(float) override {}
 };
 
+/// 2.79: a column's header shown whole: its lines are its translated name (nothing cut, no « … »), at most two,
+/// each inside its column after its icon, and they fit the header's height.
+void checkHeader(UIContext& ui, const contrib::Layout& L, const contrib::Prepared& p, int c) {
+    const auto& lines = L.headLines[static_cast<size_t>(c)];
+    const Rect& cr = L.cols[static_cast<size_t>(c)];
+    std::string joined;
+    for (const std::string& l : lines) joined += (joined.empty() ? "" : " ") + l;
+    const std::string whole = i18n::tr(p.headers[static_cast<size_t>(c)]);
+    if (joined != whole) std::printf("  en-tête « %s » coupé : « %s »\n", whole.c_str(), joined.c_str());
+    CHECK(joined == whole);
+    CHECK(joined.find("…") == std::string::npos);
+    CHECK(!lines.empty() && lines.size() <= 2);
+    const float iconW = c == 0 ? 0.0f : ui.s(28);
+    for (const std::string& l : lines) {
+        i18n::Verbatim shown(true);
+        const float w = ui.text().measure(l, FontFace::Bold, ui.s(L.headFont)).x;
+        if (iconW + w > cr.w + 0.5f) std::printf("  en-tête « %s » trop large (%.0f > %.0f)\n", l.c_str(), iconW + w, cr.w);
+        CHECK(iconW + w <= cr.w + 0.5f);
+    }
+    CHECK(static_cast<float>(lines.size()) * ui.s(L.headFont + 2.0f) <= cr.h - ui.s(8) + 0.5f);
+    CHECK(L.headFont >= 12.0f);
+}
+
 }  // namespace
 
 TEST_CASE("raid zones (2.78): a player who takes a passage changes zone alone, the others stay; each zone the same digest at 2 and 8 seats") {
@@ -587,11 +610,8 @@ TEST_CASE("raid zones (2.78): the « Tableau des contributions » and the distan
                             const Rect& cr = L.cols[static_cast<size_t>(c)];
                             CHECK(cr.right() <= L.header.right() + 0.5f);
                             if (c + 1 < contrib::kCols) CHECK(cr.right() <= L.cols[static_cast<size_t>(c + 1)].x + 0.5f);
-                            const float iconW = c == 0 ? 0.0f : ui.s(28);
-                            const float tw = ui.text().measure(p.headers[static_cast<size_t>(c)], FontFace::Bold, ui.s(L.headFont)).x;
-                            if (iconW + tw + ui.s(16) > cr.w + 0.5f)
-                                std::printf("  en-tête « %s » serré (%.0f > %.0f) : abrégé avec « … »\n", p.headers[static_cast<size_t>(c)].c_str(),
-                                            iconW + tw + ui.s(16), cr.w);
+                            // 2.79: each header whole (never « … »), on one line or two, each line inside its column.
+                            checkHeader(ui, L, p, c);
                         }
                         CHECK(L.headFont >= 17.0f * 0.62f - 0.01f);
                         // Each number's tooltip inside the screen, whatever the cell.
@@ -669,7 +689,6 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
         m.raid.title = "Raid entier · tous les groupes";
         m.raid.sub = "chaque groupe et ses joueurs, toutes leurs branches additionnées";
         for (int gi = 0; gi < 7; ++gi) {
-            m.raid.sections.push_back("Groupe " + std::to_string(gi + 1) + " · " + m.parts[static_cast<size_t>(gi)].name + " · Voûte crânienne de l'Abîme");
             for (int i = 0; i < 8; ++i) {
                 contrib::Row r;
                 r.name = i == 1 ? "Kaëlis-de-la-Nébuleuse-Infinie" : "Joueur simulé " + std::to_string(i + 1);
@@ -683,9 +702,22 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
                 r.deaths = i % 3;
                 r.revives = (7 - i) % 4;
                 r.revived = i % 2;
-                r.section = gi;
+                r.tag = "G" + std::to_string(gi + 1);
+                r.zoneDamage = {{"1. Mâchoire", 4000}, {"2. Orbite gauche", 2500 + 10 * i}, {"Antre · Skullmaw", 9000}};
                 m.raid.rows.push_back(r);
             }
+            contrib::GroupCard c;
+            c.name = "Groupe " + std::to_string(gi + 1) + " · " + m.parts[static_cast<size_t>(gi)].name;
+            c.state = gi % 2 == 0 ? "Skullmaw tombé" : "en combat · Voûte crânienne de l'Abîme";
+            c.enemy = m.parts[static_cast<size_t>(gi)].enemy;
+            c.fallen = gi % 2 == 0;
+            c.dots = {2, 2, 2, 1, 0, 0, 0, 0};
+            c.deaths = 40;
+            c.revives = 32;
+            c.objectives = 38;
+            c.best = "Kaëlis-de-la-Nébuleuse-Infinie";
+            c.part = gi;
+            m.groups.push_back(c);
         }
         for (size_t pi = 0; pi < m.parts.size(); ++pi) {
             contrib::Part& p = m.parts[pi];
@@ -696,7 +728,18 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
             p.open = pi != 6;
             p.closed = "les chiffres des autres groupes : Résultats du raid, une fois validés par le serveur";
             p.whole = m.raid;
+            for (size_t k = 0; k < p.whole.rows.size(); ++k) p.whole.rows[k].section = static_cast<int>(k / 8 % 2);  // two groups in each part
+            p.whole.sections = {"Groupe " + std::to_string(pi + 1) + " · " + p.name + " · Voûte crânienne de l'Abîme · sur place", "Renfort 1 · parti ailleurs"};
             p.zones = {m.raid, m.raid};
+            const char* zoneNames[7] = {"Mâchoire", "Orbite gauche", "Orbite droite", "Nerfs optiques", "Ossuaire oublié", "Tempe", "Voûte crânienne"};
+            for (int z = 0; z < 8; ++z) {
+                contrib::ZoneTab tab;
+                tab.name = z == 7 ? "Antre · " + p.gigaboss : std::to_string(z + 1) + ". " + zoneNames[z];
+                tab.progress = z < 3 ? 1.0f : z == 3 ? 0.5f : 0.0f;
+                tab.reached = z < 4;
+                tab.table = z < 2 ? z : -1;
+                p.tabs.push_back(tab);
+            }
         }
         m.zones = {m.raid};
         AsterionFigure fig;
@@ -714,21 +757,23 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
                     m.embedded = embedded;
                     // The sim's panel body (its title and tabs above), or the whole screen over the raid's menu.
                     const Rect panel = embedded ? Rect{ui.s(36), ui.s(130), W - ui.s(72), H - ui.s(200)} : Rect{ui.s(24), ui.s(24), W - ui.s(48), H - ui.s(48)};
-                    for (int part : {-1, 0, 7})
-                        for (int tab : {0, 1}) {
+                    for (int part : {-1, 0, 6, 7})
+                        for (int tab : {0, 1, 3}) {
                             contrib::View v;
                             v.part = part;
                             v.tab = tab;
+                            v.expanded = tab == 1 ? 3 : -1;  // a row opened: its zones under it
                             const contrib::Layout L = contrib::layout(ui, panel, m, v);
                             // The titan beside the table, everything inside the panel, nothing over anything.
                             CHECK(!L.titan.empty());
-                            CHECK(L.titanScale >= 1.0f);
+                            CHECK(L.titanScale >= 0.75f);  // smaller than its pixels only on a small screen
+                            if (H >= 1079.0f) CHECK(L.titanScale >= 2.0f);
                             CHECK(!L.titan.intersects(L.table));
                             CHECK(L.titan.right() <= L.table.x + 0.5f);
                             for (const Rect& r : L.texts) CHECK(panel.containsRect(r));
                             CHECK(L.callouts.size() == m.parts.size());
                             for (size_t i = 0; i < L.callouts.size(); ++i) {
-                                CHECK(L.titan.containsRect(L.callouts[i]));
+                                CHECK(L.titan.expanded(0.5f).containsRect(L.callouts[i]));
                                 CHECK(!L.callouts[i].intersects(L.figure));
                                 CHECK(!L.callouts[i].intersects(L.overview));
                                 CHECK(!L.callouts[i].intersects(L.caption));
@@ -736,12 +781,50 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
                                 for (size_t j = i + 1; j < L.callouts.size(); ++j) CHECK(!L.callouts[i].intersects(L.callouts[j]));
                             }
                             CHECK(L.callouts[0].h >= ui.s(48));
+                            // A part: its tabs (« Toute la branche », its zones) one after the other, inside the table's side.
+                            if (part >= 0) {
+                                CHECK(L.partTabs.size() == 9);
+                                for (size_t i = 0; i < L.partTabs.size(); ++i) {
+                                    CHECK(L.table.expanded(0.5f).containsRect(L.partTabs[i]));
+                                    for (size_t j = i + 1; j < L.partTabs.size(); ++j) CHECK(!L.partTabs[i].intersects(L.partTabs[j]));
+                                    CHECK(L.partTabs[i].bottom() <= L.header.y + 0.5f || L.header.empty());
+                                }
+                                CHECK(L.cards.empty());
+                            } else {
+                                // « Raid entier »: a card per group, side by side, above the rows.
+                                CHECK(L.cards.size() == 7);
+                                CHECK(L.table.expanded(0.5f).containsRect(L.cardsView));
+                                CHECK(L.cardsView.bottom() <= L.header.y + 0.5f);
+                                for (size_t i = 0; i < L.cards.size(); ++i) {
+                                    CHECK(L.cards[i].x >= L.cardsView.x - 0.5f && L.cards[i].right() <= L.cardsView.right() + 0.5f);
+                                    CHECK(L.cards[i].h >= ui.s(84) - 0.5f);
+                                    for (size_t j = i + 1; j < L.cards.size(); ++j) CHECK(!L.cards[i].intersects(L.cards[j]));
+                                }
+                            }
+                            if (part == 6) {  // a closed part: why, instead of the rows
+                                CHECK(!L.message.empty());
+                                CHECK(L.rows.empty());
+                                CHECK(L.table.containsRect(L.message));
+                                CHECK(!L.message.intersects(L.best));
+                                contrib::draw(g, fig, panel, m, v);
+                                continue;
+                            }
                             // The rows: never lower than readable, the groups' headers between them, scrolled past the view.
-                            const contrib::Table& t = tab == 1 ? (part < 0 ? m.raid : m.parts[static_cast<size_t>(part)].whole) : m.raid;
+                            const contrib::Table& t = part < 0 ? m.raid : tab == 0 ? m.parts[static_cast<size_t>(part)].whole : tab == 1 ? m.raid : m.raid;
+                            if (part >= 0 && tab == 3) {  // a zone reached but not counted yet: no rows
+                                CHECK(L.rows.empty());
+                                contrib::draw(g, fig, panel, m, v);
+                                continue;
+                            }
                             CHECK(L.rows.size() == t.rows.size());
                             CHECK(L.hidden == 0);
-                            if (tab == 1) CHECK(L.sections.size() == 7);
-                            CHECK(L.contentH > L.list.h);  // 56 players and 7 headers do not fit: they scroll
+                            if (part >= 0 && tab == 0) CHECK(L.sections.size() == 2);
+                            if (part < 0) CHECK(L.sections.empty());
+                            CHECK(L.contentH > L.list.h);  // 56 players do not fit: they scroll
+                            if (v.expanded >= 0) {
+                                CHECK(!L.expand.empty());
+                                for (const Rect& r : L.rows) CHECK(!r.intersects(L.expand));
+                            }
                             for (const Rect& r : L.rows) {
                                 CHECK(r.h >= ui.s(44) - 0.5f);
                                 CHECK(r.right() <= L.list.right() - ui.s(12) + 0.5f);  // the scroll bar's lane kept free
@@ -754,17 +837,24 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
                             CHECK(!L.list.intersects(L.best));
                             CHECK(!L.best.intersects(L.keys));
                             CHECK(!L.titan.intersects(L.keys));
-                            CHECK(L.tabs[1].right() <= L.sortLine.x + 0.5f);
                             CHECK(L.headFont >= 17.0f * 0.62f - 0.01f);
+                            {
+                                const contrib::Prepared pr = contrib::prepare(t, v.sort);
+                                for (int c = 0; c < contrib::kCols; ++c) checkHeader(ui, L, pr, c);  // whole, never « … »
+                            }
                             contrib::draw(g, fig, panel, m, v);
                         }
                 }
-                // The keys: Q / E, LB / RB go round « Raid entier » and the parts; Tab changes the tab.
+                // Choosing a part starts on « Toute la branche », nothing selected nor opened.
                 contrib::View v;
                 CHECK(v.part == -1);
+                v.tab = 3;
+                v.expanded = 2;
                 v.choose(7);
                 CHECK(v.part == 7);
+                CHECK(v.tab == 0);
                 CHECK(v.selected == -1);
+                CHECK(v.expanded == -1);
                 ui.end();
             }
         }

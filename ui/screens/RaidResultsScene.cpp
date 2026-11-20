@@ -24,6 +24,7 @@
 #include "game/online/Raids.h"
 #include "game/raid/RaidBranch.h"
 #include "ui/online/ContribTable.h"
+#include "ui/widgets/AsterionFigure.h"
 #include "ui/online/RaidHud.h"
 #include "ui/online/RaidMenu.h"
 #include "ui/online/RaidReviewsPanel.h"
@@ -168,9 +169,10 @@ public:
         } else if (contribOpen_) {
             // 2.78: the detailed table over the results (its own keys; Échap / B closes it, not the screen).
             ui.consumeNavigation(true, true);
-            if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), static_cast<int>(res_.zoneTables.size()))) contribOpen_ = false;
+            const contrib::Model cm2 = contribModel();
+            if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), cm2)) contribOpen_ = false;
             const float cm = ui.s(24);
-            if (contribOpen_ && contrib::draw(ui, {cm, cm, ui.screenW() - cm * 2, ui.screenH() - cm * 2}, contribModel(), contribView_)) contribOpen_ = false;
+            if (contribOpen_ && contrib::draw(g_, contribFigure_, {cm, cm, ui.screenW() - cm * 2, ui.screenH() - cm * 2}, cm2, contribView_)) contribOpen_ = false;
         } else if (!back && ui.backPressed()) {
             back = true;
         }
@@ -378,6 +380,16 @@ public:
             contribOpen_ = true;
             contribView_ = contrib::View{};
             contribView_.zone = page_;
+            // 2.79: the titan's part of the zone shown, on that zone's tab.
+            const contrib::Model cm = contribModel();
+            for (const raid::Branch* b : raid::Branch::all())
+                if (b->id == z.branch)
+                    for (size_t pi = 0; pi < cm.parts.size(); ++pi)
+                        if (cm.parts[pi].id == b->part && cm.parts[pi].open) {
+                            contribView_.choose(static_cast<int>(pi));
+                            for (size_t k = 0; k < b->zones.size(); ++k)
+                                if (b->zones[k].id == z.zone && k < cm.parts[pi].tabs.size() && cm.parts[pi].tabs[k].reached) contribView_.tab = static_cast<int>(k) + 1;
+                        }
         }
         raidhud::drawZoneTable(ui, {x - ui.s(14), r.y + navH + ui.s(8), w + ui.s(28), r.h - navH * 2 - ui.s(28)}, 1.0f, t);
         if (pages > 1) {
@@ -450,6 +462,7 @@ public:
     int gen_ = 0;
     int cat_ = 0, page_ = 0;
     contrib::View contribView_;  // 2.78
+    AsterionFigure contribFigure_;  // 2.79: the titan of the contributions table
     bool contribOpen_ = false;
 };
 

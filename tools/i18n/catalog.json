@@ -2014,6 +2014,12 @@
    ]
   },
   {
+   "fr": "AFFAIBLI",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Affaibli",
    "where": [
     "game/online/AsterionBody.cpp"
@@ -3045,6 +3051,12 @@
     "data/levels/glacior_04.json",
     "data/levels/pyralis_04.json",
     "data/levels/sylvanox_04.json"
+   ]
+  },
+  {
+   "fr": "Antre · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -5375,6 +5387,12 @@
    ]
   },
   {
+   "fr": "Aucun dégât compté zone par zone pour ce joueur.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Aucun départ du joueur",
    "where": [
     "editors/level_editor/LevelEditorTools.cpp"
@@ -5426,6 +5444,12 @@
    "fr": "Aucun fichier .cplanet trouvé",
    "where": [
     "ui/screens/ContentManagerScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun groupe",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -11304,6 +11328,12 @@
    ]
   },
   {
+   "fr": "Cette partie n'est pas dans cette simulation.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Cette partie ne vous appartient pas.",
    "where": [
     "server/src/challenges.ts"
@@ -13438,6 +13468,12 @@
    ]
   },
   {
+   "fr": "Clic ou validation : ses contributions",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Clic ou validation : simuler sa chute (ou la relever)",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -13848,6 +13884,12 @@
    "fr": "Combat de boss commencé",
    "where": [
     "game/levels/EventSystem.cpp"
+   ]
+  },
+  {
+   "fr": "COMBAT EN COURS",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -21549,8 +21591,7 @@
     "game/online/Raids.cpp",
     "game/powers/PowerStats.cpp",
     "ui/online/ContribTable.cpp",
-    "ui/online/RaidHud.cpp",
-    "ui/screens/RaidGameScene.cpp"
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -22785,6 +22826,24 @@
    "fr": "En combat : {0} groupes · {1} joueurs · {2} clans",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "en combat · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "en combat · Vestiaire",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "en combat · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -24084,6 +24143,12 @@
   },
   {
    "fr": "Entrée / A : zone suivante",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Entrée / A ou clic : ses zones",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
@@ -26304,6 +26369,18 @@
    ]
   },
   {
+   "fr": "flèches gauche / droite : trier",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "flèches haut / bas : joueurs",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Flèches hors écran (ennemis, embuscade, boss, alliés)",
    "where": [
     "ui/screens/HudEditorScene.cpp"
@@ -27443,7 +27520,6 @@
   {
    "fr": "Gigaboss",
    "where": [
-    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidResultsScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
@@ -28647,7 +28723,8 @@
    "fr": "Groupe {0}",
    "where": [
     "game/online/RaidRecap.cpp",
-    "game/raid/RaidSimulation.cpp"
+    "game/raid/RaidSimulation.cpp",
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -28675,6 +28752,12 @@
    ]
   },
   {
+   "fr": "Groupe {0} · {1} · votre instance",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "GROUPE · Anneau épinglé",
    "where": [
     "game/raid/VoidwormRoutine.cpp"
@@ -28696,12 +28779,6 @@
    "fr": "GROUPE · Côte écartée",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
-   ]
-  },
-  {
-   "fr": "Groupe · joueur",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -28892,6 +28969,7 @@
   {
    "fr": "Groupes",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
@@ -29085,6 +29163,12 @@
    "fr": "Gué du passeur",
    "where": [
     "data/levels/pyralis_02.json"
+   ]
+  },
+  {
+   "fr": "G{0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -31313,6 +31397,12 @@
    "fr": "Insulte ou harcèlement",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "INTACT",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -35947,6 +36037,18 @@
    ]
   },
   {
+   "fr": "Le Cœur est fermé tant que les sept Gigaboss ne sont pas tombés ({0} / 7). Il reste : {1}.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "le Cœur est tombé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Le cœur est à nu ({0}) : frappez sa lumière entre les côtes.",
    "where": [
     "game/raid/HeartbreakerRoutine.cpp"
@@ -37158,13 +37260,25 @@
    ]
   },
   {
-   "fr": "Le plus de la zone : {0} (couronne).",
+   "fr": "Le plus de la branche :",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
   },
   {
-   "fr": "Le plus du raid : {0} (couronne).",
+   "fr": "Le plus de la zone :",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Le plus du Cœur :",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Le plus du raid :",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
@@ -38385,6 +38499,12 @@
    ]
   },
   {
+   "fr": "les chiffres des autres groupes : Résultats du raid, une fois validés par le serveur",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Les chiffres du combat (joueurs en jeu, instances, gigaboss, reconnexions, rapports refusés, journal) sont dans l'onglet « En direct ».",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -38882,9 +39002,21 @@
    ]
   },
   {
+   "fr": "les groupes passés par cette branche, ses zones additionnées",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Les groupes sont déjà équilibrés.",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
+   ]
+  },
+  {
+   "fr": "les groupes venus au Cœur, la part de chacun dans ses dégâts",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -41588,13 +41720,31 @@
    ]
   },
   {
+   "fr": "Meilleurs de la branche",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Meilleurs de la zone",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
   },
   {
+   "fr": "Meilleurs du Cœur",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Meilleurs du raid",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Meilleurs dégâts",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
@@ -42700,6 +42850,12 @@
    ]
   },
   {
+   "fr": "molette ou barre : défiler",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Molette vers l'avant, sur la toile",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -43540,7 +43696,6 @@
     "game/online/RaidRecap.cpp",
     "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
-    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -46000,7 +46155,6 @@
     "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp",
     "ui/screens/RaidBranchScene.cpp",
-    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
    ]
   },
@@ -48459,6 +48613,12 @@
    "fr": "Pas de vignette.",
    "where": [
     "server/src/community.ts"
+   ]
+  },
+  {
+   "fr": "PAS DÉCOUVERT",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -51678,7 +51838,6 @@
   {
    "fr": "Points faibles",
    "where": [
-    "ui/screens/RaidGameScene.cpp",
     "ui/screens/RaidSheetsScene.cpp"
    ]
   },
@@ -54104,6 +54263,12 @@
    ]
   },
   {
+   "fr": "Q / E, LB / RB",
+   "where": [
+    "ui/online/ContribTable.h"
+   ]
+  },
+  {
    "fr": "Qatar",
    "where": [
     "data/online/countries.json",
@@ -54612,7 +54777,7 @@
    ]
   },
   {
-   "fr": "RAID COMPLET · TEST LOCAL — rien n'est envoyé",
+   "fr": "RAID COMPLET — TEST LOCAL, rien n'est envoyé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -54662,7 +54827,31 @@
    ]
   },
   {
+   "fr": "Raid entier : chaque groupe et ses joueurs. Une partie du titan (clic, ou {0}) : ses groupes et ses zones.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "Raid entier : tous les groupes",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Raid entier · {0}",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid entier · {0} groupe",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid entier · {0} groupes",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -56506,12 +56695,6 @@
    ]
   },
   {
-   "fr": "Relevés",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Relief du niveau en préparation…",
    "where": [
     "ui/widgets/Charts.cpp"
@@ -56594,6 +56777,12 @@
    "fr": "relique emportée par {0}",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "relique rapportée",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -58055,6 +58244,18 @@
    "fr": "Rien d'inscrit pour ces filtres.",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rien de compté pour cette partie sur ce jeu.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "rien de compté pour l'instant",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -64537,6 +64738,12 @@
    ]
   },
   {
+   "fr": "sur place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Sur un étage balayé, sautez la lame au moment où elle passe, ou changez d'étage pendant l'annonce.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -65060,7 +65267,8 @@
   {
    "fr": "Tab",
    "where": [
-    "engine/input/InputTypes.cpp"
+    "engine/input/InputTypes.cpp",
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -65140,18 +65348,6 @@
    "fr": "Tableau des contributions refait : onglets « Zone » et « Raid entier », barres des dégâts au boss et aux mini-boss, une icône et une couleur par catégorie, une couronne pour le meilleur, tri par colonne au clavier, à la manette et à la souris, une infobulle par chiffre, et trois nouveaux chiffres par joueur : morts, réanimations faites et réanimations reçues. Dans le menu du raid (« Zones terminées ») et dans Résultats du raid ; les tableaux d'avant affichent « — » pour ce qu'ils ne comptaient pas.",
    "where": [
     "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "TABLEAU DES CONTRIBUTIONS · ?",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "TABLEAU DES CONTRIBUTIONS · {0}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -66745,6 +66941,12 @@
    ]
   },
   {
+   "fr": "Test local : chiffres comptés par la simulation de chaque groupe, rien n'est envoyé au serveur.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Test local : chiffres comptés par la simulation, rien n'est envoyé au serveur.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -67376,6 +67578,7 @@
   {
    "fr": "TOMBÉ",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -67900,6 +68103,12 @@
    ]
   },
   {
+   "fr": "Tout le Cœur",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Tout le groupe est prêt : la route s'ouvre !",
    "where": [
     "data/raids/asterion/abdomen/armory.json",
@@ -68003,6 +68212,12 @@
     "game/gameplay/GameWorldTeam.cpp",
     "game/raid/RaidRun.cpp",
     "ui/screens/CoopGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toute la branche",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -68598,6 +68813,12 @@
    "fr": "Tri",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tri : {0} (clic sur un en-tête, ou flèches gauche / droite)",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -75231,6 +75452,18 @@
    ]
   },
   {
+   "fr": "zone en cours",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "zone en cours · chaque groupe passé par elle",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "zone entrée absente des zones des joueurs",
    "where": [
     "server/src/raidZones.ts"
@@ -75328,6 +75561,12 @@
    ]
   },
   {
+   "fr": "zone terminée",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "Zone terminée : au même instant, tous les joueurs de l'instance voient la carte « ZONE TERMINÉE » avec un son, que la zone ait été finie par leur groupe ou par un autre ; les autres zones de la branche finies ailleurs sont annoncées dans les alertes, et les alertes du titan (carte du titan) l'écrivent une seule fois par zone.",
    "where": [
     "data/news/changelog.json"
@@ -75340,31 +75579,13 @@
    ]
   },
   {
-   "fr": "Zone terminée par un autre groupe (état validé par le serveur)",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Zone terminée par un autre groupe (état validé par le serveur) · raid à {0} min {1} s · comptée par la simulation, la même sur tous les jeux du groupe",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Zone terminée par votre groupe",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
-   "fr": "Zone terminée par votre groupe · raid à {0} min {1} s · comptée par la simulation, la même sur tous les jeux du groupe",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "ZONE TERMINÉE · ?",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "zone terminée · chaque groupe passé par elle",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -75917,6 +76138,12 @@
    ]
   },
   {
+   "fr": "{0} / 7 Gigaboss tombés · un groupe (sa carte) ou une partie du titan pour ses zones",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} / 8 placés · {1} en jeu · zone : {2}",
    "where": [
     "ui/screens/RaidRosterScene.cpp"
@@ -76296,7 +76523,19 @@
    ]
   },
   {
+   "fr": "{0} : onglet suivant du panneau",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} : onglets · flèches gauche / droite : trier · survol ou flèches haut / bas : détails",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "{0} : partie du titan",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
@@ -76413,6 +76652,12 @@
    "fr": "{0} : zone de départ {1} inconnue",
    "where": [
     "server/src/raidWorld.ts"
+   ]
+  },
+  {
+   "fr": "{0} : zone suivante",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -77140,6 +77385,18 @@
    "fr": "{0} depuis les deux murs",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "{0} des dégâts",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "{0} des dégâts au boss",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -78114,6 +78371,12 @@
    ]
   },
   {
+   "fr": "{0} morts · {1} réa. · {2} objectifs",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} Mo…",
    "where": [
     "ui/screens/NotificationsScene.cpp"
@@ -78470,6 +78733,7 @@
   {
    "fr": "{0} PV",
    "where": [
+    "ui/online/ContribTable.cpp",
     "ui/widgets/GigabossStatsView.cpp"
    ]
   },
@@ -78939,6 +79203,12 @@
    ]
   },
   {
+   "fr": "{0} tombé",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} toutes les {1} s",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -79254,6 +79524,12 @@
    ]
   },
   {
+   "fr": "{0} · parti ailleurs",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · personnalisé",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp"
@@ -79380,6 +79656,12 @@
    ]
   },
   {
+   "fr": "{0} · sur place",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} · vaincu",
    "where": [
     "game/online/Raids.cpp"
@@ -79407,6 +79689,12 @@
    "fr": "{0} · vibration coupée",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · votre instance",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -79509,6 +79797,12 @@
    "fr": "{0} · Échap / B : fermer",
    "where": [
     "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
+   "fr": "{0} · éliminé ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
    ]
   },
   {
@@ -80755,6 +81049,12 @@
    ]
   },
   {
+   "fr": "Échap / B : fermer",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Échap / B : retour",
    "where": [
     "ui/screens/RaidRecapScene.cpp"
@@ -81688,7 +81988,19 @@
    ]
   },
   {
+   "fr": "éliminé ici",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "ÉLIMINÉ · ses joueurs regardent",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "éliminé · ses joueurs regardent",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -82708,14 +83020,12 @@
   {
    "fr": "… et {0} joueur de plus",
    "where": [
-    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },
   {
    "fr": "… et {0} joueurs de plus",
    "where": [
-    "ui/online/ContribTable.cpp",
     "ui/online/RaidHud.cpp"
    ]
   },

@@ -316,6 +316,15 @@ TEST_CASE("i18n audit: the key screens in English, nothing left in French") {
     rig.show(makeRaidTest(g, t), 60);
     t.zone = -1;  // the branch's armory (raid::RaidRun::kArmory): « Ce qu'il reste à faire » lists the other zones
     rig.show(makeRaidTest(g, t), 60);
+    // 2.79: « Simuler un raid complet », each tab of its panel (the one contributions table with the titan among them).
+    for (int panel = 0; panel < 4; ++panel) {
+        RaidSimSetup sim;
+        sim.groups = 7;
+        sim.bots = 7;
+        sim.capture = true;
+        sim.panel = panel;
+        rig.show(makeRaidSim(g, sim), 8);
+    }
     // 2.76.2: the raid's menu (Tab), each of its sections (→), in a zone of the branch.
     t.zone = 3;
     {

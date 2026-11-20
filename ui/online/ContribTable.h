@@ -34,6 +34,7 @@
 #include <array>
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/core/Math.h"
@@ -67,6 +68,9 @@ struct Row {
     int deaths = 0, revives = 0, revived = 0;
     bool v2 = true;  // mini-bosses, deaths and revivals known (a table of before 2.78: « — »)
     int section = -1;  // 2.79: its group's block (Table::sections), -1: none
+    std::string tag;   // 2.79: its group (« G3 ») after its name, in a table of several groups
+    /// 2.79: its damage zone by zone (tenths, every enemy), shown under its row when it is opened.
+    std::vector<std::pair<std::string, int64_t>> zoneDamage;
 };
 
 struct Table {
@@ -76,6 +80,26 @@ struct Table {
     /// 2.79: a header per group (« Groupe 3 · CRÂNE · Voûte crânienne »): its rows under it, sorted among
     /// themselves; the shares and the crowns stay those of the whole table.
     std::vector<std::string> sections;
+};
+
+/// 2.79: a zone's tab of a part (« 1. Mâchoire », « Antre · Skullmaw »), its progress under its name.
+struct ZoneTab {
+    std::string name;
+    float progress = 0.0f;  // its objectives done (0..1)
+    bool reached = false;   // a group got there (else greyed: nothing to show)
+    int table = -1;         // its table (Part::zones), -1: nothing counted there yet
+};
+
+/// 2.79: a group's card in « Raid entier » (a click opens its part).
+struct GroupCard {
+    std::string name;       // « Groupe 1 · CRÂNE »
+    std::string state;      // « Skullmaw tombé », « en combat · Voûte crânienne », « éliminé »
+    std::string enemy;      // its part's gigaboss (the portrait), empty: the heart's light
+    bool fallen = false, wiped = false;
+    std::vector<int> dots;  // its part's zones: 0 not reached, 1 where it is, 2 finished
+    int deaths = 0, revives = 0, objectives = 0;
+    std::string best;       // who dealt it the most damage
+    int part = -1;          // the part a click opens (Model::parts)
 };
 
 /// 2.79: a part of the titan (a branch, or the heart) as the drawing shows it, and its tables.
@@ -92,6 +116,7 @@ struct Part {
     std::vector<int> groups;  // the groups there now (their numbers)
     std::vector<Table> zones; // its zones' tables (the newest first)
     Table whole;              // the whole part: its groups, a header each
+    std::vector<ZoneTab> tabs; // its zones' tabs after « Toute la branche » (empty: the tabs « Zone » / « Toute la branche »)
 };
 
 struct Model {
@@ -107,6 +132,7 @@ struct Model {
     std::string extraKeys;     // a last piece of the keys' line (the panel around it), empty: none
     /// 2.79: drawn inside another panel (its own title and « Fermer »): no dimming, no heading.
     bool embedded = false;
+    std::vector<GroupCard> groups;  // 2.79: « Raid entier »'s cards (above every player's row)
 };
 
 /// What one column says of one row.
@@ -137,6 +163,7 @@ struct Layout {
     std::vector<Rect> rows;           // one per row, in the order shown, unscrolled (the content from list.y)
     int hidden = 0;                   // always 0 since 2.79 (the rows scroll)
     float rowFont = 18.0f, headFont = 15.0f;
+    std::array<std::vector<std::string>, kCols> headLines;  // 2.79: each header whole (translated), on one line or two
     std::vector<std::string> legendLines, keyLines;
     std::vector<Rect> texts;          // every text box drawn (for the overlap tests)
     // 2.79
@@ -151,6 +178,12 @@ struct Layout {
     std::vector<Vec2> anchors;        // where each part is on the drawing (its callout's line ends there)
     std::vector<std::string> captionLines;
     float titanScale = 0.0f;          // the drawing's scale (whole multiples once enlarged), 0: no drawing
+    std::vector<Rect> partTabs;       // « Toute la branche », then each zone's tab (a part chosen)
+    std::vector<Rect> cards;          // « Raid entier »: a card per group, unscrolled (their view: cardsView)
+    Rect cardsView;
+    float cardsH = 0.0f;
+    Rect message;                     // a closed part: why (instead of the rows)
+    Rect expand;                      // the opened row's zones, unscrolled like `rows` (empty: none)
 };
 
 class View {
@@ -160,10 +193,15 @@ public:
     Col sort = Col::Boss;
     int selected = -1;  // the row shown in detail by the keys (the order shown), -1 none
     int part = -1;      // 2.79: the titan's part shown (Model::parts), -1: « Raid entier », every group
+    int expanded = -1;  // 2.79: the row opened (Table::rows): its damage zone by zone under it
+    bool toggle = false;  // 2.79: Entrée / A pressed: the selected row opened or closed at the next draw
     /// Its keys: Tab (its tabKey action): tabs; Q / E, LB / RB: tabs, or (`parts` > 0) the titan's part;
     /// Gauche / Droite: the sorted column; Haut / Bas: a row's detail (the rows scroll to it); Entrée / A:
     /// the next zone; Échap / B: close (true).
     bool handleKeys(const InputManager& in, int zones, int parts = 0);
+    /// 2.79: with the model: Q / E, LB / RB: « Raid entier » and the parts; Tab: the part's next zone reached;
+    /// Entrée / A: the selected row opened (its zones) or closed.
+    bool handleKeys(const InputManager& in, const Model& m);
     /// 2.79: chooses a part (-1: the whole raid); the zone and the row start again.
     void choose(int p);
 };
