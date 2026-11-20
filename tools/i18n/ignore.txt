@@ -321,5 +321,6 @@ seconds
 # 2.75.5 : identifiants (puces de RaidWorldScene, clé JSON de main.cpp) que « Tab » et « sections » des textes du menu du raid rendaient « français »
 tab
 sections
+heart.relicShare
 # 2.80 : l'empreinte d'un test relayé (raid::testFingerprint : version, règles, titan), jamais affichée
 {0}|s{1}|c{2}|t{3}

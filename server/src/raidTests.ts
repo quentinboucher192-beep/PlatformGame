@@ -113,7 +113,7 @@ function readConfig(mode: Mode, raw: unknown, fail: (m: string) => never): { con
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) fail("objet attendu");
     const c = raw as Record<string, unknown>;
     const common = ["skill", "invincible", "bots_invincible"];
-    const keys = mode === "zone" ? [...common, "branch", "zone", "players", "start_phase", "parts", "relics"] : [...common, "groups", "bots"];
+    const keys = mode === "zone" ? [...common, "branch", "zone", "players", "start_phase", "parts", "relics"] : [...common, "groups", "bots", "full_groups"];
     const v = new Validator(c, keys);
     const out: Record<string, unknown> = {};
     out.skill = v.int("skill", { min: 0, max: 2 });
@@ -132,6 +132,8 @@ function readConfig(mode: Mode, raw: unknown, fail: (m: string) => never): { con
     } else {
         out.groups = v.int("groups", { min: 1, max: 14 });
         out.bots = v.int("bots", { min: 1, max: MAX_RAID_PLAYERS - 1 });
+        // 2.77.3 (« Joueurs par groupe »): the administrator's place of the other groups played by a simulated player too.
+        out.full_groups = v.bool("full_groups", { optional: true }) ?? false;
         groups = ((out.groups as number | undefined) ?? 1) + REINFORCEMENTS;
         seats = ((out.bots as number | undefined) ?? 1) + 1;
     }

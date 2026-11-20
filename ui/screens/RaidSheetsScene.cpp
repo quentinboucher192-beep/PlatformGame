@@ -13,6 +13,8 @@
 #include "game/content/CreaturePlaces.h"
 #include "game/enemies/BossAttackSheet.h"
 #include "game/online/LevelFingerprint.h"
+#include "game/online/Raids.h"
+#include "game/raid/RaidBranch.h"
 #include "game/raid/RaidSheets.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
@@ -22,6 +24,8 @@
 #include "ui/screens/RaidSheetSketch.h"
 #include "ui/widgets/AsterionFigure.h"
 #include "ui/widgets/BossSheetWidgets.h"
+#include "ui/widgets/GigabossStatsView.h"
+#include "ui/widgets/HeartSheetView.h"
 #include "ui/widgets/HitPartsView.h"
 #include "ui/widgets/UIContext.h"
 
@@ -50,12 +54,16 @@ std::string num(float v, int decimals = 1) { return sheetNumber(v, decimals); }
 constexpr const char* kTitan = "asterion";
 const std::vector<std::string> kTitanTabs = {"Le titan", "Les sept parties", "Récompenses"};
 const std::vector<std::string> kBossTabs = {"Combat", "Mécanismes", "Lieu et récompenses"};
+const std::vector<std::string> kHeartTabs = {"Combat", "Où frapper", "Lieu et récompenses"};  // 2.77.3
 
 std::vector<std::string> sheetIds(const raid::RaidSheets& s) {
     std::vector<std::string> ids = {kTitan};
     for (const raid::GigabossSheet& g : s.gigaboss) ids.push_back(g.id);
+    if (!s.heart.id.empty()) ids.push_back(s.heart.id);  // 2.77.3: the final fight, after the seven
     return ids;
 }
+
+bool isHeart(const raid::GigabossSheet* g) { return g && g->part == raid::kHeartPart; }
 
 std::string rowName(const raid::RaidSheets& s, const std::string& id) {
     if (id == kTitan) return s.asterion.title;
@@ -145,7 +153,7 @@ RaidSheetsLayout layoutRaidSheets(UIContext& ui, const raid::RaidSheets& sheets,
     L.difficulty = {rx, y + ui.s(120), rw, ui.s(40)};
     L.caption.r = {L.box.x + ui.s(10), L.box.bottom() - ui.s(36), L.box.w - ui.s(20), ui.s(32)};  // its phase, fitted as it is drawn
     L.tabs = {x, L.box.bottom() + ui.s(14), std::min(w, ui.s(640)), ui.s(40)};
-    L.tabLabels = kBossTabs;
+    L.tabLabels = isHeart(g) ? kHeartTabs : kBossTabs;
     L.content = {x, L.tabs.bottom() + ui.s(12), w, L.panel.bottom() - pad - (L.tabs.bottom() + ui.s(12))};
     return L;
 }
@@ -183,6 +191,7 @@ public:
             g_.onlineOpen.clear();
         }
         titan_.setOpenHint("Clic ou validation : la fiche de son gigaboss");
+        heartFigure_.setOpenHint("Clic ou validation : simuler sa chute (ou la relever)");  // 2.77.3
         atlas_ = officialCreatureAtlas(g_.content);  // the examples of the attacks (a neutral arena for a gigaboss)
         attacks_.setAtlas(atlas_);
         asterionfilm::hold(g_);  // Asterion's film first (its first viewing), as every screen of the titan
@@ -225,6 +234,8 @@ public:
         ui.popId();
         titan_.drawTooltip(g_);  // over everything (only when the titan was drawn this frame)
         hitStage_.drawTip(ui);   // 2.77.1: the tooltip of a part of « Où frapper » (only when drawn this frame)
+        heartFigure_.drawTooltip(g_);       // 2.77.3: a part of the titan on the heart's sheet
+        gbstats::drawTip(ui, statsTip_);    // 2.77.3: a number of the statistics
         if (!back && ui.backPressed()) back = true;
         ui.end();
         if (back) g_.app.popScene();
@@ -602,11 +613,26 @@ private:
         const float w = view.w - ui.s(16);
         const Color text{216, 222, 240, 255};
         const int phaseCount = std::max(1, static_cast<int>(g.phases.size()));
-        if (tab == 0) {
+        if (tab == 0 && isHeart(&g)) {
+            // 2.77.3: the clan's work, its statistics, its attacks by the parts fallen (ui/widgets/HeartSheetView);
+            // then its attacks, each unfolding as on every sheet.
+            y += drawHeartCombat(view, y, w) + ui.s(14);
+            view_.blocks += 3;
+        } else if (tab == 0) {
             Card about{"", "", tintOf(g), {}, {}, {}, {}};
             if (!g.description.empty()) about.lines.push_back({g.description, text});
             if (!g.summary.empty()) about.lines.push_back({"En bref : " + g.summary, kGold, FontFace::Bold});
             y += card(view, y, w, about) + ui.s(8);
+            // 2.77.3: its numbers (health by the group, phases, damage in hearts, parts, speed, size, rhythm).
+            if (!g.stats.health.empty()) {
+                const float pad = ui.s(14);
+                const gbstats::Layout S = gbstats::layoutStats(ui, g.stats, view.x + pad, y + pad, w - 2.0f * pad);
+                const Rect box{view.x, y, w, S.height + 2.0f * pad};
+                ui.r().fillRoundedRect(box, ui.s(12), Color{18, 26, 54, 235});
+                ui.r().drawRoundedRect(box, ui.s(12), kGold.withAlpha(150), ui.s(1.2f));
+                gbstats::drawStats(ui, S, "stats/" + g.id + "/", statsTip_);
+                y = box.bottom() + ui.s(10);
+            }
             for (const raid::SheetPhase& p : g.phases) {
                 Card c{std::to_string(p.number) + ". " + p.name, p.from, Color{255, 179, 71, 200}, {}, {}, {}, {}};
                 if (!p.enterText.empty()) c.lines.push_back({"« " + p.enterText + " »", kPeach});
@@ -620,6 +646,8 @@ private:
                 c.lines.push_back({"Attaques : " + join(g.lastStand), text});
                 y += card(view, y, w, c) + ui.s(8);
             }
+        }
+        if (tab == 0) {
             y += ui.s(6);
             AttackList::Options o;
             o.scroll = "content";
@@ -693,6 +721,37 @@ private:
             if (pressed) open(kTitan);
         }
         endContent(top, y);
+    }
+
+    // ------------------------------------------------------------- 2.77.3: the heart's « Combat »
+
+    /// Its three columns: the clan's state (real while an event runs and its titan's map was received, else a
+    /// simulation the player changes), its statistics, its attacks by the parts fallen. The height used.
+    float drawHeartCombat(const Rect& view, float y, float w) {
+        bool ok = false;
+        const heartsheet::State real = heartsheet::realState(sheets_, raids::lastTitan(), &ok);
+        heartsheet::State st = ok && !heartSimulated_ ? real : heartSim_;
+        st.realAvailable = ok;
+        if (!(ok && !heartSimulated_)) st.real = false;
+        const heartsheet::Layout L = heartsheet::layoutHeart(g_.ui, sheets_, st, {view.x, y, w, 0.0f});
+        const heartsheet::Action a = heartsheet::drawHeart(g_, sheets_, st, L, heartFigure_, statsTip_);
+        auto simulate = [&] {
+            if (!heartSimulated_) {
+                heartSim_ = heartsheet::State{};
+                if (ok) heartSim_.fallen = real.fallen;  // from the clan's state (its relics: the map does not say which)
+                heartSimulated_ = true;
+            }
+        };
+        if (a.toggleFall >= 0) {
+            simulate();
+            heartSim_.fallen ^= static_cast<uint8_t>(1u << a.toggleFall);
+        }
+        if (a.toggleRelic >= 0) {
+            simulate();
+            heartSim_.relics ^= static_cast<uint8_t>(1u << a.toggleRelic);
+        }
+        if (a.reset) heartSimulated_ = false;
+        return L.height;
     }
 
     // ------------------------------------------------------------- 2.75: where to hit it
@@ -1059,6 +1118,11 @@ private:
     std::string contentOf_;
     float contentH_ = 0.0f;
     RaidSheetsView view_;
+    // 2.77.3: the statistics' tooltip, the heart's titan and its simulation (the clan's real state otherwise).
+    gbstats::Tip statsTip_;
+    AsterionFigure heartFigure_;
+    heartsheet::State heartSim_;
+    bool heartSimulated_ = false;
 };
 
 }  // namespace

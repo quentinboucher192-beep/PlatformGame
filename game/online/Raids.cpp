@@ -879,4 +879,14 @@ std::vector<ResultPlayer> rankedPlayers(const std::vector<ResultPlayer>& players
     return rankedBy(r, c);
 }
 
+namespace {
+Json& titanStore() {
+    static Json titan = Json::object();
+    return titan;
+}
+}  // namespace
+
+void rememberTitan(const Json& data) { titanStore() = data.is_object() ? data : Json::object(); }
+const Json& lastTitan() { return titanStore(); }
+
 }  // namespace cosmic::raids

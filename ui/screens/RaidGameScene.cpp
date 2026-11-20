@@ -162,6 +162,7 @@ public:
         testSetup_.invincible = false;  // the administrator's, not this player's
         simSetup_.groups = c.groups;
         simSetup_.bots = c.bots;
+        simSetup_.fullGroups = c.fullGroups;  // 2.77.3
         simSetup_.skill = c.skill;
         simSetup_.invincible = c.invincible;
         simSetup_.botsInvincible = c.botsInvincible;
@@ -1085,11 +1086,12 @@ public:
             // 2.80: a real player of the test on this seat (the relay's places, their names), else as below.
             const std::string who = relayName(sim_ ? boundPlace_.first : 0, seat);
             if (!who.empty()) return who;
-            if (seat == 0) return sim_ ? std::string("Place libre (administrateur)") : relay_.admin ? std::string("Vous") : std::string("Administrateur");
+            if (seat == 0 && !sim_) return relay_.admin ? std::string("Vous") : std::string("Administrateur");
+            if (seat == 0 && !simSetup_.fullGroups) return "Place libre (administrateur)";
         }
         if (sim_) {
             // 2.77: the free place of every group is the administrator's; the others its simulated players.
-            if (seat == 0) return "Place libre (vous)";
+            if (seat == 0) return simSetup_.fullGroups ? raid::TestSession::botName(0) : std::string("Place libre (vous)");  // 2.77.3
             return seat <= simSetup_.bots ? raid::TestSession::botName(seat) : "Place libre";
         }
         // 2.72: a test's simulated players (the seats beyond them are free).
@@ -1188,6 +1190,7 @@ public:
             c.fullRaid = true;
             c.groups = simSetup_.groups;
             c.bots = simSetup_.bots;
+            c.fullGroups = simSetup_.fullGroups;  // 2.77.3: « Joueurs par groupe »
             c.skill = simSetup_.skill;
             c.invincible = simSetup_.invincible;
             c.botsInvincible = simSetup_.botsInvincible;
@@ -1449,7 +1452,8 @@ public:
             const float textW = row.w - bw * 2 - bgap * 3;
             int inPlay = 0, seats = 0;
             const GameWorld& w = g.session->run().world();
-            for (int s = 1; s < w.teamSize(); ++s) {
+            // 2.77.3 (« Joueurs par groupe »): the administrator's seat, where they are not, is a simulated player's.
+            for (int s = simSetup_.fullGroups && !(sim_->seated() && static_cast<int>(i) == sim_->viewed()) ? 0 : 1; s < w.teamSize(); ++s) {
                 if (w.member(s).presence == GameWorld::Presence::Vacant) continue;
                 ++seats;
                 inPlay += w.member(s).presence == GameWorld::Presence::Playing;

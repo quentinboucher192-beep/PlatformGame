@@ -51,6 +51,7 @@ struct RelayedTestConfig {
     // The whole raid (RaidSimSetup).
     int groups = 7;
     int bots = 4;
+    bool fullGroups = false;  // 2.77.3: « Joueurs par groupe »: the administrator's place played where they are not
     // Both.
     int skill = 1;
     bool invincible = true;  // the administrator's seat

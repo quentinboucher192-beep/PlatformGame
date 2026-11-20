@@ -44,6 +44,7 @@ Json RelayedTestConfig::toJson() const {
     if (fullRaid) {
         c["groups"] = std::clamp(groups, 1, 14);
         c["bots"] = std::clamp(bots, 1, kMaxInstancePlayers - 1);
+        c["full_groups"] = fullGroups;
     } else {
         c["branch"] = branch;
         c["zone"] = zone;
@@ -68,9 +69,11 @@ std::optional<RelayedTestConfig> RelayedTestConfig::fromJson(const std::string& 
     c.botsInvincible = *botsInv;
     if (c.fullRaid) {
         const auto groups = intIn(j, "groups", 1, 14), bots = intIn(j, "bots", 1, kMaxInstancePlayers - 1);
-        if (!groups || !bots) return std::nullopt;
+        const auto full = boolOf(j, "full_groups", false);
+        if (!groups || !bots || !full) return std::nullopt;
         c.groups = *groups;
         c.bots = *bots;
+        c.fullGroups = *full;
         return c;
     }
     const std::string branch = jstr(j, "branch");
@@ -115,6 +118,7 @@ std::unique_ptr<RaidSimulation> buildRaidSimulation(const WorldServices& service
     SimSetup s;
     s.groups = c.groups;
     s.bots = c.bots;
+    s.fullGroups = c.fullGroups;  // 2.77.3
     s.invincible = c.invincible;
     s.botsInvincible = c.botsInvincible;
     s.skill = static_cast<BotSkill>(std::clamp(c.skill, 0, 2));
