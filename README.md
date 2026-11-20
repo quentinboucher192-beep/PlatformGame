@@ -300,7 +300,7 @@ des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». D�
   « Asterion est tombé » ou jusqu'où il est allé, sept chiffres clés, la frise des sept parties et du Cœur (le portrait
   animé de chaque Gigaboss, l'heure de sa chute, le groupe qui l'a abattu, la relique de sa branche), le titan par parties,
   les meilleurs du clan avec leur avatar, les récompenses dessinées avec leur texture et votre raid ; seulement ce que le
-  serveur a validé ([docs/RAIDS.md §24](docs/RAIDS.md#24-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
+  serveur a validé ([docs/RAIDS.md §25](docs/RAIDS.md#25-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
 
 ### Fiabilité, charge et anti-triche
 
@@ -637,6 +637,17 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.77.3** :
+* **Statistiques des Gigaboss d'Asterion** dans leur fiche (onglet « Combat ») : PV de 2 à 8 joueurs, phases (seuil en %
+  et en PV, états), dégâts du contact et de chaque coup en cœurs, multiplicateurs des parties, vitesse, taille, limite de
+  temps, rythme selon le groupe ; une infobulle par chiffre, tout lu dans les données
+  ([docs/RAIDS.md §24](docs/RAIDS.md#24-statistiques-des-gigaboss-fiche-du-cœur-et-groupes-du-raid-simulé-2773)).
+* **Fiche du Cœur d'Asterion** en trois colonnes : ce que le clan a accompli (l'état réel pendant un raid, sinon une
+  simulation), sa vie de 2 à 8 joueurs avec les reliques, ses phases partagées, ses attaques selon les parties tombées.
+* **STATISTIQUES › Boss › « Raid Asterion »** : les sept Gigaboss et le Cœur, avec les mêmes onglets que les autres boss.
+* **Raid simulé : « Joueurs par groupe (vous compris) »** : tous les groupes ont la même taille (le vôtre : vous et
+  N − 1 joueurs simulés).
 
 **Nouveau dans la version 2.77.2** :
 * **Groupe éliminé : le jeu ne tremble plus.** Son monde ne fait plus de pas, mais il était dessiné avec l'interpolation

@@ -15,7 +15,7 @@
       {"text": "Le cœur cosmique d'Asterion bat au fond de sa poitrine : c'est le dernier combat, une fois ses branches tombées."},
       {"text": "Sa voie s'ouvre avec le torse : Heartbreaker vaincu, la cage thoracique est brisée."},
       {"text": "Chaque partie détruite retire au titan ce que sa ligne décrit : plus elles sont nombreuses à tomber, plus le dernier combat est à votre portée."},
-      {"text": "Son combat n'est pas encore ouvert : ses phases et ses attaques s'afficheront ici dès qu'il le sera."}
+      {"text": "Sa fiche donne sa vie selon le groupe et les reliques, ses phases partagées, ses attaques selon les parties tombées et où le frapper."}
     ],
     "contributions": [
       {"text": "Dégâts : à tous les ennemis, et au gigaboss avec ses points faibles."},
@@ -53,6 +53,15 @@
     "well": {"text": "Courez contre l'attraction et restez loin de son cœur."},
     "charge": {"text": "Sautez par-dessus, ou montez sur une plateforme."},
     "leap": {"text": "Écartez-vous de l'endroit où il retombe, puis sautez les ondes de l'atterrissage."}
+  },
+  "heart": {
+    "id": "coeur",
+    "part": "coeur",
+    "enemy": "asterion_coeur",
+    "lair": {"part": "coeur", "zone": 2},
+    "badge": "communaute_coeur",
+    "rewards": ["frame_coeur_asterion"],
+    "comment": "2.77.3: the heart's own sheet (its attacks by the parts fallen: the titan's modifier links)."
   },
   "gigaboss": [
     {

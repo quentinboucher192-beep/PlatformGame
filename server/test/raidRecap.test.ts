@@ -1,4 +1,4 @@
-// Clan raids « Asterion », 2.78.1 (docs/RAIDS.md §24): the « fiche récapitulative » of a finished raid, in the
+// Clan raids « Asterion », 2.78.1 (docs/RAIDS.md §25): the « fiche récapitulative » of a finished raid, in the
 // clan. Only its members (the session's player) and the administrators read it; only finished raids (the heart
 // fallen, or the event over) the clan took part in; every figure from what the server accepted (objectives,
 // zones, the heart's shared health, the contributions tables, the wipes, the rewards), what still waits for

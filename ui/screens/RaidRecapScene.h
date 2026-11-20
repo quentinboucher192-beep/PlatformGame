@@ -1,6 +1,6 @@
 #pragma once
 // 2.78.1: CLANS › RAIDS › « Raids terminés »: the « fiche récapitulative » of a finished raid of the clan
-// (docs/RAIDS.md §24, maquette « Récapitulatif d'un raid »). At the left, the clan's finished raids (won
+// (docs/RAIDS.md §25, maquette « Récapitulatif d'un raid »). At the left, the clan's finished raids (won
 // or not) and the titan of the one shown, its fallen parts and the relics carried back; at the right, its
 // header over a backdrop of Asterion's fall (the victory film's art, dimmed), seven key figures, « LES
 // SEPT PARTIES ET LE CŒUR » (each Gigaboss's animated portrait, the time of its fall and the group that

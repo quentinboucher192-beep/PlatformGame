@@ -520,6 +520,12 @@
    ]
   },
   {
+   "fr": "2 joueurs : {0} · 8 joueurs : {1}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "2 joueurs au moins",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -3288,6 +3294,12 @@
    ]
   },
   {
+   "fr": "après {0} s",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Arabie saoudite",
    "where": [
     "data/online/countries.json",
@@ -4456,6 +4468,18 @@
    ]
   },
   {
+   "fr": "Attaque de sa définition",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Attaque de sa définition : {0} de dégâts, soit {1}.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Attaque dirigée : maintenez Haut en attaquant pour frapper au-dessus de Nova, au sol comme en l'air ; en l'air, maintenez Bas pour frapper en dessous. Au sol, Bas reste « s'accroupir » (l'attaque frappe alors devant, comme avant) et, avec la Frappe sismique, Bas + Attaque en l'air reste la frappe sismique. Ces coups touchent les ennemis (mêmes dégâts, même recul) et les objets cassables comme le coup vers l'avant, avec leurs propres animations et leur arc de lame ; un coup vers le bas en l'air rebondit toujours sur l'ennemi touché et rend les sauts en l'air, comme avant. La direction est celle choisie au début du coup. Expliqué dans Paramètres › Clavier / souris et Manette, et dans le tutoriel.",
    "where": [
     "data/news/changelog.json"
@@ -5382,6 +5406,12 @@
    ]
   },
   {
+   "fr": "aucun lien « modifier » vers le cœur",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Aucun lieu sûr dans l'arène à cette phase : départ au point habituel.",
    "where": [
     "ui/screens/BossTrainingScene.cpp"
@@ -5869,7 +5899,14 @@
    "where": [
     "game/online/HttpTransport.cpp",
     "game/online/RaidRecap.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune : il n'enrage pas avec le temps ; seul le groupe change son rythme.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -6190,6 +6227,12 @@
    "fr": "Aucune progression à restaurer.",
    "where": [
     "server/src/accountMigration.ts"
+   ]
+  },
+  {
+   "fr": "Aucune relique rapportée : sa vie entière.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -6557,6 +6600,12 @@
    "fr": "Autres (temps écoulé…)",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autres caractéristiques",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -7666,7 +7715,8 @@
   {
    "fr": "Blesse",
    "where": [
-    "game/enemies/HitParts.cpp"
+    "game/enemies/HitParts.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -7733,6 +7783,12 @@
    "fr": "Blindée",
    "where": [
     "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
+   "fr": "Blindée {0}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -8307,6 +8363,12 @@
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidSheetsScene.cpp",
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Branche : {0} · antre : zone {1}, « {2} »",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -10394,6 +10456,12 @@
    ]
   },
   {
+   "fr": "CE QUE LE CLAN A ACCOMPLI",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "Ce que tu as appris",
    "where": [
     "ui/screens/TutorialScenes.cpp"
@@ -11474,6 +11542,12 @@
    ]
   },
   {
+   "fr": "Chaque instance frappe le même Cœur : sa part est retirée de la vie commune ({0} dix-millièmes).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Chaque joueur debout sur un miroir à l'éclair de son regard compte un mécanisme.",
    "where": [
     "data/raids/asterion_sheets.json"
@@ -11571,6 +11645,12 @@
    ]
   },
   {
+   "fr": "Chaque point faible brisé lui retire {0} % de sa vie, et compte pour qui le brise.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Chaque pouvoir garde sa touche dans tout le niveau, quel que soit son emplacement. Vos choix ne valent que pour vous : pour ce niveau, et pour les niveaux qui ont exactement les mêmes touches si l'option ci-dessous est cochée ; « Par défaut » reprend la touche du niveau.",
    "where": [
     "ui/screens/LevelPowerKeysScene.cpp"
@@ -11592,6 +11672,12 @@
    "fr": "CHAQUE RANGÉE VA DANS…",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque relique des branches validée lui retire {0} % de sa vie (au moins {1} % gardés).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -13158,6 +13244,12 @@
   },
   {
    "fr": "Clic ou validation : la fiche de son gigaboss",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Clic ou validation : simuler sa chute (ou la relever)",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
    ]
@@ -14900,7 +14992,8 @@
    "fr": "Contact",
    "where": [
     "game/enemies/EnemyDefinition.cpp",
-    "game/gameplay/Damage.cpp"
+    "game/gameplay/Damage.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -15842,9 +15935,27 @@
    ]
   },
   {
+   "fr": "Coup de ses règles de raid (son antre)",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Coup de ses règles de raid (son antre) : {0} de dégâts, soit {1}.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Coup devant lui, sur {0} (rouge)",
    "where": [
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "coup sans nom dans ses règles : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
    ]
   },
   {
@@ -17878,6 +17989,12 @@
    ]
   },
   {
+   "fr": "Debout",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "debout",
    "where": [
     "game/online/RaidRecap.cpp"
@@ -18213,13 +18330,26 @@
     "game/enemies/BossAttackSheet.cpp",
     "ui/screens/BossAttackPreview.cpp",
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/RaidSheetsScene.cpp"
+    "ui/screens/RaidSheetsScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
    "fr": "dernier souffle",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
+   ]
+  },
+  {
+   "fr": "Dernier souffle avant de tomber : {0} attaque à survivre.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Dernier souffle avant de tomber : {0} attaques à survivre.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -20128,10 +20258,22 @@
    ]
   },
   {
+   "fr": "dès 100 %",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "dès le début",
    "where": [
     "game/raid/RaidSheets.cpp",
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Dès le début du combat.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -21247,6 +21389,12 @@
    ]
   },
   {
+   "fr": "Dégâts reçus (en cœurs)",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Dégâts reçus : ×{0}   —   Vies : illimitées",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -21981,6 +22129,12 @@
    ]
   },
   {
+   "fr": "Elle commence quand sa vie tombe à {0} % : {1} à 2 joueurs, {2} à 8 joueurs.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "elle est archivée",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -21990,6 +22144,12 @@
    "fr": "Elle leur donnait tout : la sève des forêts, le feu des volcans, l'éclat des glaces.",
    "where": [
     "data/stories/singularis.json"
+   ]
+  },
+  {
+   "fr": "Elle ne prend aucun coup : la toucher blesse ({0}).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -22630,6 +22790,12 @@
    ]
   },
   {
+   "fr": "En raid, le Cœur s'ouvre quand les 7 Gigaboss sont tombés.",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "en route",
    "where": [
     "game/gameplay/entities/PlatformEntities.cpp"
@@ -23205,6 +23371,12 @@
    ]
   },
   {
+   "fr": "Enrage après {0} s dans cette phase",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Enregistrer",
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
@@ -23433,6 +23605,12 @@
    "fr": "Entraînement (boss, segments, essais) : {0} sur la période, compté à part : il n'entre dans aucune courbe.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Entraînement : pas pour un boss de raid, qui s'affronte dans son antre, en raid.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -25050,6 +25228,12 @@
   },
   {
    "fr": "Fiches des Gigaboss : nouveau schéma « Où frapper » dans l'onglet « Mécanismes » : le vrai sprite du Gigaboss pour la phase et l'état choisis (combat, blindé, à nu), avec ses zones lues dans les règles mêmes du combat : à frapper (vert), blindé (gris), ce qui blesse au contact ou attaque (rouge), les plaques du mécanisme collectif dans l'arène (or), une légende mesurée et « Frappez ici quand… ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Fiches des Gigaboss d'Asterion (CLANS › RAIDS › Fiches, onglet « Combat ») : un bloc « Statistiques » lisible. Les PV selon le groupe, de 2 à 8 joueurs, avec la vraie mise à l'échelle. Pour chaque phase : son seuil en % et en PV, et ses états (blindé, à nu…). Les dégâts du contact et de chaque coup, en cœurs. Les multiplicateurs de chaque partie (point faible × 2, blindée × 0,5), la vitesse, la taille, la limite de temps et le rythme selon le groupe. Chaque chiffre a son infobulle (souris, clavier ou manette), tout est lu dans les données du jeu.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -29485,7 +29669,8 @@
     "ui/screens/SocialScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/studio/Studio.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/HeartSheetView.cpp"
    ]
   },
   {
@@ -31805,19 +31990,19 @@
    ]
   },
   {
-   "fr": "Joueurs simulés",
+   "fr": "Joueurs par groupe (vous compris)",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Joueurs simulés (sans vous)",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
   },
   {
    "fr": "Joueurs simulés invincibles",
-   "where": [
-    "ui/screens/AdminRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Joueurs simulés par groupe (sans vous)",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -32933,6 +33118,12 @@
    "fr": "La carte des planètes",
    "where": [
     "data/music/tracks.json"
+   ]
+  },
+  {
+   "fr": "La carte du titan donne le nombre de reliques, pas leurs branches.",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
    ]
   },
   {
@@ -34302,6 +34493,12 @@
    "fr": "La victoire est validée quand le serveur a reçu de tous les groupes de quoi éteindre sa vie partagée : patientez.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "La vie de ses points faibles et des cibles de ses mécanismes grandit aussi : × {0} à 8 joueurs.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -37682,7 +37879,7 @@
    ]
   },
   {
-   "fr": "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : {0} groupes de {1} joueurs simulés et une place libre ({2} places). Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez ou regardez n'importe quel groupe depuis la pause.",
+   "fr": "Les 7 branches et toutes leurs zones (vestiaire compris), puis le Cœur d'Asterion avec tous les groupes : {0} groupes de {1} joueurs. Événements mondiaux, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) ou regardez-le.",
    "where": [
     "ui/screens/AdminRaids.cpp"
    ]
@@ -37988,6 +38185,12 @@
    "fr": "Les coordonnées de ce monde sont encore en cours de décodage. Terminez les missions disponibles pour en apprendre davantage.",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Les coups portés sur cette partie comptent {0} ({1}).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -39327,6 +39530,12 @@
    ]
   },
   {
+   "fr": "lien du cœur illisible : {0}",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Lien symbolique refusé : {0}",
    "where": [
     "packaging/PackageImporter.cpp"
@@ -39501,7 +39710,14 @@
   {
    "fr": "Limite de temps",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Limite de temps (enrage)",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -42210,7 +42426,19 @@
    ]
   },
   {
+   "fr": "MONDE · Le raid commence : {0} groupe de {1} joueurs (le vôtre : vous et {2} joueurs simulés ; test local)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
    "fr": "MONDE · Le raid commence : {0} groupe de {1} joueurs simulés (test local)",
+   "where": [
+    "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "MONDE · Le raid commence : {0} groupes de {1} joueurs (le vôtre : vous et {2} joueurs simulés ; test local)",
    "where": [
     "game/raid/RaidSimulation.cpp"
    ]
@@ -42655,6 +42883,12 @@
    "fr": "Multiplicateur poursuite",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Multiplicateurs par partie",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -44823,6 +45057,12 @@
    ]
   },
   {
+   "fr": "Nouvelle fiche du Cœur d'Asterion, en trois colonnes. « Ce que le clan a accompli » : le titan avec ses parties tombées et ses reliques ; pendant un raid, c'est l'état réel du clan, lu sur la carte du titan ; sinon, une simulation (clic ou A sur une partie, R pour revenir à l'état réel). « Statistiques » : la vie de l'instance de 2 à 8 joueurs, moins 3 % par relique, la vie partagée par tout le clan, les phases partagées et le contact. « Ses attaques selon les parties tombées » : les sept effets de la chute des parties du titan.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Nouvelle génération de classement : les règles changent (coûts, créatures des boss), les classements en ligne de la campagne repartent à zéro.",
    "where": [
     "data/news/changelog.json"
@@ -46648,7 +46888,8 @@
   {
    "fr": "Où frapper",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/screens/RaidSheetsScene.cpp"
    ]
   },
   {
@@ -47401,6 +47642,12 @@
    ]
   },
   {
+   "fr": "Partie du titan : {0}",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "partie inconnue du titan : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
@@ -47434,6 +47681,12 @@
    "fr": "Partie normale",
    "where": [
     "game/enemies/HitParts.cpp"
+   ]
+  },
+  {
+   "fr": "Partie normale {0}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -48593,6 +48846,12 @@
    ]
   },
   {
+   "fr": "Passé ce temps de combat (dans la phase dite), il enrage : plus rapide, des recharges plus courtes.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Pastille « NOUVEAU » sur chaque nouveauté d'une mise à jour (et sur le menu qui y mène) ; elle part dès que l'élément a le focus ou un clic.",
    "where": [
     "data/news/changelog.json"
@@ -49198,9 +49457,22 @@
    ]
   },
   {
+   "fr": "phase {0} : {1} s",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Phase {0} · {1}",
    "where": [
-    "ui/screens/RaidSheetsScene.cpp"
+    "ui/screens/RaidSheetsScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Phase {0} · {1} : de {2} % à {3} % de la vie commune (la même pour tous les groupes).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -49208,7 +49480,8 @@
    "where": [
     "game/enemies/BossAttackSheet.cpp",
     "ui/screens/BossStatsScene.cpp",
-    "ui/screens/BossTrainingScene.cpp"
+    "ui/screens/BossTrainingScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -49228,6 +49501,12 @@
    "fr": "Phases et réglages",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Phases partagées",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -50730,6 +51009,12 @@
    ]
   },
   {
+   "fr": "Point faible brisé",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Point faible de Pyroclast",
    "where": [
     "data/enemies/pyroclast_noyau.json"
@@ -50739,6 +51024,12 @@
    "fr": "point faible introuvable : {0}",
    "where": [
     "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
+   "fr": "Point faible {0}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -50848,6 +51139,12 @@
     "editors/enemy_editor/EnemyEditorProperties.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Points de vie selon le groupe",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -51361,6 +51658,12 @@
    "fr": "Pour participer aux classements, vous créez un compte avec un pseudonyme et un mot de passe. Le pseudonyme est public. Le mot de passe n'est jamais stocké en clair : seule une empreinte irréversible (PBKDF2-SHA-256 avec sel) est conservée. Vous êtes responsable de la confidentialité de votre mot de passe. Les pseudonymes injurieux, trompeurs ou usurpant l'identité d'une autre personne sont interdits.",
    "where": [
     "data/online/terms_fr.txt"
+   ]
+  },
+  {
+   "fr": "Pour un groupe de 2 à 8 joueurs. Survolez un chiffre, ou donnez-lui le focus (flèches, croix), pour son détail.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -53773,6 +54076,12 @@
    ]
   },
   {
+   "fr": "RAID ASTERION · ses Gigaboss et son Cœur",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
    "fr": "RAID COMPLET · TEST LOCAL — rien n'est envoyé",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -53796,6 +54105,12 @@
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/CollectionScene.cpp"
+   ]
+  },
+  {
+   "fr": "Raid de clan « Asterion, le Dévoreur de mondes » (CLANS › RAIDS), en instances de 8 joueurs.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
    ]
   },
   {
@@ -55705,13 +56020,32 @@
   {
    "fr": "Reliques",
    "where": [
-    "game/online/RaidRecap.cpp"
+    "game/online/RaidRecap.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
    "fr": "reliques",
    "where": [
     "game/achievements/AchievementSuggestions.cpp"
+   ]
+  },
+  {
+   "fr": "Reliques : × {0} = {1}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Reliques : −{0} % de vie ({1} relique) · gris : sans relique",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Reliques : −{0} % de vie ({1} reliques) · gris : sans relique",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -57619,6 +57953,12 @@
    ]
   },
   {
+   "fr": "Rythme selon le groupe",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Règles",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -58960,6 +59300,12 @@
    ]
   },
   {
+   "fr": "Sa boîte : {0} × {1} pixels ; son dessin est agrandi × {2}.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Sa carapace : fermez ses 3 évents ensemble (3 s sur chacun) pour mettre son cœur à nu, puis brisez ses points faibles.",
    "where": [
     "game/raid/RaidBranch.h"
@@ -59044,6 +59390,18 @@
    ]
   },
   {
+   "fr": "Sa fiche complète (mécanismes, récompenses) : CLANS › RAIDS › Fiches.",
+   "where": [
+    "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sa fiche donne sa vie selon le groupe et les reliques, ses phases partagées, ses attaques selon les parties tombées et où le frapper.",
+   "where": [
+    "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
    "fr": "Sa flamme vire au bleu !",
    "where": [
     "data/enemies/pyrrhax.json"
@@ -59122,9 +59480,21 @@
    ]
   },
   {
+   "fr": "Sa vie grandit avec les places occupées quand le combat commence (jamais moins : un départ ne l'affaiblit pas).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Sa vie grandit avec les sièges occupés : × (1 + {0} × (joueurs − 1)), soit × {1} à huit joueurs.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Sa vitesse de déplacement (pixels par seconde), × {0} quand il poursuit un joueur ; chaque phase peut l'accélérer.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -59459,6 +59829,12 @@
    "fr": "Sans périphérique",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Sans relique",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
    ]
   },
   {
@@ -60461,6 +60837,12 @@
    ]
   },
   {
+   "fr": "SES ATTAQUES SELON LES PARTIES TOMBÉES",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "ses balayages traversent les étages",
    "where": [
     "ui/screens/RaidGameScene.cpp"
@@ -60482,6 +60864,12 @@
    "fr": "ses charges stellaires sont rapides",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ses cibles selon le groupe",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -60581,6 +60969,12 @@
    ]
   },
   {
+   "fr": "Ses parties ne sont pas encore décrites : tout son corps compte × 1.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Ses pas arrachent la roche : les blocs tournoient !",
    "where": [
     "data/levels/confins_02.json"
@@ -60662,6 +61056,12 @@
    "fr": "Ses temps de recharge raccourcissent avec les joueurs en jeu : ÷ (1 + {0} × (joueurs − 1)).",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Ses temps de recharge raccourcissent avec les joueurs en jeu : ÷ {0} à 8 joueurs.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -61073,6 +61473,18 @@
    ]
   },
   {
+   "fr": "si tombé : {0}",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
+   "fr": "si tombé : {0} · {1}",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "Sierra Leone",
    "where": [
     "data/online/countries.json",
@@ -61160,6 +61572,18 @@
    "fr": "simulation",
    "where": [
     "game/online/LevelFingerprint.cpp"
+   ]
+  },
+  {
+   "fr": "Simulation : changez une partie ou une relique ; R ou « État réel » rétablit l'état du clan.",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
+   "fr": "Simulation libre (aucun raid en cours) : clic, Entrée ou A sur une partie, ou sur ses boutons.",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
    ]
   },
   {
@@ -61595,9 +62019,9 @@
    ]
   },
   {
-   "fr": "Son combat n'est pas encore ouvert : ses phases et ses attaques s'afficheront ici dès qu'il le sera.",
+   "fr": "Son combat se joue encore sur sa boîte : ces parties sont montrées, elles ne changent pas encore vos coups.",
    "where": [
-    "data/raids/asterion_sheets.json"
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -61724,6 +62148,12 @@
    "fr": "Son mot de passe",
    "where": [
     "ui/screens/OnlineMigration.cpp"
+   ]
+  },
+  {
+   "fr": "Son mécanisme déjoué, il est à nu : les coups comptent × {0} pendant {1} s (règles de son antre).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -62684,7 +63114,8 @@
   {
    "fr": "STATISTIQUES",
    "where": [
-    "ui/screens/StatisticsScene.cpp"
+    "ui/screens/StatisticsScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -62742,9 +63173,21 @@
    ]
   },
   {
+   "fr": "statistiques illisibles",
+   "where": [
+    "game/raid/RaidSheets.cpp"
+   ]
+  },
+  {
    "fr": "Statistiques réinitialisées.",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "STATISTIQUES › Boss : une catégorie « Raid Asterion » avec les sept Gigaboss et le Cœur, et les mêmes onglets que les autres boss. Leurs statistiques, « Où frapper » et vos combats (« Jamais affronté » tant que vous ne les avez pas combattus).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -64188,7 +64631,8 @@
     "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/HudEditorScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -65586,6 +66030,12 @@
    ]
   },
   {
+   "fr": "Tester Asterion › « Simuler un raid complet » : le réglage devient « Joueurs par groupe (vous compris) ». Tous les groupes ont la même taille : le vôtre, c'est vous et N − 1 joueurs simulés, les autres en ont N. En rejoignant un autre groupe, vous y remplacez un joueur simulé. Le test d'une zone garde « Joueurs simulés (sans vous) ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Tester Asterion › « Simuler un raid complet » : tout le raid de clan en local, les sept branches (vestiaire compris) puis le Cœur d'Asterion avec tous les groupes. Événements du monde, carte du titan, zones terminées, contributions, groupes éliminés et renforts comme dans un vrai raid ; rejoignez la place libre de n'importe quel groupe ou regardez-le depuis la pause. TEST LOCAL : rien n'est envoyé (aucun appel réseau, aucun résultat, aucune récompense).",
    "where": [
     "data/news/changelog.json"
@@ -66161,9 +66611,27 @@
    ]
   },
   {
+   "fr": "Tombé",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "tombé",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
+   ]
+  },
+  {
+   "fr": "tombé : {0}",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
+   "fr": "tombé : {0} · {1}",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
    ]
   },
   {
@@ -66282,6 +66750,12 @@
    "fr": "Touchent",
    "where": [
     "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Toucher son corps : {0} de dégâts, soit {1} (au moins un cœur, arrondi ; facteur de dégâts × 1).",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -71214,6 +71688,12 @@
    ]
   },
   {
+   "fr": "Vert : affaibli par la chute de la partie. Rouge : encore actif. Les liens « modificateur » du titan agissent sur le Cœur dans son arène.",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "Vert : à frapper",
    "where": [
     "ui/screens/RaidSheetsScene.cpp"
@@ -71373,6 +71853,12 @@
    ]
   },
   {
+   "fr": "Vie de l'instance selon le groupe",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Vie des doubles",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -71407,6 +71893,12 @@
    "fr": "Vie partagée du Cœur",
    "where": [
     "saves/RaidHudLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Vie partagée par tout le clan",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -71606,7 +72098,8 @@
     "game/powers/PowerStats.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/BossStatsScene.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -71766,6 +72259,12 @@
    "fr": "Vitesse {0}  ·  Recharge {1}  ·  Annonces {2}",
    "where": [
     "ui/screens/BossStatsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Vitesse × {0}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -72351,6 +72850,18 @@
    "fr": "votre groupe 8,1 % · les autres groupes 28,7 % · parties du titan tombées 5 / 7",
    "where": [
     "ui/screens/HudEditorScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe : vous + {0} joueur simulé · autres groupes : {1} joueurs simulés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Votre groupe : vous + {0} joueurs simulés · autres groupes : {1} joueurs simulés",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -74388,6 +74899,12 @@
    ]
   },
   {
+   "fr": "{0} / {1} parties tombées · {2} / {3} reliques",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
    "fr": "{0} / {1} parties · temps écoulé",
    "where": [
     "game/online/RaidRecap.cpp"
@@ -75063,13 +75580,15 @@
   {
    "fr": "{0} attaque à survivre",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
    "fr": "{0} attaques à survivre",
    "where": [
-    "ui/screens/BossStatsScene.cpp"
+    "ui/screens/BossStatsScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -76170,7 +76689,8 @@
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidRecapScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/SocialScene.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -76817,11 +77337,23 @@
    ]
   },
   {
+   "fr": "{0} PV",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "{0} px",
    "where": [
     "data/raids/asterion_sheets.json",
     "game/enemies/BossAttackSheet.cpp",
     "game/raid/BossHitboxes.cpp"
+   ]
+  },
+  {
+   "fr": "{0} px/s · × {1} en poursuite",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -77831,10 +78363,23 @@
    ]
   },
   {
+   "fr": "{0} × (1 + {1} × (joueurs − 1)) : sa vie grandit avec les places occupées.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "{0} × (1 + {1} × (joueurs − 1)), puis −{2} % par relique (au moins {3} %)",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "{0} × {1} px",
    "where": [
     "ui/screens/AdminAssets.cpp",
-    "ui/studio/StudioCanvas.cpp"
+    "ui/studio/StudioCanvas.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -78510,6 +79055,18 @@
    ]
   },
   {
+   "fr": "× (1 + {0} × (joueurs − 1))",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "× {0} pendant {1} s",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "× {0} salves (une toutes les {1})",
    "where": [
     "game/enemies/BossAttackSheet.cpp"
@@ -78531,6 +79088,12 @@
    "fr": "×4 (accéléré)",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "À 0 PV, il ne peut plus être blessé : ses dernières attaques, puis il tombe.",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -78700,7 +79263,8 @@
   {
    "fr": "À nu",
    "where": [
-    "game/raid/BossHitboxes.cpp"
+    "game/raid/BossHitboxes.cpp",
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -78776,6 +79340,12 @@
    "fr": "À vérifier : {0}",
    "where": [
     "editors/level_editor/LevelEditorCampaign.cpp"
+   ]
+  },
+  {
+   "fr": "à {0} %",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
    ]
   },
   {
@@ -80289,6 +80859,24 @@
    ]
   },
   {
+   "fr": "État réel du clan (R)",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
+   "fr": "État réel du clan, lu sur la carte du titan de l'événement en cours.",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
+   ]
+  },
+  {
+   "fr": "États : {0}",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "États-Unis",
    "where": [
     "data/online/countries.json",
@@ -80909,6 +81497,12 @@
    ]
   },
   {
+   "fr": "÷ (1 + {0} × (joueurs − 1))",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "Œil",
    "where": [
     "game/gameplay/BossBadge.cpp"
@@ -81048,6 +81642,18 @@
    ]
   },
   {
+   "fr": "−{0} % chacune",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "−{0} % de sa vie",
+   "where": [
+    "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
    "fr": "■ groupes (votre clan en or)",
    "where": [
     "ui/screens/RaidTitanScene.cpp"
@@ -81111,6 +81717,12 @@
    "fr": "◆ objectif facultatif",
    "where": [
     "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
+   "fr": "◆ Relique",
+   "where": [
+    "ui/widgets/HeartSheetView.cpp"
    ]
   },
   {

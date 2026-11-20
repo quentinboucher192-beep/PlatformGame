@@ -165,6 +165,7 @@ RaidSimulation::Group& RaidSimulation::form(int branch, int zone, const std::str
     g->session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g->session->setSkill(setup_.skill);
     g->session->setBotsInvincible(setup_.botsInvincible);
+    g->session->setFreeSeatPlayed(setup_.fullGroups);  // 2.77.3
     g->session->setAdminSeated(false);
     g->session->setBranchState(mask(branch) | extraMask);
     g->session->begin(zone);
@@ -184,6 +185,7 @@ void RaidSimulation::moveGroup(Group& g, int branch, int zone) {
     g.session = std::make_unique<TestSession>(services_, *branches_[static_cast<size_t>(branch)], t);
     g.session->setSkill(setup_.skill);
     g.session->setBotsInvincible(setup_.botsInvincible);
+    g.session->setFreeSeatPlayed(setup_.fullGroups);  // 2.77.3
     g.session->setAdminSeated(seatedHere);
     g.session->setBranchState(mask(branch));
     g.session->begin(zone);
@@ -218,9 +220,14 @@ bool RaidSimulation::begin() {
     seated_ = true;
     group(0).session->setAdminSeated(true);
     group(0).session->run().setQuiet(false);
-    event("MONDE · Le raid commence : " + std::to_string(setup_.groups) + (setup_.groups > 1 ? " groupes" : " groupe") + " de " +
-              std::to_string(setup_.bots) + " joueurs simulés (test local)",
-          WorldEvent::Kind::World);
+    if (setup_.fullGroups)  // 2.77.3: every group the same size, the administrator's included
+        event("MONDE · Le raid commence : " + std::to_string(setup_.groups) + (setup_.groups > 1 ? " groupes" : " groupe") + " de " +
+                  std::to_string(setup_.bots + 1) + " joueurs (le vôtre : vous et " + std::to_string(setup_.bots) + " joueurs simulés ; test local)",
+              WorldEvent::Kind::World);
+    else
+        event("MONDE · Le raid commence : " + std::to_string(setup_.groups) + (setup_.groups > 1 ? " groupes" : " groupe") + " de " +
+                  std::to_string(setup_.bots) + " joueurs simulés (test local)",
+              WorldEvent::Kind::World);
     return !groups_.empty();
 }
 
