@@ -1,4 +1,4 @@
-// 2.78 (docs/RAIDS.md §23): each player of a raid changes zone ALONE (the instance simulates every zone
+// 2.78 (docs/RAIDS.md §24): each player of a raid changes zone ALONE (the instance simulates every zone
 // where one of its players is, one world each, in lockstep), the passages of the group (the armory's
 // « Prêts ») take only the players on their plate, the lair's passage waits for every ambush of the zone
 // before it, a zone whose players are all down goes on (the others come to revive them), the deaths and
@@ -34,6 +34,7 @@
 #include "tests/TestFramework.h"
 #include "ui/online/ContribTable.h"
 #include "ui/online/RaidHud.h"
+#include "ui/screens/DownedView.h"
 #include "ui/widgets/UIContext.h"
 
 using namespace cosmic;
@@ -695,4 +696,23 @@ TEST_CASE("raid zones (2.78): the cost of several zones at once (8 players in 4 
                 "charger le Poignet-verrou : %.1f ms\n",
                 avg, worst, steps, oneTotal / steps, load);
     CHECK(avg < 8.33 * 0.5);  // half a step's budget at 120 Hz (the other half for the display)
+}
+
+TEST_CASE("2.78 raids: a player down with no ally in their zone, allies elsewhere: the « À TERRE » banner says one can come back") {
+    downed::DownInfo d;
+    d.others = false;     // nobody in play in this zone
+    d.canRevive = false;  // so nobody revives here now
+    downed::Banner b = downed::downBanner(d);
+    CHECK(!b.lines.empty());
+    if (b.lines.empty()) return;
+    CHECK(b.lines[0] == "Aucun allié en jeu pour vous relever pour l'instant");
+    d.elsewhere = 2;  // two allies in play in other zones of the branch
+    b = downed::downBanner(d);
+    CHECK(!b.lines.empty());
+    if (b.lines.empty()) return;
+    CHECK(b.lines[0] == "Aucun allié dans cette zone : un allié d'une autre zone peut revenir vous relever");
+    d.canRevive = true;  // one came back
+    d.others = true;
+    b = downed::downBanner(d);
+    CHECK(b.lines[0] == "Un allié doit maintenir Interagir 2 s près de votre âme");
 }

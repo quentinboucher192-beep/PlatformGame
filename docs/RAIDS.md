@@ -9,7 +9,8 @@
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
-# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §23)
+# à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
+# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §24)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -85,7 +86,7 @@ Une instance = un groupe de 8 d'un clan (les groupes de la phase 1) sur la branc
 * **Caméra** : chacun suit son propre joueur (affichage seulement). Pas de « cadre d'équipe » en
   raid : personne n'est ramené. Le groupe entier à terre : la zone reprend là où il y est entré
   (objectifs gardés, tous debout, tous cœurs).
-* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §23) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
+* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §24) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
   numéro d'abord) emmène toute l'instance. Chacun garde **ses cœurs, son énergie, ses pouvoirs et
   sa présence** (`GameWorld::carryOf` / `restoreMember`) et apparaît au point de la zone pour
   l'endroit d'où il vient (un joueur à terre revient debout avec la moitié de ses cœurs). Un
@@ -1415,7 +1416,71 @@ réanimation tenue, âme qui tombe sous le point d'une mort en plein saut ou va 
 sans rien prendre, noms des tablettes sans chevauchement),
 `tests/test_coop.cpp` (règles 1, 2 et 3), `server/test/coopRace.test.ts`.
 
-## 23. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
+## 23. À terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2)
+
+### Le tremblement du groupe éliminé (la cause)
+
+Un groupe éliminé ne joue plus : `RaidRun::step` laisse son monde **tel qu'il est tombé** (le relais donne encore ses pas,
+rien n'avance). Mais l'image était dessinée avec l'**alpha d'interpolation** de l'application (le reste de son accumulateur
+à 120 Hz, différent à chaque image) : la caméra (entre ses deux dernières positions, `prevPos` et `pos`) et chaque corps qui
+avait bougé à ce dernier pas (`prevBox`, `box`) **allaient et venaient à chaque image** entre leurs deux derniers états.
+Avec la caméra du monde (le raid complet en local, un joueur regardé), c'est tout l'écran qui tremblait, d'autant plus fort
+que la caméra courait encore vers l'âme du dernier joueur tombé ; avec la caméra libre, les ennemis et les plateformes.
+
+Correctif (affichage seulement) : un monde qui ne fait plus de pas est dessiné **tel qu'il est** (`downed::drawAlpha` :
+alpha 1 pour un groupe éliminé et pendant le choix d'un pouvoir, qui arrête tout le monde ; en coopération aussi à la fin,
+pendant la pause sur un même PC et quand une manette manque). La simulation ne change pas : empreintes identiques.
+
+### À terre, en attente de réanimation
+
+* Un bandeau en haut, au centre, **sous** le HUD (minimap, vie du Cœur) : « **À TERRE — en attente de réanimation** » (or),
+  puis « Un allié doit maintenir Interagir 2 s près de votre âme », la **jauge** quand un allié s'en occupe (« Joueur 2 vous
+  réanime… 60 % »), en coopération « Réanimations restantes de l'équipe : 1 sur 2 », et **où est l'âme** (dans la vue, ou
+  hors de la vue : une flèche à sa couleur la montre au bord de l'écran, comme celles des alliés à terre).
+* **Ce qu'on peut faire** : « Joueur précédent » (Q, LB), « Revenir sur mon âme » (Entrée, A), « Joueur suivant » (E, RB),
+  les vraies touches de l'appareil utilisé dessinées dans chaque bouton ; les boutons répondent aussi à la souris (sans
+  jamais prendre le focus). La caméra commence **sur l'âme** (`GameWorld::updateTeamCamera` : le joueur suivi à terre, c'est
+  son âme), passe d'un joueur en jeu à l'autre dans l'ordre des places, l'âme entre le dernier et le premier ; un joueur
+  regardé qui tombe à son tour ramène sur l'âme ; relevé, la vue revient sur le joueur. Dans l'arène d'un Gigaboss, sa
+  caméra suit de même l'âme ou le joueur regardé, jamais le corps.
+* Chaque changement de vue est un **mouvement doux** de 0,6 s (`downed::ViewBlend` : centre et zoom, accéléré puis ralenti),
+  jamais une coupure ni un aller-retour ; un nouveau monde (autre zone, autre groupe) coupe.
+* Un **léger filtre** sur l'image (vignette douce, couleurs un peu lavées) dit qu'on ne joue plus ; le HUD est dessiné
+  par-dessus, aussi lisible.
+* Rien de tout cela n'est simulé : la caméra ne fait pas partie de la simulation, et les entrées d'un joueur à terre ne
+  jouent pas.
+
+### Groupe éliminé : un autre état
+
+Bandeau rouge « **GROUPE ÉLIMINÉ — mode spectateur jusqu'à la fin de l'événement** », la ligne de la caméra libre ou du
+joueur regardé, la règle (« Tout le groupe était à terre en même temps : plus de réanimation, la zone attend un groupe de
+renfort ») et les mêmes commandes : joueur précédent / suivant de la branche (Q / E, LB / RB), **Caméra libre** (Entrée,
+A ; flèches, stick, molette pour la déplacer).
+
+### Placement
+
+Les deux bandeaux sont mesurés (`downed::layout` : titre ajusté, lignes coupées sur deux lignes au plus, jauge, boutons, chaque
+partie après la précédente) et placés au centre, sous tout bloc du HUD qu'ils couvriraient (`downed::place`). Les
+**notifications** passent sous le bandeau (`downed::below`), jamais sur un bloc du HUD : sans place, elles attendent leur
+tour. Pas de bandeau sur la pause, le menu du raid, la grande carte, le titre de l'arène ni un grand message du niveau. Le
+**menu du raid › « Groupe »** explique les deux états et leurs touches (celui du joueur en couleur).
+
+### Tests (`tests/test_downed_view.cpp`)
+
+Groupe éliminé : la vue tremblait avec l'alpha de l'application (mesuré), elle ne bouge plus sur 240 images de spectateur
+sans entrée (position et zoom), la caméra libre non plus ; à terre : la caméra se pose sur l'âme et n'en bouge plus, le
+passage à un autre joueur puis le retour sur l'âme se font sans saut ni retour en arrière (zoom compris) ; coopération : la
+caméra de l'équipe reste immobile autour d'un joueur à terre, et pendant une pause ; bandeaux : « À TERRE » pendant
+l'attente (jauge pendant la réanimation), plus rien une fois relevé, « GROUPE ÉLIMINÉ » distinct ; mise en page en
+1280 × 720 et 1920 × 1080, en français et en anglais : chaque partie dans le panneau, à la suite, rien sur le HUD, les
+notifications sous le bandeau.
+
+### Versions
+
+Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes
+de référence ne changent pas.
+
+## 24. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
 
 ### Chaque joueur change de zone seul (`raid::RaidRun`)
 
@@ -1462,6 +1527,9 @@ sans rien prendre, noms des tablettes sans chevauchement),
 * **Groupe éliminé** : toujours **tous les joueurs de l'instance à terre** au même pas, **toutes zones confondues** (personne en jeu
   ni absent nulle part). Le rapport `wipe` dit la zone du plus grand nombre de joueurs et `seats` ; le serveur garde
   `raid_instances.wiped_zones`, et **chacune** de ces zones est à reprendre (`zonesToRetake`).
+* **Le bandeau « À TERRE »** (2.77.2, §23) le dit : sans allié en jeu dans sa zone mais avec des alliés ailleurs, « Aucun allié
+  dans cette zone : un allié d'une autre zone peut revenir vous relever ». Q / E (LB / RB) n'y montrent que les joueurs de sa
+  zone ; en spectateur et dans « Simuler un raid complet », le joueur suivant peut être dans une autre zone (la caméra y va).
 
 ### Toutes les embuscades avant l'antre (`ambushes:<zone>`, `tools/levelgen`)
 

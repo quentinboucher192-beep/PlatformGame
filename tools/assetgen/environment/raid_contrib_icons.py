@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """2.78: the icons of the raids' « Tableau des contributions » and of the lair's distance indicator
-(docs/RAIDS.md §23).
+(docs/RAIDS.md §24).
 
 One sheet, deterministic (no randomness; the shapes drawn four times larger with Pillow's ImageDraw,
 then averaged down by numpy, a dark outline under each so they read on every panel):
