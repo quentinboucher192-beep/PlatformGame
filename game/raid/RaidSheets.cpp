@@ -184,13 +184,26 @@ std::string phasesLabel(const std::vector<int>& phases, int phaseCount) {
 const GigabossSheet* RaidSheets::find(const std::string& id) const {
     for (const GigabossSheet& s : gigaboss)
         if (s.id == id) return &s;
-    return nullptr;
+    return !id.empty() && heart.id == id ? &heart : nullptr;
 }
 
 const GigabossSheet* RaidSheets::ofPart(const std::string& part) const {
     for (const GigabossSheet& s : gigaboss)
         if (s.part == part) return &s;
-    return nullptr;
+    return !part.empty() && !heart.id.empty() && heart.part == part ? &heart : nullptr;
+}
+
+const GigabossSheet* RaidSheets::ofEnemy(const std::string& enemy) const {
+    for (const GigabossSheet& s : gigaboss)
+        if (s.enemy == enemy) return &s;
+    return !enemy.empty() && !heart.id.empty() && heart.enemy == enemy ? &heart : nullptr;
+}
+
+int sheetHealth(const SheetStats& st, int players, int relics) {
+    // Gigaboss::healthFactor (the seats taken), then the heart's relics (AsterionHeartRoutine: at least the floor kept).
+    float hp = st.hp * (1.0f + st.hpPerPlayer * static_cast<float>(std::clamp(players, 1, 8) - 1));
+    if (st.relicShare > 0.0f && relics > 0) hp *= std::max(st.relicFloor, 1.0f - st.relicShare * static_cast<float>(relics));
+    return static_cast<int>(std::lround(hp));
 }
 
 std::string RaidSheets::avoidOf(const std::string& type) const {
@@ -436,11 +449,71 @@ void buildGigaboss(GigabossSheet& s, const Json& e, const ContentDatabase& conte
     for (const Json& l : common.value("scaling", Json::array())) s.scaling.push_back(sheetText(l, r, probs));
     for (const Json& l : common.value("contributions", Json::array())) s.contributions.push_back(sheetText(l, r, probs));
     for (const Json& l : e.value("contributions", Json::array())) s.contributions.push_back(sheetText(l, r, probs));
-    // Its badge (an achievement « raid_reward »), then its own rewards.
+    // 2.77.3: its numbers (« Statistiques »), from its definition, its lair's rules and its parts' rules.
+    if (s.def && rules) {
+        SheetStats& st = s.stats;
+        const EnemyDefinition& d = *s.def;
+        st.hp = d.hp;
+        st.hpPerPlayer = rules->hpPerPlayer;
+        st.weakHpPerPlayer = rules->weakHpPerPlayer;
+        st.pressurePerPlayer = rules->pressurePerPlayer;
+        st.exposed = rules->exposed;
+        st.exposedMult = rules->exposedMult;
+        st.weakShare = rules->weakShare;
+        if (const Json* share = at(r, "heart.relicShare"); share && share->is_number()) st.relicShare = std::clamp(share->get<float>(), 0.0f, 0.1f);
+        for (int n = SheetStats::kMinPlayers; n <= SheetStats::kMaxPlayers; ++n) st.health.push_back(sheetHealth(st, n));
+        for (size_t i = 0; i < d.phases.size(); ++i) {
+            const BossPhase& ph = d.phases[i];
+            SheetStats::Phase p;
+            p.number = static_cast<int>(i) + 1;
+            p.name = ph.name;
+            p.from = i == 0 ? 1.0f : ph.hpThreshold;
+            p.speed = ph.speedMultiplier;
+            p.enrage = ph.enrageTime;
+            for (int h : st.health) p.health.push_back(static_cast<int>(std::lround(static_cast<float>(h) * p.from)));
+            for (const HitboxView& v : s.hitboxes.views)
+                if (v.phase == p.number && std::find(p.states.begin(), p.states.end(), v.stateName) == p.states.end()) p.states.push_back(v.stateName);
+            st.phases.push_back(std::move(p));
+        }
+        st.contact = d.contactDamage;
+        std::set<std::string> names;
+        for (const AttackDef& a : d.attacks)
+            if (names.insert(a.name).second) st.blows.push_back({a.name, a.damage, false});
+        // The blows of its raid's rules: every block of its rules with a damage (its fists, its jets when it has
+        // vents, its routine's own), named by the block or by the mechanism of its sheet that reads it.
+        for (auto it = r.begin(); it != r.end(); ++it) {
+            const Json& b = it.value();
+            if (!b.is_object() || !b.contains("damage") || !b["damage"].is_number()) continue;
+            const std::string key = it.key();
+            if (key == "fists" && rules->fistPeriods.empty()) continue;
+            if (key == "jet" && rules->vents.empty()) continue;
+            std::string name = jstr(b, "name");
+            for (const Json& m : e.value("mechanics", Json::array()))
+                if (name.empty() && m.dump().find("\"" + key + ".") != std::string::npos) name = jstr(m, "name");
+            if (name.empty()) name = key == "fists" ? rules->fistName : key == "jet" ? rules->jetName : std::string();
+            if (name.empty()) {
+                problem("coup sans nom dans ses règles : " + key);
+                continue;
+            }
+            st.blows.push_back({name, b["damage"].get<float>(), true});
+        }
+        const PartRules& pr = PartRules::of(d.id);
+        st.parts = pr.rules;
+        st.byParts = pr.fromVersion > 0;
+        st.speed = d.speed;
+        st.chase = d.chaseSpeedMultiplier;
+        st.size = d.size;
+        st.scale = d.scale;
+        st.enrage = d.enrageTime;
+        st.lastStand = static_cast<int>(d.finalAttacks.size());
+        if (st.health.empty() || st.phases.empty()) problem("statistiques illisibles");
+    }
+    // Its badge (an achievement « raid_reward »), then its own rewards. 2.77.3: the heart has none of its own
+    // (the raid's titles and suits are on Asterion's sheet).
     const std::string badge = jstr(e, "badge");
     if (const AchievementDef* a = badge.empty() ? nullptr : achievements.find(badge); a && a->condition.type == "raid_reward")
         s.rewards.push_back(badgeReward(*a));
-    else
+    else if (!(badge.empty() && s.part == kHeartPart))
         problem("badge introuvable : " + badge);
     for (const Json& id : e.value("rewards", Json::array()))
         if (const CosmeticItem* c = id.is_string() ? cosmetics.find(id.get<std::string>()) : nullptr) s.rewards.push_back(itemReward(*c));
@@ -473,6 +546,34 @@ RaidSheets buildRaidSheets(const Json& data, const ContentDatabase& content, con
     };
     std::stable_sort(sheets.begin(), sheets.end(), [&](const GigabossSheet& a, const GigabossSheet& b) { return rank(a.part) < rank(b.part); });
     out.gigaboss = std::move(sheets);
+    // 2.77.3: the Cœur d'Asterion's sheet, and the links « modifier » of the titan on it (one per part).
+    if (const Json he = data.value("heart", Json()); he.is_object()) {
+        buildGigaboss(out.heart, he, content, achievements, cosmetics, parts, common);
+        out.problems.insert(out.problems.end(), out.heart.problems.begin(), out.heart.problems.end());
+        if (const Titan* titan = Titan::builtin()) {
+            const std::string to = titan->heart.id;
+            for (const Json& l : titan->links) {
+                if (jstr(l, "kind") != "modifier" || to.empty() || jstr(l, "to") != to) continue;
+                HeartModifier m;
+                m.id = jstr(l, "id");
+                m.label = jstr(l, "label");
+                m.bit = jget<int>(l, "bit", -1);
+                for (const Json& f : l.value("from", Json::array()))
+                    for (const TitanBranch& tb : titan->branches)
+                        if (tb.id == jstr(f, "branch")) m.part = tb.part;
+                for (const asterion::Part& p : parts)
+                    if (p.id == m.part) {
+                        m.partName = p.name;
+                        m.boss = p.boss;
+                    }
+                if (m.part.empty() || m.label.empty()) out.problems.push_back("lien du cœur illisible : " + m.id);
+                out.heartModifiers.push_back(std::move(m));
+            }
+            std::stable_sort(out.heartModifiers.begin(), out.heartModifiers.end(),
+                             [&](const HeartModifier& a, const HeartModifier& b) { return rank(a.part) < rank(b.part); });
+        }
+        if (out.heartModifiers.empty()) out.problems.push_back("aucun lien « modifier » vers le cœur");
+    }
 
     // Asterion: its words, its parts, its heart, the raid's structure, the rewards.
     AsterionSheet& a = out.asterion;
