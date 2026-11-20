@@ -184,6 +184,22 @@ public:
     void forceAnimation(const std::string& clip, float seconds);
     bool respawning() const { return state_ == PlayerState::Respawn; }
 
+    /// 2.79 (raids: the simulated players' lookahead, game/raid/nav/BodySim): the private state of the
+    /// movement, read only. A light copy of the physics plays a few steps ahead from it; nothing here
+    /// changes the player.
+    struct Motion {
+        PlayerState state = PlayerState::Idle;
+        bool grounded = false, jumpCut = false, crouchBox = false;
+        uint32_t groundId = 0;
+        int airJumpsLeft = 0, extraAirJumps = 0, wallDir = 0;
+        float coyote = 0.0f, jumpBuffer = 0.0f, wallJumpLock = 0.0f, slideTimer = 0.0f, dropThrough = 0.0f;
+        float attackTimer = 0.0f, attackCooldown = 0.0f, invuln = 0.0f, hurtTimer = 0.0f, phased = 0.0f;
+        float slowTimer = 0.0f, slowMultiplier = 1.0f, curseTimer = 0.0f, curseRatio = 1.0f, energyRegenTimer = 0.0f;
+        Vec2 dashDir;
+        float dashSpeed = 0.0f, dashTimer = 0.0f;
+    };
+    Motion motion() const;
+
     // ---------------------------------------------------- animation
     Animator anim;
     /// Suit (2.19 cosmetics): a recoloured copy of the animation set's sheet, same layout.

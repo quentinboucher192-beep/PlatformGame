@@ -54,6 +54,9 @@ struct SimSetup {
     /// beaten it) — those the simulated players cannot beat yet (docs/RAIDS.md §21, limits).
     std::vector<std::string> given;
     int maxReinforcements = 8;
+    /// 2.79: the test's two rescues (a simulated player put on its mechanism or further on its path); off for the
+    /// measures (docs/RAIDS.md §28: only their inputs).
+    bool rescues = true;
 };
 
 class RaidSimulation {
@@ -127,6 +130,9 @@ public:
     double maxStepMs() const { return maxMs_; }
     /// World steps done by all the groups since the start.
     uint64_t worldSteps() const { return worldSteps_; }
+    /// 2.79: the simulated players put down so far (every group), and the test's rescues.
+    int botDeaths() const;
+    int rescues() const;
     uint64_t hash() const;
 
 private:

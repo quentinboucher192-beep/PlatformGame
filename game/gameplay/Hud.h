@@ -186,6 +186,9 @@ public:
     const TeamInfo& team() const { return team_; }
     /// Where the team panel was drawn last (empty when none).
     const Rect& teamPanelRect() const { return teamPanel_; }
+    /// 2.79: where the names over the players (and their souls) were drawn last (display: what else is
+    /// written over the world keeps out of them — the thoughts of a raid test's simulated players).
+    const std::vector<Rect>& teamLabelRects() const { return teamLabels_; }
     /// Team panel's height for `players` rows (layout checks).
     static float teamPanelHeight(float unit, int players, int notices);
 
@@ -193,6 +196,7 @@ private:
     TeamInfo team_;
     bool raidView_ = false;
     Rect teamPanel_;
+    std::vector<Rect> teamLabels_;  // 2.79
     std::vector<size_t> teamHints_;
     std::vector<float> teamAt_;  // each player's place on the route (0..1)
     void drawTeamPanel(UIContext& ui, GameWorld& w);

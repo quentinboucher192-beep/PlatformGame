@@ -221,6 +221,7 @@ void Hud::render(UIContext& ui, GameWorld& w, const WorldView& view, const Level
         if (!raidView_ && hudVisible(settings, HudElement::Enemies)) drawBlock(ui, id(HudElement::Enemies), [&] { drawEnemies(ui, w, at(HudElement::Enemies)); });
         if (!raidView_ && hudVisible(settings, HudElement::Ambush) && (w.activeAmbush() || (editorPreview_ && !w.ambushes().empty())))
             drawBlock(ui, id(HudElement::Ambush), [&] { drawAmbush(ui, w, at(HudElement::Ambush)); });
+        teamLabels_.clear();
         if (w.coop()) {
             drawTeamLabels(ui, w, view);  // names over the players, souls and their revival
             if (settings.showInputHints && team_.promptPlayer >= 0 && team_.promptPlayer < w.teamSize() &&
