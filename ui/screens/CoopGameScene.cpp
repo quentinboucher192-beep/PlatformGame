@@ -30,6 +30,7 @@
 #include "game/powers/Powers.h"
 #include "game/race/Race.h"
 #include "ui/screens/DeviceLostUi.h"
+#include "ui/screens/DownedView.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -709,12 +710,22 @@ public:
             drawCatchUp();
             return;
         }
-        WorldView view = world_->camera().view(r.width(), r.height(), alpha);
+        // 2.77.2: a world that does not step (the end, the pause or a missing device on one PC, a power's
+        // choice) is drawn as it is: with the app's alpha, its camera and its bodies swung at every frame.
+        const bool samePc = setup_.mode == CoopSetup::Mode::SamePc;
+        const bool stepping = !ended_ && !(samePc && (paused_ || unplug_.paused())) && !world_->powerOffer();
+        const float shown = downed::drawAlpha(stepping, alpha);
+        WorldView view = world_->camera().view(r.width(), r.height(), shown);
+        view_ = view;
         RenderOptions opt;
         opt.lighting = g_.settings.graphics.dynamicLighting;
         opt.debug = g_.app.debugOverlay;
-        renderer_.render(r, g_.app.resources(), *world_, view, alpha, opt);
+        renderer_.render(r, g_.app.resources(), *world_, view, shown, opt);
+        // 2.77.2: no player of this computer still plays (one of them down, waiting): a light filter.
+        const int down = downSeat();
+        if (down >= 0 && !ended_ && !playingHere()) downed::drawFilter(r, ui.screenW(), ui.screenH());
         hud_.render(ui, *world_, view, nullptr, g_.settings.gameplay);
+        if (down >= 0 && !ended_ && !paused_ && !choosing_ && !unplug_.paused()) drawDowned(down);
         if (unplug_.paused() && !ended_) {
             drawUnplug();
             return;
@@ -722,6 +733,52 @@ public:
         if (choosing_ && !ended_) drawChoice();
         if (paused_ && !ended_) drawPause();
         if (ended_) drawEnd();
+    }
+
+    // ------------------------------------------------------------ 2.77.2: a player down
+
+    /// The first player of this computer down (waiting for a revival), -1 when none.
+    int downSeat() const {
+        if (!world_ || world_->state() == WorldState::Failed || world_->state() == WorldState::Completed) return -1;
+        for (int i = 0; i < world_->teamSize(); ++i)
+            if (setup_.local(i) && downed::stateOf(*world_, i, false) == downed::State::Down) return i;
+        return -1;
+    }
+
+    /// A player of this computer still plays (one PC: the banner is shown, the filter is not).
+    bool playingHere() const {
+        for (int i = 0; i < world_->teamSize(); ++i)
+            if (setup_.local(i) && world_->member(i).presence == GameWorld::Presence::Playing) return true;
+        return false;
+    }
+
+    /// The banner of a player of this computer down: what has to happen, the revival under way, the team's
+    /// revivals left, where the soul is. The camera is the team's (it frames the players in play): no
+    /// view keys. Under the HUD at the top, never over one of its blocks; not over a big message.
+    void drawDowned(int seat) {
+        UIContext& ui = g_.ui;
+        for (const WorldMessage& m : world_->messages())
+            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return;  // it waits
+        const GameWorld& w = *world_;
+        const GameWorld::TeamMember& m = w.member(seat);
+        downed::DownInfo d;
+        d.revive = m.revive;
+        if (m.revive > 0.0f && m.reviver >= 0 && m.reviver < static_cast<int>(setup_.seats.size()))
+            d.reviver = setup_.seats[static_cast<size_t>(m.reviver)].name;
+        d.canRevive = w.canRevive();
+        d.revivesLeft = w.revivesUnlimited() ? -1 : w.revivesLeft();
+        d.revivesMax = GameWorld::kTeamRevives;
+        d.soulInView = view_.toScreen(Rect{m.soul.x - 8.0f, m.soul.y - 28.0f, 16.0f, 28.0f}).intersects({0.0f, 0.0f, ui.screenW(), ui.screenH()});
+        d.viewKeys = false;
+        int here = 0;
+        for (int i = 0; i < w.teamSize(); ++i) here += setup_.local(i) ? 1 : 0;
+        if (here > 1) d.who = setup_.seats[static_cast<size_t>(seat)].name;
+        const downed::Banner b = downed::downBanner(d);
+        std::vector<Rect> taken;
+        if (!hud_.teamPanelRect().empty()) taken.push_back(hud_.teamPanelRect());
+        for (int k = 0; k < Hud::kFadeBlocks; ++k)
+            if (!hud_.drawn(k).empty()) taken.push_back(hud_.drawn(k));
+        downed::draw(ui, b, downed::placed(ui, b, taken), "coop/down");
     }
 
     /// A centred panel of `w` × `h`.
@@ -991,6 +1048,7 @@ public:
     int choiceIndex_ = 0;
     uint8_t pendingChoice_ = 0;
     bool ended_ = false, completed_ = false;
+    WorldView view_;  // 2.77.2: the view drawn this frame (where the soul of a player down is)
     float endTime_ = 0.0f, endScore_ = 0.0f;
     std::string aborted_;
     std::string rankNote_;
