@@ -638,7 +638,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   Seule l'équipe du jeu crée et publie les événements de raid (ADMINISTRATION › Raids) ; les clans s'y inscrivent et y
   jouent. Le serveur refuse `POST /raids/events` avec un message clair (« Les raids sont des événements publiés par
   l'équipe du jeu… ») ; les raids de clan déjà programmés restent lisibles et jouables jusqu'à leur fin, rien n'est
-  effacé ([docs/RAIDS.md §24](docs/RAIDS.md#24-les-raids-sont-des-événements-avis-des-joueurs-2774)).
+  effacé ([docs/RAIDS.md §25](docs/RAIDS.md#25-les-raids-sont-des-événements-avis-des-joueurs-2774)).
 * **Noter un raid après l'avoir joué** : 1 à 5 étoiles et un commentaire facultatif (500 caractères au plus), un avis par
   joueur et par événement, modifiable ou supprimable. Seul un joueur qui a vraiment joué l'événement (une place dans une
   de ses instances et une contribution validée par le consensus) peut noter : le serveur le vérifie avec ses propres
@@ -648,6 +648,17 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   mêmes filtres et limites, signalement (masqué après 3), et dans ADMINISTRATION › Raids › « Avis », tous les avis d'un
   événement, « Masquer » ou « Rétablir » un commentaire (Journal). Serveur : migration **0185** (à appliquer avant de
   déployer).
+
+**Nouveau dans la version 2.77.3** :
+* **Statistiques des Gigaboss d'Asterion** dans leur fiche (onglet « Combat ») : PV de 2 à 8 joueurs, phases (seuil en %
+  et en PV, états), dégâts du contact et de chaque coup en cœurs, multiplicateurs des parties, vitesse, taille, limite de
+  temps, rythme selon le groupe ; une infobulle par chiffre, tout lu dans les données
+  ([docs/RAIDS.md §24](docs/RAIDS.md#24-statistiques-des-gigaboss-fiche-du-cœur-et-groupes-du-raid-simulé-2773)).
+* **Fiche du Cœur d'Asterion** en trois colonnes : ce que le clan a accompli (l'état réel pendant un raid, sinon une
+  simulation), sa vie de 2 à 8 joueurs avec les reliques, ses phases partagées, ses attaques selon les parties tombées.
+* **STATISTIQUES › Boss › « Raid Asterion »** : les sept Gigaboss et le Cœur, avec les mêmes onglets que les autres boss.
+* **Raid simulé : « Joueurs par groupe (vous compris) »** : tous les groupes ont la même taille (le vôtre : vous et
+  N − 1 joueurs simulés).
 
 **Nouveau dans la version 2.77.2** :
 * **Groupe éliminé : le jeu ne tremble plus.** Son monde ne fait plus de pas, mais il était dessiné avec l'interpolation

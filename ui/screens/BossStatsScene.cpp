@@ -14,6 +14,9 @@
 // attack again and again, Nova dodging it; one example at a time, the unfolded attack that has
 // the focus or the last unfolded (game/enemies/BossAttackSheet.h). The fold stays while the
 // screen is open.
+// 2.77.3: the gigaboss of Asterion and its heart in a category of their own, « Raid Asterion », with the
+// same tabs: their records (none until fought: « Jamais affronté »), their sheet with their statistics
+// (ui/widgets/GigabossStatsView: health by the group, phases, damage in hearts, parts…) and « Où frapper ».
 
 #include <algorithm>
 #include <cctype>
@@ -29,8 +32,12 @@
 #include "game/enemies/BossDifficulty.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/BossBadge.h"
+#include "game/raid/RaidBranch.h"
+#include "game/raid/RaidSheets.h"
+#include "ui/online/RaidWidgets.h"
 #include "ui/online/RatingWidgets.h"
 #include "ui/widgets/BossSheetWidgets.h"
+#include "ui/widgets/GigabossStatsView.h"
 #include "ui/widgets/HitPartsView.h"
 #include "ui/screens/BossStoryScene.h"
 #include "ui/screens/CreatureArt.h"
@@ -113,6 +120,12 @@ public:
             if (ka != kb) return ka > kb;
             return a->name < b->name;
         });
+        // 2.77.3: then the gigaboss of Asterion and its heart (« Raid Asterion »), in the order of the titan's body.
+        firstRaid_ = static_cast<int>(bosses_.size());
+        sheets_ = raid::loadRaidSheets(g_.content, g_.achievementCatalog, g_.cosmetics);
+        for (const raid::GigabossSheet& s : sheets_.gigaboss)
+            if (s.def) bosses_.push_back(s.def);
+        if (sheets_.heart.def) bosses_.push_back(sheets_.heart.def);
         // Automated screenshots: "boss:<id>[:<clip>][:fiche][:attaques][:attaque=<attack id>|:tout]"
         // (the clip then stays shown; « fiche »: its sheet; « attaques »: its list of attacks at the
         // top; an attack unfolded with its example, or every attack unfolded).
@@ -209,6 +222,7 @@ public:
             else g_.app.switchScene(makeStatistics(g_, 2), 0.3f);                                      // 2.54: back to Statistiques › Boss
         }
         hitView_.drawOverlay(g_);  // 2.77.1: the tooltip of a part of « Où frapper », over everything (when drawn this frame)
+        gbstats::drawTip(ui, statsTip_);  // 2.77.3: a number of a raid boss's statistics
         ui.popId();
         ui.end();
     }
@@ -254,8 +268,10 @@ private:
     void drawSummary(const Rect& r) {
         UIContext& ui = g_.ui;
         int met = 0, beatenCount = 0, kills = 0, noHit = 0, phases = 0;
-        for (const auto* d : bosses_)
-            if (const BossRecord* rec = g_.bossStats.find(d->id)) {
+        for (int i = 0; i < firstRaid_; ++i)  // the bosses of the game (the raid's have their own category)
+            if (const BossRecord* rec = g_.bossStats.find(bosses_[static_cast<size_t>(i)]->id)) {
+                const EnemyDefinition* d = bosses_[static_cast<size_t>(i)];
+                (void)d;
                 met += rec->fights > 0 ? 1 : 0;
                 beatenCount += rec->kills > 0 ? 1 : 0;
                 kills += rec->kills;
@@ -267,7 +283,7 @@ private:
             Color c;
         };
         std::vector<Chip> chips = {
-            {"Boss vaincus", std::to_string(beatenCount) + " / " + std::to_string(bosses_.size()), ui.theme().accent},
+            {"Boss vaincus", std::to_string(beatenCount) + " / " + std::to_string(firstRaid_), ui.theme().accent},
             {"Victoires", std::to_string(kills), ui.theme().warm},
             {"Combats sans dégât", std::to_string(noHit), ui.theme().success},
             {"Phases sans dégât", std::to_string(phases), Color{150, 220, 255, 255}},
@@ -292,10 +308,20 @@ private:
 
     void drawList(const Rect& area) {
         UIContext& ui = g_.ui;
-        float rh = ui.s(78), gap = ui.s(8);
-        ui.beginScroll("list", area, static_cast<float>(bosses_.size()) * (rh + gap));
+        float rh = ui.s(78), gap = ui.s(8), headH = ui.s(44);
+        const bool raids = firstRaid_ < static_cast<int>(bosses_.size());
+        ui.beginScroll("list", area, static_cast<float>(bosses_.size()) * (rh + gap) + (raids ? headH : 0.0f));
         float y = area.y - ui.scrollOffset();
         for (size_t i = 0; i < bosses_.size(); ++i) {
+            if (static_cast<int>(i) == firstRaid_) {
+                // 2.77.3: « Raid Asterion », its gigaboss and its heart (their records, their sheets).
+                const Rect head{area.x, y, area.w - ui.s(14), headH};
+                y += headH;
+                const std::string t = "RAID ASTERION · ses Gigaboss et son Cœur";
+                const float hf = fit(ui, t, FontFace::Bold, 17, head.w - ui.s(8), 0.75f);
+                ui.label(ui.elide(t, FontFace::Bold, hf, head.w - ui.s(8)), {head.x + ui.s(4), head.center().y + ui.s(4)}, hf, ui.theme().warm, Align::Left,
+                         FontFace::Bold, VAlign::Middle);
+            }
             const EnemyDefinition& d = *bosses_[i];
             Rect row{area.x, y, area.w - ui.s(14), rh};
             y += rh + gap;
@@ -411,15 +437,66 @@ private:
             y += dh + ui.s(12);
             bh -= dh + ui.s(12);
             float leftW = std::floor((w - colGap) * 0.4f);
-            drawSheetFacts({x, y, leftW, bh}, d);
+            if (const raid::GigabossSheet* gs = raidSheet(d)) drawRaidStats({x, y, leftW, bh}, *gs);  // 2.77.3
+            else drawSheetFacts({x, y, leftW, bh}, d);
             drawSheetPhases({x + leftW + colGap, y, w - leftW - colGap, bh}, d, alpha);
             return;
         }
         float leftW = std::floor((w - colGap) * 0.44f);
         const float trainH = ui.s(56);
         drawPhases({x, y, leftW, bh - trainH - ui.s(12)}, d, r, rec && r.fights > 0);
+        if (const raid::GigabossSheet* gs = raidSheet(d)) {
+            // 2.77.3: a raid boss: no training (it is fought in its lair, in a raid), where it lives.
+            drawRaidNote({x, y + bh - trainH, leftW, trainH}, "Entraînement : pas pour un boss de raid, qui s'affronte dans son antre, en raid.");
+            drawRaidPlace({x + leftW + colGap, y, w - leftW - colGap, bh}, *gs);
+            return;
+        }
         drawTraining({x, y + bh - trainH, leftW, trainH}, d, rec);
         drawPlaces({x + leftW + colGap, y, w - leftW - colGap, bh}, d);
+    }
+
+    // ---------------------------------------------------------------- 2.77.3: the raid's bosses
+
+    /// The raid sheet of a boss of Asterion (null for the game's bosses).
+    const raid::GigabossSheet* raidSheet(const EnemyDefinition& d) const { return d.raid.empty() ? nullptr : sheets_.ofEnemy(d.id); }
+
+    /// Its statistics (the same as on its raid sheet), scrolled.
+    void drawRaidStats(const Rect& area, const raid::GigabossSheet& gs) {
+        UIContext& ui = g_.ui;
+        if (statsOf_ != gs.id) {
+            statsOf_ = gs.id;
+            statsH_ = area.h;
+            ui.setScroll("raidstats", 0.0f);
+        }
+        ui.beginScroll("raidstats", area, statsH_);
+        const float top = area.y - ui.scrollOffset();
+        const gbstats::Layout S = gbstats::layoutStats(ui, gs.stats, area.x, top, area.w - ui.s(16));
+        gbstats::drawStats(ui, S, "raidstats/", statsTip_);
+        statsH_ = std::max(1.0f, S.height + ui.s(8));
+        ui.endScroll();
+    }
+
+    /// A line in the place of « Entraînement » (measured, two lines at most).
+    void drawRaidNote(const Rect& area, const std::string& text) {
+        UIContext& ui = g_.ui;
+        const auto lines = raidui::wrap(ui, text, FontFace::Body, fz(ui, 15), area.w, 2);
+        const float lh = ui.s(fz(ui, 15)) * 1.3f;
+        raidui::drawLines(ui, lines, {area.x, area.center().y - lh * static_cast<float>(lines.size()) * 0.5f}, fz(ui, 15), lh, ui.theme().textDim);
+    }
+
+    /// Where it is fought: its raid, its branch, its lair.
+    void drawRaidPlace(const Rect& area, const raid::GigabossSheet& gs) {
+        UIContext& ui = g_.ui;
+        ui.label("Où l'affronter", {area.x, area.y + ui.s(14)}, 22, ui.theme().accent, Align::Left, FontFace::Bold, VAlign::Middle);
+        float y = area.y + ui.s(44);
+        auto line = [&](const std::string& t, Color c) {
+            const auto lines = raidui::wrap(ui, t, FontFace::Body, fz(ui, 16), area.w, 3);
+            y += raidui::drawLines(ui, lines, {area.x, y}, fz(ui, 16), ui.s(fz(ui, 16)) * 1.35f, c) + ui.s(8);
+        };
+        line("Raid de clan « Asterion, le Dévoreur de mondes » (CLANS › RAIDS), en instances de 8 joueurs.", ui.theme().text);
+        line("Branche : " + gs.branchName + " · antre : zone " + std::to_string(gs.lairZone) + ", « " + gs.lairName + " »", ui.theme().warm);
+        if (!gs.partName.empty()) line("Partie du titan : " + gs.partName, ui.theme().textDim);
+        line("Sa fiche complète (mécanismes, récompenses) : CLANS › RAIDS › Fiches.", ui.theme().textDim);
     }
 
     // ---------------------------------------------------------------- « Fiche » (2.37)
@@ -852,6 +929,11 @@ private:
     std::string fromAsset_;  // 2.63: opened from ADMINISTRATION › Assets on this asset
     MenuBackground bg_;
     std::vector<const EnemyDefinition*> bosses_;
+    int firstRaid_ = 0;            // 2.77.3: bosses_ from here: the raid's (« Raid Asterion »)
+    raid::RaidSheets sheets_;      // 2.77.3: their sheets (their statistics)
+    gbstats::Tip statsTip_;
+    std::string statsOf_;
+    float statsH_ = 0.0f;
     int selected_ = 0;
     float t_ = 0.0f;
     // The boss shown: its clips (one after the other), its places.

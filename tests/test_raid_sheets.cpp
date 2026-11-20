@@ -286,6 +286,7 @@ TEST_CASE("raid sheets: open for a player who never met them, from the raid's sc
     }
     std::vector<std::string> ids = {"asterion"};
     for (const raid::GigabossSheet& b : s.gigaboss) ids.push_back(b.id);
+    if (!s.heart.id.empty()) ids.push_back(s.heart.id);  // 2.77.3: the heart's sheet
     for (const std::string& id : ids)
         for (int tab = 0; tab < 3; ++tab) {
             const size_t before = r.app.sceneCount();
@@ -322,6 +323,7 @@ TEST_CASE("raid sheets: the fixed panels hold their texts at 1280 x 720 and 1920
     const raid::RaidSheets s = raid::loadRaidSheets(g.content, g.achievementCatalog, g.cosmetics);
     std::vector<std::string> ids = {"asterion"};
     for (const raid::GigabossSheet& b : s.gigaboss) ids.push_back(b.id);
+    if (!s.heart.id.empty()) ids.push_back(s.heart.id);  // 2.77.3: the heart's sheet
     auto fits = [&](const RaidSheetText& t, const char* what, const std::string& id) {
         const float w = g.ui.text().measure(t.text, t.face, t.px).x;
         if (w > t.r.w + 0.5f) std::printf("  %s de %s : %.1f > %.1f (« %s »)\n", what, id.c_str(), w, t.r.w, t.text.c_str());

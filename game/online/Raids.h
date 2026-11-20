@@ -339,6 +339,12 @@ std::string rankingStateText(const WorldRanking& w);
 /// The players ranked by a category (as rankedBy), from any list.
 std::vector<ResultPlayer> rankedPlayers(const std::vector<ResultPlayer>& players, const std::string& category);
 
+/// 2.77.3: the titan's map last received in this session (GET /raids/events/{id}/titan, RaidTitanScene): the
+/// sheet of the Cœur d'Asterion reads the clan's real state there (the parts fallen, the relics) while its
+/// event runs. Nothing is asked for it: an empty object until a map was received.
+void rememberTitan(const Json& data);
+const Json& lastTitan();
+
 }  // namespace raids
 
 }  // namespace cosmic
