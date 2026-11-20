@@ -41,6 +41,7 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     else afk_ = 0;
     uint32_t seats = 0;
     for (int s = 1; s < players_; ++s) seats |= 1u << s;
+    seats &= ~humans_;  // 2.80: the seats real players play (their frames come in `scripted`)
     if (autopilot()) seats |= 1u;
     frames_[0] = admin;
     bots_.think(run_, frames_.data(), static_cast<int>(frames_.size()), seats, adminSeated_ && !autopilot());
@@ -61,7 +62,7 @@ void TestSession::step(const InputFrame& admin, const std::vector<std::pair<int,
     if (botsInvincible_) {
         GameWorld& w = run_.world();
         for (int s = 1; s < players_ && s < w.teamSize(); ++s)
-            if (w.member(s).presence == GameWorld::Presence::Playing && w.playerAt(s).alive()) w.playerAt(s).health = w.playerAt(s).maxHealth();
+            if (!((humans_ >> s) & 1u) && w.member(s).presence == GameWorld::Presence::Playing && w.playerAt(s).alive()) w.playerAt(s).health = w.playerAt(s).maxHealth();
     }
     rescue();
     run_.takeReports();  // empty: a test never reports anything
@@ -73,6 +74,7 @@ void TestSession::rescue() {
     for (int s = 0; s < players_ && s < w.teamSize(); ++s) {
         TestBots::Bot& b = bots_.bots()[static_cast<size_t>(s)];
         if (s == 0 && !autopilot()) continue;  // the administrator plays their seat
+        if ((humans_ >> s) & 1u) continue;     // 2.80: a real player plays it
         if (w.member(s).presence != GameWorld::Presence::Playing || !w.playerAt(s).alive() || w.playerAt(s).respawning()) continue;
         // Sent to a mechanism it cannot reach: put on it (a test alone needs its helpers there).
         if (b.task == TestBots::Task::Mechanism && b.mechanismSteps > kMechanismSteps) {

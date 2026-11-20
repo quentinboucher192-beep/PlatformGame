@@ -45,6 +45,21 @@ void RaidRun::setTest(const Test& t) {
     test_.players = std::clamp(t.players, 1, kMaxInstancePlayers);
     test_.startPhase = std::max(1, t.startPhase);
     gigaboss_.setTest(t.on ? test_.players : 0, t.on ? test_.startPhase : 1);
+    invincibleSeats_ = t.on && t.invincible ? 1u : 0u;  // 2.80: the administrator's seat, as before
+    if (world_ && t.on) {
+        world_->setInvincible(invincibleSeats_ != 0);
+        world_->setInvincibleSeats(invincibleSeats_);
+    }
+}
+
+void RaidRun::setInvincibleSeats(uint32_t seats) {
+    // 2.80 (docs/RAIDS.md §22): a test only (a real raid never has an invincible player).
+    if (!test_.on) return;
+    invincibleSeats_ = seats;
+    if (world_) {
+        world_->setInvincible(seats != 0);
+        world_->setInvincibleSeats(seats);
+    }
 }
 
 void RaidRun::setQuiet(bool on) {
@@ -75,7 +90,8 @@ void RaidRun::loadZone(int zid, const std::string& from, const std::vector<GameW
     if (test_.on) {
         // An administrator's test: a training run (nothing it does counts), invincible when asked.
         w->setTraining(true);
-        w->setInvincible(test_.invincible);
+        w->setInvincible(invincibleSeats_ != 0);  // 2.80: the seats invincible (the administrator's by default)
+        w->setInvincibleSeats(invincibleSeats_);
     }
     w->setQuiet(quiet_);
     w->setCameraFollow(follow_);

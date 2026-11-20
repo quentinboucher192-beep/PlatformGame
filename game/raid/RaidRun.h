@@ -161,6 +161,11 @@ public:
     void setTest(const Test& t);
     bool test() const { return test_.on; }
     const Test& testSetup() const { return test_; }
+    /// 2.80 (docs/RAIDS.md §22): the invincible seats of a test (bit = seat): the administrator's
+    /// (Test::invincible, seat 0) and each invited player the administrator ticked « Invincible »,
+    /// changed at a step given to every computer of the test. Ignored outside a test.
+    void setInvincibleSeats(uint32_t seats);
+    uint32_t invincibleSeats() const { return invincibleSeats_; }
     /// 2.68: a co-op mechanism of the zone (index in rules().coops): the players on its plate now,
     /// how many it needs (its count, fewer when fewer players are in play), done.
     struct CoopView {
@@ -241,6 +246,7 @@ private:
     int bossReported_ = 0;       // 2.68: the highest phase of the gigaboss already reported
     uint32_t lastResult_ = UINT32_MAX;  // 2.68: the step of the last table reported
     Test test_;                         // 2.68: an administrator's test (never reported)
+    uint32_t invincibleSeats_ = 0;      // 2.80: the invincible seats of a test
     HeartShared heart_;                 // 2.74 (phase 6): given with the step (RAID_STATE)
     int heartObjective_ = -1;           // 2.72: the heart's objective (its branch only)
     bool heartWon_ = false, heartWonNow_ = false;

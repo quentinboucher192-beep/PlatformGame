@@ -19,6 +19,13 @@
 // Nothing a game sends is trusted: the messages are bounded and checked (types, lengths,
 // action bits, flags — never Standby —, power choices, steps, rate), a bad one closes its
 // socket. The same protocol runs on a PC of the local network (game/coop/CoopRelay.cpp).
+//
+// 2.80 (raidTests.ts, docs/RAIDS.md §22): an administrator's TEST of Asterion with invited players
+// is a room of its own, marked as a test (`test`): 8 seats like a raid instance (the administrator on
+// seat 0, the invited players on the others as they come, vacant meanwhile), but nothing of a raid —
+// no member written, no branch's state, no report, nothing stored. The relay alone says, at a step
+// (TEST_SEATS), where each seat's player plays (their group and seat of the test) and whether the
+// administrator made them invincible; every computer of the test applies it at that same step.
 
 import { DurableObject } from "cloudflare:workers";
 import { requireAuth } from "./auth";
@@ -67,8 +74,10 @@ export const Msg = {
     Rejoin: 15,
     End: 16,
     RaidState: 18,
+    TestSeats: 19,
 } as const;
-export const EndReason = { Finished: 0, HostLeft: 1, TooLong: 2, Refused: 3 } as const;
+/** 2.80: Removed — an administrator's test: the administrator removed this player (raidTests.ts). */
+export const EndReason = { Finished: 0, HostLeft: 1, TooLong: 2, Refused: 3, Removed: 4 } as const;
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -249,6 +258,25 @@ export interface RaidRoomInfo {
 /** 2.75: the seat a watching socket is told (WELCOME): it never holds one (NetCoopLink::kWatcherSeat). */
 export const WATCHER_SEAT = 0xfe;
 
+/** 2.80: what makes a room an administrator's test (raidTests.ts): never a raid, never reported. */
+export interface TestRoomInfo {
+    test_id: string;
+    /** The groups a player may be placed in (indices 0 .. groups − 1) and the seats of a group (the administrator's place, seat 0, included). */
+    groups: number;
+    seats: number;
+    /** The administrator is invincible (their seat's flag at the start). */
+    invincible: boolean;
+    ended?: boolean;
+}
+
+/** 2.80: where a seat's player plays in a test (TEST_SEATS): a group (-1: nowhere, watching) and whether invincible. */
+export interface TestPlace {
+    group: number;
+    invincible: boolean;
+}
+/** 2.80: TEST_SEATS's « nowhere » (a seat nobody plays, or a player watching). */
+export const TEST_NONE = 0xff;
+
 interface RoomInfo {
     id: string;
     host: string;
@@ -257,6 +285,7 @@ interface RoomInfo {
     invited: string[];
     created: number;
     raid?: RaidRoomInfo;
+    test?: TestRoomInfo;
 }
 
 /** 2.74 (raids): steps per stored part of an instance's history (4 s; at most ~65 KB written compact). */
@@ -323,6 +352,12 @@ export class CoopRoom extends DurableObject<Bindings> {
     // 2.74 (phase 6): a heart instance: the Cœur d'Asterion's shared state (raidHeart.ts), given with the mask.
     private raidHeart: number | null = null;
     private raidPolled = 0;
+    // 2.80 (tests): each player's place (the administrator's choices), the seat of the test each one holds
+    // (kept while they come back), the tables given so far ((step, bytes) in order) and the last one.
+    private testPlaces = new Map<string, TestPlace>();
+    private testSeatOf = new Map<string, { group: number; seat: number }>();
+    private testStates: [number, Uint8Array][] = [];
+    private testLast = "";
     // 2.74 (raids): the parts of the history already stored, the restarts survived, the member
     // writes in order (an « absent » never overtakes the « back » that follows it).
     private savedChunks = 0;
@@ -343,8 +378,42 @@ export class CoopRoom extends DurableObject<Bindings> {
             case "/create": {
                 const body = (await request.json()) as RoomInfo & { host_name: string };
                 if (this.info) return Response.json({ error: "exists" }, { status: 409 });
-                this.info = { id: body.id, host: body.host, level: body.level, invited: [], created: Date.now(), raid: body.raid };
+                this.info = { id: body.id, host: body.host, level: body.level, invited: [], created: Date.now(), raid: body.raid, test: body.test };
                 if (this.info.raid) await this.ctx.storage.put("info", this.info); // 2.74: a raid room outlives its object
+                if (this.info.test) this.testPlaces.set(body.host, { group: 0, invincible: !!this.info.test.invincible }); // 2.80
+                return Response.json({ ok: true });
+            }
+            case "/test-place": {
+                // 2.80 (raidTests.ts, the Worker checked the administrator): a player's group and « Invincible »,
+                // given from the first step not given yet (every computer of the test at that same step).
+                const body = (await request.json()) as { player_id: string; group: number; invincible: boolean };
+                if (!this.info?.test || this.info.test.ended) return Response.json({ error: "gone" }, { status: 404 });
+                this.testPlaces.set(body.player_id, { group: body.group, invincible: !!body.invincible });
+                if (this.started) this.refreshTestTable();
+                return Response.json(this.status());
+            }
+            case "/test-kick": {
+                // 2.80: the administrator cancelled this player's invitation: out of the test at once (a
+                // simulated player takes the seat back at the next step), never back in.
+                const body = (await request.json()) as { player_id: string };
+                if (!this.info?.test) return Response.json({ error: "gone" }, { status: 404 });
+                this.info.invited = this.info.invited.filter((p) => p !== body.player_id);
+                this.testPlaces.delete(body.player_id);
+                this.testSeatOf.delete(body.player_id);
+                const k = this.seats.findIndex((x, i) => i > 0 && x.playerId === body.player_id && !x.vacant);
+                if (k > 0 && this.started) {
+                    const ws = this.seats[k]!.ws;
+                    this.seats[k]!.ws = null; // its close event must not count it twice
+                    this.markAbsent(k);
+                    this.freeSeat(k);
+                    this.flush();
+                    if (ws) this.endTo(ws, EndReason.Removed);
+                }
+                return Response.json(this.status());
+            }
+            case "/test-end": {
+                // 2.80: the administrator ended the test (or left it): every game is told, nothing is kept.
+                if (this.info?.test && !this.info.test.ended) this.endTest(EndReason.Finished);
                 return Response.json({ ok: true });
             }
             case "/wiped": // 2.75 (raidWipe.ts): the group was wiped: its seats are closed for good
@@ -377,13 +446,16 @@ export class CoopRoom extends DurableObject<Bindings> {
     async alarm(): Promise<void> {
         const now = Date.now();
         this.poll(now);
-        const raidGame = !!this.info?.raid && this.started;
+        const raidGame = (!!this.info?.raid || !!this.info?.test) && this.started;
         if (raidGame) {
             // 2.74: nobody in play: the seats absent for 60 s on the clock are freed; once every seat is
             // free and nobody is connected, the instance's game ends (the next player starts a new one).
+            // 2.80: a test the same way (it ends when its administrator's seat is freed).
             this.freeIdle(now);
+            if (!this.started) return; // 2.80: a test ended by freeIdle
             if (this.seats.every((s) => s.vacant && !s.ws)) {
-                await this.closeGame();
+                if (this.info?.test) this.endTest(EndReason.HostLeft);
+                else await this.closeGame();
                 return;
             }
             await this.pollRaidState(false);
@@ -405,6 +477,13 @@ export class CoopRoom extends DurableObject<Bindings> {
             raid: this.info?.raid
                 ? { mask: this.raidMask, states: this.raidStates.length, heart: this.raidHeart, restores: this.restores, stored: this.storedSteps }
                 : null,
+            // 2.80: a test: where each seat's player plays now (the last TEST_SEATS), and whether it ended.
+            test: this.info?.test
+                ? {
+                      ended: !!this.info.test.ended,
+                      places: this.testEntries().map((e, i) => ({ seat: i, player_id: this.seats[i]?.vacant ? "" : (this.seats[i]?.playerId ?? ""), group: e.group, game_seat: e.seat, invincible: e.invincible })),
+                  }
+                : null,
         };
     }
 
@@ -415,6 +494,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             return Response.json({ error: "no room" }, { status: 404 });
         // A raid instance: the Worker checked the registration (raidZones.ts); a room: invited only.
         if (!this.info.raid && playerId !== this.info.host && !this.info.invited.includes(playerId)) return Response.json({ error: "not invited" }, { status: 403 });
+        if (this.info.test?.ended) return Response.json({ error: "ended" }, { status: 404 }); // 2.80
         const pair = new WebSocketPair();
         const [client, server] = Object.values(pair) as [WebSocket, WebSocket];
         server.accept();
@@ -489,6 +569,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         if (!this.started) return;
         this.send(ws, this.goMessage());
         for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h));
+        for (const [, b] of this.testStates) this.send(ws, b); // 2.80
         for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
     }
     private drop(ws: WebSocket, seat: number) {
@@ -516,8 +597,14 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.endTo(ws, EndReason.Refused);
             return -1;
         }
+        const test = this.info!.test;
+        if (test && (test.ended || (!this.started && playerId !== this.info!.host))) {
+            // 2.80: a test's invited players join it once started (its administrator starts it at once).
+            this.endTo(ws, EndReason.Refused);
+            return -1;
+        }
         let seat = this.seats.findIndex((s) => s.playerId === playerId && !s.vacant);
-        const maxSeats = this.info!.raid ? MAX_RAID_PLAYERS : MAX_PLAYERS;
+        const maxSeats = this.info!.raid || test ? MAX_RAID_PLAYERS : MAX_PLAYERS;
         if (this.started && seat >= 0 && this.seats[seat]!.ws) {
             // 2.74: the same account again while its old connection still counts (a link that died
             // without closing, a game started again at once): the new connection takes the seat back,
@@ -532,9 +619,16 @@ export class CoopRoom extends DurableObject<Bindings> {
             }
             this.flush();
         }
-        if (this.started && this.info!.raid && seat < 0) {
-            // 2.65 (raids): a late join takes a vacant seat (vacant frames until its REJOIN).
-            seat = this.seats.findIndex((s) => s.vacant && !s.ws);
+        if (this.started && (this.info!.raid || test) && seat < 0) {
+            // 2.65 (raids): a late join takes a vacant seat (vacant frames until its REJOIN). 2.80: a test
+            // keeps seat 0 for its administrator, the invited players take the others.
+            seat = test
+                ? playerId === this.info!.host
+                    ? this.seats[0]?.vacant && !this.seats[0].ws
+                        ? 0
+                        : -1
+                    : this.seats.findIndex((s, i) => i > 0 && s.vacant && !s.ws)
+                : this.seats.findIndex((s) => s.vacant && !s.ws);
             if (seat < 0) {
                 this.endTo(ws, EndReason.Refused);
                 return -1;
@@ -579,6 +673,7 @@ export class CoopRoom extends DurableObject<Bindings> {
             this.send(ws, this.goMessage());
             this.flush();
             for (const [t, m, h] of this.raidStates) this.send(ws, this.raidStateMessage(t, m, h)); // before the frames
+            for (const [, b] of this.testStates) this.send(ws, b); // 2.80: a test's tables, before the frames too
             for (let t = 0; t < this.next; t += MAX_BATCH) this.send(ws, this.framesMessage(t, Math.min(MAX_BATCH, this.next - t)));
         } else {
             this.welcomeAll();
@@ -720,13 +815,14 @@ export class CoopRoom extends DurableObject<Bindings> {
 
     private start() {
         const raid = !!this.info?.raid;
+        const test = !!this.info?.test; // 2.80: 8 seats like a raid instance, nothing else of one
         const connected = this.seats.filter((s) => s.ws);
-        if (connected.length < (raid ? 1 : 2) || connected.length !== this.seats.length) return;
-        if (!raid && !this.seats.every((s, i) => i === 0 || s.ready)) return;
+        if (connected.length < (raid || test ? 1 : 2) || connected.length !== this.seats.length) return;
+        if (!raid && !test && !this.seats.every((s, i) => i === 0 || s.ready)) return;
         const held = this.seats.length;
         this.started = true;
         // 2.65 (raids): always 8 seats; those nobody holds are vacant from the first step.
-        if (raid) while (this.seats.length < MAX_RAID_PLAYERS) this.seats[this.addSeat("", "")]!.vacant = true;
+        if (raid || test) while (this.seats.length < MAX_RAID_PLAYERS) this.seats[this.addSeat("", "")]!.vacant = true;
         for (const s of this.seats) if (s.vacant) s.absent = true;
         this.players = this.seats.length;
         const worst = Math.max(0, ...this.seats.map((s) => s.rtt));
@@ -746,9 +842,123 @@ export class CoopRoom extends DurableObject<Bindings> {
                 if (!s.vacant) void this.writeMember(i, s.playerId, true, false, 0);
             });
         }
+        if (test) {
+            this.testStates = [];
+            this.testLast = "";
+            this.refreshTestTable(0); // 2.80: the administrator's place from the first step
+        }
         this.flush();
         if (raid) void this.persist();
-        if (!raid) void this.writeSession();
+        if (!raid && !test) void this.writeSession();
+    }
+
+    // ------------------------------------------------------------------ 2.80: an administrator's test
+
+    /** Where each seat's player plays now: its group (TEST_NONE: nowhere) and seat of the test, invincible. */
+    private testEntries(): { group: number; seat: number; invincible: boolean }[] {
+        const t = this.info?.test;
+        const out = Array.from({ length: MAX_RAID_PLAYERS }, () => ({ group: TEST_NONE, seat: 0, invincible: false }));
+        if (!t || !this.started) return out;
+        const taken = new Map<number, Set<number>>();
+        const take = (g: number, seat: number) => {
+            if (!taken.has(g)) taken.set(g, new Set());
+            taken.get(g)!.add(seat);
+        };
+        const held: { k: number; id: string; place: TestPlace }[] = [];
+        this.seats.forEach((s, k) => {
+            if (k >= MAX_RAID_PLAYERS || s.vacant || !s.playerId) return;
+            const place = this.testPlaces.get(s.playerId);
+            if (!place || place.group < 0 || place.group >= t.groups) return;
+            held.push({ k, id: s.playerId, place });
+        });
+        // The administrator's place is seat 0 of their group; an invited player keeps the seat they held in
+        // their group (a return), else takes its first seat no real player holds (its simulated player's).
+        const placed = new Set<number>();
+        for (const h of held) {
+            const was = this.testSeatOf.get(h.id);
+            const seat = h.k === 0 ? 0 : was && was.group === h.place.group && !taken.get(h.place.group)?.has(was.seat) ? was.seat : -1;
+            if (seat < 0) continue;
+            take(h.place.group, seat);
+            out[h.k] = { group: h.place.group, seat, invincible: h.place.invincible };
+            placed.add(h.k);
+        }
+        for (const h of held) {
+            if (placed.has(h.k)) continue;
+            let seat = -1;
+            for (let c = 1; c < t.seats && seat < 0; ++c) if (!taken.get(h.place.group)?.has(c)) seat = c;
+            if (seat < 0) continue; // the group is full of real players: this one watches
+            take(h.place.group, seat);
+            out[h.k] = { group: h.place.group, seat, invincible: h.place.invincible };
+        }
+        return out;
+    }
+
+    /** TEST_SEATS: u32 step, u8 count, then per seat u8 group (TEST_NONE), u8 seat of the test, u8 flags (1 invincible). */
+    private testSeatsMessage(tick: number, entries: { group: number; seat: number; invincible: boolean }[]): Uint8Array {
+        const o = new Out();
+        o.u8(Msg.TestSeats);
+        o.u32(tick);
+        o.u8(entries.length);
+        for (const e of entries) {
+            o.u8(e.group);
+            o.u8(e.seat);
+            o.u8(e.invincible ? 1 : 0);
+        }
+        return o.done();
+    }
+
+    /** The places now, given from step `tick` (the first one not given yet) when they changed. */
+    private refreshTestTable(tick = this.next) {
+        if (!this.info?.test || !this.started) return;
+        const entries = this.testEntries();
+        entries.forEach((e, k) => {
+            const id = this.seats[k]?.playerId;
+            if (id && e.group !== TEST_NONE && k > 0) this.testSeatOf.set(id, { group: e.group, seat: e.seat });
+        });
+        const key = JSON.stringify(entries);
+        if (key === this.testLast) return;
+        this.testLast = key;
+        const msg = this.testSeatsMessage(tick, entries);
+        this.testStates.push([tick, msg]);
+        this.sendAll(msg);
+    }
+
+    /** The test is over (its administrator ended it, left it for 60 s, or 2 h passed): every game is told. */
+    private endTest(reason: number) {
+        const t = this.info?.test;
+        if (!t) return;
+        t.ended = true;
+        const o = new Out();
+        o.u8(Msg.End);
+        o.u8(reason);
+        const end = o.done();
+        for (const s of this.seats) {
+            if (!s.ws) continue;
+            const ws = s.ws;
+            s.ws = null; // its close event must not count it again
+            this.send(ws, end);
+            try {
+                ws.close(1000, "ended");
+            } catch {
+                /* closed */
+            }
+        }
+        this.forget();
+        this.testPlaces.clear();
+        this.testSeatOf.clear();
+        const db = this.env.DB;
+        const now = nowIso();
+        this.ctx.waitUntil(
+            db
+                .batch([
+                    db.prepare("UPDATE raid_tests SET status = 'ended', ended_at = COALESCE(ended_at, ?2) WHERE id = ?1").bind(t.test_id, now),
+                    db.prepare("UPDATE raid_test_invitations SET status = 'expired' WHERE test_id = ?1 AND status = 'pending'").bind(t.test_id),
+                ])
+                .then(
+                    () => undefined,
+                    () => undefined, // before migration 0195
+                ),
+        );
     }
 
     private raidStateMessage(tick: number, mask: number, heart: number | null = null): Uint8Array {
@@ -846,8 +1056,10 @@ export class CoopRoom extends DurableObject<Bindings> {
     private flush() {
         if (!this.started) return;
         const raid = !!this.info?.raid;
+        const test = !!this.info?.test; // 2.80
         for (;;) {
             if (this.next >= MAX_TICKS) {
+                if (test) return this.endTest(EndReason.TooLong); // 2.80
                 const o = new Out();
                 o.u8(Msg.End);
                 o.u8(EndReason.TooLong);
@@ -863,12 +1075,14 @@ export class CoopRoom extends DurableObject<Bindings> {
             let complete = true;
             for (let k = 0; k < this.players && complete; ++k) {
                 const s = this.seats[k]!;
-                // 2.65 (raids): 60 s of absence free the seat (the simulation counts the same).
-                if (raid && s.absent && !s.vacant && s.rejoinAt === 0 && this.next - s.absentFrom > STANDBY_LIMIT_TICKS) this.freeSeat(k);
+                // 2.65 (raids): 60 s of absence free the seat (the simulation counts the same). 2.80: a test too.
+                if ((raid || test) && s.absent && !s.vacant && s.rejoinAt === 0 && this.next - s.absentFrom > STANDBY_LIMIT_TICKS) this.freeSeat(k);
+                if (!this.started) return; // 2.80: a test ended (its administrator's seat freed)
                 if (s.absent && (s.rejoinAt === 0 || this.next < s.rejoinAt)) continue;
                 if (!s.pending[0]) complete = false;
             }
             if (!complete) break;
+            let taken = false;
             for (let k = 0; k < this.players; ++k) {
                 const s = this.seats[k]!;
                 let f: Frame;
@@ -877,17 +1091,19 @@ export class CoopRoom extends DurableObject<Bindings> {
                 } else {
                     if (s.absent) {
                         // 2.68: a seat taken by a late join is held from this step (the raids' contributions).
-                        const taken = s.vacant;
+                        const late = s.vacant;
                         s.absent = false;
                         s.vacant = false;
                         s.rejoinAt = 0;
-                        void this.writeMember(k, s.playerId, true, false, taken ? this.next : undefined);
+                        taken = taken || late;
+                        void this.writeMember(k, s.playerId, true, false, late ? this.next : undefined);
                     }
                     f = s.pending[0]!;
                 }
                 s.pending.shift();
                 this.history.push(f);
             }
+            if (taken && test) this.refreshTestTable(this.next); // 2.80: a player takes their seat at this step
             ++this.next;
         }
         while (this.flushed < this.next) {
@@ -903,18 +1119,25 @@ export class CoopRoom extends DurableObject<Bindings> {
      * now, catching up: then it is their late join (the seat from their step of return).
      */
     private freeSeat(k: number) {
-        const s = this.seats[k]!;
+        const s = this.seats[k];
+        if (!s) return; // 2.80: a test ended meanwhile (its seats are gone)
         const who = s.playerId;
         s.vacant = true;
         if (!s.ws) s.playerId = "";
         void this.writeMember(k, who, false, true);
+        if (this.info?.test) {
+            // 2.80: a test without its administrator for 60 s is over; an invited player's seat is its
+            // simulated player's again from this step.
+            if (k === 0) return this.endTest(EndReason.HostLeft);
+            this.refreshTestTable(this.next);
+        }
     }
 
     /** 2.74 (raids): with nobody in play, a seat absent for 60 s on the clock is freed. */
     private freeIdle(now: number) {
         if (this.seats.some(CoopRoom.inPlay)) return; // someone plays: the steps count (flush)
         this.seats.forEach((s, k) => {
-            if (s.absent && !s.vacant && !s.ws && now - s.absentAt > STANDBY_LIMIT_MS) this.freeSeat(k);
+            if (this.started && s.absent && !s.vacant && !s.ws && now - s.absentAt > STANDBY_LIMIT_MS) this.freeSeat(k);
         });
     }
 
@@ -946,7 +1169,7 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.flush();
         // The room empties: a team room forgets everything. 2.74: a raid instance keeps its game (its
         // players come back within 60 s; its alarm frees their seats, then ends it, and stores it meanwhile).
-        if (this.seats.every((x) => !x.ws) && !this.info?.raid) this.forget();
+        if (this.seats.every((x) => !x.ws) && !this.info?.raid && !this.info?.test) this.forget();
     }
 
     poll(now: number) {
@@ -974,6 +1197,8 @@ export class CoopRoom extends DurableObject<Bindings> {
         this.savedChunks = 0;
         this.storedSteps = 0;
         this.raidStates = [];
+        this.testStates = []; // 2.80
+        this.testLast = "";
     }
 
     /** 2.74 (raids): the instance's game is over (every seat free, nobody connected): memory and storage. */
