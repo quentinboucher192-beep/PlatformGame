@@ -13483,6 +13483,27 @@
     "Une partie qui blesse ne prend aucun coup ; pendant ses attaques, elle frappe avec leurs dégâts.": "A part that hurts takes no blow; during its attacks it strikes with their damage.",
     "Pyrrhax pique désormais les ailes repliées, le nez en avant le long de sa ligne. Avec la nouvelle règle, tout son corps blesse au contact : son piqué tient dans le couloir que montre l'annonce, à sa vraie largeur, et on l'esquive en courant hors de ce couloir.": "Pyrrhax now dives with its wings folded, its nose forward along its line. With the new rule its whole body hurts on contact: its dive fits the lane the warning shows, at its real width, and running out of that lane dodges it.",
     "Fichier introuvable : data/enemies/{0}": "File not found: data/enemies/{0}",
-    "Écriture impossible : data/enemies/{0}": "Cannot write data/enemies/{0}"
+    "Écriture impossible : data/enemies/{0}": "Cannot write data/enemies/{0}",
+    "Dégâts infligés au boss : aucun": "Damage dealt to the boss: none",
+    "Dégâts infligés au boss : {0}": "Damage dealt to the boss: {0}",
+    "Dégâts infligés au boss : × 1 (sur toute sa boîte)": "Damage dealt to the boss: × 1 (over its whole box)",
+    "Dégâts reçus au contact : {0}": "Damage taken on contact: {0}",
+    "Dégâts reçus au contact : {0} (au contact de sa boîte)": "Damage taken on contact: {0} (touching its box)",
+    "Espace : pause · ← → : image (en pause) · + − : zoom · Maj + flèches : déplacer · Tab : partie suivante": "Space: pause · ← →: frame (paused) · + −: zoom · Shift + arrows: pan · Tab: next part",
+    "Il se battra par ses parties avec une prochaine version : son combat se joue encore sur sa boîte.": "It will fight by its parts in a coming version: its fight is still played on its box.",
+    "Pendant {0} : {1}": "During {0}: {1}",
+    "Rôle : {0}": "Role: {0}",
+    "Son combat se joue encore sur sa boîte : cette partie est montrée, elle ne change ni vos coups ni son contact.": "Its fight is still played on its box: this part is shown, it changes neither your blows nor its contact.",
+    "Survolez une partie : ce qu'elle fait · clic : la choisir · molette : zoom · glisser : déplacer": "Hover a part: what it does · click: choose it · wheel: zoom · drag: pan",
+    "Survolez une partie : ce qu'elle fait · molette : zoom · glisser : déplacer": "Hover a part: what it does · wheel: zoom · drag: pan",
+    "Zone rouge : ce que l'attaque de la pose blesse": "Red zone: what the attack of the pose hurts",
+    "image {0} / {1}": "frame {0} / {1}",
+    "{0} : pause · croix : image (en pause) · {1} / {2} : zoom · stick gauche : déplacer · {3} : partie suivante": "{0}: pause · D-pad: frame (paused) · {1} / {2}: zoom · left stick: pan · {3}: next part",
+    "{0} blessent aussi pendant : {1}": "{0} also hurt during: {1}",
+    "« Où frapper » (statistiques des boss, fiches des Gigaboss d'Asterion, éditeur d'ennemis › Parties) : la boîte d'avant n'est plus dessinée. Seule compte la forme précise de chaque image : ce sont ses parties qui prennent et donnent les coups.": "\"Where to hit\" (boss statistics, sheets of Asterion's Gigabosses, enemy editor › Parts): the old box is no longer drawn. Only the precise shape of each frame counts: its parts are what take and give the blows.",
+    "« Où frapper » : pause et lecture de l'animation (bouton, Espace, A à la manette), image précédente ou suivante en pause (← →, croix, boutons) et « image n / N ». Zoom de 0,5× à 6× (boutons + et −, molette autour du pointeur, gâchettes ou stick droit), déplacement quand on est zoomé (glisser, stick gauche, Maj + flèches) et « Recentrer ». Le dessin reste toujours dans son cadre.": "\"Where to hit\": pause and play the animation (button, Space, A on the gamepad), previous or next frame while paused (← →, D-pad, buttons) and \"frame n / N\". Zoom from 0.5× to 6× (+ and − buttons, the wheel around the pointer, triggers or right stick), panning when zoomed in (drag, left stick, Shift + arrows) and \"Recenter\". The drawing always stays inside its frame.",
+    "« Où frapper » : une infobulle sur chaque partie, au survol de la souris ; au clavier et à la manette, Tab ou Y passe de partie en partie. Elle donne son nom, son rôle, les dégâts infligés au boss (× 2, × 1, × 0,5 ou aucun), les dégâts reçus à son contact et, pour chaque attaque pendant laquelle elle blesse, son nom et ses dégâts, tout lu dans les données du boss. Elle ne sort jamais de l'écran et ne recouvre jamais le pointeur.": "\"Where to hit\": a tooltip on each part when the mouse hovers it; with the keyboard and the gamepad, Tab or Y goes from part to part. It gives its name, its role, the damage dealt to the boss (× 2, × 1, × 0.5 or none), the damage taken on contact and, for each attack during which it hurts, its name and its damage, all read from the boss's data. It never leaves the screen and never covers the pointer.",
+    "« Où frapper » : une légende propre, avec une seule entrée par rôle (sa couleur, son motif, ses parties nommées). La règle du combat est écrite en entier, la légende défile quand elle est longue et l'accord est juste (« Jointures blessent aussi pendant… »). La croix des pieds et le cadre blanc ont disparu des fiches.": "\"Where to hit\": a clean legend, with a single entry per role (its colour, its pattern, its parts named). The rule of the fight is written in full, the legend scrolls when it is long and the agreement is right (\"Joints also hurt during…\"). The cross of the feet and the white frame are gone from the sheets.",
+    "En cœurs perdus, pour un niveau aux dégâts × 1.": "In hearts lost, for a level with damage × 1."
   }
 }

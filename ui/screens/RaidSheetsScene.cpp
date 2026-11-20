@@ -224,6 +224,7 @@ public:
         else if (const raid::GigabossSheet* g = sheets_.find(id)) drawGigaboss(L, *g, alpha);
         ui.popId();
         titan_.drawTooltip(g_);  // over everything (only when the titan was drawn this frame)
+        hitStage_.drawTip(ui);   // 2.77.1: the tooltip of a part of « Où frapper » (only when drawn this frame)
         if (!back && ui.backPressed()) back = true;
         ui.end();
         if (back) g_.app.popScene();
@@ -724,7 +725,9 @@ private:
             hitOf_ = g.id;
             hitView_ = 0;
             hitPose_.clear();
+            hitStage_.reset();  // 2.77.1: playing, at 1×, no part chosen
         }
+        hitStage_.advance(dt_);
         const float x = view.x, pad = ui.s(12);
         float y = y0;
         // Its title, then the chips.
@@ -740,7 +743,10 @@ private:
         }
         float bottom = y;
         const int clicked = chips(ui, "hitbox", x + pad, y, x + w - pad, labels, on, bottom);
-        if (clicked >= 0) hitView_ = clicked;
+        if (clicked >= 0 && clicked != hitView_) {
+            hitView_ = clicked;
+            hitStage_.restart();
+        }
         y = bottom + ui.s(8);
         const raid::HitboxView& v = hb.views[static_cast<size_t>(hitView_)];
         // 2.75.2: the poses of this phase: at rest, then its attacks (those of its definition).
@@ -761,21 +767,49 @@ private:
             }
             float pb = y;
             const int pc = chips(ui, "hitpose", x + pad + lab, y, x + w - pad, pl, pon, pb);
-            if (pc == 0) {
+            if (pc == 0 && pose) {
                 hitPose_.clear();
                 pose = nullptr;
-            } else if (pc > 0) {
+                hitStage_.restart();
+            } else if (pc > 0 && poses[static_cast<size_t>(pc - 1)] != pose) {
                 pose = poses[static_cast<size_t>(pc - 1)];
                 hitPose_ = pose->id;
+                hitStage_.restart();
             }
             y = pb + ui.s(10);
         }
-        // The stage (its sprite and the rectangles) at the left, the legend at its right.
-        const float stageH = ui.s(320), legendW = std::min(ui.s(320), w * 0.42f);
-        const Rect stage{x + pad, y, w - 2 * pad - legendW - ui.s(12), stageH};
-        r.fillRoundedRect(stage, ui.s(10), Color{11, 18, 38, 255});
+        // 2.77.1: the stage (its bar, its drawing, its keys) at the left, the legend at its right.
+        const float legendW = std::min(ui.s(320), w * 0.42f), gap = ui.s(12);
+        const float sx = x + pad, sw = w - 2 * pad - legendW - gap;
         const EnemyDefinition* look = phaseLook(g, v.phase - 1);
         AnimationSetPtr set = g_.app.resources().animation(look->animation);
+        // The frames of the pose: at rest its idle; a pose its wind-up, then its blow (their own durations), a breath, again.
+        std::vector<std::pair<const AnimationClip*, int>> seq;
+        std::vector<float> durations;
+        float rest = 0.0f;
+        if (set && set->texture) {
+            const AnimationClip* idle = set->clip("idle");
+            if (!idle && !set->clips.empty()) idle = &set->clips.begin()->second;
+            const AnimationClip* tele = pose ? set->clip(pose->telegraphClip) : nullptr;
+            const AnimationClip* blow = pose ? set->clip(pose->attackClip) : nullptr;
+            auto add = [&](const AnimationClip* c) {
+                if (!c) return;
+                for (int f = 0; f < c->frameCount(); ++f) {
+                    seq.push_back({c, f});
+                    durations.push_back(c->durations[static_cast<size_t>(f)]);
+                }
+            };
+            if (tele || blow) {
+                add(tele);
+                add(blow);
+                rest = 0.6f;
+            } else {
+                add(idle);
+            }
+        }
+        const int fi = hitStage_.frame(durations, rest);
+        float cy = y + hitStage_.controls(ui, "hitstage", sx, y, sw) + ui.s(8);
+        const Rect stage{sx, cy, sw, ui.s(320)};
         Rect win = hb.body;
         Rect sprite{};
         if (set) {
@@ -799,197 +833,172 @@ private:
             }
         const float margin = std::max(win.w, win.h) * 0.06f;
         win = {win.x - margin, win.y - margin, win.w + 2 * margin, win.h + 2 * margin};
-        const float k = std::min((stage.w - ui.s(16)) / std::max(1.0f, win.w), (stage.h - ui.s(16)) / std::max(1.0f, win.h));
-        const Vec2 o{stage.center().x - win.center().x * k, stage.center().y - win.center().y * k};
-        auto toScreen = [&](const Rect& wr) { return Rect{o.x + wr.x * k, o.y + wr.y * k, wr.w * k, wr.h * k}; };
-        auto at = [&](Vec2 p) { return Vec2{o.x + p.x * k, o.y + p.y * k}; };
-        r.pushClip(stage);
+        hitStage_.place(stage, win, ui.s(8));
+        hitStage_.input(ui, "hitstage", dt_);
+        const float k = hitStage_.pixels();
+        auto toScreen = [&](const Rect& wr) { return hitStage_.toScreen(wr); };
+        auto at = [&](Vec2 p) { return hitStage_.toScreen(p); };
+        // Its body's own rectangles (its box: the fight's when it fights with it, never drawn when it fights by parts).
+        auto isBody = [&](const raid::HitPart& p) {
+            return p.enemy.empty() && p.rect.x == hb.body.x && p.rect.y == hb.body.y && p.rect.w == hb.body.w && p.rect.h == hb.body.h;
+        };
         const bool armour = v.state == "armour";
         bool partsShown = false;  // 2.76.0
-        bool rolesShown[4] = {false, false, false, false};  // 2.76.2: the roles of the parts drawn (PartRole)
-        // 2.76.2: a Gigaboss that fights by its parts: its parts in the colour of their role, its box a thin frame.
+        // 2.76.2: a Gigaboss that fights by its parts: its parts in the colour of their role.
         const PartRules& partRules = PartRules::of(g.def->id);
         const bool partsFight = partRules.fromVersion > 0 && partRules.fromVersion <= kSimulationVersion;
-        if (set && set->texture) {
-            // At rest: its idle; a pose: its wind-up, then its blow (their own durations), a breath, again.
-            const AnimationClip* c = set->clip("idle");
-            if (!c && !set->clips.empty()) c = &set->clips.begin()->second;
-            int f = c && c->frameCount() > 0 ? static_cast<int>(t_ * 6.0f) % c->frameCount() : 0;
-            if (pose) {
-                const AnimationClip* tele = set->clip(pose->telegraphClip);
-                const AnimationClip* blow = set->clip(pose->attackClip);
-                const float tt = tele ? tele->totalDuration() : 0.0f, bt = blow ? blow->totalDuration() : 0.0f;
-                if (tele || blow) {
-                    float tc = std::fmod(t_, tt + bt + 0.6f);
-                    const AnimationClip* now = tele && tc < tt ? tele : (blow ? blow : tele);
-                    if (now == blow && tele) tc -= tt;
-                    c = now;
-                    f = 0;
-                    while (f + 1 < c->frameCount() && tc >= c->durations[static_cast<size_t>(f)]) tc -= c->durations[static_cast<size_t>(f++)];
-                }
-            }
-            if (c && c->frameCount() > 0) {
-                const Rect src = set->frameRect(*c, f);
-                r.drawTexture(*set->texture, &src, toScreen(sprite), armour ? Color{200, 200, 215, 255} : Color::white());
-                // 2.76.0: its hit parts on this very frame (assets/hitparts), drawn only: its fight uses its box.
-                if (const HitPartsSheet* hp = HitPartsSheet::of(look->animation))
-                    if (const std::vector<HitPartPiece>* pieces = hp->frame(*set, *c, f)) {
-                        const Vec2 pv = set->pivot;
-                        const float sc = look->scale;
-                        drawHitPieces(r, std::max(1.0f, ui.s(1.5f)), *hp, *pieces, partRules,
-                                      [&](Vec2 v) { return Vec2{o.x + (v.x - pv.x) * sc * k, o.y + (v.y - pv.y) * sc * k}; }, partsFight ? 90 : 40);
-                        partsShown = true;
-                        for (const HitPartPiece& p : *pieces)
-                            if (p.part >= 0 && p.part < static_cast<int>(hp->parts.size()))
-                                rolesShown[static_cast<int>(partRules.ruleOr(hp->parts[static_cast<size_t>(p.part)]).role)] = true;
-                    }
+        const HitPartsSheet* hp = HitPartsSheet::of(look->animation);
+        const AnimationClip* c = fi < static_cast<int>(seq.size()) ? seq[static_cast<size_t>(fi)].first : nullptr;
+        const int f = fi < static_cast<int>(seq.size()) ? seq[static_cast<size_t>(fi)].second : 0;
+        const std::vector<HitPartPiece>* pieces = hp && set && c ? hp->frame(*set, *c, f) : nullptr;
+        const Vec2 pv = set ? set->pivot : Vec2{};
+        const float sc = look->scale;
+        auto pieceToScreen = [&](Vec2 p) { return hitStage_.toScreen(Vec2{(p.x - pv.x) * sc, (p.y - pv.y) * sc}); };
+        if (pieces) hitStage_.parts(ui, *hp, *pieces, pieceToScreen);
+        r.fillRoundedRect(stage, ui.s(10), Color{11, 18, 38, 255});
+        r.pushClip(stage);
+        if (set && set->texture && c && c->frameCount() > 0) {
+            const Rect src = set->frameRect(*c, f);
+            r.drawTexture(*set->texture, &src, toScreen(sprite), armour ? Color{200, 200, 215, 255} : Color::white());
+            // 2.76.0: its hit parts on this very frame (assets/hitparts); the part under the mouse outlined in white.
+            if (pieces) {
+                drawHitPieces(r, std::max(1.0f, ui.s(1.5f)), *hp, *pieces, partRules, pieceToScreen, partsFight ? 90 : 40, hitStage_.shownPart());
+                partsShown = true;
             }
         }
-        // 2.75.2: the sprites of its weak points and targets, their feet where the fight sticks them.
+        // 2.75.2: the sprites of its weak points and targets, their feet where the fight sticks them (on the stage's clock).
         for (const raid::HitPart& p : v.parts) {
             if (p.enemy.empty()) continue;
             const EnemyDefinition* d = g_.content.enemy(p.enemy);
             AnimationSetPtr ps = d ? g_.app.resources().animation(d->animation) : nullptr;
             if (!ps || !ps->texture) continue;
-            const AnimationClip* c = ps->clip("idle");
-            if (!c && !ps->clips.empty()) c = &ps->clips.begin()->second;
-            if (!c || c->frameCount() <= 0) continue;
-            const Rect src = ps->frameRect(*c, static_cast<int>(t_ * 6.0f) % c->frameCount());
+            const AnimationClip* ic = ps->clip("idle");
+            if (!ic && !ps->clips.empty()) ic = &ps->clips.begin()->second;
+            if (!ic || ic->frameCount() <= 0) continue;
+            const Rect src = ps->frameRect(*ic, static_cast<int>(hitStage_.clock() * 6.0f) % ic->frameCount());
             const Vec2 feet = p.rect.bottomCenter();
             r.drawTexture(*ps->texture, &src,
                           toScreen({feet.x - ps->pivot.x * d->scale, feet.y - ps->pivot.y * d->scale, static_cast<float>(ps->frameWidth) * d->scale,
                                     static_cast<float>(ps->frameHeight) * d->scale}));
         }
-        // The rectangles: what to hit (green), armour (grey), what hurts (red outline), in that order.
+        // The rectangles: what to hit (green), armour (grey), what hurts (red outline), in that order. 2.77.1: a body
+        // that fights by its parts has no box drawn (its parts above are what takes and gives the blows).
+        bool rolesDrawn[4] = {false, false, false, false};
         for (int pass = 0; pass < 2; ++pass)
             for (const raid::HitPart& p : v.parts) {
                 const bool hurt = p.kind == raid::HitPart::Kind::Hurt;
                 if ((pass == 0) == hurt) continue;
+                if (partsFight && partsShown && isBody(p)) continue;
                 const Rect sr = toScreen(p.rect);
-                const Color c = hitColor(p.kind);
-                if (partsFight && partsShown && p.enemy.empty() && p.label.rfind("À briser", 0) != 0) {
-                    // 2.76.2: its body fights by its parts (drawn above): its box only as a thin frame.
-                    r.drawRect(sr, Color{255, 255, 255, 150}, std::max(1.0f, ui.s(1.5f)));
-                    continue;
-                }
-                if (!hurt) r.fillRect(sr, c.withAlpha(p.kind == raid::HitPart::Kind::Armour ? 120 : 80));
-                r.drawRect(sr, c, std::max(1.5f, ui.s(hurt ? 2.5f : 2.0f)));
+                const Color hc = hitColor(p.kind);
+                if (!hurt) r.fillRect(sr, hc.withAlpha(p.kind == raid::HitPart::Kind::Armour ? 120 : 80));
+                r.drawRect(sr, hc, std::max(1.5f, ui.s(hurt ? 2.5f : 2.0f)));
+                if (p.kind == raid::HitPart::Kind::Weak) rolesDrawn[static_cast<int>(PartRole::Weak)] = true;
+                if (p.kind == raid::HitPart::Kind::Armour) rolesDrawn[static_cast<int>(PartRole::Armour)] = true;
+                if (hurt) rolesDrawn[static_cast<int>(PartRole::Hurt)] = true;
             }
         // 2.75.2: what the attack of the pose sends: red what hurts, pink where it leaves from.
         bool sourceShown = false, hurtShown = false;
         if (pose)
             for (const raid::HitShape& sh : pose->shapes) {
-                const Color c = sh.hurts ? hitColor(raid::HitPart::Kind::Hurt) : kSource;
+                const Color sc2 = sh.hurts ? hitColor(raid::HitPart::Kind::Hurt) : kSource;
                 (sh.hurts ? hurtShown : sourceShown) = true;
                 const float th = std::max(2.0f, ui.s(3.0f));
                 switch (sh.kind) {
                     case raid::HitShape::Kind::Area: {
                         const Rect sr = toScreen(sh.rect);
-                        r.fillRect(sr, c.withAlpha(60));
-                        r.drawRect(sr, c, th);
+                        r.fillRect(sr, sc2.withAlpha(60));
+                        r.drawRect(sr, sc2, th);
                         break;
                     }
                     case raid::HitShape::Kind::Origin:
                         r.fillCircle(at(sh.at), std::max(4.0f, ui.s(8)), Color::white());
-                        r.fillCircle(at(sh.at), std::max(3.0f, ui.s(6)), c);
+                        r.fillCircle(at(sh.at), std::max(3.0f, ui.s(6)), sc2);
                         break;
-                    case raid::HitShape::Kind::Ring: r.drawRing(at(sh.at), sh.radius * k, th, c.withAlpha(230)); break;
-                    case raid::HitShape::Kind::Beam: r.drawLine(at(sh.at), at(sh.to), c.withAlpha(230), std::max(3.0f, ui.s(5.0f))); break;
+                    case raid::HitShape::Kind::Ring: r.drawRing(at(sh.at), sh.radius * k, th, sc2.withAlpha(230)); break;
+                    case raid::HitShape::Kind::Beam: r.drawLine(at(sh.at), at(sh.to), sc2.withAlpha(230), std::max(3.0f, ui.s(5.0f))); break;
                     case raid::HitShape::Kind::Wave:
-                        r.drawLine(at(sh.at), at(sh.to), c, th);
-                        r.fillCircle(at(sh.to), std::max(3.0f, ui.s(6)), c);
+                        r.drawLine(at(sh.at), at(sh.to), sc2, th);
+                        r.fillCircle(at(sh.to), std::max(3.0f, ui.s(6)), sc2);
                         break;
                 }
             }
-        // Its feet: the pivot of its sprite, where every rectangle is measured from.
-        {
-            const Vec2 f0 = at({0.0f, 0.0f});
-            const float arm = ui.s(9), th = std::max(1.5f, ui.s(2));
-            r.drawLine({f0.x - arm, f0.y}, {f0.x + arm, f0.y}, Color{255, 255, 255, 200}, th);
-            r.drawLine({f0.x, f0.y - arm}, {f0.x, f0.y + arm}, Color{255, 255, 255, 200}, th);
-        }
         r.popClip();
-        // The legend: the colours present, then each part named (measured, wrapped, never past its box).
-        const Rect leg{stage.right() + ui.s(12), y, legendW, stageH};
-        r.fillRoundedRect(leg, ui.s(10), Color{18, 24, 52, 240});
-        float ly = leg.y + ui.s(10);
-        const float lx = leg.x + ui.s(12), lw = leg.w - ui.s(24);
-        struct Entry {
-            raid::HitPart::Kind kind;
-            const char* text;
-        };
-        static const Entry kEntries[] = {{raid::HitPart::Kind::Weak, "Vert : à frapper"},
-                                         {raid::HitPart::Kind::Armour, "Gris : blindé, ne prend aucun dégât"},
-                                         {raid::HitPart::Kind::Hurt, "Rouge : blesse au contact ou attaque"},
-                                         {raid::HitPart::Kind::Mechanism, "Or : plaques du mécanisme collectif"}};
-        struct Line {
-            std::string text;
-            Color color;
-            int role = -1;  // 2.76.2: a part's role: its swatch has the role's pattern
-        };
-        std::vector<Line> lines;
-        for (const Entry& e : kEntries) {
-            bool present = false;
-            for (const raid::HitPart& p : v.parts) present = present || p.kind == e.kind;
-            if (e.kind == raid::HitPart::Kind::Mechanism) present = !v.plates.empty();
-            if (e.kind == raid::HitPart::Kind::Hurt) present = present || hurtShown;
-            if (present) lines.push_back({e.text, hitColor(e.kind)});
+        hitStage_.drawFocus(ui);
+        // 2.77.1: the tooltip of the part under the mouse (or chosen with Tab / Y): what it does, from its data; the
+        // state shown first when it changes the blows (armour, bare).
+        if (!hitStage_.shownPart().empty()) {
+            std::string context;
+            if (v.state != "fight")
+                for (const raid::HitPart& p : v.parts)
+                    if (isBody(p) && p.kind != raid::HitPart::Kind::Hurt && context.empty()) context = p.label;
+            hitStage_.setTip(partTip(partFacts(hitStage_.shownPart(), partRules, *g.def), context));
         }
-        if (sourceShown) lines.push_back({"Rose : d'où part l'attaque", kSource});
+        cy = stage.bottom() + ui.s(8);
+        cy += hitStage_.help(ui, sx, cy, sw);
+        hitStage_.layout().boxes.push_back(stage);
+        // The legend, as tall as the stage: one entry per role (its colour, its pattern), the parts named, the zones of the
+        // pose, the plates; how its fight uses them, whole; each part of its sheet named. It scrolls when it is longer.
+        const Rect leg{sx + sw + gap, y, legendW, cy - y};
+        hitStage_.layout().boxes.push_back(leg);
+        std::vector<HitLegendLine> lines;
+        auto plain = [&](const std::string& text, Color swatch) {
+            HitLegendLine l;
+            l.text = text;
+            l.swatch = swatch;
+            l.gapBefore = lines.empty() ? 0.0f : 6.0f;
+            lines.push_back(l);
+        };
         if (partsShown && partsFight) {
-            // Its parts by role, each with its colour and its pattern (2.76.2) and its multiplier when its parts
-            // of that role share one.
-            for (PartRole role : {PartRole::Weak, PartRole::Normal, PartRole::Armour, PartRole::Hurt}) {
-                if (!rolesShown[static_cast<int>(role)]) continue;
-                std::string text = std::string("Parties : ") + partRoleLabel(role);
-                std::string mult;
-                bool same = true;
-                for (const PartRule& rule : partRules.rules)
-                    if (rule.role == role) {
-                        const std::string m = partDamageLabel(rule);
-                        same = same && (mult.empty() || m == mult);
-                        mult = m;
-                    }
-                if (role != PartRole::Hurt && same && !mult.empty()) text += " · " + mult;  // « · »: each piece translated
-                lines.push_back({text, partRoleColor(role), static_cast<int>(role)});
+            lines = partsLegend(hp, partRules, *g.def, rolesDrawn, false);
+            // The zones of its pose and its plates before the sentence of its rule (the last line).
+            HitLegendLine how = lines.back();
+            lines.pop_back();
+            if (hurtShown) plain("Zone rouge : ce que l'attaque de la pose blesse", hitColor(raid::HitPart::Kind::Hurt));
+            if (sourceShown) plain("Rose : d'où part l'attaque", kSource);
+            if (!v.plates.empty()) plain("Or : plaques du mécanisme collectif", hitColor(raid::HitPart::Kind::Mechanism));
+            lines.push_back(how);
+        } else {
+            struct Entry {
+                raid::HitPart::Kind kind;
+                const char* text;
+            };
+            static const Entry kEntries[] = {{raid::HitPart::Kind::Weak, "Vert : à frapper"},
+                                             {raid::HitPart::Kind::Armour, "Gris : blindé, ne prend aucun dégât"},
+                                             {raid::HitPart::Kind::Hurt, "Rouge : blesse au contact ou attaque"},
+                                             {raid::HitPart::Kind::Mechanism, "Or : plaques du mécanisme collectif"}};
+            for (const Entry& e : kEntries) {
+                bool present = false;
+                for (const raid::HitPart& p : v.parts) present = present || p.kind == e.kind;
+                if (e.kind == raid::HitPart::Kind::Mechanism) present = !v.plates.empty();
+                if (e.kind == raid::HitPart::Kind::Hurt) present = present || hurtShown;
+                if (present) plain(e.text, hitColor(e.kind).withAlpha(e.kind == raid::HitPart::Kind::Hurt ? 255 : 200));
             }
-            lines.push_back({"Tout le corps blesse au contact ; les parties rouges blessent aussi pendant leurs attaques", partRoleColor(PartRole::Hurt),
-                             static_cast<int>(PartRole::Hurt)});
-            // The parts that also hurt during an attack, by the attacks' names (never their identifiers).
-            for (const PartRule& rule : partRules.rules)
-                if (const std::string during = hurtDuringLabel(rule, *g.def); !during.empty())
-                    lines.push_back({partNameLabel(rule.name) + " " + during, partRoleColor(rule.role), static_cast<int>(rule.role)});
-            lines.push_back({"Cadre blanc : sa boîte d'avant (les replays d'avant)", Color{255, 255, 255, 200}});
-        } else if (partsShown) {
-            lines.push_back({"Bleu : ses parties (affichage ; son combat se joue sur sa boîte)", partRoleColor(PartRole::Normal),
-                             static_cast<int>(PartRole::Normal)});
+            if (sourceShown) plain("Rose : d'où part l'attaque", kSource);
+            if (partsShown) {
+                HitLegendLine l;
+                l.text = "Bleu : ses parties (affichage ; son combat se joue sur sa boîte)";
+                l.role = static_cast<int>(PartRole::Normal);
+                l.gapBefore = 6.0f;
+                lines.push_back(l);
+            }
         }
-        lines.push_back({"Croix blanche : ses pieds", Color{255, 255, 255, 220}});
+        // Each element of this phase and state, named (whole: the legend scrolls).
         std::vector<std::string> named;
         for (const raid::HitPart& p : v.parts)
             if (std::find(named.begin(), named.end(), p.label) == named.end()) named.push_back(p.label);
-        const float sw = ui.s(16);
-        for (const Line& line : lines) {
-            const auto ls = wrap(ui, line.text, FontFace::Bold, fz(ui, 13), lw - sw - ui.s(8), 2);
-            const float h = std::max(sw + ui.s(2), static_cast<float>(ls.size()) * ui.s(18));
-            if (ly + h > leg.bottom() - ui.s(8)) break;
-            if (line.role >= 0) drawPartSwatch(r, {lx, ly + ui.s(1), sw, sw}, static_cast<PartRole>(line.role), ui.s(1.0f));
-            else r.fillRect({lx, ly + ui.s(1), sw, sw}, line.color.withAlpha(line.color == hitColor(raid::HitPart::Kind::Hurt) ? 255 : 200));
-            drawLines(ui, ls, {lx + sw + ui.s(8), ly}, fz(ui, 13), ui.s(18), kText, FontFace::Bold);
-            ly += h + ui.s(4);
-        }
-        ly += ui.s(6);
         for (size_t i = 0; i < named.size(); ++i) {
-            const auto ls = wrap(ui, "• " + named[i], FontFace::Body, fz(ui, 12.5f), lw, 2);
-            const float h = static_cast<float>(ls.size()) * ui.s(17);
-            if (ly + h > leg.bottom() - ui.s(8)) {
-                fit(ui, "… et " + std::to_string(named.size() - i) + " de plus", {lx, ly + ui.s(8)}, fz(ui, 12.5f), lw, kDim);
-                break;
-            }
-            drawLines(ui, ls, {lx, ly}, fz(ui, 12.5f), ui.s(17), kDim);
-            ly += h + ui.s(2);
+            HitLegendLine l;
+            l.text = "• " + named[i];
+            l.color = kDim;
+            l.face = FontFace::Body;
+            l.size = 12.5f;
+            l.gapBefore = i == 0 ? 8.0f : 2.0f;
+            lines.push_back(l);
         }
-        y += stageH + ui.s(10);
+        drawHitLegend(ui, "hitlegend", leg, lines, &hitStage_.layout());
+        hitStage_.layout().body = toScreen(hb.body);  // where its box would be: never drawn when it fights by parts (tests)
+        y = cy + ui.s(10);
         // 2.75.2: the attack of the pose, in a sentence.
         if (pose) {
             const auto ls = wrap(ui, "« " + pose->name + " » : " + pose->reach, FontFace::Bold, fz(ui, 14), w - 2 * pad, 2);
@@ -1046,6 +1055,7 @@ private:
     std::string hitOf_;  // 2.75: the sheet whose diagram is shown, and its phase and state chosen
     int hitView_ = 0;
     std::string hitPose_;  // 2.75.2: the attack whose pose is shown ("" at rest)
+    HitStage hitStage_;    // 2.77.1: its pause and frames, zoom and pan, the tooltip of a part
     std::string contentOf_;
     float contentH_ = 0.0f;
     RaidSheetsView view_;
