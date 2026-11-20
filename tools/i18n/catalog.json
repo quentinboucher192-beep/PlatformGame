@@ -998,6 +998,12 @@
    ]
   },
   {
+   "fr": "a masqué le commentaire de {0} sur {1}",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
    "fr": "a migré les données de {0} vers {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
@@ -1143,6 +1149,12 @@
   },
   {
    "fr": "a récupéré les données de {0} avec un code de migration",
+   "where": [
+    "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "a rétabli le commentaire de {0} sur {1}",
    "where": [
     "ui/screens/AdminScene.cpp"
    ]
@@ -1521,6 +1533,7 @@
     "game/levels/Cinematic.cpp",
     "game/online/Spectate.cpp",
     "game/raid/RaidBranch.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminCampaign.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -2813,6 +2826,7 @@
     "editors/level_editor/LevelEditorChat.cpp",
     "editors/level_editor/LevelEditorDialogs.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCampaign.cpp",
@@ -2820,7 +2834,6 @@
     "ui/screens/AdminScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
-    "ui/screens/ClanRaids.cpp",
     "ui/screens/ClanScene.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/GhostSetupScene.cpp",
@@ -4863,14 +4876,7 @@
   {
    "fr": "Au moins {0} minutes à l'avance.",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Au plus 90 jours à l'avance.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -5072,6 +5078,24 @@
    ]
   },
   {
+   "fr": "Aucun autre événement pour votre clan. Les raids sont des événements publiés par l'équipe du jeu : le chef ou un officier y inscrit le clan, puis chaque membre s'inscrit.",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun avis",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun avis pour l'instant.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucun badge pour l'instant",
    "where": [
     "ui/screens/CollectionScene.cpp"
@@ -5160,6 +5184,12 @@
    "fr": "Aucun combat",
    "where": [
     "ui/screens/RaidResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun commentaire : seule votre note sera publiée.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -5605,18 +5635,6 @@
    ]
   },
   {
-   "fr": "Aucun raid du clan à venir. Programmez-en un : les membres sont prévenus et s'inscrivent eux-mêmes.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Aucun raid du clan à venir. {0}",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Aucun raid terminé pour l'instant.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -5733,6 +5751,12 @@
    ]
   },
   {
+   "fr": "Aucun signalement",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Aucun succès dans le catalogue.",
    "where": [
     "game/achievements/Achievements.cpp"
@@ -5811,7 +5835,7 @@
    ]
   },
   {
-   "fr": "Aucun événement mondial programmé pour l'instant. Les administrateurs du jeu l'annoncent ici et dans vos notifications ; les raids de votre clan se programment juste en dessous.",
+   "fr": "Aucun événement mondial programmé pour l'instant. L'équipe du jeu publie les raids : chaque événement est annoncé ici et dans vos notifications, puis votre clan s'y inscrit.",
    "where": [
     "ui/screens/ClanRaids.cpp"
    ]
@@ -6455,8 +6479,15 @@
    "where": [
     "game/records/PlayStatsRecorder.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "autre",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -6780,6 +6811,19 @@
    ]
   },
   {
+   "fr": "Avis",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "AVIS DES JOUEURS",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp",
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Avis et commentaires",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
@@ -6790,6 +6834,18 @@
    "fr": "Avis et commentaires ({0})",
    "where": [
     "ui/screens/OnlineRankingScene.cpp"
+   ]
+  },
+  {
+   "fr": "Avis indisponibles.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Avis introuvable.",
+   "where": [
+    "server/src/raidReviews.ts"
    ]
   },
   {
@@ -7536,6 +7592,12 @@
    "fr": "Biceps de givre",
    "where": [
     "data/raids/asterion/bras_gauche/branch.json"
+   ]
+  },
+  {
+   "fr": "Bien",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -10773,6 +10835,12 @@
    ]
   },
   {
+   "fr": "Cet avis n'a pas de commentaire : il n'y a rien à signaler.",
+   "where": [
+    "server/src/raidReviews.ts"
+   ]
+  },
+  {
    "fr": "Cet essai a déjà été envoyé avec d'autres données.",
    "where": [
     "server/src/challenges.ts"
@@ -11653,6 +11721,12 @@
    ]
   },
   {
+   "fr": "Chargement des avis…",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Chargement des fantômes…",
    "where": [
     "ui/screens/GhostRun.cpp"
@@ -11737,6 +11811,7 @@
    "where": [
     "editors/level_editor/LevelEditorChat.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/online/RatingWidgets.cpp",
     "ui/screens/AdminBackups.cpp",
     "ui/screens/AdminCalendar.cpp",
@@ -12214,6 +12289,12 @@
    ]
   },
   {
+   "fr": "Choisissez un événement dans l'onglet « Événements » pour lire les avis de ses joueurs.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Choisissez un événement dans l'onglet « Événements » pour suivre son déroulement en direct.",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -12253,6 +12334,18 @@
    "fr": "Choisissez une image à gauche.",
    "where": [
     "ui/studio/StudioImport.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une note",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Choisissez une note de 1 à 5 étoiles.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -13815,6 +13908,12 @@
    ]
   },
   {
+   "fr": "Commentaire (facultatif, 500 caractères au plus)",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "commentaire d'un autre fil",
    "where": [
     "server/src/workshop.ts"
@@ -13839,6 +13938,24 @@
    ]
   },
   {
+   "fr": "Commentaire masqué : sa note compte toujours (inscrit au Journal).",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaire masqué après des signalements, en attendant la décision des modérateurs.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaire masqué par la modération.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
    "fr": "Commentaire modifié.",
    "where": [
     "ui/online/CommentsPanel.cpp"
@@ -13851,9 +13968,16 @@
    ]
   },
   {
+   "fr": "Commentaire rétabli (inscrit au Journal).",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Commentaire signalé. Merci.",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -13878,6 +14002,12 @@
    "fr": "Commentaire sur une de mes courses",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Commentaire trop long : {0} caractères pour {1} au plus.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -13949,7 +14079,8 @@
   {
    "fr": "commentaire|Publier",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -14430,6 +14561,12 @@
    ]
   },
   {
+   "fr": "Connectez-vous pour noter un raid que vous avez joué.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
    "fr": "Connectez-vous pour recevoir les notifications de raid.",
    "where": [
     "ui/screens/ClanRaids.cpp"
@@ -14868,8 +15005,15 @@
    "fr": "Contenu inapproprié",
    "where": [
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "contenu inapproprié",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -16167,8 +16311,7 @@
   {
    "fr": "Court",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -17629,12 +17772,6 @@
    ]
   },
   {
-   "fr": "Date (JJ/MM/AAAA)",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "date AAAA-MM-JJ attendue",
    "where": [
     "server/src/challenges.ts"
@@ -17643,8 +17780,7 @@
   {
    "fr": "Date attendue : JJ/MM/AAAA.",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -19178,7 +19314,8 @@
   {
    "fr": "Divulgue la solution",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -20093,12 +20230,6 @@
    ]
   },
   {
-   "fr": "Début : {0}",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Début dans",
    "where": [
     "game/online/Raids.cpp"
@@ -20197,6 +20328,12 @@
     "game/online/Raids.cpp",
     "ui/screens/ChallengeRewardsUi.cpp",
     "ui/screens/ChallengeUi.cpp"
+   ]
+  },
+  {
+   "fr": "Décevant",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -23067,6 +23204,7 @@
    "where": [
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminCalendar.cpp",
     "ui/screens/AdminCreations.cpp",
     "ui/screens/ClanScene.cpp",
@@ -24013,6 +24151,12 @@
    "fr": "ex. +1,250",
    "where": [
     "ui/screens/ReplayScene.cpp"
+   ]
+  },
+  {
+   "fr": "Excellent",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -25800,7 +25944,6 @@
    "where": [
     "ui/screens/AdminAssets.cpp",
     "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp",
     "ui/screens/RaidEventScene.cpp"
    ]
   },
@@ -25840,7 +25983,6 @@
     "saves/SaveFile.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp",
-    "ui/screens/ClanRaids.cpp",
     "ui/screens/GameScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/studio/StudioDoc.cpp"
@@ -26459,6 +26601,7 @@
   {
    "fr": "Garder",
    "where": [
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp"
    ]
@@ -28494,9 +28637,16 @@
    ]
   },
   {
+   "fr": "harcèlement",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Harcèlement ou insultes",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -28702,16 +28852,9 @@
    ]
   },
   {
-   "fr": "Heure (votre heure)",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Heure attendue : HH:MM.",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -29254,6 +29397,7 @@
     "game/online/LevelFingerprint.cpp",
     "game/online/LiveSession.cpp",
     "game/online/OnlineService.cpp",
+    "game/online/RaidReviews.cpp",
     "game/online/Raids.cpp",
     "game/online/Spectate.cpp",
     "game/planets/PlanetData.cpp",
@@ -34702,12 +34846,6 @@
    ]
   },
   {
-   "fr": "Le chef et les officiers organisent les raids du clan.",
-   "where": [
-    "game/online/Raids.cpp"
-   ]
-  },
-  {
    "fr": "Le chef garde son rôle : transmettez-le d'abord.",
    "where": [
     "server/src/clans.ts"
@@ -37563,6 +37701,12 @@
    ]
   },
   {
+   "fr": "Les avis des joueurs : la note moyenne et le nombre d'avis sur les cartes de CLANS › RAIDS et sur la fiche de chaque événement ; la liste des avis (auteur, étoiles, date, texte) défile, le vôtre en tête avec « Modifier ». Les étoiles se choisissent aux flèches, au stick ou à la souris, le commentaire se tape comme ailleurs (Ctrl+C / Ctrl+V).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Les badges du profil s'ouvrent à {0} étoiles ({1} déclarées).",
    "where": [
     "server/src/badges.ts"
@@ -38269,12 +38413,6 @@
    ]
   },
   {
-   "fr": "Les membres du clan sont prévenus ; chacun s'inscrit lui-même jusqu'au verrouillage. L'heure est celle de cet ordinateur ({0}) : le jeu l'envoie en UTC.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Les miens",
    "where": [
     "ui/screens/OnlineLevelsScene.cpp"
@@ -38518,6 +38656,18 @@
    "fr": "Les racines se souviennent de chaque pas.",
    "where": [
     "data/levels/aethra_01.json"
+   ]
+  },
+  {
+   "fr": "Les raids sont des événements : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS. L'équipe du jeu crée et publie les événements de raid ; votre clan s'y inscrit (le chef ou un officier), puis chaque membre, et vous y jouez ensemble. Les raids de clan déjà programmés restent lisibles et jouables jusqu'à leur fin.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Les raids sont des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -39770,8 +39920,7 @@
   {
    "fr": "Légendaire",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -40365,6 +40514,12 @@
    ]
   },
   {
+   "fr": "Masquer le commentaire",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Masquer les infos",
    "where": [
     "ui/screens/ReplayScene.cpp"
@@ -40406,6 +40561,12 @@
    ]
   },
   {
+   "fr": "Masqué après des signalements : rétablissez-le ou laissez-le masqué.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "masqué aux autres joueurs",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -40415,6 +40576,12 @@
    "fr": "masqué par le joueur : caché aussi aux administrateurs",
    "where": [
     "game/online/AdminView.cpp"
+   ]
+  },
+  {
+   "fr": "Masqué par un administrateur. Sa note compte toujours.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -40964,6 +41131,12 @@
    "fr": "Mer",
    "where": [
     "ui/screens/AdminCalendar.cpp"
+   ]
+  },
+  {
+   "fr": "Merci : votre avis est publié.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -41659,6 +41832,7 @@
    "fr": "Modifier",
    "where": [
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/AdminEnemies.cpp",
     "ui/screens/PauseScene.cpp"
    ]
@@ -41706,6 +41880,13 @@
    ]
   },
   {
+   "fr": "Modifier mon avis",
+   "where": [
+    "game/online/RaidReviews.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Modifier mon profil",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
@@ -41714,7 +41895,8 @@
   {
    "fr": "modifié",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -41737,6 +41919,12 @@
   },
   {
    "fr": "Modération : un administrateur voit tout du profil d'un joueur, même masqué ou d'un compte inactif : statistiques, temps de jeu, succès, tenue, badges et titre, abonnés et abonnements privés, brouillons et niveaux masqués par les signalements, meilleures progressions. Le serveur en décide depuis le rôle de sa session, jamais depuis un paramètre ; les autres joueurs gardent exactement leurs verrous.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Modération des avis : les règles des commentaires (filtres, limites, signalement : masqué après trois signalements). Dans ADMINISTRATION › Raids, l'onglet « Avis » montre tous les avis d'un événement, avec leurs signalements, et permet de masquer ou de rétablir un commentaire (inscrit au Journal) ; un commentaire masqué garde sa note.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -42355,6 +42543,7 @@
    "where": [
     "game/enemies/BossAttackSheet.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -42381,6 +42570,7 @@
   {
    "fr": "Moyen",
    "where": [
+    "game/online/RaidReviews.cpp",
     "ui/screens/AchievementsScene.cpp"
    ]
   },
@@ -44159,6 +44349,13 @@
    ]
   },
   {
+   "fr": "Noter ce raid",
+   "where": [
+    "game/online/RaidReviews.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Noter les 25 niveaux de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
@@ -44174,6 +44371,12 @@
    "fr": "Noter un niveau de la campagne en ligne.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Noter un raid après l'avoir joué : « Noter ce raid » sur l'écran des résultats et sur la fiche de l'événement, de 1 à 5 étoiles, avec un commentaire facultatif de 500 caractères au plus. Un avis par événement, à modifier ou à supprimer quand vous voulez. Seuls les joueurs qui ont vraiment joué l'événement peuvent le noter : le serveur le vérifie lui-même. Jamais de fenêtre qui s'impose pendant le jeu.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -46122,18 +46325,6 @@
    "fr": "Orfèvre",
    "where": [
     "data/achievements/achievements.json"
-   ]
-  },
-  {
-   "fr": "Organiser un raid du clan",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
-   "fr": "Organiser un raid du clan…",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -49341,12 +49532,6 @@
    ]
   },
   {
-   "fr": "Places (2 à 50 joueurs)",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
-   ]
-  },
-  {
    "fr": "Placez d'abord un départ du joueur",
    "where": [
     "editors/level_editor/LevelEditorScene.cpp"
@@ -50030,6 +50215,12 @@
    "fr": "Plus anciens ›",
    "where": [
     "ui/screens/AdminScene.cpp"
+   ]
+  },
+  {
+   "fr": "Plus d'avis",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -51716,12 +51907,6 @@
    "fr": "Programmateur",
    "where": [
     "data/achievements/achievements.json"
-   ]
-  },
-  {
-   "fr": "Programmer",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -53558,6 +53743,7 @@
   {
    "fr": "Raid introuvable.",
    "where": [
+    "server/src/raidReviews.ts",
     "server/src/raids.ts"
    ]
   },
@@ -53572,12 +53758,6 @@
    "where": [
     "game/online/Raids.cpp",
     "server/src/notifications.ts"
-   ]
-  },
-  {
-   "fr": "Raid programmé : les membres du clan sont prévenus.",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -53780,12 +53960,6 @@
    "fr": "Raids de clan, phase 7 : fiabilité. Si votre liaison avec le relais de l'instance tombe, le jeu se reconnecte tout seul pendant les 60 secondes où votre place vous attend : le monde reste affiché sous la carte « LIAISON PERDUE », puis vous rejoignez votre groupe après un rattrapage, sans repasser par la carte de la branche.",
    "where": [
     "data/news/changelog.json"
-   ]
-  },
-  {
-   "fr": "RAIDS DU CLAN",
-   "where": [
-    "ui/screens/ClanRaids.cpp"
    ]
   },
   {
@@ -55206,17 +55380,17 @@
    ]
   },
   {
-   "fr": "Rejoignez un clan pour participer aux raids et en organiser.",
-   "where": [
-    "game/online/Raids.cpp"
-   ]
-  },
-  {
    "fr": "Rejoignez un clan pour participer aux raids.",
    "where": [
     "game/online/Raids.cpp",
     "server/src/raids.ts",
     "ui/screens/RaidEventScene.cpp"
+   ]
+  },
+  {
+   "fr": "Rejoignez un clan pour participer aux événements de raid.",
+   "where": [
+    "game/online/Raids.cpp"
    ]
   },
   {
@@ -58335,6 +58509,12 @@
    ]
   },
   {
+   "fr": "Rétablir le commentaire",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Rétablir · Ctrl+Y",
    "where": [
     "ui/studio/StudioCanvas.cpp"
@@ -60719,6 +60899,13 @@
    ]
   },
   {
+   "fr": "Seuls les joueurs qui ont joué cet événement peuvent le noter.",
+   "where": [
+    "game/online/RaidReviews.cpp",
+    "server/src/raidReviews.ts"
+   ]
+  },
+  {
    "fr": "Seuls ses amis peuvent regarder un joueur, et seulement s'il l'autorise dans ses paramètres en ligne.",
    "where": [
     "ui/screens/SpectateScene.cpp"
@@ -60760,6 +60947,7 @@
    "fr": "Signaler",
    "where": [
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/SocialScene.cpp"
    ]
@@ -60767,7 +60955,8 @@
   {
    "fr": "Signaler ce commentaire aux modérateurs ? Après plusieurs signalements, il est masqué en attendant leur décision.",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -60785,7 +60974,8 @@
   {
    "fr": "Signalé",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -61894,13 +62084,15 @@
   {
    "fr": "spam",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
    "fr": "Spam ou publicité",
    "where": [
-    "ui/online/CommentsPanel.cpp"
+    "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -62102,8 +62294,7 @@
    "fr": "Standard",
    "where": [
     "data/cosmetics/cosmetics.json",
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -62885,6 +63076,7 @@
     "editors/level_editor/LevelEditorDialogs.cpp",
     "editors/level_editor/LevelEditorPanels.cpp",
     "ui/online/CommentsPanel.cpp",
+    "ui/online/RaidReviewsPanel.cpp",
     "ui/screens/ContentManagerScene.cpp",
     "ui/screens/DownloadedReplaysUi.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -62936,6 +63128,12 @@
    ]
   },
   {
+   "fr": "Supprimer mon avis",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Supprimer mon compte",
    "where": [
     "ui/screens/OnlineSettingsScene.cpp"
@@ -62945,6 +63143,12 @@
    "fr": "Supprimer un calque",
    "where": [
     "editors/level_editor/LevelEditorLayout.cpp"
+   ]
+  },
+  {
+   "fr": "Supprimer votre avis sur cet événement ? Votre note et votre commentaire disparaissent ; vous pourrez en donner un nouveau.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -65902,6 +66106,7 @@
    "fr": "total",
    "where": [
     "game/online/OnlineService.cpp",
+    "game/online/RaidReviews.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/ClanScene.cpp",
@@ -66151,6 +66356,12 @@
    "fr": "Tous les auteurs",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tous les avis de l'événement, masqués compris. Un commentaire masqué garde sa note.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -67106,6 +67317,12 @@
    "fr": "Trouver une relique.",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Très bien",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -68968,6 +69185,12 @@
    ]
   },
   {
+   "fr": "Une note de 1 à 5 étoiles et, si vous le voulez, un commentaire. Un seul avis par événement : vous pourrez le modifier ou le supprimer.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Une nouvelle copie de la progression n'a pas pu partir ({0}) : c'est celle du {1} qui sera transférée.",
    "where": [
     "ui/screens/OnlineMigration.cpp"
@@ -70441,8 +70664,7 @@
   {
    "fr": "Verrouillage des inscriptions",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -71809,6 +72031,24 @@
    ]
   },
   {
+   "fr": "Votre avis",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Votre avis est modifié.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Votre avis est supprimé.",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
    "fr": "Votre choix, retenu pour ce segment.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
@@ -71840,12 +72080,6 @@
   },
   {
    "fr": "Votre clan a déjà {0} inscrits : c'est complet.",
-   "where": [
-    "server/src/raids.ts"
-   ]
-  },
-  {
-   "fr": "Votre clan a déjà {0} raids à venir : annulez-en un ou attendez la fin d'un raid.",
    "where": [
     "server/src/raids.ts"
    ]
@@ -71922,6 +72156,24 @@
    "fr": "Votre clan {0} : {1} sur {2} · {3}",
    "where": [
     "ui/screens/ClanScene.cpp"
+   ]
+  },
+  {
+   "fr": "Votre commentaire (facultatif)",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "Votre commentaire a été masqué par la modération (vous seul le voyez). Votre note compte toujours.",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
+   "fr": "Votre commentaire est masqué après des signalements, en attendant la décision des modérateurs (vous seul le voyez). Votre note compte toujours.",
+   "where": [
+    "game/online/RaidReviews.cpp"
    ]
   },
   {
@@ -72097,6 +72349,12 @@
    "fr": "Votre note est retirée.",
    "where": [
     "ui/online/RatingWidgets.cpp"
+   ]
+  },
+  {
+   "fr": "Votre note · ← → ou stick pour choisir, Entrée ou A",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -72368,6 +72626,12 @@
    ]
   },
   {
+   "fr": "Vous n'avez pas d'avis sur cet événement.",
+   "where": [
+    "server/src/raidReviews.ts"
+   ]
+  },
+  {
    "fr": "Vous n'avez pas de clan.",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -72558,6 +72822,12 @@
    "fr": "Vous ne pouvez pas répondre à ce commentaire.",
    "where": [
     "server/src/workshop.ts"
+   ]
+  },
+  {
+   "fr": "Vous ne pouvez pas signaler votre propre avis.",
+   "where": [
+    "server/src/raidReviews.ts"
    ]
   },
   {
@@ -74709,6 +74979,12 @@
    ]
   },
   {
+   "fr": "{0} avis",
+   "where": [
+    "game/online/RaidReviews.cpp"
+   ]
+  },
+  {
    "fr": "{0} badges au plus",
    "where": [
     "server/src/badges.ts"
@@ -75971,8 +76247,7 @@
   {
    "fr": "{0} min avant le début",
    "where": [
-    "ui/screens/AdminRaids.cpp",
-    "ui/screens/ClanRaids.cpp"
+    "ui/screens/AdminRaids.cpp"
    ]
   },
   {
@@ -76708,6 +76983,18 @@
    "fr": "{0} semaines de suite",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
+   ]
+  },
+  {
+   "fr": "{0} signalement",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
+   ]
+  },
+  {
+   "fr": "{0} signalements",
+   "where": [
+    "ui/online/RaidReviewsPanel.cpp"
    ]
   },
   {
@@ -80211,6 +80498,12 @@
    "fr": "événements",
    "where": [
     "ui/screens/ProjectsScene.cpp"
+   ]
+  },
+  {
+   "fr": "ÉVÉNEMENTS DU CLAN",
+   "where": [
+    "ui/screens/ClanRaids.cpp"
    ]
   },
   {

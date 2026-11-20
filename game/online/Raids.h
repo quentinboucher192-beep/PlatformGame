@@ -23,9 +23,7 @@ namespace raids {
 constexpr int kGroupSize = 8;
 constexpr int kMaxInstructions = 600;
 constexpr int kMaxRewardsText = 300;
-/// A clan raid: 2 to 50 places, 15 minutes to 90 days ahead (server: the same limits).
-constexpr int kMinPlaces = 2;
-constexpr int kMaxPlaces = 50;
+/// A world event starts at least 15 minutes ahead (server: MIN_AHEAD_MS).
 constexpr int kMinAheadMinutes = 15;
 
 // ------------------------------------------------------------------ time
@@ -178,9 +176,9 @@ Countdown countdownOf(const Event& e, int64_t now, bool clock);
 struct TabLayout {
     bool hero = false;         // the next world event (else the empty hero, with its explanation)
     std::string heroId;
-    bool clanBoxes = false;    // the clan's raids, invitations and history (a clan is known)
-    bool canOrganize = false;  // « Organiser un raid du clan… » (chief, officers)
-    bool canAnswer = false;    // the invitations get « Accepter » / « Refuser »
+    bool clanBoxes = false;    // the clan's events, invitations and history (a clan is known)
+    // 2.77.4: no « Organiser un raid du clan… » any more (the raids are the team's events).
+    bool canAnswer = false;    // the invitations (to a clan raid scheduled before) get « Accepter » / « Refuser »
     std::string clanNote;      // why the clan's boxes are empty or read only
 };
 TabLayout tabLayout(const Json& overview, bool loggedIn);

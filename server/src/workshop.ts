@@ -19,8 +19,9 @@ type Reaction = (typeof REACTIONS)[number];
 const COLUMN: Record<Reaction, string> = { like: "r_like", love: "r_love", funny: "r_funny", impressive: "r_impressive", not_useful: "r_not_useful" };
 const MAX_COMMENT = 1000;
 const MAX_PINNED = 3;
-const REPORTS_TO_HIDE = 3;
-const COMMENT_REPORT_REASONS = ["spam", "harassment", "inappropriate", "spoiler", "other"];
+// 2.77.4: shared with the reviews of the raids (raidReviews.ts): the same reports, the same threshold.
+export const REPORTS_TO_HIDE = 3;
+export const COMMENT_REPORT_REASONS = ["spam", "harassment", "inappropriate", "spoiler", "other"];
 
 interface LevelRow {
     id: string;
@@ -414,10 +415,19 @@ async function loadIn(ctx: Ctx, store: Store, id: string): Promise<CommentRow> {
 
 /** Text of a comment: trimmed, at most two blank lines in a row, few links (spam). */
 function cleanBody(v: Validator, field = "body"): string {
-    const raw = v.str(field, { min: 1, max: MAX_COMMENT, trim: true, multiline: true }) ?? "";
+    return cleanCommentText(v, field, { max: MAX_COMMENT, optional: false });
+}
+
+/**
+ * The filters of every comment's text (2.77.4: also the reviews of the raids, raidReviews.ts):
+ * no control characters, `max` characters, at most two blank lines in a row, two links at most.
+ * `optional`: an empty text is allowed ("").
+ */
+export function cleanCommentText(v: Validator, field: string, opt: { max: number; optional: boolean }): string {
+    const raw = v.str(field, { min: opt.optional ? 0 : 1, max: opt.max, trim: true, multiline: true, optional: opt.optional }) ?? "";
     const body = raw.replace(/\r\n?/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
     if ((body.match(/https?:\/\//gi) ?? []).length > 2) v.fail(field, "trop de liens");
-    if (!body) v.fail(field, "obligatoire");
+    if (!body && !opt.optional) v.fail(field, "obligatoire");
     return body;
 }
 
