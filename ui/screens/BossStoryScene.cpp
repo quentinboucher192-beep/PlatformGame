@@ -874,7 +874,9 @@ private:
         const float tau = (t_ - s.start) * s.stageScale;
         if (cur != sfxShot_) {
             sfxShot_ = cur;
-            sfxTau_ = -1e-3f;
+            // 2.81: joined in the middle of a shot (a late joiner of a film watched together): only what comes next is
+            // heard, never every sound of the shot at once.
+            sfxTau_ = t_ - s.start > 0.25f ? tau - 1e-3f : -1e-3f;
         }
         ResourceManager& res = g_.app.resources();
         const float end = s.dur * s.stageScale;

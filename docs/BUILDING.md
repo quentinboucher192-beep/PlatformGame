@@ -133,7 +133,8 @@ CosmicPlatformer --headless --coop-test confins_02:3 --spawns "1320,618;1380,618
   suivants (même format que `--input`) ; un siège sans script reste libre dans un raid. `--spawns
   "x,y;x,y;;x,y"` place chaque joueur (pieds, pixels du monde ; une place vide garde celle du niveau).
 * `--asterion-film [<secondes>]` et `--story <boss>@<secondes>` lancent le film d'Asterion et les
-  histoires des giga-boss à partir de cet instant.
+  histoires des giga-boss à partir de cet instant ; `--asterion-apres [<secondes>]` (2.81) « Après Asterion », son
+  plan des clans avec son texte générique.
 * `--raid-screen <event|titan|branch|results|world>:<id de l'événement>[:<branche>]` ouvre la fiche,
   la carte du titan, la carte d'une branche, les résultats ou le classement mondial d'un événement de
   raid, comme depuis CLANS › RAIDS (avec le compte connecté et ses vraies données).
