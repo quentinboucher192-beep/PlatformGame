@@ -76,18 +76,28 @@ const raid::Branch& branchOf(const char* part) {
 
 /// Player 0 walks into the passage of the zone loaded towards `to` (one step): the instance follows.
 bool walkTo(raid::RaidRun& run, std::vector<InputFrame>& frame, int to, uint32_t mask) {
+    // 2.78: each player changes zone alone: every player in play here walks into the passage, one after the other.
+    const int from = run.zone();
+    const raid::ZoneRules* rules = run.rulesOf(from);
+    if (!rules) return false;
     const raid::Passage* p = nullptr;
-    for (const auto& q : run.rules().passages)
+    for (const auto& q : rules->passages)
         if (q.to == to) p = &q;
     if (!p) return false;
-    // Out of every passage first (a passage takes those who walk into it, not those standing in it).
-    const auto start = run.rules().spawns.find("start");
-    if (start != run.rules().spawns.end() && !start->second.empty()) {
-        run.world().playerAt(0).teleportTo(start->second.front());
+    for (int seat = 0; seat < raid::kMaxInstancePlayers; ++seat) {
+        if (run.zoneOf(seat) != from || !((run.seatsIn(from) >> seat) & 1u)) continue;
+        GameWorld* w = run.worldOf(from);
+        if (!w) return false;
+        // Out of every passage first (a passage takes those who walk into it, not those standing in it).
+        const auto start = rules->spawns.find("start");
+        if (start != rules->spawns.end() && !start->second.empty()) {
+            w->playerAt(seat).teleportTo(start->second.front());
+            run.step(frame.data(), static_cast<int>(frame.size()), mask);
+        }
+        w->playerAt(seat).teleportTo({p->rect.center().x, p->rect.bottom()});
         run.step(frame.data(), static_cast<int>(frame.size()), mask);
+        if (run.zoneOf(seat) != to) return false;
     }
-    run.world().playerAt(0).teleportTo({p->rect.center().x, p->rect.bottom()});
-    run.step(frame.data(), static_cast<int>(frame.size()), mask);
     return run.zone() == to;
 }
 
@@ -232,7 +242,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0xf530b1128707fbd6ULL;  // reference (2.75: the floods wall to wall, over the actors): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0x25cd1f68505ab560ULL;  // reference (2.78: every ambush before the lair an objective, through the lair's armory, the route): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

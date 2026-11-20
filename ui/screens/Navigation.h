@@ -320,6 +320,9 @@ struct RaidTestSetup {
     std::vector<std::optional<Vec2>> spawns;
     /// 2.77: « Niveau des joueurs simulés » (0 Débutant, 1 Confirmé, 2 Expert: reaction and precision).
     int skill = 1;
+    /// 2.78, captures (`--raid-contrib`): the « Tableau des contributions » opens over the raid's menu at the
+    /// first zone finished (the real numbers of the test, nothing sent).
+    bool openContrib = false;
     /// 2.80: the players invited (none: the test stays local and offline).
     std::vector<RaidTestGuest> guests;
 };

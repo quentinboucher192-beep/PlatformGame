@@ -6851,28 +6851,7 @@
    }
   }
  ],
- "events": [
-  {
-   "id": "ev1",
-   "source": "o400",
-   "trigger": "cleared",
-   "once": true,
-   "actions": [
-    {
-     "type": "open",
-     "target": "o404"
-    },
-    {
-     "type": "hint",
-     "params": {
-      "text": "Le verrou cède : la Main de Pyroclast est ouverte.",
-      "duration": 3.5
-     }
-    }
-   ],
-   "delay": 0.5
-  }
- ],
+ "events": [],
  "intro": {},
  "outro": {},
  "metadata": {
@@ -6940,6 +6919,12 @@
       11776,
       576
      ]
+    ],
+    "9": [
+     [
+      11776,
+      576
+     ]
     ]
    },
    "passages": [
@@ -6964,11 +6949,27 @@
       64,
       64
      ],
-     "lock": "objective:poignet_verrou",
-     "door": "o404"
+     "lock": "ambushes:7",
+     "door": "o404",
+     "via": 9
     }
    ],
    "objectives": [
+    {
+     "id": "poignet_embuscade_1",
+     "source": "o137",
+     "trigger": "cleared"
+    },
+    {
+     "id": "poignet_embuscade_2",
+     "source": "o234",
+     "trigger": "cleared"
+    },
+    {
+     "id": "poignet_embuscade_3",
+     "source": "o306",
+     "trigger": "cleared"
+    },
     {
      "id": "poignet_verrou",
      "source": "o400",
@@ -7051,6 +7052,60 @@
      "message": "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
      "group": "jumelles"
     }
+   ],
+   "route": [
+    [
+     144,
+     576
+    ],
+    [
+     1984,
+     576
+    ],
+    [
+     3680,
+     576
+    ],
+    [
+     4800,
+     576
+    ],
+    [
+     4864,
+     224
+    ],
+    [
+     5120,
+     224
+    ],
+    [
+     6240,
+     256
+    ],
+    [
+     6240,
+     576
+    ],
+    [
+     7552,
+     576
+    ],
+    [
+     8640,
+     576
+    ],
+    [
+     10112,
+     576
+    ],
+    [
+     11712,
+     576
+    ],
+    [
+     11952,
+     576
+    ]
    ]
   }
  },

@@ -340,7 +340,7 @@ carte du titan, contributions, groupes éliminés et renforts ; l'administrateur
 et **rien n'est envoyé**. Détails : [docs/RAIDS.md §22](docs/RAIDS.md). Dans les deux tests, l'administrateur peut aussi
 **inviter de vrais joueurs** connectés (liste avec recherche, administrateurs ou non) : chacun prend la place d'un joueur
 simulé de son groupe, avec sa case **« Invincible »** que seul l'administrateur change ; le test passe alors par le
-serveur, sans jamais rien compter ([docs/RAIDS.md §26](docs/RAIDS.md#26-tester-avec-des-joueurs-invités-280)).
+serveur, sans jamais rien compter ([docs/RAIDS.md §27](docs/RAIDS.md#27-tester-avec-des-joueurs-invités-280)).
 
 Dans le **vestiaire**, les tablettes de pouvoir sont en hauteur sur leurs rebords (deux étages), avec le nom, l'icône et
 le coût d'énergie de chaque pouvoir au-dessus : on n'en prend une qu'en sautant dessus.
@@ -620,7 +620,7 @@ L'exécutable est dans `build/bin/`. Installateur Windows : `installer\build_ins
 * [docs/I18N.md](docs/I18N.md) – langues (français / anglais) : choix, fonctionnement, ajouter une traduction
 * [docs/GHOST_RACING.md](docs/GHOST_RACING.md) – fantômes, écarts, entraînement, succès, mode concentré (et leurs limites)
 * [docs/COOP.md](docs/COOP.md) – coopération à 2 ou 3 joueurs : même PC, réseau local, en ligne
-* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8, consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche
+* [docs/RAIDS.md](docs/RAIDS.md) – raids de clan contre Asterion : branches, instances de 8 (chacun sa zone), consensus, gigaboss, récompenses, événements mondiaux, fiabilité, charge et anti-triche, tableau des contributions
 * [docs/online/](docs/online/README.md) – Cosmic Online : installation, déploiement, secrets, API, règles, confidentialité, dépannage
 
 Chaque page renvoie à celle d'où l'on vient (« ← Retour », en tête et en fin) ; `python3 tools/docs/check_links.py`
@@ -641,7 +641,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   l'administrateur invite des joueurs connectés (liste avec recherche, administrateurs ou non) ; chacun prend la place d'un
   joueur simulé de son groupe (jamais un de plus), avec sa case **« Invincible »** (décochée par défaut) que seul
   l'administrateur change, avant comme pendant le test
-  ([docs/RAIDS.md §26](docs/RAIDS.md#26-tester-avec-des-joueurs-invités-280)).
+  ([docs/RAIDS.md §27](docs/RAIDS.md#27-tester-avec-des-joueurs-invités-280)).
 * **L'invitation** : une notification et un message ; en haut de NOTIFICATIONS, l'invité l'accepte ou la refuse dans les
   3 minutes (qui invite, quel test, son groupe, s'il sera invincible). L'administrateur voit chaque réponse, annule une
   invitation ou retire un joueur. Une autre version du jeu ne peut pas rejoindre.
@@ -649,6 +649,23 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   invité absent ou parti laisse sa place à son joueur simulé ; « Invincible » change au même instant partout. Sans invité,
   le test reste local et hors ligne. Rien ne compte jamais : ni record, ni contribution, ni récompense, ni classement, ni
   progression du raid (le serveur refuse tout rapport d'un test).
+
+**Nouveau dans la version 2.78.0** :
+* **Raids : chacun sa zone** : un passage n'emmène que le joueur qui y entre ; le groupe peut se répartir sur plusieurs
+  zones de la branche, toutes jouées en même temps (un monde par zone occupée, en verrouillage sur tous les jeux du groupe).
+  Les **passages de groupe** restent : la plaque « Prêts » d'un vestiaire demande tous les joueurs présents et seuls ceux
+  qui sont dessus partent ensemble. La grande carte, « Ce qu'il reste à faire », le menu du raid et le panneau du groupe
+  disent qui est dans quelle zone ; en spectateur, on regarde aussi les autres zones ([docs/RAIDS.md §26](docs/RAIDS.md#26-chacun-sa-zone-toutes-les-embuscades-avant-lantre-le-vestiaire-de-lantre-et-le-tableau-des-contributions-278)).
+* **Une zone qui se vide continue** : ses âmes attendent qu'un allié de la même zone vienne les relever ; le groupe n'est
+  éliminé que si tous ses joueurs sont à terre, toutes zones confondues (chaque zone touchée est alors à reprendre).
+* **Toutes les embuscades avant l'antre** : le passage vers l'antre de chaque Gigaboss (et vers le Cœur) reste fermé tant
+  qu'une vague d'embuscade de la zone d'avant reste (« Embuscades restantes : 2 sur 4 »).
+* **Vestiaire de l'antre** : entre l'expédition et l'arène, on ajuste ses pouvoirs pour le boss ; un indicateur du HUD
+  (« Passage vers l'antre : 124 m », sa flèche, son état) mesure la distance le long du parcours.
+* **Tableau des contributions refait** : onglets « Zone » / « Raid entier », barres des dégâts au boss et aux mini-boss,
+  icônes et couleurs par catégorie, couronne du meilleur, tri par colonne, infobulles, et trois chiffres de plus par joueur :
+  **morts**, **réanimations faites** et **reçues** (comptés par la simulation, validés par consensus ; « — » dans les
+  tableaux d'avant).
 
 **Nouveau dans la version 2.77.4** :
 * **Les raids sont des événements** : le bouton « Organiser un raid du clan… » et sa fenêtre quittent CLANS › RAIDS.

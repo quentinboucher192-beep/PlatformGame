@@ -527,7 +527,7 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
         db
             .prepare(
                 `SELECT z.instance_id, z.branch, z.zone, z.seat, z.from_tick, z.boss_damage, z.damage, z.support, z.mechanisms, z.objectives, z.tick,
-                        z.accepted_at, p.username, i.group_no, c.tag, (z.player_id = ?2) AS mine
+                        z.accepted_at, z.mini_damage, z.deaths, z.revives, z.revived, z.player_id, p.username, i.group_no, c.tag, (z.player_id = ?2) AS mine
                  FROM raid_zone_contributions z JOIN raid_instances i ON i.id = z.instance_id JOIN clans c ON c.id = i.clan_id
                  LEFT JOIN players p ON p.id = z.player_id
                  WHERE z.event_id = ?1 AND i.clan_id = (SELECT r.clan_id FROM raid_registrations r WHERE r.event_id = ?1 AND r.player_id = ?2)
@@ -579,6 +579,7 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
     type ZoneRowDb = {
         instance_id: string; branch: string; zone: number; seat: number; from_tick: number; boss_damage: number; damage: number; support: number;
         mechanisms: number; objectives: number; tick: number; accepted_at: string; username: string | null; group_no: number; tag: string; mine: number;
+        mini_damage: number | null; deaths: number | null; revives: number | null; revived: number | null; player_id: string | null;  // 2.78
     };
     const tables = new Map<string, { branch: string; zone: number; group: string; tick: number; accepted_at: string; rows: ZoneRowDb[] }>();
     for (const r of (zonesR?.results ?? []) as ZoneRowDb[]) {
@@ -607,11 +608,50 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
                 support: r.support,
                 mechanisms: r.mechanisms,
                 objectives: r.objectives,
+                // 2.78: null on a table of before (the game shows « — »).
+                mini_damage: r.mini_damage == null ? null : Math.round(r.mini_damage / 10),
+                deaths: r.deaths,
+                revives: r.revives,
+                revived: r.revived,
             })),
         };
     });
+    // 2.78: « Raid entier »: each player's zones added up (the tables of my clan's groups), the new numbers only
+    // over the tables that have them (null when none has).
+    const totals = new Map<string, {
+        username: string | null; me: boolean; zones: number; boss_damage: number; damage: number; support: number; mechanisms: number; objectives: number;
+        mini_damage: number | null; deaths: number | null; revives: number | null; revived: number | null;
+    }>();
+    for (const r of (zonesR?.results ?? []) as ZoneRowDb[]) {
+        const key = r.player_id ?? `${r.instance_id}:${r.seat}:${r.from_tick}`;
+        const t = totals.get(key) ?? { username: r.username, me: r.mine === 1, zones: 0, boss_damage: 0, damage: 0, support: 0, mechanisms: 0, objectives: 0,
+            mini_damage: null, deaths: null, revives: null, revived: null };
+        t.zones += 1;
+        t.boss_damage += r.boss_damage;
+        t.damage += r.damage;
+        t.support += r.support;
+        t.mechanisms += r.mechanisms;
+        t.objectives += r.objectives;
+        if (r.deaths != null) {
+            t.mini_damage = (t.mini_damage ?? 0) + (r.mini_damage ?? 0);
+            t.deaths = (t.deaths ?? 0) + r.deaths;
+            t.revives = (t.revives ?? 0) + (r.revives ?? 0);
+            t.revived = (t.revived ?? 0) + (r.revived ?? 0);
+        }
+        totals.set(key, t);
+    }
+    const raidTotals = [...totals.values()]
+        .sort((a, b) => b.boss_damage - a.boss_damage || b.damage - a.damage || ((a.username ?? "") < (b.username ?? "") ? -1 : 1))
+        .slice(0, 64)
+        .map((t) => ({
+            ...t,
+            boss_damage: Math.round(t.boss_damage / 10),
+            damage: Math.round(t.damage / 10),
+            mini_damage: t.mini_damage == null ? null : Math.round(t.mini_damage / 10),
+        }));
     return json(ctx, {
         zone_tables: zoneTables,
+        raid_totals: raidTotals,
         server_time: now,
         event: { id: eventRow.id, state, final: state === "termine" },
         gigaboss: {

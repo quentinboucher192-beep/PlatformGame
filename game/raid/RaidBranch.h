@@ -34,6 +34,9 @@ constexpr int kMaxInstancePlayers = 8;
 constexpr const char* kBranchLevel = "raid:asterion_bras_droit";
 /// The first bit of a branch's state that is a link of the titan (objectives below).
 constexpr int kLinkBit0 = 24;
+/// 2.78: the armory before the lair (« Vestiaire de l'antre », armory_lair.json): a zone of the game only,
+/// between the zone before the gigaboss's lair and the lair (never in the server's catalog, never reported).
+constexpr int kLairArmory = 9;
 
 struct ZoneInfo {
     int id = 0;
@@ -45,7 +48,7 @@ struct ZoneInfo {
 
 struct EdgeInfo {
     int a = 0, b = 0;
-    std::string lock;  // "", "generators", "shortcut", "objective:<id>"
+    std::string lock;  // "", "generators", "shortcut", "objective:<id>", 2.78: "ambushes:<zone>"
     bool secret = false;
 };
 
@@ -54,7 +57,7 @@ struct ObjectiveInfo {
     int index = 0, zone = 0;
     std::string label;
     bool optional = false;
-    std::string role;  // "", "generator", "shortcut"
+    std::string role;  // "", "generator", "shortcut", "gigaboss", 2.78: "ambush" (an ambush of the zone before a lair)
     std::string pair;  // objectives of one pair are done by distinct groups
 };
 
@@ -64,6 +67,15 @@ struct Passage {
     int to = 0;
     Rect rect;
     std::string lock, door;
+    /// 2.78: a passage of the group (the armory's « Prêts »): the co-op plate (its id in `coops`) that
+    /// opens it; at the step the plate is held by the players it needs, those standing on the plate take
+    /// the passage together (nobody else). "" = a passage each player takes alone by walking into it.
+    std::string plate;
+    /// 2.78: the zone of the game the passage really leads to when it is not `to` (the lair's armory on
+    /// the way to the lair: `to` stays the zone of the catalog, the edge the server knows), -1 none.
+    int via = -1;
+    /// The zone a player who takes it arrives in.
+    int arrival() const { return via >= 0 ? via : to; }
 };
 struct ZoneObjective {
     std::string id, source, trigger;
@@ -178,6 +190,9 @@ struct ZoneRules {
     std::vector<std::string> checkpoints;     // 2.68: the group starts again at the last one reached
     ArenaInfo arena;                          // 2.68: a gigaboss's arena (metadata.raid.arena)
     GigabossRules gigaboss;                   // 2.68 (phase 3): its gigaboss, when it is fought there
+    /// 2.78: the way through the zone before a lair (metadata.raid.route, pixels): the distance left to the
+    /// lair's passage is measured along it (the raids' HUD, « Passage vers l'antre : 124 m »).
+    std::vector<Vec2> route;
 };
 
 class Branch {
@@ -217,6 +232,14 @@ public:
     ZoneRules armoryRules;
     ZoneInfo armoryInfo;
     bool hasArmory() const { return armoryLevel.has_value(); }
+    /// 2.78: the armory before the lair (zone kLairArmory, armory_lair.json): the same tablets and « Prêts »
+    /// plate as the first one, between the expedition and the gigaboss's arena (or the Cœur's).
+    std::optional<LevelData> lairArmoryLevel;
+    ZoneRules lairArmoryRules;
+    ZoneInfo lairArmoryInfo;
+    bool hasLairArmory() const { return lairArmoryLevel.has_value(); }
+    /// 2.78: a zone where the players choose their powers (the first armory, 0, or the lair's).
+    static bool isArmory(int zone) { return zone == 0 || zone == kLairArmory; }
 
     const ZoneInfo* zone(int id) const;
     const ObjectiveInfo* objective(const std::string& id) const;
@@ -235,6 +258,14 @@ public:
     int generators(uint32_t mask) const;
     bool shortcut(uint32_t mask) const;
     bool lockOpen(const std::string& lock, uint32_t mask) const;
+    /// 2.78: the ambushes of `zone` (its objectives of role « ambush »): how many there are, how many
+    /// are still to beat in `mask` (the lock « ambushes:<zone> » opens at 0).
+    struct AmbushCount {
+        int left = 0, total = 0;
+    };
+    AmbushCount ambushes(int zone, uint32_t mask) const;
+    /// 2.78: « Embuscades restantes : 2 sur 4 » (what the closed passage and « Ce qu'il reste à faire » say).
+    static std::string ambushesLeftText(const AmbushCount& c);
     /// Every objective of the zone that is not optional is done (a zone without one: never).
     bool controlled(int zone, uint32_t mask) const;
     /// Zones reachable from the start (by edges whose lock is open), by id (index 0 unused).

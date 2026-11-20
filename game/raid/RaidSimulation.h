@@ -139,6 +139,7 @@ private:
     Group& form(int branch, int zone, const std::string& name, uint32_t extraMask);
     void aggregate();
     void moveGroup(Group& g, int branch, int zone);
+    static bool zoneHasWork(const RaidRun& run);  // 2.78: in the zone focused
     bool hasWork(const Group& g) const;
     int realPart(Group& g, int own) const;
     void event(std::string text, WorldEvent::Kind kind);

@@ -365,6 +365,11 @@ public:
     /// regrouping), and a team all down fails the zone (the raid run brings it back).
     void setRaidMode(bool on) { raidMode_ = on; }
     bool raidMode() const { return raidMode_; }
+    /// 2.78 (raids): the players of the instance may be in several zones (one world each): the run
+    /// judges the group's fall across them (raid::RaidRun), so this world never fails on its own when
+    /// nobody is left in play in it (its players down wait there for an ally from another zone).
+    void setRaidGroupRule(bool on) { raidGroupRule_ = on; }
+    bool raidGroupRule() const { return raidGroupRule_; }
     /// Display only: the player the camera follows in a raid (this computer's player).
     void setCameraFollow(int index) { cameraFollow_ = index; }
     /// What a player carries from a zone to the next (vitals, powers, presence).
@@ -575,6 +580,7 @@ private:
     int coopVersion_ = kCoopSimulationVersion;  // 2.75
     std::vector<PlayerInput> teamInputs_;
     bool raidMode_ = false;
+    bool raidGroupRule_ = false;  // 2.78
     int cameraFollow_ = -1;
     void loadTeam();
     void vacateMember(int i);

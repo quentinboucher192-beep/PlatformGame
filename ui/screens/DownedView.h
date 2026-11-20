@@ -103,6 +103,7 @@ struct DownInfo {
     bool viewKeys = true;      // raids: watch the others, back to the soul (cooperation: the team's camera)
     bool others = true;        // another player in play to watch
     std::string who;           // several players on this computer: whose banner ("" : this player's)
+    int elsewhere = 0;         // 2.78 (raids): allies in play in other zones of the branch (one who comes back can revive)
 };
 Banner downBanner(const DownInfo& d);
 

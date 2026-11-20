@@ -94,6 +94,8 @@ public:
     int nextNode(int seat) const;
     /// The exit the group takes when its zone has nothing left for it (-1 none), and the zone it leads to.
     static int chooseExit(const RaidRun& run, int* toZone = nullptr);
+    /// 2.78: the way out of an armory (the first one, or the lair's): its « Prêts » passage first.
+    static int armoryExit(const RaidRun& run, int* toZone = nullptr);
     /// The power a seat wishes in the armory (one of the armory's tablets), "" none.
     static std::string wish(int seat);
 

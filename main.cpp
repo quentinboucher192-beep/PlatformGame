@@ -41,6 +41,7 @@
 //   --raid-sim <groups>:<bots>[:<speed>[:<panel>]]
 //                           2.77, headless only: « Simuler un raid complet » (local, nothing sent)
 //   --raid-sim-menu         2.77, headless only: its settings (ADMINISTRATION › Raids › Tester Asterion)
+//   --raid-contrib          2.78, with --raid-test: the contributions table opens at the first zone finished
 //   --stats [<section>]     open the player's statistics (0 overview ... 5 data and saves)
 //   --stats-day <YYYY-MM-DD>
 //                           count the runs of this session on that day (automated checks of the
@@ -898,6 +899,7 @@ int main(int argc, char** argv) {
         t.startPhase = f.size() > 3 ? std::clamp(std::atoi(f[3].c_str()), 1, 3) : 1;
         t.invincible = f.size() <= 4 || f[4] != "0";
         t.capture = true;
+        t.openContrib = has("--raid-contrib");  // 2.78: the contributions table at the first zone finished
         t.scripts = captureScripts(8);
         t.spawns = captureSpawns();
         app.pushScene(makeMainMenu(game));

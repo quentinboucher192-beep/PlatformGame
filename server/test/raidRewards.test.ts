@@ -63,9 +63,11 @@ async function runningEvent(c: Clan, endsIn = 50): Promise<string> {
 
 /** The wrist broken (the long level before the hand): the gigaboss's zone is reachable. */
 async function unlockHand(event: string) {
-    await env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, 'asterion_bras_droit', 'poignet_verrou', NULL, ?2)")
-        .bind(event, new Date().toISOString())
-        .run();
+    // 2.78: every ambush of the wrist beaten (the lair's passage waits for all of them).
+    for (const id of ["poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"])
+        await env.DB.prepare("INSERT OR IGNORE INTO raid_branch_objectives (event_id, branch, objective_id, instance_id, accepted_at) VALUES (?1, 'asterion_bras_droit', ?3, NULL, ?2)")
+            .bind(event, new Date().toISOString(), id)
+            .run();
 }
 
 async function instanceOf(event: string, players: TestPlayer[]): Promise<string> {

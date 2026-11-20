@@ -142,7 +142,34 @@ export function lockOpenIn(c: Catalog, lock: string, mask: number): boolean {
         const l = linksTo(c).find((x) => x.id === lock.slice(5));
         return !!l && l.kind === "open" && isDone(mask, l.bit);
     }
+    if (lock.startsWith("ambushes:")) {
+        // 2.78: the lair's passage: every ambush of the zone before it (its objectives of role « ambush ») beaten.
+        const a = ambushesIn(c, Number(lock.slice(9)), mask);
+        return a.total > 0 && a.left === 0;
+    }
     return false;
+}
+
+/** 2.78: the ambushes of a zone (objectives of role « ambush »): how many, how many still to beat. */
+export function ambushesIn(c: Catalog, zone: number, mask: number): { left: number; total: number } {
+    const all = c.objectives.filter((o) => o.zone === zone && o.role === "ambush");
+    return { total: all.length, left: all.filter((o) => !isDone(mask, o.index)).length };
+}
+
+/**
+ * 2.78: the zone of each seat of an instance (`seat_zones`, « z0,…,z7 », accepted from the games' reports
+ * « zones »; 0 for a free seat or an armory). Without it (an instance of before 2.78, or no report yet):
+ * every player in the instance's zone.
+ */
+export function seatZonesOf(i: { zone: number; seat_zones?: string | null }): number[] {
+    if (!i.seat_zones) return [];
+    return i.seat_zones.split(",").map((x) => Number(x) || 0);
+}
+
+/** 2.78: the zones where an instance has players (its zone alone before the first report « zones »). */
+export function zonesOf(i: { zone: number; seat_zones?: string | null }): number[] {
+    const seats = seatZonesOf(i).filter((z) => z > 0);
+    return seats.length ? [...new Set(seats)].sort((a, b) => a - b) : [i.zone];
 }
 
 /** The zones reachable from the start with the passages open (index = zone id). */
@@ -733,6 +760,7 @@ interface InstRow {
     wiped_at: string | null;
     start_zone: number | null;
     relieves: string | null;
+    seat_zones: string | null;  // 2.78: the zone of each seat
 }
 
 async function snapshot(db: D1Database, eventId: string) {
@@ -746,7 +774,7 @@ async function snapshot(db: D1Database, eventId: string) {
             .bind(eventId),
         db
             .prepare(
-                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, i.wiped_zone, i.wiped_at, i.start_zone, i.relieves, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS placed
+                `SELECT i.id, i.branch, i.group_no, i.zone, i.players, i.clan_id, c.tag, i.wiped_zone, i.wiped_at, i.start_zone, i.relieves, i.seat_zones, (SELECT COUNT(*) FROM raid_placements p WHERE p.instance_id = i.id) AS placed
                  FROM raid_instances i JOIN clans c ON c.id = i.clan_id WHERE i.event_id = ?1 ORDER BY c.tag, i.branch, i.group_no LIMIT 500`,
             )
             .bind(eventId),
@@ -847,7 +875,7 @@ export async function titanView(ctx: Ctx): Promise<Response> {
         for (const z of c.zones) {
             if (z.groups_required < 2) continue;
             const open = c.objectives.filter((o) => o.zone === z.id && !o.optional && !isDone(mask, o.index)).length;
-            const groups = fighting.filter((i) => i.zone === z.id).length;
+            const groups = fighting.filter((i) => zonesOf(i).includes(z.id)).length;  // 2.78: its players may be spread
             if (open > 0 && groups > 0 && groups < z.groups_required) needs.push({ branch: partOf(c.id), zone: z.id, name: z.name, groups, required: z.groups_required });
         }
         return {
@@ -972,10 +1000,14 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             clan_tag: i.tag,
             group: i.group_no,
             zone: i.zone,
+            // 2.78: each player changes zone alone: the zones of the group, and how many players in each.
+            zones: zonesOf(i),
+            seat_zones: seatZonesOf(i),
             players: i.players,
             placed: i.placed,
             free: Math.max(0, INSTANCE_SIZE - Math.max(i.players, i.placed)),
             mine: !!reg && i.clan_id === reg.clan_id,
+            members: [] as { name: string; seat: number; zone: number }[],
             wiped_zone: i.wiped_zone ?? null,  // 2.75: the group was wiped there (spectators)
             start_zone: i.start_zone ?? null,
             relieves: i.relieves ?? null,
@@ -993,10 +1025,38 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             .first<{ instance_id: string }>();
         if (seat) mine = instances.find((i) => i.id === seat.instance_id);
     }
+    // 2.78: who is in which zone, for the groups of my clan (their names: another clan's group stays private).
+    const ownIds = instances.filter((i) => i.mine).map((i) => i.id);
+    if (ownIds.length) {
+        const rows = (
+            await db
+                .prepare(
+                    `SELECT m.instance_id, m.seat, m.player_id, p.username FROM raid_instance_members m JOIN players p ON p.id = m.player_id
+                     WHERE m.instance_id IN (SELECT value FROM json_each(?1)) AND m.left_at IS NULL ORDER BY m.instance_id, m.seat LIMIT 400`,
+                )
+                .bind(JSON.stringify(ownIds))
+                .all<{ instance_id: string; seat: number; player_id: string; username: string }>()
+        ).results;
+        for (const r of rows) {
+            const i = instances.find((x) => x.id === r.instance_id);
+            if (!i) continue;
+            const z = i.seat_zones.length ? (i.seat_zones[r.seat] ?? 0) : i.zone;
+            i.members.push({ name: r.username, seat: r.seat, zone: z });
+        }
+    }
+    // 2.78: my own zone (my seat's), for « my zone finished » (the retakes).
+    let myZone = mine?.zone ?? 0;
+    if (mine && mine.seat_zones.length) {
+        const own = await db
+            .prepare("SELECT seat FROM raid_instance_members WHERE instance_id = ?1 AND player_id = ?2 AND left_at IS NULL")
+            .bind(mine.id, me)
+            .first<{ seat: number }>();
+        if (own && (mine.seat_zones[own.seat] ?? 0) > 0) myZone = mine.seat_zones[own.seat]!;
+    }
     // 2.75 (raidWipe.ts): the zones to take again, whether I only watch, and what my group may take again.
     const retakes = await zonesToRetake(db, e.id, c, mask);
     const spect = await spectatorOf(db, e.id, me);
-    const myZoneDone = !!mine && mine.wiped_zone == null && zoneFinished(c, mine.zone, mask);
+    const myZoneDone = !!mine && mine.wiped_zone == null && zoneFinished(c, myZone, mask);
     const links = linkViews(done, objectives);
     return json(ctx, {
         server_time: now,
@@ -1014,7 +1074,9 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             finished: zoneFinishedIn(c, z.id, mask),
             finished_by: finishedBy.get(z.id)?.by ?? null,
             finished_at: finishedBy.get(z.id)?.at ?? null,
-            groups: instances.filter((i) => i.zone === z.id && i.players > 0 && i.wiped_zone == null).length,
+            groups: instances.filter((i) => i.zones.includes(z.id) && i.players > 0 && i.wiped_zone == null).length,
+            // 2.78: the players of my clan's groups in this zone (names), each group's players spread on its zones.
+            players_here: instances.filter((i) => i.mine && i.wiped_zone == null).flatMap((i) => i.members.filter((m) => m.zone === z.id).map((m) => m.name)),
             // 2.75 (raidWipe.ts): « zone à reprendre »: the group wiped there (shown by the game's panel and map).
             to_retake: retakes.some((r) => r.zone === z.id),
             retake_by: (() => {
@@ -1036,6 +1098,7 @@ export async function branchView(ctx: Ctx): Promise<Response> {
             registered: !!reg,
             clan_tag: reg?.tag ?? null,
             instance_id: mine?.id ?? null,
+            zone: myZone,  // 2.78: the zone of my seat
             placed_branch: placement ? partOf(placement.branch) : null,
             spectator: spect ? { instance_id: spect.instance_id, zone: spect.zone, part: partOf(spect.branch) } : null,
             zone_finished: myZoneDone,

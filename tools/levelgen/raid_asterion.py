@@ -26,6 +26,12 @@ written by raid_voidworm.py, raid_graviton.py and raid_titanus.py (called from h
 and those of Skullmaw, Dreadfang and Heartbreaker by raid_skullmaw.py, raid_dreadfang.py and raid_heartbreaker.py,
 each branch gains its gigaboss objective (role "gigaboss", at the end of its catalog).
 
+2.78: the zone before each lair (the expedition, zone 7; the heart's aorta, zone 1): every one of its four ambushes
+is an objective of the branch (role "ambush", added at the end of the catalog), the passages to the lair are locked
+« ambushes:7 » (open once all of them are beaten: the game's and the server's rule) and lead through the lair's
+armory (« via »: 9, raid_armory.py); the expedition writes its route (metadata.raid.route, pixels) for the
+distance to that passage shown by the game.
+
 Never edit the JSON by hand: run
     python3 tools/levelgen/raid_asterion.py          (the levels, the catalogs, the titan)
     python3 tools/levelgen/raid_asterion.py --en raid_en.json   (also: the English of every
@@ -42,7 +48,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 7  # 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
+TITAN_REVISION = 8  # 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
@@ -405,7 +411,57 @@ JAMBE_DROITE = Spec(
                   "Le raccourci Genou-forge – Mollet blindé est ouvert", "The Forge knee – Armoured calf shortcut is open",
                   "raccourci fermé (le levier est dans le Mollet blindé)", "shortcut closed (the lever is in the Armoured calf)")})
 
-SPECS = [CRANE, BRAS_GAUCHE, TORSE, ABDOMEN, JAMBE_GAUCHE, JAMBE_DROITE]
+# 2.78: the zone before each lair: every ambush of it is an objective (role « ambush »), and the lair's
+# passage stays shut until ALL of them are beaten (lock « ambushes:7 »).
+AMBUSH_ORDINALS = [("première", "first"), ("deuxième", "second"), ("troisième", "third"), ("quatrième", "fourth")]
+# 2.78: the armory before the lair (raid_armory.py: armory_lair.json), a zone of the game only.
+LAIR_ARMORY = 9
+
+
+def ambush_ids(final):
+    """The ids of the ambushes before the last one (whose objective, `final`, the zone already had)."""
+    prefix = final.split("_")[0]
+    return ["%s_embuscade_%d" % (prefix, k + 1) for k in range(3)]
+
+
+def with_ambushes(spec, zone=7, lair=8):
+    """2.78: the ambushes of the zone before the lair become objectives of the branch (added at the end of
+    its catalog: the bits never move), the last one's objective (the guard) takes the role « ambush » too,
+    and every passage its objective opened now waits for all of them (« Embuscades restantes : k sur N »)."""
+    finals = [o for o in spec.objectives if o[1] == zone and not o[4]]
+    assert len(finals) == 1, (spec.part, finals)
+    final = finals[0]
+    objectives = [o[:5] + ("ambush",) + o[6:] if o is final else o for o in spec.objectives]
+    for k, oid in enumerate(ambush_ids(final[0])):
+        fr, en = AMBUSH_ORDINALS[k]
+        label = tr("Vaincre la %s embuscade (toutes ses vagues)" % fr, "Defeat the %s ambush (all its waves)" % en)
+        objectives.append((oid, zone, label, "Defeat the %s ambush (all its waves)" % en, False, "ambush", ""))
+    spec.objectives = objectives
+    lock = "ambushes:%d" % zone
+    spec.edges = [(a, b, lock if l == "objective:" + final[0] else l, sec) for a, b, l, sec in spec.edges]
+    assert any({a, b} == {zone, lair} and l == lock for a, b, l, _ in spec.edges), spec.part
+    spec.locks[lock] = ("toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
+                        "every wave of every ambush of the zone must be beaten",
+                        "Toutes les embuscades sont vaincues : l'antre s'ouvre", "Every ambush is beaten: the lair opens",
+                        "vaincre toutes les embuscades de %s" % spec.zone_names[zone],
+                        "beat every ambush of %s" % spec.zone_en[zone])
+    tr(*spec.locks[lock][0:2])
+    tr(*spec.locks[lock][2:4])
+    tr(*spec.locks[lock][4:6])
+    return spec
+
+
+def via_lair_armory(z, lair):
+    """2.78: the passage to the lair goes through the lair's armory (« via »; `to` stays the zone of the
+    catalog, the edge the server knows); coming back from it, one arrives where one comes back from the lair."""
+    for p in z.raid["passages"]:
+        if p["to"] == lair:
+            p["via"] = LAIR_ARMORY
+    if str(lair) in z.raid["spawns"]:
+        z.raid["spawns"][str(LAIR_ARMORY)] = z.raid["spawns"][str(lair)]
+
+
+SPECS = [with_ambushes(s) for s in (CRANE, BRAS_GAUCHE, TORSE, ABDOMEN, JAMBE_GAUCHE, JAMBE_DROITE)]
 # The titan's branches in the order of its body (data/raids/asterion.json).
 ORDER = ["crane", "bras_gauche", "bras_droit", "torse", "abdomen", "jambe_gauche", "jambe_droite"]
 
@@ -819,6 +875,19 @@ class Expedition:
     def __init__(self, z):
         self.z, self.L, self.th = z, z.L, z.th
         self.coops, self.checkpoints = [], []
+        # 2.78: the way through (tiles): the low floor, the goods lifts over their walls. The game measures
+        # the distance left to the lair's passage along it (« Passage vers l'antre : 124 m »).
+        self.route = []
+
+    def walk(self, x, y=None):
+        """2.78: a point of the route (tiles), on the low floor unless `y`."""
+        self.route.append([x, LOW if y is None else y])
+
+    def finish(self, z, lair):
+        """2.78: the route ends in the lair's passage; written in metadata.raid.route (pixels)."""
+        p = next(p for p in z.raid["passages"] if p["to"] == lair)
+        self.walk((p["rect"][0] + p["rect"][2] // 2) // T, (p["rect"][1] + p["rect"][3]) // T)
+        z.raid["route"] = [[x * T, y * T] for x, y in self.route]
 
     def slabs(self, x0, x1, mid=True, high=True):
         if x1 <= x0:
@@ -846,6 +915,7 @@ class Expedition:
         """Three lanes, 90 wide: the low one crosses two gaps the branch's way, the middle one is
         held by its walkers, the high one by flyers, over brittle platforms."""
         z, w = self.z, 90
+        self.walk(x + w)
         self.well(x)
         self.slabs(x + 8, x + 40)
         self.slabs(x + 40, x + 52, high=False)
@@ -877,6 +947,7 @@ class Expedition:
     def ambush(self, x, waves_n, objective=None, text=None, w=100):
         """A giant ambush on the three floors at once: each wave comes on every floor."""
         z, mid_well = self.z, x + w // 2 - 4
+        self.walk(x + w)
         self.well(x)
         self.well(mid_well)
         self.slabs(x + 8, mid_well)
@@ -913,6 +984,7 @@ class Expedition:
         """A lock: a wall across the three floors, a door on each; they open together when `need`
         players (fewer when fewer are in play) stand together on its plate."""
         z, w = self.z, 30
+        self.walk(x + w)
         z.rock(x, LOW, x + w)
         self.slabs(x, x + w)
         wx = x + 20
@@ -933,6 +1005,9 @@ class Expedition:
         """A goods lift up a wall that bars the three floors: it starts with `need` players on it,
         then goes up and down by itself for the others."""
         z, w = self.z, 40
+        # Up the lift, over its wall, down the ledges to the high floor, then down a well to the low one.
+        for px, py in ((x + 25, LOW), (x + 25, 18), (x + 34, 18), (x + 36, HIGH), (x + w, HIGH)):
+            self.walk(px, py)
         z.rock(x, LOW, x + 21)
         z.rock(x + 21, LOW + 3, x + 31)  # a shallow pit under the lift
         z.rock(x + 31, LOW, x + w)
@@ -956,6 +1031,7 @@ class Expedition:
     def checkpoint(self, x, n):
         """Checkpoints on the three floors (the one touched last is where the group starts again)."""
         z, w = self.z, 12
+        self.walk(x + w)
         z.rock(x, LOW, x + w)
         self.slabs(x, x + w)
         for f in (LOW, MID, HIGH):
@@ -984,31 +1060,32 @@ def lock_arena(spec, west_low, west_high, objective, waves_kinds, desc, desc_en,
         z.ledge(16 if i % 2 == 0 else 20, (16 if i % 2 == 0 else 20) + 4, y)
     z.L.sign(13, LOW, tr("L'expédition vers l'antre : trois étages, restez répartis. Les points de contrôle relèvent les joueurs à terre.",
                          "The expedition to the lair: three floors, stay spread out. The checkpoints get the players who are down back up."))
+    del text, text_en  # 2.78: the lair's door opens with every ambush beaten (the game tells it), not the last one
+    amb = ambush_ids(objective)
+    e.route = [[9, LOW]]
     x = 24
     x = e.hall(x)
     x = e.checkpoint(x, 1)
     x = e.lock(x, 3, 1)
-    x, _ = e.ambush(x, 4, text=("Première embuscade repoussée !", "First ambush driven back!"))
+    x, _ = e.ambush(x, 4, objective=amb[0], text=("Première embuscade repoussée !", "First ambush driven back!"))
     x = e.hall(x, hazard=True)
     x = e.lift(x, 4)
     x = e.checkpoint(x, 2)
-    x, _ = e.ambush(x, 4, text=("Deuxième embuscade repoussée !", "Second ambush driven back!"))
+    x, _ = e.ambush(x, 4, objective=amb[1], text=("Deuxième embuscade repoussée !", "Second ambush driven back!"))
     x = e.hall(x)
     x = e.lock(x, 3, 2)
     x = e.hall(x)
     x = e.checkpoint(x, 3)
-    x, _ = e.ambush(x, 4, text=("Troisième embuscade repoussée : la garde de l'antre approche !",
-                                "Third ambush driven back: the lair's guard draws near!"))
+    x, _ = e.ambush(x, 4, objective=amb[2], text=("Troisième embuscade repoussée : la garde de l'antre approche !",
+                                                  "Third ambush driven back: the lair's guard draws near!"))
     x = e.hall(x)
     x = e.checkpoint(x, 4)
     x, _ = e.ambush(x, 4, objective=objective, w=110)
     z.rock(x, LOW, x + 4)
     z.x, z.y = x + 4, LOW
     z.east(8)
-    door = z.doors[8]
-    z.L.event(z.raid["objectives"][0]["source"], "cleared",
-              [{"type": "open", "target": door},
-               {"type": "hint", "params": {"text": tr(text, text_en), "duration": 3.5}}], delay=0.5)
+    e.finish(z, 8)
+    via_lair_armory(z, 8)
     z.raid["coop"] = e.coops
     z.raid["checkpoints"] = e.checkpoints
     return z.save()

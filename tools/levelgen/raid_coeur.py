@@ -52,7 +52,8 @@ MODIFIERS = [
 
 def spec(A):
     A.THEMES["coeur"] = THEME
-    return A.Spec(
+    # 2.78: the aorta's ambushes are objectives and the heart's door waits for all of them (lock « ambushes:1 »).
+    return A.with_ambushes(A.Spec(
         "coeur", "Cœur", "Heart", "co", "Cœur d'Asterion", 0,
         [(1, "Aorte cosmique", "Cosmic aorta", "entrée · longue expédition à 8", 300, 380,
           "Longue expédition sur trois étages : embuscades géantes, écluses et monte-charge à plusieurs, points de contrôle · la garde du cœur",
@@ -64,7 +65,7 @@ def spec(A):
          ("coeur_asterion", 2, "Vaincre le Cœur d'Asterion (sa vie est partagée par toutes les instances)",
           "Defeat Asterion's Heart (its health is shared by every instance)", False, "gigaboss", "")],
         [(1, 2, "objective:coeur_aorte", False)],
-        {})
+        {}), zone=1, lair=2)
 
 
 def aorta(A, s):
@@ -84,31 +85,31 @@ def aorta(A, s):
     z.L.sign(3, LOW, tr("Les sept gigaboss sont tombés : l'aorte mène au Cœur d'Asterion. Restez répartis sur les trois étages.",
                         "The seven gigaboss fell: the aorta leads to Asterion's Heart. Stay spread over the three floors."))
     z.L.light(8, LOW - 4, "#ffd27a", 140, flicker=0.25)
+    amb = A.ambush_ids("coeur_aorte")
+    e.route = [[6, LOW]]
     x = 24
     x = e.hall(x)
     x = e.checkpoint(x, 1)
     x = e.lock(x, 3, 1)
-    x, _ = e.ambush(x, 4, text=("Première vague du cœur repoussée !", "First wave of the heart driven back!"))
+    x, _ = e.ambush(x, 4, objective=amb[0], text=("Première vague du cœur repoussée !", "First wave of the heart driven back!"))
     x = e.hall(x, hazard=True)
     x = e.lift(x, 4)
     x = e.checkpoint(x, 2)
-    x, _ = e.ambush(x, 4, text=("Deuxième vague repoussée : le cœur bat plus fort !", "Second wave driven back: the heart beats louder!"))
+    x, _ = e.ambush(x, 4, objective=amb[1], text=("Deuxième vague repoussée : le cœur bat plus fort !", "Second wave driven back: the heart beats louder!"))
     x = e.hall(x)
     x = e.lock(x, 3, 2)
     x = e.hall(x)
     x = e.checkpoint(x, 3)
-    x, _ = e.ambush(x, 4, text=("Troisième vague repoussée : la garde du cœur approche !", "Third wave driven back: the heart's guard draws near!"))
+    x, _ = e.ambush(x, 4, objective=amb[2], text=("Troisième vague repoussée : la garde du cœur approche !", "Third wave driven back: the heart's guard draws near!"))
     x = e.hall(x)
     x = e.checkpoint(x, 4)
     x, _ = e.ambush(x, 5, objective="coeur_aorte", w=110)
     z.rock(x, LOW, x + 4)
     z.x, z.y = x + 4, LOW
     z.east(2)
-    door = z.doors[2]
-    z.L.event(z.raid["objectives"][0]["source"], "cleared",
-              [{"type": "open", "target": door},
-               {"type": "hint", "params": {"text": tr("La garde du cœur est tombée : la porte du Cœur d'Asterion s'ouvre !",
-                                                      "The heart's guard fell: the door of Asterion's Heart opens!"), "duration": 3.5}}], delay=0.5)
+    # 2.78: the heart's door opens with every ambush of the aorta beaten (its lock), through the lair's armory.
+    e.finish(z, 2)
+    A.via_lair_armory(z, 2)
     z.raid["coop"] = e.coops
     z.raid["checkpoints"] = e.checkpoints
     return z.save()

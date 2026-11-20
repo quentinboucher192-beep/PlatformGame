@@ -22,6 +22,7 @@ const char* RaidHudLayout::id(RaidHudElement e) {
         case RaidHudElement::HeartEffects: return "heart_effects";
         case RaidHudElement::Remaining: return "remaining";
         case RaidHudElement::Notices: return "notices";
+        case RaidHudElement::LairPassage: return "lair_passage";
         default: return "";
     }
 }
@@ -43,6 +44,7 @@ const char* RaidHudLayout::label(RaidHudElement e) {
         case RaidHudElement::HeartEffects: return "Effets des branches sur le Cœur";
         case RaidHudElement::Remaining: return "Ce qu'il reste à faire";
         case RaidHudElement::Notices: return "Notifications et menu du raid";
+        case RaidHudElement::LairPassage: return "Distance au passage de l'antre";
         default: return "";
     }
 }

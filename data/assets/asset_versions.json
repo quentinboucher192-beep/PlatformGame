@@ -1167,6 +1167,8 @@
   "ui/planets/sylvanox_banner.png": "2.0.0",
   "ui/raids/asterion.json": "2.66.1",
   "ui/raids/asterion.png": "2.66.1",
+  "ui/raids/contrib.json": "2.78.0",
+  "ui/raids/contrib.png": "2.78.0",
   "ui/raids/minimap.json": "2.72.0",
   "ui/raids/minimap.png": "2.72.0"
  }

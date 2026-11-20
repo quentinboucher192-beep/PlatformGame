@@ -206,7 +206,12 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
     const uint32_t gens = (1u << b.objectiveIndex("veine_generateur")) | (1u << b.objectiveIndex("avantbras_generateur"));
     CHECK(b.generators(gens) == 2);
     CHECK(b.reachable(gens)[7]);
-    CHECK(b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);  // then by the forearm too
+    // 2.78: the hand once every ambush of the wrist is beaten (then by the forearm too); the guard alone no longer.
+    CHECK(!b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);
+    uint32_t ambushes = 0;
+    for (const raid::ObjectiveInfo& o : b.objectives)
+        if (o.zone == 7 && o.role == "ambush") ambushes |= 1u << o.index;
+    CHECK(b.reachable(ambushes)[8]);
     CHECK(!b.lockOpen("shortcut", 0));
     CHECK(b.lockOpen("shortcut", 1u << b.objectiveIndex("avantbras_raccourci")));
     CHECK(b.zoneRules(8)->sealedLabel.empty());
@@ -243,7 +248,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xaaa93a0738ae65daULL;  // reference (2.75: the veins wall to wall): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xc10b72ff3ce46cbaULL;  // reference (2.78: every ambush of the wrist an objective, through the lair's armory): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -302,7 +307,7 @@ TEST_CASE("raid lockstep: through the relay in raid mode, 2 and 8 games get the 
     }
 }
 
-TEST_CASE("raid zones: a passage takes the instance to the neighbour, each player keeps hearts and powers") {
+TEST_CASE("raid zones: a passage takes the player who walks into it to the neighbour (2.78: alone), keeping hearts and powers") {
     Services s;
     raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
     CHECK(run.begin(0));
@@ -320,11 +325,17 @@ TEST_CASE("raid zones: a passage takes the instance to the neighbour, each playe
         if (p.to == 3) toVeine = &p;
     CHECK(toVeine != nullptr);
     if (!toVeine) return;
-    w.playerAt(0).teleportTo({toVeine->rect.center().x, toVeine->rect.bottom()});
-    const int serial = run.zoneSerial();
-    run.step(frame.data(), static_cast<int>(frame.size()), 0);
+    const Rect gate = toVeine->rect;
+    // 2.78: each player walks in on their own; each one changes zone alone.
+    for (int k = 0; k < 3; ++k) {
+        run.worldOf(1)->playerAt(k).teleportTo({gate.center().x, gate.bottom()});
+        run.step(frame.data(), static_cast<int>(frame.size()), 0);
+        CHECK(run.zoneOf(k) == 3);
+        for (int o = k + 1; o < 3; ++o) CHECK(run.zoneOf(o) == 1);
+    }
+    run.setCameraFollow(0);
     CHECK(run.zone() == 3);
-    CHECK(run.zoneSerial() == serial + 1);
+    CHECK(run.zonesLoaded() == std::vector<int>{3});
     GameWorld& v = run.world();
     CHECK(v.playerAt(1).health == 2);
     CHECK(v.carryOf(2).powers == powers3);
@@ -335,9 +346,9 @@ TEST_CASE("raid zones: a passage takes the instance to the neighbour, each playe
         CHECK(v.member(k).presence == GameWorld::Presence::Playing);
         CHECK(std::abs(v.playerAt(k).feet().x - arrival.x) < 120.0f);
     }
-    // The zone entered is a report; the passage behind them does not take them back by itself.
+    // Where each one is, a report; the passage behind them does not take them back by itself.
     bool zoneReport = false;
-    for (const auto& r : run.takeReports()) zoneReport = zoneReport || (r.kind == raid::Report::Kind::Zone && r.zone == 3);
+    for (const auto& r : run.takeReports()) zoneReport = zoneReport || (r.kind == raid::Report::Kind::Zones && r.zone == 3);
     CHECK(zoneReport);
     for (int t = 0; t < 30; ++t) run.step(frame.data(), static_cast<int>(frame.size()), 0);
     CHECK(run.zone() == 3);
@@ -353,7 +364,9 @@ TEST_CASE("raid zones: a passage takes the instance to the neighbour, each playe
     CHECK(run.passageOpen(*shortcut));
     run.world().playerAt(0).teleportTo({shortcut->rect.center().x, shortcut->rect.bottom()});
     run.step(frame.data(), static_cast<int>(frame.size()), open);
+    CHECK(run.zoneOf(0) == 6);
     CHECK(run.zone() == 6);
+    CHECK(run.zoneOf(1) == 3);
 }
 
 TEST_CASE("raid seats: absent 60 s the seat is freed; a late join takes a vacant seat and catches up") {

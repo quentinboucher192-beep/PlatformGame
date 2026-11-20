@@ -323,5 +323,14 @@ tab
 sections
 created
 heart.relicShare
+# 2.78 : clés JSON (rapports des raids, vestiaire, dégâts), jamais montrées
+armory
+at
+damage
+deaths
+jump
+revived
+revives
+wipe
 # 2.80 : l'empreinte d'un test relayé (raid::testFingerprint : version, règles, titan), jamais affichée
 {0}|s{1}|c{2}|t{3}
