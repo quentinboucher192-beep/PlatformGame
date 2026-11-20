@@ -32,7 +32,9 @@ Clips (packed several per row, `start` = first column): idle 8 (hover, wings fla
 (= move, same frames: glide), telegraph 6 (rears its head), attack 5 (bite + claw swipe, fire f1),
 telegraph_special 6 (inhales: chest and throat glow), special 4 (loop, fire breath), summon 6
 (spreads its wings, roars to the sky), roar 8 (phase change; the phase-5 sheet's roar is the
-scales bursting off), hurt 2, death 14 (falls, the magma cools into grey stone, crumbles).
+scales bursting off), hurt 2, death 14 (falls, the magma cools into grey stone, crumbles); 2.76.2, packed after
+them (the cells of before unchanged): telegraph_dive 6 (it folds its wings, tips its nose down), dive 4 (loop,
+wings folded: the dives with the rules of 17, « clips » of its parts in data/enemies/pyrrhax.json).
 Deterministic (fixed seeds)."""
 import math
 
@@ -967,6 +969,44 @@ class Pyrrhax:
             out.append(f)
         return out
 
+    # 2.76.2: the dive with its wings folded (the player's rule: its whole body hurts on contact, so the dive is as
+    # wide as its drawing; wings folded against its flanks, nose down along its line, it fits the lane the game shows).
+    DIVE = dict(tilt=1.25, head=(182.0, 98.0), hang=0.2, dy=-16.0, tail=-5.0)
+
+    def dive_pose(self, i, broken=False):
+        d = self.DIVE
+        return DPose(t=2.0 + 0.9 * i, broken=broken, tilt=d["tilt"], dy=d["dy"], sway=2.0 + 0.9 * i, **held(0.05, 0.0), fold=1.0,
+                     head=d["head"], hang=d["hang"], jaw=0.45 + 0.1 * (i % 2), glow=0.95, eye=1.1, hind=0.85, fore=(0.0, 0.2, 0.7),
+                     tail=d["tail"])
+
+    def telegraph_dive(self, broken=False):
+        """2.76.2: the wind-up of the dive: it folds its wings against its flanks and tips its nose down."""
+        d = self.DIVE
+        out = []
+        for i in range(6):
+            t = (i + 1) / 6
+            e = t * t * (3 - 2 * t)
+            p = DPose(t=0.7 * i, broken=broken, tilt=-0.06 + (d["tilt"] + 0.06) * e, dy=d["dy"] * e, sway=0.7 * i + 2.0 * e,
+                      **held(0.8 - 0.75 * e, 0.75 - 0.75 * e), fold=e, head=(198.0 + (d["head"][0] - 198.0) * e, 62.0 + (d["head"][1] - 62.0) * e),
+                      hang=0.06 + (d["hang"] - 0.06) * e, jaw=0.15 + 0.3 * e, glow=0.6 + 0.35 * t, eye=0.3 + 0.8 * t,
+                      hind=0.35 + 0.5 * e, fore=(0.0, 0.3 - 0.1 * e, 0.3 + 0.4 * e), tail=1.0 + (d["tail"] - 1.0) * e)
+            f = self.draw(p)
+            if i == 5:
+                x, y = self.mouth(p)
+                self.sparkle(f, x, y, 4)
+            out.append(f)
+        return out
+
+    def dive(self, broken=False):
+        """2.76.2: the dive itself, wings folded, embers torn off its seams."""
+        out = []
+        for i in range(4):
+            p = self.dive_pose(i, broken)
+            f = self.draw(p)
+            self.embers(f, i, 4, self.seed + 70, count=6, p=p)
+            out.append(f)
+        return out
+
     def special_pose(self, i, broken=False):
         return DPose(t=1.6 * i, broken=broken, sway=0.8 * i, **held(0.88 + 0.06 * (i % 2), 0.84 + 0.08 * ((i + 1) % 2)),
                      head=(197.0, 67.0), hang=0.22, jaw=1.0, glow=1.0, chest=0.85 + 0.15 * (i % 2), eye=1.1, hind=0.4,
@@ -1211,6 +1251,9 @@ class Pyrrhax:
             ("summon", self.summon(b), dict(durations=TIMING["summon"], loop=False)),
             ("roar", roar if roar is not None else self.roar(b), dict(durations=TIMING["roar"], loop=False)),
             ("death", self.death(b), dict(durations=TIMING["death"], loop=False)),
+            # 2.76.2, after every other clip (their cells unchanged): the dive with folded wings.
+            ("telegraph_dive", self.telegraph_dive(b), dict(fps=9, loop=False)),
+            ("dive", self.dive(b), dict(fps=12, loop=True)),
         ]
 
 

@@ -80,6 +80,14 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   bat par parties, en pixels du sprite depuis les pieds (comme `origin`). Elle corrige une origine hors du dessin
   sans toucher à la définition de l'attaque, donc ni à l'empreinte de ses niveaux ni aux replays d'avant (exemple :
   l'Astrarque, dont deux attaques empruntées partaient du vide).
+* `"clips": {"<attaque>": ["<clip d'élan>", "<clip du coup>"]}` (2.76.2, sous `"parts"`) : les poses que prend une
+  attaque en version 17 (`kWholeBodyContactSimulation`), au lieu des siennes (`Enemy::attackClip`). Tout le corps
+  blessant au contact, une pose doit tenir dans la zone que l'attaque annonce : Pyrrhax pique les ailes repliées
+  (`telegraph_dive`, `dive`). Hors de la définition : ni l'empreinte des niveaux ni les replays d'avant ne changent.
+  L'annonce d'un piqué a la largeur du corps dans cette pose (`Enemy::diveLaneWidth`, `partsHalfWidth`).
+* `"snouts": [{"dir": [1, 2], "clips": ["dive"]}]` (2.76.2, profil « dragon ») : où pointe le museau dans ces poses
+  (vers le bas et la droite pour un piqué), pour que `hitparts.py` y trouve la tête ; sinon, le pixel le plus à
+  droite, comme avant (les autres images restent identiques à l'octet).
 * **Un écho** (2.76.2, `"variantOf"`) sans bloc `"parts"` prend celles de son original (`PartRules::of`) avec son propre
   `"partsFromVersion"`. Il peut nommer les siennes si ses rôles diffèrent ; l'éditeur d'ennemis lui en écrit un
   bloc à lui dès qu'on règle ses parties.
@@ -98,8 +106,9 @@ complet (`data/enemies/pyrrhax.json`, `tests/test_hitparts.cpp`).
   joueur. Seul un administrateur (`ADMINISTRATION › Ennemis`) les règle. Les entités du joueur se battent avec leur
   boîte : leurs parties sont montrées, sans règles.
 * **Où ça va** : « Enregistrer les parties » (ou Ctrl+S) réécrit le seul bloc `roles` de `data/enemies/<id>.json`
-  (`savePartRules`). Les autres clés, leur ordre, l'ordre des rôles et l'indentation sont gardés : un fichier
-  réécrit avec ses propres règles revient à l'octet près. Le combat de l'arène repart avec les nouvelles règles.
+  (`savePartRules`). Les autres clés, leur ordre, l'ordre des rôles, l'indentation et les fins de ligne du fichier
+  (« \n », ou « \r\n » d'une copie Windows) sont gardés : un fichier réécrit avec ses propres règles revient à l'octet
+  près. Le combat de l'arène repart avec les nouvelles règles.
   « Publier… » n'envoie pas les parties : elles partent avec la prochaine version du jeu.
 * **Attention** : changer les règles d'un boss qui se bat déjà par parties change ses combats, et les replays
   enregistrés ne se rejouent plus à l'identique. Le panneau le rappelle. Une telle modification demande une nouvelle

@@ -217,7 +217,7 @@ void Enemy::throwBlade(GameWorld& w) {
         p.hitEffect = a.hitEffect.empty() ? "fire_burst" : a.hitEffect;
         w.spawnProjectile(p);
     }
-    playClip(a.attackAnim, true);
+    playClip(attackClip(a, false), true);
     w.particles().emit("wing_ash", box.center(), 1.2f, {dir, 0.0f});
     w.playSound("sounds/dash.wav", box.center(), 1.0f, 0.55f);
     w.shake(0.2f);

@@ -41,6 +41,11 @@ queue, pattes, griffes, souffle pour un dragon ; le corps pour les autres), chac
 Valeurs validées : tête × 2 (point faible), cou, corps, ailes et pattes × 1, queue × 0,5 (blindée). Les griffes et
 le souffle blessent ; la tête blesse aussi pendant la morsure.
 
+2.76.2 (version 17) : tout son corps blessant au contact, Pyrrhax **pique les ailes repliées**, le nez en avant le
+long de sa ligne (clips `telegraph_dive` et `dive` de son générateur, ajoutés après les autres : les images d'avant
+sont identiques à l'octet). Son corps tient dans le couloir que montre l'annonce, et on l'esquive en courant hors de
+ce couloir (`tests/test_pyrrhax.cpp`). En version 16, ses replays piquent ailes déployées, comme en 2.76.0.
+
 * **La pose fait partie de la simulation** : l'animation d'un boss qui se bat par parties avance dans le pas fixe
   (`Enemy::fixedUpdate`). C'est la même image au même pas sur chaque ordinateur et dans chaque replay.
 * **Les coups du joueur** : tirs, coups d'épée, bombes, boomerang. Ils touchent **la partie** qu'ils atteignent,

@@ -246,7 +246,10 @@ void Enemy::beginAttack(GameWorld& w) {
         if (la.lengthSq() < 0.01f) la = aimDir_;
         laserAngle_ = dmath::atan2(la.y, la.x) - degToRad(attack_->sweepDegrees * 0.5f) * facing;
     }
-    playClip(attack_->telegraphAnim, true);
+    // 2.76.2: the rules of this run (an attack forced before its first step: the editor, the tests).
+    partsFight_ = fightsByParts(*this, w);
+    wholeBody_ = partsFight_ && w.simulationVersion() >= kWholeBodyContactSimulation;
+    playClip(attackClip(*attack_, true), true);
     if (!attack_->telegraphSound.empty()) w.playSound(attack_->telegraphSound, box.center(), 0.7f);
     // Rain and eruptions announce where they will land.
     targets_.clear();
@@ -294,6 +297,29 @@ void Enemy::beginAttack(GameWorld& w) {
     if (hasMirror_ && doubles_ > 0) copyToDoubles(w);  // « Reflets »: the doubles strike too
 }
 
+const std::string& Enemy::attackClip(const AttackDef& a, bool telegraph) const {
+    if (wholeBody_)
+        if (const auto* c = PartRules::of(def_.id).clipsFor(a.id)) return telegraph ? c->first : c->second;
+    return telegraph ? a.telegraphAnim : a.attackAnim;
+}
+
+void Enemy::faceDive() {
+    if (wholeBody_ && attack_ && PartRules::of(def_.id).clipsFor(attack_->id) && std::abs(diveDir_.x) < 0.25f) return;
+    face(diveDir_.x);
+}
+
+Vec2 Enemy::diveLane(Vec2 dir) const {
+    const float half = box.h * 0.45f;
+    if (!wholeBody_ || !attack_) return {-half, half};
+    const Vec2 a = partsAcross(*this, attackClip(*attack_, false), dir);
+    return {std::min(-half, a.x), std::max(half, a.y)};
+}
+
+float Enemy::diveLaneWidth(Vec2 dir) const {
+    const Vec2 l = diveLane(dir);
+    return l.y - l.x;
+}
+
 Vec2 Enemy::attackOrigin() const {
     // 2.76.2: fighting by parts, the origin its parts give an attack (« origins »: its drawing).
     if (attack_ && partsFight_)
@@ -330,7 +356,7 @@ void Enemy::stepTelegraph(GameWorld& w, float dt) {
     if (stateTimer_ <= 0.0f && attack_) {
         state_ = EnemyState::Attack;
         stateTimer_ = attack_->active;
-        playClip(attack_->attackAnim, true);
+        playClip(attackClip(*attack_, false), true);
         performAttackStart(w);
     }
 }

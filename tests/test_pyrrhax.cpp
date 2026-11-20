@@ -5,6 +5,7 @@
 // (its wings push her away: running against them still wins). Right under the dragon is no
 // shelter any more (« si je reste en dessous il m'attaque pas beaucoup »).
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <set>
@@ -14,10 +15,12 @@
 #include "game/content/ContentDatabase.h"
 #include "game/enemies/BossDifficulty.h"
 #include "game/enemies/Enemy.h"
+#include "game/enemies/HitParts.h"
 #include "game/gameplay/BossTraining.h"
 #include "game/gameplay/GameWorld.h"
 #include "game/gameplay/InputFrame.h"
 #include "game/gameplay/entities/Entities.h"
+#include "game/online/LevelFingerprint.h"
 #include "tests/TestFramework.h"
 
 using namespace cosmic;
@@ -268,29 +271,63 @@ TEST_CASE("pyrrhax: the dive shows its line, holds it still, then strikes throug
     CHECK(e->box.bottom() < kFloor - 100.0f);
 }
 
-// With the rules of 16 (its fight of 2.76.0, where only its red parts hurt). 2.76.2: with those of 17 its whole body
-// hurts on contact (the player's rule) and its wings, 160 px on each side, reach a player who only ran out of its lane.
-TEST_CASE("pyrrhax: a dive can be dodged once its line holds still (rules of 16)") {
-    Room r(7, 16);
-    Enemy* e = r.spawn({700.0f, kFloor - 190.0f});
-    REQUIRE(e != nullptr);
-    REQUIRE(e->forceAttack(*r.w, "pique"));
-    int start = r.p().health;
-    bool dashed = false;
-    bool dashedOnce = false;
-    for (int i = 0; i < 120 * 4; ++i) {
-        // Out of its lane as soon as it holds still: running, with a dash.
-        PlayerInput in;
-        if (e->diveLocked() || dashed) {
-            in = run(1.0f, !dashedOnce);
-            dashedOnce = true;
+// 2.76.2: with the rules of 17 its whole body hurts on contact (the player's rule): it dives with its wings folded
+// against its flanks (« clips » of its parts: telegraph_dive, dive), its body as wide as the lane the game shows, so that
+// running out of that lane dodges it; with those of 16 (its fight of 2.76.0) it dives with its wings spread, and only
+// its red parts hurt.
+TEST_CASE("pyrrhax: a dive can be dodged once its line holds still (rules of 17, wings folded; and of 16)") {
+    for (int rules : {kSimulationVersion, 16}) {
+        Room r(7, rules);
+        Enemy* e = r.spawn({700.0f, kFloor - 190.0f});
+        REQUIRE(e != nullptr);
+        REQUIRE(e->forceAttack(*r.w, "pique"));
+        int start = r.p().health;
+        bool dashed = false;
+        bool dashedOnce = false;
+        Vec2 lane{}, body{};
+        Vec2 from{}, across{1.0f, 0.0f};  // its line when it shows the lane
+        for (int i = 0; i < 120 * 4; ++i) {
+            // Out of its lane as soon as it holds still: running, with a dash.
+            PlayerInput in;
+            if (e->diveLocked() || dashed) {
+                in = run(1.0f, !dashedOnce);
+                dashedOnce = true;
+            }
+            r.step(in);
+            dashed = dashed || e->diving();
+            const auto& way = e->attackPath();
+            if (way.size() >= 2) {
+                const Vec2 dir = (way[1] - way[0]).normalized();
+                if (e->diveLocked() && !dashed) {  // the lane it shows, held still, before it goes
+                    lane = e->diveLane(dir);
+                    from = way[0];
+                    across = {-dir.y, dir.x};
+                }
+                if (!dashed && e->diveLocked() && rules >= kWholeBodyContactSimulation) CHECK(e->animator().current() == "telegraph_dive");
+                if (e->diving()) {
+                    // The body that sweeps it, about the line it follows; Nova, about the same line.
+                    const Vec2 b = partsAcross(*e, e->animator().current(), dir);
+                    const float off = (e->box.center() - from).x * across.x + (e->box.center() - from).y * across.y;
+                    body = {std::min(body.x, b.x + off), std::max(body.y, b.y + off)};
+                }
+            }
+            if (dashed && e->state() == EnemyState::Recover) break;
         }
-        r.step(in);
-        dashed = dashed || e->diving();
-        if (dashed && e->state() == EnemyState::Recover) break;
+        CHECK(dashed);
+        if (r.p().health != start) std::printf("  piqué de Pyrrhax en règles %d : touchée\n", rules);
+        CHECK(r.p().health == start);
+        if (rules >= kWholeBodyContactSimulation) {
+            const float novaAcross = (r.p().box.center() - from).x * across.x + (r.p().box.center() - from).y * across.y;
+            std::printf("  piqué de Pyrrhax : couloir montré de %.0f à %.0f px de sa ligne, corps de %.0f à %.0f, Nova à %.0f\n", lane.x, lane.y,
+                        body.x, body.y, novaAcross);
+            // The lane shows its real width: the body it sweeps stays inside it (a few px of its line's drift).
+            CHECK(body.y > body.x && body.x >= lane.x - 4.0f && body.y <= lane.y + 4.0f);
+            CHECK(lane.y - lane.x < 220.0f);  // its wings folded: about its body
+            // Running on, Nova is out of the lane it showed (where its body never goes).
+            const float nh = r.p().box.w * 0.5f;
+            CHECK(novaAcross + nh < lane.x || novaAcross - nh > lane.y);
+        }
     }
-    CHECK(dashed);
-    CHECK(r.p().health == start);
 }
 
 TEST_CASE("pyrrhax: the double dive aims again before each dash") {

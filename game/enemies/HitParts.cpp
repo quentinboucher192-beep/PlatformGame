@@ -157,6 +157,11 @@ const PartRule* PartRules::rule(const std::string& name) const {
     return nullptr;
 }
 
+const std::pair<std::string, std::string>* PartRules::clipsFor(const std::string& attackId) const {
+    const auto it = clips.find(attackId);
+    return it == clips.end() ? nullptr : &it->second;
+}
+
 const Vec2* PartRules::origin(const std::string& attackId) const {
     const auto it = origins.find(attackId);
     return it == origins.end() ? nullptr : &it->second;
@@ -178,6 +183,10 @@ PartRules PartRules::parse(const Json& parts, int fromVersion) {
     if (origins.is_object())
         for (auto& [id, o] : origins.items())
             if (o.is_array() && o.size() == 2 && o[0].is_number() && o[1].is_number()) out.origins[id] = {o[0].get<float>(), o[1].get<float>()};
+    const Json clips = parts.value("clips", Json::object());
+    if (clips.is_object())
+        for (auto& [id, c] : clips.items())
+            if (c.is_array() && c.size() == 2 && c[0].is_string() && c[1].is_string()) out.clips[id] = {c[0].get<std::string>(), c[1].get<std::string>()};
     const Json roles = parts.value("roles", Json::object());
     if (!roles.is_object()) return out;
     for (auto& [name, r] : roles.items()) {
@@ -279,7 +288,18 @@ std::string withPartRules(const std::string& fileText, const PartRules& rules, s
         if (!roles.contains(r.name)) roles[r.name] = write(r);
     parts["roles"] = std::move(roles);
     try {
-        return j.dump(2) + "\n";
+        std::string out = j.dump(2) + "\n";
+        // The file's own line endings (a Windows checkout: « \r\n »): every line written as it was read.
+        if (fileText.find("\r\n") != std::string::npos) {
+            std::string crlf;
+            crlf.reserve(out.size() + out.size() / 16);
+            for (char ch : out) {
+                if (ch == '\n') crlf += '\r';
+                crlf += ch;
+            }
+            out = std::move(crlf);
+        }
+        return out;
     } catch (const nlohmann::json::exception&) {  // a name that is not UTF-8
         if (error) *error = "Fichier d'ennemi illisible";
         return {};
@@ -291,19 +311,24 @@ bool savePartRules(const std::string& enemyId, const PartRules& rules, std::stri
         if (error) *error = "Identifiant invalide";
         return false;
     }
-    const fs::path path = Paths::dataDir() / "enemies" / (enemyId + ".json");
+    if (!savePartRulesTo(Paths::dataDir() / "enemies" / (enemyId + ".json"), rules, error)) return false;
+    PartRules::reload(enemyId);
+    return true;
+}
+
+bool savePartRulesTo(const fs::path& path, const PartRules& rules, std::string* error) {
+    const std::string name = Paths::toUtf8(path.filename());
     const std::optional<std::string> text = FileUtil::readText(path);
     if (!text) {
-        if (error) *error = "Fichier introuvable : data/enemies/" + enemyId + ".json";
+        if (error) *error = "Fichier introuvable : data/enemies/" + name;
         return false;
     }
     const std::string out = withPartRules(*text, rules, error);
     if (out.empty()) return false;
     if (out != *text && !FileUtil::writeTextAtomic(path, out)) {
-        if (error) *error = "Écriture impossible : data/enemies/" + enemyId + ".json";
+        if (error) *error = "Écriture impossible : data/enemies/" + name;
         return false;
     }
-    PartRules::reload(enemyId);
     return true;
 }
 
@@ -450,6 +475,32 @@ bool hurtsWithParts(const Enemy& e, const Rect& box) {
         if (now && convexOverlapsRect(placePiece(piece, *pose.sheet, feet, e.def().scale, flip), box)) return true;
     }
     return false;
+}
+
+Vec2 partsAcross(const Enemy& e, const std::string& clip, Vec2 dir) {
+    const AnimationSetPtr& set = e.animator().set();
+    const HitPartsSheet* hp = set ? HitPartsSheet::of(set->sourcePath) : nullptr;
+    const AnimationClip* c = set ? set->clip(clip) : nullptr;
+    const float len = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+    if (!hp || !c || len < 1e-4f) return {0.0f, 0.0f};
+    const Vec2 across{-dir.y / len, dir.x / len};
+    const Vec2 mid = e.box.center(), feet = e.box.bottomCenter();
+    const bool flip = e.facing < 0.0f;
+    float lo = 0.0f, hi = 0.0f;
+    for (int f = 0; f < c->frameCount(); ++f)
+        if (const std::vector<HitPartPiece>* pieces = hp->frame(*set, *c, f))
+            for (const HitPartPiece& piece : *pieces)
+                for (const Vec2& v : placePiece(piece, *hp, feet, e.def().scale, flip)) {
+                    const float d = (v.x - mid.x) * across.x + (v.y - mid.y) * across.y;
+                    lo = std::min(lo, d);
+                    hi = std::max(hi, d);
+                }
+    return {lo, hi};
+}
+
+float partsHalfWidth(const Enemy& e, const std::string& clip, Vec2 dir) {
+    const Vec2 a = partsAcross(e, clip, dir);
+    return std::max(-a.x, a.y);
 }
 
 bool touchesWithParts(const Enemy& e, const Rect& box) {

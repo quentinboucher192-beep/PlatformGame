@@ -229,11 +229,13 @@ LOOPING["projectiles"] |= {"star_shard", "meteor"}
 # ------------------------------------------------------------------ Pyrrhax (giga boss, obsidian dragon)
 # Eight sheets like Singularis, without the teleports (it flies).
 DRAGON_CLIPS = [c for c in GIGA_CLIPS if not c[0].startswith("teleport")]
+# 2.76.2: its dive with folded wings, packed after the others (the cells of before unchanged).
+PYRRHAX_CLIPS = DRAGON_CLIPS + [("telegraph_dive", 6), ("dive", 4)]
 for _k in range(8):
     _id = "pyrrhax" if _k == 0 else "pyrrhax_p%d" % (_k + 1)
-    ANIMS[_id] = (256, 192, [128, 152], DRAGON_CLIPS, {"attack": [(1, "fire")]}, {})
+    ANIMS[_id] = (256, 192, [128, 152], PYRRHAX_CLIPS, {"attack": [(1, "fire")]}, {})
     TEXTURES[_id] = f"sprites/enemies/{_id}.png"
-    LOOPING[_id] = {"idle", "walk", "move", "special"}
+    LOOPING[_id] = {"idle", "walk", "move", "special", "dive"}
 
 # ------------------------------------------------------------------ Monolithe (golem giga boss)
 # Eight sheets, one per phase, packed like Singularis' (no teleport); a walker: footsteps.

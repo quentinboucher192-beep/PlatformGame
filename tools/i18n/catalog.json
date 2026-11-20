@@ -24934,7 +24934,7 @@
    ]
   },
   {
-   "fr": "Fichier introuvable : data/enemies/{0}.json",
+   "fr": "Fichier introuvable : data/enemies/{0}",
    "where": [
     "game/enemies/HitParts.cpp"
    ]
@@ -52590,6 +52590,12 @@
    ]
   },
   {
+   "fr": "Pyrrhax pique désormais les ailes repliées, le nez en avant le long de sa ligne. Avec la nouvelle règle, tout son corps blesse au contact : son piqué tient dans le couloir que montre l'annonce, à sa vraie largeur, et on l'esquive en courant hors de ce couloir.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Pyrrhax se bat par parties : sa tête est un point faible (× 2), sa queue est blindée (× 0,5), son cou, son corps, ses ailes et ses pattes prennent les coups normalement. Vous pouvez le toucher au bout d'une aile, bien au-delà de son ancienne boîte. Seules ses griffes, son souffle et sa tête pendant la morsure blessent au contact. Les replays d'avant rejouent à l'identique et aucun record n'est effacé.",
    "where": [
     "data/news/changelog.json"
@@ -78472,7 +78478,7 @@
    ]
   },
   {
-   "fr": "Écriture impossible : data/enemies/{0}.json",
+   "fr": "Écriture impossible : data/enemies/{0}",
    "where": [
     "game/enemies/HitParts.cpp"
    ]

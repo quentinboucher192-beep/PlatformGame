@@ -388,13 +388,17 @@ TEST_CASE("determinism: Pyrrhax's fight by parts has its golden digest, and its 
         auto checks = s.run(scriptedInputs(13, 30 * 120));
         return checks.empty() ? std::string() : hex(checks.back());
     };
-    const std::string before = play(15), now = play(16);
+    const std::string before = play(15), now = play(16), latest = play(kSimulationVersion);
     const char* golden15 = "e22ee37a63ecc0fe";  // the 2.75.2 build (its box)
     const char* golden16 = "c410f3197ff713d1";  // 2.76.0: by its parts
+    // 2.76.2 (17): its whole body hurts on contact, its red parts strike during their attacks, it dives wings folded.
+    const char* golden17 = "a014cba12fa14d2c";
     if (before != golden15) std::printf("  confins_01 (Pyrrhax, règles 15) : %s (attendu %s)\n", before.c_str(), golden15);
     if (now != golden16) std::printf("  confins_01 (Pyrrhax, règles 16) : %s (attendu %s)\n", now.c_str(), golden16);
+    if (latest != golden17) std::printf("  confins_01 (Pyrrhax, règles %d) : %s (attendu %s)\n", kSimulationVersion, latest.c_str(), golden17);
     CHECK(before == golden15);
     CHECK(now == golden16);
+    CHECK(latest == golden17);
 }
 
 // 2.76.2: the classic bosses fight by their hit parts (kSimulationVersion 17): 30 s of scripted play

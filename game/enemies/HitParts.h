@@ -24,6 +24,7 @@
 // Collision: separating axes between a convex polygon and a box or a circle, in float with the operations
 // in a fixed order (the build has -ffp-contract=off): the same on every computer.
 
+#include <filesystem>
 #include <map>
 #include <memory>
 #include <optional>
@@ -90,6 +91,11 @@ struct PartRules {
     /// sprite from its feet (× its scale, like an attack's origin): its drawing, without changing its
     /// definition (nor the fingerprint of its levels); a replay of before keeps the attack's own.
     std::map<std::string, Vec2> origins;
+    /// 2.76.2 (« clips »: attack id → [wind-up clip, blow clip]): the poses an attack takes with the rules of 17
+    /// (kWholeBodyContactSimulation), instead of its own: Pyrrhax folds its wings to dive. Not in its definition
+    /// (the records are kept); a replay of before keeps the attack's own clips.
+    std::map<std::string, std::pair<std::string, std::string>> clips;
+    const std::pair<std::string, std::string>* clipsFor(const std::string& attackId) const;
     const PartRule* rule(const std::string& name) const;
     /// The origin of an attack's shots by its parts (null: the attack's own).
     const Vec2* origin(const std::string& attackId) const;
@@ -112,6 +118,9 @@ struct PartRules {
 std::string withPartRules(const std::string& fileText, const PartRules& rules, std::string* error = nullptr);
 /// Writes them into data/enemies/<id>.json and reads them again (PartRules::reload). False with `error`.
 bool savePartRules(const std::string& enemyId, const PartRules& rules, std::string* error = nullptr);
+/// The same into the file `path` (nothing is written when it would not change; its line endings kept, « \n » or
+/// « \r\n »: a Windows checkout comes back byte for byte).
+bool savePartRulesTo(const std::filesystem::path& path, const PartRules& rules, std::string* error = nullptr);
 
 const char* partRoleId(PartRole r);
 /// « Point faible », « Partie normale », « Blindée », « Blesse ».
@@ -155,5 +164,12 @@ bool hurtsWithParts(const Enemy& e, const Rect& box);
 constexpr int kWholeBodyContactSimulation = 17;
 /// Whether any part of `e` (its current pose) touches `box`.
 bool touchesWithParts(const Enemy& e, const Rect& box);
+/// 2.76.2 (display): half the width of `e`'s parts across the direction `dir`, from the centre of its box, over the
+/// frames of `clip` of its current sheet as it faces now (0 without parts or without that clip): the lane a dive
+/// shows is as wide as the body that sweeps it.
+float partsHalfWidth(const Enemy& e, const std::string& clip, Vec2 dir);
+/// The same on each side of the line: {furthest on the side of (-dir.y, dir.x) negative (≤ 0), furthest positive (≥ 0)}
+/// (its tail on one side, its head on the other: the lane shows each).
+Vec2 partsAcross(const Enemy& e, const std::string& clip, Vec2 dir);
 
 }  // namespace cosmic

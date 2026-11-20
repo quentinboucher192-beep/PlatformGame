@@ -843,7 +843,46 @@
       "souffle": {
         "role": "hurt"
       }
-    }
+    },
+    "clips": {
+      "pique": [
+        "telegraph_dive",
+        "dive"
+      ],
+      "double_pique": [
+        "telegraph_dive",
+        "dive"
+      ],
+      "ronde_piques": [
+        "telegraph_dive",
+        "dive"
+      ],
+      "dernier_pique": [
+        "telegraph_dive",
+        "dive"
+      ]
+    },
+    "snouts": [
+      {
+        "dir": [
+          1,
+          1
+        ],
+        "clips": [
+          "telegraph_dive:2"
+        ]
+      },
+      {
+        "dir": [
+          1,
+          2
+        ],
+        "clips": [
+          "telegraph_dive:3-5",
+          "dive"
+        ]
+      }
+    ]
   },
   "partsFromVersion": 16
 }
