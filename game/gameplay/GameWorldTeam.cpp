@@ -442,6 +442,102 @@ void GameWorld::liftSoul(TeamMember& m) {
     }
 }
 
+// ------------------------------------------------- 2.80 (rules of cooperation 4): passages that close
+
+namespace {
+/// The side of a passage a point is on: across a passage taller than wide (a wall), left (-1) or right (+1);
+/// across a wider one (a floor, a ceiling), above (-1) or below (+1).
+int passageSide(const Rect& passage, Vec2 at) {
+    const float d = passage.h >= passage.w ? at.x - passage.center().x : at.y - passage.center().y;
+    return d < 0.0f ? -1 : 1;
+}
+}  // namespace
+
+bool GameWorld::teamThrough(const Rect& passage, const Vec2* inner, std::vector<Straggler>* behind) const {
+    if (behind) behind->clear();
+    if (team_.empty()) return true;
+    // Who counts, on which side (0: in the passage itself), from where.
+    int side[kMaxTeam], who[kMaxTeam];
+    Vec2 from[kMaxTeam];
+    bool down[kMaxTeam];
+    int n = 0;
+    for (size_t i = 0; i < team_.size() && n < kMaxTeam; ++i) {
+        const TeamMember& m = team_[i];
+        if (m.absent) continue;  // disconnected (its inputs in standby): not waited for; back, it comes near the team
+        if (m.presence == Presence::Playing) {
+            // In play: its body (in the doorway: not through yet).
+            const Rect& b = m.player->box;
+            side[n] = b.intersects(passage) ? 0 : passageSide(passage, b.center());
+            from[n] = b.center();
+            down[n] = false;
+        } else if (m.presence == Presence::Down && canRevive()) {
+            // Down: its soul, where it will get up (2.77: never on a door). Without a revival left, it will
+            // not come back in this attempt: the passage no longer waits for it.
+            side[n] = passage.contains(m.soul) ? 0 : passageSide(passage, m.soul);
+            from[n] = m.soul;
+            down[n] = true;
+        } else {
+            continue;  // standby (disconnected), gone, elsewhere (a raid's other zones): not waited for
+        }
+        who[n++] = static_cast<int>(i);
+    }
+    if (n == 0) return true;
+    // Its inner side: the side of what closed it; else the side most of the team is on (ties: the side of
+    // the lowest number).
+    int ref = 0;
+    if (inner) {
+        ref = passageSide(passage, *inner);
+    } else {
+        int left = 0, right = 0, first = 0;
+        for (int k = 0; k < n; ++k) {
+            if (side[k] < 0) ++left;
+            if (side[k] > 0) ++right;
+            if (first == 0) first = side[k];
+        }
+        ref = left > right ? -1 : right > left ? 1 : first;
+    }
+    bool through = ref != 0;
+    for (int k = 0; k < n; ++k) {
+        if (side[k] == ref && ref != 0) continue;
+        through = false;
+        if (!behind) break;
+        // How far (display only: the HUD's « en attente de … (12 m) »).
+        const float dx = std::max({passage.x - from[k].x, 0.0f, from[k].x - passage.right()});
+        const float dy = std::max({passage.y - from[k].y, 0.0f, from[k].y - passage.bottom()});
+        behind->push_back({who[k], std::sqrt(dx * dx + dy * dy), down[k]});
+    }
+    if (behind)
+        std::stable_sort(behind->begin(), behind->end(), [](const Straggler& a, const Straggler& b) { return a.distance < b.distance; });
+    return through;
+}
+
+bool PassageClosing::ask(GameWorld& w, const Rect& r, const Json& params) {
+    span = r;
+    waiting = false;
+    if (!w.passagesWait()) return true;  // alone (or a team of rules 1 to 3): at once, as it always did
+    // Its inner side: the side of the object that closed it (an arena, a trigger, a lever, an enemy…).
+    const std::string from = params.is_object() ? jstr(params, "from") : std::string();
+    const LevelEntity* by = from.empty() ? nullptr : w.entity(from);
+    hasInner = by != nullptr;
+    if (by) inner = by->box.center();
+    waiting = !w.teamThrough(span, hasInner ? &inner : nullptr);
+    return !waiting;
+}
+
+const PassageClosing* passageWaiting(const LevelEntity& e) {
+    if (const auto* d = dynamic_cast<const DoorEntity*>(&e)) return d->closingWait();
+    if (const auto* g = dynamic_cast<const PowerGateEntity*>(&e)) return g->closingWait();
+    if (const auto* l = dynamic_cast<const LaserEntity*>(&e)) return l->closingWait();
+    return nullptr;
+}
+
+bool PassageClosing::ready(GameWorld& w) {
+    if (!waiting) return false;
+    if (w.passagesWait() && !w.teamThrough(span, hasInner ? &inner : nullptr)) return false;
+    waiting = false;
+    return true;
+}
+
 void GameWorld::checkTeamDown() {
     if (state_ == WorldState::Failed || state_ == WorldState::Completed || state_ == WorldState::Outro) return;
     if (raidMode_ && raidGroupRule_) return;  // 2.78: the raid run judges the group across its zones

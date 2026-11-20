@@ -7526,6 +7526,12 @@
    ]
   },
   {
+   "fr": "Barrière : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "Barrière d'énergie (Onde)",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -10972,6 +10978,12 @@
    "fr": "Ce replay vient d'une autre version du niveau : il ne peut pas être rejoué ici.",
    "where": [
     "ui/screens/SobMontageScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ce salon joue avec une autre version des règles de coopération : mettez le jeu à jour pour jouer ensemble.",
+   "where": [
+    "game/coop/NetCoopLink.cpp"
    ]
   },
   {
@@ -35591,6 +35603,12 @@
    ]
   },
   {
+   "fr": "Laser : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "Laser ancien",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -49328,6 +49346,12 @@
    ]
   },
   {
+   "fr": "Passage : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "passage fermé (le levier est dans la Tempe)",
    "where": [
     "data/raids/asterion/crane/branch.json"
@@ -52404,6 +52428,12 @@
    "fr": "Porte",
    "where": [
     "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Porte : en attente de",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
    ]
   },
   {
@@ -78898,6 +78928,12 @@
    ]
   },
   {
+   "fr": "{0} m)",
+   "where": [
+    "ui/screens/PassageWaitView.cpp"
+   ]
+  },
+  {
    "fr": "{0} meilleur temps · empreinte {1}",
    "where": [
     "ui/screens/AdminCampaign.cpp"
@@ -81446,6 +81482,7 @@
    "where": [
     "game/gameplay/HudTeam.cpp",
     "ui/screens/HudEditorScene.cpp",
+    "ui/screens/PassageWaitView.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },

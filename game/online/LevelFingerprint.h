@@ -83,7 +83,7 @@ constexpr int kSimulationVersion = 17;  // 6: energy 150, time slow, magnet, air
 /// world. It changes nothing for a solo run (kSimulationVersion and its digests are the same);
 /// a team's attempts carry it, and any change of the team rules (solid players, revivals,
 /// standby, the team's frame...) bumps it with the reference digests of tests/test_coop.cpp.
-constexpr int kCoopSimulationVersion = 3;  // 2 (2.75): the players pass through each other (no
+constexpr int kCoopSimulationVersion = 4;  // 2 (2.75): the players pass through each other (no
                                            // body, no ally's head to stand on). A team replay of
                                            // version 1 plays with its solid players (GameWorld::
                                            // setCoopVersion): same digests.
@@ -92,6 +92,11 @@ constexpr int kCoopSimulationVersion = 3;  // 2 (2.75): the players pass through
                                            // a liquid rising over it), and a revival is HELD
                                            // (« Interagir » 2 s near the soul; let go, it stops).
                                            // Replays of versions 1 and 2 keep their rules.
+                                           // 4 (2.80): a passage that closes behind the players (an
+                                           // arena's doors, a door, a gate or a laser an event closes)
+                                           // waits, open, until every player still there (in play, or
+                                           // down while a revival can raise them) is through it
+                                           // (GameWorld::teamThrough). Replays of 1 to 3 keep theirs.
 /// Generation of the rankings, part of every ranked fingerprint. It follows
 /// kSimulationVersion when a change makes earlier runs incomparable (records and replays of
 /// different generations are never mixed). A change that only adds a possibility and

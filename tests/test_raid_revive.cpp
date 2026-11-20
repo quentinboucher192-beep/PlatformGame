@@ -273,7 +273,7 @@ TEST_CASE("2.75 raid lockstep: 2 and 8 seats, the same digest twice; reference d
         }
     }
     CHECK(mismatches == 0);
-    CHECK(kCoopSimulationVersion == 3);  // 2.77: rules 3 (souls on the last safe place, revivals held)
+    CHECK(kCoopSimulationVersion == 4);  // 2.77: rules 3 (souls on the last safe place, revivals held); 2.80: 4 (passages wait for the zone's players)
 }
 
 TEST_CASE("2.75: every rising liquid of the raid fills the view's width, or its basin wall to wall") {

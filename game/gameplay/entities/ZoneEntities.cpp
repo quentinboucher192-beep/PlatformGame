@@ -102,8 +102,11 @@ void CombatZoneEntity::init(GameWorld& w) {
 }
 
 void CombatZoneEntity::setDoors(GameWorld& w, bool open) {
+    // 2.80 (rules of cooperation 4): closed by the arena (« from »), its doors (or gates, lasers) have the
+    // arena's side as their inner side: in a team, each one waits open until every player is in.
+    const Json params = open ? Json::object() : Json{{"from", id()}};
     for (const auto& d : doors_)
-        if (LevelEntity* e = w.entity(d)) e->handleAction(w, open ? "open" : "close", Json::object());
+        if (LevelEntity* e = w.entity(d)) e->handleAction(w, open ? "open" : "close", params);
 }
 
 void CombatZoneEntity::startWave(GameWorld& w, size_t index) {

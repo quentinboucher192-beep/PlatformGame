@@ -22,6 +22,27 @@ struct AnimatedSprite {
               BlendMode blend = BlendMode::Alpha) const;
 };
 
+// ================================================== 2.80: passages that close behind a team
+
+/// 2.80 (rules of cooperation 4, docs/COOP.md « Passages qui se ferment »): a passage told to close
+/// (a door, a power gate formed again, a laser switched on by « close ») in a team or a raid zone
+/// waits, open, until every player of the team still there is through it (GameWorld::teamThrough).
+/// Its inner side: the side of the object that closed it (the action's « from »: the arena, the object
+/// of the event — a trigger, a lever…); without one, the side the whole team is on. Alone, it closes at
+/// once, as it always did.
+struct PassageClosing {
+    bool waiting = false;
+    bool hasInner = false;
+    Vec2 inner;  // a point on its inner side
+    Rect span;   // what it closes (the door, the gate, the beam)
+    /// Asked to close `span` by the object `params` names (« from »). True: close now; false: it waits.
+    bool ask(GameWorld& w, const Rect& span, const Json& params);
+    /// While it waits (every step): true once it may close (it stops waiting).
+    bool ready(GameWorld& w);
+};
+/// The passage `e` waiting for the team before it closes (a door, a power gate, a laser), else nullptr.
+const PassageClosing* passageWaiting(const LevelEntity& e);
+
 // ================================================================ platforms
 
 class MovingPlatformEntity : public LevelEntity {
@@ -172,11 +193,14 @@ public:
     bool onPowerHit(GameWorld& w, const std::string& power, const Rect& area) override;
     bool handleAction(GameWorld& w, const std::string& action, const Json& params) override;
     void onPlayerRespawn(GameWorld& w) override;
+    const PassageClosing* closingWait() const { return closing_.waiting ? &closing_ : nullptr; }
 
 private:
     void destroy(GameWorld& w);
+    void form(GameWorld& w);  // 2.80: formed again (« close », « enable »)
     std::string power_;
     uint32_t collider_ = 0;
+    PassageClosing closing_;  // 2.80: formed again in a team: once the whole team is through
     bool broken_ = false;
     float crack_ = 0.0f;
     float hintCooldown_ = 0.0f;
@@ -315,9 +339,13 @@ public:
     bool firesIn(float seconds) const;
     Vec2 beamFrom() const { return origin(); }
     Vec2 beamTo() const;
+    const PassageClosing* closingWait() const { return closing_.waiting ? &closing_ : nullptr; }
 
 private:
     Vec2 origin() const;
+    /// 2.80: what its beam crosses at most (from its emitter to the end of its reach).
+    Rect reach() const;
+    PassageClosing closing_;  // 2.80: « close » in a team: switched on once the whole team is through
     Vec2 endPoint() const { return end_; }
     float cycle_ = 0.0f;
     bool enabled_ = true;
@@ -440,9 +468,15 @@ public:
     void setOpen(GameWorld& w, bool open, bool silent = false);
     Json keepState(GameWorld& w) const override;
     void restoreKept(GameWorld& w, const Json& state) override;
+    /// 2.80 (rules of cooperation 4): told to close (`params`: « from », the object that closes it): at once
+    /// alone; in a team, once the whole team is through (it waits open).
+    void close(GameWorld& w, const Json& params);
+    void fixedUpdate(GameWorld& w, float dt) override;
+    const PassageClosing* closingWait() const { return closing_.waiting ? &closing_ : nullptr; }
 
 private:
     uint32_t collider_ = 0;
+    PassageClosing closing_;  // 2.80
     bool open_ = false;
     bool initialOpen_ = false;
     AnimatedSprite sprite_;

@@ -68,7 +68,10 @@ export const Msg = {
     End: 16,
     RaidState: 18,
 } as const;
-export const EndReason = { Finished: 0, HostLeft: 1, TooLong: 2, Refused: 3 } as const;
+/** 2.80: Rules — the game plays another version of the rules of cooperation than the room (it must be updated). */
+export const EndReason = { Finished: 0, HostLeft: 1, TooLong: 2, Refused: 3, Rules: 4 } as const;
+/** 2.80: the rules of cooperation a HELLO without them says (a game before 2.80: 3 at most). */
+export const RULES_BEFORE_280 = 3;
 
 const ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -305,6 +308,8 @@ export function decodeHistory(bytes: Uint8Array, count: number, players: number)
 
 export class CoopRoom extends DurableObject<Bindings> {
     private info: RoomInfo | null = null;
+    /** 2.80: the version of the rules of cooperation the room plays (its first player's: the host's). */
+    private rules: number | null = null;
     private seats: Seat[] = [];
     private started = false;
     /** 2.75 (raids): sockets that watch the game (spectators): every message of the game, never a seat. */
@@ -507,9 +512,20 @@ export class CoopRoom extends DurableObject<Bindings> {
         r.u8(); // the seat it wants: online, its account decides
         r.str(24);
         if (r.ok && r.at < r.b.length) r.str(64); // the account it says: online, the session's own is used
+        // 2.80: the rules of cooperation the game plays (kCoopSimulationVersion; none before 2.80).
+        const rules = r.ok && r.at < r.b.length ? r.u8() : RULES_BEFORE_280;
         if (type !== Msg.Hello || !r.end() || protocol !== PROTOCOL) {
             this.endTo(ws, EndReason.Refused);
             return -1;
+        }
+        if (!this.info!.raid) {
+            // 2.80: a room plays one version of the rules (mixed games would not play the same run). A raid's
+            // games check their branch's version themselves (GO's hash).
+            if (this.rules === null) this.rules = rules;
+            else if (rules !== this.rules) {
+                this.endTo(ws, EndReason.Rules);
+                return -1;
+            }
         }
         if (this.info!.raid?.wiped) {
             // 2.75: a wiped group's seats are closed for good (its players only watch).

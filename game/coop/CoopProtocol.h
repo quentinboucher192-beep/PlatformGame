@@ -38,7 +38,9 @@ constexpr uint32_t kMaxPackage = 16u << 20;
 constexpr uint32_t kPackageChunk = 48u * 1024u;
 
 enum class Msg : uint8_t {
-    Hello = 1,        // game → relay: u8 protocol, u8 wanted seat (255: any), str name, [str account]
+    Hello = 1,        // game → relay: u8 protocol, u8 wanted seat (255: any), str name, [str account, [u8 rules]]
+                      // 2.80: `rules`, the rules of cooperation the game plays (kCoopSimulationVersion; none
+                      // before 2.80: 3 at most); a room plays its host's, another game is refused (End Rules)
     Input = 2,        // game → relay: u32 first tick, u8 n, n frames
     Ping = 3,         // game → relay: u32 game clock (ms), u16 its last round trip (0xFFFF: none)
     Ready = 4,        // game → relay: u8 ready
@@ -69,7 +71,11 @@ struct RoomLevel {
     bool operator==(const RoomLevel&) const = default;
 };
 
-enum class EndReason : uint8_t { Finished = 0, HostLeft = 1, TooLong = 2, Refused = 3 };
+/// 2.80: Rules — the game plays another version of the rules of cooperation than the room (mixed versions
+/// would not play the same run: the game has to be updated).
+enum class EndReason : uint8_t { Finished = 0, HostLeft = 1, TooLong = 2, Refused = 3, Rules = 4 };
+/// 2.80: the rules of cooperation a HELLO without them says (a game before 2.80).
+constexpr uint8_t kRulesBefore280 = 3;
 
 /// Writes `count` frames, each against the previous one (the first against an empty frame).
 void writeFrames(std::vector<uint8_t>& out, const InputFrame* frames, size_t count);
@@ -142,7 +148,8 @@ struct Reader {
 // --------------------------------------------------------------- messages
 /// `account`: the Cosmic Online account of the player ("" : none), shown to the team (the
 /// online relay uses the session's own; the ranking asks each player to confirm anyway).
-std::vector<uint8_t> hello(uint8_t wantedSeat, const std::string& name, const std::string& account = {});
+/// 2.80: then the rules of cooperation this game plays (`rules`, kCoopSimulationVersion by default).
+std::vector<uint8_t> hello(uint8_t wantedSeat, const std::string& name, const std::string& account = {}, int rules = -1);
 std::vector<uint8_t> input(uint32_t firstTick, const InputFrame* frames, size_t count);
 std::vector<uint8_t> ping(uint32_t clockMs, uint16_t lastRoundTripMs);
 std::vector<uint8_t> ready(bool on);

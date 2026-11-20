@@ -5,6 +5,7 @@
 
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/entities/Entities.h"
 
 namespace cosmic {
 
@@ -163,6 +164,10 @@ uint64_t simulationStateHash(const GameWorld& w) {
             f.f32(m.offFrame);
         }
         for (const auto& e : w.entities()) f.bytes(&e->insideMask, 1);
+        // 2.80 (rules of cooperation 4): the passages waiting for the team before they close, hashed only
+        // while one waits (every other digest stays the same).
+        for (size_t k = 0; k < w.entities().size(); ++k)
+            if (passageWaiting(*w.entities()[k])) f.i32(0x57414954 ^ static_cast<int32_t>(k));
     }
     return f.h;
 }

@@ -189,9 +189,17 @@ void CoopRelay::hello(int conn, Reader& r, uint32_t now) {
     const uint8_t wanted = r.u8();
     std::string name = r.str(24);
     std::string account;
+    uint8_t rules = kRulesBefore280;
     if (r.ok && r.p != r.end) account = r.str(64);
+    if (r.ok && r.p != r.end) rules = r.u8();
     if (!r.done() || protocol != kProtocol) {
         send_(conn, end(EndReason::Refused));
+        return drop(conn);
+    }
+    // 2.80: the room plays this PC's rules of cooperation; a game of another version would not play the same
+    // run (a raid's games check their branch's version themselves, GO's hash).
+    if (!raid_ && rules != kCoopSimulationVersion) {
+        send_(conn, end(EndReason::Rules));
         return drop(conn);
     }
     waiting_.erase(std::remove(waiting_.begin(), waiting_.end(), conn), waiting_.end());

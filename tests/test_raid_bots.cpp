@@ -347,7 +347,7 @@ InputFrame interact() {
 }  // namespace
 
 TEST_CASE("cooperation 3 (2.77): death in the rising magma, the soul on the last safe ground; revived only with « Interagir » held, let go it stops") {
-    CHECK(kCoopSimulationVersion == 3);
+    CHECK(kCoopSimulationVersion >= 3);  // 2.80: 4 (passages wait for the team) keeps these rules
     Svc s;
     raid::RaidRun run(s.ws(), bras(), raid::kMaxInstancePlayers);
     CHECK(run.begin(0, 3));  // the Veine de magma

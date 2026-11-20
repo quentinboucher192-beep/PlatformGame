@@ -206,12 +206,22 @@ describe("coop: Duo and Trio boards", () => {
     });
 
     it("2.75: refuses a team attempt played with other team rules (version 1: solid players)", async () => {
-        expect(COOP_SIMULATION_VERSION).toBe(3);
+        expect(COOP_SIMULATION_VERSION).toBe(4);
         const author = await registerPlayer("Auteur");
         const levelId = await publishExtreme(author);
         const nova = await registerPlayer("Nova");
         const lyra = await registerPlayer("Lyra");
         const { run } = await teamAttempt([nova, lyra], levelId, { upTo: 0.3, boss: 0, waves: 0 }, [{ upTo: 0.3 }], { coopVersion: 1 });
+        expect(run.status).toBe("REJECTED");
+        expect(run.reasons.join(" ")).toContain("version des règles de coopération");
+    });
+
+    it("2.80: refuses a team attempt of version 3 (a passage closing behind the first player through)", async () => {
+        const author = await registerPlayer("Auteur");
+        const levelId = await publishExtreme(author);
+        const nova = await registerPlayer("Nova");
+        const lyra = await registerPlayer("Lyra");
+        const { run } = await teamAttempt([nova, lyra], levelId, { upTo: 0.3, boss: 0, waves: 0 }, [{ upTo: 0.3 }], { coopVersion: 3 });
         expect(run.status).toBe("REJECTED");
         expect(run.reasons.join(" ")).toContain("version des règles de coopération");
     });

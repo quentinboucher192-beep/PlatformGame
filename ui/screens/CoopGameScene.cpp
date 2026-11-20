@@ -31,6 +31,7 @@
 #include "game/race/Race.h"
 #include "ui/screens/DeviceLostUi.h"
 #include "ui/screens/DownedView.h"
+#include "ui/screens/PassageWaitView.h"
 #include "ui/screens/Navigation.h"
 
 namespace cosmic {
@@ -725,7 +726,9 @@ public:
         const int down = downSeat();
         if (down >= 0 && !ended_ && !playingHere()) downed::drawFilter(r, ui.screenW(), ui.screenH());
         hud_.render(ui, *world_, view, nullptr, g_.settings.gameplay);
-        if (down >= 0 && !ended_ && !paused_ && !choosing_ && !unplug_.paused()) drawDowned(down);
+        Rect banner;
+        if (down >= 0 && !ended_ && !paused_ && !choosing_ && !unplug_.paused()) banner = drawDowned(down);
+        if (!ended_ && !paused_ && !choosing_ && !unplug_.paused()) drawPassageWait(banner);
         if (unplug_.paused() && !ended_) {
             drawUnplug();
             return;
@@ -755,10 +758,10 @@ public:
     /// The banner of a player of this computer down: what has to happen, the revival under way, the team's
     /// revivals left, where the soul is. The camera is the team's (it frames the players in play): no
     /// view keys. Under the HUD at the top, never over one of its blocks; not over a big message.
-    void drawDowned(int seat) {
+    Rect drawDowned(int seat) {
         UIContext& ui = g_.ui;
         for (const WorldMessage& m : world_->messages())
-            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return;  // it waits
+            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return {};  // it waits
         const GameWorld& w = *world_;
         const GameWorld::TeamMember& m = w.member(seat);
         downed::DownInfo d;
@@ -774,11 +777,34 @@ public:
         for (int i = 0; i < w.teamSize(); ++i) here += setup_.local(i) ? 1 : 0;
         if (here > 1) d.who = setup_.seats[static_cast<size_t>(seat)].name;
         const downed::Banner b = downed::downBanner(d);
+        const downed::Layout l = downed::placed(ui, b, hudTaken());
+        downed::draw(ui, b, l, "coop/down");
+        return l.panel;
+    }
+
+    /// The HUD's blocks drawn this frame (the team's panel, the vitals, the powers…): what goes at the top
+    /// keeps off them.
+    std::vector<Rect> hudTaken() const {
         std::vector<Rect> taken;
         if (!hud_.teamPanelRect().empty()) taken.push_back(hud_.teamPanelRect());
         for (int k = 0; k < Hud::kFadeBlocks; ++k)
             if (!hud_.drawn(k).empty()) taken.push_back(hud_.drawn(k));
-        downed::draw(ui, b, downed::placed(ui, b, taken), "coop/down");
+        return taken;
+    }
+
+    /// 2.80 (rules of cooperation 4): a passage waiting for the team before it closes — who it waits for
+    /// and how far (« Porte : en attente de MVP (12 m) »), under the HUD and the banner of a player down.
+    /// Not over a big message of the level (it waits).
+    void drawPassageWait(const Rect& banner) {
+        for (const WorldMessage& m : world_->messages())
+            if (m.style != WorldMessage::Style::Hint && m.age < m.duration) return;
+        const std::vector<std::string> lines = passagewait::lines(*world_, [this](int i) {
+            return i >= 0 && i < static_cast<int>(setup_.seats.size()) ? setup_.seats[static_cast<size_t>(i)].name : "Joueur " + std::to_string(i + 1);
+        });
+        if (lines.empty()) return;
+        std::vector<Rect> taken = hudTaken();
+        if (!banner.empty()) taken.push_back(banner);
+        passagewait::draw(g_.ui, passagewait::placed(g_.ui, lines, taken));
     }
 
     /// A centred panel of `w` × `h`.
