@@ -9,7 +9,8 @@
 # réanimations, groupe éliminé, vestiaire et liquides (2.75.1, §20) ;
 # notifications et menu du raid : plus aucune carte qui bloque le joueur (2.76.1, §21) ;
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
-# à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23)
+# à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
+# la fiche récapitulative d'un raid terminé, dans le clan (2.78.1, §24)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1478,6 +1479,82 @@ notifications sous le bandeau.
 
 Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes
 de référence ne changent pas.
+
+## 24. La fiche récapitulative d'un raid terminé, dans le clan (2.78.1)
+
+Chaque raid terminé du clan, gagné ou non, garde sa **fiche récapitulative** (maquette « Récapitulatif d'un raid ») :
+CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris part ouvre sa fiche), la fiche de l'événement
+(« Fiche récapitulative » dans son bandeau, dès que le raid est fini ou que son Cœur est tombé) et les résultats du raid
+(« Fiche récapitulative » en haut). Un raid est **terminé** quand son Cœur est tombé (validé) ou que l'événement est fini.
+
+### Le serveur (`server/src/raidRecap.ts`)
+
+* `GET /clans/{id}/raids` : les 20 derniers raids terminés auxquels le clan a pris part (`raid_clan_entries`), jamais un
+  raid annulé, avec ce qu'il en reste pour la liste (Cœur tombé, parties tombées k / 7, durée).
+* `GET /clans/{id}/raids/{événement}/recap` : la fiche entière. Lue par les **membres du clan** (le joueur de la session :
+  jamais un identifiant venu de la requête ; un autre joueur reçoit `403 NOT_CLAN_MEMBER`) et par les **administrateurs**
+  (modération, n'importe quel clan ; `viewer.member` dit au jeu que la carte du titan et la fiche de l'événement d'un
+  raid de clan ne lui sont pas ouvertes). Un raid pas encore terminé ou sans le clan : `404`.
+* **Seulement ce que le serveur a accepté** : les objectifs validés par le consensus de chaque instance
+  (`raid_branch_objectives` : la chute de chaque Gigaboss et le groupe dont le rapport l'a validée, les reliques — l'objectif
+  facultatif de la zone secrète de chaque branche —, le Cœur), les zones terminées (`raid_zone_completions`), la vie partagée
+  du Cœur (`raid_heart_damage`, la part de chaque instance, d'où la part du clan), la phase la plus haute de chaque combat
+  (`raid_gigaboss_fights`), les tableaux de contributions acceptés par la majorité de chaque instance (`raid_contributions`,
+  `raid_zone_contributions`), les groupes éliminés (`raid_instances.wiped_zone`, écrit une fois l'élimination acceptée), les
+  groupes de renfort (`relieves`, créés par le serveur), les récompenses accordées (`raid_reward_grants`) et les titres du
+  clan (`raid_clan_titles`). Ce qui attend sa majorité (`pendingOf` : tableaux, objectifs) est compté **à part**, jamais dans
+  un chiffre ; le jeu écrit « en attente de validation » tant que l'événement n'est pas définitif (sa fin et les dix minutes
+  des derniers rapports passées) ou que quelque chose attend.
+* Les joueurs du clan sont ceux de son **inscription** à l'événement (un joueur d'un autre clan n'est jamais dans les
+  meilleurs du clan, même s'il a joué dans un de ses groupes). Chaque requête lit tout en un lot ; chaque instruction passe
+  par un index (`server/test/raidRecap.test.ts`).
+
+### L'écran (`ui/screens/RaidRecapScene`, modèle `game/online/RaidRecap`)
+
+* **À gauche** : les raids terminés du clan (« Asterion · 20 nov. », « Asterion vaincu · 2 h 47 min » ou « 3 / 7 parties ·
+  temps écoulé », la marque du Cœur éclaté ou resté debout), puis **le titan du raid affiché** dessiné par parties
+  (`AsterionFigure` : chaque partie tombée détruite, celle qui a été combattue affaiblie, le Cœur), la **relique** de chaque
+  branche rapportée posée sur sa partie (le sprite des reliques du jeu), « 7 / 7 parties tombées · Cœur vaincu ».
+* **L'en-tête**, sur le décor du film de la chute d'Asterion (le ciel, la nébuleuse, la supernova et son onde
+  d'`assets/stories/asterion`, assombris sous les textes ; sans supernova quand le Cœur a tenu) : l'emblème du clan,
+  « ASTERION EST TOMBÉ » (ou « RAID TERMINÉ »), l'événement (date, format, début → fin, durée ou « temps écoulé »), le clan,
+  ses joueurs, ses groupes, ses renforts et son rang mondial officiel.
+* **Sept chiffres** : parties du titan, Cœur (vaincu, phase, scellé), zones terminées sur 56, reliques sur 7, morts,
+  réanimations, groupes éliminés et repris.
+* **« LES SEPT PARTIES ET LE CŒUR »** : pour chaque partie, le **portrait animé de son Gigaboss** (le sprite de son combat,
+  `drawCreature`), son nom, la relique de sa branche, sa barre sur l'axe du temps (de l'heure de début à l'heure pleine
+  suivant la fin) jusqu'à sa chute validée, l'heure et le groupe qui l'a abattue (« Groupe 2 (renfort) », « [AUBE] groupe 3 »
+  pour un autre clan d'un événement mondial), ou « debout · phase 2 / 3 », « jamais affronté » ; le Cœur et le nombre de
+  groupes qui l'ont frappé.
+* **« LES MEILLEURS DU RAID »** : le meilleur joueur du clan dans chaque catégorie, avec son **avatar** : dégâts aux Gigaboss et
+  au Cœur (part des dégâts du clan), soutien (blocages et réanimations), réanimations faites, mécanismes, objectifs ; « Vous »
+  quand c'est vous.
+* **« RÉCOMPENSES OBTENUES PAR LE CLAN »** : chaque récompense accordée à ses joueurs, dessinée **avec sa propre texture** (le
+  badge par son emblème, le titre par sa puce, la combinaison portée par Nova, le cadre, l'effet de victoire), les badges des
+  Gigaboss ensemble ; combien de joueurs l'ont reçue ; les titres du clan. Plus de récompenses que de place : des pages
+  (‹ ›).
+* **« VOTRE RAID »** : vos groupes, les parties qu'ils ont abattues, vos zones terminées, vos réanimations, votre part des dégâts
+  du clan au Cœur et votre rang ; « Vous n'avez pas joué ce raid… » sinon.
+* **Boutons** (seulement ceux dont la cible existe) : « Carte du titan » (la carte de l'événement), « Revoir le film de
+  victoire » (le film du §17, seulement si le Cœur est tombé), « Fiche de l'événement » (résultats officiels, classement
+  mondial) ; Échap / B : retour.
+* Clavier, manette, souris : les lignes de la liste, les parties du titan (leur infobulle), les pages des récompenses et les
+  boutons sont des arrêts du focus.
+
+### Placement et tests (`tests/test_raid_recap.cpp`)
+
+`layoutRaidRecap` place chaque texte dans son rectangle, à la suite du précédent, mesuré (plus petit, puis raccourci, jamais
+sous 11,5 pixels) ; le test vérifie en 1280 × 720, 1600 × 900 et 1920 × 1080, en français et en anglais, sur un raid gagné
+(deux pages de récompenses) et un raid perdu que je n'ai pas joué : chaque texte dans son rectangle et son panneau, aucun
+texte sur un autre ni sous une image (portraits, reliques, avatars, aperçus des récompenses, icônes), aucun panneau sur un
+autre ; l'écran dessine les huit portraits, le titan, le décor et chaque récompense avec sa texture ; l'audit des textes
+(`--i18n-audit`) ne trouve rien resté en français. Les réponses du test sont des **données d'essai** (clan [ESSAI]) : rien
+n'est livré avec le jeu.
+
+### Versions
+
+Affichage et lecture seulement : `kSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes de référence ne
+changent pas ; aucune migration.
 
 ---
 

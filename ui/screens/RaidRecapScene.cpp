@@ -82,6 +82,17 @@ RecapText fitted(UIContext& ui, const std::string& t, const Rect& r, FontFace fa
     return out;
 }
 
+/// Pieces as shown: the game's words translated, the others as they are; a text the game's words alone make stays
+/// French until it is drawn (fitted() translates it).
+RecapText fittedPieces(UIContext& ui, const raids::Pieces& p, const Rect& r, FontFace face, float size, float minScale = 0.75f, Align a = Align::Left) {
+    bool raw = false;
+    for (const raids::Piece& x : p) raw = raw || x.verbatim;
+    if (!raw) return fitted(ui, raids::joined(p), r, face, size, minScale, a);
+    std::string shown;
+    for (const raids::Piece& x : p) shown += x.verbatim ? x.text : i18n::tr(x.text);
+    return fitted(ui, shown, r, face, size, minScale, a, true);
+}
+
 float measureW(UIContext& ui, const std::string& t, FontFace face, float size) { return ui.text().measure(t, face, ui.s(fz(ui, size))).x; }
 
 /// The name of a part as the recap shows it (translated where drawn).
@@ -153,6 +164,7 @@ std::vector<const RecapText*> RaidRecapLayout::texts() const {
         out.push_back(&r.name);
         out.push_back(&r.boss);
         out.push_back(&r.label);
+        out.push_back(&r.label2);
     }
     for (const RecapText& t : ticks) out.push_back(&t);
     for (const BRow& r : brows) {
@@ -229,7 +241,7 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
         const float tx = L.emblem.right() + ui.s(18), tw = L.aside.x - ui.s(18) - tx;
         L.title = fitted(ui, raids::recapTitle(rc), {tx, L.header.y + ui.s(12), tw, ui.s(52)}, FontFace::Title, 38, 0.6f);
         L.eventLine = fitted(ui, raids::recapEventLine(rc), {tx, L.header.y + ui.s(68), tw, ui.s(26)}, FontFace::Body, 17);
-        L.clanLine = fitted(ui, raids::recapClanLine(rc), {tx, L.header.y + ui.s(98), tw, ui.s(26)}, FontFace::Body, 18);
+        L.clanLine = fittedPieces(ui, raids::recapClanPieces(rc), {tx, L.header.y + ui.s(98), tw, ui.s(26)}, FontFace::Body, 18);
         L.pending = fitted(ui, raids::recapPendingText(rc), {L.aside.x, L.aside.y, L.aside.w, ui.s(28)}, FontFace::Bold, 14, 0.75f, Align::Right);
     }
     // The seven key figures.
@@ -274,7 +286,7 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
         const float rowsBottom = L.timeline.bottom() - ui.s(12) - axisH - ui.s(4);
         const size_t n = rc.parts.size() + 1;
         const float rowH = std::min(ui.s(48), (rowsBottom - rowsTop) / static_cast<float>(n));
-        const float labelW = std::min(ui.s(210), w0 * 0.28f), nameW = ui.s(128);
+        const float labelW = std::min(ui.s(240), w0 * 0.33f), nameW = ui.s(128);
         // The time axis: from the start to the next whole hour after the end.
         L.axisFrom = rc.startsAt;
         const int64_t dur = std::max<int64_t>(rc.endAt - rc.startsAt, 60);
@@ -291,13 +303,16 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
             const float ph = rowH - ui.s(4);
             row.portrait = {x0, ry + ui.s(2), ph, ph};
             const float nx = row.portrait.right() + ui.s(10);
-            row.name = fitted(ui, partName(row.part), {nx, ry + ui.s(1), nameW, rowH * 0.54f}, FontFace::Bold, 16, 0.8f);
+            row.name = fitted(ui, partName(row.part), {nx, ry + ui.s(1), nameW, rowH * 0.54f - ui.s(1)}, FontFace::Bold, 16, 0.8f);
             const std::string boss = heart ? std::string("Cœur d'Asterion") : p.boss;
             row.boss = fitted(ui, boss, {nx, ry + rowH * 0.54f, nameW, rowH * 0.44f}, FontFace::Body, 13, 0.8f, Align::Left, !heart);
             const float relicX = nx + nameW + ui.s(8), rs = std::min(ui.s(22), rowH - ui.s(6));
             if (!heart) row.relic = {relicX, ry + (rowH - rs) * 0.5f, rs, rs};
             const Rect labelR{row.r.right() - labelW, ry, labelW, rowH};
-            row.label = fitted(ui, raids::recapPartLabel(p, heart, rc.heart.groups), labelR, FontFace::Body, 14, 0.75f);
+            const std::string when = raids::recapPartLabel(p, heart, rc.heart.groups).first;
+            row.label = fitted(ui, when, {labelR.x, ry + ui.s(1), labelW, rowH * 0.5f - ui.s(1)}, FontFace::Bold, 14, 0.8f);
+            row.label2 = fittedPieces(ui, raids::recapWhoPieces(p, heart, rc.heart.groups), {labelR.x, ry + rowH * 0.5f, labelW, rowH * 0.5f - ui.s(1)},
+                                      FontFace::Body, 13, 0.8f);
             const float trackX = relicX + ui.s(22) + ui.s(12);
             row.track = {trackX, ry + rowH * 0.5f - ui.s(5), labelR.x - ui.s(14) - trackX, ui.s(10)};
             if (p.fallen && p.at > 0 && L.axisTo > L.axisFrom) {
@@ -464,7 +479,8 @@ RaidRecapLayout layoutRaidRecap(UIContext& ui, const raids::Recap& rc, const std
             // Too many parts for the line: their number, never a cut list.
             if (lines[i].first == "Parties abattues" && measureW(ui, value, FontFace::Bold, 15) * 0.75f > vr.w)
                 value = std::to_string(rc.me.parts.size()) + " parties";
-            l.value = fitted(ui, value, vr, FontFace::Bold, 15, 0.75f, Align::Right);
+            l.value = lines[i].first == "Groupe" ? fittedPieces(ui, raids::recapMyGroupPieces(rc), vr, FontFace::Bold, 15, 0.75f, Align::Right)
+                                                 : fitted(ui, value, vr, FontFace::Bold, 15, 0.75f, Align::Right);
             L.mlines.push_back(std::move(l));
         }
     }
@@ -768,7 +784,13 @@ private:
         text(L.title, recap_.heartFallen ? kGold : kText);
         text(L.eventLine, kDim);
         text(L.clanLine, kText);
-        if (!L.pending.text.empty()) text(L.pending, kGold);
+        if (!L.pending.text.empty()) {
+            // Readable over the supernova: a dark backing under the texts of the right.
+            const float tw = std::min(L.pending.r.w, ui.text().measure(L.pending.text, L.pending.face, L.pending.px).x);
+            r.fillRoundedRect({L.pending.r.right() - tw - ui.s(10), L.pending.r.y - ui.s(2), tw + ui.s(16), L.pending.r.h + ui.s(4)}, ui.s(8),
+                              Color{10, 14, 34, 210});
+            text(L.pending, kGold);
+        }
     }
 
     void drawCards(const RaidRecapLayout& L) {
@@ -842,7 +864,8 @@ private:
             } else if (p.phase > 0) {
                 r.fillRoundedRect(row.track, row.track.h * 0.5f, track);
             }
-            text(row.label, p.fallen ? (p.by.me ? kGold : kText) : kMuted);
+            text(row.label, p.fallen ? (row.heart ? kHeart : kGreen) : kMuted);
+            text(row.label2, p.fallen ? (p.by.me ? kGold : kText) : kMuted);
         }
         view_.timelineRows = static_cast<int>(L.trows.size());
         if (L.axis.w > 0.0f) r.fillRect(L.axis, Color{60, 74, 124, 200});

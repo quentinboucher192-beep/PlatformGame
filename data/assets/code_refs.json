@@ -118,7 +118,8 @@
    "game/levels/ObjectTypes.cpp": 1
   },
   "animations/relic.json": {
-   "game/levels/ObjectTypes.cpp": 1
+   "game/levels/ObjectTypes.cpp": 1,
+   "ui/screens/RaidRecapScene.cpp": 1
   },
   "animations/root_spike.json": {
    "game/enemies/GuardianAttacks.cpp": 1
@@ -731,6 +732,18 @@
    "game/cosmetics/SuitRecolor.cpp": 1,
    "ui/studio/Studio.cpp": 1,
    "ui/studio/StudioImport.cpp": 1
+  },
+  "stories/asterion/espace.png": {
+   "ui/screens/RaidRecapScene.cpp": 1
+  },
+  "stories/asterion/nebuleuse.png": {
+   "ui/screens/RaidRecapScene.cpp": 1
+  },
+  "stories/asterion/nova.png": {
+   "ui/screens/RaidRecapScene.cpp": 1
+  },
+  "stories/asterion/onde.png": {
+   "ui/screens/RaidRecapScene.cpp": 1
   },
   "textures/fx/dust.png": {
    "packaging/DependencyCollector.cpp": 1,

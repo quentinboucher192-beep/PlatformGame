@@ -242,6 +242,7 @@ void checkLayout(UIContext& ui, const RaidRecapLayout& L, const char* what) {
         in(r.name, r.r);
         in(r.boss, r.r);
         in(r.label, r.r);
+        in(r.label2, r.r);
         CHECK(inside(r.portrait, r.r));
         CHECK(inside(r.track, r.r));
         CHECK(r.track.w > 0.0f);
@@ -309,7 +310,7 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(r.heart.fallen && r.heart.groups == 12);
     CHECK(r.deaths == -1 && r.me.deaths == -1);  // not followed by the server: « — », never a guess
     CHECK(raids::recapTitle(r) == "ASTERION EST TOMBÉ");
-    CHECK(raids::recapClanLine(r) == "Clan [ESSAI] · 23 joueurs · 3 groupes · 2 renforts · 2ᵉ sur 23 clans");
+    CHECK(raids::recapClanLine(r) == "Clan [ESSAI] · 23 joueurs · 3 groupes · 2 renforts · 2e sur 23 clans");
     CHECK(raids::recapPendingText(r) == "2 résultats en attente de validation");
     CHECK(raids::recapEventLine(r).find(" · durée 2 h 47 min") != std::string::npos);
     const auto figs = raids::recapFigures(r);
@@ -317,16 +318,17 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(figs[0].value == "7 / 7" && figs[1].value == "Vaincu" && figs[2].value == "56 / 56" && figs[3].value == "4 / 7");
     CHECK(figs[4].value == "—" && figs[5].value == "38" && figs[6].value == "1 · 1 repris");
     // The timeline's labels: my clan's group, another clan's, a group of reinforcement, the heart.
-    CHECK(raids::recapPartLabel(r.parts[0], false, 0).find(" · Groupe 1") != std::string::npos);
-    CHECK(raids::recapPartLabel(r.parts[2], false, 0).find(" · [AUTRE] groupe 3") != std::string::npos);
-    CHECK(raids::recapPartLabel(r.parts[4], false, 0).find(" · Groupe 4 (renfort)") != std::string::npos);
-    CHECK(raids::recapPartLabel(r.heart, true, r.heart.groups).find(" · 12 groupes") != std::string::npos);
+    CHECK(raids::recapPartLabel(r.parts[0], false, 0).second == "Groupe 1");
+    CHECK(raids::recapPartLabel(r.parts[0], false, 0).first.size() == 5);  // « 21:58 », in the computer's zone
+    CHECK(raids::recapPartLabel(r.parts[2], false, 0).second == "[AUTRE] groupe 3");
+    CHECK(raids::recapPartLabel(r.parts[4], false, 0).second == "Groupe 4 (renfort)");
+    CHECK(raids::recapPartLabel(r.heart, true, r.heart.groups).second == "12 groupes");
     // The bests: a share of the clan's damage, a count; the category the server does not follow is not shown.
     CHECK(r.best.size() == raids::recapCategories().size());
     CHECK(raids::recapBestValue(r.best[0]) == "18 %");
     CHECK(raids::recapBestValue(r.best[2]) == "2 340");
     CHECK(!r.best[6].followed);
-    CHECK(r.titles.size() == 2 && r.titles[1] == "Dévoreurs dévorés · 2ᵉ");
+    CHECK(r.titles.size() == 2 && r.titles[1] == "Dévoreurs dévorés");
     const auto mine = raids::recapMyLines(r, {{"crane", "Crâne"}, {"torse", "Torse"}, {"jambe_droite", "Jambe droite"}});
     CHECK(mine.size() == 5);
     CHECK(mine[0].second == "1" && mine[1].second == "Crâne, Torse, Jambe droite");
@@ -336,9 +338,9 @@ TEST_CASE("raid recap: the server's answers read as they are, nothing computed b
     CHECK(raids::recapTitle(lost) == "RAID TERMINÉ");
     CHECK(raids::recapPendingText(lost).empty());
     CHECK(raids::recapEventLine(lost).find(" · temps écoulé (3 h 0 min)") != std::string::npos);
-    CHECK(raids::recapPartLabel(lost.parts[3], false, 0) == "debout · phase 2 / 3");
-    CHECK(raids::recapPartLabel(lost.parts[5], false, 0) == "jamais affronté");
-    CHECK(raids::recapPartLabel(lost.heart, true, 0) == "scellé");
+    CHECK(raids::recapPartLabel(lost.parts[3], false, 0) == std::make_pair(std::string("debout"), std::string("phase 2 / 3")));
+    CHECK(raids::recapPartLabel(lost.parts[5], false, 0).first == "jamais affronté");
+    CHECK(raids::recapPartLabel(lost.heart, true, 0).first == "scellé");
     CHECK(raids::recapFigures(lost)[1].value == "Scellé");
     CHECK(raids::recapMyLines(lost, {}).empty());
     // The list.
@@ -377,6 +379,9 @@ TEST_CASE("raid recap: the layout holds its texts at 1280 x 720 and 1920 x 1080,
                 CHECK(L.buttons.size() == 3);  // the titan's map, the victory film, the event's sheet
                 CHECK(L.ticks.size() >= 2);
                 CHECK(L.mlines.size() == 5);
+                // A clan's tag is the players' word: never translated (« ESSAI » is a French word too).
+                CHECK(L.clanLine.text.find("[ESSAI]") != std::string::npos);
+                CHECK(L.trows[2].label2.text.find("[AUTRE]") != std::string::npos);
                 // Each fall on its track, in the order of the time.
                 for (size_t i = 0; i + 1 < 7; ++i) CHECK(L.trows[i].mark >= 0.0f && L.trows[i].mark <= L.trows[i + 1].mark + 0.5f);
             }
@@ -407,11 +412,6 @@ TEST_CASE("raid recap: the screen draws the gigaboss's sprites, the titan, the f
         CHECK(v.titan && v.backdrop);
         CHECK(v.tiles >= 4 && v.previews == v.tiles);  // every reward drawn with its texture
         CHECK(v.buttons == 1);  // a fixture: the titan's map is not offered (no event on a server), the film is
-        // A capture for the documentation, on demand (COSMIC_RECAP_SHOT=<file.png>).
-        if (const char* shot = std::getenv("COSMIC_RECAP_SHOT"); shot && size.first == 1920) {
-            rig.app.requestScreenshot(shot);
-            rig.app.runFrames(2);
-        }
         rig.app.popScene();
         rig.app.runFrames(1);
         rig.app.pushScene(makeRaidRecapFrom(g, fixtureList(), fixtureLost()));
@@ -422,4 +422,47 @@ TEST_CASE("raid recap: the screen draws the gigaboss's sprites, the titan, the f
         rig.app.runFrames(1);
     }
     rig.resize(1280, 720);
+}
+
+TEST_CASE("raid recap: in English, nothing left in French (the audit of the texts drawn)") {
+    Rig rig;
+    GameServices& g = *rig.g;
+    i18n::setLanguage(Language::English);
+    i18n::startAudit();
+    for (const Json& recap : {fixtureWon(), fixtureLost()}) {
+        rig.app.pushScene(makeRaidRecapFrom(g, fixtureList(), recap));
+        rig.app.runFrames(4);
+        rig.app.popScene();
+        rig.app.runFrames(1);
+    }
+    const auto found = i18n::auditFindings();
+    i18n::stopAudit();
+    i18n::setLanguage(Language::French);
+    for (const auto& f : found) std::printf("  [%s] %s → %s (partie : %s)\n", f.reason.c_str(), f.text.c_str(), f.shown.c_str(), f.part.c_str());
+    CHECK(found.empty());
+}
+
+TEST_CASE("raid recap: a capture at 1920 x 1080, on demand (COSMIC_RECAP_SHOT=<file.png>[,<file in English>])") {
+    const char* shot = std::getenv("COSMIC_RECAP_SHOT");
+    if (!shot) return;  // nothing to capture: the other cases check the screen
+    std::string fr = shot, en;
+    if (const size_t comma = fr.find(','); comma != std::string::npos) {
+        en = fr.substr(comma + 1);
+        fr = fr.substr(0, comma);
+    }
+    Rig rig(1920, 1080);
+    GameServices& g = *rig.g;
+    for (int k = 0; k < 2; ++k) {
+        const std::string& file = k == 0 ? fr : en;
+        if (file.empty()) continue;
+        i18n::setLanguage(k == 1 ? Language::English : Language::French);
+        rig.app.pushScene(makeRaidRecapFrom(g, fixtureList(), fixtureWon()));
+        rig.app.runFrames(20);
+        rig.app.requestScreenshot(file);
+        rig.app.runFrames(2);
+        CHECK(raidRecapView(rig.app.topScene()).loaded);
+        rig.app.popScene();
+        rig.app.runFrames(1);
+    }
+    i18n::setLanguage(Language::French);
 }

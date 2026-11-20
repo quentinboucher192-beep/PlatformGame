@@ -296,6 +296,11 @@ des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». D�
   joueurs, puis le **résultat officiel** est figé à la clôture — « Asterion est tombé » ou « a survécu ».
   À la clé : la combinaison « Écorce d'Asterion », le titre de clan « Dévoreurs dévorés » pour le top 10, et
   des sessions de rattrapage pour les absents.
+* **Fiche récapitulative** (2.78.1) : chaque raid terminé du clan, gagné ou non, garde sa fiche dans CLANS › RAIDS —
+  « Asterion est tombé » ou jusqu'où il est allé, sept chiffres clés, la frise des sept parties et du Cœur (le portrait
+  animé de chaque Gigaboss, l'heure de sa chute, le groupe qui l'a abattu, la relique de sa branche), le titan par parties,
+  les meilleurs du clan avec leur avatar, les récompenses dessinées avec leur texture et votre raid ; seulement ce que le
+  serveur a validé ([docs/RAIDS.md §24](docs/RAIDS.md#24-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
 
 ### Fiabilité, charge et anti-triche
 

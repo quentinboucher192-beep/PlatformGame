@@ -185,10 +185,9 @@ Recap parseRecap(const Json& d) {
     const Json& titles = field(d, "titles");
     if (titles.is_array())
         for (const Json& j : titles) {
+            // The titles' names (the clan's world rank is in the header's line).
             const std::string t = jstr(j, "title");
-            const int rank = jget<int>(j, "rank", 0);
-            // A clan title of a ranking says its place (« Dévoreurs dévorés · 2ᵉ »); a collective one does not.
-            if (!t.empty()) r.titles.push_back(rank > 1 ? t + " · " + ordinal(rank) : t);
+            if (!t.empty()) r.titles.push_back(t);
         }
     const Json& me = field(d, "me");
     r.me.played = jget<bool>(me, "played", false);
@@ -229,13 +228,23 @@ std::string recapEventLine(const Recap& r) {
     return line;
 }
 
-std::string recapClanLine(const Recap& r) {
-    std::string line = "Clan [" + r.clanTag + "] · " + std::to_string(r.players) + (r.players > 1 ? " joueurs" : " joueur");
-    line += " · " + std::to_string(r.groups) + (r.groups > 1 ? " groupes" : " groupe");
-    line += " · " + std::to_string(r.reinforcements) + (r.reinforcements > 1 ? " renforts" : " renfort");
-    if (r.worldRank > 0 && r.worldClans > 0) line += " · " + ordinal(r.worldRank) + " sur " + std::to_string(r.worldClans) + " clans";
-    return line;
+std::string joined(const Pieces& p) {
+    std::string out;
+    for (const Piece& x : p) out += x.text;
+    return out;
 }
+
+Pieces recapClanPieces(const Recap& r) {
+    const Piece dot{" · ", true};
+    Pieces p = {{"Clan", false}, {" [" + r.clanTag + "]", true}, dot, {std::to_string(r.players) + (r.players > 1 ? " joueurs" : " joueur"), false}, dot,
+                {std::to_string(r.groups) + (r.groups > 1 ? " groupes" : " groupe"), false}, dot,
+                {std::to_string(r.reinforcements) + (r.reinforcements > 1 ? " renforts" : " renfort"), false}};
+    if (r.worldRank == 1 && r.worldClans > 0) p.insert(p.end(), {dot, {"1er sur " + std::to_string(r.worldClans) + " clans", false}});
+    else if (r.worldRank > 1 && r.worldClans > 0) p.insert(p.end(), {dot, {std::to_string(r.worldRank) + "e sur " + std::to_string(r.worldClans) + " clans", false}});
+    return p;
+}
+
+std::string recapClanLine(const Recap& r) { return joined(recapClanPieces(r)); }
 
 std::string recapPendingText(const Recap& r) {
     if (!recapPending(r)) return "";
@@ -274,17 +283,41 @@ std::string recapBestValue(const RecapBest& b) {
     return groupDigits(b.value);
 }
 
-std::string recapPartLabel(const RecapPart& p, bool heart, int heartGroups) {
+std::pair<std::string, std::string> recapPartLabel(const RecapPart& p, bool heart, int heartGroups) {
     if (!p.fallen) {
-        if (heart) return p.phase > 0 ? "debout · phase " + std::to_string(p.phase) + " / 4" : "scellé";
-        return p.phase > 0 ? "debout · phase " + std::to_string(std::min(3, p.phase)) + " / 3" : "jamais affronté";
+        if (heart) return p.phase > 0 ? std::pair<std::string, std::string>{"debout", "phase " + std::to_string(p.phase) + " / 4"} : std::pair<std::string, std::string>{"scellé", ""};
+        return p.phase > 0 ? std::pair<std::string, std::string>{"debout", "phase " + std::to_string(std::min(3, p.phase)) + " / 3"}
+                           : std::pair<std::string, std::string>{"jamais affronté", ""};
     }
     const std::string when = p.at > 0 ? hhmm(toSystemLocal(p.at)) : std::string("—");
-    if (heart) return when + " · " + std::to_string(heartGroups) + (heartGroups > 1 ? " groupes" : " groupe");
-    if (!p.by.valid) return when;
-    std::string who = p.by.mine ? "Groupe " + std::to_string(p.by.group) : "[" + p.by.clanTag + "] groupe " + std::to_string(p.by.group);
-    if (p.by.reinforcement) who += " (renfort)";
-    return when + " · " + who;
+    return {when, joined(recapWhoPieces(p, heart, heartGroups))};
+}
+
+Pieces recapWhoPieces(const RecapPart& p, bool heart, int heartGroups) {
+    if (!p.fallen) return {{recapPartLabel(p, heart, heartGroups).second, false}};
+    if (heart) return {{std::to_string(heartGroups) + (heartGroups > 1 ? " groupes" : " groupe"), false}};
+    if (!p.by.valid) return {};
+    Pieces who;
+    if (p.by.mine) who.push_back({"Groupe " + std::to_string(p.by.group), false});
+    else who.insert(who.end(), {{"[" + p.by.clanTag + "] ", true}, {"groupe " + std::to_string(p.by.group), false}});
+    if (p.by.reinforcement) who.insert(who.end(), {{" ", true}, {"(renfort)", false}});
+    return who;
+}
+
+Pieces recapMyGroupPieces(const Recap& r) {
+    Pieces out;
+    std::vector<std::string> seen;
+    for (const RecapMyGroup& g : r.me.groups) {
+        const std::string key = g.clanTag + ":" + std::to_string(g.group);
+        if (g.part == "coeur" || std::find(seen.begin(), seen.end(), key) != seen.end()) continue;
+        seen.push_back(key);
+        if (!out.empty()) out.push_back({", ", true});
+        if (!g.mine) out.push_back({"[" + g.clanTag + "] ", true});
+        out.push_back({std::to_string(g.group), true});
+        if (g.reinforcement) out.insert(out.end(), {{" ", true}, {"(renfort)", false}});
+    }
+    if (out.empty()) out.push_back({"—", true});
+    return out;
 }
 
 std::vector<std::pair<std::string, std::string>> recapMyLines(const Recap& r, const std::vector<std::pair<std::string, std::string>>& partNames) {
@@ -296,23 +329,17 @@ std::vector<std::pair<std::string, std::string>> recapMyLines(const Recap& r, co
     std::vector<std::pair<std::string, std::string>> out;
     if (!r.me.played) return out;
     // My groups (the clan's first), and the parts they downed.
-    std::string groups;
-    std::vector<int> seen;
-    for (const RecapMyGroup& g : r.me.groups) {
-        if (g.part == "coeur" || std::find(seen.begin(), seen.end(), g.group * 2 + (g.mine ? 1 : 0)) != seen.end()) continue;
-        seen.push_back(g.group * 2 + (g.mine ? 1 : 0));
-        if (!groups.empty()) groups += ", ";
-        groups += g.mine ? std::to_string(g.group) : "[" + g.clanTag + "] " + std::to_string(g.group);
-        if (g.reinforcement) groups += " (renfort)";
-    }
-    if (groups.empty()) groups = "—";
+    const std::string groups = joined(recapMyGroupPieces(r));
     std::string parts;
     for (const std::string& p : r.me.parts) parts += (parts.empty() ? "" : ", ") + nameOf(p);
     out.push_back({"Groupe", groups});
     out.push_back({"Parties abattues", parts.empty() ? std::string("aucune") : parts});
     out.push_back({"Zones terminées", std::to_string(r.me.zones)});
     out.push_back({"Morts / réanimations", (r.me.deaths >= 0 ? std::to_string(r.me.deaths) : std::string("—")) + " / " + std::to_string(r.me.revives)});
-    out.push_back({"Dégâts au Cœur", r.me.heartRank > 0 ? percent(r.me.heartShare) + " (" + ordinal(r.me.heartRank) + " du clan)" : std::string("—")});
+    std::string heart = "—";
+    if (r.me.heartRank == 1) heart = percent(r.me.heartShare) + " (1er du clan)";
+    else if (r.me.heartRank > 1) heart = percent(r.me.heartShare) + " (" + std::to_string(r.me.heartRank) + "e du clan)";
+    out.push_back({"Dégâts au Cœur", heart});
     return out;
 }
 

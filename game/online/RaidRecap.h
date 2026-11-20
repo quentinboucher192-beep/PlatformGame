@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/core/Json.h"
@@ -115,13 +116,25 @@ struct Recap {
 };
 Recap parseRecap(const Json& data);
 
+/// A text made of pieces: the game's words (translated where they are drawn) and what is never translated (a
+/// clan's tag, a group's number, the separators).
+struct Piece {
+    std::string text;
+    bool verbatim = false;
+};
+using Pieces = std::vector<Piece>;
+/// The French text of pieces, as written.
+std::string joined(const Pieces& p);
+
 /// Whether figures may still change (the event not final, or tables waiting for their majority).
 bool recapPending(const Recap& r);
 /// « ASTERION EST TOMBÉ » or « RAID TERMINÉ ».
 std::string recapTitle(const Recap& r);
 /// « Événement du jeudi 20 novembre · Raid standard · 21:00 → 23:47 · durée 2 h 47 min ».
 std::string recapEventLine(const Recap& r);
-/// « Clan [NOVA] · 23 joueurs · 3 groupes · 2 renforts ».
+/// « Clan [NOVA] · 23 joueurs · 3 groupes · 2 renforts » (« · 2e sur 23 clans » for a world event): its pieces, the tag
+/// never translated.
+Pieces recapClanPieces(const Recap& r);
 std::string recapClanLine(const Recap& r);
 /// « Fiche provisoire : 2 tableaux en attente de validation », « » when final.
 std::string recapPendingText(const Recap& r);
@@ -142,9 +155,13 @@ const std::vector<RecapCategory>& recapCategories();
 /// « 18 % », « 2 340 », « 0 » ; « — » when nobody has one.
 std::string recapBestValue(const RecapBest& b);
 
-/// The time of a fall on the timeline and who downed it: « 21:58 · Groupe 1 », « 22:52 · Groupe 2 (renfort) »,
-/// « 22:24 · [AUBE] groupe 3 », the heart « 23:47 · 12 groupes »; a part standing: « debout · phase 2 / 3 ».
-std::string recapPartLabel(const RecapPart& p, bool heart, int heartGroups);
+/// The two lines of a part on the timeline: the time of its fall and who downed it (« 21:58 », « Groupe 1 » ;
+/// « Groupe 2 (renfort) », « [AUBE] groupe 3 », the heart « 12 groupes »); standing: « debout », « phase 2 / 3 ».
+std::pair<std::string, std::string> recapPartLabel(const RecapPart& p, bool heart, int heartGroups);
+/// Who downed it, in pieces (another clan's tag never translated).
+Pieces recapWhoPieces(const RecapPart& p, bool heart, int heartGroups);
+/// My groups for « VOTRE RAID » (« 1 », « 1, [AUBE] 2 (renfort) »), in pieces.
+Pieces recapMyGroupPieces(const Recap& r);
 /// The lines of « VOTRE RAID »: label and value.
 std::vector<std::pair<std::string, std::string>> recapMyLines(const Recap& r, const std::vector<std::pair<std::string, std::string>>& partNames);
 

@@ -78,7 +78,7 @@ struct RaidRecapLayout {
     RecapText timelineTitle, timelineSub;
     struct TRow {
         Rect r, portrait, relic, track;
-        RecapText name, boss, label;
+        RecapText name, boss, label, label2;  // label: the time of its fall (« debout »), label2: who downed it
         float mark = -1.0f;  // x of its fall on the track (-1: standing)
         std::string part;
         bool heart = false;

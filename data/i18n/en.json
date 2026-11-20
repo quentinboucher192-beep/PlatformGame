@@ -13608,6 +13608,14 @@
     "mardi": "Tuesday",
     "mercredi": "Wednesday",
     "samedi": "Saturday",
-    "dimanche": "Sunday"
+    "dimanche": "Sunday",
+    "debout": "standing",
+    "Clan [{0}]": "Clan [{0}]",
+    "1er sur {0} clans": "1st of {0} clans",
+    "{0} (1er du clan)": "{0} (1st in the clan)",
+    "{0} ({1}e du clan)": "{0} (#{1} in the clan)",
+    "{0}e sur {1} clans": "#{0} of {1} clans",
+    "Titres du clan": "Clan titles",
+    "groupe {0}": "group {0}"
   }
 }

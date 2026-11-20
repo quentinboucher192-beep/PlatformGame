@@ -496,6 +496,12 @@
    ]
   },
   {
+   "fr": "1er sur {0} clans",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "1re pression : pose une balise (gratuit). 2e pression dans les 5 s : retour instantané à la balise, à l'arrêt et brièvement invulnérable.",
    "where": [
     "data/powers/recall.json"
@@ -793,12 +799,6 @@
    "fr": "[{0}] est déjà invité.",
    "where": [
     "server/src/raids.ts"
-   ]
-  },
-  {
-   "fr": "[{0}] groupe {1}",
-   "where": [
-    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -12650,6 +12650,7 @@
   {
    "fr": "Clan",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/screens/AdminClans.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/NotificationsScene.cpp",
@@ -12661,18 +12662,6 @@
    "fr": "Clan : {0}. Le nouveau nom et le nouveau tag remplacent les anciens partout (page du clan, classements, SOCIAL). Le Journal garde les deux.",
    "where": [
     "ui/screens/AdminClans.cpp"
-   ]
-  },
-  {
-   "fr": "Clan [{0}] · {1} joueur",
-   "where": [
-    "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
-   "fr": "Clan [{0}] · {1} joueurs",
-   "where": [
-    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -17889,13 +17878,7 @@
    ]
   },
   {
-   "fr": "debout · phase {0} / 3",
-   "where": [
-    "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
-   "fr": "debout · phase {0} / 4",
+   "fr": "debout",
    "where": [
     "game/online/RaidRecap.cpp"
    ]
@@ -28125,6 +28108,12 @@
    "where": [
     "game/online/RaidRecap.cpp",
     "game/raid/RaidSimulation.cpp"
+   ]
+  },
+  {
+   "fr": "groupe {0}",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -49162,6 +49151,7 @@
   {
    "fr": "phase {0} / 3",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/raid/DreadfangRoutine.cpp",
     "game/raid/HeartbreakerRoutine.cpp",
     "game/raid/SkullmawRoutine.cpp",
@@ -49171,6 +49161,7 @@
   {
    "fr": "phase {0} / 4",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/raid/AsterionHeartRoutine.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -74163,6 +74154,12 @@
    ]
   },
   {
+   "fr": "{0} (1er du clan)",
+   "where": [
+    "game/online/RaidRecap.cpp"
+   ]
+  },
+  {
    "fr": "{0} (absente de ce boss)",
    "where": [
     "editors/enemy_editor/EnemyEditorParts.cpp"
@@ -74271,12 +74268,6 @@
    ]
   },
   {
-   "fr": "{0} ({1} du clan)",
-   "where": [
-    "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
    "fr": "{0} ({1} gigaboss)",
    "where": [
     "game/online/Raids.cpp"
@@ -74292,6 +74283,12 @@
    "fr": "{0} ({1} étoiles)",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ({1}e du clan)",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
@@ -76111,6 +76108,7 @@
   {
    "fr": "{0} joueur",
    "where": [
+    "game/online/RaidRecap.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp",
     "ui/screens/RaidRecapScene.cpp"
@@ -76167,6 +76165,7 @@
   {
    "fr": "{0} joueurs",
    "where": [
+    "game/online/RaidRecap.cpp",
     "game/raid/RaidSheets.cpp",
     "ui/screens/AdminRaids.cpp",
     "ui/screens/RaidEventScene.cpp",
@@ -77193,12 +77192,6 @@
    ]
   },
   {
-   "fr": "{0} sur {1} clans",
-   "where": [
-    "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
    "fr": "{0} sur {1} emplacement · le joueur part avec ces pouvoirs, à la place de ceux du niveau",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -77766,18 +77759,6 @@
    ]
   },
   {
-   "fr": "{0} · {1} groupe",
-   "where": [
-    "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
-   "fr": "{0} · {1} groupes",
-   "where": [
-    "game/online/RaidRecap.cpp"
-   ]
-  },
-  {
    "fr": "{0} · {1} points faibles",
    "where": [
     "game/online/Raids.cpp"
@@ -78118,6 +78099,12 @@
    "fr": "{0}/{1}/{2} à {3}",
    "where": [
     "ui/screens/AchievementsScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0}e sur {1} clans",
+   "where": [
+    "game/online/RaidRecap.cpp"
    ]
   },
   {
