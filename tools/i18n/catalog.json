@@ -6864,6 +6864,12 @@
    ]
   },
   {
+   "fr": "Avec des invités, le test passe par un relais du serveur : chaque ordinateur calcule les mêmes joueurs simulés, un invité qui arrive rattrape la partie en cours, et s'il s'absente ou part, son joueur simulé reprend sa place. Sans invité, le test reste local et hors ligne comme avant. Un test ne compte jamais : aucun record, aucune contribution, aucune récompense, aucun classement, aucune progression du raid.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Avec des joueurs invités, par le serveur et sans rien compter : aucun rapport, ni classement, ni contribution, ni récompense.",
    "where": [
     "ui/screens/AdminRaids.cpp"
@@ -11634,6 +11640,12 @@
    "fr": "Chaque joueur debout sur un évent quand il se ferme compte un mécanisme.",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "Chaque joueur invité a sa case « Invincible » (décochée par défaut), que seul l'administrateur coche ou décoche, avant comme pendant le test : le changement s'applique au même instant sur tous les ordinateurs du test.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -32937,6 +32949,12 @@
    "fr": "L'inversion de gravité",
    "where": [
     "data/raids/asterion_sheets.json"
+   ]
+  },
+  {
+   "fr": "L'invité reçoit une notification et un message : en haut de NOTIFICATIONS, « Répondre » ouvre l'invitation (qui invite, quel test, son groupe, s'il sera invincible, le temps qui reste) pour l'accepter ou la refuser dans les 3 minutes. L'administrateur voit chaque réponse et peut annuler une invitation ou retirer un joueur du test. Un jeu d'une autre version ne peut pas rejoindre (message clair).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -66333,6 +66351,12 @@
    "fr": "Tester Asterion",
    "where": [
     "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
+   "fr": "Tester Asterion (administration) : dans le test d'une zone comme dans « Simuler un raid complet », l'administrateur peut inviter de vrais joueurs, administrateurs ou non. « Inviter des joueurs connectés… » ouvre la liste des joueurs connectés, avec une recherche par nom ; chaque invité prend la place d'un joueur simulé de son groupe (jamais un de plus) et l'administrateur choisit son groupe dans le raid complet.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
