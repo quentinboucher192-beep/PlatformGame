@@ -566,7 +566,7 @@ void AdminRaids::drawTest(const Rect& r) {
                                (testSkill_ == 0 ? "réaction 0,3 s, 60 % de précision" : testSkill_ == 2 ? "réaction 0,05 s, toujours précis" : "réaction 0,15 s, 85 % de précision") +
                                ") ; après 15 s sans commande, votre joueur passe en pilote automatique.",
                        FontFace::Body, 13, w,
-                       std::max(1, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))),
+                       std::max(0, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))  /* 2.80: never past the panel */),
               {x, y}, 13, ui.s(18), kDim);
     ui.popId();
 }
@@ -633,10 +633,12 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
                              "dans un vrai raid. Rejoignez un autre groupe depuis la pause (vous y remplacez un joueur simulé : il garde sa taille) "
                              "ou regardez-le.";
     const float lineH = ui.s(18);
-    const int lines = std::max(1, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));
+    const int lines = std::max(0, static_cast<int>((r.bottom() - ui.s(34) - y) / lineH));  // 2.80: never past the panel
     y += drawLines(ui, wrap(ui, text, FontFace::Body, 13, w, lines), {x, y}, 13, lineH, kDim) + ui.s(6);
     if (y + ui.s(22) <= r.bottom())
-        fit(ui, "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.", {x, y + ui.s(10)}, 13, w, kGold, FontFace::Bold);
+        fit(ui, !capture && guests_->active() > 0 ? "TEST EN LIGNE — avec les joueurs invités, par le serveur : aucun résultat, aucune récompense."
+                                                  : "TEST LOCAL — rien n'est envoyé : aucun appel réseau, aucun résultat, aucune récompense.",
+            {x, y + ui.s(10)}, 13, w, kGold, FontFace::Bold);
     ui.popId();
 }
 

@@ -13765,6 +13765,7 @@
     "L'administrateur n'est plus dans le test depuis 60 s : le test est terminé.": "The administrator has been out of the test for 60 s: the test is over.",
     "Le test est terminé.": "The test is over.",
     "Revenir dans le test": "Back to the test",
-    "Revenir dans le test d'Asterion que vous avez accepté": "Back to the Asterion test you accepted"
+    "Revenir dans le test d'Asterion que vous avez accepté": "Back to the Asterion test you accepted",
+    "TEST EN LIGNE — avec les joueurs invités, par le serveur : aucun résultat, aucune récompense.": "ONLINE TEST — with the invited players, through the server: no result, no reward."
   }
 }

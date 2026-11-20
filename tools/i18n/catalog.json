@@ -66234,6 +66234,12 @@
    ]
   },
   {
+   "fr": "TEST EN LIGNE — avec les joueurs invités, par le serveur : aucun résultat, aucune récompense.",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "TEST EN LIGNE — rien n'est compté · {0} · {1}",
    "where": [
     "ui/screens/RaidGameScene.cpp"
