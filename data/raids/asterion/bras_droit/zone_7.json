@@ -6849,6 +6849,34 @@
     "glow": true,
     "sway": 0.0
    }
+  },
+  {
+   "id": "o419",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    4448.0,
+    0.0,
+    16.0,
+    480.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
+  },
+  {
+   "id": "o420",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    8544.0,
+    0.0,
+    16.0,
+    480.0
+   ],
+   "props": {
+    "material": "basalt"
+   }
   }
  ],
  "events": [],
@@ -6999,6 +7027,9 @@
       "o144"
      ],
      "action": "open",
+     "ambushes": [
+      "poignet_embuscade_1"
+     ],
      "label": "La vanne double",
      "message": "La vanne double cède : la porte s'ouvre"
     },
@@ -7015,6 +7046,9 @@
       "o150"
      ],
      "action": "activate",
+     "ambushes": [
+      "poignet_embuscade_1"
+     ],
      "label": "Le monte-charge",
      "message": "Le monte-charge démarre : il fait ensuite la navette tout seul"
     },
@@ -7031,6 +7065,10 @@
       "o243"
      ],
      "action": "open",
+     "ambushes": [
+      "poignet_embuscade_1",
+      "poignet_embuscade_2"
+     ],
      "label": "La plaque jumelle basse",
      "message": "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
      "group": "jumelles"
@@ -7048,6 +7086,10 @@
       "o243"
      ],
      "action": "open",
+     "ambushes": [
+      "poignet_embuscade_1",
+      "poignet_embuscade_2"
+     ],
      "label": "La plaque jumelle haute",
      "message": "Les plaques jumelles tiennent ensemble : la porte s'ouvre",
      "group": "jumelles"

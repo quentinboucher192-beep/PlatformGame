@@ -14379,6 +14379,18 @@
     "Échap / B : fermer": "Esc / B: close",
     "Aucun tableau validé pour cette partie : un tableau compte quand la majorité du groupe l'a confirmé à la fin de la zone.": "No validated table for this part: a table counts once most of the group confirmed it at the end of the zone.",
     "les tableaux validés des groupes de votre clan, additionnés": "the validated tables of your clan's groups, added up",
-    "validé par le serveur": "validated by the server"
+    "validé par le serveur": "validated by the server",
+    "Aucun groupe n'y est entré pour l'instant : rien de compté.": "No group has entered it yet: nothing counted.",
+    "Embuscade à vaincre d'abord": "Beat the ambush first",
+    "embuscade à vaincre d'abord": "beat the ambush first",
+    "Le Cœur s'ouvre quand les sept Gigaboss sont tombés : aucun groupe n'y est entré.": "The Heart opens once the seven Gigabosses have fallen: no group has entered it.",
+    "Pas encore découvert : aucun groupe n'y est entré.": "Not discovered yet: no group has entered it.",
+    "Raid à tester": "Raid to test",
+    "Raids : chaque mécanisme d'Asterion (écluses, monte-charge, vanne double, plaques jumelles) attend aussi que les embuscades de sa zone situées avant lui soient vaincues ; tant qu'il en reste une, il l'annonce (« Embuscade à vaincre d'abord ») et ne fait rien. Dans les expéditions vers les antres et l'aorte du Cœur, chaque mécanisme vient désormais après une embuscade (titan 11).": "Raids: every mechanism of Asterion (locks, goods lift, double valve, twin plates) also waits for the ambushes of its zone laid before it to be beaten; while one is left, it says so (\"Beat the ambush first\") and does nothing. In the expeditions to the lairs and the Heart's aorta, every mechanism now comes after an ambush (titan 11).",
+    "Raids : le monte-charge ne démarre plus avec le premier joueur monté dessus : il attend le nombre de joueurs affiché (« 1 / 4 » reste immobile), puis ouvre la porte en haut de son mur.": "Raids: the goods lift no longer starts with the first player on it: it waits for the number of players shown (\"1 / 4\" stays still), then opens the door at the top of its wall.",
+    "Raids : plus moyen de passer un mécanisme en escaladant son mur à coups de sauts muraux : les murs des écluses et du monte-charge montent jusqu'en haut de la zone, et les portes de la vanne double et des plaques jumelles du Poignet-verrou ont un mur au-dessus d'elles.": "Raids: no more getting past a mechanism by climbing its wall with wall jumps: the walls of the locks and of the goods lift go up to the top of the zone, and the doors of the Wrist-lock's double valve and twin plates have a wall above them.",
+    "Tableau des contributions : choisir une partie « PAS DÉCOUVERT » (ou le Cœur fermé) ne fait plus planter le jeu ; une partie où aucun groupe n'est entré le dit clairement.": "Contributions table: choosing a part \"NOT DISCOVERED\" (or the closed Heart) no longer crashes the game; a part no group has entered says so clearly.",
+    "Raids : le bouton du HUD n'affiche plus que la touche du menu du raid (« Tab », ou le bouton de la manette) ; les onglets du panneau du raid simulé et du menu du raid ont tous la même largeur, et le panneau garde sa taille d'un onglet à l'autre.": "Raids: the HUD's button now shows only the raid menu's key (\"Tab\", or the gamepad's button); the tabs of the simulated raid's panel and of the raid menu all have the same width, and the panel keeps its size from one tab to another.",
+    "Administration › Raids : une liste « Raid à tester » au-dessus des réglages du test (Asterion pour l'instant), au clavier, à la manette et à la souris.": "Administration › Raids: a \"Raid to test\" list above the test's settings (Asterion for now), with the keyboard, the gamepad and the mouse."
   }
 }

@@ -1548,7 +1548,8 @@ public:
         ui.r().fillRect({0, 0, W, H}, Color{2, 4, 10, 170});
         const float bottom = statusRect_.w > 0.0f && statusRect_.y > H * 0.5f ? statusRect_.y - ui.s(10) : H - ui.s(24);
         // 2.79: the contributions (the titan and the table) on the whole width; opaque: nothing of the game under its texts.
-        const float pw = simPanel_ == 1 ? W - ui.s(32) : std::min(ui.s(1180), W - ui.s(32));
+        // 2.81.2: every tab the same panel (the width of « Contributions »): it no longer resizes at each tab.
+        const float pw = W - ui.s(32);
         const Rect box{(W - pw) * 0.5f, ui.s(24), pw, std::max(ui.s(200), bottom - ui.s(24))};
         ui.r().fillRoundedRect(box, ui.s(16), kSimPanelFill);
         ui.r().drawRoundedRect(box, ui.s(16), ui.theme().accent.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
@@ -1566,10 +1567,9 @@ public:
         fit(ui, relay_.on ? "RAID COMPLET — TEST EN LIGNE, rien n'est compté" : "RAID COMPLET — TEST LOCAL, rien n'est envoyé", {x, box.y + ui.s(36)}, 20,
             w - closeW - ui.s(16), kGold, FontFace::Title);
         const std::vector<std::string> tabs = {"Groupes", "Contributions", "Événements du monde", "Carte du titan"};
-        std::vector<bool> on(tabs.size(), false);
-        on[static_cast<size_t>(simPanel_)] = true;
+        // 2.81.2: one width for every tab (the widest name): choosing one never moves the others.
         float chipsBottom = box.y + ui.s(70);
-        const int t = chips(ui, "tabs", x, box.y + ui.s(66), box.right() - pad, tabs, on, chipsBottom);
+        const int t = raidui::tabs(ui, "tabs", x, box.y + ui.s(66), box.right() - pad, tabs, simPanel_, chipsBottom);
         if (t >= 0) simPanel_ = t;
         const Rect body{x, chipsBottom + ui.s(12), w, box.bottom() - pad - chipsBottom - ui.s(12)};
         if (simPanel_ == 0) drawSimGroups(body);
@@ -2903,11 +2903,11 @@ public:
             const float ph = std::max(ui.s(4), std::min(sr.h * 0.25f, ui.s(10)));
             r.fillRect({sr.x, sr.bottom() - ph, sr.w, ph}, v.done ? Color{124, 240, 168, 160} : Color{255, 210, 122, 150});
             if (v.done || v.need <= 0) continue;
-            const std::string t = std::to_string(std::min(v.on, v.need)) + " / " + std::to_string(v.need);
-            const float pw = std::min(textW(ui, t, 13, FontFace::Bold) + ui.s(16), std::max(ui.s(40), sr.w));
-            const Rect pill{sr.center().x - pw * 0.5f, sr.y - ui.s(30), pw, ui.s(24)};
-            r.fillRoundedRect(pill, ui.s(10), Color{16, 22, 46, 220});
-            fit(ui, t, pill.center(), 13, pill.w - ui.s(10), v.on >= v.need ? kGreen : kGold, FontFace::Bold, Align::Center, true);
+            // 2.81.2: an ambush before it still to beat: it says so (measured, kept on the screen) instead of its count.
+            const raidhud::Pill pl = raidhud::coopPill(ui, sr, v.on, v.need, v.ambush, ui.screenW());
+            r.fillRoundedRect(pl.box, ui.s(10), Color{16, 22, 46, 220});
+            fit(ui, pl.text, pl.box.center(), pl.font, pl.box.w - ui.s(10), v.ambush ? kViolet : v.on >= v.need ? kGreen : kGold, FontFace::Bold, Align::Center,
+                !v.ambush /* the count as it is; the sentence translated, as it was measured */);
         }
     }
 
@@ -3365,6 +3365,7 @@ public:
             const raid::RaidRun::CoopView v = run_->coop(k);
             const std::string& label = run_->rules().coops[k].label;
             if (v.done) lines.push_back({"OK", label, kGreen});
+            else if (v.ambush) lines.push_back({"!", label + " : " + raidhud::kAmbushFirst, kViolet});  // 2.81.2
             else lines.push_back({std::to_string(std::min(v.on, std::max(0, v.need))) + " / " + std::to_string(std::max(1, v.need)), label + " : joueurs ensemble sur la plaque", todo});
         }
         // The branch: what is left in its other zones (the zones to take back first).
@@ -3436,6 +3437,7 @@ public:
             const raid::RaidRun::CoopView v = run_->coop(k);
             const std::string& label = run_->rules().coops[k].label;
             if (v.done) lines.push_back({"OK", label + " : en marche", kGreen});
+            else if (v.ambush) lines.push_back({"!", label + " : " + raidhud::kAmbushFirst, kViolet});  // 2.81.2
             else if (v.need > 0) lines.push_back({std::to_string(v.on) + " / " + std::to_string(v.need), label + " : joueurs ensemble sur la plaque", kGold});
         }
         // 2.68: what the other branches of the titan did here (a link on in this zone).

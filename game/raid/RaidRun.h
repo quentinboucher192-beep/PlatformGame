@@ -219,6 +219,8 @@ public:
     struct CoopView {
         int on = 0, need = 1;
         bool done = false;
+        /// 2.81.2: an ambush of the zone before it is still to beat: it does nothing yet (« Embuscade à vaincre d'abord »).
+        bool ambush = false;
     };
     CoopView coop(size_t index) const;
     /// 2.75: the group was wiped (every player of the instance down at once, 2.78: whatever their zone):

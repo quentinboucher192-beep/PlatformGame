@@ -20,6 +20,25 @@ namespace cosmic::raidhud {
 
 using namespace raidui;
 
+Pill coopPill(UIContext& ui, const Rect& plate, int on, int need, bool ambush, float screenW) {
+    Pill p;
+    const float pad = ui.s(16), margin = ui.s(8);
+    if (ambush) {
+        // Its whole text (wider than the plate: it says why), smaller only when the screen is too narrow.
+        p.text = kAmbushFirst;
+        const float room = std::max(ui.s(40), screenW - margin * 2.0f);
+        p.font = ui.fitFont(p.text, FontFace::Bold, 13.0f, room - pad, 0.6f);
+        const float w = std::min(room, textW(ui, p.text, p.font, FontFace::Bold) + pad);
+        const float x = std::clamp(plate.center().x - w * 0.5f, margin, std::max(margin, screenW - margin - w));
+        p.box = {x, plate.y - ui.s(30), w, ui.s(24)};
+        return p;
+    }
+    p.text = std::to_string(std::min(on, need)) + " / " + std::to_string(need);
+    const float w = std::min(textW(ui, p.text, p.font, FontFace::Bold) + pad, std::max(ui.s(40), plate.w));
+    p.box = {plate.center().x - w * 0.5f, plate.y - ui.s(30), w, ui.s(24)};
+    return p;
+}
+
 namespace {
 
 constexpr float kTexel = 3.0f;  // world pixels per pixel of the baked terrain

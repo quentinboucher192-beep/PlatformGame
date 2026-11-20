@@ -2006,6 +2006,12 @@
    ]
   },
   {
+   "fr": "Administration › Raids : une liste « Raid à tester » au-dessus des réglages du test (Asterion pour l'instant), au clavier, à la manette et à la souris.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Administration › Raids : « Tester Asterion » (administrateurs) lance seul et en local n'importe quelle zone d'une branche du raid, combat de Pyroclast compris, en mode « Invincible (admin) · non classé », avec un nombre de joueurs simulés (2 à 8) pour sa vie et une phase de départ. Un test ne compte jamais : aucun rapport, ni consensus, ni classement, ni récompense ; le serveur refuse tout rapport marqué comme test.",
    "where": [
     "data/news/changelog.json"
@@ -4016,6 +4022,7 @@
     "game/content/AssetCatalog.cpp",
     "game/online/Raids.cpp",
     "game/online/Raids.h",
+    "ui/screens/AdminRaids.cpp",
     "ui/screens/AdminScene.cpp"
    ]
   },
@@ -5680,6 +5687,12 @@
    "fr": "Aucun groupe n'est encore entré en jeu.",
    "where": [
     "ui/screens/RaidWorldScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucun groupe n'y est entré pour l'instant : rien de compté.",
+   "where": [
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -23202,6 +23215,12 @@
    ]
   },
   {
+   "fr": "Embuscade à vaincre d'abord",
+   "where": [
+    "ui/online/RaidHud.h"
+   ]
+  },
+  {
    "fr": "Embuscades (vagues battues)",
    "where": [
     "ui/screens/RaceScene.cpp"
@@ -37159,6 +37178,12 @@
    ]
   },
   {
+   "fr": "Le Cœur s'ouvre quand les sept Gigaboss sont tombés : aucun groupe n'y est entré.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "Le cœur à nu",
    "where": [
     "data/raids/asterion/bras_droit/zone_8.json"
@@ -43097,6 +43122,7 @@
    "fr": "Menu",
    "where": [
     "engine/input/InputTypes.cpp",
+    "ui/online/RaidMenu.cpp",
     "ui/screens/OnlineAccountScene.cpp"
    ]
   },
@@ -43110,12 +43136,6 @@
    "fr": "Menu droite",
    "where": [
     "engine/input/InputTypes.cpp"
-   ]
-  },
-  {
-   "fr": "MENU DU RAID",
-   "where": [
-    "ui/online/RaidMenu.cpp"
    ]
   },
   {
@@ -43133,7 +43153,6 @@
   {
    "fr": "MENU DU RAID · {0}",
    "where": [
-    "ui/online/RaidMenu.cpp",
     "ui/screens/RaidGameScene.cpp"
    ]
   },
@@ -50037,6 +50056,12 @@
    ]
   },
   {
+   "fr": "Pas encore découvert : aucun groupe n'y est entré.",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "pas encore découverte",
    "where": [
     "ui/screens/RaidGameScene.cpp",
@@ -56324,6 +56349,12 @@
    ]
   },
   {
+   "fr": "Raid à tester",
+   "where": [
+    "ui/screens/AdminRaids.cpp"
+   ]
+  },
+  {
    "fr": "Raids",
    "where": [
     "ui/screens/AdminScene.cpp",
@@ -56351,6 +56382,12 @@
    ]
   },
   {
+   "fr": "Raids : chaque mécanisme d'Asterion (écluses, monte-charge, vanne double, plaques jumelles) attend aussi que les embuscades de sa zone situées avant lui soient vaincues ; tant qu'il en reste une, il l'annonce (« Embuscade à vaincre d'abord ») et ne fait rien. Dans les expéditions vers les antres et l'aorte du Cœur, chaque mécanisme vient désormais après une embuscade (titan 11).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : dans toute zone d'Asterion qui a une embuscade (la garde de l'entrée de chaque branche, le Nid des parasites de l'Abdomen), les passages vers la suite restent fermés tant qu'elle n'est pas vaincue (porte, « Embuscades restantes »), le retour reste ouvert ; une embuscade vaincue par un autre groupe l'est aussi chez vous.",
    "where": [
     "data/news/changelog.json"
@@ -56369,7 +56406,19 @@
    ]
   },
   {
+   "fr": "Raids : le bouton du HUD n'affiche plus que la touche du menu du raid (« Tab », ou le bouton de la manette) ; les onglets du panneau du raid simulé et du menu du raid ont tous la même largeur, et le panneau garde sa taille d'un onglet à l'autre.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : le magma et les autres liquides qui montent remplissent tout leur bassin (au moins la largeur de l'écran, d'un rebord de roche à l'autre), toujours devant les joueurs et les ennemis.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : le monte-charge ne démarre plus avec le premier joueur monté dessus : il attend le nombre de joueurs affiché (« 1 / 4 » reste immobile), puis ouvre la porte en haut de son mur.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -56406,6 +56455,12 @@
   },
   {
    "fr": "Raids : plus aucune carte ne s'ouvre d'elle-même pendant qu'on joue. Une zone terminée, le groupe éliminé, une zone reprise par un groupe de renfort ou à reprendre, un gigaboss vaincu, un lien du titan, la chute d'Asterion : une notification courte (3,5 s, avec un son) qui ne prend aucune touche ni le focus, l'une sous l'autre quand plusieurs arrivent ensemble (trois au plus, les suivantes attendent leur tour).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : plus moyen de passer un mécanisme en escaladant son mur à coups de sauts muraux : les murs des écluses et du monte-charge montent jusqu'en haut de la zone, et les portes de la vanne double et des plaques jumelles du Poignet-verrou ont un mur au-dessus d'elles.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -67087,6 +67142,12 @@
    "where": [
     "ui/online/RaidMenu.cpp",
     "ui/screens/RaidRecapScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tableau des contributions : choisir une partie « PAS DÉCOUVERT » (ou le Cœur fermé) ne fait plus planter le jeu ; une partie où aucun groupe n'est entré le dit clairement.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {

@@ -14,7 +14,7 @@
  "bounds": [
   0,
   0,
-  16832,
+  15392,
   1056
  ],
  "ambientLight": "#8ca4c8",
@@ -1027,175 +1027,170 @@
   },
   {
    "id": "o59",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
     2016.0,
-    960.0,
-    480.0,
-    96.0
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "snow_rock"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o60",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2016.0,
-    736.0,
-    480.0,
-    32.0
+    2080.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o61",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
     2016.0,
-    512.0,
-    480.0,
-    32.0
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o62",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2336.0,
-    288.0,
-    16.0,
-    160.0
+    2080.0,
+    768.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o63",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2336.0,
-    512.0,
-    16.0,
-    160.0
+    2016.0,
+    688.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o64",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2336.0,
-    736.0,
-    16.0,
-    160.0
+    2080.0,
+    640.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o65",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2336.0,
-    448.0,
-    16.0,
-    64.0
+    2016.0,
+    592.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o66",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2336.0,
-    672.0,
-    16.0,
-    64.0
+    2080.0,
+    544.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o67",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2336.0,
-    896.0,
-    16.0,
-    64.0
+    2752.0,
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o68",
-   "type": "sign",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2052.0,
-    936.0,
-    24.0,
-    24.0
+    2816.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
-    "auto": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o69",
-   "type": "emitter",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2112.0,
-    928.0,
-    160.0,
-    32.0
+    2752.0,
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "effect": "fireflies",
-    "rate": 3
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o70",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    2184.0,
-    920.0,
-    16.0,
+    2816.0,
+    768.0,
+    64.0,
     16.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 90,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "ice_ledge"
    }
   },
   {
@@ -1203,8 +1198,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    912.0,
+    2752.0,
+    688.0,
     64.0,
     16.0
    ],
@@ -1217,8 +1212,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    864.0,
+    2816.0,
+    640.0,
     64.0,
     16.0
    ],
@@ -1231,8 +1226,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    816.0,
+    2752.0,
+    592.0,
     64.0,
     16.0
    ],
@@ -1245,8 +1240,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    768.0,
+    2816.0,
+    544.0,
     64.0,
     16.0
    ],
@@ -1256,234 +1251,66 @@
   },
   {
    "id": "o75",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    688.0,
-    64.0,
-    16.0
+    2144.0,
+    736.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o76",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    640.0,
-    64.0,
-    16.0
+    2144.0,
+    512.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o77",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2496.0,
-    592.0,
-    64.0,
-    16.0
+    2880.0,
+    736.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o78",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    2560.0,
-    544.0,
-    64.0,
-    16.0
+    2880.0,
+    512.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o79",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o80",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o81",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o82",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o83",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o84",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o85",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3232.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o86",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    3296.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o87",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    2624.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o88",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    2624.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o89",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    3360.0,
-    736.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o90",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    3360.0,
-    512.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o91",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    2496.0,
+    2016.0,
     960.0,
     1600.0,
     96.0
@@ -1493,11 +1320,11 @@
    }
   },
   {
-   "id": "o92",
+   "id": "o80",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2681.0,
+    2201.0,
     950.0,
     14.0,
     10.0
@@ -1511,11 +1338,11 @@
    }
   },
   {
-   "id": "o93",
+   "id": "o81",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3401.0,
+    2921.0,
     950.0,
     14.0,
     10.0
@@ -1529,11 +1356,11 @@
    }
   },
   {
-   "id": "o94",
+   "id": "o82",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2823.0,
+    2343.0,
     948.0,
     18.0,
     12.0
@@ -1547,11 +1374,11 @@
    }
   },
   {
-   "id": "o95",
+   "id": "o83",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3113.0,
+    2633.0,
     726.0,
     14.0,
     10.0
@@ -1565,11 +1392,11 @@
    }
   },
   {
-   "id": "o96",
+   "id": "o84",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2679.0,
+    2199.0,
     724.0,
     18.0,
     12.0
@@ -1583,11 +1410,11 @@
    }
   },
   {
-   "id": "o97",
+   "id": "o85",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3689.0,
+    3209.0,
     406.0,
     14.0,
     10.0
@@ -1601,11 +1428,11 @@
    }
   },
   {
-   "id": "o98",
+   "id": "o86",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3113.0,
+    2633.0,
     502.0,
     14.0,
     10.0
@@ -1619,11 +1446,11 @@
    }
   },
   {
-   "id": "o99",
+   "id": "o87",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3543.0,
+    3063.0,
     948.0,
     18.0,
     12.0
@@ -1637,11 +1464,11 @@
    }
   },
   {
-   "id": "o100",
+   "id": "o88",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2967.0,
+    2487.0,
     948.0,
     18.0,
     12.0
@@ -1655,11 +1482,11 @@
    }
   },
   {
-   "id": "o101",
+   "id": "o89",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3689.0,
+    3209.0,
     950.0,
     14.0,
     10.0
@@ -1673,11 +1500,11 @@
    }
   },
   {
-   "id": "o102",
+   "id": "o90",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2824.0,
+    2344.0,
     712.0,
     16.0,
     24.0
@@ -1691,11 +1518,11 @@
    }
   },
   {
-   "id": "o103",
+   "id": "o91",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3545.0,
+    3065.0,
     726.0,
     14.0,
     10.0
@@ -1709,11 +1536,11 @@
    }
   },
   {
-   "id": "o104",
+   "id": "o92",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3400.0,
+    2920.0,
     402.0,
     16.0,
     14.0
@@ -1727,11 +1554,11 @@
    }
   },
   {
-   "id": "o105",
+   "id": "o93",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2823.0,
+    2343.0,
     500.0,
     18.0,
     12.0
@@ -1745,11 +1572,11 @@
    }
   },
   {
-   "id": "o106",
+   "id": "o94",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3112.0,
+    2632.0,
     936.0,
     16.0,
     24.0
@@ -1763,11 +1590,11 @@
    }
   },
   {
-   "id": "o107",
+   "id": "o95",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2679.0,
+    2199.0,
     948.0,
     18.0,
     12.0
@@ -1781,11 +1608,11 @@
    }
   },
   {
-   "id": "o108",
+   "id": "o96",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3401.0,
+    2921.0,
     950.0,
     14.0,
     10.0
@@ -1799,11 +1626,11 @@
    }
   },
   {
-   "id": "o109",
+   "id": "o97",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3687.0,
+    3207.0,
     724.0,
     18.0,
     12.0
@@ -1817,11 +1644,11 @@
    }
   },
   {
-   "id": "o110",
+   "id": "o98",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3111.0,
+    2631.0,
     724.0,
     18.0,
     12.0
@@ -1835,11 +1662,11 @@
    }
   },
   {
-   "id": "o111",
+   "id": "o99",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2969.0,
+    2489.0,
     406.0,
     14.0,
     10.0
@@ -1853,11 +1680,11 @@
    }
   },
   {
-   "id": "o112",
+   "id": "o100",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3688.0,
+    3208.0,
     402.0,
     16.0,
     14.0
@@ -1871,11 +1698,11 @@
    }
   },
   {
-   "id": "o113",
+   "id": "o101",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2819.0,
+    2339.0,
     926.0,
     26.0,
     34.0
@@ -1889,11 +1716,11 @@
    }
   },
   {
-   "id": "o114",
+   "id": "o102",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3545.0,
+    3065.0,
     950.0,
     14.0,
     10.0
@@ -1907,11 +1734,11 @@
    }
   },
   {
-   "id": "o115",
+   "id": "o103",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3400.0,
+    2920.0,
     712.0,
     16.0,
     24.0
@@ -1925,11 +1752,11 @@
    }
   },
   {
-   "id": "o116",
+   "id": "o104",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2823.0,
+    2343.0,
     724.0,
     18.0,
     12.0
@@ -1943,11 +1770,11 @@
    }
   },
   {
-   "id": "o117",
+   "id": "o105",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    2681.0,
+    2201.0,
     406.0,
     14.0,
     10.0
@@ -1961,11 +1788,11 @@
    }
   },
   {
-   "id": "o118",
+   "id": "o106",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    3400.0,
+    2920.0,
     488.0,
     16.0,
     24.0
@@ -1979,28 +1806,28 @@
    }
   },
   {
-   "id": "o119",
+   "id": "o107",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
-    2528.0,
+    2048.0,
     320.0,
     1536.0,
     640.0
    ],
    "props": {
     "doors": "",
-    "waves": "o92,o93,o94,o95,o96,o97,o98;o99,o100,o101,o102,o103,o104,o105;o106,o107,o108,o109,o110,o111,o112;o113,o114,o115,o116,o117,o118",
+    "waves": "o80,o81,o82,o83,o84,o85,o86;o87,o88,o89,o90,o91,o92,o93;o94,o95,o96,o97,o98,o99,o100;o101,o102,o103,o104,o105,o106",
     "lockCamera": false,
     "music": ""
    }
   },
   {
-   "id": "o120",
+   "id": "o108",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    3290.0,
+    2810.0,
     922.0,
     12.0,
     12.0
@@ -2010,11 +1837,11 @@
    }
   },
   {
-   "id": "o121",
+   "id": "o109",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    2970.0,
+    2490.0,
     698.0,
     12.0,
     12.0
@@ -2024,11 +1851,11 @@
    }
   },
   {
-   "id": "o122",
+   "id": "o110",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3288.0,
+    2808.0,
     888.0,
     16.0,
     16.0
@@ -2041,11 +1868,11 @@
    }
   },
   {
-   "id": "o123",
+   "id": "o111",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3288.0,
+    2808.0,
     664.0,
     16.0,
     16.0
@@ -2058,11 +1885,11 @@
    }
   },
   {
-   "id": "o124",
+   "id": "o112",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    3288.0,
+    2808.0,
     440.0,
     16.0,
     16.0
@@ -2071,6 +1898,179 @@
     "color": "#7ff6ff",
     "radius": 120,
     "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o113",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3616.0,
+    960.0,
+    480.0,
+    96.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o114",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3616.0,
+    736.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o115",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3616.0,
+    512.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o116",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    0.0,
+    16.0,
+    448.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o117",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    512.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o118",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    3936.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o119",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3936.0,
+    448.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o120",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3936.0,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o121",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    3936.0,
+    896.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o122",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    3652.0,
+    936.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o123",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    3712.0,
+    928.0,
+    160.0,
+    32.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o124",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    3784.0,
+    920.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 90,
+    "flicker": 0.2,
     "bloom": true
    }
   },
@@ -2664,7 +2664,7 @@
    "rect": [
     5536.0,
     960.0,
-    336.0,
+    192.0,
     96.0
    ],
    "props": {
@@ -2676,13 +2676,13 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    5872.0,
-    1008.0,
-    160.0,
-    48.0
+    5536.0,
+    736.0,
+    192.0,
+    32.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "glacier_ice"
    }
   },
   {
@@ -2690,104 +2690,97 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    6032.0,
-    960.0,
-    144.0,
-    96.0
+    5536.0,
+    512.0,
+    192.0,
+    32.0
    ],
    "props": {
-    "material": "snow_rock"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o164",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    5536.0,
-    736.0,
-    288.0,
-    32.0
+    5620.0,
+    912.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "label": "Expédition, étape 2"
    }
   },
   {
    "id": "o165",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    5536.0,
-    512.0,
-    288.0,
-    32.0
+    5620.0,
+    688.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "label": "Expédition, étape 2"
    }
   },
   {
    "id": "o166",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    6032.0,
-    288.0,
-    32.0,
-    672.0
+    5620.0,
+    464.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "label": "Expédition, étape 2"
    }
   },
   {
    "id": "o167",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    736.0,
-    112.0,
-    32.0
+    5728.0,
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o168",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    512.0,
-    112.0,
-    32.0
+    5792.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o169",
-   "type": "moving_platform",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    5872.0,
-    960.0,
-    144.0,
+    5728.0,
+    816.0,
+    64.0,
     16.0
    ],
    "props": {
-    "dx": 0,
-    "dy": -704,
-    "speed": 60,
-    "wait": 2.0,
-    "phase": 0.0,
-    "active": false,
-    "triggered": true,
-    "oneway": false
+    "style": "ice_ledge"
    }
   },
   {
@@ -2795,8 +2788,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    336.0,
+    5792.0,
+    768.0,
     64.0,
     16.0
    ],
@@ -2809,8 +2802,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6112.0,
-    384.0,
+    5728.0,
+    688.0,
     64.0,
     16.0
    ],
@@ -2823,8 +2816,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6064.0,
-    432.0,
+    5792.0,
+    640.0,
     64.0,
     16.0
    ],
@@ -2837,8 +2830,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6112.0,
-    480.0,
+    5728.0,
+    592.0,
     64.0,
     16.0
    ],
@@ -2848,118 +2841,114 @@
   },
   {
    "id": "o174",
-   "type": "sign",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    5748.0,
-    936.0,
-    24.0,
-    24.0
+    5792.0,
+    544.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "text": "Monte-charge : il démarre quand 4 joueurs sont dessus, puis fait la navette tout seul.",
-    "auto": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o175",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    5928.0,
-    904.0,
-    16.0,
+    6464.0,
+    912.0,
+    64.0,
     16.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 100,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o176",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6176.0,
-    960.0,
-    192.0,
-    96.0
+    6528.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "snow_rock"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o177",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6176.0,
-    736.0,
-    192.0,
-    32.0
+    6464.0,
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o178",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6176.0,
-    512.0,
-    192.0,
-    32.0
+    6528.0,
+    768.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o179",
-   "type": "checkpoint",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    6260.0,
-    912.0,
-    24.0,
-    48.0
+    6464.0,
+    688.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "label": "Expédition, étape 2"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o180",
-   "type": "checkpoint",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    6260.0,
-    688.0,
-    24.0,
-    48.0
+    6528.0,
+    640.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "label": "Expédition, étape 2"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o181",
-   "type": "checkpoint",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    6260.0,
-    464.0,
-    24.0,
-    48.0
+    6464.0,
+    592.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "label": "Expédition, étape 2"
+    "style": "ice_ledge"
    }
   },
   {
@@ -2967,8 +2956,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    6368.0,
-    912.0,
+    6528.0,
+    544.0,
     64.0,
     16.0
    ],
@@ -2978,276 +2967,66 @@
   },
   {
    "id": "o183",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6432.0,
-    864.0,
-    64.0,
-    16.0
+    5856.0,
+    736.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o184",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6368.0,
-    816.0,
-    64.0,
-    16.0
+    5856.0,
+    512.0,
+    608.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o185",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6432.0,
-    768.0,
-    64.0,
-    16.0
+    6592.0,
+    736.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o186",
-   "type": "oneway",
+   "type": "solid",
    "layer": "terrain",
    "rect": [
-    6368.0,
-    688.0,
-    64.0,
-    16.0
+    6592.0,
+    512.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "style": "ice_ledge"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o187",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    6432.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o188",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    6368.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o189",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    6432.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o190",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o191",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o192",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o193",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o194",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o195",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o196",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7104.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o197",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    7168.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o198",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    6496.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o199",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    6496.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o200",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    7232.0,
-    736.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o201",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    7232.0,
-    512.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o202",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    6368.0,
+    5728.0,
     960.0,
     1600.0,
     96.0
@@ -3257,11 +3036,11 @@
    }
   },
   {
-   "id": "o203",
+   "id": "o188",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6553.0,
+    5913.0,
     950.0,
     14.0,
     10.0
@@ -3275,11 +3054,11 @@
    }
   },
   {
-   "id": "o204",
+   "id": "o189",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7273.0,
+    6633.0,
     950.0,
     14.0,
     10.0
@@ -3293,12 +3072,282 @@
    }
   },
   {
+   "id": "o190",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6055.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o191",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6345.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o192",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5911.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o193",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6921.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o194",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6345.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o195",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6775.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o196",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6199.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o197",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6921.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o198",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6056.0,
+    712.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "frost_bulwark",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o199",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6777.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o200",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6632.0,
+    402.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "cryo_drone",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o201",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6055.0,
+    500.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o202",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6344.0,
+    936.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "frost_bulwark",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o203",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    5911.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o204",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    6633.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
    "id": "o205",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6695.0,
-    948.0,
+    6919.0,
+    724.0,
     18.0,
     12.0
    ],
@@ -3315,14 +3364,14 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6985.0,
-    726.0,
-    14.0,
-    10.0
+    6343.0,
+    724.0,
+    18.0,
+    12.0
    ],
    "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
+    "enemy": "snow_stalker",
+    "faceLeft": true,
     "patrol": 80,
     "dormant": true,
     "boss": false
@@ -3333,14 +3382,14 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6551.0,
-    724.0,
-    18.0,
-    12.0
+    6201.0,
+    406.0,
+    14.0,
+    10.0
    ],
    "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
+    "enemy": "frost_wing",
+    "faceLeft": false,
     "patrol": 80,
     "dormant": true,
     "boss": false
@@ -3351,14 +3400,14 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7561.0,
-    406.0,
-    14.0,
-    10.0
+    6920.0,
+    402.0,
+    16.0,
+    14.0
    ],
    "props": {
-    "enemy": "frost_wing",
-    "faceLeft": false,
+    "enemy": "cryo_drone",
+    "faceLeft": true,
     "patrol": 80,
     "dormant": true,
     "boss": false
@@ -3369,277 +3418,7 @@
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6985.0,
-    502.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o210",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7415.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o211",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6839.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o212",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7561.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o213",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6696.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o214",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7417.0,
-    726.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o215",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7272.0,
-    402.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "cryo_drone",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o216",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6695.0,
-    500.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o217",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6984.0,
-    936.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o218",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6551.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o219",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7273.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o220",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7559.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o221",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6983.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o222",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6841.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_wing",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o223",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    7560.0,
-    402.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "cryo_drone",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o224",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    6691.0,
+    6051.0,
     926.0,
     26.0,
     34.0
@@ -3653,11 +3432,11 @@
    }
   },
   {
-   "id": "o225",
+   "id": "o210",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7417.0,
+    6777.0,
     950.0,
     14.0,
     10.0
@@ -3671,11 +3450,11 @@
    }
   },
   {
-   "id": "o226",
+   "id": "o211",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7272.0,
+    6632.0,
     712.0,
     16.0,
     24.0
@@ -3689,11 +3468,11 @@
    }
   },
   {
-   "id": "o227",
+   "id": "o212",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6695.0,
+    6055.0,
     724.0,
     18.0,
     12.0
@@ -3707,11 +3486,11 @@
    }
   },
   {
-   "id": "o228",
+   "id": "o213",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    6553.0,
+    5913.0,
     406.0,
     14.0,
     10.0
@@ -3725,11 +3504,11 @@
    }
   },
   {
-   "id": "o229",
+   "id": "o214",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    7272.0,
+    6632.0,
     488.0,
     16.0,
     24.0
@@ -3743,28 +3522,28 @@
    }
   },
   {
-   "id": "o230",
+   "id": "o215",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
-    6400.0,
+    5760.0,
     320.0,
     1536.0,
     640.0
    ],
    "props": {
     "doors": "",
-    "waves": "o203,o204,o205,o206,o207,o208,o209;o210,o211,o212,o213,o214,o215,o216;o217,o218,o219,o220,o221,o222,o223;o224,o225,o226,o227,o228,o229",
+    "waves": "o188,o189,o190,o191,o192,o193,o194;o195,o196,o197,o198,o199,o200,o201;o202,o203,o204,o205,o206,o207,o208;o209,o210,o211,o212,o213,o214",
     "lockCamera": false,
     "music": ""
    }
   },
   {
-   "id": "o231",
+   "id": "o216",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    7162.0,
+    6522.0,
     922.0,
     12.0,
     12.0
@@ -3774,11 +3553,11 @@
    }
   },
   {
-   "id": "o232",
+   "id": "o217",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    6842.0,
+    6202.0,
     698.0,
     12.0,
     12.0
@@ -3788,11 +3567,11 @@
    }
   },
   {
-   "id": "o233",
+   "id": "o218",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7160.0,
+    6520.0,
     888.0,
     16.0,
     16.0
@@ -3805,11 +3584,11 @@
    }
   },
   {
-   "id": "o234",
+   "id": "o219",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7160.0,
+    6520.0,
     664.0,
     16.0,
     16.0
@@ -3822,11 +3601,11 @@
    }
   },
   {
-   "id": "o235",
+   "id": "o220",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    7160.0,
+    6520.0,
     440.0,
     16.0,
     16.0
@@ -3839,7 +3618,256 @@
    }
   },
   {
+   "id": "o221",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7328.0,
+    960.0,
+    336.0,
+    96.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o222",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7664.0,
+    1008.0,
+    160.0,
+    48.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o223",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7824.0,
+    960.0,
+    144.0,
+    96.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o224",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7328.0,
+    736.0,
+    288.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o225",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7328.0,
+    512.0,
+    288.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o226",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7824.0,
+    0.0,
+    32.0,
+    192.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o227",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7824.0,
+    256.0,
+    32.0,
+    704.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o228",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    736.0,
+    112.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o229",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    512.0,
+    112.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o230",
+   "type": "moving_platform",
+   "layer": "gameplay",
+   "rect": [
+    7664.0,
+    960.0,
+    144.0,
+    16.0
+   ],
+   "props": {
+    "dx": 0,
+    "dy": -704,
+    "speed": 60,
+    "wait": 2.0,
+    "phase": 0.0,
+    "active": false,
+    "triggered": false,
+    "oneway": false
+   }
+  },
+  {
+   "id": "o231",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    7824.0,
+    192.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o232",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    336.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o233",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7904.0,
+    384.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o234",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7856.0,
+    432.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o235",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    7904.0,
+    480.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
    "id": "o236",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    7540.0,
+    936.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Monte-charge : il démarre quand 4 joueurs sont dessus, puis fait la navette tout seul.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o237",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    7720.0,
+    904.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 100,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o238",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3853,7 +3881,7 @@
    }
   },
   {
-   "id": "o237",
+   "id": "o239",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3867,7 +3895,7 @@
    }
   },
   {
-   "id": "o238",
+   "id": "o240",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3881,7 +3909,7 @@
    }
   },
   {
-   "id": "o239",
+   "id": "o241",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3895,7 +3923,7 @@
    }
   },
   {
-   "id": "o240",
+   "id": "o242",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3909,7 +3937,7 @@
    }
   },
   {
-   "id": "o241",
+   "id": "o243",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3923,7 +3951,7 @@
    }
   },
   {
-   "id": "o242",
+   "id": "o244",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3937,7 +3965,7 @@
    }
   },
   {
-   "id": "o243",
+   "id": "o245",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
@@ -3951,7 +3979,7 @@
    }
   },
   {
-   "id": "o244",
+   "id": "o246",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3965,7 +3993,7 @@
    }
   },
   {
-   "id": "o245",
+   "id": "o247",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3979,7 +4007,7 @@
    }
   },
   {
-   "id": "o246",
+   "id": "o248",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -3993,7 +4021,7 @@
    }
   },
   {
-   "id": "o247",
+   "id": "o249",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4007,7 +4035,7 @@
    }
   },
   {
-   "id": "o248",
+   "id": "o250",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4021,7 +4049,7 @@
    }
   },
   {
-   "id": "o249",
+   "id": "o251",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4037,7 +4065,7 @@
    }
   },
   {
-   "id": "o250",
+   "id": "o252",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4053,7 +4081,7 @@
    }
   },
   {
-   "id": "o251",
+   "id": "o253",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4067,7 +4095,7 @@
    }
   },
   {
-   "id": "o252",
+   "id": "o254",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4083,7 +4111,7 @@
    }
   },
   {
-   "id": "o253",
+   "id": "o255",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4099,7 +4127,7 @@
    }
   },
   {
-   "id": "o254",
+   "id": "o256",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4115,7 +4143,7 @@
    }
   },
   {
-   "id": "o255",
+   "id": "o257",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4129,7 +4157,7 @@
    }
   },
   {
-   "id": "o256",
+   "id": "o258",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4145,7 +4173,7 @@
    }
   },
   {
-   "id": "o257",
+   "id": "o259",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4161,7 +4189,7 @@
    }
   },
   {
-   "id": "o258",
+   "id": "o260",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
@@ -4177,7 +4205,7 @@
    }
   },
   {
-   "id": "o259",
+   "id": "o261",
    "type": "solid",
    "layer": "terrain",
    "rect": [
@@ -4191,7 +4219,7 @@
    }
   },
   {
-   "id": "o260",
+   "id": "o262",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4209,7 +4237,7 @@
    }
   },
   {
-   "id": "o261",
+   "id": "o263",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4227,7 +4255,7 @@
    }
   },
   {
-   "id": "o262",
+   "id": "o264",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4245,7 +4273,7 @@
    }
   },
   {
-   "id": "o263",
+   "id": "o265",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4263,7 +4291,7 @@
    }
   },
   {
-   "id": "o264",
+   "id": "o266",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4281,7 +4309,7 @@
    }
   },
   {
-   "id": "o265",
+   "id": "o267",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4299,7 +4327,7 @@
    }
   },
   {
-   "id": "o266",
+   "id": "o268",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
@@ -4317,7 +4345,7 @@
    }
   },
   {
-   "id": "o267",
+   "id": "o269",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
@@ -4331,7 +4359,7 @@
    }
   },
   {
-   "id": "o268",
+   "id": "o270",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4351,7 +4379,7 @@
    }
   },
   {
-   "id": "o269",
+   "id": "o271",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4370,7 +4398,7 @@
    }
   },
   {
-   "id": "o270",
+   "id": "o272",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
@@ -4389,7 +4417,7 @@
    }
   },
   {
-   "id": "o271",
+   "id": "o273",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4406,7 +4434,7 @@
    }
   },
   {
-   "id": "o272",
+   "id": "o274",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4423,7 +4451,7 @@
    }
   },
   {
-   "id": "o273",
+   "id": "o275",
    "type": "light",
    "layer": "gameplay",
    "rect": [
@@ -4440,13 +4468,13 @@
    }
   },
   {
-   "id": "o274",
+   "id": "o276",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     9408.0,
     960.0,
-    480.0,
+    192.0,
     96.0
    ],
    "props": {
@@ -4454,42 +4482,14 @@
    }
   },
   {
-   "id": "o275",
+   "id": "o277",
    "type": "solid",
    "layer": "terrain",
    "rect": [
     9408.0,
     736.0,
-    480.0,
+    192.0,
     32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o276",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    9408.0,
-    512.0,
-    480.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o277",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    9728.0,
-    288.0,
-    16.0,
-    160.0
    ],
    "props": {
     "material": "glacier_ice"
@@ -4500,10 +4500,10 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    9728.0,
+    9408.0,
     512.0,
-    16.0,
-    160.0
+    192.0,
+    32.0
    ],
    "props": {
     "material": "glacier_ice"
@@ -4511,105 +4511,100 @@
   },
   {
    "id": "o279",
-   "type": "solid",
-   "layer": "terrain",
+   "type": "checkpoint",
+   "layer": "gameplay",
    "rect": [
-    9728.0,
-    736.0,
-    16.0,
-    160.0
+    9492.0,
+    912.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "label": "Expédition, étape 3"
    }
   },
   {
    "id": "o280",
-   "type": "door",
+   "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    9728.0,
-    448.0,
-    16.0,
-    64.0
+    9492.0,
+    688.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "open": false
+    "label": "Expédition, étape 3"
    }
   },
   {
    "id": "o281",
-   "type": "door",
+   "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    9728.0,
-    672.0,
-    16.0,
-    64.0
+    9492.0,
+    464.0,
+    24.0,
+    48.0
    ],
    "props": {
-    "open": false
+    "label": "Expédition, étape 3"
    }
   },
   {
    "id": "o282",
-   "type": "door",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9728.0,
-    896.0,
-    16.0,
-    64.0
+    9600.0,
+    912.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "open": false
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o283",
-   "type": "sign",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9444.0,
-    936.0,
-    24.0,
-    24.0
+    9664.0,
+    864.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
-    "auto": true
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o284",
-   "type": "emitter",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9504.0,
-    928.0,
-    160.0,
-    32.0
+    9600.0,
+    816.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "effect": "fireflies",
-    "rate": 3
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o285",
-   "type": "light",
-   "layer": "gameplay",
+   "type": "oneway",
+   "layer": "terrain",
    "rect": [
-    9576.0,
-    920.0,
-    16.0,
+    9664.0,
+    768.0,
+    64.0,
     16.0
    ],
    "props": {
-    "color": "#ffd27a",
-    "radius": 90,
-    "flicker": 0.2,
-    "bloom": true
+    "style": "ice_ledge"
    }
   },
   {
@@ -4617,8 +4612,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    912.0,
+    9600.0,
+    688.0,
     64.0,
     16.0
    ],
@@ -4631,8 +4626,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    864.0,
+    9664.0,
+    640.0,
     64.0,
     16.0
    ],
@@ -4645,8 +4640,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    816.0,
+    9600.0,
+    592.0,
     64.0,
     16.0
    ],
@@ -4659,8 +4654,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    768.0,
+    9664.0,
+    544.0,
     64.0,
     16.0
    ],
@@ -4673,8 +4668,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    688.0,
+    10336.0,
+    912.0,
     64.0,
     16.0
    ],
@@ -4687,8 +4682,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    640.0,
+    10400.0,
+    864.0,
     64.0,
     16.0
    ],
@@ -4701,8 +4696,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9888.0,
-    592.0,
+    10336.0,
+    816.0,
     64.0,
     16.0
    ],
@@ -4715,8 +4710,8 @@
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    9952.0,
-    544.0,
+    10400.0,
+    768.0,
     64.0,
     16.0
    ],
@@ -4726,58 +4721,58 @@
   },
   {
    "id": "o294",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10016.0,
-    736.0,
-    512.0,
-    32.0
+    10336.0,
+    688.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o295",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10016.0,
-    512.0,
-    512.0,
-    32.0
+    10400.0,
+    640.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o296",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10528.0,
-    736.0,
-    192.0,
-    32.0
+    10336.0,
+    592.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
    "id": "o297",
-   "type": "solid",
+   "type": "oneway",
    "layer": "terrain",
    "rect": [
-    10720.0,
-    736.0,
-    608.0,
-    32.0
+    10400.0,
+    544.0,
+    64.0,
+    16.0
    ],
    "props": {
-    "material": "glacier_ice"
+    "style": "ice_ledge"
    }
   },
   {
@@ -4785,8 +4780,8 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    10720.0,
-    512.0,
+    9728.0,
+    736.0,
     608.0,
     32.0
    ],
@@ -4796,34 +4791,30 @@
   },
   {
    "id": "o299",
-   "type": "crumble_platform",
-   "layer": "gameplay",
+   "type": "solid",
+   "layer": "terrain",
    "rect": [
-    10560.0,
+    9728.0,
     512.0,
-    48.0,
-    16.0
+    608.0,
+    32.0
    ],
    "props": {
-    "delay": 0.45,
-    "respawn": 3.0,
-    "style": "ice"
+    "material": "glacier_ice"
    }
   },
   {
    "id": "o300",
-   "type": "crumble_platform",
-   "layer": "gameplay",
+   "type": "solid",
+   "layer": "terrain",
    "rect": [
-    10640.0,
-    512.0,
-    48.0,
-    16.0
+    10464.0,
+    736.0,
+    736.0,
+    32.0
    ],
    "props": {
-    "delay": 0.45,
-    "respawn": 3.0,
-    "style": "ice"
+    "material": "glacier_ice"
    }
   },
   {
@@ -4831,7 +4822,1004 @@
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    9888.0,
+    10464.0,
+    512.0,
+    736.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o302",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    9600.0,
+    960.0,
+    1600.0,
+    96.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o303",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9785.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o304",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10505.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o305",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9927.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o306",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10217.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o307",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9783.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o308",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10793.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o309",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10217.0,
+    502.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o310",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10647.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o311",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10071.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o312",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10793.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o313",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9928.0,
+    712.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "frost_bulwark",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o314",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10649.0,
+    726.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o315",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10504.0,
+    402.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "cryo_drone",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o316",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9927.0,
+    500.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o317",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10216.0,
+    936.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "frost_bulwark",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o318",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9783.0,
+    948.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o319",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10505.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o320",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10791.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o321",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10215.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o322",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10073.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o323",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10792.0,
+    402.0,
+    16.0,
+    14.0
+   ],
+   "props": {
+    "enemy": "cryo_drone",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o324",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9923.0,
+    926.0,
+    26.0,
+    34.0
+   ],
+   "props": {
+    "enemy": "ice_golem",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o325",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10649.0,
+    950.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_mite",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o326",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10504.0,
+    712.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "frost_bulwark",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o327",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9927.0,
+    724.0,
+    18.0,
+    12.0
+   ],
+   "props": {
+    "enemy": "snow_stalker",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o328",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    9785.0,
+    406.0,
+    14.0,
+    10.0
+   ],
+   "props": {
+    "enemy": "frost_wing",
+    "faceLeft": true,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o329",
+   "type": "enemy",
+   "layer": "gameplay",
+   "rect": [
+    10504.0,
+    488.0,
+    16.0,
+    24.0
+   ],
+   "props": {
+    "enemy": "frost_bulwark",
+    "faceLeft": false,
+    "patrol": 80,
+    "dormant": true,
+    "boss": false
+   }
+  },
+  {
+   "id": "o330",
+   "type": "combat_zone",
+   "layer": "gameplay",
+   "rect": [
+    9632.0,
+    320.0,
+    1536.0,
+    640.0
+   ],
+   "props": {
+    "doors": "",
+    "waves": "o303,o304,o305,o306,o307,o308,o309;o310,o311,o312,o313,o314,o315,o316;o317,o318,o319,o320,o321,o322,o323;o324,o325,o326,o327,o328,o329",
+    "lockCamera": false,
+    "music": ""
+   }
+  },
+  {
+   "id": "o331",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    10394.0,
+    922.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o332",
+   "type": "health_orb",
+   "layer": "gameplay",
+   "rect": [
+    10074.0,
+    698.0,
+    12.0,
+    12.0
+   ],
+   "props": {
+    "amount": 2
+   }
+  },
+  {
+   "id": "o333",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    10392.0,
+    888.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 120,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o334",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    10392.0,
+    664.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 120,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o335",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    10392.0,
+    440.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#7ff6ff",
+    "radius": 120,
+    "flicker": 0.15,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o336",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11200.0,
+    960.0,
+    480.0,
+    96.0
+   ],
+   "props": {
+    "material": "snow_rock"
+   }
+  },
+  {
+   "id": "o337",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11200.0,
+    736.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o338",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11200.0,
+    512.0,
+    480.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o339",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11520.0,
+    0.0,
+    16.0,
+    448.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o340",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11520.0,
+    512.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o341",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11520.0,
+    736.0,
+    16.0,
+    160.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o342",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    11520.0,
+    448.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o343",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    11520.0,
+    672.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o344",
+   "type": "door",
+   "layer": "gameplay",
+   "rect": [
+    11520.0,
+    896.0,
+    16.0,
+    64.0
+   ],
+   "props": {
+    "open": false
+   }
+  },
+  {
+   "id": "o345",
+   "type": "sign",
+   "layer": "gameplay",
+   "rect": [
+    11236.0,
+    936.0,
+    24.0,
+    24.0
+   ],
+   "props": {
+    "text": "Écluse : il faut 3 joueurs ensemble sur la plaque pour ouvrir ses portes à tous les étages.",
+    "auto": true
+   }
+  },
+  {
+   "id": "o346",
+   "type": "emitter",
+   "layer": "gameplay",
+   "rect": [
+    11296.0,
+    928.0,
+    160.0,
+    32.0
+   ],
+   "props": {
+    "effect": "fireflies",
+    "rate": 3
+   }
+  },
+  {
+   "id": "o347",
+   "type": "light",
+   "layer": "gameplay",
+   "rect": [
+    11368.0,
+    920.0,
+    16.0,
+    16.0
+   ],
+   "props": {
+    "color": "#ffd27a",
+    "radius": 90,
+    "flicker": 0.2,
+    "bloom": true
+   }
+  },
+  {
+   "id": "o348",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    912.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o349",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    864.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o350",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    816.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o351",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    768.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o352",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    688.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o353",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    640.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o354",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
+    592.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o355",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    11744.0,
+    544.0,
+    64.0,
+    16.0
+   ],
+   "props": {
+    "style": "ice_ledge"
+   }
+  },
+  {
+   "id": "o356",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11808.0,
+    736.0,
+    512.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o357",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11808.0,
+    512.0,
+    512.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o358",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    12320.0,
+    736.0,
+    192.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o359",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    12512.0,
+    736.0,
+    608.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o360",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    12512.0,
+    512.0,
+    608.0,
+    32.0
+   ],
+   "props": {
+    "material": "glacier_ice"
+   }
+  },
+  {
+   "id": "o361",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    12352.0,
+    512.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.45,
+    "respawn": 3.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o362",
+   "type": "crumble_platform",
+   "layer": "gameplay",
+   "rect": [
+    12432.0,
+    512.0,
+    48.0,
+    16.0
+   ],
+   "props": {
+    "delay": 0.45,
+    "respawn": 3.0,
+    "style": "ice"
+   }
+  },
+  {
+   "id": "o363",
+   "type": "solid",
+   "layer": "terrain",
+   "rect": [
+    11680.0,
     960.0,
     320.0,
     96.0
@@ -4841,11 +5829,11 @@
    }
   },
   {
-   "id": "o302",
+   "id": "o364",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    10256.0,
+    12048.0,
     960.0,
     48.0,
     16.0
@@ -4857,11 +5845,11 @@
    }
   },
   {
-   "id": "o303",
+   "id": "o365",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    10352.0,
+    12144.0,
     960.0,
     48.0,
     16.0
@@ -4873,11 +5861,11 @@
    }
   },
   {
-   "id": "o304",
+   "id": "o366",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    10464.0,
+    12256.0,
     960.0,
     48.0,
     16.0
@@ -4889,11 +5877,11 @@
    }
   },
   {
-   "id": "o305",
+   "id": "o367",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    10560.0,
+    12352.0,
     960.0,
     256.0,
     96.0
@@ -4903,11 +5891,11 @@
    }
   },
   {
-   "id": "o306",
+   "id": "o368",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    10864.0,
+    12656.0,
     960.0,
     48.0,
     16.0
@@ -4919,11 +5907,11 @@
    }
   },
   {
-   "id": "o307",
+   "id": "o369",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    10960.0,
+    12752.0,
     960.0,
     48.0,
     16.0
@@ -4935,11 +5923,11 @@
    }
   },
   {
-   "id": "o308",
+   "id": "o370",
    "type": "crumble_platform",
    "layer": "gameplay",
    "rect": [
-    11040.0,
+    12832.0,
     960.0,
     48.0,
     16.0
@@ -4951,11 +5939,11 @@
    }
   },
   {
-   "id": "o309",
+   "id": "o371",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    11136.0,
+    12928.0,
     960.0,
     192.0,
     96.0
@@ -4965,11 +5953,11 @@
    }
   },
   {
-   "id": "o310",
+   "id": "o372",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10041.0,
+    11833.0,
     950.0,
     14.0,
     10.0
@@ -4983,11 +5971,11 @@
    }
   },
   {
-   "id": "o311",
+   "id": "o373",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10681.0,
+    12473.0,
     950.0,
     14.0,
     10.0
@@ -5001,11 +5989,11 @@
    }
   },
   {
-   "id": "o312",
+   "id": "o374",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    11223.0,
+    13015.0,
     948.0,
     18.0,
     12.0
@@ -5019,11 +6007,11 @@
    }
   },
   {
-   "id": "o313",
+   "id": "o375",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10359.0,
+    12151.0,
     724.0,
     18.0,
     12.0
@@ -5037,11 +6025,11 @@
    }
   },
   {
-   "id": "o314",
+   "id": "o376",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10936.0,
+    12728.0,
     712.0,
     16.0,
     24.0
@@ -5055,11 +6043,11 @@
    }
   },
   {
-   "id": "o315",
+   "id": "o377",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    10265.0,
+    12057.0,
     406.0,
     14.0,
     10.0
@@ -5073,11 +6061,11 @@
    }
   },
   {
-   "id": "o316",
+   "id": "o378",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    11000.0,
+    12792.0,
     402.0,
     16.0,
     14.0
@@ -5091,11 +6079,11 @@
    }
   },
   {
-   "id": "o317",
+   "id": "o379",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    10602.0,
+    12394.0,
     698.0,
     12.0,
     12.0
@@ -5105,11 +6093,11 @@
    }
   },
   {
-   "id": "o318",
+   "id": "o380",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    9968.0,
+    11760.0,
     912.0,
     32.0,
     48.0
@@ -5125,11 +6113,11 @@
    }
   },
   {
-   "id": "o319",
+   "id": "o381",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    10064.0,
+    11856.0,
     912.0,
     32.0,
     48.0
@@ -5145,11 +6133,11 @@
    }
   },
   {
-   "id": "o320",
+   "id": "o382",
    "type": "decor",
    "layer": "bg_decor",
    "rect": [
-    10168.0,
+    11960.0,
     944.0,
     16.0,
     16.0
@@ -5164,1006 +6152,12 @@
    }
   },
   {
-   "id": "o321",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    10600.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o322",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    10600.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o323",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    10600.0,
-    440.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o324",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11328.0,
-    960.0,
-    192.0,
-    96.0
-   ],
-   "props": {
-    "material": "snow_rock"
-   }
-  },
-  {
-   "id": "o325",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11328.0,
-    736.0,
-    192.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o326",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11328.0,
-    512.0,
-    192.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o327",
-   "type": "checkpoint",
-   "layer": "gameplay",
-   "rect": [
-    11412.0,
-    912.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "label": "Expédition, étape 3"
-   }
-  },
-  {
-   "id": "o328",
-   "type": "checkpoint",
-   "layer": "gameplay",
-   "rect": [
-    11412.0,
-    688.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "label": "Expédition, étape 3"
-   }
-  },
-  {
-   "id": "o329",
-   "type": "checkpoint",
-   "layer": "gameplay",
-   "rect": [
-    11412.0,
-    464.0,
-    24.0,
-    48.0
-   ],
-   "props": {
-    "label": "Expédition, étape 3"
-   }
-  },
-  {
-   "id": "o330",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o331",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o332",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o333",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o334",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o335",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o336",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o337",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    11584.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o338",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o339",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o340",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o341",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o342",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o343",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o344",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12256.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o345",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    12320.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o346",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11648.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o347",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11648.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o348",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    12384.0,
-    736.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o349",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    12384.0,
-    512.0,
-    736.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o350",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    11520.0,
-    960.0,
-    1600.0,
-    96.0
-   ],
-   "props": {
-    "material": "snow_rock"
-   }
-  },
-  {
-   "id": "o351",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11705.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o352",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12425.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o353",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11847.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o354",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12137.0,
-    726.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o355",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11703.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o356",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12713.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_wing",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o357",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12137.0,
-    502.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o358",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12567.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o359",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11991.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o360",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12713.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o361",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11848.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o362",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12569.0,
-    726.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o363",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12424.0,
-    402.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "cryo_drone",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o364",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11847.0,
-    500.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o365",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12136.0,
-    936.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o366",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11703.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o367",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12425.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o368",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12711.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o369",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12135.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o370",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11993.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_wing",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o371",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12712.0,
-    402.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "cryo_drone",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o372",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11843.0,
-    926.0,
-    26.0,
-    34.0
-   ],
-   "props": {
-    "enemy": "ice_golem",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o373",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12569.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o374",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12424.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o375",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11847.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o376",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    11705.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_wing",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o377",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    12424.0,
-    488.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": true,
-    "boss": false
-   }
-  },
-  {
-   "id": "o378",
-   "type": "combat_zone",
-   "layer": "gameplay",
-   "rect": [
-    11552.0,
-    320.0,
-    1536.0,
-    640.0
-   ],
-   "props": {
-    "doors": "",
-    "waves": "o351,o352,o353,o354,o355,o356,o357;o358,o359,o360,o361,o362,o363,o364;o365,o366,o367,o368,o369,o370,o371;o372,o373,o374,o375,o376,o377",
-    "lockCamera": false,
-    "music": ""
-   }
-  },
-  {
-   "id": "o379",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    12314.0,
-    922.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o380",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    11994.0,
-    698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o381",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    12312.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o382",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    12312.0,
-    664.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
    "id": "o383",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    12312.0,
-    440.0,
+    12392.0,
+    888.0,
     16.0,
     16.0
    ],
@@ -6176,558 +6170,10 @@
   },
   {
    "id": "o384",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    912.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o385",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    864.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o386",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    816.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o387",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    768.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o388",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    688.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o389",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    640.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o390",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    592.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o391",
-   "type": "oneway",
-   "layer": "terrain",
-   "rect": [
-    13184.0,
-    544.0,
-    64.0,
-    16.0
-   ],
-   "props": {
-    "style": "ice_ledge"
-   }
-  },
-  {
-   "id": "o392",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13248.0,
-    736.0,
-    512.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o393",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13248.0,
-    512.0,
-    512.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o394",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13760.0,
-    736.0,
-    192.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o395",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13952.0,
-    736.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o396",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13952.0,
-    512.0,
-    608.0,
-    32.0
-   ],
-   "props": {
-    "material": "glacier_ice"
-   }
-  },
-  {
-   "id": "o397",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13792.0,
-    512.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.45,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o398",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13872.0,
-    512.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.45,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o399",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13120.0,
-    960.0,
-    320.0,
-    96.0
-   ],
-   "props": {
-    "material": "snow_rock"
-   }
-  },
-  {
-   "id": "o400",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13488.0,
-    960.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.5,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o401",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13584.0,
-    960.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.5,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o402",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    13696.0,
-    960.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.5,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o403",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    13792.0,
-    960.0,
-    256.0,
-    96.0
-   ],
-   "props": {
-    "material": "snow_rock"
-   }
-  },
-  {
-   "id": "o404",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    14096.0,
-    960.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.5,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o405",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    14192.0,
-    960.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.5,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o406",
-   "type": "crumble_platform",
-   "layer": "gameplay",
-   "rect": [
-    14272.0,
-    960.0,
-    48.0,
-    16.0
-   ],
-   "props": {
-    "delay": 0.5,
-    "respawn": 3.0,
-    "style": "ice"
-   }
-  },
-  {
-   "id": "o407",
-   "type": "solid",
-   "layer": "terrain",
-   "rect": [
-    14368.0,
-    960.0,
-    192.0,
-    96.0
-   ],
-   "props": {
-    "material": "snow_rock"
-   }
-  },
-  {
-   "id": "o408",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13273.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o409",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13913.0,
-    950.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_mite",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o410",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    14455.0,
-    948.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o411",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13591.0,
-    724.0,
-    18.0,
-    12.0
-   ],
-   "props": {
-    "enemy": "snow_stalker",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o412",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    14168.0,
-    712.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "enemy": "frost_bulwark",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o413",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    13497.0,
-    406.0,
-    14.0,
-    10.0
-   ],
-   "props": {
-    "enemy": "frost_wing",
-    "faceLeft": false,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o414",
-   "type": "enemy",
-   "layer": "gameplay",
-   "rect": [
-    14232.0,
-    402.0,
-    16.0,
-    14.0
-   ],
-   "props": {
-    "enemy": "cryo_drone",
-    "faceLeft": true,
-    "patrol": 80,
-    "dormant": false,
-    "boss": false
-   }
-  },
-  {
-   "id": "o415",
-   "type": "health_orb",
-   "layer": "gameplay",
-   "rect": [
-    13834.0,
-    698.0,
-    12.0,
-    12.0
-   ],
-   "props": {
-    "amount": 2
-   }
-  },
-  {
-   "id": "o416",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    13160.0,
-    936.0,
-    16.0,
-    24.0
-   ],
-   "props": {
-    "sprite": "ice_crystal",
-    "alpha": 0.9,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o417",
-   "type": "decor",
-   "layer": "bg_decor",
-   "rect": [
-    13400.0,
-    948.0,
-    16.0,
-    12.0
-   ],
-   "flipX": true,
-   "props": {
-    "sprite": "snow_rock_small",
-    "alpha": 0.9,
-    "tint": "#ffffff",
-    "animSpeed": 1.0,
-    "glow": true,
-    "sway": 0.0
-   }
-  },
-  {
-   "id": "o418",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    13832.0,
-    888.0,
-    16.0,
-    16.0
-   ],
-   "props": {
-    "color": "#7ff6ff",
-    "radius": 120,
-    "flicker": 0.15,
-    "bloom": true
-   }
-  },
-  {
-   "id": "o419",
-   "type": "light",
-   "layer": "gameplay",
-   "rect": [
-    13832.0,
+    12392.0,
     664.0,
     16.0,
     16.0
@@ -6740,11 +6186,11 @@
    }
   },
   {
-   "id": "o420",
+   "id": "o385",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    13832.0,
+    12392.0,
     440.0,
     16.0,
     16.0
@@ -6757,11 +6203,11 @@
    }
   },
   {
-   "id": "o421",
+   "id": "o386",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14560.0,
+    13120.0,
     960.0,
     192.0,
     96.0
@@ -6771,11 +6217,11 @@
    }
   },
   {
-   "id": "o422",
+   "id": "o387",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14560.0,
+    13120.0,
     736.0,
     192.0,
     32.0
@@ -6785,11 +6231,11 @@
    }
   },
   {
-   "id": "o423",
+   "id": "o388",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14560.0,
+    13120.0,
     512.0,
     192.0,
     32.0
@@ -6799,11 +6245,11 @@
    }
   },
   {
-   "id": "o424",
+   "id": "o389",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    14644.0,
+    13204.0,
     912.0,
     24.0,
     48.0
@@ -6813,11 +6259,11 @@
    }
   },
   {
-   "id": "o425",
+   "id": "o390",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    14644.0,
+    13204.0,
     688.0,
     24.0,
     48.0
@@ -6827,11 +6273,11 @@
    }
   },
   {
-   "id": "o426",
+   "id": "o391",
    "type": "checkpoint",
    "layer": "gameplay",
    "rect": [
-    14644.0,
+    13204.0,
     464.0,
     24.0,
     48.0
@@ -6841,11 +6287,11 @@
    }
   },
   {
-   "id": "o427",
+   "id": "o392",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     912.0,
     64.0,
     16.0
@@ -6855,11 +6301,11 @@
    }
   },
   {
-   "id": "o428",
+   "id": "o393",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     864.0,
     64.0,
     16.0
@@ -6869,11 +6315,11 @@
    }
   },
   {
-   "id": "o429",
+   "id": "o394",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     816.0,
     64.0,
     16.0
@@ -6883,11 +6329,11 @@
    }
   },
   {
-   "id": "o430",
+   "id": "o395",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     768.0,
     64.0,
     16.0
@@ -6897,11 +6343,11 @@
    }
   },
   {
-   "id": "o431",
+   "id": "o396",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     688.0,
     64.0,
     16.0
@@ -6911,11 +6357,11 @@
    }
   },
   {
-   "id": "o432",
+   "id": "o397",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     640.0,
     64.0,
     16.0
@@ -6925,11 +6371,11 @@
    }
   },
   {
-   "id": "o433",
+   "id": "o398",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     592.0,
     64.0,
     16.0
@@ -6939,11 +6385,11 @@
    }
   },
   {
-   "id": "o434",
+   "id": "o399",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    14816.0,
+    13376.0,
     544.0,
     64.0,
     16.0
@@ -6953,11 +6399,11 @@
    }
   },
   {
-   "id": "o435",
+   "id": "o400",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     912.0,
     64.0,
     16.0
@@ -6967,11 +6413,11 @@
    }
   },
   {
-   "id": "o436",
+   "id": "o401",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     864.0,
     64.0,
     16.0
@@ -6981,11 +6427,11 @@
    }
   },
   {
-   "id": "o437",
+   "id": "o402",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     816.0,
     64.0,
     16.0
@@ -6995,11 +6441,11 @@
    }
   },
   {
-   "id": "o438",
+   "id": "o403",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     768.0,
     64.0,
     16.0
@@ -7009,11 +6455,11 @@
    }
   },
   {
-   "id": "o439",
+   "id": "o404",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     688.0,
     64.0,
     16.0
@@ -7023,11 +6469,11 @@
    }
   },
   {
-   "id": "o440",
+   "id": "o405",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     640.0,
     64.0,
     16.0
@@ -7037,11 +6483,11 @@
    }
   },
   {
-   "id": "o441",
+   "id": "o406",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15568.0,
+    14128.0,
     592.0,
     64.0,
     16.0
@@ -7051,11 +6497,11 @@
    }
   },
   {
-   "id": "o442",
+   "id": "o407",
    "type": "oneway",
    "layer": "terrain",
    "rect": [
-    15632.0,
+    14192.0,
     544.0,
     64.0,
     16.0
@@ -7065,11 +6511,11 @@
    }
   },
   {
-   "id": "o443",
+   "id": "o408",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14880.0,
+    13440.0,
     736.0,
     688.0,
     32.0
@@ -7079,11 +6525,11 @@
    }
   },
   {
-   "id": "o444",
+   "id": "o409",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14880.0,
+    13440.0,
     512.0,
     688.0,
     32.0
@@ -7093,11 +6539,11 @@
    }
   },
   {
-   "id": "o445",
+   "id": "o410",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    15696.0,
+    14256.0,
     736.0,
     816.0,
     32.0
@@ -7107,11 +6553,11 @@
    }
   },
   {
-   "id": "o446",
+   "id": "o411",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    15696.0,
+    14256.0,
     512.0,
     816.0,
     32.0
@@ -7121,11 +6567,11 @@
    }
   },
   {
-   "id": "o447",
+   "id": "o412",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    14752.0,
+    13312.0,
     960.0,
     1760.0,
     96.0
@@ -7135,11 +6581,11 @@
    }
   },
   {
-   "id": "o448",
+   "id": "o413",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14937.0,
+    13497.0,
     950.0,
     14.0,
     10.0
@@ -7153,11 +6599,11 @@
    }
   },
   {
-   "id": "o449",
+   "id": "o414",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15513.0,
+    14073.0,
     950.0,
     14.0,
     10.0
@@ -7171,11 +6617,11 @@
    }
   },
   {
-   "id": "o450",
+   "id": "o415",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16231.0,
+    14791.0,
     948.0,
     18.0,
     12.0
@@ -7189,11 +6635,11 @@
    }
   },
   {
-   "id": "o451",
+   "id": "o416",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15369.0,
+    13929.0,
     726.0,
     14.0,
     10.0
@@ -7207,11 +6653,11 @@
    }
   },
   {
-   "id": "o452",
+   "id": "o417",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16087.0,
+    14647.0,
     724.0,
     18.0,
     12.0
@@ -7225,11 +6671,11 @@
    }
   },
   {
-   "id": "o453",
+   "id": "o418",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15945.0,
+    14505.0,
     406.0,
     14.0,
     10.0
@@ -7243,11 +6689,11 @@
    }
   },
   {
-   "id": "o454",
+   "id": "o419",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15081.0,
+    13641.0,
     502.0,
     14.0,
     10.0
@@ -7261,11 +6707,11 @@
    }
   },
   {
-   "id": "o455",
+   "id": "o420",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15799.0,
+    14359.0,
     948.0,
     18.0,
     12.0
@@ -7279,11 +6725,11 @@
    }
   },
   {
-   "id": "o456",
+   "id": "o421",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14935.0,
+    13495.0,
     948.0,
     18.0,
     12.0
@@ -7297,11 +6743,11 @@
    }
   },
   {
-   "id": "o457",
+   "id": "o422",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15513.0,
+    14073.0,
     950.0,
     14.0,
     10.0
@@ -7315,11 +6761,11 @@
    }
   },
   {
-   "id": "o458",
+   "id": "o423",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16232.0,
+    14792.0,
     712.0,
     16.0,
     24.0
@@ -7333,11 +6779,11 @@
    }
   },
   {
-   "id": "o459",
+   "id": "o424",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15369.0,
+    13929.0,
     726.0,
     14.0,
     10.0
@@ -7351,11 +6797,11 @@
    }
   },
   {
-   "id": "o460",
+   "id": "o425",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15224.0,
+    13784.0,
     402.0,
     16.0,
     14.0
@@ -7369,11 +6815,11 @@
    }
   },
   {
-   "id": "o461",
+   "id": "o426",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15943.0,
+    14503.0,
     500.0,
     18.0,
     12.0
@@ -7387,11 +6833,11 @@
    }
   },
   {
-   "id": "o462",
+   "id": "o427",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15080.0,
+    13640.0,
     936.0,
     16.0,
     24.0
@@ -7405,11 +6851,11 @@
    }
   },
   {
-   "id": "o463",
+   "id": "o428",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15799.0,
+    14359.0,
     948.0,
     18.0,
     12.0
@@ -7423,11 +6869,11 @@
    }
   },
   {
-   "id": "o464",
+   "id": "o429",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14937.0,
+    13497.0,
     950.0,
     14.0,
     10.0
@@ -7441,11 +6887,11 @@
    }
   },
   {
-   "id": "o465",
+   "id": "o430",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15511.0,
+    14071.0,
     724.0,
     18.0,
     12.0
@@ -7459,11 +6905,11 @@
    }
   },
   {
-   "id": "o466",
+   "id": "o431",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16231.0,
+    14791.0,
     724.0,
     18.0,
     12.0
@@ -7477,11 +6923,11 @@
    }
   },
   {
-   "id": "o467",
+   "id": "o432",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16089.0,
+    14649.0,
     406.0,
     14.0,
     10.0
@@ -7495,11 +6941,11 @@
    }
   },
   {
-   "id": "o468",
+   "id": "o433",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15224.0,
+    13784.0,
     402.0,
     16.0,
     14.0
@@ -7513,11 +6959,11 @@
    }
   },
   {
-   "id": "o469",
+   "id": "o434",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15939.0,
+    14499.0,
     926.0,
     26.0,
     34.0
@@ -7531,11 +6977,11 @@
    }
   },
   {
-   "id": "o470",
+   "id": "o435",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15081.0,
+    13641.0,
     950.0,
     14.0,
     10.0
@@ -7549,11 +6995,11 @@
    }
   },
   {
-   "id": "o471",
+   "id": "o436",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    14936.0,
+    13496.0,
     712.0,
     16.0,
     24.0
@@ -7567,11 +7013,11 @@
    }
   },
   {
-   "id": "o472",
+   "id": "o437",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15511.0,
+    14071.0,
     724.0,
     18.0,
     12.0
@@ -7585,11 +7031,11 @@
    }
   },
   {
-   "id": "o473",
+   "id": "o438",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    15369.0,
+    13929.0,
     406.0,
     14.0,
     10.0
@@ -7603,11 +7049,11 @@
    }
   },
   {
-   "id": "o474",
+   "id": "o439",
    "type": "enemy",
    "layer": "gameplay",
    "rect": [
-    16088.0,
+    14648.0,
     488.0,
     16.0,
     24.0
@@ -7621,28 +7067,28 @@
    }
   },
   {
-   "id": "o475",
+   "id": "o440",
    "type": "combat_zone",
    "layer": "gameplay",
    "rect": [
-    14784.0,
+    13344.0,
     320.0,
     1696.0,
     640.0
    ],
    "props": {
     "doors": "",
-    "waves": "o448,o449,o450,o451,o452,o453,o454;o455,o456,o457,o458,o459,o460,o461;o462,o463,o464,o465,o466,o467,o468;o469,o470,o471,o472,o473,o474",
+    "waves": "o413,o414,o415,o416,o417,o418,o419;o420,o421,o422,o423,o424,o425,o426;o427,o428,o429,o430,o431,o432,o433;o434,o435,o436,o437,o438,o439",
     "lockCamera": false,
     "music": ""
    }
   },
   {
-   "id": "o476",
+   "id": "o441",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    15626.0,
+    14186.0,
     922.0,
     12.0,
     12.0
@@ -7652,11 +7098,11 @@
    }
   },
   {
-   "id": "o477",
+   "id": "o442",
    "type": "health_orb",
    "layer": "gameplay",
    "rect": [
-    15306.0,
+    13866.0,
     698.0,
     12.0,
     12.0
@@ -7666,11 +7112,11 @@
    }
   },
   {
-   "id": "o478",
+   "id": "o443",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    15624.0,
+    14184.0,
     888.0,
     16.0,
     16.0
@@ -7683,11 +7129,11 @@
    }
   },
   {
-   "id": "o479",
+   "id": "o444",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    15624.0,
+    14184.0,
     664.0,
     16.0,
     16.0
@@ -7700,11 +7146,11 @@
    }
   },
   {
-   "id": "o480",
+   "id": "o445",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    15624.0,
+    14184.0,
     440.0,
     16.0,
     16.0
@@ -7717,11 +7163,11 @@
    }
   },
   {
-   "id": "o481",
+   "id": "o446",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    16512.0,
+    15072.0,
     960.0,
     64.0,
     96.0
@@ -7731,11 +7177,11 @@
    }
   },
   {
-   "id": "o482",
+   "id": "o447",
    "type": "solid",
    "layer": "terrain",
    "rect": [
-    16576.0,
+    15136.0,
     960.0,
     256.0,
     96.0
@@ -7745,11 +7191,11 @@
    }
   },
   {
-   "id": "o483",
+   "id": "o448",
    "type": "door",
    "layer": "gameplay",
    "rect": [
-    16688.0,
+    15248.0,
     896.0,
     16.0,
     64.0
@@ -7759,11 +7205,11 @@
    }
   },
   {
-   "id": "o484",
+   "id": "o449",
    "type": "sign",
    "layer": "gameplay",
    "rect": [
-    16756.0,
+    15316.0,
     936.0,
     24.0,
     24.0
@@ -7774,11 +7220,11 @@
    }
   },
   {
-   "id": "o485",
+   "id": "o450",
    "type": "light",
    "layer": "gameplay",
    "rect": [
-    16760.0,
+    15320.0,
     920.0,
     16.0,
     16.0
@@ -7791,11 +7237,11 @@
    }
   },
   {
-   "id": "o486",
+   "id": "o451",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
-    16736.0,
+    15296.0,
     896.0,
     64.0,
     64.0
@@ -7806,7 +7252,7 @@
    }
   },
   {
-   "id": "o487",
+   "id": "o452",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7821,7 +7267,7 @@
    }
   },
   {
-   "id": "o488",
+   "id": "o453",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7836,7 +7282,7 @@
    }
   },
   {
-   "id": "o489",
+   "id": "o454",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7851,7 +7297,7 @@
    }
   },
   {
-   "id": "o490",
+   "id": "o455",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7866,7 +7312,7 @@
    }
   },
   {
-   "id": "o491",
+   "id": "o456",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7881,7 +7327,7 @@
    }
   },
   {
-   "id": "o492",
+   "id": "o457",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7896,7 +7342,7 @@
    }
   },
   {
-   "id": "o493",
+   "id": "o458",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7911,7 +7357,7 @@
    }
   },
   {
-   "id": "o494",
+   "id": "o459",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7926,7 +7372,7 @@
    }
   },
   {
-   "id": "o495",
+   "id": "o460",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7941,7 +7387,7 @@
    }
   },
   {
-   "id": "o496",
+   "id": "o461",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7956,7 +7402,7 @@
    }
   },
   {
-   "id": "o497",
+   "id": "o462",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7971,7 +7417,7 @@
    }
   },
   {
-   "id": "o498",
+   "id": "o463",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -7986,7 +7432,7 @@
    }
   },
   {
-   "id": "o499",
+   "id": "o464",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -8001,43 +7447,13 @@
    }
   },
   {
-   "id": "o500",
+   "id": "o465",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
     14560.0,
     64.0,
-    1120.0,
-    352.0
-   ],
-   "props": {
-    "effect": "snowfall",
-    "rate": 1.2
-   }
-  },
-  {
-   "id": "o501",
-   "type": "emitter",
-   "layer": "gameplay",
-   "rect": [
-    15680.0,
-    64.0,
-    1120.0,
-    352.0
-   ],
-   "props": {
-    "effect": "snowfall",
-    "rate": 1.2
-   }
-  },
-  {
-   "id": "o502",
-   "type": "emitter",
-   "layer": "gameplay",
-   "rect": [
-    16800.0,
-    64.0,
-    32.0,
+    832.0,
     352.0
    ],
    "props": {
@@ -8049,7 +7465,7 @@
  "events": [
   {
    "id": "ev1",
-   "source": "o119",
+   "source": "o107",
    "trigger": "cleared",
    "once": true,
    "actions": [
@@ -8065,7 +7481,7 @@
   },
   {
    "id": "ev2",
-   "source": "o230",
+   "source": "o215",
    "trigger": "cleared",
    "once": true,
    "actions": [
@@ -8081,7 +7497,7 @@
   },
   {
    "id": "ev3",
-   "source": "o378",
+   "source": "o330",
    "trigger": "cleared",
    "once": true,
    "actions": [
@@ -8144,69 +7560,69 @@
       512
      ]
     ],
-    "cp:o179": [
+    "cp:o164": [
      [
-      6272,
+      5632,
       960
      ]
     ],
-    "cp:o180": [
+    "cp:o165": [
      [
-      6272,
+      5632,
       736
      ]
     ],
-    "cp:o181": [
+    "cp:o166": [
      [
-      6272,
+      5632,
       512
      ]
     ],
-    "cp:o327": [
+    "cp:o279": [
      [
-      11424,
+      9504,
       960
      ]
     ],
-    "cp:o328": [
+    "cp:o280": [
      [
-      11424,
+      9504,
       736
      ]
     ],
-    "cp:o329": [
+    "cp:o281": [
      [
-      11424,
+      9504,
       512
      ]
     ],
-    "cp:o424": [
+    "cp:o389": [
      [
-      14656,
+      13216,
       960
      ]
     ],
-    "cp:o425": [
+    "cp:o390": [
      [
-      14656,
+      13216,
       736
      ]
     ],
-    "cp:o426": [
+    "cp:o391": [
      [
-      14656,
+      13216,
       512
      ]
     ],
     "8": [
      [
-      16624,
+      15184,
       960
      ]
     ],
     "9": [
      [
-      16624,
+      15184,
       960
      ]
     ]
@@ -8240,42 +7656,42 @@
      "id": "p7_8",
      "to": 8,
      "rect": [
-      16736,
+      15296,
       896,
       64,
       64
      ],
      "lock": "ambushes:7",
-     "door": "o483",
+     "door": "o448",
      "via": 9
     }
    ],
    "objectives": [
     {
      "id": "bg_embuscade_1",
-     "source": "o119",
+     "source": "o107",
      "trigger": "cleared"
     },
     {
      "id": "bg_embuscade_2",
-     "source": "o230",
+     "source": "o215",
      "trigger": "cleared"
     },
     {
      "id": "bg_embuscade_3",
-     "source": "o378",
+     "source": "o330",
      "trigger": "cleared"
     },
     {
      "id": "bg_poignet",
-     "source": "o475",
+     "source": "o440",
      "trigger": "cleared"
     }
    ],
    "magma": {
     "zone": "magma_flow",
     "period": 75.0,
-    "first": 40.0,
+    "first": 50.0,
     "warn": 3.0,
     "duration": 6.0,
     "name": "Balayage des griffes",
@@ -8297,7 +7713,7 @@
      960
     ],
     [
-     2496,
+     3616,
      960
     ],
     [
@@ -8309,47 +7725,47 @@
      960
     ],
     [
-     5936,
+     5728,
      960
     ],
     [
-     5936,
-     288
-    ],
-    [
-     6080,
-     288
-    ],
-    [
-     6112,
-     512
-    ],
-    [
-     6176,
-     512
-    ],
-    [
-     6368,
+     7328,
      960
+    ],
+    [
+     7728,
+     960
+    ],
+    [
+     7728,
+     256
+    ],
+    [
+     7856,
+     256
+    ],
+    [
+     7904,
+     512
     ],
     [
      7968,
-     960
+     512
     ],
     [
      9408,
      960
     ],
     [
-     9888,
+     9600,
      960
     ],
     [
-     11328,
+     11200,
      960
     ],
     [
-     11520,
+     11680,
      960
     ],
     [
@@ -8357,19 +7773,15 @@
      960
     ],
     [
-     14560,
+     13312,
      960
     ],
     [
-     14752,
+     15072,
      960
     ],
     [
-     16512,
-     960
-    ],
-    [
-     16768,
+     15328,
      960
     ]
    ],
@@ -8377,52 +7789,65 @@
     {
      "id": "ecluse_1",
      "rect": [
-      2112,
+      3712,
       896,
       160,
       64
      ],
      "players": 3,
      "targets": [
-      "o65",
-      "o66",
-      "o67"
+      "o119",
+      "o120",
+      "o121"
      ],
      "action": "open",
+     "ambushes": [
+      "bg_embuscade_1"
+     ],
      "label": "Écluse",
      "message": "L'écluse s'ouvre : ses portes cèdent à tous les étages"
     },
     {
      "id": "monte_charge",
      "rect": [
-      5872,
+      7664,
       896,
       144,
       64
      ],
      "players": 4,
      "targets": [
-      "o169"
+      "o230",
+      "o231"
      ],
-     "action": "activate",
+     "action": "open",
+     "ambushes": [
+      "bg_embuscade_1",
+      "bg_embuscade_2"
+     ],
      "label": "Monte-charge",
      "message": "Le monte-charge démarre : il fait ensuite la navette tout seul"
     },
     {
      "id": "ecluse_2",
      "rect": [
-      9504,
+      11296,
       896,
       160,
       64
      ],
      "players": 3,
      "targets": [
-      "o280",
-      "o281",
-      "o282"
+      "o342",
+      "o343",
+      "o344"
      ],
      "action": "open",
+     "ambushes": [
+      "bg_embuscade_1",
+      "bg_embuscade_2",
+      "bg_embuscade_3"
+     ],
      "label": "Écluse",
      "message": "L'écluse s'ouvre : ses portes cèdent à tous les étages"
     }
@@ -8431,15 +7856,15 @@
     "o56",
     "o57",
     "o58",
-    "o179",
-    "o180",
-    "o181",
-    "o327",
-    "o328",
-    "o329",
-    "o424",
-    "o425",
-    "o426"
+    "o164",
+    "o165",
+    "o166",
+    "o279",
+    "o280",
+    "o281",
+    "o389",
+    "o390",
+    "o391"
    ]
   }
  },
