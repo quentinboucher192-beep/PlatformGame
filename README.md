@@ -296,6 +296,11 @@ des 10 meilleures contributions et le titre de clan « Briseurs d'étoile ». D�
   joueurs, puis le **résultat officiel** est figé à la clôture — « Asterion est tombé » ou « a survécu ».
   À la clé : la combinaison « Écorce d'Asterion », le titre de clan « Dévoreurs dévorés » pour le top 10, et
   des sessions de rattrapage pour les absents.
+* **Fiche récapitulative** (2.78.1) : chaque raid terminé du clan, gagné ou non, garde sa fiche dans CLANS › RAIDS —
+  « Asterion est tombé » ou jusqu'où il est allé, sept chiffres clés, la frise des sept parties et du Cœur (le portrait
+  animé de chaque Gigaboss, l'heure de sa chute, le groupe qui l'a abattu, la relique de sa branche), le titan par parties,
+  les meilleurs du clan avec leur avatar, les récompenses dessinées avec leur texture et votre raid ; seulement ce que le
+  serveur a validé ([docs/RAIDS.md §27](docs/RAIDS.md#27-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
 
 ### Fiabilité, charge et anti-triche
 
@@ -632,6 +637,21 @@ drapeaux flag-icons (MIT), les noms de pays i18n-iso-countries (MIT) et les lumi
 de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
 
 ## Historique des versions
+
+**Nouveau dans la version 2.78.1** :
+* **Fiche récapitulative d'un raid terminé**, dans CLANS › RAIDS (l'historique des raids, la fiche de l'événement et les
+  résultats l'ouvrent) : chaque raid du clan, gagné ou non. En tête, sur le décor de la chute d'Asterion, « Asterion est
+  tombé » ou « Raid terminé », la date, la durée, le clan, ses joueurs, groupes et renforts, son rang mondial et la note des
+  joueurs ; sept chiffres clés (parties du titan, Cœur, zones, reliques, morts, réanimations, groupes éliminés et repris)
+  ([docs/RAIDS.md §27](docs/RAIDS.md#27-la-fiche-récapitulative-dun-raid-terminé-dans-le-clan-2781)).
+* **« Les sept parties et le Cœur »** : le portrait animé de chaque Gigaboss, l'heure de sa chute validée, le groupe qui
+  l'a abattu (renforts compris) et la relique de sa branche ; le titan du raid dessiné partie par partie, reliques posées dessus.
+* **« Les meilleurs du raid »** avec leur avatar, les **récompenses du clan** dessinées avec leur vraie texture (badge, titre,
+  combinaison portée par Nova, cadre, effet de victoire), **« Votre raid »**, et les boutons « Tableau des contributions »
+  (celui du clan), « Carte du titan », « Revoir le film de victoire », « Fiche de l'événement », « Noter ce raid ».
+* **Seulement ce que le serveur a validé** (`GET /clans/{id}/raids/{événement}/recap`, membres du clan et administrateurs) ;
+  ce qui attend encore sa majorité est dit « en attente de validation ». Mise en page vérifiée en 1280 × 720, 1600 × 900 et
+  1920 × 1080, en français et en anglais.
 
 **Nouveau dans la version 2.78.0** :
 * **Raids : chacun sa zone** : un passage n'emmène que le joueur qui y entre ; le groupe peut se répartir sur plusieurs

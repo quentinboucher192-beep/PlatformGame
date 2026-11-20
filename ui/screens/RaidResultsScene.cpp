@@ -30,6 +30,7 @@
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
+#include "ui/screens/RaidRecapScene.h"
 
 namespace cosmic {
 
@@ -131,7 +132,21 @@ public:
         std::string state = !loaded_ ? "" : res_.final ? "Classement final" : "Classement en cours · résultats validés par le serveur";
         const float sw = std::min(textW(ui, state, 14), (page.right() - hx) * 0.45f);
         if (!state.empty()) fit(ui, state, {page.right(), page.y + ui.s(22)}, 14, sw, res_.final ? kGreen : kGold, FontFace::Bold, Align::Right);
-        fit(ui, "Résultats du raid — Asterion", {hx, page.y + ui.s(22)}, 26, page.right() - hx - sw - ui.s(16), kText, FontFace::Title);
+        // 2.78.1: the « fiche récapitulative » of the raid for my clan, once it is finished (or its heart fallen).
+        const std::string recapLabel = "Fiche récapitulative", myClan = jstr(jfield(g_.online.myClan(), "clan"), "id");
+        const bool heartDown = std::find(res_.defeatedBosses.begin(), res_.defeatedBosses.end(), "Cœur d'Asterion") != res_.defeatedBosses.end();
+        bool clanIn = false;
+        for (const raids::ResultClan& c : res_.clans) clanIn = clanIn || c.tag == g_.online.myClanTag();
+        const float cw = loaded_ && (res_.final || heartDown) && clanIn && !myClan.empty()
+                             ? std::min(textW(ui, recapLabel, 15, FontFace::Bold) + ui.s(32), (page.right() - hx - sw) * 0.4f)
+                             : 0.0f;
+        if (cw > ui.s(60)) {
+            UIContext::ButtonStyle st;
+            st.small = true;
+            if (ui.button("recap", {page.right() - sw - ui.s(16) - cw, page.y, cw, ui.s(44)}, recapLabel, st)) g_.app.pushScene(makeRaidRecap(g_, myClan, eventId_));
+        }
+        fit(ui, "Résultats du raid — Asterion", {hx, page.y + ui.s(22)}, 26, page.right() - hx - sw - ui.s(16) - (cw > ui.s(60) ? cw + ui.s(16) : 0.0f), kText,
+            FontFace::Title);
         if (!loaded_) {
             fit(ui, error_.empty() ? "Chargement des résultats…" : error_, {page.x, page.y + ui.s(80)}, 17, page.w, error_.empty() ? kDim : ui.theme().danger);
         } else {
@@ -164,46 +179,7 @@ public:
     }
 
     /// 2.78: the server's tables as the detailed « Tableau des contributions » shows them (old ones: « — »).
-    contrib::Row contribRow(const raids::ZoneResultRow& r) const {
-        contrib::Row row;
-        row.name = r.username.empty() ? std::string("Joueur parti") : r.username;
-        row.color = r.me ? Color{110, 190, 255, 255} : Color{200, 206, 230, 255};
-        row.me = r.me;
-        row.bossTenths = static_cast<int64_t>(r.bossDamage) * 10;
-        row.miniTenths = static_cast<int64_t>(r.miniDamage) * 10;
-        row.damageTenths = static_cast<int64_t>(r.damage) * 10;
-        row.support = r.support;
-        row.mechanisms = r.mechanisms;
-        row.objectives = r.objectives;
-        row.deaths = r.deaths;
-        row.revives = r.revives;
-        row.revived = r.revived;
-        row.v2 = r.v2;
-        return row;
-    }
-    contrib::Model contribModel() const {
-        contrib::Model m;
-        m.legend = "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).";
-        m.tooltipNote = "Compté par la simulation du groupe, validé par le serveur.";
-        m.tabKey = "Q / E";
-        for (const raids::ZoneResultTable& z : res_.zoneTables) {
-            contrib::Table t;
-            std::string zoneName = "Zone " + std::to_string(z.zone), branchName;
-            for (const raid::Branch* b : raid::Branch::all())
-                if (b->id == z.branch) {
-                    branchName = b->name;
-                    if (const raid::ZoneInfo* zi = b->zone(z.zone)) zoneName = zi->name;
-                }
-            t.title = zoneName + (branchName.empty() ? "" : " · " + branchName);
-            t.sub = "Groupe " + z.group + " · " + raidmenu::raidTime(static_cast<float>(z.tick) / 120.0f);
-            for (const raids::ZoneResultRow& r : z.rows) t.rows.push_back(contribRow(r));
-            m.zones.push_back(std::move(t));
-        }
-        m.raid.title = "Raid entier";
-        m.raid.sub = "les zones des groupes de votre clan, additionnées par joueur";
-        for (const raids::ZoneResultRow& r : res_.raidTotals) m.raid.rows.push_back(contribRow(r));
-        return m;
-    }
+    contrib::Model contribModel() const { return contrib::modelOfResults(res_, "les zones des groupes de votre clan, additionnées par joueur"); }
 
     /// Four figures: the gigaboss, the clans, the participants, my rank. Returns the bottom.
     float drawSummary(const Rect& r) {

@@ -280,11 +280,11 @@ std::string groupDigits(int64_t v);
 
 // ------------------------------------------------------------------ 2.69: the world events (phase 5)
 
-/// « 1er », « 2ᵉ »…
+/// « 1er », « 2e »… (no « ᵉ »: not in the game's fonts)
 std::string ordinal(int rank);
 /// « Arrivée en retard : jusqu'à la fin », « … : jusqu'à 30 min après le début », « … : non ».
 std::string lateRuleText(const Event& e);
-/// The history's line of a frozen result: « Asterion a survécu · 42 % · [AUBE] 2ᵉ / 23 ».
+/// The history's line of a frozen result: « Asterion a survécu · 42 % · [AUBE] 2e / 23 ».
 std::string resultLine(const EventResult& r, const std::string& clanTag);
 
 /// The world rankings of a world event (GET /raids/events/{id}/world), from the validated results
@@ -327,7 +327,7 @@ struct WorldRanking {
     int myClanRank = 0, myClanPoints = 0, myGroupRank = 0, myRank = 0;
     bool myPending = false;
     int myPendingReports = 0;
-    std::vector<std::string> myClanTitles;  // « Dévoreurs dévorés · 2ᵉ mondial »
+    std::vector<std::string> myClanTitles;  // « Dévoreurs dévorés · 2e mondial »
     std::vector<Reward> rewards;            // mine to claim for this event
     // A catch-up session: the official result it never changes.
     bool officialFrozen = false;

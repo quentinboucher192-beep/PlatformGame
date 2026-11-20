@@ -10,6 +10,9 @@
 #include "engine/core/Paths.h"
 #include "engine/input/InputManager.h"
 #include "game/GameServices.h"
+#include "game/online/Raids.h"
+#include "game/raid/RaidBranch.h"
+#include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/CreatureArt.h"
@@ -900,5 +903,51 @@ bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r
 bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) { return drawImpl(ui, nullptr, nullptr, r, m, v); }
 
 bool draw(GameServices& g, AsterionFigure& fig, const Rect& r, const Model& m, View& v) { return drawImpl(g.ui, &g, &fig, r, m, v); }
+
+namespace {
+
+Row rowOf(const raids::ZoneResultRow& r) {
+    Row row;
+    row.name = r.username.empty() ? std::string("Joueur parti") : r.username;
+    row.color = r.me ? Color{110, 190, 255, 255} : Color{200, 206, 230, 255};
+    row.me = r.me;
+    row.bossTenths = static_cast<int64_t>(r.bossDamage) * 10;
+    row.miniTenths = static_cast<int64_t>(r.miniDamage) * 10;
+    row.damageTenths = static_cast<int64_t>(r.damage) * 10;
+    row.support = r.support;
+    row.mechanisms = r.mechanisms;
+    row.objectives = r.objectives;
+    row.deaths = r.deaths;
+    row.revives = r.revives;
+    row.revived = r.revived;
+    row.v2 = r.v2;
+    return row;
+}
+
+}  // namespace
+
+Model modelOfResults(const raids::Results& res, const std::string& raidSub) {
+    Model m;
+    m.legend = "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).";
+    m.tooltipNote = "Compté par la simulation du groupe, validé par le serveur.";
+    m.tabKey = "Q / E";
+    for (const raids::ZoneResultTable& z : res.zoneTables) {
+        Table t;
+        std::string zoneName = "Zone " + std::to_string(z.zone), branchName;
+        for (const raid::Branch* b : raid::Branch::all())
+            if (b->id == z.branch) {
+                branchName = b->name;
+                if (const raid::ZoneInfo* zi = b->zone(z.zone)) zoneName = zi->name;
+            }
+        t.title = zoneName + (branchName.empty() ? "" : " · " + branchName);
+        t.sub = "Groupe " + z.group + " · " + raidmenu::raidTime(static_cast<float>(z.tick) / 120.0f);
+        for (const raids::ZoneResultRow& r : z.rows) t.rows.push_back(rowOf(r));
+        m.zones.push_back(std::move(t));
+    }
+    m.raid.title = "Raid entier";
+    m.raid.sub = raidSub;
+    for (const raids::ZoneResultRow& r : res.raidTotals) m.raid.rows.push_back(rowOf(r));
+    return m;
+}
 
 }  // namespace cosmic::contrib

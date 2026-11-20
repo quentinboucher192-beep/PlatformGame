@@ -332,3 +332,7 @@ jump
 revived
 revives
 wipe
+# 2.78.1: identifiers of the recap's buttons (ui/screens/RaidRecapScene.cpp) and a piece of its request's path
+film
+titan
+raids

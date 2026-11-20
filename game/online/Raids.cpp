@@ -718,7 +718,8 @@ std::vector<ResultPlayer> rankedBy(const Results& r, const std::string& c) {
 
 // ------------------------------------------------------------------ 2.69: the world events (phase 5)
 
-std::string ordinal(int rank) { return rank == 1 ? "1er" : std::to_string(std::max(0, rank)) + "ᵉ"; }
+// 2.78.1: « 2e », never « ᵉ » (not in the game's fonts: an empty box).
+std::string ordinal(int rank) { return rank == 1 ? "1er" : std::to_string(std::max(0, rank)) + "e"; }
 
 std::string lateRuleText(const Event& e) {
     if (e.lateMinutes < 0) return "Arrivée en retard : jusqu'à la fin";

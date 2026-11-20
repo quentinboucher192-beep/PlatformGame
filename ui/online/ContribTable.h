@@ -45,6 +45,9 @@ namespace cosmic {
 class AsterionFigure;
 class GameServices;
 class InputManager;
+namespace raids {
+struct Results;
+}
 class UIContext;
 
 namespace contrib {
@@ -187,6 +190,10 @@ struct Tooltip {
     Col col = Col::Boss;
 };
 Tooltip tooltip(UIContext& ui, const Model& m, const View& v, const Prepared& p, int row, Col col, const Rect& anchor);
+/// 2.78.1: the server's validated tables (GET /raids/events/{id}/results, the recap of a clan: `zone_tables`,
+/// `raid_totals`) as the table shows them, a table of before 2.78 with « — ». `raidSub`: whose zones « Raid entier » adds.
+Model modelOfResults(const raids::Results& r, const std::string& raidSub);
+
 /// A category's name, its explanation and its colour.
 const char* colName(Col c);
 Color colColor(Col c);
