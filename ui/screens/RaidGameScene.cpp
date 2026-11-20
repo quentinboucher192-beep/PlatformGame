@@ -468,7 +468,11 @@ public:
         }
         int steps = 1;
         if (link_->available() > tick_ + static_cast<uint32_t>(link_->inputDelay() + 6)) steps = 4;
+        // 2.78: several zones may be simulated at once (one world per zone a player is in): a catch-up of several
+        // steps stops at the image's budget (the next image goes on), so the main thread never waits on it.
+        const auto frameStart = std::chrono::steady_clock::now();
         for (int k = 0; k < steps && !ended_; ++k) {
+            if (k > 0 && std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - frameStart).count() > kOnlineBudgetMs) break;
             sendLocal();
             if (!link_->frameFor(tick_, frame_)) {
                 waiting_ += dt;
@@ -2191,7 +2195,8 @@ public:
 
     /// 2.75.5: the raid's menu over the combat (opened by the player; the game goes on under it).
     void drawMenu(GameWorld& w) {
-        const raidmenu::MenuAction act = raidmenu::drawMenu(g_.ui, overlay_.menu, menuData(w));
+        // 2.78: the table open over the menu takes the whole screen (the menu's buttons under it never answer).
+        const raidmenu::MenuAction act = contribOpen_ ? raidmenu::MenuAction{} : raidmenu::drawMenu(g_.ui, overlay_.menu, menuData(w));
         if (act.close) overlay_.menu.close();
         if (act.table && !contribOpen_) {
             contribOpen_ = true;
@@ -2343,7 +2348,7 @@ public:
         const Color todo{255, 176, 74, 255};
         const raid::ZoneGoals here = raid::zoneGoals(*branch_, run_->zone(), run_->validated(), run_->localDone());
         // 2.78: where each player of the group is (each one changes zone alone).
-        if (const std::string where = groupWhere(); !where.empty()) lines.push_back({"◇", where, kSky});
+        if (const std::string where = groupWhere(); !where.empty()) lines.push_back({"i", where, kSky});
         if (here.finished) lines.push_back({"OK", "Zone terminée", kGreen});
         if (const auto fell = retake_.find(run_->zone()); fell != retake_.end() && !here.finished)
             lines.push_back({"!", "Zone à reprendre : " + fell->second + " est tombé ici, finissez-la à sa place", kDanger});
@@ -2384,7 +2389,7 @@ public:
         for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
             if (g.zone == run_->zone() || g.finished) continue;
             if (g.passage) {  // 2.78: the lair's armory, a zone of passage (once the way to the lair is open)
-                if (g.reachable) branch.push_back({"◇", i18n::keep(i18n::tr(g.name) + colon + i18n::tr(g.missing())), kSky});
+                if (g.reachable) branch.push_back({"i", i18n::keep(i18n::tr(g.name) + colon + i18n::tr(g.missing())), kSky});
                 continue;
             }
             const std::string miss = g.missing();
@@ -2622,6 +2627,7 @@ public:
     // 2.77: « Simuler un raid complet » (raid::RaidSimulation): the raid, the instance shown, the budget
     // of time per image, the speed measured, the world's events already told, the raid's panel.
     static constexpr double kSimBudgetMs = 10.0;
+    static constexpr double kOnlineBudgetMs = 6.0;  // 2.78: an online raid's steps in one image (at least one)
     RaidSimSetup simSetup_;
     bool simMode_ = false;
     std::unique_ptr<raid::RaidSimulation> sim_;

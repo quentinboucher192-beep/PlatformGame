@@ -341,6 +341,7 @@ Tooltip tooltip(UIContext& ui, const Model& m, const View& v, const Prepared& p,
 bool draw(UIContext& ui, const Rect& r, const Model& m, View& v) {
     bool closed = false;
     ui.pushId("contribtable");
+    ui.consumeNavigation(true, true);  // its keys sort and choose rows: the focus never travels to its buttons
     const Layout L = layout(ui, r, m, v);
     const Table& t = tableOf(m, v);
     const Prepared p = prepare(t, v.sort);

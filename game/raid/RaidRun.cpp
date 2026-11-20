@@ -89,9 +89,9 @@ const Gigaboss* RaidRun::gigabossOf(int zone) const {
 int RaidRun::focusedZone() const {
     if (focus_ >= 0 && zw(focus_)) return focus_;
     if (follow_ >= 0 && follow_ < kMaxInstancePlayers && zw(seatZone_[follow_])) return seatZone_[follow_];
-    for (const auto& z : zones_)
-        for (int i = 0; i < z->world->teamSize() && i < kMaxInstancePlayers; ++i)
-            if (seatZone_[i] == z->zone && z->world->member(i).presence == P::Playing) return z->zone;
+    // The zone of the lowest seat in play.
+    for (int i = 0; i < kMaxInstancePlayers; ++i)
+        if (const ZoneWorld* z = zw(seatZone_[i]); z && i < z->world->teamSize() && z->world->member(i).presence == P::Playing) return z->zone;
     // The zone of the lowest seat held, else the first one loaded.
     for (int i = 0; i < kMaxInstancePlayers; ++i)
         if (const ZoneWorld* z = zw(seatZone_[i]); z && i < z->world->teamSize() && held(z->world->member(i).presence)) return z->zone;
@@ -177,19 +177,14 @@ bool RaidRun::begin(uint32_t branchMask, int zone) {
     zones_.clear();
     const int first = zone > 0 ? zone : zone == kArmory && branch_.hasArmory() ? 0 : branch_.startZone;
     for (int i = 0; i < kMaxInstancePlayers; ++i) seatZone_[i] = first;
-    ZoneWorld* z = loadZone(first, "start");
-    if (!z) return false;
     // Every seat starts there (the free ones are vacant from the first step, as the relay says).
-    for (int i = 0; i < z->world->teamSize(); ++i) {
-        GameWorld::MemberCarry c = z->world->carryOf(i);
-        c.presence = P::Playing;
-        placeSeat(*z, i, "start", c);
-    }
+    ZoneWorld* z = loadZone(first, "start", true);
+    if (!z) return false;
     checkFinished(true);  // 2.75: the zones already finished are not news
     return z->rules != nullptr;
 }
 
-RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from) {
+RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from, bool everyone) {
     const LevelData* level = branch_.level(zid);
     const ZoneRules* rules = branch_.zoneRules(zid);
     if (!level || !rules) return nullptr;
@@ -215,7 +210,7 @@ RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from) {
     z->serial = ++serials_;
     GameWorld& world = *z->world;
     // Nobody of the instance is here yet: every seat vacant (placeSeat brings the players in).
-    {
+    if (!everyone) {
         GameWorld::MemberCarry away;
         away.presence = P::Vacant;
         away.health = world.playerAt(0).maxHealth();
@@ -250,6 +245,18 @@ RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from) {
     // 2.68: kept when the same zone starts again; 2.72: and when a player comes back to it.
     const auto kept = memory_.find(zid);
     z->lastCheckpoint = kept != memory_.end() ? kept->second.checkpoint : std::string();
+    if (everyone) {
+        // The instance's first zone: every player at the zone's place for where they come from (else its start
+        // points, player i at point i, in turn), a free spot near it, in the order of the seats (as before 2.78).
+        auto it = rules->spawns.find(from);
+        if (it == rules->spawns.end() || it->second.empty()) it = rules->spawns.find("start");
+        const std::vector<Vec2> points = it != rules->spawns.end() && !it->second.empty() ? it->second : std::vector<Vec2>{};
+        for (int i = 0; i < world.teamSize(); ++i) {
+            const Vec2 at = points.empty() ? world.playerAt(i).feet() : points[static_cast<size_t>(i) % points.size()];
+            world.restoreMember(i, world.carryOf(i), at);
+            if (i < kMaxInstancePlayers) seatZone_[i] = zid;
+        }
+    }
     z->insidePassage.assign(rules->passages.size(), 0);
     z->coopDone.assign(rules->coops.size(), 0);
     if (kept != memory_.end()) {
@@ -264,6 +271,13 @@ RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from) {
                     else e->handleAction(world, p.action, Json::object());
                 }
         }
+    }
+    if (everyone) {
+        // The passages the players stand in now never take them (they must walk into one).
+        for (size_t k = 0; k < rules->passages.size(); ++k)
+            for (int i = 0; i < world.teamSize() && i < kMaxInstancePlayers; ++i)
+                if (rules->passages[k].rect.intersects(world.playerAt(i).box)) z->insidePassage[k] |= static_cast<uint8_t>(1u << i);
+        z->inPlayBefore = seatsInPlay(*z);  // 2.77: those who arrive are in play already
     }
     syncDoors(*z, true);
     for (const EffectInfo& e : branch_.effects)

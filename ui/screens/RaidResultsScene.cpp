@@ -108,7 +108,7 @@ public:
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         bg_.render(g_, 0.6f);
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{12, 10, 30, 160});
-        ui.inputEnabled = g_.app.topScene() == this;
+        ui.inputEnabled = g_.app.topScene() == this && !contribOpen_;  // 2.78: the detailed table over it answers alone
         ui.pushId("results");
         bool back = false;
         const float W = ui.screenW(), H = ui.screenH(), m = ui.s(26);
@@ -138,6 +138,7 @@ public:
         ui.popId();
         if (contribOpen_) {
             // 2.78: the detailed table over the results (its own keys; Échap / B closes it, not the screen).
+            ui.inputEnabled = g_.app.topScene() == this;
             ui.consumeNavigation(true, true);
             if (ui.inputEnabled && contribView_.handleKeys(g_.app.input(), static_cast<int>(res_.zoneTables.size()))) contribOpen_ = false;
             const float cm = ui.s(24);

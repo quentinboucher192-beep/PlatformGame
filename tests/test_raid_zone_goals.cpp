@@ -128,8 +128,9 @@ TEST_CASE("raid zone goals (2.75): each zone's requirements, ticked from the val
     CHECK(raid::zoneFinished(b, 5, bit("grotte_relique")));
     // The branch: every zone, the lair last.
     const auto all = raid::branchGoals(b, 0);
-    CHECK(all.size() == b.zones.size());
+    CHECK(all.size() == b.zones.size() + (b.hasLairArmory() ? 1 : 0));  // 2.78: and the lair's armory, a zone of passage
     CHECK(all.back().lair);
+    CHECK(!b.hasLairArmory() || all[all.size() - 2].passage);
 }
 
 TEST_CASE("raid zone finished (2.75): told once at the step it happens, its table made and reported once, the others' zones told apart") {

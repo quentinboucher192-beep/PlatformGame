@@ -265,8 +265,9 @@ private:
     ZoneWorld* zw(int zone);
     const ZoneWorld* zw(int zone) const;
     const ZoneWorld* focused() const;
-    /// 2.78: loads `zone` (its world, what it kept), every seat vacant in it but those placed after.
-    ZoneWorld* loadZone(int zone, const std::string& from);
+    /// 2.78: loads `zone` (its world, what it kept), every seat vacant in it but those placed after;
+    /// `everyone` (the instance's first zone): every seat placed there at once, as before 2.78.
+    ZoneWorld* loadZone(int zone, const std::string& from, bool everyone = false);
     /// 2.78: places seat `seat` in `z` coming from `from` (the zone's place for it), with its carry.
     void placeSeat(ZoneWorld& z, int seat, const std::string& from, const GameWorld::MemberCarry& carry);
     /// 2.78: a seat leaves its world (vacant there from now on).

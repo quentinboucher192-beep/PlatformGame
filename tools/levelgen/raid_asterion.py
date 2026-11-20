@@ -26,6 +26,12 @@ written by raid_voidworm.py, raid_graviton.py and raid_titanus.py (called from h
 and those of Skullmaw, Dreadfang and Heartbreaker by raid_skullmaw.py, raid_dreadfang.py and raid_heartbreaker.py,
 each branch gains its gigaboss objective (role "gigaboss", at the end of its catalog).
 
+2.78: the zone before each lair (the expedition, zone 7; the heart's aorta, zone 1): every one of its four ambushes
+is an objective of the branch (role "ambush", added at the end of the catalog), the passages to the lair are locked
+« ambushes:7 » (open once all of them are beaten: the game's and the server's rule) and lead through the lair's
+armory (« via »: 9, raid_armory.py); the expedition writes its route (metadata.raid.route, pixels) for the
+distance to that passage shown by the game.
+
 Never edit the JSON by hand: run
     python3 tools/levelgen/raid_asterion.py          (the levels, the catalogs, the titan)
     python3 tools/levelgen/raid_asterion.py --en raid_en.json   (also: the English of every

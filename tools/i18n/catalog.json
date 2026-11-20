@@ -29383,6 +29383,12 @@
    ]
   },
   {
+   "fr": "Ici, de votre clan",
+   "where": [
+    "ui/screens/RaidBranchScene.cpp"
+   ]
+  },
+  {
    "fr": "Ici, la lave obéit à un soleil.",
    "where": [
     "data/levels/aethra_03.json"

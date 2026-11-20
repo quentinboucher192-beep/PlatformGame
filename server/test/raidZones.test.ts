@@ -88,7 +88,9 @@ describe("raids phase 2: the branch's rules", () => {
         expect(reachable(0).filter(Boolean).length).toBe(6); // 2.68: all but the wrist and the hand (behind the wrist's long level)
         expect(reachable(0)[7]).toBe(false);
         expect(reachable(0)[8]).toBe(false);
-        expect(reachable(maskOf(["poignet_verrou"]))[8]).toBe(true);
+        // 2.78: the hand once every ambush of the wrist is beaten (the guard's alone no longer opens it).
+        expect(reachable(maskOf(["poignet_verrou"]))[8]).toBe(false);
+        expect(reachable(maskOf(["poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"]))[8]).toBe(true);
         const gens = maskOf(["veine_generateur", "avantbras_generateur"]);
         expect(lockOpen("generators", maskOf(["veine_generateur"]))).toBe(false);
         expect(lockOpen("generators", gens)).toBe(true);

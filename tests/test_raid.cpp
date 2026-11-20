@@ -206,7 +206,12 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
     const uint32_t gens = (1u << b.objectiveIndex("veine_generateur")) | (1u << b.objectiveIndex("avantbras_generateur"));
     CHECK(b.generators(gens) == 2);
     CHECK(b.reachable(gens)[7]);
-    CHECK(b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);  // then by the forearm too
+    // 2.78: the hand once every ambush of the wrist is beaten (then by the forearm too); the guard alone no longer.
+    CHECK(!b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);
+    uint32_t ambushes = 0;
+    for (const raid::ObjectiveInfo& o : b.objectives)
+        if (o.zone == 7 && o.role == "ambush") ambushes |= 1u << o.index;
+    CHECK(b.reachable(ambushes)[8]);
     CHECK(!b.lockOpen("shortcut", 0));
     CHECK(b.lockOpen("shortcut", 1u << b.objectiveIndex("avantbras_raccourci")));
     CHECK(b.zoneRules(8)->sealedLabel.empty());
@@ -243,7 +248,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xaaa93a0738ae65daULL;  // reference (2.75: the veins wall to wall): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xc10b72ff3ce46cbaULL;  // reference (2.78: every ambush of the wrist an objective, through the lair's armory): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }

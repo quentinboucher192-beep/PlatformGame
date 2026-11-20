@@ -38,6 +38,12 @@
 
 using namespace cosmic;
 
+#ifdef _WIN32
+#define COSMIC_NULL_DEVICE "NUL"
+#else
+#define COSMIC_NULL_DEVICE "/dev/null"
+#endif
+
 namespace {
 
 struct Svc {
@@ -239,8 +245,8 @@ TEST_CASE("raid zones (2.78): a passage of the group opens only with the players
     CHECK(run.zoneOf(1) == bras().startZone);
     CHECK(run.zoneOf(2) == 0);  // not on the plate: it stays
     CHECK(run.zonesLoaded() == (std::vector<int>{0, bras().startZone}));
-    // Back, it walks through the passage alone (the plate done: the door stays open).
-    stepN(run, 3, 30);
+    // Back (in play once it has appeared again), it walks through the passage alone (the plate done: the door stays open).
+    stepN(run, 3, 240);
     into(run, 2, *road);
     stepN(run, 3, 2);
     CHECK(run.zoneOf(2) == bras().startZone);
@@ -248,8 +254,7 @@ TEST_CASE("raid zones (2.78): a passage of the group opens only with the players
 }
 
 TEST_CASE("raid zones (2.78): every branch's lair waits for every ambush of the zone before it, through the lair's armory (the Cœur too)") {
-    std::vector<const raid::Branch*> list = raid::Branch::all();
-    if (const raid::Branch* heart = raid::Branch::builtin(raid::kHeartPart)) list.push_back(heart);
+    const std::vector<const raid::Branch*> list = raid::Branch::all();  // the seven branches, then the Cœur
     CHECK(list.size() == 8);
     for (const raid::Branch* b : list) {
         int lair = 0;
@@ -287,13 +292,17 @@ TEST_CASE("raid zones (2.78): every branch's lair waits for every ambush of the 
         for (const LevelObject& o : b->level(raid::kLairArmory)->objects) tablets += o.type == "power_unlock";
         CHECK(tablets >= 10);
         // One ambush left: closed; « Embuscades restantes : 1 sur 4 » on its passage and in « Ce qu'il reste à faire ».
-        uint32_t three = 0, guardOnly = 0;
+        uint32_t three = 0, guardOnly = 0, others = 0;
         int counted = 0;
         for (const raid::ObjectiveInfo& o : b->objectives)
             if (o.zone == before && o.role == "ambush") {
                 if (counted++ < 3) three |= 1u << o.index;
                 else guardOnly |= 1u << o.index;
+            } else if (o.role != "gigaboss") {
+                others |= 1u << o.index;  // the rest of the branch (the zone before the lair reachable)
             }
+        for (const raid::EffectInfo& e : b->effects)
+            if (e.bit >= 0 && e.bit < 32) others |= 1u << e.bit;  // the titan's links (passages opened from elsewhere)
         const std::string lock = "ambushes:" + std::to_string(before);
         CHECK(!b->lockOpen(lock, three));
         CHECK(!b->lockOpen(lock, guardOnly));  // the guard alone (the lock of before 2.78) no longer opens it
@@ -303,12 +312,12 @@ TEST_CASE("raid zones (2.78): every branch's lair waits for every ambush of the 
         for (const raid::Requirement& r : raid::zoneGoals(*b, before, three).items) said = said || r.text == "Embuscades restantes : 1 sur 4";
         CHECK(said);
         bool access = false;
-        for (const raid::Requirement& r : raid::zoneGoals(*b, lair, three).items)
+        for (const raid::Requirement& r : raid::zoneGoals(*b, lair, others | three).items)
             access = access || (r.access && r.text.find("Embuscades restantes : 1 sur 4") != std::string::npos);
-        CHECK(access || b->part == raid::kHeartPart);  // the heart's arena is reached from zone 1 only
+        CHECK(access);
         // The maps show the lair's armory, a zone of passage just before the lair.
         bool shown = false;
-        for (const raid::ZoneGoals& g : raid::branchGoals(*b, three | guardOnly)) shown = shown || (g.zone == raid::kLairArmory && g.passage && g.reachable);
+        for (const raid::ZoneGoals& g : raid::branchGoals(*b, others | three | guardOnly)) shown = shown || (g.zone == raid::kLairArmory && g.passage && g.reachable);
         CHECK(shown);
     }
 }
@@ -425,7 +434,7 @@ TEST_CASE("raid zones (2.78): a zone whose players are all down goes on while ot
     CHECK(line(rows, 1) && line(rows, 1)->deaths == 1 && line(rows, 1)->revived == 1);
     CHECK(line(rows, 0) && line(rows, 0)->revives == 1);
     // Apart again, both down at once in two zones: the group is wiped, out of both zones.
-    stepN(run, 2, 60);
+    stepN(run, 2, 240);
     into(run, 1, *passageTo(run, 3, 1));
     stepN(run, 2, 2);
     CHECK(run.zoneOf(1) == 1);
@@ -667,6 +676,23 @@ TEST_CASE("raid zones (2.78): the cost of several zones at once (8 players in 4 
         worst = std::max(worst, ms);
     }
     const double avg = total / steps;
-    std::printf("  4 zones simulées à la fois (8 joueurs) : %.3f ms par pas en moyenne, %.2f ms au pire (%d pas)\n", avg, worst, steps);
+    // The same 8 players in one zone, for comparison.
+    raid::RaidRun one(s.ws(), b, raid::kMaxInstancePlayers);
+    CHECK(one.begin(0, 1));
+    double oneTotal = 0.0;
+    for (int t = 0; t < steps; ++t) {
+        auto f = seats(8, held);
+        const auto t0 = std::chrono::steady_clock::now();
+        one.step(f.data(), static_cast<int>(f.size()), 0);
+        oneTotal += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    }
+    // Loading the largest zone (the Poignet-verrou: what a player entering it alone costs, once).
+    const auto l0 = std::chrono::steady_clock::now();
+    raid::RaidRun big(s.ws(), b, raid::kMaxInstancePlayers);
+    CHECK(big.begin(0, 7));
+    const double load = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - l0).count();
+    std::printf("  4 zones simulées à la fois (8 joueurs) : %.3f ms par pas en moyenne, %.2f ms au pire (%d pas) ; une seule zone : %.3f ms ; "
+                "charger le Poignet-verrou : %.1f ms\n",
+                avg, worst, steps, oneTotal / steps, load);
     CHECK(avg < 8.33 * 0.5);  // half a step's budget at 120 Hz (the other half for the display)
 }

@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 
+#include "engine/core/I18n.h"
 #include "engine/rendering/Renderer.h"
 #include "game/GameServices.h"
 #include "game/raid/RaidBranch.h"
@@ -101,9 +102,18 @@ public:
     }
 
     std::vector<Json> groupsIn(int zone) const {
+        // 2.78: each player changes zone alone: a group is in every zone where one of its players is (`zones`,
+        // a server of before: its `zone`).
         std::vector<Json> out;
-        for (const auto& i : data_.value("instances", Json::array()))
-            if (jget<int>(i, "zone", 0) == zone && jget<int>(i, "players", 0) > 0) out.push_back(i);
+        for (const auto& i : data_.value("instances", Json::array())) {
+            if (jget<int>(i, "players", 0) <= 0) continue;
+            bool here = jget<int>(i, "zone", 0) == zone;
+            if (const Json zs = i.value("zones", Json()); zs.is_array() && !zs.empty()) {
+                here = false;
+                for (const Json& z : zs) here = here || (z.is_number_integer() && z.get<int>() == zone);
+            }
+            if (here) out.push_back(i);
+        }
         return out;
     }
 
@@ -448,6 +458,11 @@ public:
                                    (jget<bool>(gi, "mine", false) ? " · votre clan" : ""),
                                {"", kText}});
         if (present.empty()) present.push_back({"Aucun groupe ici pour l'instant.", {"", kDim}});
+        // 2.78: the players of my clan in this zone (each one changes zone alone; the server names them).
+        std::string names;
+        for (const auto& n : z.value("players_here", Json::array()))
+            if (n.is_string()) names += (names.empty() ? "" : ", ") + n.get<std::string>();
+        if (!names.empty()) present.push_back({i18n::keep(i18n::tr("Ici, de votre clan") + (i18n::language() == Language::English ? ": " : " : ") + names), {"", kSky}});
         const int required = jget<int>(z, "groups_required", 1);
         section(required > 1 ? "Groupes présents · " + std::to_string(required) + " groupes requis" : "Groupes présents", present);
     }
