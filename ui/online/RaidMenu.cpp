@@ -132,9 +132,10 @@ NoticeLayout layoutNotices(UIContext& ui, const Rect& area, float k, const std::
 }
 
 bool drawNotices(UIContext& ui, const Rect& area, float k, const std::vector<const Notice*>& list, const std::vector<float>& alpha,
-                 const std::string& key, bool button, size_t* drawnCount) {
+                 const std::string& key, bool button, size_t* drawnCount, Rect* buttonRect) {
     const std::string bt = buttonText(key);
     const NoticeLayout L = layoutNotices(ui, area, k, list, bt, button);
+    if (buttonRect) *buttonRect = L.button;
     bool clicked = false;
     if (L.button.w > 0.0f) {
         // A mouse-only click zone (never a stop of the keyboard or the gamepad: no focus taken).

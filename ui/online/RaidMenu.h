@@ -97,9 +97,9 @@ std::string buttonText(const std::string& key);
 std::string reminder(const Notice& n, const std::string& key);
 /// Draws the button and `list` at their places (`alpha` one per notification). No widget: nothing
 /// takes the focus or a key; the button answers a mouse click (true when clicked). `drawnCount`:
-/// how many of `list` were drawn.
+/// how many of `list` were drawn; `buttonRect` (2.77.4): where the button was drawn (empty if not).
 bool drawNotices(UIContext& ui, const Rect& area, float k, const std::vector<const Notice*>& list, const std::vector<float>& alpha,
-                 const std::string& key, bool button, size_t* drawnCount = nullptr);
+                 const std::string& key, bool button, size_t* drawnCount = nullptr, Rect* buttonRect = nullptr);
 
 /// The raid's menu, opened and closed by the player.
 class Menu {

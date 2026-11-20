@@ -591,7 +591,10 @@ public:
     void update(float dt) override {
         clock_ += dt;
         overlay_.notices.update(clock_);  // 2.75.5: each notification goes by itself
-        if (g_.app.input().mouseMovedThisFrame()) pointerAt_ = clock_;
+        // 2.77.4: the pointer stays hidden while playing (the mouse can aim, click a power): it comes
+        // back only when the mouse moves to the HUD's menu button (a mouse-only click zone), or while
+        // watching a group of the full raid's simulation (its buttons).
+        if (g_.app.input().mouseMovedThisFrame() && pointerWanted()) pointerAt_ = clock_;
         if (test_) {
             if (sim_) updateSim();
             updateGame(dt);
@@ -2276,6 +2279,7 @@ public:
     /// they are drawn).
     void drawNoticesHud(GameWorld& w) {
         UIContext& ui = g_.ui;
+        menuButtonRect_ = {};  // 2.77.4: drawn below, or not this frame
         bool bigMessage = false;
         for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
         if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || g_.app.topScene() != this) return;
@@ -2291,7 +2295,7 @@ public:
                 alpha.push_back(raidmenu::Notices::alpha(*n, clock_));
             }
         size_t drawn = 0;
-        if (raidmenu::drawNotices(ui, r, raidhud::scaleOf(l, RaidHudElement::Notices), list, alpha, menuKeyName(), true, &drawn))
+        if (raidmenu::drawNotices(ui, r, raidhud::scaleOf(l, RaidHudElement::Notices), list, alpha, menuKeyName(), true, &drawn, &menuButtonRect_))
             overlay_.menu.open(menuSectionNow());
         overlay_.notices.drawn(drawn, clock_);
         hudRects_.push_back(r);
@@ -2839,6 +2843,17 @@ public:
     bool fallSeen_ = false;      // 2.75.5: a gigaboss fell here: « Résultats du raid » in the menu
     std::string fallMore_;       // 2.75.5: when its results count (the menu's « Titan »)
     float pointerAt_ = -10.0f;   // 2.75.5: when the mouse last moved (the pointer shown, for the HUD's button)
+    Rect menuButtonRect_{};      // 2.77.4: the HUD's menu button as last drawn (empty when not shown)
+
+    /// 2.77.4: whether a mouse move shows the pointer: near the HUD's menu button (the only mouse-only
+    /// zone while playing) or while watching a group of the full raid's simulation (its ◀ ▶ buttons).
+    bool pointerWanted() const {
+        if (sim_ && local_ < 0) return true;
+        if (menuButtonRect_.w <= 0.0f) return false;
+        const float m = g_.ui.s(40);
+        const Rect near{menuButtonRect_.x - m, menuButtonRect_.y - m, menuButtonRect_.w + 2 * m, menuButtonRect_.h + 2 * m};
+        return near.contains(g_.app.input().mousePos());
+    }
     const raid::RaidRun* watchedRun_ = nullptr;  // 2.75.5: the run whose branch is watched (its zones, its links)
     uint32_t seenZones_ = 0, seenLinks_ = 0;
     bool branchRead_ = false;    // 2.75.5: the branch's map read once (what was so then is no news)

@@ -1,8 +1,9 @@
 // Clan raids « Asterion », phase 1 (raids.ts): world events scheduled by the administrators
-// (draft, publication to every clan), clan raids scheduled by a chief or an officer (internal,
-// invitations between clans), the registration of the clans and of their members (roles, lock
-// time, capacity), the reminders of the cron (each once, at its time, as each player chose),
-// the « raid » notifications (grouped, read all). Every time is UTC: the game converts.
+// (draft, publication to every clan), the clan raids scheduled before 2.77.4 (internal,
+// invitations between clans; a clan can no longer schedule one: the raids are the team's events),
+// the registration of the clans and of their members (roles, lock time, capacity), the reminders
+// of the cron (each once, at its time, as each player chose), the « raid » notifications
+// (grouped, read all). Every time is UTC: the game converts.
 
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it } from "vitest";
@@ -291,18 +292,53 @@ describe("raids: the clan, then each member registers", () => {
     });
 });
 
+/** A clan raid as a chief or an officer scheduled it before 2.77.4 (the route now refuses it): still played until its end. */
+async function legacyClanRaid(t: Team, by: TestPlayer, capacity: number): Promise<string> {
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const t0 = timesOf(Date.now() + 24 * 3600000, 30, "court");
+    await env.DB.batch([
+        env.DB.prepare(
+            `INSERT INTO raid_events (id, kind, raid, format, clan_id, starts_at, lock_minutes, lock_at, ends_at, registration_open, capacity, clan_capacity,
+               difficulty, rewards_text, published_at, created_by, created_at, updated_at)
+             VALUES (?1, 'clan', 'asterion', 'court', ?2, ?3, 30, ?4, ?5, 1, ?6, 50, 3, '', ?7, ?8, ?7, ?7)`,
+        ).bind(id, t.id, t0.starts_at, t0.lock_at, t0.ends_at, capacity, now, by.id),
+        env.DB.prepare(
+            "INSERT INTO raid_clan_entries (event_id, clan_id, registered_by, leader_id, instructions, created_at, updated_at) VALUES (?1, ?2, ?3, ?3, '', ?4, ?4)",
+        ).bind(id, t.id, by.id, now),
+    ]);
+    return id;
+}
+
 describe("raids: clan raids", () => {
-    it("internal to the clan, scheduled by its chief or officers, raids in common by invitation", async () => {
+    it("a clan can no longer schedule a raid: the raids are the team's events (clear message, nothing written)", async () => {
+        const aube = await team("AUBE", 1, 1);
+        const body = { format: "court", starts_at: inMin(24 * 60), capacity: 8 };
+        for (const p of [aube.chief, aube.off[0]!, aube.mem[0]!]) {
+            const r = await api("POST", `${V}/raids/events`, { token: p.token, body });
+            expect(r.status).toBe(403);
+            expect(r.body.error.code).toBe("RAID_EVENTS_ONLY");
+            expect(r.body.error.message).toBe(
+                "Les raids sont des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS.",
+            );
+        }
+        expect((await api("POST", `${V}/raids/events`, { body })).status).toBe(401);
+        expect(await countWhere("SELECT COUNT(*) AS n FROM raid_events WHERE kind = 'clan'")).toBe(0);
+        expect(await raidNotes(aube.mem[0]!)).toHaveLength(0);
+        // The tab still works, without any « clan raid » to organize.
+        const o = await api("GET", `${V}/raids`, { token: aube.chief.token });
+        expect(o.status).toBe(200);
+        expect(o.body.data.clan_events).toEqual([]);
+    });
+
+    it("those scheduled before 2.77.4: internal to the clan, raids in common by invitation, until their end", async () => {
         const aube = await team("AUBE", 1, 2);
         const nebu = await team("NEBU", 0, 1);
-        const body = { format: "court", starts_at: inMin(24 * 60), capacity: 3 };
-        expect((await api("POST", `${V}/raids/events`, { token: aube.mem[0]!.token, body })).status).toBe(403);
-        expect((await api("POST", `${V}/raids/events`, { token: aube.off[0]!.token, body: { ...body, starts_at: inMin(5) } })).status).toBe(400);
-        const c = await api("POST", `${V}/raids/events`, { token: aube.off[0]!.token, body });
-        expect(c.status, JSON.stringify(c.body)).toBe(201);
-        const id = c.body.data.event.id as string;
-        expect(c.body.data.event.state).toBe("inscription");
-        expect((await raidNotes(aube.mem[0]!)).map((n) => n.text)).toEqual(["AUBEOff1 a programmé un raid du clan : Asterion (raid court)"]);
+        const id = await legacyClanRaid(aube, aube.off[0]!, 3);
+        const sheet = await api("GET", `${V}/raids/events/${id}`, { token: aube.mem[0]!.token });
+        expect(sheet.status).toBe(200);
+        expect(sheet.body.data.event.state).toBe("inscription");
+        expect(sheet.body.data.event.reviews).toEqual({ average: null, count: 0 });
         // Internal: another clan does not see it.
         expect((await api("GET", `${V}/raids/events/${id}`, { token: nebu.chief.token })).status).toBe(404);
         expect((await register(id, nebu.mem[0]!)).status).toBe(404);

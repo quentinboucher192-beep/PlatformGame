@@ -2,10 +2,12 @@
 // CLANS › RAIDS (phase 1 of the clan raids « ASTERION, LE DÉVOREUR DE MONDES », maquette
 // « Onglet Raids du clan »): the hero card of the next world event (local time and UTC,
 // countdown, format, difficulty, clans and players registered, my clan's count, « Voir
-// l'événement » and the player's own button), the clan's raids (« Organiser un raid du clan… »
-// for the chief and the officers), the invitations to raids in common, the rewards to claim
+// l'événement » and the player's own button), the clan's events (the raids are events published
+// by the game's team: 2.77.4 removed « Organiser un raid du clan… »; the clan raids scheduled
+// before stay listed until their end), the invitations to raids in common, the rewards to claim
 // (2.68: granted by the server from validated results, « Récupérer »), the clan's history, and
-// the panel of the raid notifications (« Tout marquer lu », the player's reminders).
+// the panel of the raid notifications (« Tout marquer lu », the player's reminders). 2.77.4: each
+// event's card shows the players' reviews (★ average · count, ui/online/RaidReviewsPanel).
 //
 // Every rule is the server's (server/src/raids.ts); every read goes through OnlineService
 // (never blocking, kept in the cache for offline display). The times are shown in the
@@ -19,6 +21,7 @@
 
 #include "engine/core/Json.h"
 #include "engine/core/Math.h"
+#include "game/online/RaidReviews.h"
 #include "game/online/Raids.h"
 #include "ui/widgets/AsterionFigure.h"
 
@@ -35,9 +38,6 @@ public:
     /// Read again every minute while `shown`.
     void update(float dt, bool shown);
     void draw(const Rect& body);
-    /// « Organiser un raid du clan… » is open.
-    bool modal() const { return organizing_; }
-    void drawModal();
     /// Unread raid notifications (the tab's badge).
     int unread() const { return unread_; }
     bool fromCache() const { return cache_; }
@@ -51,7 +51,6 @@ private:
     void markAllRead();
     void openNote(const Json& n);
     void putPrefs(const Json& body);
-    void openOrganize();
     /// 2.68: POST /raids/rewards/claim (every reward waiting), then the claimed ones remembered.
     void claimRewards();
     void rememberClaimed(const Json& list);
@@ -68,6 +67,8 @@ private:
     std::string clanId() const;
     std::string clanRole() const;
     std::string clanTag() const;
+    /// 2.77.4: the players' reviews of an event of GET /raids (its « reviews »).
+    raidreviews::Summary reviewsOf(const std::string& eventId) const;
 
     GameServices& g_;
     std::function<void(const std::string&, bool)> say_;
@@ -84,12 +85,6 @@ private:
     Json notes_ = Json::array();  // GET /notifications?filter=raids
     bool notesLoaded_ = false;
     int notesGen_ = 0;
-
-    // « Organiser un raid du clan… »
-    bool organizing_ = false, sending_ = false;
-    int formatIdx_ = 1, lockIdx_ = 2;
-    std::string date_, clock_, formError_;
-    float places_ = 8.0f;
 };
 
 }  // namespace cosmic

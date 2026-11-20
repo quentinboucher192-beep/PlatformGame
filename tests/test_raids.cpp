@@ -254,16 +254,16 @@ TEST_CASE("raids: the button of an event and the layout of the tab") {
                      {"clan", nullptr}};
     raids::TabLayout out = raids::tabLayout(overview, false);
     CHECK(out.hero && out.heroId == "e1");
-    CHECK(!out.clanBoxes && !out.canOrganize);
+    CHECK(!out.clanBoxes && !out.canAnswer);
     CHECK(out.clanNote == "Connectez-vous pour voir les raids de votre clan.");
     raids::TabLayout alone = raids::tabLayout(overview, true);
-    CHECK(alone.clanNote == "Rejoignez un clan pour participer aux raids et en organiser.");
+    CHECK(alone.clanNote == "Rejoignez un clan pour participer aux événements de raid.");
     overview["clan"] = {{"id", "c1"}, {"tag", "AUBE"}, {"role", "member"}};
     raids::TabLayout member = raids::tabLayout(overview, true);
-    CHECK(member.clanBoxes && !member.canOrganize && !member.canAnswer);
+    CHECK(member.clanBoxes && !member.canAnswer && member.clanNote.empty());
     overview["clan"]["role"] = "officer";
     raids::TabLayout officer = raids::tabLayout(overview, true);
-    CHECK(officer.canOrganize && officer.canAnswer && officer.clanNote.empty());
+    CHECK(officer.canAnswer && officer.clanNote.empty());  // 2.77.4: nothing to organize, only invitations to answer
     const auto list = raids::clanRaidList(overview, officer.heroId);
     CHECK(list.size() == 1);
     CHECK(list[0].id == "c2");

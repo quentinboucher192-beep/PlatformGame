@@ -11,7 +11,8 @@
 # joueurs simulés qui jouent, raid complet en local, âmes et vestiaire en hauteur (2.77, §22) ;
 # à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
 # statistiques des Gigaboss, fiche du Cœur, groupes du raid simulé (2.77.3, §24) ;
-# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §25)
+# les raids sont des événements, avis des joueurs (2.77.4, §25) ;
+# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §26)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -87,7 +88,7 @@ Une instance = un groupe de 8 d'un clan (les groupes de la phase 1) sur la branc
 * **Caméra** : chacun suit son propre joueur (affichage seulement). Pas de « cadre d'équipe » en
   raid : personne n'est ramené. Le groupe entier à terre : la zone reprend là où il y est entré
   (objectifs gardés, tous debout, tous cœurs).
-* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §25) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
+* **Changer de zone** (jusqu'à la 2.77 ; **2.78 : chacun change de zone seul**, §26) : le premier joueur en jeu qui **entre** dans un passage ouvert (plus petit
   numéro d'abord) emmène toute l'instance. Chacun garde **ses cœurs, son énergie, ses pouvoirs et
   sa présence** (`GameWorld::carryOf` / `restoreMember`) et apparaît au point de la zone pour
   l'endroit d'où il vient (un joueur à terre revient debout avec la moitié de ses cœurs). Un
@@ -1554,7 +1555,97 @@ Affichage, données des fiches et réglage du test seulement : `kSimulationVersi
 `kRankingGeneration`, `TITAN_REVISION` et les empreintes de référence ne changent pas (sans « Joueurs par groupe », les
 groupes d'un test se jouent comme avant).
 
-## 25. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
+## 25. Les raids sont des événements, avis des joueurs (2.77.4)
+
+### Les raids sont des événements
+
+Un raid n'est plus organisé par un clan : **l'équipe du jeu** crée et publie les événements de raid (ADMINISTRATION ›
+Raids, `adminCreate` / `adminPublish`, §14), les clans s'y inscrivent (le chef ou un officier) puis chaque membre, et ils
+y jouent. CLANS › RAIDS n'a plus le bouton « Organiser un raid du clan… » ni sa fenêtre ; la case du milieu s'appelle
+« ÉVÉNEMENTS DU CLAN » (les événements auxquels le clan participe) et dit où s'inscrire quand elle est vide.
+
+Le serveur refuse `POST /raids/events` (`scheduleClanRaid`) à tout le monde : `403 RAID_EVENTS_ONLY`, « Les raids sont
+des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS. » (traduit par le
+jeu ; un jeu plus ancien l'affiche tel quel dans sa fenêtre). **Rien n'est effacé** : un raid de clan programmé avant la
+2.77.4 reste lisible et jouable jusqu'à sa fin, avec ses inscriptions, ses invitations (« Accepter » / « Refuser »), sa
+fiche et son annulation par le clan qui l'organise. La limite `raid_schedule` disparaît.
+
+### Noter un raid après l'avoir joué (`server/src/raidReviews.ts`, migration **0185**)
+
+Une note de **1 à 5 étoiles** et un **commentaire facultatif** (500 caractères au plus, comptés comme le serveur : un par
+lettre, accents compris). **Un avis par joueur et par événement** (clé unique `(event_id, player_id)` : deux envois en même
+temps n'en font qu'un), modifiable (`edited_at`) ou supprimable par son auteur seulement.
+
+**Qui peut noter** : le serveur le décide avec ses propres tables, jamais avec ce que dit le jeu (un champ inconnu est
+refusé) : le joueur a eu **une place dans une instance** de l'événement (`raid_instance_members`, écrit par le relais) **et**
+il y a **joué** (une contribution acceptée par le consensus de l'instance : `raid_contributions` avec des pas en jeu, ou une
+ligne d'un tableau de zone, `raid_zone_contributions`). Être inscrit, ou membre d'un clan qui participe, ne suffit pas ;
+une place sans contribution validée non plus (`403 RAID_NOT_PLAYED`, « Seuls les joueurs qui ont joué cet événement
+peuvent le noter. »).
+
+| Route | Rôle |
+|---|---|
+| `GET /raids/events/{id}/reviews?limit=&offset=` | ceux qui voient la fiche : `summary {average, count}`, `me {played, can_review, review}` (mon avis à part), `reviews` (les autres, du plus récent au plus ancien, sans les auteurs bloqués dans un sens ou dans l'autre), `total` |
+| `PUT /raids/events/{id}/review {stars, body?}` | écrit ou modifie mon avis (`201` puis `200`) |
+| `DELETE /raids/events/{id}/review` | supprime mon avis (et ses signalements) |
+| `POST /raids/reviews/{reviewId}/report {reason}` | signale un commentaire (jamais le sien, une fois par joueur) |
+| `GET /admin/raids/{id}/reviews` | administrateurs : tous les avis, masqués compris, avec leurs signalements |
+| `POST /admin/raids/{id}/reviews/{reviewId}/moderate {action: hide\|restore}` | masque ou rétablit un commentaire (Journal) |
+
+La **moyenne** (une décimale, arrondie au plus proche) et le **nombre d'avis** de chaque événement accompagnent ses vues
+(`reviews` de `GET /raids`, de sa fiche et de `GET /admin/raids`) : tous les avis comptent, commentaire masqué ou non.
+
+### Modération : celle des commentaires
+
+Les avis reprennent la modération des commentaires des niveaux et des courses (`workshop.ts`) : les mêmes **filtres**
+(`cleanCommentText` : pas de caractère de contrôle, deux lignes vides au plus, deux liens au plus), les mêmes **limites de
+débit** (`community_comment` pour écrire, modifier et supprimer, `community_report` pour signaler), les mêmes **motifs**
+et le même seuil : masqué pour tous après **3 signalements**, en attendant un administrateur. Un administrateur
+(ADMINISTRATION › Raids › onglet « **Avis** ») voit tous les avis de l'événement choisi, leurs signalements et leurs motifs,
+et **masque** ou **rétablit** un commentaire (rétabli : ses signalements effacés) ; chaque action va au Journal
+(`admin_raid_review_hidden`, `admin_raid_review_restored`). Un commentaire masqué **garde ses étoiles** : la note vient
+d'un vrai participant, seul son texte est retenu ; son auteur le voit encore, avec la raison.
+
+### Dans le jeu (`game/online/RaidReviews`, `ui/online/RaidReviewsPanel`)
+
+* **Jamais une fenêtre qui s'impose** : « **Noter ce raid** » est un bouton, sur l'écran des **résultats du raid** (à côté
+  des récompenses) et sur la **fiche de l'événement** ; il n'apparaît que si le serveur dit `can_review`. Déjà noté :
+  « **Modifier mon avis** ». Sans compte ou sans avoir joué : pas de bouton, une ligne dit pourquoi.
+* **La fiche de l'événement** (en cours ou terminé) : une colonne « **AVIS DES JOUEURS** » à côté des consignes et des
+  récompenses, la moyenne et le nombre d'avis en tête (★ 4,2 · 12 avis), **mon avis en premier** (encadré, « Modifier »),
+  puis les autres avec leur auteur, leurs étoiles, leur date (« modifié ») et leur texte, qui défilent ; « Signaler » sur
+  un commentaire, « Plus d'avis » au bout de la liste.
+* **Les cartes de CLANS › RAIDS** : la moyenne et le nombre d'avis sur la carte de l'événement mondial, les lignes des
+  événements du clan et l'historique, quand la place le permet (mesurée d'abord, jamais sur un autre texte).
+* **La fenêtre « Noter ce raid »** : cinq étoiles, chacune un arrêt du focus (← → ou le stick choisissent la note, Entrée
+  ou A et le clic aussi), le mot de la note (« 4 / 5 · Très bien »), le commentaire dans un champ de texte (Ctrl+C / Ctrl+V
+  comme ailleurs) avec son compteur « 123 / 500 » et un aperçu sur quatre lignes, « Publier » (ou « Enregistrer »),
+  « Annuler » et « Supprimer mon avis » (avec confirmation). Échap / B la ferme.
+* **Placement** : chaque partie mesurée puis placée après la précédente (`raidreviewsui::layoutItem`, `layoutEditor`,
+  `layoutSummary`) ; les textes des joueurs ne sont jamais traduits (`i18n::Verbatim`).
+
+### Tests
+
+* Serveur (`server/test/raidReviews.test.ts`, `raids.test.ts`) : le bouton de clan est refusé (rien d'écrit) et les raids
+  de clan d'avant restent jouables ; un non-participant ne peut pas noter (inscrit seulement, une place sans contribution,
+  un joueur extérieur, un champ « played » ajouté par le jeu) ; un participant note, modifie et supprime ; un seul avis par
+  joueur, même pour deux envois en même temps ; 501 caractères refusés, 500 lettres accentuées acceptées, liens et
+  caractères de contrôle filtrés ; signalements (masqué au troisième), un administrateur masque puis rétablit (Journal),
+  un joueur bloqué disparaît de la liste ; la moyenne juste (3,75 → 3,8 ; 14 / 3 → 4,7) sur la fiche et les cartes.
+* Jeu (`tests/test_raid_reviews.cpp`) : l'offre (« déjà noté » : « Modifier mon avis » ; aucun bouton pour un
+  non-participant ni sans compte ; jamais dans la liste des administrateurs), la longueur comptée comme le serveur,
+  la moyenne affichée ; la mise en page en 1280 × 720 et 1920 × 1080, en français et en anglais : chaque partie d'une
+  carte dans la carte et à la suite (texte de 500 caractères, commentaire masqué, signalements), la moyenne à côté du titre,
+  la fenêtre dans l'écran, ses étoiles, son champ, son aperçu et ses boutons sans chevauchement.
+
+### Versions
+
+Rien ne change dans la simulation : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`,
+`TITAN_REVISION` et les empreintes de référence restent les mêmes. La migration **0185_raid_reviews.sql** (tables
+`raid_reviews`, `raid_review_reports`) doit être appliquée **avant** de déployer le serveur.
+
+
+## 26. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
 
 ### Chaque joueur change de zone seul (`raid::RaidRun`)
 
