@@ -20,7 +20,7 @@
 // action bits, flags — never Standby —, power choices, steps, rate), a bad one closes its
 // socket. The same protocol runs on a PC of the local network (game/coop/CoopRelay.cpp).
 //
-// 2.80 (raidTests.ts, docs/RAIDS.md §22): an administrator's TEST of Asterion with invited players
+// 2.80 (raidTests.ts, docs/RAIDS.md « Tester avec des joueurs invités »): an administrator's TEST of Asterion with invited players
 // is a room of its own, marked as a test (`test`): 8 seats like a raid instance (the administrator on
 // seat 0, the invited players on the others as they come, vacant meanwhile), but nothing of a raid —
 // no member written, no branch's state, no report, nothing stored. The relay alone says, at a step

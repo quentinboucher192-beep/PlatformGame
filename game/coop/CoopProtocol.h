@@ -56,7 +56,7 @@ enum class Msg : uint8_t {
     PackagePart = 17, // relay → game (2.63.5): u32 total (0: none), u32 offset, 32 bytes SHA-256 of the whole, the bytes
     RaidState = 18,   // relay → game (2.65, raids): u32 step from which it applies, u32 objectives done (bits);
                       // 2.72 (phase 6, the Cœur d'Asterion): + u32 the heart's shared state (raid::HeartShared packed)
-    TestSeats = 19,   // relay → game (2.80, an administrator's test with invited players, docs/RAIDS.md §22): u32 step
+    TestSeats = 19,   // relay → game (2.80, an administrator's test with invited players, docs/RAIDS.md « Tester avec des joueurs invités »): u32 step
                       // from which it applies, u8 count, then per relay seat u8 group (kTestNone), u8 seat of the test, u8 flags
 };
 
@@ -74,7 +74,7 @@ struct RoomLevel {
 /// 2.80: Removed — an administrator's test: its administrator removed this player.
 enum class EndReason : uint8_t { Finished = 0, HostLeft = 1, TooLong = 2, Refused = 3, Removed = 4 };
 
-/// 2.80 (docs/RAIDS.md §22): where the player of a relay seat plays in an administrator's test with
+/// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): where the player of a relay seat plays in an administrator's test with
 /// invited players (TEST_SEATS, decided by the relay alone and given at a step to every computer).
 constexpr uint8_t kTestNone = 0xFF;
 struct TestSeat {

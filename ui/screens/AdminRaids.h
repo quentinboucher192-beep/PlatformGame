@@ -13,7 +13,7 @@
 // only (players in play, instances with their zone, players and the latency the games measured,
 // gigaboss down, reconnections, refused reports, the journal of the admin actions and anomalies);
 // « Suspendre » / « Reprendre »; a catch-up session after the event. The right column has three tabs:
-// « Événements », « En direct », « Tester Asterion ». 2.80 (docs/RAIDS.md §22): « Joueurs invités » in both
+// « Événements », « En direct », « Tester Asterion ». 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): « Joueurs invités » in both
 // tests (one zone, the whole raid): real players connected now chosen before the launch (their group,
 // « Invincible »), invited with it — the test then goes through the server (ui/online/RaidTestGuests).
 

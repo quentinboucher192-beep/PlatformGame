@@ -1,5 +1,5 @@
 #pragma once
-// 2.80 (docs/RAIDS.md §22): the players an administrator invites to their test of Asterion (one zone or
+// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the players an administrator invites to their test of Asterion (one zone or
 // the whole raid simulated), in one window shared by the test's settings (ADMINISTRATION › Raids › Tester
 // Asterion: chosen before the launch, the invitations leave with it) and the test itself (the pause:
 // invited, cancelled, changed while it runs):

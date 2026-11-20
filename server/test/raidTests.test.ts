@@ -1,4 +1,4 @@
-// 2.80 (raidTests.ts, docs/RAIDS.md §22): an administrator's test of Asterion with invited players.
+// 2.80 (raidTests.ts, docs/RAIDS.md « Tester avec des joueurs invités »): an administrator's test of Asterion with invited players.
 // Only an administrator creates a test, invites, changes « Invincible » or a group, cancels and ends;
 // the invitations go to players connected now, expire, are accepted or declined; an invited game with
 // another fingerprint is refused; the relay (a CoopRoom marked as a test) gives at a step where each
@@ -263,6 +263,9 @@ describe("2.80: the relay of a test", () => {
         const acc = await api("POST", `${V}/raid-tests/${test}/accept`, { token: p.token, body: { fingerprint: FP } });
         expect(acc.status, JSON.stringify(acc.body)).toBe(200);
         expect(acc.body.data.test.config).toMatchObject({ branch: "asterion_bras_droit", zone: 4, players: 3 });
+        // Accepted: still offered (a game that lost its link comes back to the test from there).
+        const again = await api("GET", `${V}/raid-tests/invitations`, { token: p.token });
+        expect(again.body.data.invitations.map((x: { status: string }) => x.status)).toEqual(["accepted"]);
         // A player who did not accept never reaches the relay.
         expect((await socketOf(q, test)).status).toBe(404);
         // The invited game: the history, its catch-up, then its seat from the step the relay chose.
@@ -313,7 +316,7 @@ describe("2.80: the relay of a test", () => {
         const a = await admin("TestAdmin");
         const p = await registerPlayer("Joueuse");
         await online(p);
-        const test = await createTest(a, "raid", { skill: 1, invincible: false, bots_invincible: false, groups: 3, bots: 2 });
+        const test = await createTest(a, "raid", { skill: 1, invincible: false, bots_invincible: false, groups: 3, bots: 2, full_groups: true });
         const ga = await adminStarts(a, test);
         await until(() => ga.tables().length === 1);
         expect(ga.tables()[0]!.seats[0]).toEqual([0, 0, 0]);

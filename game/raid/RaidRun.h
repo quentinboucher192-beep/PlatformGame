@@ -161,7 +161,7 @@ public:
     void setTest(const Test& t);
     bool test() const { return test_.on; }
     const Test& testSetup() const { return test_; }
-    /// 2.80 (docs/RAIDS.md §22): the invincible seats of a test (bit = seat): the administrator's
+    /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the invincible seats of a test (bit = seat): the administrator's
     /// (Test::invincible, seat 0) and each invited player the administrator ticked « Invincible »,
     /// changed at a step given to every computer of the test. Ignored outside a test.
     void setInvincibleSeats(uint32_t seats);

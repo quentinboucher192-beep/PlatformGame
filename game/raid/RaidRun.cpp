@@ -53,7 +53,7 @@ void RaidRun::setTest(const Test& t) {
 }
 
 void RaidRun::setInvincibleSeats(uint32_t seats) {
-    // 2.80 (docs/RAIDS.md §22): a test only (a real raid never has an invincible player).
+    // 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): a test only (a real raid never has an invincible player).
     if (!test_.on) return;
     invincibleSeats_ = seats;
     if (world_) {

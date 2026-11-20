@@ -1,4 +1,4 @@
-// 2.80 (docs/RAIDS.md §22): an administrator's test of Asterion played with invited players, relayed.
+// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): an administrator's test of Asterion played with invited players, relayed.
 // Two computers of the same test — the administrator's, shown, and an invited player's, quiet and
 // caught up all at once — step the same relay stream (the real players' frames, the places given at a
 // step: the invited player's seat, their absence, « Invincible » ticked mid-test, the administrator
@@ -113,8 +113,9 @@ TEST_CASE("raid test relay (2.80): the settings of a relayed test, as the server
     r.fullRaid = true;
     r.groups = 9;
     r.bots = 3;
+    r.fullGroups = true;  // 2.77.3: « Joueurs par groupe (vous compris) »
     const auto rb = raid::RelayedTestConfig::fromJson("raid", r.toJson());
-    CHECK(rb.has_value() && rb->fullRaid && rb->groups == 9 && rb->bots == 3 && rb->seatsPerGroup() == 4);
+    CHECK(rb.has_value() && rb->fullRaid && rb->groups == 9 && rb->bots == 3 && rb->fullGroups && rb->seatsPerGroup() == 4);
     // Out of bounds, or a field missing: nothing (the game never builds a test it cannot trust).
     Json bad = j;
     bad["players"] = 12;
@@ -184,6 +185,7 @@ TEST_CASE("raid test relay (2.80): the whole raid — an invited player in anoth
     c.fullRaid = true;
     c.groups = 2;
     c.bots = 2;
+    c.fullGroups = true;  // as ADMINISTRATION › Raids launches it (2.77.3): the administrator's place played where they are not
     c.invincible = false;
     const int steps = 900;
     Stream s = streamOf(steps, 120, 500);

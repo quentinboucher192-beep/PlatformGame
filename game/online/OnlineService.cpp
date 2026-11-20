@@ -1400,7 +1400,7 @@ void OnlineService::noteTestInvitations(const Json& list) {
     testInvites_ = std::move(kept);
     for (const Json& j : testInvites_) {
         const std::string id = jstr(j, "test_id");
-        if (!testInvitesTold_.insert(id).second) continue;
+        if (jstr(j, "status") == "accepted" || !testInvitesTold_.insert(id).second) continue;  // accepted: only to come back
         const std::string admin = jstr(j.value("admin", Json::object()), "username");
         notify(Notification::Kind::Friend, "Invitation à un test d'Asterion",
                (admin.empty() ? std::string("Un administrateur") : admin) + " vous invite (" + jstr(j, "title", "administration") +

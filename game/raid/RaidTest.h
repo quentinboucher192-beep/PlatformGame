@@ -91,7 +91,7 @@ public:
     void setBotsInvincible(bool on) { botsInvincible_ = on; }
     bool botsInvincible() const { return botsInvincible_; }
 
-    // 2.80 (docs/RAIDS.md §22): real players invited by the administrator, the test relayed to every
+    // 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): real players invited by the administrator, the test relayed to every
     // computer (the same steps, the same frames, the same digest).
     /// The seats a real player plays at the next steps (bit = seat, never 0): their frames come with
     /// step() (`scripted`), their simulated player neither thinks nor is rescued, and « Joueurs simulés

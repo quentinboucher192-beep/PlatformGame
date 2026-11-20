@@ -1,4 +1,4 @@
-// 2.80 (docs/RAIDS.md §22): the invitations to an administrator's test of Asterion still to answer, over the
+// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the invitations to an administrator's test of Asterion still to answer, over the
 // screen they were opened from (NOTIFICATIONS: its strip, or the notification « Répondre à l'invitation »).
 // Each one says who invites, which test (one zone of a branch, or the whole raid simulated: its groups),
 // where this player would play (the seat of a simulated player; the group), whether the administrator made
@@ -155,11 +155,13 @@ public:
                 ui.r().fillRoundedRect(card, ui.s(12), Color{22, 28, 60, 255});
                 const float cx = card.x + ui.s(16), cw = card.w - ui.s(32);
                 // The time left, at the right of the first line; who invites in what is left.
+                // An invitation accepted (its game left the test): only to come back while the test lasts.
+                const bool accepted = jstr(inv, "status") == "accepted";
                 const int64_t end = raids::parseUtc(jstr(inv, "expires_at")).value_or(now);
-                const int64_t left = std::max<int64_t>(0, end - now);
+                const int64_t left = accepted ? 1 : std::max<int64_t>(0, end - now);
                 char clock[24];
                 std::snprintf(clock, sizeof clock, "%d:%02d", static_cast<int>(left / 60), static_cast<int>(left % 60));
-                const std::string timeT = left > 0 ? "expire dans " + std::string(clock) : std::string("expirée");
+                const std::string timeT = accepted ? std::string("acceptée") : left > 0 ? "expire dans " + std::string(clock) : std::string("expirée");
                 const float tw = std::min(cw * 0.4f, textW(ui, timeT, 14, FontFace::Bold) + ui.s(4));
                 fit(ui, timeT, {card.right() - ui.s(16) - tw, card.y + ui.s(26)}, 14, tw, left > 0 ? kGold : kRed, FontFace::Bold);
                 const std::string admin = jstr(inv.value("admin", Json::object()), "username");
@@ -171,11 +173,11 @@ public:
                 fit(ui, inv8 ? "Invincible : oui (choisi par l'administrateur, qui peut le changer pendant le test)"
                              : "Invincible : non (l'administrateur peut le changer pendant le test)",
                     {cx, card.y + ui.s(100)}, 15, cw, inv8 ? kGreen : kDim);
-                const float gap2 = ui.s(12), bw = (cw - gap2) * 0.5f, by = card.bottom() - ui.s(16) - ui.s(48);
+                const float gap2 = ui.s(12), bw = accepted ? cw : (cw - gap2) * 0.5f, by = card.bottom() - ui.s(16) - ui.s(48);
                 UIContext::ButtonStyle ok;
                 ok.primary = true;
                 ok.enabled = !busy_ && left > 0;
-                const std::string okT = "Accepter et rejoindre";
+                const std::string okT = accepted ? "Revenir dans le test" : "Accepter et rejoindre";
                 ok.fontSize = ui.fitFont(okT, FontFace::Bold, 22, bw - ui.s(24));
                 ui.pushId(jstr(inv, "test_id"));
                 if (focusFirst_ && i == 0) {
@@ -189,7 +191,7 @@ public:
                 UIContext::ButtonStyle no;
                 no.enabled = !busy_ && left > 0;
                 no.fontSize = ui.fitFont("Refuser", FontFace::Bold, 22, bw - ui.s(24));
-                if (ui.button("decline", {cx + bw + gap2, by, bw, ui.s(48)}, "Refuser", no)) clicked = static_cast<int>(i);
+                if (!accepted && ui.button("decline", {cx + bw + gap2, by, bw, ui.s(48)}, "Refuser", no)) clicked = static_cast<int>(i);
                 ui.popId();
             }
             ui.endScroll();

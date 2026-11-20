@@ -150,9 +150,11 @@ public:
         y += ui.s(72);
         if (const Json& tests = g_.online.testInvitations(); g_.online.loggedIn() && tests.is_array() && !tests.empty()) {
             // 2.80: an administrator invites this player to a test of Asterion (3 minutes to answer): the window that answers.
-            const int n = static_cast<int>(tests.size());
-            const std::string t = n > 1 ? std::to_string(n) + " invitations à un test d'Asterion : répondre"
-                                        : std::string("Un administrateur vous invite à un test d'Asterion : répondre");
+            int n = 0;
+            for (const Json& x : tests) n += jstr(x, "status") != "accepted";
+            const std::string t = n > 1    ? std::to_string(n) + " invitations à un test d'Asterion : répondre"
+                                  : n == 1 ? std::string("Un administrateur vous invite à un test d'Asterion : répondre")
+                                           : std::string("Revenir dans le test d'Asterion que vous avez accepté");
             UIContext::ButtonStyle is;
             is.primary = true;
             is.fontSize = ui.fitFont(t, FontFace::Bold, 22, std::min(W, ui.s(900)) - ui.s(24));

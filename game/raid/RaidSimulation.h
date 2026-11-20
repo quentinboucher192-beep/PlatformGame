@@ -82,7 +82,7 @@ public:
     bool begin();
     /// One step of the raid: the administrator's frame on their seat (when they hold one).
     void step(const InputFrame& admin);
-    /// 2.80 (docs/RAIDS.md §22): a real player invited by the administrator on a seat (1 and up) of a
+    /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): a real player invited by the administrator on a seat (1 and up) of a
     /// group (an index in groups()), with the frame they played at this step.
     struct Human {
         int group = 0;

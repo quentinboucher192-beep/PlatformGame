@@ -157,7 +157,7 @@ public:
     /// 2.75: whether the current player is invincible: in a raid (an administrator's test) only seat 0,
     /// the administrator — the simulated players fall, go down and are revived like real players.
     /// 2.80: the seats invincible in a raid's test (bit = seat; 1, the administrator, unless told
-    /// otherwise): a player the administrator invited and ticked « Invincible » (docs/RAIDS.md §22).
+    /// otherwise): a player the administrator invited and ticked « Invincible » (docs/RAIDS.md « Tester avec des joueurs invités »).
     bool invinciblePlayer() const { return invincible() && (!raidMode_ || ((invincibleSeats_ >> (curIndex_ & 31)) & 1u)); }
     void setInvincibleSeats(uint32_t seats) { invincibleSeats_ = seats; }
     uint32_t invincibleSeats() const { return invincibleSeats_; }

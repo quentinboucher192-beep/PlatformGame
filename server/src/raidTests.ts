@@ -1,4 +1,4 @@
-// 2.80: an administrator's test of Asterion played with invited players (docs/RAIDS.md §22).
+// 2.80: an administrator's test of Asterion played with invited players (docs/RAIDS.md « Tester avec des joueurs invités »).
 //
 // ADMINISTRATION › Raids › « Tester Asterion » (one zone, or the whole raid simulated) stays local and
 // offline while nobody is invited. With invited players, the test becomes a relayed TEST (raid_tests,
@@ -464,16 +464,20 @@ interface PendingRow {
     expires_at: string;
     admin_id: string;
     admin_name: string | null;
+    status: "pending" | "accepted";
 }
 
-/** My invitations still to answer (valid, their test open), newest first. */
+/**
+ * My invitations still to answer (valid, their test open), newest first; and those I accepted of a test still
+ * open (a game that lost its link, or was closed, comes back to it from the same window).
+ */
 export async function pendingFor(db: D1Database, me: string, limit = 5): Promise<PendingRow[]> {
     try {
         const rows = await db
             .prepare(
-                `SELECT i.test_id, t.mode, t.config, t.fingerprint, i.group_no, i.invincible, i.created_at, i.expires_at, t.admin_id, p.username AS admin_name
+                `SELECT i.test_id, t.mode, t.config, t.fingerprint, i.group_no, i.invincible, i.created_at, i.expires_at, i.status, t.admin_id, p.username AS admin_name
                  FROM raid_test_invitations i JOIN raid_tests t ON t.id = i.test_id LEFT JOIN players p ON p.id = t.admin_id
-                 WHERE i.player_id = ?1 AND i.status = 'pending' AND i.expires_at >= ?2 AND t.status = 'open'
+                 WHERE i.player_id = ?1 AND ((i.status = 'pending' AND i.expires_at >= ?2) OR i.status = 'accepted') AND t.status = 'open'
                  ORDER BY i.created_at DESC LIMIT ?3`,
             )
             .bind(me, nowIso(), limit)
@@ -496,6 +500,7 @@ function pendingJson(r: PendingRow) {
         admin: { id: r.admin_id, username: r.admin_name ?? "" },
         created_at: r.created_at,
         expires_at: r.expires_at,
+        status: r.status,
     };
 }
 

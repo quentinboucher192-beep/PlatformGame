@@ -1,6 +1,6 @@
 #pragma once
 
-// 2.80 (docs/RAIDS.md §22): an administrator's test of Asterion played with invited players.
+// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): an administrator's test of Asterion played with invited players.
 //
 // « Tester Asterion » stays local (TestSession, RaidSimulation) while nobody is invited. With invited
 // players, the test goes through a relay of its own on the server (server/src/raidTests.ts, a CoopRoom

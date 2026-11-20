@@ -1,5 +1,5 @@
 -- 2.80: the administrators' tests of Asterion played with invited players (raidTests.ts,
--- docs/RAIDS.md §22). ADMINISTRATION › Raids › « Tester Asterion » (one zone or the whole raid
+-- docs/RAIDS.md « Tester avec des joueurs invités »). ADMINISTRATION › Raids › « Tester Asterion » (one zone or the whole raid
 -- simulated) stays local and offline while nobody is invited; with invited players the test goes
 -- through a relay of its own (a CoopRoom marked as a test): the administrator's computer and every
 -- invited one play the same steps (the simulated players computed by every computer alike, the

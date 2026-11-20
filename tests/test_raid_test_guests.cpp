@@ -1,4 +1,4 @@
-// 2.80 (docs/RAIDS.md §22): the window of the players invited to an administrator's test of Asterion
+// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the window of the players invited to an administrator's test of Asterion
 // (ui/online/RaidTestGuests): its places measured at 1280 × 720 and 1920 × 1080, in French and in English —
 // each part inside the window and after the one before, the list and the picker side by side (or one under
 // the other) without overlapping, every row's texts and controls inside their row and apart, and every label

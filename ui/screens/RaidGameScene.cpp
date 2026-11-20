@@ -42,7 +42,7 @@
 // under the menu's button (ui/online/RaidMenu, never a key nor the focus taken), and the raid's menu
 // the player opens and closes (Action::RaidMenu) with what is left, the zones' tables, the journal,
 // the group and the titan; this player's inputs neutral while it is open, as in the pause.
-// 2.80 (docs/RAIDS.md §22): an administrator's test with invited players (one zone or the whole raid):
+// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): an administrator's test with invited players (one zone or the whole raid):
 // the administrator creates it on the server at the launch (raidTests.ts), starts its relay on seat 0
 // and sends the invitations (ui/online/RaidTestGuests: invited, cancelled, « Invincible » and group
 // changed from the pause); an invited player who accepted joins it (RaidTestJoin), catches up, then
@@ -192,7 +192,7 @@ public:
     // 2.75.5: the pointer comes back with the raid's menu, and while the mouse moves (the HUD's button).
     bool hidesCursor() const override {
         return run_ && !catching_ && !connecting_ && !paused_ && !ended_ && !overlay_.wantsPointer() && clock_ - pointerAt_ > 2.5f && !bigMap_ &&
-               !reconnect_.active() && !spec_.on && simPanel_ < 0 && !guestsOpen();
+               !reconnect_.active() && !spec_.on && simPanel_ < 0 && !guestsOpen() && !(relay_.on && !relay_.started);
     }
 
     void onEnter() override {
@@ -510,6 +510,12 @@ public:
         if (!relay_.started && fail_.empty() && link_->go()) startRelay();
         if (!relay_.started && fail_.empty() && !link_->error().empty()) fail_ = link_->error();
         if (!link_->endReason().empty() && !ended_ && fail_.empty()) {
+            // The relay's reason, said for a test.
+            std::string why = link_->endReason();
+            if (link_->endCode() == static_cast<int>(coopnet::EndReason::Finished))
+                why = relay_.admin ? "Le test est terminé." : "L'administrateur a terminé le test.";
+            else if (link_->endCode() == static_cast<int>(coopnet::EndReason::HostLeft))
+                why = "L'administrateur n'est plus dans le test depuis 60 s : le test est terminé.";
             if (catching_ || !relay_.started) {
                 // Over before this game was in it (removed, ended, refused): said on the waiting card.
                 stopWorker_ = true;
@@ -517,10 +523,10 @@ public:
                 stopWorker_ = false;
                 catching_ = false;
                 relay_.started = false;
-                fail_ = link_->endReason();
+                fail_ = why;
             } else {
                 ended_ = true;
-                endReason_ = link_->endReason();
+                endReason_ = why;
                 g_.ui.setFocus("raidgame/end/map");
             }
         }
@@ -3139,7 +3145,7 @@ public:
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
-    // 2.80 (docs/RAIDS.md §22): the test relayed to invited players (raid::stepRelayed).
+    // 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the test relayed to invited players (raid::stepRelayed).
     struct Relay {
         bool on = false;         // the test goes through the server (players invited)
         bool admin = false;      // this computer's administrator opened it (else an invited player)

@@ -138,7 +138,7 @@ public:
     const std::string& openConversation() const { return openConversation_; }
     /// A screen that loaded GET /social/unread itself shares the answer.
     void noteUnread(const Json& data);
-    /// 2.80 (docs/RAIDS.md §22): the invitations to an administrator's test of Asterion still to answer
+    /// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the invitations to an administrator's test of Asterion still to answer
     /// (read with the unread messages, every 30 s, or by the screen that answers them); each new one is
     /// told once by a toast. Entries as the server writes them (raidTests.ts pendingJson).
     const Json& testInvitations() const { return testInvites_; }

@@ -206,7 +206,7 @@ void NetCoopLink::handle(const std::vector<uint8_t>& msg) {
                          : reason == EndReason::Refused ? "Le relais refuse cette connexion (partie complète, ou plus de 60 s d'absence)."
                          : reason == EndReason::Removed ? "L'administrateur vous a retiré du test."  // 2.80
                                                         : "La partie est terminée.";
-            removed_ = reason == EndReason::Removed;
+            endCode_ = static_cast<int>(reason);
             break;
         }
         default:

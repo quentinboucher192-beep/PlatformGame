@@ -288,7 +288,7 @@ inline void readRaidEntry(RaidEntry& e, const Json& data) {
 }
 /// The combat of a raid instance (up to 8 players in lockstep), in place of the current screen.
 std::unique_ptr<Scene> makeRaidGame(GameServices& g, RaidEntry entry);
-/// 2.80 (docs/RAIDS.md §22): a player the administrator invites to their test (chosen before the launch:
+/// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): a player the administrator invites to their test (chosen before the launch:
 /// the test then goes through the server, the invitation leaves at once).
 struct RaidTestGuest {
     std::string id, name;
@@ -341,7 +341,7 @@ struct RaidSimSetup {
     std::vector<RaidTestGuest> guests;
 };
 std::unique_ptr<Scene> makeRaidSim(GameServices& g, RaidSimSetup setup);
-/// 2.80 (docs/RAIDS.md §22): an invited player joins an administrator's test they accepted (the server's
+/// 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): an invited player joins an administrator's test they accepted (the server's
 /// answer: the test, its settings and fingerprint, their group and « Invincible »), in place of the current screen.
 struct RaidTestJoin {
     std::string testId, mode, fingerprint, adminName;
