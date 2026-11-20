@@ -477,11 +477,9 @@ TabLayout tabLayout(const Json& overview, bool loggedIn) {
     const Json clan = jfield(overview, "clan", Json());
     const std::string role = clan.is_object() ? jstr(clan, "role") : std::string();
     t.clanBoxes = loggedIn && clan.is_object();
-    t.canOrganize = t.clanBoxes && (role == "leader" || role == "officer");
-    t.canAnswer = t.canOrganize;
+    t.canAnswer = t.clanBoxes && (role == "leader" || role == "officer");
     if (!loggedIn) t.clanNote = "Connectez-vous pour voir les raids de votre clan.";
-    else if (!clan.is_object()) t.clanNote = "Rejoignez un clan pour participer aux raids et en organiser.";
-    else if (!t.canOrganize) t.clanNote = "Le chef et les officiers organisent les raids du clan.";
+    else if (!clan.is_object()) t.clanNote = "Rejoignez un clan pour participer aux événements de raid.";
     return t;
 }
 

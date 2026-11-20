@@ -80,6 +80,7 @@
 //                           profile:<name> | replay:<name> (automated screenshots)
 //   --online-server <url>   Cosmic Online server to use (else data/online/config.json)
 //   --clans [<clan id>]     open ONLINE › CLANS (on that clan's page)
+//   --raid-event <id>       with --clans (screenshots): the sheet of that raid event over it
 //   --race <kind:level[:version]>
 //                           the « course à la vérification » of an EXTRÊME level, over
 //                           ONLINE RANKING (official) or ONLINE LEVELS (community)
@@ -997,6 +998,8 @@ int main(int argc, char** argv) {
         app.pushScene(makeSocial(game, value("--social")));
     } else if (has("--clans")) {
         app.pushScene(makeClans(game, value("--clans")));
+        // 2.77.4, captures: --raid-event <id> opens the sheet of that raid event (its reviews) over CLANS › RAIDS.
+        if (std::string re = value("--raid-event"); !re.empty()) app.pushScene(makeRaidEvent(game, re));
     } else if (has("--online")) {
         app.pushScene(makeOnlineRanking(game, value("--online")));
     } else if (std::string cf = value("--compare"); !cf.empty()) {

@@ -8,7 +8,9 @@
 //     until published, then announced to every clan; a clan takes part when its chief or an
 //     officer registers it, then each member registers themselves;
 //   - clan raids, scheduled by the chief or an officer of a clan, internal to that clan and to
-//     the clans it invites to a raid in common (their chief or an officer answers).
+//     the clans it invites to a raid in common (their chief or an officer answers). 2.77.4: no
+//     longer scheduled (POST /raids/events is refused: the raids are the team's events); those
+//     scheduled before stay readable and playable until their end.
 // Every time is UTC (ISO 8601, « …Z »): the game converts to its own time zone (with its
 // daylight saving time) and sends UTC; a time with an offset is refused. The states
 // (inscription ouverte / programmé / imminent / en cours / terminé) are computed from UTC.
@@ -26,6 +28,7 @@ import { Errors, json, log, nowIso, readJsonObject, type Ctx } from "./http";
 import type { PlayerRow } from "./model";
 import { notify } from "./notifications";
 import { aftermathOf } from "./raidHeart";
+import { NO_REVIEWS, reviewSummaries } from "./raidReviews";
 import { bodiesOf, rewardsOf } from "./raidRewards";
 import { requireValidMap, resultSummaries } from "./raidWorld";
 import { RULES, rateLimit } from "./ratelimit";
@@ -62,12 +65,10 @@ const TICK_OFFSETS = [1440, 60, 10, 0];
 const REMINDER_GRACE_MS = 15 * 60000;
 export const MAX_INSTRUCTIONS = 600;
 export const MAX_REWARDS_TEXT = 300;
-/** Clan raids to come at once per clan, invitations per clan raid. */
-export const MAX_CLAN_RAIDS = 10;
+/** Invitations per clan raid (the clan raids scheduled before 2.77.4). */
 export const MAX_INVITATIONS = 10;
-/** A clan raid: between 15 minutes and 90 days ahead; a world event: up to a year. */
+/** A world event: between 15 minutes and a year ahead. */
 const MIN_AHEAD_MS = 15 * 60000;
-const MAX_CLAN_AHEAD_MS = 90 * 86400000;
 const MAX_WORLD_AHEAD_MS = 365 * 86400000;
 /** The cron of the reminders (wrangler.jsonc), beside the daily maintenance. */
 export const RAID_CRON = "* * * * *";
@@ -79,7 +80,7 @@ const PLAYER_ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 const UTC_RE = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?Z$/;
 const TAG_RE = /^[A-Za-z0-9]{2,5}$/;
 
-interface EventRow {
+export interface EventRow {
     id: string;
     kind: "world" | "clan";
     raid: string;
@@ -116,7 +117,7 @@ interface EventRow {
     leader_name?: string | null;
 }
 
-interface MyClan {
+export interface MyClan {
     id: string;
     tag: string;
     name: string;
@@ -228,7 +229,7 @@ export function groupsOf<T extends { id: string }>(roster: T[], leaderId: string
 
 // ------------------------------------------------------------------ helpers
 
-async function myClanOf(db: D1Database, playerId: string): Promise<MyClan | null> {
+export async function myClanOf(db: D1Database, playerId: string): Promise<MyClan | null> {
     return await db
         .prepare("SELECT c.id, c.tag, c.name, m.role FROM clan_members m JOIN clans c ON c.id = m.clan_id WHERE m.player_id = ?1")
         .bind(playerId)
@@ -260,7 +261,7 @@ async function loadEvent(db: D1Database, id: string, clanId: string, me: string)
  * The event as `clan` may see it: a published world event, or a clan raid of its own clan,
  * one it takes part in or one it was invited to; else « introuvable » (a raid is internal).
  */
-async function visibleEvent(db: D1Database, id: string, clan: MyClan | null, me: string): Promise<EventRow> {
+export async function visibleEvent(db: D1Database, id: string, clan: MyClan | null, me: string): Promise<EventRow> {
     const e = await loadEvent(db, id, clan?.id ?? "", me);
     if (!e) throw RAID_NOT_FOUND();
     if (e.kind === "world") {
@@ -405,7 +406,14 @@ export async function overview(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     const bodies = await bodiesOf(db, listed);
     // 2.69: the official result of the world events closed (frozen), with my clan's rank.
     const results = await resultSummaries(db, listed, c);
-    const withBody = (e: EventRow) => ({ ...eventView(e, now), ...(bodies.get(e.id) ?? { body: {}, effects: [] }), result: results.get(e.id) ?? null });
+    // 2.77.4: the players' reviews of each event (raidReviews.ts): average and count.
+    const reviews = await reviewSummaries(db, listed);
+    const withBody = (e: EventRow) => ({
+        ...eventView(e, now),
+        ...(bodies.get(e.id) ?? { body: {}, effects: [] }),
+        result: results.get(e.id) ?? null,
+        reviews: reviews.get(e.id) ?? NO_REVIEWS,
+    });
     const rewards = await rewardsOf(db, me);
     return json(ctx, {
         server_time: now,
@@ -492,11 +500,12 @@ export async function getEvent(ctx: Ctx, viewer: AuthInfo | null): Promise<Respo
     const def = definition(e.raid);
     const body = (await bodiesOf(db, [e.id])).get(e.id) ?? { body: {}, effects: [] };
     const result = (await resultSummaries(db, [e.id], c)).get(e.id) ?? null; // 2.69: the official result once frozen
+    const reviews = (await reviewSummaries(db, [e.id])).get(e.id) ?? NO_REVIEWS; // 2.77.4: the players' reviews
     const aftermath = await aftermathOf(db, e.id, me, clan?.id ?? null); // 2.81: « Après Asterion » (its time, the clans of the fall)
     return json(ctx, {
         server_time: now,
         ...(aftermath ? { aftermath } : {}),
-        event: { ...eventView(e, now), ...body, result },
+        event: { ...eventView(e, now), ...body, result, reviews },
         description: def.description,
         rewards_text: e.rewards_text || def.rewards_text,
         my: {
@@ -601,62 +610,18 @@ function readStart(v: Validator, raw: string | undefined, minAheadMs: number, ma
 }
 
 /**
- * POST /raids/events {raid?, format, starts_at, capacity, lock_minutes?, instructions?, leader_id?}:
- * the chief or an officer schedules a raid of their clan (its members are told).
+ * POST /raids/events: 2.77.4, refused. The raids are events published by the game's team
+ * (ADMINISTRATION › Raids, adminCreate / adminPublish): the clans register to them and play
+ * them, they no longer schedule their own. The clan raids scheduled before stay readable and
+ * playable until their end (nothing is deleted: their invitations, registrations and
+ * cancellation keep working).
  */
 export async function scheduleClanRaid(ctx: Ctx): Promise<Response> {
-    const auth = await requireAuth(ctx);
-    const me = auth.player.id;
-    await rateLimit(ctx, RULES.raidSchedule, "player:" + me);
-    const body = await readJsonObject(ctx);
-    const v = new Validator(body, ["raid", "format", "starts_at", "capacity", "lock_minutes", "instructions", "leader_id"]);
-    const raid = v.str("raid", { max: 32, optional: true }) ?? "asterion";
-    if (!(raid in RAIDS)) v.fail("raid", "raid inconnu");
-    const format = v.str("format", { max: 16 }) as RaidFormat | undefined;
-    if (format !== undefined && !FORMAT_IDS.includes(format)) v.fail("format", "court, standard ou legendaire");
-    const capacity = v.int("capacity", { min: 2, max: 50 });
-    const lock = v.int("lock_minutes", { min: 0, max: 120, optional: true }) ?? 30;
-    const instructions = v.str("instructions", { max: MAX_INSTRUCTIONS, optional: true, trim: true, multiline: true }) ?? "";
-    const leaderId = v.str("leader_id", { max: 64, pattern: PLAYER_ID_RE, optional: true });
-    const start = readStart(v, v.str("starts_at", { max: 40 }), Math.max(MIN_AHEAD_MS, (lock + 5) * 60000), MAX_CLAN_AHEAD_MS);
-    v.done();
-    const db = ctx.env.DB;
-    const clan = await myClanOf(db, me);
-    if (!clan) throw NO_CLAN();
-    if (!isManager(clan)) throw MANAGERS_ONLY();
-    if (leaderId) {
-        const ok = await db.prepare("SELECT 1 AS x FROM clan_members WHERE player_id = ?1 AND clan_id = ?2").bind(leaderId, clan.id).first();
-        if (!ok) throw Errors.validation([{ field: "leader_id", message: "le chef de raid doit être un membre du clan" }]);
-    }
-    const now = nowIso();
-    const t = timesOf(start!, lock, format!);
-    const id = crypto.randomUUID();
-    // The role and the number of raids to come are checked by the INSERT itself.
-    const r = await db.batch([
-        db
-            .prepare(
-                `INSERT INTO raid_events (id, kind, raid, format, clan_id, starts_at, lock_minutes, lock_at, ends_at, registration_open, capacity, clan_capacity,
-                   difficulty, rewards_text, published_at, created_by, created_at, updated_at)
-                 SELECT ?1, 'clan', ?2, ?3, ?4, ?5, ?6, ?7, ?8, 1, ?9, 50, 3, '', ?10, ?11, ?10, ?10
-                 WHERE EXISTS (SELECT 1 FROM clan_members m WHERE m.player_id = ?11 AND m.clan_id = ?4 AND m.role IN ('leader', 'officer'))
-                   AND (SELECT COUNT(*) FROM raid_events x WHERE x.clan_id = ?4 AND x.cancelled_at IS NULL AND x.ends_at > ?10) < ?12`,
-            )
-            .bind(id, raid, format, clan.id, t.starts_at, lock, t.lock_at, t.ends_at, capacity, now, me, MAX_CLAN_RAIDS),
-        db
-            .prepare(
-                `INSERT INTO raid_clan_entries (event_id, clan_id, registered_by, leader_id, instructions, created_at, updated_at)
-                 SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?6 WHERE EXISTS (SELECT 1 FROM raid_events WHERE id = ?1)`,
-            )
-            .bind(id, clan.id, me, leaderId ?? me, instructions, now),
-    ]);
-    if (!r[0]!.meta.changes) {
-        if (!isManager(await myClanOf(db, me))) throw MANAGERS_ONLY();
-        throw Errors.conflict("TOO_MANY_RAIDS", `Votre clan a déjà ${MAX_CLAN_RAIDS} raids à venir : annulez-en un ou attendez la fin d'un raid.`);
-    }
-    const e = (await loadEvent(db, id, clan.id, me))!;
-    await notifyClanMembers(ctx, clan.id, me, notifData(e, "scheduled", { tag: clan.tag }), null);
-    if (leaderId && leaderId !== me) await notifyPlayers(ctx, [leaderId], me, notifData(e, "leader", { tag: clan.tag }));
-    return json(ctx, { event: eventView(e, now) }, { status: 201 });
+    await requireAuth(ctx);
+    throw Errors.forbidden(
+        "RAID_EVENTS_ONLY",
+        "Les raids sont des événements publiés par l'équipe du jeu : votre clan s'inscrit à un événement dans CLANS › RAIDS.",
+    );
 }
 
 /** DELETE /raids/events/{eventId}: the organizer's chief or an officer cancels a clan raid (everyone concerned is told). */
@@ -1068,7 +1033,7 @@ export async function pruneRaidReminders(db: D1Database): Promise<void> {
 // ------------------------------------------------------------------ administration
 
 /** What the Journal keeps of an event (adminRoles.ts reads it back). */
-function journalRaid(e: Pick<EventRow, "id" | "raid" | "format" | "starts_at">, extra: Record<string, unknown> = {}) {
+export function journalRaid(e: Pick<EventRow, "id" | "raid" | "format" | "starts_at">, extra: Record<string, unknown> = {}) {
     return { id: e.id, raid: e.raid, name: definition(e.raid).name, format: e.format, starts_at: e.starts_at, ...extra };
 }
 
@@ -1111,10 +1076,11 @@ export async function adminList(ctx: Ctx): Promise<Response> {
     await requireAdminRole(ctx);
     const now = nowIso();
     const rows = await ctx.env.DB.prepare(`${EVENT_SELECT} WHERE e.kind = 'world' ORDER BY e.starts_at DESC, e.id LIMIT 60`).bind("", "").all<EventRow>();
+    const reviews = await reviewSummaries(ctx.env.DB, rows.results.map((e) => e.id)); // 2.77.4
     return json(ctx, {
         server_time: now,
         raids: Object.values(RAIDS).map((r) => ({ ...r, formats: RAID_FORMATS })),
-        events: rows.results.map((e) => ({ ...eventView(e, now), rewards_text: e.rewards_text })),
+        events: rows.results.map((e) => ({ ...eventView(e, now), rewards_text: e.rewards_text, reviews: reviews.get(e.id) ?? NO_REVIEWS })),
     });
 }
 

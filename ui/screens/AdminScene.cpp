@@ -1162,6 +1162,11 @@ private:
                 const int d = jget<int>(raid, "days", 0);
                 return {"Raid", ui.theme().warm, "a ouvert une session de rattrapage de " + what + " (" + std::to_string(d) + (d > 1 ? " jours)" : " jour)")};
             }
+            // 2.77.4 (raidReviews.ts): a player's review of the event, its comment masked or restored.
+            if (action == "admin_raid_review_hidden")
+                return {"Raid", ui.theme().danger, "a masqué le commentaire de " + jstr(raid, "review_author", "?") + " sur " + what};
+            if (action == "admin_raid_review_restored")
+                return {"Raid", ui.theme().success, "a rétabli le commentaire de " + jstr(raid, "review_author", "?") + " sur " + what};
         }
         if (action == "admin_role_granted")
             return {"Rôle", ui.theme().warm, jstr(e, "by") == "migration" ? "a nommé " + target + " premier admin (mise en service)" : "a donné le rôle admin à " + target};
