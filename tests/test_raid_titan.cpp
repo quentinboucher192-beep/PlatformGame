@@ -159,7 +159,7 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
                 for (const raid::EdgeInfo& e : b.edges)
                     if ((e.a == z.zone && e.b == p.to) || (e.b == z.zone && e.a == p.to))
                         // Titan 9: a gate of ambushes (not a lair's) closes only the way on; the way back into it is open.
-                        edge = e.lock.rfind("ambushes:", 0) == 0 && p.to < z.zone && !b.ambushesOpenLair(p.to) ? p.lock.empty() : e.lock == p.lock;
+                        edge = e.lock == "ambushes:" + std::to_string(p.to) && p.to < z.zone && !b.ambushesOpenLair(p.to) ? p.lock.empty() : e.lock == p.lock;
                 CHECK(edge);
                 CHECK(b.zoneRules(p.to)->spawns.count(std::to_string(z.zone)) == 1);
             }
@@ -188,7 +188,13 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
         if (tb.part == "bras_droit") continue;
         // The six new branches: two paths and a secret zone open from the start; the lock zone (7)
         // and the lair (8) wait for their objectives; a zone needs two groups (a pair).
-        const auto reach = b.reachable(0);
+        // Titan 9: once the entry's guard (an ambush; the abdomen's nest too) is beaten; before, the entry alone.
+        uint32_t entry = 0;
+        for (const auto& o : b.objectives)
+            if (o.zone < 7 && o.role == "ambush") entry |= 1u << o.index;
+        CHECK(entry != 0);
+        for (int z = 2; z <= 8; ++z) CHECK(!b.reachable(0)[static_cast<size_t>(z)]);
+        const auto reach = b.reachable(entry);
         for (int z = 1; z <= 6; ++z) CHECK(reach[static_cast<size_t>(z)]);
         CHECK(!reach[7] && !reach[8]);
         bool pair = false, shortcut = false;
@@ -220,7 +226,8 @@ TEST_CASE("raid titan: seven branches of eight zones, each linked as on its map,
     if (poignet) {
         CHECK(!crane.lockOpen("link:bd_poignet", 0));
         CHECK(crane.lockOpen("link:bd_poignet", 1u << poignet->bit));
-        CHECK(crane.reachable(1u << poignet->bit)[7]);
+        CHECK(!crane.reachable(1u << poignet->bit)[7]);  // titan 9: not past the Jaw's guard
+        CHECK(crane.reachable((1u << poignet->bit) | (1u << crane.objectiveIndex("crane_machoire")))[7]);
     }
     // The Right arm (raid_bras_droit.py, unchanged) receives the Right leg's reactors.
     const raid::Branch& bd = branchOf("bras_droit");

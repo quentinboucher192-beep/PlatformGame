@@ -679,6 +679,18 @@ TEST_CASE("raid zones (2.78): the simulated players follow the same rule (each o
     // The administrator alone into the Veine: the simulated players stay in the Épaule, playing there.
     a.step(InputFrame{});
     b.step(InputFrame{});
+    // Titan 9: the Épaule's guard first (an ambush: its ways on wait for it), wave after wave.
+    for (raid::TestSession* x : {&a, &b}) {
+        GameWorld& w = *x->run().worldOf(1);
+        for (CombatZoneEntity* amb : w.ambushes()) {
+            if (!amb->started()) amb->handleAction(w, "start", Json::object());
+            for (int k = 0; k < 6000 && !amb->cleared(); ++k) {
+                strikeWave(w, *amb);
+                x->step(InputFrame{});
+            }
+            CHECK(amb->cleared());
+        }
+    }
     for (raid::TestSession* x : {&a, &b}) {
         const raid::Passage* p = passageTo(x->run(), 1, 3);
         x->run().worldOf(1)->playerAt(0).teleportTo({p->rect.center().x, p->rect.bottom() - 1.0f});

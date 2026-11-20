@@ -176,7 +176,7 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
             for (const raid::EdgeInfo& e : b.edges)
                 if ((e.a == z.zone && e.b == p.to) || (e.b == z.zone && e.a == p.to))
                     // Titan 9: a gate of ambushes (not a lair's) closes only the way on; the way back into it is open.
-                    edge = e.lock.rfind("ambushes:", 0) == 0 && p.to < z.zone && !b.ambushesOpenLair(p.to) ? p.lock.empty() : e.lock == p.lock;
+                    edge = e.lock == "ambushes:" + std::to_string(p.to) && p.to < z.zone && !b.ambushesOpenLair(p.to) ? p.lock.empty() : e.lock == p.lock;
             CHECK(edge);
             // Arriving from the neighbour: a place of its own, out of every passage.
             const auto it = b.zoneRules(p.to)->spawns.find(std::to_string(z.zone));
@@ -202,18 +202,21 @@ TEST_CASE("raid branch: the eight zones of BRAS DROIT are read, linked as on the
     }
     // The rules of the map: two paths, the secret grotto, the wrist locked by 2 generators,
     // the shortcut; 2.68: the hand is the gigaboss's arena.
-    auto reach = b.reachable(0);
+    // Titan 9: nothing past the Épaule before its guard (an ambush) is beaten.
+    CHECK(!b.reachable(0)[2] && !b.reachable(0)[3]);
+    const uint32_t entry = 1u << b.objectiveIndex("epaule_arene");
+    auto reach = b.reachable(entry);
     CHECK(reach[2] && reach[3] && reach[4] && reach[5] && reach[6]);
     CHECK(!reach[7] && !reach[8]);  // 2.68: the hand only once the wrist is broken (its long level)
     const uint32_t gens = (1u << b.objectiveIndex("veine_generateur")) | (1u << b.objectiveIndex("avantbras_generateur"));
     CHECK(b.generators(gens) == 2);
-    CHECK(b.reachable(gens)[7]);
+    CHECK(b.reachable(entry | gens)[7]);
     // 2.78: the hand once every ambush of the wrist is beaten (then by the forearm too); the guard alone no longer.
     CHECK(!b.reachable(1u << b.objectiveIndex("poignet_verrou"))[8]);
     uint32_t ambushes = 0;
     for (const raid::ObjectiveInfo& o : b.objectives)
         if (o.zone == 7 && o.role == "ambush") ambushes |= 1u << o.index;
-    CHECK(b.reachable(ambushes)[8]);
+    CHECK(b.reachable(entry | ambushes)[8]);
     CHECK(!b.lockOpen("shortcut", 0));
     CHECK(b.lockOpen("shortcut", 1u << b.objectiveIndex("avantbras_raccourci")));
     CHECK(b.zoneRules(8)->sealedLabel.empty());
