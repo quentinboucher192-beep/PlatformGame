@@ -52,7 +52,8 @@ Json Settings::toJson() const {
                      {"unlockAll", gameplay.unlockAll},
                      {"recordStats", gameplay.recordStats},
                      {"bossStories", gameplay.bossStories},
-                     {"attractTrailer", gameplay.attractTrailer}};
+                     {"attractTrailer", gameplay.attractTrailer},
+                     {"filmMode", gameplay.filmMode}};
     j["ghosts"] = {{"enabled", ghosts.enabled},
                    {"personalByDefault", ghosts.personalByDefault},
                    {"maxGhosts", ghosts.maxGhosts},
@@ -122,6 +123,7 @@ Settings Settings::fromJson(const Json& j) {
         s.gameplay.recordStats = jget<bool>(g, "recordStats", true);
         s.gameplay.bossStories = std::clamp(jget<int>(g, "bossStories", 0), 0, 1);
         s.gameplay.attractTrailer = jget<bool>(g, "attractTrailer", true);
+        s.gameplay.filmMode = jget<bool>(g, "filmMode", false);  // 2.82
     }
     if (j.contains("ghosts")) {
         const Json& g = j["ghosts"];

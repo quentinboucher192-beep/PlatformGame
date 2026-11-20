@@ -227,6 +227,7 @@ public:
 
     void update(float dt) override {
         sinceEnter_ += dt;
+        noticeT_ = std::max(0.0f, noticeT_ - dt);  // 2.82: the notice of « Mode Film » fades
         if (closing_) {
             closeT_ += dt;
             if (closeT_ >= fadeOut()) finish();
@@ -266,20 +267,34 @@ public:
             }
             return;
         }
+        InputManager& in = g_.app.input();
+        const bool click = in.mousePressed(SDL_BUTTON_LEFT);
+        // 2.81: « Depuis le début » (R, Ⓨ, a click on its button) for a late joiner; « Commencer maintenant » in a countdown.
+        const bool padY = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH);
+        const bool padYEdge = padY && !padY_;
+        padY_ = padY;
+        const bool restartAsked =
+            !locked_ && restartOffered() && (in.keyPressed(SDL_SCANCODE_R) || padYEdge || (click && restartRect_.contains(in.mousePos())));
+        // 2.82: « Mode Film » on or off (F, Ⓨ when it does not restart, a click on its button) — in every film, even a
+        // first viewing (it skips nothing)
+        if (in.mousePos() != lastMouse_) {
+            lastMouse_ = in.mousePos();
+            mouseShown_ = 2.0f;
+        }
+        mouseShown_ = std::max(0.0f, mouseShown_ - dt);
+        const bool modeClick = click && filmModeRect_.w > 0.0f && filmModeRect_.contains(in.mousePos());
+        const bool modeAsked = !restartAsked && (in.keyPressed(SDL_SCANCODE_F) || (padYEdge && !restartOffered()) || modeClick);
+        if (modeAsked) {
+            toggleFilmMode();
+            return;
+        }
         // 2.68: a film's first viewing: nothing skips it or leaves it (no key, button or click).
         if (locked_) return;
         // 2.63: « Passer » (Space, Enter, Ⓐ, a click) skips the shot playing — a quick cross-fade
         // to the next one; on the last shot or the title card, the story ends. « Quitter »
         // (Échap, Ⓑ, a click on its hint) leaves the whole story. Never by a press of the
         // fight's first instant (the player may be jumping).
-        InputManager& in = g_.app.input();
-        const bool click = in.mousePressed(SDL_BUTTON_LEFT);
         const bool quit = in.menuPressed(Action::MenuBack) || (click && quitRect_.contains(in.mousePos()));
-        // 2.81: « Depuis le début » (R, Ⓨ, a click on its button) for a late joiner; « Commencer maintenant » in a countdown.
-        const bool padY = in.rawPadButton(SDL_GAMEPAD_BUTTON_NORTH);
-        const bool padYEdge = padY && !padY_;
-        padY_ = padY;
-        const bool restartAsked = restartOffered() && (in.keyPressed(SDL_SCANCODE_R) || padYEdge || (click && restartRect_.contains(in.mousePos())));
         const bool skip = !quit && !restartAsked &&
                           (in.menuPressed(Action::MenuConfirm) || in.keyPressed(SDL_SCANCODE_SPACE) || (click && !restartRect_.contains(in.mousePos())));
         if (sinceEnter_ <= 0.6f) return;
@@ -392,19 +407,73 @@ private:
         return cur;
     }
 
+    /// 2.82: « Mode Film » on or off, kept in the settings (every film and story).
+    void toggleFilmMode() {
+        g_.settings.gameplay.filmMode = !g_.settings.gameplay.filmMode;
+        g_.saveSettings();
+        noticeT_ = g_.settings.gameplay.filmMode ? 2.4f : 0.0f;
+        g_.uiSound("ui_confirm", 0.3f);
+    }
+
+public:
+    bool filmMode() const { return g_.settings.gameplay.filmMode; }
+
+private:
+    /// 2.82: the « Mode Film » button (top band, right), or in Film mode its discreet way back (while the mouse moves)
+    /// and the notice shown when it is turned on.
+    void drawFilmModeControls(bool on) {
+        UIContext& ui = g_.ui;
+        Renderer& r = ui.r();
+        const FilmModeLayout L = layoutFilmMode(ui, on);
+        if (on && noticeT_ > 0.0f && L.notice.w > 0.0f) {
+            const float a = std::min(1.0f, noticeT_ / 0.6f);
+            r.fillRoundedRect(L.notice, L.notice.h * 0.3f, Color{0, 0, 0, static_cast<uint8_t>(150 * a)});
+            TextStyle st;
+            st.face = FontFace::Body;
+            st.size = L.noticePx;
+            st.align = Align::Center;
+            st.valign = VAlign::Middle;
+            st.color = Color{226, 232, 244, 255}.withAlphaF(a);
+            i18n::Verbatim asShown;
+            ui.text().draw(L.noticeText, L.notice.center(), st);
+        }
+        const float shown = on ? std::min(1.0f, mouseShown_ / 0.5f) : 1.0f;
+        filmModeRect_ = (shown > 0.05f && !attract_) ? L.button : Rect{};
+        if (filmModeRect_.w <= 0.0f) return;
+        const bool hover = L.button.contains(g_.app.input().mousePos());
+        r.fillRoundedRect(L.button, L.button.h * 0.3f, Color{255, 255, 255, static_cast<uint8_t>((hover ? 46 : 22) * shown)});
+        r.drawRoundedRect(L.button, L.button.h * 0.3f, story_.color.withAlpha(static_cast<uint8_t>((hover ? 220 : 120) * shown)), std::max(1.0f, ui.s(1.5f)));
+        float x = L.button.x + ui.s(12);
+        const float cy = L.button.center().y;
+        x += Glyphs::drawBinding(ui, SDL_SCANCODE_F, PadBinding{}, false, {x, cy}, L.keyH, true) + ui.s(6);
+        Glyphs::drawPadButton(ui, PadBinding::button(SDL_GAMEPAD_BUTTON_NORTH), {x, cy}, L.keyH);
+        x += L.keyH + ui.s(10);
+        TextStyle bs;
+        bs.face = FontFace::Bold;
+        bs.size = L.px;
+        bs.valign = VAlign::Middle;
+        bs.color = (hover ? Color::white() : Color{226, 232, 244, 255}).withAlphaF(shown);
+        i18n::Verbatim asShown;
+        ui.text().draw(L.text, {x, cy}, bs);
+    }
+
     void drawStory() {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         const float W = ui.screenW(), H = ui.screenH();
         r.fillRect({0, 0, W, H}, Color{0, 0, 0, 255});
+        const bool mode = filmMode() && !attract_;  // 2.82: only the picture (and its own captions)
         const float band = std::round(H * 0.13f);
-        const Rect img{0, band, W, H - 2.0f * band};
+        const Rect img = mode ? Rect{0, 0, W, H} : Rect{0, band, W, H - 2.0f * band};
         if (film_ && t_ < 0.0f) {  // 2.81: the countdown of a film played with others
             drawCountdown(img);
-            drawLiveBand();
-            const StoryNarrationLayout lay = layoutStoryNarration(ui, std::string(), !locked_);
-            drawProgress(lay.bar);
-            if (!locked_) drawSkipHint({lay.hint.right(), lay.hint.center().y});
+            if (!mode) {
+                drawLiveBand();
+                const StoryNarrationLayout lay = layoutStoryNarration(ui, std::string(), !locked_);
+                drawProgress(lay.bar);
+                if (!locked_) drawSkipHint({lay.hint.right(), lay.hint.center().y});
+            }
+            drawFilmModeControls(mode);
             return;
         }
         r.pushClip(img);
@@ -427,26 +496,34 @@ private:
             const float through = std::min(clamp01(t_ / story::kFade), clamp01((total_ - t_) / story::kFade));
             if (passes_ > 0 || t_ > story::kFade) r.fillRect(img, Color{0, 0, 0, 255}.withAlphaF(1.0f - through));
         }
-        // Soft edges against the bands.
+        // Soft edges against the bands (in Film mode: a shade under the captions only).
         const float soft = std::round(img.h * 0.08f);
-        r.fillGradientV({img.x, img.y, img.w, soft}, Color{0, 0, 0, 170}, Color{0, 0, 0, 0});
-        r.fillGradientV({img.x, img.bottom() - soft, img.w, soft}, Color{0, 0, 0, 0}, Color{0, 0, 0, 170});
+        if (!mode) {
+            r.fillGradientV({img.x, img.y, img.w, soft}, Color{0, 0, 0, 170}, Color{0, 0, 0, 0});
+            r.fillGradientV({img.x, img.bottom() - soft, img.w, soft}, Color{0, 0, 0, 0}, Color{0, 0, 0, 170});
+        } else {
+            r.fillGradientV({img.x, img.bottom() - band * 1.4f, img.w, band * 1.4f}, Color{0, 0, 0, 0}, Color{0, 0, 0, 160});
+        }
         r.popClip();
-        r.fillRect({img.x, img.y - std::max(1.0f, ui.s(1.5f)), img.w, std::max(1.0f, ui.s(1.5f))}, story_.color.withAlpha(60));
-        r.fillRect({img.x, img.bottom(), img.w, std::max(1.0f, ui.s(1.5f))}, story_.color.withAlpha(60));
+        if (!mode) {
+            r.fillRect({img.x, img.y - std::max(1.0f, ui.s(1.5f)), img.w, std::max(1.0f, ui.s(1.5f))}, story_.color.withAlpha(60));
+            r.fillRect({img.x, img.bottom(), img.w, std::max(1.0f, ui.s(1.5f))}, story_.color.withAlpha(60));
+        }
 
         if (trailer_) {  // the trailer: its titles are in the picture; below, how to leave it
-            drawTrailerHint({0, img.bottom(), W, H - img.bottom()});
+            if (!mode) drawTrailerHint({0, img.bottom(), W, H - img.bottom()});
+            drawFilmModeControls(mode);
             return;
         }
         // The bottom band: progress bar on its top, the line of narration, « Passer » at the right
         // (the line keeps to the room left of the measured hint: layoutStoryNarration).
         const int cur = currentShot();
-        const StoryNarrationLayout lay = layoutStoryNarration(ui, title ? std::string() : shots_[static_cast<size_t>(cur)].shown, !locked_);
-        drawProgress(lay.bar);
-        if (!title) drawNarration(cur, lay, img);
-        if (!locked_) drawSkipHint({lay.hint.right(), lay.hint.center().y});  // a first viewing: no hint at all
-        if (film_ && play_.synced) drawLiveBand();  // 2.81: in the top band
+        const StoryNarrationLayout lay = layoutStoryNarration(ui, title ? std::string() : shots_[static_cast<size_t>(cur)].shown, !locked_ && !mode);
+        if (!mode) drawProgress(lay.bar);
+        if (!title) drawNarration(cur, lay, img);  // the film's own captions: shown in Film mode too
+        if (!locked_ && !mode) drawSkipHint({lay.hint.right(), lay.hint.center().y});  // a first viewing: no hint at all
+        if (film_ && play_.synced && !mode) drawLiveBand();  // 2.81: in the top band
+        drawFilmModeControls(mode);
     }
 
     /// 2.81: the music of a film, once (after its countdown when it has one).
@@ -515,7 +592,7 @@ private:
     void drawLiveBand() {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
-        const FilmLiveLayout L = layoutFilmLive(ui, t_ < 0.0f, restartOffered());
+        const FilmLiveLayout L = layoutFilmLive(ui, t_ < 0.0f, restartOffered(), layoutFilmMode(ui, false).button.w + ui.s(16));
         restartRect_ = L.showButton ? L.button : Rect{};
         if (synced_ && L.label.w > 0.0f) {
             const float dot = L.labelPx * 0.32f;
@@ -1244,6 +1321,10 @@ private:
     uint64_t activity_ = 0;
     static constexpr float kQuickFade = 0.2f;
     Rect quitRect_;             // 2.63: « Échap · Ⓑ Quitter », as drawn last (a click there leaves)
+    Rect filmModeRect_;         // 2.82: the « Mode Film » button as drawn last (a click there turns it on or off)
+    Vec2 lastMouse_{-1.0f, -1.0f};
+    float mouseShown_ = 0.0f;   // 2.82: in Film mode, its way back shows while the mouse moves
+    float noticeT_ = 0.0f;      // 2.82: « Mode Film — F ou Ⓨ pour revenir », fading
     TexturePtr target_;
     TexturePtr shotTarget_;  // a scene cross-fading in
     TexturePtr drawTarget_;  // where the story is drawn this frame (nullptr: the window)
@@ -1460,7 +1541,38 @@ FilmRosterLayout layoutFilmRoster(UIContext& ui, const Rect& img, const StoryRos
     return L;  // not even one: nothing (never a text outside its area)
 }
 
-FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart) {
+FilmModeLayout layoutFilmMode(UIContext& ui, bool on) {
+    FilmModeLayout L;
+    const float W = ui.screenW(), H = ui.screenH();
+    const float band = std::round(H * 0.13f);
+    const float margin = std::round(std::max(ui.s(56), 16.0f));
+    L.text = i18n::tr(on ? "Quitter le mode Film" : "Mode Film");
+    L.noticeText = i18n::tr("Mode Film — F ou Y (manette) pour revenir");
+    i18n::Verbatim asShown;
+    TextRenderer& tr = ui.text();
+    const float h = std::min(band * 0.62f, std::max(24.0f, ui.s(46)));
+    L.keyH = h * 0.62f;
+    L.px = std::max(11.0f, std::min(ui.s(18), h * 0.5f));
+    const float keysW = Glyphs::drawBinding(ui, SDL_SCANCODE_F, PadBinding{}, false, {0, 0}, L.keyH, false) + ui.s(6) + L.keyH + ui.s(10);
+    auto widthAt = [&](float px) { return ui.s(12) + keysW + tr.measure(L.text, FontFace::Bold, px).x + ui.s(16); };
+    const float maxW = (W - 2.0f * margin) * 0.34f;
+    while (widthAt(L.px) > maxW && L.px > 10.0f) L.px -= 1.0f;
+    const float bw = std::min(maxW, widthAt(L.px));
+    L.button = {W - margin - bw, (band - h) * 0.5f, bw, h};
+    L.noticePx = ui.s(ui.fitFont(L.noticeText, FontFace::Body, 20.0f, W * 0.6f, 0.5f));
+    const Vec2 ns = tr.measure(L.noticeText, FontFace::Body, L.noticePx);
+    const float pad = ui.s(14);
+    L.notice = {(W - ns.x) * 0.5f - pad, band * 0.5f - ns.y * 0.5f - pad * 0.5f, ns.x + 2.0f * pad, ns.y + pad};
+    if (L.notice.intersects(L.button)) L.notice.y = L.button.bottom() + ui.s(8);  // never over the button
+    return L;
+}
+
+bool filmModeShown(const Scene* s) {
+    const auto* t = dynamic_cast<const BossStoryScene*>(s);
+    return t && t->filmMode();
+}
+
+FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart, float reserveRight) {
     FilmLiveLayout L;
     const float W = ui.screenW(), H = ui.screenH();
     const float band = std::round(H * 0.13f);
@@ -1472,7 +1584,7 @@ FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart) {
     TextRenderer& tr = ui.text();
     const float h = std::min(band * 0.62f, std::max(24.0f, ui.s(46)));
     L.keyH = h * 0.62f;
-    const float room = W - 2.0f * margin;
+    const float room = W - 2.0f * margin - reserveRight;
     L.showButton = canRestart;
     float buttonW = 0.0f;
     if (L.showButton) {
@@ -1481,7 +1593,7 @@ FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart) {
         auto widthAt = [&](float px) { return ui.s(12) + keysW + tr.measure(L.buttonText, FontFace::Bold, px).x + ui.s(16); };
         while (widthAt(L.buttonPx) > room * 0.5f && L.buttonPx > 10.0f) L.buttonPx -= 1.0f;
         buttonW = std::min(room * 0.5f, widthAt(L.buttonPx));
-        L.button = {W - margin - buttonW, (band - h) * 0.5f, buttonW, h};
+        L.button = {W - margin - reserveRight - buttonW, (band - h) * 0.5f, buttonW, h};
     }
     const float labelRoom = room - (L.showButton ? buttonW + ui.s(24) : 0.0f);
     L.labelPx = std::max(10.0f, std::min(ui.s(18), h * 0.45f));

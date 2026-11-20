@@ -64,6 +64,9 @@ struct GameplaySettings {
     int bossStories = 0;
     /// 2.63: the trailer plays on the main menu after a minute without any input (attract mode).
     bool attractTrailer = true;
+    /// 2.82: « Mode Film »: the films and stories show only their picture (and their own captions): no bands, no
+    /// progress bar, no hints. Turned on and off in any film (F, Ⓨ, its button); kept for every film.
+    bool filmMode = false;
 };
 
 /// Whether a HUD element is shown (the timer and the progress bar have their own settings;

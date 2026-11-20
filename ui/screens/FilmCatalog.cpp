@@ -102,10 +102,11 @@ std::vector<FilmEntry> filmCatalog(GameServices& g, bool forPlayer) {
         out.push_back(std::move(e));
     }
     // 2.82: the transition films after Asterion, teasers of raid 2: open to everyone in the Collection.
-    for (const auto& [id, film, where] : {std::tuple{"asterion_balancier", asterionfilm::balancier(),
-                                                     "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (après la chute d'Asterion)"},
-                                          std::tuple{"asterion_tour", asterionfilm::tour(),
-                                                     "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (si Asterion survit)"}}) {
+    for (const auto& [id, film, where, thumb] :
+         {std::tuple{"asterion_balancier", asterionfilm::balancier(),
+                     "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (après la chute d'Asterion)", "ui/films/asterion_balancier.png"},
+          std::tuple{"asterion_tour", asterionfilm::tour(), "Collection › Galerie › Films, pour tous : une avant-première du raid 2 (si Asterion survit)",
+                     "ui/films/asterion_tour.png"}}) {
         if (!film) continue;
         FilmEntry e;
         e.id = id;
@@ -113,7 +114,7 @@ std::vector<FilmEntry> filmCatalog(GameServices& g, bool forPlayer) {
         e.kind = kKindAsterion;
         e.where = where;
         e.seconds = story::duration(*film);
-        e.thumb = std::string("ui/films/") + id + ".png";
+        e.thumb = thumb;
         out.push_back(std::move(e));
     }
     if (g.trailer && !g.trailer->shots.empty()) {

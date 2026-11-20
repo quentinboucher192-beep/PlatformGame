@@ -2666,6 +2666,18 @@ toujours). C'est ce qui fige les éclats, les étincelles et le ciel du plan `fi
 (`StoryElement::localTime`, lu par `BossStoryScene` et le rendu Python des planches). Un élément sans `hold` est dessiné
 exactement comme avant : les films existants ne changent pas (leurs générateurs `--check` restent identiques à l'octet).
 
+### Mode Film (tous les films et histoires)
+
+Dans tout ce que joue le lecteur des films et des histoires (`BossStoryScene` : ces deux films, ceux d'Asterion, les
+histoires des giga-boss, la bande-annonce), **F**, **Ⓨ** (quand il ne sert pas à « Depuis le début ») ou le bouton
+« F · Ⓨ Mode Film » (en haut à droite) passent en **Mode Film** : seule l'image reste, plein écran, avec les sous-titres
+et les titres du film ; ni bandes, ni barre de progression, ni touches, ni bandeau « EN DIRECT ». Une note discrète
+(« Mode Film — F ou Y (manette) pour revenir ») s'efface après deux secondes ; à la souris, « Quitter le mode Film »
+apparaît au même endroit tant qu'elle bouge. Passer et Quitter marchent comme avant ; même un premier visionnage
+verrouillé peut passer en Mode Film (il ne saute rien). Le choix est gardé dans les paramètres (`gameplay.filmMode`) pour
+tous les films. Tout est mesuré (`layoutFilmMode`) : le bouton, la note et le bandeau « EN DIRECT » ne se chevauchent
+jamais (testé en 1280 × 720 et 1920 × 1080, en français et en anglais).
+
 ### Où, et pour la suite
 
 ADMINISTRATION › Films et Collection › Galerie › Films (`ui/screens/FilmCatalog`, filtre « Films d'Asterion ») ;

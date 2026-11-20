@@ -18,6 +18,7 @@
 #include "game/GameServices.h"
 #include "game/content/BossStories.h"
 #include "game/progression/Progression.h"
+#include "saves/Settings.h"
 #include "tests/TestFramework.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/BossStoryScene.h"
@@ -194,4 +195,76 @@ TEST_CASE("transition films: in the films' lists (for everyone in the Collection
         r.app.runFrames(4);
         CHECK(std::fabs(filmTime(scene) - 50.2f) < 0.6f);
     }
+}
+
+TEST_CASE("films: Mode Film — F turns it on and off in any film, the choice is kept, its controls never overlap") {
+    FilmRig r;
+    CHECK(r.ok);
+    const bool before = r.g->settings.gameplay.filmMode;
+    r.g->settings.gameplay.filmMode = false;
+    auto press = [&r](SDL_Scancode sc, SDL_Keycode key) {
+        SDL_Event down{};
+        down.type = SDL_EVENT_KEY_DOWN;
+        down.key.scancode = sc;
+        down.key.key = key;
+        down.key.down = true;
+        SDL_PushEvent(&down);
+        r.app.runFrames(2);
+        SDL_Event up = down;
+        up.type = SDL_EVENT_KEY_UP;
+        up.key.down = false;
+        SDL_PushEvent(&up);
+        r.app.runFrames(1);
+    };
+    auto s = asterionfilm::makeTeaser(*r.g, asterionfilm::Teaser::Tour, 20.0f);
+    CHECK(s != nullptr);
+    if (!s) return;
+    Scene* scene = s.get();
+    r.app.pushScene(std::move(s));
+    r.app.runFrames(4);
+    CHECK(!filmModeShown(scene));
+    const float t0 = filmTime(scene);
+    press(SDL_SCANCODE_F, SDLK_F);
+    CHECK(r.g->settings.gameplay.filmMode);
+    CHECK(filmModeShown(scene));
+    CHECK(SettingsStore::load().gameplay.filmMode);  // kept: every film opens in Film mode now
+    CHECK(filmTime(scene) > t0);                     // it never skipped nor stopped the film
+    CHECK(r.app.sceneCount() == 2);
+    r.app.runFrames(10);
+    auto other = makeFilmScene(*r.g, filmCatalog(*r.g).front());  // another film (a giga boss's story): the same mode
+    CHECK(other && filmModeShown(other.get()));
+    press(SDL_SCANCODE_F, SDLK_F);
+    CHECK(!r.g->settings.gameplay.filmMode);
+    CHECK(!SettingsStore::load().gameplay.filmMode);
+    // Its button, its way back and its notice: inside the screen, never over the live band of a film watched together.
+    for (Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}}) {
+        r.app.setWindowSize(static_cast<int>(size.x), static_cast<int>(size.y));
+        r.app.renderer().refreshOutputSize();
+        for (Language lang : {Language::French, Language::English}) {
+            i18n::setLanguage(lang);
+            r.app.runFrames(1);
+            UIContext& ui = r.g->ui;
+            ui.begin(r.app, 1.0f / 60.0f);
+            for (bool on : {false, true}) {
+                const FilmModeLayout M = layoutFilmMode(ui, on);
+                const Rect screen{0, 0, ui.screenW(), ui.screenH()};
+                CHECK(M.button.w > 0.0f && M.button.x >= 0.0f && M.button.right() <= screen.right());
+                CHECK(M.notice.w > 0.0f && M.notice.right() <= screen.right() && M.notice.x >= 0.0f);
+                CHECK(!M.notice.intersects(M.button));
+                i18n::Verbatim asShown;
+                CHECK(ui.text().measure(M.text, FontFace::Bold, M.px).x <= M.button.w);
+                CHECK(ui.text().measure(M.noticeText, FontFace::Body, M.noticePx).x <= M.notice.w);
+            }
+            const FilmModeLayout M = layoutFilmMode(ui, false);
+            for (bool countdown : {false, true}) {
+                const FilmLiveLayout L = layoutFilmLive(ui, countdown, true, M.button.w + ui.s(16));
+                CHECK(!L.button.intersects(M.button));
+                if (L.label.w > 0.0f) CHECK(!L.label.intersects(M.button));
+            }
+            ui.end();
+        }
+    }
+    i18n::setLanguage(Language::French);
+    r.g->settings.gameplay.filmMode = before;
+    r.g->saveSettings();
 }

@@ -536,7 +536,9 @@ AssetCatalog AssetCatalog::build(const fs::path& assetsDir, const fs::path& data
     // 2.68: Asterion's film (data/raids/asterion_film.json): its scenes' files, its sounds, its music; 2.81: the same for
     // the film of its fall (asterion_victoire.json) and « Après Asterion » (asterion_apres.json), and their thumbnails
     // (ADMINISTRATION › Films, ui/screens/FilmCatalog).
-    for (auto film : {story::loadAsterionFilm(dataDir, nullptr), story::loadAsterionVictory(dataDir, nullptr), story::loadAsterionAftermath(dataDir, nullptr)}) {
+    // 2.82: the two transition films (asterion_balancier.json, asterion_tour.json), teasers of raid 2.
+    for (auto film : {story::loadAsterionFilm(dataDir, nullptr), story::loadAsterionVictory(dataDir, nullptr), story::loadAsterionAftermath(dataDir, nullptr),
+                      story::loadFilm(dataDir / "raids" / "asterion_balancier.json", nullptr), story::loadFilm(dataDir / "raids" / "asterion_tour.json", nullptr)}) {
         if (!film) continue;
         uses.add(film->music, AssetUseKind::Story, "asterion", "Asterion", false);
         for (const StoryShot& shot : film->shots)

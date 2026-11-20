@@ -43910,6 +43910,24 @@
    ]
   },
   {
+   "fr": "Mode Film",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
+   "fr": "Mode Film : dans tous les films et histoires (films d'Asterion, histoires des giga-boss, bande-annonce), F ou Y (manette), ou le bouton « Mode Film », n'affiche plus que l'image et ses sous-titres : ni bandes, ni barre de progression, ni touches. Le choix est gardé ; Passer et Quitter marchent toujours.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Mode Film — F ou Y (manette) pour revenir",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
+   ]
+  },
+  {
    "fr": "modifiable",
    "where": [
     "ui/screens/AdminCalendar.cpp"
@@ -55914,6 +55932,12 @@
    "fr": "Quitter le groupe ? Vous ne verrez plus ses messages.",
    "where": [
     "ui/screens/SocialScene.cpp"
+   ]
+  },
+  {
+   "fr": "Quitter le mode Film",
+   "where": [
+    "ui/screens/BossStoryScene.cpp"
    ]
   },
   {

@@ -135,7 +135,22 @@ struct FilmLiveLayout {
     std::string labelText, buttonText;
     bool showButton = false;
 };
-FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart);
+/// 2.82: `reserveRight` pixels kept free at the band's right (the « Mode Film » button).
+FilmLiveLayout layoutFilmLive(UIContext& ui, bool countdown, bool canRestart, float reserveRight = 0.0f);
+/// 2.82: « Mode Film » (Settings › gameplay.filmMode): the button that turns it on, at the right of the top band of
+/// every film and story (« F · Ⓨ  Mode Film »), measured; in Film mode, the discreet button that turns it off (shown
+/// while the mouse moves) at the same place, and the notice shown when it is turned on.
+struct FilmModeLayout {
+    Rect button;
+    float px = 0.0f, keyH = 0.0f;
+    std::string text;
+    Rect notice;
+    float noticePx = 0.0f;
+    std::string noticeText;
+};
+FilmModeLayout layoutFilmMode(UIContext& ui, bool on);
+/// Whether a story or film scene `s` is shown in Film mode now.
+bool filmModeShown(const Scene* s);
 /// The main menu's attract mode: after this long without any input, the trailer plays.
 constexpr float kAttractDelay = 60.0f;
 /// Whether the attract mode may start now: its setting on (Paramètres › Jeu), a trailer, nothing
