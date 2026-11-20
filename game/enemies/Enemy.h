@@ -82,6 +82,9 @@ public:
     int doubles() const { return doubles_; }
     /// Guardian attacks (2.19): the bouncing path of a prism, the mark of a shadow step, the
     /// radius of an eclipse ring... (tests, display).
+    /// 2.79 (display, the simulated players of a raid test): the impact points of a rain or an eruption chosen
+    /// during its wind-up (what its telegraph marks on the screen).
+    const std::vector<Vec2>& telegraphTargets() const { return targets_; }
     const std::vector<Vec2>& attackPath() const { return path_; }
     /// The second, mirrored beam of a prism with two arms (2.33); empty otherwise.
     const std::vector<Vec2>& attackPath2() const { return path2_; }

@@ -24,6 +24,7 @@ import * as raidMap from "./raidMap";
 import * as raidWipe from "./raidWipe";
 import * as raidWorld from "./raidWorld";
 import * as raidReviews from "./raidReviews";
+import * as raidRecap from "./raidRecap";
 import * as campaignRevisions from "./campaignRevisions";
 import * as enemyRevisions from "./enemyRevisions";
 import * as challenges from "./challenges";
@@ -263,6 +264,9 @@ route("POST", `${V}/clans/{clanId}/requests/{playerId}`, (ctx) => clans.answerAp
 route("POST", `${V}/clans/{clanId}/transfer`, (ctx) => clans.transferLeadership(ctx));
 route("PATCH", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.setMemberRole(ctx));
 route("DELETE", `${V}/clans/{clanId}/members/{playerId}`, (ctx) => clans.removeMember(ctx));
+// 2.78.1 (raidRecap.ts): the « fiches récapitulatives » of the clan's finished raids (its members, the administrators).
+route("GET", `${V}/clans/{clanId}/raids`, (ctx) => raidRecap.finishedRaids(ctx));
+route("GET", `${V}/clans/{clanId}/raids/{eventId}/recap`, (ctx) => raidRecap.raidRecap(ctx));
 // Clan raids « Asterion » (raids.ts), phase 1: events, registrations, reminders.
 route("GET", `${V}/raids`, raids.overview, { viewer: true });
 route("GET", `${V}/raids/prefs`, (ctx) => raids.getPrefs(ctx));

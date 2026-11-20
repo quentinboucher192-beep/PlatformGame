@@ -35,6 +35,7 @@
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/AsterionFilm.h"
+#include "ui/screens/RaidRecapScene.h"
 #include "ui/widgets/AsterionFigure.h"
 
 namespace cosmic {
@@ -257,9 +258,15 @@ private:
             // 2.74 (phase 6): the Cœur d'Asterion fell (validated): its film again.
             const bool heartDown = jstr(at(at(data_, "event"), "body"), "coeur") == "detruit";
             const float vw = heartDown && asterionfilm::victory() ? std::min(asterionfilm::victoryButtonWidth(ui), band.w * 0.24f) : 0.0f;
-            if (vw > 0.0f) {
-                const float vx = (running ? wr.x - ui.s(8) - bw : wr.x) - ui.s(8) - vw;
-                asterionfilm::victoryButton(g_, "victory", {vx, band.y + ui.s(6), vw, band.h - ui.s(12)});
+            const float vx = (running ? wr.x - ui.s(8) - bw : wr.x) - ui.s(8) - vw;
+            if (vw > 0.0f) asterionfilm::victoryButton(g_, "victory", {vx, band.y + ui.s(6), vw, band.h - ui.s(12)});
+            // 2.78.1: the « fiche récapitulative » of the raid, once finished (or its heart fallen), for a clan that took part.
+            const std::string recapLabel = "Fiche récapitulative";
+            const bool recap = (!running || heartDown) && e.clanRegistered && !clanId().empty() && !e.cancelled;
+            const float rcw = recap ? std::min(textW(ui, recapLabel, 16, FontFace::Bold) + ui.s(40), band.w * 0.22f) : 0.0f;
+            if (recap) {
+                const Rect cr{(vw > 0.0f ? vx : vx + ui.s(8)) - ui.s(8) - rcw, band.y + ui.s(6), rcw, band.h - ui.s(12)};
+                if (ui.button("recap", cr, recapLabel)) g_.app.pushScene(makeRaidRecap(g_, clanId(), id_));
             }
             std::string text = running ? "Le raid est en cours : les sept branches sont ouvertes, leurs gigaboss attendent au fond de chacune."
                                        : "Le raid est terminé : ses résultats validés et vos récompenses.";
@@ -271,7 +278,8 @@ private:
                 text = "Résultat officiel : " + raids::resultLine(e.result, clanTag()) + ".";  // 2.69: frozen by the server
             else if (!running && worldEvent && !e.catchup)
                 text = "Le raid est terminé : le résultat officiel est figé dix minutes après la fin (derniers rapports).";
-            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15, band.w - rw - ww - bw - (vw > 0.0f ? vw + ui.s(8) : 0.0f) - ui.s(56), kText, FontFace::Bold);
+            fit(ui, text, {band.x + ui.s(16), band.center().y}, 15,
+                band.w - rw - ww - bw - (vw > 0.0f ? vw + ui.s(8) : 0.0f) - (rcw > 0.0f ? rcw + ui.s(8) : 0.0f) - ui.s(56), kText, FontFace::Bold);
             y += ui.s(66);
         }
         // Four figures.

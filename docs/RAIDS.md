@@ -12,7 +12,10 @@
 # à terre ou groupe éliminé : deux états clairs, une vue qui ne tremble plus (2.77.2, §23) ;
 # statistiques des Gigaboss, fiche du Cœur, groupes du raid simulé (2.77.3, §24) ;
 # les raids sont des événements, avis des joueurs (2.77.4, §25) ;
-# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §26)
+# chacun sa zone, toutes les embuscades avant l'antre, vestiaire de l'antre, tableau des contributions refait (2.78, §26) ;
+# la fiche récapitulative d'un raid terminé, dans le clan (2.78.1, §27) ;
+# joueurs simulés : terrain et anticipation, leurs mouvements et ce qu'ils pensent (2.79, §28) ;
+# joueurs simulés : tactiques, rôles, pensées et ordres (2.79, §29)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -1293,7 +1296,8 @@ l'horloge, l'écran ni le réseau) :
   qu'il touche une touche (dit dans la ligne du test). Les entrées restent celles de la session : mêmes trames, même partie.
 * Deux règles **du test seulement** (jamais dans un vrai raid) : un joueur simulé envoyé sur un mécanisme qu'il n'atteint
   pas en 6 s y est placé, et un joueur simulé qui ne se rapproche plus de son but pendant 8 s est placé sur la place
-  suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît.
+  suivante de son chemin. La règle d'avant (« revenir près de l'administrateur après 5 s ») disparaît. (2.79 : ces deux
+  règles disparaissent à leur tour, le test ne déplace plus jamais un joueur simulé, §27.)
 * **Limites mesurées** (à 7 joueurs simulés, niveau Expert) : seuls, ils finissent les zones (l'embuscade de l'Épaule en
   14 s, le gardien du Biceps en 16 s, le générateur de la Veine en 13 s, le vestiaire en 15 s) et, invincibles, battent
   Pyroclast (depuis sa phase 2 : évents tenus ensemble, points faibles et corps à nu ; en 906 s de jeu depuis qu'il se
@@ -1304,7 +1308,7 @@ l'horloge, l'écran ni le réseau) :
   et, mortels, ils tombent face aux Gigaboss en quelques minutes (les attaques propres à chaque boss ne sont lues qu'en
   partie : marques, poings, jets, pluies et tirs annoncés, pas ses coups au contact). Le réglage « Joueurs simulés
   invincibles » permet de voir un raid entier.
-* **Pas encore corrigé : les îlots flottants.** Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
+* **Pas encore corrigé : les îlots flottants** (corrigé en 2.79 : la plateforme est visée là où elle sera, §27). Dans les zones à plateformes qui bougent au-dessus du vide (Jambe gauche :
   Cuisse flottante, Muscle suspendu…), leurs sauts visent la plateforme où elle est, pas où elle sera : ils tombent
   encore dans le vide. Un groupe de renfort qui reprend une telle zone peut y être éliminé à son tour, et les 8 renforts
   s'épuiser ; « Joueurs simulés invincibles » n'y change rien (une chute dans le vide met encore à terre). Corriger
@@ -1644,7 +1648,6 @@ Rien ne change dans la simulation : `kSimulationVersion`, `kCoopSimulationVersio
 `TITAN_REVISION` et les empreintes de référence restent les mêmes. La migration **0185_raid_reviews.sql** (tables
 `raid_reviews`, `raid_review_reports`) doit être appliquée **avant** de déployer le serveur.
 
-
 ## 26. Chacun sa zone, toutes les embuscades avant l'antre, le vestiaire de l'antre et le tableau des contributions (2.78)
 
 ### Chaque joueur change de zone seul (`raid::RaidRun`)
@@ -1812,6 +1815,480 @@ même empreinte par zone ; zone déchargée et siège repris ; passage de groupe
 l'antre fermé tant qu'une embuscade reste ; morts et réanimations exactes ; zone vidée sans élimination, puis groupe éliminé sur deux
 zones ; joueurs simulés zone par zone ; distance le long du parcours ; mise en page du tableau et de l'indicateur ; icônes ; coût),
 `server/test/raidZonesPerPlayer.test.ts`.
+
+## 27. La fiche récapitulative d'un raid terminé, dans le clan (2.78.1)
+
+Chaque raid terminé du clan, gagné ou non, garde sa **fiche récapitulative** (maquette « Récapitulatif d'un raid ») :
+CLANS › RAIDS › « HISTORIQUE DES RAIDS » (un raid auquel le clan a pris part ouvre sa fiche), la fiche de l'événement
+(« Fiche récapitulative » dans son bandeau, dès que le raid est fini ou que son Cœur est tombé) et les résultats du raid
+(« Fiche récapitulative » en haut). Un raid est **terminé** quand son Cœur est tombé (validé) ou que l'événement est fini.
+
+### Le serveur (`server/src/raidRecap.ts`)
+
+* `GET /clans/{id}/raids` : les 20 derniers raids terminés auxquels le clan a pris part (`raid_clan_entries`), jamais un
+  raid annulé, avec ce qu'il en reste pour la liste (Cœur tombé, parties tombées k / 7, durée).
+* `GET /clans/{id}/raids/{événement}/recap` : la fiche entière. Lue par les **membres du clan** (le joueur de la session :
+  jamais un identifiant venu de la requête ; un autre joueur reçoit `403 NOT_CLAN_MEMBER`) et par les **administrateurs**
+  (modération, n'importe quel clan ; `viewer.member` dit au jeu que la carte du titan et la fiche de l'événement d'un
+  raid de clan ne lui sont pas ouvertes). Un raid pas encore terminé ou sans le clan : `404`.
+* **Seulement ce que le serveur a accepté** : les objectifs validés par le consensus de chaque instance
+  (`raid_branch_objectives` : la chute de chaque Gigaboss et le groupe dont le rapport l'a validée, les reliques — l'objectif
+  facultatif de la zone secrète de chaque branche —, le Cœur), les zones terminées (`raid_zone_completions`), la vie partagée
+  du Cœur (`raid_heart_damage`, la part de chaque instance, d'où la part du clan), la phase la plus haute de chaque combat
+  (`raid_gigaboss_fights`), les tableaux de contributions acceptés par la majorité de chaque instance (`raid_contributions`,
+  `raid_zone_contributions`), les groupes éliminés (`raid_instances.wiped_zone`, écrit une fois l'élimination acceptée), les
+  groupes de renfort (`relieves`, créés par le serveur), les récompenses accordées (`raid_reward_grants`) et les titres du
+  clan (`raid_clan_titles`). Ce qui attend sa majorité (`pendingOf` : tableaux, objectifs) est compté **à part**, jamais dans
+  un chiffre ; le jeu écrit « en attente de validation » tant que l'événement n'est pas définitif (sa fin et les dix minutes
+  des derniers rapports passées) ou que quelque chose attend.
+* Les joueurs du clan sont ceux de son **inscription** à l'événement (un joueur d'un autre clan n'est jamais dans les
+  meilleurs du clan, même s'il a joué dans un de ses groupes). Chaque requête lit tout en un lot ; chaque instruction passe
+  par un index (`server/test/raidRecap.test.ts`).
+* **Morts** (2.78, §26) : celles que comptent les tableaux des zones (`raid_zone_contributions.deaths`, acceptés par la
+  majorité du groupe) ; un événement d'avant la 2.78 n'en compte aucune : `null`, le jeu écrit « — » et ne montre pas « Le moins
+  de morts » (jamais un 0 inventé). « Le moins de morts » : parmi les joueurs du clan dont les tableaux comptent les morts et
+  qui ont joué 5 minutes au moins, le moins ; puis le plus longtemps en jeu.
+* **Tableau des contributions** (`contributions`) : les tableaux validés des groupes du clan, zone par zone et « Raid entier »
+  (chaque joueur additionné), construits par la même fonction que les résultats de l'événement (`contributionTables`,
+  `raidRewards.ts`) ; une ligne d'avant la 2.78 a ses morts et réanimations à `null`.
+* **Note des joueurs** (`reviews`, §25) : la moyenne et le nombre d'avis de l'événement (`reviewSummaries`).
+
+### L'écran (`ui/screens/RaidRecapScene`, modèle `game/online/RaidRecap`)
+
+* **À gauche** : les raids terminés du clan (« Asterion · 20 nov. », « Asterion vaincu · 2 h 47 min » ou « 3 / 7 parties ·
+  temps écoulé », la marque du Cœur éclaté ou resté debout), puis **le titan du raid affiché** dessiné par parties
+  (`AsterionFigure` : chaque partie tombée détruite, celle qui a été combattue affaiblie, le Cœur), la **relique** de chaque
+  branche rapportée posée sur sa partie (le sprite des reliques du jeu), « 7 / 7 parties tombées · Cœur vaincu ».
+* **L'en-tête**, sur le décor du film de la chute d'Asterion (le ciel, la nébuleuse, la supernova et son onde
+  d'`assets/stories/asterion`, assombris sous les textes ; sans supernova quand le Cœur a tenu) : l'emblème du clan,
+  « ASTERION EST TOMBÉ » (ou « RAID TERMINÉ »), l'événement (date, format, début → fin, durée ou « temps écoulé »), le clan,
+  ses joueurs, ses groupes, ses renforts et son rang mondial officiel ; à droite, la **note des joueurs** (les avis du §25 :
+  cinq étoiles remplies jusqu'à la moyenne, « 4,3 · 17 avis », « Aucun avis »).
+* **Sept chiffres** : parties du titan, Cœur (vaincu, phase, scellé), zones terminées sur 56, reliques sur 7, morts (« — »
+  avant la 2.78), réanimations, groupes éliminés et repris.
+* **« LES SEPT PARTIES ET LE CŒUR »** : pour chaque partie, le **portrait animé de son Gigaboss** (le sprite de son combat,
+  `drawCreature`), son nom, la relique de sa branche, sa barre sur l'axe du temps (de l'heure de début à l'heure pleine
+  suivant la fin) jusqu'à sa chute validée, l'heure et le groupe qui l'a abattue (« Groupe 2 (renfort) », « [AUBE] groupe 3 »
+  pour un autre clan d'un événement mondial), ou « debout · phase 2 / 3 », « jamais affronté » ; le Cœur et le nombre de
+  groupes qui l'ont frappé.
+* **« LES MEILLEURS DU RAID »** : le meilleur joueur du clan dans chaque catégorie, avec son **avatar** : dégâts aux Gigaboss et
+  au Cœur (part des dégâts du clan), soutien (blocages et réanimations), réanimations faites, mécanismes, objectifs, le moins de
+  morts ; « Vous » quand c'est vous.
+* **« RÉCOMPENSES OBTENUES PAR LE CLAN »** : chaque récompense accordée à ses joueurs, dessinée **avec sa propre texture** (le
+  badge par son emblème, le titre par sa puce, la combinaison portée par Nova, le cadre, l'effet de victoire), les badges des
+  Gigaboss ensemble ; combien de joueurs l'ont reçue ; les titres du clan. Plus de récompenses que de place : des pages
+  (‹ ›).
+* **« VOTRE RAID »** : vos groupes, les parties qu'ils ont abattues, vos zones terminées, vos morts et vos réanimations, votre part
+  des dégâts du clan au Cœur et votre rang ; « Vous n'avez pas joué ce raid… » sinon.
+* **Boutons** (seulement ceux dont la cible existe) : « Tableau des contributions » (le tableau refait du §26, ouvert sur
+  « Raid entier » du clan, puis zone par zone ; ses touches, Échap / B le ferme), « Carte du titan » (la carte de l'événement), « Revoir le film de
+  victoire » (le film du §17, seulement si le Cœur est tombé), « Fiche de l'événement » (résultats officiels, classement
+  mondial), « Noter ce raid » ou « Modifier mon avis » (la fenêtre d'avis du §25, seulement quand le serveur dit que vous
+  avez joué l'événement ; un avis écrit, la note de la fiche est relue) ; Échap / B : retour.
+* Clavier, manette, souris : les lignes de la liste, les parties du titan (leur infobulle), les pages des récompenses et les
+  boutons sont des arrêts du focus.
+
+### Placement et tests (`tests/test_raid_recap.cpp`)
+
+`layoutRaidRecap` place chaque texte dans son rectangle, à la suite du précédent, mesuré (plus petit, puis raccourci, jamais
+sous 11,5 pixels) ; le test vérifie en 1280 × 720, 1600 × 900 et 1920 × 1080, en français et en anglais, sur un raid gagné
+(deux pages de récompenses, cinq boutons) et un raid perdu d'avant la 2.78 que je n'ai pas joué : chaque texte dans son rectangle et son panneau, aucun
+texte sur un autre ni sous une image (portraits, reliques, avatars, aperçus des récompenses, icônes), aucun panneau sur un
+autre ; l'écran dessine les huit portraits, le titan, le décor et chaque récompense avec sa texture, et le tableau des
+contributions par-dessus ; l'audit des textes
+(`--i18n-audit`) ne trouve rien resté en français. Les réponses du test sont des **données d'essai** (clan [ESSAI]) : rien
+n'est livré avec le jeu.
+
+### Versions
+
+Affichage et lecture seulement : `kSimulationVersion`, `kRankingGeneration`, `TITAN_REVISION` et les empreintes de référence ne
+changent pas ; aucune migration.
+
+## 28. Joueurs simulés : terrain et anticipation (2.79)
+
+Les joueurs simulés de « Tester Asterion » et de « Simuler un raid complet » se déplacent désormais comme un **très bon
+joueur** : ils lisent le terrain en simulant leur propre physique, essaient leurs mouvements quelques dizaines de pas à
+l'avance sur une copie légère de la zone, utilisent **tous** leurs mouvements (double et triple saut, ruée au sol et en
+l'air, impulsion, saut mural, traversée d'une plateforme vers le bas) et disent ce qu'ils font. Leurs décisions de
+combat, de rôle et de tâche restent celles de `game/raid/RaidBots` ; ce qui suit est leur façon de **se déplacer**
+(`game/raid/nav/`, `game/raid/RaidNav`). **Aucune règle de jeu ne change** : les joueurs simulés n'envoient que des
+`InputFrame` de joueur, les empreintes solo, coopération et raid sans joueurs simulés sont identiques.
+
+### La copie de la physique (`game/raid/nav/BodySim`)
+
+Un **corps** (`nav::Body`) avance exactement comme `Player::fixedUpdate` : même `PlayerConfig`, mêmes opérations dans le
+même ordre, même `PhysicsWorld::move`. Course, saut tenu plus ou moins longtemps (hauteur variable), temps de grâce et
+saut mémorisé, double et triple saut, glissade le long d'un mur et saut mural, accroupi et glissade au sol, traversée
+d'une plateforme à sens unique (Bas + Saut), échelles, eau, courants ascendants, ruée (au sol, en l'air, en diagonale ;
+ruée au sol puis saut), impulsion (une fois par saut), énergie et temps de recharge de ces pouvoirs. Ce qu'il ne fait
+jamais : être blessé, frapper, tirer — le jeu le décide ; un écart avec la prédiction est vu et le mouvement est choisi
+de nouveau.
+
+Pour lire l'état sans le changer, le jeu expose quelques accesseurs **en lecture seule** : `Player::motion()` (minuteurs
+du saut et de la ruée, sauts en l'air restants…), les usages restants de la ruée et de l'impulsion,
+`MovingPlatformEntity::predict` (où une plateforme mobile **sera** à chacun des prochains pas : la même arithmétique
+que son `fixedUpdate`, mise en commun dans `advanceRoute` / `routePos`), la phase et le minuteur d'une plateforme qui
+s'effrite, le cycle d'un laser (`LaserEntity::firesIn`), un courant allumé ou non.
+
+**Fidélité mesurée** (`tests/test_raid_nav.cpp`) : sur des suites d'entrées jouées à la fois par le vrai joueur et par la
+copie (course, saut tenu, double saut, ruée en diagonale, impulsion, accroupi, glissade, saut court, ruée au sol puis
+saut, chute rapide, sauts muraux d'un mur à l'autre), l'écart est de **0,00000 px** à chaque pas.
+
+### Le graphe de la zone : ses sauts trouvés en simulant (`game/raid/RaidNav`)
+
+* **Places** (comme en 2.77) : le dessus de chaque sol et plateforme traversable tous les 16 px, les échelles, la route
+  de chaque plateforme mobile tous les 32 px. Les places reliées en marchant forment un **segment** (un sol). Les
+  **passages** de la zone le coupent : entrer dans un passage fait changer tout le groupe de zone, donc une place dedans
+  est un segment à part et un chemin n'y entre que si c'est son but — un passage posé en travers d'un sol (le raccourci
+  de l'Avant-bras) se **saute** par-dessus.
+* **Liaisons dans les airs** : pour chaque paire de segments à portée (210 px plus haut, 300 px de côté, 460 px plus
+  bas), depuis les deux meilleures places d'envol, le jeu **simule** une bibliothèque de mouvements (`nav::Program`),
+  du plus simple au plus riche : se laisser tomber (puis double saut), saut court, moyen ou complet, monter puis
+  avancer, double saut tôt ou tard, triple saut, ruée en l'air (de niveau, en diagonale, après le double saut), ruée au
+  sol puis saut, impulsion (puis double saut), sauts muraux d'un mur à l'autre. Le premier qui **atterrit** sur le
+  segment visé, hors de tout danger durable, devient la liaison et garde son programme. Une liaison dit ce qu'elle
+  demande (la ruée, l'impulsion, un troisième saut) : un joueur qui ne l'a pas ne la prend jamais, et pour lui le graphe
+  garde aussi le mouvement le plus simple qu'il sait faire (une liaison par besoin). Une plateforme mobile est posée à
+  la place de sa route que vise la liaison.
+* **Calcul borné** : un mouvement qui n'atteint pas une place même à l'air libre (sa portée, simulée une fois par
+  programme) n'est jamais essayé vers elle ; 60 000 simulations au plus par zone.
+* **En arrière-plan, au même pas partout** : le graphe est construit sur un autre thread à partir d'un instantané de la
+  zone pris au pas où il est demandé (sa physique copiée, ses dangers, ses échelles, ses courants, ses plateformes, ses
+  passages) — une fonction pure de cet instantané. Il sert à partir d'un pas fixé par la largeur de la zone (24 pas plus
+  un par 120 px, 160 au plus : 0,2 s à 1,3 s), qu'il vienne du cache ou non : le déroulement est le même sur chaque
+  ordinateur et à chaque exécution. Pendant ce temps les joueurs simulés **observent la zone** ; si la construction est
+  en retard, le thread principal attend à ce pas-là seulement (compté). Mis en cache par niveau, état de ses portes et
+  de ses zones de dégâts (un rideau de magma qui ferme une arène), passages : 48 graphes au plus, partagés par les
+  groupes.
+
+| Zone (graphe complet) | Places | Liaisons | Paires essayées | Simulations | Temps | Mémoire |
+|---|---|---|---|---|---|---|
+| Bras droit · Épaule | 169 | 359 | 53 | 105 (17303 pas du corps) | 6,5 ms | 20 Ko |
+| Jambe gauche · Muscle suspendu | 125 | 285 | 73 | 92 (16899 pas du corps) | 7,7 ms | 14 Ko |
+| Crâne · Orbite gauche | 234 | 572 | 198 | 295 (37467 pas du corps) | 9,5 ms | 30 Ko |
+| Bras droit · Poignet-verrou | 1845 | 4438 | 1241 | 3344 (362581 pas du corps) | 125,6 ms | 208 Ko |
+| Crâne · Voûte crânienne (16 832 px) | 3400 | 7962 | 3875 | 15389 (1646688 pas du corps) | 439,4 ms | 386 Ko |
+| Jambe gauche · Cheville (16 832 px) | 3375 | 7932 | 3780 | 15314 (1635493 pas du corps) | 511,9 ms | 385 Ko |
+
+### L'anticipation (`game/raid/nav/Terrain`, `Maneuver`, `Pilot`)
+
+* **Une copie légère de la zone** (`nav::Terrain`) : sa physique copiée et suivie pas à pas (portes, plateformes qui
+  s'effritent, murs d'un boss), dans laquelle chaque essai **déplace les plateformes mobiles là où elles seront**, porte
+  le corps qui s'y tient, fait céder une plateforme qui s'effrite sous lui puis la fait revenir ; elle est remise comme
+  le monde après chaque essai. Ce qui blesse, avec son heure : le vide, les liquides mortels, les pics, les zones de
+  dégâts, le **liquide qui monte** de la zone (son calendrier de `RaidRun` : quand, jusqu'où), les **lasers** (leur
+  cycle), les **tirs** ennemis (leur trajectoire, gravité comprise) et les **coups annoncés** (poings, jets des évents,
+  marques d'un Gigaboss, dangers des boss). Elle ne lit que le monde et n'écrit que dans sa copie.
+* **Un mouvement = un programme d'entrées** (`nav::Program`, `padAt`) avec une boucle fermée pour l'atterrissage : en
+  l'air, il pousse vers l'endroit visé et freine à temps. La même fonction donne l'entrée de chaque pas dans l'essai et
+  dans le jeu : les entrées jouées sont celles qui ont été simulées.
+* **Le pilote** (`nav::Pilot`, un par place) suit son chemin (A* du graphe), marche, grimpe ; avant chaque mouvement
+  dans les airs il essaie sur la copie le programme de la liaison puis les autres, et garde le plus sûr et le plus
+  rapide ; une plateforme mobile, il **attend qu'elle soit là où il atterrira** (jusqu'à 3 s, porté s'il est déjà
+  dessus) et vise sa position **future**. Il vérifie à chaque pas que le jeu suit la simulation : sinon (un coup, un
+  ennemi, une plateforme qui part), il choisit de nouveau ; **en l'air, il se rattrape** avec ce qui lui reste (double
+  saut, ruée, impulsion) sur le sol sûr le plus proche. Une liaison qui échoue est laissée de côté quelques secondes et
+  un autre chemin est cherché ; pousser contre quelque chose sans avancer (un monte-charge posé au sol, une porte) aussi.
+* **Ce qui arrive sur son chemin** : quelques pas devant lui (24, 32 ou 48 selon son niveau), il simule sa marche ; un
+  tir, un rayon, un coup annoncé, le liquide qui monte vu pendant **son temps de réaction**, il **esquive** : rester,
+  s'accroupir, reculer, sauter, double saut, ruée (invulnérable pendant la ruée : il passe à travers), chacun simulé
+  sur 110 pas, le premier sans aucun mal et le plus proche de son chemin. Un mouvement en cours est revérifié tous les 3
+  pas contre ce qui est apparu depuis. Six secondes avant que le liquide de la zone monte, s'il est dessous ou que son
+  but l'est, il **remonte** sur la place sûre la plus proche et y attend qu'il redescende. Il n'entre jamais dans un
+  liquide mortel ni dans le vide : ce sont des échecs pour tout essai.
+* **Coût borné par pas** : chaque groupe a 8 000 pas simulés pour commencer des choix dans un pas de jeu ; au-delà, le
+  choix d'un joueur attend le pas suivant (déterministe : par ordre des places, compté). Un choix coûte au plus 2 000,
+  4 000 ou 6 000 pas simulés selon le niveau (un choix commencé va à son terme : au pire 8 000 + 6 000 pas en un pas de
+  jeu). Un pas du corps simulé coûte environ 0,25 µs (1,6 million en 0,44 s pour le plus grand graphe) : 14 000 pas,
+  environ 3,5 ms. Rien ne tourne sur un autre thread que la construction du graphe.
+
+**Niveau des joueurs simulés** (jamais de triche : les mêmes entrées, la même physique) :
+
+| Niveau | Temps de réaction | Profondeur (pas simulés par choix) | Regard devant lui | Précision du geste |
+|---|---|---|---|---|
+| Débutant | 0,3 s | 2 000 | 24 pas | ± 2 pas sur ses doubles sauts, ruées, impulsions, attentes |
+| Confirmé | 0,15 s | 4 000 | 32 pas | ± 1 pas |
+| Expert | 0,05 s | 6 000 | 48 pas | exacte |
+
+Tous ont les mêmes mouvements ; la profondeur seule fait qu'un Débutant trouve moins souvent le mouvement riche (les
+programmes sont essayés du plus simple au plus riche), et son geste imprécis le fait se rattraper en l'air plus souvent.
+
+### Ce qu'ils pensent (`game/raid/nav/Intent.h`)
+
+`raid::nav::Intent` et `intentText()` : la pensée de déplacement d'un joueur simulé, en français (traduite à
+l'affichage, `data/i18n/en.json`) ; `TestBots::moveThought(place)` la donne avec le pas où elle a commencé
+(`nav::Thought`). Affichage seulement, jamais lu par la simulation. Les pensées :
+
+| Pensée | Anglais |
+|---|---|
+| Observe la zone | Looking over the zone |
+| Avance vers son objectif · Attend à son poste | Heading for its objective · Holding its position |
+| Saute vers la plateforme suivante · Double saut · Triple saut | Jumping to the next platform · Double jump · Triple Jump |
+| Double saut au-dessus du vide | Double jump over the void |
+| Saut vers la plateforme mobile · Attend la plateforme mobile · Se laisse porter par la plateforme mobile | Jump to the moving platform · Waiting for the moving platform · Riding the moving platform |
+| Ruée aérienne · Ruée au-dessus du vide · Ruée puis saut allongé · Impulsion vers le haut · Saut mural | Air Dash · Dash over the void · Dash into a long jump · Impulse upward · Wall jump |
+| Se laisse tomber plus bas · Traverse la plateforme vers le bas · Grimpe à l'échelle | Dropping to a lower floor · Dropping through the platform · Climbing the ladder |
+| Se rattrape en l'air | Catching itself in mid-air |
+| Esquive du tir · Esquive du rayon · Esquive du coup annoncé · S'accroupit sous le coup | Dodging the shot · Dodging the beam · Dodging the announced blow · Ducking under the blow |
+| Remonte au-dessus du magma · Se met à l'abri en hauteur · Évite le danger | Climbing above the magma · Taking shelter up high · Keeping clear of the danger |
+| Cherche un autre chemin | Looking for another way |
+
+### Ils ne trichent jamais
+
+Seulement les entrées d'un joueur (`InputFrame` : touches, stick, choix), la même physique ; l'anticipation lit l'état du
+jeu (permis pour une IA de test) et n'écrit que dans sa propre copie. Les deux « sauvetages » du test de la 2.77 (un
+joueur simulé **placé** sur son mécanisme après 6 s, ou sur la place suivante de son chemin après 8 s sans progrès)
+**disparaissent** : le test ne déplace plus jamais un joueur simulé ; il compte seulement les fois où l'un d'eux est
+resté bloqué, et son chemin est refait. Les îlots flottants de la 2.77 (§22, « pas encore corrigé ») sont corrigés : la
+plateforme est visée là où elle sera.
+
+### Tests (`tests/test_raid_nav.cpp`) et mesures
+
+* La copie de la physique contre le vrai joueur : 0,00000 px d'écart (ci-dessus), sauts muraux compris.
+* **Chaque zone de chaque branche d'Asterion, vestiaire compris** (7 branches et le Cœur : 66 zones) : un joueur simulé
+  **Expert** seul part du départ, va à chaque objectif (un générateur, un levier, un gardien, une arène, une relique, le
+  Gigaboss : à portée, ou sur la meilleure place pour le combattre ; au vestiaire, il **touche** chacune des 19
+  tablettes), tient chaque plaque d'un verrou jusqu'à ce qu'elle s'ouvre (les écluses, le monte-charge, les plaques
+  jumelles), puis entre dans la sortie. Les objectifs de la branche sont donnés comme faits (portes ouvertes, arènes
+  vidées : seul le terrain se dresse devant lui) et les coups des ennemis ne le blessent pas (seul le terrain compte).
+  Compté : ses morts (le vide, un liquide mortel) et chaque contact avec un danger du terrain (pics, zone de dégâts,
+  liquide qui monte). **Résultat : **66 / 66 zones réussies**, aucune mort due au terrain, aucun danger touché ; 1891 s de jeu en tout (les plus longues : les routes de 16 832 px, environ 2 minutes) ; 161 doubles sauts, 303 ruées, 66 impulsions**
+
+| Branche | Zones (objectifs atteints · temps de jeu) | Morts (terrain) | Dangers touchés |
+|---|---|---|---|
+| Crâne | Vestiaire 21/21 16,4 s · Mâchoire 2/2 11,8 s · Orbite gauche 2/2 14,7 s · Orbite droite 2/2 13,2 s · Nerfs optiques 3/3 13,9 s · Ossuaire oublié 2/2 11,4 s · Tempe 3/3 15,0 s · Voûte crânienne 5/5 121,4 s · Antre de Skullmaw 2/2 33,6 s | 0 | 0 |
+| Bras gauche | Vestiaire 21/21 16,4 s · Épaule gelée 2/2 11,8 s · Biceps de givre 2/2 13,5 s · Tendon glacé 2/2 20,3 s · Coude des lames 3/3 12,3 s · Crevasse cachée 2/2 7,6 s · Avant-bras de givre 3/3 21,7 s · Poignet de glace 5/5 117,5 s · Griffes de Dreadfang 2/2 41,7 s | 0 | 0 |
+| Bras droit | Vestiaire 21/21 16,4 s · Épaule 2/2 10,8 s · Biceps de basalte 2/2 11,5 s · Veine de magma 2/2 16,8 s · Coude-forge 4/4 14,0 s · Grotte des scories 2/2 12,4 s · Avant-bras 3/3 13,3 s · Poignet-verrou 6/6 89,2 s · Main de Pyroclast 2/2 28,1 s | 0 | 0 |
+| Torse | Vestiaire 21/21 16,4 s · Clavicule 2/2 11,8 s · Côtes hautes 2/2 11,4 s · Poumon gauche 3/3 16,2 s · Sternum 3/3 12,5 s · Reliquaire du cœur 2/2 11,7 s · Côtes basses 3/3 13,0 s · Cage du cœur 5/5 117,3 s · Antre de Heartbreaker 2/2 26,9 s | 0 | 0 |
+| Abdomen | Vestiaire 21/21 16,4 s · Diaphragme 2/2 11,8 s · Estomac 2/2 22,0 s · Nid des parasites 2/2 9,5 s · Intestin 3/3 15,5 s · Poche oubliée 2/2 10,9 s · Foie noir 3/3 13,6 s · Gosier de Voidworm 5/5 120,4 s · Antre de Voidworm 2/2 25,4 s | 0 | 0 |
+| Jambe gauche | Vestiaire 21/21 16,4 s · Hanche 2/2 11,8 s · Cuisse flottante 2/2 16,8 s · Muscle suspendu 2/2 11,2 s · Genou 3/3 14,7 s · Sanctuaire des poids 2/2 11,6 s · Tibia 3/3 15,1 s · Cheville 5/5 120,9 s · Pied de Graviton 2/2 35,7 s | 0 | 0 |
+| Jambe droite | Vestiaire 21/21 16,4 s · Hanche de fer 2/2 11,8 s · Cuisse-piston 2/2 11,4 s · Fémur fendu 2/2 15,7 s · Genou-forge 3/3 14,4 s · Forge oubliée 2/2 11,0 s · Mollet blindé 3/3 14,5 s · Cheville d'acier 5/5 121,9 s · Talon de Titanus 2/2 34,1 s | 0 | 0 |
+| Cœur | Vestiaire 21/21 16,4 s · Aorte cosmique 5/5 117,3 s · Le Cœur d'Asterion 2/2 42,0 s | 0 | 0 |
+
+* Ciblés : un vide de 170 px qu'un saut seul ne franchit pas (la copie le dit : il tombe) est franchi par un **double
+  saut** (le graphe n'a que lui, le joueur simulé le joue et pense « Double saut au-dessus du vide ») ; les quatre îlots
+  mouvants du Muscle suspendu : **4 sauts sur une plateforme mobile, dont 2 où elle a bougé d'au moins 8 px pendant le vol (visée où elle sera), 4 posés au pixel près où la simulation l'annonçait, jamais dans le vide** ; le magma de la Veine de magma (monte à 16 s pendant 7 s) : il remonte avant,
+  jamais touché, redescend ensuite (« Remonte au-dessus du magma ») ; huit tirs à hauteur de tête et des pieds : aucun
+  ne le touche (accroupi, saut) ; un rayon en travers du chemin : il attend qu'il s'éteigne et passe, jamais touché ; une
+  cheminée de 200 px (hors de portée du double saut) : il la monte d'un mur à l'autre (« Saut mural »).
+* Débutant, Confirmé, Expert sur le Muscle suspendu et le Poignet-verrou : tous arrivent, sans mort ; l'Expert ne se
+  rattrape presque jamais en l'air (0 et 3 fois), le Débutant souvent (6 et 16 fois : son geste imprécis).
+* « Simuler un raid complet » (le test du §22 : 7 groupes de 7 Experts invincibles, chaque branche depuis son antre) : les
+  sept Gigaboss puis le **Cœur** tombent en **598 s de jeu** (2 226 s en 2.77), sans aucun déplacement par le test ; pas
+  moyen du raid 1,74 ms, au pire 1 016 ms — un graphe de 16 832 px attendu au pas où il sert, dans un test sans
+  affichage qui enchaîne les pas sans attendre l'horloge (en jeu, il a 1,3 s pour se construire et il en faut 0,5).
+* La même empreinte à chaque exécution, à 2 et 8 places (îlots mouvants, joueurs simulés Experts, 30 s) : la même empreinte deux fois à 2 et à 8 places ; à 8 places (7 Experts, 30 s), **0,0147 ms** en moyenne par joueur simulé et par pas (2,41 ms au pire), 220 choix de mouvement, au plus 18224 pas simulés en un pas de jeu pour tout le groupe
+
+### Limites
+
+* Le graphe ne tente pas les sauts depuis une échelle ; ses places sur une plateforme mobile sont celles de sa route
+  (une plateforme en orbite ou une bulle n'en a pas) : on y monte seulement si elle passe à une place.
+* Les autres joueurs ne sont pas dans la copie (dans un raid, ils se traversent) ; un ennemi qui pousse un joueur simulé
+  le fait seulement choisir de nouveau.
+* Le test des zones donne les objectifs comme faits : il prouve le terrain, pas le combat (les tests de `RaidBots`).
+* Le graphe d'une route de 16 832 px se construit en 0,4 à 0,5 s sur un seul thread : en « ×4 accéléré » (§22), le raid
+  peut l'attendre une fois, à son pas, en entrant dans une telle zone (dit dans le coût mesuré) ; le construire sur
+  plusieurs threads reste à faire.
+
+## 29. Joueurs simulés : tactiques, rôles, pensées et ordres (2.79)
+
+« Les IA sont très mauvaises […] : je veux jouer avec des GOAT. » La 2.79 donne aux joueurs simulés des tests (§22) une
+tactique contre chaque Gigaboss, des rôles dans le groupe, l'usage de leurs pouvoirs, ce qu'ils pensent à l'écran, et
+elle les fait obéir à l'administrateur. Ils **ne trichent jamais** : uniquement des `InputFrame` de joueur, la même
+physique, les mêmes coups ; rien n'est lu que le joueur ne voie (les marques au-dessus de l'arène, les évents, les
+ennemis de son mécanisme, ses points faibles, les coups annoncés, les tirs). Les mesures se font **sans aucune
+invincibilité** ; le test ne déplace jamais un joueur simulé (§28), et `TestSession::setRescues(false)` (`SimSetup::rescues`)
+coupe aussi le décompte de ses blocages.
+
+**Qui fait quoi.** La tactique choisit **où** aller et **quoi** faire (la place d'où tirer, la station à tenir, le côté
+par où sortir d'une zone, l'abri, le joueur à relever) ; la navigation du §28 décide **comment** y aller (son chemin, ses
+sauts simulés à l'avance, ce qu'elle voit venir sur son chemin : les zones de coups que la tactique lui donne à chaque pas).
+La tactique ne reprend la direction que pour une réaction à elle (s'écarter d'une zone, attendre à son bord, se tenir
+sous une dalle), jamais pendant un mouvement en l'air en cours : il est joué tel qu'il a été simulé. Les ondes qui
+courent sur un sol, elle les fait sauter elle-même (leur vitesse et leur hauteur : le bon moment).
+
+### Une tactique par Gigaboss (`game/raid/bots/`)
+
+`bots::BossTactic` lit, à chaque pas, la vraie routine de son Gigaboss et dit au groupe ce qui arrive (`Danger` :
+une zone à quitter, une ligne d'où sortir, une onde qui court sur un sol à sauter, un liquide au-dessus duquel monter,
+un secteur dont la gravité s'inverse, un puits qui aspire), les places à tenir ensemble (`Station`, avec le nombre de
+joueurs) et quoi frapper (`Target` : les points faibles d'abord quand ils sont à nu, les cibles de son mécanisme
+achevées **ensemble** quand ses règles le demandent). Son corps blesse au contact ([HITBOX_PARTS.md](HITBOX_PARTS.md)) : il est
+toujours une zone à éviter.
+
+| Gigaboss | Ce que lit sa tactique (`game/raid/bots/Tactic*.cpp`) |
+|---|---|
+| Pyroclast | poings marqués, jets des évents ouverts ; blindé : ses 3 évents tenus (celui du centre par les plateformes) ; à nu : ses phalanges (× 2) depuis les plateformes |
+| Skullmaw | chaque regard figé puis tiré : une ligne d'où sortir ; voilé : les miroirs qu'il demande (4 à 8 joueurs) tenus **en permanence**, ceux du sol d'abord ; quand son regard se charge, les autres se cachent derrière une colonne (rien de solide entre ses yeux et eux), le bouclier en secours ; aveuglé : ses yeux et son cristal |
+| Dreadfang | chaque balayage : une onde par étage balayé (1 500 px/s, depuis son mur) à sauter ; la marque de la griffe clouante (seul le joueur visé la quitte) ; un joueur cloué : sa griffe, première cible (un sauvetage) ; blindé : ses 3 chaînes ; enchaîné au sol : ses jointures, depuis le sol à côté de lui |
+| Titanus | ses ondes de choc (le talon levé : deux ondes dans 0,9 s ; puis 430 px/s) à sauter ; rochers et écrasements marqués ; blindé : ses **2 entraves**, à 150 px sur ses jambes, frappées avec l'onde **visée vers le haut** (en diagonale depuis le sol, ou depuis les plateformes), chacune amenée bas puis achevées ensemble (moins de 1,5 s d'écart) ; à genou : sa rotule et ses coutures |
+| Voidworm | sa gueule : l'anneau vert qui suit un joueur, à quitter une fois figé ; un joueur avalé : la poche de l'estomac (un sauvetage) ; l'acide annoncé, son niveau connu : tout le monde au-dessus ; blindé : ses 3 crochets ; ses parasites |
+| Graviton | un secteur annoncé : en sortir, ou se mettre sous une de ses dalles (un plafond solide sous la voûte, où un joueur qui monte s'arrête) ; ses puits ; blindé : ses générateurs tenus **en même temps** |
+| Heartbreaker | ses ondes de battement (520 px/s) à sauter ; phase 1 : ses 4 plaques amenées bas puis brisées ensemble (avant qu'elles repoussent) ; blindé : ses 2 côtes, tenues ensemble ; à nu : la lumière de son cœur |
+| Cœur d'Asterion | ses lances une fois figées ; ses balayages et ses comètes (la comète, 64 px de haut, demande le double saut) ; pluie, puits ; la marée de plasma : sur les plateformes avant qu'elle monte ; blindé : ses 4 artères ; sa supernova : ses ancres tenues par autant de joueurs qu'il en demande |
+
+Pour tous, les coups propres du boss sont lus pendant leur annonce (`Enemy::currentAttack` : poing, charge, ruée,
+anneau, rayon vers sa cible…) et les tirs ennemis où ils seront dans la demi-seconde.
+
+### Comment ils se battent
+
+* **De loin, l'onde visée** : comme le stick d'une manette, huit directions (droite, diagonale, haut…). Chacun choisit
+  une place du graphe de la zone d'où une onde atteint sa cible (portée 300 px, rien de solide entre), hors du corps du
+  boss et de ce qui arrive, pas sur la place d'un autre ; l'appât près du boss, les autres à bonne distance. La place
+  est la plus proche qu'il **peut atteindre** sur le graphe (jamais de l'autre côté d'un mur ou du corps du boss). Arrivé,
+  il vise et tire ; en chemin, il tire dès qu'une direction l'atteint ; une cible trop haute pour le sol, il saute, double
+  saut, et tire au sommet. Les cibles sans contact (griffes, poches, plaques) se frappent aussi à la lame ; un point
+  faible à nu reçoit le **tir chargé** de ceux qui le portent (tenu immobile 0,9 s, lâché visé).
+* **L'énergie** : 22 gardés pour le bouclier ; hors des points faibles, une réserve de 30 pour eux ; à nu, tout part.
+* **Ce qui arrive** : sortir d'une zone par le côté sûr le plus proche (l'autre côté quand celui-ci mène à un autre coup
+  ou à un mur), sortir d'un rayon perpendiculairement, sauter une onde au bon moment (sa vitesse et sa hauteur : la
+  comète, saut puis double saut), monter au-dessus d'un liquide, quitter un secteur ou se mettre sous une dalle, fuir
+  un puits, se cacher d'un regard ; le **bouclier** (2,2 s, rien ne passe) quand un coup ne peut plus être évité,
+  quand un tir arrive (il le renvoie), ou sur une plaque (le bouclier plutôt qu'un saut qui la ferait lâcher).
+* **Réanimer** quand c'est sûr : rien ne doit arriver sur lui ni sur l'âme pendant les 2 s (sinon il attend à côté,
+  bouclier levé) ; en combat, le **leurre** posé au début de la réanimation détourne les coups du boss.
+
+### Des rôles dans le groupe (`TestBots::assignRoles`)
+
+Donnés à chaque plan (tous les quarts de seconde) parmi les joueurs simulés en jeu ; celui qui a un rôle le garde tant
+qu'il est valable (pas d'échanges inutiles) :
+
+* **Réanimateur** (dès 3 joueurs ; 2 à partir de 6 quand 2 âmes attendent) : celui qui porte le leurre, sinon le plus
+  proche des âmes ; il relève l'âme la plus proche, sinon se tient prêt près du groupe ;
+* **Appât** (en combat, dès 4) : le plus proche du boss (ses coups suivent le joueur le plus proche) ; il le frappe de
+  près, ou l'attire loin des plaques quand il est blindé ;
+* **Coureur** : autant que de places à tenir (au moins un dès 5) ; les plaques, les évents, les objectifs d'abord ;
+* **Frappeur** : tous les autres ; les points faibles, les cibles du mécanisme, puis le corps.
+
+Quand quelqu'un tombe, les rôles sont redonnés au plan suivant (le réanimateur à terre : un autre le devient). Aux
+plaques de coopération qui demandent plusieurs joueurs, ceux qui ne la tiennent pas **se regroupent** à côté.
+Au vestiaire, chacun prend le pouvoir de son rôle (le réanimateur : le leurre ; les frappeurs : le tir chargé, lâché sur un point
+faible à nu ; l'appât et les coureurs : le triple saut).
+
+### Ce qu'ils pensent
+
+Au-dessus de chaque joueur simulé, une bulle : **son rôle → son intention** (« Réanimateur → réanime Joueur simulé 3 »,
+« Frappeur → frappe le point faible (× 2) », « Coureur → tient le miroir », « Appât → attire Titanus loin des plaques »,
+ou ce qu'il fait à cet instant : « saute l'onde », « sort de la ligne du rayon », « se cache derrière une colonne »…),
+et dessous **comment il se déplace** (la pensée de sa navigation, §28 : « Double saut au-dessus du vide », « Esquive
+du rayon »… ; ou sa réaction du moment : « s'écarte », « attend que ça passe »). Une
+bulle dont l'intention est un ordre est bordée d'or.
+
+* Mesurées (`botsui::layoutThoughts`) : police ajustée, intention raccourcie avec « … » quand il le faut ; posées
+  au-dessus du nom du joueur, sinon plus haut, sinon à côté ; jamais l'une sur l'autre, ni sur un nom, ni sur un
+  personnage, ni sur un panneau du HUD, toujours dans l'écran ; une bulle sans place n'est pas dessinée.
+* **V** (`Pensées des joueurs simulés`, réglable dans Paramètres › Commandes), la roue d'ordres, ou Paramètres › HUD ›
+  « Raids » › « Pensées des joueurs simulés (tests) » les affichent ou les masquent.
+* Le menu du raid, section **« Groupe »**, écrit sous chaque joueur simulé son rôle, son intention et son mouvement.
+
+### Les ordres (la roue)
+
+**C** (manette : clic du stick droit ; `Ordres aux joueurs simulés`, réglable) ouvre la roue : **Suivez-moi**,
+**Attendez ici**, **Tous sur l'objectif** (sans rôle : tout le monde sur le mécanisme ou la cible du moment),
+**Réanimez-le** (les deux plus proches relèvent le joueur à terre le plus près de vous), **Libres** (retour aux rôles et à
+la tactique), **Marquer un endroit** (un viseur déplacé au stick, aux flèches ou à la souris, posé avec Valider ou un
+clic : les deux plus proches y frappent l'ennemi, tiennent la plaque, actionnent le levier ou le générateur, sinon
+vont voir) et **Afficher / masquer les pensées**. Le stick, les flèches ou la souris choisissent, Valider ou un clic
+donne l'ordre, Retour ferme ; le jeu continue dessous (vos entrées sont neutres tant qu'elle est ouverte).
+
+L'ordre **passe par les entrées** : il voyage sur la trame de l'administrateur de ce pas (`bots::withOrder` : un bit de
+`InputFrame::flags`, l'ordre et sa place dans `choice`, `moveX`, `moveY`), `TestSession::step` le prend à ce pas et
+donne au monde la trame sans lui. Les mêmes trames redonnent le même test (même empreinte) ; un vrai raid n'en voit
+jamais (son relais ne pose pas ce bit, et il n'y a de joueurs simulés que dans un test).
+
+### Le niveau
+
+**Débutant**, **Confirmé**, **Expert** agissent sur le temps de réaction (0,3 / 0,15 / 0,05 s), la précision (moment de
+leurs coups et tirs, une visée qui glisse d'un cran, le moment de leurs sauts d'onde) et leurs choix (le bouclier contre
+un coup inévitable : 35 % / 70 % / toujours ; se cacher d'un regard : Confirmé et Expert). Rien d'autre.
+
+### Mesures (`tests/test_raid_goat.cpp`, sans invincibilité, le test ne déplaçant jamais personne)
+
+Chaque Gigaboss dans son antre, depuis sa phase 1, contre **8 joueurs simulés Experts** (la place de l'administrateur
+jouée aussi par l'IA), 15 minutes de jeu au plus ; un test par Gigaboss (`raid GOAT (2.79): …`), qui écrit sa mesure et
+**ce qui a mis chacun à terre** (le dernier coup reçu et le rôle du joueur : `morts : …`). Le jeu est déterministe : la
+même mesure à chaque lancement. Trois colonnes : avant la navigation du §28 (« avant »), juste après sa fusion
+(« fusion »), et après le travail sur les causes de mort (« après », la version livrée).
+
+| Gigaboss | avant | fusion | après | morts (après) | vie restante (après) |
+|---|---|---|---|---|---|
+| Pyroclast | éliminé, 661 s, phase 2 | éliminé, 537 s, phase 2 | éliminé, 484 s, phase 2 | 32 | 66 % |
+| Skullmaw | debout, 900 s, phase 1 | debout, 900 s, phase 2 | debout, 900 s, phase 2 | 56 | 66 % |
+| Dreadfang | debout, 900 s, phase 2 | éliminé, 295 s, phase 2 | **debout, 900 s, phase 2** | 50 | **52 %** |
+| Titanus | éliminé, 213 s, phase 2 | éliminé, 255 s, phase 1 | éliminé, 200 s, phase 1 | 15 | 76 % |
+| Voidworm | debout, 900 s, phase 2 | debout, 900 s, phase 2 | debout, 900 s, phase 2 | 18 | 66 % |
+| Graviton | éliminé, 199 s, phase 1 | éliminé, 140 s, phase 1 | **éliminé, 513 s, phase 1** | 25 | **68 %** |
+| Heartbreaker | debout, 900 s, phase 2 | debout, 900 s, phase 2 | éliminé, 757 s, phase 1 | 72 | 74 % |
+| Cœur d'Asterion (les sept parties tombées) | éliminé, 578 s, phase 1 | éliminé, 356 s, phase 1 | **debout, 900 s, phase 2** | 29 | 74 % |
+
+**Aucun Gigaboss n'est battu** par huit joueurs simulés Experts sans aide dans la limite : c'est dit tel quel (le test
+l'écrit, « trop dur pour l'instant » ; la liste `kBeaten` des Gigaboss battus, vide, deviendra une garantie dès qu'un
+combat sera gagné). Les combats sont chaotiques : un petit changement de comportement déplace beaucoup un combat
+(Heartbreaker tenait 900 s juste après la fusion, il tombe maintenant en phase 1 à 757 s ; Graviton et le Cœur ont
+gagné beaucoup).
+
+Ce qui met les joueurs à terre, avant et après (les plus fréquents, rôle du joueur touché) :
+
+* **Skullmaw** — fusion : son « Regard balayant » (29 morts : un rayon qui tourne de 80°, lu comme un rayon droit dont on
+  s'écarte d'un pas) et ses « Regards traqueurs » (21). Après : le balayage est lu comme le **secteur** qu'il parcourt,
+  et le bouclier (2,2 s) levé dès son annonce dure plus que lui (0,9 + 1,3 s) ; il en reste (au moins 18 morts du
+  balayage : bouclier pas encore rechargé, 5 s ; au moins 12 des regards traqueurs).
+* **Graviton** et **le Cœur** — fusion : leur couronne (« Couronne de débris », « Couronne solaire » : des tirs qui
+  tournent autour d'eux jusqu'à 330 px) lue comme une zone de 100 px. Après : lue à son vrai rayon (on en sort, ou le
+  bouclier) ; Graviton tient 513 s au lieu de 140 s, le Cœur 900 s jusqu'à sa phase 2 au lieu de 356 s.
+* **Pyroclast** — fusion : pluie de magma (réanimateurs), poings, lave ; après : lave et coups au contact (« ? »),
+  pluie de magma ; ses trois évents ne sont jamais tenus ensemble (voir plus bas).
+* **Dreadfang** — après : balayages des griffes (coureurs, réanimateurs), éclats de givre, griffes du sol ; sa
+  carapace tombe enfin (52 % de vie).
+* **Titanus** — fusion : charge du colosse (appâts, frappeurs), écrasements, chutes de rochers ; après : effets
+  persistants (lave, fissures), séisme du talon.
+* **Voidworm** — après : crachats d'acide, sucs du ventre (coureurs, réanimateurs).
+* **Heartbreaker** — fusion et après : éruptions du cœur (coureurs, appât), ondes du battement (frappeurs), côtes-pièges.
+
+* **Le niveau** (Heartbreaker, 8 joueurs simulés) : Débutant éliminé en 415 s (50 morts, 88 % de vie) ; Confirmé
+  éliminé en 623 s (62 morts, 82 %) ; Expert éliminé en 757 s (72 morts, 74 %) : chaque niveau tient plus longtemps et
+  frappe plus que le précédent.
+* **« Simuler un raid complet » sans aucune invincibilité** (7 groupes de 7 joueurs simulés Experts, depuis les
+  antres) : pas fini en une heure de jeu — aucun Gigaboss ne tombe, 15 groupes engagés (renforts compris), 688 morts.
+* Les ordres (rejoués à l'identique), les rôles (redonnés quand le réanimateur tombe) et les bulles (8 sur 8 placées
+  en 1280 × 720, 1920 × 1080 et 800 × 600, sans chevauchement) ont leurs tests dans le même fichier.
+
+**Ce qui a changé pour les causes de mort** (2.79, après la fusion) : le rayon qui balaie (secteur, bouclier dès
+l'annonce) ; la couronne à son vrai rayon ; les missiles et les jets de vapeur des Gigaboss lus ; un joueur envoyé
+tenir une place prend sous son bouclier ce qui frappe cette place (son jet, une marque) au lieu de la quitter ; une
+place donnée reste au même joueur d'un plan à l'autre (avant, deux coureurs échangeaient sans fin l'évent de l'est et
+celui du centre). Essayés puis retirés, parce qu'ils faisaient plus de morts : laisser la navigation seule esquiver
+(la tactique réagissant plus tard), ne plus attendre au bord d'un coup qui dure, ne pas donner à la navigation les
+coups du boss lui-même, garder en mémoire les marques d'une pluie ou d'une éruption après leur annonce.
+
+### Ce qui reste
+
+* **La carapace de la phase 2** est le premier mur : à 66 % de vie, ses places doivent être tenues ensemble. Pyroclast
+  en est le cas net, mesuré aussi avec des joueurs simulés invincibles depuis sa phase 2 (`COSMIC_GOAT_PHASE=2
+  COSMIC_GOAT_INVINCIBLE=1`) : l'évent de l'ouest est fermé, mais les coureurs de l'évent du centre et de celui de l'est
+  ne traversent pas : le bras de Pyroclast flotte entre eux et ces évents, ses poings frappent sous chaque joueur, et la
+  navigation recommence son chemin à chaque coup esquivé (le chemin reste à ses 10 premiers nœuds sur 165). Pour cette
+  raison, le test de la 2.77 sur Pyroclast depuis sa phase 2 (joueurs invincibles, 1 200 s ; la navigation du §28 seule
+  le battait en 906 s) **ne demande plus sa chute** : il vérifie que ses évents sont tenus et fermés, et mesure et dit
+  sa chute (« raid bots (2.77): Pyroclast from its phase 2 … its fall measured »). Il faut un appât qui emmène
+  vraiment le boss hors du chemin des coureurs (il suit le joueur le plus proche), ou une traversée sous lui.
+* **Les passages de groupe** (2.78, « Prêts ») : la navigation garde ses joueurs hors de leur plaque, sauf ceux envoyés
+  la tenir — en traversant le vestiaire pour une tablette, un joueur simulé emmenait sinon tout le monde hors de la
+  zone ; un groupe ne quitte une zone qu'ensemble (tous libres, réunis près du passage).
+* **Les pluies et éruptions** : leurs marques disparaissent quand le boss frappe, alors que leurs impacts tombent
+  encore pendant une seconde ; les garder demande d'en lire la suite (`Enemy` ne la montre pas encore) — l'essai fait
+  avec une mémoire des marques a déplacé les morts sans en ôter.
+* **Skullmaw** : le bouclier ne couvre qu'un balayage sur deux (5 s de recharge) ; il faut aussi se mettre à l'abri
+  derrière ses colonnes pendant le balayage, comme pour son regard de mort.
+* **Survivre longtemps** : sans soin ni sauvetage, la vie baisse coup après coup ; les orbes de vie de l'arène sont
+  pris, mais ne suffisent pas sur 15 minutes. Plus de 15 minutes de jeu par combat, ou un groupe de plus de 8, n'ont pas
+  été mesurés.
+
+### Versions
+
+Rien ne change pour les vrais joueurs : les joueurs simulés n'existent que dans les tests (l'ordre ne voyage que sur la
+trame d'un administrateur de test). `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les
+empreintes de référence (solo, coopération, raid sans joueurs simulés) ne changent pas.
 
 ---
 

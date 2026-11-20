@@ -236,7 +236,7 @@ function raidSentence(d: Record<string, unknown>, who: string, count: number): s
         // 2.69 (raidWorld.ts): the official result of a world event, a suspension, a catch-up session.
         case "results": {
             const outcome = d.outcome === "vaincu" ? "Asterion est tombé" : "Asterion a survécu";
-            const rank = Number(d.rank) > 0 ? ` · ${tag} ${Number(d.rank) === 1 ? "1er" : `${Number(d.rank)}ᵉ`} sur ${Number(d.clans) || 0} clans` : "";
+            const rank = Number(d.rank) > 0 ? ` · ${tag} ${Number(d.rank) === 1 ? "1er" : `${Number(d.rank)}e`} sur ${Number(d.clans) || 0} clans` : "";
             return `Résultats officiels de ${raid} : ${outcome} (progression mondiale ${Number(d.progress) || 0} %)${rank}`;
         }
         case "suspended":

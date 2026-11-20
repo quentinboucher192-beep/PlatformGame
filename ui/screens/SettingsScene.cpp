@@ -357,7 +357,8 @@ private:
             if (a == Action::Pause) text("Partie", "");
             if (a == Action::RaidMap)
                 text("Raids", "La carte agrandie de la zone et de la branche, et le menu du raid (ce qu'il reste à faire, zones terminées, journal, "
-                              "groupe, titan), pendant un raid : le groupe continue à jouer.");
+                              "groupe, titan), pendant un raid : le groupe continue à jouer. Dans un test : la roue d'ordres aux joueurs simulés et "
+                              "leurs pensées.");
             ListItem it;
             it.action = a;
             it.h = ui.s(52);
