@@ -95,6 +95,40 @@ focus, une bulle donne son nom, sa catégorie, ses étoiles et sa description.
 * Le profil en ligne (le sien et celui des autres, sauf profil masqué) montre les badges sur la
   ligne du titre quand ils y tiennent, sinon sur une ligne à eux ; jamais dans les classements.
 
+## Cadeaux
+
+Un administrateur peut **offrir** des récompenses à un ou plusieurs joueurs (ADMINISTRATION › *Cadeaux*) :
+des éléments du catalogue réel (les cinq catégories du Vestiaire, jamais l'élément de base) et les badges
+du profil que le serveur accorde lui-même (ceux des raids). Chaque cadeau a l'un des onze **emballages**
+(Or, Améthyste, Azur, Rubis, Émeraude, Nébuleuse, Givre, Braise, Cosmos, Rouage, Asterion : du pixel art de
+`tools/assetgen/environment/gift_wraps.py`, `assets/ui/gifts/wraps.png` ; `--check` vérifie les fichiers) et
+un message facultatif (140 caractères).
+
+* **Côté joueur** : COSMIC ONLINE montre *CADEAUX* dès le premier cadeau reçu, avec le nombre de cadeaux
+  à ouvrir ; une notification (« Vous avez reçu N cadeaux ») et une alerte du menu principal y mènent.
+  Filtres *À ouvrir*, *Ouverts*, *Tous* ; le contenu reste une **surprise** jusqu'à l'ouverture (le
+  serveur ne l'envoie pas avant). *Ouvrir le cadeau* joue l'ouverture : la boîte tremble de plus en plus,
+  la lumière fuit, le couvercle s'envole, l'objet monte dans son halo (une combinaison avec sa vraie
+  feuille et son clip de victoire, une traînée, un cadre, un effet de victoire et un badge avec les
+  aperçus du Vestiaire, un titre en plaque dorée). Puis *Équiper maintenant* (Y), *Cadeau suivant*
+  (Entrée / A) ou *Plus tard* (Échap / B : les autres attendent). Un clic ou Entrée / A passe
+  l'animation ; les tremblements suivent le réglage « Tremblements d'écran », les éclats la qualité des
+  particules. *Revoir l'ouverture* la rejoue.
+* **Côté serveur** : c'est l'**ouverture** qui accorde l'objet, une seule fois, par le mécanisme existant
+  (`player_won_rewards`, `challenge_id` « gift:<id> », pour un objet ; une récompense de raid récupérée
+  pour un badge) : le jeu ne peut ni s'en inventer ni en ouvrir un deux fois. Ce qui a été ouvert est
+  gardé comme les autres récompenses gagnées en ligne (utilisable hors ligne) ; sans Internet, les
+  cadeaux attendent.
+* **Côté admin** : les récompenses (catégories, grille avec aperçus, plusieurs au choix), l'emballage,
+  les joueurs (recherche, *En ligne*, *Tous*, son clan, *Choisis*) avec « possède déjà X » d'après le
+  serveur (ces joueurs sont ignorés), le message, le résumé « N récompenses × M joueurs = K cadeaux »,
+  *Aperçu de l'ouverture* (la vraie scène, *Retour à l'envoi*), puis *Envoyer K cadeaux* après une
+  confirmation. *Derniers envois* : chaque envoi avec ses cadeaux ouverts ; *Retirer* annule ceux qui ne
+  sont pas encore ouverts. Chaque envoi et chaque retrait sont inscrits au Journal (« Cadeaux »).
+
+Routes et règles : [online/API.md §8.10 sexies](online/API.md#810-sexies-cadeaux), migration
+`server/migrations/0205_gifts.sql`.
+
 ## Musiques
 
 Liste : `data/music/tracks.json`. Un morceau devient écoutable la **première fois qu'il est

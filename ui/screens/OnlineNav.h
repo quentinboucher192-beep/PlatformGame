@@ -7,9 +7,10 @@ namespace cosmic {
 class GameServices;
 
 /// Sections of ONLINE, reached from the navigation column shared by its screens.
-enum class OnlineSection { Levels, Ranking, Social, Clans, Projects, Workshop };
+enum class OnlineSection { Levels, Ranking, Social, Clans, Gifts, Projects, Workshop };
 
-/// Draws the ONLINE navigation (ONLINE LEVELS, ONLINE RANKING, SOCIAL, CLANS, PROJETS, WORKSHOP, RETOUR) at the top of
+/// Draws the ONLINE navigation (ONLINE LEVELS, ONLINE RANKING, SOCIAL, CLANS, CADEAUX once a gift was received,
+/// PROJETS, WORKSHOP, RETOUR) at the top of
 /// `area` and switches screen when an item is chosen. Returns the height used.
 float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current);
 

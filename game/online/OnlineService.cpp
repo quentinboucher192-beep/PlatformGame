@@ -211,6 +211,14 @@ void OnlineService::update(float dt) {
             refreshMyClan();
         }
     }
+    // Gifts: on connection (offline: once, from the cache), then every five minutes.
+    if (loggedIn() && !giftsBusy_ && (netState_ == OnlineState::Online || !giftsRead_)) {
+        giftsTimer_ -= dt;
+        if (giftsTimer_ <= 0.0f) {
+            giftsTimer_ = 300.0f;
+            refreshGifts();
+        }
+    }
     // Notification centre: read on connection, then every minute.
     if (netState_ == OnlineState::Online && loggedIn() && !notificationsBusy_) {
         notificationsTimer_ -= dt;
@@ -1077,6 +1085,34 @@ void OnlineService::resetFriends() {
     notificationsTimer_ = 4.0f;
     myClan_ = Json();
     clanTimer_ = 2.0f;
+    gifts_.clear();
+    giftsOwner_.clear();
+    giftsRead_ = false;
+    giftsTimer_ = 3.0f;
+}
+
+// ------------------------------------------------------------------- gifts
+
+void OnlineService::noteGifts(std::vector<gifts::Gift> list) {
+    if (!loggedIn()) return;
+    gifts_ = std::move(list);
+    giftsOwner_ = tokens_.playerId;
+    giftsRead_ = true;
+}
+
+void OnlineService::refreshGifts(ApiCallback cb) {
+    if (!loggedIn()) {
+        if (cb) cb(unusableResult());
+        return;
+    }
+    giftsBusy_ = true;
+    const std::string who = tokens_.playerId;
+    get("/api/v1/gifts/me", [this, who, cb](const ApiResult& r) {
+        giftsBusy_ = false;
+        // An answer for an account that is no longer the one connected changes nothing.
+        if (r.ok && tokens_.playerId == who) noteGifts(gifts::parseList(r.data));
+        if (cb) cb(r);
+    });
 }
 
 // ------------------------------------------------------------------- clans (2.66)
@@ -1151,6 +1187,7 @@ void OnlineService::noteNotifications(const Json& data) {
         for (const auto& n : *it) {
             std::string at = jstr(n, "created_at");
             if (at.empty() || at <= seen) continue;
+            if (jstr(n, "kind") == "gift") giftsTimer_ = std::min(giftsTimer_, 0.5f);  // a gift arrived: the list follows
             newest = std::max(newest, at);
             fresh.push_back(jstr(n, "text"));
         }

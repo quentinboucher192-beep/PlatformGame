@@ -424,6 +424,8 @@ export async function performMigration(ctx: Ctx, plan: MigrationPlan): Promise<M
                  ON CONFLICT (player_id, challenge_id, reward_kind, reward_ref) DO UPDATE SET granted_at = min(player_won_rewards.granted_at, excluded.granted_at)`,
             ),
             st("DELETE FROM player_won_rewards WHERE player_id = ?1"),
+            // Gifts (gifts.ts): those received follow, the wrapped ones still to open.
+            st("UPDATE gifts SET recipient_id = ?2 WHERE recipient_id = ?1"),
         );
         const looks = await db
             .prepare("SELECT player_id, suit, trail, frame, title, victory FROM player_cosmetics WHERE player_id IN (?1, ?2)")

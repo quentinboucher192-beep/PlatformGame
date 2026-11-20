@@ -13,6 +13,7 @@
 #include "engine/core/Json.h"
 #include "engine/core/Paths.h"
 #include "game/online/DeviceIdentity.h"
+#include "game/online/Gifts.h"
 #include "game/online/LatencyMeter.h"
 #include "game/online/LevelFingerprint.h"
 #include "game/online/LevelRatings.h"
@@ -157,6 +158,20 @@ public:
     void refreshMyClan(ApiCallback cb = {});
     /// A screen that read GET /clans/me, or changed the clan (created, joined, left…), shares it.
     void noteMyClan(const Json& data);
+
+    // ------------------------------------------------------------------ gifts
+    /// My gifts (« Cadeaux », GET /gifts/me) as last read: from the network or, offline, from the cache (the
+    /// wrapped ones wait; what was opened is already in the rewards won). Read a moment after each login, then
+    /// every five minutes while connected, and at once when a « gift » notification arrives.
+    const std::vector<gifts::Gift>& myGifts() const { return gifts_; }
+    /// The gifts still wrapped (the pill of CADEAUX, the main menu's alert).
+    int giftsUnopened() const { return loggedIn() ? gifts::unopenedCount(gifts_) : 0; }
+    /// At least one gift received: COSMIC ONLINE shows CADEAUX.
+    bool hasGifts() const { return loggedIn() && !gifts_.empty(); }
+    void refreshGifts(ApiCallback cb = {});
+    /// A screen that read GET /gifts/me, or opened a gift (POST /gifts/{id}/open), shares it.
+    void noteGifts(std::vector<gifts::Gift> list);
+    void noteGiftOpened(const gifts::Gift& g) { gifts::applyOpened(gifts_, g); }
 
     // -------------------------------------------------------- notifications
     /// Unread notifications of the Cosmic Online centre (last known), for the badges.
@@ -384,6 +399,11 @@ private:
     Json myClan_;  // 2.66: GET /clans/me
     bool clanBusy_ = false;
     float clanTimer_ = 2.0f;
+
+    std::vector<gifts::Gift> gifts_;  // GET /gifts/me
+    std::string giftsOwner_;          // the account they belong to
+    bool giftsBusy_ = false, giftsRead_ = false;
+    float giftsTimer_ = 3.0f;
 
     float notificationsTimer_ = 4.0f;
     bool notificationsBusy_ = false;

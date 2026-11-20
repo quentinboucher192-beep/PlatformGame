@@ -31,6 +31,7 @@ export const NOTIFICATION_KINDS = [
     "coop_invite", //       2.62: a friend invites me to play an EXTRÊME level in a team
     "clan", //              2.66: my clan (invitation, application to answer, accepted, excluded, chief, dissolved)
     "raid", //              clan raids (raids.ts): events scheduled or announced, reminders, registrations, invitations
+    "gift", //              gifts of an administrator (gifts.ts), merged while unread (count: the gifts)
 ] as const;
 export type NotificationKind = (typeof NOTIFICATION_KINDS)[number];
 
@@ -174,6 +175,8 @@ function sentence(n: NotificationRow, d: Record<string, string>): string {
             return clanSentence(d, who);
         case "raid":
             return raidSentence(d as unknown as Record<string, unknown>, who, n.count);
+        case "gift":
+            return n.count > 1 ? `Vous avez reçu ${n.count} cadeaux` : `${who} vous a envoyé un cadeau`;
     }
 }
 

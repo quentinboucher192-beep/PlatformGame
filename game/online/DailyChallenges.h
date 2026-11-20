@@ -347,6 +347,8 @@ public:
     /// reading of /challenges/me and kept with it in state.json), for the same account as
     /// rewardProgress(); not `known` before a first reading.
     const WonRewards& wonRewards() const;
+    /// Reads GET /players/me/rewards again now (a gift just opened: its item is among the rewards won).
+    void refreshWon() { fetchWon(); }
 
     // ------------------------------------------------------------------- runs
     struct RunReport {

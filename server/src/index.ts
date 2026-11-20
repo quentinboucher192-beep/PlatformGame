@@ -8,6 +8,7 @@ import * as migration from "./accountMigration";
 import * as backups from "./backups";
 import { login, logout, me, optionalAuth, refresh, register, releaseClosedUsernames, usernameAvailable, type AuthInfo } from "./auth";
 import * as friends from "./friends";
+import * as gifts from "./gifts";
 import * as globe from "./globe";
 import { ApiError, errorResponse, json, log, type Bindings, type Ctx } from "./http";
 import * as boards from "./leaderboards";
@@ -145,6 +146,9 @@ route("GET", `${V}/players/me/progress-restore/file`, (ctx) => migration.getRest
 route("POST", `${V}/players/me/progress-restore`, (ctx) => migration.answerRestore(ctx));
 route("PUT", `${V}/players/me/cosmetics`, (ctx) => cosmetics.putCosmetics(ctx));
 route("GET", `${V}/players/me/rewards`, (ctx) => challenges.myRewards(ctx));
+// Gifts (gifts.ts): mine (the content hidden until opened), and opening one (what grants it).
+route("GET", `${V}/gifts/me`, (ctx) => gifts.myGifts(ctx));
+route("POST", `${V}/gifts/{giftId}/open`, (ctx) => gifts.openGift(ctx));
 route("PUT", `${V}/players/me/badges`, (ctx) => badges.putBadges(ctx));
 route("GET", `${V}/players/{playerId}`, players.getPlayer, { viewer: true });
 route("GET", `${V}/players/{playerId}/creations`, creators.creations, { viewer: true });
@@ -497,6 +501,11 @@ route("POST", `${V}/admin/raid-tests/{testId}/end`, (ctx) => raidTests.end(ctx))
 // 2.77.4 (raidReviews.ts): every review of an event, a comment masked or restored (Journal).
 route("GET", `${V}/admin/raids/{eventId}/reviews`, (ctx) => raidReviews.adminListReviews(ctx));
 route("POST", `${V}/admin/raids/{eventId}/reviews/{reviewId}/moderate`, (ctx) => raidReviews.adminModerateReview(ctx));
+// ADMINISTRATION › Cadeaux (gifts.ts): the players to choose (with what they own), a send, the sends, a cancellation.
+route("GET", `${V}/admin/gifts/players`, (ctx) => gifts.adminPlayers(ctx));
+route("GET", `${V}/admin/gifts`, (ctx) => gifts.adminHistory(ctx));
+route("POST", `${V}/admin/gifts`, (ctx) => gifts.adminSend(ctx));
+route("POST", `${V}/admin/gifts/{sendId}/cancel`, (ctx) => gifts.adminCancel(ctx));
 route("GET", `${V}/admin/creations`, (ctx) => creations.listCreations(ctx));
 route("POST", `${V}/admin/creations`, (ctx) => creations.createCreation(ctx));
 route("PUT", `${V}/admin/creations/{creationId}`, (ctx) => creations.updateCreation(ctx));

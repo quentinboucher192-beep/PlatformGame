@@ -58,6 +58,8 @@ export const ADMIN_ACTIONS = {
         "admin_raid_review_hidden",
         "admin_raid_review_restored",
     ],
+    // ADMINISTRATION › Cadeaux (gifts.ts): rewards sent to players, the unopened gifts of a send withdrawn.
+    gift: ["admin_gift_sent", "admin_gift_cancelled"],
     // Backups (ADMINISTRATION › Sauvegardes, backups.ts): copies, downloads, imports. Never a passphrase.
     backup: [
         "backup_created",
@@ -84,9 +86,10 @@ const ALL_ADMIN_ACTIONS: readonly string[] = [
         ...ADMIN_ACTIONS.account,
         ...ADMIN_ACTIONS.clan,
         ...ADMIN_ACTIONS.raid,
+        ...ADMIN_ACTIONS.gift,
     ]),
 ];
-const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan", "raid"] as const;
+const LOG_KINDS = ["all", "role", "challenge", "refused", "backup", "campaign", "creation", "enemy", "account", "clan", "raid", "gift"] as const;
 
 const ID_RE = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -533,7 +536,7 @@ function raidOfDetails(d: Record<string, unknown>) {
 }
 
 /**
- * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account|clan|raid&actor=<player id>&limit=&offset=
+ * GET /admin/log?kind=all|role|challenge|refused|backup|campaign|creation|enemy|account|clan|raid|gift&actor=<player id>&limit=&offset=
  * The administration's own actions, newest first: who (the admin's current username, or the
  * one written at the time when the account is gone), what, when. Never the IP hash.
  */
@@ -593,6 +596,8 @@ export async function listLog(ctx: Ctx): Promise<Response> {
             clan: clanOfDetails(d),
             // A world event of ADMINISTRATION › Raids (created, edited, published, cancelled).
             raid: raidOfDetails(d),
+            // A send of ADMINISTRATION › Cadeaux, or its unopened gifts withdrawn: {send_id, rewards [{kind, id, name}], wrap, recipients, gifts, skipped?, cancelled?, names?}.
+            gift: isObject(d.gift) ? d.gift : null,
             // 2.75: the level of a replay watched by an administrator, and the lock it went through.
             level_title: str("level_title"),
             lock: str("lock"),

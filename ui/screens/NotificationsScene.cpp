@@ -76,6 +76,7 @@ const std::vector<OnlineKind>& onlineKinds() {
         {"security", "!", {255, 138, 61, 255}, "Sécurité", "Mon compte et son ordinateur (connexion refusée ailleurs…)"},
         {"clan", "K", {166, 107, 255, 255}, "Clan", "Mon clan (invitation, candidature à traiter, exclusion, rôle de chef)"},
         {"raid", "R", {255, 138, 76, 255}, "Raid", "Raids de clan (événements, rappels, inscriptions, invitations)"},
+        {"gift", "G", {255, 205, 110, 255}, "Cadeau", "Cadeau reçu d'un administrateur (COSMIC ONLINE › CADEAUX)"},
     };
     return k;
 }
@@ -329,6 +330,7 @@ private:
         if (kind == "record_beaten" && n.contains("data") && !jstr(n["data"], "official").empty()) return "Voir le classement";
         if (kind == "challenge_featured") return "Voir les défis";
         if (kind == "challenge_reward") return "Voir la Collection";
+        if (kind == "gift") return "Voir mes cadeaux";
         // 2.66: a clan still there (a dissolved one has no page any more).
         if (kind == "clan" && n.contains("data") && jstr(n["data"], "event") != "dissolved" && !jstr(n["data"], "clan_id").empty()) return "Voir le clan";
         // 2.80: an administrator's invitation to a test, while it waits for an answer.
@@ -382,6 +384,11 @@ private:
             }
             if (kind == "clan") {  // 2.66: the clan's page (an invitation is answered there)
                 g_.app.switchScene(makeClans(g_, n.contains("data") ? jstr(n["data"], "clan_id") : std::string{}), 0.3f);
+                return;
+            }
+            if (kind == "gift") {  // gifts of an administrator, to open
+                g_.online.refreshGifts();
+                g_.app.switchScene(makeGifts(g_), 0.3f);
                 return;
             }
             if (kind == "challenge_reward") {  // 2.43: rewards won at a challenge, to equip

@@ -89,6 +89,9 @@ export const RULES = {
     raidCall: { name: "raid_call", limit: 6, windowSeconds: 3600 },
     // 2.68: claiming the rewards of the raids (idempotent; a few per event).
     raidClaim: { name: "raid_claim", limit: 60, windowSeconds: 600 },
+    // Gifts (gifts.ts): an administrator's sends (each up to 100 players), a player's openings.
+    giftSend: { name: "gift_send", limit: 20, windowSeconds: 3600 },
+    giftOpen: { name: "gift_open", limit: 120, windowSeconds: 600 },
     // 2.80 (raidTests.ts): an administrator's tests with invited players, and the invitations sent.
     raidTestCreate: { name: "raid_test_create", limit: 30, windowSeconds: 3600 },
     raidTestInvite: { name: "raid_test_invite", limit: 40, windowSeconds: 3600 },

@@ -12,6 +12,7 @@
 #include "game/ghost/SobMontage.h"
 #include "game/levels/LevelData.h"
 #include "game/online/DailyChallenges.h"
+#include "game/online/Gifts.h"
 
 namespace cosmic {
 
@@ -249,6 +250,17 @@ std::unique_ptr<Scene> makeSocial(GameServices& g, const std::string& conversati
 /// of a clan. `clanId`: that clan's page on arrival. `pushed`: opened over another screen (a
 /// profile, SOCIAL): « Retour » pops it instead of going back to the ONLINE screens.
 std::unique_ptr<Scene> makeClans(GameServices& g, const std::string& clanId = {}, bool pushed = false);
+/// ONLINE › CADEAUX: the gifts an administrator gave me (to open, opened, all) and the one chosen; `select`: that gift.
+std::unique_ptr<Scene> makeGifts(GameServices& g, int64_t select = 0);
+/// The opening of a gift (pushed over its screen): `gift` wrapped is opened by Cosmic Online first; `replay`
+/// (« Revoir l'ouverture ») and `preview` (ADMINISTRATION › Cadeaux › « Aperçu de l'ouverture ») play it with
+/// the reward they know, asking nothing of the server.
+struct GiftOpening {
+    gifts::Gift gift;
+    bool replay = false;
+    bool preview = false;
+};
+std::unique_ptr<Scene> makeGiftOpening(GameServices& g, GiftOpening opening);
 /// The sheet of a clan raid event (CLANS › RAIDS, phase 1 of « Asterion »), pushed over the current screen.
 std::unique_ptr<Scene> makeRaidEvent(GameServices& g, const std::string& eventId);
 /// 2.65, raids phase 2 (docs/RAIDS.md): the map of a branch of the titan (2.68: any of the seven,

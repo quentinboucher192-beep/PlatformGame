@@ -15,8 +15,10 @@ int onlineSocialBadge(GameServices& g) {
 
 float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
     UIContext& ui = g.ui;
-    constexpr int kItems = 7;
-    Rect nav{area.x, area.y, area.w, ui.s(kItems * 58 + 20)};
+    // CADEAUX only once the player received a gift (its pill: the gifts still wrapped).
+    const bool gifts = g.online.hasGifts() || current == OnlineSection::Gifts;
+    const int kItems = gifts ? 8 : 7;
+    Rect nav{area.x, area.y, area.w, ui.s(static_cast<float>(kItems * 58 + 20))};
     ui.r().fillRoundedRect(nav, ui.s(14), Color{6, 10, 22, 170});
     ui.pushId("online/nav");
     float y = nav.y + ui.s(10), h = ui.s(50);
@@ -56,6 +58,7 @@ float drawOnlineNav(GameServices& g, const Rect& area, OnlineSection current) {
         g.app.switchScene(makeSocial(g));
     // 2.66: the clans (the invitations received in an amber pill, like the friend requests).
     if (item("clans", "CLANS", current == OnlineSection::Clans, 0, in ? g.online.clanInvitations() : 0)) g.app.switchScene(makeClans(g));
+    if (gifts && item("gifts", "CADEAUX", current == OnlineSection::Gifts, 0, in ? g.online.giftsUnopened() : 0)) g.app.switchScene(makeGifts(g));
     if (item("projects", "PROJETS", current == OnlineSection::Projects)) g.app.switchScene(makeProjects(g));
     if (item("workshop", "ATELIER", current == OnlineSection::Workshop)) g.app.switchScene(makeContentManager(g));
     if (item("back", "RETOUR", false)) g.app.switchScene(makeMainMenu(g));
