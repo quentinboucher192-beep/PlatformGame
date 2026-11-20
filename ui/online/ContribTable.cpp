@@ -638,7 +638,8 @@ Layout layout(UIContext& ui, const Rect& r, const Model& m, const View& v) {
         L.headLines[static_cast<size_t>(c)] = textW(ui, h, L.headFont, FontFace::Bold, true) <= textRoom ? std::vector<std::string>{h} : split(h, L.headFont).first;
     }
     for (int c = 0; c < kCols; ++c) L.texts.push_back(L.cols[static_cast<size_t>(c)]);
-    L.rowFont = std::clamp(rowH / ui.s(1.0f) * 0.36f, 13.0f, 22.0f);
+    // Beside the titan the table is narrower: its numbers no larger than its names and bars can hold.
+    L.rowFont = std::clamp(rowH / ui.s(1.0f) * 0.36f, 13.0f, L.titan.empty() ? 22.0f : 16.0f);
     float ry = L.list.y;
     for (const Item& it : items) {
         if (it.row < 0) {
@@ -1051,7 +1052,7 @@ bool drawImpl(UIContext& ui, GameServices* g, AsterionFigure* fig, const Rect& r
         for (size_t j = 0; j < k; ++j) rank += t.rows[static_cast<size_t>(L.rowOf[j])].section == row.section ? 1 : 0;
         const float rankW = textW(ui, "88", f, FontFace::Bold);
         fit(ui, std::to_string(rank), {pc.x + rankW * 0.5f, cy}, f, rankW, kMuted, FontFace::Bold, Align::Center, true);
-        const float dot = std::min(rect.h * 0.5f, ui.s(30));
+        const float dot = std::min(rect.h * 0.4f, ui.s(L.titan.empty() ? 30.0f : 22.0f));
         rr.fillCircle({pc.x + rankW + ui.s(8) + dot * 0.5f, cy}, dot * 0.5f, row.color);
         const float nx = pc.x + rankW + ui.s(16) + dot;
         // Its group's tag after its name (measured first: the name takes what is left).
