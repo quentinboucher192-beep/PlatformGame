@@ -1431,7 +1431,8 @@
   {
    "fr": "acceptée",
    "where": [
-    "ui/screens/RaidEventScene.cpp"
+    "ui/screens/RaidEventScene.cpp",
+    "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
   {
@@ -32506,6 +32507,18 @@
    ]
   },
   {
+   "fr": "L'administrateur a terminé le test.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "L'administrateur n'est plus dans le test depuis 60 s : le test est terminé.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
    "fr": "L'administrateur vous a retiré du test.",
    "where": [
     "game/coop/NetCoopLink.cpp"
@@ -37647,6 +37660,12 @@
   },
   {
    "fr": "Le test continue pendant la pause : vous pouvez encore être touché.",
+   "where": [
+    "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le test est terminé.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
    ]
@@ -57535,6 +57554,18 @@
    "fr": "Revenir dans la partie",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir dans le test",
+   "where": [
+    "ui/screens/RaidTestInviteScene.cpp"
+   ]
+  },
+  {
+   "fr": "Revenir dans le test d'Asterion que vous avez accepté",
+   "where": [
+    "ui/screens/NotificationsScene.cpp"
    ]
   },
   {

@@ -1038,17 +1038,18 @@ public:
         // 2.75.5: the raid's menu, opened and closed by the player (its key, the HUD's button), as the pause:
         // the game goes on, this player's inputs are neutral while it is open; Échap or B close it.
         const bool menuWasOpen = overlay_.menu.isOpen();
-        const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0 && !guestsOpen();
+        const bool waitingRelay = relay_.on && !relay_.started;  // 2.80: the waiting card is shown, not the game
+        const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0 && !guestsOpen() && !waitingRelay;
         const bool menuBack = overlay_.menu.handleKeys(g_.app.input(), menuAllowed, menuSectionNow());
         if (overlay_.menu.isOpen()) bigMap_ = false;
-        if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && !guestsOpen() &&
+        if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ && !guestsOpen() && !waitingRelay &&
             g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
             g_.ui.setFocus("raidgame/pause/resume");
         }
         // 2.72: the large map (display only: the group, and this player, keep playing).
-        if (!ended_ && !paused_ && simPanel_ < 0 && !guestsOpen() && g_.app.input().menuPressed(Action::RaidMap)) {
+        if (!ended_ && !paused_ && simPanel_ < 0 && !guestsOpen() && !waitingRelay && g_.app.input().menuPressed(Action::RaidMap)) {
             bigMap_ = !bigMap_;
             mapPan_ = 0.0f;
             if (bigMap_) overlay_.menu.close();

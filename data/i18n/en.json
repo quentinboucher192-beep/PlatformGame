@@ -13760,6 +13760,11 @@
     "{0} sera invité au lancement du test.": "{0} will be invited when the test is launched.",
     "{0} vous invite ({1}) : répondez dans NOTIFICATIONS, sous 3 minutes.": "{0} invites you ({1}): answer in NOTIFICATIONS within 3 minutes.",
     "{0} vous invite à un test d'Asterion ({1}) : répondez dans les 3 minutes": "{0} invites you to an Asterion test ({1}): answer within 3 minutes",
-    "Connectez-vous à Cosmic Online pour voir les joueurs connectés.": "Log in to Cosmic Online to see the online players."
+    "Connectez-vous à Cosmic Online pour voir les joueurs connectés.": "Log in to Cosmic Online to see the online players.",
+    "L'administrateur a terminé le test.": "The administrator ended the test.",
+    "L'administrateur n'est plus dans le test depuis 60 s : le test est terminé.": "The administrator has been out of the test for 60 s: the test is over.",
+    "Le test est terminé.": "The test is over.",
+    "Revenir dans le test": "Back to the test",
+    "Revenir dans le test d'Asterion que vous avez accepté": "Back to the Asterion test you accepted"
   }
 }
