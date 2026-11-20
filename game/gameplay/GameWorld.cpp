@@ -354,6 +354,12 @@ void GameWorld::fixedUpdate(const PlayerInput& in, float dt) {
 void GameWorld::update(float dt) {
     particles_.update(dt);
     player_.update(*this, dt);
+    // A team's other players animate as the first one does (display only, never the simulation): their
+    // clip chosen from their state, their frames advancing. Before, only the first seat did: the others
+    // stayed on the first frame of the last clip their simulation started (idle, a hit, the beam of a
+    // revival…), in coop, in raids, their simulated players and the replays of a team alike.
+    for (size_t i = 1; i < team_.size(); ++i)
+        if (team_[i].player && team_[i].player != &player_) team_[i].player->update(*this, dt);
     for (auto& e : enemies_)
         if (!e->frozen()) e->update(*this, dt);  // a frozen enemy keeps its pose
     for (auto& e : entities_) e->update(*this, dt);

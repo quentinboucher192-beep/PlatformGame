@@ -222,6 +222,11 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
         forcedAnimTimer_ -= dt;
         if (forcedAnimTimer_ <= 0) forcedAnim_.clear();
     }
+    // The dash afterimages (display only, never read by the simulation) fade with the game's own
+    // time: a world stepped without being drawn (a raid's other group, a catch-up, a fast-forward)
+    // or a player whose display is never updated keeps none of them.
+    for (auto& a : afterimages_) a.life -= dt;
+    while (!afterimages_.empty() && afterimages_.front().life <= 0.0f) afterimages_.pop_front();
 
     if (state_ == PlayerState::Hidden) return;
     // Out of a crouch some other way (hurt, dash, launched, dead...): standing size again
@@ -290,7 +295,8 @@ void Player::fixedUpdate(GameWorld& w, const PlayerInput& inRaw, float dt) {
         afterimageTimer_ -= dt;
         if (afterimageTimer_ <= 0.0f) {
             afterimageTimer_ = 0.035f;
-            afterimages_.push_back({box.bottomCenter(), anim.sourceRect(), facing < 0, 0.25f});
+            if (afterimages_.size() >= kMaxAfterimages) afterimages_.pop_front();
+            afterimages_.push_back({box.bottomCenter(), anim.sourceRect(), facing < 0, kAfterimageLife});
         }
         moveAndCollide(w, dt);
         if (dashTimer_ <= 0.0f) endDash();
