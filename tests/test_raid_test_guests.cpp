@@ -29,7 +29,10 @@ struct Blank : Scene {
     void render(float) override {}
 };
 
-bool inside(const Rect& outer, const Rect& r) { return r.empty() || outer.containsRect(r); }
+/// `r` within `outer` (half a pixel of rounding allowed: rooms are computed by subtraction).
+bool inside(const Rect& outer, const Rect& r) {
+    return r.empty() || (r.x >= outer.x - 0.5f && r.y >= outer.y - 0.5f && r.right() <= outer.right() + 0.5f && r.bottom() <= outer.bottom() + 0.5f);
+}
 bool apart(const Rect& a, const Rect& b) { return a.empty() || b.empty() || !a.intersects(b); }
 
 void report(bool ok, const char* what, const Vec2& size) {
@@ -94,7 +97,7 @@ TEST_CASE("raid test guests (2.80): the invited players' window measured — 128
                     report(L.list.y >= y - 0.5f && L.pick.y >= y - 0.5f, "listes sur l'introduction", size);
                     report(apart(L.list, L.pick), "la liste des invités sur celle des joueurs connectés", size);
                     report(L.status.y >= L.list.bottom() && L.status.y >= L.pick.bottom(), "ligne d'état sur les listes", size);
-                    report(L.pick.containsRect(L.search) && L.pick.containsRect(L.pickList) && L.pickList.y >= L.search.bottom(), "recherche mal placée", size);
+                    report(inside(L.pick, L.search) && inside(L.pick, L.pickList) && L.pickList.y >= L.search.bottom(), "recherche mal placée", size);
                     report(L.list.h > L.rowH * 2.0f && L.pickList.h > L.pickRowH * 2.0f, "listes trop basses", size);
                     // A guest's row, as the list draws it (its width: the list's, its scroll bar aside).
                     const Rect row{L.list.x, L.list.y + ui.s(40), L.list.w - ui.s(14), L.rowH};

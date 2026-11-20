@@ -379,7 +379,8 @@ std::string RaidTestGuests::actionText(const Guest& x) {
 RaidTestGuests::Layout RaidTestGuests::layout(UIContext& ui, bool attached) {
     Layout L;
     const float W = ui.screenW(), H = ui.screenH();
-    const float w = std::min(ui.s(1160), W - ui.s(32)), h = std::min(ui.s(700), H - ui.s(32));
+    // As wide as the screen allows (90 %, up to 1400 scaled pixels): the rows hold a name, two pills and three controls.
+    const float w = std::min(W - ui.s(32), std::max(ui.s(1160), std::min(W * 0.9f, ui.s(1400)))), h = std::min(ui.s(700), H - ui.s(32));
     L.box = {(W - w) * 0.5f, (H - h) * 0.5f, w, h};
     const float p = ui.s(22), x = L.box.x + p, iw = w - p * 2;
     const std::string closeT = "Fermer";
@@ -429,15 +430,32 @@ RaidTestGuests::RowLayout RaidTestGuests::rowLayout(UIContext& ui, const Rect& r
     const float roleW = std::min(in * 0.2f, textW(ui, role, 13, FontFace::Bold) + ui.s(22));
     R.role = {R.state.x - gap - roleW, cy - ph * 0.5f, roleW, ph};
     R.name = {row.x + pad, cy - ph * 0.5f, std::max(0.0f, R.role.x - gap - row.x - pad), ph};
-    // Second line: the action (as wide as the widest action), the box, the group's choice in what is left.
+    // Second line: the action (as wide as the widest action), the box, the group's choice in what is left. Each
+    // control first at its comfortable width; the group's choice too narrow for the longest group's name (« Renfort
+    // 8 », « Reinforcement 8 »): the box and the action give back room, down to what their labels need at their
+    // least size (UIContext::toggle fits its label down to 60 %, a button down to 55 %, a cycle's value to 50 %).
     const float ly = row.y + ui.s(46), lh = ui.s(40);
-    float actionW = 0.0f;
-    for (const char* a : kActions) actionW = std::max(actionW, textW(ui, a, 18, FontFace::Bold));
-    actionW = std::min(in * 0.36f, actionW + ui.s(28));
+    float actionText = 0.0f;
+    for (const char* a : kActions) actionText = std::max(actionText, textW(ui, a, 18, FontFace::Bold));
+    float actionW = std::min(in * 0.36f, actionText + ui.s(28));
+    const float actionMin = std::min(actionW, actionText * 0.55f + ui.s(22));
+    const float invText = textW(ui, "Invincible", 22, FontFace::Body);
+    float invW = std::min(groups ? in * 0.36f : in - actionW - gap, invText + ui.s(116));
+    const float invMin = std::min(invW, invText * 0.6f + ui.s(118));
+    if (groups) {
+        float groupNeed = 0.0f;
+        for (const std::string& n : groupNames) groupNeed = std::max(groupNeed, textW(ui, n, 22, FontFace::Bold) * 0.5f);
+        groupNeed += ui.s(96);
+        float short_ = groupNeed - (in - actionW - invW - gap * 2.0f);
+        if (short_ > 0.0f) {
+            const float fromInv = std::min(short_, invW - invMin);
+            invW -= fromInv;
+            short_ -= fromInv;
+        }
+        if (short_ > 0.0f) actionW -= std::min(short_, actionW - actionMin);
+    }
     R.action = {row.right() - pad - actionW, ly, actionW, lh};
     R.actionFont = ui.fitFont(action, FontFace::Bold, 18, actionW - ui.s(20), 0.55f);
-    // The box: its switch (UIContext::toggle: 116 px of track and margins) and its label at full size if it can.
-    const float invW = std::min(groups ? in * 0.36f : in - actionW - gap, textW(ui, "Invincible", 22, FontFace::Body) + ui.s(116));
     R.invincible = {R.action.x - gap - invW, ly, invW, lh};
     if (groups) {
         R.group = {row.x + pad, ly, std::max(0.0f, R.invincible.x - gap - row.x - pad), lh};
