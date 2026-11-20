@@ -39784,7 +39784,7 @@
    ]
   },
   {
-   "fr": "Les rangs s'écrivent « 2e », « 3e »… : le « ᵉ » d'avant n'existe pas dans les polices du jeu et s'affichait comme un carré vide (historique des raids, titres de clan, notifications des résultats).",
+   "fr": "Les rangs s'écrivent « 2e », « 3e »… : le petit « e » en exposant d'avant n'existe pas dans les polices du jeu et s'affichait comme un carré vide (historique des raids, titres de clan, notifications des résultats).",
    "where": [
     "data/news/changelog.json"
    ]
