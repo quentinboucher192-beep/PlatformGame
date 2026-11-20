@@ -1,6 +1,6 @@
 #pragma once
 // 2.78.1: the « fiche récapitulative » of a finished clan raid (CLANS › RAIDS › Raids terminés,
-// docs/RAIDS.md §26), as the server sends it (server/src/raidRecap.ts): the clan's finished raids
+// docs/RAIDS.md §27), as the server sends it (server/src/raidRecap.ts): the clan's finished raids
 // (GET /clans/{id}/raids) and one of them whole (GET /clans/{id}/raids/{event}/recap). Every figure
 // is the server's, from what its consensus accepted; nothing here computes a result. The texts are
 // French (translated where they are drawn), the times shown in the computer's own zone.

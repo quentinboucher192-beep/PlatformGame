@@ -195,7 +195,12 @@ TEST_CASE("raid heart: its catalog apart from the seven branches, its gigantic a
     CHECK(b->zones[1].boss && !b->zones[0].boss);
     CHECK(b->zoneRules(1)->spawns.at("start").size() == 3);
     CHECK(!b->reachable(0)[2]);  // its aorta's guard opens the arena
-    CHECK(b->reachable(1u << b->objectiveIndex("coeur_aorte"))[2]);
+    // 2.78: every ambush of its aorta beaten (the guard's alone no longer opens it).
+    CHECK(!b->reachable(1u << b->objectiveIndex("coeur_aorte"))[2]);
+    uint32_t ambushes = 0;
+    for (const raid::ObjectiveInfo& o : b->objectives)
+        if (o.zone == 1 && o.role == "ambush") ambushes |= 1u << o.index;
+    CHECK(b->reachable(ambushes)[2]);
     const raid::ZoneRules* z = b->zoneRules(kArena);
     CHECK(z && z->gigaboss.present && z->gigaboss.routine == "coeur");
     if (!z) return;

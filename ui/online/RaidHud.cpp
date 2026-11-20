@@ -4,6 +4,7 @@
 #include <cmath>
 #include <map>
 
+#include "engine/core/Application.h"
 #include "engine/physics/PhysicsWorld.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
@@ -140,10 +141,16 @@ Rect defaultArea(UIContext& ui, const RaidHudLayout& l, RaidHudElement e, const 
                 std::max(ui.s(120), std::min({ui.s(500) * k, W * 0.28f, defaultArea(ui, l, RaidHudElement::Danger, hud).x - ui.s(10) - m}));
             return Rect{m, y, w, std::max(ui.s(80), std::min(ui.s(320) * k, bottom - y))};
         }
+        case RaidHudElement::LairPassage: {
+            // 2.78: the right column, under the alerts (« Ce qu'il reste à faire » goes under it).
+            const Rect a = defaultArea(ui, l, RaidHudElement::Alerts, hud);
+            const float w = std::min(ui.s(320), W * 0.24f) * k;
+            return Rect{W - m - w, a.bottom() + ui.s(10), w, ui.s(56) * k};
+        }
         case RaidHudElement::Remaining: {
             // 2.75: the right column under the alerts, never down to the danger band (centred) nor to the
-            // contributions' line (bottom right).
-            const Rect a = defaultArea(ui, l, RaidHudElement::Alerts, hud);
+            // contributions' line (bottom right). 2.78: under the distance to the lair's passage.
+            const Rect a = defaultArea(ui, l, RaidHudElement::LairPassage, hud);
             const float w = std::min(ui.s(320), W * 0.24f) * k;
             const float x = W - m - w;
             float y = a.bottom() + ui.s(10);
@@ -201,6 +208,30 @@ GameplaySettings hudSettings(const GameplaySettings& base) {
         s.hud[RaidHudLayout::hudElement(e)] = p;
     }
     return s;
+}
+
+LairPassageLayout layoutLairPassage(UIContext& ui, const Rect& r, float k) {
+    LairPassageLayout L;
+    const float pad = ui.s(8) * k, a = std::min(r.h - pad * 2, ui.s(30) * k);
+    L.arrow = {r.x + pad, r.center().y - a * 0.5f, a, a};
+    const float tx = L.arrow.right() + ui.s(8) * k, tw = std::max(0.0f, r.right() - pad - tx);
+    const float half = (r.h - pad * 2) * 0.5f;
+    L.title = {tx, r.y + pad, tw, half};
+    L.state = {tx, r.y + pad + half, tw, half};
+    return L;
+}
+
+void drawLairPassage(UIContext& ui, const Rect& r, float k, const LairPassage& p) {
+    hudBox(ui, r);
+    const LairPassageLayout L = layoutLairPassage(ui, r, k);
+    // The arrow (ui/raids/contrib.png, its last icon), turned toward where to go, in the state's colour.
+    if (auto tex = ui.app().resources().texture("ui/raids/contrib.png")) {
+        const Rect src{9.0f * 32.0f, 0.0f, 32.0f, 32.0f};
+        const float deg = std::atan2(p.dir.y, p.dir.x) * 57.29578f;
+        ui.r().drawTexture(*tex, &src, L.arrow, p.open ? kGreen : kGold, BlendMode::Alpha, false, false, deg);
+    }
+    fit(ui, p.title, {L.title.x, L.title.center().y}, 14 * k, L.title.w, kText, FontFace::Bold);
+    fit(ui, p.state, {L.state.x, L.state.center().y}, 13 * k, L.state.w, p.open ? kGreen : kOrange);
 }
 
 void hudBox(UIContext& ui, const Rect& r) {

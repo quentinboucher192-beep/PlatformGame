@@ -49,6 +49,7 @@
 #include <cmath>
 #include <cstdio>
 #include <map>
+#include <optional>
 #include <memory>
 #include <thread>
 
@@ -78,6 +79,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "saves/Settings.h"
 #include "ui/online/RaidHud.h"
+#include "ui/online/ContribTable.h"
 #include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/Glyphs.h"
@@ -366,6 +368,13 @@ public:
         session_->step(f, scripted);  // never reports anything
         ++tick_;
         if (const int z = run_->zoneFinishedNow()) zoneDone(z);  // 2.75
+        if (testSetup_.openContrib && !contribShown_ && !run_->finishes().empty()) {
+            // 2.78, a capture (--raid-contrib): the table over the menu, as the player would open it.
+            contribShown_ = true;
+            overlay_.menu.open(raidmenu::Section::Zones);
+            contribOpen_ = true;
+            contribView_ = contrib::View{};
+        }
         if (run_->wipedNow()) groupWiped();  // 2.75.1
         if (run_->gigaboss().fellNow()) gigabossFell();  // 2.75.5: a notification (no results: a test is never reported)
         if (run_->heartWonNow()) playVictory();  // 2.74: a test's fall is its victory (never reported)
@@ -461,7 +470,11 @@ public:
         }
         int steps = 1;
         if (link_->available() > tick_ + static_cast<uint32_t>(link_->inputDelay() + 6)) steps = 4;
+        // 2.78: several zones may be simulated at once (one world per zone a player is in): a catch-up of several
+        // steps stops at the image's budget (the next image goes on), so the main thread never waits on it.
+        const auto frameStart = std::chrono::steady_clock::now();
         for (int k = 0; k < steps && !ended_; ++k) {
+            if (k > 0 && std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - frameStart).count() > kOnlineBudgetMs) break;
             sendLocal();
             if (!link_->frameFor(tick_, frame_)) {
                 waiting_ += dt;
@@ -513,11 +526,14 @@ public:
                                : r.kind == raid::Report::Kind::Heart   ? "heart"
                                : r.kind == raid::Report::Kind::ZoneTable ? "zone_table"
                                : r.kind == raid::Report::Kind::Wipe      ? "wipe"  // 2.75
+                               : r.kind == raid::Report::Kind::Zones     ? "zones"  // 2.78
                                                                        : "zone";
             Json body{{"kind", kind}, {"zone", r.zone}, {"tick", r.tick}, {"hash", hex16(r.hash)}};
             if (r.kind == raid::Report::Kind::Objective) body["objective"] = r.objective;
             if (r.kind == raid::Report::Kind::Boss) body["phase"] = r.phase;
             if (r.kind == raid::Report::Kind::Heart) body["damage"] = r.damage;  // 2.72: this instance's part of the shared health
+            // 2.78: where each player is (each one changes zone alone), with the wipe too.
+            if ((r.kind == raid::Report::Kind::Zones || r.kind == raid::Report::Kind::Wipe) && !r.seats.empty()) body["seats"] = r.seats;
             if (r.kind == raid::Report::Kind::Result) {
                 // 2.68: the players' contributions (the same table on every computer of the instance).
                 Json rows = Json::array();
@@ -546,7 +562,12 @@ public:
                                         {"damage", c.damage},
                                         {"support", c.support},
                                         {"mechanisms", c.mechanisms},
-                                        {"objectives", c.objectives}});
+                                        {"objectives", c.objectives},
+                                        // 2.78: the mini-bosses, the deaths, the revivals done and received.
+                                        {"mini_damage", c.miniDamage},
+                                        {"deaths", c.deaths},
+                                        {"revives", c.revives},
+                                        {"revived", c.revived}});
                 body["records"] = rows;
             }
             const bool objective = r.kind == raid::Report::Kind::Objective;
@@ -621,7 +642,15 @@ public:
         // the game goes on, this player's inputs are neutral while it is open; Échap or B close it.
         const bool menuWasOpen = overlay_.menu.isOpen();
         const bool menuAllowed = !ended_ && !paused_ && !reconnect_.active() && g_.app.topScene() == this && simPanel_ < 0;
-        const bool menuBack = overlay_.menu.handleKeys(g_.app.input(), menuAllowed, menuSectionNow());
+        bool menuBack = false;
+        if (contribOpen_ && overlay_.menu.isOpen() && menuAllowed) {
+            // 2.78: the table's keys while it is open over the menu (Échap / B back to the menu, never the pause).
+            if (contribView_.handleKeys(g_.app.input(), static_cast<int>(run_ ? run_->finishes().size() : 0))) contribOpen_ = false;
+            menuBack = true;
+        } else {
+            contribOpen_ = false;
+            menuBack = overlay_.menu.handleKeys(g_.app.input(), menuAllowed, menuSectionNow());
+        }
         if (overlay_.menu.isOpen()) bigMap_ = false;
         if (!menuWasOpen && !menuBack && !ended_ && g_.app.topScene() == this && simPanel_ < 0 && !panelJustClosed_ &&
             g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
@@ -863,11 +892,12 @@ public:
     }
 
     void watchNext(int dir) {
-        GameWorld& w = run_->world();
-        const int n = w.teamSize();
+        const int n = run_->world().teamSize();
         for (int k = 1; k <= n; ++k) {
             const int s = ((watchSeat_ < 0 ? 0 : watchSeat_) + dir * k + n * 4) % n;
-            if (w.member(s).presence == GameWorld::Presence::Vacant) continue;
+            // 2.78: every player of the group, whatever their zone (the camera goes to the zone of the one watched).
+            const GameWorld* sw = run_->worldOf(run_->zoneOf(s));
+            if (!sw || s >= sw->teamSize() || sw->member(s).presence == GameWorld::Presence::Vacant) continue;
             if (s != watchSeat_) blend_.start(view_);  // 2.77.2: eased
             watchSeat_ = s;
             run_->setCameraFollow(s);
@@ -994,12 +1024,14 @@ public:
             ui.r().fillRoundedRect(row, ui.s(8), here ? Color{40, 34, 72, 255} : Color{22, 28, 60, 255});
             const float textW = row.w - bw * 2 - bgap * 3;
             int inPlay = 0, seats = 0;
-            const GameWorld& w = g.session->run().world();
+            const raid::RaidRun& gr = g.session->run();
             // 2.77.3 (« Joueurs par groupe »): the administrator's seat, where they are not, is a simulated player's.
-            for (int s = simSetup_.fullGroups && !(here && sim_->seated()) ? 0 : 1; s < w.teamSize(); ++s) {
-                if (w.member(s).presence == GameWorld::Presence::Vacant) continue;
+            // 2.78: each seat read in the world of its own zone (the group can be spread over several).
+            for (int s = simSetup_.fullGroups && !(here && sim_->seated()) ? 0 : 1; s < raid::kMaxInstancePlayers; ++s) {
+                const GameWorld* sw = gr.worldOf(gr.zoneOf(s));
+                if (!sw || s >= sw->teamSize() || sw->member(s).presence == GameWorld::Presence::Vacant) continue;
                 ++seats;
-                inPlay += w.member(s).presence == GameWorld::Presence::Playing;
+                inPlay += sw->member(s).presence == GameWorld::Presence::Playing;
             }
             std::string state = g.wiped ? "ÉLIMINÉ · ses joueurs regardent" : std::to_string(inPlay) + " / " + std::to_string(seats) + " joueurs simulés en jeu";
             if (g.relieves > 0) state += " · renfort du Groupe " + std::to_string(g.relieves);
@@ -1321,6 +1353,11 @@ public:
         d.others = false;
         for (int i = 0; i < w.teamSize(); ++i) d.others = d.others || (i != local_ && w.member(i).presence == GameWorld::Presence::Playing);
         d.canRevive = w.canRevive() && d.others;  // a raid: as many as wanted, while an ally is in play
+        // 2.78: allies in play in the branch's other zones (only an ally of this zone revives: one who comes back).
+        for (int z : run_->zonesLoaded())
+            if (const GameWorld* o = run_->worldOf(z); o && o != &w)
+                for (int i = 0; i < o->teamSize(); ++i)
+                    if (run_->zoneOf(i) == z && o->member(i).presence == GameWorld::Presence::Playing) ++d.elsewhere;
         d.revivesLeft = w.revivesUnlimited() ? -1 : w.revivesLeft();
         d.revivesMax = GameWorld::kTeamRevives;
         d.soulInView = view_.toScreen(Rect{m.soul.x - 8.0f, m.soul.y - 28.0f, 16.0f, 28.0f}).intersects({0.0f, 0.0f, g_.ui.screenW(), g_.ui.screenH()});
@@ -1491,6 +1528,13 @@ public:
                                static_cast<float>(run_->zoneTicks()) / static_cast<float>(kSimHz));
             hudRects_.push_back(r);
         }
+        if (shown(E::LairPassage))
+            if (const auto lp = lairPassage(w)) {
+                // 2.78: in the zone before the lair, the distance to its passage, its arrow and its state.
+                const Rect r = at(E::LairPassage);
+                raidhud::drawLairPassage(ui, r, k(E::LairPassage), *lp);
+                hudRects_.push_back(r);
+            }
         if (shown(E::Remaining)) {
             // 2.75: « Ce qu'il reste à faire »: the zone's requirements, then the branch's zones to finish.
             const Rect r = at(E::Remaining);
@@ -1543,14 +1587,80 @@ public:
     }
 
     /// 2.72: the group panel's data (8 rows).
-    raidhud::Group groupData(GameWorld& w) {
+    /// 2.78: the distance indicator of the zone shown (the one before a lair: its passage through the lair's
+    /// armory), for the player the camera follows: along the zone's route, else horizontally. None elsewhere.
+    std::optional<raidhud::LairPassage> lairPassage(const GameWorld& w) const {
+        if (!run_ || !branch_) return std::nullopt;
+        const raid::Passage* to = nullptr;
+        for (const raid::Passage& p : run_->rules().passages)
+            if (p.via == raid::kLairArmory) to = &p;
+        if (!to) return std::nullopt;
+        const int seat = run_->cameraFollow() >= 0 && run_->cameraFollow() < w.teamSize() ? run_->cameraFollow() : std::max(0, local_);
+        const Vec2 feet = seat < w.teamSize() && w.member(seat).presence == GameWorld::Presence::Down ? w.member(seat).soul : w.playerAt(seat).feet();
+        const raid::RouteLeft left = raid::routeLeft(run_->rules().route, feet, to->rect.center());
+        raidhud::LairPassage lp;
+        lp.title = i18n::keep(i18n::tr("Passage vers l'antre") + (i18n::language() == Language::English ? ": " : " : ") + std::to_string(left.metres()) + " m");
+        lp.dir = left.dir;
+        lp.open = run_->passageOpen(*to);
+        if (lp.open) {
+            lp.state = "ouvert";
+        } else if (to->lock.rfind("ambushes:", 0) == 0) {
+            const raid::Branch::AmbushCount c = branch_->ambushes(std::atoi(to->lock.c_str() + 9), run_->mask());
+            lp.state = i18n::keep(i18n::tr("fermé") + " — " + i18n::tr(raid::Branch::ambushesLeftText(c)));
+        } else {
+            lp.state = "fermé";
+        }
+        return lp;
+    }
+
+    /// 2.78: the players of the instance in `zone` (names, « Vous » first), « » when none.
+    std::string playersIn(int zone) const {
+        if (!run_) return {};
+        std::string out;
+        for (int i = 0; i < raid::kMaxInstancePlayers; ++i) {
+            if (run_->zoneOf(i) != zone || !((run_->seatsIn(zone) >> i) & 1u)) continue;
+            const std::string n = i == local_ ? i18n::tr("Vous") : seatName(i);
+            out = i == local_ ? n + (out.empty() ? "" : ", " + out) : out + (out.empty() ? "" : ", ") + n;
+        }
+        return out;
+    }
+    /// 2.78: « Groupe : Vous, Lyra ici · Orion : Veine de magma » (empty when everyone is here).
+    std::string groupWhere() const {
+        if (!run_ || !branch_) return {};
+        const std::vector<int> zones = run_->zonesLoaded();
+        if (zones.size() < 2) return {};
+        const char* colon = i18n::language() == Language::English ? ": " : " : ";
+        std::string out = i18n::tr("Groupe") + colon + playersIn(run_->zone()) + " " + i18n::tr("ici");
+        for (int z : zones) {
+            if (z == run_->zone() || playersIn(z).empty()) continue;
+            const raid::ZoneInfo* info = branch_->zone(z);
+            out += " · " + playersIn(z) + colon + (info ? i18n::tr(info->name) : std::to_string(z));
+        }
+        return i18n::keep(out);
+    }
+
+    /// 2.78: the world a seat is in (each player changes zone alone), else `w`.
+    const GameWorld& seatWorld(const GameWorld& w, int seat) const {
+        const GameWorld* sw = run_ ? run_->worldOf(run_->zoneOf(seat)) : nullptr;
+        return sw && seat < sw->teamSize() ? *sw : w;
+    }
+    /// 2.78: the name of the zone a seat is in.
+    std::string seatZoneName(int seat) const {
+        const raid::ZoneInfo* z = run_ && branch_ ? branch_->zone(run_->zoneOf(seat)) : nullptr;
+        return z ? z->name : std::string();
+    }
+
+    raidhud::Group groupData(GameWorld& fw) {
         using P = GameWorld::Presence;
         raidhud::Group g;
-        int held = 0;
-        for (int i = 0; i < w.teamSize(); ++i) held += w.member(i).presence != P::Vacant;
+        int held = 0, revivals = 0;
+        for (int i = 0; i < fw.teamSize(); ++i) held += seatWorld(fw, i).member(i).presence != P::Vacant;
+        if (run_)
+            for (int z : run_->zonesLoaded()) revivals += run_->worldOf(z)->revivalsDone();
         g.title = "[" + entry_.clanTag + "]·" + std::to_string(entry_.group) + " · " + std::to_string(held) + " / 8";
         if (sim_) g.title = sim_->group(sim_->viewed()).name + " · " + std::to_string(held) + " / 8";  // 2.77
-        for (int i = 0; i < w.teamSize(); ++i) {
+        for (int i = 0; i < fw.teamSize(); ++i) {
+            const GameWorld& w = seatWorld(fw, i);
             const GameWorld::TeamMember& mb = w.member(i);
             const Player& p = w.playerAt(i);
             raidhud::GroupRow row;
@@ -1570,11 +1680,14 @@ public:
                 case P::Gone: row.state = "parti"; break;
                 case P::Vacant: row.state = "place libre"; break;
             }
+            // 2.78: a player in another zone: its zone with its state.
+            if (!row.vacant && run_ && run_->zoneOf(i) != run_->zone() && !seatZoneName(i).empty())
+                row.state = i18n::keep(i18n::tr(row.state) + " · " + i18n::tr(seatZoneName(i)));
             g.rows.push_back(std::move(row));
         }
         // 2.75: as many revivals as wanted; the whole group down: eliminated from the zone (spectators).
         g.footer = run_ && run_->wiped() ? "GROUPE ÉLIMINÉ — mode spectateur"
-                                         : "Réanimations illimitées (" + std::to_string(w.revivalsDone()) + ") · tous à terre : groupe éliminé";
+                                         : "Réanimations illimitées (" + std::to_string(revivals) + ") · tous à terre : groupe éliminé";
         return g;
     }
 
@@ -1646,8 +1759,10 @@ public:
             const bool retake = !g.finished && fell != retake_.end();
             c.state = g.finished ? "terminée" : retake ? "zone à reprendre" : c.here ? "vous êtes ici" : g.reachable ? "à finir" : "verrouillée";
             if (c.here && g.finished) c.state = "terminée · vous êtes ici";
+            if (g.passage) c.state = c.here ? "zone de passage · vous êtes ici" : g.reachable ? "zone de passage" : "verrouillée";  // 2.78
+            if (const std::string who = playersIn(g.zone); !who.empty()) c.state = i18n::keep(i18n::tr(c.state) + " · " + who);  // 2.78
             c.color = c.here ? kGold : g.finished ? kGreen : retake ? kDanger : g.reachable ? kSky : kDim;
-            if (!g.finished) c.missing = (retake ? fell->second + " est tombé · " : std::string()) + g.missing() + (g.optional ? " (facultatif)" : "");
+            if (!g.finished) c.missing = (retake ? fell->second + " est tombé · " : std::string()) + g.missing() + (g.optional && !g.passage ? " (facultatif)" : "");
             zones.push_back(std::move(c));
         }
         const raid::ZoneInfo* z = branch_->zone(run_->zone());
@@ -2213,12 +2328,69 @@ public:
 
     /// 2.75.5: the raid's menu over the combat (opened by the player; the game goes on under it).
     void drawMenu(GameWorld& w) {
-        const raidmenu::MenuAction act = raidmenu::drawMenu(g_.ui, overlay_.menu, menuData(w));
+        // 2.78: the table open over the menu takes the whole screen (the menu's buttons under it never answer).
+        const raidmenu::MenuAction act = contribOpen_ ? raidmenu::MenuAction{} : raidmenu::drawMenu(g_.ui, overlay_.menu, menuData(w));
         if (act.close) overlay_.menu.close();
+        if (act.table && !contribOpen_) {
+            contribOpen_ = true;
+            contribView_ = contrib::View{};
+        }
+        if (contribOpen_ && overlay_.menu.isOpen()) {
+            // 2.78: the full table over the menu (the game goes on: this player's inputs stay neutral).
+            const float m = g_.ui.s(24);
+            if (contrib::draw(g_.ui, {m, m, g_.ui.screenW() - m * 2, g_.ui.screenH() - m * 2}, contribModel(), contribView_)) contribOpen_ = false;
+        }
         if (act.results && !test_ && !entry_.eventId.empty()) {
             overlay_.menu.close();
             g_.app.pushScene(makeRaidResults(g_, entry_.eventId));  // its own choice, as from the pause
         }
+    }
+
+    /// 2.78: a line of the « Tableau des contributions » from the simulation's numbers.
+    contrib::Row contribRow(const raid::ZoneContribution& c, const std::vector<raid::ZoneContribution>& all) const {
+        contrib::Row row;
+        bool later = false;  // a newer holder of the same seat: this row is a player who left
+        for (const raid::ZoneContribution& o : all) later = later || (o.seat == c.seat && o.from > c.from);
+        row.name = later ? "Joueur parti (place " + std::to_string(c.seat + 1) + ")" : seatName(c.seat);
+        row.color = seatColor(c.seat, local_);
+        row.me = !later && c.seat == local_;
+        row.bossTenths = c.bossDamage;
+        row.miniTenths = c.miniDamage;
+        row.damageTenths = c.damage;
+        row.support = c.support;
+        row.mechanisms = c.mechanisms;
+        row.objectives = c.objectives;
+        row.deaths = c.deaths;
+        row.revives = c.revives;
+        row.revived = c.revived;
+        row.v2 = c.v2;
+        return row;
+    }
+
+    /// 2.78: the « Tableau des contributions »: each zone finished while a player of the instance was in it
+    /// (the newest first), and the whole raid (every zone of the instance added up).
+    contrib::Model contribModel() const {
+        contrib::Model m;
+        m.tabKey = const_cast<RaidGameScene*>(this)->menuKeyName();
+        m.legend = test_ ? "Test local : chiffres comptés par la simulation, rien n'est envoyé au serveur."
+                         : "Chiffres comptés par la simulation (les mêmes sur tous les jeux du groupe), validés par la majorité.";
+        m.tooltipNote = test_ ? "Compté par la simulation (test local)." : "Compté par la simulation, validé par la majorité du groupe.";
+        if (!run_) return m;
+        const auto& list = run_->finishes();
+        for (auto it = list.rbegin(); it != list.rend(); ++it) {
+            contrib::Table t;
+            const raid::ZoneInfo* z = branch_->zone(it->zone);
+            t.title = "Zone " + std::to_string(it->zone) + " · " + (z ? z->name : std::string("?"));
+            t.sub = std::string(it->byUs ? "terminée par votre groupe" : "terminée par un autre groupe") + " · " +
+                    raidmenu::raidTime(static_cast<float>(it->tick) / static_cast<float>(kSimHz));
+            for (const raid::ZoneContribution& c : it->rows) t.rows.push_back(contribRow(c, it->rows));
+            m.zones.push_back(std::move(t));
+        }
+        const std::vector<raid::ZoneContribution> all = run_->contributions().raidTable();
+        m.raid.title = "Raid entier · " + std::string(branch_->name);
+        m.raid.sub = "toutes les zones de votre instance, additionnées";
+        for (const raid::ZoneContribution& c : all) m.raid.rows.push_back(contribRow(c, all));
+        return m;
     }
 
     /// 2.75.5: what the menu shows, from this screen's data (the simulation's, the server's).
@@ -2230,7 +2402,21 @@ public:
         d.remainingTitle = "CE QU'IL RESTE À FAIRE · " + std::string(z ? z->name : "?");
         d.remaining = remainingLines(w);
         const auto& list = run_->finishes();
-        for (auto it = list.rbegin(); it != list.rend(); ++it) d.tables.push_back(zoneTable(*it));
+        // 2.78: a line per zone finished; the full table (tabs, sort, details) opens over the menu.
+        const contrib::Model cm = contribModel();
+        d.tableAvailable = !cm.zones.empty() || !cm.raid.rows.empty();
+        for (const contrib::Table& t : cm.zones) {
+            const contrib::Prepared pr = contrib::prepare(t, contrib::Col::Boss);
+            std::string line = t.title + " · " + t.sub;
+            for (size_t i = 0; i < pr.cells.size(); ++i)
+                if (pr.cells[i][static_cast<size_t>(contrib::Col::Boss)].best) {
+                    const contrib::Row& r = t.rows[i];
+                    line += " · " + pr.headers[static_cast<size_t>(contrib::Col::Boss)] + " : " + (r.me ? std::string("vous") : r.name) + " (" +
+                            pr.cells[i][static_cast<size_t>(contrib::Col::Boss)].text + ")";
+                    break;
+                }
+            d.tableLines.push_back(i18n::keep(line));
+        }
         for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
             bool here = false;
             for (const raid::ZoneFinish& f : list) here = here || f.zone == g.zone;
@@ -2310,6 +2496,8 @@ public:
         std::vector<raidhud::Line> lines;
         const Color todo{255, 176, 74, 255};
         const raid::ZoneGoals here = raid::zoneGoals(*branch_, run_->zone(), run_->validated(), run_->localDone());
+        // 2.78: where each player of the group is (each one changes zone alone).
+        if (const std::string where = groupWhere(); !where.empty()) lines.push_back({"i", where, kSky});
         if (here.finished) lines.push_back({"OK", "Zone terminée", kGreen});
         if (const auto fell = retake_.find(run_->zone()); fell != retake_.end() && !here.finished)
             lines.push_back({"!", "Zone à reprendre : " + fell->second + " est tombé ici, finissez-la à sa place", kDanger});
@@ -2322,8 +2510,11 @@ public:
         std::vector<const CombatZoneEntity*> fights;
         for (const auto& e : w.entities())
             if (auto* c = dynamic_cast<const CombatZoneEntity*>(e.get())) {
-                bool objective = false;
-                for (const raid::ZoneObjective& zo : run_->rules().objectives) objective = objective || zo.source == e->id();
+                bool objective = false;  // 2.78: the ambushes of the zone before a lair are objectives, and listed here too
+                for (const raid::ZoneObjective& zo : run_->rules().objectives) {
+                    const raid::ObjectiveInfo* o = branch_->objective(zo.id);
+                    objective = objective || (zo.source == e->id() && !(o && o->role == "ambush"));
+                }
                 if (!objective) fights.push_back(c);
             }
         for (size_t i = 0; i < fights.size(); ++i) {
@@ -2346,6 +2537,10 @@ public:
         const char* colon = i18n::language() == Language::English ? ": " : " : ";
         for (const raid::ZoneGoals& g : raid::branchGoals(*branch_, run_->validated(), run_->localDone())) {
             if (g.zone == run_->zone() || g.finished) continue;
+            if (g.passage) {  // 2.78: the lair's armory, a zone of passage (once the way to the lair is open)
+                if (g.reachable) branch.push_back({"i", i18n::keep(i18n::tr(g.name) + colon + i18n::tr(g.missing())), kSky});
+                continue;
+            }
             const std::string miss = g.missing();
             if (const auto fell = retake_.find(g.zone); fell != retake_.end()) {
                 retake.push_back({"!", i18n::keep(i18n::tr(g.name) + colon + i18n::tr("zone à reprendre (" + fell->second + " est tombé)") +
@@ -2437,9 +2632,13 @@ public:
     /// 2.72: the simulation's alerts of the last 8 s (group, branch, danger), then the server's answers.
     std::vector<raidhud::Line> alertLines() {
         std::vector<raidhud::Line> show;
-        for (const raid::Alert& a : run_->alerts())
-            if (run_->tick() - a.tick < 8 * 120 && !toldAsNotice(a.text))
-                show.push_back({"", a.text, a.kind == raid::Alert::Kind::Branch ? kGreen : a.kind == raid::Alert::Kind::Danger ? kDanger : kGold});
+        for (const raid::Alert& a : run_->alerts()) {
+            if (run_->tick() - a.tick >= 8 * 120 || toldAsNotice(a.text)) continue;
+            // 2.78: what happens in another zone stays there; who changes zone is told to everyone.
+            if (a.zone != 0 && a.zone != run_->zone() && a.seat < 0) continue;
+            const std::string text = a.seat >= 0 ? i18n::keep(seatName(a.seat) + " · " + i18n::tr(a.text)) : a.text;
+            show.push_back({"", text, a.kind == raid::Alert::Kind::Branch ? kGreen : a.kind == raid::Alert::Kind::Danger ? kDanger : kGold});
+        }
         for (const auto& n : notes_)
             if (clock_ - n.at < 8.0f) show.push_back({"", n.text, n.c});
         if (show.size() > 4) show.erase(show.begin(), show.end() - 4);
@@ -2577,6 +2776,7 @@ public:
     // 2.77: « Simuler un raid complet » (raid::RaidSimulation): the raid, the instance shown, the budget
     // of time per image, the speed measured, the world's events already told, the raid's panel.
     static constexpr double kSimBudgetMs = 10.0;
+    static constexpr double kOnlineBudgetMs = 6.0;  // 2.78: an online raid's steps in one image (at least one)
     RaidSimSetup simSetup_;
     bool simMode_ = false;
     std::unique_ptr<raid::RaidSimulation> sim_;
@@ -2637,6 +2837,9 @@ public:
     RaidTestSetup testSetup_;
     std::vector<InputScript> scripts_;  // 2.70: a capture's seats (docs/BUILDING.md)
     raidmenu::Overlay overlay_;  // 2.75.5: the notifications and the raid's menu (no card opens by itself)
+    contrib::View contribView_;  // 2.78: the « Tableau des contributions » over the menu (tabs, sort, details)
+    bool contribOpen_ = false;
+    bool contribShown_ = false;  // 2.78: a capture opened it already
     bool fallSeen_ = false;      // 2.75.5: a gigaboss fell here: « Résultats du raid » in the menu
     std::string fallMore_;       // 2.75.5: when its results count (the menu's « Titan »)
     float pointerAt_ = -10.0f;   // 2.75.5: when the mouse last moved (the pointer shown, for the HUD's button)

@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "engine/core/Math.h"
+
 namespace cosmic::raid {
 
 class Branch;
@@ -35,17 +37,31 @@ struct ZoneGoals {
     bool reachable = false;
     bool optional = false;  // nothing in it is required (the secret zone)
     bool lair = false;      // the gigaboss's zone (its fight has its own card)
+    bool passage = false;   // 2.78: the lair's armory (« zone de passage »: nothing to finish there)
     std::vector<Requirement> items;
     /// What it still misses on one line (« 1 générateur sur 2 · Vaincre le golem »), "" when finished.
     std::string missing() const;
 };
+
+/// 2.78: what is left from `feet` to the end of `route` (the way through the zone before a lair, pixels):
+/// along it from the nearest point of it (ties: the first segment), plus the way to that point; `dir` is
+/// where to go now (toward the next point of the route). Without a route (fewer than two points): the
+/// horizontal distance to `target`. One tile (16 px) is one metre (« 124 m »).
+struct RouteLeft {
+    float pixels = 0.0f;
+    Vec2 dir{1.0f, 0.0f};
+    bool along = false;  // measured along the route (else horizontally)
+    int metres() const;
+};
+RouteLeft routeLeft(const std::vector<Vec2>& route, Vec2 feet, Vec2 target);
 
 /// Whether `zone` is finished in `mask` (see above; a zone without any objective: never).
 bool zoneFinished(const Branch& b, int zone, uint32_t mask);
 /// The requirements of `zone`: `validated` is the server's state (RAID_STATE), `own` what this
 /// instance did itself (RaidRun::localDone).
 ZoneGoals zoneGoals(const Branch& b, int zone, uint32_t validated, uint32_t own = 0);
-/// Every zone of the branch in order (the lair last), each with its requirements.
+/// Every zone of the branch in order (the lair last), each with its requirements; 2.78: the lair's armory
+/// (a zone of passage, `passage`) just before the lair when the branch has one.
 std::vector<ZoneGoals> branchGoals(const Branch& b, uint32_t validated, uint32_t own = 0);
 
 }  // namespace cosmic::raid

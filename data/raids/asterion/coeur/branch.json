@@ -7,7 +7,13 @@
  "gigaboss": "Cœur d'Asterion",
  "start_zone": 1,
  "generators_needed": 0,
- "lock_texts": {},
+ "lock_texts": {
+  "ambushes:1": {
+   "hint": "toutes les vagues de toutes les embuscades de la zone doivent être vaincues",
+   "message": "Toutes les embuscades sont vaincues : l'antre s'ouvre",
+   "objective": "vaincre toutes les embuscades de Aorte cosmique"
+  }
+ },
  "zones": [
   {
    "id": 1,
@@ -42,7 +48,7 @@
   {
    "a": 1,
    "b": 2,
-   "lock": "objective:coeur_aorte",
+   "lock": "ambushes:1",
    "secret": false
   }
  ],
@@ -53,7 +59,7 @@
    "zone": 1,
    "label": "Franchir l'Aorte cosmique : vaincre la garde du cœur",
    "optional": false,
-   "role": "",
+   "role": "ambush",
    "pair": ""
   },
   {
@@ -63,6 +69,33 @@
    "label": "Vaincre le Cœur d'Asterion (sa vie est partagée par toutes les instances)",
    "optional": false,
    "role": "gigaboss",
+   "pair": ""
+  },
+  {
+   "id": "coeur_embuscade_1",
+   "index": 2,
+   "zone": 1,
+   "label": "Vaincre la première embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "coeur_embuscade_2",
+   "index": 3,
+   "zone": 1,
+   "label": "Vaincre la deuxième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
+   "pair": ""
+  },
+  {
+   "id": "coeur_embuscade_3",
+   "index": 4,
+   "zone": 1,
+   "label": "Vaincre la troisième embuscade (toutes ses vagues)",
+   "optional": false,
+   "role": "ambush",
    "pair": ""
   }
  ]

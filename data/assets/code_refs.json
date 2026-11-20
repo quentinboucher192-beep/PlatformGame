@@ -873,6 +873,10 @@
   "ui/raids/asterion.png": {
    "ui/widgets/AsterionFigure.cpp": 1
   },
+  "ui/raids/contrib.png": {
+   "ui/online/ContribTable.cpp": 1,
+   "ui/online/RaidHud.cpp": 1
+  },
   "ui/raids/minimap.json": {
    "ui/online/RaidHud.cpp": 1
   },

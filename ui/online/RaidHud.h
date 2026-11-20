@@ -89,6 +89,21 @@ struct HeartBar {
 };
 void drawHeartBar(UIContext& ui, const Rect& r, float k, const HeartBar& h);
 
+/// 2.78: the distance to the lair's passage (the zone before the lair): « Passage vers l'antre : 124 m »,
+/// an arrow toward where to go (along the route), and its state (« fermé — embuscades restantes : 2 sur 4 »,
+/// « ouvert »). Both lines measured into the box.
+struct LairPassage {
+    std::string title, state;
+    bool open = false;
+    Vec2 dir{1.0f, 0.0f};
+};
+void drawLairPassage(UIContext& ui, const Rect& r, float k, const LairPassage& p);
+/// Its two lines as drawn (the first one fitted, the state wrapped), for the tests.
+struct LairPassageLayout {
+    Rect arrow, title, state;
+};
+LairPassageLayout layoutLairPassage(UIContext& ui, const Rect& r, float k);
+
 /// A box of the HUD (its rounded panel).
 void hudBox(UIContext& ui, const Rect& r);
 

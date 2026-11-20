@@ -70,7 +70,8 @@ Banner downBanner(const DownInfo& d) {
     b.color = kDown;
     if (!d.canRevive)
         b.lines.push_back(d.revivesLeft == 0 ? "L'équipe n'a plus de réanimation : vous restez à terre jusqu'à la fin de la tentative"
-                                             : "Aucun allié en jeu pour vous relever pour l'instant");
+                          : d.elsewhere > 0 ? "Aucun allié dans cette zone : un allié d'une autre zone peut revenir vous relever"  // 2.78
+                                            : "Aucun allié en jeu pour vous relever pour l'instant");
     else if (d.who.empty())
         b.lines.push_back("Un allié doit maintenir Interagir 2 s près de votre âme");
     else

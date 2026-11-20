@@ -8094,26 +8094,6 @@
     }
    ],
    "delay": 0.6
-  },
-  {
-   "id": "ev4",
-   "source": "o475",
-   "trigger": "cleared",
-   "once": true,
-   "actions": [
-    {
-     "type": "open",
-     "target": "o483"
-    },
-    {
-     "type": "hint",
-     "params": {
-      "text": "Le poignet cède ! Les griffes de Dreadfang sont ouvertes.",
-      "duration": 3.5
-     }
-    }
-   ],
-   "delay": 0.5
   }
  ],
  "intro": {},
@@ -8223,6 +8203,12 @@
       16624,
       960
      ]
+    ],
+    "9": [
+     [
+      16624,
+      960
+     ]
     ]
    },
    "passages": [
@@ -8259,11 +8245,27 @@
       64,
       64
      ],
-     "lock": "objective:bg_poignet",
-     "door": "o483"
+     "lock": "ambushes:7",
+     "door": "o483",
+     "via": 9
     }
    ],
    "objectives": [
+    {
+     "id": "bg_embuscade_1",
+     "source": "o119",
+     "trigger": "cleared"
+    },
+    {
+     "id": "bg_embuscade_2",
+     "source": "o230",
+     "trigger": "cleared"
+    },
+    {
+     "id": "bg_embuscade_3",
+     "source": "o378",
+     "trigger": "cleared"
+    },
     {
      "id": "bg_poignet",
      "source": "o475",
@@ -8281,6 +8283,96 @@
     "message": "Les griffes balaient le sol ! Restez en hauteur"
    },
    "sealed": null,
+   "route": [
+    [
+     144,
+     960
+    ],
+    [
+     1824,
+     960
+    ],
+    [
+     2016,
+     960
+    ],
+    [
+     2496,
+     960
+    ],
+    [
+     4096,
+     960
+    ],
+    [
+     5536,
+     960
+    ],
+    [
+     5936,
+     960
+    ],
+    [
+     5936,
+     288
+    ],
+    [
+     6080,
+     288
+    ],
+    [
+     6112,
+     512
+    ],
+    [
+     6176,
+     512
+    ],
+    [
+     6368,
+     960
+    ],
+    [
+     7968,
+     960
+    ],
+    [
+     9408,
+     960
+    ],
+    [
+     9888,
+     960
+    ],
+    [
+     11328,
+     960
+    ],
+    [
+     11520,
+     960
+    ],
+    [
+     13120,
+     960
+    ],
+    [
+     14560,
+     960
+    ],
+    [
+     14752,
+     960
+    ],
+    [
+     16512,
+     960
+    ],
+    [
+     16768,
+     960
+    ]
+   ],
    "coop": [
     {
      "id": "ecluse_1",
