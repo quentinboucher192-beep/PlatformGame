@@ -2982,11 +2982,18 @@ retombée (`Plan::reviveWindow`). **5 / 8** (85 %) ; les trois départs perdus :
 morsures et son crachat au contact, près de son corps), un en phase 3. Heartbreaker : son appât aussi au-dessus de ses
 ondes, 2 / 8 avec moins de morts.
 
-### Mesure complète (difficulté 3 / 5, 8 départs, un processus par départ)
+### Mesure complète (difficulté 3 / 5, 8 départs)
 
-**Un départ par processus** : dans un même processus, le cache des graphes de navigation (`RaidNav`) a déjà le graphe
-de l'antre au deuxième combat (il est prêt plus tôt), ce qui change la suite ; chaque départ se mesure donc dans son propre
-processus (`COSMIC_GOAT_SEED0=k COSMIC_GOAT_SEEDS=1`), toujours le même résultat pour la même graine.
+**Les choix des joueurs simulés ne dépendent que de la partie.** Le cache des graphes de navigation (`RaidNav`) reconnaissait
+un graphe à la seule signature de la zone (son niveau, ses portes, ses passages) : un graphe construit pendant un combat
+précédent du même processus, à un autre moment (l'acide de Voidworm, ses crochets), resservait — le même départ donnait un
+autre combat selon ce que le processus avait joué avant (Voidworm : 2 / 8 enchaîné, 4 / 8 un départ par processus), un
+risque de désynchronisation entre les ordinateurs d'un test relayé. Le cache ne rend plus un graphe que construit depuis
+**exactement le même monde** (tout ce que la construction lit, haché : `contentKey`) ; le moment où un graphe sert reste
+fixé par la zone. Le test `raid GOAT (2.84): the simulated players' choices depend on the game only` joue le même départ
+après un autre combat de l'antre, cache vidé puis cache chaud (divergence à 133 s avant la correction, identiques après) ;
+`COSMIC_GOAT_DIGESTS` / `COSMIC_GOAT_DIGESTS_REF` le comparent avec un processus neuf (identiques). Les mesures enchaînées
+et un départ par processus donnent maintenant les mêmes résultats.
 
 | Combat | vaincu | vie ôtée (moyenne) | temps de chaque départ |
 |---|---|---|---|

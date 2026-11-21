@@ -29,6 +29,7 @@
 #include "game/gameplay/WorldListener.h"
 #include "game/raid/AsterionHeartRoutine.h"
 #include "game/raid/RaidBranch.h"
+#include "game/raid/RaidNav.h"
 #include "game/raid/RaidRun.h"
 #include "game/raid/RaidSimulation.h"
 #include "game/raid/RaidTest.h"
@@ -682,4 +683,82 @@ TEST_CASE("raid GOAT bench (2.84): every Gigaboss and the Cœur over several sta
         std::printf("  BENCH %-14s %d/%d vaincus (moyenne %.0f s) :%s\n", part.c_str(), won, seeds, won ? wonSeconds / won : 0.0, line.c_str());
         std::fflush(stdout);
     }
+}
+
+namespace {
+
+/// One start of a lair's fight (8 simulated players, Expert, seed `seed`) for `seconds` of play: the session's digest
+/// every second (the world and the simulated players' state).
+std::vector<uint64_t> digestsOf(Svc& s, const std::string& part, uint32_t seed, int seconds) {
+    std::vector<uint64_t> out;
+    const raid::Branch* b = raid::Branch::builtin(part);
+    if (!b) return out;
+    raid::RaidRun::Test t;
+    t.on = true;
+    t.players = 8;
+    raid::TestSession session(s.ws(), *b, t);
+    session.setAdminSeated(true);
+    session.setAdminBot(true);
+    session.setRescues(false);
+    session.setSkill(raid::BotSkill::Expert);
+    session.setBotSeed(seed);
+    uint32_t state = 0;
+    for (const raid::ObjectiveInfo& o : b->objectives)
+        if (o.role != "gigaboss" && !o.optional) state |= 1u << o.index;
+    session.setBranchState(state);
+    if (!session.begin(lairOf(*b))) return out;
+    for (int k = 0; k < seconds * kSimHz; ++k) {
+        session.step(InputFrame{});
+        if (k % kSimHz == kSimHz - 1) out.push_back(session.hash());
+    }
+    return out;
+}
+
+}  // namespace
+
+TEST_CASE("raid GOAT (2.84): the simulated players' choices depend on the game only — the same start twice in one process and in a fresh one, the same digests") {
+    // Their choices must be a pure function of the simulation (a relayed or online test runs them on several computers):
+    // nothing left by an earlier fight in the same process (a cache, a shared rule) may change them. A digest every
+    // second. A fresh process: COSMIC_GOAT_DIGESTS=<file> runs the start as its very first fight and writes its digests;
+    // COSMIC_GOAT_DIGESTS_REF=<file> then compares them with this process's runs.
+    Svc s;
+    const int secs = std::getenv("COSMIC_GOAT_DIGEST_SECONDS") ? std::atoi(std::getenv("COSMIC_GOAT_DIGEST_SECONDS")) : 180;
+    // After another start of the same lair (its graphs in the cache, built from that fight at other moments: its hooks,
+    // its acid), then as in a fresh process (the graphs' cache emptied), then once more (the cache warm).
+    if (const char* path = std::getenv("COSMIC_GOAT_DIGESTS")) {
+        // The fresh process's run: the very first fight of this process, written for another to compare.
+        const std::vector<uint64_t> first = digestsOf(s, "abdomen", 2, secs);
+        if (FILE* f = std::fopen(path, "w")) {
+            for (uint64_t h : first) std::fprintf(f, "%016llx\n", static_cast<unsigned long long>(h));
+            std::fclose(f);
+        }
+        CHECK(first.size() == static_cast<size_t>(secs));
+        return;
+    }
+    raid::NavGraph::clearCache();
+    digestsOf(s, "abdomen", 1, 400);
+    const std::vector<uint64_t> b = digestsOf(s, "abdomen", 2, secs);
+    raid::NavGraph::clearCache();
+    const std::vector<uint64_t> a = digestsOf(s, "abdomen", 2, secs);
+    const std::vector<uint64_t> c = digestsOf(s, "abdomen", 2, secs);
+    CHECK(c == a);
+    size_t diverge = a.size();
+    for (size_t k = 0; k < a.size() && k < b.size(); ++k)
+        if (a[k] != b[k]) {
+            diverge = k;
+            break;
+        }
+    std::printf("  %zu s comparées : %s\n", a.size(), diverge == a.size() ? "identiques" : ("divergence à " + std::to_string(diverge + 1) + " s").c_str());
+    if (const char* path = std::getenv("COSMIC_GOAT_DIGESTS_REF"))
+        if (FILE* f = std::fopen(path, "r")) {
+            std::vector<uint64_t> ref;
+            unsigned long long h = 0;
+            while (std::fscanf(f, "%llx", &h) == 1) ref.push_back(h);
+            std::fclose(f);
+            std::printf("  avec un processus neuf : %s\n", ref == a && ref == b ? "identiques" : "DIFFÉRENTES");
+            CHECK(ref == a);
+            CHECK(ref == b);
+        }
+    CHECK(a.size() == static_cast<size_t>(secs));
+    CHECK(a == b);
 }
