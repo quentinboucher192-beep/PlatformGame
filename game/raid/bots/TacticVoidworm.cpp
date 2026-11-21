@@ -33,6 +33,15 @@ public:
         const Enemy* b = gb.boss(w);
         const GigabossRoutine* rt = gb.routine();
         if (!b || !rt) return;
+        // 2.84, its fight plan: once its acid floods the gut (from its 3rd phase), the strikers fire from above the
+        // acid's height — never caught on the floor when it rises (3 s of warning, a climb of two storeys).
+        if (gb.rules()) {
+            const Json ac = gb.rules()->extra.value("acid", Json::object());
+            if (gb.phase() >= jget<int>(ac, "from", 3)) {
+                v.plan.floorY = jget<float>(ac, "floor", b->box.bottom());
+                v.plan.elevate = jget<float>(ac, "height", 150.0f) + 12.0f;
+            }
+        }
         std::vector<BossMark> marks;
         rt->marks(w, gb, marks);
         for (const BossMark& m : marks) {
