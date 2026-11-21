@@ -17658,7 +17658,7 @@
    ]
   },
   {
-   "fr": "Course à la vérification : chaque tentative (Solo, Duo, Trio) a de nouveau son bouton 💬 avec son nombre de commentaires, à côté du ▶, comme les records d'un niveau classique.",
+   "fr": "Course à la vérification : chaque tentative (Solo, Duo, Trio) a de nouveau son bouton de commentaires, avec leur nombre, à côté du ▶, comme les records d'un niveau classique.",
    "where": [
     "data/news/changelog.json"
    ]
