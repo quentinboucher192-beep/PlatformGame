@@ -2815,7 +2815,8 @@ touche 0 à 0,6 s plus tard, ses petites hésitations et le moment de ses plans 
 d'avant (mêmes empreintes). Rien d'autre : la simulation, les règles et les empreintes de référence ne changent pas.
 Pour régler : `COSMIC_GOAT_HIST` (où va leur temps, leurs dégâts, leurs coups par pouvoir), `COSMIC_GOAT_DEATHS` (chaque
 mort : qui, quoi, où), `COSMIC_GOAT_EXPOSED` (chaque joueur pendant que le boss est à nu), `COSMIC_GOAT_MIRROR` (les
-miroirs de Skullmaw à chaque regard).
+miroirs de Skullmaw à chaque regard), `COSMIC_GOAT_GAZE` (2.86 : chaque regard traqueur le pas avant qu'il tire, les
+joueurs dans sa ligne).
 
 ### Avant / après, sans invincibilité (5 départs, 15 min)
 
@@ -3042,6 +3043,36 @@ phase 1 durait 340 s, le groupe usé avant sa cage thoracique (depuis sa phase 2
 89 % de sa vie ôtée, des combats de 255 à 335 s (avant : 3 / 8, 72 %, 362 à 568 s). Essayés et retirés : chercher
 l'ouverture de l'onde du cœur sans bouclier (sans effet : ils sont presque toujours en l'air), garder le bouclier pour
 ses Côtes-pièges et ses anneaux (`Plan::reserveShield` : 0 / 8).
+
+2.86 : **Skullmaw, ses regards traqueurs sautés**. Ce que la sonde a montré (`COSMIC_GOAT_GAZE` : chaque regard le pas
+avant qu'il tire, les joueurs dans sa ligne, ce qu'ils font) : ses rayons partent de ses yeux, haut au-dessus de l'arène,
+et passent presque à plat sur ses miroirs (pente 0,3 à 0,5) — le pas de côté sur la plaque ne s'appliquait jamais, ses
+porteurs n'avaient que leur bouclier (5 s de recharge, un regard toutes les 4,6 s en phase 2, 3,5 s en phase 3) ; et un
+saut commencé dans le vide était coupé par la navigation au premier pas en l'air (14 px de haut, le rayon les touchait au
+sommet). Maintenant (`Plan::jumpBeams`, Skullmaw seulement) :
+
+* un rayon moins raide que 1 pour 1 se **saute au moment où il tire**, aussi haut que sa pente le demande sur la largeur
+  du corps (la montée de leur propre saut : 0,12 à 0,16 s avant, au-dessus de la ligne jusqu'à 0,6 s après), tenu jusqu'en
+  haut (`Bot::beamJump` : la navigation ne le coupe plus) ; un porteur de miroir le saute depuis sa plaque quand son
+  bouclier n'est pas prêt, jamais pendant un regard de mort ; un joueur à genoux près d'une âme, sans bouclier, le saute
+  aussi (il reprend la réanimation après) ;
+* hors de son propre rayon, le côté choisi est celui dont la place la plus proche est hors de **tous** les rayons sur le
+  point de tirer (un pas de côté tombait dans celui d'un voisin) ; sur sa plaque, le bord hors de tous les rayons ;
+* un joueur envoyé à un miroir qu'il atteint avant l'éclair y va (il partait se cacher derrière une colonne à quelques pas
+  de lui : miroir manquant à l'éclair), bouclier levé s'il n'y est pas encore à l'éclair ;
+* voilé, rien à frapper : ceux qui n'ont pas de miroir attendent **loin de son crâne** (`Plan::hideArmoured`, 320 à
+  700 px de son corps) — près de lui, ses rayons partis de ses yeux se croisaient tous, et son regard balayant (qui vise
+  le plus proche) les prenait tous.
+
+Skullmaw : **6 / 8, 96 %** de sa vie ôtée (avant : 0 / 8, 70 %) ; sur les départs 9 à 16, 7 / 8, 99,9 %. Mesuré étape
+par étape (départs 1 à 8) : le côté libre de tous les rayons seul 0 / 8, 73 % ; plus le miroir atteint avant l'éclair
+1 / 8, 71 % ; plus le saut du porteur (saut coupé par la navigation, sans le savoir) 1 / 8, 74 % ; saut réglé sur la
+pente 3 / 8, 82 % ; le saut tenu jusqu'en haut 3 / 8, 90 % (départs 9 à 16 : 4 / 8, 96 %) ; loin de son crâne pendant
+le voile 6 / 8, 96 %. Gardé sans gain net mesuré : le réanimateur sans bouclier qui saute le rayon au lieu de rester à genoux
+dessous (16 départs : 1 / 16, 78 % ; sans lui 3 / 16, 77 %). Essayé ailleurs et retiré : attendre loin du corps blindé
+(`Plan::hideArmoured`) contre le Cœur (0 / 8, 44 % au lieu de 47 %), Pyroclast (0 / 8, 37 % au lieu de 39 %) et Graviton
+(0 / 8, 41 % au lieu de 39 % : aucun départ gagné de plus). Les autres combats ne changent
+pas (les sept autres, mêmes résultats départ par départ).
 
 ### Versions
 

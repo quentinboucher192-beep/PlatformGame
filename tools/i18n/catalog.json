@@ -63813,6 +63813,12 @@
    ]
   },
   {
+   "fr": "saute par-dessus le rayon",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "saute par-dessus le tir",
    "where": [
     "game/raid/RaidBots.cpp"
