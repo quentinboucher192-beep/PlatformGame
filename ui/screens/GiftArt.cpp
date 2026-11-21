@@ -79,7 +79,7 @@ void star(Renderer& r, Vec2 c, float radius, float rot, Color col, BlendMode ble
 }
 
 void drawBox(GameServices& g, const std::string& wrap, Vec2 base, float px, const BoxPose& p) {
-    TexturePtr tex = g.app.resources().texture(gifts::kWrapsTexture);
+    TexturePtr tex = g.app.resources().texture(p.parcel ? gifts::kParcelsTexture : gifts::kWrapsTexture);
     if (!tex) return;
     const int w = std::max(0, gifts::wrapIndex(wrap));
     const float cw = gifts::kWrapCell * px * p.sx, ch = gifts::kWrapCell * px * p.sy;
@@ -97,8 +97,8 @@ void drawBox(GameServices& g, const std::string& wrap, Vec2 base, float px, cons
     r.drawTexture(*tex, &lsrc, lid, p.tint, BlendMode::Alpha, false, false, p.rot * kDeg, &lpivot);
 }
 
-void drawLid(GameServices& g, const std::string& wrap, Vec2 base, float px, Vec2 offset, float rot, float alpha) {
-    TexturePtr tex = g.app.resources().texture(gifts::kWrapsTexture);
+void drawLid(GameServices& g, const std::string& wrap, Vec2 base, float px, Vec2 offset, float rot, float alpha, bool parcel) {
+    TexturePtr tex = g.app.resources().texture(parcel ? gifts::kParcelsTexture : gifts::kWrapsTexture);
     if (!tex || alpha <= 0.0f) return;
     const int w = std::max(0, gifts::wrapIndex(wrap));
     const float cw = gifts::kWrapCell * px;
@@ -153,16 +153,24 @@ void drawReward(GameServices& g, OnlineUi* online, const gifts::Reward& rw, Vec2
 }
 
 void drawGiftIcon(GameServices& g, OnlineUi* online, const gifts::Gift& gift, const Rect& box, float t) {
-    if (gift.opened && gift.reward) {
+    if (gift.opened && gift.reward && !gift.parcel) {
         drawReward(g, online, *gift.reward, box.center(), box.w * 0.8f, t, false);
         return;
     }
     Renderer& r = g.app.renderer();
     const Color light = gifts::wrapLight(gift.wrap);
     const float phase = static_cast<float>(gift.id % 97);
-    r.drawGlow({box.center().x, box.y + box.h * 0.6f}, box.w * 0.5f, light.withAlphaF(0.45f));
+    r.drawGlow({box.center().x, box.y + box.h * 0.6f}, box.w * 0.5f, light.withAlphaF(gift.opened ? 0.3f : 0.45f));
     const float px = box.w / 48.0f;
     BoxPose pose;
+    pose.parcel = gift.parcel;
+    pose.open = gift.opened;
+    if (gift.opened) {  // an opened parcel: its box, open, its light still in it
+        const Vec2 base{box.center().x, box.y + box.h * 0.92f};
+        r.drawGlow({base.x, base.y - mouthHeight(true) * px}, box.w * 0.3f, light.withAlphaF(0.5f));
+        drawBox(g, gift.wrap, base, px, pose);
+        return;
+    }
     pose.rot = std::sin(t * 5.0f + phase) * 0.03f;
     drawBox(g, gift.wrap, {box.center().x, box.y + box.h * 0.92f + std::sin(t * 2.4f + phase) * box.h * 0.035f}, px, pose);
 }

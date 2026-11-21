@@ -148,6 +148,23 @@ DetailLayout detailLayout(UIContext& ui, const Rect& panel, const DetailTexts& t
     return L;
 }
 
+ContentRowLayout contentRowLayout(UIContext& ui, const Rect& row, const std::string& name, const std::string& kind, const std::string& equip) {
+    ContentRowLayout L;
+    const float isz = std::min(ui.s(54), row.h - ui.s(10));
+    L.icon = {row.x + ui.s(8), row.center().y - isz * 0.5f, isz, isz};
+    // « Équiper » at the right, as wide as its label needs (at most 42 % of the row, its label smaller then).
+    const float pad = ui.s(30), maxW = row.w * 0.42f;
+    L.equipSize = ui.fitFont(equip, FontFace::Bold, 16, maxW - pad, 0.65f);
+    const float ew = std::min(maxW, ui.text().measure(equip, FontFace::Bold, ui.s(L.equipSize)).x + pad);
+    L.equip = {row.right() - ui.s(10) - ew, row.center().y - ui.s(19), ew, ui.s(38)};
+    const float x = L.icon.right() + ui.s(12), room = L.equip.x - ui.s(12) - x;
+    L.name = fitText(ui, name, FontFace::Bold, 18, room, 0.7f);
+    L.name.box = {x, row.y + row.h * 0.34f - ui.s(12), room, ui.s(24)};
+    L.kind = fitText(ui, kind, FontFace::Body, 14, room, 0.75f);
+    L.kind.box = {x, row.y + row.h * 0.72f - ui.s(10), room, ui.s(20)};
+    return L;
+}
+
 // ------------------------------------------------------------ the opening
 
 RevealLayout revealLayout(UIContext& ui, const RevealTexts& t) {

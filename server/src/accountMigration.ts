@@ -426,6 +426,7 @@ export async function performMigration(ctx: Ctx, plan: MigrationPlan): Promise<M
             st("DELETE FROM player_won_rewards WHERE player_id = ?1"),
             // Gifts (gifts.ts): those received follow, the wrapped ones still to open.
             st("UPDATE gifts SET recipient_id = ?2 WHERE recipient_id = ?1"),
+            st("UPDATE gift_parcels SET recipient_id = ?2 WHERE recipient_id = ?1"),
         );
         const looks = await db
             .prepare("SELECT player_id, suit, trail, frame, title, victory FROM player_cosmetics WHERE player_id IN (?1, ?2)")

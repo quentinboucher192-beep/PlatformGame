@@ -6,9 +6,11 @@
 //      eleven wraps;
 //   2. the players: a search, « En ligne », « Tous », the administrator's clan, « Choisis »; each with the rewards
 //      chosen it already owns (« possède déjà… », as the SERVER counts it: they are skipped);
-//   3. the message (140 characters), the summary « N récompenses × M joueurs = K cadeaux · Ignoré : … »,
-//      « Aperçu de l'ouverture » (the real scene) and « Envoyer K cadeaux » after a confirmation; then
-//      « Derniers envois »: each send with its gifts opened, and its unopened gifts withdrawn on demand.
+//   3. the message (140 characters), with two rewards or more « N cadeaux séparés » or « 1 colis de N cadeaux »
+//      (one parcel per player, what it holds hidden until opened), the summary « N récompenses × M joueurs =
+//      K cadeaux (or colis) · Ignoré : … », « Aperçu de l'ouverture » (the real scene) and « Envoyer K cadeaux »
+//      after a confirmation; then « Derniers envois »: each send (« Colis (N) » for parcels) with its gifts
+//      opened, and its unopened gifts or parcels withdrawn on demand.
 // The server checks the role on every request and writes each send and each withdrawal to the Journal.
 
 #include <functional>
@@ -50,7 +52,9 @@ private:
     void loadChosenOwned();
     void loadHistory();
     void send();
-    void cancelSend(int64_t id);
+    void cancelSend(int64_t id, bool parcels);
+    /// One parcel per player is chosen (and there are at least two rewards to put in it).
+    bool bundled() const { return bundle_ && rewards_.size() >= 2; }
     std::string rewardsQuery() const;
     bool isChosen(const std::string& id) const;
     void toggle(const Json& player);
@@ -89,6 +93,7 @@ private:
 
     // 3. the message and the send
     std::string message_;
+    bool bundle_ = false;  // « 1 colis de N cadeaux » (with two rewards or more) rather than N separate gifts
     bool confirm_ = false, sending_ = false;
     Json history_ = Json::array();
     bool historyLoaded_ = false, historyMore_ = false;

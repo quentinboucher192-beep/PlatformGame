@@ -126,8 +126,32 @@ un message facultatif (140 caractères).
   confirmation. *Derniers envois* : chaque envoi avec ses cadeaux ouverts ; *Retirer* annule ceux qui ne
   sont pas encore ouverts. Chaque envoi et chaque retrait sont inscrits au Journal (« Cadeaux »).
 
-Routes et règles : [online/API.md §8.10 sexies](online/API.md#810-sexies-cadeaux), migration
-`server/migrations/0205_gifts.sql`.
+### Colis
+
+Avec **deux récompenses ou plus**, l'administrateur choisit « **N cadeaux séparés** » ou « **1 colis de N
+cadeaux** ». Un colis, c'est **un seul paquet par joueur** qui contient les récompenses choisies qu'il ne
+possède pas encore (s'il les a toutes, il est ignoré ; s'il n'en reste qu'une, c'est quand même un colis :
+le joueur ne peut pas le deviner). Le résumé devient « … = K colis », le bouton *Envoyer K colis*, la
+confirmation aussi ; *Aperçu de l'ouverture* joue le colis entier. Dans *Derniers envois*, la ligne commence
+par « Colis (N) » et ses comptes (ouverts, retirés) sont des colis ; *Retirer* reprend les colis pas encore
+ouverts.
+
+* **Côté joueur** : « **Colis de X** », dans une boîte plus grande, ficelée dans les deux sens (le même
+  emballage, dessiné par `gift_wraps.py` : `assets/ui/gifts/parcels.png`). Son contenu est une surprise et
+  **aucun nombre** n'apparaît nulle part (ni dans la liste, ni dans la notification, qui compte le colis
+  pour un, ni pendant l'ouverture). L'ouverture joue la scène habituelle pour le premier objet ; chaque
+  objet suivant sort de la même boîte, déjà ouverte, avec son halo, après une validation (*Suivant*,
+  Entrée / A ou un clic). Chaque objet a son propre *Équiper maintenant* (Y) tant qu'il est montré ; pas de
+  compteur « 2 sur 5 ». Après le dernier : « **Le colis est vide** », *Cadeau suivant* s'il en reste,
+  *Fermer*. *Plus tard* en plein colis : le reste est déjà dans la collection (le serveur ouvre le colis
+  en entier), et la liste montre le colis ouvert avec tout ce qu'il contenait, chacun avec *Équiper* ;
+  *Revoir l'ouverture* rejoue tout le colis.
+* **Côté serveur** : un colis n'écrit aucun cadeau avant d'être ouvert (aucun identifiant ne trahit ce
+  qu'il contient) ; son ouverture écrit un cadeau ouvert par récompense, dans l'ordre, et accorde chacun par
+  le même mécanisme, une seule fois (idempotent).
+
+Routes et règles : [online/API.md §8.10 sexies](online/API.md#810-sexies-cadeaux), migrations
+`server/migrations/0205_gifts.sql` et `0210_gift_parcels.sql` (colis).
 
 ## Musiques
 

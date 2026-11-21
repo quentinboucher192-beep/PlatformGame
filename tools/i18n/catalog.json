@@ -410,6 +410,12 @@
    ]
   },
   {
+   "fr": "1 colis de {0} cadeaux",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "1 défi {0}",
    "where": [
     "ui/screens/ChallengeRewardsUi.cpp"
@@ -11729,6 +11735,12 @@
    ]
   },
   {
+   "fr": "Ces colis étaient déjà ouverts.",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "Ces conditions peuvent évoluer. Une nouvelle version vous sera présentée et devra être acceptée lors de la création d'un nouveau compte.",
    "where": [
     "data/online/terms_fr.txt"
@@ -14439,6 +14451,54 @@
    "fr": "Col des blizzards",
    "where": [
     "data/levels/glacior_01.json"
+   ]
+  },
+  {
+   "fr": "Colis ({0}) · {1}",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Colis de {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis introuvable (il a peut-être été retiré).",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "Colis introuvable.",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
+   "fr": "Colis ouvert",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis ouvert · {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis · emballage {0}",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Colis · emballage {0} · aperçu",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -19208,6 +19268,12 @@
    ]
   },
   {
+   "fr": "De {0} · tout est dans votre collection",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "De {0} · {1}",
    "where": [
     "ui/screens/GiftsScene.cpp"
@@ -19215,6 +19281,12 @@
   },
   {
    "fr": "De {0} · {1} · ajouté à votre collection",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "De {0} · {1} · tout est dans votre collection",
    "where": [
     "ui/screens/GiftsScene.cpp"
    ]
@@ -26607,6 +26679,7 @@
     "ui/screens/CommunityPublishScene.cpp",
     "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GhostOptionsScene.cpp",
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/OnlineMigration.cpp",
     "ui/screens/OnlineSettingsScene.cpp",
     "ui/screens/OnlineThreadScene.cpp",
@@ -31198,6 +31271,12 @@
   },
   {
    "fr": "Hors ligne : le cadeau vous attend, il s'ouvrira une fois connecté.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Hors ligne : le colis vous attend, il s'ouvrira une fois connecté.",
    "where": [
     "ui/screens/GiftsScene.cpp"
    ]
@@ -37334,6 +37413,18 @@
    "fr": "Le coffre de phase !",
    "where": [
     "data/levels/sylvanox_01.json"
+   ]
+  },
+  {
+   "fr": "Le colis est vide",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Le colis n'a pas pu être ouvert.",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -49451,6 +49542,12 @@
    ]
   },
   {
+   "fr": "Ouverture du colis…",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
    "fr": "Ouverture du replay…",
    "where": [
     "ui/screens/DownloadedReplaysUi.cpp"
@@ -49542,6 +49639,12 @@
   },
   {
    "fr": "Ouvrir le cadeau",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Ouvrir le colis",
    "where": [
     "ui/screens/GiftsScene.cpp"
    ]
@@ -67089,7 +67192,14 @@
   {
    "fr": "Suivant",
    "where": [
+    "ui/screens/GiftsScene.cpp",
     "ui/screens/PowerGuideScene.cpp"
+   ]
+  },
+  {
+   "fr": "suivant",
+   "where": [
+    "ui/screens/GiftsScene.cpp"
    ]
   },
   {
@@ -72676,6 +72786,12 @@
    "fr": "Un clic sur un objet groupé sélectionne tout son groupe (Alt+clic : l'objet seul).",
    "where": [
     "editors/level_editor/LevelEditorPanels.cpp"
+   ]
+  },
+  {
+   "fr": "Un colis par joueur · emballage {0} · son contenu reste une surprise",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -80399,6 +80515,12 @@
    ]
   },
   {
+   "fr": "{0} cadeaux séparés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "{0} candidature · {1} invitation envoyée",
    "where": [
     "ui/screens/ClanScene.cpp"
@@ -80473,6 +80595,36 @@
    "fr": "{0} Cliquez pour réessayer.",
    "where": [
     "ui/screens/MainMenuScene.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis envoyé",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis envoyés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis retiré",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} colis retirés",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
