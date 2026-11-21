@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
-"""The gift wraps of « Cadeaux » (docs/COLLECTION.md « Cadeaux »): eleven boxes in pixel art.
+"""The gift wraps of « Cadeaux » (docs/COLLECTION.md « Cadeaux »): eleven boxes in pixel art, and the same eleven
+wraps as parcels (« Colis »: a wider, taller box tied both ways, with a bigger bow).
 
-One sheet, deterministic (fixed seeds, Pillow's ImageDraw on exact pixels, no smoothing):
+Two sheets, deterministic (fixed seeds, Pillow's ImageDraw on exact pixels, no smoothing):
 
 * ui/gifts/wraps.png: one row of 80 x 40 per wrap, in the order of WRAPS below (the server's GIFT_WRAPS):
     x  0..39  the body of the box (its ribbon down the middle, its pattern);
     x 40..79  the lid with its bow, drawn 14 px higher than the body (`lid_dy`) when the box is closed.
 * ui/gifts/wraps.json: the cells of each wrap ([x, y, w, h] of the body and of the lid), the lid's offset, and the
   colour of its light (the rays, the halo and the sparks of the opening scene; the box's own colours are in the PNG).
+* ui/gifts/parcels.png and parcels.json: the parcels, in the same cells, order and lid offset; `top`: the row of
+  the body's top edge (the mouth the items rise from), 12 instead of the gift's 18.
 
 Each wrap: a box colour with its shadow, dark edge and light edge, a ribbon (with its shadow and light), and a
 pattern (stars, dots, stripes, galaxy, snow, cracks, gears, a heart) in its own colour.
 
-    python3 tools/assetgen/environment/gift_wraps.py           # writes the two files
+    python3 tools/assetgen/environment/gift_wraps.py           # writes the four files
     python3 tools/assetgen/environment/gift_wraps.py --check   # 0: the files are the generator's
 
-`--check` renders the sheet twice (the same pixels) and compares the JSON bytes and the PNG pixels with the files
+`--check` renders each sheet twice (the same pixels) and compares the JSON bytes and the PNG pixels with the files
 on disk (tests/test_gifts.cpp runs it)."""
 import io
 import json
@@ -30,8 +33,11 @@ REPO = os.path.dirname(os.path.dirname(os.path.dirname(HERE)))
 ASSETS = os.path.join(REPO, "assets")
 PNG = "ui/gifts/wraps.png"
 MANIFEST = "ui/gifts/wraps.json"
+PARCEL_PNG = "ui/gifts/parcels.png"
+PARCEL_MANIFEST = "ui/gifts/parcels.json"
 CELL = 40
 LID_DY = -14
+PARCEL_TOP = 12
 
 # id: (box, shadow, dark, light, ribbon, ribbon shadow, ribbon light, pattern, pattern colour, light of the scene)
 WRAPS = [
@@ -141,48 +147,108 @@ def box(p):
     return body, lid
 
 
-def render():
+def parcel(p):
+    """The body (40 x 40) and the lid with its bow (40 x 40) of one wrap as a parcel: wider and taller than the
+    gift's box, tied both ways, corner plates, a bigger bow."""
+    b, bs, bd, bl, r, rs, rl, kind, pc, _light = p
+    b, bs, bd, bl, r, rs, rl, pc = map(C, (b, bs, bd, bl, r, rs, rl, pc))
+    body = Image.new("RGBA", (CELL, CELL), (0, 0, 0, 0))
+    d = ImageDraw.Draw(body)
+    x0, y0, x1, y1 = 2, PARCEL_TOP, 37, 38
+    d.rectangle([x0, y0, x1, y1], fill=bd)
+    d.rectangle([x0 + 1, y0, x1 - 1, y1 - 1], fill=b)
+    d.rectangle([x0 + 1, y0 + 16, x1 - 1, y1 - 1], fill=bs)
+    pattern(d, kind, pc, x0 + 1, y0 + 1, x1 - 1, y1 - 1, 11)
+    d.rectangle([x0 + 1, y0, x0 + 2, y1 - 2], fill=bl)
+    d.rectangle([x1 - 3, y0, x1 - 1, y1 - 1], fill=bs)
+    # The ribbon both ways: down the middle and around the box.
+    d.rectangle([x0 + 1, 23, x1 - 1, 26], fill=r)
+    d.rectangle([x0 + 1, 23, x1 - 1, 23], fill=rl)
+    d.rectangle([x0 + 1, 26, x1 - 1, 26], fill=rs)
+    d.rectangle([18, y0, 21, y1 - 1], fill=r)
+    d.rectangle([21, y0, 21, y1 - 1], fill=rs)
+    d.rectangle([18, y0, 18, y1 - 1], fill=rl)
+    # Corner plates.
+    for (cx, cy) in [(x0 + 1, y1 - 4), (x1 - 4, y1 - 4)]:
+        d.rectangle([cx, cy, cx + 3, cy + 3], fill=bd)
+        d.point([(cx + 1, cy + 1)], fill=bl)
+    d.rectangle([x0, y0, x1, y0], fill=bd)
+    lid = Image.new("RGBA", (CELL, CELL), (0, 0, 0, 0))
+    d = ImageDraw.Draw(lid)
+    lx0, ly0, lx1, ly1 = 0, 18, 39, 27
+    d.rectangle([lx0, ly0, lx1, ly1], fill=bd)
+    d.rectangle([lx0 + 1, ly0 + 1, lx1 - 1, ly1 - 1], fill=b)
+    pattern(d, kind if kind not in ("heart", "snow", "gears", "stars") else "none", pc, lx0 + 1, ly0 + 1, lx1 - 1, ly1 - 1, 5)
+    d.rectangle([lx0 + 1, ly0 + 1, lx1 - 1, ly0 + 2], fill=bl)
+    d.rectangle([lx0 + 1, ly1 - 2, lx1 - 1, ly1 - 1], fill=bs)
+    d.rectangle([18, ly0, 21, ly1], fill=r)
+    d.rectangle([18, ly0, 18, ly1], fill=rl)
+    for side in (-1, 1):
+        cx = 19.5 + side * 8
+        d.ellipse([cx - 7, 5, cx + 7, 19], fill=rs)
+        d.ellipse([cx - 6, 6, cx + 6, 18], fill=r)
+        d.ellipse([cx - 3 + side, 10, cx + 3 + side, 14], fill=rs)
+        d.point([(int(cx - 3 * side), 7), (int(cx - 4 * side), 8)], fill=rl)
+    d.rectangle([16, 10, 23, 19], fill=rs)
+    d.rectangle([17, 11, 22, 18], fill=r)
+    d.point([(17, 11), (18, 12)], fill=rl)
+    return body, lid
+
+
+def render(draw=box, png_path=PNG, extra=None):
     sheet = Image.new("RGBA", (2 * CELL, CELL * len(WRAPS)), (0, 0, 0, 0))
     wraps = []
     for i, (wid, p) in enumerate(WRAPS):
-        body, lid = box(p)
+        body, lid = draw(p)
         y = i * CELL
         sheet.paste(body, (0, y))
         sheet.paste(lid, (CELL, y))
         wraps.append({"id": wid, "body": [0, y, CELL, CELL], "lid": [CELL, y, CELL, CELL], "light": list(C(p[9]))})
-    manifest = {"texture": PNG, "cell": CELL, "lid_dy": LID_DY, "wraps": wraps,
-                "comment": "Written by tools/assetgen/environment/gift_wraps.py: never edit by hand."}
+    manifest = {"texture": png_path, "cell": CELL, "lid_dy": LID_DY}
+    manifest.update(extra or {})
+    manifest["wraps"] = wraps
+    manifest["comment"] = "Written by tools/assetgen/environment/gift_wraps.py: never edit by hand."
     buf = io.BytesIO()
     sheet.save(buf, format="PNG", optimize=False)
     text = json.dumps(manifest, ensure_ascii=False, indent=1) + "\n"
     return buf.getvalue(), text, sheet
 
 
+# The two sheets: (how to draw one wrap, the PNG, the manifest, what the manifest adds).
+SHEETS = [
+    (box, PNG, MANIFEST, None),
+    (parcel, PARCEL_PNG, PARCEL_MANIFEST, {"top": PARCEL_TOP}),
+]
+
+
 def main():
-    png, text, sheet = render()
-    if len(sys.argv) > 1 and sys.argv[1] == "--check":
-        _png2, text2, sheet2 = render()
-        if text != text2 or sheet.tobytes() != sheet2.tobytes():
-            print("gift_wraps: not deterministic")
-            return 1
-        try:
-            with open(os.path.join(ASSETS, MANIFEST), encoding="utf-8") as f:
-                on_disk = f.read()
-            disk = Image.open(os.path.join(ASSETS, PNG)).convert("RGBA")
-        except OSError as e:
-            print("gift_wraps: %s" % e)
-            return 1
-        if on_disk != text or disk.size != sheet.size or disk.tobytes() != sheet.tobytes():
-            print("gift_wraps: the files on disk are not the generator's (run it)")
-            return 1
+    check = len(sys.argv) > 1 and sys.argv[1] == "--check"
+    for draw, png_path, manifest_path, extra in SHEETS:
+        png, text, sheet = render(draw, png_path, extra)
+        if check:
+            _png2, text2, sheet2 = render(draw, png_path, extra)
+            if text != text2 or sheet.tobytes() != sheet2.tobytes():
+                print("gift_wraps: not deterministic (%s)" % png_path)
+                return 1
+            try:
+                with open(os.path.join(ASSETS, manifest_path), encoding="utf-8") as f:
+                    on_disk = f.read()
+                disk = Image.open(os.path.join(ASSETS, png_path)).convert("RGBA")
+            except OSError as e:
+                print("gift_wraps: %s" % e)
+                return 1
+            if on_disk != text or disk.size != sheet.size or disk.tobytes() != sheet.tobytes():
+                print("gift_wraps: the files on disk are not the generator's (run it): %s" % png_path)
+                return 1
+            continue
+        os.makedirs(os.path.dirname(os.path.join(ASSETS, png_path)), exist_ok=True)
+        with open(os.path.join(ASSETS, png_path), "wb") as f:
+            f.write(png)
+        with open(os.path.join(ASSETS, manifest_path), "w", encoding="utf-8", newline="\n") as f:
+            f.write(text)
+        print("wrote assets/%s and assets/%s" % (png_path, manifest_path))
+    if check:
         print("gift_wraps: ok")
-        return 0
-    os.makedirs(os.path.dirname(os.path.join(ASSETS, PNG)), exist_ok=True)
-    with open(os.path.join(ASSETS, PNG), "wb") as f:
-        f.write(png)
-    with open(os.path.join(ASSETS, MANIFEST), "w", encoding="utf-8", newline="\n") as f:
-        f.write(text)
-    print("wrote assets/%s and assets/%s" % (PNG, MANIFEST))
     return 0
 
 

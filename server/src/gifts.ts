@@ -10,7 +10,11 @@
 //     through the existing ownership: an item goes to player_won_rewards (challenge_id « gift:<id> », read by
 //     GET /players/me/rewards and by what may be worn online), a badge to a claimed raid_reward_grants row
 //     (event « gift:<id> »: the achievement the player may then declare). One conditional UPDATE marks it
-//     opened; the grants are INSERT OR IGNORE: opening twice grants nothing more.
+//     opened; the grants are INSERT OR IGNORE: opening twice grants nothing more;
+//   - « Colis » (migration 0210): with `bundle`, a send gives each recipient ONE parcel holding the rewards they do
+//     not own yet. A parcel is one wrapped entry: neither what it holds nor how many are known before it is opened
+//     (its gifts are only written then, so no id betrays them); opening it writes one opened gift per reward, in
+//     order, and grants each the same way, once.
 import achievementCatalog from "./achievementCatalog.json";
 import cosmeticCatalog from "./cosmeticCatalog.json";
 import { audit, requireAuth } from "./auth";
@@ -145,7 +149,12 @@ export async function giftOwnership(db: D1Database, players: string[], rewards: 
             for (const b of badges) if (RAID_ACHIEVEMENTS[b.id] === r.reward) mark(r.player_id, keyOf(b), "owned");
     }
     const waiting = await db
-        .prepare(`SELECT DISTINCT recipient_id, reward_kind, reward_id FROM gifts WHERE ${IN_JSON("recipient_id", "?1")} AND opened_at IS NULL AND cancelled_at IS NULL`)
+        .prepare(
+            `SELECT DISTINCT recipient_id, reward_kind, reward_id FROM gifts WHERE ${IN_JSON("recipient_id", "?1")} AND opened_at IS NULL AND cancelled_at IS NULL
+             UNION
+             SELECT p.recipient_id, json_extract(j.value, '$.kind'), json_extract(j.value, '$.id') FROM gift_parcels p, json_each(p.rewards) j
+             WHERE ${IN_JSON("p.recipient_id", "?1")} AND p.opened_at IS NULL AND p.cancelled_at IS NULL`,
+        )
         .bind(ids)
         .all<{ recipient_id: string; reward_kind: string; reward_id: string }>();
     const wanted = new Set(rewards.map(keyOf));
@@ -277,9 +286,12 @@ interface Skipped {
 }
 
 /**
- * POST /admin/gifts {rewards: [{kind, id}], players: [ids], wrap, message?}: one gift per reward and player,
- * except for those who already own the reward or have it waiting (`skipped`). One D1 batch: the send, its
- * gifts, the recipients' notification (« gift », merged while unread). 201 {send, created, skipped};
+ * POST /admin/gifts {rewards: [{kind, id}], players: [ids], wrap, message?, bundle?}: one gift per reward and
+ * player, except for those who already own the reward or have it waiting (`skipped`). With `bundle: true`, ONE
+ * parcel per player instead, holding the rewards not skipped for them (a player for whom every reward is skipped
+ * gets none; one reward left is still a parcel: its recipient cannot tell). One D1 batch: the send, its gifts or
+ * parcels, the recipients' notification (« gift », merged while unread; a parcel counts as one). 201 {send,
+ * created, parcels, skipped} (`created`: the rewards given; `parcels`: how many parcels, 0 without `bundle`);
  * 409 NOTHING_TO_SEND when every pair is skipped. The Journal keeps it (admin_gift_sent).
  */
 export async function adminSend(ctx: Ctx): Promise<Response> {
@@ -287,9 +299,10 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
     await rateLimit(ctx, RULES.adminWrite, "player:" + auth.player.id);
     await rateLimit(ctx, RULES.giftSend, "player:" + auth.player.id);
     const body = await readJsonObject(ctx, 16 * 1024);
-    const v = new Validator(body, ["rewards", "players", "wrap", "message"]);
+    const v = new Validator(body, ["rewards", "players", "wrap", "message", "bundle"]);
     const rewards = parseRewards(v, body.rewards);
     const wrap = v.oneOf("wrap", GIFT_WRAPS);
+    const bundle = v.bool("bundle", { optional: true }) ?? false;
     const rawMessage = body.message === undefined || body.message === null ? "" : body.message;
     let message = "";
     if (typeof rawMessage !== "string") v.fail("message", "doit être une chaîne");
@@ -317,6 +330,7 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
     const skipped: Skipped[] = [];
     const per = new Map<string, string[]>(); // reward key → recipients
     const countOf = new Map<string, number>(); // recipient → gifts
+    const parcelOf = new Map<string, GiftReward[]>(); // recipient → the rewards of its parcel, in order
     for (const r of rewards) {
         const to: string[] = [];
         for (const p of players) {
@@ -325,6 +339,7 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
             else {
                 to.push(p);
                 countOf.set(p, (countOf.get(p) ?? 0) + 1);
+                (parcelOf.get(p) ?? parcelOf.set(p, []).get(p)!).push({ kind: r.kind, id: r.id });
             }
         }
         per.set(keyOf(r), to);
@@ -333,12 +348,24 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
     if (created === 0) throw Errors.conflict("NOTHING_TO_SEND", "Chaque joueur choisi possède déjà ces récompenses.", { skipped });
     const now = nowIso();
     const send = await db
-        .prepare("INSERT INTO gift_sends (sender_id, sender_name, wrap, message, rewards, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6) RETURNING id")
-        .bind(auth.player.id, auth.player.username, wrap!, message, JSON.stringify(rewards.map((r) => ({ kind: r.kind, id: r.id }))), now)
+        .prepare("INSERT INTO gift_sends (sender_id, sender_name, wrap, message, rewards, created_at, bundle) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) RETURNING id")
+        .bind(auth.player.id, auth.player.username, wrap!, message, JSON.stringify(rewards.map((r) => ({ kind: r.kind, id: r.id }))), now, bundle ? 1 : 0)
         .first<{ id: number }>();
     const sendId = send!.id;
     const stmts: D1PreparedStatement[] = [];
-    for (const r of rewards) {
+    if (bundle) {
+        // One parcel per recipient (in the order of `players`), its rewards in the order of the send.
+        const contents = players.filter((p) => parcelOf.has(p)).map((p) => ({ to: p, rewards: parcelOf.get(p)! }));
+        stmts.push(
+            db
+                .prepare(
+                    `INSERT INTO gift_parcels (send_id, recipient_id, sender_id, wrap, message, rewards, created_at)
+                     SELECT ?1, json_extract(j.value, '$.to'), ?2, ?3, ?4, json_extract(j.value, '$.rewards'), ?5 FROM json_each(?6) j ORDER BY j.key`,
+                )
+                .bind(sendId, auth.player.id, wrap!, message, now, JSON.stringify(contents)),
+        );
+    }
+    for (const r of bundle ? [] : rewards) {
         const to = per.get(keyOf(r))!;
         if (to.length === 0) continue;
         stmts.push(
@@ -350,9 +377,13 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
                 .bind(sendId, auth.player.id, r.kind, r.id, wrap!, message, now, JSON.stringify(to)),
         );
     }
-    // The notification « gift »: one per recipient, merged with an unread one (its count grows by the gifts).
+    // The notification « gift »: one per recipient, merged with an unread one (its count grows by the gifts; a
+    // parcel counts as one, whatever it holds).
     const byCount = new Map<number, string[]>();
-    for (const [p, n] of countOf) (byCount.get(n) ?? byCount.set(n, []).get(n)!).push(p);
+    for (const [p, count] of countOf) {
+        const n = bundle ? 1 : count;
+        (byCount.get(n) ?? byCount.set(n, []).get(n)!).push(p);
+    }
     const data = JSON.stringify({ send_id: sendId });
     for (const [n, ids] of byCount) {
         const list = JSON.stringify(ids);
@@ -388,11 +419,12 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
             wrap,
             recipients: recipients.length,
             gifts: created,
+            ...(bundle ? { parcels: recipients.length } : {}),
             skipped: skipped.length,
             names: recipients.slice(0, 5).map((p) => names.get(p)),
         },
     });
-    return json(ctx, { send: await sendView(db, sendId), created, skipped }, { status: 201 });
+    return json(ctx, { send: await sendView(db, sendId), created, parcels: bundle ? recipients.length : 0, skipped }, { status: 201 });
 }
 
 interface SendRow {
@@ -404,6 +436,7 @@ interface SendRow {
     message: string;
     rewards: string;
     created_at: string;
+    bundle: number;
     total: number;
     opened: number;
     cancelled: number;
@@ -411,12 +444,16 @@ interface SendRow {
     names: string | null;
 }
 
-const SEND_SQL = `SELECT s.id, s.sender_id, s.sender_name, p.username AS sender_username, s.wrap, s.message, s.rewards, s.created_at,
-        COUNT(g.id) AS total, COALESCE(SUM(g.opened_at IS NOT NULL), 0) AS opened, COALESCE(SUM(g.cancelled_at IS NOT NULL), 0) AS cancelled,
+// A send's units: its gifts, or its parcels (the gifts a parcel wrote once opened are not counted again).
+const SEND_SQL = `SELECT s.id, s.sender_id, s.sender_name, p.username AS sender_username, s.wrap, s.message, s.rewards, s.created_at, s.bundle,
+        COUNT(g.recipient_id) AS total, COALESCE(SUM(g.opened_at IS NOT NULL), 0) AS opened, COALESCE(SUM(g.cancelled_at IS NOT NULL), 0) AS cancelled,
         COUNT(DISTINCT g.recipient_id) AS recipients,
-        (SELECT json_group_array(username) FROM (SELECT DISTINCT q.username FROM gifts h JOIN players q ON q.id = h.recipient_id
-                                                 WHERE h.send_id = s.id ORDER BY q.username_normalized LIMIT 6)) AS names
-    FROM gift_sends s LEFT JOIN players p ON p.id = s.sender_id LEFT JOIN gifts g ON g.send_id = s.id`;
+        (SELECT json_group_array(username) FROM (SELECT DISTINCT q.username, q.username_normalized FROM
+                                                     (SELECT recipient_id FROM gifts WHERE send_id = s.id UNION SELECT recipient_id FROM gift_parcels WHERE send_id = s.id) h
+                                                 JOIN players q ON q.id = h.recipient_id ORDER BY q.username_normalized LIMIT 6)) AS names
+    FROM gift_sends s LEFT JOIN players p ON p.id = s.sender_id
+    LEFT JOIN (SELECT send_id, recipient_id, opened_at, cancelled_at FROM gifts WHERE parcel_id IS NULL
+               UNION ALL SELECT send_id, recipient_id, opened_at, cancelled_at FROM gift_parcels) g ON g.send_id = s.id`;
 
 function parseList(text: string | null): unknown[] {
     try {
@@ -434,6 +471,8 @@ function sendJson(r: SendRow) {
         sender: { id: r.sender_id, username: r.sender_username ?? r.sender_name },
         wrap: r.wrap,
         message: r.message,
+        // A send of parcels (« Colis (N) »): `total`, `opened`, `cancelled` and `waiting` count its parcels.
+        bundle: r.bundle === 1,
         rewards: parseList(r.rewards)
             .map((x) => {
                 const o = (x ?? {}) as Record<string, unknown>;
@@ -465,7 +504,7 @@ export async function adminHistory(ctx: Ctx): Promise<Response> {
     return json(ctx, { sends: rows.results.slice(0, page.limit).map(sendJson), has_more: rows.results.length > page.limit, offset: page.offset });
 }
 
-/** POST /admin/gifts/{sendId}/cancel: withdraws the gifts of a send not opened yet (the opened ones stay). */
+/** POST /admin/gifts/{sendId}/cancel: withdraws the gifts (or the parcels) of a send not opened yet (the opened ones stay). */
 export async function adminCancel(ctx: Ctx): Promise<Response> {
     const auth = await requireAdminRole(ctx);
     await rateLimit(ctx, RULES.adminWrite, "player:" + auth.player.id);
@@ -474,12 +513,24 @@ export async function adminCancel(ctx: Ctx): Promise<Response> {
     const db = ctx.env.DB;
     const before = await sendView(db, id);
     if (!before) throw Errors.notFound("GIFT_SEND_NOT_FOUND", "Envoi introuvable.");
-    const res = await db.prepare("UPDATE gifts SET cancelled_at = ?2 WHERE send_id = ?1 AND opened_at IS NULL AND cancelled_at IS NULL").bind(id, nowIso()).run();
-    const cancelled = res.meta.changes ?? 0;
+    const now = nowIso();
+    const res = await db.batch([
+        db.prepare("UPDATE gifts SET cancelled_at = ?2 WHERE send_id = ?1 AND opened_at IS NULL AND cancelled_at IS NULL").bind(id, now),
+        db.prepare("UPDATE gift_parcels SET cancelled_at = ?2 WHERE send_id = ?1 AND opened_at IS NULL AND cancelled_at IS NULL").bind(id, now),
+    ]);
+    const cancelled = res.reduce((n, x) => n + (x.meta.changes ?? 0), 0);
     if (cancelled > 0)
         await audit(ctx, auth.player.id, "admin_gift_cancelled", {
             by_username: auth.player.username,
-            gift: { send_id: id, rewards: before.rewards, wrap: before.wrap, recipients: before.recipients, gifts: before.total, cancelled },
+            gift: {
+                send_id: id,
+                rewards: before.rewards,
+                wrap: before.wrap,
+                recipients: before.recipients,
+                gifts: before.total,
+                cancelled,
+                ...(before.bundle ? { parcels: before.total } : {}),
+            },
         });
     return json(ctx, { cancelled, send: await sendView(db, id) });
 }
@@ -509,6 +560,7 @@ function giftJson(g: GiftRow) {
     const reward = opened ? giftReward(g.reward_kind, g.reward_id) : null;
     return {
         id: g.id,
+        parcel: false,
         from: { id: g.sender_id, username: g.sender_username ?? g.sender_name },
         wrap: g.wrap,
         message: g.message,
@@ -520,13 +572,73 @@ function giftJson(g: GiftRow) {
     };
 }
 
-/** GET /gifts/me: my gifts (never the cancelled ones), newest first, with how many wait to be opened. */
+interface ParcelRow {
+    id: number;
+    rewards: string;
+    wrap: string;
+    message: string;
+    created_at: string;
+    opened_at: string | null;
+    sender_id: string | null;
+    sender_name: string;
+    sender_username: string | null;
+}
+
+const PARCEL_SQL = `SELECT c.id, c.rewards, c.wrap, c.message, c.created_at, c.opened_at, c.sender_id, s.sender_name, p.username AS sender_username
+    FROM gift_parcels c JOIN gift_sends s ON s.id = c.send_id LEFT JOIN players p ON p.id = c.sender_id`;
+
+/** The rewards a parcel holds, in their order (as written by adminSend: {kind, id}). */
+function parcelRewards(text: string): GiftReward[] {
+    return parseList(text)
+        .map((x) => {
+            const o = (x ?? {}) as Record<string, unknown>;
+            return typeof o.kind === "string" && typeof o.id === "string" && (GIFT_KINDS as readonly string[]).includes(o.kind) && ID_RE.test(o.id)
+                ? { kind: o.kind as GiftKind, id: o.id }
+                : null;
+        })
+        .filter((x) => x !== null);
+}
+
+/**
+ * A parcel as its recipient sees it: one wrapped entry. Before it is opened, NOTHING tells what it holds nor how
+ * many: no reward, no list, no count (`contents` is null). Once opened: `contents`, its rewards in their order.
+ */
+function parcelJson(c: ParcelRow) {
+    const opened = c.opened_at !== null;
+    return {
+        id: c.id,
+        parcel: true,
+        from: { id: c.sender_id, username: c.sender_username ?? c.sender_name },
+        wrap: c.wrap,
+        message: c.message,
+        created_at: c.created_at,
+        opened,
+        opened_at: c.opened_at,
+        reward: null,
+        contents: opened ? parcelRewards(c.rewards).map((r) => ({ kind: r.kind, id: r.id, name: giftReward(r.kind, r.id)?.name ?? r.id })) : null,
+    };
+}
+
+/**
+ * GET /gifts/me: my gifts and parcels (never the cancelled ones), newest first, with how many wait to be opened
+ * (a parcel counts as one). The gifts a parcel held are listed in it (`contents`), once opened, never apart.
+ */
 export async function myGifts(ctx: Ctx): Promise<Response> {
     const auth = await requireAuth(ctx);
-    const rows = await ctx.env.DB.prepare(`${GIFT_SQL} WHERE g.recipient_id = ?1 AND g.cancelled_at IS NULL ORDER BY g.created_at DESC, g.id DESC LIMIT 300`)
-        .bind(auth.player.id)
-        .all<GiftRow>();
-    const gifts = rows.results.map(giftJson);
+    const db = ctx.env.DB;
+    const [rows, parcels] = await Promise.all([
+        db
+            .prepare(`${GIFT_SQL} WHERE g.recipient_id = ?1 AND g.cancelled_at IS NULL AND g.parcel_id IS NULL ORDER BY g.created_at DESC, g.id DESC LIMIT 300`)
+            .bind(auth.player.id)
+            .all<GiftRow>(),
+        db
+            .prepare(`${PARCEL_SQL} WHERE c.recipient_id = ?1 AND c.cancelled_at IS NULL ORDER BY c.created_at DESC, c.id DESC LIMIT 300`)
+            .bind(auth.player.id)
+            .all<ParcelRow>(),
+    ]);
+    const gifts = [...rows.results.map(giftJson), ...parcels.results.map(parcelJson)]
+        .sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0))
+        .slice(0, 300);
     return json(ctx, { gifts, unopened: gifts.filter((g) => !g.opened).length, total: gifts.length });
 }
 
@@ -542,7 +654,10 @@ export async function openGift(ctx: Ctx): Promise<Response> {
     const id = Number(ctx.params.giftId);
     if (!Number.isSafeInteger(id) || id < 1) throw Errors.notFound("GIFT_NOT_FOUND", "Cadeau introuvable.");
     const db = ctx.env.DB;
-    const g = await db.prepare(`${GIFT_SQL} WHERE g.id = ?1 AND g.recipient_id = ?2 AND g.cancelled_at IS NULL`).bind(id, me).first<GiftRow>();
+    const g = await db
+        .prepare(`${GIFT_SQL} WHERE g.id = ?1 AND g.recipient_id = ?2 AND g.cancelled_at IS NULL AND g.parcel_id IS NULL`)
+        .bind(id, me)
+        .first<GiftRow>();
     if (!g) throw Errors.notFound("GIFT_NOT_FOUND", "Cadeau introuvable (il a peut-être été retiré).");
     const now = nowIso();
     const grant =
@@ -570,4 +685,62 @@ export async function openGift(ctx: Ctx): Promise<Response> {
     const after = await db.prepare(`${GIFT_SQL} WHERE g.id = ?1`).bind(id).first<GiftRow>();
     const mine = await rewardsOf(db, me);
     return json(ctx, { gift: giftJson(after!), opened_now: openedNow, raid_rewards_claimed: mine.claimed });
+}
+
+/**
+ * POST /gifts/parcels/{parcelId}/open: opens one of my parcels. One batch: the parcel marked opened (a conditional
+ * UPDATE), one opened gift written per reward it holds, in order (gifts.parcel_id, only if none was written yet),
+ * each granted as a gift is (player_won_rewards « gift:<id> », a claimed raid badge; INSERT OR IGNORE). Idempotent:
+ * opening it again returns it as it is and grants nothing more. 200 {gift (the parcel, `contents` now listed),
+ * items (what to reveal, in order), opened_now, raid_rewards_claimed}.
+ */
+export async function openParcel(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    const me = auth.player.id;
+    await rateLimit(ctx, RULES.giftOpen, "player:" + me);
+    const id = Number(ctx.params.parcelId);
+    if (!Number.isSafeInteger(id) || id < 1) throw Errors.notFound("GIFT_NOT_FOUND", "Colis introuvable.");
+    const db = ctx.env.DB;
+    const c = await db.prepare(`${PARCEL_SQL} WHERE c.id = ?1 AND c.recipient_id = ?2 AND c.cancelled_at IS NULL`).bind(id, me).first<ParcelRow>();
+    if (!c) throw Errors.notFound("GIFT_NOT_FOUND", "Colis introuvable (il a peut-être été retiré).");
+    const rewards = parcelRewards(c.rewards);
+    // What may be granted: the items still in the catalogue, the badges the server still gives (by achievement).
+    const items = rewards.filter((r) => r.kind !== "badge" && ITEMS.has(r.id)).map((r) => r.id);
+    const badges: Record<string, string> = {};
+    for (const r of rewards) if (r.kind === "badge" && RAID_ACHIEVEMENTS[r.id] !== undefined) badges[r.id] = RAID_ACHIEVEMENTS[r.id]!;
+    const now = nowIso();
+    const res = await db.batch([
+        db.prepare("UPDATE gift_parcels SET opened_at = ?3 WHERE id = ?1 AND recipient_id = ?2 AND opened_at IS NULL AND cancelled_at IS NULL").bind(id, me, now),
+        db
+            .prepare(
+                `INSERT INTO gifts (send_id, recipient_id, sender_id, reward_kind, reward_id, wrap, message, created_at, opened_at, parcel_id)
+                 SELECT c.send_id, c.recipient_id, c.sender_id, json_extract(j.value, '$.kind'), json_extract(j.value, '$.id'), c.wrap, c.message, c.created_at,
+                        c.opened_at, c.id
+                 FROM gift_parcels c, json_each(c.rewards) j
+                 WHERE c.id = ?1 AND c.recipient_id = ?2 AND c.opened_at IS NOT NULL AND NOT EXISTS (SELECT 1 FROM gifts x WHERE x.parcel_id = c.id)
+                   AND json_extract(j.value, '$.kind') IN (SELECT value FROM json_each(?3))
+                 ORDER BY j.key`,
+            )
+            .bind(id, me, JSON.stringify(GIFT_KINDS)),
+        db
+            .prepare(
+                `INSERT OR IGNORE INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at)
+                 SELECT g.recipient_id, 'gift:' || g.id, 'item', g.reward_id, g.opened_at FROM gifts g
+                 WHERE g.parcel_id = ?1 AND g.recipient_id = ?2 AND g.reward_kind <> 'badge' AND ${IN_JSON("g.reward_id", "?3")}`,
+            )
+            .bind(id, me, JSON.stringify(items)),
+        db
+            .prepare(
+                `INSERT OR IGNORE INTO raid_reward_grants (player_id, reward, event_id, instance_id, reason, granted_at, claimed_at)
+                 SELECT g.recipient_id, json_extract(?3, '$.' || g.reward_id), 'gift:' || g.id, NULL, 'Cadeau de ' || s.sender_name, g.opened_at, g.opened_at
+                 FROM gifts g JOIN gift_sends s ON s.id = g.send_id
+                 WHERE g.parcel_id = ?1 AND g.recipient_id = ?2 AND g.reward_kind = 'badge' AND json_extract(?3, '$.' || g.reward_id) IS NOT NULL`,
+            )
+            .bind(id, me, JSON.stringify(badges)),
+    ]);
+    const openedNow = (res[0]!.meta.changes ?? 0) > 0;
+    const after = await db.prepare(`${PARCEL_SQL} WHERE c.id = ?1`).bind(id).first<ParcelRow>();
+    const parcel = parcelJson(after!);
+    const mine = await rewardsOf(db, me);
+    return json(ctx, { gift: parcel, items: parcel.contents ?? [], opened_now: openedNow, raid_rewards_claimed: mine.claimed });
 }

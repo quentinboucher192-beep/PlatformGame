@@ -28,18 +28,22 @@ struct BoxPose {
     float sx = 1.0f, sy = 1.0f;
     float lidDy = 0.0f;
     bool open = false;
+    bool parcel = false;  // the parcel's box (« Colis »: wider, taller, tied both ways)
     Color tint = Color::white();
 };
 /// The box of `wrap`, the middle of its cell's bottom edge on `base`, `px` screen pixels per pixel of the sheet.
 void drawBox(GameServices& g, const std::string& wrap, Vec2 base, float px, const BoxPose& pose = {});
 /// The lid alone (flying away): where it sits on a closed box standing on `base`, moved by `offset`, turned by `rot`.
-void drawLid(GameServices& g, const std::string& wrap, Vec2 base, float px, Vec2 offset, float rot, float alpha);
+void drawLid(GameServices& g, const std::string& wrap, Vec2 base, float px, Vec2 offset, float rot, float alpha, bool parcel = false);
+/// How high the mouth of an open box is above its base, in sheet pixels (where the items rise from).
+inline float mouthHeight(bool parcel) { return static_cast<float>(gifts::kWrapCell - (parcel ? gifts::kParcelTop : gifts::kWrapTop)); }
 
 /// The name of a reward as this game knows it (its catalogue, its achievements), else the server's.
 std::string rewardName(GameServices& g, const gifts::Reward& r);
 /// What a reward looks like, centred on `c`, about `size` pixels (`reveal`: the opening: a suit's victory clip).
 void drawReward(GameServices& g, OnlineUi* online, const gifts::Reward& r, Vec2 c, float size, float t, bool reveal);
-/// The icon of a gift in a list: wrapped, a glow of its light and the box gently bobbing; opened, what it held.
+/// The icon of a gift in a list: wrapped, a glow of its light and the box gently bobbing; opened, what it held (a
+/// parcel: its box, open, glowing).
 void drawGiftIcon(GameServices& g, OnlineUi* online, const gifts::Gift& gift, const Rect& box, float t);
 /// A wrap alone, closed, bobbing in `box` (the choice of wraps of ADMINISTRATION › Cadeaux).
 void drawWrapIcon(GameServices& g, const std::string& wrap, const Rect& box, float t, float phase);

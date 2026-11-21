@@ -146,9 +146,10 @@ route("GET", `${V}/players/me/progress-restore/file`, (ctx) => migration.getRest
 route("POST", `${V}/players/me/progress-restore`, (ctx) => migration.answerRestore(ctx));
 route("PUT", `${V}/players/me/cosmetics`, (ctx) => cosmetics.putCosmetics(ctx));
 route("GET", `${V}/players/me/rewards`, (ctx) => challenges.myRewards(ctx));
-// Gifts (gifts.ts): mine (the content hidden until opened), and opening one (what grants it).
+// Gifts (gifts.ts): mine (the content hidden until opened), and opening one, or a parcel (what grants it).
 route("GET", `${V}/gifts/me`, (ctx) => gifts.myGifts(ctx));
 route("POST", `${V}/gifts/{giftId}/open`, (ctx) => gifts.openGift(ctx));
+route("POST", `${V}/gifts/parcels/{parcelId}/open`, (ctx) => gifts.openParcel(ctx));
 route("PUT", `${V}/players/me/badges`, (ctx) => badges.putBadges(ctx));
 route("GET", `${V}/players/{playerId}`, players.getPlayer, { viewer: true });
 route("GET", `${V}/players/{playerId}/creations`, creators.creations, { viewer: true });

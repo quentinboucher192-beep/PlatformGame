@@ -123,11 +123,45 @@ std::string kindName(const std::string& kind) {
     return "Récompense";
 }
 
+namespace {
+
+std::optional<Reward> parseReward(const Json& r) {
+    if (!r.is_object()) return std::nullopt;
+    Reward w{jstr(r, "kind"), jstr(r, "id"), jstr(r, "name")};
+    bool known = false;
+    for (const auto& k : rewardKinds()) known = known || k == w.kind;
+    if (!known || w.id.empty() || w.id.size() > 64) return std::nullopt;
+    return w;
+}
+
+}  // namespace
+
+std::vector<Reward> revealed(const Gift& g) {
+    if (!g.opened) return {};
+    if (g.parcel) return g.contents;
+    if (g.reward) return {*g.reward};
+    return {};
+}
+
+bool isRevealed(const Gift& g) { return !revealed(g).empty(); }
+
+std::string openPath(const Gift& g) {
+    return std::string("/api/v1/gifts/") + (g.parcel ? "parcels/" : "") + std::to_string(g.id) + "/open";
+}
+
+bool Unwrapping::advance() {
+    if (empty) return false;
+    if (at + 1 < items.size()) ++at;
+    else empty = true;
+    return true;
+}
+
 std::optional<Gift> parseGift(const Json& j) {
     if (!j.is_object()) return std::nullopt;
     Gift g;
     g.id = jget<int64_t>(j, "id", 0);
     if (g.id <= 0) return std::nullopt;
+    g.parcel = jget<bool>(j, "parcel", false);
     const Json& from = jfield(j, "from", Json());
     g.fromId = jstr(from, "id");
     g.from = jstr(from, "username", "Cosmic Online");
@@ -136,11 +170,13 @@ std::optional<Gift> parseGift(const Json& j) {
     g.createdAt = jstr(j, "created_at");
     g.openedAt = jstr(j, "opened_at");
     g.opened = jget<bool>(j, "opened", false);
-    if (const Json& r = jfield(j, "reward", Json()); g.opened && r.is_object()) {
-        Reward w{jstr(r, "kind"), jstr(r, "id"), jstr(r, "name")};
-        bool known = false;
-        for (const auto& k : rewardKinds()) known = known || k == w.kind;
-        if (known && !w.id.empty() && w.id.size() <= 64) g.reward = w;
+    // What it holds, only once opened (whatever a wrapped one's answer would carry).
+    if (g.parcel) {
+        if (const Json& c = jfield(j, "contents", Json()); g.opened && c.is_array())
+            for (const Json& r : c)
+                if (auto w = parseReward(r); w && g.contents.size() < static_cast<size_t>(kMaxRewards)) g.contents.push_back(*w);
+    } else if (g.opened) {
+        g.reward = parseReward(jfield(j, "reward", Json()));
     }
     return g;
 }
@@ -170,17 +206,17 @@ int unopenedCount(const std::vector<Gift>& all) {
 const Gift* nextToOpen(const std::vector<Gift>& all, int64_t current) {
     size_t at = 0;
     for (size_t i = 0; i < all.size(); ++i)
-        if (all[i].id == current) at = i + 1;
+        if (all[i].key() == current) at = i + 1;
     for (size_t k = 0; k < all.size(); ++k) {
         const Gift& g = all[(at + k) % all.size()];
-        if (!g.opened && g.id != current) return &g;
+        if (!g.opened && g.key() != current) return &g;
     }
     return nullptr;
 }
 
 void applyOpened(std::vector<Gift>& all, const Gift& opened) {
     for (Gift& g : all)
-        if (g.id == opened.id) g = opened;
+        if (g.key() == opened.key()) g = opened;
 }
 
 std::string dateText(const std::string& iso) {

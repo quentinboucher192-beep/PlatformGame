@@ -62,11 +62,24 @@ struct DetailLayout {
 /// The detail panel: the kind, the big box (or what it held), the name, who sent it and when, the message, the buttons.
 DetailLayout detailLayout(UIContext& ui, const Rect& panel, const DetailTexts& t);
 
+constexpr float kContentRowH = 66.0f;
+constexpr float kContentRowGap = 8.0f;
+struct ContentRowLayout {
+    Rect icon, equip;
+    Text name, kind;
+    float equipSize = 0.0f;
+};
+/// One reward of an opened parcel, in the detail panel's art (a scrolled list): its icon, its name, its kind, and
+/// its own « Équiper » at the right.
+ContentRowLayout contentRowLayout(UIContext& ui, const Rect& row, const std::string& name, const std::string& kind, const std::string& equip);
+
 // ------------------------------------------------------------ the opening
 
 struct RevealTexts {
     std::string kind, name, from, message;
-    std::vector<std::string> buttons;  // « Équiper maintenant », « Cadeau suivant (n) », « Plus tard »
+    // « Équiper maintenant », « Cadeau suivant (n) », « Plus tard »; a parcel: « Équiper maintenant », « Suivant »,
+    // « Plus tard », then, the box empty, « Cadeau suivant (n) » and « Fermer »
+    std::vector<std::string> buttons;
 };
 struct RevealLayout {
     Text kind, name, from;

@@ -210,3 +210,125 @@ describe("gifts: the player opens them", () => {
         expect((await api("POST", `${V}/admin/gifts/999/cancel`, { token: a.token })).status).toBe(404);
     });
 });
+
+// « Colis » (migration 0210): `bundle: true` gives each player ONE parcel with the rewards they do not own yet; it
+// shows as one wrapped entry that tells neither what it holds nor how many, and opening it grants everything once.
+describe("gifts: parcels (« Colis »)", () => {
+    const TRAIL = { kind: "trail", id: "trail_comet" };
+
+    it("one parcel per player with what each does not own; skipped when everything is owned; the notification counts one", async () => {
+        const a = await admin("NovaRider");
+        const lyra = await registerPlayer("Lyra");
+        const vega = await registerPlayer("Vega");
+        const orion = await registerPlayer("Orion");
+        // Vega owns the suit (two rewards left); Orion owns the suit and the trail, and waits for the badge.
+        for (const [p, ref] of [
+            [vega.id, "suit_or"],
+            [orion.id, "suit_or"],
+            [orion.id, "trail_comet"],
+        ] as const)
+            await env.DB.prepare("INSERT INTO player_won_rewards (player_id, challenge_id, reward_kind, reward_ref, granted_at) VALUES (?1, 'x', 'item', ?2, 'x')")
+                .bind(p, ref)
+                .run();
+        await send(a, [orion.id], [BADGE]);
+        expect((await send(a, [lyra.id], [SUIT, TRAIL], { bundle: "yes" })).status).toBe(400);
+        const r = await send(a, [lyra.id, vega.id, orion.id], [SUIT, TRAIL, BADGE], { bundle: true });
+        expect(r.status, JSON.stringify(r.body)).toBe(201);
+        expect(r.body.data.parcels).toBe(2);
+        expect(r.body.data.created).toBe(5); // Lyra 3, Vega 2
+        expect(r.body.data.skipped.filter((s: { player_id: string }) => s.player_id === orion.id).length).toBe(3);
+        expect(r.body.data.send).toMatchObject({ bundle: true, total: 2, opened: 0, waiting: 2, recipients: 2 });
+        const rows = await env.DB.prepare("SELECT recipient_id, rewards FROM gift_parcels ORDER BY id").all<{ recipient_id: string; rewards: string }>();
+        expect(rows.results.map((x) => [x.recipient_id, JSON.parse(x.rewards).map((y: { id: string }) => y.id)])).toEqual([
+            [lyra.id, ["suit_or", "trail_comet", "communaute_coeur"]],
+            [vega.id, ["trail_comet", "communaute_coeur"]],
+        ]);
+        // No gift is written before a parcel is opened (no id spent).
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM gifts WHERE recipient_id IN (?1, ?2)").bind(lyra.id, vega.id).first<{ n: number }>())?.n).toBe(0);
+        // The notification counts the parcel as one.
+        const note = await env.DB.prepare("SELECT count FROM notifications WHERE kind = 'gift' AND player_id = ?1").bind(lyra.id).first<{ count: number }>();
+        expect(note?.count).toBe(1);
+        // One reward left for a player: still a parcel.
+        const single = await send(a, [vega.id], [SUIT, { kind: "frame", id: "frame_gold" }], { bundle: true });
+        expect(single.status, JSON.stringify(single.body)).toBe(201);
+        expect(single.body.data).toMatchObject({ parcels: 1, created: 1 });
+        // What waits in a parcel is « pending » for the tab, and a second parcel of the same skips it.
+        const tags = await api("GET", `${V}/admin/gifts/players?filter=ids&ids=${lyra.id}&rewards=trail:trail_comet`, { token: a.token });
+        expect(tags.body.data.players[0].pending).toEqual(["trail:trail_comet"]);
+        expect((await send(a, [lyra.id], [SUIT, TRAIL], { bundle: true })).status).toBe(409);
+        // The Journal, the history.
+        const log = await api("GET", `${V}/admin/log?kind=gift`, { token: a.token });
+        expect(log.body.data.entries[1].gift).toMatchObject({ parcels: 2, gifts: 5, recipients: 2 });
+    });
+
+    it("never tells what a wrapped parcel holds nor how many; opening grants all, in order, once", async () => {
+        const a = await admin("NovaRider");
+        const lyra = await registerPlayer("Lyra");
+        await send(a, [lyra.id], [SUIT, TRAIL, BADGE], { bundle: true });
+        const mine = await api("GET", `${V}/gifts/me`, { token: lyra.token });
+        expect(mine.body.data.unopened).toBe(1);
+        expect(mine.body.data.total).toBe(1);
+        const p = mine.body.data.gifts[0];
+        expect(p).toMatchObject({ parcel: true, opened: false, reward: null, contents: null, wrap: "or" });
+        const text = JSON.stringify(mine.body.data);
+        for (const secret of ["suit_or", "trail_comet", "communaute_coeur", "count", "items"]) expect(text).not.toContain(secret);
+        expect(Object.keys(p).sort()).toEqual(["contents", "created_at", "from", "id", "message", "opened", "opened_at", "parcel", "reward", "wrap"]);
+        // Not someone else's; not a number.
+        const vega = await registerPlayer("Vega");
+        expect((await api("POST", `${V}/gifts/parcels/${p.id}/open`, { token: vega.token })).status).toBe(404);
+        expect((await api("POST", `${V}/gifts/parcels/abc/open`, { token: lyra.token })).status).toBe(404);
+        const o = await api("POST", `${V}/gifts/parcels/${p.id}/open`, { token: lyra.token });
+        expect(o.status, JSON.stringify(o.body)).toBe(200);
+        expect(o.body.data.opened_now).toBe(true);
+        expect(o.body.data.items.map((x: { id: string }) => x.id)).toEqual(["suit_or", "trail_comet", "communaute_coeur"]);
+        expect(o.body.data.gift).toMatchObject({ parcel: true, opened: true });
+        expect(o.body.data.gift.contents).toEqual(o.body.data.items);
+        expect(o.body.data.raid_rewards_claimed).toContain("coeur_badge");
+        const twice = await api("POST", `${V}/gifts/parcels/${p.id}/open`, { token: lyra.token });
+        expect(twice.body.data.opened_now).toBe(false);
+        expect(twice.body.data.items).toEqual(o.body.data.items);
+        // Granted through the usual ownership, once: one gift per reward, in order.
+        const gifts = await env.DB.prepare("SELECT id, reward_id, opened_at FROM gifts WHERE parcel_id = ?1 ORDER BY id")
+            .bind(p.id)
+            .all<{ id: number; reward_id: string; opened_at: string | null }>();
+        expect(gifts.results.map((g) => g.reward_id)).toEqual(["suit_or", "trail_comet", "communaute_coeur"]);
+        expect(gifts.results.every((g) => g.opened_at !== null)).toBe(true);
+        const won = await env.DB.prepare("SELECT challenge_id, reward_ref FROM player_won_rewards WHERE player_id = ?1 ORDER BY reward_ref").bind(lyra.id).all();
+        expect(won.results).toEqual([
+            { challenge_id: `gift:${gifts.results[0]!.id}`, reward_ref: "suit_or" },
+            { challenge_id: `gift:${gifts.results[1]!.id}`, reward_ref: "trail_comet" },
+        ]);
+        const badge = await env.DB.prepare("SELECT event_id FROM raid_reward_grants WHERE player_id = ?1 AND claimed_at IS NOT NULL").bind(lyra.id).all();
+        expect(badge.results).toEqual([{ event_id: `gift:${gifts.results[2]!.id}` }]);
+        // The gifts it held are neither listed nor opened apart; the list shows it opened with its contents.
+        expect((await api("POST", `${V}/gifts/${gifts.results[0]!.id}/open`, { token: lyra.token })).status).toBe(404);
+        const after = await api("GET", `${V}/gifts/me`, { token: lyra.token });
+        expect(after.body.data.total).toBe(1);
+        expect(after.body.data.unopened).toBe(0);
+        expect(after.body.data.gifts[0].contents.map((x: { id: string }) => x.id)).toEqual(["suit_or", "trail_comet", "communaute_coeur"]);
+    });
+
+    it("lists parcels with gifts, newest first; the history says « bundle »; cancelling withdraws the unopened parcels", async () => {
+        const a = await admin("NovaRider");
+        const lyra = await registerPlayer("Lyra");
+        const vega = await registerPlayer("Vega");
+        await send(a, [lyra.id], [{ kind: "frame", id: "frame_gold" }]);
+        const s = await send(a, [lyra.id, vega.id], [SUIT, TRAIL], { bundle: true });
+        const sendId = s.body.data.send.id;
+        const mine = await api("GET", `${V}/gifts/me`, { token: lyra.token });
+        expect(mine.body.data.gifts.map((g: { parcel: boolean }) => g.parcel)).toEqual([true, false]);
+        await api("POST", `${V}/gifts/parcels/${mine.body.data.gifts[0].id}/open`, { token: lyra.token });
+        const h = await api("GET", `${V}/admin/gifts`, { token: a.token });
+        expect(h.body.data.sends[0]).toMatchObject({ id: sendId, bundle: true, total: 2, opened: 1, waiting: 1, recipients: 2, names: ["Lyra", "Vega"] });
+        expect(h.body.data.sends[1]).toMatchObject({ bundle: false, total: 1 });
+        const c = await api("POST", `${V}/admin/gifts/${sendId}/cancel`, { token: a.token });
+        expect(c.body.data.cancelled).toBe(1);
+        expect(c.body.data.send).toMatchObject({ opened: 1, cancelled: 1, waiting: 0 });
+        expect((await api("GET", `${V}/gifts/me`, { token: vega.token })).body.data.gifts).toEqual([]);
+        const vegaParcel = await env.DB.prepare("SELECT id FROM gift_parcels WHERE recipient_id = ?1").bind(vega.id).first<{ id: number }>();
+        expect((await api("POST", `${V}/gifts/parcels/${vegaParcel!.id}/open`, { token: vega.token })).status).toBe(404);
+        expect((await env.DB.prepare("SELECT COUNT(*) AS n FROM player_won_rewards WHERE player_id = ?1").bind(vega.id).first<{ n: number }>())?.n).toBe(0);
+        const log = await api("GET", `${V}/admin/log?kind=gift`, { token: a.token });
+        expect(log.body.data.entries[0]).toMatchObject({ action: "admin_gift_cancelled", gift: { cancelled: 1, parcels: 2 } });
+    });
+});
