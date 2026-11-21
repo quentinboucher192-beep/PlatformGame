@@ -56,6 +56,8 @@ public:
             std::vector<const SkullmawRoutine::Mirror*> order;
             for (const auto& m : rt->mirrors()) order.push_back(&m);
             std::stable_sort(order.begin(), order.end(), [](const auto* a, const auto* c) { return a->area.y > c->area.y + 1.0f; });
+            // 2.84: the mirrors already held first (fewer asked for when players fall: never one left for a far one).
+            std::stable_sort(order.begin(), order.end(), [](const auto* a, const auto* c) { return (a->holders != 0) > (c->holders != 0); });
             const int need = std::min(rt->mirrorsNeeded(), static_cast<int>(order.size()));
             for (int k = 0; k < need; ++k) {
                 Station s;
