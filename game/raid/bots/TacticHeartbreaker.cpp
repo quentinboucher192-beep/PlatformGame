@@ -1,8 +1,8 @@
 // 2.79 (docs/RAIDS.md §28): HEARTBREAKER, the rib cage of the torso (game/raid/HeartbreakerRoutine):
 //
 // * « La cuirasse » (phase 1): its four armour plates (two high, shot from the flank towers or upward from the
-//   floor; two low) struck together, each brought low, then finished within the window after the first broken
-//   (else they grow back);
+//   floor; two low): 2.85, each broken as soon as it can be (each takes 5 % of its health; once all four are broken
+//   within the window after the first, its cuirasse falls);
 // * « Battements »: every strong beat a wave runs along the floor from both its sides (520 px/s): jumped;
 // * its « Côtes-pièges »: the marks under the players;
 // * « La cage thoracique » (phase 2): its two ribs (the plates on the flank towers) held together: the light of
@@ -29,6 +29,9 @@ public:
     const char* name() const override { return "Heartbreaker"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v);
+        // 2.85 (fight plan): its rib traps (the marks under every player, the first dangers read): under the shield when it
+        // is ready rather than a step aside (into another's mark, off a platform, down among its waves).
+        for (size_t k = 0; k < run.gigaboss().fists().size() && k < v.dangers.size(); ++k) v.dangers[k].shieldFirst = true;
 
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
@@ -77,8 +80,9 @@ public:
                 t.uid = u;
                 t.want = 2;
                 t.priority = 25;
-                t.sync = 1;
-                t.holdAt = 0.34f;
+                // 2.85 (fight plan): each plate broken as soon as it can be — every one takes its share of its health (5 %) and
+                // the four together within their window were never reached (they grew back while held low together: its
+                // cuirasse lasted 340 s, the group worn out before its cage). 3 / 8 → 5 / 8.
                 t.melee = false;
                 t.label = e->box.bottom() < b->box.center().y ? "Plaque haute" : "Plaque basse";
                 v.targets.push_back(t);

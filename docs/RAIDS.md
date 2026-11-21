@@ -3028,6 +3028,21 @@ avant la fin de ses plaques, ses frappeurs plus espacés, la dernière place d'u
 monde relevé ; puis, après la correction du cache : Voidworm sans traverser son corps (4 / 8), à 200 px de lui (1 / 8), sans
 relever les âmes collées à lui (5 / 8, pas mieux) ; Heartbreaker en tirant pendant ses esquives (0 / 8).
 
+2.85 : les **Côtes-pièges** de Heartbreaker (la marque sous chaque joueur, sa première cause de mort : 36 morts sur 8
+départs, en esquivant) sont prises **sous le bouclier** quand il est prêt (`Danger::shieldFirst` sur ses poings : un
+pas de côté tombait dans la marque d'un autre, hors de sa plateforme ou parmi ses ondes) : **3 / 8**, 72 % de sa vie
+ôtée en moyenne (avant : 2 / 8, 67 %). Les autres combats ne changent pas (Dreadfang, Voidworm : mêmes résultats départ
+par départ). Essayés et retirés : le pic du tentacule fouisseur de Voidworm lu à l'instant où il jaillit (2 / 8), ses
+parasites avant sa tête (aucun effet), sa fenêtre de réanimation de 7 s (5 / 8, pas mieux), ses réanimateurs sans
+bouclier qui esquivent (5 / 8, 84 % au lieu de 90 %).
+
+2.85 : la **cuirasse** de Heartbreaker n'attend plus ses quatre plaques ensemble : chacune est brisée dès que possible
+(chacune lui ôte 5 % de vie). Tenues basses ensemble, elles repoussaient avant la dernière (« 4 → 3 → 4 plaques ») : sa
+phase 1 durait 340 s, le groupe usé avant sa cage thoracique (depuis sa phase 2, frais : 7 / 8). Maintenant **5 / 8**,
+89 % de sa vie ôtée, des combats de 255 à 335 s (avant : 3 / 8, 72 %, 362 à 568 s). Essayés et retirés : chercher
+l'ouverture de l'onde du cœur sans bouclier (sans effet : ils sont presque toujours en l'air), garder le bouclier pour
+ses Côtes-pièges et ses anneaux (`Plan::reserveShield` : 0 / 8).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
