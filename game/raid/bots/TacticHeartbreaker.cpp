@@ -41,6 +41,7 @@ public:
         // platforms above it.
         v.plan.elevate = 40.0f;
         v.plan.floorY = floor;
+        v.plan.elevateAll = true;  // its lure too: above its waves, still the nearest
         // Where its strong beats throw their waves (both its sides, along the floor): too close to jump them in time,
         // a place to keep away from (a strong beat every few seconds).
         std::vector<float> from;
