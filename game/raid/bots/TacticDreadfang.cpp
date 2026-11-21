@@ -36,7 +36,9 @@ public:
         v.plan.elevate = 0.0f;    // measured: up on its storeys, fewer places to fire from, no fewer players down
         // (a wider distance to its arm, 170 px, measured the same: the default)
         v.plan.frontOnly = false;  // measured: all in front of it, its joints broken more slowly
-        v.plan.noLure = true;     // measured: fewer players down without one keeping close to it
+        v.plan.noLure = true;
+        v.plan.focusWeak = true;
+        v.plan.fireOnTheRun = true;     // measured: fewer players down without one keeping close to it
         v.plan.lureOnFloor = true;
         v.plan.freeOnClosed = true;  // its chains on the swept floor: off them when closed, back when they open
         v.plan.hideArmoured = false;  // measured: waiting far off cost more than it saved (groups wiped sooner)

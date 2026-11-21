@@ -473,6 +473,19 @@ void TestBots::sense(RaidRun& run) {
                 view_.dangers.push_back(d);
             }
         }
+    // 2.84 (fight plan): bare, all on one weak point at a time (the most hurt first), not two on each — broken one after the
+    // other in its few seconds rather than three half-broken.
+    if (fight_ && view_.exposed && view_.plan.focusWeak) {
+        bots::Target* first = nullptr;
+        for (bots::Target& t : view_.targets)
+            if (t.weak)
+                if (const Enemy* e = enemyOf(w, t.uid); e && (!first || e->hp() < enemyOf(w, first->uid)->hp())) first = &t;
+        for (bots::Target& t : view_.targets)
+            if (t.weak) {
+                t.want = &t == first ? 8 : 1;
+                t.priority = &t == first ? 21 : 20;
+            }
+    }
     dangers_ = view_.dangers;
     // The sync groups (targets finished together): each one low enough everywhere?
     syncLow_.assign(4, 1);
@@ -1981,6 +1994,18 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 if (kDirX[aim] == 0) dir = 0;
                 fired = true;
             }
+        }
+    }
+    // 2.84 (fight plan): getting out of a blow, it still fires when a wave reaches its target from where it is (a step of
+    // its run turned into a shot, as a player does) — more of its time spent striking.
+    if (fight_ && dodging && !fired && !fleeing && !nailed && foe && worthStriking && !holdFire && sh && keyBit(sh) >= 0 && view_.plan.fireOnTheRun) {
+        const int aim = shotFrom(w, me.center(), fb, me.grounded());
+        const float reserve = (shield ? 22.0f : 0.0f) + (view_.exposed ? 0.0f : 10.0f);
+        if (aim >= 0 && kDirX[aim] != 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh)))) {
+            held |= 1u << keyBit(sh);
+            f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
+            f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
+            fired = true;
         }
     }
     if (b.act == Shoot && !fleeing && !dodging) {
