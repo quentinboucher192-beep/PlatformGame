@@ -25,6 +25,7 @@
 #include "game/raid/RaidRun.h"
 #include "saves/RaidHudLayout.h"
 #include "tests/TestFramework.h"
+#include "ui/online/ContribTable.h"
 #include "ui/online/RaidHud.h"
 #include "ui/online/RaidMenu.h"
 #include "ui/widgets/UIContext.h"
@@ -244,6 +245,83 @@ TEST_CASE("raid menu (2.75.5): its key opens and closes it, Échap closes it wit
     CHECK(o.frame(jump, false, false, false) == InputFrame{});
     o.menu.close();
     CHECK(o.frame(jump, false, false, false) == InputFrame::fromPlayerInput(jump));
+}
+
+TEST_CASE("raid menu (titan 13): Tab while moving never runs through its tabs; a fresh press moves it by exactly one") {
+    // « Je fais Tab pour ouvrir le menu tout en avançant : ça change d'onglets à l'infini. » A held direction repeats
+    // (InputManager's auto-repeat); the menu, its contributions and the test's panel read a fresh press only, and a
+    // direction held when they open waits for its release.
+    InputManager in;
+    in.setBindings(InputBindings::defaults());
+    int repeats = 0;
+    auto frame = [&](bool right, bool tab = false) {
+        in.beginFrame();
+        if (tab) {
+            SDL_Event e{};
+            e.type = SDL_EVENT_KEY_DOWN;
+            e.key.scancode = SDL_SCANCODE_TAB;
+            in.handleEvent(e);
+        }
+        in.simulateHeld(Action::MoveRight, right);  // the right arrow: the move and the menus' « Droite »
+        in.simulateHeld(Action::MenuRight, right);
+        in.update(1.0f / 60.0f);
+        if (in.menuPressed(Action::MenuRight)) ++repeats;
+    };
+    raidmenu::Menu m;
+    for (int t = 0; t < 30; ++t) frame(true);  // walking right
+    frame(true, true);                         // Tab, still walking
+    m.handleKeys(in, true, raidmenu::Section::Remaining);
+    CHECK(m.isOpen());
+    repeats = 0;
+    for (int t = 0; t < 60; ++t) {
+        frame(true);
+        m.handleKeys(in, true, raidmenu::Section::Count);
+        CHECK(m.section() == raidmenu::Section::Remaining);
+    }
+    CHECK(repeats > 3);  // the input does repeat: the menu ignores it
+    frame(false);        // released…
+    m.handleKeys(in, true, raidmenu::Section::Count);
+    CHECK(m.section() == raidmenu::Section::Remaining);
+    frame(true);  // …pressed again: one section
+    m.handleKeys(in, true, raidmenu::Section::Count);
+    CHECK(m.section() == raidmenu::Section::Zones);
+    for (int t = 0; t < 60; ++t) {  // held on: still one
+        frame(true);
+        m.handleKeys(in, true, raidmenu::Section::Count);
+    }
+    CHECK(m.section() == raidmenu::Section::Zones);
+    // The same for the contributions' table (its sort: Gauche / Droite), opened while the right arrow is held.
+    contrib::View v;
+    const contrib::Col sort0 = v.sort;
+    for (int t = 0; t < 60; ++t) {
+        frame(true);
+        CHECK(!v.handleKeys(in, 2, 0));
+        CHECK(v.sort == sort0);
+    }
+    frame(false);
+    v.handleKeys(in, 2, 0);
+    frame(true);
+    v.handleKeys(in, 2, 0);
+    CHECK(static_cast<int>(v.sort) == (static_cast<int>(sort0) + 1) % contrib::kCols);
+    for (int t = 0; t < 60; ++t) {
+        frame(true);
+        v.handleKeys(in, 2, 0);
+    }
+    CHECK(static_cast<int>(v.sort) == (static_cast<int>(sort0) + 1) % contrib::kCols);
+    // A short tap (pressed and released within a frame) still counts, once.
+    raidmenu::Menu q;
+    frame(false, true);
+    q.handleKeys(in, true, raidmenu::Section::Remaining);
+    in.beginFrame();
+    SDL_Event e{};
+    e.type = SDL_EVENT_KEY_DOWN;
+    e.key.scancode = SDL_SCANCODE_RIGHT;
+    in.handleEvent(e);
+    in.simulateHeld(Action::MoveRight, false);
+    in.simulateHeld(Action::MenuRight, false);
+    in.update(1.0f / 60.0f);
+    q.handleKeys(in, true, raidmenu::Section::Count);
+    CHECK(q.section() == raidmenu::Section::Zones);
 }
 
 TEST_CASE("raid notices and menu (2.75.5): measured into their places, inside the screen, nothing over anything, no focus taken") {

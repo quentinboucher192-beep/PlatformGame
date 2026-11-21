@@ -222,7 +222,7 @@ void DreadfangRoutine::stepPins(GameWorld& w, Contributions& c, Gigaboss& g, Ene
                 if (Enemy* e = w.spawnEnemy(pinEnemy_, p.at, b.facing < 0.0f)) {
                     e->summonedBy = b.uid();
                     e->countsForStats = false;
-                    e->scaleHealth(1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor(g) - 1)));
+                    e->scaleHealth((1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor(g) - 1))) * g.healthScale());
                     p.claw = e->uid();
                 }
                 p.nailed = true;

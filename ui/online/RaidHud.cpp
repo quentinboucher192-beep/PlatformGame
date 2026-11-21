@@ -426,29 +426,47 @@ void drawDanger(UIContext& ui, const Rect& r, float k, const std::string& text) 
     fit(ui, text, band.center(), 20 * k, band.w - ui.s(24) * k, Color{255, 200, 200, 255}, FontFace::Bold, Align::Center);
 }
 
-void drawTimer(UIContext& ui, const Rect& r, float k, float instanceSeconds, float zoneSeconds) {
+std::string RaidClock::at(float raidSeconds) const {
+    if (!deadline) return LevelTimer::format(std::max(0.0f, raidSeconds), false);
+    return "reste " + LevelTimer::format(std::max(0.0f, end - raidSeconds), false);
+}
+
+Color clockColor(const RaidClock& c, Color normal, float time) {
+    if (!c.urgent()) return normal;
+    // Its last minute: red, its brightness beating twice a second.
+    const float beat = 0.5f + 0.5f * std::sin(time * 6.2831853f * 2.0f);
+    return Color{255, static_cast<uint8_t>(60 + 90 * beat), static_cast<uint8_t>(60 + 90 * beat), 255};
+}
+
+void drawTimer(UIContext& ui, const Rect& r, float k, const RaidClock& raid, float zoneSeconds) {
     hudBox(ui, r);
     const float pad = ui.s(10) * k, iconS = ui.s(28) * k;
     const float bigH = ui.s(34) * k, smallH = ui.s(16) * k;
     const float top = r.y + pad, rowY = top + bigH * 0.5f;
     // The clock of the levels' timer, then the time in its font (fitted to what is left).
+    const Color col = clockColor(raid, ui.theme().text, ui.time());
+    if (raid.urgent()) ui.r().drawRoundedRect(r, ui.s(10) * k, col.withAlpha(200), ui.s(2) * k);  // its last minute
     ui.icon("ui/icons_hud.png", 6, 16, {r.x + pad, rowY - iconS * 0.5f, iconS, iconS}, Color{255, 255, 255, 200});
     const float tx = r.x + pad + iconS + ui.s(8) * k, room = r.right() - pad - tx;
-    const std::string big = LevelTimer::format(std::max(0.0f, instanceSeconds));
+    const std::string big = LevelTimer::format(raid.deadline ? raid.left() : std::max(0.0f, raid.now), false);
     const float fs = ui.fitFont(big, FontFace::Title, 34.0f * k, room, 0.5f);
     TextStyle st;
     st.face = FontFace::Title;
     st.size = ui.s(fs);
-    st.color = ui.theme().text;
+    st.color = col;
     st.align = Align::Left;
     st.valign = VAlign::Middle;
     st.shadow = true;
     st.shadowOffset = ui.s(2) * k;
-    st.glow = ui.s(10) * k;
-    st.glowColor = ui.theme().text.withAlpha(40);
+    st.glow = ui.s(raid.urgent() ? 16 : 10) * k;
+    st.glowColor = col.withAlpha(raid.urgent() ? 90 : 40);
     if (room > ui.s(10)) ui.text().draw(big, {tx, rowY}, st);
-    fit(ui, "Zone : " + LevelTimer::format(std::max(0.0f, zoneSeconds), false), {r.x + pad, top + bigH + ui.s(6) * k + smallH * 0.5f}, 15 * k,
-        r.w - pad * 2, kDim);
+    // What the big time is, then the zone's (elapsed: a zone has no limit), fitted to the box.
+    const std::string zone = LevelTimer::format(std::max(0.0f, zoneSeconds), false);
+    const std::string line = !raid.deadline       ? "Écoulé depuis le début · zone : " + zone
+                             : raid.left() <= 0.0f ? "Temps du raid écoulé · zone : " + zone
+                                                   : "Reste du raid · zone : " + zone + " écoulées";
+    fit(ui, line, {r.x + pad, top + bigH + ui.s(6) * k + smallH * 0.5f}, 15 * k, r.w - pad * 2, raid.urgent() ? col : kDim);
 }
 
 void drawLineBox(UIContext& ui, const Rect& r, float k, const std::string& text, Color textColor, bool test) {

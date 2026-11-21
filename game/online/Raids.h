@@ -150,6 +150,9 @@ std::string formatLine(const Event& e);
 std::string eventName(const Event& e);
 /// « Difficulté 4 / 5 ».
 std::string difficultyLabel(int difficulty);
+/// Titan 13: what a level of difficulty changes (game/raid/Difficulty.h): « Vie des Gigaboss : 100 % · Dégâts reçus :
+/// 100 % · combat visé ≈ 10 min » (a good group of 8, the Heart's health and damage the same).
+std::string difficultyEffects(int difficulty);
 /// The reminders a player may choose (minutes before the start) and their labels (« 24 h avant »).
 const std::vector<int>& reminderChoices();
 std::string reminderLabel(int minutes);

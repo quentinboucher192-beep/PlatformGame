@@ -194,6 +194,8 @@ def arena(A, s):
     z.raid["arena"] = {"rect": [ax0 * T, 6 * T, ARENA_W * T, (F - 6) * T], "floor": F * T, "door": "",
                        "entry": [(ax0 + 6) * T, F * T], "players": 8}
     z.raid["gigaboss"] = dict(K.SCALING, **{
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.18,
         "boss": boss, "name": "Cœur d'Asterion", "objective": "coeur_asterion", "routine": "coeur",
         # Its health is shared by every instance of the event (raidHeart.ts): each one reports its own part
         # (ten-thousandths of its health), the others' part comes with RAID_STATE. Each relic of the seven
@@ -202,7 +204,7 @@ def arena(A, s):
         # « Les artères » (phases 2 and 3, its armour): its four artery plates held together bare its
         # ventricles (the rules' exposure). « La cage » (the Torso standing): its armour from its first phase,
         # each artery held longer, its ventricles bare less long.
-        "carapace": [2, 4], "vents": plates, "hold": 2.5, "reopen": 14.0, "exposed": 10.0, "exposedMult": 2.0,
+        "carapace": [2, 4], "vents": plates, "hold": 2.5, "reopen": 24.0, "exposed": 14.0, "exposedMult": 2.0,
         "jet": {"name": tr("Jet d'artère", "Artery jet"), "period": 9.0, "warn": 1.2, "duration": 0.8, "height": 120.0, "damage": 1.0},
         "cage": {"hold": 3.5, "exposed": 0.6},
         "weakEnemy": "asterion_ventricule", "weakSpots": [[-150.0, -96.0], [150.0, -96.0], [0.0, -372.0]], "weakShare": 0.05,
@@ -247,6 +249,10 @@ def arena(A, s):
     L.light(mid, F - 27, "#ffffff", 320, flicker=0.35)
     L.emitter(ax0 + 20, 10, ax1 - 20, F, "aurora_motes", 3.0)
     L.emitter(mid - 30, F - 50, mid + 30, F - 6, "embers_rising", 3.0)
+    # Titan 13: more footholds: a storey between the 6th and the top one (a plain double jump from both), another
+    # over the top one; none in the heart's room nor on the ways of the shuttles, ferries and lifts.
+    L.footholds(ax0 + 2, ax1 - 2, [F - 42, F - 54], THEME["ledge"], sub_gap=12,
+                keep=[(heart_x0 - 3, heart_top - 3, heart_x1 + 3, heart_bottom + 2)])
     z.x = ax1 + 2
     return z.save()
 

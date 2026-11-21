@@ -622,6 +622,10 @@ private:
             Card about{"", "", tintOf(g), {}, {}, {}, {}};
             if (!g.description.empty()) about.lines.push_back({g.description, text});
             if (!g.summary.empty()) about.lines.push_back({"En bref : " + g.summary, kGold, FontFace::Bold});
+            // Titan 13: what the event's « Difficulté » changes (its health and its damage; the numbers below: 3 / 5).
+            about.lines.push_back({"Difficulté de l'événement : 1 / 5 : " + raids::difficultyEffects(1) + " ; 3 / 5 (les chiffres ci-dessous) : " +
+                                       raids::difficultyEffects(3) + " ; 5 / 5 : " + raids::difficultyEffects(5) + ".",
+                                   kSky});
             y += card(view, y, w, about) + ui.s(8);
             // 2.77.3: its numbers (health by the group, phases, damage in hearts, parts, speed, size, rhythm).
             if (!g.stats.health.empty()) {

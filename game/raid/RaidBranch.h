@@ -170,6 +170,7 @@ struct GigabossRules {
     const std::string& weakEnemyAt(size_t k) const { return k < weakEnemies.size() && !weakEnemies[k].empty() ? weakEnemies[k] : weakEnemy; }
     float weakShare = 0.04f;           // share of its health a weak point takes from it when broken
     float hpPerPlayer = 0.55f;         // health × (1 + hpPerPlayer × (players − 1)), players seated (2 to 8)
+    float hpScale = 1.0f;              // titan 13: its definition's health × this in its raid (the lair's « hpScale »)
     float weakHpPerPlayer = 0.25f;
     float pressurePerPlayer = 0.06f;   // its cooldowns ÷ (1 + pressurePerPlayer × (players in play − 1))
     /// « Poings de magma »: one fist per player in play every fistPeriods[phase − 1] seconds

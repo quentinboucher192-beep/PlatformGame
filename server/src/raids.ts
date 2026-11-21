@@ -1148,6 +1148,9 @@ export async function adminUpdate(ctx: Ctx): Promise<Response> {
     // 2.69: a catch-up session keeps its dates (registrations open until its end): cancel it and open another.
     if (e.catchup_of) throw Errors.conflict("RAID_IS_CATCHUP", "Une session de rattrapage ne se modifie pas : annulez-la et ouvrez-en une autre.");
     if (startGiven && now >= e.starts_at) throw Errors.conflict("RAID_STARTED", "L'événement a commencé : son heure ne change plus.");
+    // Titan 13: the difficulty is a rule of every fight (the games' and the reports'): fixed once the event started.
+    if (f.difficulty !== undefined && f.difficulty !== e.difficulty && now >= e.starts_at)
+        throw Errors.conflict("RAID_STARTED", "L'événement a commencé : sa difficulté ne change plus.");
     const format = f.format ?? e.format;
     const lock = f.lock_minutes ?? e.lock_minutes;
     const t = timesOf(f.start ?? Date.parse(e.starts_at), lock, format);

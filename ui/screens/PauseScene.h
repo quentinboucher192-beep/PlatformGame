@@ -5,6 +5,7 @@
 
 #include "engine/core/Math.h"
 #include "engine/core/Scene.h"
+#include "engine/input/InputManager.h"
 #include "game/achievements/Achievements.h"
 #include "ui/widgets/CosmicStyle2.h"
 
@@ -45,6 +46,7 @@ private:
     GameServices& g_;
     GameScene& game_;
     float t_ = 0.0f;
+    FreshKeys keys_;  // titan 13: what was held when the pause opened waits for its release
     bool confirmQuit_ = false;
     float mapPan_ = 0.0f;  // world units the map was scrolled by
     bool keysOpened_ = false;  // automated screenshots: « Touches de ce niveau » opened once

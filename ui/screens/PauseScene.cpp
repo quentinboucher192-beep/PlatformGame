@@ -20,6 +20,7 @@ void PauseScene::onEnter() {
     g_.app.audio().setMusicDuck(0.35f);
     g_.uiSound("ui_confirm", 0.5f);
     g_.ui.setFocus("pause/resume");
+    keys_.reset();  // titan 13: the directions held at this moment (moving) are ignored until released
     // « Succès suivis » (2.52): the counters with this run's progress, read once (nothing moves
     // while paused; the inputs scan the user folders).
     liveStats_ = game_.liveAchievementStats();
@@ -238,6 +239,7 @@ void PauseScene::onResume() {
 
 void PauseScene::update(float dt) {
     t_ += dt;
+    keys_.update(g_.app.input());
     // Automated screenshots: --pause --online-open powerkeys[:…] opens « Touches de ce niveau ».
     if (!keysOpened_ && g_.onlineOpen.rfind("powerkeys", 0) == 0) {
         keysOpened_ = true;
@@ -324,8 +326,9 @@ void PauseScene::drawMapPanel(const Rect& panel, const std::vector<const Achieve
             if (in.wheel() != 0.0f) mapPan_ -= in.wheel() * step * 0.5f;
         }
         const float dt = g_.app.frameTime() / 1000.0f;
-        if (in.keyDown(SDL_SCANCODE_LEFT) || in.held(Action::MenuTabPrev)) mapPan_ -= step * 2.0f * dt;
-        if (in.keyDown(SDL_SCANCODE_RIGHT) || in.held(Action::MenuTabNext)) mapPan_ += step * 2.0f * dt;
+        // Titan 13: a direction held since the pause opened (the player was moving) pans nothing until released.
+        if (!keys_.waitingH() && (in.keyDown(SDL_SCANCODE_LEFT) || in.held(Action::MenuTabPrev))) mapPan_ -= step * 2.0f * dt;
+        if (!keys_.waitingH() && (in.keyDown(SDL_SCANCODE_RIGHT) || in.held(Action::MenuTabNext))) mapPan_ += step * 2.0f * dt;
         mapPan_ = std::clamp(mapPan_, v.minPan, v.maxPan);
     }
     if (tracked) {
@@ -337,6 +340,7 @@ void PauseScene::drawMapPanel(const Rect& panel, const std::vector<const Achieve
 void PauseScene::render(float /*alpha*/) {
     UIContext& ui = g_.ui;
     ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
+    ui.consumeNavigation(keys_.waitingH(), keys_.waitingV());  // titan 13: no focus moved by a direction held since it opened
     float k = std::min(1.0f, t_ / 0.25f);
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{4, 6, 14, 255}.withAlphaF(0.65f * k));
 

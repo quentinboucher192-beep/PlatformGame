@@ -770,6 +770,7 @@ void AdminRaids::drawTest(const Rect& r) {
         ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
         y += rowH + gap;
     }
+    y = difficultyRow({x, y, w, rowH}) + gap;  // titan 13
     guestsRow({x, y, w, rowH}, false);  // 2.80
     y += rowH + gap;
     bool inv = g_.settings.gameplay.adminInvincible;
@@ -789,6 +790,7 @@ void AdminRaids::drawTest(const Rect& r) {
         t.parts = testParts_;  // 2.74 (phase 6): the heart's test only
         t.relics = testRelics_;
         t.skill = testSkill_;  // 2.77
+        t.difficulty = testDifficulty_ + 1;  // titan 13
         t.guests = guests_->chosen();  // 2.80: invited with the launch (the test then goes through the server)
         guests_->setChosen({});
         g_.app.pushScene(makeRaidTest(g_, t));
@@ -803,6 +805,17 @@ void AdminRaids::drawTest(const Rect& r) {
                        std::max(0, static_cast<int>((r.bottom() - ui.s(8) - y) / ui.s(18)))  /* 2.80: never past the panel */),
               {x, y}, 13, ui.s(18), kDim);
     ui.popId();
+}
+
+float AdminRaids::difficultyRow(const Rect& row) {
+    UIContext& ui = g_.ui;
+    static const std::vector<std::string> kLevels = {"1 / 5", "2 / 5", "3 / 5", "4 / 5", "5 / 5"};
+    ui.cycle("difficulty", row, "Difficulté", testDifficulty_, kLevels);
+    testDifficulty_ = std::clamp(testDifficulty_, 0, 4);
+    // What it changes, under it (one line, fitted to the width).
+    const float y = row.bottom() + ui.s(4);
+    fit(ui, raids::difficultyEffects(testDifficulty_ + 1), {row.x, y + ui.s(9)}, 13, row.w, kDim);
+    return y + ui.s(18);
 }
 
 void AdminRaids::drawSim(const Rect& r, bool capture) {
@@ -830,6 +843,7 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     y += ui.s(20) + gap;
     ui.cycle("skill", {x, y, w, rowH}, "Niveau des joueurs simulés", testSkill_, kSkills);
     y += rowH + gap;
+    y = difficultyRow({x, y, w, rowH}) + gap;  // titan 13
     ui.cycle("speed", {x, y, w, rowH}, "Vitesse des groupes non regardés", simSpeed_, kSpeeds);
     y += rowH + gap;
     bool inv = g_.settings.gameplay.adminInvincible;
@@ -852,6 +866,7 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
         s.bots = simBots_ + 1;  // N − 1: the administrator's place, then N − 1 simulated players
         s.fullGroups = true;
         s.skill = testSkill_;
+        s.difficulty = testDifficulty_ + 1;  // titan 13
         s.background = simSpeed_ == 2 ? 4 : simSpeed_ == 1 ? 2 : 1;
         s.invincible = g_.settings.gameplay.adminInvincible;
         s.botsInvincible = simBotsInvincible_;
@@ -902,7 +917,11 @@ void AdminRaids::drawForm(const Rect& r) {
     for (const raid::CatalogEntry& e : cat) raidNames.push_back(e.title);
     const float listH = raidOpen_ ? static_cast<float>(cat.size()) * (ui.s(4) + std::max(ui.s(36), ui.s(44) - ui.s(8))) : 0.0f;
     const float posterH = raidE ? layoutRaidPoster(ui, {x, 0.0f, w, 0.0f}, *raidE).height + ui.s(12) : 0.0f;
-    const float contentH = 10 * rowH + listH + posterH;
+    // Titan 13: what the difficulty chosen changes, wrapped under its row (measured here: the scroll's height).
+    const int formDifficulty = (raidE ? raidE->difficultyMin : 1) + difficultyIdx_;
+    const std::vector<std::string> effects = wrap(ui, raids::difficultyEffects(formDifficulty), FontFace::Body, 14, w, 3);
+    const float effectsH = static_cast<float>(effects.size()) * ui.s(19) + ui.s(10);
+    const float contentH = 10 * rowH + listH + posterH + effectsH;
     const bool locked = editing && (st == raids::State::Running || st == raids::State::Finished || st == raids::State::Cancelled);
     ui.beginScroll("fields", fields, contentH);
     float y = fields.y - ui.scrollOffset();
@@ -977,6 +996,9 @@ void AdminRaids::drawForm(const Rect& r) {
         difficultyIdx_ = std::clamp(difficultyIdx_, 0, dMax - dMin);
     }
     y += rowH;
+    // Titan 13: what it changes (the lines measured above), under its row.
+    drawLines(ui, effects, {x, y}, 14, ui.s(19), kDim);
+    y += effectsH;
     // 2.69: the late arrivals: a newcomer may still enter play this long after the start.
     {
         std::vector<std::string> lates;

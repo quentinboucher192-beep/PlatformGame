@@ -1266,6 +1266,482 @@
   },
   {
    "id": "o75",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1808.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o76",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2496.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o77",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1440.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o78",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2144.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o79",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2848.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o80",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1120.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o81",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1344.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o82",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1920.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o83",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2512.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o84",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2736.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o85",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3248.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o86",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3472.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o87",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    912.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o88",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1136.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o89",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o90",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1984.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o91",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2592.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o92",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2832.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o93",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3440.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o94",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3664.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o95",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    864.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o96",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1616.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2160.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2416.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2960.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o101",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o102",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3712.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o103",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1216.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o104",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1760.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o105",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1984.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o106",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2496.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o107",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2720.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o108",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3280.0,
+    416.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "sanctum_ledge"
+   }
+  },
+  {
+   "id": "o109",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1280,7 +1756,7 @@
    }
   },
   {
-   "id": "o76",
+   "id": "o110",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1295,7 +1771,7 @@
    }
   },
   {
-   "id": "o77",
+   "id": "o111",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1310,7 +1786,7 @@
    }
   },
   {
-   "id": "o78",
+   "id": "o112",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1475,6 +1951,7 @@
     "hpPerPlayer": 0.55,
     "weakHpPerPlayer": 0.25,
     "pressurePerPlayer": 0.06,
+    "hpScale": 0.25,
     "boss": "o72",
     "name": "Skullmaw",
     "objective": "crane_skullmaw",
@@ -1562,8 +2039,8 @@
      4,
      4
     ],
-    "exposed": 10.0,
-    "exposedMult": 2.0,
+    "exposed": 14.0,
+    "exposedMult": 3.0,
     "weakEnemy": "skullmaw_oeil",
     "weakSpots": [
      [

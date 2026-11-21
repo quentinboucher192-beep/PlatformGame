@@ -64,6 +64,8 @@ def lair(A, spec):
                   ("Dreadfang vaincu", "Dreadfang defeated"),
                   extra3=[{"type": "activate", "target": ",".join(shred)}])
     z.raid["gigaboss"] = dict(K.SCALING, **{
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.85,
         "boss": boss, "name": "Dreadfang", "objective": "bg_dreadfang", "routine": "dreadfang",
         # « Griffes du sol »: under each player in play, claws of ice burst out of the ground (the rules' fists).
         "fists": {"name": tr("Griffes du sol", "Ground claws"), "periods": [8.0, 6.5, 5.0], "warn": 1.2, "width": 56.0, "damage": 1.0, "rise": True},
@@ -74,7 +76,7 @@ def lair(A, spec):
         # « Griffe clouante » (phases 2 and 3): it nails a player to the ground; the others break the claw.
         "pin": {"from": 2, "period": 15.0, "warn": 1.2, "reach": 56.0, "hold": 8.0, "every": 2.5, "damage": 1.0, "enemy": "dreadfang_griffe"},
         # « Le bras enchaîné » (phase 2): its frost armour holds until its three chains are held together.
-        "carapace": [2, 3], "vents": anchors, "hold": 2.5, "reopen": 12.0, "exposed": 10.0, "exposedMult": 2.0,
+        "carapace": [2, 3], "vents": anchors, "hold": 2.5, "reopen": 18.0, "exposed": 10.0, "exposedMult": 2.0,
         "jet": {"name": tr("Éclats de givre", "Frost shards"), "period": 7.0, "warn": 1.2, "duration": 0.8, "height": 112.0, "damage": 1.0},
         "weakEnemy": "dreadfang_jointure", "weakSpots": [[70.0, -151.0], [100.0, -156.0], [130.0, -141.0]], "weakShare": 0.04,
         "fx": "animations/dreadfang_fx.json",
@@ -84,4 +86,6 @@ def lair(A, spec):
                       "Its frost armour: hold its 3 chains together to pin it to the floor, break its joints, free the nailed players."),
     })
     L.emitter(ax0 + 20, 10, ax1 - 20, F, spec.theme["dust"], 2.0)
+    # Titan 13: more footholds on every storey (the sweeps still cross whole storeys: jump the blade).
+    z.L.footholds(ax0 + 2, ax1 - 2, [F - 6 * k for k in range(1, 7)], z.th["ledge"])
     return z.save()

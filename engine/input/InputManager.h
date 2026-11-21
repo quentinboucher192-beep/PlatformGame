@@ -44,6 +44,8 @@ public:
     /// Builds the input for the next fixed step and consumes pressed/released edges.
     PlayerInput consumePlayerInput();
     bool held(Action a) const { return held_[idx(a)]; }
+    /// Titan 13 (tests, the headless driver): `a` held as if its key were down, from the next update().
+    void simulateHeld(Action a, bool on) { simHeld_[idx(a)] = on; }
 
     // ------------------------------------------------------------- menus
     /// True on press this frame (with auto-repeat for navigation actions).
@@ -168,6 +170,7 @@ private:
     std::array<bool, kActionCount> gameReleased_{};
     std::array<bool, kActionCount> framePressed_{};
     std::array<float, kActionCount> repeatTimer_{};
+    std::array<bool, kActionCount> simHeld_{};
 
     std::vector<SDL_Scancode> keysPressed_;
     std::vector<SDL_Keycode> keyLabelsPressed_;
@@ -204,6 +207,45 @@ private:
     bool padGameplay_ = true;
     int lostPad_ = 0;
     void notePlugged(SDL_JoystickID id);
+};
+
+/// Titan 13 (« Tab en avançant ») : the keys of a panel that opens in the middle of the game (the raid's menu, its
+/// contributions, a test's panel, the pause). A tab or a sort changes on a FRESH press only, never on the
+/// auto-repeat of a held direction; every key already held when the panel opened is ignored until it is released
+/// (moving right while opening the menu never runs through its tabs). The mouse is not concerned.
+class FreshKeys {
+public:
+    /// The panel opens (or opens again): what is held at the next update() waits for its release.
+    void reset() { armed_ = false; }
+    /// Once a frame, before reading the keys (the first call after reset() takes what is held).
+    void update(const InputManager& in) {
+        for (int i = 0; i < kActionCount; ++i) {
+            const bool h = in.held(static_cast<Action>(i));
+            if (!armed_) wait_[i] = prev_[i] = h;
+            else {
+                prev_[i] = now_[i];
+                if (!h) wait_[i] = false;
+            }
+            now_[i] = h;
+        }
+        armed_ = true;
+    }
+    /// A new press of `a` this frame: not its repeat, not a key held since the panel opened.
+    bool fresh(const InputManager& in, Action a) const {
+        const int i = static_cast<int>(a);
+        return in.menuPressed(a) && !wait_[i] && !prev_[i];
+    }
+    /// `a` pressed this frame, its repeat included (a list scrolled), unless held since the panel opened.
+    bool pressed(const InputManager& in, Action a) const { return in.menuPressed(a) && !wait_[static_cast<int>(a)]; }
+    /// `a` held since the panel opened and not released yet (its focus moves, its pans: ignored).
+    bool waiting(Action a) const { return wait_[static_cast<int>(a)]; }
+    /// Whether a horizontal / vertical direction still waits (for UIContext::consumeNavigation).
+    bool waitingH() const { return waiting(Action::MenuLeft) || waiting(Action::MenuRight) || waiting(Action::MenuTabPrev) || waiting(Action::MenuTabNext); }
+    bool waitingV() const { return waiting(Action::MenuUp) || waiting(Action::MenuDown); }
+
+private:
+    bool armed_ = false;
+    std::array<bool, kActionCount> wait_{}, prev_{}, now_{};
 };
 
 }  // namespace cosmic

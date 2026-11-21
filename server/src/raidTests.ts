@@ -112,13 +112,14 @@ function summary(mode: Mode): string {
 function readConfig(mode: Mode, raw: unknown, fail: (m: string) => never): { config: Record<string, unknown>; groups: number; seats: number } {
     if (!raw || typeof raw !== "object" || Array.isArray(raw)) fail("objet attendu");
     const c = raw as Record<string, unknown>;
-    const common = ["skill", "invincible", "bots_invincible"];
+    const common = ["skill", "invincible", "bots_invincible", "difficulty"];
     const keys = mode === "zone" ? [...common, "branch", "zone", "players", "start_phase", "parts", "relics"] : [...common, "groups", "bots", "full_groups"];
     const v = new Validator(c, keys);
     const out: Record<string, unknown> = {};
     out.skill = v.int("skill", { min: 0, max: 2 });
     out.invincible = v.bool("invincible");
     out.bots_invincible = v.bool("bots_invincible", { optional: true }) ?? false;
+    out.difficulty = v.int("difficulty", { min: 1, max: 5, optional: true }) ?? 3; // titan 13: « Difficulté » of the test
     let groups = 1;
     let seats = 2;
     if (mode === "zone") {

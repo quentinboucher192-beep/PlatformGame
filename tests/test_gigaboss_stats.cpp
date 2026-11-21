@@ -99,7 +99,7 @@ TEST_CASE("2.77.3 gigaboss statistics: every number of each sheet is its data's 
         std::printf("  %s : %s PV (1 joueur), %s à 8 joueurs, %zu phases, %zu coups, %zu parties\n", g.id.c_str(), gbstats::thousands(static_cast<int>(st.hp)).c_str(),
                     gbstats::thousands(st.health.empty() ? 0 : st.health.back()).c_str(), st.phases.size(), st.blows.size(), st.parts.size());
         // Its health: its file's « hp » × the lair's scaling (Gigaboss::healthFactor), 2 to 8 players.
-        CHECK(st.hp == jget<float>(file, "hp", -1.0f));
+        CHECK(st.hp == jget<float>(file, "hp", -1.0f) * r->hpScale);  // titan 13: its raid's base (the lair's « hpScale »)
         CHECK(st.hpPerPlayer == r->hpPerPlayer);
         CHECK(st.health.size() == 7);
         for (int n = 2; n <= 8; ++n)

@@ -109,6 +109,16 @@ export const partOf = (id: string) => TITAN.branches.find((b) => b.id === id)?.p
 /** The relay's level of an instance and its hash: every game must have the same branch and titan. */
 export const levelIdOf = (c: Catalog) => "raid:" + c.id;
 export const levelHashOf = (c: Catalog) => `${c.revision}.${TITAN.revision}`;
+/**
+ * Titan 13: the level hash an instance's relay gives its games (GO): the branch's, then the event's difficulty
+ * (« 3.13.d4 »: game/raid/Difficulty.h, readLevelHash). Every game of the instance plays the Gigaboss and the
+ * Heart at that difficulty; a game of another titan refuses it (« mettez le jeu à jour »).
+ */
+export const DIFFICULTY_MIN = 1;
+export const DIFFICULTY_MAX = 5;
+export const difficultyOf = (e: { difficulty?: number | null }) =>
+    Math.min(DIFFICULTY_MAX, Math.max(DIFFICULTY_MIN, Math.round(Number(e.difficulty ?? 3)) || 3));
+export const levelHashFor = (c: Catalog, e: { difficulty?: number | null }) => `${levelHashOf(c)}.d${difficultyOf(e)}`;
 
 // ------------------------------------------------------------------ rules of a state (as game/raid/RaidBranch)
 
@@ -243,6 +253,7 @@ export async function stateMaskOf(db: D1Database, eventId: string, branch: strin
 interface EventRow {
     id: string;
     kind: string;
+    difficulty?: number | null; // titan 13: the Gigaboss' and the Heart's (1 to 5)
     clan_id: string | null;
     starts_at: string;
     lock_at: string;
@@ -473,7 +484,7 @@ export async function enter(ctx: Ctx, e: EventRow, inst: InstanceRow, me: string
     await ask(ctx.env, inst.id, "/create", {
         id: inst.id,
         host: me,
-        level: { source: "raid", id: levelIdOf(c), hash: levelHashOf(c), title: "Asterion · " + c.name },
+        level: { source: "raid", id: levelIdOf(c), hash: levelHashFor(c, e), title: "Asterion · " + c.name },
         raid: { instance_id: inst.id, event_id: e.id, branch: c.id, revision: c.revision },
     });
     const tag = await ctx.env.DB.prepare("SELECT tag FROM clans WHERE id = ?1").bind(inst.clan_id).first<{ tag: string }>();
@@ -493,7 +504,8 @@ export async function enter(ctx: Ctx, e: EventRow, inst: InstanceRow, me: string
             part: partOf(c.id),
             revision: c.revision,
             level: levelIdOf(c),
-            hash: levelHashOf(c),
+            hash: levelHashFor(c, e),
+            difficulty: difficultyOf(e), // titan 13
         },
     });
 }

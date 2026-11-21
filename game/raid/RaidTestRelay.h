@@ -27,6 +27,7 @@
 #include "engine/core/Json.h"
 #include "game/coop/CoopProtocol.h"
 #include "game/gameplay/InputFrame.h"
+#include "game/raid/Difficulty.h"
 
 namespace cosmic {
 struct WorldServices;
@@ -54,6 +55,7 @@ struct RelayedTestConfig {
     bool fullGroups = false;  // 2.77.3: « Joueurs par groupe »: the administrator's place played where they are not
     // Both.
     int skill = 1;
+    int difficulty = kDifficultyDefault;  // titan 13: « Difficulté » of the test (1 to 5)
     bool invincible = true;  // the administrator's seat
     bool botsInvincible = false;
 

@@ -121,7 +121,9 @@ describe("raids phase 4: a new branch, its consensus and the links", () => {
         const r = await join(a.players[0]!, ev, "crane");
         expect(r.status, JSON.stringify(r.body)).toBe(200);
         expect(r.body.data.instance.level).toBe("raid:asterion_crane");
-        expect(r.body.data.instance.hash).toBe(`${catalogByPart("crane")!.revision}.${TITAN.revision}`);
+        // Titan 13: the branch's version, then the event's difficulty (3 / 5 here): every game of the instance plays it.
+        expect(r.body.data.instance.hash).toBe(`${catalogByPart("crane")!.revision}.${TITAN.revision}.d3`);
+        expect(r.body.data.instance.difficulty).toBe(3);
         const inst = r.body.data.instance.id as string;
         for (const p of a.players.slice(1)) expect((await join(p, ev, "crane")).body.data.instance.id).toBe(inst);
         await playing(inst, a.players);

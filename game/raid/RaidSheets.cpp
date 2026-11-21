@@ -453,7 +453,7 @@ void buildGigaboss(GigabossSheet& s, const Json& e, const ContentDatabase& conte
     if (s.def && rules) {
         SheetStats& st = s.stats;
         const EnemyDefinition& d = *s.def;
-        st.hp = d.hp;
+        st.hp = d.hp * rules->hpScale;  // titan 13: its raid's base (the lair's « hpScale »)
         st.hpPerPlayer = rules->hpPerPlayer;
         st.weakHpPerPlayer = rules->weakHpPerPlayer;
         st.pressurePerPlayer = rules->pressurePerPlayer;

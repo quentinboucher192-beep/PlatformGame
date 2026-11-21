@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 
+#include "game/raid/Difficulty.h"
 #include "game/raid/RaidTest.h"
 
 namespace cosmic::raid {
@@ -47,6 +48,7 @@ struct SimSetup {
     int background = 1;                  // steps of each group not watched per step of the raid (1, 2 or 4)
     int startPhase = 1;                  // of every gigaboss (tests)
     int heartStartPhase = 0;             // of the heart (tests; 0: startPhase)
+    int difficulty = kDifficultyDefault;  // titan 13: of every gigaboss and the heart (1 to 5)
     /// Tests (« configuration réduite »): each branch starts at its lair, the objectives before it given
     /// as done by other groups; the heart at its arena. The real lairs, the real heart.
     bool lairs = false;

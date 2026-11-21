@@ -338,6 +338,7 @@ struct RaidTestSetup {
     int zone = 1;
     int players = 2;
     int startPhase = 1;
+    int difficulty = 3;  // titan 13: « Difficulté » of the test (1 to 5: the Gigaboss' and the Heart's health and damage)
     bool invincible = true;
     /// 2.74 (phase 6), the Cœur d'Asterion: the parts of the titan simulated as fallen (bit p = the part p
     /// of raid::AsterionHeartRoutine::Part: their « modifier » links on in the test's branch state) and the
@@ -368,6 +369,7 @@ struct RaidSimSetup {
     int bots = 4;          // simulated players per group, the administrator not counted (1 to 7)
     bool fullGroups = false;  // 2.77.3: « Joueurs par groupe »: the administrator's seat of the other groups played too
     int skill = 1;         // 0 Débutant, 1 Confirmé, 2 Expert
+    int difficulty = 3;    // titan 13: « Difficulté » (1 to 5)
     int background = 1;    // the groups not watched: 1 (as the one watched), 2 or 4 steps each (« accéléré »)
     bool invincible = true;
     bool botsInvincible = false;  // the simulated players too (a test only: their survival is not what is tested)
