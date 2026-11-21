@@ -1556,6 +1556,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if (view_.flashIn <= 24) raiseShield = true;
         } else {
             react = "caché du regard";
+            // 2.84: hidden as it charges, its shield anyway as it flashes (its skull drifts: a column that hid it may not any
+            // more at the very instant).
+            if (view_.flashIn <= 18) raiseShield = true;
             b.goal = feet;
             b.goalNode = -1;
             b.path.clear();
