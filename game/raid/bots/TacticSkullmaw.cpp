@@ -29,6 +29,7 @@ public:
     const char* name() const override { return "Skullmaw"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v, false);
+        v.plan.fixedHolders = true;  // 2.84: each mirror its own player through its veil, revived first
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);
@@ -56,6 +57,8 @@ public:
             std::vector<const SkullmawRoutine::Mirror*> order;
             for (const auto& m : rt->mirrors()) order.push_back(&m);
             std::stable_sort(order.begin(), order.end(), [](const auto* a, const auto* c) { return a->area.y > c->area.y + 1.0f; });
+            // 2.84: the mirrors already held first (fewer asked for when players fall: never one left for a far one).
+            std::stable_sort(order.begin(), order.end(), [](const auto* a, const auto* c) { return (a->holders != 0) > (c->holders != 0); });
             const int need = std::min(rt->mirrorsNeeded(), static_cast<int>(order.size()));
             for (int k = 0; k < need; ++k) {
                 Station s;

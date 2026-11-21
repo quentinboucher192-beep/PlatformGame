@@ -285,21 +285,32 @@ bool NavGraph::Ticket::finished() const {
     return future.valid() && future.wait_for(std::chrono::seconds(0)) == std::future_status::ready;
 }
 
+namespace {
+
+/// 2.84: everything a build reads (the snapshot itself), hashed — a graph is taken from the cache only when it was built
+/// from the very same world: the simulated players' choices never depend on what an earlier fight of the process left in
+/// it (a graph built at another moment, when a liquid, an updraft or a hazard was not the same), so that every computer
+/// of a relayed test, cache or not, has the same graph.
+uint64_t contentKey(const NavGraph::Snapshot& s);
+
+}  // namespace
+
 NavGraph::Ticket NavGraph::request(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) {
     Ticket t;
+    std::shared_ptr<Snapshot> snap = snapshot(w, periodic, keepOut);
     t.key = signature(w, periodic, keepOut);
+    const uint64_t cacheKey = mix(t.key, contentKey(*snap));  // the cache's own key: the very same world
     t.delay = delayFor(w);
     {
         std::lock_guard<std::mutex> lock(cacheMutex());
         auto& c = cache();
         for (auto it = c.begin(); it != c.end(); ++it)
-            if (it->key == t.key) {
+            if (it->key == cacheKey) {
                 c.splice(c.begin(), c, it);  // most recent first
                 t.future = c.front().graph;
                 return t;
             }
     }
-    std::shared_ptr<Snapshot> snap = snapshot(w, periodic, keepOut);
     t.future = std::async(std::launch::async, [snap]() -> std::shared_ptr<const NavGraph> {
                    auto g = std::make_shared<NavGraph>();
                    g->build(*snap);
@@ -307,9 +318,14 @@ NavGraph::Ticket NavGraph::request(const GameWorld& w, const std::string& period
                }).share();
     std::lock_guard<std::mutex> lock(cacheMutex());
     auto& c = cache();
-    c.push_front({t.key, t.future});
+    c.push_front({cacheKey, t.future});
     while (c.size() > 48) c.pop_back();
     return t;
+}
+
+void NavGraph::clearCache() {
+    std::lock_guard<std::mutex> lock(cacheMutex());
+    cache().clear();
 }
 
 std::shared_ptr<const NavGraph> NavGraph::of(const GameWorld& w, const std::string& periodic, const std::vector<Rect>& keepOut) {
@@ -896,4 +912,54 @@ uint64_t NavGraph::hash() const {
     return h;
 }
 
+}  // namespace cosmic::raid
+
+namespace cosmic::raid {
+namespace {
+
+uint64_t contentKey(const NavGraph::Snapshot& s) {
+    uint64_t h = 0x9E3779B97F4A7C15ULL;
+    const auto f = [&](float v) { h = mix(h, static_cast<uint64_t>(static_cast<int64_t>(std::lround(v * 8.0f)))); };
+    const auto r = [&](const Rect& q) {
+        f(q.x);
+        f(q.y);
+        f(q.w);
+        f(q.h);
+    };
+    for (unsigned char c : s.level) h = mix(h, c);
+    r(s.bounds);
+    f(s.killY);
+    for (const Collider& c : s.physics.colliders()) {
+        h = mix(h, (static_cast<uint64_t>(c.id) << 8) | (c.enabled ? 1u : 0u) | (c.dynamic ? 2u : 0u) | (static_cast<uint64_t>(c.kind) << 2));
+        h = mix(h, static_cast<uint64_t>(c.tags));
+        r(c.box);
+    }
+    for (const Rect& q : s.hazards) r(q);
+    for (const auto& e : s.env) {
+        r(e.box);
+        h = mix(h, static_cast<uint64_t>(e.kind));
+        f(e.strength);
+    }
+    for (const auto& m : s.movers) {
+        h = mix(h, (static_cast<uint64_t>(m.collider) << 1) | (m.oneway ? 1u : 0u));
+        f(m.a.x);
+        f(m.a.y);
+        f(m.b.x);
+        f(m.b.y);
+        f(m.w);
+        f(m.h);
+    }
+    for (const Rect& q : s.keepOut) r(q);
+    f(s.cfg.maxRunSpeed);
+    f(s.cfg.jumpHeight);
+    f(s.cfg.doubleJumpHeight);
+    h = mix(h, static_cast<uint64_t>(s.cfg.airJumps));
+    h = mix(h, static_cast<uint64_t>(s.kit.airJumps) | (static_cast<uint64_t>(s.kit.dashKey + 1) << 8) | (static_cast<uint64_t>(s.kit.impulseKey + 1) << 16));
+    f(s.kit.dashCost);
+    f(s.kit.dashSpeed);
+    f(s.kit.impulseVelocity);
+    return h;
+}
+
+}  // namespace
 }  // namespace cosmic::raid

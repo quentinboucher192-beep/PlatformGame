@@ -6,12 +6,14 @@
 
 #include "engine/physics/Collision.h"
 #include "engine/physics/PhysicsWorld.h"
+#include "game/content/ContentDatabase.h"
 #include "game/enemies/BossHazards.h"
 #include "game/enemies/Enemy.h"
 #include "game/enemies/HitParts.h"
 #include "game/gameplay/Projectile.h"
 #include "game/gameplay/entities/Entities.h"
 #include "game/powers/Power.h"
+#include "game/raid/BossHitboxes.h"
 #include "game/raid/GigabossRoutine.h"
 
 namespace cosmic::raid {
@@ -38,6 +40,7 @@ Vec2 dirOf(int d) {
     return kDirX[d] != 0 && kDirY[d] != 0 ? v * 0.70710678f : v;
 }
 constexpr float kWaveRange = 285.0f;  // a little short of its 300 px
+constexpr float kKeepOff = 120.0f;  // 2.84: the strikers' distance to the boss's body (its shape) when they can
 
 uint64_t mix(uint64_t h, uint64_t v) {
     for (int i = 0; i < 8; ++i) {
@@ -144,23 +147,39 @@ Rect strikeBox(const Enemy& e, const GameWorld& w) {
 
 /// 2.79: the whole shape of `e` in its pose now — every part, those that only hurt too (its body hurts on contact,
 /// docs/HITBOX_PARTS.md), and its box: what a player must keep out of.
-Rect bodyBox(const Enemy& e, const GameWorld& w) {
+Rect bodyBox(const Enemy& e, const GameWorld& w, std::vector<Rect>* parts = nullptr) {
     Rect out = e.box;
-    if (!fightsByParts(e, w)) return out;
+    if (parts) parts->clear();
+    if (!fightsByParts(e, w)) {
+        if (parts) parts->push_back(out);
+        return out;
+    }
     const AnimationSetPtr& set = e.animator().set();
-    if (!set || set->frameWidth <= 0 || set->frameHeight <= 0) return out;
+    const auto whole = [&] {
+        if (parts) parts->push_back(out);
+        return out;
+    };
+    if (!set || set->frameWidth <= 0 || set->frameHeight <= 0) return whole();
     const HitPartsSheet* sheet = HitPartsSheet::of(set->sourcePath);
-    if (!sheet) return out;
+    if (!sheet) return whole();
     const Rect src = e.animator().sourceRect();
     const std::vector<HitPartPiece>* pieces = sheet->cell(static_cast<int>(src.y) / set->frameHeight, static_cast<int>(src.x) / set->frameWidth);
-    if (!pieces) return out;
+    if (!pieces || pieces->empty()) return whole();
     for (const HitPartPiece& piece : *pieces) {
         const std::vector<Vec2> poly = placePiece(piece, *sheet, e.box.bottomCenter(), e.def().scale, e.facing < 0.0f);
+        if (poly.empty()) continue;
+        Rect r{poly[0].x, poly[0].y, 0.0f, 0.0f};
         for (const Vec2& q : poly) {
             const float l = std::min(out.x, q.x), t = std::min(out.y, q.y);
             out = {l, t, std::max(out.right(), q.x) - l, std::max(out.bottom(), q.y) - t};
+            const float rl = std::min(r.x, q.x), rt = std::min(r.y, q.y);
+            r = {rl, rt, std::max(r.right(), q.x) - rl, std::max(r.bottom(), q.y) - rt};
         }
+        // 2.84: each part's own box (what touches is a part, not the box around all of them: the space under a skull,
+        // between two legs, is free).
+        if (parts) parts->push_back(r);
     }
+    if (parts && parts->empty()) parts->push_back(out);
     return out;
 }
 
@@ -226,7 +245,8 @@ uint64_t TestBots::hash() const {
     h = mix(h, (static_cast<uint64_t>(order_.kind) << 56) ^ (static_cast<uint64_t>(std::lround(order_.at.x)) << 24) ^
                    static_cast<uint64_t>(std::lround(order_.at.y)) ^ (static_cast<uint64_t>(order_.tick) << 32));
     h = mix(h, navi_.hash());
-    return mix(h, static_cast<uint64_t>(skill_));
+    h = mix(h, static_cast<uint64_t>(skill_));
+    return seed_ ? mix(h, seed_) : h;
 }
 
 std::string TestBots::wish(int seat) {
@@ -416,12 +436,26 @@ void TestBots::sense(RaidRun& run) {
         tactic_->read(run, view_);
         bossUid_ = boss->uid();
         // Its body hurts on contact (every part of it): a lasting area to keep out of.
-        Danger body;
-        body.kind = Danger::Kind::Area;
-        bossBody_ = bodyBox(*boss, w);
-        body.area = bossBody_.expanded(6.0f);
-        body.body = true;
-        view_.dangers.push_back(body);
+        // 2.84: part by part (the box around them all closed the space between its legs, under its skull, to the
+        // players and their shots).
+        bossBody_ = bodyBox(*boss, w, &bodyParts_);
+        // 2.84: bare (its few seconds to strike its weak points), part by part — the box around them all closes every
+        // place near its weak points; otherwise that whole box (closer, the group took more blows: measured).
+        if (view_.exposed) {
+            for (const Rect& r : bodyParts_) {
+                Danger body;
+                body.kind = Danger::Kind::Area;
+                body.area = r.expanded(6.0f);
+                body.body = true;
+                view_.dangers.push_back(body);
+            }
+        } else {
+            Danger body;
+            body.kind = Danger::Kind::Area;
+            body.area = bossBody_.expanded(6.0f);
+            body.body = true;
+            view_.dangers.push_back(body);
+        }
     } else {
         bots::BossTactic::readCommon(run, view_, false);
         bossUid_ = 0;
@@ -439,7 +473,22 @@ void TestBots::sense(RaidRun& run) {
                 view_.dangers.push_back(d);
             }
         }
+    // 2.84 (fight plan): bare, all on one weak point at a time (the most hurt first), not two on each — broken one after the
+    // other in its few seconds rather than three half-broken.
+    if (fight_ && view_.exposed && view_.plan.focusWeak) {
+        bots::Target* first = nullptr;
+        for (bots::Target& t : view_.targets)
+            if (t.weak)
+                if (const Enemy* e = enemyOf(w, t.uid); e && (!first || e->hp() < enemyOf(w, first->uid)->hp())) first = &t;
+        for (bots::Target& t : view_.targets)
+            if (t.weak) {
+                t.want = &t == first ? 8 : 1;
+                t.priority = &t == first ? 21 : 20;
+            }
+    }
     dangers_ = view_.dangers;
+    for (const Danger& d : dangers_)
+        if (d.kind == Danger::Kind::Flood) lastFlood_ = tick_;  // 2.84: the last step a liquid was coming or up
     // The sync groups (targets finished together): each one low enough everywhere?
     syncLow_.assign(4, 1);
     std::vector<uint8_t> any(4, 0);
@@ -451,6 +500,13 @@ void TestBots::sense(RaidRun& run) {
     }
     for (size_t k = 0; k < any.size(); ++k)
         if (!any[k]) syncLow_[k] = 1;
+}
+
+bool TestBots::touchesBody(const Rect& r) const {
+    if (!r.intersects(bossBody_)) return false;
+    for (const Rect& p : bodyParts_)
+        if (p.intersects(r)) return true;
+    return false;
 }
 
 bool TestBots::threatened(const GameWorld& w, int seat, const Rect& box, int horizon, const Danger** out) const {
@@ -527,20 +583,48 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
         auto ok = [&](int i) {
             const NavGraph::Node& nd = nav->node(i);
             if (nd.mover >= 0 || nd.ladder) return false;
-            if (std::fabs(nd.feet.x - tc.x) > kWaveRange + 20.0f || std::fabs(nd.feet.y - 11.0f - tc.y) > kWaveRange + 20.0f) return false;
+            // In a wave's reach of its target (2.84: of its box — a big arm's centre is far from its edge).
+            if (std::max({0.0f, target.x - nd.feet.x, nd.feet.x - target.right()}) > kWaveRange + 20.0f ||
+                std::max({0.0f, target.y - (nd.feet.y - 11.0f), (nd.feet.y - 11.0f) - target.bottom()}) > kWaveRange + 20.0f)
+                return false;
             const Vec2 c{nd.feet.x, nd.feet.y - 11.0f};
             const float fromTarget = (c - tc).length();
+            // 2.84 (fight plan): above the floor under the boss, whatever the pass (its waves run along that floor).
+            if (body && view_.plan.elevate > 0.0f && (b.role != Role::Lure || view_.plan.elevateAll) && nd.feet.y > view_.plan.floorY - view_.plan.elevate)
+                return false;
+            // 2.84: never on another's place (a group on one pixel is swept, crushed, burnt together).
+            for (int o = 0; o < static_cast<int>(bots_.size()) && pass == 1; ++o)
+                if (o != seat && bots_[static_cast<size_t>(o)].spot >= 0 && ((seats_ >> o) & 1u) &&
+                    (nav->node(bots_[static_cast<size_t>(o)].spot).feet - nd.feet).lengthSq() < 28.0f * 28.0f)
+                    return false;
             if (pass == 0) {
                 if (b.role == Role::Lure ? fromTarget > 210.0f : fromTarget < 130.0f) return false;
+                // 2.84: the others a good way off its body (most of its blows are near it), at the far end of a wave's
+                // reach; only a weak point bare is worth coming close.
+                if (body && b.role != Role::Lure && !(view_.exposed && b.target != bossUid_)) {
+                    const float ex = std::max({0.0f, bossBox.x - c.x, c.x - bossBox.right()});
+                    const float ey = std::max({0.0f, bossBox.y - c.y, c.y - bossBox.bottom()});
+                    const float keep = view_.plan.keepOff >= 0.0f ? view_.plan.keepOff : kKeepOff;
+                    if (ex * ex + ey * ey < keep * keep) return false;
+                }
+                if (body && b.role == Role::Lure && view_.plan.lureOnFloor && nd.feet.y < bossBox.bottom() - 40.0f) return false;
                 for (int o = 0; o < static_cast<int>(bots_.size()); ++o)
                     if (o != seat && bots_[static_cast<size_t>(o)].spot >= 0 && ((seats_ >> o) & 1u) &&
                         (nav->node(bots_[static_cast<size_t>(o)].spot).feet - nd.feet).lengthSq() < 52.0f * 52.0f)
                         return false;  // another's place
             }
-            if (body && bodyAt(nd.feet).intersects(bossBox.expanded(clearance))) return false;
+            // 2.84: a weak point bare is struck from as close as its parts allow (the space under a skull, between two
+            // legs); otherwise the box around them all is kept out of.
+            const bool close = view_.exposed && b.target != bossUid_;
+            // 2.84 (fight plan): bare, all in front of it (it turns toward the players: on both sides, its weak points
+            // swap sides under their shots every second).
+            if (close && view_.plan.frontOnly && body && (nd.feet.x - body->center().x) * body->facing < 0.0f) return false;
+            if (body && (close ? touchesBody(bodyAt(nd.feet).expanded(clearance)) : bodyAt(nd.feet).intersects(bossBox.expanded(clearance)))) return false;
             // On its side of the boss's body (under its top): the way to the other side goes through it.
+            // 2.84: a part of it between (at that height), not the box around them all.
             if (body && nd.feet.y > bossBox.y && nd.feet.y - 22.0f < bossBox.bottom() &&
-                (me.center().x < bossBox.center().x ? nd.feet.x > bossBox.x : nd.feet.x < bossBox.right()))
+                (close ? touchesBody(Rect{std::min(me.center().x, nd.feet.x), nd.feet.y - 22.0f, std::fabs(nd.feet.x - me.center().x), 20.0f})
+                       : (me.center().x < bossBox.center().x ? nd.feet.x > bossBox.x : nd.feet.x < bossBox.right())))
                 return false;
             // From the ground, else from the top of its double jump (the target high over the floor: it jumps and
             // fires at the top, as a player does).
@@ -559,7 +643,7 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
                     }
                 }
             }
-            if (d < 0 || !safeSpot(w, seat, nd.feet, 90)) return false;
+            if (d < 0 || !safeSpot(w, seat, nd.feet, pass == 0 ? 90 : 36)) return false;
             dir = d;
             jump = high;
             return true;
@@ -569,6 +653,7 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
         if (found < 0) continue;
         b.spot = found;
         b.spotDir = dir;
+        b.spotFor = tc;
         b.jumpShot = jump;
         b.goalNode = found;
         b.goal = nav->node(found).feet;
@@ -595,7 +680,7 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count, uint32_t seats
     const bool newZone = navZone_ != run.zoneSerial();
     sense(run);
     ensureNav(run);
-    if (tick_ % 15 == 0 || newZone || navi_.graphChanged()) plan(run, seats, adminActive);
+    if ((tick_ + seed_ * 7u) % 15u == 0 || newZone || navi_.graphChanged()) plan(run, seats, adminActive);  // 2.84: the seed shifts its plans
     for (int s = 0; s < n; ++s) {
         Bot& b = bots_[static_cast<size_t>(s)];
         if (!((seats >> s) & 1u)) continue;
@@ -615,7 +700,15 @@ void TestBots::think(RaidRun& run, InputFrame* frames, int count, uint32_t seats
         if (std::fabs(d.x) > e->box.w * 0.5f + 22.0f || std::fabs(d.y) > e->box.h * 0.5f + 18.0f) syncReady_ = false;
     }
     for (int s = 0; s < n; ++s)
-        if ((seats >> s) & 1u) frames[s] = drive(run, s, bots_[static_cast<size_t>(s)]);
+        if ((seats >> s) & 1u) {
+            frames[s] = drive(run, s, bots_[static_cast<size_t>(s)]);
+            // 2.84 (setSeed): its first key a little later than the others' (0 to 0,6 s, by seed and seat), as players.
+            if (seed_ != 0 && tick_ < static_cast<uint32_t>(noise(s + 8 * static_cast<int>(seed_), 999) * 0.6f * static_cast<float>(kSimHz))) {
+                frames[s] = InputFrame{};
+                bots_[static_cast<size_t>(s)].prevHeld = 0;
+                bots_[static_cast<size_t>(s)].jumpHold = 0;
+            }
+        }
     // An order to revive or a place marked ends once done (the soul up, the place reached by someone).
     if (order_.kind == bots::OrderKind::Revive) {
         bool any = false;
@@ -647,7 +740,7 @@ void TestBots::assignRoles(const RaidRun& run, const std::vector<int>& drivers, 
     int stationNeed = 0;
     for (const bots::Station& s : view_.stations) stationNeed += s.now ? s.need : 0;
     const int wantReviver = n >= 3 ? (n >= 6 && souls >= 2 ? 2 : 1) : 0;
-    const int wantLure = fight && boss && n >= 4 ? 1 : 0;
+    const int wantLure = fight && boss && n >= 4 && !view_.plan.noLure ? 1 : 0;  // 2.84: a plan may want none
     const int wantRunner = fight ? std::clamp(stationNeed, n >= 5 ? 1 : 0, std::max(0, n - wantReviver - wantLure - (n >= 3 ? 1 : 0)))
                                  : (n >= 4 ? 1 : 0);
     std::vector<int> free = drivers;
@@ -718,12 +811,16 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             b.holdAt = 0.0f;
             b.ranged = false;
             b.mechanism = {};
+            b.mechanismClosed = false;
             b.revivee = 0;
+            b.preAim = {};
             b.thought.order = false;
             if (wasTarget == 0) b.spot = -1;
             if (was == Task::Flee) b.task = Task::Flee;  // it finishes sheltering (drive)
             if (playing(w, s)) drivers.push_back(s);
         }
+    if (!fight_ || view_.stations.empty())
+        for (Bot& b : bots_) b.fixedStation = {};  // 2.84: no place to hold any more (its phase over)
     assignRoles(run, drivers, fight_);
     std::vector<bool> busy(static_cast<size_t>(kMaxInstancePlayers), false);
     std::vector<std::string> said;
@@ -798,6 +895,11 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         std::vector<int> down;
         for (int d = 0; d < w.teamSize(); ++d)
             if (w.member(d).presence == GameWorld::Presence::Down) down.push_back(d);
+        // 2.84 (fight plan): the players of the places to hold first (a mirror, a hook without its player stays empty).
+        if (view_.plan.fixedHolders)
+            std::stable_sort(down.begin(), down.end(), [&](int a, int c) {
+                return (bots_[static_cast<size_t>(a)].fixedStation.w > 0.0f) > (bots_[static_cast<size_t>(c)].fixedStation.w > 0.0f);
+            });
         // « Réanimez-le »: the soul nearest to the place given first, the two nearest players on it.
         if (ord == bots::OrderKind::Revive)
             std::stable_sort(down.begin(), down.end(), [&](int a, int c) {
@@ -806,6 +908,18 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         bool first = true;
         for (int d : down) {
             const Vec2 soul = w.member(d).soul;
+            // 2.84: a soul under a liquid that rises or is up (Voidworm's acid) waits for it to fall again: its reviver
+            // would kneel in it.
+            bool drowned = false;
+            for (const bots::Danger& dg : dangers_)
+                drowned = drowned || (dg.kind == bots::Danger::Kind::Flood && fight_ && soul.x > dg.area.x - 10.0f && soul.x < dg.area.right() + 10.0f &&
+                                      soul.y > dg.area.y - 12.0f);
+            if (drowned && ord != bots::OrderKind::Revive) continue;
+            // 2.84 (fight plan): a liquid that comes back on a cycle (Voidworm's acid): a soul under its height only in the
+            // first seconds after it has fallen (the time to kneel 2 s and climb back before the next one).
+            if (fight_ && view_.plan.reviveWindow > 0.0f && view_.plan.elevate > 0.0f && soul.y > view_.plan.floorY - view_.plan.elevate &&
+                static_cast<float>(tick_ - lastFlood_) > view_.plan.reviveWindow * static_cast<float>(kSimHz) && ord != bots::OrderKind::Revive)
+                continue;
             // The reviver first; else (a small group, or more souls than revivers) the nearest free player.
             int s = nearestFree(soul, [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Reviver; });
             if (s < 0 && (!fight_ || drivers.size() <= 2 || ord == bots::OrderKind::Revive || freeCount() > 2)) s = nearestFree(soul);
@@ -835,13 +949,15 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
     for (int s : drivers) {
         if (busy[static_cast<size_t>(s)] || ord == bots::OrderKind::Follow || ord == bots::OrderKind::Wait) continue;
         const Player& p = w.playerAt(s);
-        if (p.health * 10 > p.maxHealth() * 4) continue;
+        if (p.health * 10 > p.maxHealth() * (fight_ ? 6 : 4)) continue;  // 2.84: in a fight, an orb (4 hearts) as soon as it lacks them
         if (bots_[static_cast<size_t>(s)].role == Role::Runner && !view_.stations.empty()) continue;  // its plate first
+        if (fight_ && view_.exposed) continue;  // 2.84: its few seconds bare are for striking
         const LevelEntity* orb = nullptr;
         float bd = 700.0f * 700.0f;
         for (const auto& e : w.entities())
             if (!e->removed && e->active && e->visible && e->type() == "health_orb" && (e->box.center() - p.center()).lengthSq() < bd &&
-                safeSpot(w, s, e->box.bottomCenter(), 60)) {
+                safeSpot(w, s, e->box.bottomCenter(), 60) &&
+                !(view_.plan.elevate > 0.0f && e->box.bottom() > view_.plan.floorY - view_.plan.elevate)) {  // 2.84: not down under its waves, its acid
                 bd = (e->box.center() - p.center()).lengthSq();
                 orb = e.get();
             }
@@ -907,20 +1023,46 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             if (st.now) stations.push_back(&st);
         std::stable_sort(stations.begin(), stations.end(), [](const auto* a, const auto* c) { return a->priority > c->priority; });
         int held = 0;
+        // 2.84: who stands on a place keeps it, whatever comes first (a player on a closed vent was sent to an open one
+        // across the arena, and the closed one to a player who could not reach it: none was ever held again).
+        const auto standsOn = [&](int seat) -> const bots::Station* {
+            for (const bots::Station* st : stations)
+                if (st->plate.expanded(12.0f).intersects(w.playerAt(seat).box)) return st;
+            return nullptr;
+        };
+        const auto other = [&](int seat, const bots::Station* st) {
+            const bots::Station* on = standsOn(seat);
+            return on && on != st && !on->plate.intersects(st->plate);
+        };
         for (const bots::Station* st : stations) {
             int need = std::max(0, st->need - heldByOthers(st->plate));
             while (need-- > 0) {
+                int s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return standsOn(seat) == st; });
+                // 2.84 (fight plan): its own player for the whole phase, wherever it is (never handed to another while it lives).
+                if (s < 0 && view_.plan.fixedHolders)
+                    s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].fixedStation.intersects(st->plate); });
                 // The one already on its way there keeps it (a place given again to another each plan is never reached).
-                int s = nearestFree(st->plate.bottomCenter(), [&](int seat) {
-                    return wasPlate[static_cast<size_t>(seat)].intersects(st->plate) && bots_[static_cast<size_t>(seat)].role != Role::Reviver;
-                });
-                if (s < 0) s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Runner; });
-                if (s < 0) s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role != Role::Reviver; });
-                if (s < 0) s = nearestFree(st->plate.bottomCenter());
+                if (s < 0)
+                    s = nearestFree(st->plate.bottomCenter(), [&](int seat) {
+                        return wasPlate[static_cast<size_t>(seat)].intersects(st->plate) && bots_[static_cast<size_t>(seat)].role != Role::Reviver;
+                    });
+                if (s < 0)
+                    s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Runner && !other(seat, st); });
+                if (s < 0)
+                    s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].role != Role::Reviver && !other(seat, st); });
+                if (s < 0) s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return !other(seat, st); });
                 if (s < 0) break;
                 give(s, Task::Mechanism, {st->plate.center().x, st->plate.bottom()}, Stand);
                 Bot& b = bots_[static_cast<size_t>(s)];
                 b.mechanism = st->plate;
+                if (view_.plan.fixedHolders) {
+                    // Its place from now on (a player who owned another gives it up only for this one).
+                    bool taken = false;
+                    for (int q = 0; q < w.teamSize(); ++q)
+                        taken = taken || (q != s && w.member(q).presence != GameWorld::Presence::Gone && bots_[static_cast<size_t>(q)].fixedStation.intersects(st->plate));
+                    if (!taken) b.fixedStation = st->plate;
+                }
+                b.mechanismClosed = st->closed && view_.plan.freeOnClosed;
                 b.goalNode = standNode(st->plate);
                 think(b, "tient " + std::string(st->label.empty() ? "la plaque" : st->label));
                 ++held;
@@ -976,8 +1118,17 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                         if (t->priority >= 10 || t->uid == boss->uid()) continue;
                         const Enemy* e = enemyOf(w, t->uid);
                         if (!e) continue;
-                        const float d2 = (e->center() - w.playerAt(s).center()).lengthSq();
-                        if (d2 < bd && (d2 < 360.0f * 360.0f || !body)) {
+                        float d2 = (e->center() - w.playerAt(s).center()).lengthSq();
+                        // 2.84: its places held (its carapace), the creatures closest to those holding them first, wherever
+                        // they are (its parasites bite the players on its hooks: nobody else was near them).
+                        bool guard = false;
+                        if (!view_.bodyTakesDamage)
+                            for (const bots::Station& st : view_.stations)
+                                if ((e->center() - st.plate.center()).lengthSq() < 320.0f * 320.0f) {
+                                    guard = true;
+                                    d2 = std::min(d2, (e->center() - st.plate.center()).lengthSq() * 0.25f);
+                                }
+                        if (d2 < bd && (d2 < 360.0f * 360.0f || !body || guard)) {
                             bd = d2;
                             target = t->uid;
                             what = e->def().name;
@@ -988,7 +1139,19 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                 give(s, Task::Fight, boss->box.bottomCenter(), Strike, target);
                 b.ranged = true;
                 if (b.role == Role::Lure) think(b, view_.bodyTakesDamage ? "attire " + bossName : "attire " + bossName + " loin des plaques");
-                else if (!view_.bodyTakesDamage && target == boss->uid()) think(b, std::string("garde son énergie pour les points faibles"));
+                else if (!view_.bodyTakesDamage && target == boss->uid()) {
+                    // 2.84: already where its weak points will be in reach once it is bare (the spots of its rules,
+                    // as its sheet shows them): its few seconds bare are spent striking, not walking.
+                    const GigabossRules* gr = run.gigaboss().rules();
+                    if (gr && !gr->weakSpots.empty() && b.role != Role::Lure) {
+                        const size_t k = static_cast<size_t>(s) % gr->weakSpots.size();
+                        const Vec2 at = spotFeet(boss->box, boss->facing, gr->weakSpots[k]);
+                        Vec2 size{40.0f, 40.0f};
+                        if (const EnemyDefinition* wd = w.content().enemy(gr->weakEnemyAt(k))) size = wd->size * wd->scale;
+                        b.preAim = Rect::fromBottomCenter(at, size);
+                    }
+                    think(b, std::string("garde son énergie pour les points faibles"));
+                }
                 else think(b, (view_.exposed && target == boss->uid() ? "frappe " + what + " à nu (× 2)" : "frappe " + what));
             }
         said.push_back(view_.phase.empty() ? "Combat de " + bossName : view_.phase);
@@ -1228,6 +1391,9 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     plan.flee = b.task == Task::Flee;
     plan.hold = b.task == Task::Revive || b.task == Task::Mechanism;
     plan.mayLeave = (b.task == Task::Exit && b.act == Enter) || (b.task == Task::Mechanism && b.thing == kGroupPlate);
+    // 2.84: in a fight its energy is for its shots and its shield (a dash costs its own and stops its regeneration for
+    // 0,7 s): moves without one when it can (more than a tenth of its energy went into dashes on the way).
+    plan.spare = fight_ && w.playerAt(seat).energy < 120.0f && b.task == Task::Fight;  // a place to reach or a soul: every move
     plan.path = &b.path;
     plan.at = &b.at;
     plan.planned = &b.planned;
@@ -1238,7 +1404,8 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     dir = pad.mx > 0 ? 1 : pad.mx < 0 ? -1 : 0;
     if (pad.my != 0) f.moveY = pad.my;
     // A move through the air under way is the navigation's own (no jump of the tactic's over it).
-    if (navi_.pilot(seat).committed()) b.jumpHold = 0;
+    // 2.84: except its jump over a wave running at it (a move along the ground gives way to it).
+    if (navi_.pilot(seat).committed() && !(b.waveJumpCool > 0 && w.playerAt(seat).grounded())) b.jumpHold = 0;
 }
 
 InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
@@ -1265,13 +1432,17 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     std::string react;  // what it does about what is coming this step (its thought)
     if (b.shieldCool > 0) --b.shieldCool;
     if (b.waveJumpCool > 0) --b.waveJumpCool;
+    if (b.hop && me.grounded() && b.jumpHold <= 0) b.hop = 0;
+    // 2.84: held back at the edge of what is coming (counted while it waits there; a step away from it forgets it).
+    if (b.moveText != "attend que ça passe" && b.moveText != "s'écarte") b.blocked = 0;
     const Power* shield = powerOf(me, "shield");
     const bool shieldReady = shield && keyBit(shield) >= 0 && shield->ready(me) && !(b.prevHeld & (1u << keyBit(shield))) && !me.shieldActive();
     bool raiseShield = false;
-    const bool holding = b.task == Task::Mechanism && b.mechanism.w > 0.0f && b.mechanism.intersects(me.box);
+    // 2.84: a place closed for now (its vent shut) is kept, not held: its player dodges and jumps around it.
+    const bool holding = b.task == Task::Mechanism && b.mechanism.w > 0.0f && b.mechanism.intersects(me.box) && !b.mechanismClosed;
     // Sent to a place to hold: what strikes that place (its own jet, a mark on it) is taken under the shield, never a
     // reason to leave it or to wait beside it — a vent or a hook left while its jet comes is never closed.
-    const Rect station = b.task == Task::Mechanism && b.mechanism.w > 0.0f ? b.mechanism.expanded(10.0f) : Rect{};
+    const Rect station = b.task == Task::Mechanism && b.mechanism.w > 0.0f && !b.mechanismClosed ? b.mechanism.expanded(10.0f) : Rect{};
     b.onStation = holding;
     // ------------------------------------------------------------ rising liquids: above their top
     bool fleeing = false;
@@ -1304,6 +1475,44 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     } else if (b.task == Task::Flee) {
         b.task = Task::Follow;
         b.fleeNode = -1;
+    }
+    // ------------------------------------------------------------ 2.84: a storey about to be swept: onto another one
+    if (!fleeing && !holding && nav && fight_) {  // a reviver too: it comes back once the blade has passed
+        bool onSwept = false;
+        int in = 1 << 20;
+        for (const Danger& d : dangers_)
+            if (d.kind == Danger::Kind::Storey && feet.y <= d.floorY + 6.0f && feet.y >= d.floorY - 30.0f && feet.x >= d.area.x && feet.x <= d.area.right()) {
+                onSwept = true;
+                in = std::min(in, d.in);
+            }
+        if (onSwept && in >= kSimHz / 3) {
+            const auto swept = [&](Vec2 f) {
+                for (const Danger& d : dangers_)
+                    if (d.kind == Danger::Kind::Storey && f.y <= d.floorY + 6.0f && f.y >= d.floorY - 30.0f && f.x >= d.area.x && f.x <= d.area.right()) return true;
+                return false;
+            };
+            if (b.storeyNode < 0 || swept(nav->node(b.storeyNode).feet)) {
+                const int here = nav->locate(feet, 96.0f);
+                b.storeyNode = here >= 0 ? nav->search(
+                                               here,
+                                               [&](int i) {
+                                                   const NavGraph::Node& nd = nav->node(i);
+                                                   return nd.mover < 0 && !nd.ladder && !swept(nd.feet) && safeSpot(w, seat, nd.feet, 60);
+                                               },
+                                               static_cast<float>(in) * 2.5f)
+                                         : -1;
+            }
+            if (b.storeyNode >= 0) {
+                fleeing = true;
+                b.task = Task::Flee;
+                b.goal = nav->node(b.storeyNode).feet;
+                b.goalNode = b.storeyNode;
+                stop = 4.0f;
+                react = "change d'étage avant la lame";
+            }
+        } else if (!onSwept) {
+            b.storeyNode = -1;
+        }
     }
     // ------------------------------------------------------------ a sector whose gravity turns over (Graviton)
     int forced = 0;  // a side it must go to this step (a reaction), 0 none
@@ -1364,6 +1573,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if (view_.flashIn <= 24) raiseShield = true;
         } else {
             react = "caché du regard";
+            // 2.84: hidden as it charges, its shield anyway as it flashes (its skull drifts: a column that hid it may not any
+            // more at the very instant).
+            if (view_.flashIn <= 18) raiseShield = true;
             b.goal = feet;
             b.goalNode = -1;
             b.path.clear();
@@ -1375,7 +1587,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // ------------------------------------------------------------ its target: where to strike it from
     const Enemy* foe = enemyOf(w, b.target);
     const Enemy* boss = fight_ ? enemyOf(w, bossUid_) : nullptr;
-    const Rect fb = foe ? strikeBox(*foe, w) : Rect{};
+    const Rect fb = foe && b.preAim.w > 0.0f && fight_ && !view_.bodyTakesDamage ? b.preAim : foe ? strikeBox(*foe, w) : Rect{};
     const Vec2 fc = fb.center();
     const Power* sh = shooter(me);
     const bool bossFight = fight_ && boss;
@@ -1389,14 +1601,39 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (ranged) {
             // A place of the graph that sees it, out of its body and of what is coming (again every half second,
             // or when that place no longer sees it).
-            const bool stale = b.spot < 0 || static_cast<int>(tick_) - b.spotAt > 60 ||
+            // 2.84: its target moved away from where its place was chosen for (an arm that sweeps across the arena): again.
+            const bool moved = b.spot >= 0 && (fc - b.spotFor).lengthSq() > 70.0f * 70.0f;
+            const bool stale = b.spot < 0 || static_cast<int>(tick_) - b.spotAt > 60 || moved ||
                                (nav && b.spot >= 0 && !safeSpot(w, seat, nav->node(b.spot).feet, 60));
-            if (stale && static_cast<int>(tick_) - b.spotAt > 12) chooseSpot(w, seat, b, fb, boss);
+            // 2.84 (fight plan): its body closed to blows and nothing else to strike, a good way off it until it opens.
+            const bool hide = view_.plan.hideArmoured && bossFight && !view_.bodyTakesDamage && foe == boss;
+            if (hide) b.spot = -1;
+            else if (stale && static_cast<int>(tick_) - b.spotAt > 12) chooseSpot(w, seat, b, fb, boss);
             if (b.spot < 0) {
                 // No place sees it: near it, out of its body, each one its own place (never all on one pixel).
                 const float side = fc.x < me.center().x ? 1.0f : -1.0f;
                 b.goal = {fc.x + side * (fb.w * 0.5f + 120.0f + 34.0f * static_cast<float>(seat % 4)), std::max(fb.bottom(), feet.y)};
                 if (nav && (b.goalNode < 0 || (nav->node(b.goalNode).feet - b.goal).lengthSq() > 64.0f * 64.0f)) b.goalNode = nav->locate(b.goal, 200.0f);
+                // 2.84 (fight plan): a boss fight — no place to fire from now: it waits a good way off its body, somewhere
+                // safe (never walking up to it for want of a better place), until one comes.
+                if (bossFight && nav && b.role != Role::Lure) {
+                    const int here = nav->locate(feet, 96.0f);
+                    const Rect off = bossBody_.expanded(hide ? 320.0f : 170.0f);
+                    const Rect near = bossBody_.expanded(hide ? 700.0f : 340.0f);  // and not out of the fight either
+                    if (here >= 0 && (b.standOff < 0 || off.contains(nav->node(b.standOff).feet) || !near.contains(nav->node(b.standOff).feet) ||
+                                      !safeSpot(w, seat, nav->node(b.standOff).feet, 36)))
+                        b.standOff = nav->search(
+                            here, [&](int i) {
+                                const NavGraph::Node& nd = nav->node(i);
+                                return nd.mover < 0 && !nd.ladder && !off.contains(nd.feet) && near.contains(nd.feet) && safeSpot(w, seat, nd.feet, 36) &&
+                                       !(view_.plan.elevate > 0.0f && nd.feet.y > view_.plan.floorY - view_.plan.elevate);
+                            },
+                            4000.0f);
+                    if (b.standOff >= 0) {
+                        b.goalNode = b.standOff;
+                        b.goal = nav->node(b.standOff).feet;
+                    }
+                }
             }
         } else {
             const float side = fc.x < me.center().x ? 1.0f : -1.0f;
@@ -1422,6 +1659,43 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             }
             break;
         }
+    // ------------------------------------------------------------ 2.84: through the boss's body, under its shield
+    // Its way (a place to hold, a soul, a place to strike from) lies on the other side of the boss, whose body fills
+    // the floor between (Pyroclast's arm over the arena): a player does not wait for it to leave — the shield up (it
+    // takes the contact, 2,2 s), dashes through (invulnerable while it dashes), out the other side.
+    if (fight_ && bossUid_ && b.cross <= 0 && !fleeing && !holding && b.task == Task::Mechanism) {
+        const Rect& bb = bossBody_;
+        const bool across = (me.center().x < bb.x && b.goal.x > bb.right() + 8.0f) || (me.center().x > bb.right() && b.goal.x < bb.x - 8.0f);
+        const float edge = me.center().x < bb.x ? bb.x - me.box.right() : me.box.x - bb.right();
+        const bool level = me.box.bottom() > bb.y && me.box.y < bb.bottom();
+        // At its edge, or held back short of it by its blows (waiting there for a second): the shield, and through.
+        if (across && level && edge > -4.0f && (edge < 60.0f || (edge < 420.0f && b.blocked > kSimHz)) && me.grounded() && shieldReady && me.energy >= 45.0f) {
+            b.cross = static_cast<int>(5.0f * static_cast<float>(kSimHz));
+            b.crossDir = b.goal.x > me.center().x ? 1 : -1;
+            if (!me.shieldActive()) raiseShield = true;
+        }
+    }
+    // 2.84: on its way to a place to hold or a soul, held back by blows that keep coming (a second at their edge): the
+    // shield up, it goes on through them on its path for as long as it lasts (it takes them all), as a player does.
+    if (fight_ && b.push <= 0 && b.cross <= 0 && b.task == Task::Mechanism && !holding && b.blocked > kSimHz && shieldReady &&
+        me.energy >= 30.0f) {
+        b.push = static_cast<int>(2.1f * static_cast<float>(kSimHz));
+        raiseShield = true;
+    }
+    if (b.push > 0) {
+        --b.push;
+        if (!me.shieldActive() && !raiseShield) b.push = 0;
+        else react = "passe sous son bouclier";
+    }
+    const bool pushing = b.push > 0;
+    const bool crossing = b.cross > 0;
+    if (crossing) {
+        --b.cross;
+        const bool inside = me.box.expanded(4.0f).intersects(bossBody_);
+        // Out the other side (or its shield fell before it was halfway): done.
+        if (!inside && ((b.crossDir > 0 && me.box.x > bossBody_.right()) || (b.crossDir < 0 && me.box.right() < bossBody_.x))) b.cross = 0;
+        react = "traverse sous son bouclier";
+    }
     if (!fleeing && !forced) {
         // The most pressing blow on it: the one whose time left is the shortest against the time it needs to get
         // out (its way out at a run, its level's reaction), the blows still far off left for later.
@@ -1431,14 +1705,15 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         for (const Danger& d : dangers_) {
             if ((d.seat >= 0 && d.seat != seat) || d.in > 3 * kSimHz) continue;
             if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f) continue;  // a sweep: its shield (above)
-            if (station.w > 0.0f && d.kind == Danger::Kind::Area && !d.body && d.area.intersects(station) && !d.shot) {
+            if (station.w > 0.0f && d.kind == Danger::Kind::Area && !d.body && d.area.intersects(station) && !d.shot && !d.unblockable) {
                 if (d.in <= 14 && d.area.intersects(mine)) {
                     raiseShield = true;
                     react = "tient sous son bouclier";
                 }
                 continue;
             }
-            if (me.shieldActive() && !d.body && d.kind != Danger::Kind::Pull) continue;  // under its shield: nothing gets through
+            if (me.shieldActive() && !d.body && d.kind != Danger::Kind::Pull && !d.unblockable) continue;  // under its shield: nothing gets through
+            if ((crossing || pushing) && (d.body || (me.shieldActive() && d.kind != Danger::Kind::Pull))) continue;  // 2.84: it goes through (above)
             float need = 0.0f;
             if (d.kind == Danger::Kind::Area || d.kind == Danger::Kind::Pull) {
                 if (!d.area.intersects(mine)) continue;
@@ -1469,9 +1744,26 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if (seen) b.react = 1;  // seen: it stays seen while it lasts
             const bool shot = hit->shot;
             // Holding a plate or reviving: it stays (its shield takes the blow); otherwise out by the nearest safe side.
-            if (holding || staysPut || (shot && shieldReady)) {
+            if ((holding || staysPut || (shot && shieldReady)) && !hit->unblockable) {
                 if (hit->in <= 14) raiseShield = true;
-            } else if (seen && noise(seat, tick_ / 30) < std::max(0.55f, lv.precision)) {
+                // 2.84: a beam on a player holding its place (Skullmaw's gazes on the mirrors): a step aside on the plate itself,
+                // to its edge away from the beam — still on it, out of the line.
+                if (holding && hit->kind == Danger::Kind::Line && b.mechanism.w > 24.0f && me.grounded()) {
+                    const Vec2 ab = hit->to - hit->from;
+                    if (std::fabs(ab.y) > std::fabs(ab.x) * 0.5f) {
+                        const float len2 = std::max(1.0f, ab.lengthSq());
+                        const float t = std::clamp(((me.center() - hit->from).x * ab.x + (me.center() - hit->from).y * ab.y) / len2, 0.0f, 1.0f);
+                        const float away = me.center().x - (hit->from.x + ab.x * t);
+                        const int side = std::fabs(away) > 0.5f ? (away > 0.0f ? 1 : -1) : (me.center().x < b.mechanism.center().x ? -1 : 1);
+                        const float edge = side > 0 ? b.mechanism.right() - 4.0f : b.mechanism.x + 4.0f;
+                        if ((edge - me.center().x) * static_cast<float>(side) > 2.0f) {
+                            forced = side;
+                            dodging = true;
+                            react = "s'écarte sur sa plaque";
+                        }
+                    }
+                }
+            } else if (seen && noise(seat + 8 * static_cast<int>(seed_), tick_ / 30) < std::max(0.55f, lv.precision)) {
                 int side = 0;
                 if (hit->kind == Danger::Kind::Line) {
                     const Vec2 a = hit->from, c = hit->to;
@@ -1547,6 +1839,14 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             else gap = d.area.x - me.box.right();
             if (gap < -(d.area.w + me.box.w)) continue;  // already past it
             const float t = std::max(0.0f, gap) / std::fabs(d.speed) + static_cast<float>(d.in) / static_cast<float>(kSimHz);
+            // 2.84 (fight plan): a wave too fast for a sure jump — its shield as it comes, kept for it; a jump without it.
+            if (d.shieldFirst && (me.shieldActive() || (shieldReady && me.energy >= 20.0f))) {
+                if (!me.shieldActive() && t < 0.2f) {
+                    raiseShield = true;
+                    react = "bouclier contre la lame";
+                }
+                if (t < 0.6f) break;
+            }
             // Its jump: above the wave's height from `up` to `down` seconds after it leaves the ground (its own jump's
             // physics: the rise, the top, the faster fall); the wave passes under it in `pass` seconds. A wave taller
             // than its jump: the double jump at the top (from `up` of that one).
@@ -1564,7 +1864,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 down = apex + v1 / g + std::sqrt(2.0f * (top2 - h) / (g * pc.fallGravityMultiplier));
             }
             const float pass = (d.area.w + me.box.w) / std::fabs(d.speed);
-            const float err = lv.timing * (noise(seat, tick_ / 20 + 101) - 0.5f) * 2.0f;
+            const float err = lv.timing * (noise(seat + 8 * static_cast<int>(seed_), tick_ / 20 + 101) - 0.5f) * 2.0f;
             const float lo = up + 0.03f, hi = std::max(lo + 0.02f, down - pass - 0.03f);
             if (t + err < lo && t < 0.18f && shieldReady) {
                 raiseShield = true;  // too late for a jump: the shield
@@ -1576,7 +1876,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 raiseShield = true;  // on its plate: the shield, not a jump off it
                 react = "bouclier contre l'onde";
             } else if (!(b.prevHeld & (1u << kJump))) {
-                b.jumpHold = 34;
+                b.jumpHold = 48;  // 2.84: held to the top of its jump (released before, the jump is cut short)
                 b.airJump = d.height + 4.0f < me.config().jumpHeight - 2.0f;  // a tall wave: its air jump at the top
                 b.waveJumpCool = 30;
                 react = "saute l'onde";
@@ -1611,25 +1911,58 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     int dir = 0;
     steer(w, seat, b, f, held, dir, stop);
     const int pilotDir = dir;
-    if (forced != 0 && !navi_.pilot(seat).committed()) {
+    if (crossing && !navi_.pilot(seat).committed() && forced == 0) {
+        // 2.84: straight through, dashing (invulnerable while it dashes) as soon as it can.
+        dir = b.crossDir;
+        b.moveText = "traverse en ruée";
+        if (const Power* dp = powerOf(me, "dash"); dp && keyBit(dp) >= 0 && dp->ready(me) && me.energy >= 25.0f && !(b.prevHeld & (1u << keyBit(dp))) &&
+                                                   me.box.expanded(30.0f).intersects(bossBody_))
+            held |= 1u << keyBit(dp);
+    } else if (forced != 0 && !navi_.pilot(seat).committed()) {
         dir = forced;
         b.moveText = "s'écarte";
     } else {
         if (stay && !navi_.pilot(seat).committed()) dir = 0;
         // Never into what is coming (a mark, a cloud, a column, the boss's body): it waits at its edge, the way
         // it was going, until it has passed — out of a danger it may cross (it is getting out).
-        if (dir != 0 && me.grounded() && !holding && !(station.w > 0.0f && me.box.expanded(48.0f).intersects(station))) {
+        if (dir != 0 && me.grounded() && !holding && !crossing && !pushing && !fleeing && !(station.w > 0.0f && me.box.expanded(48.0f).intersects(station))) {
             const Rect next = me.box.translated({static_cast<float>(dir) * 10.0f, 0.0f}).expanded(3.0f);
             if (threatened(w, seat, next, 100) && !threatened(w, seat, me.box.expanded(3.0f), 100)) {
                 dir = 0;
                 b.moveText = "attend que ça passe";
                 b.lost = 0;
+                ++b.blocked;
             }
+        }
+    }
+    // ------------------------------------------------------------ 2.84: nailed (Dreadfang's claw): it breaks its own claw
+    // Held on its mark, the claw at its feet: its blade on it (turned toward it), its shield against the claw's bites.
+    const bool nailed = fight_ && std::find(view_.held.begin(), view_.held.end(), seat) != view_.held.end();
+    if (nailed) {
+        const Enemy* claw = nullptr;
+        float cd = 90.0f * 90.0f;
+        for (const bots::Target& t : view_.targets)
+            if (t.priority >= 30 && t.melee)
+                if (const Enemy* e = enemyOf(w, t.uid); e && (e->center() - me.center()).lengthSq() < cd) {
+                    cd = (e->center() - me.center()).lengthSq();
+                    claw = e;
+                }
+        if (claw) {
+            const float dx = claw->center().x - me.center().x;
+            dir = 0;
+            forced = 0;
+            if (std::fabs(dx) > 2.0f && (dx >= 0.0f) != (me.facing >= 0.0f)) dir = dx > 0.0f ? 1 : -1;
+            else if (b.attackCool <= 0) {
+                held |= 1u << kAttack;
+                b.attackCool = 22;
+            }
+            raiseShield = true;
+            react = "brise la griffe qui le cloue";
         }
     }
     // ------------------------------------------------------------ what it does once there
     bool fired = false;
-    if (!fleeing && foe && !dodging) {
+    if (!fleeing && foe && !dodging && !nailed) {
         const Vec2 d = fc - me.center();
         const bool melee = !ranged || !sh || me.energy < 10.0f;
         // Never into the boss's body for a blade (it hurts on contact).
@@ -1641,7 +1974,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             b.lost = 0;
             const bool facing = (d.x >= 0.0f) == (me.facing >= 0.0f) || std::fabs(d.x) < 3.0f;
             if (!facing) dir = d.x > 0.0f ? 1 : -1;
-            else if (b.attackCool <= 0 && (!b.sync || b.syncGroup > 0 || syncReady_) && noise(seat, tick_) < lv.precision + 0.1f) {
+            else if (b.attackCool <= 0 && (!b.sync || b.syncGroup > 0 || syncReady_) && noise(seat + 8 * static_cast<int>(seed_), tick_) < lv.precision + 0.1f) {
                 held |= 1u << kAttack;
                 if (d.y < -30.0f) {
                     held |= 1u << kUp;  // an upward strike
@@ -1677,6 +2010,27 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             // The energy kept: its shield (20), and outside the weak points a reserve for them.
             const bool burst = view_.exposed || b.syncGroup > 0 || !fight_;
             const float reserve = (shield ? 22.0f : 0.0f) + (burst ? 0.0f : 10.0f);
+            // 2.84: nothing reaches it from where it stands, but from the top of a jump (or of its double jump) a wave
+            // does: it jumps and fires up there, wherever it is (its place or on its way), as a player does — rather
+            // than waiting, its energy full, to be at its place.
+            if (fight_ && aim < 0 && me.grounded() && ready && me.energy - 10.0f >= reserve && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump)) &&
+                !holding && b.task == Task::Fight && !navi_.pilot(seat).committed()) {
+                const float h1 = me.config().jumpHeight - 6.0f, h2 = me.config().jumpHeight + me.config().doubleJumpHeight - 8.0f;
+                if (shotFrom(w, me.center() - Vec2{0.0f, h1}, fb, false) >= 0) {
+                    b.jumpHold = 40;
+                    b.airJump = true;
+                    b.hop = 1;
+                } else if (shotFrom(w, me.center() - Vec2{0.0f, h2}, fb, false) >= 0) {
+                    b.jumpHold = 40;
+                    b.airJump = false;
+                    b.hop = 2;
+                }
+            }
+            if (b.hop == 2 && !me.grounded() && !b.airJump && me.vel.y > -40.0f && !(b.prevHeld & (1u << kJump))) {
+                b.airJump = true;
+                held |= 1u << kJump;
+                b.jumpHold = 14;
+            }
             // Its charged shot (the armory's), on a weak point bare: held still at its place, then let go aimed (4 damage,
             // through three targets) — the wave meanwhile waits.
             const Power* charge = powerOf(me, "charge_shot");
@@ -1699,15 +2053,27 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 b.chargeHold = 0;
             }
             if (!fired && b.chargeHold == 0 && aim >= 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh))) &&
-                noise(seat, tick_ + 7) < lv.precision + 0.1f) {
+                noise(seat + 8 * static_cast<int>(seed_), tick_ + 7) < lv.precision + 0.1f) {
                 // A Beginner's aim slips a notch now and then (its precision).
-                if (noise(seat, tick_ + 53) > lv.precision + 0.25f) aim = (aim + 1) % 8;
+                if (noise(seat + 8 * static_cast<int>(seed_), tick_ + 53) > lv.precision + 0.25f) aim = (aim + 1) % 8;
                 held |= 1u << keyBit(sh);
                 f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
                 f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
                 if (kDirX[aim] == 0) dir = 0;
                 fired = true;
             }
+        }
+    }
+    // 2.84 (fight plan): getting out of a blow, it still fires when a wave reaches its target from where it is (a step of
+    // its run turned into a shot, as a player does) — more of its time spent striking.
+    if (fight_ && dodging && !fired && !fleeing && !nailed && foe && worthStriking && !holdFire && sh && keyBit(sh) >= 0 && view_.plan.fireOnTheRun) {
+        const int aim = shotFrom(w, me.center(), fb, me.grounded());
+        const float reserve = (shield ? 22.0f : 0.0f) + (view_.exposed ? 0.0f : 10.0f);
+        if (aim >= 0 && kDirX[aim] != 0 && sh->ready(me) && me.energy - 10.0f >= reserve && !(b.prevHeld & (1u << keyBit(sh)))) {
+            held |= 1u << keyBit(sh);
+            f.moveX = static_cast<int8_t>(kDirX[aim] * 127);
+            f.moveY = static_cast<int8_t>(kDirY[aim] * 127);
+            fired = true;
         }
     }
     if (b.act == Shoot && !fleeing && !dodging) {
@@ -1717,9 +2083,18 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             const float dx = e->box.center().x - me.center().x;
             dir = 0;
             if ((dx >= 0.0f) != (me.facing >= 0.0f)) dir = dx > 0.0f ? 1 : -1;
-            else if (sh->ready(me) && !(b.prevHeld & (1u << keyBit(sh))) && noise(seat, tick_ + 13) < lv.precision + 0.1f) held |= 1u << keyBit(sh);
+            else if (sh->ready(me) && !(b.prevHeld & (1u << keyBit(sh))) && noise(seat + 8 * static_cast<int>(seed_), tick_ + 13) < lv.precision + 0.1f) held |= 1u << keyBit(sh);
         }
     }
+    // 2.84: an orb hanging in the air (over a floor, a platform): under it, a jump (or a double jump) to take it.
+    if (b.task == Task::Objective && b.act == Enter && !fleeing && me.grounded())
+        if (const LevelEntity* e = w.entity(b.thing); e && e->type() == "health_orb" && std::fabs(e->box.center().x - me.center().x) < 12.0f &&
+                                                     e->box.bottom() < me.box.y && e->box.bottom() > me.box.y - 110.0f && b.jumpHold <= 0 &&
+                                                     !(b.prevHeld & (1u << kJump))) {
+            b.jumpHold = 46;
+            b.airJump = e->box.bottom() > me.box.y - me.config().jumpHeight + 4.0f;  // a jump is enough: no double jump
+            b.hop = b.airJump ? 0 : 2;
+        }
     if (b.act == Interact && !fleeing) {
         if (LevelEntity* e = w.entity(b.thing); e && e->box.expanded(8.0f).intersects(me.box)) {
             dir = 0;
@@ -1732,7 +2107,14 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         // coming on it or the soul for that long — else it waits beside it under its shield; its decoy draws the
         // boss's blows away while it kneels.
         const Rect around = me.box.expanded(10.0f);
-        const bool unsafe = threatened(w, seat, around, 40) && !(me.shieldActive() || shieldReady);
+        bool unsafe = threatened(w, seat, around, 40) && !(me.shieldActive() || shieldReady);
+        // 2.84: near the boss or with blows on their way, it kneels under its shield (2,2 s: the whole revival), never
+        // bare; its shield not ready, it waits beside the soul for what is close to pass.
+        if (fight_ && lv.shieldSense >= 1.0f && !me.shieldActive() &&
+            (threatened(w, seat, around, 2 * kSimHz) || (bossUid_ && around.expanded(160.0f).intersects(bossBody_)))) {
+            if (shieldReady && me.energy >= 20.0f) raiseShield = true;
+            else unsafe = threatened(w, seat, around, 60);
+        }
         if (!unsafe) {
             dir = 0;
             held |= 1u << kInteract;
@@ -1750,8 +2132,44 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         const Rect target = b.task == Task::Mechanism ? b.mechanism : Rect{b.goal.x - 8.0f, b.goal.y - 24.0f, 16.0f, 26.0f};
         if (target.w > 0.0f && target.intersects(me.box) && me.grounded() && std::fabs(b.goal.x - feet.x) < 10.0f && !dodging) dir = 0;
     }
+    // ------------------------------------------------------------ 2.84: the shield before any blow about to land on it
+    // What a good player does in a fight: whatever is about to touch it in the next sixth of a second (a mark, a shot, a
+    // beam, the boss's body or its blow), the shield goes up — not only against a blow it cannot leave any more. Never
+    // while its last hit still protects it (wasted), nor for what it does not stop (a well's pull, a sector, a flood).
+    if (fight_ && shieldReady && !raiseShield && !me.invulnerable() && lv.shieldSense >= 1.0f && !(b.task == Task::Mechanism && !holding && me.health > 3)) {
+        const Rect near = me.box.expanded(8.0f);
+        // 2.84 (fight plan): its shield kept for one blow — except against the boss's own body and blows (its touch).
+        const bool reserve = view_.plan.reserveShield && me.health > 4;
+        // Its touch first, unless a sweep is on its way (announced) or it holds its place (no storey to change to).
+        bool sweepDue = holding;
+        for (const Danger& d : dangers_) sweepDue = sweepDue || d.kind == Danger::Kind::Storey || (d.shieldFirst && d.in > 0);
+        for (const Danger& d : dangers_) {
+            if (reserve && (sweepDue || (!d.body && !d.attack))) continue;
+            if ((d.seat >= 0 && d.seat != seat) || d.in > (d.attack ? kSimHz / 4 : 20)) continue;  // its own blows: from their wind-up
+            bool hit = false;
+            switch (d.kind) {
+                case Danger::Kind::Area: hit = d.area.intersects(near) && !d.unblockable; break;
+                case Danger::Kind::Line: hit = hitsLine(d, near); break;
+                case Danger::Kind::Pull: hit = d.area.intersects(near); break;  // 2.84: dragged to its core: its touch under the shield
+                case Danger::Kind::Flood: hit = d.area.intersects(me.box) && fleeing; break;  // 2.84: caught by the liquid on its way up
+                case Danger::Kind::FloorWave: {
+                    if (!me.grounded() || feet.y > d.floorY + 6.0f || feet.y < d.floorY - 30.0f || d.speed == 0.0f) break;
+                    const float gap = d.speed > 0.0f ? me.box.x - d.area.right() : d.area.x - me.box.right();
+                    hit = gap > -(d.area.w + me.box.w) && std::max(0.0f, gap) / std::fabs(d.speed) < 0.1f && b.jumpHold <= 0;
+                    break;
+                }
+                default: break;
+            }
+            if (hit) {
+                raiseShield = true;
+                if (react.empty()) react = "lève son bouclier";
+                break;
+            }
+        }
+    }
     // ------------------------------------------------------------ the shield (its level's choice), when a blow cannot be avoided
-    if (raiseShield && shieldReady && b.shieldCool <= 0 && me.energy >= 20.0f && noise(seat, tick_ / 12 + 77) < lv.shieldSense) {
+    if (raiseShield && shieldReady && (b.shieldCool <= 0 || react == "bouclier contre la lame") && me.energy >= 20.0f &&
+        noise(seat + 8 * static_cast<int>(seed_), tick_ / 12 + 77) < lv.shieldSense) {
         held |= 1u << keyBit(shield);
         b.shieldCool = 30;
         if (react.empty() || react == "esquive") react = "lève son bouclier";

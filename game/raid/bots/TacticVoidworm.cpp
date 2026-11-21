@@ -33,6 +33,18 @@ public:
         const Enemy* b = gb.boss(w);
         const GigabossRoutine* rt = gb.routine();
         if (!b || !rt) return;
+        // 2.84, its fight plan: once its acid floods the gut (from its 3rd phase), the strikers fire from above the
+        // acid's height — never caught on the floor when it rises (3 s of warning, a climb of two storeys).
+        v.plan.hideArmoured = true;  // armoured, nothing to strike: off its body (its bites, its spit), not where its rings will be
+        if (gb.rules()) {
+            const Json ac = gb.rules()->extra.value("acid", Json::object());
+            if (gb.phase() >= jget<int>(ac, "from", 3)) {
+                v.plan.floorY = jget<float>(ac, "floor", b->box.bottom());
+                v.plan.elevate = jget<float>(ac, "height", 150.0f) + 12.0f;
+                v.plan.reviveWindow = 5.0f;  // its acid every 22 s, 13 s up: 8 s dry
+                v.plan.elevateAll = true;
+            }
+        }
         std::vector<BossMark> marks;
         rt->marks(w, gb, marks);
         for (const BossMark& m : marks) {
@@ -43,6 +55,7 @@ public:
                 d.kind = Danger::Kind::Area;
                 d.area = {m.area.x - 6.0f, m.area.y - 150.0f, m.area.w + 12.0f, 150.0f + m.area.h};
                 d.in = static_cast<int>((1.0f - std::clamp(m.progress, 0.0f, 1.0f)) * 1.8f * static_cast<float>(kSimHz));  // its track + lock
+                d.unblockable = true;  // 2.84: a shield does not keep it from swallowing (a hook or a soul left for it)
                 v.dangers.push_back(d);
             } else if (m.kind == BossMark::Kind::Zone && m.label.rfind("L'ACIDE", 0) == 0) {
                 Danger d;

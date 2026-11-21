@@ -29,6 +29,19 @@ public:
     const char* name() const override { return "Dreadfang"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v);
+        // 2.84, its fight plan: the shield kept for its sweeps (a sweep every 7,5 to 11 s, the shield back in 5 s) and
+        // its touch; another storey before each sweep (its Storey dangers below); nobody kept close to it; bare, all in
+        // front of it.
+        v.plan.reserveShield = true;
+        v.plan.elevate = 0.0f;    // measured: up on its storeys, fewer places to fire from, no fewer players down
+        // (a wider distance to its arm, 170 px, measured the same: the default)
+        v.plan.frontOnly = false;  // measured: all in front of it, its joints broken more slowly
+        v.plan.noLure = true;
+        v.plan.focusWeak = true;
+        v.plan.fireOnTheRun = true;     // measured: fewer players down without one keeping close to it
+        v.plan.lureOnFloor = true;
+        v.plan.freeOnClosed = true;  // its chains on the swept floor: off them when closed, back when they open
+        v.plan.hideArmoured = false;  // measured: waiting far off cost more than it saved (groups wiped sooner)
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);
@@ -54,7 +67,17 @@ public:
                 d.speed = static_cast<float>(s.dir) * speed;
                 d.area = {front - 28.0f, y - height, 56.0f, height};
                 d.in = out ? 0 : std::max(0, static_cast<int>(warn * static_cast<float>(kSimHz)) - s.t);
+                d.shieldFirst = true;  // 1 500 px/s: its shield as the blade comes (kept for it), a jump only without it
                 v.dangers.push_back(d);
+                if (!out) {
+                    // 2.84 (fight plan): announced, the storey itself — « changez d'étage » — while there is time.
+                    Danger st;
+                    st.kind = Danger::Kind::Storey;
+                    st.floorY = y;
+                    st.area = {x0, y - 40.0f, x1 - x0, 46.0f};
+                    st.in = d.in;
+                    v.dangers.push_back(st);
+                }
             }
         // Its nailing claw: the mark under its player (leave it), then the claw to break (a rescue).
         const float reach = jget<float>(x.value("pin", Json::object()), "reach", 56.0f);

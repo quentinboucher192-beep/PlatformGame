@@ -87,6 +87,8 @@ public:
     static std::shared_ptr<const NavGraph> of(const GameWorld& w, const std::string& periodic = {}, const std::vector<Rect>& keepOut = {});
     /// What the graph depends on (the level, its doors and walls that open or break).
     static uint64_t signature(const GameWorld& w, const std::string& periodic = {}, const std::vector<Rect>& keepOut = {});
+    /// 2.84: empties the graphs' cache (tests: a run as if in a fresh process).
+    static void clearCache();
     /// The steps between a request and the use of its graph (a function of the zone only).
     static int delayFor(const GameWorld& w);
 

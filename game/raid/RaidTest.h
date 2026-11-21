@@ -84,6 +84,11 @@ public:
         skill_ = s;
         for (auto& [zone, b] : bots_) b.setSkill(s);
     }
+    /// 2.84: the seed of the simulated players' starts (TestBots::setSeed): the measures over several starts.
+    void setBotSeed(uint32_t seed) {
+        seed_ = seed;
+        for (auto& [zone, b] : bots_) b.setSeed(seed);
+    }
     /// The administrator AFK (no key for 15 s): their seat is played by the AI until they touch one.
     bool autopilot() const { return adminSeated_ && (adminBot_ || afk_ >= kAfkSteps); }
     TestBots& botsMut() { return botsFor(run_.zone()); }
@@ -132,6 +137,7 @@ private:
     RaidRun run_;
     std::map<int, TestBots> bots_;  // 2.78: by zone
     BotSkill skill_ = BotSkill::Skilled;
+    uint32_t seed_ = 0;  // 2.84: setBotSeed
     int lastZone_[kMaxInstancePlayers] = {-2, -2, -2, -2, -2, -2, -2, -2};  // 2.78: the zone of each seat at the last step
     int players_ = 1;
     uint32_t state_ = 0;

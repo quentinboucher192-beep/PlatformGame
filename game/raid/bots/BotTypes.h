@@ -39,6 +39,7 @@ struct Danger {
         Sector,     // gravity turning over in the area: leave it or stand under a slab
         Pull,       // a well pulling toward `from`: run away from it
         Ring,       // a ring growing from `from` (its radius now, its speed), one opening: its shield as it comes
+        Storey,     // 2.84: a whole storey about to be swept (floorY): onto another one before it comes (else its shield)
     };
     Kind kind = Kind::Area;
     Rect area;
@@ -52,6 +53,8 @@ struct Danger {
     int seat = -1;       // only this seat (a mark aimed at one player), -1: everyone
     bool body = false;   // the boss's own body (it hurts on contact)
     bool attack = false; // a blow of the boss itself around its body (the tactic dodges it; its navigation goes past)
+    bool unblockable = false;  // 2.84: no shield stops it (Voidworm's maw swallows): leave it, even from a place held
+    bool shieldFirst = false;  // 2.84 (fight plan): a wave too fast to jump surely (Dreadfang's sweeps): the shield as it comes
     float radius = 0.0f, reach = 0.0f;  // Ring: its radius now, the farthest it goes
     float gap = 0.0f, gapHalf = 0.0f;   // Ring: the angle of its opening and its half-width (radians)
 };
@@ -62,6 +65,7 @@ struct Station {
     int priority = 0;        // the higher first
     bool always = true;      // held all the time (else only when `now`)
     bool now = true;         // needed at this step
+    bool closed = false;     // 2.84: done for now (a vent closed): kept by its player, who dodges freely around it
     std::string label;       // « Miroir haut est »
 };
 

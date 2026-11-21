@@ -8949,6 +8949,12 @@
    ]
   },
   {
+   "fr": "bouclier contre la lame",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "bouclier contre le rayon",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -9274,6 +9280,12 @@
    "fr": "Bravo, Nova !",
    "where": [
     "ui/screens/TutorialScenes.cpp"
+   ]
+  },
+  {
+   "fr": "brise la griffe qui le cloue",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -12353,6 +12365,12 @@
    "fr": "champs attendus",
    "where": [
     "server/src/live.ts"
+   ]
+  },
+  {
+   "fr": "change d'étage avant la lame",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {
@@ -19202,6 +19220,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/powers/PowerDemos.cpp",
     "game/powers/Powers.cpp",
+    "game/raid/RaidBots.cpp",
     "game/raid/RaidNav.cpp",
     "game/tutorial/Tutorial.cpp",
     "packaging/DependencyCollector.cpp",
@@ -51910,6 +51929,12 @@
    ]
   },
   {
+   "fr": "passe sous son bouclier",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Passe-muraille",
    "where": [
     "data/achievements/achievements.json"
@@ -63089,6 +63114,12 @@
    ]
   },
   {
+   "fr": "s'écarte sur sa plaque",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "s'éloigne du puits",
    "where": [
     "game/raid/RaidBots.cpp"
@@ -72044,9 +72075,21 @@
    ]
   },
   {
+   "fr": "traverse en ruée",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Traverse la plateforme vers le bas",
    "where": [
     "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "traverse sous son bouclier",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {

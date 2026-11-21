@@ -63,6 +63,7 @@ struct SeatPlan {
     bool flee = false;  // up above the rising liquid
     bool hold = false;  // holds a mechanism or revives: it dodges only what would kill it
     bool mayLeave = false;  // its goal is a passage it takes (the group leaves the zone): else never in one
+    bool spare = false;     // 2.84: its energy spared (a fight): a dash or an impulse for a move only where nothing else goes
     std::vector<int>* path = nullptr;
     size_t* at = nullptr;
     int* planned = nullptr;
@@ -165,6 +166,7 @@ private:
     void start(Pilot& p, const Program& prog, const std::vector<Vec2>& track, Intent intent);
     int spend(int steps);  // counts simulated steps; the budget left this step
     Skill skill_ = Skill::of(1);
+    float dashCost_ = 9.0f;  // 2.84: a dash's weight in the choice of a move (SeatPlan::spare)
     int level_ = 1;
     std::shared_ptr<const NavGraph> graph_;
     NavGraph::Ticket pending_;

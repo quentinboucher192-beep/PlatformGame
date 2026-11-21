@@ -14683,6 +14683,12 @@
     "Nettoyer la galerie 4 : vaincre son embuscade": "Clear gallery 4: defeat its ambush",
     "Nettoyer les Gaines : vaincre leur embuscade": "Clear the Sheaths: defeat their ambush",
     "barrage": "barrage",
+    "passe sous son bouclier": "pushes through under its shield",
+    "traverse en ruée": "dashes through",
+    "traverse sous son bouclier": "crosses under its shield",
+    "bouclier contre la lame": "shield against the blade",
+    "change d'étage avant la lame": "changes storey before the blade",
+    "brise la griffe qui le cloue": "breaks the claw pinning it",
     "Difficulté de l'événement : 1 / 5 : {0} ; 3 / 5 (les chiffres ci-dessous) : {1} ; 5 / 5 : {2}.": "Event difficulty: 1 / 5: {0}; 3 / 5 (the numbers below): {1}; 5 / 5: {2}.",
     "L'événement a commencé : sa difficulté ne change plus.": "The event has started: its difficulty no longer changes.",
     "Reste du raid · zone : {0} écoulées": "Raid time left · zone: {0} elapsed",
@@ -14692,6 +14698,7 @@
     "difficulté différente de celle de l'événement": "difficulty different from the event's",
     "reste {0}": "{0} left",
     "Écoulé depuis le début · zone : {0}": "Elapsed since the start · zone: {0}",
-    "Écoulé {0}": "{0} elapsed"
+    "Écoulé {0}": "{0} elapsed",
+    "s'écarte sur sa plaque": "steps aside on its plate"
   }
 }

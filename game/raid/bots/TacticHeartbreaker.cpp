@@ -29,6 +29,7 @@ public:
     const char* name() const override { return "Heartbreaker"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v);
+
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);
@@ -36,6 +37,11 @@ public:
         if (!b || !rt) return;
         const Json be = gb.rules()->extra.value("beats", Json::object());
         const float speed = jget<float>(be, "speed", 520.0f), height = jget<float>(be, "height", 40.0f), floor = jget<float>(be, "floor", b->box.bottom());
+        // 2.84, its fight plan: its beats throw waves along its floor only, every 1,25 to 2 s — the strikers fire from the
+        // platforms above it.
+        v.plan.elevate = 40.0f;
+        v.plan.floorY = floor;
+        v.plan.elevateAll = true;  // its lure too: above its waves, still the nearest
         // Where its strong beats throw their waves (both its sides, along the floor): too close to jump them in time,
         // a place to keep away from (a strong beat every few seconds).
         std::vector<float> from;
@@ -61,6 +67,8 @@ public:
             v.dangers.push_back(d);
         }
         if (rt->plated()) {
+            // 2.84: its ribs count only once its plates are broken (its cage): nobody waits on them before.
+            v.stations.clear();
             int left = 0;
             for (uint32_t u : rt->plates()) {
                 const Enemy* e = u ? w.findEnemy(u) : nullptr;
