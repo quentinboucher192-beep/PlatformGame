@@ -60225,16 +60225,12 @@
     "editors/enemy_editor/EnemyEditorScene.cpp",
     "engine/input/InputTypes.cpp",
     "ui/screens/AchievementsScene.cpp",
-    "ui/screens/AdminScene.cpp",
     "ui/screens/BossStatsScene.cpp",
     "ui/screens/BossTrainingScene.cpp",
     "ui/screens/ChallengesScene.cpp",
     "ui/screens/ClanScene.cpp",
-    "ui/screens/CollectionScene.cpp",
-    "ui/screens/CoopLobbyScene.cpp",
     "ui/screens/GiftsScene.cpp",
     "ui/screens/LevelPowerKeysScene.cpp",
-    "ui/screens/NotificationsScene.cpp",
     "ui/screens/OnlineAccountScene.cpp",
     "ui/screens/PowerGuideScene.cpp",
     "ui/screens/RaidEventScene.cpp",
@@ -60245,7 +60241,8 @@
     "ui/screens/SobMontageScene.cpp",
     "ui/screens/SpectateScene.cpp",
     "ui/screens/StatisticsScene.cpp",
-    "ui/studio/StudioDoc.cpp"
+    "ui/studio/StudioDoc.cpp",
+    "ui/widgets/CosmicFrame.h"
    ]
   },
   {

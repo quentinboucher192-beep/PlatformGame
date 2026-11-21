@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminEnemies.h"
 
 #include <algorithm>
@@ -102,7 +103,7 @@ void AdminEnemies::draw(const Rect& in) {
     rs.small = true;
     rs.enabled = !busy_;
     float rw = ui.text().measure("Actualiser", FontFace::Bold, ui.s(17)).x + ui.s(44);
-    if (ui.button("refresh", {in.right() - rw, y, rw, bh}, "Actualiser", rs)) {
+    if (cframe::button(ui, "refresh", {in.right() - rw, y, rw, bh}, "Actualiser", rs)) {
         load();
         if (!selected_.empty()) loadHistory(selected_);
     }
@@ -159,12 +160,12 @@ void AdminEnemies::drawList(const Rect& r) {
         es.primary = true;
         es.fontSize = 16;
         es.enabled = !opening_ && loaded_;
-        if (ui.button("edit" + id, eb, "Modifier", es)) edit(id);
+        if (cframe::button(ui, "edit" + id, eb, "Modifier", es)) edit(id);
         UIContext::ButtonStyle hs;
         hs.small = true;
         hs.fontSize = 16;
         hs.selected = sel;
-        if (ui.button("hist" + id, hb, "Historique", hs)) loadHistory(id);
+        if (cframe::button(ui, "hist" + id, hb, "Historique", hs)) loadHistory(id);
         if (!visible) continue;
         const float tx = row.x + ui.s(14), room = eb.x - ui.s(14) - tx;
         const Json* srv = serverRow(id);
@@ -195,8 +196,7 @@ void AdminEnemies::drawList(const Rect& r) {
 
 void AdminEnemies::drawHistory(const Rect& r) {
     UIContext& ui = g_.ui;
-    ui.r().fillRoundedRect(r, ui.s(12), Color{14, 20, 42, 235});
-    ui.r().drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 12);
     Rect in{r.x + ui.s(16), r.y + ui.s(14), r.w - ui.s(32), r.h - ui.s(28)};
     const EnemyDefinition* d = selected_.empty() ? nullptr : g_.content.enemy(selected_);
     if (!d) {

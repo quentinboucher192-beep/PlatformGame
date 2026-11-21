@@ -11,6 +11,7 @@
 // under the list for a new title or a reward's condition), then « Revenir au tirage » and
 // « Enregistrer » (the challenge, then its rewards). Keyboard, gamepad and mouse throughout.
 
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminCalendar.h"
 
 #include <algorithm>
@@ -557,8 +558,7 @@ void AdminCalendar::draw(const Rect& body) {
 
 void AdminCalendar::drawCalendar(const Rect& r) {
     UIContext& ui = g_.ui;
-    ui.r().fillRoundedRect(r, ui.s(14), Color{10, 15, 32, 225});
-    ui.r().drawRoundedRect(r, ui.s(14), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 14);
     const float x = r.x + ui.s(18), w = r.w - ui.s(36);
     float y = r.y + ui.s(16);
     // Mois précédent, the month, Mois suivant.
@@ -583,9 +583,9 @@ void AdminCalendar::drawCalendar(const Rect& r) {
             editorWarn_ = true;
             return false;
         };
-        if (ui.button("prev", {x, y, bw, hh}, prevL, nb) && leave("<month-1")) loadMonth(challenge_period::addMonths(month_, -1));
+        if (cframe::button(ui, "prev", {x, y, bw, hh}, prevL, nb) && leave("<month-1")) loadMonth(challenge_period::addMonths(month_, -1));
         nb.enabled = !loading_ && (lastMonth_.empty() || month_ < lastMonth_);
-        if (ui.button("next", {x + w - bw, y, bw, hh}, nextL, nb) && leave("<month+1")) loadMonth(challenge_period::addMonths(month_, 1));
+        if (cframe::button(ui, "next", {x + w - bw, y, bw, hh}, nextL, nb) && leave("<month+1")) loadMonth(challenge_period::addMonths(month_, 1));
         int yy = 0, mm = 0;
         std::sscanf(month_.c_str(), "%4d-%2d", &yy, &mm);
         fitLabel(ui, std::string(monthTitle(mm)) + " " + std::to_string(yy), {x + w * 0.5f, y + hh * 0.5f}, 30, w - 2 * bw - ui.s(40), ui.theme().text,
@@ -597,7 +597,7 @@ void AdminCalendar::drawCalendar(const Rect& r) {
     if (!loaded_) {
         std::string t = loadError_.empty() ? std::string("Chargement du calendrier…") : "Calendrier indisponible : " + loadError_;
         Vec2 s = ui.labelWrapped(t, {x, y + ui.s(20)}, w, fz(ui, 18), loadError_.empty() ? ui.theme().textDim : ui.theme().warm);
-        if (!loadError_.empty() && ui.button("retry", {x, y + ui.s(40) + s.y, ui.s(220), ui.s(46)}, "Réessayer")) loadMonth(month_);
+        if (!loadError_.empty() && cframe::button(ui, "retry", {x, y + ui.s(40) + s.y, ui.s(220), ui.s(46)}, "Réessayer")) loadMonth(month_);
         return;
     }
     // The month's challenge on top.
@@ -797,8 +797,7 @@ void AdminCalendar::drawLegend(float x, float cy, float w) {
 
 void AdminCalendar::drawEditor(const Rect& r) {
     UIContext& ui = g_.ui;
-    ui.r().fillRoundedRect(r, ui.s(14), Color{10, 15, 32, 225});
-    ui.r().drawRoundedRect(r, ui.s(14), ui.theme().accent.withAlpha(150), ui.s(1.2f));
+    cframe::panel(ui, r, true, 14);
     ui.pushId("ed");
     const float x = r.x + ui.s(22), w = r.w - ui.s(44);
     float y = r.y + ui.s(18);
@@ -828,7 +827,7 @@ void AdminCalendar::drawEditor(const Rect& r) {
             st.fontSize = fs;
             float bw = std::min(ui.text().measure(kSub[i], FontFace::Bold, ui.s(fs)).x + pad, x + w - sx);
             Rect br{sx, y, bw, ui.s(38)};
-            if (ui.button("sub" + std::to_string(i), br, kSub[i], st)) subTab_ = i;
+            if (cframe::button(ui, "sub" + std::to_string(i), br, kSub[i], st)) subTab_ = i;
             if (i == 2) ui.newBadge("sub2", br, "admin.calendar.rewards", true, true);
             sx += bw + gap;
         }
@@ -869,13 +868,13 @@ void AdminCalendar::drawEditor(const Rect& r) {
         rs.fontSize = std::min(20.0f, ui.fitFont(resetL, FontFace::Bold, 20, std::min(rw, w * 0.55f) - ui.s(24), 0.7f));
         rs.enabled = !busy_ && p->challenge.is_object() && jstr(p->challenge, "source") == "admin" && !dirty_ && !prizesDirty_;
         rw = std::min(rw, w * 0.55f);
-        if (ui.button("reset", {x + w - sw - ui.s(12) - rw, by, rw, bh}, resetL, rs)) resetToDraw();
+        if (cframe::button(ui, "reset", {x + w - sw - ui.s(12) - rw, by, rw, bh}, resetL, rs)) resetToDraw();
         UIContext::ButtonStyle ss;
         ss.primary = true;
         ss.fontSize = 20;
         // The challenge (then its rewards, if they changed too), or its rewards alone.
         ss.enabled = !busy_ && ((dirty_ && draftProblem().empty()) || (!dirty_ && prizesDirty_));
-        if (ui.button("save", {x + w - sw, by, sw, bh}, saveL, ss)) {
+        if (cframe::button(ui, "save", {x + w - sw, by, sw, bh}, saveL, ss)) {
             if (dirty_) save();
             else savePrizes();
         }
@@ -950,13 +949,13 @@ bool AdminCalendar::stepper(const std::string& id, float right, float cy, float 
     const float vw = std::max(ui.s(56), ui.text().measure(value, FontFace::Bold, ui.s(18)).x + ui.s(16));
     bool changed = false;
     st.enabled = enabled && v + step <= hi;
-    if (ui.button(id + "+", {right - bw, cy - h * 0.5f, bw, h}, "+", st)) {
+    if (cframe::button(ui, id + "+", {right - bw, cy - h * 0.5f, bw, h}, "+", st)) {
         v = std::min(hi, v + step);
         changed = true;
     }
     ui.label(value, {right - bw - vw * 0.5f, cy}, 18, enabled ? ui.theme().text : ui.theme().textDim, Align::Center, FontFace::Bold, VAlign::Middle);
     st.enabled = enabled && v - step >= lo;
-    if (ui.button(id + "-", {right - 2 * bw - vw, cy - h * 0.5f, bw, h}, "-", st)) {
+    if (cframe::button(ui, id + "-", {right - 2 * bw - vw, cy - h * 0.5f, bw, h}, "-", st)) {
         v = std::max(lo, v - step);
         changed = true;
     }
@@ -1027,7 +1026,7 @@ void AdminCalendar::drawLevelTab(const Period& p, const Rect& r, bool editable) 
             st.fontSize = 16;
             st.enabled = editable;
             float bw = ui.text().measure(kSrc[i], FontFace::Bold, ui.s(16)).x + ui.s(30);
-            if (ui.button("src" + std::to_string(i), {sx, y, bw, h}, kSrc[i], st) && levelSource_ != i) {
+            if (cframe::button(ui, "src" + std::to_string(i), {sx, y, bw, h}, kSrc[i], st) && levelSource_ != i) {
                 levelSource_ = i;
                 if (i == 1 && (!communityLoaded_ || searched_ != search_)) loadCommunity(0);
             }
@@ -1161,9 +1160,9 @@ void AdminCalendar::drawLevelList(const Rect& r, bool editable) {
         st.fontSize = 15;
         float bw = (r.w - ui.s(10)) * 0.5f, py = r.bottom() - ui.s(38);
         st.enabled = communityOffset_ > 0;
-        if (ui.button("cprev", {r.x, py, bw, ui.s(38)}, "Précédents", st)) loadCommunity(communityOffset_ - 20);
+        if (cframe::button(ui, "cprev", {r.x, py, bw, ui.s(38)}, "Précédents", st)) loadCommunity(communityOffset_ - 20);
         st.enabled = communityMore_;
-        if (ui.button("cnext", {r.x + bw + ui.s(10), py, bw, ui.s(38)}, "Suivants", st)) loadCommunity(communityOffset_ + 20);
+        if (cframe::button(ui, "cnext", {r.x + bw + ui.s(10), py, bw, ui.s(38)}, "Suivants", st)) loadCommunity(communityOffset_ + 20);
     }
 }
 
@@ -1207,7 +1206,7 @@ void AdminCalendar::drawRules(float x, float y, float w, bool editable) {
             st.selected = true;
             st.fontSize = 14;
             st.enabled = editable;
-            if (ui.button("pw" + id, {cx, cy - ch * 0.5f, cw, ch}, t, st)) remove = id;
+            if (cframe::button(ui, "pw" + id, {cx, cy - ch * 0.5f, cw, ch}, t, st)) remove = id;
             cx += cw + gap;
         }
         if (editable) {
@@ -1221,7 +1220,7 @@ void AdminCalendar::drawRules(float x, float y, float w, bool editable) {
             st.small = true;
             st.fontSize = 14;
             st.enabled = editable;
-            if (ui.button("pwadd", {cx, cy - ch * 0.5f, cw, ch}, t, st)) {
+            if (cframe::button(ui, "pwadd", {cx, cy - ch * 0.5f, cw, ch}, t, st)) {
                 picker_ = true;
                 ui.setFocus("picker/close");
             }
@@ -1579,7 +1578,7 @@ float AdminCalendar::conditionChooser(const std::string& id, float x, float y, f
             st.small = true;
             st.fontSize = 15;
             st.selected = condKind_ == o.kind && (std::string(o.kind) != "tier" || condValue_ == o.value);
-            if (ui.button(id + std::to_string(i), {cx, cy, bw, h}, o.label, st)) {
+            if (cframe::button(ui, id + std::to_string(i), {cx, cy, bw, h}, o.label, st)) {
                 if (std::string(o.kind) == "top" && !top) condValue_ = 10;
                 else if (std::string(o.kind) == "tier") condValue_ = o.value;
                 else if (std::string(o.kind) == "finished") condValue_ = 0;
@@ -1603,11 +1602,11 @@ float AdminCalendar::conditionChooser(const std::string& id, float x, float y, f
             const float lw = std::min(w * 0.5f, ui.text().measure(label, FontFace::Body, ui.s(fz(ui, 15))).x);
             fitLabel(ui, label, {x, cyMid}, 15, w * 0.5f, ui.theme().textDim);
             const float vx = x + lw + ui.s(12);
-            if (ui.button(id + "minus", {vx, cyMid - bh * 0.5f, bh, bh}, "-", st)) condValue_ = nextTop(condValue_, -1);
+            if (cframe::button(ui, id + "minus", {vx, cyMid - bh * 0.5f, bh, bh}, "-", st)) condValue_ = nextTop(condValue_, -1);
             const float vw = ui.text().measure("100", FontFace::Bold, ui.s(18)).x + ui.s(20);
             ui.label(std::to_string(condValue_), {vx + bh + vw * 0.5f, cyMid}, 18, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
             st.enabled = condValue_ < 100;
-            if (ui.button(id + "plus", {vx + bh + vw, cyMid - bh * 0.5f, bh, bh}, "+", st)) condValue_ = nextTop(condValue_, 1);
+            if (cframe::button(ui, id + "plus", {vx + bh + vw, cyMid - bh * 0.5f, bh, bh}, "+", st)) condValue_ = nextTop(condValue_, 1);
         }
         cy += ui.s(36);
     }
@@ -1667,7 +1666,7 @@ void AdminCalendar::drawPrizeForm(const Rect& box) {
             st.fontSize = std::min(15.0f, ui.fitFont(name, FontFace::Bold, 15, bw - ui.s(44), 0.75f));
             st.selected = titleColor_ == i;
             Rect br{cx, y + ui.s(2), bw, ui.s(34)};
-            if (ui.button("tcol" + std::to_string(i), br, name, st)) titleColor_ = i;
+            if (cframe::button(ui, "tcol" + std::to_string(i), br, name, st)) titleColor_ = i;
             // Its colour, a dot at the left of the label (the label stays centred, clear of it).
             r.fillCircle({br.x + ui.s(14), br.center().y}, ui.s(5), titleColor(kTitleColors[i]));
             cx += bw + ui.s(8);
@@ -1686,8 +1685,8 @@ void AdminCalendar::drawPrizeForm(const Rect& box) {
     ok.enabled = title ? !titleBusy_ && !text.empty() && codepoints(text) <= kTitleMaxChars && prizes_.size() < kMaxPrizes : true;
     UIContext::ButtonStyle no;
     no.fontSize = 17;
-    if (ui.button("fcancel", {x + w - okW - ui.s(10) - noW, y, noW, ui.s(44)}, noL, no)) form_ = PrizeForm::None;
-    if (ui.button("fok", {x + w - okW, y, okW, ui.s(44)}, okL, ok)) {
+    if (cframe::button(ui, "fcancel", {x + w - okW - ui.s(10) - noW, y, noW, ui.s(44)}, noL, no)) form_ = PrizeForm::None;
+    if (cframe::button(ui, "fok", {x + w - okW, y, okW, ui.s(44)}, okL, ok)) {
         if (title) createTitle();
         else if (formIndex_ >= 0 && formIndex_ < static_cast<int>(prizes_.size())) {
             ChallengePrize& p = prizes_[static_cast<size_t>(formIndex_)];
@@ -1735,7 +1734,7 @@ bool AdminCalendar::drawPrizeRow(const Period& per, size_t i, const Rect& row, b
         UIContext::ButtonStyle st;
         st.small = true;
         st.fontSize = 17;
-        if (ui.button("prx" + std::to_string(i), {right - xb, row.center().y - xb * 0.5f, xb, xb}, "×", st)) removed = true;
+        if (cframe::button(ui, "prx" + std::to_string(i), {right - xb, row.center().y - xb * 0.5f, xb, xb}, "×", st)) removed = true;
         right -= xb + ui.s(10);
     }
     const std::string cond = prizeConditionShort(p);
@@ -1748,7 +1747,7 @@ bool AdminCalendar::drawPrizeRow(const Period& per, size_t i, const Rect& row, b
         UIContext::ButtonStyle st;
         st.small = true;
         st.fontSize = 16;
-        if (ui.button("prc" + std::to_string(i), {condX, row.y + ui.s(24), condW, ui.s(30)}, cond, st)) {
+        if (cframe::button(ui, "prc" + std::to_string(i), {condX, row.y + ui.s(24), condW, ui.s(30)}, cond, st)) {
             form_ = PrizeForm::Condition;
             formIndex_ = static_cast<int>(i);
             condKind_ = p.condition;
@@ -1837,7 +1836,7 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
             st.small = true;
             st.fontSize = fs;
             st.enabled = prizes_.size() < kMaxPrizes;
-            if (ui.button("addgame", {x, by, aw, bh}, a, st)) {
+            if (cframe::button(ui, "addgame", {x, by, aw, bh}, a, st)) {
                 itemPicker_ = true;
                 pickRef_.clear();
                 condKind_ = "tier";
@@ -1845,7 +1844,7 @@ void AdminCalendar::drawRewardsTab(const Period& p, const Rect& r, bool editable
                 if (!titlesLoaded_) loadTitles();
                 ui.setFocus("items/cat" + std::to_string(pickCat_));
             }
-            if (ui.button("addtitle", {x + aw + ui.s(10), by, bw, bh}, b, st)) {
+            if (cframe::button(ui, "addtitle", {x + aw + ui.s(10), by, bw, bh}, b, st)) {
                 form_ = PrizeForm::Title;
                 titleText_.clear();
                 condKind_ = "tier";
@@ -1899,8 +1898,7 @@ void AdminCalendar::drawItemPicker() {
     pickCat_ = std::clamp(pickCat_, 0, static_cast<int>(cats.size()) - 1);
     const float boxW = std::min(ui.screenW() - ui.s(80), ui.s(1000)), boxH = std::min(ui.screenH() - ui.s(40), ui.s(720));
     Rect box{ui.screenW() * 0.5f - boxW * 0.5f, ui.screenH() * 0.5f - boxH * 0.5f, boxW, boxH};
-    r.fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
-    r.drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.8f), ui.s(1.5f));
+    cframe::panel(ui, box, true, 18);
     ui.pushId("admin");
     ui.pushId("cal");
     ui.pushId("ed");
@@ -1926,7 +1924,7 @@ void AdminCalendar::drawItemPicker() {
             st.small = true;
             st.fontSize = 16;
             st.selected = pickCat_ == static_cast<int>(i);
-            if (ui.button("cat" + std::to_string(i), {cx, y, bw, ch}, cats[i].name, st) && pickCat_ != static_cast<int>(i)) {
+            if (cframe::button(ui, "cat" + std::to_string(i), {cx, y, bw, ch}, cats[i].name, st) && pickCat_ != static_cast<int>(i)) {
                 pickCat_ = static_cast<int>(i);
                 pickRef_.clear();
             }
@@ -2042,8 +2040,8 @@ void AdminCalendar::drawItemPicker() {
     add.primary = true;
     add.enabled = !pickRef_.empty() && prizes_.size() < kMaxPrizes;
     UIContext::ButtonStyle no;
-    bool close = ui.button("close", {x + w - bw * 2 - ui.s(12), btnY, bw, btnH}, noL, no) || ui.backPressed();
-    if (ui.button("add", {x + w - bw, btnY, bw, btnH}, addL, add)) {
+    bool close = cframe::button(ui, "close", {x + w - bw * 2 - ui.s(12), btnY, bw, btnH}, noL, no) || ui.backPressed();
+    if (cframe::button(ui, "add", {x + w - bw, btnY, bw, btnH}, addL, add)) {
         for (const CosmeticItem& it : list)
             if (it.id == pickRef_) {
                 ChallengePrize p;
@@ -2088,8 +2086,7 @@ void AdminCalendar::drawModal() {
     float boxW = cols * bw + (cols - 1) * gap + ui.s(64);
     float boxH = ui.s(30 + 40 + 34 + 16) + rows * (bh + gap) + ui.s(16 + 50 + 26);
     Rect box{ui.screenW() * 0.5f - boxW * 0.5f, std::max(ui.s(20), ui.screenH() * 0.5f - boxH * 0.5f), boxW, std::min(boxH, ui.screenH() - ui.s(40))};
-    ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
-    ui.r().drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.8f), ui.s(1.5f));
+    cframe::panel(ui, box, true, 18);
     ui.pushId("admin");
     ui.pushId("cal");
     ui.pushId("ed");
@@ -2111,7 +2108,7 @@ void AdminCalendar::drawModal() {
         st.fontSize = 17;
         st.enabled = on || n < draft_.slots;
         Rect br{x + static_cast<float>(i % cols) * (bw + gap), y + static_cast<float>(i / cols) * (bh + gap), bw, bh};
-        if (ui.button("p" + d->id, br, d->name, st)) {
+        if (cframe::button(ui, "p" + d->id, br, d->name, st)) {
             if (on) draft_.powers.erase(std::remove(draft_.powers.begin(), draft_.powers.end(), d->id), draft_.powers.end());
             else draft_.powers.push_back(d->id);
             std::sort(draft_.powers.begin(), draft_.powers.end());
@@ -2121,7 +2118,7 @@ void AdminCalendar::drawModal() {
     }
     UIContext::ButtonStyle cs;
     cs.primary = true;
-    if (ui.button("close", {box.right() - ui.s(32) - ui.s(200), box.bottom() - ui.s(26) - ui.s(50), ui.s(200), ui.s(50)}, "Fermer", cs) || ui.backPressed())
+    if (cframe::button(ui, "close", {box.right() - ui.s(32) - ui.s(200), box.bottom() - ui.s(26) - ui.s(50), ui.s(200), ui.s(50)}, "Fermer", cs) || ui.backPressed())
         picker_ = false;
     ui.popId();
     ui.popId();

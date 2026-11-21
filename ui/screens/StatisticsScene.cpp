@@ -27,6 +27,7 @@
 #include "game/levels/LevelData.h"
 #include "game/powers/PowerDefinition.h"
 #include "game/records/PlayStats.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Charts.h"
@@ -198,15 +199,12 @@ public:
         const float W = ui.screenW(), H = ui.screenH(), m = ui.s(40);
         ui.pushId("stats");
         ui.inputEnabled = !confirmReset_;
-        UIContext::ButtonStyle small;
-        small.small = true;
         Rect back{W - m - ui.s(200), ui.s(26), ui.s(200), ui.s(46)};
-        bool leave = ui.button("back", back, "Retour", small);
-        float tf = ui.fitFont("STATISTIQUES", FontFace::Title, 40, back.x - m - ui.s(24), 0.6f);
-        ui.label("STATISTIQUES", {m, ui.s(49)}, tf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        bool leave = cframe::back(ui, "back", back);
+        cframe::title(ui, "STATISTIQUES", {m, ui.s(49)}, 40, Align::Left, VAlign::Middle, back.x - m - ui.s(24));
         Rect tabsR{m, ui.s(92), W - 2 * m, ui.s(48)};
         int before = tab_;
-        ui.tabs("tabs", tabsR, {"Vue d'ensemble", "Combat", "Boss", "Niveaux", "Passages difficiles", "Données et sauvegarde"}, tab_);
+        cframe::tabs(ui, "tabs", tabsR, {"Vue d'ensemble", "Combat", "Boss", "Niveaux", "Passages difficiles", "Données et sauvegarde"}, tab_);
         if (tab_ != before) tip_ = Tip{};
         // « NOUVEAU » (2.55) on « Données et sauvegarde » until it is opened; its new cards keep
         // theirs during that visit.
@@ -269,7 +267,7 @@ private:
             st.small = true;
             st.fontSize = 15;
             float bw = ui.text().measure(t, FontFace::Bold, ui.s(15)).x + ui.s(28);
-            if (ui.button("tbl/" + table, {right - bw, r.y + ui.s(12), bw, ui.s(32)}, t, st)) on = !on;
+            if (cframe::button(ui, "tbl/" + table, {right - bw, r.y + ui.s(12), bw, ui.s(32)}, t, st)) on = !on;
             right -= bw + ui.s(12);
         }
         const float tf = fz(ui, 16), sf = fz(ui, 14);
@@ -338,7 +336,7 @@ private:
             st.selected = period_ == p;
             std::string t = std::to_string(p) + " j";
             float bw = ui.text().measure(t, FontFace::Bold, ui.s(16)).x + ui.s(30);
-            if (ui.button("period" + std::to_string(p), {bx, y, bw, ui.s(36)}, t, st)) period_ = p;
+            if (cframe::button(ui, "period" + std::to_string(p), {bx, y, bw, ui.s(36)}, t, st)) period_ = p;
             bx += bw + ui.s(8);
         }
         return ui.s(36);
@@ -639,7 +637,7 @@ private:
             const std::string t = "Fiches des boss : lieux, animations, entraînement";
             float bw = std::min(w, ui.text().measure(t, FontFace::Bold, ui.s(20)).x + ui.s(48));
             Rect br{x, y, bw, ui.s(48)};
-            if (ui.button("bossstats", br, t, st)) g_.app.switchScene(makeBossStats(g_, phaseBoss_), 0.3f);
+            if (cframe::button(ui, "bossstats", br, t, st)) g_.app.switchScene(makeBossStats(g_, phaseBoss_), 0.3f);
             ui.newBadge("bossstats", br, "stats.bosses");
             y += br.h + ui.s(16);
         }
@@ -658,9 +656,9 @@ private:
             UIContext::ButtonStyle st;
             st.small = true;
             st.enabled = group_ > 0;
-            if (ui.button("grpprev", {x, y, ui.s(52), ui.s(36)}, "‹", st)) --group_;
+            if (cframe::button(ui, "grpprev", {x, y, ui.s(52), ui.s(36)}, "‹", st)) --group_;
             st.enabled = group_ + 1 < groups;
-            if (ui.button("grpnext", {x + ui.s(60), y, ui.s(52), ui.s(36)}, "›", st)) ++group_;
+            if (cframe::button(ui, "grpnext", {x + ui.s(60), y, ui.s(52), ui.s(36)}, "›", st)) ++group_;
             group_ = std::clamp(group_, 0, groups - 1);
             std::string t = "Boss " + std::to_string(group_ * 3 + 1) + " à " + std::to_string(group_ * 3 + static_cast<int>(shown.size())) + " sur " +
                             std::to_string(order.size()) + ", du plus récent au plus ancien";
@@ -769,7 +767,7 @@ private:
                     cy += ui.s(40);
                 }
                 st.selected = order[i] == phaseBoss_;
-                if (ui.button("pb" + std::to_string(i), {cx, cy, bw, ui.s(34)}, ui.elide(n, FontFace::Bold, 16, bw - ui.s(20)), st)) phaseBoss_ = order[i];
+                if (cframe::button(ui, "pb" + std::to_string(i), {cx, cy, bw, ui.s(34)}, ui.elide(n, FontFace::Bold, 16, bw - ui.s(20)), st)) phaseBoss_ = order[i];
                 cx += bw + ui.s(8);
             }
             cy += ui.s(46);
@@ -967,7 +965,7 @@ private:
                 st.enabled = g_.content.level(levelId) != nullptr;
                 float bw = ui.text().measure(bt, FontFace::Bold, ui.s(16)).x + ui.s(30);
                 Rect br{row.right() - ui.s(12) - bw, row.center().y - ui.s(19), bw, ui.s(38)};
-                if (ui.button("train" + std::to_string(i), br, bt, st)) trainSegment(levelId, s.from);
+                if (cframe::button(ui, "train" + std::to_string(i), br, bt, st)) trainSegment(levelId, s.from);
                 const float tx = rc.x + rk * 0.5f + ui.s(14), room = br.x - ui.s(14) - tx;
                 std::string name = "Segment " + std::to_string(s.index + 1) + " : " + checkpointName(li, s.from, false) + " → " + checkpointName(li, s.to, true);
                 std::string meta = "Meilleur " + clockTime(s.best) + " · médiane " + clockTime(s.median) + " · perdu en moyenne " + clockTime(s.lost) +
@@ -1095,8 +1093,8 @@ private:
         const int n = static_cast<int>(order.size());
         bool changed = false;
         st.enabled = n > 1;
-        if (ui.button(id + "prev", {x, y, ui.s(52), ui.s(40)}, "‹", st)) idx = (idx + n - 1) % n, changed = true;
-        if (ui.button(id + "next", {x + w - ui.s(52), y, ui.s(52), ui.s(40)}, "›", st)) idx = (idx + 1) % n, changed = true;
+        if (cframe::button(ui, id + "prev", {x, y, ui.s(52), ui.s(40)}, "‹", st)) idx = (idx + n - 1) % n, changed = true;
+        if (cframe::button(ui, id + "next", {x + w - ui.s(52), y, ui.s(52), ui.s(40)}, "›", st)) idx = (idx + 1) % n, changed = true;
         idx = std::clamp(idx, 0, n - 1);
         const std::string& lid = order[static_cast<size_t>(idx)].second;
         std::string name = lid;
@@ -1213,7 +1211,7 @@ private:
                 st.enabled = can;
                 float bw = ui.text().measure(bt, FontFace::Bold, ui.s(16)).x + ui.s(30);
                 Rect br{row.right() - ui.s(12) - bw, row.center().y - ui.s(19), bw, ui.s(38)};
-                if (ui.button("hard" + std::to_string(i), br, bt, st)) {
+                if (cframe::button(ui, "hard" + std::to_string(i), br, bt, st)) {
                     if (boss) {
                         g_.app.switchScene(makeBossTraining(g_, h.id, h.phase), 0.3f);
                     } else if (const LevelInfo* li = info(h.id)) {
@@ -1335,12 +1333,12 @@ private:
             const std::string rt = "Réinitialiser les statistiques";
             float bw = ui.text().measure(rt, FontFace::Bold, ui.s(20)).x + ui.s(40);
             Rect br{in.x, in.bottom() - ui.s(50), bw, ui.s(50)};
-            if (ui.button("reset", br, rt, danger)) confirmReset_ = true;
+            if (cframe::button(ui, "reset", br, rt, danger)) confirmReset_ = true;
             UIContext::ButtonStyle st;
             st.fontSize = 20;
             const std::string ot = "Ouvrir les Paramètres";
             float ow = ui.text().measure(ot, FontFace::Bold, ui.s(20)).x + ui.s(40);
-            if (br.right() + ui.s(14) + ow <= in.right() && ui.button("settings", {br.right() + ui.s(14), br.y, ow, br.h}, ot, st))
+            if (br.right() + ui.s(14) + ow <= in.right() && cframe::button(ui, "settings", {br.right() + ui.s(14), br.y, ow, br.h}, ot, st))
                 g_.app.pushScene(makeSettingsScene(g_, true));
             if (!status_.empty() && br.right() + ui.s(14) + ow + ui.s(20) < in.right()) {
                 float room = in.right() - (br.right() + ui.s(14) + ow + ui.s(20));
@@ -1356,7 +1354,7 @@ private:
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{0, 0, 0, 160});
         Rect m = Rect::fromCenter({ui.screenW() * 0.5f, ui.screenH() * 0.5f}, {std::min(ui.screenW() - ui.s(40), ui.s(760)), ui.s(250)});
-        ui.panel(m, true, 16);
+        cframe::panel(ui, m, true, 16);
         const std::string head = "Réinitialiser les statistiques ?";
         float hf = ui.fitFont(head, FontFace::Bold, 26, m.w - ui.s(60), 0.6f);
         ui.label(head, {m.center().x, m.y + ui.s(42)}, hf, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
@@ -1366,8 +1364,8 @@ private:
         const float bw = (m.w - ui.s(90)) / 2.0f;
         UIContext::ButtonStyle st, danger;
         danger.danger = true;
-        if (ui.button("no", {m.x + ui.s(30), m.bottom() - ui.s(76), bw, ui.s(52)}, "Annuler", st) || ui.backPressed()) confirmReset_ = false;
-        else if (ui.button("yes", {m.right() - ui.s(30) - bw, m.bottom() - ui.s(76), bw, ui.s(52)}, "Tout effacer", danger)) {
+        if (cframe::button(ui, "no", {m.x + ui.s(30), m.bottom() - ui.s(76), bw, ui.s(52)}, "Annuler", st) || ui.backPressed()) confirmReset_ = false;
+        else if (cframe::button(ui, "yes", {m.right() - ui.s(30) - bw, m.bottom() - ui.s(76), bw, ui.s(52)}, "Tout effacer", danger)) {
             g_.playStats.reset();
             confirmReset_ = false;
             status_ = "Statistiques réinitialisées.";
@@ -1376,7 +1374,7 @@ private:
     }
 
     GameServices& g_;
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     int tab_ = 0;
     int period_ = 30;
     int today_ = 0;

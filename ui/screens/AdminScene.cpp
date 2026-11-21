@@ -37,6 +37,7 @@
 #include "game/online/Clans.h"
 #include "game/online/OnlineSession.h"
 #include "game/progression/NewsCenter.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/OnlineMigration.h"
 #include "ui/screens/AdminAssets.h"
@@ -232,11 +233,11 @@ public:
         x0_ = (ui.screenW() - W_) * 0.5f;
         float y = ui.s(36), hh = ui.s(52);
         ui.pushId("admin");
-        float titleW = ui.text().measure("ADMINISTRATION", FontFace::Title, ui.s(40)).x;
-        ui.label("ADMINISTRATION", {x0_, y + hh * 0.5f}, 40, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
         float backW = ui.s(170);
+        // 2.83: the title in chrome letters, never wider than the room beside « Retour ».
+        float titleW = cframe::title(ui, "ADMINISTRATION", {x0_, y + hh * 0.5f}, 40, Align::Left, VAlign::Middle, W_ - backW - ui.s(24)).x;
         // 2.61: Esc / B first cancels what the Studio has under way (a selection, a shape...).
-        bool back = ui.button("back", {x0_ + W_ - backW, y, backW, hh}, "Retour") ||
+        bool back = cframe::back(ui, "back", {x0_ + W_ - backW, y, backW, hh}) ||
                     (!modal && !(tab_ == kTabCreations && creations_.capturesBack()) && ui.backPressed());
         // The tabs after the title when they fit, else on the line below. Equal tabs, each as
         // wide as its longest label needs (« Calendrier des défis »).
@@ -255,7 +256,7 @@ public:
             bodyY += hh + ui.s(16);
         }
         int tab = tab_;
-        ui.tabs("tabs", tabsR, kTabs, tab);
+        cframe::tabs(ui, "tabs", tabsR, kTabs, tab);
         // « NOUVEAU » (2.41) on « Calendrier des défis » until it is opened.
         Rect calTab{tabsR.x + tabW + ui.s(2), tabsR.y, tabW - ui.s(4), tabsR.h};
         ui.newBadge("tabcal", calTab, "admin.tab.calendar", true, true);
@@ -319,8 +320,7 @@ public:
             // Its own two panels: the month and the editor.
             calendar_.draw(body);
         } else {
-            ui.r().fillRoundedRect(body, ui.s(14), Color{10, 15, 32, 225});
-            ui.r().drawRoundedRect(body, ui.s(14), ui.theme().border, ui.s(1));
+            cframe::panel(ui, body, false, 14);
             Rect inner{body.x + ui.s(22), body.y + ui.s(18), body.w - ui.s(44), body.h - ui.s(36)};
             if (tab_ == kTabPlayers) drawPlayers(inner);
             else if (tab_ == kTabBackups) backups_.draw(inner);
@@ -469,7 +469,7 @@ private:
             st.selected = static_cast<int>(i) == active;
             st.fontSize = font;
             float w = ui.text().measure(labels[i], FontFace::Bold, ui.s(static_cast<float>(font))).x + ui.s(36);
-            if (ui.button(id + std::to_string(i), {x, y, w, h}, labels[i], st)) active = static_cast<int>(i);
+            if (cframe::button(ui, id + std::to_string(i), {x, y, w, h}, labels[i], st)) active = static_cast<int>(i);
             x += w + ui.s(8);
         }
         return x - ui.s(8);
@@ -577,12 +577,12 @@ private:
         std::string hint = "Clic sur un pseudo : son profil · « + » : ses derniers niveaux joués · Entrée sur le rôle : le changer";
         float hs = ui.fitFont(hint, FontFace::Body, 15, hintRoom);
         ui.label(ui.elide(hint, FontFace::Body, hs, hintRoom), {in.x, py + pagerH * 0.5f}, hs, ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
-        if (ui.button("prev", {in.right() - 2 * bw - ui.s(10), py, bw, pagerH}, "Précédents", st)) {
+        if (cframe::button(ui, "prev", {in.right() - 2 * bw - ui.s(10), py, bw, pagerH}, "Précédents", st)) {
             offset_ = std::max(0, offset_ - 50);
             loadPlayers();
         }
         st.enabled = jget<bool>(players_, "has_more", false) && !busy_;
-        if (ui.button("next", {in.right() - bw, py, bw, pagerH}, "Suivants", st)) {
+        if (cframe::button(ui, "next", {in.right() - bw, py, bw, pagerH}, "Suivants", st)) {
             offset_ += 50;
             loadPlayers();
         }
@@ -669,7 +669,7 @@ private:
             ts.small = true;
             ts.selected = open;
             ts.fontSize = 18;
-            if (ui.button("levels" + prefix + id, {row.x + ui.s(6), row.y + ui.s(9), ui.s(30), row.h - ui.s(18)}, open ? "–" : "+", ts)) toggleLevels(p, prefix);
+            if (cframe::button(ui, "levels" + prefix + id, {row.x + ui.s(6), row.y + ui.s(9), ui.s(30), row.h - ui.s(18)}, open ? "–" : "+", ts)) toggleLevels(p, prefix);
         }
         // Player: avatar, name (opens the profile), « vous ».
         float av = row.h - ui.s(14);
@@ -727,7 +727,7 @@ private:
             ds.fontSize = 15;
             Rect db{rb.right() + ui.s(8), rb.y, std::max(0.0f, c.x[7] + ui.s(8) + colW - rb.right() - ui.s(8)), rb.h};
             std::string label = ui.elide("Ordinateur", FontFace::Bold, 15, db.w - ui.s(16));
-            if (db.w > ui.s(60) && ui.button("device" + prefix + id, db, label, ds)) openDevice(p);
+            if (db.w > ui.s(60) && cframe::button(ui, "device" + prefix + id, db, label, ds)) openDevice(p);
         }
         if (me) {
             ui.label("admin", {rb.x + ui.s(4), row.y + row.h * 0.5f}, 16, ui.theme().warm, Align::Left, FontFace::Bold, VAlign::Middle);
@@ -737,7 +737,7 @@ private:
             st.selected = admin;
             st.fontSize = 15;
             st.enabled = !busyRole_;
-            if (ui.button("role" + prefix + id, rb, admin ? "admin" : "joueur", st)) askRole(p);
+            if (cframe::button(ui, "role" + prefix + id, rb, admin ? "admin" : "joueur", st)) askRole(p);
         }
     }
 
@@ -847,7 +847,7 @@ private:
                 st.small = true;
                 st.fontSize = 14;
                 const std::string label = ui.elide("Regarder", FontFace::Bold, 14, bb.w - ui.s(12));
-                if (ui.button("watch" + jstr(rep, "record_id"), bb, label, st)) g_.app.pushScene(makeReplayViewer(g_, jstr(rep, "record_id")));
+                if (cframe::button(ui, "watch" + jstr(rep, "record_id"), bb, label, st)) g_.app.pushScene(makeReplayViewer(g_, jstr(rep, "record_id")));
             } else {
                 cell(4, rep.is_object() ? jstr(rep, "reason", "indisponible") : std::string("—"), ui.theme().textDim, cy);
             }
@@ -858,12 +858,12 @@ private:
             st.small = true;
             const float bw = std::min(ui.s(200), w * 0.4f);
             st.enabled = levelsOffset_ > 0;
-            if (ui.button("lnewer", {x, y + ui.s(6), bw, ui.s(36)}, "‹ Plus récents", st)) {
+            if (cframe::button(ui, "lnewer", {x, y + ui.s(6), bw, ui.s(36)}, "‹ Plus récents", st)) {
                 levelsOffset_ = std::max(0, levelsOffset_ - 10);
                 loadLevels(levelsFor_);
             }
             st.enabled = jget<bool>(levelsData_, "has_more", false);
-            if (ui.button("lolder", {x + w - bw, y + ui.s(6), bw, ui.s(36)}, "Plus anciens ›", st)) {
+            if (cframe::button(ui, "lolder", {x + w - bw, y + ui.s(6), bw, ui.s(36)}, "Plus anciens ›", st)) {
                 levelsOffset_ += 10;
                 loadLevels(levelsFor_);
             }
@@ -910,8 +910,7 @@ private:
         const std::string name = jstr(devicePlayer_, "username");
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
         Rect box{ui.screenW() * 0.5f - ui.s(400), ui.screenH() * 0.5f - ui.s(290), ui.s(800), ui.s(580)};
-        ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
-        ui.r().drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.6f), ui.s(1.5f));
+        cframe::panel(ui, box, true, 18);
         ui.pushId("device");
         float x = box.x + ui.s(32), w = box.w - ui.s(64), y = box.y + ui.s(28);
         std::string title = "Ordinateur de " + name;
@@ -943,7 +942,7 @@ private:
                 UIContext::ButtonStyle st;
                 st.small = true;
                 st.enabled = !busyDevice_;
-                if (ui.button("bind" + std::to_string(jget<int64_t>(a, "id", 0)), {x + w - bw, y, bw, ui.s(40)}, "Lier à cet ordinateur", st))
+                if (cframe::button(ui, "bind" + std::to_string(jget<int64_t>(a, "id", 0)), {x + w - bw, y, bw, ui.s(40)}, "Lier à cet ordinateur", st))
                     deviceAction(Json{{"action", "bind"}, {"attempt_id", jget<int64_t>(a, "id", 0)}}, name + " est lié à cet ordinateur.");
                 y += ui.s(48);
             }
@@ -954,7 +953,7 @@ private:
         UIContext::ButtonStyle un;
         un.danger = true;
         un.enabled = !busyDevice_ && deviceData_.is_object() && !jget<bool>(deviceData_, "rebind_allowed", false);
-        if (ui.button("unbind", {x, by, ui.s(330), bh}, "Délier (nouvel ordinateur autorisé)", un))
+        if (cframe::button(ui, "unbind", {x, by, ui.s(330), bh}, "Délier (nouvel ordinateur autorisé)", un))
             deviceAction(Json{{"action", "unbind"}}, name + " est délié : sa prochaine connexion le liera de nouveau.");
         // 2.50: the data of this player moved to another account (when the server offers it).
         if (g_.migration.available()) {
@@ -962,13 +961,13 @@ private:
             UIContext::ButtonStyle ms;
             ms.enabled = !busyDevice_;
             ms.fontSize = ui.fitFont("Migrer les données…", FontFace::Bold, 20, mw - ui.s(24));
-            if (mw > ui.s(120) && ui.button("migrate", {mx, by, mw, bh}, "Migrer les données…", ms)) {
+            if (mw > ui.s(120) && cframe::button(ui, "migrate", {mx, by, mw, bh}, "Migrer les données…", ms)) {
                 const Json p = devicePlayer_;
                 devicePlayer_ = Json();
                 g_.app.pushScene(makeAdminMigration(g_, p));
             }
         }
-        if (ui.button("close", {box.right() - ui.s(32) - ui.s(170), by, ui.s(170), bh}, "Fermer") || ui.backPressed()) devicePlayer_ = Json();
+        if (cframe::button(ui, "close", {box.right() - ui.s(32) - ui.s(170), by, ui.s(170), bh}, "Fermer") || ui.backPressed()) devicePlayer_ = Json();
         ui.popId();
     }
 
@@ -985,7 +984,7 @@ private:
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
         Rect box{ui.screenW() * 0.5f - ui.s(340), ui.screenH() * 0.5f - ui.s(190), ui.s(680), ui.s(380)};
         Color edge = grant ? ui.theme().warm : ui.theme().danger;
-        ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+        cframe::panel(ui, box, true, 18);
         ui.r().drawRoundedRect(box, ui.s(18), edge.withAlphaF(0.8f), ui.s(1.5f));
         ui.pushId("confirm");
         float x = box.x + ui.s(32), w = box.w - ui.s(64), y = box.y + ui.s(30);
@@ -1013,9 +1012,9 @@ private:
         UIContext::ButtonStyle ok;
         ok.primary = grant;
         ok.danger = !grant;
-        if (ui.button("cancel", {box.right() - ui.s(32) - ui.s(170) - ui.s(14) - ui.s(230), by, ui.s(170), bh}, "Annuler") || ui.backPressed()) {
+        if (cframe::button(ui, "cancel", {box.right() - ui.s(32) - ui.s(170) - ui.s(14) - ui.s(230), by, ui.s(170), bh}, "Annuler") || ui.backPressed()) {
             confirmId_.clear();
-        } else if (ui.button("ok", {box.right() - ui.s(32) - ui.s(230), by, ui.s(230), bh}, grant ? "Donner le rôle" : "Retirer le rôle", ok)) {
+        } else if (cframe::button(ui, "ok", {box.right() - ui.s(32) - ui.s(230), by, ui.s(230), bh}, grant ? "Donner le rôle" : "Retirer le rôle", ok)) {
             setRole(confirmId_, grant, name);
             confirmId_.clear();
         }
@@ -1498,7 +1497,7 @@ private:
         if (logMore_) {
             UIContext::ButtonStyle st;
             st.small = true;
-            if (ui.button("more", {in.right() - ui.s(220), in.bottom() - ui.s(44), ui.s(220), ui.s(44)}, "Plus anciens", st)) loadLog(true);
+            if (cframe::button(ui, "more", {in.right() - ui.s(220), in.bottom() - ui.s(44), ui.s(220), ui.s(44)}, "Plus anciens", st)) loadLog(true);
         }
         ui.popId();
     }
@@ -1540,7 +1539,7 @@ private:
     AdminRaids raids_;      // « Raids » (clan raids, phase 1)
     FilmList films_;  // 2.81: ADMINISTRATION › Films
     AdminGifts gifts_;  // « Cadeaux »: rewards given to players
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     float W_ = 0.0f, x0_ = 0.0f;
     int tab_ = 0;

@@ -32,6 +32,7 @@
 #include "game/gameplay/InputFrame.h"
 #include "game/online/Replay.h"
 #include "packaging/PackageImporter.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/CoopGameScene.h"
@@ -114,6 +115,7 @@ public:
     void onExit() override { g_.app.input().setReservedPads({}); }
 
     void update(float dt) override {
+        bg_.update(dt);
         t_ += dt;
         anim_.update(dt);
         if (levelsFuture_.valid() && levelsFuture_.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
@@ -688,24 +690,22 @@ public:
     void render(float) override {
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
-        Renderer& r = ui.r();
         const float W = ui.screenW(), H = ui.screenH();
-        r.fillRect({0, 0, W, H}, Color{7, 11, 26, 255});
+        bg_.render(g_, 0.72f);
         const float pad = ui.s(28), gap = ui.s(16);
         float y = ui.s(22);
         ui.pushId("coop");
         // Header: title, « NOUVEAU », the line about the mode, « Retour » at the right.
         const float headH = ui.s(48);
         const Rect back{W - pad - ui.s(170), y + (headH - ui.s(44)) * 0.5f, ui.s(170), ui.s(44)};
-        if (ui.button("back", back, "Retour") || (ui.backPressed() && !choosingLevel_ && !inviting_)) {
+        if (cframe::back(ui, "back", back) || (ui.backPressed() && !choosingLevel_ && !inviting_)) {
             leaveNet();
             ui.popId();
             g_.localTeam.clear();  // the keys screens are the solo game's again
             g_.app.switchScene(makeMainMenu(g_), 0.3f);
             return;
         }
-        const float titleW = ui.text().measure("COOPÉRATION", FontFace::Title, ui.s(34)).x;
-        ui.label("COOPÉRATION", {pad, y + headH * 0.5f}, 34, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        const float titleW = cframe::title(ui, "COOPÉRATION", {pad, y + headH * 0.5f}, 34, Align::Left, VAlign::Middle, back.x - ui.s(20) - pad).x;
         float hx = pad + titleW + ui.s(16);
         {
             const std::string sub = "Niveaux EXTRÊME à 2 ou 3 joueurs · une seule vie chacun · classement par équipe";
@@ -742,8 +742,7 @@ public:
     void drawLevel(const Rect& box) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
-        r.fillRoundedRect(box, ui.s(14), Color{15, 23, 48, 255});
-        r.drawRoundedRect(box, ui.s(14), Color{34, 48, 90, 255}, ui.s(1));
+        cframe::panel(ui, box, false, 14);
         const float in = ui.s(16), x = box.x + in, w = box.w - in * 2.0f;
         float y = heading("NIVEAU", x, box.y + in);
         const bool guest = showsRoomLevel();
@@ -751,7 +750,7 @@ public:
             // 2.63.5: the campaign's EXTRÊME levels or the community's installed ones (fixed in a room).
             const Rect tabs{x, y, w, ui.s(40)};
             int src = source_;
-            if (ui.tabs("source", tabs, {"Campagne", "Communauté"}, src) && src != source_ && !link_) {
+            if (cframe::tabs(ui, "source", tabs, {"Campagne", "Communauté"}, src) && src != source_ && !link_) {
                 source_ = src;
                 level_ = firstOfSource(source_);
             }
@@ -774,7 +773,7 @@ public:
                                       ? "Aucun niveau EXTRÊME installé."
                                       : "Aucun niveau EXTRÊME de la communauté installé : choisissez-en un dans NIVEAUX EN LIGNE, puis « Jouer en coop ».";
             y += ui.labelWrapped(m, {x, y}, w, 17, ui.theme().textDim).y + ui.s(14);
-            if (levelsLoaded_ && source_ == 1 && !link_ && ui.button("online", {x, y, w, ui.s(44)}, "Niveaux en ligne…")) {
+            if (levelsLoaded_ && source_ == 1 && !link_ && cframe::button(ui, "online", {x, y, w, ui.s(44)}, "Niveaux en ligne…")) {
                 leaveNet();
                 g_.app.switchScene(makeOnlineLevels(g_), 0.3f);
             }
@@ -824,7 +823,7 @@ public:
         UIContext::ButtonStyle bs;
         // In an online room, the level is the room's; on the local network it follows the host.
         bs.enabled = countOfSource(source_) > 1 && !(link_ && mode_ == 2);
-        if (ui.button("level", {x, box.bottom() - in - ui.s(44), w, ui.s(44)}, "Changer de niveau…", bs)) {
+        if (cframe::button(ui, "level", {x, box.bottom() - in - ui.s(44), w, ui.s(44)}, "Changer de niveau…", bs)) {
             choosingLevel_ = true;
             ui.setFocus("coop/levels/" + std::to_string(level_));
         }
@@ -890,7 +889,7 @@ public:
         // Where the team plays: this PC, the local network, online.
         const Rect tabs{full.x, full.y, full.w, ui.s(44)};
         int m = mode_;
-        if (ui.tabs("mode", tabs, {"Sur ce PC", "Réseau local", "En ligne"}, m) && m != mode_ && !link_) {
+        if (cframe::tabs(ui, "mode", tabs, {"Sur ce PC", "Réseau local", "En ligne"}, m) && m != mode_ && !link_) {
             mode_ = m;
             netError_.clear();
         }
@@ -929,7 +928,7 @@ public:
         ps.enabled = team_.count() >= 2 && ready && !levels_.empty();
         ps.fontSize = ui.fitFont(play, FontFace::Bold, 20, playW - ui.s(24), 0.6f);
         const Rect playRect{box.right() - playW, rowY, playW, rowH};
-        if (ui.button("play", playRect, play, ps)) start();
+        if (cframe::button(ui, "play", playRect, play, ps)) start();
         ui.newBadge("play", playRect, "coop");  // 2.62: « NOUVEAU » until the button is reached
         {
             const bool note = keysNoteTimer_ > 0.0f;
@@ -1091,7 +1090,7 @@ public:
             bs.enabled = other;
             const std::string change = "Changer de périphérique";
             bs.fontSize = ui.fitFont(change, FontFace::Bold, 15, w - ui.s(16), 0.6f);
-            if (ui.button("change" + std::to_string(i), {x, buttonsTop, w, bh}, change, bs) && team_.cycle(i, avail)) {
+            if (cframe::button(ui, "change" + std::to_string(i), {x, buttonsTop, w, bh}, change, bs) && team_.cycle(i, avail)) {
                 rumbleFor(i);
                 g_.uiSound("ui_confirm");
             }
@@ -1100,7 +1099,7 @@ public:
             ks.small = true;
             const std::string keys = "Touches…";
             ks.fontSize = ui.fitFont(keys, FontFace::Bold, 15, w - ui.s(16), 0.6f);
-            if (ui.button("keys" + std::to_string(i), {x, buttonsTop + bh + bgap, w, bh}, keys, ks)) openKeys(i);
+            if (cframe::button(ui, "keys" + std::to_string(i), {x, buttonsTop + bh + bgap, w, bh}, keys, ks)) openKeys(i);
             ui.newBadge("keys" + std::to_string(i), {x, buttonsTop + bh + bgap, w, bh}, "coop.keys", i == 0, true);
         }
         // The buttons it presses, lit live (rows that fit only), then the hint (if it fits).
@@ -1141,8 +1140,7 @@ public:
     void drawDevices(const Rect& box, const std::vector<PadEntry>& pads, float lineH) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
-        r.fillRoundedRect(box, ui.s(16), Color{18, 24, 54, 255});
-        r.drawRoundedRect(box, ui.s(16), Color{44, 53, 102, 255}, ui.s(1));
+        cframe::panel(ui, box, true, 16);
         const float in = ui.s(14), x = box.x + in, w = box.w - in * 2.0f;
         const std::string title = "PÉRIPHÉRIQUES BRANCHÉS";
         const float tf = ui.fitFont(title, FontFace::Bold, 15, w * 0.45f, 0.7f);
@@ -1194,9 +1192,7 @@ public:
     /// A card with a title and a wrapped text; returns the y under the text.
     float card(const Rect& c, const std::string& title, const std::string& text) {
         UIContext& ui = g_.ui;
-        Renderer& r = ui.r();
-        r.fillRoundedRect(c, ui.s(14), Color{15, 23, 48, 255});
-        r.drawRoundedRect(c, ui.s(14), Color{34, 48, 90, 255}, ui.s(1));
+        cframe::panel(ui, c, false, 14);
         const float in = ui.s(16), w = c.w - in * 2.0f;
         const float fs = ui.fitFont(title, FontFace::Bold, 20, w, 0.7f);
         ui.label(ui.elide(title, FontFace::Bold, fs, w), {c.x + in, c.y + in}, fs, ui.theme().text, Align::Left, FontFace::Bold);
@@ -1230,10 +1226,10 @@ public:
         UIContext::ButtonStyle ps;
         ps.primary = true;
         ps.enabled = chosenLevel() != nullptr;
-        if (ui.button("host", {left.x + in, y, w, ui.s(48)}, "Héberger la partie", ps)) hostLan();
+        if (cframe::button(ui, "host", {left.x + in, y, w, ui.s(48)}, "Héberger la partie", ps)) hostLan();
         y += ui.s(60);
         if (previous_ && previous_->mode == CoopSetup::Mode::Lan && previous_->localSeat >= 0 && !previous_->address.empty() &&
-            ui.button("rejoin", {left.x + in, y, w, ui.s(48)}, "Revenir dans la partie"))
+            cframe::button(ui, "rejoin", {left.x + in, y, w, ui.s(48)}, "Revenir dans la partie"))
             rejoin();
         y = card(right, "Parties du réseau local", "");
         const float rw = right.w - in * 2.0f;
@@ -1243,7 +1239,7 @@ public:
         ui.textField("address", {right.x + in, fieldY, rw - joinW - ui.s(10), ui.s(48)}, joinAddress_, "Adresse d'un PC (ex. 192.168.1.20)", 64);
         UIContext::ButtonStyle js;
         js.enabled = !joinAddress_.empty();
-        if (ui.button("joinaddr", {right.right() - in - joinW, fieldY, joinW, ui.s(48)}, "Rejoindre", js))
+        if (cframe::button(ui, "joinaddr", {right.right() - in - joinW, fieldY, joinW, ui.s(48)}, "Rejoindre", js))
             joinNet(makeLanTransport(joinAddress_, net::kLanPort));
         const auto games = search_.games();
         const Rect list{right.x + in, y, rw, fieldY - ui.s(12) - y};
@@ -1283,10 +1279,10 @@ public:
         UIContext::ButtonStyle ps;
         ps.primary = true;
         ps.enabled = chosenLevel() != nullptr && !busy_;
-        if (ui.button("create", {left.x + in, y, w, ui.s(48)}, busy_ ? "Connexion…" : "Créer un salon", ps)) createRoom();
+        if (cframe::button(ui, "create", {left.x + in, y, w, ui.s(48)}, busy_ ? "Connexion…" : "Créer un salon", ps)) createRoom();
         y += ui.s(60);
         if (previous_ && previous_->mode == CoopSetup::Mode::Online && previous_->localSeat >= 0 && !previous_->roomId.empty() &&
-            ui.button("rejoin", {left.x + in, y, w, ui.s(48)}, "Revenir dans la partie"))
+            cframe::button(ui, "rejoin", {left.x + in, y, w, ui.s(48)}, "Revenir dans la partie"))
             rejoin();
         y = card(right, "Invitations reçues", "");
         const Rect list{right.x + in, y, right.w - in * 2.0f, right.bottom() - in - y};
@@ -1331,7 +1327,7 @@ public:
         // The bottom row: leave, then « Prêt » or « Lancer ».
         const float rowH = ui.s(52), rowY = box.bottom() - rowH;
         const float bw = std::min(ui.s(260), box.w * 0.32f);
-        if (ui.button("leave", {box.x, rowY, bw, rowH}, "Quitter le salon")) {
+        if (cframe::button(ui, "leave", {box.x, rowY, bw, rowH}, "Quitter le salon")) {
             leaveNet();
             return;
         }
@@ -1340,7 +1336,7 @@ public:
         if (host) {
             ps.enabled = seats.size() >= 2 && ready >= static_cast<int>(seats.size());
             const std::string t = "Lancer · " + std::to_string(ready) + " / " + std::to_string(seats.size()) + " prêts";
-            if (ui.button("start", {box.right() - bw, rowY, bw, rowH}, t, ps)) link_->startGame(static_cast<int>(seats.size()));
+            if (cframe::button(ui, "start", {box.right() - bw, rowY, bw, rowH}, t, ps)) link_->startGame(static_cast<int>(seats.size()));
         } else {
             // 2.63.5: « Prêt » only once the room's level is here, in its version.
             const bool levelHere = room_ == Room::Ready;
@@ -1349,7 +1345,7 @@ public:
             std::string label = ready_ ? "Prêt · annuler" : "Je suis prêt";
             if (!levelHere)
                 label = room_ == Room::Fetching ? "Niveau en route…" : room_ == Room::Installing ? "Installation…" : room_ == Room::Failed ? "Niveau manquant" : "Vérification…";
-            if (ui.button("ready", {box.right() - bw, rowY, bw, rowH}, label, ps) && levelHere) {
+            if (cframe::button(ui, "ready", {box.right() - bw, rowY, bw, rowH}, label, ps) && levelHere) {
                 ready_ = !ready_;
                 link_->setReady(ready_);
             }
@@ -1369,8 +1365,8 @@ public:
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
         const Color color = coopColor(i);
-        r.fillRoundedRect(c, ui.s(14), Color{15, 23, 48, 255});
-        r.drawRoundedRect(c, ui.s(14), seat ? color : Color{34, 48, 90, 255}, ui.s(2));
+        cframe::panel(ui, c, false, 14);
+        if (seat) r.drawRoundedRect(c, ui.s(14), color, ui.s(2));
         const float in = ui.s(14), w = c.w - in * 2.0f;
         float y = c.y + in;
         ui.label("JOUEUR " + std::to_string(i + 1), {c.x + in, y}, 13, Color{143, 155, 189, 255}, Align::Left, FontFace::Bold);
@@ -1379,7 +1375,7 @@ public:
             if (host && mode_ == 2) {
                 UIContext::ButtonStyle bs;
                 bs.enabled = !roomId_.empty();
-                if (ui.button("invite" + std::to_string(i), {c.x + in, y, w, ui.s(44)}, "Inviter un ami", bs)) inviting_ = true;
+                if (cframe::button(ui, "invite" + std::to_string(i), {c.x + in, y, w, ui.s(44)}, "Inviter un ami", bs)) inviting_ = true;
                 y += ui.s(56);
             }
             const std::string t = mode_ == 1 ? "Place libre : un joueur du réseau local la prend en rejoignant la partie."
@@ -1429,7 +1425,7 @@ public:
         const float W = std::min(ui.s(640), ui.screenW() - ui.s(40));
         const float listH = std::min(ui.screenH() - ui.s(240), std::max(rowH, static_cast<float>(n) * (rowH + gap)));
         const Rect box{(ui.screenW() - W) * 0.5f, (ui.screenH() - listH - ui.s(160)) * 0.5f, W, listH + ui.s(160)};
-        ui.panel(box, true, 16);
+        cframe::panel(ui, box, true, 16);
         ui.label("Inviter un ami", {box.center().x, box.y + ui.s(36)}, 28, ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
         const Rect view{box.x + ui.s(24), box.y + ui.s(76), box.w - ui.s(48), listH};
         if (n == 0) {
@@ -1450,7 +1446,7 @@ public:
             ui.popId();
             ui.endScroll();
         }
-        if (ui.button("closeinvite", {box.center().x - ui.s(120), box.bottom() - ui.s(64), ui.s(240), ui.s(48)}, "Fermer") || ui.backPressed())
+        if (cframe::button(ui, "closeinvite", {box.center().x - ui.s(120), box.bottom() - ui.s(64), ui.s(240), ui.s(48)}, "Fermer") || ui.backPressed())
             inviting_ = false;
     }
 
@@ -1462,8 +1458,7 @@ public:
     void drawRules(const Rect& box) {
         UIContext& ui = g_.ui;
         Renderer& r = ui.r();
-        r.fillRoundedRect(box, ui.s(14), Color{15, 23, 48, 255});
-        r.drawRoundedRect(box, ui.s(14), Color{34, 48, 90, 255}, ui.s(1));
+        cframe::panel(ui, box, false, 14);
         const float in = ui.s(16), x = box.x + in, w = box.w - in * 2.0f;
         const float top = heading("RÈGLES DE L'ÉQUIPE", x, box.y + in);
         // Measured first: the list scrolls when the column is too short for it.
@@ -1494,7 +1489,7 @@ public:
         const int count = countOfSource(source_);
         const float listH = std::min(ui.screenH() - ui.s(220), static_cast<float>(count) * (rowH + gap));
         const Rect box{(ui.screenW() - W) * 0.5f, (ui.screenH() - listH - ui.s(150)) * 0.5f, W, listH + ui.s(150)};
-        ui.panel(box, true, 16);
+        cframe::panel(ui, box, true, 16);
         const std::string title = source_ == 1 ? "Niveaux EXTRÊME de la communauté" : "Choisir un niveau EXTRÊME";
         ui.label(title, {box.center().x, box.y + ui.s(36)}, ui.fitFont(title, FontFace::Title, 28, box.w - ui.s(48)), ui.theme().text, Align::Center,
                  FontFace::Title, VAlign::Middle);
@@ -1518,13 +1513,14 @@ public:
         }
         ui.popId();
         ui.endScroll();
-        if (ui.button("closelist", {box.center().x - ui.s(120), box.bottom() - ui.s(64), ui.s(240), ui.s(48)}, "Fermer") || ui.backPressed()) {
+        if (cframe::button(ui, "closelist", {box.center().x - ui.s(120), box.bottom() - ui.s(64), ui.s(240), ui.s(48)}, "Fermer") || ui.backPressed()) {
             choosingLevel_ = false;
             ui.setFocus("coop/level");
         }
     }
 
     GameServices& g_;
+    cframe::Backdrop bg_;  // 2.83: the planets of the main menu
     std::optional<CoopSetup> previous_;
     std::future<std::vector<CoopLevel>> levelsFuture_;
     std::vector<CoopLevel> levels_;

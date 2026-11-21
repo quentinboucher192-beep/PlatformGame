@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminCreations.h"
 
 #include <algorithm>
@@ -635,7 +636,7 @@ void AdminCreations::drawKinds(const Rect& r) {
         st.selected = i == kind_;
         st.enabled = !saving_;
         const Rect b{r.x + static_cast<float>(i) * (tw + gap), r.y, tw, r.h};
-        if (ui.button("k" + std::to_string(i), b, labels[static_cast<size_t>(i)], st)) chooseKind(i);
+        if (cframe::button(ui, "k" + std::to_string(i), b, labels[static_cast<size_t>(i)], st)) chooseKind(i);
         // 2.59: the three new kinds (« NOUVEAU » until the button gets the focus or a click).
         if (i > 0) ui.newBadge("k" + std::to_string(i), b, std::string("admin.creations.") + kKinds[i].id, true, true);
     }
@@ -675,11 +676,11 @@ void AdminCreations::drawList(const Rect& r) {
         st.fontSize = row.font;
         st.primary = true;
         st.enabled = !saving_;
-        if (ui.button("new", {x, y, row.widths[0], bh}, labels[0], st)) choose(-1);
+        if (cframe::button(ui, "new", {x, y, row.widths[0], bh}, labels[0], st)) choose(-1);
         x += row.widths[0] + gap;
         st.primary = false;
         st.enabled = !loading_;
-        if (ui.button("refresh", {x, y, row.widths[1], bh}, labels[1], st)) load();
+        if (cframe::button(ui, "refresh", {x, y, row.widths[1], bh}, labels[1], st)) load();
         y += bh + ui.s(10);
     }
     // 2.60: the filter: in service, the reserve (never given), given as a reward, the archives.
@@ -697,7 +698,7 @@ void AdminCreations::drawList(const Rect& r) {
             st.fontSize = row.font;
             st.selected = filter_ == f;
             const Rect b{x, y, row.widths[static_cast<size_t>(f)], bh};
-            if (ui.button("filter" + std::to_string(f), b, labels[static_cast<size_t>(f)], st)) filter_ = f;
+            if (cframe::button(ui, "filter" + std::to_string(f), b, labels[static_cast<size_t>(f)], st)) filter_ = f;
             if (f == 1) ui.newBadge("filter1", b, "admin.creations.reserve", true, true);
             x += b.w + gap;
         }
@@ -865,10 +866,8 @@ void AdminCreations::drawRow(const Json& c, const Rect& row) {
 
 void AdminCreations::drawEditor(const Rect& r) {
     UIContext& ui = g_.ui;
-    Renderer& rr = ui.r();
     const KindWords& words = kKinds[kind_];
-    rr.fillRoundedRect(r, ui.s(12), Color{14, 20, 42, 235});
-    rr.drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 12);
     const Rect in{r.x + ui.s(18), r.y + ui.s(16), r.w - ui.s(36), r.h - ui.s(32)};
     ui.pushId("ed");
     if (!editing_) {
@@ -1015,11 +1014,11 @@ void AdminCreations::drawEditor(const Rect& r) {
         st.fontSize = row.font;
         st.primary = true;
         st.enabled = !saving_ && dirty() && problem().empty();
-        if (ui.button("save", {bx, by, row.widths[0], bh}, saving_ ? "Envoi…" : labels[0], st)) save();
+        if (cframe::button(ui, "save", {bx, by, row.widths[0], bh}, saving_ ? "Envoi…" : labels[0], st)) save();
         bx += row.widths[0] + ui.s(10);
         st.primary = false;
         st.enabled = !saving_ && dirty();
-        if (ui.button("revert", {bx, by, row.widths[1], bh}, labels[1], st)) {
+        if (cframe::button(ui, "revert", {bx, by, row.widths[1], bh}, labels[1], st)) {
             draft_ = base_;
             pendingChoice_ = 0;
             pendingKind_ = -1;
@@ -1029,7 +1028,7 @@ void AdminCreations::drawEditor(const Rect& r) {
             bx += row.widths[1] + ui.s(10);
             st.enabled = !saving_ && !dirty();
             st.danger = !draft_.archived;
-            if (ui.button("archive", {bx, by, row.widths[2], bh}, labels[2], st)) setArchived(!draft_.archived);
+            if (cframe::button(ui, "archive", {bx, by, row.widths[2], bh}, labels[2], st)) setArchived(!draft_.archived);
         }
     }
     drawPreview(preview);
@@ -1059,7 +1058,7 @@ float AdminCreations::drawStyles(float x, float y, float w, bool measure) {
         st.small = true;
         st.fontSize = font;
         st.selected = draft_.look.style == styles[i];
-        if (ui.button("style" + std::to_string(i), b, creationStyleName(kindId(), styles[i]), st)) draft_.look.style = styles[i];
+        if (cframe::button(ui, "style" + std::to_string(i), b, creationStyleName(kindId(), styles[i]), st)) draft_.look.style = styles[i];
     }
     return height;
 }

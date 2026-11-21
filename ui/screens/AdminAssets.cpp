@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminAssets.h"
 
 #include <SDL3/SDL.h>
@@ -49,7 +50,7 @@ float chips(UIContext& ui, const std::string& id, float x, float y, float h, con
             w = std::max(ui.s(24), share);
             shown = ui.elide(labels[i], FontFace::Bold, font, w - ui.s(16));
         }
-        if (ui.button(id + std::to_string(i), {x, y, w, h}, shown, st)) active = static_cast<int>(i);
+        if (cframe::button(ui, id + std::to_string(i), {x, y, w, h}, shown, st)) active = static_cast<int>(i);
         x += w + gap;
     }
     return x - gap;
@@ -221,15 +222,15 @@ void AdminAssets::drawToolbar(const Rect& r) {
     const float lw = ui.text().measure(listT, FontFace::Bold, ui.s(16)).x + ui.s(30);
     float x = r.right() - lw;
     st.selected = !grid_;
-    if (ui.button("list", {x, r.y, lw, r.h}, listT, st)) grid_ = false;
+    if (cframe::button(ui, "list", {x, r.y, lw, r.h}, listT, st)) grid_ = false;
     x -= ui.s(8) + gw;
     st.selected = grid_;
-    if (ui.button("grid", {x, r.y, gw, r.h}, gridT, st)) grid_ = true;
+    if (cframe::button(ui, "grid", {x, r.y, gw, r.h}, gridT, st)) grid_ = true;
     const std::string unusedT = "Inutilisés · " + std::to_string(cat_->unusedCount());
     const float uw = ui.text().measure(unusedT, FontFace::Bold, ui.s(16)).x + ui.s(30);
     x -= ui.s(16) + uw;
     st.selected = unusedOnly_;
-    if (ui.button("unused", {x, r.y, uw, r.h}, unusedT, st)) {
+    if (cframe::button(ui, "unused", {x, r.y, uw, r.h}, unusedT, st)) {
         unusedOnly_ = !unusedOnly_;
         dirty_ = true;
     }
@@ -260,8 +261,7 @@ void AdminAssets::drawTypes(const Rect& r) {
 void AdminAssets::drawTree(const Rect& r) {
     UIContext& ui = g_.ui;
     Renderer& rr = ui.r();
-    rr.fillRoundedRect(r, ui.s(12), Color{14, 20, 42, 235});
-    rr.drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 12);
     const Rect in{r.x + ui.s(10), r.y + ui.s(10), r.w - ui.s(20), r.h - ui.s(20)};
     const std::string head = "Rangement";
     const float hs = ui.fitFont(head, FontFace::Bold, 18, in.w);
@@ -343,8 +343,7 @@ void AdminAssets::drawTree(const Rect& r) {
 void AdminAssets::drawResults(const Rect& r) {
     UIContext& ui = g_.ui;
     Renderer& rr = ui.r();
-    rr.fillRoundedRect(r, ui.s(12), Color{12, 18, 38, 235});
-    rr.drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 12);
     const Rect in{r.x + ui.s(12), r.y + ui.s(10), r.w - ui.s(24), r.h - ui.s(20)};
     // Where we are: the folder's trail (each name translated, joined), then the user filter.
     std::string trail;
@@ -365,7 +364,7 @@ void AdminAssets::drawResults(const Rect& r) {
         const std::string clearT = "Retirer";
         const float bw = ui.text().measure(clearT, FontFace::Bold, ui.s(15)).x + ui.s(30);
         const float bh = ui.s(36);
-        if (ui.button("nouser", {in.right() - bw, y, bw, bh}, clearT, st)) {
+        if (cframe::button(ui, "nouser", {in.right() - bw, y, bw, bh}, clearT, st)) {
             user_.reset();
             dirty_ = true;
         }
@@ -584,8 +583,7 @@ void AdminAssets::drawList(const Rect& view) {
 void AdminAssets::drawDetail(const Rect& r) {
     UIContext& ui = g_.ui;
     Renderer& rr = ui.r();
-    rr.fillRoundedRect(r, ui.s(12), Color{14, 20, 42, 235});
-    rr.drawRoundedRect(r, ui.s(12), ui.theme().border, ui.s(1));
+    cframe::panel(ui, r, false, 12);
     const Rect in{r.x + ui.s(16), r.y + ui.s(14), r.w - ui.s(32), r.h - ui.s(28)};
     const AssetEntry* e = selected_.empty() ? nullptr : cat_->find(selected_);
     if (!e) {
@@ -661,7 +659,7 @@ void AdminAssets::drawDetail(const Rect& r) {
     bs.fontSize = 16;
     const std::string openT = "Ouvrir le dossier";
     const float bw = std::min(in.w, ui.text().measure(openT, FontFace::Bold, ui.s(16)).x + ui.s(40));
-    if (ui.button("folder", {in.x, in.bottom() - buttonH, bw, buttonH}, openT, bs)) openFolder(*e);
+    if (cframe::button(ui, "folder", {in.x, in.bottom() - buttonH, bw, buttonH}, openT, bs)) openFolder(*e);
     const float hintRoom = in.w - bw - ui.s(12);
     if (hintRoom > ui.s(60)) {
         const std::string hint = "Lecture seule : rien n'est modifié ici.";
@@ -725,7 +723,7 @@ void AdminAssets::drawUses(const AssetEntry& e, const Rect& r) {
             }
             ui.app().resources().playSound("sounds/ui_move.wav", 0.5f);
         }
-        if (sheet && ui.button(id + "s", sb, sheetT, bs)) openSheet(u);
+        if (sheet && cframe::button(ui, id + "s", sb, sheetT, bs)) openSheet(u);
         if (row.bottom() < view.y || row.y > view.bottom()) continue;
         const bool focus = ui.focused(id);
         rr.fillRoundedRect(area, ui.s(6), hovered || focus ? Color{28, 40, 70, 220} : Color{18, 26, 50, 210});

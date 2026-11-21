@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminRaids.h"
 
 #include <algorithm>
@@ -76,7 +77,7 @@ void AdminRaids::guestsRow(const Rect& r, bool fullRaid) {
     UIContext::ButtonStyle bs;
     bs.selected = !n.empty();
     bs.fontSize = ui.fitFont(label, FontFace::Bold, 18, r.w - ui.s(24));
-    if (ui.button("guests", r, label, bs)) guests_->open();
+    if (cframe::button(ui, "guests", r, label, bs)) guests_->open();
 }
 
 void AdminRaids::enter(bool force) {
@@ -325,7 +326,7 @@ void AdminRaids::drawLive(const Rect& r) {
             bs.fontSize = 14;
             bs.danger = it->danger;
             bs.enabled = it->enabled;
-            if (ui.button(it->id, {bx, y, bw, ui.s(40)}, it->label, bs)) {
+            if (cframe::button(ui, it->id, {bx, y, bw, ui.s(40)}, it->label, bs)) {
                 if (it->id == "suspend") {
                     reason_.clear();
                     confirmError_.clear();
@@ -574,7 +575,7 @@ void AdminRaids::drawTest(const Rect& r) {
     }
     UIContext::ButtonStyle bs;
     bs.primary = true;
-    if (ui.button("launch", {x + half + gap, y, half, rowH}, "Lancer le test", bs)) {
+    if (cframe::button(ui, "launch", {x + half + gap, y, half, rowH}, "Lancer le test", bs)) {
         RaidTestSetup t;
         t.branch = b.id;
         t.zone = atArmory ? raid::RaidRun::kArmory : b.zones[static_cast<size_t>(testZone_)].id;
@@ -641,7 +642,7 @@ void AdminRaids::drawSim(const Rect& r, bool capture) {
     UIContext::ButtonStyle bs;
     bs.primary = true;
     bs.fontSize = std::max(ui.fitFont("Lancer la simulation", FontFace::Bold, 17, w - ui.s(20), 0.7f), 12.0f / ui.s(1.0f));
-    if (ui.button("launch", {x, y, w, rowH}, "Lancer la simulation", bs) && !capture) {
+    if (cframe::button(ui, "launch", {x, y, w, rowH}, "Lancer la simulation", bs) && !capture) {
         RaidSimSetup s;
         s.groups = simGroups_ + 1;
         s.bots = simBots_ + 1;  // N − 1: the administrator's place, then N − 1 simulated players
@@ -704,7 +705,7 @@ void AdminRaids::drawForm(const Rect& r) {
             UIContext::ButtonStyle st2;
             st2.small = true;
             st2.selected = formatIdx_ == i;
-            if (ui.button(std::string("format/") + kFormats[i], {fx + static_cast<float>(i) * (bw + ui.s(8)), y + ui.s(6), bw, ui.s(44)}, kNames[i], st2) && !locked)
+            if (cframe::button(ui, std::string("format/") + kFormats[i], {fx + static_cast<float>(i) * (bw + ui.s(8)), y + ui.s(6), bw, ui.s(44)}, kNames[i], st2) && !locked)
                 formatIdx_ = i;
         }
     }
@@ -795,20 +796,20 @@ void AdminRaids::drawForm(const Rect& r) {
     UIContext::ButtonStyle plain;
     plain.small = true;
     plain.enabled = !busy_;
-    if (ui.button("new", {x, by1, half, ui.s(44)}, "Nouvel événement", plain)) clearForm();
+    if (cframe::button(ui, "new", {x, by1, half, ui.s(44)}, "Nouvel événement", plain)) clearForm();
     UIContext::ButtonStyle saveSt = plain;
     saveSt.primary = !editing;
     saveSt.enabled = !busy_ && problem.empty() && !locked && (!editing || !changes.empty());
-    if (ui.button("save", {x + half + ui.s(10), by1, half, ui.s(44)}, editing ? "Enregistrer les changements" : "Créer le brouillon", saveSt))
+    if (cframe::button(ui, "save", {x + half + ui.s(10), by1, half, ui.s(44)}, editing ? "Enregistrer les changements" : "Créer le brouillon", saveSt))
         save(editing ? changes : body);
     if (editing && !cur.published) {
         // 2.69: « Valider la carte » (the server checks the titan's catalogs; publishing needs a valid map).
         UIContext::ButtonStyle check = plain;
-        if (ui.button("validate", {x, by2, half, ui.s(44)}, "Valider la carte", check)) action("/validate-map", Json::object(), "");
+        if (cframe::button(ui, "validate", {x, by2, half, ui.s(44)}, "Valider la carte", check)) action("/validate-map", Json::object(), "");
         UIContext::ButtonStyle pub = plain;
         pub.primary = true;
         pub.enabled = !busy_ && changes.empty() && st == raids::State::Draft && now < cur.lockAt;
-        if (ui.button("publish", {x + half + ui.s(10), by2, half, ui.s(44)}, changes.empty() ? "Publier et notifier tous les clans" : "Enregistrez avant de publier", pub)) {
+        if (cframe::button(ui, "publish", {x + half + ui.s(10), by2, half, ui.s(44)}, changes.empty() ? "Publier et notifier tous les clans" : "Enregistrez avant de publier", pub)) {
             busy_ = true;
             g_.online.send("POST", "/api/v1/admin/raids/" + selected_ + "/publish", Json::object(), OnlineService::guard(life_, [this](const ApiResult& res) {
                                busy_ = false;
@@ -822,11 +823,11 @@ void AdminRaids::drawForm(const Rect& r) {
     } else if (editing && !locked) {
         UIContext::ButtonStyle tog = plain;
         tog.enabled = !busy_ && changes.empty();
-        if (ui.button("toggle", {x, by2, half, ui.s(44)}, cur.registrationOpen ? "Fermer les inscriptions" : "Ouvrir les inscriptions", tog))
+        if (cframe::button(ui, "toggle", {x, by2, half, ui.s(44)}, cur.registrationOpen ? "Fermer les inscriptions" : "Ouvrir les inscriptions", tog))
             save({{"registration_open", !cur.registrationOpen}});
         UIContext::ButtonStyle cancel = plain;
         cancel.danger = true;
-        if (ui.button("cancel", {x + half + ui.s(10), by2, half, ui.s(44)}, "Annuler l'événement…", cancel)) {
+        if (cframe::button(ui, "cancel", {x + half + ui.s(10), by2, half, ui.s(44)}, "Annuler l'événement…", cancel)) {
             reason_.clear();
             confirmError_.clear();
             confirmKind_ = Confirm::Cancel;
@@ -835,7 +836,7 @@ void AdminRaids::drawForm(const Rect& r) {
     } else if (editing && !cur.cancelled && st != raids::State::Finished) {
         UIContext::ButtonStyle cancel = plain;
         cancel.danger = true;
-        if (ui.button("cancel", {x, by2, w, ui.s(44)}, "Annuler l'événement…", cancel)) {
+        if (cframe::button(ui, "cancel", {x, by2, w, ui.s(44)}, "Annuler l'événement…", cancel)) {
             reason_.clear();
             confirmError_.clear();
             confirmKind_ = Confirm::Cancel;
@@ -951,7 +952,7 @@ void AdminRaids::drawModal() {
     const float introH = static_cast<float>(intro.size()) * ui.s(22);
     const float h = ui.s(80) + introH + ui.s(16) + ui.s(76) + ui.s(34) + ui.s(76);
     const Rect box{(ui.screenW() - w) * 0.5f, (ui.screenH() - h) * 0.5f, w, h};
-    ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
+    cframe::panel(ui, box, true, 18);
     ui.r().drawRoundedRect(box, ui.s(18), confirmKind_ == Confirm::Catchup ? kSky : ui.theme().danger, ui.s(1.5f));
     ui.pushId("admin/raids/modal");
     const float x = box.x + ui.s(30);
@@ -978,8 +979,8 @@ void AdminRaids::drawModal() {
     const std::string okLabel = cancelKind ? "Annuler l'événement" : suspendKind ? "Suspendre" : "Ouvrir la session";
     const float okW = std::min(textW(ui, okLabel, 17, FontFace::Bold) + ui.s(44), tw * 0.55f);
     const float cW = std::min(textW(ui, "Garder", 17, FontFace::Bold) + ui.s(44), tw * 0.4f);
-    const bool go = ui.button("ok", {box.right() - ui.s(30) - okW, by, okW, ui.s(48)}, okLabel, ok);
-    const bool keep = ui.button("keep", {box.right() - ui.s(30) - okW - ui.s(12) - cW, by, cW, ui.s(48)}, "Garder") || (ui.backPressed() && !ui.editingText());
+    const bool go = cframe::button(ui, "ok", {box.right() - ui.s(30) - okW, by, okW, ui.s(48)}, okLabel, ok);
+    const bool keep = cframe::button(ui, "keep", {box.right() - ui.s(30) - okW - ui.s(12) - cW, by, cW, ui.s(48)}, "Garder") || (ui.backPressed() && !ui.editingText());
     ui.popId();
     if (keep) {
         confirm_ = false;
@@ -1032,7 +1033,7 @@ public:
 
 private:
     GameServices& g_;
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     AdminRaids raids_;
 };
 

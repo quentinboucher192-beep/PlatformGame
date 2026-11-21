@@ -14,6 +14,7 @@
 #include "game/GameServices.h"
 #include "game/achievements/AchievementSuggestions.h"
 #include "game/content/CreaturePlaces.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -145,14 +146,12 @@ public:
         ui.pushId("ach");
         const float W = ui.screenW(), H = ui.screenH(), m = ui.s(48);
         const AchievementCatalog& cat = g_.achievementCatalog;
-        ui.label("SUCCÈS", {m, ui.s(52)}, 40, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
-        UIContext::ButtonStyle bs;
-        bs.small = true;
         Rect back{W - m - ui.s(180), ui.s(30), ui.s(180), ui.s(46)};
-        bool leave = ui.button("back", back, "Retour", bs);
+        bool leave = cframe::back(ui, "back", back);
         Rect tabs{back.x - ui.s(20) - ui.s(450), ui.s(30), ui.s(450), ui.s(46)};
+        cframe::title(ui, "SUCCÈS", {m, ui.s(52)}, 40, Align::Left, VAlign::Middle, tabs.x - m - ui.s(20));
         int view = view_;
-        if (ui.tabs("view", tabs, {"Toile", "Liste", "Suggestions"}, view)) {
+        if (cframe::tabs(ui, "view", tabs, {"Toile", "Liste", "Suggestions"}, view)) {
             view_ = view;
             if (view_ == 2 && suggestionsStale_) computeSuggestions();  // opened again: up to date
         }
@@ -646,19 +645,19 @@ private:
         st.small = true;
         st.fontSize = 22;
         float h = ui.s(40), bw = ui.s(44);
-        if (ui.button("zoomout", {x, y - h * 0.5f, bw, h}, "−", st)) zoomAt(zoom_ / 1.25f, webArea_.center(), webArea_);
+        if (cframe::button(ui, "zoomout", {x, y - h * 0.5f, bw, h}, "−", st)) zoomAt(zoom_ / 1.25f, webArea_.center(), webArea_);
         x += bw + ui.s(8);
         char pct[16];
         std::snprintf(pct, sizeof pct, "%d %%", static_cast<int>(std::lround(zoom_ * 100.0f)));
         ui.label(pct, {x + ui.s(36), y}, fz(ui, 17), ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
         x += ui.s(72) + ui.s(8);
-        if (ui.button("zoomin", {x, y - h * 0.5f, bw, h}, "+", st)) zoomAt(zoom_ * 1.25f, webArea_.center(), webArea_);
+        if (cframe::button(ui, "zoomin", {x, y - h * 0.5f, bw, h}, "+", st)) zoomAt(zoom_ * 1.25f, webArea_.center(), webArea_);
         x += bw + ui.s(10);
         UIContext::ButtonStyle rs;
         rs.small = true;
         rs.fontSize = 17;
         rs.enabled = zoom_ != 1.0f || pan_.x != 0.0f || pan_.y != 0.0f;
-        if (ui.button("zoomreset", {x, y - h * 0.5f, ui.s(130), h}, "Recentrer", rs)) {
+        if (cframe::button(ui, "zoomreset", {x, y - h * 0.5f, ui.s(130), h}, "Recentrer", rs)) {
             zoom_ = 1.0f;
             pan_ = {};
         }
@@ -713,7 +712,7 @@ private:
         const AchievementDef& a = sel();
         const AchievementCategory* k = cat.category(a.category);
         Color col = k ? k->color : th.accent;
-        ui.panel(p, true, 16);
+        cframe::panel(ui, p, true, 16);
         float x = p.x + ui.s(22), w = p.w - ui.s(44), y = p.y + ui.s(18);
         // The category.
         int have = g_.achievements.stars(cat, a.category), tot = 0, got = 0, n = 0;
@@ -775,7 +774,7 @@ private:
             ts.fontSize = fz(ui, 17);
             const float tw = std::min(w, ui.text().measure(tl, FontFace::Bold, ui.s(ts.fontSize)).x + ui.s(44));
             const Rect tb{x, y, tw, ui.s(40)};
-            if (ui.button("track", tb, tl, ts)) toggleTrack(a);
+            if (cframe::button(ui, "track", tb, tl, ts)) toggleTrack(a);
             ui.newBadge("track", tb, "achievements.track", true, true);
             const std::string cnt = std::to_string(g_.achievements.tracked().size()) + " / " + std::to_string(AchievementBook::kMaxTracked) + " suivis";
             const float room = w - tw - ui.s(16);
@@ -913,7 +912,7 @@ private:
     void drawSuggestionList(const Rect& p) {
         UIContext& ui = g_.ui;
         const UITheme& th = ui.theme();
-        ui.panel(p, false, 14);
+        cframe::panel(ui, p, false, 14);
         const float x = p.x + ui.s(22), w = p.w - ui.s(44);
         float y = p.y + ui.s(16);
         ui.label("Suggestions", {x, y}, 24, th.text, Align::Left, FontFace::Bold);
@@ -954,7 +953,7 @@ private:
         const float bw = ui.s(150), bh = std::min(ui.s(46), c.h - ui.s(20));
         const Rect b{c.right() - ui.s(14) - bw, c.center().y - bh * 0.5f, bw, bh};
         const std::string bid = "sg" + std::to_string(i);
-        if (ui.button(bid, b, on ? "Suivi" : "Suivre", bs)) toggleTrack(a);
+        if (cframe::button(ui, bid, b, on ? "Suivi" : "Suivre", bs)) toggleTrack(a);
         ui.newBadge(bid, b, "achievements.track", true, true);
         // Name and stars, the category and description, the bar, why.
         const float x0 = c.x + ui.s(22), cw = b.x - ui.s(18) - x0;
@@ -980,7 +979,7 @@ private:
     void drawTrackedList(const Rect& p) {
         UIContext& ui = g_.ui;
         const UITheme& th = ui.theme();
-        ui.panel(p, false, 14);
+        cframe::panel(ui, p, false, 14);
         const float x = p.x + ui.s(22), w = p.w - ui.s(44);
         float y = p.y + ui.s(16);
         const auto& ids = g_.achievements.tracked();
@@ -1015,7 +1014,7 @@ private:
             const std::string ul = "Ne plus suivre";
             const float bw = ui.text().measure(ul, FontFace::Bold, ui.s(bs.fontSize)).x + ui.s(36), bh = std::min(ui.s(42), row.h - ui.s(16));
             const Rect b{row.right() - ui.s(12) - bw, row.center().y - bh * 0.5f, bw, bh};
-            if (ui.button("tr" + std::to_string(i), b, ul, bs)) removed = static_cast<int>(i);
+            if (cframe::button(ui, "tr" + std::to_string(i), b, ul, bs)) removed = static_cast<int>(i);
             const float x0 = row.x + ui.s(20), cw2 = b.x - ui.s(14) - x0;
             ui.label(ui.elide(a->name, FontFace::Bold, fz(ui, 17), cw2), {x0, row.y + row.h * 0.32f}, fz(ui, 17), th.text, Align::Left, FontFace::Bold,
                      VAlign::Middle);
@@ -1121,7 +1120,7 @@ private:
 
     GameServices& g_;
     bool fromPause_ = false;  // over a paused run: « Retour » goes back to it
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     AchievementInputs inputs_;
     // 2.52: the suggestions (computed on entry), the bosses' levels, a message about « Suivre ».
     std::vector<AchievementSuggestion> suggestions_;

@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/FilmCatalog.h"
 
 #include <algorithm>
@@ -261,7 +262,7 @@ void FilmList::draw(const Rect& r) {
             st.fontSize = 16;
             st.selected = filter == i;
             const float w = std::min(fw[i], std::max(ui.s(60), (r.right() - fx) - (3 - i) * ui.s(8)));
-            if (ui.button(std::string("filter") + std::to_string(i), {fx, y, w, bh}, kFilters[i], st)) filter = i;
+            if (cframe::button(ui, std::string("filter") + std::to_string(i), {fx, y, w, bh}, kFilters[i], st)) filter = i;
             fx += w + ui.s(8);
         }
         y += bh + ui.s(14);
@@ -322,7 +323,7 @@ void FilmList::draw(const Rect& r) {
         bs.fontSize = 16;
         bs.primary = true;
         // Off screen: its button only (keyboard and gamepad reach every row; the scroll follows the focus).
-        if (ui.button("play_" + e.id, L.button, L.buttonText, bs)) {
+        if (cframe::button(ui, "play_" + e.id, L.button, L.buttonText, bs)) {
             if (auto s = makeFilmScene(g_, e)) {
                 if (e.tutorial) g_.app.switchScene(std::move(s), 0.5f);  // a run: the administration comes back at its end
                 else g_.app.pushScene(std::move(s));

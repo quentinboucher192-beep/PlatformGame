@@ -5,6 +5,7 @@
 
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/MenuBackground.h"
 #include "ui/screens/Navigation.h"
 #include "ui/widgets/Glyphs.h"
@@ -69,10 +70,10 @@ public:
 
         float w = std::min(ui.s(1500), ui.screenW() - ui.s(80)), h = ui.screenH() - ui.s(140);
         Rect panel{(ui.screenW() - w) * 0.5f, ui.s(60), w, h};
-        ui.panel(panel, false, 18);
-        ui.label("PARAMÈTRES", {panel.x + ui.s(40), panel.y + ui.s(26)}, 40, ui.theme().text, Align::Left, FontFace::Title);
+        cframe::panel(ui, panel, false, 18);
+        cframe::title(ui, "PARAMÈTRES", {panel.x + ui.s(40), panel.y + ui.s(26)}, 40, Align::Left, VAlign::Top, panel.w - ui.s(80));
         Rect tabsR{panel.x + ui.s(40), panel.y + ui.s(90), panel.w - ui.s(80), ui.s(54)};
-        ui.tabs("settings/tabs", tabsR, {"Graphismes", "Audio", "Clavier / souris", "Manette", "Jeu"}, tab_);
+        cframe::tabs(ui, "settings/tabs", tabsR, {"Graphismes", "Audio", "Clavier / souris", "Manette", "Jeu"}, tab_);
         // « NOUVEAU » on the tabs leading to a novelty (data/news/new_features.json): it stays,
         // the tab open or not, until everything new in it has been seen.
         {
@@ -104,9 +105,7 @@ public:
         ui.inputEnabled = true;
 
         float by = panel.bottom() - ui.s(80);
-        UIContext::ButtonStyle p;
-        p.primary = true;
-        if (!capturing && (ui.button("settings/back", {panel.right() - ui.s(340), by, ui.s(300), ui.s(58)}, "Retour", p) ||
+        if (!capturing && (cframe::back(ui, "settings/back", {panel.right() - ui.s(340), by, ui.s(300), ui.s(58)}) ||
                            ui.backPressed())) {
             g_.app.popScene();
         }
@@ -163,7 +162,7 @@ private:
             st.fontSize = fs;
             st.selected = k == player_;
             const Rect b{r.x + static_cast<float>(k) * (bw + gap), r.y, bw, r.h};
-            if (!ui.button("p" + std::to_string(k), b, labels[static_cast<size_t>(k)], st)) continue;
+            if (!cframe::button(ui, "p" + std::to_string(k), b, labels[static_cast<size_t>(k)], st)) continue;
             if (k < n) {
                 player_ = k;
                 continue;
@@ -273,7 +272,7 @@ private:
             }
             float labelRoom = b.w - ui.s(16) - (icon ? 2.0f * (ui.s(8) + ui.s(32) + ui.s(4)) : 0.0f);
             st.fontSize = ui.fitFont(label, FontFace::Bold, 20, std::max(ui.s(30), labelRoom));
-            if (ui.button(id, b, label, st)) {
+            if (cframe::button(ui, id, b, label, st)) {
                 captureAction_ = a;
                 captureSlot_ = slot;
                 capturePad_ = pad;
@@ -294,7 +293,7 @@ private:
             const std::string label = "Par défaut";
             st.fontSize = ui.fitFont(label, FontFace::Bold, 16, std::max(ui.s(30), rb.w - ui.s(14)), 0.6f);
             const std::string resetId = std::string(pad ? "pr" : "kr") + actionId(a);
-            const bool resetClicked = ui.button(resetId, rb, label, st);
+            const bool resetClicked = cframe::button(ui, resetId, rb, label, st);
             // « NOUVEAU » (2.29.1): seen as soon as any « Par défaut » gets the focus or a click (a
             // disabled one too); the pill itself only on the first row, not on every line.
             ui.newBadge(resetId, rb, pad ? "settings.reset_one.gamepad" : "settings.reset_one.keyboard", a == Action::MoveLeft, true);
@@ -405,7 +404,7 @@ private:
         Rect reset{c.x, c.bottom() - ui.s(54), ui.s(360), ui.s(54)};
         UIContext::ButtonStyle d;
         d.danger = true;
-        if (ui.button(pad ? "padreset" : "kbreset", reset, "Réinitialiser", d)) {
+        if (cframe::button(ui, pad ? "padreset" : "kbreset", reset, "Réinitialiser", d)) {
             if (pad) cur().resetGamepad();
             else cur().resetKeyboard();
             apply();
@@ -550,7 +549,7 @@ private:
         ui.toggle("attract", r, "Bande-annonce à l'accueil après 1 min d'inactivité", working_.gameplay.attractTrailer);
         ui.newBadge("attract", r, "settings.game.attract_trailer", true, true);
         r.y += row();
-        bool openHud = ui.button("hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)");
+        bool openHud = cframe::button(ui, "hudeditor", r, "Personnaliser le HUD (place et taille de chaque élément)");
         ui.newBadge("hudeditor", r, "settings.hud_editor", true, true);  // « NOUVEAU » (2.52: « Ennemis vaincus »)
         if (openHud) g_.app.pushScene(makeHudEditor(g_, working_.gameplay));
         r.y += row();
@@ -625,7 +624,7 @@ private:
         UIContext& ui = g_.ui;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, {0, 0, 0, 150});
         Rect m = Rect::fromCenter({ui.screenW() * 0.5f, ui.screenH() * 0.5f}, {ui.s(760), ui.s(240)});
-        ui.panel(m, true, 16);
+        cframe::panel(ui, m, true, 16);
         ui.label(std::string("Nouvelle commande : ") + actionLabel(captureAction_), {m.center().x, m.y + ui.s(40)}, 28,
                  ui.theme().text, Align::Center, FontFace::Bold);
         // Keyboard / mouse: any key, any mouse button (side buttons and the extra buttons of
@@ -648,7 +647,7 @@ private:
     int startTab_ = -1;
     int player_ = 0;  // 2.65: whose controls (a team on this PC)
     Settings working_;
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     int tab_ = 0;
     int scrollTo_ = 0;  // automated screenshots: 1 the power slots, 2 the end
     float t_ = 0.0f;

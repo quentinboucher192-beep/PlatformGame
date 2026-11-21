@@ -1,3 +1,4 @@
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/screens/AdminBackups.h"
 
 #include <algorithm>
@@ -343,11 +344,11 @@ void AdminBackups::draw(const Rect& in) {
     st.primary = true;
     st.enabled = !creating_ && downloadStep_ == 0;
     float w1 = ui.text().measure("Faire une copie maintenant", FontFace::Bold, ui.s(20)).x + ui.s(48);
-    if (ui.button("create", {in.x, y, w1, bh}, creating_ ? "Copie en cours…" : "Faire une copie maintenant", st)) createCopy();
+    if (cframe::button(ui, "create", {in.x, y, w1, bh}, creating_ ? "Copie en cours…" : "Faire une copie maintenant", st)) createCopy();
     UIContext::ButtonStyle st2;
     st2.enabled = importStep_ == 0 || importStep_ == 7;
     float w2 = ui.text().measure("Importer une sauvegarde…", FontFace::Bold, ui.s(20)).x + ui.s(48);
-    if (ui.button("import", {in.x + w1 + ui.s(12), y, w2, bh}, "Importer une sauvegarde…", st2)) {
+    if (cframe::button(ui, "import", {in.x + w1 + ui.s(12), y, w2, bh}, "Importer une sauvegarde…", st2)) {
         resetImport();
         importStep_ = 1;
         openDialog_ = FileDialogs::openFile(g_.app.window(), "Sauvegarde Cosmic Online", "cpbk", Paths::toUtf8(Paths::userDir()));
@@ -355,7 +356,7 @@ void AdminBackups::draw(const Rect& in) {
     float w3 = ui.text().measure("Actualiser", FontFace::Bold, ui.s(20)).x + ui.s(48);
     UIContext::ButtonStyle st3;
     st3.enabled = !busy_;
-    if (ui.button("refresh", {in.x + w1 + w2 + ui.s(24), y, w3, bh}, "Actualiser", st3)) load();
+    if (cframe::button(ui, "refresh", {in.x + w1 + w2 + ui.s(24), y, w3, bh}, "Actualiser", st3)) load();
     {
         std::string info = "Une copie automatique chaque nuit · 14 gardées · manuelles 90 jours";
         float room = in.right() - (in.x + w1 + w2 + w3 + ui.s(48));
@@ -415,7 +416,7 @@ void AdminBackups::draw(const Rect& in) {
                  VAlign::Middle);
         UIContext::ButtonStyle sm;
         sm.small = true;
-        if (ui.button("abandon" + id, {row.right() - bw - ui.s(6), row.y + ui.s(4), bw, row.h - ui.s(8)}, "Abandonner", sm)) abandon(id);
+        if (cframe::button(ui, "abandon" + id, {row.right() - bw - ui.s(6), row.y + ui.s(4), bw, row.h - ui.s(8)}, "Abandonner", sm)) abandon(id);
         area.y += row.h + ui.s(8);
         area.h -= row.h + ui.s(8);
     }
@@ -457,7 +458,7 @@ void AdminBackups::draw(const Rect& in) {
         sm.small = true;
         sm.enabled = status == "ready" && downloadStep_ == 0;
         Rect btn{cx[7] + ui.s(6), row.y + ui.s(6), std::min(cx[8] - cx[7], row.right() - cx[7]) - ui.s(12), row.h - ui.s(12)};
-        if (ui.button("dl" + jstr(b, "id"), btn, "Télécharger…", sm)) {
+        if (cframe::button(ui, "dl" + jstr(b, "id"), btn, "Télécharger…", sm)) {
             downloadId_ = jstr(b, "id");
             downloadDate_ = jstr(b, "created_at").substr(0, 10);
             pass1_.clear();
@@ -498,9 +499,9 @@ void AdminBackups::drawImport(Rect& area) {
         float fw = std::min(ui.s(420), w * 0.5f);
         ui.passwordField("ipass", {x, y, fw, bh}, importPass_, "Phrase secrète du fichier");
         sm.enabled = importStep_ != 6 && importPass_.size() >= 12;
-        if (ui.button("check", {x + fw + ui.s(10), y, ui.s(170), bh}, "Vérifier", sm)) check();
+        if (cframe::button(ui, "check", {x + fw + ui.s(10), y, ui.s(170), bh}, "Vérifier", sm)) check();
         sm.enabled = importStep_ != 6;
-        if (ui.button("abandon", {x + fw + ui.s(190), y, ui.s(170), bh}, "Abandonner", sm)) abandon(importId_);
+        if (cframe::button(ui, "abandon", {x + fw + ui.s(190), y, ui.s(170), bh}, "Abandonner", sm)) abandon(importId_);
         y += bh + ui.s(10);
         if (checked_.is_object()) {
             const Json& b = checked_.value("backup", Json::object());
@@ -522,14 +523,14 @@ void AdminBackups::drawImport(Rect& area) {
                 d.danger = true;
                 d.small = true;
                 d.enabled = importStep_ != 6 && confirm_ == kConfirm && importPass_.size() >= 12;
-                if (ui.button("apply", {x + fw2 + ui.s(10), cy, ui.s(320), bh}, importStep_ == 6 ? "Remplacement en cours…" : "Remplacer toutes les données", d)) {
+                if (cframe::button(ui, "apply", {x + fw2 + ui.s(10), cy, ui.s(320), bh}, importStep_ == 6 ? "Remplacement en cours…" : "Remplacer toutes les données", d)) {
                     progress_ = 0.0;
                     apply();
                 }
             }
         }
     } else if (importStep_ == 7) {
-        if (ui.button("close", {x, y, ui.s(170), bh}, "Fermer", sm)) resetImport();
+        if (cframe::button(ui, "close", {x, y, ui.s(170), bh}, "Fermer", sm)) resetImport();
     }
     area.y += h + ui.s(10);
     area.h -= h + ui.s(10);
@@ -539,8 +540,7 @@ void AdminBackups::drawModal() {
     UIContext& ui = g_.ui;
     ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 12, 185});
     Rect box{ui.screenW() * 0.5f - ui.s(360), ui.screenH() * 0.5f - ui.s(190), ui.s(720), ui.s(380)};
-    ui.r().fillRoundedRect(box, ui.s(18), Color{9, 14, 32, 250});
-    ui.r().drawRoundedRect(box, ui.s(18), ui.theme().accent.withAlphaF(0.7f), ui.s(1.5f));
+    cframe::panel(ui, box, true, 18);
     ui.pushId("backups-dl");
     float x = box.x + ui.s(30), w = box.w - ui.s(60), y = box.y + ui.s(26);
     std::string title = "Télécharger la copie du " + stamp(downloadDate_ + "T12:00:00Z").substr(0, 10);
@@ -562,11 +562,11 @@ void AdminBackups::drawModal() {
     UIContext::ButtonStyle ok;
     ok.primary = true;
     ok.enabled = pass1_.size() >= 12 && pass1_.size() <= 200 && pass1_ == pass2_;
-    if (ui.button("cancel", {box.right() - ui.s(30) - ui.s(330) - ui.s(12) - ui.s(170), by, ui.s(170), bh}, "Annuler") || ui.backPressed()) {
+    if (cframe::button(ui, "cancel", {box.right() - ui.s(30) - ui.s(330) - ui.s(12) - ui.s(170), by, ui.s(170), bh}, "Annuler") || ui.backPressed()) {
         pass1_.clear();
         pass2_.clear();
         downloadStep_ = 0;
-    } else if (ui.button("save", {box.right() - ui.s(30) - ui.s(330), by, ui.s(330), bh}, "Choisir où l'enregistrer…", ok)) {
+    } else if (cframe::button(ui, "save", {box.right() - ui.s(30) - ui.s(330), by, ui.s(330), bh}, "Choisir où l'enregistrer…", ok)) {
         downloadStep_ = 2;
         std::string def = Paths::toUtf8(Paths::userDir() / ("cosmic-backup-" + downloadDate_ + ".cpbk"));
         saveDialog_ = FileDialogs::saveFile(g_.app.window(), "Sauvegarde Cosmic Online", "cpbk", def);

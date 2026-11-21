@@ -21,6 +21,7 @@
 #include "game/GameServices.h"
 #include "game/online/LevelFingerprint.h"
 #include "packaging/PackageImporter.h"
+#include "ui/widgets/CosmicFrame.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/ChallengeUi.h"
@@ -318,7 +319,7 @@ public:
         const float y0 = ui.s(26);
         // Header: title, the four tabs, the connection, Retour.
         float tf = 32.0f;
-        Vec2 ts = ui.label("DÉFIS", {m, y0 + ui.s(24)}, tf, ui.theme().text, Align::Left, FontFace::Title, VAlign::Middle);
+        Vec2 ts = cframe::title(ui, "DÉFIS", {m, y0 + ui.s(24)}, tf, Align::Left, VAlign::Middle);
         float x = m + ts.x + ui.s(28);
         static const char* const kTabs[4] = {"Jour", "Semaine", "Mois", "Calendrier"};
         static const char* const kTabFeatures[4] = {"challenges.tab.today", "challenges.tab.week", "challenges.tab.month", "challenges.tab.calendar"};
@@ -330,16 +331,14 @@ public:
             st.selected = tab_ == i;
             st.fontSize = 18;
             Rect tr{x, y0 + ui.s(4), w, ui.s(42)};
-            if (ui.button("tab" + std::to_string(i), tr, kTabs[i], st) && tab_ != i) switchTab(i);
+            if (cframe::button(ui, "tab" + std::to_string(i), tr, kTabs[i], st) && tab_ != i) switchTab(i);
             ui.newBadge("tab" + std::to_string(i), tr, kTabFeatures[i], true, true);
             x += w + ui.s(10);
         }
         if (ui.input().menuPressed(Action::MenuTabNext)) switchTab((tab_ + 1) % 4);
         else if (ui.input().menuPressed(Action::MenuTabPrev)) switchTab((tab_ + 3) % 4);
-        UIContext::ButtonStyle bs;
-        bs.small = true;
         Rect back{W - m - ui.s(150), y0 + ui.s(4), ui.s(150), ui.s(42)};
-        bool leave = ui.button("back", back, "Retour", bs);
+        bool leave = cframe::back(ui, "back", back);
         drawConnection({x + ui.s(16), y0 + ui.s(25)}, back.x - ui.s(20) - (x + ui.s(16)));
         Rect body{m, ui.s(92), W - 2 * m, H - ui.s(92) - ui.s(26)};
         rewardsShown_ = false;
@@ -450,7 +449,7 @@ private:
     void drawNoChallenge(ChallengeKind kind, const Rect& body) {
         UIContext& ui = g_.ui;
         Rect p = Rect::fromCenter(body.center(), {std::min(ui.s(900), body.w), std::min(ui.s(330), body.h)});
-        ui.panel(p, true, 16);
+        cframe::panel(ui, p, true, 16);
         float x = p.x + ui.s(36), w = p.w - ui.s(72), y = p.y + ui.s(34);
         auto fs = g_.challenges.fetchState();
         std::string head = fs == ChallengeService::Fetch::Loading ? "Recherche du défi…"
@@ -479,10 +478,10 @@ private:
         st.enabled = g_.online.usable() && fs != ChallengeService::Fetch::Loading;
         float bw = std::min(w, ui.s(320));
         float by = std::min(y, p.bottom() - ui.s(84));
-        if (ui.button("play", {x, by, bw, ui.s(56)}, "Réessayer", st)) g_.challenges.refresh(true);
+        if (cframe::button(ui, "play", {x, by, bw, ui.s(56)}, "Réessayer", st)) g_.challenges.refresh(true);
         float ax = x + bw + ui.s(16);
         if (ax + ui.s(200) < p.right() - ui.s(36))
-            if (ui.button("tocalendar", {ax, by, std::min(ui.s(300), p.right() - ui.s(36) - ax), ui.s(56)}, "Voir le calendrier")) switchTab(3);
+            if (cframe::button(ui, "tocalendar", {ax, by, std::min(ui.s(300), p.right() - ui.s(36) - ax), ui.s(56)}, "Voir le calendrier")) switchTab(3);
     }
 
     /// The level: its name, its planet (campaign: and its description) or its author
@@ -536,7 +535,7 @@ private:
 
     void drawChallengeCard(const DailyChallenge& c, const Rect& area, bool fromCalendar) {
         UIContext& ui = g_.ui;
-        ui.panel(area, false, 16);
+        cframe::panel(ui, area, false, 16);
         const float x = area.x + ui.s(28), w = area.w - ui.s(56);
         float y = area.y + ui.s(24);
         LevelPlace place = levelPlace(g_, c);
@@ -550,7 +549,7 @@ private:
             UIContext::ButtonStyle st;
             st.small = true;
             st.fontSize = 16;
-            if (ui.button("tocal", {x, y - ui.s(4), bw, ph + ui.s(8)}, bl, st)) closeDetail();
+            if (cframe::button(ui, "tocal", {x, y - ui.s(4), bw, ph + ui.s(8)}, bl, st)) closeDetail();
             lx = x + bw + ui.s(16);
         }
         std::string left = challengeTitle(c, over);
@@ -632,18 +631,18 @@ private:
         float fs = 26.0f;
         for (int i = 0; i < 3; ++i) fs = std::min(fs, ui.fitFont(*labels[i], FontFace::Bold, 26.0f, bws[i] - ui.s(28)));
         primary.fontSize = fs;
-        if (ui.button("play", {x, by, bws[0], ui.s(58)}, playLabel, primary)) {
+        if (cframe::button(ui, "play", {x, by, bws[0], ui.s(58)}, playLabel, primary)) {
             if (needDownload) download(c);
             else g_.app.pushScene(makeChallengeStart(g_, c.id, false));
         }
         UIContext::ButtonStyle st;
         st.fontSize = fs;
         st.enabled = res && res->hasReplay && !place.localId.empty();
-        if (ui.button("best", {x + bws[0] + gap, by, bws[1], ui.s(58)}, bestLabel, st)) watchBest(c);
+        if (cframe::button(ui, "best", {x + bws[0] + gap, by, bws[1], ui.s(58)}, bestLabel, st)) watchBest(c);
         UIContext::ButtonStyle pr;
         pr.fontSize = fs;
         pr.enabled = !place.localId.empty();
-        if (ui.button("practice", {x + bws[0] + bws[1] + 2 * gap, by, bws[2], ui.s(58)}, practiceLabel, pr))
+        if (cframe::button(ui, "practice", {x + bws[0] + bws[1] + 2 * gap, by, bws[2], ui.s(58)}, practiceLabel, pr))
             g_.app.pushScene(makeChallengeStart(g_, c.id, true));
     }
 
@@ -839,7 +838,7 @@ private:
 
     void drawBoard(const DailyChallenge& c, const Rect& area) {
         UIContext& ui = g_.ui;
-        ui.panel(area, false, 16);
+        cframe::panel(ui, area, false, 16);
         float x = area.x + ui.s(24), w = area.w - ui.s(48), y = area.y + ui.s(22);
         fitLabel(ui, boardTitle(c.kind), {x, y + ui.s(16)}, 24, w, ui.theme().text, Align::Left, FontFace::Bold);
         y += ui.s(48);
@@ -851,7 +850,7 @@ private:
             y += s.y + ui.s(22);
             UIContext::ButtonStyle st;
             st.enabled = g_.online.usable();
-            if (ui.button("login", {x, y, std::min(w, ui.s(300)), ui.s(52)}, "Se connecter", st)) g_.app.pushScene(makeOnlineAccount(g_, false));
+            if (cframe::button(ui, "login", {x, y, std::min(w, ui.s(300)), ui.s(52)}, "Se connecter", st)) g_.app.pushScene(makeOnlineAccount(g_, false));
             y += ui.s(52) + ui.s(34);
             // What the leaderboard shows once connected (each time's state, honestly worded).
             fitLabel(ui, "Avec un compte", {x, y + ui.s(11)}, 18, w, ui.theme().accent, Align::Left, FontFace::Bold);
@@ -881,7 +880,7 @@ private:
                 st.selected = period_ == i;
                 st.fontSize = ui.fitFont(kPeriods[i], FontFace::Bold, 17, pw - ui.s(24), 0.7f);
                 Rect pr{x + (pw + ui.s(10)) * static_cast<float>(i), y, pw, ui.s(40)};
-                if (ui.button("period" + std::to_string(i), pr, kPeriods[i], st) && period_ != i) {
+                if (cframe::button(ui, "period" + std::to_string(i), pr, kPeriods[i], st) && period_ != i) {
                     period_ = i;
                     fetchBoard(c);
                 }
@@ -903,7 +902,7 @@ private:
                 st.selected = boardKind_ == i;
                 st.fontSize = ui.fitFont(labels[i], FontFace::Bold, 17, bw - ui.s(24), 0.7f);
                 Rect br{x + (bw + ui.s(10)) * static_cast<float>(i), y, bw, ui.s(40)};
-                if (ui.button("kind" + std::to_string(i), br, labels[i], st) && boardKind_ != i) {
+                if (cframe::button(ui, "kind" + std::to_string(i), br, labels[i], st) && boardKind_ != i) {
                     boardKind_ = i;
                     fetchBoard(c);
                 }
@@ -923,7 +922,7 @@ private:
             st.small = true;
             st.selected = scope_ == i;
             st.fontSize = 17;
-            if (ui.button("scope" + std::to_string(i), {x + (sw + ui.s(10)) * static_cast<float>(i), y, sw, ui.s(40)}, kScopes[i], st) && scope_ != i) {
+            if (cframe::button(ui, "scope" + std::to_string(i), {x + (sw + ui.s(10)) * static_cast<float>(i), y, sw, ui.s(40)}, kScopes[i], st) && scope_ != i) {
                 scope_ = i;
                 fetchBoard(c);
             }
@@ -950,7 +949,7 @@ private:
                                    ? "Pays inconnu : choisissez votre pays dans votre compte (EN LIGNE) pour ce classement."
                                    : "Classement indisponible : " + boardMsg_;
             Vec2 s = ui.labelWrapped(text, {x, y}, w, fz(ui, 17), ui.theme().textDim);
-            if (ui.button("retry", {x, y + s.y + ui.s(16), std::min(w, ui.s(240)), ui.s(46)}, "Réessayer")) fetchBoard(c);
+            if (cframe::button(ui, "retry", {x, y + s.y + ui.s(16), std::min(w, ui.s(240)), ui.s(46)}, "Réessayer")) fetchBoard(c);
             return;
         }
         const Json& entries = jfield(board_, "entries", Json::array());
@@ -1012,7 +1011,7 @@ private:
             st.small = true;
             st.fontSize = fz(ui, 15);
             st.enabled = watching_.empty();
-            if (ui.button("watch" + replayId + (me ? "m" : ""), {right - bw, row.y + ui.s(5), bw, row.h - ui.s(10)}, label, st))
+            if (cframe::button(ui, "watch" + replayId + (me ? "m" : ""), {right - bw, row.y + ui.s(5), bw, row.h - ui.s(10)}, label, st))
                 watchRun(e, replayId, attemptReplay);
             right -= bw + ui.s(10);
             // 2.45: kept on this computer, to watch it without a connection.
@@ -1276,7 +1275,7 @@ private:
         if (ui.isNew("challenges.calendar.medals") && ui.featureSeen) ui.featureSeen("challenges.calendar.medals");
         // « NOUVEAU » (2.38) on « Calendrier » until the calendar with its images is seen once.
         if (ui.isNew("challenges.calendar.look") && ui.featureSeen) ui.featureSeen("challenges.calendar.look");
-        ui.panel(body, false, 16);
+        cframe::panel(ui, body, false, 16);
         const float x = body.x + ui.s(22), w = body.w - ui.s(44);
         float y = body.y + ui.s(16);
         const int64_t now = cs.nowMs();
@@ -1301,9 +1300,9 @@ private:
             nb.small = true;
             nb.fontSize = 17;
             nb.enabled = month_ > first;
-            if (ui.button("prev", {x, y, bw, hh}, prevL, nb)) changeMonth(-1);
+            if (cframe::button(ui, "prev", {x, y, bw, hh}, prevL, nb)) changeMonth(-1);
             nb.enabled = month_ < thisMonth;
-            if (ui.button("next", {x + w - bw, y, bw, hh}, nextL, nb)) changeMonth(+1);
+            if (cframe::button(ui, "next", {x + w - bw, y, bw, hh}, nextL, nb)) changeMonth(+1);
             int yy = 0, mm = 0;
             std::sscanf(month_.c_str(), "%4d-%2d", &yy, &mm);
             std::string title = std::string(kTitles[std::clamp(mm, 1, 12) - 1]) + " " + std::to_string(yy);
@@ -1392,7 +1391,7 @@ private:
 
     GameServices& g_;
     OnlineUi ou_;
-    MenuBackground bg_;
+    cframe::Backdrop bg_;
     int tab_ = 0;
     std::string detail_;      // the calendar shows this challenge's card ("" = the month)
     std::string detailFrom_;  // the cell it was opened from (the focus goes back to it)
@@ -1479,14 +1478,14 @@ public:
         ui.r().fillRect({0, 0, W, H}, Color{4, 6, 14, 236});
         const float m = ui.s(44);
         Rect panel{m, ui.s(32), W - 2 * m, H - ui.s(64)};
-        ui.panel(panel, true, 18);
+        cframe::panel(ui, panel, true, 18);
         ui.pushId("cstart");
         float x = panel.x + ui.s(32), w = panel.w - ui.s(64), y = panel.y + ui.s(26);
         bool cancel = false, go = false;
         rewardsShown_ = false;
         if (!challenge_) {
             fitLabel(ui, "Ce défi n'est plus sur ce PC.", {x, y + ui.s(20)}, 26, w, ui.theme().danger, Align::Left, FontFace::Bold);
-            cancel = ui.button("cancel", {panel.right() - ui.s(32) - ui.s(220), panel.bottom() - ui.s(80), ui.s(220), ui.s(54)}, "Retour");
+            cancel = cframe::button(ui, "cancel", {panel.right() - ui.s(32) - ui.s(220), panel.bottom() - ui.s(80), ui.s(220), ui.s(54)}, "Retour");
         } else {
             const DailyChallenge& c = *challenge_;
             std::string title = practice_ ? "ENTRAÎNEMENT — HORS CLASSEMENT" : challengeTitle(c, late_);
@@ -1530,9 +1529,9 @@ public:
             Rect goR{panel.right() - ui.s(32) - ui.s(330), by, ui.s(330), ui.s(56)};
             const std::string goLabel = downloadingGhost_ ? "Fantôme…" : practice_ ? "Lancer l'entraînement" : late_ ? "Lancer (hors délai)" : "Lancer le défi";
             primary.fontSize = ui.fitFont(goLabel, FontFace::Bold, 26, goR.w - ui.s(28), 0.6f);
-            go = ui.button("go", goR, goLabel, primary);
+            go = cframe::button(ui, "go", goR, goLabel, primary);
             Rect cancelR{goR.x - ui.s(16) - ui.s(200), by, ui.s(200), ui.s(56)};
-            cancel = ui.button("cancel", cancelR, "Annuler");
+            cancel = cframe::button(ui, "cancel", cancelR, "Annuler");
             float leftEnd = cancelR.x;
             // The keys of the powers of this run (the level's and the imposed ones), for this
             // player: the same as the level's « Touches… » (also in the pause menu).
@@ -1541,7 +1540,7 @@ public:
                 UIContext::ButtonStyle ks;
                 const std::string label = "Touches…";
                 ks.fontSize = ui.fitFont(label, FontFace::Bold, 26, keysR.w - ui.s(24), 0.6f);
-                bool openKeys = ui.button("keys", keysR, label, ks);
+                bool openKeys = cframe::button(ui, "keys", keysR, label, ks);
                 ui.newBadge("keys", keysR, "challenges.keys");  // « NOUVEAU » (2.32.1)
                 if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, *level_, c.rules.powers));
                 leftEnd = keysR.x;
@@ -1681,7 +1680,7 @@ private:
             st.small = true;
             st.selected = ghost_ == opts[i].first;
             st.fontSize = 17;
-            if (ui.button("ghost" + std::to_string(opts[i].first), {x + (bw + gap) * static_cast<float>(i), gy, bw, ui.s(48)}, opts[i].second, st))
+            if (cframe::button(ui, "ghost" + std::to_string(opts[i].first), {x + (bw + gap) * static_cast<float>(i), gy, bw, ui.s(48)}, opts[i].second, st))
                 ghost_ = opts[i].first;
         }
     }
@@ -1830,7 +1829,7 @@ public:
         if (noteH > 0.0f) noteH += ui.s(4);
         float ph = std::min(ui.s(30 + 56 + 24 + 44) + ui.s(64) * static_cast<float>(rows) + noteH + ui.s(24 + 60 + 30), H - ui.s(60));
         Rect p{(W - pw) * 0.5f, (H - ph) * 0.5f, pw, ph};
-        ui.panel(p, true, 18);
+        cframe::panel(ui, p, true, 18);
         float x = p.x + ui.s(36), y = p.y + ui.s(30);
         std::string title = changed ? "DÉFI CHANGÉ" : !d_.completed ? "DÉFI ÉCHOUÉ" : d_.practice ? "ENTRAÎNEMENT TERMINÉ" : "DÉFI RÉUSSI";
         Color tc = changed ? ui.theme().warm : !d_.completed ? ui.theme().danger : d_.practice ? ui.theme().warm : ui.theme().success;
@@ -1912,11 +1911,11 @@ public:
         UIContext::ButtonStyle primary;
         primary.primary = true;
         // A changed challenge: its new version (from « Défis »), never its former one again.
-        bool again = ui.button("again", {x, by, bw, ui.s(60)}, changed ? "Nouvelle version" : "Recommencer", primary);
+        bool again = cframe::button(ui, "again", {x, by, bw, ui.s(60)}, changed ? "Nouvelle version" : "Recommencer", primary);
         UIContext::ButtonStyle rs;
         rs.enabled = d_.completed && d_.replay != nullptr;
-        bool watch = ui.button("watch", {x + bw + gap, by, bw, ui.s(60)}, "Revoir la partie", rs);
-        bool back = ui.button("back", {x + 2 * (bw + gap), by, bw, ui.s(60)}, "Retour aux défis");
+        bool watch = cframe::button(ui, "watch", {x + bw + gap, by, bw, ui.s(60)}, "Revoir la partie", rs);
+        bool back = cframe::button(ui, "back", {x + 2 * (bw + gap), by, bw, ui.s(60)}, "Retour aux défis");
         ui.popId();
         InputManager& in = g_.app.input();
         if (again || in.keyPressed(SDL_SCANCODE_R) || in.rawPadButton(SDL_GAMEPAD_BUTTON_BACK)) {
