@@ -32,6 +32,7 @@
 #include "ui/screens/DeviceLostUi.h"
 #include "ui/screens/DownedView.h"
 #include "ui/screens/PassageWaitView.h"
+#include "ui/widgets/CosmicStyle2.h"
 #include "ui/widgets/PowerLabels.h"
 #include "ui/screens/Navigation.h"
 
@@ -848,30 +849,36 @@ public:
     }
 
     void drawPause() {
+        // 2.84: the Cosmic kit, as the solo pause (holographic panel, chrome title, plates).
         UIContext& ui = g_.ui;
+        const cstyle::Motion mo = cstyle::Motion::from(g_.settings.graphics.particleQuality, g_.settings.graphics.screenShake);
+        const float t = ui.time(), dt = g_.app.frameTime() / 1000.0f;
+        const float cu = cstyle::CosmicLayout::of(ui.screenW(), ui.screenH()).unit;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
         const bool network = setup_.mode != CoopSetup::Mode::SamePc;
         Rect box = centred(ui.s(560), ui.s(network ? 330 : 400));
-        ui.panel(box, true, 16);
-        ui.label("PAUSE", {box.center().x, box.y + ui.s(44)}, 40, ui.theme().text, Align::Center, FontFace::Title, VAlign::Middle);
+        pauseCard_.begin(ui, box, t, cu, mo);
+        pauseTitle_.draw(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, ui.s(46), box.w - ui.s(80), Align::Center, t, mo, cu);
         const std::string note = network ? "La partie continue pendant la pause : vous pouvez encore être touché." : "Toute l'équipe est en pause.";
-        ui.label(note, {box.center().x, box.y + ui.s(88)}, ui.fitFont(note, FontFace::Body, 18, box.w - ui.s(48)), ui.theme().textDim,
-                 Align::Center, FontFace::Body, VAlign::Middle);
+        const float nf = ui.fitFont(note, FontFace::Body, 18, box.w - ui.s(48));
+        ui.label(ui.elide(note, FontFace::Body, nf, box.w - ui.s(48)), {box.center().x, box.y + ui.s(88)}, nf, ui.theme().textDim, Align::Center,
+                 FontFace::Body, VAlign::Middle);
         ui.pushId("coop/pause");
         float y = box.y + ui.s(124);
         const float bw = box.w - ui.s(80), bh = ui.s(58);
-        UIContext::ButtonStyle bs;
-        bs.primary = true;
-        if (ui.button("resume", {box.x + ui.s(40), y, bw, bh}, "Reprendre", bs)) paused_ = false;
-        y += bh + ui.s(14);
-        if (!network) {
-            if (ui.button("restart", {box.x + ui.s(40), y, bw, bh}, "Recommencer la tentative")) restart();
+        auto plate = [&](const char* id, const char* label, const char* icon, Color accent) {
+            cstyle::PlateEx p;
+            p.plate = {label, "", icon, accent};
+            p.wrap = true;
+            const bool act = cstyle::plateButtonEx(ui, pauseAnims_, id, {box.x + ui.s(40), y, bw, bh}, p, bh / 64.0f, 1.0f, t, dt, mo);
             y += bh + ui.s(14);
-        }
-        UIContext::ButtonStyle danger;
-        danger.danger = true;
-        if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, network ? "Quitter la partie" : "Retour au salon", danger)) backToLobby();
+            return act;
+        };
+        if (plate("resume", "Reprendre", "continue", {255, 205, 110, 255})) paused_ = false;
+        if (!network && plate("restart", "Recommencer la tentative", "challenges", {94, 224, 255, 255})) restart();
+        if (plate("quit", network ? "Quitter la partie" : "Retour au salon", "quit", {255, 106, 106, 255})) backToLobby();
         ui.popId();
+        pauseCard_.end(ui, t);
         if (!pauseOpenedNow_ && ui.backPressed()) paused_ = false;
         pauseOpenedNow_ = false;
     }
@@ -1080,6 +1087,9 @@ public:
     std::string loadError_;
     bool paused_ = false;
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
+    cstyle::Anims pauseAnims_;  // 2.84: the pause in the Cosmic kit
+    cstyle::HoloCard pauseCard_;
+    cstyle::ChromeText pauseTitle_;
     bool choosing_ = false;
     int choiceIndex_ = 0;
     uint8_t pendingChoice_ = 0;

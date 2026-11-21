@@ -79,11 +79,14 @@
    "ui/screens/CollectionScene.cpp": 1,
    "ui/screens/CoopLobbyScene.cpp": 1,
    "ui/screens/GiftArt.cpp": 1,
+   "ui/screens/MainMenuScene.cpp": 1,
    "ui/screens/PlayerProfileScene.cpp": 1,
    "ui/screens/RewardsScene.cpp": 1,
    "ui/screens/TutorialScenes.cpp": 1,
    "ui/studio/Studio.cpp": 1,
-   "ui/studio/StudioFrise.cpp": 1
+   "ui/studio/StudioFrise.cpp": 1,
+   "ui/widgets/CosmicStyle.cpp": 1,
+   "ui/widgets/CosmicStyle2.cpp": 1
   },
   "animations/phase_wall.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
@@ -618,13 +621,13 @@
    "ui/screens/DownloadedReplaysUi.cpp": 1,
    "ui/screens/GhostSetupScene.cpp": 1,
    "ui/screens/GiftsScene.cpp": 1,
-   "ui/screens/PlanetMapScene.cpp": 2
+   "ui/screens/PlanetMapScene.cpp": 4
   },
   "sounds/ui_move.wav": {
    "ui/screens/AchievementsScene.cpp": 2,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/OnlineRankingScene.cpp": 1,
-   "ui/screens/PlanetMapScene.cpp": 3,
+   "ui/screens/PlanetMapScene.cpp": 1,
    "ui/screens/SocialScene.cpp": 1,
    "ui/studio/Studio.cpp": 2,
    "ui/widgets/UIContext.cpp": 5
@@ -747,6 +750,12 @@
    "ui/studio/Studio.cpp": 1,
    "ui/studio/StudioImport.cpp": 1
   },
+  "sprites/player/suits/nova_givre.png": {
+   "ui/screens/MainMenuScene.cpp": 2
+  },
+  "sprites/player/suits/nova_nebuleuse.png": {
+   "ui/screens/MainMenuScene.cpp": 2
+  },
   "stories/asterion/espace.png": {
    "ui/screens/RaidRecapScene.cpp": 1
   },
@@ -825,9 +834,11 @@
    "engine/core/Application.cpp": 1
   },
   "ui/badge_extreme.png": {
+   "ui/widgets/CosmicStyle2.cpp": 1,
    "ui/widgets/UIContext.cpp": 1
   },
   "ui/badge_extreme_en.png": {
+   "ui/widgets/CosmicStyle2.cpp": 1,
    "ui/widgets/UIContext.cpp": 1
   },
   "ui/boss_arrow.png": {
@@ -879,6 +890,7 @@
   },
   "ui/icons_medals.png": {
    "packaging/DependencyCollector.cpp": 1,
+   "ui/screens/MainMenuScene.cpp": 1,
    "ui/screens/PlanetMapScene.cpp": 4,
    "ui/screens/ResultsScene.cpp": 2
   },
@@ -895,8 +907,8 @@
    "ui/screens/PowerGuideScene.cpp": 2,
    "ui/widgets/PowerLabels.cpp": 1
   },
-  "ui/map_background.png": {
-   "ui/screens/PlanetMapScene.cpp": 1
+  "ui/menu_icons.png": {
+   "ui/widgets/CosmicStyle.cpp": 1
   },
   "ui/planets/sun.png": {
    "ui/screens/PlanetMapScene.cpp": 1

@@ -177,7 +177,7 @@ private:
     void drawHeader() {
         UIContext& ui = g_.ui;
         ui.r().fillGradientV(L_.header, Color{6, 10, 24, 230}, Color{6, 10, 24, 0});
-        Vec2 tsz = ui.label("COSMIC ONLINE", {ui.s(32), L_.header.center().y}, 34, ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
+        Vec2 tsz = drawOnlineTitle(g_, {ui.s(32), L_.header.center().y});
         ui.label("Cadeaux", {ui.s(32) + tsz.x + ui.s(18), L_.header.center().y + ui.s(3)}, 19, ui.theme().textDim, Align::Left, FontFace::Body,
                  VAlign::Middle);
         online_.drawConnection({L_.detail.right() - ui.s(240), L_.header.center().y});

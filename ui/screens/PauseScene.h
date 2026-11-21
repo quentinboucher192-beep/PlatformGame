@@ -6,6 +6,7 @@
 #include "engine/core/Math.h"
 #include "engine/core/Scene.h"
 #include "game/achievements/Achievements.h"
+#include "ui/widgets/CosmicStyle2.h"
 
 namespace cosmic {
 
@@ -51,6 +52,10 @@ private:
     // The achievements' counters with this run's progress, and what their conditions read.
     AchievementStats liveStats_;
     AchievementInputs achInputs_;
+    // 2.84: the Cosmic kit (plates, holographic panel, chrome title).
+    cstyle::Anims anims_;
+    cstyle::HoloCard card_;
+    cstyle::ChromeText title_;
 };
 
 }  // namespace cosmic

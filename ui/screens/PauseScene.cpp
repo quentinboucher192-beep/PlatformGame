@@ -2,6 +2,8 @@
 
 #include "engine/core/I18n.h"
 
+#include <functional>
+
 #include "engine/core/Easing.h"
 #include "game/GameServices.h"
 #include "game/achievements/AchievementSuggestions.h"
@@ -9,6 +11,7 @@
 #include "ui/screens/LevelPowerKeysScene.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/PauseLayout.h"
+#include "ui/widgets/CosmicStyle2.h"
 #include "ui/widgets/Glyphs.h"
 
 namespace cosmic {
@@ -373,90 +376,96 @@ void PauseScene::render(float /*alpha*/) {
     float slide = (1.0f - applyEase(Ease::OutCubic, k)) * ui.s(40);
     Rect panel{(ui.screenW() - total) * 0.5f, (ui.screenH() - h) * 0.5f + slide, w, h};
     if (side) drawMapPanel({panel.right() + gap, panel.y, mapW, h}, &tracked, note);
-    ui.panel(panel, true, 18);
-    ui.label("PAUSE", {panel.center().x, panel.y + ui.s(40)}, 52, ui.theme().text, Align::Center, FontFace::Title);
+    // 2.84: the Cosmic kit (holographic panel, chrome title, cockpit plates), quick over the dimmed
+    // level: no flicker, the plates sliding in within a quarter of a second.
+    const cstyle::Motion mo = cstyle::Motion::from(g_.settings.graphics.particleQuality, g_.settings.graphics.screenShake);
+    const float dt = g_.app.frameTime() / 1000.0f;
+    const float cu = cstyle::CosmicLayout::of(ui.screenW(), ui.screenH()).unit;
+    card_.begin(ui, panel, t_, cu, mo);
+    title_.draw(ui, "PAUSE", {panel.center().x, panel.y + ui.s(66)}, ui.s(56), panel.w - ui.s(80), Align::Center, t_, mo, cu);
     GameWorld* world = game_.world();
     if (world) {
         std::string info = world->level().name + "  —  " + LevelTimer::format(world->timer().elapsed());
-        ui.label(info, {panel.center().x, panel.y + ui.s(112)}, 22, ui.theme().textDim, Align::Center);
+        const float f = ui.fitFont(info, FontFace::Body, 22, panel.w - ui.s(60), 0.7f);
+        ui.label(ui.elide(info, FontFace::Body, f, panel.w - ui.s(60)), {panel.center().x, panel.y + ui.s(112)}, f, ui.theme().textDim, Align::Center);
         std::string stats = "Éclats " + std::to_string(world->stats().shards) + "/" + std::to_string(world->stats().totalShards) +
                             "   Morts " + std::to_string(world->stats().deaths) + "   Ennemis " + std::to_string(world->stats().kills);
         if (int lives = world->level().livesAllowed(); lives > 0)
             stats += "   Vies " + std::to_string(std::max(0, lives - world->stats().deaths)) + "/" + std::to_string(lives);
-        ui.label(stats, {panel.center().x, panel.y + ui.s(142)}, 20, ui.theme().textDim, Align::Center);
+        const float sf = ui.fitFont(stats, FontFace::Body, 20, panel.w - ui.s(60), 0.7f);
+        ui.label(stats, {panel.center().x, panel.y + ui.s(142)}, sf, ui.theme().textDim, Align::Center);
     }
 
     float bx = panel.x + ui.s(60), bw = panel.w - ui.s(120), bh = ui.s(L.buttonH);
     const float step = bh + ui.s(L.gap);
+    const float pu = bh / 64.0f;  // the plates' unit
     float y = panel.y + ui.s(L.top);
     ui.pushId("pause");
-    UIContext::ButtonStyle primary;
-    primary.primary = true;
-    bool resume = ui.button("resume", {bx, y, bw, bh}, "Reprendre", primary);
+    int index = 0;
+    // A plate of the column (its label in capitals, on two lines rather than cut).
+    auto plate = [&](const char* id, const std::string& label, const char* icon, Color accent, const std::string& feature = {},
+                     float rightW = 0.0f, std::function<void(const Rect&, float)> right = nullptr) {
+        cstyle::PlateEx p;
+        p.plate = {label, "", icon, accent};
+        p.plate.feature = feature;
+        p.wrap = true;
+        p.rightW = rightW;
+        p.drawRight = std::move(right);
+        const float appear = mo.reduced ? 1.0f : std::clamp((t_ - 0.03f * index++) / 0.22f, 0.0f, 1.0f);
+        return cstyle::plateButtonEx(ui, anims_, id, {bx, y, bw, bh}, p, pu, appear, t_, dt, mo);
+    };
+    const Color cyan{94, 224, 255, 255}, gold{255, 205, 110, 255}, violet{190, 150, 255, 255};
+    bool resume = plate("resume", "Reprendre", "continue", gold);
     y += step;
-    if (ui.button("restart", {bx, y, bw, bh}, "Recommencer")) {
+    if (plate("restart", "Recommencer", "challenges", cyan)) {
         g_.app.popScene();
         game_.restart();
     }
     y += step;
-    bool openSettings = ui.button("settings", {bx, y, bw, bh}, "Paramètres");
-    ui.newBadge("settings", {bx, y, bw, bh}, "menu.settings");
-    if (openSettings) g_.app.pushScene(makeSettingsScene(g_, true));
+    // « NOUVEAU » on the settings (menu.settings) and on the guide: cards of the guide changed (2.25).
+    if (plate("settings", "Paramètres", "settings", cyan, "menu.settings")) g_.app.pushScene(makeSettingsScene(g_, true));
     y += step;
-    bool openGuide = ui.button("guide", {bx, y, bw, bh}, "Guide des pouvoirs");
-    ui.newBadge("guide", {bx, y, bw, bh}, "powers.guide");  // « NOUVEAU »: cards of the guide changed (2.25)
-    if (openGuide) g_.app.pushScene(makePowerGuide(g_));
+    if (plate("guide", "Guide des pouvoirs", "achievements", violet, "powers.guide")) g_.app.pushScene(makePowerGuide(g_));
     y += step;
     if (keys) {
         // The keys of this level's powers, for this player (each power keeps its own key).
-        bool openKeys = ui.button("levelkeys", {bx, y, bw, bh}, "Touches de ce niveau");
-        ui.newBadge("levelkeys", {bx, y, bw, bh}, "pause.level_keys");  // « NOUVEAU » (2.31)
-        if (openKeys) g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
+        if (plate("levelkeys", "Touches de ce niveau", "settings", cyan, "pause.level_keys"))  // « NOUVEAU » (2.31)
+            g_.app.pushScene(makeLevelPowerKeys(g_, game_.level(), game_.powerKeyExtra(), game_.carriedPowers()));
         y += step;
     }
     if (invincible) {
         // Administrators: no damage in this training run, a fall goes back to solid ground.
+        // Never ranked: only in training runs, which record nothing (said on the plate).
         const bool on = game_.invincible();
-        UIContext::ButtonStyle st;
-        st.selected = on;
-        // Never ranked: only in training runs, which record nothing (said on the button).
         const std::string label = std::string("Invincible (admin) : ") + (on ? "activé · non classé" : "désactivé");
-        st.fontSize = ui.fitFont(label, FontFace::Bold, 26, bw - ui.s(24));
-        if (ui.button("invincible", {bx, y, bw, bh}, label, st)) game_.setInvincible(!on);
-        ui.newBadge("invincible", {bx, y, bw, bh}, "pause.invincible");
+        if (plate("invincible", label, "admin", on ? Color{110, 225, 150, 255} : cyan, "pause.invincible")) game_.setInvincible(!on);
         y += step;
     }
     {
-        // « Mode concentré »: the reduced HUD (also T / Partage in game).
-        // A button like the others (label centred, same font and size), its state on a small
-        // switch at the right; the label never reaches the switch.
+        // « Mode concentré »: the reduced HUD (also T / Partage in game); its state on a small switch
+        // in the room the plate keeps at its right (the label never reaches it).
         bool focus = g_.settings.gameplay.focusMode;
-        const Rect fr{bx, y, bw, bh};
-        if (ui.button("focus", fr, "")) {
+        const float tw = ui.s(48), th = ui.s(22);
+        if (plate("focus", "Mode concentré", "stats", cyan, {}, tw, [&](const Rect& room, float) {
+                const Rect track{room.right() - tw, room.center().y - th * 0.5f, tw, th};
+                ui.r().fillRoundedRect(track, th * 0.5f, focus ? ui.theme().accent.withAlpha(210) : Color{40, 50, 70, 255});
+                ui.r().fillCircle({focus ? track.right() - th * 0.5f : track.x + th * 0.5f, track.center().y}, th * 0.39f, Color::white());
+            })) {
             g_.settings.gameplay.focusMode = focus = !focus;
             g_.saveSettings();
         }
-        const Rect track{fr.right() - ui.s(16) - ui.s(48), fr.center().y - ui.s(11), ui.s(48), ui.s(22)};
-        const std::string fl = "Mode concentré";
-        const float half = fr.center().x - (track.x - ui.s(10));
-        const float ffs = ui.fitFont(fl, FontFace::Bold, 26.0f, 2.0f * half, 0.6f);
-        ui.label(fl, fr.center(), ffs, ui.theme().text, Align::Center, FontFace::Bold, VAlign::Middle);
-        ui.r().fillRoundedRect(track, ui.s(11), focus ? ui.theme().accent.withAlpha(210) : Color{40, 50, 70, 255});
-        ui.r().fillCircle({focus ? track.right() - ui.s(11) : track.x + ui.s(11), track.center().y}, ui.s(8.5f), Color::white());
         y += step;
     }
     if (ghosts) {
-        if (ui.button("ghosts", {bx, y, bw, bh}, game_.ghostsVisible() ? "Fantômes" : "Fantômes (masqués)")) g_.app.pushScene(makeGhostOptions(g_, &game_));
+        if (plate("ghosts", game_.ghostsVisible() ? "Fantômes" : "Fantômes (masqués)", "coop", violet)) g_.app.pushScene(makeGhostOptions(g_, &game_));
         y += step;
     }
-    UIContext::ButtonStyle danger;
-    danger.danger = true;
     std::string quitLabel = game_.editorTest()        ? "Retour à l'éditeur"
                             : game_.sectionTraining() ? "Retour à l'entraînement"  // its setup, same segment
                             : game_.tutorialReplay()  ? "Retour à l'administration"  // 2.81: an administrator's replay (nothing kept)
                             : game_.tutorial()        ? (confirmQuit_ ? "Confirmer : passer le didacticiel" : "Passer le didacticiel")  // 2.64
                             : (confirmQuit_ ? "Confirmer : quitter le niveau" : "Retour au menu");
-    if (ui.button("quit", {bx, y, bw, bh}, quitLabel, danger)) {
+    if (plate("quit", quitLabel, "quit", Color{255, 106, 106, 255})) {
         if (game_.editorTest() || game_.sectionTraining() || game_.tutorialReplay() || confirmQuit_) {
             g_.app.popScene();
             game_.quitToMenu();
@@ -471,8 +480,15 @@ void PauseScene::render(float /*alpha*/) {
     if (resume || ui.backPressed() || (g_.app.input().menuPressed(Action::Pause) && t_ > 0.1f)) {
         g_.app.popScene();
     }
-    Glyphs::drawHint(ui, Action::MenuConfirm, "Valider", {panel.x + ui.s(60), panel.bottom() - ui.s(40)}, ui.s(30));
-    Glyphs::drawHint(ui, Action::MenuBack, "Reprendre", {panel.center().x + ui.s(20), panel.bottom() - ui.s(40)}, ui.s(30));
+    {
+        const float gh = ui.s(30);
+        const float hx = panel.x + ui.s(60), hy = panel.bottom() - ui.s(40);
+        const float w1 = cstyle::hintWidth(ui, Action::MenuConfirm, "Valider", gh);
+        // « Reprendre » at the middle as before, or right after « Valider » when that one is wider.
+        const float gap = std::max(ui.s(20), panel.center().x + ui.s(20) - hx - w1);
+        cstyle::hintBar(ui, {{Action::MenuConfirm, "Valider", gap}, {Action::MenuBack, "Reprendre"}}, {hx, hy}, gh, gap, panel.w - ui.s(90));
+    }
+    card_.end(ui, t_);
     ui.end();
 }
 
