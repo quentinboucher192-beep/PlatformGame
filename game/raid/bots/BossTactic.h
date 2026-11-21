@@ -56,6 +56,7 @@ struct BossView {
         float elevate = 0.0f;        // the strikers stand this much above floorY (its floor blows)
         float floorY = 0.0f;         // the floor its blows run along
         bool elevateAll = false;     // the lure too
+        bool fixedHolders = false;   // each place its own player for the whole phase, revived first
         float reviveWindow = 0.0f;   // a liquid on a cycle: souls under elevate only this many seconds after it fell
         float keepOff = -1.0f;       // the strikers' distance to its body (< 0: the default)
         bool focusWeak = false;      // bare, all on one weak point at a time

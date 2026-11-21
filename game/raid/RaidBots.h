@@ -70,6 +70,7 @@ public:
         Vec2 goal;
         Rect mechanism;       // the plate or vent it was sent to (Task::Mechanism)
         bool mechanismClosed = false;  // 2.84: that vent is shut for now (kept, not held)
+        Rect fixedStation;             // 2.84 (Plan::fixedHolders): its own place for the whole phase
         int mechanismSteps = 0;  // steps since it was sent there without standing on it
         // 2.77
         uint32_t target = 0;  // the enemy it strikes (uid), 0 none

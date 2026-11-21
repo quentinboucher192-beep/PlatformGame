@@ -29,6 +29,7 @@ public:
     const char* name() const override { return "Skullmaw"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v, false);
+        v.plan.fixedHolders = true;  // 2.84: each mirror its own player through its veil, revived first
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);

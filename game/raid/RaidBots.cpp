@@ -819,6 +819,8 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             if (was == Task::Flee) b.task = Task::Flee;  // it finishes sheltering (drive)
             if (playing(w, s)) drivers.push_back(s);
         }
+    if (!fight_ || view_.stations.empty())
+        for (Bot& b : bots_) b.fixedStation = {};  // 2.84: no place to hold any more (its phase over)
     assignRoles(run, drivers, fight_);
     std::vector<bool> busy(static_cast<size_t>(kMaxInstancePlayers), false);
     std::vector<std::string> said;
@@ -893,6 +895,11 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
         std::vector<int> down;
         for (int d = 0; d < w.teamSize(); ++d)
             if (w.member(d).presence == GameWorld::Presence::Down) down.push_back(d);
+        // 2.84 (fight plan): the players of the places to hold first (a mirror, a hook without its player stays empty).
+        if (view_.plan.fixedHolders)
+            std::stable_sort(down.begin(), down.end(), [&](int a, int c) {
+                return (bots_[static_cast<size_t>(a)].fixedStation.w > 0.0f) > (bots_[static_cast<size_t>(c)].fixedStation.w > 0.0f);
+            });
         // « Réanimez-le »: the soul nearest to the place given first, the two nearest players on it.
         if (ord == bots::OrderKind::Revive)
             std::stable_sort(down.begin(), down.end(), [&](int a, int c) {
@@ -1031,6 +1038,9 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
             int need = std::max(0, st->need - heldByOthers(st->plate));
             while (need-- > 0) {
                 int s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return standsOn(seat) == st; });
+                // 2.84 (fight plan): its own player for the whole phase, wherever it is (never handed to another while it lives).
+                if (s < 0 && view_.plan.fixedHolders)
+                    s = nearestFree(st->plate.bottomCenter(), [&](int seat) { return bots_[static_cast<size_t>(seat)].fixedStation.intersects(st->plate); });
                 // The one already on its way there keeps it (a place given again to another each plan is never reached).
                 if (s < 0)
                     s = nearestFree(st->plate.bottomCenter(), [&](int seat) {
@@ -1045,6 +1055,13 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                 give(s, Task::Mechanism, {st->plate.center().x, st->plate.bottom()}, Stand);
                 Bot& b = bots_[static_cast<size_t>(s)];
                 b.mechanism = st->plate;
+                if (view_.plan.fixedHolders) {
+                    // Its place from now on (a player who owned another gives it up only for this one).
+                    bool taken = false;
+                    for (int q = 0; q < w.teamSize(); ++q)
+                        taken = taken || (q != s && w.member(q).presence != GameWorld::Presence::Gone && bots_[static_cast<size_t>(q)].fixedStation.intersects(st->plate));
+                    if (!taken) b.fixedStation = st->plate;
+                }
                 b.mechanismClosed = st->closed && view_.plan.freeOnClosed;
                 b.goalNode = standNode(st->plate);
                 think(b, "tient " + std::string(st->label.empty() ? "la plaque" : st->label));
