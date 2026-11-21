@@ -14,7 +14,7 @@
     "Défis, Coopération, Succès, Collection, Statistiques, Paramètres, Notifications et ADMINISTRATION prennent le style du nouveau menu principal : planètes en parallaxe, titres chromés, onglets et boutons en plaques de cockpit, « Retour » en losange, panneaux holographiques, animations selon les réglages de mouvement.": "Challenges, Co-op, Achievements, Collection, Statistics, Settings, Notifications and ADMINISTRATION now match the new main menu: planet parallax, chrome titles, cockpit-plate tabs and buttons, diamond « Back » buttons, holographic panels, and motion that follows the motion settings.",
     "BOSS": "BOSS",
     "BOSS ×{0}": "BOSS ×{0}",
-    "2 ou 3 joueurs sur les niveaux EXTRÊME.":"2 or 3 players on the EXTREME levels.",
+    "2 ou 3 joueurs sur les niveaux EXTRÊME.": "2 or 3 players on the EXTREME levels.",
     "Classements, clans, raids et niveaux de la communauté.": "Rankings, clans, raids and community levels.",
     "Combinaisons, traînées, cadres, titres, effets de victoire et badges de profil.": "Suits, trails, frames, titles, victory effects and profile badges.",
     "Compte requis": "Account required",
@@ -14594,6 +14594,9 @@
     "Raids : plus moyen de passer un mécanisme en escaladant son mur à coups de sauts muraux : les murs des écluses et du monte-charge montent jusqu'en haut de la zone, et les portes de la vanne double et des plaques jumelles du Poignet-verrou ont un mur au-dessus d'elles.": "Raids: no more getting past a mechanism by climbing its wall with wall jumps: the walls of the locks and of the goods lift go up to the top of the zone, and the doors of the Wrist-lock's double valve and twin plates have a wall above them.",
     "Tableau des contributions : choisir une partie « PAS DÉCOUVERT » (ou le Cœur fermé) ne fait plus planter le jeu ; une partie où aucun groupe n'est entré le dit clairement.": "Contributions table: choosing a part \"NOT DISCOVERED\" (or the closed Heart) no longer crashes the game; a part no group has entered says so clearly.",
     "Raids : le bouton du HUD n'affiche plus que la touche du menu du raid (« Tab », ou le bouton de la manette) ; les onglets du panneau du raid simulé et du menu du raid ont tous la même largeur, et le panneau garde sa taille d'un onglet à l'autre.": "Raids: the HUD's button now shows only the raid menu's key (\"Tab\", or the gamepad's button); the tabs of the simulated raid's panel and of the raid menu all have the same width, and the panel keeps its size from one tab to another.",
-    "Administration › Raids : une liste « Raid à tester » au-dessus des réglages du test (Asterion pour l'instant), au clavier, à la manette et à la souris.": "Administration › Raids: a \"Raid to test\" list above the test's settings (Asterion for now), with the keyboard, the gamepad and the mouse."
+    "Administration › Raids : une liste « Raid à tester » au-dessus des réglages du test (Asterion pour l'instant), au clavier, à la manette et à la souris.": "Administration › Raids: a \"Raid to test\" list above the test's settings (Asterion for now), with the keyboard, the gamepad and the mouse.",
+    "passe sous son bouclier": "pushes through under its shield",
+    "traverse en ruée": "dashes through",
+    "traverse sous son bouclier": "crosses under its shield"
   }
 }

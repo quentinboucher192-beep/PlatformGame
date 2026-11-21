@@ -61,6 +61,8 @@ public:
             v.dangers.push_back(d);
         }
         if (rt->plated()) {
+            // 2.84: its ribs count only once its plates are broken (its cage): nobody waits on them before.
+            v.stations.clear();
             int left = 0;
             for (uint32_t u : rt->plates()) {
                 const Enemy* e = u ? w.findEnemy(u) : nullptr;

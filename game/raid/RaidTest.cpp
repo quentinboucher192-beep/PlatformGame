@@ -34,6 +34,7 @@ TestBots& TestSession::botsFor(int zone) {
         it = bots_.emplace(zone, TestBots{}).first;
         it->second.reset(players_);
         it->second.setSkill(skill_);
+        it->second.setSeed(seed_);
         it->second.setNames(names_);  // 2.79: the names in their thoughts, the order of the administrator
         if (lastOrder_.kind != bots::OrderKind::None) it->second.order(lastOrder_);
     }

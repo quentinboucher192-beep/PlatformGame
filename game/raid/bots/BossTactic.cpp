@@ -313,11 +313,13 @@ void BossTactic::readCommon(const RaidRun& run, BossView& v, bool vents) {
     if (vents && gb.stage() == Gigaboss::Stage::Carapace)
         for (size_t k = 0; k < gb.vents().size(); ++k) {
             const auto& vt = gb.vents()[k];
-            if (vt.closed) continue;  // closed, it stays closed a while: free until it lights again
+            // 2.84: closed, it is still held — its player stays on it (it closes again 3 s after it lights): three
+            // players each on their own, whatever the order they close in, they are all closed at once within one
+            // turn of their cycle (a player who left a closed one to help elsewhere was never back in time).
             Station s;
             s.plate = vt.area;
             s.need = 1;
-            s.priority = 10;
+            s.priority = vt.closed ? 9 : 10;
             // What it is, as a player names it (its rules' id is not a name).
             const std::string routine = gb.rules() ? gb.rules()->routine : std::string();
             s.label = routine == "dreadfang"      ? "la chaîne"

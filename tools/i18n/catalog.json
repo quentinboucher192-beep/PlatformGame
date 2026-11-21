@@ -19047,6 +19047,7 @@
     "game/powers/PowerDefinition.cpp",
     "game/powers/PowerDemos.cpp",
     "game/powers/Powers.cpp",
+    "game/raid/RaidBots.cpp",
     "game/raid/RaidNav.cpp",
     "game/tutorial/Tutorial.cpp",
     "packaging/DependencyCollector.cpp",
@@ -51556,6 +51557,12 @@
    ]
   },
   {
+   "fr": "passe sous son bouclier",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Passe-muraille",
    "where": [
     "data/achievements/achievements.json"
@@ -71603,9 +71610,21 @@
    ]
   },
   {
+   "fr": "traverse en ruée",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Traverse la plateforme vers le bas",
    "where": [
     "game/raid/nav/Intent.cpp"
+   ]
+  },
+  {
+   "fr": "traverse sous son bouclier",
+   "where": [
+    "game/raid/RaidBots.cpp"
    ]
   },
   {

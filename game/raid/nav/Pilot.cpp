@@ -383,8 +383,8 @@ bool Navigator::search(const GameWorld& w, int seat, Pilot& p, const Body& body,
             spend(o.steps);
             if (!o.accepted) return false;
             const float landX = std::fabs(o.feet.x - TN.feet.x);
-            float score = static_cast<float>(o.steps) + 5.0f * static_cast<float>(o.airJumps) + 9.0f * static_cast<float>(o.dashes) +
-                          12.0f * static_cast<float>(o.impulses) + 6.0f * static_cast<float>(o.wallJumps) + landX * 0.4f;
+            float score = static_cast<float>(o.steps) + 5.0f * static_cast<float>(o.airJumps) + (recover ? 9.0f : dashCost_) * static_cast<float>(o.dashes) +
+                          (recover ? 12.0f : dashCost_ + 3.0f) * static_cast<float>(o.impulses) + 6.0f * static_cast<float>(o.wallJumps) + landX * 0.4f;
             if (recover) score += static_cast<float>(&T - targets.data()) * 40.0f;  // where it was going first
             if (score < bestScore) {
                 bestScore = score;
@@ -537,7 +537,7 @@ bool Navigator::dodge(const GameWorld& w, int seat, Pilot& p, const Body& body, 
         spend(o.steps);
         if (o.harm != Harm::None) continue;  // nothing hurts it on the whole horizon (in the air or not)
         // Still in the air at the end: it must be over a floor it can reach (the next steps check it).
-        float score = std::fabs(o.feet.x - towardX) + 25.0f * static_cast<float>(o.dashes + o.airJumps) + (q.crouch ? 6.0f : 0.0f);
+        float score = std::fabs(o.feet.x - towardX) + 25.0f * static_cast<float>(o.airJumps) + (dashCost_ > 9.0f ? 70.0f : 25.0f) * static_cast<float>(o.dashes) + (q.crouch ? 6.0f : 0.0f);
         if (!o.landed && q.jump > 0) score += 40.0f;
         if (score < bestScore) {
             bestScore = score;
@@ -584,6 +584,8 @@ Pad Navigator::steer(const GameWorld& w, int seat, SeatPlan& plan, uint32_t prev
     const Player& me = w.playerAt(seat);
     const Body body = Body::of(me);
     const Kit kit = Kit::of(me);
+    // 2.84: its energy spared (a fight: its shots and its shield), a dash or an impulse only where nothing else goes.
+    dashCost_ = plan.spare ? 150.0f : 9.0f;
     const BodySim sim(me.config(), kit);
     const PlayerConfig& cfg = me.config();
     const uint8_t can = static_cast<uint8_t>((kit.hasDash() && skill_.powers ? NeedDash : 0) | (kit.hasImpulse() && skill_.powers ? NeedImpulse : 0) |

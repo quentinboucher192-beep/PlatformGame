@@ -101,6 +101,12 @@ public:
         int waveJumpCool = 0; // steps before it jumps a wave again
         bool onStation = false;
         int shieldCool = 0;
+        int hop = 0;
+        Rect preAim;
+        int cross = 0;        // 2.84: steps left of a crossing through the boss's body under its shield
+        int crossDir = 0;
+        int blocked = 0;
+        int push = 0;         // 2.84: steps left going on through what is coming under its shield      // 2.84: steps held back at the edge of what is coming          // 2.84: armoured, where its weak point will be once bare (its place is chosen for it)          // 2.84: a jump (1) or a double jump (2) to fire from its top
         uint32_t revivee = 0; // the seat it revives + 1 (0 none)
         bots::Thought thought;
         std::string intent;   // its task's intention (the plan's), shown unless it reacts to something
@@ -113,6 +119,11 @@ public:
         navi_.setSkill(static_cast<int>(s));
     }
     BotSkill skill() const { return skill_; }
+    /// 2.84: a seed for the measures over several starts (docs/RAIDS.md §35): each seat waits a few steps more or
+    /// less at the start of its zone (as players never press their first key at the same instant) and its small
+    /// hesitations change. 0 (the default): no wait, the starts of every version before it.
+    void setSeed(uint32_t seed) { seed_ = seed; }
+    uint32_t seed() const { return seed_; }
     /// Fills the frames of the seats in `seats` (bit k = seat k) from the world.
     void think(RaidRun& run, InputFrame* frames, int count, uint32_t seats, bool adminActive);
     /// Compat (2.72): seats 1 .. players − 1, the administrator active.
@@ -189,6 +200,7 @@ private:
     nav::Navigator navi_;  // 2.79: the graph, the copy of the zone, a pilot per seat (game/raid/nav)
     int navZone_ = -1;
     uint32_t tick_ = 0;
+    uint32_t seed_ = 0;  // 2.84: setSeed
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
     std::string plan_;
     // 2.79
@@ -202,6 +214,9 @@ private:
     std::vector<uint8_t> syncLow_;  // per sync group: all its targets at or under their hold share
     uint32_t bossUid_ = 0;
     Rect bossBody_;  // its whole shape this step (every part, its box): kept out of
+    std::vector<Rect> bodyParts_;  // 2.84: each part's box this step (what a player touches)
+    /// 2.84: whether `r` touches one of the boss's parts this step.
+    bool touchesBody(const Rect& r) const;
 };
 
 }  // namespace cosmic::raid

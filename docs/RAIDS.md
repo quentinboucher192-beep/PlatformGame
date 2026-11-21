@@ -19,7 +19,8 @@
 # tester avec des joueurs invités (2.80, §30) ;
 # « Après Asterion », le film du monde d'après regardé ensemble ; ADMINISTRATION › Films (2.81, §31 et §32) ;
 # mécanismes qui attendent les embuscades, monte-charge et murs sans escalade (2.81.2, §33) ;
-# « Le Balancier » et « Encore un tour », les films de transition, avant-premières du raid 2 (2.82, §34)
+# « Le Balancier » et « Encore un tour », les films de transition, avant-premières du raid 2 (2.82, §34) ;
+# joueurs simulés contre les Gigaboss : mesure sur plusieurs départs, carapaces tenues ensemble (2.84, §35)
 
 # phase 5 : les événements mondiaux (2.69, §14) ; les raids tels qu'on les teste et qu'on les joue (2.72, §16)
 
@@ -2726,6 +2727,116 @@ une seconde donnée. `tests/test_asterion_aftermath.cpp` : les lignes des listes
 
 Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les empreintes de référence
 ne changent pas ; rien côté serveur.
+
+## 35. Joueurs simulés contre les Gigaboss : mesure sur plusieurs départs, carapaces tenues ensemble (2.84)
+
+Le but donné : « améliore les IA pour qu'elles puissent battre les Gigaboss d'Asterion et Asterion » — 8 joueurs
+simulés Experts, **sans aucune invincibilité**, dans chaque antre et devant le Cœur, 4 départs sur 5 gagnés en 15 min.
+**Ce but n'est pas atteint** : aucun Gigaboss ni le Cœur ne tombe encore sans invincibilité. Cette section dit ce qui a
+été mesuré, ce qui a changé et ce qui bloque, tel quel.
+
+### La mesure (`tests/test_raid_goat.cpp`, « raid GOAT bench »)
+
+`COSMIC_GOAT_BENCH=1 cosmic_tests "raid GOAT bench"` : chaque antre (et le Cœur, les sept parties tombées) depuis la
+phase 1, 8 joueurs simulés Experts (la place de l'administrateur aussi), ni invincibilité ni sauvetage, 15 min au plus,
+sur `COSMIC_GOAT_SEEDS` départs (5 par défaut ; `COSMIC_GOAT_PARTS=bras_droit,crane` pour quelques parties). Un départ
+est une **graine des joueurs simulés** (`TestSession::setBotSeed`, `TestBots::setSeed`) : chacun appuie sur sa première
+touche 0 à 0,6 s plus tard, ses petites hésitations et le moment de ses plans changent ; la graine 0 garde les départs
+d'avant (mêmes empreintes). Rien d'autre : la simulation, les règles et les empreintes de référence ne changent pas.
+Pour régler : `COSMIC_GOAT_HIST` (où va leur temps, leurs dégâts, leurs coups par pouvoir), `COSMIC_GOAT_DEATHS` (chaque
+mort : qui, quoi, où), `COSMIC_GOAT_EXPOSED` (chaque joueur pendant que le boss est à nu), `COSMIC_GOAT_MIRROR` (les
+miroirs de Skullmaw à chaque regard).
+
+### Avant / après, sans invincibilité (5 départs, 15 min)
+
+V : vaincu ; la vie qui lui reste à la fin (moyenne) ; le temps de jeu de chaque départ (un départ plus court : groupe
+éliminé).
+
+| Combat | avant : vaincus | avant : vie restante | avant : temps | après : vaincus | après : vie restante | après : temps |
+|---|---|---|---|---|---|---|
+| Pyroclast | 0 / 5 | 66 % | 599 / 900 / 550 / 714 / 394 s | 0 / 5 | 67 % | 601 / 661 / 495 / 342 / 384 s |
+| Skullmaw | 0 / 5 | 66 % | 900 / 900 / 900 / 820 / 900 s | 0 / 5 | 66 % | 900 s (× 5) |
+| Dreadfang | 0 / 5 | 60 % | 406 / 823 / 460 / 608 / 610 s | 0 / 5 | 63 % | 514 / 664 / 537 / 256 / 603 s |
+| Titanus | 0 / 5 | 76 % | 215 / 289 / 324 / 143 / 209 s | 0 / 5 | 76 % | 400 / 268 / 145 / 204 / 208 s |
+| Voidworm | 0 / 5 | 66 % | 900 / 792 / 512 / 900 / 900 s | 0 / 5 | 66 % | 815 / 545 / 525 / 641 / 560 s |
+| Graviton | 0 / 5 | 73 % | 395 / 329 / 386 / 431 / 457 s | 0 / 5 | 71 % | 540 / 298 / 722 / 540 / 243 s |
+| Heartbreaker | 0 / 5 | 77 % | 481 / 900 / 194 / 900 / 731 s | 0 / 5 | **66 %** | 900 / 900 / 897 / 900 / 610 s |
+| Cœur d'Asterion | 0 / 5 | 74 % | 900 / 900 / 900 / 719 / 900 s | 0 / 5 | 75 % | 553 / 900 / 900 / 900 / 900 s |
+
+En moyenne, 30 % de leur vie ôtée avant, 31 % après : **pas de gain mesurable sans invincibilité**, sauf Heartbreaker
+(il ne tue plus le groupe en phase 1 : 4 départs sur 5 tiennent les 15 min, 66 % au lieu de 77 %). Les combats restent
+chaotiques : d'un départ à l'autre, le même combat finit à 260 s ou à 660 s.
+
+### Avant / après, le mécanisme seul (depuis la phase 2, joueurs simulés invincibles, 1 départ)
+
+Ce que la carapace demande (tenir ses places ensemble, puis frapper ses points faibles) mesuré à part : 8 joueurs
+simulés Experts **invincibles** (le réglage de test), depuis la phase 2 de chaque combat, 15 min.
+
+| Combat (depuis sa phase 2, invincibles) | avant | après |
+|---|---|---|
+| Pyroclast | 66 %, carapace jamais brisée | 50 % |
+| Skullmaw | 60 % | 61 % |
+| Dreadfang | **vaincu en 528 s** | **vaincu en 409 s** |
+| Titanus | 48 % | 32 % (phase 3) |
+| Voidworm | 66 %, carapace jamais brisée | 24 à 38 % (phase 3 atteinte dans le test) |
+| Graviton | 26 % (phase 3) | 8 % (phase 3) |
+| Heartbreaker | 66 %, cage jamais ouverte | **vaincu en 619 s** |
+| Cœur d'Asterion | 62 % | 53 % |
+
+Le test `raid GOAT (2.84): carapaces held together — …` le garde : Dreadfang et Heartbreaker tombent, Voidworm finit à
+55 % au plus (depuis leur phase 2, invincibles, un départ chacun).
+
+### Ce qui a changé (`game/raid/RaidBots.cpp`, `game/raid/bots/`, `game/raid/nav/Pilot.cpp`)
+
+Toujours et seulement des `InputFrame` de joueur :
+
+* **Une place fermée reste tenue** : un évent, une chaîne, un crochet, une côte ou une artère fermés restent une place à
+  tenir (priorité un peu plus basse) ; avant, son joueur partait aider ailleurs et n'était jamais revenu quand elle se
+  rallumait — trois joueurs restés chacun sur la sienne les ont toutes fermées en même temps dans un tour de leur cycle.
+* **Qui se tient sur une place la garde** : un joueur debout sur un évent fermé était envoyé vers l'évent ouvert au
+  bout de l'arène, et le sien donné à un joueur qui ne pouvait pas l'atteindre.
+* **Traverser le corps du boss sous son bouclier** : un joueur envoyé tenir une place de l'autre côté du boss (le bras
+  de Pyroclast au milieu de l'arène) ne l'attend plus au bord : bouclier levé, il traverse en ruées ; retenu une seconde
+  au bord de ses coups sur le chemin d'une place, il passe dessous son bouclier. Les autres rôles ne le font pas (essayé :
+  plus de morts).
+* **Heartbreaker** : ses côtes ne comptent qu'une fois ses plaques brisées ; avant, deux joueurs attendaient sur elles
+  toute la phase 1 et y mouraient.
+* **Le bouclier** (Expert) : levé dès qu'un coup est sur le point de le toucher (un sixième de seconde ; dès l'annonce
+  pour les coups du boss lui-même), pas seulement contre un coup inévitable ; jamais pendant l'invulnérabilité d'un coup
+  reçu ; un coureur en route le garde pour traverser. Une réanimation près du boss ou sous des coups annoncés se fait
+  sous le bouclier (2,2 s : toute la réanimation), sinon il attend que le plus proche soit passé.
+* **Tirer d'un saut** : rien ne l'atteint d'où il se tient, mais du sommet d'un saut ou d'un double saut une onde l'atteint :
+  il saute et tire là-haut, au lieu d'attendre d'être à sa place.
+* **Prêts pour les points faibles** : boss blindé, les frappeurs se placent d'où ses points faibles seront à portée une
+  fois à nu (les places des règles, comme la fiche « Où frapper » les montre) ; à nu, ils les frappent d'aussi près que
+  ses parties le permettent (la boîte de chaque partie, pas celle autour de toutes), et personne ne part chercher un orbe
+  de vie pendant ces secondes-là.
+* **L'énergie** : en combat, un frappeur sous 120 d'énergie ne prend une ruée ou une impulsion pour se déplacer que si
+  rien d'autre ne passe (une ruée coûte la sienne et arrête la régénération 0,7 s).
+
+Essayés puis retirés (plus de morts, mesuré) : le corps du boss lu partie par partie pour se déplacer (ils s'en
+approchaient trop), garder les frappeurs à 150 px de son corps (moins de tirs), traverser le corps pour tous les rôles,
+prendre les places de la carapace avant qu'elle se ferme (le groupe se divisait en fin de phase 1).
+
+### Ce qui bloque encore
+
+* **Survivre** : sans invincibilité, presque tous les départs finissent par un groupe éliminé, la plupart en phase 1
+  ou au début de la phase 2 (Titanus : ses charges et sa lave en 150 à 400 s ; Graviton : ses puits, sa couronne et sa
+  voûte ; Voidworm : deux joueurs avalés pendant que les autres sont à terre). Les âmes tombent près du boss et leurs
+  réanimateurs y tombent à leur tour.
+* **Les dégâts** : en phase 1, 2,5 à 4 de vie par seconde pour le groupe, le quart de ce que leur énergie permet ; un
+  tiers de leur temps, aucune des huit directions d'une onde n'atteint ses parties qui comptent (le boss bouge, leur
+  place est à refaire) ; leurs ondes sont limitées par leur énergie (18 par seconde, après 0,7 s sans dépense).
+* **Skullmaw** : ses miroirs sont parfois tenus (4 sur 4 à un regard sur cinq environ), mais à nu, ses yeux flottent à 500 px
+  au-dessus du sol : presque aucun dégât en 10 s.
+* **Le Cœur et Pyroclast** : les artères et l'évent du centre (en hauteur) sont rarement atteints à temps.
+* Avec ces limites, même invincibles, seuls Dreadfang et Heartbreaker tombent depuis leur phase 2.
+
+### Versions
+
+Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`
+et les empreintes de référence ne changent pas ; rien côté serveur. Trois pensées nouvelles des joueurs simulés
+(« traverse sous son bouclier »…) ont leur anglais dans `data/i18n/en.json`.
 
 ---
 
