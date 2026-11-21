@@ -883,7 +883,7 @@ de GeoNames (CC BY 4.0, © GeoNames), générés par `tools/globegen`.
   (« Tableau : Tab ») ; sa place se règle dans Paramètres › HUD › « Raids ». La carte « ZONE TERMINÉE », qui réagissait au
   saut et aux déplacements, et celle de la chute du gigaboss, qui pouvait figer le personnage sous les résultats, n'existent
   plus.
-* **Menu du raid** (**Tab**, **L3** à la manette, le bouton du HUD, ou la pause ; Échap ou B le ferment) : « Ce qu'il reste à
+* **Menu du raid** (**Tab**, **L3** à la manette, ou le bouton du HUD ; Échap ou B le ferment) : « Ce qu'il reste à
   faire », « Zones terminées » et leurs tableaux des contributions, « Journal » (toutes les notifications, à l'heure du
   raid), « Groupe » (à terre, spectateur…), « Titan » (parties, liens, événements, « Résultats du raid »). Le jeu continue
   comme pendant la pause, et ses touches ne bougent jamais le personnage ([docs/RAIDS.md §21](docs/RAIDS.md)).

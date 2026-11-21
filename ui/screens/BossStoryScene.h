@@ -151,6 +151,9 @@ struct FilmModeLayout {
 FilmModeLayout layoutFilmMode(UIContext& ui, bool on);
 /// Whether a story or film scene `s` is shown in Film mode now.
 bool filmModeShown(const Scene* s);
+/// 2.84: over a film or a story (the trailer, in Film mode or not) the mouse pointer is hidden; a move of the
+/// mouse shows it for this many seconds (Scene::hidesCursor), and it comes back when the film is left.
+constexpr float kFilmPointerShow = 2.0f;
 /// The main menu's attract mode: after this long without any input, the trailer plays.
 constexpr float kAttractDelay = 60.0f;
 /// Whether the attract mode may start now: its setting on (Paramètres › Jeu), a trailer, nothing

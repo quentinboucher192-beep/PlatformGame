@@ -237,12 +237,19 @@ void PowerUnlockEntity::exchange(GameWorld& w, const std::string& dropped) {
 
 void PowerUnlockEntity::celebrate(GameWorld& w, const PowerDefinition& def, Vec2 at, const std::string& message,
                                   const std::string& dropped) {
-    w.playSound("sounds/power_unlock.wav", 1.0f);
+    // 2.84: in a team, the celebration (sound, flash, shake, « Nouveau pouvoir ») is for the player who picked it
+    // up, on their computer only (display: the others see the tablet's sparkle). The hit stop stays as it was.
+    const int who = w.coop() ? w.currentPlayer() : -1;
+    const bool here = w.viewing(who);
+    if (here) w.playSound("sounds/power_unlock.wav", 1.0f);
     w.particles().emit("power_unlock", at, 1.5f);
-    w.flash(def.color, 0.35f);
-    w.shake(0.25f);
+    if (here) {
+        w.flash(def.color, 0.35f);
+        w.shake(0.25f);
+    }
     w.hitStop(0.12f);
     WorldMessage m;
+    m.player = who;
     m.style = WorldMessage::Style::Title;
     m.text = "Nouveau pouvoir : " + def.name;
     if (!dropped.empty()) {

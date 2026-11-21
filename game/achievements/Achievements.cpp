@@ -381,6 +381,7 @@ std::vector<const AchievementDef*> AchievementBook::evaluate(const AchievementCa
             unlocked_[a.id] = date;
             untrack(a.id);  // done: no longer followed (its slot is free again)
             announce_.push_back(a.id);
+            if (!isUnseen(a.id)) unseen_.push_back(a.id);  // 2.84: new for SUCCÈS until seen there
             out.push_back(&a);
             changed = true;
         }
@@ -400,6 +401,10 @@ bool AchievementBook::track(const std::string& id) {
 
 void AchievementBook::untrack(const std::string& id) { tracked_.erase(std::remove(tracked_.begin(), tracked_.end(), id), tracked_.end()); }
 
+bool AchievementBook::isUnseen(const std::string& id) const { return std::find(unseen_.begin(), unseen_.end(), id) != unseen_.end(); }
+
+void AchievementBook::markSeen(const std::string& id) { unseen_.erase(std::remove(unseen_.begin(), unseen_.end(), id), unseen_.end()); }
+
 std::vector<std::string> AchievementBook::takeAnnouncements() {
     std::vector<std::string> v;
     v.swap(announce_);
@@ -415,12 +420,13 @@ Json AchievementBook::toJson() const {
     for (const auto& [k, v] : unlocked_) unlocked[k] = v;
     return Json{{"format", "cosmic.achievement_book"}, {"version", kVersion}, {"unlocked", unlocked},
                 {"counters", counters},             {"maxima", maxima},       {"sets", sets}, {"power_uses", powers},
-                {"tracked", tracked_}};
+                {"tracked", tracked_},              {"unseen", unseen_}};
 }
 
 void AchievementBook::fromJson(const Json& j) {
     unlocked_.clear();
     tracked_.clear();
+    unseen_.clear();
     stats_ = AchievementStats{};
     if (!j.is_object()) return;
     // A save is user data: keys and values are bounded and checked.
@@ -442,6 +448,11 @@ void AchievementBook::fromJson(const Json& j) {
     if (j.contains("tracked") && j["tracked"].is_array())
         for (const Json& x : j["tracked"])
             if (x.is_string()) track(x.get<std::string>());
+    // 2.84: the unlocks not seen in SUCCÈS yet: each once, unlocked ones only (absent: all seen).
+    if (j.contains("unseen") && j["unseen"].is_array())
+        for (const Json& x : j["unseen"])
+            if (x.is_string() && unlocked(x.get<std::string>()) && !isUnseen(x.get<std::string>()) && unseen_.size() < 2000)
+                unseen_.push_back(x.get<std::string>());
     readMap("counters", stats_.counters);
     readMap("maxima", stats_.maxima);
     readMap("power_uses", stats_.powerUses);
