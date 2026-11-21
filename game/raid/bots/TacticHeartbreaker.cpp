@@ -29,6 +29,9 @@ public:
     const char* name() const override { return "Heartbreaker"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v);
+        // 2.85 (fight plan): its rib traps (the marks under every player, the first dangers read): under the shield when it
+        // is ready rather than a step aside (into another's mark, off a platform, down among its waves).
+        for (size_t k = 0; k < run.gigaboss().fists().size() && k < v.dangers.size(); ++k) v.dangers[k].shieldFirst = true;
 
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();

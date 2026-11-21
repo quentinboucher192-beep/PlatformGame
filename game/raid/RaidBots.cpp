@@ -1821,7 +1821,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if (seen) b.react = 1;  // seen: it stays seen while it lasts
             const bool shot = hit->shot;
             // Holding a plate or reviving: it stays (its shield takes the blow); otherwise out by the nearest safe side.
-            if ((holding || staysPut || (shot && shieldReady)) && !hit->unblockable) {
+            // 2.85 (fight plan): a blow marked « shield first » (Heartbreaker's rib traps under every player: a step aside
+            // lands in another's or off its platform) is taken under the shield when it is ready.
+            if ((holding || staysPut || ((shot || hit->shieldFirst) && (shieldReady || me.shieldActive()))) && !hit->unblockable) {
                 if (hit->in <= 14) raiseShield = true;
                 // 2.84: a beam on a player holding its place (Skullmaw's gazes on the mirrors): a step aside on the plate itself,
                 // to its edge away from the beam — still on it, out of the line.
