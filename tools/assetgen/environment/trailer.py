@@ -131,7 +131,8 @@ def shot_system(D):
            spr("voile", story("singularis", "voile"), [K(0, pos=(-200, 300), clip="idle", alpha=0.7)], depth=0.2, drift=(-14, 0)) | {"repeat": True},
            glow("soleil_lueur", "#ffd27a", 220, [K(0, pos=(480, 270), alpha=0.8)], depth=0.5, pulse=(0.25, 1.6)),
            lay("soleil", "ui/planets/sun.png", 0.5, (416, 206), scale=0.25)]
-    orbit = [("sylvanox", 300, 0.0), ("pyralis", 300, 0.25), ("glacior", 300, 0.5), ("aethra", 300, 0.75)]
+    # The six worlds: the Noyau stellaire is the star at the centre, the five others orbit it.
+    orbit = [("sylvanox", 300, 0.0), ("pyralis", 300, 0.2), ("glacior", 300, 0.4), ("aethra", 300, 0.6), ("confins", 300, 0.8)]
     for name, r, ph in orbit:
         keys = []
         for j in range(5):
@@ -280,7 +281,7 @@ def shot_online(D):
 # =================================================================== the trailer
 def shots():
     out = [
-        ("system", "UN SYSTÈME À EXPLORER", "Sylvanox · Pyralis · Glacior · Aethra", 3.4, (0.5, 0.78), "#ffd27a", shot_system),
+        ("system", "UN SYSTÈME À EXPLORER", "Sylvanox · Pyralis · Glacior · Noyau stellaire · Aethra · Les Confins", 3.4, (0.5, 0.78), "#ffd27a", shot_system),
         ("run", "COURIR, SAUTER, GLISSER", "", 3.2, (0.5, 0.2), "#c8ff9a", shot_run),
         ("powers", "19 POUVOIRS À DÉBLOQUER", "", 2.8, (0.5, 0.2), "#9adcff", shot_powers),
         ("enemies", "DES ENNEMIS SUR CHAQUE PLANÈTE", "", 2.6, (0.5, 0.2), "#c8f0ff", shot_enemies),

@@ -544,10 +544,12 @@ void GameServices::checkAchievements(bool announce) {
 }
 
 void GameServices::checkForUpdate() {
-    if (!online.usable()) return;
+    if (!online.usable() || releaseWatch_.busy()) return;
+    releaseWatch_.sent();
     // 2.62: `since` = this game's version: the notes of every installer published after it
     // (a player several versions behind sees all that changed, not only the newest).
     online.get(std::string("/api/v1/client/latest?platform=windows&since=") + COSMIC_VERSION_STRING, [this](const ApiResult& r) {
+        releaseWatch_.answered(r.ok);
         if (!r.ok || !r.data.is_object() || !r.data.contains("release") || !r.data["release"].is_object()) return;
         const Json& rel = r.data["release"];
         std::string v = jstr(rel, "version");
@@ -571,8 +573,18 @@ void GameServices::checkForUpdate() {
             notes = jstr(rel, "notes");
             notesEn = jstr(rel, "notes_en");
         }
-        news.offerRelease(v, jget<int64_t>(rel, "size", 0), jstr(rel, "sha256"), jstr(rel, "download"), notes, english ? notesEn : std::string{});
+        const std::string sha = jstr(rel, "sha256"), download = jstr(rel, "download");
+        news.offerRelease(v, jget<int64_t>(rel, "size", 0), sha, download, notes, english ? notesEn : std::string{});
+        // Announced live, wherever the player is (during a run the toast waits for its end,
+        // as every other one); the main menu's Notifications counter counts the item at once.
+        if (!download.empty() && releaseWatch_.announce(v, sha))
+            online.notify(OnlineService::Notification::Kind::Info, "Nouvelle version " + v + " disponible",
+                          "Menu principal › Notifications pour l'installer.");
     }, false);
+}
+
+void GameServices::updateReleaseCheck(float dt) {
+    if (releaseWatch_.tick(dt, online.usable(), online.state() == OnlineState::Offline)) checkForUpdate();
 }
 
 void GameServices::applySettings() {
@@ -736,6 +748,7 @@ void GameServices::noteStartedLocal() {
 void GameServices::noteSessionStarted() {
     progressCopyDue = true;
     progressCopyWait_ = std::min(progressCopyWait_, 8.0f);
+    releaseWatch_.wake();  // a newer installer looked for again after the login
     auto snap = FileUtil::loadJson(localSnapshotPath());
     std::error_code ec;
     fs::remove(localSnapshotPath(), ec);

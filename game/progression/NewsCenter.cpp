@@ -1,6 +1,7 @@
 #include "game/progression/NewsCenter.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdio>
 #include <set>
 
@@ -37,6 +38,51 @@ bool versionNewer(const std::string& a, const std::string& b) {
     for (int i = 0; i < 3; ++i)
         if (pa[i] != pb[i]) return pa[i] > pb[i];
     return false;
+}
+
+bool ReleaseWatch::tick(float dt, bool usable, bool offline) {
+    if (!usable) {
+        usable_ = false;
+        return false;
+    }
+    if (!usable_) due_ = true;             // Cosmic Online just became usable (start, settings)
+    if (offline_ && !offline) due_ = true;  // the connection came back
+    usable_ = true;
+    offline_ = offline;
+    if (busy_) return false;
+    sinceCheck_ += dt;
+    return due_ || sinceCheck_ >= period_;
+}
+
+void ReleaseWatch::sent() {
+    busy_ = true;
+    usable_ = true;
+    due_ = false;
+    sinceCheck_ = 0.0f;
+}
+
+void ReleaseWatch::answered(bool ok) {
+    busy_ = false;
+    period_ = ok ? kPeriodSeconds : kRetrySeconds;
+    if (!ok) return;
+    // This answer already says what the server has: no second check for the same reason.
+    offline_ = false;
+    due_ = false;
+}
+
+bool ReleaseWatch::announce(const std::string& version, const std::string& sha256) {
+    int dots = 0;
+    for (char c : version) {
+        if (c == '.') ++dots;
+        else if (c < '0' || c > '9') return false;
+    }
+    if (version.empty() || version.size() > 14 || dots != 2 || version.front() == '.' || version.back() == '.' ||
+        version.find("..") != std::string::npos)
+        return false;
+    if (sha256.size() != 64) return false;
+    for (char c : sha256)
+        if (!std::isxdigit(static_cast<unsigned char>(c))) return false;
+    return announced_.insert(version).second;
 }
 
 Json NewsCenter::Item::toJson() const {
@@ -225,6 +271,9 @@ void NewsCenter::noteRevision(const std::string& levelId, const std::string& lev
 
 void NewsCenter::offerRelease(const std::string& version, int64_t size, const std::string& sha256, const std::string& download,
                               const std::string& notes, const std::string& notesEn) {
+    // Asked again every 10 minutes: an installer already offered changes nothing (no write).
+    for (const auto& e : items_)
+        if (e.id == "update:" + version) return;
     Item it;
     it.id = "update:" + version;
     it.kind = "update";

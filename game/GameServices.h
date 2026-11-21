@@ -223,8 +223,13 @@ public:
     NewsCenter news;
     /// « NOUVEAU » pills on the novelties of the updates (data/news/new_features.json).
     NewBadges newBadges;
-    /// Asks the server once for a newer installer (no account needed, nothing personal sent).
+    /// Asks the server for a newer installer (no account needed, nothing personal sent); a
+    /// version seen for the first time this session gets its toast at once.
     void checkForUpdate();
+    /// Every frame: the check again when Cosmic Online becomes usable or comes back, after
+    /// a login, then every 10 minutes (ReleaseWatch), so that a new version is announced live.
+    void updateReleaseCheck(float dt);
+    ReleaseWatch releaseWatch_;
     /// Presence for friends (2.32.3): « active » or « idle » (no input for 5 min), sent every
     /// minute and on each change while logged in; « offline » when the game closes.
     void updatePresence(float dt);

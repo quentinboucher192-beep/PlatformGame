@@ -708,6 +708,7 @@ int main(int argc, char** argv) {
         game.updateCampaignRevisions(dt);
         game.updateServerSuits(dt);
         game.updates.update();
+        if (sendPresence) game.updateReleaseCheck(dt);  // a new version announced live
         if (sendPresence) game.updatePresence(dt);
         game.spectate.update(dt);
         asterionfilm::updateParty(game, dt);  // 2.81: « Après Asterion » with the clans of the fall, at its time

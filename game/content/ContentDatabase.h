@@ -57,6 +57,10 @@ public:
     // Planets
     std::vector<const PlanetData*> planets() const;
     const PlanetData* planet(const std::string& id) const;
+    /// The planets of the campaign (levels to play, no teaser) in the order they are
+    /// played: each after the planets (or the level's planet) its `unlock` waits for, the
+    /// easiest first among those open at the same time, then the nearest to the star.
+    std::vector<const PlanetData*> campaignPlanets() const;
 
     // Levels
     std::vector<const LevelEntry*> levels() const;

@@ -96,8 +96,6 @@ public:
         bg_.render(g_, 0.15f);
         float appear = std::clamp(t_ / 0.7f, 0.0f, 1.0f);
         drawGameTitle(g_, {ui.screenW() * 0.66f, ui.screenH() * 0.36f}, 110, appear);
-        ui.label("Sylvanox · Pyralis · Glacior · Aethra", {ui.screenW() * 0.66f, ui.screenH() * 0.36f + ui.s(120)}, 26,
-                 ui.theme().text.withAlphaF(appear * 0.85f), Align::Center, FontFace::Body, VAlign::Middle);
 
         // Only a campaign level: WORKSHOP levels are reached from the WORKSHOP.
         bool canContinue = !g_.progression.lastLevel.empty() && g_.content.level(g_.progression.lastLevel) &&
@@ -112,6 +110,7 @@ public:
         float y = ui.screenH() * 0.5f - (rows * (h + gap)) * 0.5f + ui.s(rows > 10 ? 12 : 40);
         Rect side{x - ui.s(40), y - ui.s(40), w + ui.s(80), rows * (h + gap) + ui.s(70)};
         ui.r().fillRoundedRect(side, ui.s(18), Color{6, 10, 22, 150});
+        drawPlanetLine(side, appear);
         ui.pushId("main");
         // `badge`: unread messages, in a red pill at the right edge (the subtitle keeps the room left of it).
         auto btn = [&](const char* id, const std::string& label, const std::string& sub, bool primary = false, int badge = 0) {
@@ -217,6 +216,41 @@ private:
         if (!res.exists(path)) return;
         if (anim) res.animation(path);
         else res.texture(path, true);
+    }
+
+    /// The campaign's planets under the title, in the order they are played, read from the
+    /// content (never out of date). Centred under the title, between the menu and the screen's
+    /// edge: one line fitted to that room, else two balanced lines (the font of the title has no
+    /// « · »: the body font, as before).
+    void drawPlanetLine(const Rect& side, float appear) {
+        UIContext& ui = g_.ui;
+        if (planetNames_.empty())
+            for (const PlanetData* p : g_.content.campaignPlanets()) planetNames_.push_back(p->name);
+        const size_t n = planetNames_.size();
+        const float cx = ui.screenW() * 0.66f, y = ui.screenH() * 0.36f + ui.s(120);
+        const float room = 2.0f * std::min(cx - side.right() - ui.s(24), ui.screenW() - ui.s(24) - cx);
+        if (n == 0 || room < ui.s(60)) return;
+        auto join = [&](size_t from, size_t to) {
+            std::string s;
+            for (size_t i = from; i < to; ++i) s += (s.empty() ? "" : " · ") + planetNames_[i];
+            return s;
+        };
+        auto width = [&](const std::string& s) { return ui.text().measure(s, FontFace::Body, ui.s(26)).x; };
+        const Color c = ui.theme().text.withAlphaF(appear * 0.85f);
+        std::vector<std::string> lines{join(0, n)};
+        float f = ui.fitFont(lines[0], FontFace::Body, 26, room, 0.8f);
+        if (n > 1 && ui.text().measure(lines[0], FontFace::Body, ui.s(f)).x > room) {
+            size_t cut = 1;  // where the two lines are the closest in width
+            for (size_t k = 2; k < n; ++k)
+                if (std::fabs(width(join(0, k)) - width(join(k, n))) < std::fabs(width(join(0, cut)) - width(join(cut, n)))) cut = k;
+            lines = {join(0, cut), join(cut, n)};
+            f = std::min(ui.fitFont(lines[0], FontFace::Body, 26, room), ui.fitFont(lines[1], FontFace::Body, 26, room));
+        }
+        float ly = y;
+        for (const std::string& line : lines) {
+            ui.label(ui.elide(line, FontFace::Body, f, room), {cx, ly}, f, c, Align::Center, FontFace::Body, VAlign::Middle);
+            ly += ui.s(f) * 1.25f;
+        }
     }
 
     /// A newer version exists (announced by Cosmic Online): an alert at the bottom of the menu.
@@ -344,6 +378,7 @@ private:
     GameServices& g_;
     MenuBackground bg_;
     float t_ = 0.0f;
+    std::vector<std::string> planetNames_;  // the campaign's planets, in the order they are played
     bool confirmQuit_ = false;
     float idle_ = 0.0f;        // 2.63: seconds without any input (attract mode)
     uint64_t activity_ = 0;

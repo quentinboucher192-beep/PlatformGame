@@ -43756,6 +43756,12 @@
    ]
   },
   {
+   "fr": "Menu principal › Notifications pour l'installer.",
+   "where": [
+    "game/GameServices.cpp"
+   ]
+  },
+  {
    "fr": "Menu principal › Statistiques : calculées à partir de vos parties, gardées avec vos sauvegardes et, avec un compte, dans la copie privée de votre progression.",
    "where": [
     "ui/screens/SettingsScene.cpp"
@@ -47633,6 +47639,7 @@
   {
    "fr": "Nouvelle version {0} disponible",
    "where": [
+    "game/GameServices.cpp",
     "ui/screens/MainMenuScene.cpp"
    ]
   },
@@ -67559,10 +67566,9 @@
    ]
   },
   {
-   "fr": "Sylvanox · Pyralis · Glacior · Aethra",
+   "fr": "Sylvanox · Pyralis · Glacior · Noyau stellaire · Aethra · Les Confins",
    "where": [
-    "data/trailer/trailer.json",
-    "ui/screens/MainMenuScene.cpp"
+    "data/trailer/trailer.json"
    ]
   },
   {

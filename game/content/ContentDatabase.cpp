@@ -194,6 +194,50 @@ const PlanetData* ContentDatabase::planet(const std::string& id) const {
     return it == planets_.end() ? nullptr : &it->second;
 }
 
+std::vector<const PlanetData*> ContentDatabase::campaignPlanets() const {
+    std::vector<const PlanetData*> left;  // nearest to the star first (planets())
+    for (const PlanetData* p : planets())
+        if (!p->teaser && !levelsForPlanet(p->id).empty()) left.push_back(p);
+    // What each planet's `unlock` waits for: "planet:<id>", "planets:<id>,<id>…", "level:<id>".
+    auto needs = [this](const PlanetData& p) {
+        std::vector<std::string> ids;
+        const std::string& rule = p.unlock;
+        if (rule.rfind("planets:", 0) == 0) {
+            for (size_t start = 8; start <= rule.size();) {
+                const size_t end = rule.find(',', start);
+                ids.push_back(rule.substr(start, end == std::string::npos ? std::string::npos : end - start));
+                if (end == std::string::npos) break;
+                start = end + 1;
+            }
+        } else if (rule.rfind("planet:", 0) == 0) {
+            ids.push_back(rule.substr(7));
+        } else if (rule.rfind("level:", 0) == 0) {
+            ids.push_back(campaignPlanetOf(rule.substr(6)));
+        }
+        return ids;
+    };
+    std::vector<const PlanetData*> out;
+    while (!left.empty()) {
+        // The planets open once those already listed are done (one waiting for a planet outside
+        // the list, or for itself, is open: never left out).
+        auto open = [&](const PlanetData* p) {
+            for (const std::string& id : needs(*p)) {
+                if (id.empty() || id == p->id) continue;
+                const bool waits = std::any_of(left.begin(), left.end(), [&](const PlanetData* q) { return q->id == id; });
+                if (waits) return false;
+            }
+            return true;
+        };
+        const PlanetData* next = nullptr;
+        for (const PlanetData* p : left)
+            if (open(p) && (!next || p->difficulty < next->difficulty)) next = p;
+        if (!next) next = left.front();  // a loop between unlock rules: nearest first
+        out.push_back(next);
+        left.erase(std::find(left.begin(), left.end(), next));
+    }
+    return out;
+}
+
 std::vector<const LevelEntry*> ContentDatabase::levels() const {
     std::vector<const LevelEntry*> v;
     for (const auto& [id, l] : levels_) v.push_back(&l);
