@@ -109,6 +109,10 @@ public:
         int cross = 0;        // 2.84: steps left of a crossing through the boss's body under its shield
         int crossDir = 0;
         int blocked = 0;
+        int brave = 0;        // 2.85: out of a boss fight, steps left it goes on through what made it wait too long
+        int idle = 0;         // 2.85: steps it has not moved while its target was away from it
+        int shootFor = 0;     // 2.85: steps left it strikes its target from a place a wave reaches it from (no way to it)
+        Vec2 idleAt;
         int push = 0;
         int standOff = -1;
         int storeyNode = -1;  // 2.84: the place on another storey it goes to before a sweep    // 2.84: where it waits off the boss's body while no place lets it fire         // 2.84: steps left going on through what is coming under its shield      // 2.84: steps held back at the edge of what is coming          // 2.84: armoured, where its weak point will be once bare (its place is chosen for it)          // 2.84: a jump (1) or a double jump (2) to fire from its top
@@ -206,6 +210,10 @@ private:
     int navZone_ = -1;
     uint32_t tick_ = 0;
     uint32_t seed_ = 0;  // 2.84: setSeed
+    // 2.85: the exit the group gathers at (its zone's serial and passage) and the step it began to wait there: a player
+    // that cannot reach it never keeps the others waiting for ever.
+    uint64_t exitWaitKey_ = 0;
+    uint32_t exitWaitSince_ = 0;
     uint32_t lastFlood_ = 0;  // 2.84: the last step a liquid was coming or up (Plan::reviveWindow)
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
     std::string plan_;
