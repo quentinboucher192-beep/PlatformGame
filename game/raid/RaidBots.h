@@ -95,6 +95,7 @@ public:
         int spot = -1;        // the node it shoots from
         int spotDir = 0;      // the direction it shoots in from there (0..7, kDirs)
         int spotAt = -100000; // the step the spot was chosen
+        Vec2 spotFor;         // 2.84: where its target was when the spot was chosen
         bool jumpShot = false; // its target is out of reach from the ground there: it fires at the top of a double jump
         int hideNode = -1;    // where it hides from a flash
         int escapeDir = 0;    // the side it leaves a danger by (sticky while it lasts)

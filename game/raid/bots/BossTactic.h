@@ -55,6 +55,8 @@ struct BossView {
         bool reserveShield = false;  // the shield kept for the blows marked shieldFirst (and a player at 4 hearts or less)
         float elevate = 0.0f;        // the strikers stand this much above the floor under the boss (its floor blows)
         float keepOff = -1.0f;       // the strikers' distance to its body (< 0: the default)
+        bool frontOnly = false;      // bare, its strikers all in front of it (its weak points are, and it turns to them)
+        bool noLure = false;         // nobody keeps close to it on purpose (its blows reach the nearest whoever it is)
         bool lureOnFloor = false;    // the lure stays on its floor (its blows aimed at the nearest go there)
         bool freeOnClosed = false;   // a player on a closed place dodges and jumps around it (else it stays on it)
         bool hideArmoured = false;   // its body closed to blows: the strikers wait far off it (not where its weak points will be)

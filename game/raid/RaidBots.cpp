@@ -597,6 +597,9 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
             // 2.84: a weak point bare is struck from as close as its parts allow (the space under a skull, between two
             // legs); otherwise the box around them all is kept out of.
             const bool close = view_.exposed && b.target != bossUid_;
+            // 2.84 (fight plan): bare, all in front of it (it turns toward the players: on both sides, its weak points
+            // swap sides under their shots every second).
+            if (close && view_.plan.frontOnly && body && (nd.feet.x - body->center().x) * body->facing < 0.0f) return false;
             if (body && (close ? touchesBody(bodyAt(nd.feet).expanded(clearance)) : bodyAt(nd.feet).intersects(bossBox.expanded(clearance)))) return false;
             // On its side of the boss's body (under its top): the way to the other side goes through it.
             // 2.84: a part of it between (at that height), not the box around them all.
@@ -631,6 +634,7 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
         if (found < 0) continue;
         b.spot = found;
         b.spotDir = dir;
+        b.spotFor = tc;
         b.jumpShot = jump;
         b.goalNode = found;
         b.goal = nav->node(found).feet;
@@ -717,7 +721,7 @@ void TestBots::assignRoles(const RaidRun& run, const std::vector<int>& drivers, 
     int stationNeed = 0;
     for (const bots::Station& s : view_.stations) stationNeed += s.now ? s.need : 0;
     const int wantReviver = n >= 3 ? (n >= 6 && souls >= 2 ? 2 : 1) : 0;
-    const int wantLure = fight && boss && n >= 4 ? 1 : 0;
+    const int wantLure = fight && boss && n >= 4 && !view_.plan.noLure ? 1 : 0;  // 2.84: a plan may want none
     const int wantRunner = fight ? std::clamp(stationNeed, n >= 5 ? 1 : 0, std::max(0, n - wantReviver - wantLure - (n >= 3 ? 1 : 0)))
                                  : (n >= 4 ? 1 : 0);
     std::vector<int> free = drivers;
@@ -1536,7 +1540,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         if (ranged) {
             // A place of the graph that sees it, out of its body and of what is coming (again every half second,
             // or when that place no longer sees it).
-            const bool stale = b.spot < 0 || static_cast<int>(tick_) - b.spotAt > 60 ||
+            // 2.84: its target moved away from where its place was chosen for (an arm that sweeps across the arena): again.
+            const bool moved = b.spot >= 0 && (fc - b.spotFor).lengthSq() > 70.0f * 70.0f;
+            const bool stale = b.spot < 0 || static_cast<int>(tick_) - b.spotAt > 60 || moved ||
                                (nav && b.spot >= 0 && !safeSpot(w, seat, nav->node(b.spot).feet, 60));
             // 2.84 (fight plan): its body closed to blows and nothing else to strike, a good way off it until it opens.
             const bool hide = view_.plan.hideArmoured && bossFight && !view_.bodyTakesDamage && foe == boss;
@@ -1848,9 +1854,34 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             }
         }
     }
+    // ------------------------------------------------------------ 2.84: nailed (Dreadfang's claw): it breaks its own claw
+    // Held on its mark, the claw at its feet: its blade on it (turned toward it), its shield against the claw's bites.
+    const bool nailed = fight_ && std::find(view_.held.begin(), view_.held.end(), seat) != view_.held.end();
+    if (nailed) {
+        const Enemy* claw = nullptr;
+        float cd = 90.0f * 90.0f;
+        for (const bots::Target& t : view_.targets)
+            if (t.priority >= 30 && t.melee)
+                if (const Enemy* e = enemyOf(w, t.uid); e && (e->center() - me.center()).lengthSq() < cd) {
+                    cd = (e->center() - me.center()).lengthSq();
+                    claw = e;
+                }
+        if (claw) {
+            const float dx = claw->center().x - me.center().x;
+            dir = 0;
+            forced = 0;
+            if (std::fabs(dx) > 2.0f && (dx >= 0.0f) != (me.facing >= 0.0f)) dir = dx > 0.0f ? 1 : -1;
+            else if (b.attackCool <= 0) {
+                held |= 1u << kAttack;
+                b.attackCool = 22;
+            }
+            raiseShield = true;
+            react = "brise la griffe qui le cloue";
+        }
+    }
     // ------------------------------------------------------------ what it does once there
     bool fired = false;
-    if (!fleeing && foe && !dodging) {
+    if (!fleeing && foe && !dodging && !nailed) {
         const Vec2 d = fc - me.center();
         const bool melee = !ranged || !sh || me.energy < 10.0f;
         // Never into the boss's body for a blade (it hurts on contact).
@@ -2003,10 +2034,12 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     // What a good player does in a fight: whatever is about to touch it in the next sixth of a second (a mark, a shot, a
     // beam, the boss's body or its blow), the shield goes up — not only against a blow it cannot leave any more. Never
     // while its last hit still protects it (wasted), nor for what it does not stop (a well's pull, a sector, a flood).
-    if (fight_ && shieldReady && !raiseShield && !me.invulnerable() && lv.shieldSense >= 1.0f && !(b.task == Task::Mechanism && !holding && me.health > 3) &&
-        !(view_.plan.reserveShield && me.health > 4)) {
+    if (fight_ && shieldReady && !raiseShield && !me.invulnerable() && lv.shieldSense >= 1.0f && !(b.task == Task::Mechanism && !holding && me.health > 3)) {
         const Rect near = me.box.expanded(8.0f);
+        // 2.84 (fight plan): its shield kept for one blow — except against the boss's own body and blows (its touch).
+        const bool reserve = view_.plan.reserveShield && me.health > 4;
         for (const Danger& d : dangers_) {
+            if (reserve && !d.body && !d.attack) continue;
             if ((d.seat >= 0 && d.seat != seat) || d.in > (d.attack ? kSimHz / 4 : 20)) continue;  // its own blows: from their wind-up
             bool hit = false;
             switch (d.kind) {

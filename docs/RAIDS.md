@@ -2938,6 +2938,14 @@ carnage : ses coups au contact (sa ruée, ses griffes sous la glace, son éventa
 de lui) et ses griffes clouantes mettent le groupe à terre pendant que ses chaînes sont tenues. Attendre loin de lui
 pendant son armure a été essayé (des groupes éliminés plus tôt).
 
+Deuxième tour (8 départs) : le bouclier gardé cède devant son corps et ses coups au contact ; un joueur cloué brise sa
+propre griffe (lame tournée vers elle, bouclier contre ses morsures) ; une place d'où tirer est refaite dès que sa cible a
+bougé de 70 px (le bras qui traverse l'arène) ; plus d'appât (moins de joueurs à terre). Essayé puis laissé de côté (`Plan::frontOnly`) : à nu, tous devant lui (ses
+jointures sont devant sa griffe et changent de côté quand il se retourne) — ses jointures tombaient plus lentement.
+Dreadfang : 0 / 8, 38 % de sa vie ôtée, 3 départs sur 8 tiennent les 15 min (560 à 900 s, 15 à 38 morts). Ce qui
+bloque : sa phase 2 avance à peine (de 66 à 55-65 %) — ses chaînes tenues et ses jointures frappées sous ses coups, des
+expositions qui ôtent la moitié de la vie de ses jointures — et la phase 1 prend 350 à 420 s (240 s invincibles).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`

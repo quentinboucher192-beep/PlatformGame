@@ -9277,6 +9277,12 @@
    ]
   },
   {
+   "fr": "brise la griffe qui le cloue",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Brise-sorts",
    "where": [
     "data/achievements/achievements.json"
