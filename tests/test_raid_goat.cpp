@@ -762,3 +762,133 @@ TEST_CASE("raid GOAT (2.84): the simulated players' choices depend on the game o
     CHECK(a.size() == static_cast<size_t>(secs));
     CHECK(a == b);
 }
+
+/// 2.85: a whole branch played by its simulated players alone (8 of them, the administrator AFK, the test's rescues off), from
+/// its armory through its zones to its lair. The objectives of a pair are done by distinct groups: the other half of each
+/// pair given as done by another group (one group alone could never open some branches' generators). Tuning runs print the
+/// zone, the branch's state and each player's position and thought every COSMIC_PROBE_EVERY seconds (COSMIC_BRANCH_PROBE).
+namespace {
+
+struct BranchRun {
+    double lairAt = -1.0;    // seconds to the lair's door (-1: not within the limit)
+    double relicAt = -1.0;   // the relic of the secret zone taken
+    double ambushAt = -1.0;  // first step in the zone of the ambushes that open the lair
+    uint32_t mask = 0;
+    int zone = 0;
+    double ms = 0.0;
+};
+
+BranchRun branchToLair(Svc& s, const std::string& part, uint32_t seed, int limitSeconds, bool print) {
+    BranchRun out;
+    const raid::Branch* b = raid::Branch::builtin(part);
+    CHECK(b != nullptr);
+    if (!b) return out;
+    raid::RaidRun::Test t;
+    t.on = true;
+    t.invincible = false;
+    t.players = 8;
+    raid::TestSession session(s.ws(), *b, t);
+    session.setAdminSeated(true);
+    session.setAdminBot(true);
+    session.setRescues(false);
+    session.setBotsInvincible(std::getenv("COSMIC_PROBE_MORTAL") == nullptr);
+    session.setSkill(raid::BotSkill::Expert);
+    session.setBotSeed(seed);
+    uint32_t state = 0;
+    std::vector<std::string> pairs;
+    for (const raid::ObjectiveInfo& o : b->objectives) {
+        if (o.pair.empty()) continue;
+        if (std::find(pairs.begin(), pairs.end(), o.pair) == pairs.end()) pairs.push_back(o.pair);  // the first: this group's
+        else state |= 1u << o.index;                                                                // the others: another group's
+    }
+    const char* z0 = print ? std::getenv("COSMIC_PROBE_ZONE") : nullptr;
+    if (const char* st = print ? std::getenv("COSMIC_PROBE_STATE") : nullptr) state = static_cast<uint32_t>(std::strtoul(st, nullptr, 16));
+    session.setBranchState(state);
+    CHECK(session.begin(z0 ? std::atoi(z0) : raid::RaidRun::kArmory));
+    int relic = -1, ambushZone = -1;
+    for (const raid::ObjectiveInfo& o : b->objectives)
+        if (o.optional && b->zone(o.zone) && b->zone(o.zone)->secret) relic = o.index;
+    for (const raid::ZoneInfo& z : b->zones)
+        if (!z.boss && b->ambushesOpenLair(z.id)) ambushZone = z.id;
+    const int every = (std::getenv("COSMIC_PROBE_EVERY") ? std::atoi(std::getenv("COSMIC_PROBE_EVERY")) : 20) * kSimHz;
+    const int limit = limitSeconds * kSimHz;
+    const auto t0 = std::chrono::steady_clock::now();
+    int zone = -99;
+    for (int st = 0; st < limit; ++st) {
+        session.step(InputFrame{});
+        const raid::RaidRun& run = session.run();
+        const double now = (st + 1) / static_cast<double>(kSimHz);
+        if (relic >= 0 && out.relicAt < 0.0 && raid::Branch::done(run.mask(), relic)) out.relicAt = now;
+        for (int k = 0; k < 8 && out.ambushAt < 0.0; ++k)
+            if (run.zoneOf(k) == ambushZone) out.ambushAt = now;
+        if (print && (run.zone() != zone || st % every == 0)) {
+            zone = run.zone();
+            int to = 0;
+            const int exit = raid::TestBots::chooseExit(run, &to);
+            std::printf("  %6.0f s zone %d done %08x exit %d->%d%s |", st / double(kSimHz), zone, run.mask(), exit, to, run.wiped() ? " DÉCIMÉ" : "");
+            const GameWorld& w = run.world();
+            for (int k = 0; k < w.teamSize() && k < 8; ++k) {
+                const Vec2 c = w.member(k).player ? w.member(k).player->box.center() : Vec2{};
+                std::printf(" %d(%.0f,%.0f)p%d z%d %s", k + 1, c.x, c.y, static_cast<int>(w.member(k).presence), run.zoneOf(k), session.bots().thought(k).intent.substr(0, 40).c_str());
+                if (std::getenv("COSMIC_PROBE_DETAIL") && k < static_cast<int>(session.bots().bots().size())) {
+                    const auto& bb = session.bots().bots()[static_cast<size_t>(k)];
+                    std::printf("[t%d g(%.0f,%.0f) n%d p%zu/%zu still%d '%s' '%s']", static_cast<int>(bb.task), bb.goal.x, bb.goal.y, bb.goalNode, bb.at,
+                                bb.path.size(), bb.still, bb.moveText.c_str(), session.bots().thought(k).move.c_str());
+                    if (const Enemy* e = bb.target ? w.findEnemy(bb.target) : nullptr) {
+                        const Player& pl = w.playerAt(k);
+                        std::string pw;
+                        for (const auto& x : pl.powers()) pw += x->id().substr(0, 4) + ",";
+                        std::printf("[foe(%.0f,%.0f %.0fx%.0f) e%.0f %s spot%d r%d sa%d]", e->center().x, e->center().y, e->box.w, e->box.h, pl.energy,
+                                    pw.c_str(), bb.spot, bb.ranged ? 1 : 0, bb.spotAt);
+                    }
+                }
+            }
+            std::printf("\n");
+        }
+        // Its players change zone each on their own (2.78): the lair reached by the first of them in it.
+        bool lair = false;
+        for (int k = 0; k < 8 && !lair; ++k) {
+            const int z = run.zoneOf(k);
+            lair = z >= 1 && b->zone(z) && b->zone(z)->boss;
+        }
+        if (lair) {
+            out.lairAt = now;
+            break;
+        }
+    }
+    out.mask = session.run().mask();
+    out.zone = session.run().zone();
+    out.ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
+    return out;
+}
+
+}  // namespace
+
+TEST_CASE("raid bots probe (2.85): a whole branch from its armory, simulated players only (COSMIC_BRANCH_PROBE=part)") {
+    const char* part = std::getenv("COSMIC_BRANCH_PROBE");
+    if (!part) return;
+    Svc s;
+    const int minutes = std::getenv("COSMIC_PROBE_MIN") ? std::atoi(std::getenv("COSMIC_PROBE_MIN")) : 30;
+    const char* seed = std::getenv("COSMIC_PROBE_SEED");
+    const BranchRun r = branchToLair(s, part, seed ? static_cast<uint32_t>(std::atoi(seed)) : 0u, minutes * 60, true);
+    std::printf("  %s : antre %.0f s · relique %.0f s · zone des embuscades %.0f s · %.0f ms\n", part, r.lairAt, r.relicAt, r.ambushAt, r.ms);
+}
+
+TEST_CASE("raid bots (2.85): alone in a whole branch, the simulated players go from the armory to the lair — the relic first, then the ambushes") {
+    // The order of a branch (docs/RAIDS.md §22): its zones, the relic of its secret zone as soon as its passage is open (before
+    // the long zone of the ambushes before the lair), that zone, then the lair — never waiting where an objective is in reach.
+    // One start, the simulated players invincible (their way, not their fights, measured), within 25 min of game. The Crâne
+    // by default (about a minute); the seven branches with COSMIC_RAID_ALL_BRANCHES (about 10 min).
+    Svc s;
+    std::vector<const char*> parts{"crane"};
+    if (std::getenv("COSMIC_RAID_ALL_BRANCHES")) parts = {"bras_droit", "crane", "bras_gauche", "jambe_droite", "abdomen", "jambe_gauche", "torse"};
+    for (const char* part : parts) {
+        const BranchRun r = branchToLair(s, part, 0, 25 * 60, false);
+        std::printf("  %-13s antre %s (%.0f s de jeu) · relique à %.0f s · zone des embuscades à %.0f s · état %08x zone %d · %.0f ms\n", part,
+                    r.lairAt > 0.0 ? "atteinte" : "PAS ATTEINTE", r.lairAt, r.relicAt, r.ambushAt, r.mask, r.zone, r.ms);
+        CHECK(r.lairAt > 0.0);
+        CHECK(r.relicAt > 0.0);
+        CHECK(r.ambushAt > 0.0);
+        CHECK(r.relicAt < r.ambushAt);
+    }
+}

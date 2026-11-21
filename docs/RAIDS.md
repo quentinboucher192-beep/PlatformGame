@@ -1282,11 +1282,26 @@ l'horloge, l'écran ni le réseau) :
 * **Ce qu'il reste à faire** : les mêmes données que le panneau du §19 — les objectifs de la branche pas encore faits dans
   la zone (générateurs, leviers, arènes, gardiens, reliques ; une paire dont ce groupe a déjà fait l'autre moitié est
   laissée), les plaques à tenir ensemble, les embuscades en cours, le Gigaboss, puis la **sortie** vers la prochaine zone
-  à finir (recherche en largeur sur les passages ouverts : les zones à finir d'abord, puis la relique de la zone secrète,
-  l'antre en dernier). Les tâches sont redistribuées tous les quarts de seconde, les plus proches d'abord : **deux par
-  générateur** (seulement ceux qui portent un tir : l'onde ou le boomerang), un par levier ou relique, **le bon nombre
-  sur chaque plaque** (son compte moins les joueurs qui y sont déjà), tous les autres sur le combat. Quand
-  l'administrateur est là et joue, le groupe l'**attend près de la sortie** ; absent ou AFK, il y va seul.
+  à finir (recherche en largeur sur les passages ouverts). 2.85 : **la relique de la zone secrète d'abord**, dès que son
+  passage est ouvert (un détour de quelques salles, avant la longue zone des embuscades), puis les zones à finir, la zone
+  des embuscades qui ouvrent l'antre après les autres, **l'antre en dernier** (avant 2.85 : la relique après la zone des
+  embuscades). Les tâches sont redistribuées tous les quarts de seconde, les plus proches d'abord : **deux par
+  générateur** (seulement ceux qui portent un tir : l'onde ou le boomerang), un par levier ou relique (2.85 : la relique,
+  posée au-dessus du sol de sa grotte, est prise d'un saut, comme un orbe en l'air), **le bon nombre sur chaque plaque**
+  (son compte moins les joueurs qui y sont déjà), tous les autres sur le combat. Dans une embuscade (2.85), une créature
+  en l'air ou au-dessus de leur tête (drone, spectre, bombardier, ennemi d'un étage plus haut) est visée à l'onde depuis
+  la place la plus proche d'où elle l'atteint (debout d'abord, sinon du haut d'un saut ou d'un double saut ; chacun la
+  sienne, jamais contre elle), ou frappée à la lame d'un saut. Une créature qu'il n'arrive pas à rejoindre (4 s sans un
+  pas vers elle) est visée de même pendant 8 s ; ce qu'il attend au bord de son chemin et qui ne passe pas est traversé
+  après 4 s (bouclier levé s'il le peut). Hors combat de Gigaboss seulement : les combats des antres ne changent pas. Quand
+  l'administrateur est là et joue, le groupe l'**attend près de la sortie** ; absent ou AFK, il y va seul. 2.85 : un
+  joueur qui ne peut pas rejoindre la sortie ne retient plus le groupe : après 30 s d'attente les autres y vont (il suit).
+  Test : `raid bots (2.85): alone in a whole branch…` (`tests/test_raid_goat.cpp`) — le Crâne (les sept branches avec
+  `COSMIC_RAID_ALL_BRANCHES`, environ 5 min), joué seul par ses 8 joueurs simulés (l'administrateur AFK, invincibles,
+  sans les sauvetages du test ; l'autre moitié de chaque paire donnée comme faite par un autre groupe) du vestiaire à
+  l'antre (le premier d'entre eux qui y entre) en moins de 25 min de jeu, la relique prise avant la zone des embuscades.
+  Mesure 2.85 (graine 0) : les sept branches y arrivent en 535 à 811 s de jeu, la relique entre 47 et 161 s, toujours
+  avant la zone des embuscades (avant la correction : aucune antre atteinte en 40 min).
 * **Se déplacer** : un graphe de la zone (`raid::NavGraph`) construit depuis le monde de collision du niveau — une place
   tous les 16 px sur chaque sol et chaque plateforme traversable (avec la place de passer, hors des dangers durables :
   pics, lave, zone de dégâts qui n'est pas le liquide périodique), les échelles, la route de chaque plateforme mobile —,

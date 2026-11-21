@@ -5020,6 +5020,12 @@
    ]
   },
   {
+   "fr": "attend son bouclier pour réanimer",
+   "where": [
+    "game/raid/RaidBots.cpp"
+   ]
+  },
+  {
    "fr": "Attend un objectif",
    "where": [
     "game/raid/nav/Intent.cpp"

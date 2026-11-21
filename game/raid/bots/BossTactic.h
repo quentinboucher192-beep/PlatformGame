@@ -65,6 +65,7 @@ struct BossView {
         bool noLure = false;         // nobody keeps close to it on purpose (its blows reach the nearest whoever it is)
         bool lureOnFloor = false;    // the lure stays on its floor (its blows aimed at the nearest go there)
         bool freeOnClosed = false;   // a player on a closed place dodges and jumps around it (else it stays on it)
+        bool reviveShielded = false; // a soul in its body approached only with the shield ready
         bool hideArmoured = false;   // its body closed to blows: the strikers wait far off it (not where its weak points will be)
     } plan;
 };
