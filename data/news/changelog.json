@@ -1,4 +1,16 @@
 {
+  "2.84.0": [
+    "ADMINISTRATION › Raids devient générique : tout vient du catalogue des raids — liste « Raid » avec icônes, affiche du raid (art, accroche, parties, formats, difficulté, « Fiche du raid › »), formats et difficulté du raid, onglet « Tester le raid », chaque événement avec l'icône et « Raid — Format ».",
+    "Cadeaux : un administrateur peut envoyer 1 colis de N cadeaux au lieu de N cadeaux séparés ; le joueur ne voit ni son contenu ni leur nombre, et les objets sortent un par un de la même boîte (Suivant, Équiper pour chacun, puis « Le colis est vide »).",
+    "Survol à la souris : un bouton du nouveau style reste allumé (glissement, halo, reflet en boucle) tant que le pointeur reste dessus.",
+    "CLASSEMENTS › niveau EXTRÊME : chaque tentative de la course à la vérification a de nouveau son bouton ▶ pour voir son replay.",
+    "Films et histoires : le pointeur de la souris est caché pendant la lecture, en mode Film ou non, et revient deux secondes quand la souris bouge.",
+    "SUCCÈS : en entrant, un bandeau « Nouveaux succès depuis votre dernière visite » les nomme (cliquez pour y aller, « Voir les nouveaux » les parcourt) ; chacun porte la pastille NOUVEAU et un halo doré ; le menu principal compte ceux à voir.",
+    "Statistiques : tous les niveaux de la campagne, planète par planète (Aethra, Noyau stellaire, Les Confins compris), et tous les boss du jeu (gardiens, giga-boss, Gigaboss d'Asterion et son Cœur).",
+    "Les pastilles NOUVEAU reviennent sur les icônes en losange (menu principal, carte des planètes).",
+    "En équipe et en raid, la tablette de pouvoir ramassée n'est annoncée (message, son, flash) qu'au joueur qui l'a prise.",
+    "Raid : l'entrée « Menu du raid » quitte la pause (Tab ou L3 l'ouvrent toujours) ; la pause prend le nouveau style."
+  ],
   "2.83.0": [
     "Notifications : une nouvelle version publiée pendant que vous jouez s'annonce aussitôt, où que vous soyez (notification à l'écran, compteur Notifications du menu principal à jour) ; le jeu la cherche au démarrage, quand Cosmic Online redevient accessible, après une connexion, puis toutes les 10 minutes.",
     "Menu principal : la ligne sous le titre nomme les six planètes dans l'ordre de la campagne (Noyau stellaire et Les Confins compris), lue dans le contenu du jeu ; la bande-annonce aussi.",

@@ -2097,6 +2097,12 @@
    ]
   },
   {
+   "fr": "ADMINISTRATION › Raids devient générique : tout vient du catalogue des raids — liste « Raid » avec icônes, affiche du raid (art, accroche, parties, formats, difficulté, « Fiche du raid › »), formats et difficulté du raid, onglet « Tester le raid », chaque événement avec l'icône et « Raid — Format ».",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "ADMINISTRATION › Raids › « Tester Asterion » : le Cœur d'Asterion est testable, avec sa phase de départ (1 à 4), les parties du titan à simuler comme tombées (pour voir leurs effets) et les reliques ; un test ne rapporte jamais rien. Il se joue comme une vraie instance, avec les joueurs simulés.",
    "where": [
     "data/news/changelog.json"
@@ -9853,6 +9859,12 @@
    ]
   },
   {
+   "fr": "Cadeaux : un administrateur peut envoyer 1 colis de N cadeaux au lieu de N cadeaux séparés ; le joueur ne voit ni son contenu ni leur nombre, et les objets sortent un par un de la même boîte (Suivant, Équiper pour chacun, puis « Le colis est vide »).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Cadre",
    "where": [
     "ui/screens/PlayerProfileScene.cpp",
@@ -14081,6 +14093,12 @@
   },
   {
    "fr": "CLASSEMENTS › NIVEAU : sur un niveau EXTRÊME, le panneau de droite montre la course à la vérification (Solo, Duo, Trio : rang, joueurs, meilleure progression, temps et date) tant que le niveau n'est pas vérifié ; ensuite ses records reviennent, la course restant au choix.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "CLASSEMENTS › niveau EXTRÊME : chaque tentative de la course à la vérification a de nouveau son bouton ▶ pour voir son replay.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -24407,6 +24425,12 @@
    ]
   },
   {
+   "fr": "En équipe et en raid, la tablette de pouvoir ramassée n'est annoncée (message, son, flash) qu'au joueur qui l'a prise.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "en-tête absent",
    "where": [
     "game/online/Spectate.cpp"
@@ -27341,6 +27365,12 @@
    ]
   },
   {
+   "fr": "Films et histoires : le pointeur de la souris est caché pendant la lecture, en mode Film ou non, et revient deux secondes quand la souris bouge.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "filtre",
    "where": [
     "ui/screens/GiftsScene.cpp"
@@ -28007,6 +28037,12 @@
     "server/src/leaderboards.ts",
     "server/src/levels.ts",
     "server/src/validate.ts"
+   ]
+  },
+  {
+   "fr": "formats",
+   "where": [
+    "game/raid/RaidCatalog.cpp"
    ]
   },
   {
@@ -41209,6 +41245,12 @@
    "fr": "Les parties s'envoient en application/octet-stream.",
    "where": [
     "server/src/backups.ts"
+   ]
+  },
+  {
+   "fr": "Les pastilles NOUVEAU reviennent sur les icônes en losange (menu principal, carte des planètes).",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
@@ -57154,6 +57196,12 @@
    ]
   },
   {
+   "fr": "Raid : l'entrée « Menu du raid » quitte la pause (Tab ou L3 l'ouvrent toujours) ; la pause prend le nouveau style.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raid annulé",
    "where": [
     "game/online/Raids.cpp"
@@ -66850,6 +66898,12 @@
    ]
   },
   {
+   "fr": "Statistiques : tous les niveaux de la campagne, planète par planète (Aethra, Noyau stellaire, Les Confins compris), et tous les boss du jeu (gardiens, giga-boss, Gigaboss d'Asterion et son Cœur).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "STATISTIQUES DES BOSS",
    "where": [
     "ui/screens/BossStatsScene.cpp"
@@ -67063,6 +67117,12 @@
   },
   {
    "fr": "Succès : chaque succès ajouté porte la pastille dans la liste et le panneau ; sur la toile, un point doré marque les nouveaux et la pastille apparaît près du nom en zoomant.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "SUCCÈS : en entrant, un bandeau « Nouveaux succès depuis votre dernière visite » les nomme (cliquez pour y aller, « Voir les nouveaux » les parcourt) ; chacun porte la pastille NOUVEAU et un halo doré ; le menu principal compte ceux à voir.",
    "where": [
     "data/news/changelog.json"
    ]
@@ -67747,6 +67807,12 @@
    "fr": "Survivant",
    "where": [
     "data/achievements/achievements.json"
+   ]
+  },
+  {
+   "fr": "Survol à la souris : un bouton du nouveau style reste allumé (glissement, halo, reflet en boucle) tant que le pointeur reste dessus.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
