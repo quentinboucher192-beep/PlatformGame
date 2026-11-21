@@ -626,11 +626,25 @@ Results parseResults(const Json& j) {
         for (const Json& f : fights) {
             const int phase = jget<int>(f, "phase", 0);
             const std::string boss = jstr(f, "boss");  // 2.69 (phase 4B): several gigaboss
+            if (!boss.empty() && phase >= 1) {  // 2.86: its best fight (the bars of « Contributions »)
+                bool known = false;
+                for (auto& bp : r.bossPhases)
+                    if (bp.first == boss) {
+                        bp.second = std::max(bp.second, std::min(phase, 4));
+                        known = true;
+                    }
+                if (!known) r.bossPhases.push_back({boss, std::min(phase, 4)});
+            }
             r.fights.push_back((boss.empty() ? std::string() : boss + " · ") + jstr(f, "group") + " · " +
                                (phase >= 4 ? std::string("vaincu") : "phase " + std::to_string(std::clamp(phase, 1, 3)) + " / 3"));
         }
     for (const Json& b : jfield(giga, "defeated_bosses", Json::array()))
         if (b.is_string()) r.defeatedBosses.push_back(b.get<std::string>());
+    // 2.86: the heart's shared health (validated parts only), null while it is sealed.
+    const Json heart = jfield(j, "heart", Json());
+    r.heartFallen = jget<bool>(heart, "fallen", false);
+    r.heartHealth = std::clamp(jget<int>(heart, "health", -1), -1, 10000);
+    r.heartPhase = r.heartHealth >= 0 ? std::clamp(jget<int>(heart, "phase", 0), 0, 4) : 0;
     const Json clans = jfield(j, "clans", Json());
     if (clans.is_array())
         for (const Json& c : clans) {

@@ -111,6 +111,10 @@ describe("raids phase 6: the Cœur d'Asterion", () => {
         const ev = await worldEvent([a]);
         const sealed = await api("POST", `${V}/raids/events/${ev}/branches/coeur/join`, { token: a.players[0]!.token, body: {} });
         expect(sealed.status).toBe(409);
+        // 2.86: sealed: no health nor phase in the results (nothing to show on its bar).
+        const res = await api("GET", `${V}/raids/events/${ev}/results`, { token: a.players[0]!.token });
+        expect(res.status).toBe(200);
+        expect(res.body.data.heart).toEqual({ open: false, fallen: false, health: null, phase: null });
         expect(sealed.body.error.code).toBe("HEART_SEALED");
         for (const c of CATALOGS.slice(0, 6)) await accept(ev, c, c.objectives.find((o) => o.role === "gigaboss")!.id);
         expect((await api("POST", `${V}/raids/events/${ev}/branches/coeur/join`, { token: a.players[0]!.token, body: {} })).status).toBe(409);
@@ -136,9 +140,14 @@ describe("raids phase 6: the Cœur d'Asterion", () => {
         await openHeart(ev);
         const x = await heartInstance(ev, a);
         const y = await heartInstance(ev, b);
+        // 2.86: the results give its shared health and phase (the bars of « Contributions »): validated parts only.
+        const heartOf = async () => (await api("GET", `${V}/raids/events/${ev}/results`, { token: b.players[0]!.token })).body.data.heart;
+        expect(await heartOf()).toEqual({ open: true, fallen: false, health: 10000, phase: 1 });
         expect((await x.send(a.players[0]!, { kind: "heart", damage: 6000 })).body.data.status).toBe("pending");
+        expect((await heartOf()).health).toBe(10000);  // one game's claim alone changes nothing
         expect((await x.send(a.players[1]!, { kind: "heart", damage: 6000 })).body.data.status).toBe("accepted");
         expect(await damageOf(x.inst)).toBe(6000);
+        expect(await heartOf()).toEqual({ open: true, fallen: false, health: 4000, phase: 3 });
         // A later table lower than the one kept never lowers it (a late or repeated report).
         for (const p of a.players) await x.send(p, { kind: "heart", damage: 5000, tick: TICK + 1200 });
         expect(await damageOf(x.inst)).toBe(6000);
@@ -193,6 +202,8 @@ describe("raids phase 6: the Cœur d'Asterion", () => {
         const titan = await api("GET", `${V}/raids/events/${ev}/titan`, { token: a.players[0]!.token });
         expect(titan.body.data.heart.state).toBe("tombe");
         expect(titan.body.data.body.coeur).toBe("detruit");
+        const res = await api("GET", `${V}/raids/events/${ev}/results`, { token: a.players[0]!.token });
+        expect(res.body.data.heart).toEqual({ open: true, fallen: true, health: 0, phase: 4 });
         const sheet = await api("GET", `${V}/raids/events/${ev}`, { token: a.players[0]!.token });
         expect(sheet.body.data.event?.body?.coeur ?? sheet.body.data.body?.coeur).toBe("detruit");
     });

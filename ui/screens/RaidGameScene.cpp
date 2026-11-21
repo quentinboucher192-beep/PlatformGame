@@ -1771,7 +1771,6 @@ public:
     contrib::Model simContribModel() const {
         contrib::Model m;
         m.embedded = true;
-        m.tabKey = const_cast<RaidGameScene*>(this)->menuKeyName();
         m.partKey = keyNames(Action::MenuTabPrev) + " / " + keyNames(Action::MenuTabNext);
         m.extraKeys = keyNames(Action::RaidMap) + " : onglet suivant du panneau";
         m.legend = "Test local : chiffres comptés par la simulation de chaque groupe, rien n'est envoyé au serveur.";
@@ -1807,6 +1806,18 @@ public:
                                              : asterion::State::Intact;
             part.fallen = heart ? sim_->heartFallen() : sim_->gigabossDown(b);
             part.relic = !heart && simRelic(b);
+            // 2.86: its gigaboss's bar: the real health in the simulations of the groups in its lair; several groups
+            // there apart: the lowest (the best progress).
+            if (!part.fallen)
+                for (const auto& gp : groups) {
+                    float h = 0.0f;
+                    int ph = 0;
+                    if (gp->branch != b || gp->wiped || !contrib::lairBoss(gp->session->run(), h, ph)) continue;
+                    if (part.health < 0.0f || h < part.health) {
+                        part.health = h;
+                        part.phase = ph;
+                    }
+                }
             if (heart && !sim_->heartOpen()) {
                 // Closed until the seven have fallen: what remains.
                 std::string left;
@@ -3209,7 +3220,6 @@ public:
     /// (the newest first), and the whole raid (every zone of the instance added up).
     contrib::Model contribModel() const {
         contrib::Model m;
-        m.tabKey = const_cast<RaidGameScene*>(this)->menuKeyName();
         m.legend = test_ ? "Test local : chiffres comptés par la simulation, rien n'est envoyé au serveur."
                          : "Chiffres comptés par la simulation (les mêmes sur tous les jeux du groupe), validés par la majorité.";
         m.tooltipNote = test_ ? "Compté par la simulation (test local)." : "Compté par la simulation, validé par la majorité du groupe.";
@@ -3246,6 +3256,9 @@ public:
             }
             p.fallen = branch_->part == raid::kHeartPart ? run_->heartWon() : fallen;
             p.state = p.fallen ? asterion::State::Destroyed : asterion::State::Attacked;
+            // 2.86: its gigaboss's bar (the heart's: its shared health, the other instances' validated parts in it):
+            // this instance's simulation, in its lair only.
+            if (!p.fallen) contrib::lairBoss(*run_, p.health, p.phase);
             if (entry_.group > 0) p.groups.push_back(entry_.group);
             p.whole = m.raid;
             // Its zones' tabs: each finished zone's table (the simulation's, agreed by the group), the zone where it is.

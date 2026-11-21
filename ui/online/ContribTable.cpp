@@ -10,13 +10,17 @@
 #include "engine/core/Paths.h"
 #include "engine/input/InputManager.h"
 #include "game/GameServices.h"
+#include "game/enemies/Enemy.h"
+#include "game/gameplay/GameWorld.h"
 #include "game/online/Raids.h"
 #include "game/raid/RaidBranch.h"
+#include "game/raid/RaidRun.h"
 #include "ui/online/RaidMenu.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/AsterionFilm.h"
 #include "ui/screens/CreatureArt.h"
 #include "ui/widgets/AsterionFigure.h"
+#include "ui/widgets/CosmicStyle.h"
 #include "ui/widgets/UIContext.h"
 
 namespace cosmic::contrib {
@@ -131,18 +135,17 @@ void triangleDown(UIContext& ui, Vec2 c, float s, Color col) { ui.r().fillTriang
 
 std::string keysLine(const Model& m, bool zones, bool parts) {
     if (parts) {  // 2.79: with the titan, each piece translated on its own (the keys' names change), the whole kept as is
-        const std::string tabKey = m.tabKey.empty() ? std::string("Tab") : m.tabKey;
-        std::vector<std::string> pieces = {i18n::tr(m.partKey + " : partie du titan"),    i18n::tr(tabKey + " : zone suivante"),
-                                           i18n::tr("flèches gauche / droite : trier"),   i18n::tr("flèches haut / bas : joueurs"),
-                                           i18n::tr("Entrée / A ou clic : ses zones"),    i18n::tr("molette ou barre : défiler")};
+        // 2.86: no « Tab » here any more (the raid menu's key): Entrée / A goes to the part's next zone.
+        std::vector<std::string> pieces = {i18n::tr(m.partKey + " : partie du titan"),        i18n::tr("flèches gauche / droite : trier"),
+                                           i18n::tr("flèches haut / bas : joueurs"),           i18n::tr("Entrée / A : zone suivante"),
+                                           i18n::tr("Entrée / A ou clic sur un joueur : ses zones"), i18n::tr("molette ou barre : défiler")};
         if (!m.extraKeys.empty()) pieces.push_back(i18n::tr(m.extraKeys));
         pieces.push_back(i18n::tr("Échap / B : fermer"));
         std::string s;
         for (const std::string& piece : pieces) s += (s.empty() ? "" : " · ") + piece;
         return i18n::keep(s);
     }
-    const std::string tab = m.tabKey.empty() ? std::string("LB RB") : parts ? m.tabKey : m.tabKey + " / LB RB";
-    std::string s = tab + " : onglets · flèches gauche / droite : trier · survol ou flèches haut / bas : détails";
+    std::string s = m.partKey + " : onglets · flèches gauche / droite : trier · survol ou flèches haut / bas : détails";
     if (parts) s += " · " + m.partKey + " : partie du titan";
     s += " · molette ou barre : défiler";
     if (zones) s += " · Entrée / A : zone suivante";
@@ -400,7 +403,11 @@ bool View::handleKeys(const InputManager& in, const Model& m) {
         choose(((part + 1 + (next ? 1 : -1)) % n + n) % n - 1);
     }
     const Part* p = partOf(m, *this);
-    if (keys.fresh(in, Action::RaidMenu) && p && !p->tabs.empty()) {
+    // 2.86: Entrée / A opens the selected row (its zones), else goes to the part's next zone (never Tab: the raid
+    // menu's key does nothing on this screen).
+    const bool confirm = keys.fresh(in, Action::MenuConfirm);
+    if (confirm && selected >= 0) toggle = true;
+    else if (confirm && p && !p->tabs.empty()) {
         // The part's next zone reached (« Toute la branche » after the last).
         const int n = static_cast<int>(p->tabs.size()) + 1;
         for (int k = 1; k < n; ++k) {
@@ -419,7 +426,6 @@ bool View::handleKeys(const InputManager& in, const Model& m) {
     if (step != 0) sort = static_cast<Col>((static_cast<int>(sort) + step + kCols) % kCols);
     if (keys.pressed(in, Action::MenuUp)) selected = std::max(-1, selected - 1);
     if (keys.pressed(in, Action::MenuDown)) selected = selected + 1;
-    if (keys.fresh(in, Action::MenuConfirm) && selected >= 0) toggle = true;
     return false;
 }
 
@@ -431,7 +437,7 @@ bool View::handleKeys(const InputManager& in, int zones, int parts) {
         // -1 (« Raid entier ») then each part, around.
         const int n = parts + 1;
         choose(((part + 1 + (next ? 1 : -1)) % n + n) % n - 1);
-    } else if (prev || next || keys.fresh(in, Action::RaidMenu)) {
+    } else if (prev || next) {
         tab = 1 - tab;
         selected = -1;
     }
@@ -732,22 +738,140 @@ Tooltip tooltip(UIContext& ui, const Model& m, const View& v, const Prepared& p,
     return tt;
 }
 
+// ------------------------------------------------------------------------------------- 2.86: the bosses' bars
+
+std::string healthText(const Part& p) {
+    if (p.fallen) return "Vaincu";
+    if (p.state == asterion::State::Unknown) return {};  // not discovered: no bar
+    if (p.health >= 0.0f) {
+        const float h = std::clamp(p.health, 0.0f, 1.0f);
+        int pct = static_cast<int>(std::lround(h * 100.0f));
+        if (h > 0.0f && pct == 0) pct = 1;  // still standing: never « 0 % »
+        if (h < 1.0f && pct == 100) pct = 99;
+        return p.phase > 0 ? std::to_string(pct) + " % · phase " + std::to_string(p.phase) : std::to_string(pct) + " %";
+    }
+    if (p.phase > 0) return "— · phase " + std::to_string(p.phase);  // a phase validated, its health never known
+    return {};
+}
+
+Callout calloutLayout(UIContext& ui, const Rect& c, const Part& p) {
+    Callout o;
+    const float pad = ui.s(8);
+    Rect in{c.x + pad, c.y + pad, std::max(0.0f, c.w - pad * 2), std::max(0.0f, c.h - pad * 2)};
+    o.barText = healthText(p);
+    if (!o.barText.empty()) {
+        // The bar along the bottom (its words inside it); a callout too short for two lines above a readable bar:
+        // a thin bar without words (its health still drawn, never more than it says).
+        const float gap = ui.s(4);
+        float bh = std::clamp(std::floor(c.h * 0.17f), ui.s(13), ui.s(16));
+        if (in.h - bh - gap < ui.s(32)) bh = ui.s(6);
+        o.bar = {in.x, in.bottom() - bh, in.w, bh};
+        in.h = std::max(0.0f, in.h - bh - gap);
+        if (bh >= ui.s(13)) {
+            const float maxFont = std::min(11.0f, std::floor(bh / ui.s(1.0f) * 0.72f));
+            o.barFont = ui.fitFont(o.barText, FontFace::Bold, maxFont, o.bar.w - ui.s(12), 0.8f);
+        } else {
+            o.barText.clear();
+        }
+    }
+    const std::string word = stateWord(p);
+    const float nameH = ui.s(22);
+    o.twoRows = in.h >= nameH + ui.s(38);
+    if (o.twoRows) {
+        // Its name on the whole width at the top, then its portrait and, beside it, its groups and its state's pill.
+        o.name = {in.x + ui.s(2), in.y, in.w - ui.s(2), ui.s(20)};
+        const float top = in.y + nameH, midH = in.bottom() - top;
+        const float ps = std::min(ui.s(46), midH);
+        o.portrait = {in.x, top, ps, ps};
+        const float tx = o.portrait.right() + ui.s(8), room = in.right() - tx;
+        o.groups = {tx, top, room, ui.s(16)};
+        const float pillH = std::clamp(midH - ui.s(18), ui.s(20), ui.s(28));
+        o.pillFont = pillH >= ui.s(24) ? 11.0f : 10.0f;
+        const float relicS = std::min(ui.s(20), pillH);
+        const float maxRight = in.right() - (p.relic ? relicS + ui.s(4) : 0.0f);
+        const float pw = textW(ui, word, o.pillFont, FontFace::Bold) + ui.s(22);
+        const float py = top + std::min(midH, ui.s(46)) - pillH;
+        o.pill = {tx, py, std::min(pw, std::max(0.0f, maxRight - tx)), pillH};
+        if (p.relic) o.relic = {o.pill.right() + ui.s(4), o.pill.center().y - relicS * 0.5f, relicS, relicS};
+    } else {
+        // Short: its portrait, and beside it its name over « state · groups ».
+        const float ps = std::min(ui.s(40), in.h);
+        o.portrait = {in.x, in.y, ps, ps};
+        const float tx = o.portrait.right() + ui.s(8), room = in.right() - tx;
+        const float relicS = ui.s(18);
+        const float half = in.h * 0.5f;
+        o.name = {tx, in.y, room - (p.relic ? relicS + ui.s(4) : 0.0f), half};
+        o.groups = {tx, in.y + half, room, half};
+        if (p.relic) o.relic = {in.right() - relicS, o.name.center().y - relicS * 0.5f, relicS, relicS};
+    }
+    return o;
+}
+
+bool lairBoss(const raid::RaidRun& run, float& health, int& phase) {
+    const raid::ZoneInfo* z = run.branch().zone(run.zone());
+    if (!z || !z->boss) return false;
+    const Enemy* b = run.world().activeBoss();
+    if (!b) return false;
+    health = b->alive() ? std::clamp(b->hpRatio(), 0.0f, 1.0f) : 0.0f;
+    phase = std::max(1, b->phaseIndex() + 1);
+    return true;
+}
+
 // ------------------------------------------------------------------------------------- drawing
 
 namespace {
 
-/// A part's callout: its gigaboss's portrait (the heart's light), its name, its groups, its state, its relic.
+/// 2.86: the bar of a part's gigaboss (the heart) on its callout: its real health, green to red, a shine running
+/// along it; fallen: empty, « Vaincu »; a phase alone: greyed, « — · phase N ».
+void drawHealthBar(UIContext& ui, const Callout& o, const Part& p) {
+    if (o.bar.empty()) return;
+    const Rect& b = o.bar;
+    const float cut = std::min(ui.s(5), b.h * 0.4f);
+    const std::vector<Vec2> track = cstyle::chamfer(b, cut);
+    const bool known = !p.fallen && p.health >= 0.0f;
+    cstyle::fillPolyH(ui, track, Color{8, 11, 26, 255}, Color{14, 18, 40, 255});
+    if (known) {
+        const float h = std::clamp(p.health, 0.0f, 1.0f);
+        // Green (full) to amber (half) to red (nearly gone).
+        auto mix = [](Color a, Color c, float k) {
+            return Color{static_cast<uint8_t>(a.r + (c.r - a.r) * k), static_cast<uint8_t>(a.g + (c.g - a.g) * k), static_cast<uint8_t>(a.b + (c.b - a.b) * k), 255};
+        };
+        const Color red{214, 52, 60, 255}, amber{232, 170, 48, 255}, green{58, 196, 104, 255};
+        const Color col = h >= 0.5f ? mix(amber, green, (h - 0.5f) * 2.0f) : mix(red, amber, h * 2.0f);
+        const Color deep = mix(Color{20, 10, 24, 255}, col, 0.55f);
+        const Rect fill{b.x, b.y, b.w * h, b.h};
+        if (fill.w >= 1.0f) {
+            ui.r().pushClip(fill);
+            cstyle::fillPolyH(ui, track, deep, col);
+            // The shine: a soft band running along the filled part, a highlight on its top edge.
+            const float t = ui.time();
+            const float period = 2.6f, k = std::fmod(t, period) / period;
+            const float bw = std::max(ui.s(10), b.w * 0.18f);
+            const float sx = b.x - bw + (b.w + bw * 2.0f) * k;
+            ui.r().fillRect({sx, b.y, bw * 0.5f, b.h}, Color{255, 255, 255, 34});
+            ui.r().fillRect({sx + bw * 0.5f, b.y, bw * 0.5f, b.h}, Color{255, 255, 255, 18});
+            ui.r().fillRect({b.x, b.y + std::max(1.0f, ui.s(1)), b.w, std::max(1.0f, ui.s(2))}, Color{255, 255, 255, 46});
+            ui.r().popClip();
+        }
+    }
+    const Color edge = p.fallen ? kFallen : known ? Color{120, 132, 190, 200} : Color{70, 80, 120, 200};
+    cstyle::strokePoly(ui, track, edge, std::max(1.0f, ui.s(1)));
+    if (o.barText.empty()) return;
+    const Color tc = p.fallen ? Color{255, 150, 150, 255} : known ? kText : kMuted;
+    const Vec2 at = b.center();
+    if (known) ui.label(ui.elide(o.barText, FontFace::Bold, o.barFont, b.w - ui.s(12)), {at.x + ui.s(1), at.y + ui.s(1)}, o.barFont, Color{0, 0, 0, 170},
+                        Align::Center, FontFace::Bold, VAlign::Middle);
+    ui.label(ui.elide(o.barText, FontFace::Bold, o.barFont, b.w - ui.s(12)), at, o.barFont, tc, Align::Center, FontFace::Bold, VAlign::Middle);
+}
+
+/// A part's callout: its gigaboss's portrait (the heart's light), its name, its groups, its state, its relic,
+/// 2.86: its gigaboss's health bar. Every box measured by calloutLayout.
 void drawCallout(UIContext& ui, GameServices* g, const Rect& c, const Part& p, bool on, bool hover) {
     Renderer& rr = ui.r();
     rr.fillRoundedRect(c, ui.s(10), on ? kOn : hover ? kHover : kHeadFill);
     rr.drawRoundedRect(c, ui.s(10), on ? kMeEdge : hover ? kGold : kBorder, ui.s(2));
-    const float pad = ui.s(8);
-    // Its name on the whole width at the top, then its portrait and, beside it, its groups and its state (a short
-    // callout: everything on two lines beside the portrait).
-    const bool twoRows = c.h >= ui.s(84);
-    const float nameH = twoRows ? ui.s(22) : 0.0f;
-    const float ps = twoRows ? std::min(ui.s(46), c.bottom() - pad - (c.y + pad + nameH)) : std::min(ui.s(40), c.h - pad * 2);
-    const Rect por{c.x + pad, c.y + pad + nameH, ps, ps};
+    const Callout o = calloutLayout(ui, c, p);
+    const Rect& por = o.portrait;
     rr.fillRoundedRect(por, ui.s(6), Color{10, 14, 32, 255});
     const float t = ui.time();
     if (p.enemy.empty()) {  // the heart: its light, beating
@@ -765,26 +889,24 @@ void drawCallout(UIContext& ui, GameServices* g, const Rect& c, const Part& p, b
     if (p.fallen) {  // a red line across the portrait: fallen
         rr.drawLine({por.x + ui.s(4), por.bottom() - ui.s(4)}, {por.right() - ui.s(4), por.y + ui.s(4)}, kFallen.withAlpha(230), ui.s(3));
     }
-    const float tx = por.right() + ui.s(8), room = c.right() - pad - tx;
     const Color nameC = p.open ? kText : kMuted;
-    if (twoRows) {
-        fit(ui, p.name, {c.x + pad + ui.s(2), c.y + pad + nameH * 0.45f}, 14, c.w - pad * 2 - ui.s(2), nameC, FontFace::Bold);
-        fit(ui, groupsLine(p), {tx, por.y + ui.s(8)}, 12, room, p.groups.empty() ? kMuted : kSky);
-        // The state's pill (28 high), the relic after it.
-        const float cy = por.y + ui.s(32);
+    if (o.twoRows) {
+        fit(ui, p.name, {o.name.x, o.name.center().y}, 14, o.name.w, nameC, FontFace::Bold);
+        fit(ui, groupsLine(p), {o.groups.x, o.groups.center().y}, 12, o.groups.w, p.groups.empty() ? kMuted : kSky);
+        // The state's pill, the relic after it.
         const std::string word = stateWord(p);
-        const float relicS = ui.s(20);
-        const float maxRight = c.right() - pad - (p.relic ? relicS + ui.s(4) : 0.0f);
-        float pw = pill(ui, tx, cy, word, stateFill(p), kText, maxRight, 11);
-        if (pw == 0.0f) pw = fit(ui, word, {tx, cy}, 11, maxRight - tx, kText, FontFace::Bold).x;
-        if (p.relic) ui.icon(kRelic, static_cast<int>(t * 8.0f) % 8, 16, {tx + pw + ui.s(4), cy - relicS * 0.5f, relicS, relicS});
+        if (textW(ui, word, o.pillFont, FontFace::Bold) + ui.s(22) <= o.pill.w + 0.5f) {
+            rr.fillRoundedRect(o.pill, std::min(ui.s(8), o.pill.h * 0.4f), stateFill(p));
+            ui.label(word, o.pill.center(), o.pillFont, kText, Align::Center, FontFace::Bold, VAlign::Middle);
+        } else {
+            fit(ui, word, {o.pill.x, o.pill.center().y}, o.pillFont, o.pill.w, kText, FontFace::Bold);
+        }
     } else {
-        const float relicS = ui.s(18);
-        const float nameRoom = room - (p.relic ? relicS + ui.s(4) : 0.0f);
-        fit(ui, p.name, {tx, c.y + c.h * 0.32f}, 14, nameRoom, nameC, FontFace::Bold);
-        fit(ui, std::string(stateWord(p)) + " · " + groupsLine(p), {tx, c.y + c.h * 0.72f}, 12, room, p.fallen ? Color{255, 140, 140, 255} : kSky);
-        if (p.relic) ui.icon(kRelic, static_cast<int>(t * 8.0f) % 8, 16, {c.right() - pad - relicS, c.y + c.h * 0.32f - relicS * 0.5f, relicS, relicS});
+        fit(ui, p.name, {o.name.x, o.name.center().y}, 14, o.name.w, nameC, FontFace::Bold);
+        fit(ui, std::string(stateWord(p)) + " · " + groupsLine(p), {o.groups.x, o.groups.center().y}, 12, o.groups.w, p.fallen ? Color{255, 140, 140, 255} : kSky);
     }
+    if (p.relic && !o.relic.empty()) ui.icon(kRelic, static_cast<int>(t * 8.0f) % 8, 16, o.relic);
+    drawHealthBar(ui, o, p);
 }
 
 /// 2.81.2: no part asked for in this image (a click asks for one: applied once the image is drawn).
@@ -1255,7 +1377,6 @@ Model modelOfResults(const raids::Results& res, const std::string& raidSub) {
     Model m;
     m.legend = "Chiffres comptés par la simulation de chaque groupe, validés par le serveur (la majorité des joueurs du groupe).";
     m.tooltipNote = "Compté par la simulation du groupe, validé par le serveur.";
-    m.tabKey = "Q / E";
     for (const raids::ZoneResultTable& z : res.zoneTables) {
         Table t;
         std::string zoneName = "Zone " + std::to_string(z.zone), branchName;
@@ -1273,13 +1394,24 @@ Model modelOfResults(const raids::Results& res, const std::string& raidSub) {
     m.raid.sub = raidSub;
     for (const raids::ZoneResultRow& r : res.raidTotals) m.raid.rows.push_back(rowOf(r));
     // 2.79: the titan: each part with the validated tables of its zones (a header per group, its zones' tabs).
-    m.tabKey = "Tab";
     m.parts = titanParts();
     for (Part& p : m.parts) {
         const raid::Branch* br = nullptr;
         for (const raid::Branch* b : raid::Branch::all())
             if (b->part == p.id) br = b;
         for (const std::string& boss : res.defeatedBosses) p.fallen = p.fallen || (!p.gigaboss.empty() && boss == p.gigaboss);
+        // 2.86: the bars: the heart's validated shared health and phase; a gigaboss's best phase (its health is
+        // never on the server: « — · phase N »).
+        if (p.id == raid::kHeartPart) {
+            p.fallen = p.fallen || res.heartFallen;
+            if (!p.fallen && res.heartHealth >= 0) {
+                p.health = static_cast<float>(res.heartHealth) / 10000.0f;
+                p.phase = res.heartPhase;
+            }
+        } else if (!p.fallen) {
+            for (const auto& bp : res.bossPhases)
+                if (!p.gigaboss.empty() && bp.first == p.gigaboss && bp.second < 4) p.phase = bp.second;
+        }
         p.state = p.fallen ? asterion::State::Destroyed : asterion::State::Intact;
         std::map<int, Table> zt;
         for (const raids::ZoneResultTable& z : br ? res.zoneTables : std::vector<raids::ZoneResultTable>{}) {

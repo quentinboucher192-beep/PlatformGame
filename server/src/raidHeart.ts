@@ -100,6 +100,20 @@ async function doneIn(db: D1Database, eventId: string): Promise<Map<string, Set<
     return done;
 }
 
+/**
+ * 2.86 (the bosses' health bars of « Contributions », GET …/results): the heart as the server holds it, read only:
+ * open once the seven gigaboss fell, its shared health (the validated parts only: raid_heart_damage), its phase,
+ * fallen once its objective is written. Never a game's claim: `health` and `phase` are null while it is sealed.
+ */
+export async function heartStatusOf(db: D1Database, eventId: string): Promise<{ open: boolean; fallen: boolean; health: number | null; phase: number | null }> {
+    if (!HEART) return { open: false, fallen: false, health: null, phase: null };
+    const [dmg, done] = await Promise.all([heartDamageOf(db, eventId), doneIn(db, eventId)]);
+    const open = heartOpenIn(done);
+    const fallen = heartFallenIn(done);
+    if (!open && !fallen) return { open, fallen, health: null, phase: null };
+    return { open, fallen, health: fallen ? 0 : HEART_UNITS - dmg.total, phase: fallen ? 4 : phaseOf(dmg.total) };
+}
+
 /** What a heart relay gives its games (coop.ts): the others' part, the shared phase, the relics. */
 export async function heartPackFor(db: D1Database, eventId: string, instanceId: string): Promise<number> {
     const [dmg, done] = await Promise.all([heartDamageOf(db, eventId), doneIn(db, eventId)]);

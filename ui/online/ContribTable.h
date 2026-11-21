@@ -49,6 +49,9 @@ class GameServices;
 namespace raids {
 struct Results;
 }
+namespace raid {
+class RaidRun;
+}
 class UIContext;
 
 namespace contrib {
@@ -117,7 +120,29 @@ struct Part {
     std::vector<Table> zones; // its zones' tables (the newest first)
     Table whole;              // the whole part: its groups, a header each
     std::vector<ZoneTab> tabs; // its zones' tabs after « Toute la branche » (empty: the tabs « Zone » / « Toute la branche »)
+    /// 2.86: its gigaboss's (the heart's) bar on its callout, never invented: its REAL remaining health (0..1: a
+    /// simulation's on this computer, the heart's validated shared health from the server), -1 unknown; its phase
+    /// (1.., 0 unknown). Fallen: an empty bar « Vaincu »; a phase alone: a greyed bar « — · phase N »; neither, or
+    /// not discovered: no bar.
+    float health = -1.0f;
+    int phase = 0;
 };
+
+/// 2.86: what a part's bar says (« 62 % · phase 2 », « Vaincu », « — · phase 2 »), empty: no bar.
+std::string healthText(const Part& p);
+
+/// 2.86: a part's callout measured (the rows of drawCallout): every box inside the callout, none over another.
+struct Callout {
+    bool twoRows = false;
+    Rect name, portrait, groups, pill, relic, bar;  // empty: not drawn
+    std::string barText;   // healthText(), measured into `bar` at barFont
+    float barFont = 11.0f; // unscaled (as UIContext::label takes it)
+    float pillFont = 11.0f;
+};
+Callout calloutLayout(UIContext& ui, const Rect& c, const Part& p);
+/// 2.86: the gigaboss (the heart) of `run`'s branch as its simulation has it now: true, with its remaining health
+/// (0..1) and its phase (1..), while the run is in its lair and the fight is there; false otherwise (no bar).
+bool lairBoss(const raid::RaidRun& run, float& health, int& phase);
 
 struct Model {
     std::string heading = "TABLEAU DES CONTRIBUTIONS";
@@ -125,7 +150,6 @@ struct Model {
     Table raid;                // « Raid entier »
     std::string legend;        // where the numbers come from (one line or two)
     std::string tooltipNote;   // the last line of each tooltip
-    std::string tabKey;        // the key that changes tab besides LB / RB (« Tab »)
     /// 2.79: the titan's parts (the seven branches, then the heart); empty: no titan (the tables above alone).
     std::vector<Part> parts;
     std::string partKey = "Q / E, LB / RB";  // the keys that choose a part
@@ -196,12 +220,12 @@ public:
     int expanded = -1;  // 2.79: the row opened (Table::rows): its damage zone by zone under it
     bool toggle = false;  // 2.79: Entrée / A pressed: the selected row opened or closed at the next draw
     FreshKeys keys;       // titan 13: tabs, parts and sort on a fresh press only (keys.reset() when it opens again)
-    /// Its keys: Tab (its tabKey action): tabs; Q / E, LB / RB: tabs, or (`parts` > 0) the titan's part;
-    /// Gauche / Droite: the sorted column; Haut / Bas: a row's detail (the rows scroll to it); Entrée / A:
-    /// the next zone; Échap / B: close (true).
+    /// Its keys: Q / E, LB / RB: tabs, or (`parts` > 0) the titan's part; Gauche / Droite: the sorted column;
+    /// Haut / Bas: a row's detail (the rows scroll to it); Entrée / A: the next zone; Échap / B: close (true).
+    /// 2.86: never Tab (the raid menu's key does nothing on this screen).
     bool handleKeys(const InputManager& in, int zones, int parts = 0);
-    /// 2.79: with the model: Q / E, LB / RB: « Raid entier » and the parts; Tab: the part's next zone reached;
-    /// Entrée / A: the selected row opened (its zones) or closed.
+    /// 2.79: with the model: Q / E, LB / RB: « Raid entier » and the parts; Entrée / A: the selected row opened
+    /// (its zones) or closed, no row selected (2.86, instead of Tab): the part's next zone reached.
     bool handleKeys(const InputManager& in, const Model& m);
     /// 2.79: chooses a part (-1: the whole raid); the zone and the row start again.
     void choose(int p);

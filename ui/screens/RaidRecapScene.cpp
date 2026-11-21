@@ -702,6 +702,24 @@ private:
     /// 2.78: the clan's tables, « Raid entier » first (the recap is the whole raid's).
     void openContributions() {
         contribModel_ = contrib::modelOfResults(recap_.contributions, "les zones des groupes du clan, additionnées par joueur");
+        // 2.86: the bars from the recap's validated state: each gigaboss's best phase (its health never known by the
+        // server), the heart's shared health once open.
+        for (contrib::Part& p : contribModel_.parts) {
+            if (p.id == recap_.heart.part) {
+                p.fallen = p.fallen || recap_.heart.fallen;
+                if (!p.fallen && recap_.heart.open) {
+                    p.health = static_cast<float>(10000 - recap_.heart.taken) / 10000.0f;
+                    p.phase = recap_.heart.phase;
+                }
+            } else {
+                for (const raids::RecapPart& rp : recap_.parts)
+                    if (rp.part == p.id) {
+                        p.fallen = p.fallen || rp.fallen;
+                        if (!p.fallen && rp.phase > 0 && rp.phase < 4) p.phase = rp.phase;
+                    }
+            }
+            if (p.fallen) p.state = asterion::State::Destroyed;
+        }
         contribView_ = contrib::View{};
         contribView_.tab = 1;
         contribOpen_ = true;

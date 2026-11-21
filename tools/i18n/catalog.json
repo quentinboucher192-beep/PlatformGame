@@ -25502,7 +25502,7 @@
    ]
   },
   {
-   "fr": "Entrée / A ou clic : ses zones",
+   "fr": "Entrée / A ou clic sur un joueur : ses zones",
    "where": [
     "ui/online/ContribTable.cpp"
    ]
@@ -37223,12 +37223,6 @@
    "fr": "LB",
    "where": [
     "engine/input/InputTypes.cpp"
-   ]
-  },
-  {
-   "fr": "LB RB",
-   "where": [
-    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -52588,7 +52582,8 @@
   {
    "fr": "phase {0}",
    "where": [
-    "game/enemies/BossAttackSheet.cpp"
+    "game/enemies/BossAttackSheet.cpp",
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -56847,12 +56842,6 @@
    "where": [
     "data/online/countries.json",
     "data/online/country_codes.json"
-   ]
-  },
-  {
-   "fr": "Q / E",
-   "where": [
-    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -68466,8 +68455,7 @@
   {
    "fr": "Tab",
    "where": [
-    "engine/input/InputTypes.cpp",
-    "ui/online/ContribTable.cpp"
+    "engine/input/InputTypes.cpp"
    ]
   },
   {
@@ -75775,7 +75763,8 @@
   {
    "fr": "Vaincu",
    "where": [
-    "game/online/RaidRecap.cpp"
+    "game/online/RaidRecap.cpp",
+    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -79685,6 +79674,12 @@
    ]
   },
   {
+   "fr": "{0} % · phase {1}",
+   "where": [
+    "ui/online/ContribTable.cpp"
+   ]
+  },
+  {
    "fr": "{0} % · {1} Mo reçus",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -79880,12 +79875,6 @@
    "fr": "{0} / flèches : déplacer la vue (Maj : plus vite) · Alt+flèches : décaler la sélection",
    "where": [
     "editors/level_editor/LevelEditorDialogs.cpp"
-   ]
-  },
-  {
-   "fr": "{0} / LB RB",
-   "where": [
-    "ui/online/ContribTable.cpp"
    ]
   },
   {
@@ -80391,12 +80380,6 @@
    "fr": "{0} : zone de départ {1} inconnue",
    "where": [
     "server/src/raidWorld.ts"
-   ]
-  },
-  {
-   "fr": "{0} : zone suivante",
-   "where": [
-    "ui/online/ContribTable.cpp"
    ]
   },
   {

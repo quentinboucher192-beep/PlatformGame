@@ -770,7 +770,6 @@ TEST_CASE("raid zones (2.78): the « Tableau des contributions » and the distan
         contrib::Model m;
         m.legend = "Chiffres comptés par la simulation (les mêmes sur tous les jeux du groupe), validés par la majorité.";
         m.tooltipNote = "Compté par la simulation, validé par la majorité du groupe.";
-        m.tabKey = "Tab";
         contrib::Table t;
         t.title = "Zone 7 · Voûte crânienne";
         t.sub = "terminée par votre groupe · 12:34";
@@ -905,7 +904,6 @@ TEST_CASE("raid zones (2.79): the one contributions table with the titan: seven 
         contrib::Model m;
         m.legend = "Test local : chiffres comptés par la simulation de chaque groupe, rien n'est envoyé au serveur.";
         m.tooltipNote = "Compté par la simulation (test local).";
-        m.tabKey = "Tab";
         m.partKey = "Q / E";
         m.extraKeys = "M : onglet suivant du panneau";
         m.parts = contrib::titanParts();

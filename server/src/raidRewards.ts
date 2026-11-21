@@ -18,7 +18,7 @@ import { RULES, rateLimit } from "./ratelimit";
 import { Validator } from "./validate";
 import { WORLD_REWARDS } from "./raidWorldRewards";
 import { HEART_REWARDS } from "./raidHeartRewards";
-import { grantEndedHeartTops, grantHeartTop } from "./raidHeart";
+import { grantEndedHeartTops, grantHeartTop, heartStatusOf } from "./raidHeart";
 
 /** One player's contributions (the numbers the games computed, tenths of health for the damage). */
 export interface Contribution {
@@ -663,6 +663,8 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
     const pending = pendingR!.results as { instance_id: string; report_key: string; n: number }[];
     const mine = await rewardsOf(db, me);
     const { zoneTables, raidTotals } = contributionTables((zonesR?.results ?? []) as ZoneTableRow[]);
+    // 2.86: the heart's shared health and phase (validated parts only), for its bar on the titan of « Contributions ».
+    const heart = await heartStatusOf(db, eventRow.id);
     return json(ctx, {
         zone_tables: zoneTables,
         raid_totals: raidTotals,
@@ -675,6 +677,7 @@ export async function results(ctx: Ctx, eventRow: Parameters<typeof raidState>[0
             defeated_bosses: [...new Set(fights.filter((f) => f.phase === 4).map((f) => f.boss))],
             fights: fights.map((f) => ({ boss: f.boss, group: `[${f.tag}]·${f.group_no}`, phase: f.phase, defeated_at: f.defeated_at })),
         },
+        heart,
         clans: [...clans.entries()]
             .map(([id, c]) => ({ id, ...c }))
             .sort((a, b) => b.points - a.points || (a.tag < b.tag ? -1 : 1))
