@@ -3001,7 +3001,7 @@ et un départ par processus donnent maintenant les mêmes résultats.
 | Skullmaw | 0 / 8 | 70 % | 308 à 900 s (presque tous en phase 3) |
 | Dreadfang | 0 / 8 | 41 % | 200 à 615 s |
 | Titanus | 0 / 8 | 33 % | 122 à 288 s |
-| Voidworm | **4 / 8** | 83 % | 362 à 502 s |
+| Voidworm | **5 / 8** | 85 % | 337 à 505 s (blindé, ses frappeurs attendent loin de son corps : `Plan::hideArmoured`) |
 | Graviton | 0 / 8 | 39 % | 210 à 466 s |
 | Heartbreaker | **2 / 8** | 67 % | 464 à 688 s |
 | Cœur d'Asterion | 0 / 8 | 47 % | 238 à 900 s |
@@ -3010,7 +3010,8 @@ Depuis la ligne précédente : un orbe de vie suspendu se prend d'un saut (ils r
 ou de l'acide ; chaque miroir de Skullmaw garde son joueur pour tout le voile, ses joueurs relevés d'abord
 (`Plan::fixedHolders`) ; bouclier au regard de mort même caché. Essayés et retirés : les côtes de Heartbreaker prises
 avant la fin de ses plaques, ses frappeurs plus espacés, la dernière place d'une carapace tenue seulement une fois tout le
-monde relevé.
+monde relevé ; puis, après la correction du cache : Voidworm sans traverser son corps (4 / 8), à 200 px de lui (1 / 8), sans
+relever les âmes collées à lui (5 / 8, pas mieux) ; Heartbreaker en tirant pendant ses esquives (0 / 8).
 
 ### Versions
 
