@@ -40,7 +40,7 @@ Vec2 dirOf(int d) {
     return kDirX[d] != 0 && kDirY[d] != 0 ? v * 0.70710678f : v;
 }
 constexpr float kWaveRange = 285.0f;  // a little short of its 300 px
-constexpr float kKeepOff = 0.0f;     // 2.84: the strikers' distance to the boss's body (its shape) when they can
+constexpr float kKeepOff = 120.0f;  // 2.84: the strikers' distance to the boss's body (its shape) when they can
 
 uint64_t mix(uint64_t h, uint64_t v) {
     for (int i = 0; i < 8; ++i) {
@@ -439,11 +439,23 @@ void TestBots::sense(RaidRun& run) {
         // 2.84: part by part (the box around them all closed the space between its legs, under its skull, to the
         // players and their shots).
         bossBody_ = bodyBox(*boss, w, &bodyParts_);
-        Danger body;
-        body.kind = Danger::Kind::Area;
-        body.area = bossBody_.expanded(6.0f);
-        body.body = true;
-        view_.dangers.push_back(body);
+        // 2.84: bare (its few seconds to strike its weak points), part by part — the box around them all closes every
+        // place near its weak points; otherwise that whole box (closer, the group took more blows: measured).
+        if (view_.exposed) {
+            for (const Rect& r : bodyParts_) {
+                Danger body;
+                body.kind = Danger::Kind::Area;
+                body.area = r.expanded(6.0f);
+                body.body = true;
+                view_.dangers.push_back(body);
+            }
+        } else {
+            Danger body;
+            body.kind = Danger::Kind::Area;
+            body.area = bossBody_.expanded(6.0f);
+            body.body = true;
+            view_.dangers.push_back(body);
+        }
     } else {
         bots::BossTactic::readCommon(run, view_, false);
         bossUid_ = 0;
@@ -1319,7 +1331,8 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     dir = pad.mx > 0 ? 1 : pad.mx < 0 ? -1 : 0;
     if (pad.my != 0) f.moveY = pad.my;
     // A move through the air under way is the navigation's own (no jump of the tactic's over it).
-    if (navi_.pilot(seat).committed()) b.jumpHold = 0;
+    // 2.84: except its jump over a wave running at it (a move along the ground gives way to it).
+    if (navi_.pilot(seat).committed() && !(b.waveJumpCool > 0 && w.playerAt(seat).grounded())) b.jumpHold = 0;
 }
 
 InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
@@ -1552,14 +1565,14 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         for (const Danger& d : dangers_) {
             if ((d.seat >= 0 && d.seat != seat) || d.in > 3 * kSimHz) continue;
             if (d.kind == Danger::Kind::Line && d.gapHalf > 0.0f) continue;  // a sweep: its shield (above)
-            if (station.w > 0.0f && d.kind == Danger::Kind::Area && !d.body && d.area.intersects(station) && !d.shot) {
+            if (station.w > 0.0f && d.kind == Danger::Kind::Area && !d.body && d.area.intersects(station) && !d.shot && !d.unblockable) {
                 if (d.in <= 14 && d.area.intersects(mine)) {
                     raiseShield = true;
                     react = "tient sous son bouclier";
                 }
                 continue;
             }
-            if (me.shieldActive() && !d.body && d.kind != Danger::Kind::Pull) continue;  // under its shield: nothing gets through
+            if (me.shieldActive() && !d.body && d.kind != Danger::Kind::Pull && !d.unblockable) continue;  // under its shield: nothing gets through
             if ((crossing || pushing) && (d.body || (me.shieldActive() && d.kind != Danger::Kind::Pull))) continue;  // 2.84: it goes through (above)
             float need = 0.0f;
             if (d.kind == Danger::Kind::Area || d.kind == Danger::Kind::Pull) {
@@ -1591,7 +1604,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if (seen) b.react = 1;  // seen: it stays seen while it lasts
             const bool shot = hit->shot;
             // Holding a plate or reviving: it stays (its shield takes the blow); otherwise out by the nearest safe side.
-            if (holding || staysPut || (shot && shieldReady)) {
+            if ((holding || staysPut || (shot && shieldReady)) && !hit->unblockable) {
                 if (hit->in <= 14) raiseShield = true;
             } else if (seen && noise(seat + 8 * static_cast<int>(seed_), tick_ / 30) < std::max(0.55f, lv.precision)) {
                 int side = 0;
@@ -1698,7 +1711,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                 raiseShield = true;  // on its plate: the shield, not a jump off it
                 react = "bouclier contre l'onde";
             } else if (!(b.prevHeld & (1u << kJump))) {
-                b.jumpHold = 34;
+                b.jumpHold = 48;  // 2.84: held to the top of its jump (released before, the jump is cut short)
                 b.airJump = d.height + 4.0f < me.config().jumpHeight - 2.0f;  // a tall wave: its air jump at the top
                 b.waveJumpCool = 30;
                 react = "saute l'onde";
@@ -1918,8 +1931,9 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             if ((d.seat >= 0 && d.seat != seat) || d.in > (d.attack ? kSimHz / 4 : 20)) continue;  // its own blows: from their wind-up
             bool hit = false;
             switch (d.kind) {
-                case Danger::Kind::Area: hit = d.area.intersects(near); break;
+                case Danger::Kind::Area: hit = d.area.intersects(near) && !d.unblockable; break;
                 case Danger::Kind::Line: hit = hitsLine(d, near); break;
+                case Danger::Kind::Pull: hit = d.area.intersects(near); break;  // 2.84: dragged to its core: its touch under the shield
                 case Danger::Kind::FloorWave: {
                     if (!me.grounded() || feet.y > d.floorY + 6.0f || feet.y < d.floorY - 30.0f || d.speed == 0.0f) break;
                     const float gap = d.speed > 0.0f ? me.box.x - d.area.right() : d.area.x - me.box.right();

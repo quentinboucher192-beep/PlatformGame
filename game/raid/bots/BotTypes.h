@@ -52,6 +52,7 @@ struct Danger {
     int seat = -1;       // only this seat (a mark aimed at one player), -1: everyone
     bool body = false;   // the boss's own body (it hurts on contact)
     bool attack = false; // a blow of the boss itself around its body (the tactic dodges it; its navigation goes past)
+    bool unblockable = false;  // 2.84: no shield stops it (Voidworm's maw swallows): leave it, even from a place held
     float radius = 0.0f, reach = 0.0f;  // Ring: its radius now, the farthest it goes
     float gap = 0.0f, gapHalf = 0.0f;   // Ring: the angle of its opening and its half-width (radians)
 };

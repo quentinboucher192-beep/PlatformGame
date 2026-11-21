@@ -43,6 +43,7 @@ public:
                 d.kind = Danger::Kind::Area;
                 d.area = {m.area.x - 6.0f, m.area.y - 150.0f, m.area.w + 12.0f, 150.0f + m.area.h};
                 d.in = static_cast<int>((1.0f - std::clamp(m.progress, 0.0f, 1.0f)) * 1.8f * static_cast<float>(kSimHz));  // its track + lock
+                d.unblockable = true;  // 2.84: a shield does not keep it from swallowing (a hook or a soul left for it)
                 v.dangers.push_back(d);
             } else if (m.kind == BossMark::Kind::Zone && m.label.rfind("L'ACIDE", 0) == 0) {
                 Danger d;

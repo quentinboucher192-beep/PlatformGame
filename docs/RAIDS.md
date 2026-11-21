@@ -2886,6 +2886,35 @@ prendre les places de la carapace avant qu'elle se ferme (le groupe se divisait 
 * **Le Cœur et Pyroclast** : les artères et l'évent du centre (en hauteur) sont rarement atteints à temps.
 * Avec ces limites, même invincibles, seuls Dreadfang et Heartbreaker tombent depuis leur phase 2.
 
+### Suite (après la fusion du titan 12) : survie, distance, points faibles
+
+Mesuré sur 5 départs, sans invincibilité (vie restante en moyenne ; avant = le même code juste après la fusion) :
+
+| Combat | avant | après |
+|---|---|---|
+| Pyroclast | 0 / 5, 67 % | 0 / 5, 69 % |
+| Skullmaw | 0 / 5, 66 % | 0 / 5, 66 % |
+| Dreadfang | 0 / 5, 63 % | 0 / 5, 66 % |
+| Titanus | 0 / 5, 76 % | 0 / 5, 79 % |
+| Voidworm | 0 / 5, 66 % | 0 / 5, 66 % |
+| Graviton | 0 / 5, 71 % | 0 / 5, 67 % |
+| Heartbreaker | 0 / 5, 66 % | 0 / 5, 63 % |
+| Cœur d'Asterion | 0 / 5, 75 % | 0 / 5, 74 % |
+
+Toujours aucun combat gagné ; la moyenne ne bouge pas (31 % de vie ôtée). Gardé, parce que juste et sans perte :
+
+* **La gueule de Voidworm** se quitte même depuis un crochet ou une âme (un bouclier ne l'empêche pas d'avaler) ;
+* **un puits** (Graviton) : bouclier levé dès qu'il tire le joueur vers son cœur ;
+* **le bond du colosse** (Titanus) : le cercle où il retombe, sous son ombre qui suit sa cible, est quitté ;
+* **un saut par-dessus une onde** n'est plus annulé par un pas de la navigation, et il est tenu jusqu'au sommet du saut ;
+* **les frappeurs** restent à 120 px du corps du boss quand une place le permet ;
+* **à nu**, le corps du boss se lit partie par partie (seulement ces secondes-là) : leurs places près des points faibles
+  ne sont plus toutes refusées — les yeux de Skullmaw sont touchés, sans être encore brisés.
+
+Essayés et retirés (aucun gain sur 3 départs, ou des groupes éliminés plus tôt) : les places en hauteur contre un boss au
+sol, la fissure du séisme lue dès son annonce, la charge lue en deux temps, laisser une âme sous le corps du boss.
+Avec invincibilité, depuis leur phase 2, Dreadfang, Heartbreaker **et Voidworm** tombent maintenant (le test les garde).
+
 ### Versions
 
 Les joueurs simulés n'existent que dans les tests : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration`

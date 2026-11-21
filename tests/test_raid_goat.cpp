@@ -337,7 +337,7 @@ const std::vector<std::string> kBeaten = {};
 constexpr int kRaidGigabossDown = 0;
 constexpr bool kRaidHeartFalls = false;
 /// 2.84: Voidworm from its phase 2 (8 invincible simulated players, 15 min): its health left at most.
-constexpr float kVoidwormPhase2Left = 0.55f;  // measured: 24 % (the bench alone: 38 %; before 2.84: 66 %)
+constexpr float kVoidwormPhase2Left = 0.55f;  // measured: beaten in 879 s (before 2.84: 66 % left)
 
 }  // namespace
 
