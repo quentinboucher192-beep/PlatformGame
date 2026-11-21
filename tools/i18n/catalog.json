@@ -16428,6 +16428,12 @@
    ]
   },
   {
+   "fr": "Contributions : chaque partie d'Asterion affiche la barre de vie de son Gigaboss (et du Cœur), avec la vraie vie restante et la phase (« 62 % · phase 2 »), « Vaincu » une fois tombé, rien sans donnée ; Tab (menu du raid) ne fait plus rien sur cet écran, Entrée / A passe à la zone suivante.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Contributions calculées dans la simulation, les mêmes sur chaque ordinateur de l'instance : dégâts (et au gigaboss), dégâts évités (ses coups esquivés, les coups bloqués par le bouclier), soutien, évents fermés, points faibles brisés, objectifs, temps de participation, présence à sa chute. Le serveur ne retient un tableau que si la majorité de l'instance a envoyé le même, refuse les valeurs impossibles et journalise les menteurs ; tant qu'il attend, le résultat est « en attente de validation ».",
    "where": [
     "data/news/changelog.json"
@@ -42440,6 +42446,12 @@
    "fr": "Liquide",
    "where": [
     "game/levels/ObjectTypes.cpp"
+   ]
+  },
+  {
+   "fr": "Liquides qui montent (acide de Voidworm, marée de plasma du Cœur, crues de lave, de plasma et d'eau des abysses des boss, reflux d'acide de l'abdomen) : ils remplissent désormais toute leur largeur et jusqu'au sol, avec une houle animée, de l'écume, un dégradé plus sombre en profondeur et une légère transparence, au lieu d'un mince ruban flottant.",
+   "where": [
+    "data/news/changelog.json"
    ]
   },
   {
