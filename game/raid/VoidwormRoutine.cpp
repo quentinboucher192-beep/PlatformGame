@@ -454,7 +454,7 @@ private:
         f.hold = acidHold_;
         f.fall = acidFall_;
         f.damage = acidDamage_;
-        f.look = "tide";
+        f.look = "acid";  // display: a body of acid (LiquidBody.h)
         f.color = kAcid;
         w.hazards().addFlood(f);
         acidT_ = 0;
