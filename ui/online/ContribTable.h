@@ -38,6 +38,7 @@
 #include <vector>
 
 #include "engine/core/Math.h"
+#include "engine/input/InputManager.h"
 #include "engine/rendering/Renderer.h"
 #include "game/online/AsterionBody.h"
 
@@ -45,7 +46,6 @@ namespace cosmic {
 
 class AsterionFigure;
 class GameServices;
-class InputManager;
 namespace raids {
 struct Results;
 }
@@ -195,6 +195,7 @@ public:
     int part = -1;      // 2.79: the titan's part shown (Model::parts), -1: « Raid entier », every group
     int expanded = -1;  // 2.79: the row opened (Table::rows): its damage zone by zone under it
     bool toggle = false;  // 2.79: Entrée / A pressed: the selected row opened or closed at the next draw
+    FreshKeys keys;       // titan 13: tabs, parts and sort on a fresh press only (keys.reset() when it opens again)
     /// Its keys: Tab (its tabKey action): tabs; Q / E, LB / RB: tabs, or (`parts` > 0) the titan's part;
     /// Gauche / Droite: the sorted column; Haut / Bas: a row's detail (the rows scroll to it); Entrée / A:
     /// the next zone; Échap / B: close (true).

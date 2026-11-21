@@ -163,6 +163,9 @@ private:
     // 2.77: « Une zone » or « Simuler un raid complet » (docs/RAIDS.md §21); the level of the simulated
     // players (both); the raid's groups, simulated players per group, speed of the groups not watched.
     int testMode_ = 0, testSkill_ = 1, simGroups_ = 6, simBots_ = 3, simSpeed_ = 0;
+    int testDifficulty_ = 2;  // titan 13: « Difficulté » of the test (index: 1 to 5 / 5)
+    /// Titan 13: the « Difficulté » row of a test (1 to 5) and what it changes under it; returns the y under them.
+    float difficultyRow(const Rect& row);
     // 2.81.2: « Raid à tester » (2.83: an index in the raid catalogue) and whether its list is open.
     int testRaid_ = 0;
     bool testRaidOpen_ = false;

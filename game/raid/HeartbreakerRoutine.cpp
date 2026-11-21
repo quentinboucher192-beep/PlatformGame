@@ -123,7 +123,7 @@ void HeartbreakerRoutine::step(GameWorld& w, Contributions& c, Gigaboss& g, Enem
 
 // ------------------------------------------------------------------------ plates (phase 1)
 void HeartbreakerRoutine::spawnPlates(GameWorld& w, Contributions& c, Gigaboss& g, Enemy& b) {
-    const float factor = 1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor(g) - 1));
+    const float factor = (1.0f + rules_->weakHpPerPlayer * static_cast<float>(std::max(0, scaledFor(g) - 1))) * g.healthScale();
     for (size_t k = 0; k < plateSpots_.size(); ++k) {
         if (plates_[k] != 0) continue;
         const Vec2 spot{b.box.center().x + plateSpots_[k].x, b.box.bottom() + plateSpots_[k].y};

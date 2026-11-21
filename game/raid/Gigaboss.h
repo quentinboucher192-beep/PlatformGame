@@ -101,7 +101,8 @@ public:
     std::vector<std::pair<std::string, AlertKind>> takeAlerts();
     uint64_t hash() const;
 
-    /// Health factor for `players` seated (1 to 8): 1 + hpPerPlayer × (players − 1).
+    /// Health factor for `players` seated (1 to 8): hpScale × (1 + hpPerPlayer × (players − 1)) (titan 13: hpScale, the
+    /// raid's base of its definition's health; the event's difficulty apart: setDifficulty).
     static float healthFactor(const GigabossRules& r, int players);
     /// 2.68, an administrator's test (ADMINISTRATION › Raids, never counted): its health scaled
     /// for at least `players` seated, and the fight started at phase `startPhase` (1-based).
@@ -109,6 +110,14 @@ public:
         testPlayers_ = players;
         testPhase_ = startPhase;
     }
+    /// Titan 13: the event's difficulty (game/raid/Difficulty.h): its health and its parts' × `health`, the damage
+    /// the players take in its arena × `damage`. Kept from one zone to the next, as the test's.
+    void setDifficulty(float health, float damage) {
+        healthScale_ = health;
+        damageScale_ = damage;
+    }
+    float healthScale() const { return healthScale_; }
+    float damageScale() const { return damageScale_; }
     /// 2.69 (phase 4B): the routine of the gigaboss (Voidworm, Graviton, Titanus), null for
     /// Pyroclast; the state of the branch at this step (the objectives its routine reads).
     const GigabossRoutine* routine() const { return routine_.get(); }
@@ -145,6 +154,7 @@ private:
     int weakTotal_ = 0;
     std::vector<std::pair<std::string, AlertKind>> alerts_;
     int testPlayers_ = 0, testPhase_ = 1;  // 2.68: an administrator's test only
+    float healthScale_ = 1.0f, damageScale_ = 1.0f;  // titan 13: setDifficulty
     bool seen_ = false, fallen_ = false;   // the boss found in the world; it already fell (branch state)
     std::vector<Fist> fists_;
     int fistClock_ = 0;

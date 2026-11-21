@@ -71,6 +71,7 @@
 #include "game/gameplay/Hud.h"
 #include "game/online/Clans.h"
 #include "game/powers/PowerKeys.h"
+#include "game/raid/RaidCatalog.h"
 #include "game/raid/RaidRun.h"
 #include "game/raid/AsterionHeartRoutine.h"
 #include "ui/screens/AsterionFilm.h"
@@ -166,6 +167,8 @@ public:
         testSetup_.parts = c.parts;
         testSetup_.relics = c.relics;
         testSetup_.skill = c.skill;
+        testSetup_.difficulty = c.difficulty;  // titan 13
+        simSetup_.difficulty = c.difficulty;
         testSetup_.invincible = false;  // the administrator's, not this player's
         simSetup_.groups = c.groups;
         simSetup_.bots = c.bots;
@@ -303,7 +306,8 @@ public:
 
     void begin() {
         const auto& go = *link_->go();
-        if (go.level != branch_->levelId() || go.hash != branch_->levelHash()) {
+        int difficulty = raid::kDifficultyDefault;  // titan 13: the event's (« 3.13.d4 »)
+        if (go.level != branch_->levelId() || !raid::readLevelHash(go.hash, branch_->levelHash(), difficulty)) {
             fail_ = "Ce raid se joue avec une autre version de la branche : mettez le jeu à jour.";
             return;
         }
@@ -325,6 +329,7 @@ public:
         WorldServices ws{res, g_.app.audio(), g_.content, &g_.app.input(), g_.settings.graphics.screenShake,
                          g_.settings.graphics.particleQuality == 0 ? 0.4f : g_.settings.graphics.particleQuality == 1 ? 0.7f : 1.0f};
         ownRun_ = std::make_unique<raid::RaidRun>(ws, *branch_, go.players);
+        ownRun_->setDifficulty(difficulty);  // titan 13: the same on every computer of the instance
         run_ = ownRun_.get();
         watchedRun_ = nullptr;  // 2.75.5: a new run: what it holds once caught up is no news
         run_->setCameraFollow(watchSeat_ >= 0 ? watchSeat_ : local_);  // 2.75: a spectator follows the player watched
@@ -384,6 +389,7 @@ public:
             c.parts = testSetup_.parts;
             c.relics = testSetup_.relics;
             c.skill = testSetup_.skill;
+            c.difficulty = testSetup_.difficulty;  // titan 13
             c.invincible = testSetup_.invincible;
             relay_.config = c;
         }
@@ -1093,6 +1099,7 @@ public:
                                         {"revived", c.revived}});
                 body["records"] = rows;
             }
+            body["difficulty"] = run_ ? run_->difficulty() : raid::kDifficultyDefault;  // titan 13: checked against the event's
             const bool objective = r.kind == raid::Report::Kind::Objective;
             const std::string label = objective && branch_->objective(r.objective) ? branch_->objective(r.objective)->label : "";
             g_.online.send("POST", "/api/v1/raids/instances/" + entry_.instanceId + "/reports", body,
@@ -1185,6 +1192,7 @@ public:
             g_.app.input().menuPressed(Action::Pause)) {  // 2.72: not under the victory film
             paused_ = !paused_;
             pauseOpenedNow_ = paused_;  // the same press (Échap = pause and back) must not close it
+            pauseKeys_.reset();          // titan 13: the directions held now (moving) are ignored until released
             g_.ui.setFocus("raidgame/pause/resume");
         }
         // 2.72: the large map (display only: the group, and this player, keep playing).
@@ -1201,6 +1209,7 @@ public:
     void fetchBranch() {
         branchAt_ = clock_ + 15.0f;
         if (entry_.eventId.empty()) return;
+        if (!eventAsked_) fetchEventEnd();
         g_.online.get("/api/v1/raids/events/" + entry_.eventId + "/branches/" + entry_.branch, OnlineService::guard(life_, [this](const ApiResult& r) {
                           if (!r.ok) return;
                           std::map<int, std::string> out;
@@ -1224,6 +1233,43 @@ public:
                           retake_ = std::move(out);
                       }),
                       false);
+    }
+
+    /// Titan 13 (« des décomptes, pas des chronomètres ») : the event's end (`ends_at`: its start plus its format's
+    /// length), read once and carried into the raid's own seconds (the HUD's countdown, the journal). Display only.
+    void fetchEventEnd() {
+        eventAsked_ = true;
+        g_.online.get("/api/v1/raids/events/" + entry_.eventId, OnlineService::guard(life_, [this](const ApiResult& r) {
+                          if (!r.ok || !run_) {
+                              if (!r.ok) eventAsked_ = false;  // asked again with the branch's map
+                              return;
+                          }
+                          const raids::Event e = raids::parseEvent(r.data.value("event", Json()));
+                          if (e.endsAt <= 0) return;
+                          const int64_t left = e.endsAt - raidui::nowUtc(r.fromCache ? 0 : raidui::skewOf(r.data));
+                          raidEnd_ = raidSeconds() + static_cast<float>(left);
+                          raidEndKnown_ = true;
+                      }));
+    }
+
+    float raidSeconds() const { return run_ ? static_cast<float>(run_->tick()) / static_cast<float>(kSimHz) : 0.0f; }
+
+    /// Titan 13: the raid's clock: the time left before the event's end; in a test (no event), the length of the
+    /// raid's default format (its longest: as an event of that format ends) from the test's start.
+    raidhud::RaidClock raidClock() const {
+        raidhud::RaidClock c;
+        c.now = sim_ ? static_cast<float>(sim_->tick()) / static_cast<float>(kSimHz) : raidSeconds();
+        if (raidEndKnown_) {
+            c.deadline = true;
+            c.end = raidEnd_;
+        } else if (test_) {
+            if (const raid::CatalogEntry* re = raid::findRaid("asterion"); re && !re->formats.empty()) {
+                const raid::CatalogFormat& f = re->formats[static_cast<size_t>(std::clamp(re->defaultFormat, 0, static_cast<int>(re->formats.size()) - 1))];
+                c.deadline = f.maxMinutes > 0;
+                c.end = static_cast<float>(f.maxMinutes) * 60.0f;
+            }
+        }
+        return c;
     }
 
     std::string seatName(int seat) const {
@@ -1341,6 +1387,7 @@ public:
             c.bots = simSetup_.bots;
             c.fullGroups = simSetup_.fullGroups;  // 2.77.3: « Joueurs par groupe »
             c.skill = simSetup_.skill;
+            c.difficulty = simSetup_.difficulty;  // titan 13
             c.invincible = simSetup_.invincible;
             c.botsInvincible = simSetup_.botsInvincible;
             relay_.config = c;
@@ -1455,10 +1502,11 @@ public:
         InputManager& in = g_.app.input();
         if (simPanel_ >= 0) {
             // 2.79: the keys read from the input (the UI is not begun yet on the first image: a capture opens the panel at once).
+            simKeys_.update(in);  // titan 13: its tabs on a fresh press only
             if ((in.menuPressed(Action::MenuBack) && !in.capturing()) || in.menuPressed(Action::Pause)) {
                 simPanel_ = -1;
                 panelJustClosed_ = true;  // the same press must not open the pause
-            } else if (in.menuPressed(Action::RaidMap)) {
+            } else if (simKeys_.fresh(in, Action::RaidMap)) {
                 simPanel_ = (simPanel_ + 1) % 4;  // 2.79: the panel's next tab (M, Retour on the gamepad)
             } else if (simPanel_ == 1) {
                 // 2.79: the contributions' keys (parts, tabs, sort, rows); Échap / B closes the panel above.
@@ -1490,6 +1538,8 @@ public:
 
     void openSimPanel(int tab) {
         simPanel_ = std::clamp(tab, 0, 3);
+        simKeys_.reset();  // titan 13: what is held now waits for its release (its tabs, its table's sort)
+        simContrib_.keys.reset();
         bigMap_ = false;
         g_.ui.setFocus("raidgame/simpanel/close");
     }
@@ -1549,6 +1599,7 @@ public:
     void drawSimPanel() {
         UIContext& ui = g_.ui;
         const float W = ui.screenW(), H = ui.screenH();
+        ui.consumeNavigation(simKeys_.waitingH(), simKeys_.waitingV());  // titan 13: no focus moved by a direction held since it opened
         ui.r().fillRect({0, 0, W, H}, Color{2, 4, 10, 170});
         const float bottom = statusRect_.w > 0.0f && statusRect_.y > H * 0.5f ? statusRect_.y - ui.s(10) : H - ui.s(24);
         // 2.79: the contributions (the titan and the table) on the whole width; opaque: nothing of the game under its texts.
@@ -1887,10 +1938,8 @@ public:
             if (y + h >= body.y && y <= body.bottom()) {
                 using K = raid::RaidSimulation::WorldEvent::Kind;
                 const Color c = e.kind == K::Danger ? kDanger : e.kind == K::World ? kGold : e.kind == K::Branch ? kGreen : kSky;
-                const int sec = static_cast<int>(e.tick / kSimHz);
-                char clockText[24];
-                std::snprintf(clockText, sizeof clockText, "%d:%02d", sec / 60, sec % 60);
-                fit(ui, clockText, {body.x, y + lineH * 0.5f}, 13, timeW - ui.s(6), kDim);
+                // Titan 13: the raid's countdown at that moment (« reste 47:30 »), as the HUD showed it.
+                fit(ui, raidClock().at(static_cast<float>(e.tick) / static_cast<float>(kSimHz)), {body.x, y + lineH * 0.5f}, 13, timeW - ui.s(6), kDim);
                 drawLines(ui, lines[li], {body.x + timeW, y}, 14, lineH, c);
             }
             y += h + ui.s(6);
@@ -2316,8 +2365,8 @@ public:
             // 2.72: the raid's chrono from the simulation's steps (the same on every computer; it
             // runs on during a pause: the world never stops).
             const Rect r = at(E::Timer);
-            raidhud::drawTimer(ui, r, k(E::Timer), static_cast<float>(run_->tick()) / static_cast<float>(kSimHz),
-                               static_cast<float>(run_->zoneTicks()) / static_cast<float>(kSimHz));
+            // Titan 13: the time left before the raid's end (counting down), the zone's elapsed time under it.
+            raidhud::drawTimer(ui, r, k(E::Timer), raidClock(), static_cast<float>(run_->zoneTicks()) / static_cast<float>(kSimHz));
             hudRects_.push_back(r);
         }
         if (shown(E::LairPassage))
@@ -3171,7 +3220,7 @@ public:
             const raid::ZoneInfo* z = branch_->zone(it->zone);
             t.title = "Zone " + std::to_string(it->zone) + " · " + (z ? z->name : std::string("?"));
             t.sub = std::string(it->byUs ? "terminée par votre groupe" : "terminée par un autre groupe") + " · " +
-                    raidmenu::raidTime(static_cast<float>(it->tick) / static_cast<float>(kSimHz));
+                    raidClock().at(static_cast<float>(it->tick) / static_cast<float>(kSimHz));
             for (const raid::ZoneContribution& c : it->rows) t.rows.push_back(contribRow(c, it->rows));
             m.zones.push_back(std::move(t));
         }
@@ -3218,7 +3267,7 @@ public:
                         contrib::Table t;
                         t.title = p.name + " · " + tab.name;
                         t.sub = std::string(it->byUs ? "terminée par votre groupe" : "terminée par un autre groupe") + " · " +
-                                raidmenu::raidTime(static_cast<float>(it->tick) / static_cast<float>(kSimHz));
+                                raidClock().at(static_cast<float>(it->tick) / static_cast<float>(kSimHz));
                         for (const raid::ZoneContribution& c : it->rows) t.rows.push_back(contribRow(c, it->rows));
                         tab.table = static_cast<int>(p.zones.size());
                         p.zones.push_back(std::move(t));
@@ -3275,6 +3324,7 @@ public:
             if (g.finished && !here) d.otherZones.push_back(g.name);
         }
         d.journal = &overlay_.notices.journal();
+        d.clock = raidClock();
         // The group: each seat's state, « spectateur » once the group is eliminated.
         const raidhud::Group g = groupData(w);
         d.groupTitle = "GROUPE · " + g.title;
@@ -3571,6 +3621,8 @@ public:
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
         Rect box = centred(ui.s(600), ui.s(398) + (sim_ ? ui.s(72) : 0.0f) + (guests_ ? ui.s(72) : 0.0f));
         if (pauseOpenedNow_) pauseCard_.flicker(t);
+        pauseKeys_.update(g_.app.input());
+        ui.consumeNavigation(pauseKeys_.waitingH(), pauseKeys_.waitingV());  // titan 13: no focus moved by a direction held since it opened
         pauseCard_.begin(ui, box, t, cu, mo);
         pauseTitle_.draw(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, ui.s(46), box.w - ui.s(80), Align::Center, t, mo, cu);
         fit(ui, sim_ ? "Le raid continue pendant la pause : tous les groupes jouent." : test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
@@ -3719,6 +3771,7 @@ public:
     bool fresh_ = false;         // 2.74: link_ is an attempt of the reconnection (its GO not come yet)
     bool rejoining_ = false;     // 2.74: the catch-up of a reconnection (its text)
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
+    FreshKeys pauseKeys_, simKeys_;  // titan 13: the pause's and the test's panel's keys: held ones wait for their release
     cstyle::Anims pauseAnims_;        // 2.84: the pause in the Cosmic kit
     cstyle::HoloCard pauseCard_;
     cstyle::ChromeText pauseTitle_;
@@ -3770,6 +3823,8 @@ public:
     bool branchRead_ = false;    // 2.75.5: the branch's map read once (what was so then is no news)
     std::map<int, std::string> retake_;  // 2.75: zones to take back (a group fell there): zone → that group
     float branchAt_ = 0.0f;              // 2.75: when the branch's map is read again
+    bool eventAsked_ = false, raidEndKnown_ = false;  // titan 13: the event's end read (the countdown)
+    float raidEnd_ = 0.0f;                            // titan 13: the raid's second at which the event ends
     raid::ArenaCamera arenaCam_;   // 2.68: the camera of a gigaboss's arena (display only)
     std::vector<Rect> hudRects_;   // 2.68: what the HUD covers this frame (kept clear of the arrows)
     WorldView view_;

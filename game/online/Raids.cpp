@@ -2,8 +2,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
 #include <cstdio>
 #include <ctime>
+
+#include "game/raid/Difficulty.h"
 
 namespace cosmic::raids {
 
@@ -401,6 +404,12 @@ std::string eventName(const Event& e) {
 }
 
 std::string difficultyLabel(int d) { return "Difficulté " + std::to_string(std::clamp(d, 1, 5)) + " / 5"; }
+
+std::string difficultyEffects(int d) {
+    const raid::DifficultyScale s = raid::difficultyScale(d);
+    auto pct = [](float f) { return std::to_string(static_cast<int>(std::lround(f * 100.0f))) + " %"; };
+    return "Vie des Gigaboss : " + pct(s.health) + " · Dégâts reçus : " + pct(s.damage) + " · combat visé ≈ " + std::to_string(s.minutes) + " min";
+}
 
 const std::vector<int>& reminderChoices() {
     static const std::vector<int> k = {1440, 60, 10};

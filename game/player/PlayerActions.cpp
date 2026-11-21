@@ -283,6 +283,13 @@ bool Player::hurt(GameWorld& w, const DamageInfo& dmg) {
     if (invulnTimer_ > 0.0f) return false;
     // The level's damage factor (shown before playing: "Dégâts reçus : x1.5").
     int amount = std::max(1, static_cast<int>(std::round(dmg.amount * w.level().damageFactor)));
+    if (w.hurtScale() != 1.0f) {
+        // Titan 13: a raid's difficulty (its Gigaboss' and its Heart's damage × 0.6 to 1.5): the exact total, the
+        // fractions carried from one blow to the next (a blow of 1 at × 0.6: 0, 1, 1, 0, 1…), never more at once.
+        hurtCarry += dmg.amount * w.level().damageFactor * w.hurtScale();
+        amount = static_cast<int>(std::floor(hurtCarry + 1e-4f));
+        hurtCarry = std::max(0.0f, hurtCarry - static_cast<float>(amount));
+    }
     health -= amount;
     if (dmg.slow > 0.0f && dmg.slowDuration > 0.0f) {
         applySlow(dmg.slow, dmg.slowDuration);

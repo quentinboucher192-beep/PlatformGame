@@ -22,6 +22,9 @@ export default defineConfig(async () => {
                         // Backups: no wait before the pre_import copy; 1 MiB parts (several per file).
                         BACKUP_SETTLE_MS: "0",
                         BACKUP_IMPORT_PART_SIZE: "1048576",
+                        // Gifts: small steps, so that a send of a few hundred players goes on over several requests.
+                        GIFT_STEP_PLAYERS: "100",
+                        GIFT_STEPS_PER_REQUEST: "2",
                     },
                 },
             }),

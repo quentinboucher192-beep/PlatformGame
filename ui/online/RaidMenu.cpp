@@ -6,6 +6,7 @@
 
 #include "engine/core/I18n.h"
 #include "engine/rendering/Renderer.h"
+#include "game/levels/LevelTimer.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/widgets/UIContext.h"
 
@@ -172,6 +173,7 @@ bool drawNotices(UIContext& ui, const Rect& area, float k, const std::vector<con
 void Menu::open(Section s) {
     open_ = true;
     if (s != Section::Count) section_ = s;
+    keys_.reset();  // titan 13: what is held now (moving) waits for its release
     scrollBy = 0.0f;
     confirm = false;
 }
@@ -179,7 +181,10 @@ void Menu::open(Section s) {
 bool Menu::handleKeys(const InputManager& in, bool allowed, Section openAt) {
     confirm = false;
     if (!open_) {
-        if (allowed && in.menuPressed(Action::RaidMenu)) open(openAt);
+        if (allowed && in.menuPressed(Action::RaidMenu)) {
+            open(openAt);
+            keys_.update(in);  // titan 13: the directions held at this moment are ignored until released
+        }
         return false;
     }
     if (!allowed) {
@@ -194,12 +199,14 @@ bool Menu::handleKeys(const InputManager& in, bool allowed, Section openAt) {
         open_ = false;
         return true;
     }
+    // Titan 13: a section changes on a fresh press only (never a held direction's repeat, never one held when it opened).
+    keys_.update(in);
     int step = 0;
-    if (in.menuPressed(Action::MenuLeft) || in.menuPressed(Action::MenuTabPrev)) step = -1;
-    else if (in.menuPressed(Action::MenuRight) || in.menuPressed(Action::MenuTabNext)) step = 1;
+    if (keys_.fresh(in, Action::MenuLeft) || keys_.fresh(in, Action::MenuTabPrev)) step = -1;
+    else if (keys_.fresh(in, Action::MenuRight) || keys_.fresh(in, Action::MenuTabNext)) step = 1;
     if (step != 0) section_ = static_cast<Section>((static_cast<int>(section_) + step + kSections) % kSections);
-    if (in.menuPressed(Action::MenuUp)) scrollBy -= 90.0f;
-    if (in.menuPressed(Action::MenuDown)) scrollBy += 90.0f;
+    if (keys_.pressed(in, Action::MenuUp)) scrollBy -= 90.0f;
+    if (keys_.pressed(in, Action::MenuDown)) scrollBy += 90.0f;
     confirm = in.menuPressed(Action::MenuConfirm);
     return false;
 }
@@ -254,11 +261,11 @@ void lineList(Pen& p, const std::vector<raidhud::Line>& ls) {
     }
 }
 
-void entry(Pen& p, const Notice& n) {
+void entry(Pen& p, const Notice& n, const raidhud::RaidClock& clock) {
     const float timeW = p.ui.s(84), tx = p.x + timeW, tw = p.w - timeW;
     const auto lines = wrap(p.ui, n.text, FontFace::Body, 14, tw, 3);
     if (p.draw) {
-        fit(p.ui, raidTime(n.raidSeconds), {p.x, p.y + p.ui.s(11)}, 14, timeW - p.ui.s(10), kDim, FontFace::Bold, Align::Left, true);
+        fit(p.ui, clock.at(n.raidSeconds), {p.x, p.y + p.ui.s(11)}, 14, timeW - p.ui.s(10), kDim, FontFace::Bold, Align::Left, true);
         fit(p.ui, n.title, {tx, p.y + p.ui.s(11)}, 15, tw, n.color, FontFace::Bold);
         drawLines(p.ui, lines, {tx, p.y + p.ui.s(24)}, 14, p.ui.s(19), kDim);
     }
@@ -332,7 +339,7 @@ void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tabl
             const size_t n = d.journal ? d.journal->size() : 0;
             heading(p, n == 0 ? std::string("JOURNAL") : "JOURNAL · " + std::to_string(n) + (n > 1 ? " notifications" : " notification"), kGold);
             if (n == 0) paragraph(p, "Aucune notification pour l'instant : chacune s'ajoute ici avec son heure dans le raid.", kDim);
-            for (size_t i = n; i-- > 0;) entry(p, (*d.journal)[i]);
+            for (size_t i = n; i-- > 0;) entry(p, (*d.journal)[i], d.clock);
             break;
         }
         case Section::Group:
@@ -365,7 +372,7 @@ void sectionBody(Pen& p, const MenuData& d, Section s, bool* results, bool* tabl
             if (d.journal)
                 for (size_t i = d.journal->size(); i-- > 0;)
                     if ((*d.journal)[i].section == Section::Titan) {
-                        entry(p, (*d.journal)[i]);
+                        entry(p, (*d.journal)[i], d.clock);
                         any = true;
                     }
             if (!any) paragraph(p, "Aucun événement du titan pour l'instant.", kDim);
@@ -429,7 +436,16 @@ MenuAction drawMenu(UIContext& ui, Menu& m, const MenuData& d) {
     ui.r().fillRoundedRect(L.panel, ui.s(16), Color{16, 22, 46, 255});
     ui.r().drawRoundedRect(L.panel, ui.s(16), ui.theme().accent.withAlpha(150), std::max(1.0f, ui.s(1.5f)));
     // The body faces (« · » is not in the titles' font).
-    fit(ui, d.title, {L.title.x, L.title.center().y}, 22, L.title.w, kText, FontFace::Bold);
+    // Titan 13: the raid's countdown at the right of the title (measured first; the title in what is left).
+    float titleW = L.title.w;
+    {
+        const std::string c = d.clock.deadline ? "Reste " + LevelTimer::format(d.clock.left(), false)
+                                               : "Écoulé " + LevelTimer::format(std::max(0.0f, d.clock.now), false);
+        const float cw = std::min(L.title.w * 0.45f, textW(ui, c, 18, FontFace::Bold) + ui.s(12));
+        fit(ui, c, {L.title.right() - cw, L.title.center().y}, 18, cw, raidhud::clockColor(d.clock, ui.theme().text, ui.time()), FontFace::Bold);
+        titleW = std::max(0.0f, L.title.w - cw - ui.s(12));
+    }
+    fit(ui, d.title, {L.title.x, L.title.center().y}, 22, titleW, kText, FontFace::Bold);
     UIContext::ButtonStyle cs;
     cs.small = true;
     cs.fontSize = ui.fitFont(closeText(d.keyName), FontFace::Bold, 15, std::max(ui.s(20), L.close.w - ui.s(16)));

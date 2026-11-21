@@ -796,6 +796,12 @@
    ]
   },
   {
+   "fr": "8 à 64 lettres, chiffres ou tirets",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "8. Disponibilité",
    "where": [
     "data/online/terms_fr.txt"
@@ -9878,6 +9884,12 @@
    ]
   },
   {
+   "fr": "Cadeaux : plus de limite de récompenses ni de joueurs ; « Tous les joueurs » envoie à chaque joueur actif, et un grand envoi n'apparaît qu'une fois complet, jamais en double.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Cadeaux : un administrateur offre des récompenses du catalogue (combinaisons, traînées, cadres, titres, effets de victoire, badges de profil) à un ou plusieurs joueurs, dans l'un des onze emballages, avec un message ; COSMIC ONLINE › CADEAUX les garde (contenu surprise jusqu'à l'ouverture) et les ouvre dans une scène animée (la boîte tremble, le couvercle s'envole, l'objet monte dans son halo), puis « Équiper maintenant », « Cadeau suivant » ou « Plus tard » ; ADMINISTRATION › Cadeaux pour choisir, prévisualiser, envoyer et retirer, chaque envoi inscrit au Journal.",
    "where": [
     "data/news/changelog.json"
@@ -11721,12 +11733,6 @@
    ]
   },
   {
-   "fr": "Cent joueurs au plus par envoi.",
-   "where": [
-    "ui/screens/AdminGifts.cpp"
-   ]
-  },
-  {
    "fr": "Cent phases de boss battues sans être touché.",
    "where": [
     "data/cosmetics/cosmetics.json"
@@ -11841,6 +11847,12 @@
    "fr": "Cet avis n'a pas de commentaire : il n'y a rien à signaler.",
    "where": [
     "server/src/raidReviews.ts"
+   ]
+  },
+  {
+   "fr": "Cet envoi est déjà en cours d'écriture : renvoyez la même demande.",
+   "where": [
+    "server/src/gifts.ts"
    ]
   },
   {
@@ -11976,6 +11988,12 @@
    "fr": "Cette branche ou cette zone est introuvable dans les données du jeu.",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Cette clé d'envoi sert déjà à un autre envoi.",
+   "where": [
+    "server/src/gifts.ts"
    ]
   },
   {
@@ -12498,6 +12516,12 @@
    "fr": "Chaque instance frappe le même Cœur : sa part est retirée de la vie commune ({0} dix-millièmes).",
    "where": [
     "ui/widgets/GigabossStatsView.cpp"
+   ]
+  },
+  {
+   "fr": "Chaque joueur actif · ceux qui les possèdent déjà ou les attendent sont ignorés par le serveur",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -13911,6 +13935,7 @@
    "fr": "Classement",
    "where": [
     "game/online/OnlineService.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/studio/StudioFrise.cpp"
    ]
   },
@@ -17651,6 +17676,12 @@
    ]
   },
   {
+   "fr": "Course à la vérification : chaque tentative (Solo, Duo, Trio) a de nouveau son bouton 💬 avec son nombre de commentaires, à côté du ▶, comme les records d'un niveau classique.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Course à la vérification : chaque tentative d'un niveau EXTRÊME est classée selon sa progression, même sans arriver au bout : parcours (40 points), vie retirée aux boss et vagues d'embuscade battues (60 points). Le serveur recalcule le score à partir du replay.",
    "where": [
     "data/news/changelog.json"
@@ -17672,6 +17703,24 @@
    "fr": "Course à la vérification : {0} %",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course à la vérification · Duo",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course à la vérification · Solo",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
+   "fr": "Course à la vérification · Trio",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
    ]
   },
   {
@@ -20633,6 +20682,18 @@
    ]
   },
   {
+   "fr": "Difficulté de l'événement : 1 / 5 : {0} ; 3 / 5 (les chiffres ci-dessous) : {1} ; 5 / 5 : {2}.",
+   "where": [
+    "ui/screens/RaidSheetsScene.cpp"
+   ]
+  },
+  {
+   "fr": "difficulté différente de celle de l'événement",
+   "where": [
+    "server/src/raidZones.ts"
+   ]
+  },
+  {
    "fr": "Difficulté {0}   —   {1}",
    "where": [
     "ui/screens/PlanetMapScene.cpp"
@@ -21230,12 +21291,6 @@
    "fr": "Double saut au-dessus du vide",
    "where": [
     "game/raid/nav/Intent.cpp"
-   ]
-  },
-  {
-   "fr": "Douze récompenses au plus par envoi.",
-   "where": [
-    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -25638,7 +25693,14 @@
   {
    "fr": "Envoi en cours…",
    "where": [
+    "ui/screens/AdminGifts.cpp",
     "ui/studio/Studio.cpp"
+   ]
+  },
+  {
+   "fr": "Envoi en cours… {0} / {1} joueurs",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -25753,6 +25815,24 @@
   },
   {
    "fr": "Envoyer {0} ?",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyer à tous",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyer à {0} joueur ?",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "Envoyer à {0} joueurs ?",
    "where": [
     "ui/screens/AdminGifts.cpp"
    ]
@@ -34134,6 +34214,12 @@
    ]
   },
   {
+   "fr": "Joueurs choisis ({0})",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
    "fr": "JOUEURS CONNECTÉS",
    "where": [
     "ui/online/RaidTestGuests.cpp"
@@ -35158,6 +35244,12 @@
    "fr": "l'évent",
    "where": [
     "game/raid/bots/BossTactic.cpp"
+   ]
+  },
+  {
+   "fr": "L'événement a commencé : sa difficulté ne change plus.",
+   "where": [
+    "server/src/raids.ts"
    ]
   },
   {
@@ -41655,6 +41747,12 @@
    ]
   },
   {
+   "fr": "Les tentatives ne se commentent que sur les niveaux de la campagne.",
+   "where": [
+    "server/src/workshop.ts"
+   ]
+  },
+  {
    "fr": "Les tirs et les rayons des boss classiques partent de leur dessin : le poing du Thornwarden et de l'Archonte, leur cœur pour le rayon, la lance d'Aurorax, le chapeau de Mycélia, les yeux de Nyxara, l'œil de Pyrogyre, le marteau du Cœur du Creuset.",
    "where": [
     "data/news/changelog.json"
@@ -42419,18 +42517,6 @@
    ]
   },
   {
-   "fr": "liste de 1 à {0} joueurs attendue",
-   "where": [
-    "server/src/gifts.ts"
-   ]
-  },
-  {
-   "fr": "liste de 1 à {0} récompenses attendue",
-   "where": [
-    "server/src/gifts.ts"
-   ]
-  },
-  {
    "fr": "liste de 1000 identifiants au plus",
    "where": [
     "server/src/achievements.ts"
@@ -42473,9 +42559,21 @@
    ]
   },
   {
+   "fr": "liste de joueurs (un au moins) ou « all » attendue",
+   "where": [
+    "server/src/gifts.ts"
+   ]
+  },
+  {
    "fr": "liste de pouvoirs attendue",
    "where": [
     "server/src/challengeSpec.mjs"
+   ]
+  },
+  {
+   "fr": "liste de récompenses attendue (une au moins)",
+   "where": [
+    "server/src/gifts.ts"
    ]
   },
   {
@@ -55460,7 +55558,8 @@
    "fr": "Progression",
    "where": [
     "game/online/Raids.cpp",
-    "ui/screens/ChallengesScene.cpp"
+    "ui/screens/ChallengesScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp"
    ]
   },
   {
@@ -57557,6 +57656,12 @@
   },
   {
    "fr": "Raids : le monte-charge ne démarre plus avec le premier joueur monté dessus : il attend le nombre de joueurs affiché (« 1 / 4 » reste immobile), puis ouvre la porte en haut de son mur.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
+   "fr": "Raids : le temps du raid se compte à rebours (rouge dans la dernière minute) ; plus de plateformes dans les antres et l'arène du Cœur ; ouvrir le menu (Tab) en courant ne fait plus défiler ses onglets ; les Gigaboss et le Cœur rééquilibrés (environ 10 min pour un bon groupe de 8 à 3 / 5) ; la difficulté d'un événement (1 à 5) change vraiment leur vie et leurs dégâts, affichés à côté du choix (titan 13).",
    "where": [
     "data/news/changelog.json"
    ]
@@ -60394,9 +60499,27 @@
    ]
   },
   {
+   "fr": "Reste du raid · zone : {0} écoulées",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "Reste en bas (s)",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp"
+   ]
+  },
+  {
+   "fr": "Reste {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
+   "fr": "reste {0}",
+   "where": [
+    "ui/online/RaidHud.cpp"
    ]
   },
   {
@@ -64007,6 +64130,7 @@
     "ui/screens/CoopGameScene.cpp",
     "ui/screens/OnlineLevelsScene.cpp",
     "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/PlayerProfileScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
@@ -65235,6 +65359,12 @@
    "fr": "Seuls les défis gardés sur ce PC sont montrés.",
    "where": [
     "ui/screens/ChallengesScene.cpp"
+   ]
+  },
+  {
+   "fr": "Seuls les joueurs de l'équipe peuvent épingler un commentaire.",
+   "where": [
+    "server/src/workshop.ts"
    ]
   },
   {
@@ -68965,6 +69095,12 @@
    ]
   },
   {
+   "fr": "Temps du raid écoulé · zone : {0}",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
    "fr": "TEMPS GAGNABLE",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -69277,7 +69413,8 @@
    "where": [
     "server/src/coopRace.ts",
     "server/src/devices.ts",
-    "server/src/race.ts"
+    "server/src/race.ts",
+    "server/src/workshop.ts"
    ]
   },
   {
@@ -71190,6 +71327,12 @@
    "fr": "Tous les emplacements sont pris : retirez d'abord un pouvoir.",
    "where": [
     "ui/screens/GhostSetupScene.cpp"
+   ]
+  },
+  {
+   "fr": "Tous les joueurs ({0})",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -76557,6 +76700,12 @@
    ]
   },
   {
+   "fr": "Vie des Gigaboss : {0} · Dégâts reçus : {1} · combat visé ≈ {2} min",
+   "where": [
+    "game/online/Raids.cpp"
+   ]
+  },
+  {
    "fr": "Vie du boss",
    "where": [
     "saves/HudLayout.cpp"
@@ -78934,12 +79083,6 @@
    ]
   },
   {
-   "fr": "Zone : {0}",
-   "where": [
-    "ui/online/RaidHud.cpp"
-   ]
-  },
-  {
    "fr": "Zone d'escalade (Haut/Bas pour grimper).",
    "where": [
     "game/levels/ObjectTypes.cpp"
@@ -79524,6 +79667,12 @@
    ]
   },
   {
+   "fr": "{0} % · Fini",
+   "where": [
+    "ui/screens/OnlineThreadScene.cpp"
+   ]
+  },
+  {
    "fr": "{0} % · {1} Mo reçus",
    "where": [
     "ui/screens/CoopLobbyScene.cpp"
@@ -79665,6 +79814,24 @@
    "fr": "{0} ({1} étoiles)",
    "where": [
     "game/GameServices.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ({1}) × tous les joueurs ({2}) = jusqu'à {3} cadeau",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ({1}) × tous les joueurs ({2}) = jusqu'à {3} cadeaux",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
+   ]
+  },
+  {
+   "fr": "{0} ({1}) × tous les joueurs ({2}) = jusqu'à {3} colis",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {
@@ -82717,6 +82884,7 @@
    "fr": "{0} réanimation",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -82736,6 +82904,7 @@
    "fr": "{0} réanimations",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -85685,6 +85854,18 @@
    ]
   },
   {
+   "fr": "Écoulé depuis le début · zone : {0}",
+   "where": [
+    "ui/online/RaidHud.cpp"
+   ]
+  },
+  {
+   "fr": "Écoulé {0}",
+   "where": [
+    "ui/online/RaidMenu.cpp"
+   ]
+  },
+  {
    "fr": "Écouter",
    "where": [
     "ui/widgets/AssetPreview.cpp"
@@ -86233,6 +86414,7 @@
   {
    "fr": "Équipe",
    "where": [
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/ReplayScene.cpp"
    ]
   },
@@ -86246,6 +86428,7 @@
    "fr": "équipe incomplète",
    "where": [
     "ui/screens/OnlineRankingScene.cpp",
+    "ui/screens/OnlineThreadScene.cpp",
     "ui/screens/RaceScene.cpp"
    ]
   },
@@ -87055,6 +87238,12 @@
    "fr": "Œil de Skullmaw",
    "where": [
     "data/enemies/skullmaw_oeil.json"
+   ]
+  },
+  {
+   "fr": "… ({0} joueurs)",
+   "where": [
+    "ui/screens/AdminGifts.cpp"
    ]
   },
   {

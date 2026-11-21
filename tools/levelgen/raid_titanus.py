@@ -76,15 +76,17 @@ def lair(A, spec):
     z.raid["arena"] = {"rect": [ax0 * T, 6 * T, ARENA_W * T, (FLOOR - 6) * T], "floor": FLOOR * T, "door": "",
                        "entry": [(ax0 + 6) * T, FLOOR * T], "players": 8}
     z.raid["gigaboss"] = {
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.40,
         "boss": boss, "name": "Titanus", "objective": "jd_titanus", "routine": "titanus", "carapace": [2, 4],
-        "hold": 3.0, "reopen": 15.0, "exposed": 11.0, "exposedMult": 2.0,
+        "hold": 3.0, "reopen": 15.0, "exposed": 15.0, "exposedMult": 2.0,
         "fists": {"name": tr("Écrasement", "Crushing heel"), "periods": [8.5, 7.0, 5.5], "warn": 1.5, "width": 96.0, "damage": 2.0},
         "weakEnemy": "titanus_genou", "weakSpots": [[50.0, -260.0], [-60.0, -110.0], [70.0, -110.0]], "weakShare": 0.04,
         "hpPerPlayer": 0.55, "weakHpPerPlayer": 0.25, "pressurePerPlayer": 0.06,
         "waves": {"periods": [10.0, 8.0, 6.5], "warn": 0.9, "speed": 430.0, "height": 40.0, "width": 26.0, "damage": 1.0, "double": 3,
                   "first": 6.0, "floor": FLOOR * T, "left": ax0 * T, "right": ax1 * T},
         "boulders": {"periods": [0.0, 9.0, 7.0], "count": [0, 6, 9], "warn": 1.3, "damage": 1.0, "top": 6 * T},
-        "restraints": {"enemy": "titanus_entrave", "spots": [[-70.0, -150.0], [70.0, -150.0]], "window": 1.5, "reactors": 1.5},
+        "restraints": {"enemy": "titanus_entrave", "spots": [[-70.0, -150.0], [70.0, -150.0]], "window": 3.0, "reactors": 1.5},
         "links": {"west": "jd_reacteur_ouest", "east": "jd_reacteur_est"},
         "fx": "animations/titanus_fx.json",
         "fallText": tr("La jambe droite d'Asterion chancelle : ses charges ralentissent.", "Asterion's right leg staggers: its charges slow down."),
@@ -101,4 +103,6 @@ def lair(A, spec):
     L.decor(th["deco_tall"][2], ax0 + 160, FLOOR, alpha=0.8)
     L.orb("health_orb", x0 + 14, FLOOR - 2)
     z.x = ax1 + 2
+    # Titan 13: more footholds on every storey (none under the forge's ledges: its shock waves still run along the floor).
+    z.L.footholds(ax0 + 2, ax1 - 2, [FLOOR - 1 - 6 * k for k in range(1, 6)], z.th["ledge"], min_gap=16)
     return z.save()

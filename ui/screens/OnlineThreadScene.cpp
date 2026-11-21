@@ -1,11 +1,14 @@
 // COSMIC ONLINE (2.19) - « Avis et commentaires » of an official level of the campaign (the
 // players' rating and its comments, shown in ONLINE only) and the comments of a run of the
-// leaderboards. Pushed over the ranking screen; every rule is checked by the server, the page
-// only shows what it answers.
+// leaderboards, and (2.85) of an attempt of the « course à la vérification » of an EXTRÊME level
+// (solo: "race:<attempt>", Duo / Trio: "coop:<attempt>"). Pushed over the ranking screen; every
+// rule is checked by the server, the page only shows what it answers.
 
 #include <algorithm>
+#include <cstdio>
 #include <map>
 
+#include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "ui/online/CommentsPanel.h"
 #include "ui/online/OnlineWidgets.h"
@@ -28,8 +31,10 @@ public:
     void onEnter() override {
         g_.ui.setFocus("thread/close");
         run_ = thread_.rfind("run:", 0) == 0;
+        team_ = thread_.rfind("coop:", 0) == 0;
+        race_ = team_ || thread_.rfind("race:", 0) == 0;
         id_ = thread_.substr(thread_.find(':') + 1);
-        if (!run_) levelId_ = id_;  // a run's level is confirmed by its record
+        if (!run_ && !race_) levelId_ = id_;  // a run's level is confirmed by its record, an attempt's by the server
         comments_.setBackButton(false);
         if (g_.onlineOpen == "comments-replies") {  // automated screenshots
             g_.onlineOpen.clear();
@@ -38,6 +43,8 @@ public:
         if (run_) {
             comments_.openThread(CommentsPanel::Kind::Run, thread_, "/api/v1/records/" + id_, "");
             loadRun();
+        } else if (race_) {
+            comments_.openThread(CommentsPanel::Kind::Run, thread_, (team_ ? "/api/v1/coop/runs/" : "/api/v1/races/runs/") + id_, "");
         } else {
             comments_.openThread(CommentsPanel::Kind::Level, thread_, "/api/v1/levels/" + id_, levelName());
             rating_.open(id_);
@@ -45,7 +52,7 @@ public:
     }
 
     void onResume() override {
-        if (!run_) rating_.refresh();
+        if (!run_ && !race_) rating_.refresh();
     }
 
     void update(float) override {}
@@ -65,7 +72,7 @@ public:
         cs.small = true;
         Rect close{box_.right() - ui.s(170), box_.y + ui.s(20), ui.s(150), ui.s(42)};
         bool leave = ui.button("close", close, "Fermer", cs);
-        std::string title = run_ ? "Commentaires de la course" : "Avis et commentaires";
+        std::string title = run_ || race_ ? "Commentaires de la course" : "Avis et commentaires";
         float tx = box_.x + ui.s(30);
         float tf = ui.fitFont(title, FontFace::Title, 28, close.x - ui.s(20) - tx, 0.7f);
         ui.label(title, {tx, close.center().y}, tf, ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
@@ -73,7 +80,8 @@ public:
         float colW = std::clamp(content.w * 0.3f, ui.s(300), ui.s(430));
         Rect left{content.x, content.y, colW, content.h};
         Rect right{left.right() + ui.s(24), content.y, content.right() - left.right() - ui.s(24), content.h};
-        if (run_) drawRun(left);
+        if (race_) drawAttempt(left);
+        else if (run_) drawRun(left);
         else drawLevel(left);
         ui.r().fillRoundedRect(right, ui.s(14), Color{8, 13, 30, 220});
         ui.r().drawRoundedRect(right, ui.s(14), ui.theme().border, ui.s(1.2f));
@@ -228,6 +236,85 @@ private:
         }
     }
 
+    /// 2.85: the attempt of the race (as the server describes it with its comments): its player or its
+    /// team's players (each one opens their profile), its board, its progression, its time and day, and
+    /// its replay. Every line fitted to the column.
+    void drawAttempt(const Rect& col) {
+        UIContext& ui = g_.ui;
+        float x = col.x, y = col.y, w = col.w;
+        const Json& a = comments_.subject();
+        if (a.is_object())
+            if (std::string lid = jstr(a, "level_id"); !lid.empty()) levelId_ = lid;
+        y = drawLevelHeader(x, y, w);
+        ui.separator({x, y + ui.s(4)}, w);
+        y += ui.s(16);
+        if (!a.is_object()) {
+            const std::string& err = comments_.loadError();
+            std::string t = err.empty() ? "Chargement de la course…" : "Course indisponible : " + err;
+            ui.labelWrapped(t, {x, y}, w, 17, err.empty() ? ui.theme().textDim : ui.theme().warm);
+            return;
+        }
+        const int size = std::clamp(jget<int>(a, "size", 1), 1, 3);
+        Json players = Json::array();
+        if (size > 1) players = jfield(a, "players", Json::array());
+        else players.push_back(jfield(a, "player", Json::object()));
+        const std::string myId = g_.online.playerId();
+        UIContext::ButtonStyle ns;
+        ns.small = true;
+        int k = 0;
+        for (const Json& p : players) {
+            const std::string pid = jstr(p, "id");
+            std::string name = jstr(p, "username");
+            i18n::Verbatim words;  // a pseudonym, as its player wrote it
+            ns.enabled = !pid.empty();
+            ns.fontSize = ui.fitFont(name, FontFace::Bold, 18, w - ui.s(28), 0.7f);
+            name = ui.elide(name, FontFace::Bold, ns.fontSize, w - ui.s(28));
+            const float bw = std::min(w, ui.text().measure(name, FontFace::Bold, ui.s(ns.fontSize)).x + ui.s(28));
+            if (ui.button("player" + std::to_string(k++), {x, y, bw, ui.s(34)}, name, ns)) g_.app.pushScene(makePlayerProfile(g_, pid));
+            if (!myId.empty() && pid == myId) ui.r().fillRect({x + ui.s(6), y + ui.s(31), bw - ui.s(12), ui.s(2)}, ui.theme().accent);
+            y += ui.s(40);
+        }
+        y += ui.s(4);
+        auto row = [&](const std::string& key, const std::string& v, Color c, float sz) {
+            ui.label(key, {x, y + ui.s(10)}, ui.fitFont(key, FontFace::Body, 15, w), ui.theme().textDim, Align::Left, FontFace::Body, VAlign::Middle);
+            ui.label(v, {x, y + ui.s(32)}, ui.fitFont(v, FontFace::Bold, sz, w), c, Align::Left, FontFace::Bold, VAlign::Middle);
+            y += ui.s(54);
+        };
+        row("Classement", std::string("Course à la vérification · ") + (size == 3 ? "Trio" : size == 2 ? "Duo" : "Solo"), ui.theme().text, 19);
+        char pct[32];
+        std::snprintf(pct, sizeof pct, "%.1f", jget<double>(a, "score", 0.0));
+        std::string score = pct;
+        if (auto d = score.find('.'); d != std::string::npos) score[d] = ',';
+        const bool finished = jget<bool>(a, "finished", false);
+        row("Progression", score + " %" + (finished ? " · Fini" : ""), finished ? ui.theme().success : ui.theme().accent, 26);
+        if (size > 1) {
+            const int revives = jget<int>(a, "revives", 0);
+            std::string t = std::to_string(revives) + (revives > 1 ? " réanimations" : " réanimation");
+            if (jget<bool>(a, "incomplete", false)) t += " · équipe incomplète";
+            row("Équipe", t, ui.theme().text, 19);
+        }
+        std::string date = jstr(a, "at");
+        std::string when = date.size() >= 10 ? date.substr(8, 2) + "/" + date.substr(5, 2) + "/" + date.substr(0, 4) : std::string("—");
+        if (const int64_t ms = jget<int64_t>(a, "time_ms", 0); ms > 0) row("Temps", formatRunTime(ms), ui.theme().text, 19);
+        row("Réalisé le", when, ui.theme().text, 19);
+        y += ui.s(6);
+        // « Voir le replay »: downloaded then played, as the ▶ of its row.
+        UIContext::ButtonStyle st;
+        st.small = true;
+        st.fontSize = ui.fitFont("Voir le replay", FontFace::Bold, 17, w - ui.s(24), 0.7f);
+        st.enabled = jget<bool>(a, "has_replay", false) && !fetching_;
+        if (ui.button("replay", {x, y, w, ui.s(40)}, "Voir le replay", st)) {
+            fetching_ = true;
+            watchRaceAttempt(g_, a, size, life_, [this](const std::string& m) {
+                replayMsg_ = m;
+                if (m != "Téléchargement du replay…") fetching_ = false;
+            });
+        }
+        y += ui.s(48);
+        std::string why = !jget<bool>(a, "has_replay", false) ? "Pas de replay vérifié pour cette course." : replayMsg_;
+        if (!why.empty()) ui.labelWrapped(why, {x, y}, w, 14, ui.theme().textDim);
+    }
+
     GameServices& g_;
     OnlineUi ui_;
     CommentsPanel comments_;
@@ -235,6 +322,8 @@ private:
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
     std::string thread_, levelId_, id_;
     bool run_ = false;
+    bool race_ = false, team_ = false, fetching_ = false;  // 2.85: an attempt of a race (a team's), its replay downloading
+    std::string replayMsg_;
     Json run_data_;
     std::string runError_;
     Rect box_;

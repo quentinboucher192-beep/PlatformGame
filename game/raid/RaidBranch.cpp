@@ -510,6 +510,7 @@ ZoneRules parseZoneRules(const LevelData& level, const Branch& b) {
             }
         g.weakShare = std::clamp(jget<float>(giga, "weakShare", g.weakShare), 0.0f, 0.2f);
         g.hpPerPlayer = std::clamp(jget<float>(giga, "hpPerPlayer", g.hpPerPlayer), 0.0f, 2.0f);
+        g.hpScale = std::clamp(jget<float>(giga, "hpScale", g.hpScale), 0.05f, 4.0f);  // titan 13
         g.weakHpPerPlayer = std::clamp(jget<float>(giga, "weakHpPerPlayer", g.weakHpPerPlayer), 0.0f, 2.0f);
         g.pressurePerPlayer = std::clamp(jget<float>(giga, "pressurePerPlayer", g.pressurePerPlayer), 0.0f, 0.3f);
         // 2.69 (phase 4B): the routine of the other gigaboss, their texts, the objectives they read.

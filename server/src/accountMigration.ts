@@ -305,6 +305,8 @@ export async function performMigration(ctx: Ctx, plan: MigrationPlan): Promise<M
             stmts.push(
                 // Its bests and replays follow the records (ON DELETE CASCADE).
                 st("DELETE FROM records WHERE player_id = ?2"),
+                // 2.85: the threads of its race attempts go with them.
+                st("DELETE FROM campaign_comments WHERE thread IN (SELECT 'race:' || id FROM race_runs WHERE player_id = ?2)"),
                 st("DELETE FROM race_runs WHERE player_id = ?2"),
                 st("DELETE FROM community_records WHERE player_id = ?2"),
                 st("DELETE FROM community_level_players WHERE player_id = ?2"),

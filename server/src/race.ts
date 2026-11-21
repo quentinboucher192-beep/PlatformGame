@@ -9,6 +9,7 @@
 // RaceOptions, the replay carries the challenge's rules, and deaths with returns to the
 // checkpoints are allowed when the challenge has its checkpoints on.
 
+import { attemptCommentCounts } from "./campaign";
 import { refreshClanOfPlayer } from "./clans";
 import { adminReplayHeaders, adminViewing, auditAdminView, profileLocks, statusLock, usernameOf, type AdminLock } from "./adminView";
 import { optionalAuth, requireAuth } from "./auth";
@@ -472,6 +473,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
         .first<{ n: number }>();
     // Frame, title and suit of each ranked player (2.23), when their profile is visible.
     const looks = await boardCosmetics(ctx, rows.results.map((r) => String(r.player_id)));
+    // 2.85: the comments of each attempt (official levels only: a community race has no comments).
+    const comments = board.kind === "official" ? await attemptCommentCounts(ctx, "race:", rows.results.map((r) => String(r.id))) : null;
     // 2.75.3: an administrator (the session's role) may watch the replay of a masked profile (marked).
     const isAdmin = adminViewing(viewer, "");
     return json(ctx, {
@@ -500,6 +503,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
             has_replay: r.has_replay === 1 || r.player_id === me || (isAdmin && r.replay_kept === 1),
             ...(isAdmin && r.player_id !== me && r.replay_kept === 1 && r.profile_visibility === "private" ? { admin_view: { locks: ["profile_private"] } } : {}),
             me: r.player_id === me,
+            // null: no comments (a community level, or a player who hid their profile, as a record's).
+            comment_count: comments && (r.profile_visibility !== "private" || r.player_id === me) ? (comments.get(String(r.id)) ?? 0) : null,
         })),
         my_pending: pending?.n ?? 0,
     });

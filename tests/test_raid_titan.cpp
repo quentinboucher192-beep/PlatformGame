@@ -265,7 +265,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x818a318a1b0cd62eULL;  // reference (titan 12: each gallery an ambush, a gate after it): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0xfcb1d8c517a59392ULL;  // reference (titan 13: more footholds in the lairs and the Heart's arena, the nerf, Voidworm's crown over its body): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }

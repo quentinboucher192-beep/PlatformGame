@@ -434,7 +434,7 @@ private:
             }
             // Comments of the campaign (2.19): an official level or a run, opened from its ranking.
             std::string thread = n.contains("data") ? jstr(n["data"], "thread") : std::string{};
-            if (thread.rfind("level:", 0) == 0 || thread.rfind("run:", 0) == 0) {
+            if (thread.rfind("level:", 0) == 0 || thread.rfind("run:", 0) == 0 || thread.rfind("race:", 0) == 0 || thread.rfind("coop:", 0) == 0) {
                 g_.onlineOpen = "thread:" + thread;
                 g_.app.switchScene(makeOnlineRanking(g_, jstr(n, "level_id")));
                 return;

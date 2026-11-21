@@ -26,6 +26,7 @@
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/entities/Entities.h"
 #include "game/raid/ArenaCamera.h"
+#include "game/raid/Difficulty.h"
 #include "game/raid/RaidBranch.h"
 #include "game/raid/RaidRun.h"
 #include "tests/TestFramework.h"
@@ -253,7 +254,7 @@ TEST_CASE("raid branch: the server's catalog is the game's, and the generated zo
             h *= 1099511628211ULL;
         }
     }
-    constexpr uint64_t kZonesDigest = 0xba075d6aef357048ULL;  // reference (titan 12: the Gaines an ambush, a gate after each ambush, nothing over the towers' east doors): printed below when it changes
+    constexpr uint64_t kZonesDigest = 0xb840f0e1c481a62eULL;  // reference (titan 13: more footholds in the Pyroclast's hand, its nerf): printed below when it changes
     if (h != kZonesDigest) std::printf("  zones du raid : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kZonesDigest);
 }
@@ -558,6 +559,55 @@ TEST_CASE("raid gigaboss: Pyroclast's health follows the seats taken (2 to 8), i
     }
 }
 
+TEST_CASE("raid difficulty (titan 13): 1 to 5 scales the Gigaboss' health and the damage taken in its arena; the GO carries it") {
+    // The table (game/raid/Difficulty.h): 3 / 5 the base the fights are tuned for, clamped out of 1..5.
+    const float health[5] = {0.6f, 0.8f, 1.0f, 1.25f, 1.5f};
+    for (int level = 1; level <= 5; ++level) {
+        CHECK(raid::difficultyScale(level).health == health[level - 1]);
+        CHECK(raid::difficultyScale(level).damage == health[level - 1]);
+    }
+    CHECK(raid::difficultyScale(0).health == 0.6f);
+    CHECK(raid::difficultyScale(9).health == 1.5f);
+    CHECK(raid::difficultyScale(3).minutes == 10);
+    // The relay's level hash: the branch's version, then the event's difficulty; another version refused.
+    int level = 0;
+    CHECK(raid::readLevelHash("3.13.d4", "3.13", level));
+    CHECK(level == 4);
+    CHECK(raid::readLevelHash("3.13", "3.13", level));
+    CHECK(level == raid::kDifficultyDefault);
+    CHECK(!raid::readLevelHash("3.12.d4", "3.13", level));
+    CHECK(!raid::readLevelHash("3.13.d7", "3.13", level));
+    CHECK(!raid::readLevelHash("3.13.x4", "3.13", level));
+    CHECK(raid::levelHashWith("3.13", 5) == "3.13.d5");
+    CHECK(raid::levelHashWith(branch().levelHash(), 2) == branch().levelHash() + ".d2");
+    // In the fight: its health × the level (the seats' factor and its raid's base apart), the damage its arena deals too.
+    Services s;
+    const EnemyDefinition* def = s.content.enemy("pyroclast");
+    CHECK(def != nullptr);
+    if (!def) return;
+    for (int d = 1; d <= 5; ++d) {
+        raid::RaidRun run(s.ws(), branch(), raid::kMaxInstancePlayers);
+        run.setDifficulty(d);
+        CHECK(run.difficulty() == d);
+        CHECK(run.begin(0, kHand));
+        CHECK(engage(run, 8));
+        const Enemy* b = bossOf(run);
+        CHECK(b != nullptr);
+        if (!b) continue;
+        const float want = def->hp * raid::Gigaboss::healthFactor(run.rules().gigaboss, 8) * health[d - 1];
+        CHECK(std::abs(b->maxHp() - want) < 0.5f);
+        CHECK(run.gigaboss().healthScale() == health[d - 1]);
+        CHECK(run.world().hurtScale() == health[d - 1]);
+    }
+    // A test's own (« Tester le raid »: « Difficulté »).
+    raid::RaidRun t(s.ws(), branch(), raid::kMaxInstancePlayers);
+    raid::RaidRun::Test setup;
+    setup.on = true;
+    setup.difficulty = 5;
+    t.setTest(setup);
+    CHECK(t.difficulty() == 5);
+}
+
 TEST_CASE("raid gigaboss: 2 and 8 players, the fight in lockstep gives the same digest on two computers and through the relay") {
     Services s;
     for (int players : {2, 8}) {
@@ -674,7 +724,8 @@ TEST_CASE("raid gigaboss: its carapace holds until every vent is closed together
         CHECK(run.gigaboss().weakLeft() == 2);
     }
     // The exposure over: the vents light again, the carapace with them.
-    for (int k = 0; k < 1400 && run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
+    const int exposure = static_cast<int>(run.rules().gigaboss.exposed * 120.0f) + 200;  // titan 13: its window (14 s)
+    for (int k = 0; k < exposure && run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
     CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);
     CHECK(run.gigaboss().ventsClosed() == 0);
 }

@@ -136,6 +136,11 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
     Fight out;
     if (!b) return out;
     const bool heart = part == raid::kHeartPart;
+    // Titan 13, the nerf's bench (docs/RAIDS.md §37): another base health for this measure only (COSMIC_GOAT_HPSCALE),
+    // to sample the fight's chaos around a value (one start, several neighbouring healths) without regenerating the lair.
+    if (const char* hs = std::getenv("COSMIC_GOAT_HPSCALE"))
+        if (const raid::ZoneRules* zr = b->zoneRules(lairOf(*b)); zr && zr->gigaboss.present)
+            const_cast<raid::GigabossRules&>(zr->gigaboss).hpScale = static_cast<float>(std::atof(hs));
     raid::RaidRun::Test t;
     t.on = true;
     t.invincible = false;
@@ -346,7 +351,10 @@ namespace {
 /// One Gigaboss's fight (a test each): 8 simulated players (Expert), no invincibility, no rescue, 15 min at most.
 void goat(const std::string& part) {
     Svc s;
-    const Fight f = fightAt(s, part, raid::BotSkill::Expert, 900);
+    // Titan 13, the bench of the nerf (docs/RAIDS.md §37): COSMIC_GOAT_LIMIT seconds instead of 15 min (with
+    // COSMIC_GOAT_INVINCIBLE: how long invincible Experts take to beat it, the proxy of a good group).
+    const char* lim = std::getenv("COSMIC_GOAT_LIMIT");
+    const Fight f = fightAt(s, part, raid::BotSkill::Expert, lim ? std::max(60, std::atoi(lim)) : 900);
     print(f);
     CHECK(f.rescues == 0);
     // What they beat as measured (docs/RAIDS.md §28) must keep winning in time; the others are said too hard for now,

@@ -350,3 +350,5 @@ rouage
 guide
 # 2.84 : clé JSON du catalogue des raids (game/raid/RaidCatalog.cpp), jamais affichée
 formats
+# 2.85 : valeur « players » de POST /admin/gifts (ui/screens/AdminGifts.cpp), jamais affichée
+all

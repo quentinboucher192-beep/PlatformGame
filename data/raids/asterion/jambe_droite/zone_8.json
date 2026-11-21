@@ -1402,6 +1402,496 @@
   },
   {
    "id": "o84",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o85",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o86",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o87",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o88",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2608.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o89",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3024.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o90",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    880.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o91",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o92",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1136.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o93",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1552.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o94",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1968.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o95",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2384.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o96",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2800.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    784.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o101",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o102",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2608.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o103",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3024.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o104",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    688.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o105",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o106",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1136.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o107",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1552.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o108",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1968.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o109",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2384.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o110",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2800.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o111",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    592.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o112",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    944.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o113",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1360.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o114",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1776.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o115",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2192.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o116",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2608.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o117",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3024.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o118",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    496.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "chain_grate"
+   }
+  },
+  {
+   "id": "o119",
    "type": "liquid",
    "layer": "gameplay",
    "rect": [
@@ -1415,7 +1905,7 @@
    }
   },
   {
-   "id": "o85",
+   "id": "o120",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1430,7 +1920,7 @@
    }
   },
   {
-   "id": "o86",
+   "id": "o121",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1445,7 +1935,7 @@
    }
   },
   {
-   "id": "o87",
+   "id": "o122",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1460,7 +1950,7 @@
    }
   },
   {
-   "id": "o88",
+   "id": "o123",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1475,7 +1965,7 @@
    }
   },
   {
-   "id": "o89",
+   "id": "o124",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1490,7 +1980,7 @@
    }
   },
   {
-   "id": "o90",
+   "id": "o125",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1505,7 +1995,7 @@
    }
   },
   {
-   "id": "o91",
+   "id": "o126",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1520,7 +2010,7 @@
    }
   },
   {
-   "id": "o92",
+   "id": "o127",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1694,6 +2184,7 @@
     "players": 8
    },
    "gigaboss": {
+    "hpScale": 0.4,
     "boss": "o62",
     "name": "Titanus",
     "objective": "jd_titanus",
@@ -1704,7 +2195,7 @@
     ],
     "hold": 3.0,
     "reopen": 15.0,
-    "exposed": 11.0,
+    "exposed": 15.0,
     "exposedMult": 2.0,
     "fists": {
      "name": "Écrasement",
@@ -1780,7 +2271,7 @@
        -150.0
       ]
      ],
-     "window": 1.5,
+     "window": 3.0,
      "reactors": 1.5
     },
     "links": {

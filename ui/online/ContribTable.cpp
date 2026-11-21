@@ -392,14 +392,15 @@ void View::choose(int p) {
 
 bool View::handleKeys(const InputManager& in, const Model& m) {
     if (m.parts.empty()) return handleKeys(in, static_cast<int>(zonesOf(m, *this).size()), 0);
+    keys.update(in);  // titan 13: fresh presses only
     if (in.menuPressed(Action::MenuBack)) return true;
-    const bool prev = in.menuPressed(Action::MenuTabPrev), next = in.menuPressed(Action::MenuTabNext);
+    const bool prev = keys.fresh(in, Action::MenuTabPrev), next = keys.fresh(in, Action::MenuTabNext);
     if (prev || next) {
         const int n = static_cast<int>(m.parts.size()) + 1;  // « Raid entier », then each part, around
         choose(((part + 1 + (next ? 1 : -1)) % n + n) % n - 1);
     }
     const Part* p = partOf(m, *this);
-    if (in.menuPressed(Action::RaidMenu) && p && !p->tabs.empty()) {
+    if (keys.fresh(in, Action::RaidMenu) && p && !p->tabs.empty()) {
         // The part's next zone reached (« Toute la branche » after the last).
         const int n = static_cast<int>(p->tabs.size()) + 1;
         for (int k = 1; k < n; ++k) {
@@ -413,33 +414,34 @@ bool View::handleKeys(const InputManager& in, const Model& m) {
         expanded = -1;
     }
     int step = 0;
-    if (in.menuPressed(Action::MenuLeft)) step = -1;
-    if (in.menuPressed(Action::MenuRight)) step = 1;
+    if (keys.fresh(in, Action::MenuLeft)) step = -1;
+    if (keys.fresh(in, Action::MenuRight)) step = 1;
     if (step != 0) sort = static_cast<Col>((static_cast<int>(sort) + step + kCols) % kCols);
-    if (in.menuPressed(Action::MenuUp)) selected = std::max(-1, selected - 1);
-    if (in.menuPressed(Action::MenuDown)) selected = selected + 1;
-    if (in.menuPressed(Action::MenuConfirm) && selected >= 0) toggle = true;
+    if (keys.pressed(in, Action::MenuUp)) selected = std::max(-1, selected - 1);
+    if (keys.pressed(in, Action::MenuDown)) selected = selected + 1;
+    if (keys.fresh(in, Action::MenuConfirm) && selected >= 0) toggle = true;
     return false;
 }
 
 bool View::handleKeys(const InputManager& in, int zones, int parts) {
+    keys.update(in);  // titan 13: fresh presses only
     if (in.menuPressed(Action::MenuBack)) return true;
-    const bool prev = in.menuPressed(Action::MenuTabPrev), next = in.menuPressed(Action::MenuTabNext);
+    const bool prev = keys.fresh(in, Action::MenuTabPrev), next = keys.fresh(in, Action::MenuTabNext);
     if (parts > 0 && (prev || next)) {
         // -1 (« Raid entier ») then each part, around.
         const int n = parts + 1;
         choose(((part + 1 + (next ? 1 : -1)) % n + n) % n - 1);
-    } else if (prev || next || in.menuPressed(Action::RaidMenu)) {
+    } else if (prev || next || keys.fresh(in, Action::RaidMenu)) {
         tab = 1 - tab;
         selected = -1;
     }
     int step = 0;
-    if (in.menuPressed(Action::MenuLeft)) step = -1;
-    if (in.menuPressed(Action::MenuRight)) step = 1;
+    if (keys.fresh(in, Action::MenuLeft)) step = -1;
+    if (keys.fresh(in, Action::MenuRight)) step = 1;
     if (step != 0) sort = static_cast<Col>((static_cast<int>(sort) + step + kCols) % kCols);
-    if (in.menuPressed(Action::MenuUp)) selected = std::max(-1, selected - 1);
-    if (in.menuPressed(Action::MenuDown)) selected = selected + 1;
-    if (in.menuPressed(Action::MenuConfirm) && tab == 0 && zones > 1) {
+    if (keys.pressed(in, Action::MenuUp)) selected = std::max(-1, selected - 1);
+    if (keys.pressed(in, Action::MenuDown)) selected = selected + 1;
+    if (keys.fresh(in, Action::MenuConfirm) && tab == 0 && zones > 1) {
         zone = (zone + 1) % zones;
         selected = -1;
     }

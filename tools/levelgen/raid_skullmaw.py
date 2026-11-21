@@ -115,6 +115,8 @@ def lair(A, spec):
                  "Skullmaw is defeated: Asterion's skull goes dark, the titan is blinded."),
                 ("Skullmaw vaincu", "Skullmaw defeated"))
     z.raid["gigaboss"] = dict(SCALING, **{
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.25,
         "boss": boss, "name": "Skullmaw", "objective": "crane_skullmaw", "routine": "skullmaw",
         # Its eyes (from its feet, x toward where it faces): where its gazes and its flash leave from.
         "eyes": [[-55.0, -205.0], [55.0, -205.0]],
@@ -126,7 +128,7 @@ def lair(A, spec):
         # Mirrors held at the flash, by the players in play (1 to 8).
         "need": [1, 2, 2, 2, 3, 3, 4, 4],
         # Blind: its eyes and its crystal bare (the rules' exposure).
-        "exposed": 10.0, "exposedMult": 2.0,
+        "exposed": 14.0, "exposedMult": 3.0,
         "weakEnemy": "skullmaw_oeil",
         "weakSpots": [[-55.0, -181.0, "skullmaw_oeil"], [55.0, -181.0, "skullmaw_oeil"], [0.0, -256.0, "skullmaw_cristal"]],
         "weakShare": 0.05,
@@ -139,4 +141,6 @@ def lair(A, spec):
                       "Its veil: at its flash, hold mirrors together (up to 4) to blind it; the others hide behind the columns."),
     })
     L.emitter(ax0 + 20, 10, ax1 - 20, F, spec.theme["dust"], 2.0)
+    # Titan 13: more footholds on every storey (the balconies' row a whole storey now), out of the columns.
+    z.L.footholds(ax0 + 2, ax1 - 2, [F - 6 * k for k in range(1, 7)], z.th["ledge"])
     return z.save()

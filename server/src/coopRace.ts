@@ -15,6 +15,7 @@
 // no ranking.
 
 import { optionalAuth, requireAuth } from "./auth";
+import { attemptCommentCounts } from "./campaign";
 import { clanPointsStatements } from "./clans";
 import { ApiError, Errors, json, log, nowIso, readJsonObject, readLimited, type Ctx } from "./http";
 import { IN_KEYS, loadBoard, raceScore, routeReached, type RaceLayout } from "./race";
@@ -352,6 +353,8 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
     const ver = q.get("version");
     const board = await loadBoard(ctx, q.get("kind") ?? "", q.get("level_id") ?? "", ver ? Number(ver) : null, q.get("level_hash"));
     const rows = await ranking(ctx, board.keys, size);
+    // 2.85: the comments of each attempt (official levels only: a community race has no comments).
+    const comments = board.kind === "official" ? await attemptCommentCounts(ctx, "coop:", rows.map((r) => String(r.id))) : null;
     const pending = me
         ? await ctx.env.DB.prepare(
               `SELECT COUNT(*) AS n FROM coop_runs r JOIN coop_run_members m ON m.run_id = r.id
@@ -377,6 +380,7 @@ export async function getBoard(ctx: Ctx): Promise<Response> {
             at: r.verified_at,
             has_replay: r.has_replay === 1,
             me: r.players.some((p) => p.id === me),
+            comment_count: comments ? (comments.get(String(r.id)) ?? 0) : null,
         })),
         my_pending: pending?.n ?? 0,
     });

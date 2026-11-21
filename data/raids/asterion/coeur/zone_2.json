@@ -2169,6 +2169,300 @@
   },
   {
    "id": "o134",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    976.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o135",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1264.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o136",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1536.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o137",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1824.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o138",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2096.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o139",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2384.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o140",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3216.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o141",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3504.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o142",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3776.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o143",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4064.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o144",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4336.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o145",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4624.0,
+    544.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o146",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    976.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o147",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1264.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o148",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1536.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o149",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1824.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o150",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2096.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o151",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3776.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o152",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4064.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o153",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4336.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o154",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    4624.0,
+    352.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "tech_ledge"
+   }
+  },
+  {
+   "id": "o155",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2183,7 +2477,7 @@
    }
   },
   {
-   "id": "o135",
+   "id": "o156",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2198,7 +2492,7 @@
    }
   },
   {
-   "id": "o136",
+   "id": "o157",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2213,7 +2507,7 @@
    }
   },
   {
-   "id": "o137",
+   "id": "o158",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2228,7 +2522,7 @@
    }
   },
   {
-   "id": "o138",
+   "id": "o159",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -2422,6 +2716,7 @@
     "hpPerPlayer": 0.55,
     "weakHpPerPlayer": 0.25,
     "pressurePerPlayer": 0.06,
+    "hpScale": 0.18,
     "boss": "o119",
     "name": "Cœur d'Asterion",
     "objective": "coeur_asterion",
@@ -2473,8 +2768,8 @@
      }
     ],
     "hold": 2.5,
-    "reopen": 14.0,
-    "exposed": 10.0,
+    "reopen": 24.0,
+    "exposed": 14.0,
     "exposedMult": 2.0,
     "jet": {
      "name": "Jet d'artère",

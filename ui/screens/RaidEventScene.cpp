@@ -327,7 +327,10 @@ private:
                     cards[i].gold ? FontFace::Title : FontFace::Bold);
                 fit(ui, cards[i].sub, {tx, c.y + ui.s(80)}, 13, tw, Color{154, 160, 200, 255});
             }
-            y += ch + ui.s(14);
+            y += ch + ui.s(10);
+            // Titan 13: the event's difficulty and what it changes (its Gigaboss' and its Heart's health and damage).
+            fit(ui, raids::difficultyLabel(e.difficulty) + " — " + raids::difficultyEffects(e.difficulty), {left.x, y + ui.s(10)}, 14, left.w, kSky, FontFace::Bold);
+            y += ui.s(24);
         }
         // The instructions and the rewards; 2.77.4: the players' reviews beside them once the raid is under way.
         const float gap = ui.s(12), sh = left.bottom() - y;

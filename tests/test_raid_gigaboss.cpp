@@ -334,7 +334,7 @@ TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): Skullmaw's veil
         CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed);  // blind
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(!boss->raidGuarded());
-        CHECK(boss->raidMultiplier() == 2.0f);
+        CHECK(boss->raidMultiplier() == run.rules().gigaboss.exposedMult);  // titan 13: × 3
         CHECK(run.gigaboss().weakTotal() == 3);  // two eyes and its crystal
         CHECK(sk->gazes().empty());    // blind, it sees nobody
         int mirrors = 0;
@@ -351,7 +351,7 @@ TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): Skullmaw's veil
             CHECK(boss->hp() < before - 0.045f * boss->maxHp());  // its share (the rules' weakShare)
             CHECK(run.gigaboss().weakLeft() == 2);
         }
-        for (int k = 0; k < 1400 && run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
+        for (int k = 0; k < static_cast<int>(run.rules().gigaboss.exposed * 120.0f) + 200 && run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed; ++k) run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Carapace);  // its veil again
         CHECK(run.gigaboss().weakLeft() == 0);
         run.step(f.data(), static_cast<int>(f.size()), 0);
@@ -508,7 +508,7 @@ TEST_CASE("raid gigaboss 4B (Skullmaw, Dreadfang, Heartbreaker): Heartbreaker's 
         CHECK(run.gigaboss().stage() == raid::Gigaboss::Stage::Exposed);
         run.step(f.data(), static_cast<int>(f.size()), 0);
         CHECK(!boss->raidGuarded());
-        CHECK(boss->raidMultiplier() == 2.5f);
+        CHECK(boss->raidMultiplier() == run.rules().gigaboss.exposedMult);  // titan 13: × 3
         CHECK(run.gigaboss().weakLeft() == 1);
         int ribs = 0;
         for (const raid::Contribution& c : run.contributions().records()) ribs += c.vents;

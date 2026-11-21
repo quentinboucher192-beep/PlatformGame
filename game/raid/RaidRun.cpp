@@ -286,6 +286,10 @@ RaidRun::ZoneWorld* RaidRun::loadZone(int zid, const std::string& from, bool eve
     // 2.68: the gigaboss of the zone (gone when its objective is done: it already fell).
     const int fallen = rules->gigaboss.present ? branch_.objectiveIndex(rules->gigaboss.objective) : -1;
     z->gigaboss.setTest(test_.on ? test_.players : 0, test_.on ? test_.startPhase : 1);
+    {
+        const DifficultyScale d = difficultyScale(difficulty_);  // titan 13: the event's difficulty
+        z->gigaboss.setDifficulty(d.health, d.damage);
+    }
     contrib_.focus(world);
     z->gigaboss.begin(world, rules->gigaboss, fallen >= 0 && Branch::done(mask(), fallen), contrib_);
     z->gigaboss.setBranchMask(mask());  // 2.69 (phase 4B): the objectives its routine reads
@@ -361,11 +365,18 @@ void RaidRun::placeJoiners(const InputFrame* frames, int count) {
 
 // ------------------------------------------------------------------------------- settings
 
+void RaidRun::setDifficulty(int level) {
+    difficulty_ = std::clamp(level, kDifficultyMin, kDifficultyMax);
+    const DifficultyScale d = difficultyScale(difficulty_);
+    for (auto& z : zones_) z->gigaboss.setDifficulty(d.health, d.damage);
+}
+
 void RaidRun::setTest(const Test& t) {
     test_ = t;
     test_.players = std::clamp(t.players, 1, kMaxInstancePlayers);
     test_.startPhase = std::max(1, t.startPhase);
     for (auto& z : zones_) z->gigaboss.setTest(t.on ? test_.players : 0, t.on ? test_.startPhase : 1);
+    if (t.on) setDifficulty(t.difficulty);  // titan 13: the test's own (« Difficulté » of « Tester le raid »)
     invincibleSeats_ = t.on && t.invincible ? 1u : 0u;  // 2.80: the administrator's seat, as before
     if (t.on)
         for (auto& z : zones_) {

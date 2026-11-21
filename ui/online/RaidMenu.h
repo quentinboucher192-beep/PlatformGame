@@ -121,6 +121,7 @@ public:
 private:
     bool open_ = false;
     Section section_ = Section::Remaining;
+    FreshKeys keys_;  // titan 13: its sections on a fresh press only
 };
 
 /// Whether this computer's player is held (neutral inputs) at a step: in the pause or the raid's menu
@@ -165,6 +166,7 @@ struct MenuData {
     bool tableAvailable = false;
     std::vector<std::string> otherZones;     // the branch's zones finished elsewhere (their names)
     const std::vector<Notice>* journal = nullptr;
+    raidhud::RaidClock clock;  // titan 13: the raid's countdown (the title row, the journal's times)
     std::string groupTitle, groupFooter;
     std::vector<Member> group;
     std::vector<raidhud::Line> groupStates;  // 2.77.2: « À TERRE » and « GROUPE ÉLIMINÉ » (mark: the state's name), explained

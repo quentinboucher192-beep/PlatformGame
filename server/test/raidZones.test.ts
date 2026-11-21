@@ -184,6 +184,19 @@ describe("raids phase 2: instances and consensus", () => {
         expect((await report(a.players[0]!, ia, { objective: "epaule_arene" })).body.data.status).toBe("accepted");
     });
 
+    it("titan 13: a report played at another difficulty than the event's is refused (its Gigaboss' health and damage)", async () => {
+        const a = await clan("AUBE", 1);
+        const ev = await runningEvent(a);
+        await env.DB.prepare("UPDATE raid_events SET difficulty = 4 WHERE id = ?1").bind(ev).run();
+        const inst = await instanceOf(ev, a, a.players);
+        const p = a.players[0]!;
+        const wrong = await report(p, inst, { objective: "epaule_arene", difficulty: 3 });
+        expect(wrong.body.data.status).toBe("rejected");
+        expect(wrong.body.data.reason).toBe("difficulté différente de celle de l'événement");
+        expect((await api("POST", `${V}/raids/instances/${inst}/reports`, { token: p.token, body: { kind: "objective", zone: 1, tick: 6000, hash: H1, difficulty: 9 } })).status).toBe(400);
+        expect((await report(p, inst, { objective: "epaule_arene", difficulty: 4 })).body.data.status).toBe("accepted");
+    });
+
     it("implausible reports are refused: locked zone, wrong zone, impossible step, stranger", async () => {
         const a = await clan("AUBE", 1);
         const ev = await runningEvent(a);

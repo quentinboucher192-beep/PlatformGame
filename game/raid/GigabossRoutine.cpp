@@ -108,7 +108,7 @@ void GigabossRoutine::expose(Gigaboss& g, GameWorld& w, Contributions& c, Enemy&
     g.stage_ = Gigaboss::Stage::Exposed;
     g.exposedTicks_ = steps(r.exposed);
     g.weak_.clear();
-    const float factor = 1.0f + r.weakHpPerPlayer * static_cast<float>(std::max(0, g.scaledFor_ - 1));
+    const float factor = (1.0f + r.weakHpPerPlayer * static_cast<float>(std::max(0, g.scaledFor_ - 1))) * g.healthScale_;
     for (size_t k = 0; k < r.weakSpots.size(); ++k) {
         const Vec2 s = r.weakSpots[k];
         const Vec2 at{b.box.center().x + s.x * b.facing, b.box.bottom() + s.y};

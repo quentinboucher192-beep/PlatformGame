@@ -10,6 +10,9 @@ export type Bindings = Env & {
     /** Backups (tests only): wait after setting maintenance, size of the parts of an import. */
     BACKUP_SETTLE_MS?: string;
     BACKUP_IMPORT_PART_SIZE?: string;
+    /** Gifts (tests only): players per step of a send, steps per request (src/gifts.ts). */
+    GIFT_STEP_PLAYERS?: string;
+    GIFT_STEPS_PER_REQUEST?: string;
 };
 
 export interface Ctx {

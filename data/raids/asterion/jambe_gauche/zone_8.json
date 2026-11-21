@@ -1543,6 +1543,468 @@
   },
   {
    "id": "o95",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    912.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o96",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1328.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o97",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o98",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2160.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o99",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2576.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o100",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2992.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o101",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3408.0,
+    896.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o102",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o103",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1120.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o104",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1536.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o105",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1952.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o106",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2368.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o107",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2784.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o108",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3200.0,
+    800.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o109",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    912.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o110",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1328.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o111",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1744.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o112",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2160.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o113",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2576.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o114",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2992.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o115",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3408.0,
+    704.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o116",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    704.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o117",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1120.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o118",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1536.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o119",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1952.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o120",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2368.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o121",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2784.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o122",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3200.0,
+    608.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o123",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    912.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o124",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    1328.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o125",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2160.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o126",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    2992.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o127",
+   "type": "oneway",
+   "layer": "terrain",
+   "rect": [
+    3408.0,
+    512.0,
+    96.0,
+    16.0
+   ],
+   "props": {
+    "style": "ruin_bridge"
+   }
+  },
+  {
+   "id": "o128",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1557,7 +2019,7 @@
    }
   },
   {
-   "id": "o96",
+   "id": "o129",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1572,7 +2034,7 @@
    }
   },
   {
-   "id": "o97",
+   "id": "o130",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1587,7 +2049,7 @@
    }
   },
   {
-   "id": "o98",
+   "id": "o131",
    "type": "emitter",
    "layer": "gameplay",
    "rect": [
@@ -1749,6 +2211,7 @@
     "players": 8
    },
    "gigaboss": {
+    "hpScale": 0.48,
     "boss": "o73",
     "name": "Graviton",
     "objective": "jg_graviton",

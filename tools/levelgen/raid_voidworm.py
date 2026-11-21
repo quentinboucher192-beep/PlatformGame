@@ -48,16 +48,19 @@ def lair(A, spec):
             if ax0 + 88 <= px <= ax0 + 106 and k < 3:
                 continue  # never inside the worm
             z.ledge(px, px + 10, row)
-    # The crown over its head, and its hook.
+    # The crown over its head, and its hook. Titan 13: over its body (its top at row 25), no longer in it: a player
+    # holds the hook out of its contact, reached by two steps a side from the high roots (plain jumps).
     cx = ax0 + 100
-    z.ledge(cx - 10, cx + 10, 26)
-    z.ledge(cx - 22, cx - 12, 29)
-    z.ledge(cx + 12, cx + 22, 29)
+    z.ledge(cx - 10, cx + 10, 22)
+    z.ledge(cx - 22, cx - 12, 25)
+    z.ledge(cx + 12, cx + 22, 25)
+    z.ledge(cx - 30, cx - 22, 28)
+    z.ledge(cx + 22, cx + 30, 28)
     boss = L.enemy("voidworm", cx, FLOOR, patrol_tiles=0, face_left=True, dormant=True, boss=True)
     L.combat(ax0 + 1, 6, ax1, FLOOR, waves=boss, lock=False, music="music/mycelia_boss.ogg")
     L.data["objects"][-1]["props"]["announce"] = False
     z.objective("abd_voidworm", boss, "killed")
-    hooks = [("crochet_ouest", ax0 + 30, FLOOR), ("crochet_couronne", cx, 26), ("crochet_est", ax0 + 170, FLOOR)]
+    hooks = [("crochet_ouest", ax0 + 30, FLOOR), ("crochet_couronne", cx, 22), ("crochet_est", ax0 + 170, FLOOR)]
     vents = []
     for vid, vx, vy in hooks:
         vents.append({"id": vid, "rect": [(vx - 1.5) * T, (vy - 1) * T, 3 * T, 1 * T]})
@@ -66,8 +69,8 @@ def lair(A, spec):
     for hx in holes:
         L.emitter(hx - 2, FLOOR - 2, hx + 2, FLOOR, "spores", 1.5)
     orbs = {}
-    for ph, ox, oy in ((2, ax0 + 30, FLOOR - 8), (2, ax0 + 170, FLOOR - 8), (2, cx, 24), (3, ax0 + 20, 36), (3, ax0 + 180, 36), (3, cx - 16, 27),
-                       (3, cx + 16, 27)):
+    for ph, ox, oy in ((2, ax0 + 30, FLOOR - 8), (2, ax0 + 170, FLOOR - 8), (2, cx, 20), (3, ax0 + 20, 36), (3, ax0 + 180, 36), (3, cx - 16, 23),
+                       (3, cx + 16, 23)):
         L.orb("health_orb", ox, oy)
         L.data["objects"][-1]["props"] = {"amount": 4, "hidden": True}
         orbs.setdefault(ph, []).append(L.data["objects"][-1]["id"])
@@ -88,8 +91,10 @@ def lair(A, spec):
     z.raid["arena"] = {"rect": [ax0 * T, 6 * T, ARENA_W * T, (FLOOR - 6) * T], "floor": FLOOR * T, "door": "",
                        "entry": [(ax0 + 6) * T, FLOOR * T], "players": 8}
     z.raid["gigaboss"] = {
+        # Titan 13 (the nerf, docs/RAIDS.md §37): its definition's health × hpScale in the raid (3 / 5).
+        "hpScale": 0.35,
         "boss": boss, "name": "Voidworm", "objective": "abd_voidworm", "routine": "voidworm", "vents": vents, "carapace": [2, 3],
-        "hold": 3.0, "reopen": 14.0, "exposed": 10.0, "exposedMult": 2.0,
+        "hold": 2.0, "reopen": 30.0, "exposed": 14.0, "exposedMult": 2.5,
         "jet": {"name": tr("Geyser d'acide", "Acid geyser"), "period": 6.0, "warn": 1.2, "duration": 1.0, "height": 128.0, "damage": 1.0},
         "fists": {"name": tr("Fouissement", "Burrowing"), "periods": [9.5, 8.0, 6.5], "warn": 1.5, "width": 72.0, "damage": 1.0},
         "weakEnemy": "voidworm_anneau", "weakSpots": [[-40.0, -120.0], [60.0, -210.0], [0.0, -300.0]], "weakShare": 0.04,
@@ -116,4 +121,6 @@ def lair(A, spec):
     L.decor(th["deco_tall"][0], x0 + 2, FLOOR)
     L.orb("health_orb", x0 + 14, FLOOR - 2)
     z.x = ax1 + 2
+    # Titan 13: more footholds on every storey of roots, none by the crown (its hook stays up there).
+    z.L.footholds(ax0 + 2, ax1 - 2, [FLOOR - 6 * k for k in range(1, 6)], z.th["ledge"], min_gap=16, keep=[(cx - 32, 18, cx + 32, 34)])
     return z.save()
