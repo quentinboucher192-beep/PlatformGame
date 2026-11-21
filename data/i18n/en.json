@@ -3,6 +3,9 @@
   "language": "en",
   "name": "English",
   "strings": {
+    "Raids : le temps du raid se compte à rebours (rouge dans la dernière minute) ; plus de plateformes dans les antres et l'arène du Cœur ; ouvrir le menu (Tab) en courant ne fait plus défiler ses onglets ; les Gigaboss et le Cœur rééquilibrés (environ 10 min pour un bon groupe de 8 à 3 / 5) ; la difficulté d'un événement (1 à 5) change vraiment leur vie et leurs dégâts, affichés à côté du choix (titan 13).": "Raids: the raid's time now counts down (red in the last minute); more platforms in the lairs and the Heart's arena; opening the menu (Tab) while running no longer cycles its tabs; the Gigaboss and the Heart rebalanced (about 10 min for a good group of 8 at 3 / 5); an event's difficulty (1 to 5) now really changes their health and damage, shown next to the choice (titan 13).",
+    "Course à la vérification : chaque tentative (Solo, Duo, Trio) a de nouveau son bouton 💬 avec son nombre de commentaires, à côté du ▶, comme les records d'un niveau classique.": "Verification race: every attempt (Solo, Duo, Trio) has its 💬 button with its comment count again, next to ▶, as on a classic level's records.",
+    "Cadeaux : plus de limite de récompenses ni de joueurs ; « Tous les joueurs » envoie à chaque joueur actif, et un grand envoi n'apparaît qu'une fois complet, jamais en double.": "Gifts: no limit on rewards or players any more; « All players » sends to every active player, and a large send only appears once it is complete, never twice.",
     "8 à 64 lettres, chiffres ou tirets": "8 to 64 letters, digits or hyphens",
     "Cet envoi est déjà en cours d'écriture : renvoyez la même demande.": "This send is already being written: send the same request again.",
     "Cette clé d'envoi sert déjà à un autre envoi.": "This send key is already used by another send.",
