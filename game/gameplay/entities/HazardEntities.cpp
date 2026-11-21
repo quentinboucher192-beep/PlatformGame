@@ -7,6 +7,7 @@
 #include "engine/resources/ResourceManager.h"
 #include "game/enemies/Enemy.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/LiquidBody.h"
 #include "game/gameplay/entities/Entities.h"
 #include "engine/core/DetMath.h"
 
@@ -306,6 +307,12 @@ void DamageZoneEntity::render(RenderContext& ctx) {
     }
     if (obj_.propStr("style", "toxic") == "souls") {
         renderSouls(ctx);
+        return;
+    }
+    if (obj_.prop<bool>("overActors", false) && box.w >= box.h) {
+        // A raid's periodic acid (tools/levelgen/raid_asterion.py, the abdomen's reflux): a pool
+        // of acid filling its basin wall to wall down to the ground, fading in when switched on.
+        drawLiquidBody(ctx, box, box.bottom(), liquidLook("acid", {157, 255, 58, 255}), ctx.time, shown_);
         return;
     }
     if (active) {

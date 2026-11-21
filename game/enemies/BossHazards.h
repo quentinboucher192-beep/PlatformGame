@@ -65,11 +65,17 @@ public:
         float rise = 1.0f, hold = 4.0f, fall = 1.0f;
         float damage = 2.0f;
         float age = 0.0f;
-        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33), "tide" = dark water (2.53)
-        Color color{122, 230, 255, 255};  // display: the light of its crests ("tide": the boss's phase)
+        std::string look;  // display: "" = lava, "plasma" = star plasma (2.33), "tide" = dark water (2.53), "acid" (Voidworm)
+        Color color{122, 230, 255, 255};  // display: the light of its crests ("tide", "acid": the boss's)
+        /// Display: how far under its floor its body is drawn (it melts into the ground there: no gap
+        /// over an uneven floor); solid down to the floor and kSolidBelow under it.
+        static constexpr float kSinkBelow = 64.0f, kSolidBelow = 16.0f;
         /// Surface height above the floor (0 .. height) at the current age.
         float level() const;
         float surfaceY() const { return floorY - level(); }
+        /// Display: the body drawn, wall to wall (left .. right), from its surface down under its floor
+        /// (everything under the surface hurts, BossHazards::update).
+        Rect bodyRect() const { return {left, surfaceY(), right - left, floorY + kSinkBelow - surfaceY()}; }
         bool done() const { return age >= rise + hold + fall; }
     };
     struct Wall {

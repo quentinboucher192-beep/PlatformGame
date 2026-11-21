@@ -7,6 +7,7 @@
 #include "engine/physics/Collision.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/gameplay/GameWorld.h"
+#include "game/gameplay/LiquidBody.h"
 
 namespace cosmic {
 
@@ -611,32 +612,6 @@ void BossHazards::bendShot(Projectile& p, float dt) const {
 // ================================================================== render
 
 namespace {
-/// A tide of the abyss (2.53, the Kraken): dark water, its crests lit with the boss's light,
-/// foam where the swell peaks, bubbles rising inside. Display only (time-driven).
-void drawTide(RenderContext& ctx, const BossHazards::Flood& f, float t) {
-    const float top = f.surfaceY();
-    const Rect body{f.left, top, f.right - f.left, f.floorY + 64.0f - top};
-    const Color c = f.color;
-    ctx.r.fillWorldRect(body, Color{10, 22, 52, 228});
-    ctx.r.fillWorldRect({body.x, top + 10.0f, body.w, std::max(0.0f, body.h - 10.0f)}, Color{c.r, c.g, c.b, 30}, BlendMode::Additive);
-    for (float x = f.left; x < f.right; x += 8.0f) {
-        const float wdt = std::min(8.0f, f.right - x);
-        const float swell = 3.0f * dmath::sin(t * 1.8f + x * 0.025f) + 1.5f * dmath::sin(t * 4.3f + x * 0.11f);
-        ctx.r.fillWorldRect({x, top - 3.0f + swell, wdt, 5.0f}, Color{30, 70, 120, 240});
-        ctx.r.fillWorldRect({x, top - 3.0f + swell, wdt, 2.0f}, c.withAlpha(210), BlendMode::Additive);
-        if (swell < -2.6f) ctx.r.fillWorldRect({x, top - 5.0f + swell, wdt, 2.0f}, Color{235, 250, 255, 190}, BlendMode::Additive);
-    }
-    const float depth = std::min(f.level(), 220.0f);
-    const int bubbles = static_cast<int>(body.w / 40.0f);
-    for (int k = 0; k < bubbles && depth > 12.0f; ++k) {
-        const float ph = std::fmod(t * 0.45f + static_cast<float>(k) * 0.618f, 1.0f);
-        const float x = f.left + std::fmod(static_cast<float>(k) * 97.3f, body.w) + 4.0f * dmath::sin(t * 3.0f + static_cast<float>(k));
-        const float y = top + 8.0f + (1.0f - ph) * (depth - 8.0f);
-        ctx.r.drawWorldCircle({x, y}, 1.5f + 1.5f * ph, Color{200, 240, 255, static_cast<uint8_t>(150 * ph)}, 1.0f);
-    }
-    for (float x = f.left + 48.0f; x < f.right; x += 120.0f) ctx.lights.add({x, top}, 110.0f, c);
-}
-
 /// A tentacle out of the floor (2.53, the Kraken's « Étau de tentacules »): it sways, its tip
 /// curls over the cage, a row of suckers lit with the boss's light along its inner side.
 void drawTentacle(RenderContext& ctx, const BossHazards::Wall& wl, const Rect& vis, float t) {
@@ -825,42 +800,30 @@ void BossHazards::render(RenderContext& ctx) const {
 
     ctx.r.setListener(threats);
 
-    // Lava tide (or star plasma, 2.33).
+    // Lava tide (or star plasma 2.33, the dark water of the abyss 2.53, Voidworm's acid): a body of
+    // liquid filling its span wall to wall, from its swell down into the ground under its floor
+    // (game/gameplay/LiquidBody.h); the lava and the plasma keep their sheet's surface over it.
     AnimationSetPtr lavaSheet = sheetOf("lava_flood");
     AnimationSetPtr plasmaFx = sheetOf("plasma_flood");
     for (const Flood& f : floods_) {
-        float level = f.level();
-        if (level < 0.5f) continue;
-        if (f.look == "tide") {
-            drawTide(ctx, f, t);
-            continue;
-        }
+        if (f.level() < 0.5f) continue;
+        const Rect body = f.bodyRect();
+        drawLiquidBody(ctx, body, f.floorY + Flood::kSolidBelow, liquidLook(f.look, f.color), t);
+        if (f.look == "tide" || f.look == "acid") continue;
         const bool plasma = f.look == "plasma";
         const AnimationSetPtr& lavaFx = plasma && clipIn(plasmaFx, "surface") ? plasmaFx : lavaSheet;
         const AnimationClip* lava = clipIn(lavaFx, "surface");
-        float top = f.surfaceY();
-        Rect body{f.left, top, f.right - f.left, f.floorY + 64.0f - top};
-        ctx.r.fillWorldRect(body, plasma ? Color{120, 20, 92, 225} : Color{170, 40, 18, 225});
-        ctx.r.fillWorldRect({body.x, top + 6.0f, body.w, std::max(0.0f, body.h - 6.0f)},
-                            plasma ? Color{255, 110, 210, 60} : Color{255, 110, 40, 60}, BlendMode::Additive);
-        if (lava) {
-            int frame = static_cast<int>(t * 10.0f) % std::max(1, lava->frameCount());
-            Rect src = lavaFx->frameRect(*lava, frame);
-            float fw = static_cast<float>(lavaFx->frameWidth), fh = static_cast<float>(lavaFx->frameHeight);
-            for (float x = f.left; x < f.right; x += fw) {
-                float wdt = std::min(fw, f.right - x);
-                Rect s = src;
-                s.w = src.w * (wdt / fw);
-                ctx.r.drawWorldTexture(*lavaFx->texture, &s, {x, top - fh * 0.5f, wdt, fh});
-            }
-        } else {
-            for (float x = f.left; x < f.right; x += 12.0f) {
-                float wave = 2.0f * dmath::sin(t * 4.0f + x * 0.08f);
-                ctx.r.fillWorldRect({x, top - 2.0f + wave, 12.0f, 4.0f}, Color{255, 200, 90, 240}, BlendMode::Additive);
-            }
+        if (!lava) continue;
+        const int frame = static_cast<int>(t * 10.0f) % std::max(1, lava->frameCount());
+        const Rect src = lavaFx->frameRect(*lava, frame);
+        const float fw = static_cast<float>(lavaFx->frameWidth), fh = static_cast<float>(lavaFx->frameHeight);
+        const Rect vis = ctx.r.view().visibleWorld().expanded(fw);
+        for (float x = f.left + std::max(0.0f, std::floor((vis.x - f.left) / fw) * fw); x < std::min(f.right, vis.right()); x += fw) {
+            const float wdt = std::min(fw, f.right - x);
+            Rect s = src;
+            s.w = src.w * (wdt / fw);
+            ctx.r.drawWorldTexture(*lavaFx->texture, &s, {x, body.y - fh * 0.5f, wdt, fh});
         }
-        for (float x = f.left + 48.0f; x < f.right; x += 120.0f)
-            ctx.lights.add({x, top}, 110.0f, plasma ? Color{255, 120, 220, 255} : Color{255, 120, 50, 255});
     }
 
     // Walls of thorns (or of starlight, 2.33), rising out of the ground.
