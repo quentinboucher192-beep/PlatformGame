@@ -490,7 +490,7 @@ private:
     void drawHeader() {
         UIContext& ui = g_.ui;
         ui.r().fillGradientV(header_, Color{6, 10, 24, 230}, Color{6, 10, 24, 0});
-        Vec2 tsz = ui.label("COSMIC ONLINE", {ui.s(32), header_.center().y}, 34, ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
+        Vec2 tsz = drawOnlineTitle(g_, {ui.s(32), header_.center().y});
         Vec2 ssz = ui.label("Clans", {ui.s(32) + tsz.x + ui.s(18), header_.center().y + ui.s(3)}, 19, ui.theme().textDim, Align::Left, FontFace::Body,
                             VAlign::Middle);
         const float connX = zoneB_.right() - ui.s(240);

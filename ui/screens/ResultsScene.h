@@ -11,6 +11,7 @@
 #include "game/records/BossStats.h"
 #include "game/records/Records.h"
 #include "ui/screens/Navigation.h"
+#include "ui/widgets/CosmicStyle2.h"
 
 namespace cosmic {
 
@@ -61,9 +62,9 @@ public:
 
 private:
     bool rewardsChecked_ = false;
-    void drawOnlineStatus(const Rect& panel);
-    void drawRace(const Rect& panel);
-    void drawBosses(const Rect& panel);
+    void drawOnlineStatus(const Rect& area);
+    void drawRace(const Rect& area);
+    void drawBosses(const Rect& area);
 
     GameServices& g_;
     GameScene& game_;
@@ -73,6 +74,12 @@ private:
     bool medalPlayed_ = false;
     /// Rating of the official level just finished (Cosmic Online, logged in only).
     std::shared_ptr<LevelRatingPanel> rating_;
+    // 2.84: the Cosmic kit (the level's planet, chrome titles, holographic cards, plates).
+    float dt_ = 0.0f;
+    cstyle::PlanetScenery scenery_;
+    cstyle::ChromeText title_, recordTitle_;
+    cstyle::HoloCard statsCard_, medalCard_;
+    cstyle::Anims anims_;
 };
 
 }  // namespace cosmic

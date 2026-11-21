@@ -18,7 +18,7 @@
 #include "ui/online/RatingWidgets.h"
 #include "ui/screens/ChallengeRewardsUi.h"
 #include "ui/screens/CosmeticFx.h"
-#include "ui/screens/MenuBackground.h"
+#include "ui/widgets/CosmicStyle.h"
 #include "ui/screens/Navigation.h"
 #include "ui/screens/ReplayCompareNav.h"
 #include "ui/screens/OnlineNav.h"
@@ -76,6 +76,7 @@ public:
     OnlineRankingScene(GameServices& g, std::string levelId) : g_(g), ui_(g), levelRating_(g), wantedLevel_(std::move(levelId)) {}
 
     void onEnter() override {
+        backdrop_.start(g_.content);
         g_.playMusic("music/menu_theme.ogg");
         globe_.init(g_.app.resources());
         for (const PlanetData* p : g_.content.planets())
@@ -118,7 +119,7 @@ public:
 
     void update(float dt) override {
         t_ += dt;
-        bg_.update(dt);
+        backdrop_.update(g_.ui, dt, cstyle::Motion::from(g_.settings.graphics.particleQuality, g_.settings.graphics.screenShake));
         requireAccount();
         cam_.update(dt);
         idle_ += dt;
@@ -134,7 +135,11 @@ public:
         UIContext& ui = g_.ui;
         ui.begin(g_.app, g_.app.frameTime() / 1000.0f);
         layout();
-        bg_.render(g_, 0.35f);
+        {
+            const cstyle::Motion mo = cstyle::Motion::from(g_.settings.graphics.particleQuality, g_.settings.graphics.screenShake);
+            backdrop_.render(ui, zoneB_.center(), zoneA_.right() + ui.s(40), cstyle::CosmicLayout::of(ui.screenW(), ui.screenH()).unit, mo);
+            ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{4, 6, 14, 90});  // the boards stay readable over it
+        }
         // Under the profile (pushed over this screen) nothing here reacts.
         const bool top = g_.app.topScene() == this;
         ui.inputEnabled = top;
@@ -594,7 +599,7 @@ private:
     void drawHeader() {
         UIContext& ui = g_.ui;
         ui.r().fillGradientV(header_, Color{6, 10, 24, 230}, Color{6, 10, 24, 0});
-        Vec2 tsz = ui.label("COSMIC ONLINE", {ui.s(32), header_.center().y}, 34, ui.theme().accent, Align::Left, FontFace::Title, VAlign::Middle);
+        Vec2 tsz = drawOnlineTitle(g_, {ui.s(32), header_.center().y});
         ui.label("Classements mondiaux", {ui.s(32) + tsz.x + ui.s(18), header_.center().y + ui.s(3)}, 19, ui.theme().textDim, Align::Left,
                  FontFace::Body, VAlign::Middle);
         ui_.drawConnection({zoneC_.x - ui.s(250), header_.center().y});
@@ -1625,7 +1630,7 @@ private:
     LevelRatingPanel levelRating_;
     std::string wantedLevel_;
     std::shared_ptr<int> life_ = std::make_shared<int>(0);
-    MenuBackground bg_;
+    cstyle::PlanetBackdrop backdrop_;  // 2.84: the planets of the campaign behind the globe (Cosmic kit)
     GlobeRenderer globe_;
     GlobeCamera cam_;
     GlobeView globeView_;

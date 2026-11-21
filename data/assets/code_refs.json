@@ -85,7 +85,8 @@
    "ui/screens/TutorialScenes.cpp": 1,
    "ui/studio/Studio.cpp": 1,
    "ui/studio/StudioFrise.cpp": 1,
-   "ui/widgets/CosmicStyle.cpp": 1
+   "ui/widgets/CosmicStyle.cpp": 1,
+   "ui/widgets/CosmicStyle2.cpp": 1
   },
   "animations/phase_wall.json": {
    "game/gameplay/entities/PlatformEntities.cpp": 1,
@@ -620,13 +621,13 @@
    "ui/screens/DownloadedReplaysUi.cpp": 1,
    "ui/screens/GhostSetupScene.cpp": 1,
    "ui/screens/GiftsScene.cpp": 1,
-   "ui/screens/PlanetMapScene.cpp": 2
+   "ui/screens/PlanetMapScene.cpp": 4
   },
   "sounds/ui_move.wav": {
    "ui/screens/AchievementsScene.cpp": 2,
    "ui/screens/BossTrainingScene.cpp": 1,
    "ui/screens/OnlineRankingScene.cpp": 1,
-   "ui/screens/PlanetMapScene.cpp": 3,
+   "ui/screens/PlanetMapScene.cpp": 1,
    "ui/screens/SocialScene.cpp": 1,
    "ui/studio/Studio.cpp": 2,
    "ui/widgets/UIContext.cpp": 5
@@ -833,9 +834,11 @@
    "engine/core/Application.cpp": 1
   },
   "ui/badge_extreme.png": {
+   "ui/widgets/CosmicStyle2.cpp": 1,
    "ui/widgets/UIContext.cpp": 1
   },
   "ui/badge_extreme_en.png": {
+   "ui/widgets/CosmicStyle2.cpp": 1,
    "ui/widgets/UIContext.cpp": 1
   },
   "ui/boss_arrow.png": {
@@ -903,9 +906,6 @@
    "ui/screens/PowerChoiceScene.cpp": 2,
    "ui/screens/PowerGuideScene.cpp": 2,
    "ui/widgets/PowerLabels.cpp": 1
-  },
-  "ui/map_background.png": {
-   "ui/screens/PlanetMapScene.cpp": 1
   },
   "ui/menu_icons.png": {
    "ui/widgets/CosmicStyle.cpp": 1

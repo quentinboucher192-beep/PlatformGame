@@ -1903,6 +1903,7 @@
     "editors/level_editor/LevelEditorScene.cpp",
     "ui/screens/AdminScene.cpp",
     "ui/screens/MainMenuScene.cpp",
+    "ui/screens/PauseScene.cpp",
     "ui/screens/ProjectsScene.cpp",
     "ui/widgets/CosmicStyle.cpp"
    ]
@@ -8637,6 +8638,12 @@
    ]
   },
   {
+   "fr": "BOSS",
+   "where": [
+    "ui/screens/PlanetMapScene.cpp"
+   ]
+  },
+  {
    "fr": "Boss",
    "where": [
     "editors/enemy_editor/EnemyEditorProperties.cpp",
@@ -8832,6 +8839,12 @@
    "fr": "boss {0}/{1}",
    "where": [
     "ui/screens/ResultsScene.cpp"
+   ]
+  },
+  {
+   "fr": "BOSS ×{0}",
+   "where": [
+    "ui/screens/PlanetMapScene.cpp"
    ]
   },
   {
@@ -14443,6 +14456,7 @@
     "game/GameServices.cpp",
     "game/online/ProgressMerge.cpp",
     "ui/screens/MainMenuScene.cpp",
+    "ui/screens/OnlineNav.cpp",
     "ui/widgets/CosmicStyle.cpp"
    ]
   },
@@ -16704,13 +16718,8 @@
   {
    "fr": "COSMIC ONLINE",
    "where": [
-    "ui/screens/ClanScene.cpp",
-    "ui/screens/GiftsScene.cpp",
     "ui/screens/MainMenuScene.cpp",
-    "ui/screens/OnlineLevelsScene.cpp",
-    "ui/screens/OnlineRankingScene.cpp",
-    "ui/screens/ProjectsScene.cpp",
-    "ui/screens/SocialScene.cpp"
+    "ui/screens/OnlineNav.cpp"
    ]
   },
   {
@@ -26069,12 +26078,6 @@
    ]
   },
   {
-   "fr": "Explorer {0}",
-   "where": [
-    "ui/screens/PlanetMapScene.cpp"
-   ]
-  },
-  {
    "fr": "Explosion",
    "where": [
     "game/gameplay/Damage.cpp",
@@ -26170,6 +26173,7 @@
    "where": [
     "ui/screens/ChallengeUi.cpp",
     "ui/screens/NotificationsScene.cpp",
+    "ui/widgets/CosmicStyle2.cpp",
     "ui/widgets/UIContext.cpp"
    ]
   },
@@ -32979,6 +32983,7 @@
    "where": [
     "game/raid/RaidTestRelay.cpp",
     "ui/online/RaidTestGuests.cpp",
+    "ui/screens/PauseScene.cpp",
     "ui/screens/RaidTestInviteScene.cpp"
    ]
   },
@@ -69884,7 +69889,8 @@
     "game/levels/LevelData.cpp",
     "game/levels/TerrainRenderer.cpp",
     "packaging/DependencyCollector.cpp",
-    "ui/widgets/CosmicStyle.cpp"
+    "ui/widgets/CosmicStyle.cpp",
+    "ui/widgets/CosmicStyle2.cpp"
    ]
   },
   {
