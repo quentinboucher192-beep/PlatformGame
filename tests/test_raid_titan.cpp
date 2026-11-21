@@ -265,7 +265,7 @@ TEST_CASE("raid titan: the server's copy is the game's, and the generated zones 
         }
     }
     CHECK((*server)["catalogs"].size() == 6);
-    constexpr uint64_t kTitanZonesDigest = 0x104c7138c0b11024ULL;  // reference (titan 11: each mechanism after an ambush, the walls up to the top, the lift's door): printed below when it changes
+    constexpr uint64_t kTitanZonesDigest = 0x818a318a1b0cd62eULL;  // reference (titan 12: each gallery an ambush, a gate after it): printed below when it changes
     if (h != kTitanZonesDigest) std::printf("  zones du titan : empreinte %016llx\n", static_cast<unsigned long long>(h));
     CHECK(h == kTitanZonesDigest);
 }
@@ -434,14 +434,17 @@ TEST_CASE("raid titan: the expedition before each lair (three floors, ambushes, 
         if (!level || !rules) continue;
         // Long, on three floors: giant ambushes (one combat zone across the floors, waves on each).
         CHECK(level->bounds.w >= 700.0f * 16.0f);
-        int giant = 0;
+        // Titan 12: and its four galleries, ambushes too (one wave: their pack), each followed by a gate.
+        int giant = 0, galleries = 0;
         for (const LevelObject& o : level->objects)
             if (o.type == "combat_zone" && o.rect.h >= 36.0f * 16.0f) {
-                ++giant;
                 const std::string waves = o.propStr("waves");
-                CHECK(std::count(waves.begin(), waves.end(), ';') >= 3);  // 4 waves
+                if (std::count(waves.begin(), waves.end(), ';') >= 3) ++giant;  // 4 waves
+                else if (waves.find(';') == std::string::npos && std::count(waves.begin(), waves.end(), ',') == 6) ++galleries;  // its pack of 7
             }
         CHECK(giant == 4);
+        CHECK(galleries == 4);
+        CHECK(rules->gates.size() == 4);
         // Two locks and a goods lift for several players; checkpoints on every floor.
         CHECK(rules->coops.size() == 3);
         for (const raid::CoopPlate& c : rules->coops) {
@@ -482,7 +485,8 @@ TEST_CASE("raid titan: a lock opens for everyone when enough players stand on it
     Services s;
     const raid::Branch& b = branchOf("crane");
     uint32_t eyes = (1u << b.objectiveIndex("crane_oeil_gauche")) | (1u << b.objectiveIndex("crane_oeil_droit"));
-    eyes |= 1u << b.objectiveIndex("crane_embuscade_1");  // 2.81.2 (titan 11): the first lock waits for the ambush before it
+    // 2.81.2 (titan 11): the first lock waits for the ambush before it; titan 12: and the gallery before it (its gate).
+    eyes |= 1u << b.objectiveIndex("crane_embuscade_1") | 1u << b.objectiveIndex("crane_galerie_1");
     std::vector<InputFrame> frame(raid::kMaxInstancePlayers);
     for (int k = 2; k < raid::kMaxInstancePlayers; ++k) frame[static_cast<size_t>(k)].flags = InputFrame::Vacant;  // 2 players
     raid::RaidRun x(s.ws(), b, raid::kMaxInstancePlayers), y(s.ws(), b, raid::kMaxInstancePlayers);

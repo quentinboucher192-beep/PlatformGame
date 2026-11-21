@@ -2734,6 +2734,52 @@ une seconde donnée. `tests/test_asterion_aftermath.cpp` : les lignes des listes
 Affichage seulement : `kSimulationVersion`, `kCoopSimulationVersion`, `kRankingGeneration` et les empreintes de référence
 ne changent pas ; rien côté serveur.
 
+## 35. Aucune embuscade derrière soi (titan 12)
+
+*Signalé en jeu* (Voûte crânienne, trois captures de la carte) : « ici je n'ai pas validé la première embuscade et j'ai pu
+passer », « j'ai encore des monstres à gauche, je devrais avoir 2 flèches vertes pour passer », puis « ZONE TERMINÉE » avec
+des ennemis restés derrière. **La cause** : dans chaque expédition, avant chaque point de contrôle, une **galerie** tient une
+meute de sept ennemis sur les trois étages (`Expedition.hall`). Elle ressemble à une embuscade mais n'en était pas une : pas
+d'arène, pas d'objectif, donc pas de coche sur la carte, et rien ne l'attendait (l'écluse, le monte-charge, le passage de
+l'antre ne comptaient que les arènes géantes). On la traversait par l'étage bas et on passait. Les arènes géantes, elles,
+étaient bien gardées (2.81.2). Au Poignet-verrou (Bras droit), la porte est de chaque tour n'avait pas de mur au-dessus (on
+la passait par les étages hauts) et s'ouvrait quand un joueur tombait pendant l'embuscade (pour le laisser revenir) : on
+pouvait aller à l'embuscade suivante en laissant celle-ci derrière.
+
+* **Chaque galerie est une embuscade** : son arène couvre toute la galerie, du haut du niveau au sol (on ne peut pas passer
+  au-dessus de son déclencheur), sa meute est sa vague, qui attend qu'un joueur entre. Chacune est un **objectif** de rôle
+  `ambush` (`<branche>_galerie_1` à `_4`, ajoutés à la fin du catalogue : les bits ne bougent pas), avec sa coche sur la
+  carte. Au Poignet-verrou, les Gaines (l'entrée, six ennemis) le deviennent aussi (`poignet_galerie_1`).
+* **Un barrage après chaque galerie** (`metadata.raid.gates`, `raid::AmbushGate`) : un mur sur les trois étages jusqu'en haut
+  du niveau, une porte à chaque étage, qui **s'ouvrent ensemble au pas où toutes les embuscades de la zone posées avant lui
+  sont vaincues** (ici ou par un autre groupe : `RaidRun::syncDoors`). Personne ne les ouvre : ni plaque ni levier. Au
+  Poignet-verrou, la porte est de chaque tour devient celle d'un barrage (plus celle de l'arène : une chute ne l'ouvre plus),
+  avec un mur au-dessus jusqu'en haut du niveau.
+* **Les mécanismes et la sortie** attendent aussi les galeries (la liste `ambushes` de chaque plaque, le verrou
+  `ambushes:<zone>` du passage de l'antre et de l'accès au Cœur : « Embuscades restantes : k sur 8 ») ; une zone n'est
+  **terminée** qu'avec toutes ses embuscades vaincues (tous ses objectifs).
+* **À l'écran** : au-dessus de chaque porte d'un barrage fermé, une pastille rouge « Embuscades restantes : 1 sur 2 »
+  (`raidhud::ambushPill`, mesurée, gardée dans l'écran) ; la pastille d'une plaque dit aussi combien il en reste (plus
+  « Embuscade à vaincre d'abord ») ; « Ce qu'il reste à faire » écrit « Barrage — Embuscades restantes : 1 sur 2 » ; la carte
+  montre un **cadenas** (« Verrouillé ») sur les portes d'un barrage fermé ; à l'ouverture : « L'embuscade est vaincue : le
+  barrage s'ouvre ».
+* **Généré et vérifié** (`tools/levelgen`) : `Expedition.hall(objective=…)`, `Expedition.gate`, `raid_bras_droit.gate` ;
+  `check_gates` : aucune meute (4 ennemis ou plus) hors d'une embuscade dans une zone à embuscades, chaque barrage attend
+  exactement les embuscades à l'ouest de son mur et ferme sa colonne jusqu'en haut.
+* **L'audit** (`tests/test_raid_ambush_gates.cpp`, toutes les zones à embuscade des sept branches et du Cœur ;
+  `COSMIC_AMBUSH_AUDIT=1` affiche chaque défaut sans s'arrêter) : chaque embuscade est un objectif « ambush » de sa zone, aucune
+  meute hors embuscade ; chaque barrage a son mur et sa liste ; pour chaque embuscade *k* non vaincue (celles d'avant vaincues,
+  leurs barrages ouverts et leurs mécanismes en marche), le graphe des joueurs simulés (`raid::NavGraph` : sauts, double et
+  triple saut, ruée, impulsion, sauts muraux, monte-charge en marche) n'atteint **ni l'embuscade suivante ni les passages vers
+  la suite**, ne passe pas à côté de son déclencheur, et les atteint une fois *k* vaincue. **Avant le correctif**, il trouvait
+  ouvertes : la zone 7 des six branches au format d'Asterion (Voûte crânienne, Poignet de glace, Cage du cœur, Gosier de
+  Voidworm, Cheville, Cheville d'acier) et l'Aorte cosmique du Cœur (quatre meutes hors embuscade chacune, l'arène suivante
+  atteinte sans elles), et le Poignet-verrou du Bras droit (les Gaines ; la Fosse des scories passée par-dessus sa porte est
+  jusqu'à la Garde du verrou : les deux premières tours avaient un mécanisme après elles). 30 défauts en tout, 0 après.
+  Les zones 1 (la garde de l'entrée) et le Nid des parasites étaient déjà fermées (titan 9).
+* **Versions** : `TITAN_REVISION` passe à **12** (catalogues, `raidTitan.json` et `raidBranches.json` régénérés, empreintes
+  des zones) ; `kSimulationVersion` et `kRankingGeneration` restent (rien ne change en solo ni en coopération).
+
 ---
 
 [← Retour à l'accueil (README)](../README.md)

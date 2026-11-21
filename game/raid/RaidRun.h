@@ -221,8 +221,13 @@ public:
         bool done = false;
         /// 2.81.2: an ambush of the zone before it is still to beat: it does nothing yet (« Embuscade à vaincre d'abord »).
         bool ambush = false;
+        /// Titan 12: of its ambushes, how many are still to beat (« Embuscades restantes : 1 sur 2 » over its plate).
+        int ambushLeft = 0, ambushTotal = 0;
     };
     CoopView coop(size_t index) const;
+    /// Titan 12: an ambush gate of the zone (rules().gates): its ambushes still to beat out of all of them (0 left:
+    /// open), what its pill and the maps say while it is shut.
+    Branch::AmbushCount gate(size_t index) const;
     /// 2.75: the group was wiped (every player of the instance down at once, 2.78: whatever their zone):
     /// out of its zones for good, nothing steps any more (its players spectate); wipedNow(): this very
     /// step. wipedZone(): the zone of the most players then (ties: the lowest); wipedZones(): all of them.

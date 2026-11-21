@@ -274,7 +274,7 @@ TEST_CASE("raid test (2.72): the simulated players stand on a co-op plate with t
     raid::TestSession session(s.ws(), bras(), setup);
     // 2.81.2 (titan 11): the plate also waits for the ambush before it (the Tour des tendons): beaten here (the branch's
     // state), what is tested is the simulated players coming to the plate (tests/test_raid_mechanisms.cpp: the ambush's rule).
-    session.setBranchState(1u << bras().objectiveIndex("poignet_embuscade_1"));
+    session.setBranchState(1u << bras().objectiveIndex("poignet_embuscade_1") | 1u << bras().objectiveIndex("poignet_galerie_1"));  // titan 12: and the Gaines
     CHECK(session.begin(7));
     CHECK(!session.run().rules().coops.empty());
     if (session.run().rules().coops.empty()) return;

@@ -314,8 +314,8 @@ TEST_CASE("raid zones (2.78): every branch's lair waits for every ambush of the 
         CHECK(lair > 1);
         const int before = lair - 1;
         const raid::Branch::AmbushCount all = b->ambushes(before, 0);
-        CHECK(all.total == 4);
-        CHECK(all.left == 4);
+        CHECK(all.total == (b->part == "bras_droit" ? 5 : 8));  // titan 12: the galleries too (the Bras droit: its Gaines)
+        CHECK(all.left == all.total);
         // Its passages to the lair: locked « ambushes », through the lair's armory, a door that follows the lock.
         int ways = 0;
         for (const raid::ZoneRules& zr : b->rules)
@@ -342,12 +342,14 @@ TEST_CASE("raid zones (2.78): every branch's lair waits for every ambush of the 
         int tablets = 0;
         for (const LevelObject& o : b->level(raid::kLairArmory)->objects) tablets += o.type == "power_unlock";
         CHECK(tablets >= 10);
-        // One ambush left: closed; « Embuscades restantes : 1 sur 4 » on its passage and in « Ce qu'il reste à faire ».
+        // One ambush left: closed; « Embuscades restantes : 1 sur 8 » (titan 12: the galleries too; the Bras droit: 1 sur 5) on
+        // its passage and in « Ce qu'il reste à faire ».
+        const std::string oneLeft = "Embuscades restantes : 1 sur " + std::to_string(all.total);
         uint32_t three = 0, guardOnly = 0, others = 0;
         int counted = 0;
         for (const raid::ObjectiveInfo& o : b->objectives)
             if (o.zone == before && o.role == "ambush") {
-                if (counted++ < 3) three |= 1u << o.index;
+                if (counted++ < all.total - 1) three |= 1u << o.index;
                 else guardOnly |= 1u << o.index;
             } else if (o.role != "gigaboss") {
                 others |= 1u << o.index;  // the rest of the branch (the zone before the lair reachable)
@@ -358,13 +360,13 @@ TEST_CASE("raid zones (2.78): every branch's lair waits for every ambush of the 
         CHECK(!b->lockOpen(lock, three));
         CHECK(!b->lockOpen(lock, guardOnly));  // the guard alone (the lock of before 2.78) no longer opens it
         CHECK(b->lockOpen(lock, three | guardOnly));
-        CHECK(raid::Branch::ambushesLeftText(b->ambushes(before, three)) == "Embuscades restantes : 1 sur 4");
+        CHECK(raid::Branch::ambushesLeftText(b->ambushes(before, three)) == oneLeft);
         bool said = false;
-        for (const raid::Requirement& r : raid::zoneGoals(*b, before, three).items) said = said || r.text == "Embuscades restantes : 1 sur 4";
+        for (const raid::Requirement& r : raid::zoneGoals(*b, before, three).items) said = said || r.text == oneLeft;
         CHECK(said);
         bool access = false;
         for (const raid::Requirement& r : raid::zoneGoals(*b, lair, others | three).items)
-            access = access || (r.access && r.text.find("Embuscades restantes : 1 sur 4") != std::string::npos);
+            access = access || (r.access && r.text.find(oneLeft) != std::string::npos);
         CHECK(access);
         // The maps show the lair's armory, a zone of passage just before the lair.
         bool shown = false;
@@ -379,7 +381,7 @@ TEST_CASE("raid zones (2.78): the lair's passage stays shut while one ambush wav
     uint32_t three = 0, last = 0, others = 0;
     int counted = 0;
     for (const raid::ObjectiveInfo& o : b.objectives) {
-        if (o.zone == 7 && o.role == "ambush") (counted++ < 3 ? three : last) |= 1u << o.index;
+        if (o.zone == 7 && o.role == "ambush") (counted++ < 4 ? three : last) |= 1u << o.index;  // titan 12: five (the Gaines last)
         else if (o.role != "gigaboss") others |= 1u << o.index;
     }
     raid::RaidRun run(s.ws(), b, raid::kMaxInstancePlayers);
@@ -395,7 +397,7 @@ TEST_CASE("raid zones (2.78): the lair's passage stays shut while one ambush wav
     stepN(run, 2, 2, others | three);
     CHECK(run.zoneOf(0) == 7);  // refused
     bool said = false;
-    for (const WorldMessage& m : run.worldOf(7)->messages()) said = said || m.text.find("Embuscades restantes : 1 sur 4") != std::string::npos;
+    for (const WorldMessage& m : run.worldOf(7)->messages()) said = said || m.text.find("Embuscades restantes : 1 sur 5") != std::string::npos;
     CHECK(said);
     // The last ambush beaten (validated for the branch at this step): the door opens for everyone, the same step.
     stepN(run, 2, 1, others | three | last);

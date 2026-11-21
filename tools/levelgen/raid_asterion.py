@@ -48,7 +48,7 @@ from levelkit import Level, ROOT, T
 
 # Raise when a zone, a catalog or a link changes how the raid plays: every game of an instance
 # must have the same (the relay's GO carries "<branch revision>.<titan revision>").
-TITAN_REVISION = 11  # 11 (2.81.2): every co-op mechanism waits for the ambushes before it too (each one after an ambush in the expeditions), the goods lift started by its plate only, the walls of the locks, of the lift and over the doors of the plates up to the top of the level (no wall jumps over them); 10 (2.80): a passage that closes behind the group (an arena's doors) waits for every player of the zone (rules of cooperation 4); 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
+TITAN_REVISION = 12  # 12: the galleries of the expeditions are ambushes too (their packs, an objective each), a gate after each one (a wall up to the top, its doors opened by the ambushes before it: metadata.raid.gates), the Poignet-verrou's towers end in a gate (their east door no longer the arena's, a wall over it); 11 (2.81.2): every co-op mechanism waits for the ambushes before it too (each one after an ambush in the expeditions), the goods lift started by its plate only, the walls of the locks, of the lift and over the doors of the plates up to the top of the level (no wall jumps over them); 10 (2.80): a passage that closes behind the group (an arena's doors) waits for every player of the zone (rules of cooperation 4); 9 (the ambush gates): every zone with an ambush (the entry's guard, the abdomen's nest) keeps its way on shut until it is beaten, the way back open, a branch's state seen in the zones already loaded; 8 (2.78): each player changes zone alone, the lair's door waits for every ambush of the zone before it, the lair's armory; 2.72 (phase 6): the heart and its links « modifier »; 3 (2.75): the armories, the floods wall to wall, revives, wipes; 4 (2.75.2): the gigaboss shots leave their drawing, the crown keeps its radius; 5 (2.76.0): the flight of the weakened enemies bounded (simulation 16); 6 (2.76.2): every boss by its hit parts (simulation 17); 7 (2.77): a soul falls under the point of death or waits on the last safe place, a revival is held (« Interagir »), the armory's tablets up
 BRANCH_REVISION = 3  # 2.69 (phase 4B): lairs unsealed, gigaboss objectives (3: Skullmaw, Dreadfang, Heartbreaker too)
 RAID_DIR = os.path.join(ROOT, "data", "raids", "asterion")
 SERVER_COPY = os.path.join(ROOT, "server", "src", "raidTitan.json")
@@ -436,6 +436,15 @@ def ambush_ids(final):
     return ["%s_embuscade_%d" % (prefix, k + 1) for k in range(3)]
 
 
+def gallery_ids(final):
+    """Titan 12: the ids of the galleries' ambushes of an expedition (one per gallery, four)."""
+    prefix = final.split("_")[0]
+    return ["%s_galerie_%d" % (prefix, k + 1) for k in range(GALLERIES)]
+
+
+GALLERIES = 4  # titan 12: the galleries of an expedition (each before a checkpoint and a giant ambush)
+
+
 def with_ambushes(spec, zone=7, lair=8):
     """2.78: the ambushes of the zone before the lair become objectives of the branch (added at the end of
     its catalog: the bits never move), the last one's objective (the guard) takes the role « ambush » too,
@@ -448,6 +457,11 @@ def with_ambushes(spec, zone=7, lair=8):
         fr, en = AMBUSH_ORDINALS[k]
         label = tr("Vaincre la %s embuscade (toutes ses vagues)" % fr, "Defeat the %s ambush (all its waves)" % en)
         objectives.append((oid, zone, label, "Defeat the %s ambush (all its waves)" % en, False, "ambush", ""))
+    # Titan 12: the galleries before each giant ambush hold a pack on the three floors: an ambush too (an objective each,
+    # added after the others: the bits never move), so nothing that looks like an ambush is left behind the group.
+    for k, oid in enumerate(gallery_ids(final[0])):
+        label = tr("Nettoyer la galerie %d : vaincre son embuscade" % (k + 1), "Clear gallery %d: defeat its ambush" % (k + 1))
+        objectives.append((oid, zone, label, "Clear gallery %d: defeat its ambush" % (k + 1), False, "ambush", ""))
     spec.objectives = objectives
     lock = "ambushes:%d" % zone
     spec.edges = [(a, b, lock if l == "objective:" + final[0] else l, sec) for a, b, l, sec in spec.edges]
@@ -927,6 +941,8 @@ class Expedition:
         # 2.81.2: the ambushes met so far along the route (their objectives): a mechanism laid after them waits
         # for them too (« ambushes » of its plate: game/raid/RaidRun::updateCoops), never for one behind it.
         self.ambushes = []
+        # Titan 12: the gates after the galleries (metadata.raid.gates): opened by the ambushes before them, nobody else.
+        self.gates = []
 
     def walk(self, x, y=None):
         """2.78: a point of the route (tiles), on the low floor unless `y`."""
@@ -960,9 +976,11 @@ class Expedition:
         for f in (LOW, MID, HIGH):
             self.L.light((x0 + x1) // 2, f - 4, self.th["glow"], 120, flicker=0.15)
 
-    def hall(self, x, hazard=False):
+    def hall(self, x, hazard=False, objective=None):
         """Three lanes, 90 wide: the low one crosses two gaps the branch's way, the middle one is
-        held by its walkers, the high one by flyers, over brittle platforms."""
+        held by its walkers, the high one by flyers, over brittle platforms. Titan 12: with `objective`, its pack is an
+        ambush (an arena over its three floors, the pack its one wave, waiting until a player comes in): the gate after
+        it (gate()) waits for it."""
         z, w = self.z, 90
         self.walk(x + w)
         self.well(x)
@@ -982,13 +1000,19 @@ class Expedition:
             z.y = LOW
             # 2.81.2: first at 50 s (40 before): the lock now after the first ambush, the group reaches this hall later.
             z.hazard(x, x + w, period=75.0, first=50.0)
-        self.enemy("small", x + 10, LOW)
-        self.enemy("small", x + 50, LOW, flip=True)
-        self.enemy("mid", x + 84, LOW)
-        self.enemy("mid", x + 30, MID)
-        self.enemy("heavy", x + 66, MID, flip=True)
-        self.enemy("flyer", x + 24, HIGH, flyer=True)
-        self.enemy("flyer2", x + 70, HIGH, flyer=True, flip=True)
+        d = objective is not None
+        pack = [self.enemy("small", x + 10, LOW, dormant=d),
+                self.enemy("small", x + 50, LOW, flip=True, dormant=d),
+                self.enemy("mid", x + 84, LOW, dormant=d),
+                self.enemy("mid", x + 30, MID, dormant=d),
+                self.enemy("heavy", x + 66, MID, flip=True, dormant=d),
+                self.enemy("flyer", x + 24, HIGH, flyer=True, dormant=d),
+                self.enemy("flyer2", x + 70, HIGH, flyer=True, flip=True, dormant=d)]
+        if d:
+            # Its trigger over the whole hall, from the top of the level: nobody passes it by.
+            a = self.L.combat(x + 1, 0, x + w - 1, LOW, waves=",".join(pack), lock=False)
+            z.objective(objective, a, "cleared")
+            self.ambushes.append(objective)
         self.L.orb("health_orb", x + 45, MID - 2)
         z.scatter(x + 1, x + 19, 0.3)
         self.lights(x, x + w)
@@ -1087,6 +1111,22 @@ class Expedition:
         self.L.light(x + 25, LOW - 3, "#ffd27a", 100, flicker=0.2)
         return x + w
 
+    def gate(self, x, n):
+        """Titan 12: a gate after an ambush: a wall across the three floors up to the top of the level, a door on each,
+        that open together at the step every ambush laid before it is beaten (here or by another group): no plate, no
+        lever (metadata.raid.gates, game/raid/RaidRun::syncDoors). The group never leaves an ambush behind it."""
+        z, w = self.z, 6
+        self.walk(x + w)
+        z.rock(x, LOW, x + w)
+        self.slabs(x, x + w)
+        wx = x + 3
+        for y0, y1 in ((0, HIGH - 4), (HIGH, MID - 4), (MID, LOW - 4)):
+            z.slab(wx, y0, wx + 1, y1)
+        doors = [self.L.door(wx, f - 4, 4) for f in (HIGH, MID, LOW)]
+        self.gates.append({"id": "barrage_%d" % n, "rect": [wx * T, 0, T, LOW * T], "doors": doors, "ambushes": list(self.ambushes)})
+        self.L.light(wx, LOW - 5, "#ff6a5a", 80, flicker=0.1)
+        return x + w
+
     def checkpoint(self, x, n):
         """Checkpoints on the three floors (the one touched last is where the group starts again)."""
         z, w = self.z, 12
@@ -1120,24 +1160,29 @@ def lock_arena(spec, west_low, west_high, objective, waves_kinds, desc, desc_en,
     z.L.sign(13, LOW, tr("L'expédition vers l'antre : trois étages, restez répartis. Les points de contrôle relèvent les joueurs à terre.",
                          "The expedition to the lair: three floors, stay spread out. The checkpoints get the players who are down back up."))
     del text, text_en  # 2.78: the lair's door opens with every ambush beaten (the game tells it), not the last one
-    amb = ambush_ids(objective)
+    amb, gal = ambush_ids(objective), gallery_ids(objective)
     e.route = [[9, LOW]]
     x = 24
     # 2.81.2: each mechanism after an ambush (it waits for every ambush before it: never one only it leads to).
-    x = e.hall(x)
+    # Titan 12: each gallery an ambush, a gate after it (the group never leaves an ambush behind it).
+    x = e.hall(x, objective=gal[0])
+    x = e.gate(x, 1)
     x = e.checkpoint(x, 1)
     x, _ = e.ambush(x, 4, objective=amb[0], text=("Première embuscade repoussée !", "First ambush driven back!"))
     x = e.lock(x, 3, 1)
-    x = e.hall(x, hazard=True)
+    x = e.hall(x, hazard=True, objective=gal[1])
+    x = e.gate(x, 2)
     x = e.checkpoint(x, 2)
     x, _ = e.ambush(x, 4, objective=amb[1], text=("Deuxième embuscade repoussée !", "Second ambush driven back!"))
     x = e.lift(x, 4)
-    x = e.hall(x)
+    x = e.hall(x, objective=gal[2])
+    x = e.gate(x, 3)
     x = e.checkpoint(x, 3)
     x, _ = e.ambush(x, 4, objective=amb[2], text=("Troisième embuscade repoussée : la garde de l'antre approche !",
                                                   "Third ambush driven back: the lair's guard draws near!"))
     x = e.lock(x, 3, 2)
-    x = e.hall(x)
+    x = e.hall(x, objective=gal[3])
+    x = e.gate(x, 4)
     x = e.checkpoint(x, 4)
     x, _ = e.ambush(x, 4, objective=objective, w=110)
     z.rock(x, LOW, x + 4)
@@ -1146,6 +1191,7 @@ def lock_arena(spec, west_low, west_high, objective, waves_kinds, desc, desc_en,
     e.finish(z, 8)
     via_lair_armory(z, 8)
     z.raid["coop"] = e.coops
+    z.raid["gates"] = e.gates
     z.raid["checkpoints"] = e.checkpoints
     return z.save()
 
@@ -1831,6 +1877,40 @@ def check_ambush_gates(cat, levels):
                 if p["to"] > n:
                     assert p["lock"] == "ambushes:%d" % n, (cat["id"], n, "open way on past an ambush", p["id"], p["lock"])
         check_mechanisms(cat["id"], n, lv, ambushes, sources)
+        check_gates(cat["id"], n, lv, ambushes, sources)
+
+
+def loose_packs(lv):
+    """Titan 12: the enemies outside every arena's waves, in packs (4 or more, each within 24 tiles of the next)."""
+    listed = {i for o in lv["objects"] if o["type"] == "combat_zone" for w in o["props"].get("waves", "").split(";") for i in w.split(",") if i}
+    loose = sorted((o for o in lv["objects"] if o["type"] == "enemy" and o["id"] not in listed), key=lambda o: o["rect"][0])
+    packs = []
+    for o in loose:
+        if not packs or o["rect"][0] - packs[-1][-1]["rect"][0] > 24 * T:
+            packs.append([])
+        packs[-1].append(o)
+    return [p for p in packs if len(p) >= 4]
+
+
+def check_gates(cid, n, lv, ambushes, sources):
+    """Titan 12: in a zone with ambushes, no pack of enemies outside an ambush (what looks like one is one); each gate waits
+    for EVERY ambush laid before it (west of its wall) and none after, and closes its column up to the top of the level (a
+    solid or one of its doors on every row)."""
+    objs = {o["id"]: o for o in lv["objects"]}
+    if ambushes:
+        packs = loose_packs(lv)
+        assert not packs, (cid, n, "a pack outside an ambush", [[o["id"] for o in p] for p in packs])
+    for g in lv["metadata"]["raid"].get("gates", []):
+        x = g["rect"][0]
+        want = sorted(sources[a] for a in ambushes if objs[a]["rect"][0] + objs[a]["rect"][2] <= x)
+        assert want and sorted(g["ambushes"]) == want, (cid, n, g["id"], "its ambushes", g["ambushes"], want)
+        col = x + 1
+        for row in range(int((g["rect"][1] + g["rect"][3]) // T)):
+            y = row * T + T // 2
+            assert any(w["type"] in ("solid", "door") and w["rect"][0] <= col < w["rect"][0] + w["rect"][2] and
+                       w["rect"][1] <= y < w["rect"][1] + w["rect"][3] for w in lv["objects"]), (cid, n, g["id"], "a way over it", row)
+        for d in g["doors"]:
+            assert objs[d]["type"] == "door" and not objs[d]["props"].get("open"), (cid, n, g["id"], d)
 
 
 def check_mechanisms(cid, n, lv, ambushes, sources):

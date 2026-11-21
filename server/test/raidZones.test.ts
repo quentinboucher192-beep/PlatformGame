@@ -95,7 +95,7 @@ describe("raids phase 2: the branch's rules", () => {
         expect(reachable(entry)[8]).toBe(false);
         // 2.78: the hand once every ambush of the wrist is beaten (the guard's alone no longer opens it).
         expect(reachable(maskOf(["epaule_arene", "poignet_verrou"]))[8]).toBe(false);
-        expect(reachable(maskOf(["epaule_arene", "poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"]))[8]).toBe(true);
+        expect(reachable(maskOf(["epaule_arene", "poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3", "poignet_galerie_1"]))[8]).toBe(true);
         expect(reachable(maskOf(["poignet_verrou", "poignet_embuscade_1", "poignet_embuscade_2", "poignet_embuscade_3"]))[8]).toBe(false);
         const gens = maskOf(["veine_generateur", "avantbras_generateur"]);
         expect(lockOpen("generators", maskOf(["veine_generateur"]))).toBe(false);
