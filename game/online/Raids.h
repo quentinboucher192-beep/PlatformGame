@@ -12,6 +12,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "engine/core/Json.h"
@@ -264,6 +265,13 @@ struct Results {
     std::vector<Reward> rewards;  // mine to claim for this event
     std::vector<ZoneResultTable> zoneTables;  // 2.75: my clan's groups' zone tables (newest first)
     std::vector<ZoneResultRow> raidTotals;    // 2.78: « Raid entier »: each player's zones added up
+    /// 2.86 (the bosses' bars of « Contributions »): the highest phase each gigaboss's fights reached (validated,
+    /// every instance; 4: fallen) — the server never knows a gigaboss's health, only its phases.
+    std::vector<std::pair<std::string, int>> bossPhases;
+    /// 2.86: the heart's shared health (ten-thousandths, the validated parts only) and phase; -1 / 0: sealed or unknown.
+    int heartHealth = -1;
+    int heartPhase = 0;
+    bool heartFallen = false;
 };
 Results parseResults(const Json& j);
 

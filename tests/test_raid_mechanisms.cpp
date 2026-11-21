@@ -380,7 +380,6 @@ SDL_Event padEvent(SDL_GamepadButton b) {
 contrib::Model model(bool noGroups, bool heartShut) {
     contrib::Model m;
     m.legend = "Test : chiffres comptés par la simulation.";
-    m.tabKey = "Tab";
     m.parts = contrib::titanParts();
     m.raid.title = "Raid entier";
     contrib::Row r;
@@ -535,8 +534,12 @@ TEST_CASE("raid mechanisms (2.81.2): contributions — every part and the heart 
                             frame(&next, true);
                             openRow(pad ? padEvent(SDL_GAMEPAD_BUTTON_DPAD_DOWN) : keyEvent(SDL_SCANCODE_DOWN),
                                     pad ? padEvent(SDL_GAMEPAD_BUTTON_SOUTH) : keyEvent(SDL_SCANCODE_RETURN));
+                            // 2.86: Tab (the raid menu's key) does nothing on this screen.
+                            const int tabBefore = v.tab, partBefore = v.part;
                             const SDL_Event tab = keyEvent(SDL_SCANCODE_TAB);
                             frame(&tab, true);
+                            CHECK(v.tab == tabBefore);
+                            CHECK(v.part == partBefore);
                             openRow(keyEvent(SDL_SCANCODE_DOWN), keyEvent(SDL_SCANCODE_RETURN));
                         }
                         for (int k = 0; k < static_cast<int>(m.parts.size() + 1); ++k) {
@@ -567,6 +570,172 @@ TEST_CASE("raid mechanisms (2.81.2): contributions — every part and the heart 
             contrib::draw(g, fig, {ui.s(24), ui.s(24), ui.screenW() - ui.s(48), ui.screenH() - ui.s(48)}, empty, v);
             ui.end();
         }
+    }
+}
+
+TEST_CASE("raid mechanisms (2.86): the bosses' health bars on the titan's callouts — real data only, measured in French and English; Tab does nothing") {
+    // The words of a bar: the real health and phase, « Vaincu », a phase alone greyed, nothing without data.
+    contrib::Part p;
+    p.state = asterion::State::Attacked;
+    CHECK(contrib::healthText(p).empty());  // no data: no bar
+    p.health = 0.62f;
+    p.phase = 2;
+    CHECK(contrib::healthText(p) == "62 % · phase 2");
+    p.health = 0.001f;
+    CHECK(contrib::healthText(p) == "1 % · phase 2");  // still standing: never « 0 % »
+    p.health = -1.0f;
+    CHECK(contrib::healthText(p) == "— · phase 2");  // a validated phase, its health never known
+    p.state = asterion::State::Unknown;
+    p.health = 0.5f;
+    CHECK(contrib::healthText(p).empty());  // not discovered: no bar
+    p.fallen = true;
+    CHECK(contrib::healthText(p) == "Vaincu");
+
+    // The server's results: the heart's validated shared health and phase, each gigaboss's best phase; sealed: nothing.
+    const Json res = Json::parse(R"({"gigaboss":{"defeated_bosses":["Pyroclast"],"fights":[
+        {"boss":"Skullmaw","group":"[A]·1","phase":1},{"boss":"Skullmaw","group":"[B]·2","phase":2},{"boss":"Pyroclast","group":"[A]·3","phase":4}]},
+        "heart":{"open":true,"fallen":false,"health":4000,"phase":3}})");
+    const raids::Results r = raids::parseResults(res);
+    CHECK(r.heartHealth == 4000);
+    CHECK(r.heartPhase == 3);
+    const contrib::Model rm = contrib::modelOfResults(r, "");
+    int heartBars = 0, phaseOnly = 0, fallenBars = 0;
+    for (const contrib::Part& q : rm.parts) {
+        if (q.id == raid::kHeartPart) {
+            CHECK(std::fabs(q.health - 0.4f) < 0.001f);
+            CHECK(contrib::healthText(q) == "40 % · phase 3");
+            ++heartBars;
+        } else if (q.gigaboss == "Skullmaw") {
+            CHECK(q.health < 0.0f);  // the server never knows a gigaboss's health
+            CHECK(contrib::healthText(q) == "— · phase 2");  // its best fight
+            ++phaseOnly;
+        } else if (q.gigaboss == "Pyroclast") {
+            CHECK(contrib::healthText(q) == "Vaincu");
+            ++fallenBars;
+        } else {
+            CHECK(contrib::healthText(q).empty());  // never fought: no bar
+        }
+    }
+    if (!rm.parts.empty()) CHECK(heartBars + phaseOnly + fallenBars == 3);
+    const raids::Results sealed = raids::parseResults(Json::parse(R"({"heart":{"open":false,"fallen":false,"health":null,"phase":null}})"));
+    CHECK(sealed.heartHealth == -1);
+    for (const contrib::Part& q : contrib::modelOfResults(sealed, "").parts) CHECK(contrib::healthText(q).empty());
+
+    SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "offscreen");
+    Application app;
+    AppConfig cfg;
+    cfg.headless = true;
+    cfg.width = 1280;
+    cfg.height = 720;
+    cfg.vsync = false;
+    CHECK(app.init(cfg));
+    {
+        GameServices g(app);
+        g.loadAll();
+        g.progression.asterionFilmSeen = true;
+        app.pushScene(std::make_unique<Blank>());
+        // Every kind of bar, the longest names, relics, several groups; two parts without any data.
+        contrib::Model m = model(false, false);
+        CHECK(m.parts.size() == 8);
+        if (m.parts.size() != 8) return;
+        const float healths[8] = {0.62f, -1.0f, 0.5f, -1.0f, 0.004f, -1.0f, 1.0f, 0.3f};
+        const int phases[8] = {2, 0, 3, 2, 3, 0, 1, 4};
+        for (size_t i = 0; i < m.parts.size(); ++i) {
+            contrib::Part& q = m.parts[i];
+            q.health = healths[i];
+            q.phase = phases[i];
+            q.relic = i % 2 == 0;
+            q.groups = {static_cast<int>(i) + 1, static_cast<int>(i) + 8, static_cast<int>(i) + 15};
+            q.state = i == 2 ? asterion::State::Unknown : i == 4 ? asterion::State::Weakened : asterion::State::Attacked;
+            q.fallen = i == 1;
+        }
+        const bool hasBar[8] = {true, true, false, true, true, false, true, true};
+        AsterionFigure fig;
+        float smallest = 1e9f;
+        for (Language lang : {Language::French, Language::English}) {
+            i18n::setLanguage(lang);
+            for (const Vec2 size : {Vec2{1280, 720}, Vec2{1920, 1080}}) {
+                app.setWindowSize(static_cast<int>(size.x), static_cast<int>(size.y));
+                app.renderer().refreshOutputSize();
+                app.runFrames(1);
+                app.renderer().refreshOutputSize();
+                UIContext& ui = g.ui;
+                ui.begin(app, 1.0f / 60.0f);
+                const float W = ui.screenW(), H = ui.screenH();
+                for (bool embedded : {false, true}) {
+                    m.embedded = embedded;
+                    const Rect panel = embedded ? Rect{ui.s(36), ui.s(130), W - ui.s(72), H - ui.s(200)} : Rect{ui.s(24), ui.s(24), W - ui.s(48), H - ui.s(48)};
+                    contrib::View v;
+                    const contrib::Layout L = contrib::layout(ui, panel, m, v);
+                    CHECK(L.callouts.size() == m.parts.size());
+                    if (L.callouts.size() != m.parts.size()) continue;
+                    for (size_t i = 0; i < L.callouts.size(); ++i) {
+                        const Rect& c = L.callouts[i];
+                        smallest = std::min(smallest, c.h / ui.s(1.0f));
+                        const contrib::Callout o = contrib::calloutLayout(ui, c, m.parts[i]);
+                        CHECK(o.bar.empty() == !hasBar[i]);  // no data, not discovered: no bar at all
+                        std::vector<Rect> boxes = {o.name, o.portrait, o.groups, o.pill, o.relic, o.bar};
+                        for (size_t a = 0; a < boxes.size(); ++a) {
+                            if (boxes[a].empty()) continue;
+                            CHECK(c.expanded(0.5f).containsRect(boxes[a]));
+                            for (size_t b = a + 1; b < boxes.size(); ++b)
+                                if (!boxes[b].empty()) CHECK(!boxes[a].intersects(boxes[b]));
+                        }
+                        if (!hasBar[i]) continue;
+                        // Its words inside it, whole, at a readable size, in this language.
+                        CHECK(o.bar.h >= ui.s(13) - 0.5f);
+                        CHECK(o.barText == contrib::healthText(m.parts[i]));
+                        CHECK(o.barFont >= 8.0f);
+                        CHECK(raidui::textW(ui, o.barText, o.barFont, FontFace::Bold) <= o.bar.w - ui.s(12) + 0.5f);
+                        CHECK(o.bar.w >= ui.s(100));
+                    }
+                    contrib::draw(g, fig, panel, m, v);
+                    // 2.86: the keys' line no longer names Tab (the raid menu's key).
+                    for (const std::string& line : L.keyLines) CHECK(line.find("Tab") == std::string::npos);
+                }
+                ui.end();
+            }
+        }
+        i18n::setLanguage(Language::French);
+        std::printf("  barres de vie des boss : appel le plus court %.0f px (à l'échelle 1)\n", smallest);
+
+        // Tab changes nothing; Entrée / A without a row chosen goes to the part's next zone reached, with one opens it.
+        InputManager& in = app.input();
+        contrib::View v;
+        v.choose(0);  // part 0: its zones 1 and 2 reached
+        auto tap = [&](const SDL_Event& down) {
+            app.runFrames(1);
+            send(in, down);
+            v.handleKeys(in, m);
+            SDL_Event up = down;
+            if (down.type == SDL_EVENT_KEY_DOWN) {
+                up.type = SDL_EVENT_KEY_UP;
+                up.key.down = false;
+            } else {
+                up.type = SDL_EVENT_GAMEPAD_BUTTON_UP;
+                up.gbutton.down = false;
+            }
+            app.runFrames(1);
+            send(in, up);
+            v.handleKeys(in, m);
+        };
+        tap(keyEvent(SDL_SCANCODE_TAB));
+        CHECK(v.part == 0);
+        CHECK(v.tab == 0);
+        CHECK(!v.toggle);
+        tap(keyEvent(SDL_SCANCODE_RETURN));
+        CHECK(v.tab == 1);
+        tap(padEvent(SDL_GAMEPAD_BUTTON_SOUTH));
+        CHECK(v.tab == 2);
+        tap(keyEvent(SDL_SCANCODE_RETURN));
+        CHECK(v.tab == 0);  // « Toute la branche » after the last zone reached
+        tap(keyEvent(SDL_SCANCODE_TAB));
+        CHECK(v.tab == 0);
+        tap(keyEvent(SDL_SCANCODE_DOWN));
+        CHECK(v.selected == 0);
+        tap(keyEvent(SDL_SCANCODE_RETURN));
+        CHECK(v.toggle);  // a row chosen: its zones
+        CHECK(v.tab == 0);
     }
 }
 
