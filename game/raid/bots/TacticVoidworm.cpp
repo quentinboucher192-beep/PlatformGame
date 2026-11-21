@@ -35,6 +35,7 @@ public:
         if (!b || !rt) return;
         // 2.84, its fight plan: once its acid floods the gut (from its 3rd phase), the strikers fire from above the
         // acid's height — never caught on the floor when it rises (3 s of warning, a climb of two storeys).
+        v.plan.reviveShielded = true;  // its body bites who kneels in it
         v.plan.hideArmoured = true;  // armoured, nothing to strike: off its body (its bites, its spit), not where its rings will be
         if (gb.rules()) {
             const Json ac = gb.rules()->extra.value("acid", Json::object());
