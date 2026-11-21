@@ -205,6 +205,7 @@ private:
     int navZone_ = -1;
     uint32_t tick_ = 0;
     uint32_t seed_ = 0;  // 2.84: setSeed
+    uint32_t lastFlood_ = 0;  // 2.84: the last step a liquid was coming or up (Plan::reviveWindow)
     bool syncReady_ = true;  // the players striking a mechanism together are all within reach
     std::string plan_;
     // 2.79

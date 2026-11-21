@@ -40,6 +40,8 @@ public:
             if (gb.phase() >= jget<int>(ac, "from", 3)) {
                 v.plan.floorY = jget<float>(ac, "floor", b->box.bottom());
                 v.plan.elevate = jget<float>(ac, "height", 150.0f) + 12.0f;
+                v.plan.reviveWindow = 5.0f;  // its acid every 22 s, 13 s up: 8 s dry
+                v.plan.elevateAll = true;
             }
         }
         std::vector<BossMark> marks;

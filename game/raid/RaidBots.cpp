@@ -487,6 +487,8 @@ void TestBots::sense(RaidRun& run) {
             }
     }
     dangers_ = view_.dangers;
+    for (const Danger& d : dangers_)
+        if (d.kind == Danger::Kind::Flood) lastFlood_ = tick_;  // 2.84: the last step a liquid was coming or up
     // The sync groups (targets finished together): each one low enough everywhere?
     syncLow_.assign(4, 1);
     std::vector<uint8_t> any(4, 0);
@@ -588,7 +590,8 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
             const Vec2 c{nd.feet.x, nd.feet.y - 11.0f};
             const float fromTarget = (c - tc).length();
             // 2.84 (fight plan): above the floor under the boss, whatever the pass (its waves run along that floor).
-            if (body && view_.plan.elevate > 0.0f && b.role != Role::Lure && nd.feet.y > view_.plan.floorY - view_.plan.elevate) return false;
+            if (body && view_.plan.elevate > 0.0f && (b.role != Role::Lure || view_.plan.elevateAll) && nd.feet.y > view_.plan.floorY - view_.plan.elevate)
+                return false;
             // 2.84: never on another's place (a group on one pixel is swept, crushed, burnt together).
             for (int o = 0; o < static_cast<int>(bots_.size()) && pass == 1; ++o)
                 if (o != seat && bots_[static_cast<size_t>(o)].spot >= 0 && ((seats_ >> o) & 1u) &&
@@ -905,6 +908,11 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                 drowned = drowned || (dg.kind == bots::Danger::Kind::Flood && fight_ && soul.x > dg.area.x - 10.0f && soul.x < dg.area.right() + 10.0f &&
                                       soul.y > dg.area.y - 12.0f);
             if (drowned && ord != bots::OrderKind::Revive) continue;
+            // 2.84 (fight plan): a liquid that comes back on a cycle (Voidworm's acid): a soul under its height only in the
+            // first seconds after it has fallen (the time to kneel 2 s and climb back before the next one).
+            if (fight_ && view_.plan.reviveWindow > 0.0f && view_.plan.elevate > 0.0f && soul.y > view_.plan.floorY - view_.plan.elevate &&
+                static_cast<float>(tick_ - lastFlood_) > view_.plan.reviveWindow * static_cast<float>(kSimHz) && ord != bots::OrderKind::Revive)
+                continue;
             // The reviver first; else (a small group, or more souls than revivers) the nearest free player.
             int s = nearestFree(soul, [&](int seat) { return bots_[static_cast<size_t>(seat)].role == Role::Reviver; });
             if (s < 0 && (!fight_ || drivers.size() <= 2 || ord == bots::OrderKind::Revive || freeCount() > 2)) s = nearestFree(soul);

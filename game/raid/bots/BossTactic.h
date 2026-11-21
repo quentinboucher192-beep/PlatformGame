@@ -55,6 +55,8 @@ struct BossView {
         bool reserveShield = false;  // the shield kept for the blows marked shieldFirst (and a player at 4 hearts or less)
         float elevate = 0.0f;        // the strikers stand this much above floorY (its floor blows)
         float floorY = 0.0f;         // the floor its blows run along
+        bool elevateAll = false;     // the lure too
+        float reviveWindow = 0.0f;   // a liquid on a cycle: souls under elevate only this many seconds after it fell
         float keepOff = -1.0f;       // the strikers' distance to its body (< 0: the default)
         bool focusWeak = false;      // bare, all on one weak point at a time
         bool fireOnTheRun = false;   // fires while it gets out of a blow when a wave reaches
