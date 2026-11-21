@@ -57573,6 +57573,12 @@
    ]
   },
   {
+   "fr": "Raids : plus aucune embuscade derrière soi. Les galeries des expéditions (les meutes sur trois étages avant chaque point de contrôle, et les Gaines du Poignet-verrou) sont de vraies embuscades, cochées sur la carte, et un barrage les suit : il ne s'ouvre que quand toutes les embuscades d'avant sont vaincues (« Embuscades restantes : 1 sur 2 » sur ses portes, cadenas sur la carte). Les portes des tours du Poignet-verrou ne se passent plus par-dessus et ne s'ouvrent plus à une chute (titan 12).",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : plus moyen de passer un mécanisme en escaladant son mur à coups de sauts muraux : les murs des écluses et du monte-charge montent jusqu'en haut de la zone, et les portes de la vanne double et des plaques jumelles du Poignet-verrou ont un mur au-dessus d'elles.",
    "where": [
     "data/news/changelog.json"
