@@ -1415,7 +1415,7 @@ void TestBots::steer(const GameWorld& w, int seat, Bot& b, InputFrame& f, uint32
     if (pad.my != 0) f.moveY = pad.my;
     // A move through the air under way is the navigation's own (no jump of the tactic's over it).
     // 2.84: except its jump over a wave running at it (a move along the ground gives way to it).
-    if (navi_.pilot(seat).committed() && !(b.waveJumpCool > 0 && w.playerAt(seat).grounded())) b.jumpHold = 0;
+    if (navi_.pilot(seat).committed() && !(b.waveJumpCool > 0 && w.playerAt(seat).grounded()) && b.beamJump <= 0) b.jumpHold = 0;
 }
 
 InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
@@ -1424,6 +1424,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     if (!playing(w, seat)) {
         b.prevHeld = 0;
         b.jumpHold = 0;
+        b.beamJump = 0;
         b.path.clear();
         b.spot = -1;
         if (seat < w.teamSize() && w.member(seat).presence == GameWorld::Presence::Down) {
@@ -1442,6 +1443,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     std::string react;  // what it does about what is coming this step (its thought)
     if (b.shieldCool > 0) --b.shieldCool;
     if (b.waveJumpCool > 0) --b.waveJumpCool;
+    if (b.beamJump > 0) --b.beamJump;
     if (b.hop && me.grounded() && b.jumpHold <= 0) b.hop = 0;
     // 2.84: held back at the edge of what is coming (counted while it waits there; a step away from it forgets it).
     if (b.moveText != "attend que ça passe" && b.moveText != "s'écarte") b.blocked = 0;
@@ -1450,6 +1452,17 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     bool raiseShield = false;
     // 2.84: a place closed for now (its vent shut) is kept, not held: its player dodges and jumps around it.
     const bool holding = b.task == Task::Mechanism && b.mechanism.w > 0.0f && b.mechanism.intersects(me.box) && !b.mechanismClosed;
+    // 2.86: when to jump over a beam about to fire (steps before it fires; -1: no jump rises over it): high enough over the line
+    // through its middle for its slope across its body (its own jump's rise), from then on as long as the beam fires.
+    const auto beamJumpAt = [&](const Danger& d) {
+        const Vec2 ab = d.to - d.from;
+        const float slope = std::fabs(ab.y) / std::max(1.0f, std::fabs(ab.x));
+        const float h = me.box.h * 0.5f + d.width * 0.5f + (me.box.w * 0.5f + d.width * 0.5f) * slope + 6.0f;
+        const float v = me.config().jumpVelocity(), g = me.config().gravity();
+        const float disc = v * v - 2.0f * g * h;
+        if (disc < 0.0f || g <= 0.0f) return -1;
+        return static_cast<int>(std::ceil((v - std::sqrt(disc)) / g * static_cast<float>(kSimHz)));
+    };
     // Sent to a place to hold: what strikes that place (its own jet, a mark on it) is taken under the shield, never a
     // reason to leave it or to wait beside it — a vent or a hook left while its jet comes is never closed.
     const Rect station = b.task == Task::Mechanism && b.mechanism.w > 0.0f && !b.mechanismClosed ? b.mechanism.expanded(10.0f) : Rect{};
@@ -1560,7 +1573,12 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         }
     // ------------------------------------------------------------ a flash coming (Skullmaw): hide behind a column
     bool hiding = false;
-    if (!fleeing && !forced && view_.flash && !holding && lv.hides && nav) {
+    // 2.86: a player sent to a mirror that it reaches before the flash goes on to it (a mirror held is safe too): it went to
+    // hide behind a column a few steps short of it, and the mirror was missing at the flash.
+    const bool toPlate = b.task == Task::Mechanism && b.mechanism.w > 0.0f && !b.mechanismClosed &&
+                         (std::fabs(b.mechanism.center().x - feet.x) + 2.0f * std::fabs(b.mechanism.bottom() - feet.y)) / 120.0f <
+                             static_cast<float>(view_.flashIn) / static_cast<float>(kSimHz) - 0.4f;
+    if (!fleeing && !forced && view_.flash && !holding && !toPlate && lv.hides && nav) {
         const auto hidden = [&](Vec2 c) { return w.physics().raycast(view_.eye, c).has_value(); };
         if (!hidden(me.center())) {
             if (b.hideNode < 0 || !hidden({nav->node(b.hideNode).feet.x, nav->node(b.hideNode).feet.y - 11.0f})) {
@@ -1593,6 +1611,7 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
         }
     } else {
         b.hideNode = -1;
+        if (toPlate && view_.flash && !holding && view_.flashIn <= 20) raiseShield = true;  // not on it yet as it flashes
     }
     // ------------------------------------------------------------ its target: where to strike it from
     const Enemy* foe = enemyOf(w, b.target);
@@ -1823,7 +1842,10 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
             // Holding a plate or reviving: it stays (its shield takes the blow); otherwise out by the nearest safe side.
             // 2.85 (fight plan): a blow marked « shield first » (Heartbreaker's rib traps under every player: a step aside
             // lands in another's or off its platform) is taken under the shield when it is ready.
-            if ((holding || staysPut || ((shot || hit->shieldFirst) && (shieldReady || me.shieldActive()))) && !hit->unblockable) {
+            // 2.86 (fight plan): a beam to jump (Skullmaw's gazes) on a player kneeling by a soul without its shield: over it, the
+            // revival begun again after (it took the beam kneeling, one gaze after the other).
+            const bool kneelBare = staysPut && view_.plan.jumpBeams && hit->kind == Danger::Kind::Line && !shieldReady && !me.shieldActive();
+            if ((holding || (staysPut && !kneelBare) || ((shot || hit->shieldFirst) && (shieldReady || me.shieldActive()))) && !hit->unblockable) {
                 if (hit->in <= 14) raiseShield = true;
                 // 2.84: a beam on a player holding its place (Skullmaw's gazes on the mirrors): a step aside on the plate itself,
                 // to its edge away from the beam — still on it, out of the line.
@@ -1833,13 +1855,34 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                         const float len2 = std::max(1.0f, ab.lengthSq());
                         const float t = std::clamp(((me.center() - hit->from).x * ab.x + (me.center() - hit->from).y * ab.y) / len2, 0.0f, 1.0f);
                         const float away = me.center().x - (hit->from.x + ab.x * t);
-                        const int side = std::fabs(away) > 0.5f ? (away > 0.0f ? 1 : -1) : (me.center().x < b.mechanism.center().x ? -1 : 1);
-                        const float edge = side > 0 ? b.mechanism.right() - 4.0f : b.mechanism.x + 4.0f;
+                        int side = std::fabs(away) > 0.5f ? (away > 0.0f ? 1 : -1) : (me.center().x < b.mechanism.center().x ? -1 : 1);
+                        // 2.86: the edge out of every beam about to fire (another player's gaze may cross its plate), if one is.
+                        const auto litAt = [&](float x) {
+                            const Rect body = bodyAt({x, feet.y}).expanded(3.0f);
+                            for (const Danger& o : dangers_)
+                                if (o.kind == Danger::Kind::Line && o.gapHalf <= 0.0f && (o.seat < 0 || o.seat == seat) && o.in <= hit->in + kSimHz / 2 &&
+                                    hitsLine(o, body))
+                                    return true;
+                            return false;
+                        };
+                        const auto edgeOf = [&](int sd) { return sd > 0 ? b.mechanism.right() - 4.0f : b.mechanism.x + 4.0f; };
+                        if (litAt(edgeOf(side)) && !litAt(edgeOf(-side))) side = -side;
+                        const float edge = edgeOf(side);
                         if ((edge - me.center().x) * static_cast<float>(side) > 2.0f) {
                             forced = side;
                             dodging = true;
                             react = "s'écarte sur sa plaque";
                         }
+                    }
+                    // 2.86: a beam lying low across its plate (no step aside gets out of it) and its shield not ready: a jump
+                    // as it fires (it rises over the line for half a second, back on its plate), never as the gaze flashes.
+                    const int at = beamJumpAt(*hit);
+                    if (std::fabs(ab.y) <= std::fabs(ab.x) * (view_.plan.jumpBeams ? 1.0f : 0.5f) && !shieldReady && !me.shieldActive() && at >= 0 &&
+                        hit->in <= at && hit->in >= at - 3 && !(view_.flash && view_.flashIn < kSimHz) && b.jumpHold <= 0 &&
+                        !(b.prevHeld & (1u << kJump))) {
+                        b.jumpHold = 46;
+                        b.beamJump = 46;
+                        react = "saute par-dessus le rayon";
                     }
                 }
             } else if (seen && noise(seat + 8 * static_cast<int>(seed_), tick_ / 30) < std::max(0.55f, lv.precision)) {
@@ -1851,12 +1894,39 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                     const float t = std::clamp(((me.center() - a).x * ab.x + (me.center() - a).y * ab.y) / len2, 0.0f, 1.0f);
                     const Vec2 near = a + ab * t;
                     const Vec2 away = me.center() - near;
-                    if (std::fabs(ab.x) > std::fabs(ab.y) * 2.0f) {
+                    if (std::fabs(ab.x) > std::fabs(ab.y) * (view_.plan.jumpBeams ? 1.0f : 2.0f)) {
                         // A beam lying along its floor: over it (jump) or under it (crouch).
-                        if (away.y <= 0.0f && me.grounded() && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump))) b.jumpHold = 26;
+                        // 2.86: the jump timed on its firing (over the line from about a tenth to two thirds of a second after it
+                        // leaves the ground, as high as the beam's slope asks): jumped as soon as seen, it came down into the beam
+                        // still firing.
+                        const int at = view_.plan.jumpBeams ? beamJumpAt(*hit) : 1 << 20;
+                        if (away.y <= 0.0f && me.grounded() && b.jumpHold <= 0 && !(b.prevHeld & (1u << kJump)) && at >= 0 && hit->in <= at) {
+                            b.jumpHold = view_.plan.jumpBeams ? 46 : 26;
+                            if (view_.plan.jumpBeams) b.beamJump = 46;  // held to its top (the navigation cut it short)
+                        }
                         else if (away.y > 0.0f) held |= 1u << kDown;
                     } else {
                         side = std::fabs(away.x) > 1.0f ? (away.x > 0.0f ? 1 : -1) : (me.center().x >= a.x ? 1 : -1);
+                        // 2.86: out of its own beam, but not into another's (Skullmaw's gazes fan out from the same eye, one per
+                        // player: a step aside landed in a neighbour's) — the side whose nearest place along its floor is out of
+                        // every beam about to fire, with ground under it and no wall on the way.
+                        float dist[2] = {1e30f, 1e30f};
+                        for (int sgn : {-1, 1})
+                            for (float dx = 6.0f; dx <= 84.0f; dx += 6.0f) {
+                                const Vec2 at{feet.x + static_cast<float>(sgn) * dx, feet.y};
+                                if (w.physics().raycast(me.center(), {at.x, me.center().y}).has_value()) break;  // a wall
+                                if (me.grounded() && !w.physics().raycast({at.x, at.y - 4.0f}, {at.x, at.y + 24.0f}, true).has_value()) break;  // the edge
+                                const Rect body = bodyAt(at).expanded(5.0f);
+                                bool lit = false;
+                                for (const Danger& o : dangers_)
+                                    lit = lit || (o.kind == Danger::Kind::Line && o.gapHalf <= 0.0f && (o.seat < 0 || o.seat == seat) &&
+                                                  o.in <= hit->in + kSimHz / 2 && hitsLine(o, body));
+                                if (lit) continue;
+                                dist[sgn > 0 ? 1 : 0] = dx;
+                                break;
+                            }
+                        const int other = -side;
+                        if (dist[other > 0 ? 1 : 0] + 12.0f < dist[side > 0 ? 1 : 0]) side = other;
                     }
                     react = "sort de la ligne du rayon";
                 } else if (hit->shot && std::fabs(hit->to.x) > std::fabs(hit->to.y) * 1.5f && me.grounded()) {

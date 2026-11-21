@@ -67,6 +67,7 @@ struct BossView {
         bool freeOnClosed = false;   // a player on a closed place dodges and jumps around it (else it stays on it)
         bool reviveShielded = false; // a soul in its body approached only with the shield ready
         bool hideArmoured = false;   // its body closed to blows: the strikers wait far off it (not where its weak points will be)
+        bool jumpBeams = false;      // 2.86: a beam lying lower than steep (Skullmaw's gazes) jumped over as it fires, not stepped out of
     } plan;
 };
 

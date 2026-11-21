@@ -63,6 +63,7 @@ public:
         uint32_t prevHeld = 0;
         int jumpHold = 0;     // steps the jump stays held
         bool airJump = false; // its air jump used in this flight
+        int beamJump = 0;     // 2.86: steps its jump over a beam stays its own (the navigation does not cut it short)
         float lastX = 0.0f;
         int still = 0;        // steps it wanted to move and did not
         int attackCool = 0;

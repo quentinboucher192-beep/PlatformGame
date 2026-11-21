@@ -30,6 +30,10 @@ public:
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v, false);
         v.plan.fixedHolders = true;  // 2.84: each mirror its own player through its veil, revived first
+        v.plan.jumpBeams = true;     // 2.86: its gazes from its eyes high over the arena lie low: jumped as they fire
+        // 2.86: veiled, nothing to strike: the players without a mirror wait a good way off it (320 to 700 px), where its
+        // gazes from its eyes fan out — near its skull they all crossed, and its sweeping gaze reached them all.
+        v.plan.hideArmoured = true;
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);

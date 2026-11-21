@@ -19,6 +19,7 @@
 
 #include "engine/audio/AudioSystem.h"
 #include "engine/core/Application.h"
+#include "engine/physics/Collision.h"
 #include "engine/rendering/Text.h"
 #include "engine/resources/ResourceManager.h"
 #include "game/GameServices.h"
@@ -236,6 +237,24 @@ Fight fightAt(Svc& s, const std::string& part, raid::BotSkill skill, int limitSe
                     std::printf("      %6.1f s flash : %d / %d miroirs ·%s\n", steps / 120.0, sk->held(), sk->mirrorsNeeded(), who.c_str());
                 }
                 wasCharging = sk->charging() && sk->chargeRatio() > 0.97f;
+            }
+        if (std::getenv("COSMIC_GOAT_GAZE"))
+            if (const auto* sk = dynamic_cast<const raid::SkullmawRoutine*>(gb.routine())) {
+                // 2.86 (tuning runs): each tracking gaze the step before it fires — the players in its line, what they do then.
+                const GameWorld& w = session.run().world();
+                for (const auto& z : sk->gazes()) {
+                    if (sk->gazeState(z) != raid::SkullmawRoutine::GazeState::Locked || sk->gazeProgress(z) < 0.985f) continue;  // the step before it fires
+                    const Vec2 ab = z.end - z.from;
+                    for (int k = 0; k < w.teamSize(); ++k) {
+                        if (w.member(k).presence != GameWorld::Presence::Playing) continue;
+                        const Player& p = w.playerAt(k);
+                        if (!Collision::segmentIntersectsRect(z.from, z.end, p.box.expanded(9.0f))) continue;
+                        std::printf("      %6.1f s regard de %d sur %d (pente %.2f) · (%.0f, %.0f) sol %d vy %.0f bouclier %d invuln %d énergie %.0f · %s · %s\n", steps / 120.0,
+                                    z.seat + 1, k + 1, std::fabs(ab.y) / std::max(1.0f, std::fabs(ab.x)), p.feet().x, p.feet().y, p.grounded() ? 1 : 0,
+                                    p.vel.y, p.shieldActive() ? 1 : 0, p.invulnerable() ? 1 : 0, p.energy, session.bots().thought(k).intent.c_str(),
+                                    session.bots().thought(k).move.c_str());
+                    }
+                }
             }
         if (trace && std::getenv("COSMIC_GOAT_TRACE")[0] == '3') {
             // Each mark about to strike a simulated player: where it stands, what it thinks (tuning runs).
