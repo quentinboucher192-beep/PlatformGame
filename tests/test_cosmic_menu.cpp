@@ -86,7 +86,11 @@ struct MenuRig {
 }  // namespace
 
 TEST_CASE("cosmic menu: the icon sheet is its generator's, in the code's order") {
-    CHECK(std::system("python3 tools/assetgen/environment/menu_icons.py --check" COSMIC_MENU_NULL) == 0);
+    // As the other generators' checks: skipped where python3 + Pillow are missing (the Windows runner).
+    if (std::system("python3 -c \"import PIL\"" COSMIC_MENU_NULL) == 0)
+        CHECK(std::system("python3 tools/assetgen/environment/menu_icons.py --check" COSMIC_MENU_NULL) == 0);
+    else
+        std::printf("  (python3 + Pillow absents : vérification des icônes du menu sautée)\n");
     auto j = FileUtil::loadJson("assets/ui/menu_icons.json");
     CHECK(j.has_value());
     if (!j) return;
