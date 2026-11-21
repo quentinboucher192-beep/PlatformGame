@@ -1085,8 +1085,17 @@ void TestBots::plan(RaidRun& run, uint32_t seats, bool adminActive) {
                         if (t->priority >= 10 || t->uid == boss->uid()) continue;
                         const Enemy* e = enemyOf(w, t->uid);
                         if (!e) continue;
-                        const float d2 = (e->center() - w.playerAt(s).center()).lengthSq();
-                        if (d2 < bd && (d2 < 360.0f * 360.0f || !body)) {
+                        float d2 = (e->center() - w.playerAt(s).center()).lengthSq();
+                        // 2.84: its places held (its carapace), the creatures closest to those holding them first, wherever
+                        // they are (its parasites bite the players on its hooks: nobody else was near them).
+                        bool guard = false;
+                        if (!view_.bodyTakesDamage)
+                            for (const bots::Station& st : view_.stations)
+                                if ((e->center() - st.plate.center()).lengthSq() < 320.0f * 320.0f) {
+                                    guard = true;
+                                    d2 = std::min(d2, (e->center() - st.plate.center()).lengthSq() * 0.25f);
+                                }
+                        if (d2 < bd && (d2 < 360.0f * 360.0f || !body || guard)) {
                             bd = d2;
                             target = t->uid;
                             what = e->def().name;
