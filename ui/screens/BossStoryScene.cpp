@@ -224,9 +224,26 @@ public:
     bool updatesSceneBelow() const override { return keepBelow_; }  // 2.72: the raid's victory film
     void setKeepBelow(bool on) { keepBelow_ = on; }
     bool holdsNotifications() const override { return true; }
+    /// 2.84: no pointer over the picture, but for a moment after the mouse moved.
+    bool hidesCursor() const override { return mouseShown_ <= 0.0f; }
 
     void update(float dt) override {
         sinceEnter_ += dt;
+        // 2.84: the pointer is hidden while it plays (in Film mode or not); a move of the mouse shows it
+        // for kFilmPointerShow seconds (the « Mode Film » button, its way back, a click), leaving brings it back.
+        {
+            const InputManager& in = g_.app.input();
+            if (!pointerSeen_) {  // where it was when the film opened: not a move
+                pointerSeen_ = true;
+                lastMouse_ = in.mousePos();
+            }
+            if (in.mouseMovedThisFrame() || in.mousePos() != lastMouse_) {
+                lastMouse_ = in.mousePos();
+                mouseShown_ = kFilmPointerShow;
+            } else {
+                mouseShown_ = std::max(0.0f, mouseShown_ - dt);
+            }
+        }
         noticeT_ = std::max(0.0f, noticeT_ - dt);  // 2.82: the notice of « Mode Film » fades
         if (closing_) {
             closeT_ += dt;
@@ -277,11 +294,6 @@ public:
             !locked_ && restartOffered() && (in.keyPressed(SDL_SCANCODE_R) || padYEdge || (click && restartRect_.contains(in.mousePos())));
         // 2.82: « Mode Film » on or off (F, Ⓨ when it does not restart, a click on its button) — in every film, even a
         // first viewing (it skips nothing)
-        if (in.mousePos() != lastMouse_) {
-            lastMouse_ = in.mousePos();
-            mouseShown_ = 2.0f;
-        }
-        mouseShown_ = std::max(0.0f, mouseShown_ - dt);
         const bool modeClick = click && filmModeRect_.w > 0.0f && filmModeRect_.contains(in.mousePos());
         const bool modeAsked = !restartAsked && (in.keyPressed(SDL_SCANCODE_F) || (padYEdge && !restartOffered()) || modeClick);
         if (modeAsked) {
@@ -1323,7 +1335,8 @@ private:
     Rect quitRect_;             // 2.63: « Échap · Ⓑ Quitter », as drawn last (a click there leaves)
     Rect filmModeRect_;         // 2.82: the « Mode Film » button as drawn last (a click there turns it on or off)
     Vec2 lastMouse_{-1.0f, -1.0f};
-    float mouseShown_ = 0.0f;   // 2.82: in Film mode, its way back shows while the mouse moves
+    bool pointerSeen_ = false;  // 2.84: the pointer's place at the opening read (not taken for a move)
+    float mouseShown_ = 0.0f;   // 2.82: in Film mode, its way back shows while the mouse moves; 2.84: and the pointer
     float noticeT_ = 0.0f;      // 2.82: « Mode Film — F ou Ⓨ pour revenir », fading
     TexturePtr target_;
     TexturePtr shotTarget_;  // a scene cross-fading in

@@ -1240,7 +1240,7 @@ d'information ne s'ouvre en jeu (le choix d'un pouvoir et « MANETTE DÉBRANCHÉ
 ### Le menu du raid (`raidmenu::Menu`, `Action::RaidMenu`)
 
 * **Ouvert et fermé par le joueur** : **Tab** au clavier, **L3** (clic du stick gauche) à la manette, réglables dans
-  Paramètres › Commandes (« Menu du raid ») ; le bouton du HUD à la souris ; « Menu du raid » dans la pause. **Échap** ou
+  Paramètres › Commandes (« Menu du raid ») ; le bouton du HUD à la souris (2.84 : plus d'entrée dans la pause). **Échap** ou
   **B** le ferment aussi (sans ouvrir la pause). Il s'ouvre sur la section de la notification affichée, sinon là où le
   joueur l'avait laissé. L3 est aussi le bouton des fantômes de Ghost Racing : jamais dans la même partie. Un ancien
   fichier de réglages où Tab ou L3 servaient à une autre commande laisse le menu sans touche (à choisir).

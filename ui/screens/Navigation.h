@@ -176,6 +176,9 @@ std::unique_ptr<Scene> makeAchievements(GameServices& g);
 /// 2.51: Succès over a paused run (pause › Succès suivis › Modifier), on its « Suggestions »
 /// tab; « Retour » goes back to the pause menu.
 std::unique_ptr<Scene> makeAchievementsFromPause(GameServices& g);
+/// 2.84 (tests): SUCCÈS's banner of the unlocks new since the last visit as laid out now: its frame, then
+/// « Voir les nouveaux », the title, each name shown and « +K »; empty when `s` is not SUCCÈS or nothing is new.
+std::vector<Rect> achievementsFreshPieces(const Scene* s);
 /// Main menu → Collection: Vestiaire, Route des étoiles, Musiques (jukebox), Galerie.
 std::unique_ptr<Scene> makeCollection(GameServices& g, int tab = 0);
 /// The Collection's Vestiaire on one reward (its category, the item selected), over the
@@ -186,6 +189,17 @@ std::unique_ptr<Scene> makeNewRewards(GameServices& g);
 /// Main menu → Statistiques (2.54): the player's own statistics, kept on this computer. `tab`:
 /// 0 Vue d'ensemble, 1 Combat, 2 Boss, 3 Niveaux, 4 Passages difficiles, 5 Données et sauvegarde.
 std::unique_ptr<Scene> makeStatistics(GameServices& g, int tab = 0);
+/// 2.84: the levels Statistiques offers, by planet: every planet of the campaign in its order with its levels in
+/// theirs (from the content), then « Autres niveaux »: the other levels for which `hasData` is true.
+struct StatsLevelGroup {
+    std::string planetId;  // "" for « Autres niveaux »
+    std::string name;
+    std::vector<std::string> levels;
+};
+std::vector<StatsLevelGroup> statisticsLevelGroups(const GameServices& g, const std::function<bool(const std::string&)>& hasData);
+/// 2.84: the bosses of Statistiques › Boss: the ones fought (most recent first), then every other boss of the
+/// content (guardians, giga-bosses, the raids' gigaboss and heart) and of the older boss statistics.
+std::vector<std::string> statisticsBosses(const GameServices& g);
 /// Statistiques › Boss › « Fiches des boss »: the bosses (victories, without being hit, per
 /// phase, how they look, where to fight them). `bossId`: the boss selected on arrival.
 /// `fromAsset` (2.63): opened from ADMINISTRATION › Assets on this asset (« Retour » goes back there).
@@ -402,6 +416,10 @@ std::unique_ptr<Scene> makeOnlineSettings(GameServices& g, int tab = 0);
 /// `version` 0 = the current one). `size` (2.63.5): the board shown first, 1 Solo, 2 Duo, 3 Trio.
 std::unique_ptr<Scene> makeRaceBoard(GameServices& g, const std::string& kind, const std::string& levelId, int version = 0,
                                      const std::string& levelHash = {}, int size = 1);
+/// 2.84: the replay of an attempt `entry` of a race board (`size` 1: Solo, 2 or 3: a team), from its copy on this
+/// computer or downloaded; `status` gets « Téléchargement du replay… », then "" (it plays) or why it cannot. Nothing
+/// happens once `life` has expired (the caller left).
+void watchRaceAttempt(GameServices& g, const Json& entry, int size, std::weak_ptr<int> life, std::function<void(const std::string&)> status);
 /// « Avis et commentaires » (pushed over ONLINE, 2.19): `thread` = "level:<official level
 /// id>" (the players' rating and the level's comments) or "run:<record id>" (the comments of
 /// a run of the leaderboards; `levelId` names its level until the record is read).

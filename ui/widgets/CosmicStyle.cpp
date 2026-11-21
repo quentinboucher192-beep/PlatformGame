@@ -232,6 +232,8 @@ bool plateButton(UIContext& ui, Anims& anims, const std::string& id, const Rect&
 
 // ----------------------------------------------------------------- diamond
 
+Rect newPill(UIContext& ui, Vec2 c, float maxW) { return ui.drawNewPillIn(c, maxW); }
+
 bool diamondButton(UIContext& ui, Anims& anims, const std::string& id, Vec2 c, float half, const Diamond& d, float appear, float t,
                    float dt, bool* isNew) {
     const Rect hit = Rect::fromCenter(c, {half * 2.0f, half * 2.0f});
@@ -252,12 +254,10 @@ bool diamondButton(UIContext& ui, Anims& anims, const std::string& id, Vec2 c, f
     menuIcon(ui, d.icon, Rect::fromCenter(c, {is, is}));
     bool fresh = !d.feature.empty() && ui.newBadge(id, hit, d.feature, false);
     if (isNew) *isNew = fresh;
-    if (fresh) {  // a small gold mark at the top-left edge
-        const Vec2 m{c.x - half * 0.62f, c.y - half * 0.62f};
-        const float s = 4.5f * u * (1.0f + 0.15f * std::sin(t * 4.0f));
-        rd.fillConvexPolygon({{m.x, m.y - s}, {m.x + s, m.y}, {m.x, m.y + s}, {m.x - s, m.y}}, kGold);
-    }
     if (d.badge > 0) badgePill(ui, {c.x + half * 0.72f, c.y - half * 0.72f}, d.badge, 20.0f * u, Color{255, 77, 109, 255});
+    // 2.84: « NOUVEAU » in its pill again (2.83 had only a gold mark): on the top tip, or on the bottom one when
+    // the count pill takes the top; never wider than the diamond and the gap to the next one.
+    if (fresh) newPill(ui, {c.x, d.badge > 0 ? c.y + half : c.y - half}, half * 2.28f);
     return act;
 }
 

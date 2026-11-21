@@ -60,6 +60,9 @@ struct WorldMessage {
     /// key of that slot, or the move / « passif » for a power that does not use it).
     std::string power;
     int powerSlot = -1;
+    /// 2.84 (display only): the team member it is for (a power picked up, a power left): shown only on the
+    /// computer of that player (GameWorld::viewers); -1: for everyone.
+    int player = -1;
     float duration = 3.0f;
     float age = 0.0f;
 };
@@ -193,6 +196,12 @@ public:
     std::vector<Projectile>& projectiles() { return projectiles_; }
     const std::vector<Projectile>& projectiles() const { return projectiles_; }
     std::vector<WorldMessage>& messages() { return messages_; }
+    /// 2.84 (display only, never part of the simulation): the team members played on this computer (bit i: member
+    /// i), set by the scene; a message or a celebration meant for one player is shown only where that player plays.
+    /// All bits (the default): everything is shown (alone, the editor, a test).
+    uint64_t viewers = ~0ull;
+    bool viewing(int member) const { return member < 0 || member >= 64 || ((viewers >> member) & 1ull) != 0; }
+    bool shownHere(const WorldMessage& m) const { return viewing(m.player); }
     /// Lasting effects of the guardians' attacks (2.19): pulls, frozen ground, lava tide,
     /// walls of thorns. Part of the simulation; cleared when the player respawns.
     BossHazards& hazards() { return hazards_; }
@@ -457,7 +466,7 @@ public:
     void flash(Color c, float duration);
     void rumble(float low, float high, int ms);
     void message(WorldMessage msg);
-    void hint(const std::string& text, float duration = 3.5f);
+    void hint(const std::string& text, float duration = 3.5f, int player = -1);
     Color flashColor() const;
 
     // ----------------------------------------------------- level logic

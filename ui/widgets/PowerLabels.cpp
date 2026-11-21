@@ -83,7 +83,7 @@ std::vector<PowerLabel> powerLabels(UIContext& ui, const GameWorld& w, const Wor
 
 bool powerLabelsAllowed(UIContext& ui, GameWorld& w, std::vector<Rect>& keepOut) {
     for (const WorldMessage& m : w.messages()) {
-        if (m.age >= m.duration) continue;
+        if (m.age >= m.duration || !w.shownHere(m)) continue;
         if (m.style != WorldMessage::Style::Hint) return false;
         // The hints' line (Hud::drawMessages: centred, 150 px above the bottom, 210 with a boss).
         const float hintY = ui.screenH() - ui.s(w.activeBoss() ? 210 : 150);

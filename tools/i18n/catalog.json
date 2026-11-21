@@ -6097,6 +6097,12 @@
    ]
   },
   {
+   "fr": "Aucun passage n'est encore enregistré dans ce niveau : jouez-le pour voir où vous tombez.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
+   ]
+  },
+  {
    "fr": "Aucun passage ne se détache encore (il en faut au moins 5 passages pour en juger).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
@@ -6703,7 +6709,7 @@
    ]
   },
   {
-   "fr": "Aucune partie d'un niveau classique n'est encore enregistrée. Jouez un niveau de la campagne (hors EXTRÊME) depuis son début : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
+   "fr": "Aucune partie de ce niveau n'est encore enregistrée. Jouez-le depuis son début (hors EXTRÊME) : chaque segment entre deux points de passage est chronométré, ses temps forment votre « somme des meilleurs » (SOB).",
    "where": [
     "ui/screens/StatisticsScene.cpp"
    ]
@@ -6827,6 +6833,12 @@
    "fr": "Aucune tentative classée sur un niveau EXTRÊME : chaque tentative compte, même sans arriver au bout.",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Aucune tentative contre ce boss n'est encore enregistrée.",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -7143,6 +7155,12 @@
    "fr": "autres groupes ×{0} (accéléré)",
    "where": [
     "ui/screens/RaidGameScene.cpp"
+   ]
+  },
+  {
+   "fr": "Autres niveaux",
+   "where": [
+    "ui/screens/StatisticsScene.cpp"
    ]
   },
   {
@@ -43911,12 +43929,6 @@
    ]
   },
   {
-   "fr": "Menu du raid · {0}",
-   "where": [
-    "ui/screens/RaidGameScene.cpp"
-   ]
-  },
-  {
    "fr": "Menu du raid, ouvert et fermé par le joueur : Tab au clavier, L3 à la manette (réglables dans Paramètres › Commandes), le bouton du HUD à la souris ou la pause ; Échap ou B le ferment aussi. Sections « Ce qu'il reste à faire », « Zones terminées » et leurs tableaux des contributions, « Journal » (toutes les notifications, à l'heure du raid), « Groupe » (en jeu, à terre, spectateur) et « Titan » (son gigaboss, les parties tombées, les liens des autres branches, ses événements, « Résultats du raid »), avec défilement au clavier, à la manette et à la souris.",
    "where": [
     "data/news/changelog.json"
@@ -47701,6 +47713,12 @@
    "fr": "Nouveaux niveaux : sans alerte",
    "where": [
     "ui/screens/PlayerProfileScene.cpp"
+   ]
+  },
+  {
+   "fr": "Nouveaux succès depuis votre dernière visite : {0}",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {
@@ -76974,6 +76992,12 @@
    "fr": "Voir les défis",
    "where": [
     "ui/screens/NotificationsScene.cpp"
+   ]
+  },
+  {
+   "fr": "Voir les nouveaux",
+   "where": [
+    "ui/screens/AchievementsScene.cpp"
    ]
   },
   {

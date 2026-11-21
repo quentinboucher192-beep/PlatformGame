@@ -93,6 +93,7 @@
 #include "ui/online/RaidMenu.h"
 #include "ui/online/RaidTestGuests.h"
 #include "ui/online/RaidWidgets.h"
+#include "ui/widgets/CosmicStyle2.h"
 #include "ui/widgets/Glyphs.h"
 #include "ui/screens/DownedView.h"
 #include "ui/screens/PassageWaitView.h"
@@ -958,6 +959,9 @@ public:
     }
 
     void fixedUpdate(float dt) override {
+        // 2.84 (display only): this computer's seat — a power picked up by another player (a bot included) is
+        // celebrated on theirs only; watching without a seat, everything is shown.
+        if (run_ && !catching_) run_->world().viewers = local_ >= 0 && local_ < 64 ? 1ull << local_ : ~0ull;
         if (test_) {
             // The pause never stops the world, not even in a test: only this player's inputs
             // are held (neutral frame), the boss and the enemies keep going and can still hit.
@@ -2126,7 +2130,7 @@ public:
         bannerLayout_ = {};
         banner_ = {};
         bool bigMessage = false;
-        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
+        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration && w.shownHere(m));
         if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || arenaCam_.intro() || simPanel_ >= 0) return;
         const downed::State st = downed::stateOf(w, local_, spec_.on && !sim_);
         if (st == downed::State::None) return;
@@ -2153,7 +2157,7 @@ public:
     void placePassageWait(GameWorld& w) {
         passageLayout_ = {};
         bool bigMessage = false;
-        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
+        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration && w.shownHere(m));
         if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || arenaCam_.intro() || simPanel_ >= 0) return;
         const std::vector<std::string> lines = passagewait::lines(w, [this](int i) { return seatName(i); });
         if (lines.empty()) return;
@@ -3070,7 +3074,7 @@ public:
         UIContext& ui = g_.ui;
         menuButtonRect_ = {};  // 2.77.4: drawn below, or not this frame
         bool bigMessage = false;
-        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration);
+        for (const WorldMessage& m : w.messages()) bigMessage = bigMessage || (m.style != WorldMessage::Style::Hint && m.age < m.duration && w.shownHere(m));
         if (paused_ || ended_ || bigMap_ || overlay_.menu.isOpen() || reconnect_.active() || bigMessage || g_.app.topScene() != this) return;
         const RaidHudLayout& l = g_.settings.gameplay.raidHud;
         Rect r = raidhud::area(ui, l, RaidHudElement::Notices, hudAreas_);
@@ -3534,61 +3538,50 @@ public:
     }
 
     void drawPause() {
+        // 2.84: the Cosmic kit, as the solo and coop pauses (holographic panel, chrome title, plates). No « Menu du raid »
+        // entry any more: its key (Tab, LS at the gamepad) opens it, as the help line under the plates says.
         UIContext& ui = g_.ui;
+        const cstyle::Motion mo = cstyle::Motion::from(g_.settings.graphics.particleQuality, g_.settings.graphics.screenShake);
+        const float t = ui.time(), dt = g_.app.frameTime() / 1000.0f;
+        const float cu = cstyle::CosmicLayout::of(ui.screenW(), ui.screenH()).unit;
         ui.r().fillRect({0, 0, ui.screenW(), ui.screenH()}, Color{2, 4, 10, 170});
-        Rect box = centred(ui.s(600), ui.s(470) + (sim_ ? ui.s(72) : 0.0f) + (guests_ ? ui.s(72) : 0.0f));
-        ui.panel(box, true, 16);
-        fit(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, 40, box.w - ui.s(48), kText, FontFace::Title, Align::Center);
+        Rect box = centred(ui.s(600), ui.s(398) + (sim_ ? ui.s(72) : 0.0f) + (guests_ ? ui.s(72) : 0.0f));
+        if (pauseOpenedNow_) pauseCard_.flicker(t);
+        pauseCard_.begin(ui, box, t, cu, mo);
+        pauseTitle_.draw(ui, "PAUSE", {box.center().x, box.y + ui.s(44)}, ui.s(46), box.w - ui.s(80), Align::Center, t, mo, cu);
         fit(ui, sim_ ? "Le raid continue pendant la pause : tous les groupes jouent." : test_ ? "Le test continue pendant la pause : vous pouvez encore être touché." : "Le groupe continue à jouer : vous pouvez encore être touché.", {box.center().x, box.y + ui.s(88)}, 18, box.w - ui.s(48), kDim,
             FontFace::Body, Align::Center);
         ui.pushId("pause");
         const float bw = box.w - ui.s(80), bh = ui.s(58);
         float y = box.y + ui.s(124);
-        UIContext::ButtonStyle bs;
-        bs.primary = true;
-        if (ui.button("resume", {box.x + ui.s(40), y, bw, bh}, "Reprendre", bs)) paused_ = false;
-        y += bh + ui.s(14);
-        if (sim_) {
-            // 2.77: the groups (join, watch), the contributions, the world's events, the titan's map.
-            if (ui.button("raid", {box.x + ui.s(40), y, bw, bh}, "Groupes, contributions et carte du titan")) {
-                paused_ = false;
-                openSimPanel(0);
-            }
+        auto plate = [&](const char* id, const std::string& label, const char* icon, Color accent) {
+            cstyle::PlateEx p;
+            p.plate = {label, "", icon, accent};
+            p.wrap = true;
+            const bool act = cstyle::plateButtonEx(ui, pauseAnims_, id, {box.x + ui.s(40), y, bw, bh}, p, bh / 64.0f, 1.0f, t, dt, mo);
             y += bh + ui.s(14);
+            return act;
+        };
+        if (plate("resume", "Reprendre", "continue", {255, 205, 110, 255})) paused_ = false;
+        // 2.77: the groups (join, watch), the contributions, the world's events, the titan's map.
+        if (sim_ && plate("raid", "Groupes, contributions et carte du titan", "online", {94, 224, 255, 255})) {
+            paused_ = false;
+            openSimPanel(0);
         }
         if (guests_) {
             // 2.80: the invited players (invite, cancel, « Invincible », group), the pause closed.
             const std::string n = guests_->summary();
-            const std::string label = n.empty() ? std::string("Inviter des joueurs") : "Joueurs invités · " + n;
-            UIContext::ButtonStyle gs;
-            gs.fontSize = ui.fitFont(label, FontFace::Bold, 22, bw - ui.s(24));
-            if (ui.button("guests", {box.x + ui.s(40), y, bw, bh}, label, gs)) {
+            if (plate("guests", n.empty() ? std::string("Inviter des joueurs") : "Joueurs invités · " + n, "coop", {190, 150, 255, 255})) {
                 paused_ = false;
                 openGuests();
             }
-            y += bh + ui.s(14);
         }
-        {
-            // 2.75.5: the raid's menu (the zones' tables among its sections), the pause closed: its own choice.
-            const std::string label = "Menu du raid · " + menuKeyName();
-            UIContext::ButtonStyle ms;
-            ms.fontSize = ui.fitFont(label, FontFace::Bold, 22, bw - ui.s(24));
-            if (ui.button("menu", {box.x + ui.s(40), y, bw, bh}, label, ms)) {
-                paused_ = false;
-                overlay_.menu.open(run_ && !run_->finishes().empty() ? raidmenu::Section::Zones : raidmenu::Section::Remaining);
-            }
-            y += bh + ui.s(14);
-        }
-        UIContext::ButtonStyle danger;
-        danger.danger = true;
         const std::string quit = relay_.on && relay_.admin ? "Terminer le test (pour tous les joueurs)"
                                  : relay_.on                ? "Quitter le test (un joueur simulé reprend votre place)"
                                  : test_                    ? "Quitter le test (retour à l'administration)"
                                                             : "Quitter le raid (retour à la carte)";
-        danger.fontSize = ui.fitFont(quit, FontFace::Bold, 26, bw - ui.s(24));
-        if (ui.button("quit", {box.x + ui.s(40), y, bw, bh}, quit, danger))
-            leave();
-        y += bh + ui.s(18);
+        if (plate("quit", quit, "quit", {255, 106, 106, 255})) leave();
+        y += ui.s(4);
         // 2.72: the raid's keys (the large map; 2.75.5: the menu), measured into the panel.
         const std::string mapKey = actionKey(g_.app.input(), Action::RaidMap), menuKey = actionKey(g_.app.input(), Action::RaidMenu);
         const PadBinding& menuPad = g_.app.input().bindings().pad[static_cast<int>(Action::RaidMenu)][0];
@@ -3599,6 +3592,7 @@ public:
         const auto lines = wrap(ui, keys, FontFace::Body, 15, box.w - ui.s(80), 3);
         drawLines(ui, lines, {box.x + ui.s(40), y}, 15, ui.s(20), kDim);
         ui.popId();
+        pauseCard_.end(ui, t);
         if (!pauseOpenedNow_ && ui.backPressed()) paused_ = false;
         pauseOpenedNow_ = false;
     }
@@ -3701,6 +3695,9 @@ public:
     bool fresh_ = false;         // 2.74: link_ is an attempt of the reconnection (its GO not come yet)
     bool rejoining_ = false;     // 2.74: the catch-up of a reconnection (its text)
     bool pauseOpenedNow_ = false;  // the pause opened this frame: its own key press must not close it
+    cstyle::Anims pauseAnims_;        // 2.84: the pause in the Cosmic kit
+    cstyle::HoloCard pauseCard_;
+    cstyle::ChromeText pauseTitle_;
     bool test_ = false;         // 2.68: an administrator's test (solo, local, never reported)
     RaidTestSetup testSetup_;
     // 2.80 (docs/RAIDS.md « Tester avec des joueurs invités »): the test relayed to invited players (raid::stepRelayed).

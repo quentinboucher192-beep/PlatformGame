@@ -482,3 +482,46 @@ TEST_CASE("coop: same inputs, same team run; reference digests") {
     CHECK(mismatches == 0);
     CHECK(kCoopSimulationVersion == 4);
 }
+
+TEST_CASE("coop and raid (2.84): a power picked up is celebrated on its player's computer only, never on the others'") {
+    // Display only: the same simulation everywhere (the power granted, the tablet), only what each computer shows
+    // differs. Player 2 (index 1) picks the tablet up; player 1's computer shows no « Nouveau pouvoir », no flash.
+    for (bool raid : {false, true}) {
+        Team t(2, {}, kCoopSimulationVersion, [](LevelData& l) {
+            LevelObject o;
+            o.id = "tab";
+            o.type = "power_unlock";
+            o.layer = "gameplay";
+            o.rect = {900.0f, 200.0f, 32.0f, 32.0f};
+            o.props = Json{{"power", "dash"}};
+            l.objects.push_back(o);
+        });
+        t.w->setRaidMode(raid);
+        LevelEntity* tab = t.w->entity("tab");
+        CHECK(tab != nullptr);
+        if (!tab) return;
+        t.idle(30);
+        t.w->viewers = 1ull;  // the computer of player 1 (bit 0)
+        t.p(1).teleportTo({tab->box.center().x, tab->box.bottom()});
+        bool got = false;
+        for (int i = 0; i < 20 && !got; ++i) {
+            t.step({InputFrame{}, InputFrame{}});
+            got = t.p(1).hasPower("dash");
+        }
+        CHECK(got);
+        CHECK(!t.p(0).hasPower("dash"));
+        const WorldMessage* title = nullptr;
+        for (const WorldMessage& m : t.w->messages())
+            if (m.style == WorldMessage::Style::Title) title = &m;
+        CHECK(title != nullptr);
+        if (title) {
+            CHECK(title->player == 1);
+            CHECK(!t.w->shownHere(*title));  // not on player 1's computer
+        }
+        CHECK(t.w->flashColor().a == 0);  // nor its flash
+        t.w->viewers = 2ull;  // on player 2's computer (bit 1): there
+        if (title) CHECK(t.w->shownHere(*title));
+        t.w->viewers = ~0ull;  // one computer for both (same PC): there
+        if (title) CHECK(t.w->shownHere(*title));
+    }
+}

@@ -893,7 +893,8 @@ private:
         float nx = drawRankAndAvatar(p, rank, row);
         const float rx = row.right() - ui.s(10);
         const std::string value = progressText(e);
-        const float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
+        float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
+        right = raceReplayButton(e, row, index, right, nx);
         const float room = std::max(ui.s(40), right - nx);
         const Json ver = jfield(race_.data, "verifier");
         const bool verifier = !pid.empty() && ver.is_object() && jstr(jfield(ver, "player", Json::object()), "id") == pid;
@@ -916,6 +917,33 @@ private:
         ui.label(value, {rx, row.center().y}, 18,
                  finished ? ui.theme().success : rank == 1 ? GlobeRenderer::tierColor(MarkerTier::Gold) : ui.theme().text, Align::Right, FontFace::Bold,
                  VAlign::Middle);
+    }
+
+    /// 2.84: the ▶ of an attempt of the race (as on the records' rows, lost with the race's panel in 2.82): its replay,
+    /// downloaded then played (the race's own screen does the same). Left of `right` when there is room (more than
+    /// 120 px after `left`); returns where the row's text must stop.
+    float raceReplayButton(const Json& e, const Rect& row, int index, float right, float left) {
+        UIContext& ui = g_.ui;
+        const std::string runId = jstr(e, "run_id");
+        if (!jget<bool>(e, "has_replay", false) || runId.empty() || right - ui.s(48) - left < ui.s(120)) return right;
+        const Rect vb{right - ui.s(40), row.center().y - ui.s(14), ui.s(40), ui.s(28)};
+        UIContext::ButtonStyle vst;
+        vst.small = true;
+        vst.enabled = raceFetching_.empty();
+        if (ui.button("racerep" + std::to_string(index), vb, "", vst)) {
+            raceFetching_ = runId;
+            watchRaceAttempt(g_, e, raceSize_, life_, [this](const std::string& m) {
+                raceMsg_ = m;
+                if (m != "Téléchargement du replay…") raceFetching_.clear();
+            });
+        }
+        const Vec2 c = vb.center();
+        if (raceFetching_ == runId)
+            ui.label("…", c, 16, ui.theme().accent, Align::Center, FontFace::Bold, VAlign::Middle);
+        else
+            ui.r().fillTriangle({c.x - ui.s(5), c.y - ui.s(7)}, {c.x - ui.s(5), c.y + ui.s(7)}, {c.x + ui.s(7), c.y},
+                                vst.enabled ? ui.theme().accent : ui.theme().textDim);
+        return vb.x - ui.s(8);
     }
 
     /// The board in memory is the selected level's, at the size chosen.
@@ -960,7 +988,7 @@ private:
         const std::string value = progressText(e);
         const float rx = row.right() - ui.s(10);
         const float nx = row.x + ui.s(84);
-        const float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
+        const float right = raceReplayButton(e, row, index, rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12), nx);
         const float room = std::max(ui.s(40), right - nx);
         const float nameY = row.center().y - ui.s(8);
         // The names: their size at most, else smaller (down to 80 %), else each one shortened to its share.
@@ -1072,6 +1100,7 @@ private:
             note = std::to_string(pending) + (pending > 1 ? " tentatives d'équipe en cours de vérification." : " tentative d'équipe en cours de vérification.");
         else if (pending > 0)
             note = std::to_string(pending) + (pending > 1 ? " de vos tentatives sont en cours de vérification." : " de vos tentatives est en cours de vérification.");
+        if (!raceMsg_.empty()) note = raceMsg_;  // 2.84: a replay downloading, or why it cannot be watched
         if (!note.empty()) {
             const float nr = refresh.x - ui.s(12) - (f.x + ui.s(14));
             float fs = ui.fitFont(note, FontFace::Body, 15, nr);
@@ -1674,6 +1703,7 @@ private:
     std::map<std::string, bool> extreme_;  // EXTRÊME levels (one life): they have a race
     RaceBoardState race_;                   // the race of the selected EXTRÊME level (NIVEAU tab)
     std::set<std::string> verifiedLevels_;  // levels seen with a verified record or a verifier
+    std::string raceFetching_, raceMsg_;  // 2.84: the attempt whose replay is downloading; what became of it
     std::map<std::string, bool> raceView_;  // the player's choice per EXTRÊME level: true = its race
     int raceSize_ = 1;                      // the race shown: 1 Solo, 2 Duo, 3 Trio
 };
