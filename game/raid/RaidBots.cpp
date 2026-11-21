@@ -1647,6 +1647,15 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
     }
     // ------------------------------------------------------------ a blow coming on it: out of it (its level's reaction)
     bool dodging = forced != 0;
+    // 2.84: a soul in the boss's body is approached only with its shield ready (it kneels 2 s under it): without it, it
+    // waits off the body (the bites and the spit of Voidworm took its revivers one after the other).
+    if (fight_ && bossUid_ && b.task == Task::Revive && !me.shieldActive() && !shieldReady &&
+        Rect{b.goal.x - 6.0f, b.goal.y - 22.0f, 12.0f, 22.0f}.intersects(bossBody_.expanded(20.0f)) && !me.box.intersects(bossBody_.expanded(60.0f))) {
+        b.goal = feet;
+        b.goalNode = -1;
+        b.path.clear();
+        react = "attend son bouclier pour réanimer";
+    }
     const bool staysPut = b.task == Task::Revive && std::fabs(b.goal.x - feet.x) <= GameWorld::kReviveReachX - 6.0f &&
                           std::fabs(b.goal.y - feet.y) <= GameWorld::kReviveReachY - 6.0f;
     // A sweeping beam on it (announced or lit): no step gets out of it — the shield as soon as it is seen, whatever
