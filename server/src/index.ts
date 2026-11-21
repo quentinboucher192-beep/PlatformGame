@@ -235,6 +235,9 @@ route("PUT", `${V}/coop/runs/{runId}/replay`, (ctx) => coopRace.uploadRunReplay(
 route("GET", `${V}/coop/runs/{runId}/replay`, (ctx) => coopRace.downloadRunReplay(ctx));
 route("POST", `${V}/coop/attempts/{attemptId}/confirm`, (ctx) => coopRace.confirm(ctx));
 route("GET", `${V}/coop/board`, (ctx) => coopRace.getBoard(ctx));
+// 2.85: the comments of a team's attempt (then the /community/comments routes, as a run's).
+route("GET", `${V}/coop/runs/{runId}/comments`, (ctx) => campaign.listCoopComments(ctx));
+route("POST", `${V}/coop/runs/{runId}/comments`, (ctx) => campaign.postCoopComment(ctx));
 
 // Social: conversations between friends, groups, blocks
 route("GET", `${V}/social/conversations`, (ctx) => social.listConversations(ctx));
@@ -385,6 +388,9 @@ route("POST", `${V}/races/runs`, (ctx) => race.submitRun(ctx));
 route("PUT", `${V}/races/runs/{runId}/replay`, (ctx) => race.uploadRunReplay(ctx));
 route("GET", `${V}/races/board`, (ctx) => race.getBoard(ctx));
 route("GET", `${V}/races/runs/{runId}/replay`, (ctx) => race.downloadRunReplay(ctx));
+// 2.85: the comments of an attempt of a solo race (then the /community/comments routes, as a run's).
+route("GET", `${V}/races/runs/{runId}/comments`, (ctx) => campaign.listRaceComments(ctx));
+route("POST", `${V}/races/runs/{runId}/comments`, (ctx) => campaign.postRaceComment(ctx));
 route("GET", `${V}/players/{playerId}/races`, (ctx) => race.playerRaces(ctx));
 // Chat of the live editor
 route("GET", `${V}/projects/{projectId}/messages`, (ctx) => projects.listMessages(ctx));

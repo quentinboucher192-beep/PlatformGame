@@ -9,7 +9,7 @@ import { optionalAuth, requireAuth } from "./auth";
 import { Errors, json, nowIso, readJsonObject, type Ctx } from "./http";
 import { RULES, rateLimit } from "./ratelimit";
 import { LEVEL_ID_RE, Validator } from "./validate";
-import { listThread, officialLevelThread, postToThread, runThread } from "./workshop";
+import { coopThread, listThread, officialLevelThread, postToThread, raceThread, runThread } from "./workshop";
 
 interface Summary {
     average: number | null;
@@ -168,6 +168,52 @@ export async function postRunComment(ctx: Ctx): Promise<Response> {
     return postToThread(ctx, await runThread(ctx, ctx.params.recordId!, auth.player.id, true), auth.player.id);
 }
 
+/** GET /races/runs/{runId}/comments (2.85): the comments of an attempt of a solo race (official level). */
+export async function listRaceComments(ctx: Ctx): Promise<Response> {
+    const viewer = await optionalAuth(ctx);
+    const me = viewer?.player.id ?? "";
+    return listThread(ctx, await raceThread(ctx, ctx.params.runId!, me || null, true), me);
+}
+
+/** POST /races/runs/{runId}/comments {body, parent_id?}: its player is notified. */
+export async function postRaceComment(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    await rateLimit(ctx, RULES.communityComment, "player:" + auth.player.id);
+    return postToThread(ctx, await raceThread(ctx, ctx.params.runId!, auth.player.id, true), auth.player.id);
+}
+
+/** GET /coop/runs/{runId}/comments (2.85): the comments of a team's attempt (Duo, Trio). */
+export async function listCoopComments(ctx: Ctx): Promise<Response> {
+    const viewer = await optionalAuth(ctx);
+    const me = viewer?.player.id ?? "";
+    return listThread(ctx, await coopThread(ctx, ctx.params.runId!, me || null, true), me);
+}
+
+/** POST /coop/runs/{runId}/comments {body, parent_id?}: every player of the team is notified. */
+export async function postCoopComment(ctx: Ctx): Promise<Response> {
+    const auth = await requireAuth(ctx);
+    await rateLimit(ctx, RULES.communityComment, "player:" + auth.player.id);
+    return postToThread(ctx, await coopThread(ctx, ctx.params.runId!, auth.player.id, true), auth.player.id);
+}
+
+/**
+ * 2.85: number of visible top-level comments of each attempt of a race board (`prefix` 'race:'
+ * for the solo boards, 'coop:' for the Duo / Trio ones), in one statement.
+ */
+export async function attemptCommentCounts(ctx: Ctx, prefix: "race:" | "coop:", runIds: string[]): Promise<Map<string, number>> {
+    const out = new Map<string, number>();
+    if (runIds.length === 0) return out;
+    const rows = await ctx.env.DB.prepare(
+        `SELECT thread, COUNT(*) AS n FROM campaign_comments
+         WHERE thread IN (SELECT ?2 || value FROM json_each(?1)) AND parent_id IS NULL AND hidden = 0 AND deleted_at IS NULL
+         GROUP BY thread`,
+    )
+        .bind(JSON.stringify(runIds), prefix)
+        .all<{ thread: string; n: number }>();
+    for (const r of rows.results) out.set(r.thread.slice(prefix.length), r.n);
+    return out;
+}
+
 /**
  * Number of visible top-level comments of each run (leaderboard rows), in one statement
  * whatever the page size.
@@ -216,6 +262,8 @@ export function campaignBeforeAccountDeletion(ctx: Ctx, playerId: string) {
         .map((k) => `r_${k} = (SELECT COUNT(*) FROM campaign_comment_reactions x WHERE x.comment_id = campaign_comments.id AND x.kind = '${k}' AND x.player_id <> ?1)`)
         .join(", ");
     return [
+        // 2.85: the threads of their solo race attempts go with them (race_runs ON DELETE CASCADE).
+        db.prepare("DELETE FROM campaign_comments WHERE thread IN (SELECT 'race:' || id FROM race_runs WHERE player_id = ?1)").bind(playerId),
         db.prepare(
             `UPDATE level_rating_stats SET
                rating_sum = (SELECT COALESCE(SUM(stars), 0) FROM level_ratings r WHERE r.level_id = level_rating_stats.level_id AND r.player_id <> ?1),

@@ -174,7 +174,7 @@ std::optional<Gift> parseGift(const Json& j) {
     if (g.parcel) {
         if (const Json& c = jfield(j, "contents", Json()); g.opened && c.is_array())
             for (const Json& r : c)
-                if (auto w = parseReward(r); w && g.contents.size() < static_cast<size_t>(kMaxRewards)) g.contents.push_back(*w);
+                if (auto w = parseReward(r)) g.contents.push_back(*w);
     } else if (g.opened) {
         g.reward = parseReward(jfield(j, "reward", Json()));
     }

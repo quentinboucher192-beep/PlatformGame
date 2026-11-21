@@ -5,10 +5,12 @@
 #include <chrono>
 #include <cstdio>
 #include <ctime>
+#include <random>
 
 #include "engine/core/I18n.h"
 #include "game/GameServices.h"
 #include "game/online/OnlineSession.h"
+#include "game/online/Raids.h"
 #include "ui/online/OnlineWidgets.h"
 #include "ui/online/RaidWidgets.h"
 #include "ui/screens/GiftArt.h"
@@ -123,6 +125,7 @@ void AdminGifts::loadPlayers(bool more) {
                           }
                       more_ = jget<bool>(r.data, "has_more", false);
                       clan_ = jfield(r.data, "clan", Json());
+                      if (r.data.contains("active_players")) activePlayers_ = jget<int>(r.data, "active_players", activePlayers_);
                   }),
                   false);
 }
@@ -141,6 +144,14 @@ void AdminGifts::loadChosenOwned() {
                       if (list.is_array())
                           for (const Json& p : list) owned_[jstr(p, "id")] = p;
                       if (clan_.is_null()) clan_ = jfield(r.data, "clan", Json());
+                  }),
+                  false);
+}
+
+void AdminGifts::loadActive() {
+    g_.online.get("/api/v1/admin/gifts/players?filter=all&limit=1", OnlineService::guard(life_, [this](const ApiResult& r) {
+                      if (lostRole_(r) || !r.ok) return;
+                      activePlayers_ = jget<int>(r.data, "active_players", activePlayers_);
                   }),
                   false);
 }
@@ -176,37 +187,64 @@ void AdminGifts::toggle(const Json& p) {
     const std::string id = jstr(p, "id");
     auto it = std::find_if(chosen_.begin(), chosen_.end(), [&](const Chosen& c) { return c.id == id; });
     if (it != chosen_.end()) chosen_.erase(it);
-    else if (static_cast<int>(chosen_.size()) < gifts::kMaxRecipients) chosen_.push_back({id, jstr(p, "username")});
-    else say_("Cent joueurs au plus par envoi.", true);
+    else chosen_.push_back({id, jstr(p, "username")});
     confirm_ = false;
 }
 
 void AdminGifts::send() {
-    if (sending_ || rewards_.empty() || chosen_.empty()) return;
+    if (sending_ || rewards_.empty() || (!allPlayers_ && chosen_.empty())) return;
     Json rewards = Json::array(), players = Json::array();
     for (const auto& r : rewards_) rewards.push_back({{"kind", r.kind}, {"id", r.id}});
     for (const auto& c : chosen_) players.push_back(c.id);
-    sending_ = true;
     const bool bundle = bundled();
-    g_.online.send("POST", "/api/v1/admin/gifts",
-                   Json{{"rewards", rewards}, {"players", players}, {"wrap", wrap_}, {"message", gifts::cleanMessage(message_)}, {"bundle", bundle}},
-                   OnlineService::guard(life_, [this, bundle](const ApiResult& r) {
+    Json body{{"rewards", rewards}, {"wrap", wrap_}, {"message", gifts::cleanMessage(message_)}, {"bundle", bundle}};
+    body["players"] = allPlayers_ ? Json("all") : players;
+    // The same request (a send interrupted, its answer lost) keeps its key: the server goes on, never sends it twice.
+    const std::string what = body.dump();
+    if (requestKey_.empty() || what != requestBody_) {
+        static const char* kHex = "0123456789abcdef";
+        std::random_device rd;
+        requestKey_ = "gift-";
+        for (int i = 0; i < 24; ++i) requestKey_ += kHex[rd() % 16];
+        requestBody_ = what;
+    }
+    body["request_key"] = requestKey_;
+    sending_ = true;
+    post(body, bundle);
+}
+
+void AdminGifts::post(const Json& body, bool bundle) {
+    g_.online.send("POST", "/api/v1/admin/gifts", body, OnlineService::guard(life_, [this, body, bundle](const ApiResult& r) {
+                       if (lostRole_(r)) {
+                           sending_ = confirm_ = false;
+                           return;
+                       }
+                       if (r.ok && jstr(r.data, "state") == "writing") {  // a large send: written in steps, it goes on
+                           const int done = jget<int>(r.data, "done", -1), total = jget<int>(r.data, "total", -1);
+                           say_(done >= 0 && total > 0 ? "Envoi en cours… " + raids::groupDigits(done) + " / " + raids::groupDigits(total) + " joueurs"
+                                                       : std::string("Envoi en cours…"),
+                                false);
+                           post(body, bundle);
+                           return;
+                       }
                        sending_ = false;
                        confirm_ = false;
-                       if (lostRole_(r)) return;
                        if (!r.ok) {
+                           if (r.status != 0) requestKey_.clear();  // refused: the next send is a new one (a lost connection keeps it)
                            say_(r.message, true);
                            return;
                        }
+                       requestKey_.clear();
                        const int n = jget<int>(r.data, "created", 0), parcels = jget<int>(r.data, "parcels", 0);
                        const Json& skipped = jfield(r.data, "skipped", Json::array());
-                       const int s = skipped.is_array() ? static_cast<int>(skipped.size()) : 0;
+                       const int s = jget<int>(r.data, "skipped_count", skipped.is_array() ? static_cast<int>(skipped.size()) : 0);
                        say_((bundle ? plural(parcels, "colis envoyé", "colis envoyés") : plural(n, "cadeau envoyé", "cadeaux envoyés")) +
                                 (s > 0 ? " · " + plural(s, "ignoré", "ignorés") : std::string()) + " · inscrit au Journal",
                             false);
                        g_.uiSound("ui_confirm", 0.6f);
                        chosen_.clear();
                        owned_.clear();
+                       allPlayers_ = false;
                        loadPlayers(false);
                        loadHistory();
                    }));
@@ -298,8 +336,7 @@ void AdminGifts::drawRewards(const Rect& col) {
         const bool chosen = at != rewards_.end();
         if (clicked) {
             if (chosen) rewards_.erase(at);
-            else if (static_cast<int>(rewards_.size()) < gifts::kMaxRewards) rewards_.push_back(it);
-            else say_("Douze récompenses au plus par envoi.", true);
+            else rewards_.push_back(it);
             confirm_ = false;
         }
         if (cell.bottom() < grid.y || cell.y > grid.bottom()) continue;
@@ -443,7 +480,20 @@ void AdminGifts::drawSend(const Rect& col) {
     const std::string counter = std::to_string(gifts::textLength(gifts::cleanMessage(message_))) + " / " + std::to_string(gifts::kMaxMessage);
     ui.label(counter, {col.right(), y + ui.s(10)}, 14, kMuted, Align::Right, FontFace::Body, VAlign::Middle);
     y += ui.s(26);
-    const int n = static_cast<int>(rewards_.size()), m = static_cast<int>(chosen_.size());
+    // 2.85: the recipients — the players chosen, or every active player (as many as the server counts).
+    {
+        const std::string count = activePlayers_ >= 0 ? raids::groupDigits(activePlayers_) : std::string("…");
+        const std::vector<std::string> labels = {"Joueurs choisis (" + std::to_string(chosen_.size()) + ")", "Tous les joueurs (" + count + ")"};
+        float bottom = y;
+        const int hit = raidui::chips(ui, "recipients", col.x, y, col.right(), labels, {!allPlayers_, allPlayers_}, bottom);
+        if (hit >= 0 && (hit == 1) != allPlayers_) {
+            allPlayers_ = hit == 1;
+            confirm_ = false;
+            if (allPlayers_) loadActive();
+        }
+        y = bottom + ui.s(10);
+    }
+    const int n = static_cast<int>(rewards_.size()), m = allPlayers_ ? std::max(0, activePlayers_) : static_cast<int>(chosen_.size());
     // Two rewards or more: N separate gifts, or one parcel per player holding them (its content and how many it
     // holds hidden from the player until opened).
     if (n >= 2) {
@@ -458,9 +508,9 @@ void AdminGifts::drawSend(const Rect& col) {
     }
     const bool bundle = bundled();
     // The summary: N rewards × M players = K gifts (or parcels), and who is skipped (as the server counted it).
-    int skippedCount = 0, parcels = 0;
+    int skippedCount = 0, parcels = allPlayers_ ? m : 0;
     std::vector<std::string> skipped;
-    for (const auto& c : chosen_) {
+    for (const auto& c : allPlayers_ ? std::vector<Chosen>{} : chosen_) {
         auto it = owned_.find(c.id);
         int mine = 0;
         if (it != owned_.end())
@@ -487,8 +537,14 @@ void AdminGifts::drawSend(const Rect& col) {
         std::string names;
         for (size_t i = 0; i < rewards_.size() && i < 3; ++i) names += (i ? ", " : "") + giftart::rewardName(g_, rewards_[i]);
         if (rewards_.size() > 3) names += "…";
-        sum = plural(n, "récompense", "récompenses") + " (" + names + ") × " + plural(m, "joueur", "joueurs") + " = " + units;
-        if (!skipped.empty()) {
+        if (allPlayers_)  // the skipped ones are counted by the server when it sends: at most this many
+            sum = plural(n, "récompense", "récompenses") + " (" + names + ") × tous les joueurs (" + raids::groupDigits(m) + ") = jusqu'à " +
+                  (bundle ? raids::groupDigits(total) + " colis" : raids::groupDigits(total) + (total > 1 ? " cadeaux" : " cadeau"));
+        else
+            sum = plural(n, "récompense", "récompenses") + " (" + names + ") × " + plural(m, "joueur", "joueurs") + " = " + units;
+        if (allPlayers_) {
+            sub = "Chaque joueur actif · ceux qui les possèdent déjà ou les attendent sont ignorés par le serveur";
+        } else if (!skipped.empty()) {
             sub = "Ignoré : ";
             for (size_t i = 0; i < skipped.size(); ++i) sub += (i ? " · " : "") + skipped[i];
             if (skippedCount > static_cast<int>(skipped.size())) sub += " · …";
@@ -511,7 +567,7 @@ void AdminGifts::drawSend(const Rect& col) {
     y = box.bottom() + ui.s(12);
     // « Aperçu de l'ouverture », « Envoyer K cadeaux »; then the confirmation on the same line.
     const float bh = ui.s(48);
-    const std::string sendLabel = total > 0 ? "Envoyer " + units : std::string("Envoyer");
+    const std::string sendLabel = allPlayers_ ? std::string("Envoyer à tous") : total > 0 ? "Envoyer " + units : std::string("Envoyer");
     if (!confirm_) {
         const auto rects = std::vector<std::string>{"Aperçu de l'ouverture", sendLabel};
         const float half = (col.w - ui.s(10)) * 0.5f;
@@ -541,9 +597,10 @@ void AdminGifts::drawSend(const Rect& col) {
         if (cframe::button(ui, "send", {col.x + half + ui.s(10), y, half, bh}, sendLabel, sd)) {
             confirm_ = true;
             ui.setFocus("ok");
+            if (allPlayers_) loadActive();  // the confirmation says the real count, read again now
         }
     } else {
-        const std::string ask = "Envoyer " + units + " ?";
+        const std::string ask = allPlayers_ ? "Envoyer à " + raids::groupDigits(m) + (m > 1 ? " joueurs ?" : " joueur ?") : "Envoyer " + units + " ?";
         const float bw = std::min(ui.s(140), col.w * 0.28f);
         const float room = col.w - 2 * bw - ui.s(20);
         raidui::fit(ui, ask, {col.x, y + bh * 0.5f}, 16, room, kGold, FontFace::Bold);
@@ -611,7 +668,7 @@ void AdminGifts::drawSend(const Rect& col) {
         if (names.is_array())
             for (const Json& x : names)
                 if (x.is_string()) who += (who.empty() ? "" : ", ") + x.get<std::string>();
-        if (recipients > static_cast<int>(names.size()) && !who.empty()) who += "…";
+        if (recipients > static_cast<int>(names.size()) && !who.empty()) who += "… (" + raids::groupDigits(recipients) + " joueurs)";
         const std::string info = stamp(jstr(s, "at")) + " · ouverts " + std::to_string(opened) + " / " + std::to_string(total2) +
                                  (cancelled > 0 ? " · " + plural(cancelled, "retiré", "retirés") : std::string());
         const float x0 = row.x + ui.s(12), room = right - x0;

@@ -300,8 +300,10 @@ Le lecteur de replays rejoue l'équipe et suit **un joueur au choix ou toute l'�
 * Routes : `POST /coop/runs` (déclaration : niveau, tentative, temps, boss, vagues, mode
   `online` / `lan` / `same_pc`, joueurs par siège ; en ligne, la liste doit être celle que le
   relais a notée), `PUT /coop/runs/{id}/replay` (le replay d'équipe ; le serveur calcule le
-  score), `GET /coop/board?size=2|3&kind=…&level_id=…` (le classement), `GET
-  /coop/runs/{id}/replay` (le replay d'une tentative classée). Tables : migration
+  score), `GET /coop/board?size=2|3&kind=…&level_id=…` (le classement ; 2.85 : chaque ligne
+  donne `comment_count`), `GET /coop/runs/{id}/replay` (le replay d'une tentative classée),
+  `GET` / `POST /coop/runs/{id}/comments` (2.85 : ses commentaires, fil `coop:<tentative>`,
+  [API.md § 8.9 decies](online/API.md)). Tables : migration
   `server/migrations/0140_coop.sql` (`coop_sessions`, `coop_runs`, `coop_run_members`,
   `coop_confirms`).
 * Sur un même PC, seul le joueur 1 a son compte dans le jeu : une partie à plusieurs sur un

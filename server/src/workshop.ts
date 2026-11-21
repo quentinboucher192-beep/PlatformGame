@@ -175,11 +175,16 @@ export const CAMPAIGN_STORE: Store = {
 /** What a thread is about, resolved by the server (never described by the client). */
 export interface Thread {
     store: Store;
-    /** Value of the store's thread column: community level id, 'level:<id>' or 'run:<record id>'. */
+    /** Value of the store's thread column: community level id, 'level:<id>', 'run:<record id>',
+     *  'race:<race_runs id>' (2.85: an attempt of a solo race) or 'coop:<coop_runs id>' (a team's). */
     key: string;
-    kind: "community" | "level" | "run";
-    /** Owner of the subject (level creator, run author): badge, pins, notifications. Null: official level. */
+    kind: "community" | "level" | "run" | "race" | "coop";
+    /** Owner of the subject (level creator, run author): badge, pins, notifications. Null: official level, team. */
     ownerId: string | null;
+    /** 2.85: every owner of the subject when there are several (a team's players); else [ownerId]. */
+    owners?: string[];
+    /** 2.85: the attempt a race thread is about, returned with its comments (as a row of its board). */
+    subject?: Record<string, unknown>;
     /** Name of the subject in notifications. */
     title: string;
     /** Level of the subject (community or official level id): notifications.level_id. */
@@ -296,9 +301,157 @@ export async function runThread(ctx: Ctx, recordId: string, viewer: string | nul
     };
 }
 
+/** The owners of a thread's subject: its badge, its pins and its notifications. */
+const ownersOf = (t: Thread): string[] => t.owners ?? (t.ownerId ? [t.ownerId] : []);
+/** A thread about an attempt (a run of the leaderboards, of a race, of a team). */
+const aboutRun = (t: Thread) => t.kind === "run" || t.kind === "race" || t.kind === "coop";
+
+/** The official level of a race board ('o:<level>:<hash>'): its comments live with the campaign's. */
+async function raceLevel(ctx: Ctx, board: string): Promise<{ id: string; name: string }> {
+    const [k, levelId] = board.split(":");
+    // The races of the community levels have no comments (campaign_comments names an official level).
+    if (k !== "o" || !levelId) throw Errors.forbidden("RACE_COMMENTS_CLOSED", "Les tentatives ne se commentent que sur les niveaux de la campagne.");
+    const l = await ctx.env.DB.prepare("SELECT id, name FROM levels WHERE id = ?1").bind(levelId).first<{ id: string; name: string }>();
+    if (!l) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    return l;
+}
+
+/**
+ * 2.85: the thread of an attempt of a solo « course à la vérification » (race_runs) of an official
+ * level, with the rules of a run's: others only see the verified attempts of active accounts, and
+ * nothing of a player who hid their profile (`strict`); its author always sees it, and is notified.
+ */
+export async function raceThread(ctx: Ctx, runId: string, viewer: string | null, strict: boolean): Promise<Thread> {
+    if (!ID_RE.test(runId)) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    const r = await ctx.env.DB.prepare(
+        `SELECT r.id, r.board, r.player_id, r.status, r.score, r.finished, r.time_ms, r.verified_at, r.replay_key IS NOT NULL AS has_replay,
+                p.username, p.avatar, p.profile_visibility, p.account_status
+         FROM race_runs r JOIN players p ON p.id = r.player_id WHERE r.id = ?1`,
+    )
+        .bind(runId)
+        .first<{
+            id: string;
+            board: string;
+            player_id: string;
+            status: string;
+            score: number | null;
+            finished: number | null;
+            time_ms: number;
+            verified_at: string | null;
+            has_replay: number;
+            username: string;
+            avatar: string;
+            profile_visibility: string;
+            account_status: string;
+        }>();
+    if (!r) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    if (strict && viewer !== r.player_id) {
+        if (r.status !== "VERIFIED" || r.account_status !== "active") throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+        if (r.profile_visibility === "private")
+            throw Errors.forbidden("PROFILE_PRIVATE", "Le joueur a masqué son profil : les commentaires de ses courses sont fermés.");
+    }
+    const l = await raceLevel(ctx, r.board);
+    const key = "race:" + r.id;
+    return {
+        store: CAMPAIGN_STORE,
+        key,
+        kind: "race",
+        ownerId: r.player_id,
+        title: `${l.name} (course de ${r.username})`,
+        levelId: l.id,
+        recordId: null,
+        closed: r.status !== "VERIFIED" ? { code: "RUN_NOT_VERIFIED", message: "Les commentaires s'ouvrent quand la course est vérifiée." } : null,
+        notifyData: { thread: key, level_id: l.id, level_name: l.name, run_id: r.id },
+        subject: {
+            size: 1,
+            run_id: r.id,
+            level_id: l.id,
+            player: { id: r.player_id, username: r.username, avatar: r.avatar },
+            score: r.score ?? 0,
+            finished: r.finished === 1,
+            time_ms: r.time_ms,
+            at: r.verified_at,
+            has_replay: r.has_replay === 1,
+            me: r.player_id === viewer,
+        },
+    };
+}
+
+/**
+ * 2.85: the thread of a team's attempt (coop_runs, Duo or Trio) of an official level. Others only
+ * see a ranked attempt (verified, confirmed by all its players); its players always see it, may
+ * pin, and are all notified.
+ */
+export async function coopThread(ctx: Ctx, runId: string, viewer: string | null, strict: boolean): Promise<Thread> {
+    if (!ID_RE.test(runId)) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    const db = ctx.env.DB;
+    const r = await db
+        .prepare(
+            `SELECT r.id, r.board, r.size, r.status, r.score, r.revives, r.incomplete, r.finished, r.time_ms, r.verified_at, r.replay_key IS NOT NULL AS has_replay,
+                    NOT EXISTS (SELECT 1 FROM coop_run_members m WHERE m.run_id = r.id
+                                AND NOT EXISTS (SELECT 1 FROM coop_confirms c WHERE c.attempt_id = r.attempt_id AND c.player_id = m.player_id)) AS confirmed
+             FROM coop_runs r WHERE r.id = ?1`,
+        )
+        .bind(runId)
+        .first<{
+            id: string;
+            board: string;
+            size: number;
+            status: string;
+            score: number | null;
+            revives: number | null;
+            incomplete: number | null;
+            finished: number | null;
+            time_ms: number;
+            verified_at: string | null;
+            has_replay: number;
+            confirmed: number;
+        }>();
+    if (!r) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    const members = (
+        await db
+            .prepare("SELECT p.id, p.username, p.avatar FROM coop_run_members m JOIN players p ON p.id = m.player_id WHERE m.run_id = ?1 ORDER BY m.seat")
+            .bind(r.id)
+            .all<{ id: string; username: string; avatar: string }>()
+    ).results;
+    const ranked = r.status === "VERIFIED" && r.confirmed === 1;
+    const member = viewer !== null && members.some((m) => m.id === viewer);
+    if (strict && !member && !ranked) throw Errors.notFound("RUN_NOT_FOUND", "Tentative introuvable.");
+    const l = await raceLevel(ctx, r.board);
+    const key = "coop:" + r.id;
+    return {
+        store: CAMPAIGN_STORE,
+        key,
+        kind: "coop",
+        ownerId: null,
+        owners: members.map((m) => m.id),
+        title: `${l.name} (course de ${members.map((m) => m.username).join(" · ")})`,
+        levelId: l.id,
+        recordId: null,
+        closed: ranked ? null : { code: "RUN_NOT_VERIFIED", message: "Les commentaires s'ouvrent quand la course est vérifiée." },
+        notifyData: { thread: key, level_id: l.id, level_name: l.name, run_id: r.id, size: r.size },
+        subject: {
+            size: r.size,
+            run_id: r.id,
+            level_id: l.id,
+            players: members,
+            score: r.score ?? 0,
+            revives: r.revives ?? 0,
+            incomplete: r.incomplete === 1,
+            finished: r.finished === 1,
+            time_ms: r.time_ms,
+            at: r.verified_at,
+            has_replay: r.has_replay === 1,
+            me: member,
+        },
+    };
+}
+
 async function campaignThread(ctx: Ctx, key: string, viewer: string | null, strict: boolean): Promise<Thread> {
     if (key.startsWith("level:")) return officialLevelThread(ctx, key.slice(6));
     if (key.startsWith("run:")) return runThread(ctx, key.slice(4), viewer, strict);
+    if (key.startsWith("race:")) return raceThread(ctx, key.slice(5), viewer, strict);
+    if (key.startsWith("coop:")) return coopThread(ctx, key.slice(5), viewer, strict);
     throw Errors.notFound("COMMENT_NOT_FOUND", "Commentaire introuvable.");
 }
 
@@ -325,7 +478,7 @@ function commentView(c: CommentJoin, me: string, t: Thread) {
               } as PlayerRow),
         creator: !deleted && c.is_creator === 1,
         // The owner of the subject: the level's creator, or the run's author.
-        level_author: !deleted && t.ownerId !== null && c.author_id === t.ownerId,
+        level_author: !deleted && ownersOf(t).includes(c.author_id),
         thread: t.kind,
         body: deleted ? "" : c.body,
         deleted,
@@ -340,7 +493,7 @@ function commentView(c: CommentJoin, me: string, t: Thread) {
         reported: c.reported_by_me === 1,
         mine: c.author_id === me,
         can_edit: !deleted && c.author_id === me,
-        can_pin: !deleted && me !== "" && t.kind !== "level" && t.ownerId === me && c.parent_id === null,
+        can_pin: !deleted && me !== "" && t.kind !== "level" && ownersOf(t).includes(me) && c.parent_id === null,
     };
 }
 
@@ -366,7 +519,7 @@ export async function listThread(ctx: Ctx, t: Thread, me: string): Promise<Respo
         .bind(me, t.key, limit, offset)
         .all<CommentJoin>();
     const n = total?.n ?? 0;
-    return json(ctx, { comments: rows.results.map((c) => commentView(c, me, t)), sort, comment_count: n }, {
+    return json(ctx, { comments: rows.results.map((c) => commentView(c, me, t)), sort, comment_count: n, ...(t.subject ? { attempt: t.subject } : {}) }, {
         meta: { limit, offset, total: n, next_offset: offset + limit < n ? offset + limit : null },
     });
 }
@@ -439,8 +592,9 @@ export function cleanCommentText(v: Validator, field: string, opt: { max: number
 export async function postToThread(ctx: Ctx, t: Thread, me: string): Promise<Response> {
     const s = t.store;
     if (t.closed) throw Errors.forbidden(t.closed.code, t.closed.message);
-    if (t.ownerId && (await blocked(ctx, me, t.ownerId)))
-        throw Errors.forbidden("BLOCKED", t.kind === "run" ? "Vous ne pouvez pas commenter cette course." : "Vous ne pouvez pas commenter ce niveau.");
+    for (const owner of ownersOf(t))
+        if (await blocked(ctx, me, owner))
+            throw Errors.forbidden("BLOCKED", aboutRun(t) ? "Vous ne pouvez pas commenter cette course." : "Vous ne pouvez pas commenter ce niveau.");
     const v = new Validator(await readJsonObject(ctx), ["body", "parent_id"]);
     const body = cleanBody(v);
     const parentId = v.str("parent_id", { max: 36, optional: true });
@@ -491,14 +645,15 @@ export async function postToThread(ctx: Ctx, t: Thread, me: string): Promise<Res
         });
     else if (t.kind === "community" && t.ownerId)
         await notify(ctx, t.ownerId, "level_comment", { actor: me, levelId: t.levelId, commentId: id, data: { title: t.title }, groupKey: "comments:" + t.key });
-    else if (t.kind === "run" && t.ownerId)
-        await notify(ctx, t.ownerId, "run_comment", {
-            actor: me,
-            levelId: t.levelId,
-            commentId: id,
-            data: { title: t.title, ...t.notifyData },
-            groupKey: "comments:" + t.key,
-        });
+    else if (aboutRun(t))
+        for (const owner of ownersOf(t))
+            await notify(ctx, owner, "run_comment", {
+                actor: me,
+                levelId: t.levelId,
+                commentId: id,
+                data: { title: t.title, ...t.notifyData },
+                groupKey: "comments:" + t.key,
+            });
     const row = await ctx.env.DB.prepare(`${commentSql(s)} WHERE c.id = ?2`).bind(me, id).first<CommentJoin>();
     return json(ctx, { comment: commentView(row!, me, t) }, { status: 201 });
 }
@@ -570,10 +725,14 @@ export async function pinComment(ctx: Ctx, pin: boolean): Promise<Response> {
     const { c, store } = await loadComment(ctx, ctx.params.commentId!);
     const t = await threadOf(ctx, store, c, auth.player.id, false);
     if (t.kind === "level") throw Errors.forbidden("NOT_AUTHOR", "Les commentaires d'un niveau officiel ne s'épinglent pas.");
-    if (!t.ownerId || t.ownerId !== auth.player.id)
+    if (!ownersOf(t).includes(auth.player.id))
         throw Errors.forbidden(
             "NOT_AUTHOR",
-            t.kind === "run" ? "Seul l'auteur de la course peut épingler un commentaire." : "Seul le créateur du niveau peut épingler un commentaire.",
+            t.kind === "coop"
+                ? "Seuls les joueurs de l'équipe peuvent épingler un commentaire."
+                : aboutRun(t)
+                  ? "Seul l'auteur de la course peut épingler un commentaire."
+                  : "Seul le créateur du niveau peut épingler un commentaire.",
         );
     if (c.parent_id || c.deleted_at || c.hidden) throw Errors.forbidden("COMMENT_NOT_PINNABLE", "Ce commentaire ne peut pas être épinglé.");
     if (pin && !c.pinned_at) {

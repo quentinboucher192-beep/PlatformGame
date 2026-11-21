@@ -5,8 +5,9 @@
 //      profil), a grid of their items drawn by the game's own renderers (several may be chosen), then one of the
 //      eleven wraps;
 //   2. the players: a search, « En ligne », « Tous », the administrator's clan, « Choisis »; each with the rewards
-//      chosen it already owns (« possède déjà… », as the SERVER counts it: they are skipped);
-//   3. the message (140 characters), with two rewards or more « N cadeaux séparés » or « 1 colis de N cadeaux »
+//      chosen it already owns (« possède déjà… », as the SERVER counts it: they are skipped); no limit (2.85);
+//   3. the message (140 characters), the recipients (« Joueurs choisis » or, 2.85, « Tous les joueurs »: every active
+//      player, the confirmation saying how many the server counts), with two rewards or more « N cadeaux séparés » or « 1 colis de N cadeaux »
 //      (one parcel per player, what it holds hidden until opened), the summary « N récompenses × M joueurs =
 //      K cadeaux (or colis) · Ignoré : … », « Aperçu de l'ouverture » (the real scene) and « Envoyer K cadeaux »
 //      after a confirmation; then « Derniers envois »: each send (« Colis (N) » for parcels) with its gifts
@@ -52,6 +53,10 @@ private:
     void loadChosenOwned();
     void loadHistory();
     void send();
+    /// POST /admin/gifts: again with its request key while the server answers that it is still writing (202).
+    void post(const Json& body, bool bundle);
+    /// How many players « Tous les joueurs » reaches (GET /admin/gifts/players: `active_players`).
+    void loadActive();
     void cancelSend(int64_t id, bool parcels);
     /// One parcel per player is chosen (and there are at least two rewards to put in it).
     bool bundled() const { return bundle_ && rewards_.size() >= 2; }
@@ -95,6 +100,9 @@ private:
     std::string message_;
     bool bundle_ = false;  // « 1 colis de N cadeaux » (with two rewards or more) rather than N separate gifts
     bool confirm_ = false, sending_ = false;
+    bool allPlayers_ = false;  // 2.85: « Tous les joueurs » (players: "all") rather than the chosen ones
+    int activePlayers_ = -1;   // the server's count (-1: not known yet)
+    std::string requestKey_, requestBody_;  // the send's key, kept while the same request is retried
     Json history_ = Json::array();
     bool historyLoaded_ = false, historyMore_ = false;
     int64_t cancelAsk_ = 0;

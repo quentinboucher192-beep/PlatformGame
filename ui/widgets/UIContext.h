@@ -145,6 +145,16 @@ public:
             if (f.id == w) return true;
         return false;
     }
+    /// Where that stop was drawn (tests: buttons of a row that must not overlap); false when absent.
+    bool navigableRect(const std::string& name, Rect& out) const {
+        const WidgetId w = id(name);
+        for (const auto& f : focusables_)
+            if (f.id == w) {
+                out = f.rect;
+                return true;
+            }
+        return false;
+    }
     bool editingText() const { return editing_ != 0; }
     bool mouseOver(const Rect& r) const;
     bool mouseClicked(const Rect& r) const;

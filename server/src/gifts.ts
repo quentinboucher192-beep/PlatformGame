@@ -15,9 +15,17 @@
 //     not own yet. A parcel is one wrapped entry: neither what it holds nor how many are known before it is opened
 //     (its gifts are only written then, so no id betrays them); opening it writes one opened gift per reward, in
 //     order, and grants each the same way, once.
+//   - 2.85 (migration 0215): no limit on the rewards (only those of the real catalogue exist) nor on the players
+//     (`players: "all"`: every active player). A send is written in steps of GIFT_STEP_PLAYERS players, each one
+//     D1 batch holding its progress; it stays invisible (state 'writing') until its last batch makes it 'sent'
+//     with its notifications. A request that stops after GIFT_STEPS_PER_REQUEST steps answers 202 with its
+//     `request_key` (one that fails leaves the send 'writing'): sent again with that key, the same request goes on
+//     where it stopped; once sent, it answers the send again (never twice). A send left 'writing' for an hour is
+//     removed with what it wrote.
 import achievementCatalog from "./achievementCatalog.json";
 import cosmeticCatalog from "./cosmeticCatalog.json";
 import { audit, requireAuth } from "./auth";
+import { sha256Hex } from "./crypto";
 import { requireAdminRole } from "./adminRoles";
 import { rewardProgressFrom, type VerifiedChallenge, type WonRewards } from "./challengeRewards";
 import { unlocked, type CosmeticItem, type CosmeticProgress } from "./cosmetics";
@@ -34,9 +42,19 @@ export type GiftWrap = (typeof GIFT_WRAPS)[number];
 export const GIFT_KINDS = ["suit", "trail", "frame", "title", "victory", "badge"] as const;
 export type GiftKind = (typeof GIFT_KINDS)[number];
 
-export const MAX_GIFT_RECIPIENTS = 100;
-export const MAX_GIFT_REWARDS = 12;
 export const MAX_GIFT_MESSAGE = 140;
+/** Players written per step (one D1 batch: their gifts or parcels, and the send's progress). */
+export const GIFT_STEP_PLAYERS = 500;
+/** Steps one request writes at most (D1's queries per request, the Worker's time); then 202 and the game goes on. */
+export const GIFT_STEPS_PER_REQUEST = 40;
+/** Players chosen by ids in one request (its body stays under 1 MiB); more: `players: "all"`. */
+const MAX_BODY = 1024 * 1024;
+/** Players whose tags « possède déjà » one page asks for. */
+const MAX_TAGGED = 200;
+/** The skipped pairs an answer lists (`skipped_count` counts them all). */
+const MAX_SKIPPED_LISTED = 200;
+/** A send left 'writing' this long (no step) is removed. */
+const STALE_WRITING_MS = 3600 * 1000;
 
 const ITEMS = new Map((cosmeticCatalog as unknown as { items: CosmeticItem[] }).items.map((i) => [i.id, i]));
 const STARS = (achievementCatalog as { stars: Record<string, number> }).stars;
@@ -167,8 +185,8 @@ export async function giftOwnership(db: D1Database, players: string[], rewards: 
 
 /** The rewards of a request (`rewards`: a list of {kind, id}), each once, all of the catalogue. */
 function parseRewards(v: Validator, raw: unknown, field = "rewards"): (GiftReward & { name: string })[] {
-    if (!Array.isArray(raw) || raw.length === 0 || raw.length > MAX_GIFT_REWARDS) {
-        v.fail(field, `liste de 1 à ${MAX_GIFT_REWARDS} récompenses attendue`);
+    if (!Array.isArray(raw) || raw.length === 0) {
+        v.fail(field, "liste de récompenses attendue (une au moins)");
         return [];
     }
     const out: (GiftReward & { name: string })[] = [];
@@ -187,7 +205,7 @@ function parseRewards(v: Validator, raw: unknown, field = "rewards"): (GiftRewar
 /** "suit:suit_or,badge:communaute_coeur" (a query parameter), the unknown ones ignored. */
 function rewardsOfQuery(raw: string | null): GiftReward[] {
     const out: GiftReward[] = [];
-    for (const part of (raw ?? "").split(",").slice(0, MAX_GIFT_REWARDS)) {
+    for (const part of (raw ?? "").split(",")) {
         const at = part.indexOf(":");
         const g = at > 0 ? giftReward(part.slice(0, at), part.slice(at + 1)) : null;
         if (g && !out.some((x) => x.kind === g.kind && x.id === g.id)) out.push({ kind: g.kind, id: g.id });
@@ -239,7 +257,7 @@ export async function adminPlayers(ctx: Ctx): Promise<Response> {
         binds.push(clan.id);
         where.push(`EXISTS (SELECT 1 FROM clan_members cm WHERE cm.player_id = p.id AND cm.clan_id = ?${binds.length})`);
     } else if (filter === "ids") {
-        const ids = (ctx.url.searchParams.get("ids") ?? "").split(",").filter((s) => PLAYER_ID_RE.test(s)).slice(0, MAX_GIFT_RECIPIENTS);
+        const ids = (ctx.url.searchParams.get("ids") ?? "").split(",").filter((s) => PLAYER_ID_RE.test(s)).slice(0, MAX_TAGGED);
         if (ids.length === 0) return json(ctx, { players: [], has_more: false, clan: clan ? { tag: clan.tag, name: clan.name } : null });
         binds.push(JSON.stringify(ids));
         where.push(IN_JSON("p.id", `?${binds.length}`));
@@ -260,7 +278,10 @@ export async function adminPlayers(ctx: Ctx): Promise<Response> {
         rewards,
     );
     const since = new Date(Date.now() - PRESENCE_TIMEOUT_MS).toISOString();
+    // 2.85: how many players « Tous les joueurs » reaches (the confirmation says it).
+    const active = await db.prepare("SELECT COUNT(*) AS n FROM players WHERE account_status = 'active'").first<{ n: number }>();
     return json(ctx, {
+        active_players: active?.n ?? 0,
         players: list.map((p) => {
             const m = owned.get(p.id) ?? new Map();
             return {
@@ -285,21 +306,35 @@ interface Skipped {
     reason: "owned" | "pending";
 }
 
+interface SendState {
+    id: number;
+    state: string;
+    request_key: string;
+    request_hash: string | null;
+    progress: string | null;
+    bundle: number;
+}
+
 /**
- * POST /admin/gifts {rewards: [{kind, id}], players: [ids], wrap, message?, bundle?}: one gift per reward and
- * player, except for those who already own the reward or have it waiting (`skipped`). With `bundle: true`, ONE
- * parcel per player instead, holding the rewards not skipped for them (a player for whom every reward is skipped
- * gets none; one reward left is still a parcel: its recipient cannot tell). One D1 batch: the send, its gifts or
- * parcels, the recipients' notification (« gift », merged while unread; a parcel counts as one). 201 {send,
- * created, parcels, skipped} (`created`: the rewards given; `parcels`: how many parcels, 0 without `bundle`);
- * 409 NOTHING_TO_SEND when every pair is skipped. The Journal keeps it (admin_gift_sent).
+ * POST /admin/gifts {rewards: [{kind, id}], players: [ids] | "all", wrap, message?, bundle?, request_key?}: one gift
+ * per reward and player, except for those who already own the reward or have it waiting (`skipped`). With `bundle:
+ * true`, ONE parcel per player instead, holding the rewards not skipped for them (a player for whom every reward is
+ * skipped gets none; one reward left is still a parcel: its recipient cannot tell). No limit on the rewards (each of
+ * the catalogue, once) nor on the players (`"all"`: every active player, in the order of their ids).
+ *
+ * Written in steps (GIFT_STEP_PLAYERS players: their gifts or parcels and the send's progress in one D1 batch),
+ * invisible until the last batch makes it 'sent' with the recipients' notification (« gift », merged while unread;
+ * a parcel counts as one). 201 {send, created, parcels, skipped, skipped_count, request_key} (`created`: the rewards
+ * given; `parcels`: how many parcels, 0 without `bundle`; `skipped`: the first ones skipped by this request). 202
+ * {request_key, state: "writing", done, total?} when it stopped before the end: the same request (same key) goes on.
+ * The same key once sent: 200, the send again (`replayed`). 409 NOTHING_TO_SEND when every pair is skipped; 409
+ * REQUEST_KEY_REUSED for the same key with another request. The Journal keeps it (admin_gift_sent), once.
  */
 export async function adminSend(ctx: Ctx): Promise<Response> {
     const auth = await requireAdminRole(ctx);
     await rateLimit(ctx, RULES.adminWrite, "player:" + auth.player.id);
-    await rateLimit(ctx, RULES.giftSend, "player:" + auth.player.id);
-    const body = await readJsonObject(ctx, 16 * 1024);
-    const v = new Validator(body, ["rewards", "players", "wrap", "message", "bundle"]);
+    const body = await readJsonObject(ctx, MAX_BODY);
+    const v = new Validator(body, ["rewards", "players", "wrap", "message", "bundle", "request_key"]);
     const rewards = parseRewards(v, body.rewards);
     const wrap = v.oneOf("wrap", GIFT_WRAPS);
     const bundle = v.bool("bundle", { optional: true }) ?? false;
@@ -312,119 +347,246 @@ export async function adminSend(ctx: Ctx): Promise<Response> {
         else message = m;
     }
     const rawPlayers = body.players;
+    const all = rawPlayers === "all";
     let players: string[] = [];
-    if (!Array.isArray(rawPlayers) || rawPlayers.length === 0 || rawPlayers.length > MAX_GIFT_RECIPIENTS)
-        v.fail("players", `liste de 1 à ${MAX_GIFT_RECIPIENTS} joueurs attendue`);
-    else if (!rawPlayers.every((p) => typeof p === "string" && PLAYER_ID_RE.test(p))) v.fail("players", "identifiants de joueurs attendus");
-    else players = [...new Set(rawPlayers as string[])];
+    if (!all) {
+        if (!Array.isArray(rawPlayers) || rawPlayers.length === 0) v.fail("players", "liste de joueurs (un au moins) ou « all » attendue");
+        else if (!rawPlayers.every((p) => typeof p === "string" && PLAYER_ID_RE.test(p))) v.fail("players", "identifiants de joueurs attendus");
+        else players = [...new Set(rawPlayers as string[])];
+    }
+    const rawKey = body.request_key;
+    if (rawKey !== undefined && rawKey !== null && (typeof rawKey !== "string" || !/^[A-Za-z0-9-]{8,64}$/.test(rawKey)))
+        v.fail("request_key", "8 à 64 lettres, chiffres ou tirets");
     v.done();
     const db = ctx.env.DB;
-    const found = await db
-        .prepare(`SELECT id, username FROM players WHERE ${IN_JSON("id", "?1")} AND account_status = 'active'`)
-        .bind(JSON.stringify(players))
-        .all<{ id: string; username: string }>();
-    const names = new Map(found.results.map((p) => [p.id, p.username]));
-    const unknown = players.filter((p) => !names.has(p));
-    if (unknown.length) throw new ApiError(404, "PLAYER_NOT_FOUND", "Joueur introuvable ou compte inactif.", { players: unknown });
-    const owned = await giftOwnership(db, players, rewards);
+    const now = nowIso();
+    // A send abandoned while it was written goes, with what it wrote (ON DELETE CASCADE).
+    await db.prepare("DELETE FROM gift_sends WHERE state = 'writing' AND touched_at < ?1").bind(new Date(Date.now() - STALE_WRITING_MS).toISOString()).run();
+    const requestHash = await sha256Hex(
+        JSON.stringify({ rewards: rewards.map(keyOf), players: all ? "all" : players, wrap, message, bundle }),
+    );
+    const key = typeof rawKey === "string" ? rawKey : null;
+    let send = key
+        ? await db
+              .prepare("SELECT id, state, request_key, request_hash, progress, bundle FROM gift_sends WHERE sender_id = ?1 AND request_key = ?2")
+              .bind(auth.player.id, key)
+              .first<SendState>()
+        : null;
+    if (send && send.request_hash !== requestHash)
+        throw Errors.conflict("REQUEST_KEY_REUSED", "Cette clé d'envoi sert déjà à un autre envoi.");
+    if (send?.state === "sent") return json(ctx, { ...(await sendResult(db, send.id, [], send.request_key)), replayed: true });
+    if (!send) {
+        // A new send: the rate limit counts it once (its next steps are the same send), its players must exist.
+        await rateLimit(ctx, RULES.giftSend, "player:" + auth.player.id);
+        if (!all) {
+            const unknown: string[] = [];
+            for (let i = 0; i < players.length; i += 1000) {
+                const part = players.slice(i, i + 1000);
+                const found = await db
+                    .prepare(`SELECT id FROM players WHERE ${IN_JSON("id", "?1")} AND account_status = 'active'`)
+                    .bind(JSON.stringify(part))
+                    .all<{ id: string }>();
+                const ok = new Set(found.results.map((p) => p.id));
+                unknown.push(...part.filter((p) => !ok.has(p)));
+            }
+            if (unknown.length) throw new ApiError(404, "PLAYER_NOT_FOUND", "Joueur introuvable ou compte inactif.", { players: unknown.slice(0, 100) });
+        }
+        const requestKey = key ?? crypto.randomUUID();
+        try {
+            send = await db
+                .prepare(
+                    `INSERT INTO gift_sends (sender_id, sender_name, wrap, message, rewards, created_at, bundle, state, request_key, request_hash, progress, touched_at)
+                     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, 'writing', ?8, ?9, '', ?6)
+                     RETURNING id, state, request_key, request_hash, progress, bundle`,
+                )
+                .bind(auth.player.id, auth.player.username, wrap!, message, JSON.stringify(rewards.map((r) => ({ kind: r.kind, id: r.id }))), now, bundle ? 1 : 0, requestKey, requestHash)
+                .first<SendState>();
+        } catch {
+            throw Errors.conflict("SEND_IN_PROGRESS", "Cet envoi est déjà en cours d'écriture : renvoyez la même demande.");
+        }
+    }
+    const sendId = send!.id;
+    const requestKey = send!.request_key;
+    const stepPlayers = Math.max(1, Number(ctx.env.GIFT_STEP_PLAYERS ?? GIFT_STEP_PLAYERS) || GIFT_STEP_PLAYERS);
+    const stepsPerRequest = Math.max(1, Number(ctx.env.GIFT_STEPS_PER_REQUEST ?? GIFT_STEPS_PER_REQUEST) || GIFT_STEPS_PER_REQUEST);
+    // The steps: the next players, what they own, their gifts or parcels, and the progress — one batch each.
+    let progress = send!.progress ?? "";
     const skipped: Skipped[] = [];
-    const per = new Map<string, string[]>(); // reward key → recipients
-    const countOf = new Map<string, number>(); // recipient → gifts
-    const parcelOf = new Map<string, GiftReward[]>(); // recipient → the rewards of its parcel, in order
-    for (const r of rewards) {
-        const to: string[] = [];
-        for (const p of players) {
-            const state = owned.get(p)?.get(keyOf(r));
-            if (state) skipped.push({ player_id: p, username: names.get(p)!, reward: keyOf(r), reason: state });
-            else {
-                to.push(p);
-                countOf.set(p, (countOf.get(p) ?? 0) + 1);
-                (parcelOf.get(p) ?? parcelOf.set(p, []).get(p)!).push({ kind: r.kind, id: r.id });
+    for (let step = 0; ; ++step) {
+        let chunk: { id: string; username: string }[];
+        let next: string;
+        if (all) {
+            chunk = (
+                await db
+                    .prepare("SELECT id, username FROM players WHERE account_status = 'active' AND id > ?1 ORDER BY id LIMIT ?2")
+                    .bind(progress, stepPlayers)
+                    .all<{ id: string; username: string }>()
+            ).results;
+            next = chunk.length ? chunk[chunk.length - 1]!.id : progress;
+        } else {
+            const at = Number(progress || "0");
+            const ids = players.slice(at, at + stepPlayers);
+            next = String(at + ids.length);
+            const found = ids.length
+                ? await db
+                      .prepare(`SELECT id, username FROM players WHERE ${IN_JSON("id", "?1")} AND account_status = 'active'`)
+                      .bind(JSON.stringify(ids))
+                      .all<{ id: string; username: string }>()
+                : { results: [] };
+            const names = new Map(found.results.map((p) => [p.id, p.username]));
+            chunk = ids.filter((p) => names.has(p)).map((p) => ({ id: p, username: names.get(p)! }));
+            if (ids.length === 0) chunk = [];
+            else if (chunk.length === 0) {
+                // Every player of this step left meanwhile: only the progress moves.
+                await db.prepare("UPDATE gift_sends SET progress = ?2, touched_at = ?3 WHERE id = ?1 AND progress = ?4").bind(sendId, next, nowIso(), progress).run();
+                progress = next;
+                continue;
             }
         }
-        per.set(keyOf(r), to);
-    }
-    const created = [...per.values()].reduce((s, l) => s + l.length, 0);
-    if (created === 0) throw Errors.conflict("NOTHING_TO_SEND", "Chaque joueur choisi possède déjà ces récompenses.", { skipped });
-    const now = nowIso();
-    const send = await db
-        .prepare("INSERT INTO gift_sends (sender_id, sender_name, wrap, message, rewards, created_at, bundle) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7) RETURNING id")
-        .bind(auth.player.id, auth.player.username, wrap!, message, JSON.stringify(rewards.map((r) => ({ kind: r.kind, id: r.id }))), now, bundle ? 1 : 0)
-        .first<{ id: number }>();
-    const sendId = send!.id;
-    const stmts: D1PreparedStatement[] = [];
-    if (bundle) {
-        // One parcel per recipient (in the order of `players`), its rewards in the order of the send.
-        const contents = players.filter((p) => parcelOf.has(p)).map((p) => ({ to: p, rewards: parcelOf.get(p)! }));
+        if (chunk.length === 0) break;
+        if (step >= stepsPerRequest)
+            return json(ctx, { request_key: requestKey, state: "writing", done: all ? null : Number(progress), total: all ? null : players.length }, { status: 202 });
+        const ids = chunk.map((p) => p.id);
+        const owned = await giftOwnership(db, ids, rewards);
+        let skippedHere = 0;
+        const per = new Map<string, string[]>(); // reward key → recipients
+        const parcelOf = new Map<string, GiftReward[]>(); // recipient → the rewards of its parcel, in order
+        for (const r of rewards) {
+            const to: string[] = [];
+            for (const p of chunk) {
+                const state = owned.get(p.id)?.get(keyOf(r));
+                if (state) {
+                    ++skippedHere;
+                    if (skipped.length < MAX_SKIPPED_LISTED) skipped.push({ player_id: p.id, username: p.username, reward: keyOf(r), reason: state });
+                } else {
+                    to.push(p.id);
+                    (parcelOf.get(p.id) ?? parcelOf.set(p.id, []).get(p.id)!).push({ kind: r.kind, id: r.id });
+                }
+            }
+            per.set(keyOf(r), to);
+        }
+        const stmts: D1PreparedStatement[] = [];
+        if (bundle) {
+            // One parcel per recipient (in the order of the players), its rewards in the order of the send.
+            const contents = ids.filter((p) => parcelOf.has(p)).map((p) => ({ to: p, rewards: parcelOf.get(p)! }));
+            if (contents.length)
+                stmts.push(
+                    db
+                        .prepare(
+                            `INSERT OR IGNORE INTO gift_parcels (send_id, recipient_id, sender_id, wrap, message, rewards, created_at)
+                             SELECT ?1, json_extract(j.value, '$.to'), ?2, ?3, ?4, json_extract(j.value, '$.rewards'), ?5 FROM json_each(?6) j ORDER BY j.key`,
+                        )
+                        .bind(sendId, auth.player.id, wrap!, message, now, JSON.stringify(contents)),
+                );
+        } else {
+            for (const r of rewards) {
+                const to = per.get(keyOf(r))!;
+                if (to.length === 0) continue;
+                stmts.push(
+                    db
+                        .prepare(
+                            `INSERT OR IGNORE INTO gifts (send_id, recipient_id, sender_id, reward_kind, reward_id, wrap, message, created_at)
+                             SELECT ?1, j.value, ?2, ?3, ?4, ?5, ?6, ?7 FROM json_each(?8) j`,
+                        )
+                        .bind(sendId, auth.player.id, r.kind, r.id, wrap!, message, now, JSON.stringify(to)),
+                );
+            }
+        }
+        // The progress, in the same batch: a step is written whole or not at all, and never twice.
         stmts.push(
             db
-                .prepare(
-                    `INSERT INTO gift_parcels (send_id, recipient_id, sender_id, wrap, message, rewards, created_at)
-                     SELECT ?1, json_extract(j.value, '$.to'), ?2, ?3, ?4, json_extract(j.value, '$.rewards'), ?5 FROM json_each(?6) j ORDER BY j.key`,
-                )
-                .bind(sendId, auth.player.id, wrap!, message, now, JSON.stringify(contents)),
+                .prepare("UPDATE gift_sends SET progress = ?2, skipped = skipped + ?3, touched_at = ?4 WHERE id = ?1 AND state = 'writing' AND progress = ?5")
+                .bind(sendId, next, skippedHere, nowIso(), progress),
         );
+        await db.batch(stmts);
+        progress = next;
     }
-    for (const r of bundle ? [] : rewards) {
-        const to = per.get(keyOf(r))!;
-        if (to.length === 0) continue;
-        stmts.push(
-            db
-                .prepare(
-                    `INSERT INTO gifts (send_id, recipient_id, sender_id, reward_kind, reward_id, wrap, message, created_at)
-                     SELECT ?1, j.value, ?2, ?3, ?4, ?5, ?6, ?7 FROM json_each(?8) j`,
-                )
-                .bind(sendId, auth.player.id, r.kind, r.id, wrap!, message, now, JSON.stringify(to)),
-        );
-    }
-    // The notification « gift »: one per recipient, merged with an unread one (its count grows by the gifts; a
-    // parcel counts as one, whatever it holds).
-    const byCount = new Map<number, string[]>();
-    for (const [p, count] of countOf) {
-        const n = bundle ? 1 : count;
-        (byCount.get(n) ?? byCount.set(n, []).get(n)!).push(p);
+    // The end: nothing to give → the send goes; else it becomes 'sent' with its notifications (one batch, once).
+    const units = await sendUnits(db, sendId);
+    if (units.created === 0) {
+        await db.prepare("DELETE FROM gift_sends WHERE id = ?1 AND state = 'writing'").bind(sendId).run();
+        throw Errors.conflict("NOTHING_TO_SEND", "Chaque joueur choisi possède déjà ces récompenses.", { skipped });
     }
     const data = JSON.stringify({ send_id: sendId });
-    for (const [n, ids] of byCount) {
-        const list = JSON.stringify(ids);
-        stmts.push(
-            db
-                .prepare(
-                    `UPDATE notifications SET count = count + ?2, actor_id = ?3, data = ?4, created_at = ?5
-                     WHERE kind = 'gift' AND group_key = 'gifts' AND read_at IS NULL AND ${IN_JSON("player_id", "?1")}`,
-                )
-                .bind(list, n, auth.player.id, data, now),
-            db
-                .prepare(
-                    `INSERT INTO notifications (id, player_id, kind, actor_id, data, group_key, count, created_at)
-                     SELECT lower(hex(randomblob(16))), j.value, 'gift', ?3, ?4, 'gifts', ?2, ?5 FROM json_each(?1) j
-                     WHERE instr(',' || (SELECT notifications_off FROM players WHERE id = j.value) || ',', ',gift,') = 0
-                       AND NOT EXISTS (SELECT 1 FROM notifications x WHERE x.player_id = j.value AND x.kind = 'gift' AND x.group_key = 'gifts' AND x.read_at IS NULL)`,
-                )
-                .bind(list, n, auth.player.id, data, now),
-        );
+    const writing = "EXISTS (SELECT 1 FROM gift_sends w WHERE w.id = ?1 AND w.state = 'writing')";
+    const recipientsSql = bundle
+        ? "SELECT recipient_id, 1 AS n FROM gift_parcels WHERE send_id = ?1"
+        : "SELECT recipient_id, COUNT(*) AS n FROM gifts WHERE send_id = ?1 AND parcel_id IS NULL GROUP BY recipient_id";
+    const done = await db.batch([
+        db
+            .prepare(
+                `UPDATE notifications SET count = count + (SELECT u.n FROM (${recipientsSql}) u WHERE u.recipient_id = notifications.player_id),
+                        actor_id = ?2, data = ?3, created_at = ?4
+                 WHERE kind = 'gift' AND group_key = 'gifts' AND read_at IS NULL AND ${writing}
+                   AND player_id IN (SELECT recipient_id FROM (${recipientsSql}))`,
+            )
+            .bind(sendId, auth.player.id, data, now),
+        db
+            .prepare(
+                `INSERT INTO notifications (id, player_id, kind, actor_id, data, group_key, count, created_at)
+                 SELECT lower(hex(randomblob(16))), u.recipient_id, 'gift', ?2, ?3, 'gifts', u.n, ?4 FROM (${recipientsSql}) u
+                 WHERE ${writing}
+                   AND instr(',' || (SELECT notifications_off FROM players WHERE id = u.recipient_id) || ',', ',gift,') = 0
+                   AND NOT EXISTS (SELECT 1 FROM notifications x WHERE x.player_id = u.recipient_id AND x.kind = 'gift' AND x.group_key = 'gifts' AND x.read_at IS NULL)`,
+            )
+            .bind(sendId, auth.player.id, data, now),
+        db.prepare("UPDATE gift_sends SET state = 'sent', touched_at = ?2 WHERE id = ?1 AND state = 'writing'").bind(sendId, nowIso()),
+    ]);
+    const result = await sendResult(db, sendId, skipped, requestKey);
+    // The Journal: once, by the request that made it 'sent'.
+    if ((done[2]?.meta.changes ?? 0) > 0) {
+        const names = await db
+            .prepare(
+                `SELECT q.username FROM players q WHERE q.id IN (SELECT recipient_id FROM gifts WHERE send_id = ?1 UNION SELECT recipient_id FROM gift_parcels WHERE send_id = ?1)
+                 ORDER BY q.username_normalized LIMIT 5`,
+            )
+            .bind(sendId)
+            .all<{ username: string }>();
+        await audit(ctx, auth.player.id, "admin_gift_sent", {
+            by_username: auth.player.username,
+            gift: {
+                send_id: sendId,
+                rewards: rewards.map((r) => ({ kind: r.kind, id: r.id, name: r.name })),
+                wrap,
+                recipients: units.recipients,
+                gifts: units.created,
+                ...(bundle ? { parcels: units.parcels } : {}),
+                ...(all ? { all_players: true } : {}),
+                skipped: result.skipped_count,
+                names: names.results.map((n) => n.username),
+            },
+        });
     }
-    try {
-        await db.batch(stmts);
-    } catch (e) {
-        await db.prepare("DELETE FROM gift_sends WHERE id = ?1").bind(sendId).run(); // nothing half-sent
-        throw e;
-    }
-    const recipients = [...countOf.keys()];
-    await audit(ctx, auth.player.id, "admin_gift_sent", {
-        by_username: auth.player.username,
-        gift: {
-            send_id: sendId,
-            rewards: rewards.map((r) => ({ kind: r.kind, id: r.id, name: r.name })),
-            wrap,
-            recipients: recipients.length,
-            gifts: created,
-            ...(bundle ? { parcels: recipients.length } : {}),
-            skipped: skipped.length,
-            names: recipients.slice(0, 5).map((p) => names.get(p)),
-        },
-    });
-    return json(ctx, { send: await sendView(db, sendId), created, parcels: bundle ? recipients.length : 0, skipped }, { status: 201 });
+    return json(ctx, result, { status: 201 });
+}
+
+/** What a send gave: its rewards given (a parcel counts what it holds), its parcels, its recipients. */
+async function sendUnits(db: D1Database, id: number): Promise<{ created: number; parcels: number; recipients: number }> {
+    const r = await db
+        .prepare(
+            `SELECT (SELECT COUNT(*) FROM gifts WHERE send_id = ?1 AND parcel_id IS NULL) AS gifts,
+                    (SELECT COUNT(*) FROM gift_parcels WHERE send_id = ?1) AS parcels,
+                    (SELECT COALESCE(SUM(json_array_length(rewards)), 0) FROM gift_parcels WHERE send_id = ?1) AS held,
+                    (SELECT COUNT(*) FROM (SELECT recipient_id FROM gifts WHERE send_id = ?1 AND parcel_id IS NULL
+                                           UNION SELECT recipient_id FROM gift_parcels WHERE send_id = ?1)) AS recipients`,
+        )
+        .bind(id)
+        .first<{ gifts: number; parcels: number; held: number; recipients: number }>();
+    return { created: (r?.gifts ?? 0) + (r?.held ?? 0), parcels: r?.parcels ?? 0, recipients: r?.recipients ?? 0 };
+}
+
+/** The answer of a send written: the send, what it gave, the pairs skipped (the first ones, and how many). */
+async function sendResult(db: D1Database, id: number, skipped: Skipped[], requestKey: string) {
+    const units = await sendUnits(db, id);
+    const row = await db.prepare("SELECT skipped FROM gift_sends WHERE id = ?1").bind(id).first<{ skipped: number }>();
+    return {
+        send: await sendView(db, id),
+        created: units.created,
+        parcels: units.parcels,
+        skipped,
+        skipped_count: row?.skipped ?? skipped.length,
+        request_key: requestKey,
+    };
 }
 
 interface SendRow {
@@ -490,7 +652,7 @@ function sendJson(r: SendRow) {
 }
 
 async function sendView(db: D1Database, id: number) {
-    const r = await db.prepare(`${SEND_SQL} WHERE s.id = ?1 GROUP BY s.id`).bind(id).first<SendRow>();
+    const r = await db.prepare(`${SEND_SQL} WHERE s.id = ?1 AND s.state = 'sent' GROUP BY s.id`).bind(id).first<SendRow>();
     return r ? sendJson(r) : null;
 }
 
@@ -498,7 +660,7 @@ async function sendView(db: D1Database, id: number) {
 export async function adminHistory(ctx: Ctx): Promise<Response> {
     await requireAdminRole(ctx);
     const page = paging(ctx.url, 20, 100);
-    const rows = await ctx.env.DB.prepare(`${SEND_SQL} GROUP BY s.id ORDER BY s.created_at DESC, s.id DESC LIMIT ?1 OFFSET ?2`)
+    const rows = await ctx.env.DB.prepare(`${SEND_SQL} WHERE s.state = 'sent' GROUP BY s.id ORDER BY s.created_at DESC, s.id DESC LIMIT ?1 OFFSET ?2`)
         .bind(page.limit + 1, page.offset)
         .all<SendRow>();
     return json(ctx, { sends: rows.results.slice(0, page.limit).map(sendJson), has_more: rows.results.length > page.limit, offset: page.offset });
@@ -628,11 +790,11 @@ export async function myGifts(ctx: Ctx): Promise<Response> {
     const db = ctx.env.DB;
     const [rows, parcels] = await Promise.all([
         db
-            .prepare(`${GIFT_SQL} WHERE g.recipient_id = ?1 AND g.cancelled_at IS NULL AND g.parcel_id IS NULL ORDER BY g.created_at DESC, g.id DESC LIMIT 300`)
+            .prepare(`${GIFT_SQL} WHERE g.recipient_id = ?1 AND g.cancelled_at IS NULL AND g.parcel_id IS NULL AND s.state = 'sent' ORDER BY g.created_at DESC, g.id DESC LIMIT 300`)
             .bind(auth.player.id)
             .all<GiftRow>(),
         db
-            .prepare(`${PARCEL_SQL} WHERE c.recipient_id = ?1 AND c.cancelled_at IS NULL ORDER BY c.created_at DESC, c.id DESC LIMIT 300`)
+            .prepare(`${PARCEL_SQL} WHERE c.recipient_id = ?1 AND c.cancelled_at IS NULL AND s.state = 'sent' ORDER BY c.created_at DESC, c.id DESC LIMIT 300`)
             .bind(auth.player.id)
             .all<ParcelRow>(),
     ]);
@@ -655,7 +817,7 @@ export async function openGift(ctx: Ctx): Promise<Response> {
     if (!Number.isSafeInteger(id) || id < 1) throw Errors.notFound("GIFT_NOT_FOUND", "Cadeau introuvable.");
     const db = ctx.env.DB;
     const g = await db
-        .prepare(`${GIFT_SQL} WHERE g.id = ?1 AND g.recipient_id = ?2 AND g.cancelled_at IS NULL AND g.parcel_id IS NULL`)
+        .prepare(`${GIFT_SQL} WHERE g.id = ?1 AND g.recipient_id = ?2 AND g.cancelled_at IS NULL AND g.parcel_id IS NULL AND s.state = 'sent'`)
         .bind(id, me)
         .first<GiftRow>();
     if (!g) throw Errors.notFound("GIFT_NOT_FOUND", "Cadeau introuvable (il a peut-être été retiré).");
@@ -701,7 +863,7 @@ export async function openParcel(ctx: Ctx): Promise<Response> {
     const id = Number(ctx.params.parcelId);
     if (!Number.isSafeInteger(id) || id < 1) throw Errors.notFound("GIFT_NOT_FOUND", "Colis introuvable.");
     const db = ctx.env.DB;
-    const c = await db.prepare(`${PARCEL_SQL} WHERE c.id = ?1 AND c.recipient_id = ?2 AND c.cancelled_at IS NULL`).bind(id, me).first<ParcelRow>();
+    const c = await db.prepare(`${PARCEL_SQL} WHERE c.id = ?1 AND c.recipient_id = ?2 AND c.cancelled_at IS NULL AND s.state = 'sent'`).bind(id, me).first<ParcelRow>();
     if (!c) throw Errors.notFound("GIFT_NOT_FOUND", "Colis introuvable (il a peut-être été retiré).");
     const rewards = parcelRewards(c.rewards);
     // What may be granted: the items still in the catalogue, the badges the server still gives (by achievement).

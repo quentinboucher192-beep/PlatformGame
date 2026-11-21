@@ -123,7 +123,10 @@ un message facultatif (140 caractères).
   les joueurs (recherche, *En ligne*, *Tous*, son clan, *Choisis*) avec « possède déjà X » d'après le
   serveur (ces joueurs sont ignorés), le message, le résumé « N récompenses × M joueurs = K cadeaux »,
   *Aperçu de l'ouverture* (la vraie scène, *Retour à l'envoi*), puis *Envoyer K cadeaux* après une
-  confirmation. *Derniers envois* : chaque envoi avec ses cadeaux ouverts ; *Retirer* annule ceux qui ne
+  confirmation. Ni le nombre de récompenses ni celui des joueurs n'est limité (2.85) ; *Destinataires :
+  Tous les joueurs* envoie à chaque joueur actif, après la confirmation « Envoyer à 1 234 joueurs ? » (le
+  nombre réel, donné par le serveur). Un grand envoi s'écrit par étapes et n'apparaît qu'une fois complet
+  (le jeu reprend tout seul un envoi interrompu, jamais deux fois). *Derniers envois* : chaque envoi avec ses cadeaux ouverts ; *Retirer* annule ceux qui ne
   sont pas encore ouverts. Chaque envoi et chaque retrait sont inscrits au Journal (« Cadeaux »).
 
 ### Colis

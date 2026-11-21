@@ -63,6 +63,7 @@ void CommentsPanel::openThread(Kind kind, const std::string& key, const std::str
     basePath_ = basePath;
     if (!same) {
         comments_ = Json::array();
+        subject_ = Json();
         replies_.clear();
         expanded_.clear();
         draft_.clear();
@@ -99,6 +100,7 @@ void CommentsPanel::load(bool more) {
                 return;
             }
             loadError_.clear();
+            if (!more && r.data.contains("attempt")) subject_ = r.data["attempt"];
             Json list = r.data.value("comments", Json::array());
             if (more)
                 for (auto& c : list) comments_.push_back(c);

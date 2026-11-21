@@ -41,8 +41,8 @@ Color wrapLight(const std::string& id);
 
 /// The longest message (characters, as the server counts them).
 constexpr int kMaxMessage = 140;
-constexpr int kMaxRecipients = 100;
-constexpr int kMaxRewards = 12;
+// 2.85: no limit on the rewards of a send (nor of a parcel) or on its players: the server writes a large one in
+// steps, and only the real catalogue's rewards exist.
 /// Characters of `s` (UTF-8 code points).
 int textLength(const std::string& s);
 /// As the server keeps it: control and direction characters removed, trimmed.

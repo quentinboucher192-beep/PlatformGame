@@ -161,7 +161,7 @@ de `wrangler.jsonc`, plafonnée à 1 000) multiplie toutes les limites.
 | `community_rate` / `community_report` | 60 / 20 | 1 h | joueur | notes, signalements |
 | `community_record` | 30 | 1 min | joueur | `POST /community/levels/{id}/records` |
 | `community_favorite` | 120 | 1 h | joueur | `POST`/`DELETE /community/levels/{id}/favorite` |
-| `community_comment` | 8 | 10 min | joueur | `POST /community/levels/{id}/comments`, `POST /levels/{id}/comments`, `POST /records/{id}/comments`, `PATCH /community/comments/{id}` (compteur partagé par tous les fils) |
+| `community_comment` | 8 | 10 min | joueur | `POST /community/levels/{id}/comments`, `POST /levels/{id}/comments`, `POST /records/{id}/comments`, `POST /races/runs/{id}/comments`, `POST /coop/runs/{id}/comments`, `PATCH /community/comments/{id}` (compteur partagé par tous les fils) |
 | `community_reaction` | 120 | 10 min | joueur | `PUT /community/comments/{id}/reaction` |
 | `level_rate` | 60 | 1 h | joueur | `PUT` / `DELETE /levels/{id}/rating` (notes des niveaux de la campagne) |
 | `follow` | 60 | 1 h | joueur | `POST /players/{id}/follow` |
@@ -1366,7 +1366,7 @@ boss ni embuscade, le parcours compte pour 100.
 |---|---|---|---|
 | POST | `/races/runs` `{ kind, level_id, version? \| level_hash?, attempt_id, time_ms, finished, bosses, waves }` | oui | `kind` : `community` (id en ligne, `version` facultative) ou `official` (`level_hash` facultatif) ; `bosses` : pour mille de vie retirée par boss du tracé ; `waves` : vagues battues par embuscade ; `201 { run: { id, status: PENDING }, upload }` ; `409 RUN_EXISTS` pour une tentative déjà envoyée ; 240 envois par heure |
 | PUT | `/races/runs/{runId}/replay` | oui (le joueur de la tentative) | le replay (`application/octet-stream`) ; le serveur calcule le score : `{ run: { status: VERIFIED \| REJECTED, score, finished, reasons, rank }, verifier }` |
-| GET | `/races/board?kind=&level_id=&version=\|level_hash=` | non | `{ race: { title, version, bosses, ambushes, participants }, verifier: { player, at } \| null, ranking: [{ rank, player, score, route, bosses_beaten, waves, finished, detail, time_ms, at, me }], my_pending }` (meilleure tentative vérifiée de chaque joueur, 100 au plus ; égalité : la plus ancienne d'abord) |
+| GET | `/races/board?kind=&level_id=&version=\|level_hash=` | non | `{ race: { title, version, bosses, ambushes, participants }, verifier: { player, at } \| null, ranking: [{ rank, player, score, route, bosses_beaten, waves, finished, detail, time_ms, at, run_id, has_replay, me, comment_count }], my_pending }` (meilleure tentative vérifiée de chaque joueur, 100 au plus ; égalité : la plus ancienne d'abord). `comment_count` (2.85) : commentaires principaux visibles de la tentative (§ 8.9 decies) ; `null` sur un niveau de la communauté (pas de fil) et pour un joueur qui a masqué son profil (sauf lui-même) |
 
 Ce que le serveur vérifie (sinon `REJECTED`, avec les raisons) : le replay est celui de la
 tentative et de cette version du niveau ; au plus une mort et aucune réapparition ; départ au
@@ -1448,19 +1448,37 @@ officiels que dans la section En ligne.
 | POST | `/levels/{levelId}/comments` `{ body, parent_id? }` | requise | `201 { comment }` ; tout joueur connecté ; personne n'y épingle |
 | GET | `/records/{recordId}/comments?sort=…` | facultative | fil d'une course (un record des classements) |
 | POST | `/records/{recordId}/comments` `{ body, parent_id? }` | requise | `201 { comment }` ; l'auteur de la course est notifié (`run_comment`) et peut épingler 3 commentaires |
+| GET | `/races/runs/{runId}/comments?sort=…` | facultative | 2.85 : fil d'une tentative de la course à la vérification en solo (`race:<tentative>`) ; `{ comments, comment_count, attempt }` paginé |
+| POST | `/races/runs/{runId}/comments` `{ body, parent_id? }` | requise | `201 { comment }` ; le joueur de la tentative est notifié (`run_comment`) et peut épingler 3 commentaires |
+| GET | `/coop/runs/{runId}/comments?sort=…` | facultative | 2.85 : fil d'une tentative d'équipe, Duo ou Trio (`coop:<tentative>`) ; `{ comments, comment_count, attempt }` paginé |
+| POST | `/coop/runs/{runId}/comments` `{ body, parent_id? }` | requise | `201 { comment }` ; chaque joueur de l'équipe est notifié (`run_comment`) et peut épingler |
 
 Les autres actions sur un commentaire, quel que soit son fil, passent par les routes
 existantes : `GET /community/comments/{id}/replies`, `PATCH` / `DELETE
 /community/comments/{id}`, `POST` / `DELETE …/pin`, `PUT` / `DELETE …/reaction`, `POST
-…/report`. Chaque commentaire porte en plus `thread` (`community`, `level` ou `run`) ;
-`level_author` y désigne le propriétaire du sujet (créateur du niveau, auteur de la course).
+…/report`. Chaque commentaire porte en plus `thread` (`community`, `level`, `run`, `race` ou
+`coop`) ; `level_author` y désigne le propriétaire du sujet (créateur du niveau, auteur de la
+course, un joueur de l'équipe).
 Une course n'est visible et commentable par les autres que si elle est `VERIFIED`, d'un
 compte actif, et que son auteur n'a pas masqué son profil (`403 PROFILE_PRIVATE` ; son
 auteur garde l'accès à son fil). Un parent d'un autre fil donne `400`. Le fil d'une course
 disparaît avec elle (suppression du compte de son auteur). Les notifications de ces fils
 (`comment_reply`, `comment_reaction`, `run_comment`) portent `data.thread`
-(`level:<id>` ou `run:<record>`), `data.level_id` et, pour une course, `data.record_id` et
-`data.level_name`, pour que le jeu ouvre le bon écran.
+(`level:<id>`, `run:<record>`, `race:<tentative>` ou `coop:<tentative>`), `data.level_id` et,
+pour une course, `data.record_id` (une tentative : `data.run_id`, et `data.size` pour une
+équipe) et `data.level_name`, pour que le jeu ouvre le bon écran.
+
+**Tentatives de la course à la vérification (2.85).** Les fils `race:<tentative>` (solo,
+`race_runs`) et `coop:<tentative>` (Duo / Trio, `coop_runs`) suivent les mêmes règles que ceux
+des courses : une tentative solo n'est visible et commentable par les autres que `VERIFIED`,
+d'un compte actif dont le profil n'est pas masqué ; une tentative d'équipe, que classée
+(vérifiée et confirmée par tous ses joueurs ; ses joueurs gardent l'accès à son fil, fermé tant
+qu'elle ne l'est pas : `403 RUN_NOT_VERIFIED`). Un joueur bloqué par l'un des joueurs ne la
+commente pas (`403 BLOCKED`). Seules les courses des niveaux officiels ont des fils (`403
+RACE_COMMENTS_CLOSED` pour un niveau de la communauté) ; une tentative inconnue donne `404
+RUN_NOT_FOUND`. `attempt` décrit la tentative comme une ligne de son classement : `{ size,
+run_id, level_id, player (ou players), score, finished, revives?, incomplete?, time_ms, at,
+has_replay, me }`. Le fil d'une tentative solo disparaît avec le compte de son joueur.
 
 ### 8.9 undecies Tenue en ligne : cadre, titre, combinaison (2.23)
 
@@ -1830,8 +1848,8 @@ Un administrateur offre des récompenses du catalogue réel à des joueurs ([COL
 
 | Méthode | Route | Rôle |
 |---|---|---|
-| GET | `/admin/gifts/players?filter=online\|all\|clan\|ids&q=&ids=&rewards=kind:id,…` | admin : les joueurs à choisir (en ligne, tous, le clan de l'admin, ceux donnés), chacun avec `owned` et `pending` (les récompenses demandées qu'il possède déjà ou qui l'attendent dans un cadeau) |
-| POST | `/admin/gifts` | admin : `{rewards [{kind, id}] (1 à 12), players [ids] (1 à 100), wrap, message?, bundle?}` → `201 {send, created, parcels, skipped [{player_id, username, reward, reason: owned\|pending}]}` ; avec `bundle: true`, **un colis par joueur** (au lieu d'un cadeau par récompense) qui contient les récompenses qu'il ne possède pas encore : `created` compte ces récompenses, `parcels` les colis (0 sans `bundle`) ; un joueur à qui tout est ignoré n'en reçoit pas, une seule récompense restante fait quand même un colis ; un joueur qui possède déjà une récompense (selon ce que le serveur compte : succès déclarés, défis vérifiés, récompenses gagnées, badges récupérés) ou l'a déjà en attente est ignoré ; `409 NOTHING_TO_SEND` si tout l'est ; `404 PLAYER_NOT_FOUND` (compte inconnu ou inactif). Message : caractères de contrôle et de direction retirés, espaces des bords enlevés, 140 caractères au plus. Notification `gift` à chaque destinataire (fusionnée tant qu'elle n'est pas lue : son compte est le nombre de cadeaux, un colis comptant pour un). Journal : `admin_gift_sent`. Limites `admin_write` et `gift_send` (20 envois par heure) |
+| GET | `/admin/gifts/players?filter=online\|all\|clan\|ids&q=&ids=&rewards=kind:id,…` | admin : les joueurs à choisir (en ligne, tous, le clan de l'admin, ceux donnés), chacun avec `owned` et `pending` (les récompenses demandées qu'il possède déjà ou qui l'attendent dans un cadeau) ; `active_players` (2.85) : le nombre de joueurs actifs, ceux que « Tous les joueurs » atteint ; `ids` : 200 au plus par page |
+| POST | `/admin/gifts` | admin : `{rewards [{kind, id}] (une au moins, sans maximum : seules celles du vrai catalogue existent), players [ids] (un au moins, sans maximum ; corps de 1 Mio au plus) \| "all" (tous les joueurs actifs), wrap, message?, bundle?, request_key?}` → `201 {send, created, parcels, skipped [{player_id, username, reward, reason: owned\|pending}] (les 200 premiers), skipped_count, request_key}` ; 2.85 : l'envoi s'écrit par étapes (500 joueurs, un lot D1 chacune avec sa progression), invisible (ni chez les destinataires, ni dans l'historique, ni annulable) jusqu'au dernier lot qui le rend « envoyé » avec les notifications ; après 40 étapes, `202 {request_key, state: "writing", done, total}` : la même demande renvoyée avec cette clé reprend là où elle s'est arrêtée ; une clé déjà envoyée renvoie l'envoi (`200`, `replayed: true`, rien de donné deux fois) ; la même clé pour une autre demande : `409 REQUEST_KEY_REUSED` ; un envoi resté en écriture une heure est supprimé avec ce qu'il avait écrit (migration 0215) ; avec `bundle: true`, **un colis par joueur** (au lieu d'un cadeau par récompense) qui contient les récompenses qu'il ne possède pas encore : `created` compte ces récompenses, `parcels` les colis (0 sans `bundle`) ; un joueur à qui tout est ignoré n'en reçoit pas, une seule récompense restante fait quand même un colis ; un joueur qui possède déjà une récompense (selon ce que le serveur compte : succès déclarés, défis vérifiés, récompenses gagnées, badges récupérés) ou l'a déjà en attente est ignoré ; `409 NOTHING_TO_SEND` si tout l'est ; `404 PLAYER_NOT_FOUND` (compte inconnu ou inactif). Message : caractères de contrôle et de direction retirés, espaces des bords enlevés, 140 caractères au plus. Notification `gift` à chaque destinataire (fusionnée tant qu'elle n'est pas lue : son compte est le nombre de cadeaux, un colis comptant pour un). Journal : `admin_gift_sent` (une fois par envoi ; `all_players` pour « Tous les joueurs »). Limites `admin_write` (chaque demande) et `gift_send` (20 envois par heure, compté une fois par envoi) |
 | GET | `/admin/gifts?limit=&offset=` | admin : les envois, du plus récent : `{sends [{id, at, sender, wrap, message, bundle, rewards, recipients, names, total, opened, cancelled, waiting}], has_more}` ; pour un envoi de colis (`bundle: true`), `total`, `opened`, `cancelled` et `waiting` comptent des colis |
 | POST | `/admin/gifts/{sendId}/cancel` | admin : retire les cadeaux (ou les colis) de l'envoi qui ne sont pas encore ouverts (les autres restent) → `{cancelled, send}` ; Journal : `admin_gift_cancelled` |
 | GET | `/gifts/me` | les cadeaux et colis du joueur de la session (jamais les retirés), du plus récent : `{gifts [{id, parcel, from {id, username}, wrap, message, created_at, opened, opened_at, reward, contents?}], unopened, total}` ; `reward` (`{kind, id, name}`) vaut `null` tant que le cadeau n'est pas ouvert. Un colis (`parcel: true`, avec ses propres identifiants) est **une seule entrée** : `reward` et `contents` valent `null` tant qu'il n'est pas ouvert (ni son contenu ni son nombre de récompenses ne sont donnés), puis `contents` liste ses récompenses dans l'ordre ; `unopened` le compte pour un ; les cadeaux qu'il contenait ne sont jamais listés à part |

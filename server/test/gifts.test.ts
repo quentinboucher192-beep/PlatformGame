@@ -67,8 +67,10 @@ describe("gifts: an administrator sends", () => {
         expect((await send(a, [p.id], [SUIT], { message: "x".repeat(141) })).status).toBe(400);
         expect((await send(a, [p.id], [SUIT], { extra: 1 })).status).toBe(400);
         expect((await send(a, [], [SUIT])).status).toBe(400);
-        expect((await send(a, Array.from({ length: 101 }, (_, i) => `player-${String(i).padStart(4, "0")}`))).status).toBe(400);
-        expect((await send(a, [p.id], Array.from({ length: 13 }, () => SUIT))).status).toBe(400);
+        // 2.85: no limit on the players nor the rewards — but they must exist (and "all" is the only word allowed).
+        expect((await send(a, Array.from({ length: 101 }, (_, i) => `player-${String(i).padStart(4, "0")}`))).status).toBe(404);
+        expect((await send(a, [p.id], [])).status).toBe(400);
+        expect((await api("POST", `${V}/admin/gifts`, { token: a.token, body: { rewards: [SUIT], players: "everyone", wrap: "or" } })).status).toBe(400);
         const unknown = await send(a, ["ffffffff-ffff-4fff-8fff-ffffffffffff"]);
         expect(unknown.status).toBe(404);
         expect(unknown.body.error.code).toBe("PLAYER_NOT_FOUND");

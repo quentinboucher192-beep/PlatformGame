@@ -100,11 +100,12 @@ public:
             g_.onlineOpen.clear();
             g_.app.pushScene(makeOnlineSettings(g_, tab));
         } else if (g_.onlineOpen.rfind("thread:", 0) == 0 && g_.online.loggedIn()) {
-            // A notification of a campaign thread (2.19): "thread:level:<id>" or "thread:run:<record>".
+            // A notification of a campaign thread (2.19): "thread:level:<id>" or "thread:run:<record>"
+            // (2.85: "thread:race:<attempt>", "thread:coop:<attempt>", an attempt of the level's race).
             std::string thread = g_.onlineOpen.substr(7);
             g_.onlineOpen = g_.onlineOpen.find("|replies") != std::string::npos ? "comments-replies" : std::string{};
             thread = thread.substr(0, thread.find('|'));
-            if (thread.rfind("level:", 0) == 0 || thread.rfind("run:", 0) == 0)
+            if (thread.rfind("level:", 0) == 0 || thread.rfind("run:", 0) == 0 || thread.rfind("race:", 0) == 0 || thread.rfind("coop:", 0) == 0)
                 g_.app.pushScene(makeOnlineThread(g_, thread, level() ? level()->id : std::string{}));
         }
         requireAccount();
@@ -894,6 +895,7 @@ private:
         const float rx = row.right() - ui.s(10);
         const std::string value = progressText(e);
         float right = rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12);
+        right = raceCommentButton(e, row, index, right, nx);
         right = raceReplayButton(e, row, index, right, nx);
         const float room = std::max(ui.s(40), right - nx);
         const Json ver = jfield(race_.data, "verifier");
@@ -946,6 +948,41 @@ private:
         return vb.x - ui.s(8);
     }
 
+    /// 2.85: the 💬 of an attempt of the race, as on the records' rows: its number of comments, opens its thread
+    /// (« race:<attempt> », « coop:<attempt> » for a team). No count on the board (a player who hid their profile):
+    /// no button. Left of `right` when there is room for it, the ▶ and 120 px of name after `left`; returns where
+    /// the rest of the row must stop.
+    float raceCommentButton(const Json& e, const Rect& row, int index, float right, float left) {
+        UIContext& ui = g_.ui;
+        const auto it = e.find("comment_count");
+        if (jstr(e, "run_id").empty() || it == e.end() || !it->is_number_integer()) return right;
+        const std::string count = std::to_string(it->get<int>());
+        const float cw = ui.text().measure(count, FontFace::Bold, ui.s(14)).x + ui.s(40);
+        const float replay = jget<bool>(e, "has_replay", false) ? ui.s(48) : 0.0f;
+        if (right - cw - ui.s(8) - replay - left < ui.s(120)) return right;
+        const Rect cb{right - cw, row.center().y - ui.s(14), cw, ui.s(28)};
+        UIContext::ButtonStyle cst;
+        cst.small = true;
+        if (ui.button("racecom" + std::to_string(index), cb, "", cst)) {
+            selectedRow_ = index;
+            openRaceComments(e);
+        }
+        // A speech bubble, then the count (as on the records' rows).
+        const Rect bubble{cb.x + ui.s(9), cb.center().y - ui.s(7), ui.s(16), ui.s(11)};
+        ui.r().drawRoundedRect(bubble, ui.s(3), ui.theme().textDim, ui.s(1.5f));
+        ui.r().fillTriangle({bubble.x + ui.s(4), bubble.bottom()}, {bubble.x + ui.s(9), bubble.bottom()}, {bubble.x + ui.s(3), bubble.bottom() + ui.s(5)},
+                            ui.theme().textDim);
+        ui.label(count, {bubble.right() + ui.s(6), cb.center().y}, 14, ui.theme().text, Align::Left, FontFace::Bold, VAlign::Middle);
+        return cb.x - ui.s(8);
+    }
+
+    /// The comments of an attempt of the race (its player, every player of a team, is notified of new ones).
+    void openRaceComments(const Json& e) {
+        const std::string id = jstr(e, "run_id");
+        if (id.empty() || !g_.online.usable()) return;
+        g_.app.pushScene(makeOnlineThread(g_, (raceSize_ > 1 ? "coop:" : "race:") + id, level() ? level()->id : std::string{}));
+    }
+
     /// The board in memory is the selected level's, at the size chosen.
     bool raceCurrent() const { return level() && race_.levelId == level()->id && race_.size == raceSize_; }
 
@@ -988,7 +1025,8 @@ private:
         const std::string value = progressText(e);
         const float rx = row.right() - ui.s(10);
         const float nx = row.x + ui.s(84);
-        const float right = raceReplayButton(e, row, index, rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12), nx);
+        const float right =
+            raceReplayButton(e, row, index, raceCommentButton(e, row, index, rx - ui.text().measure(value, FontFace::Bold, ui.s(18)).x - ui.s(12), nx), nx);
         const float room = std::max(ui.s(40), right - nx);
         const float nameY = row.center().y - ui.s(8);
         // The names: their size at most, else smaller (down to 80 %), else each one shortened to its share.

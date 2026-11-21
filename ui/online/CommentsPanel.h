@@ -26,8 +26,9 @@ public:
 
     /// A community level's comments.
     void open(const std::string& levelId, const std::string& title);
-    /// Another thread: `key` identifies it ("level:<id>", "run:<record id>"), `basePath` is
-    /// the API path its comments hang from ("/api/v1/levels/<id>", "/api/v1/records/<id>").
+    /// Another thread: `key` identifies it ("level:<id>", "run:<record id>", 2.85: "race:<attempt>",
+    /// "coop:<attempt>"), `basePath` is the API path its comments hang from ("/api/v1/levels/<id>",
+    /// "/api/v1/records/<id>", "/api/v1/races/runs/<id>", "/api/v1/coop/runs/<id>").
     void openThread(Kind kind, const std::string& key, const std::string& basePath, const std::string& title);
     void close() { levelId_.clear(); }
     bool isOpen() const { return !levelId_.empty(); }
@@ -35,6 +36,10 @@ public:
     const std::string& levelId() const { return levelId_; }
     /// Visible top-level comments (after the first load).
     int total() const { return total_; }
+    /// 2.85: the attempt of a race thread, as the server describes it with its comments (else null).
+    const Json& subject() const { return subject_; }
+    /// Why the comments could not be read (empty when they were).
+    const std::string& loadError() const { return loadError_; }
     /// false: no « Retour » button in the header (the page has its own way back).
     void setBackButton(bool on) { showBack_ = on; }
     /// Draws the panel in `area`. Returns false when the player goes back to the list.
@@ -68,6 +73,7 @@ private:
     std::string loadError_;
     int sort_ = 0;
     Json comments_ = Json::array();
+    Json subject_;
     std::map<std::string, Json> replies_;
     std::set<std::string> expanded_;
     int nextOffset_ = -1, total_ = 0, generation_ = 0;
