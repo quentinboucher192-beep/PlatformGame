@@ -587,6 +587,8 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
                 return false;
             const Vec2 c{nd.feet.x, nd.feet.y - 11.0f};
             const float fromTarget = (c - tc).length();
+            // 2.84 (fight plan): above the floor under the boss, whatever the pass (its waves run along that floor).
+            if (body && view_.plan.elevate > 0.0f && b.role != Role::Lure && nd.feet.y > view_.plan.floorY - view_.plan.elevate) return false;
             // 2.84: never on another's place (a group on one pixel is swept, crushed, burnt together).
             for (int o = 0; o < static_cast<int>(bots_.size()) && pass == 1; ++o)
                 if (o != seat && bots_[static_cast<size_t>(o)].spot >= 0 && ((seats_ >> o) & 1u) &&
@@ -601,8 +603,6 @@ bool TestBots::chooseSpot(const GameWorld& w, int seat, Bot& b, const Rect& targ
                     const float ey = std::max({0.0f, bossBox.y - c.y, c.y - bossBox.bottom()});
                     const float keep = view_.plan.keepOff >= 0.0f ? view_.plan.keepOff : kKeepOff;
                     if (ex * ex + ey * ey < keep * keep) return false;
-                    // 2.84 (fight plan): up on a storey above the floor under the boss (its floor blows).
-                    if (view_.plan.elevate > 0.0f && nd.feet.y > bossBox.bottom() - view_.plan.elevate) return false;
                 }
                 if (body && b.role == Role::Lure && view_.plan.lureOnFloor && nd.feet.y < bossBox.bottom() - 40.0f) return false;
                 for (int o = 0; o < static_cast<int>(bots_.size()); ++o)
@@ -1596,7 +1596,8 @@ InputFrame TestBots::drive(RaidRun& run, int seat, Bot& b) {
                         b.standOff = nav->search(
                             here, [&](int i) {
                                 const NavGraph::Node& nd = nav->node(i);
-                                return nd.mover < 0 && !nd.ladder && !off.contains(nd.feet) && near.contains(nd.feet) && safeSpot(w, seat, nd.feet, 36);
+                                return nd.mover < 0 && !nd.ladder && !off.contains(nd.feet) && near.contains(nd.feet) && safeSpot(w, seat, nd.feet, 36) &&
+                                       !(view_.plan.elevate > 0.0f && nd.feet.y > view_.plan.floorY - view_.plan.elevate);
                             },
                             4000.0f);
                     if (b.standOff >= 0) {

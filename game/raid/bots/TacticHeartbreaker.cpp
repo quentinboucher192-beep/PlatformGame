@@ -29,6 +29,7 @@ public:
     const char* name() const override { return "Heartbreaker"; }
     void read(const RaidRun& run, BossView& v) const override {
         readCommon(run, v);
+
         const GameWorld& w = run.world();
         const Gigaboss& gb = run.gigaboss();
         const Enemy* b = gb.boss(w);
@@ -36,6 +37,10 @@ public:
         if (!b || !rt) return;
         const Json be = gb.rules()->extra.value("beats", Json::object());
         const float speed = jget<float>(be, "speed", 520.0f), height = jget<float>(be, "height", 40.0f), floor = jget<float>(be, "floor", b->box.bottom());
+        // 2.84, its fight plan: its beats throw waves along its floor only, every 1,25 to 2 s — the strikers fire from the
+        // platforms above it.
+        v.plan.elevate = 40.0f;
+        v.plan.floorY = floor;
         // Where its strong beats throw their waves (both its sides, along the floor): too close to jump them in time,
         // a place to keep away from (a strong beat every few seconds).
         std::vector<float> from;
