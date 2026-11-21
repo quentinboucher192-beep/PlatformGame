@@ -2963,7 +2963,7 @@ qui ne changent pas d'étage), avec sa poigne et ses griffes sous la glace au co
 | Skullmaw | 0 / 8, 68 % | 0 / 8, 63 % (6 départs sur 8 tiennent 15 min, la plupart en phase 3) |
 | Dreadfang | 0 / 8, 45 % | 0 / 8, 42 % |
 | Titanus | 0 / 8, 33 % | 0 / 8, 33 % |
-| Voidworm | 0 / 8, 71 % | **3 / 8**, 82 % |
+| Voidworm | 0 / 8, 71 % | **3 / 8**, 82 % ; puis **5 / 8**, 85 % (voir plus bas) |
 | Graviton | 0 / 8, 39 % | 0 / 8, 39 % |
 | Heartbreaker | 1 / 8, 52 % | **2 / 8**, 54 % |
 | Cœur d'Asterion | 0 / 8, 44 % | 0 / 8, 45 % |
@@ -2975,6 +2975,12 @@ un pas de côté hors d'un rayon (les regards traqueurs de Skullmaw sur ses miro
 du sol de ses ondes (`Plan::floorY`). Essayés puis retirés (moins bons) : deux joueurs par chaîne de Dreadfang, sa poigne lue
 comme une aspiration, le crochet contre le corps de Voidworm pris en dernier, les miroirs hauts de Skullmaw donnés d'abord,
 pas d'appât contre Heartbreaker.
+
+Voidworm, ensuite : en phase 3 (son acide, 150 px, toutes les 22 s), tous ses frappeurs et son appât au-dessus de la
+hauteur de l'acide (`Plan::elevate`, `elevateAll`) ; une âme sous cette hauteur relevée seulement dans les 5 s qui suivent sa
+retombée (`Plan::reviveWindow`). **5 / 8** (85 %) ; les trois départs perdus : deux groupes éliminés en phase 2 (ses
+morsures et son crachat au contact, près de son corps), un en phase 3. Heartbreaker : son appât aussi au-dessus de ses
+ondes, 2 / 8 avec moins de morts.
 
 ### Versions
 
