@@ -57601,6 +57601,12 @@
    ]
   },
   {
+   "fr": "Raids (tests) : plans de combat des joueurs simulés par Gigaboss ; ils gardent ceux qui tiennent les places d'une carapace, se tiennent au-dessus de l'acide de Voidworm et des ondes de Heartbreaker, attendent loin d'un Gigaboss blindé, ne réaniment plus sous l'acide, prennent d'un saut les orbes de vie suspendus, s'écartent des rayons sans quitter leur plaque, gardent chacun leur miroir, changent d'étage avant les balayages de Dreadfang ; leurs choix ne dépendent plus que de la partie (même combat sur chaque ordinateur) ; Voidworm et Heartbreaker tombent maintenant sous les joueurs simulés seuls.",
+   "where": [
+    "data/news/changelog.json"
+   ]
+  },
+  {
    "fr": "Raids : avant chaque antre, et avant le Cœur d'Asterion, il faut vaincre toutes les vagues de toutes les embuscades de la zone : le passage reste fermé tant qu'il en reste une, et le dit (« Embuscades restantes : 2 sur 4 », sur le passage et dans « Ce qu'il reste à faire »).",
    "where": [
     "data/news/changelog.json"

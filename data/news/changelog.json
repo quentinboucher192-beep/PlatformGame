@@ -1,4 +1,7 @@
 {
+  "2.85.0": [
+    "Raids (tests) : plans de combat des joueurs simulés par Gigaboss ; ils gardent ceux qui tiennent les places d'une carapace, se tiennent au-dessus de l'acide de Voidworm et des ondes de Heartbreaker, attendent loin d'un Gigaboss blindé, ne réaniment plus sous l'acide, prennent d'un saut les orbes de vie suspendus, s'écartent des rayons sans quitter leur plaque, gardent chacun leur miroir, changent d'étage avant les balayages de Dreadfang ; leurs choix ne dépendent plus que de la partie (même combat sur chaque ordinateur) ; Voidworm et Heartbreaker tombent maintenant sous les joueurs simulés seuls."
+  ],
   "2.84.1": [
     "Raids : le temps du raid se compte à rebours (rouge dans la dernière minute) ; plus de plateformes dans les antres et l'arène du Cœur ; ouvrir le menu (Tab) en courant ne fait plus défiler ses onglets ; les Gigaboss et le Cœur rééquilibrés (environ 10 min pour un bon groupe de 8 à 3 / 5) ; la difficulté d'un événement (1 à 5) change vraiment leur vie et leurs dégâts, affichés à côté du choix (titan 13).",
     "Course à la vérification : chaque tentative (Solo, Duo, Trio) a de nouveau son bouton de commentaires, avec leur nombre, à côté du ▶, comme les records d'un niveau classique.",
