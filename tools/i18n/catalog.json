@@ -28040,12 +28040,6 @@
    ]
   },
   {
-   "fr": "formats",
-   "where": [
-    "game/raid/RaidCatalog.cpp"
-   ]
-  },
-  {
    "fr": "formatVersion invalide",
    "where": [
     "server/src/campaignRevisions.ts"
